@@ -1,0 +1,57 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "test-ds",
+  "homepage": "https://test-ds.example.com",
+  "items": [
+    {
+      "name": "styles-main",
+      "type": "registry:style",
+      "files": [
+        {
+          "type": "registry:theme",
+          "target": "styles/main.css",
+          "path": "src/styles/main.css"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "type": "registry:lib",
+          "target": "lib/utils.ts",
+          "path": "src/lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/button.tsx",
+          "path": "src/components/ui/button.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/card.tsx",
+          "path": "src/components/ui/card.tsx"
+        }
+      ],
+      "categories": ["display"]
+    }
+  ]
+}

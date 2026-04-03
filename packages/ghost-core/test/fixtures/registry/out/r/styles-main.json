@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "styles-main",
+  "type": "registry:style",
+  "files": [
+    {
+      "path": "src/styles/main.css",
+      "content": "@theme {\n  --color-white: #ffffff;\n  --color-black: #000000;\n  --color-gray-50: #f5f5f5;\n  --color-gray-200: #e8e8e8;\n  --color-gray-500: #999999;\n  --color-gray-900: #1a1a1a;\n  --color-red-200: #f94b4b;\n}\n\n:root {\n  --radius: 20px;\n  --background-default: var(--color-white);\n  --background-alt: var(--color-gray-50);\n  --background-accent: var(--color-gray-900);\n  --border-default: var(--color-gray-200);\n  --border-strong: var(--color-gray-900);\n  --text-default: var(--color-gray-900);\n  --text-muted: var(--color-gray-500);\n  --text-inverse: var(--color-white);\n  --text-danger: var(--color-red-200);\n  --shadow-card: 0 2px 8px rgba(76,76,76, 0.15);\n}\n\n.dark {\n  --background-default: var(--color-gray-900);\n  --background-alt: var(--color-black);\n  --text-default: var(--color-white);\n  --text-muted: var(--color-gray-500);\n}",
+      "type": "registry:theme",
+      "target": "styles/main.css"
+    }
+  ]
+}
