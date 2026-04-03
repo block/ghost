@@ -1,0 +1,35 @@
+@theme {
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #f5f5f5;
+  --color-gray-200: #e8e8e8;
+  --color-gray-500: #999999;
+  --color-gray-900: #1a1a1a;
+  --color-red-200: #f94b4b;
+}
+
+:root {
+  --radius: 20px;
+  --background-default: var(--color-white);
+  --background-alt: var(--color-gray-50);
+  --background-accent: var(--color-gray-900);
+  /* DRIFT: token value changed */
+  --border-default: var(--color-gray-500);
+  --border-strong: var(--color-gray-900);
+  --text-default: var(--color-gray-900);
+  /* DRIFT: missing --text-muted, --text-inverse, --text-danger */
+  --shadow-card: 0 2px 8px rgba(76,76,76, 0.15);
+}
+
+/* DRIFT: hardcoded color outside @theme */
+.custom-banner {
+  background: #ff6b6b;
+  color: rgb(255, 255, 255);
+}
+
+.dark {
+  --background-default: var(--color-gray-900);
+  --background-alt: var(--color-black);
+  --text-default: var(--color-white);
+  --text-muted: var(--color-gray-500);
+}

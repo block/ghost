@@ -1,0 +1,27 @@
+{
+  "name": "@ghost/core",
+  "version": "0.1.0",
+  "description": "Design drift detection engine",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "diff": "^7.0.0",
+    "jiti": "^2.4.0",
+    "postcss": "^8.5.0"
+  },
+  "devDependencies": {
+    "@types/diff": "^6.0.0"
+  }
+}

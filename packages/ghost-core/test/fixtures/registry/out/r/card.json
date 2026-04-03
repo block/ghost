@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "card",
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ui/card.tsx",
+      "content": "import * as React from \"react\";\nimport { cn } from \"@/lib/utils\";\n\nfunction Card({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"card\"\n      className={cn(\"rounded-xl border bg-card text-card-foreground shadow-sm\", className)}\n      {...props}\n    />\n  );\n}\n\nfunction CardHeader({ className, ...props }: React.ComponentProps<\"div\">) {\n  return <div data-slot=\"card-header\" className={cn(\"flex flex-col gap-1.5 p-6\", className)} {...props} />;\n}\n\nfunction CardTitle({ className, ...props }: React.ComponentProps<\"div\">) {\n  return <div data-slot=\"card-title\" className={cn(\"font-semibold leading-none\", className)} {...props} />;\n}\n\nfunction CardContent({ className, ...props }: React.ComponentProps<\"div\">) {\n  return <div data-slot=\"card-content\" className={cn(\"p-6 pt-0\", className)} {...props} />;\n}\n\nexport { Card, CardHeader, CardTitle, CardContent };",
+      "type": "registry:ui",
+      "target": "components/ui/card.tsx"
+    }
+  ],
+  "categories": ["display"],
+  "type": "registry:ui"
+}
