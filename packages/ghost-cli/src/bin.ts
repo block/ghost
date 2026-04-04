@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
+import {
+  formatCLIReport,
+  formatJSONReport,
+  loadConfig,
+  scan,
+} from "@ghost/core";
 import { defineCommand, runMain } from "citty";
-import { loadConfig, scan, formatCLIReport, formatJSONReport } from "@ghost/core";
 
 const scanCommand = defineCommand({
   meta: {

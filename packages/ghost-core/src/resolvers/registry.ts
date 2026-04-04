@@ -1,11 +1,11 @@
-import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
+import { readFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import type {
+  CSSToken,
   Registry,
   RegistryItem,
   ResolvedRegistry,
-  CSSToken,
 } from "../types.js";
 import { parseCSS } from "./css.js";
 
@@ -32,7 +32,9 @@ async function resolveItemContent(
       // Try built output first: out/r/[name].json
       const builtPath = join(registryDir, "out", "r", `${item.name}.json`);
       if (existsSync(builtPath)) {
-        const built = JSON.parse(await readFile(builtPath, "utf-8")) as RegistryItem;
+        const built = JSON.parse(
+          await readFile(builtPath, "utf-8"),
+        ) as RegistryItem;
         const builtFile = built.files?.find((f) => f.path === file.path);
         if (builtFile?.content) {
           return { ...file, content: builtFile.content };
@@ -83,7 +85,10 @@ function extractStyleTokens(items: RegistryItem[]): CSSToken[] {
   for (const item of items) {
     if (item.type !== "registry:style") continue;
     for (const file of item.files) {
-      if (file.content && (file.path.endsWith(".css") || file.type === "registry:theme")) {
+      if (
+        file.content &&
+        (file.path.endsWith(".css") || file.type === "registry:theme")
+      ) {
         return parseCSS(file.content);
       }
     }

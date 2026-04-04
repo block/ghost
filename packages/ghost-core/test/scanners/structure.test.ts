@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 import { resolveRegistry } from "../../src/resolvers/registry.js";
 import { scanStructure } from "../../src/scanners/structure.js";
 
@@ -43,8 +43,8 @@ describe("scanStructure - drifted consumer", () => {
 
     const buttonDrift = modified.find((r) => r.component === "button");
     expect(buttonDrift).toBeDefined();
-    expect(buttonDrift!.linesAdded).toBeGreaterThan(0);
-    expect(buttonDrift!.diff).toBeDefined();
+    expect(buttonDrift?.linesAdded).toBeGreaterThan(0);
+    expect(buttonDrift?.diff).toBeDefined();
   });
 
   it("detects missing components", async () => {

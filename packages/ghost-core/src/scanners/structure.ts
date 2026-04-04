@@ -1,8 +1,8 @@
-import { readFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { resolve, relative, basename } from "node:path";
+import { readFile } from "node:fs/promises";
+import { relative, resolve } from "node:path";
 import { createPatch } from "diff";
-import type { RegistryItem, StructureDrift, RuleSeverity } from "../types.js";
+import type { RegistryItem, RuleSeverity, StructureDrift } from "../types.js";
 
 export interface StructureScannerOptions {
   registryItems: RegistryItem[];
@@ -16,7 +16,7 @@ function matchesIgnore(filePath: string, patterns: string[]): boolean {
   for (const pattern of patterns) {
     // Simple glob matching: support * wildcard
     const regex = new RegExp(
-      "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+      `^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
     );
     if (regex.test(filePath)) return true;
   }
@@ -82,8 +82,12 @@ export async function scanStructure(
       const registryContent = file.content;
 
       // Normalize line endings
-      const normalizedConsumer = consumerContent.replace(/\r\n/g, "\n").trimEnd();
-      const normalizedRegistry = registryContent.replace(/\r\n/g, "\n").trimEnd();
+      const normalizedConsumer = consumerContent
+        .replace(/\r\n/g, "\n")
+        .trimEnd();
+      const normalizedRegistry = registryContent
+        .replace(/\r\n/g, "\n")
+        .trimEnd();
 
       if (normalizedConsumer === normalizedRegistry) continue;
 
