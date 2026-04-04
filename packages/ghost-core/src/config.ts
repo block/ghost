@@ -10,13 +10,15 @@ const CONFIG_FILES = [
 ];
 
 const DEFAULT_CONFIG: Omit<GhostConfig, "designSystems"> = {
-  scan: { values: true, structure: true, analysis: false },
+  scan: { values: true, structure: true, visual: false, analysis: false },
   rules: {
     "hardcoded-color": "error",
     "token-override": "warn",
     "missing-token": "warn",
     "structural-divergence": "error",
     "missing-component": "warn",
+    "visual-regression": "warn",
+    "visual-render-failure": "warn",
   },
   ignore: [],
 };
@@ -71,5 +73,6 @@ export async function loadConfig(
     scan: { ...DEFAULT_CONFIG.scan, ...raw.scan },
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
+    visual: raw.visual,
   };
 }

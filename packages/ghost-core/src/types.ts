@@ -70,7 +70,15 @@ export interface DesignSystemConfig {
 export interface ScanOptions {
   values: boolean;
   structure: boolean;
+  visual: boolean;
   analysis: boolean;
+}
+
+export interface VisualScanConfig {
+  threshold?: number;
+  viewport?: { width: number; height: number };
+  timeout?: number;
+  outputDir?: string;
 }
 
 export interface GhostConfig {
@@ -78,6 +86,7 @@ export interface GhostConfig {
   scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
+  visual?: VisualScanConfig;
 }
 
 // --- Drift report types ---
@@ -115,10 +124,24 @@ export interface DriftSummary {
   tokensScanned: number;
 }
 
+export interface VisualDrift {
+  component: string;
+  rule: string;
+  severity: RuleSeverity;
+  message: string;
+  diffPercentage: number;
+  threshold: number;
+  registryFile?: string;
+  consumerFile?: string;
+  diffImagePath?: string;
+  error?: string;
+}
+
 export interface DesignSystemReport {
   designSystem: string;
   values: ValueDrift[];
   structure: StructureDrift[];
+  visual: VisualDrift[];
 }
 
 export interface DriftReport {

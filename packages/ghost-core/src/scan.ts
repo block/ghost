@@ -8,11 +8,13 @@ import type {
   DriftSummary,
   ValueDrift,
   StructureDrift,
+  VisualDrift,
 } from "./types.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import { parseCSS } from "./resolvers/css.js";
 import { scanValues } from "./scanners/values.js";
 import { scanStructure } from "./scanners/structure.js";
+import { scanVisual } from "./scanners/visual.js";
 
 export async function scan(
   config: GhostConfig,
@@ -27,6 +29,7 @@ export async function scan(
 
     let values: ValueDrift[] = [];
     let structure: StructureDrift[] = [];
+    let visual: VisualDrift[] = [];
 
     // Values scan
     if (config.scan.values) {
@@ -60,10 +63,35 @@ export async function scan(
       });
     }
 
+    // Visual scan
+    if (config.scan.visual) {
+      const styleItem = registry.items.find(
+        (i) => i.type === "registry:style",
+      );
+      const registryCSS = styleItem?.files[0]?.content ?? "";
+      const consumerCSS =
+        existsSync(resolve(cwd, ds.styleEntry))
+          ? await readFile(resolve(cwd, ds.styleEntry), "utf-8")
+          : "";
+
+      visual = await scanVisual({
+        registryItems: registry.items,
+        consumerDir: cwd,
+        componentDir: ds.componentDir,
+        styleContent: registryCSS,
+        consumerStyleContent: consumerCSS,
+        rules: config.rules,
+        ignore: config.ignore,
+        visual: config.visual ?? {},
+        cwd,
+      });
+    }
+
     systems.push({
       designSystem: ds.name,
       values,
       structure,
+      visual,
     });
   }
 
@@ -94,6 +122,11 @@ function computeSummary(
     for (const s of system.structure) {
       if (s.severity === "error") errors++;
       else if (s.severity === "warn") warnings++;
+      else info++;
+    }
+    for (const v of system.visual) {
+      if (v.severity === "error") errors++;
+      else if (v.severity === "warn") warnings++;
       else info++;
     }
   }
