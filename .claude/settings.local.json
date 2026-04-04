@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/nahiyan/Development/ghost log --oneline)",
+      "Bash(git:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx biome:*)",
+      "Bash(just check:*)",
+      "Bash(just build:*)",
+      "Bash(npx lefthook:*)"
+    ]
+  }
+}
