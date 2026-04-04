@@ -1,0 +1,16 @@
+pre-commit:
+  commands:
+    format:
+      run: npx biome format --write . && npx biome check --fix . && git add -u
+    check:
+      run: just check
+
+pre-push:
+  parallel: true
+  commands:
+    check:
+      run: just check
+    test:
+      run: just test
+    build:
+      run: just build
