@@ -1,0 +1,20 @@
+{
+  "name": "ghost-cli",
+  "version": "0.1.0",
+  "description": "CLI for ghost design drift detection",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "ghost": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@ghost/core": "workspace:*",
+    "citty": "^0.1.6"
+  }
+}
