@@ -1,4 +1,4 @@
-import type { DriftReport, ValueDrift, StructureDrift } from "../types.js";
+import type { DriftReport, ValueDrift, StructureDrift, VisualDrift } from "../types.js";
 
 const useColor =
   !process.env["NO_COLOR"] &&
@@ -59,6 +59,22 @@ function formatStructureDrift(drift: StructureDrift): string {
   return lines.join("\n");
 }
 
+function formatVisualDrift(drift: VisualDrift): string {
+  const lines: string[] = [];
+  const location = drift.consumerFile ?? drift.component;
+
+  lines.push(
+    `  ${severityTag(drift.severity)}  ${c.dim(drift.rule)}  ${c.dim(location)}`,
+  );
+  lines.push(`         ${drift.message}`);
+
+  if (drift.diffImagePath) {
+    lines.push(`         ${c.dim("diff image:")} ${drift.diffImagePath}`);
+  }
+
+  return lines.join("\n");
+}
+
 export function formatReport(report: DriftReport): string {
   const lines: string[] = [];
 
@@ -85,7 +101,21 @@ export function formatReport(report: DriftReport): string {
       }
     }
 
-    if (system.values.length === 0 && system.structure.length === 0) {
+    if (system.visual.length > 0) {
+      lines.push("");
+      lines.push(
+        c.bold(`Visual ${c.dim(`(${system.visual.length} issues)`)}`),
+      );
+      for (const drift of system.visual) {
+        lines.push(formatVisualDrift(drift));
+      }
+    }
+
+    if (
+      system.values.length === 0 &&
+      system.structure.length === 0 &&
+      system.visual.length === 0
+    ) {
       lines.push("");
       lines.push(c.green("  No drift detected."));
     }
