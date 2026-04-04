@@ -1,5 +1,5 @@
-import type { CSSToken, ValueDrift, RuleSeverity } from "../types.js";
-import { buildTokenMap, buildReverseValueMap } from "../resolvers/css.js";
+import { buildReverseValueMap, buildTokenMap } from "../resolvers/css.js";
+import type { CSSToken, RuleSeverity, ValueDrift } from "../types.js";
 
 const COLOR_REGEX = /#(?:[0-9a-fA-F]{3,8})\b|rgba?\([^)]+\)|hsla?\([^)]+\)/g;
 
@@ -12,24 +12,40 @@ export interface ValuesScannerOptions {
 }
 
 export function scanValues(options: ValuesScannerOptions): ValueDrift[] {
-  const { registryTokens, consumerTokens, consumerCSS, rules, styleFile } = options;
+  const { registryTokens, consumerTokens, consumerCSS, rules, styleFile } =
+    options;
   const results: ValueDrift[] = [];
 
   if (rules["token-override"] !== "off") {
     results.push(
-      ...detectTokenOverrides(registryTokens, consumerTokens, rules["token-override"] ?? "warn", styleFile),
+      ...detectTokenOverrides(
+        registryTokens,
+        consumerTokens,
+        rules["token-override"] ?? "warn",
+        styleFile,
+      ),
     );
   }
 
   if (rules["hardcoded-color"] !== "off") {
     results.push(
-      ...detectHardcodedColors(registryTokens, consumerCSS, rules["hardcoded-color"] ?? "error", styleFile),
+      ...detectHardcodedColors(
+        registryTokens,
+        consumerCSS,
+        rules["hardcoded-color"] ?? "error",
+        styleFile,
+      ),
     );
   }
 
   if (rules["missing-token"] !== "off") {
     results.push(
-      ...detectMissingTokens(registryTokens, consumerTokens, rules["missing-token"] ?? "warn", styleFile),
+      ...detectMissingTokens(
+        registryTokens,
+        consumerTokens,
+        rules["missing-token"] ?? "warn",
+        styleFile,
+      ),
     );
   }
 
@@ -152,7 +168,9 @@ function detectMissingTokens(
   styleFile: string,
 ): ValueDrift[] {
   // Only check :root tokens — these are the semantic tokens consumers should have
-  const registryRootTokens = registryTokens.filter((t) => t.selector === ":root");
+  const registryRootTokens = registryTokens.filter(
+    (t) => t.selector === ":root",
+  );
   const consumerNames = new Set(consumerTokens.map((t) => t.name));
   const drifts: ValueDrift[] = [];
 

@@ -1,7 +1,12 @@
-import type { DriftReport, ValueDrift, StructureDrift, VisualDrift } from "../types.js";
+import type {
+  DriftReport,
+  StructureDrift,
+  ValueDrift,
+  VisualDrift,
+} from "../types.js";
 
 const useColor =
-  !process.env["NO_COLOR"] &&
+  !process.env.NO_COLOR &&
   !process.argv.includes("--no-color") &&
   process.stdout.isTTY;
 
@@ -103,9 +108,7 @@ export function formatReport(report: DriftReport): string {
 
     if (system.visual.length > 0) {
       lines.push("");
-      lines.push(
-        c.bold(`Visual ${c.dim(`(${system.visual.length} issues)`)}`),
-      );
+      lines.push(c.bold(`Visual ${c.dim(`(${system.visual.length} issues)`)}`));
       for (const drift of system.visual) {
         lines.push(formatVisualDrift(drift));
       }
@@ -126,8 +129,10 @@ export function formatReport(report: DriftReport): string {
 
   const { errors, warnings, info } = report.summary;
   const parts: string[] = [];
-  if (errors > 0) parts.push(c.red(`${errors} error${errors !== 1 ? "s" : ""}`));
-  if (warnings > 0) parts.push(c.yellow(`${warnings} warning${warnings !== 1 ? "s" : ""}`));
+  if (errors > 0)
+    parts.push(c.red(`${errors} error${errors !== 1 ? "s" : ""}`));
+  if (warnings > 0)
+    parts.push(c.yellow(`${warnings} warning${warnings !== 1 ? "s" : ""}`));
   if (info > 0) parts.push(c.cyan(`${info} info`));
 
   if (parts.length === 0) {

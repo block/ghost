@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parseCSS, buildTokenMap, buildReverseValueMap } from "../../src/resolvers/css.js";
+import { describe, expect, it } from "vitest";
+import {
+  buildReverseValueMap,
+  buildTokenMap,
+  parseCSS,
+} from "../../src/resolvers/css.js";
 
 const fixtureCSS = readFileSync(
   resolve(__dirname, "../fixtures/registry/src/styles/main.css"),
@@ -17,8 +21,8 @@ describe("parseCSS", () => {
 
     const white = themeTokens.find((t) => t.name === "--color-white");
     expect(white).toBeDefined();
-    expect(white!.value).toBe("#ffffff");
-    expect(white!.category).toBe("color");
+    expect(white?.value).toBe("#ffffff");
+    expect(white?.category).toBe("color");
   });
 
   it("extracts tokens from :root block", () => {
@@ -27,8 +31,8 @@ describe("parseCSS", () => {
 
     const bgDefault = rootTokens.find((t) => t.name === "--background-default");
     expect(bgDefault).toBeDefined();
-    expect(bgDefault!.value).toBe("var(--color-white)");
-    expect(bgDefault!.category).toBe("background");
+    expect(bgDefault?.value).toBe("var(--color-white)");
+    expect(bgDefault?.category).toBe("background");
   });
 
   it("extracts tokens from .dark block", () => {
@@ -40,21 +44,23 @@ describe("parseCSS", () => {
     const bgDefault = tokens.find(
       (t) => t.name === "--background-default" && t.selector === ":root",
     );
-    expect(bgDefault!.resolvedValue).toBe("#ffffff");
+    expect(bgDefault?.resolvedValue).toBe("#ffffff");
   });
 
   it("categorizes tokens correctly", () => {
     const border = tokens.find((t) => t.name === "--border-default");
-    expect(border!.category).toBe("border");
+    expect(border?.category).toBe("border");
 
-    const text = tokens.find((t) => t.name === "--text-muted" && t.selector === ":root");
-    expect(text!.category).toBe("text");
+    const text = tokens.find(
+      (t) => t.name === "--text-muted" && t.selector === ":root",
+    );
+    expect(text?.category).toBe("text");
 
     const shadow = tokens.find((t) => t.name === "--shadow-card");
-    expect(shadow!.category).toBe("shadow");
+    expect(shadow?.category).toBe("shadow");
 
     const radius = tokens.find((t) => t.name === "--radius");
-    expect(radius!.category).toBe("radius");
+    expect(radius?.category).toBe("radius");
   });
 });
 

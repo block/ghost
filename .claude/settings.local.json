@@ -12,7 +12,12 @@
       "Bash(npx biome:*)",
       "Bash(just check:*)",
       "Bash(just build:*)",
-      "Bash(npx lefthook:*)"
+      "Bash(npx lefthook:*)",
+      "Bash(mv commit-msg.pre-entire commit-msg)",
+      "Bash(mv post-commit.pre-entire post-commit)",
+      "Bash(mv pre-push.pre-entire pre-push)",
+      "Bash(mv prepare-commit-msg.pre-entire prepare-commit-msg)",
+      "Bash(pnpm:*)"
     ]
   }
 }
