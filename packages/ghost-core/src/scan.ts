@@ -1,20 +1,20 @@
-import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { parseCSS } from "./resolvers/css.js";
+import { resolveRegistry } from "./resolvers/registry.js";
+import { scanStructure } from "./scanners/structure.js";
+import { scanValues } from "./scanners/values.js";
+import { scanVisual } from "./scanners/visual.js";
 import type {
-  GhostConfig,
-  DriftReport,
   DesignSystemReport,
+  DriftReport,
   DriftSummary,
-  ValueDrift,
+  GhostConfig,
   StructureDrift,
+  ValueDrift,
   VisualDrift,
 } from "./types.js";
-import { resolveRegistry } from "./resolvers/registry.js";
-import { parseCSS } from "./resolvers/css.js";
-import { scanValues } from "./scanners/values.js";
-import { scanStructure } from "./scanners/structure.js";
-import { scanVisual } from "./scanners/visual.js";
 
 export async function scan(
   config: GhostConfig,
@@ -65,14 +65,11 @@ export async function scan(
 
     // Visual scan
     if (config.scan.visual) {
-      const styleItem = registry.items.find(
-        (i) => i.type === "registry:style",
-      );
+      const styleItem = registry.items.find((i) => i.type === "registry:style");
       const registryCSS = styleItem?.files[0]?.content ?? "";
-      const consumerCSS =
-        existsSync(resolve(cwd, ds.styleEntry))
-          ? await readFile(resolve(cwd, ds.styleEntry), "utf-8")
-          : "";
+      const consumerCSS = existsSync(resolve(cwd, ds.styleEntry))
+        ? await readFile(resolve(cwd, ds.styleEntry), "utf-8")
+        : "";
 
       visual = await scanVisual({
         registryItems: registry.items,
@@ -95,7 +92,11 @@ export async function scan(
     });
   }
 
-  const summary = computeSummary(systems, totalTokensScanned, totalComponentsScanned);
+  const summary = computeSummary(
+    systems,
+    totalTokensScanned,
+    totalComponentsScanned,
+  );
 
   return {
     timestamp: new Date().toISOString(),

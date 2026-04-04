@@ -1,4 +1,9 @@
-import postcss, { type Root, type Rule, type AtRule, type Declaration } from "postcss";
+import postcss, {
+  type AtRule,
+  type Declaration,
+  type Root,
+  type Rule,
+} from "postcss";
 import type { CSSToken, TokenCategory } from "../types.js";
 
 const CATEGORY_PREFIXES: [string, TokenCategory][] = [
@@ -33,7 +38,9 @@ function getSelectorFromParent(node: postcss.Container): string {
   if (node.type === "rule") return (node as Rule).selector;
   if (node.type === "atrule") {
     const atrule = node as AtRule;
-    return atrule.params ? `@${atrule.name} ${atrule.params}` : `@${atrule.name}`;
+    return atrule.params
+      ? `@${atrule.name} ${atrule.params}`
+      : `@${atrule.name}`;
   }
   return "root";
 }
@@ -104,9 +111,7 @@ function resolveVarReferences(tokens: CSSToken[], maxPasses = 5): CSSToken[] {
   return tokens;
 }
 
-export function buildTokenMap(
-  tokens: CSSToken[],
-): Map<string, CSSToken> {
+export function buildTokenMap(tokens: CSSToken[]): Map<string, CSSToken> {
   const map = new Map<string, CSSToken>();
   for (const token of tokens) {
     map.set(`${token.selector}::${token.name}`, token);
@@ -114,9 +119,7 @@ export function buildTokenMap(
   return map;
 }
 
-export function buildReverseValueMap(
-  tokens: CSSToken[],
-): Map<string, string> {
+export function buildReverseValueMap(tokens: CSSToken[]): Map<string, string> {
   const map = new Map<string, string>();
   for (const token of tokens) {
     const resolved = token.resolvedValue ?? token.value;

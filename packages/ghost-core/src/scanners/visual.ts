@@ -1,16 +1,13 @@
-import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { resolve, relative } from "node:path";
+import { readFile } from "node:fs/promises";
+import { relative, resolve } from "node:path";
 import type {
   RegistryItem,
+  RuleSeverity,
   VisualDrift,
   VisualScanConfig,
-  RuleSeverity,
 } from "../types.js";
-import {
-  createVisualHarness,
-  resolveVisualConfig,
-} from "./visual-harness.js";
+import { createVisualHarness, resolveVisualConfig } from "./visual-harness.js";
 
 export interface VisualScannerOptions {
   registryItems: RegistryItem[];
@@ -27,7 +24,7 @@ export interface VisualScannerOptions {
 function matchesIgnore(filePath: string, patterns: string[]): boolean {
   for (const pattern of patterns) {
     const regex = new RegExp(
-      "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+      `^${pattern.replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
     );
     if (regex.test(filePath)) return true;
   }

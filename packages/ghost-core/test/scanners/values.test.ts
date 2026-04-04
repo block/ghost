@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 import { parseCSS } from "../../src/resolvers/css.js";
 import { scanValues } from "../../src/scanners/values.js";
 
@@ -58,8 +58,8 @@ describe("scanValues - drifted consumer", () => {
 
     const borderDrift = overrides.find((r) => r.token === "--border-default");
     expect(borderDrift).toBeDefined();
-    expect(borderDrift!.registryValue).toBe("var(--color-gray-200)");
-    expect(borderDrift!.consumerValue).toBe("var(--color-gray-500)");
+    expect(borderDrift?.registryValue).toBe("var(--color-gray-200)");
+    expect(borderDrift?.consumerValue).toBe("var(--color-gray-500)");
   });
 
   it("detects hardcoded colors", () => {

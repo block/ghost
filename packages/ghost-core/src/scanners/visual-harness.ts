@@ -1,7 +1,7 @@
-import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, basename, extname } from "node:path";
 import { execSync } from "node:child_process";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, extname, join } from "node:path";
 import type { RegistryItem, VisualScanConfig } from "../types.js";
 
 // Dynamic import helper — bypasses TypeScript's compile-time module resolution
@@ -61,8 +61,13 @@ export function resolveVisualConfig(
 }
 
 export async function createVisualHarness(options: HarnessOptions) {
-  const { registryItems, styleContent, consumerStyleContent, config, outputDir } =
-    options;
+  const {
+    registryItems,
+    styleContent,
+    consumerStyleContent,
+    config,
+    outputDir,
+  } = options;
 
   const tempDir = await mkdtemp(join(tmpdir(), "ghost-visual-"));
   const components: ComponentEntry[] = [];
@@ -258,8 +263,7 @@ export default defineConfig({
     });
     await server.listen();
     const address = server.httpServer?.address();
-    const port =
-      typeof address === "object" && address ? address.port : 5173;
+    const port = typeof address === "object" && address ? address.port : 5173;
     const baseUrl = `http://localhost:${port}`;
 
     // Launch browser
@@ -277,10 +281,9 @@ export default defineConfig({
       try {
         // Screenshot registry version
         const regPage = await context.newPage();
-        await regPage.goto(
-          `${baseUrl}/src/registry/${comp.name}/index.html`,
-          { timeout: config.timeout },
-        );
+        await regPage.goto(`${baseUrl}/src/registry/${comp.name}/index.html`, {
+          timeout: config.timeout,
+        });
         await regPage
           .waitForFunction(() => (window as any).__GHOST_READY === true, {
             timeout: config.timeout,
@@ -291,10 +294,9 @@ export default defineConfig({
 
         // Screenshot consumer version
         const conPage = await context.newPage();
-        await conPage.goto(
-          `${baseUrl}/src/consumer/${comp.name}/index.html`,
-          { timeout: config.timeout },
-        );
+        await conPage.goto(`${baseUrl}/src/consumer/${comp.name}/index.html`, {
+          timeout: config.timeout,
+        });
         await conPage
           .waitForFunction(() => (window as any).__GHOST_READY === true, {
             timeout: config.timeout,
@@ -394,7 +396,7 @@ function makeHtml(name: string, variant: string): string {
 </html>`;
 }
 
-function makeMain(variant: string, name: string): string {
+function makeMain(_variant: string, _name: string): string {
   return `import React from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
@@ -418,12 +420,7 @@ root.render(<App />);
 `;
 }
 
-function resizePng(
-  PNG: any,
-  img: any,
-  width: number,
-  height: number,
-): any {
+function resizePng(PNG: any, img: any, width: number, height: number): any {
   if (img.width === width && img.height === height) return img;
 
   const resized = new PNG({ width, height });

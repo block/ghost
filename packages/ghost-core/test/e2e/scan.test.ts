@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 import { scan } from "../../src/scan.js";
 import type { GhostConfig } from "../../src/types.js";
 

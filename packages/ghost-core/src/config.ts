@@ -1,13 +1,9 @@
-import { createJiti } from "jiti";
 import { existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve } from "node:path";
+import { createJiti } from "jiti";
 import type { GhostConfig } from "./types.js";
 
-const CONFIG_FILES = [
-  "ghost.config.ts",
-  "ghost.config.js",
-  "ghost.config.mjs",
-];
+const CONFIG_FILES = ["ghost.config.ts", "ghost.config.js", "ghost.config.mjs"];
 
 const DEFAULT_CONFIG: Omit<GhostConfig, "designSystems"> = {
   scan: { values: true, structure: true, visual: false, analysis: false },
@@ -55,7 +51,8 @@ export async function loadConfig(
 
   const jiti = createJiti(resolvedPath);
   const mod = await jiti.import(resolvedPath);
-  const raw = (mod as { default?: GhostConfig }).default ?? (mod as GhostConfig);
+  const raw =
+    (mod as { default?: GhostConfig }).default ?? (mod as GhostConfig);
 
   if (!raw.designSystems || !Array.isArray(raw.designSystems)) {
     throw new Error("Config must include a designSystems array");
@@ -63,9 +60,14 @@ export async function loadConfig(
 
   for (const ds of raw.designSystems) {
     if (!ds.name) throw new Error("Each design system must have a name");
-    if (!ds.registry) throw new Error(`Design system "${ds.name}" must have a registry path or URL`);
-    if (!ds.componentDir) throw new Error(`Design system "${ds.name}" must have a componentDir`);
-    if (!ds.styleEntry) throw new Error(`Design system "${ds.name}" must have a styleEntry`);
+    if (!ds.registry)
+      throw new Error(
+        `Design system "${ds.name}" must have a registry path or URL`,
+      );
+    if (!ds.componentDir)
+      throw new Error(`Design system "${ds.name}" must have a componentDir`);
+    if (!ds.styleEntry)
+      throw new Error(`Design system "${ds.name}" must have a styleEntry`);
   }
 
   return {
