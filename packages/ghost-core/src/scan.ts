@@ -24,6 +24,12 @@ export async function scan(
   let totalTokensScanned = 0;
   let totalComponentsScanned = 0;
 
+  if (!config.designSystems?.length) {
+    throw new Error(
+      "scan() requires at least one design system in config.designSystems",
+    );
+  }
+
   for (const ds of config.designSystems) {
     const registry = await resolveRegistry(ds.registry);
 

@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 
+import { readFile, writeFile } from "node:fs/promises";
+import type { DesignFingerprint } from "@ghost/core";
 import {
+  compareFingerprints,
   formatCLIReport,
+  formatComparison,
+  formatComparisonJSON,
+  formatFingerprint,
+  formatFingerprintJSON,
   formatJSONReport,
   loadConfig,
+  profile,
+  profileRegistry,
   scan,
 } from "@ghost/core";
 import { defineCommand, runMain } from "citty";
@@ -51,6 +60,117 @@ const scanCommand = defineCommand({
   },
 });
 
+const profileCommand = defineCommand({
+  meta: {
+    name: "profile",
+    description: "Generate a design fingerprint for a project",
+  },
+  args: {
+    config: {
+      type: "string",
+      description: "Path to ghost config file",
+      alias: "c",
+    },
+    registry: {
+      type: "string",
+      description:
+        "Path or URL to a registry.json (profiles registry directly)",
+      alias: "r",
+    },
+    output: {
+      type: "string",
+      description: "Write fingerprint to file",
+      alias: "o",
+    },
+    format: {
+      type: "string",
+      description: "Output format: cli or json",
+      default: "cli",
+    },
+  },
+  async run({ args }) {
+    try {
+      let fingerprint: DesignFingerprint;
+
+      if (args.registry) {
+        fingerprint = await profileRegistry(args.registry);
+      } else {
+        const config = await loadConfig({
+          configPath: args.config,
+          requireDesignSystems: false,
+        });
+        fingerprint = await profile(config);
+      }
+
+      const output =
+        args.format === "json"
+          ? formatFingerprintJSON(fingerprint)
+          : formatFingerprint(fingerprint);
+
+      if (args.output) {
+        await writeFile(args.output, formatFingerprintJSON(fingerprint));
+        console.log(`Fingerprint written to ${args.output}`);
+      }
+
+      process.stdout.write(`${output}\n`);
+      process.exit(0);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  },
+});
+
+const compareCommand = defineCommand({
+  meta: {
+    name: "compare",
+    description: "Compare two design fingerprints",
+  },
+  args: {
+    source: {
+      type: "positional",
+      description: "Path to source fingerprint JSON",
+      required: true,
+    },
+    target: {
+      type: "positional",
+      description: "Path to target fingerprint JSON",
+      required: true,
+    },
+    format: {
+      type: "string",
+      description: "Output format: cli or json",
+      default: "cli",
+    },
+  },
+  async run({ args }) {
+    try {
+      const sourceData = await readFile(args.source, "utf-8");
+      const targetData = await readFile(args.target, "utf-8");
+
+      const source: DesignFingerprint = JSON.parse(sourceData);
+      const target: DesignFingerprint = JSON.parse(targetData);
+
+      const comparison = compareFingerprints(source, target);
+
+      const output =
+        args.format === "json"
+          ? formatComparisonJSON(comparison)
+          : formatComparison(comparison);
+
+      process.stdout.write(`${output}\n`);
+      process.exit(comparison.distance > 0.5 ? 1 : 0);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  },
+});
+
 const main = defineCommand({
   meta: {
     name: "ghost",
@@ -59,6 +179,8 @@ const main = defineCommand({
   },
   subCommands: {
     scan: scanCommand,
+    profile: profileCommand,
+    compare: compareCommand,
   },
 });
 

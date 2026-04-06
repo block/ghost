@@ -17,7 +17,8 @@
       "Bash(mv post-commit.pre-entire post-commit)",
       "Bash(mv pre-push.pre-entire pre-push)",
       "Bash(mv prepare-commit-msg.pre-entire prepare-commit-msg)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(npx:*)"
     ]
   }
 }
