@@ -82,11 +82,144 @@ export interface VisualScanConfig {
 }
 
 export interface GhostConfig {
-  designSystems: DesignSystemConfig[];
+  designSystems?: DesignSystemConfig[];
   scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
   visual?: VisualScanConfig;
+  llm?: LLMConfig;
+  embedding?: EmbeddingConfig;
+  extractors?: string[];
+}
+
+// --- Fingerprint types ---
+
+export interface SemanticColor {
+  role: string;
+  value: string;
+  oklch?: [number, number, number];
+}
+
+export interface ColorRamp {
+  steps: string[];
+  count: number;
+}
+
+export interface DesignFingerprint {
+  id: string;
+  source: "registry" | "extraction" | "llm";
+  timestamp: string;
+
+  palette: {
+    dominant: SemanticColor[];
+    neutrals: ColorRamp;
+    semantic: SemanticColor[];
+    saturationProfile: "muted" | "vibrant" | "mixed";
+    contrast: "high" | "moderate" | "low";
+  };
+
+  spacing: {
+    scale: number[];
+    regularity: number;
+    baseUnit: number | null;
+  };
+
+  typography: {
+    families: string[];
+    sizeRamp: number[];
+    weightDistribution: Record<number, number>;
+    lineHeightPattern: "tight" | "normal" | "loose";
+  };
+
+  surfaces: {
+    borderRadii: number[];
+    shadowComplexity: "none" | "subtle" | "layered";
+    borderUsage: "minimal" | "moderate" | "heavy";
+  };
+
+  architecture: {
+    tokenization: number;
+    methodology: string[];
+    componentCount: number;
+    componentCategories: Record<string, number>;
+    namingPattern: string;
+  };
+
+  embedding: number[];
+}
+
+// --- Extractor types ---
+
+export interface ExtractedFile {
+  path: string;
+  content: string;
+  type: "css" | "scss" | "tailwind-config" | "component" | "config" | "other";
+}
+
+export interface ExtractedMaterial {
+  styleFiles: ExtractedFile[];
+  componentFiles: ExtractedFile[];
+  configFiles: ExtractedFile[];
+  metadata: {
+    framework: string | null;
+    componentLibrary: string | null;
+    tokenCount: number;
+    componentCount: number;
+  };
+}
+
+export interface ExtractorOptions {
+  ignore?: string[];
+  maxFiles?: number;
+  componentDir?: string;
+  styleEntry?: string;
+}
+
+export interface Extractor {
+  name: string;
+  detect: (cwd: string) => Promise<boolean>;
+  extract: (
+    cwd: string,
+    options?: ExtractorOptions,
+  ) => Promise<ExtractedMaterial>;
+}
+
+// --- LLM types ---
+
+export interface LLMConfig {
+  provider: "anthropic" | "openai";
+  model?: string;
+  apiKey?: string;
+}
+
+export interface EmbeddingConfig {
+  provider: "openai" | "voyage";
+  model?: string;
+  apiKey?: string;
+}
+
+export interface LLMProvider {
+  name: string;
+  interpret: (
+    material: ExtractedMaterial,
+    schema: string,
+  ) => Promise<DesignFingerprint>;
+}
+
+// --- Comparison types ---
+
+export interface DimensionDelta {
+  dimension: string;
+  distance: number;
+  description: string;
+}
+
+export interface FingerprintComparison {
+  source: DesignFingerprint;
+  target: DesignFingerprint;
+  distance: number;
+  dimensions: Record<string, DimensionDelta>;
+  summary: string;
 }
 
 // --- Drift report types ---

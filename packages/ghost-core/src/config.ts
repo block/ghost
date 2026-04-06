@@ -23,37 +23,35 @@ export function defineConfig(config: GhostConfig): GhostConfig {
   return config;
 }
 
-export async function loadConfig(
-  configPath?: string,
-  cwd: string = process.cwd(),
-): Promise<GhostConfig> {
-  let resolvedPath: string | undefined;
+interface LoadConfigOptions {
+  configPath?: string;
+  cwd?: string;
+  requireDesignSystems?: boolean;
+}
 
+async function resolveConfigFile(
+  configPath: string | undefined,
+  cwd: string,
+): Promise<string> {
   if (configPath) {
-    resolvedPath = resolve(cwd, configPath);
-    if (!existsSync(resolvedPath)) {
-      throw new Error(`Config file not found: ${resolvedPath}`);
+    const resolved = resolve(cwd, configPath);
+    if (!existsSync(resolved)) {
+      throw new Error(`Config file not found: ${resolved}`);
     }
-  } else {
-    for (const file of CONFIG_FILES) {
-      const candidate = resolve(cwd, file);
-      if (existsSync(candidate)) {
-        resolvedPath = candidate;
-        break;
-      }
-    }
-    if (!resolvedPath) {
-      throw new Error(
-        `No ghost config found. Create one of: ${CONFIG_FILES.join(", ")}`,
-      );
-    }
+    return resolved;
   }
 
-  const jiti = createJiti(resolvedPath);
-  const mod = await jiti.import(resolvedPath);
-  const raw =
-    (mod as { default?: GhostConfig }).default ?? (mod as GhostConfig);
+  for (const file of CONFIG_FILES) {
+    const candidate = resolve(cwd, file);
+    if (existsSync(candidate)) return candidate;
+  }
 
+  throw new Error(
+    `No ghost config found. Create one of: ${CONFIG_FILES.join(", ")}`,
+  );
+}
+
+function validateDesignSystems(raw: GhostConfig): void {
   if (!raw.designSystems || !Array.isArray(raw.designSystems)) {
     throw new Error("Config must include a designSystems array");
   }
@@ -69,12 +67,46 @@ export async function loadConfig(
     if (!ds.styleEntry)
       throw new Error(`Design system "${ds.name}" must have a styleEntry`);
   }
+}
 
+function mergeDefaults(raw: GhostConfig): GhostConfig {
   return {
     designSystems: raw.designSystems,
     scan: { ...DEFAULT_CONFIG.scan, ...raw.scan },
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
     visual: raw.visual,
+    llm: raw.llm,
+    embedding: raw.embedding,
+    extractors: raw.extractors,
   };
+}
+
+export async function loadConfig(
+  configPathOrOptions?: string | LoadConfigOptions,
+  cwd: string = process.cwd(),
+): Promise<GhostConfig> {
+  let configPath: string | undefined;
+  let requireDesignSystems = true;
+
+  if (typeof configPathOrOptions === "object") {
+    configPath = configPathOrOptions.configPath;
+    cwd = configPathOrOptions.cwd ?? cwd;
+    requireDesignSystems = configPathOrOptions.requireDesignSystems ?? true;
+  } else {
+    configPath = configPathOrOptions;
+  }
+
+  const resolvedPath = await resolveConfigFile(configPath, cwd);
+
+  const jiti = createJiti(resolvedPath);
+  const mod = await jiti.import(resolvedPath);
+  const raw =
+    (mod as { default?: GhostConfig }).default ?? (mod as GhostConfig);
+
+  if (requireDesignSystems) {
+    validateDesignSystems(raw);
+  }
+
+  return mergeDefaults(raw);
 }
