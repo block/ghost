@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Viz</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow: hidden; background: #0c0c0f; width: 100%; height: 100%; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+  canvas { display: block; }
+
+  #overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #0c0c0f; z-index: 100; pointer-events: none;
+    transition: opacity 1.5s ease; opacity: 1;
+  }
+  #overlay.fade { opacity: 0; }
+
+  #info-panel {
+    position: fixed; top: 32px; left: 36px; z-index: 60;
+    display: flex; flex-direction: column; gap: 6px;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+  #info-panel.visible { opacity: 1; }
+  .info-title {
+    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+  .info-stat {
+    font-size: 13px; color: rgba(255,255,255,0.55); letter-spacing: 0.5px;
+  }
+  .info-stat span { color: rgba(255,255,255,0.85); }
+
+  .fingerprint-label {
+    position: fixed; pointer-events: none; z-index: 55;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    white-space: nowrap; display: none;
+    transition: color 0.3s, opacity 0.3s;
+  }
+  .fingerprint-label.visible { display: block; }
+  .fingerprint-label.highlight { color: rgba(255,255,255,0.9); z-index: 56; }
+  .fingerprint-label.dim { color: rgba(255,255,255,0.1); }
+
+  #detail-panel {
+    position: fixed; bottom: 36px; left: 36px; z-index: 60;
+    display: none; flex-direction: column; gap: 10px;
+    max-width: 320px;
+  }
+  #detail-panel.visible { display: flex; }
+  .detail-title {
+    font-size: 13px; color: rgba(255,255,255,0.85); letter-spacing: 1px;
+  }
+  .detail-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px;
+  }
+  .detail-bar {
+    height: 3px; border-radius: 2px; flex: 1; max-width: 120px;
+    background: rgba(255,255,255,0.08);
+    position: relative; overflow: hidden;
+  }
+  .detail-bar-fill {
+    position: absolute; top: 0; left: 0; height: 100%; border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .detail-dim { min-width: 90px; }
+  .detail-val { min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .cursor-ring {
+    position: fixed; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%; pointer-events: none; z-index: 50;
+    transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, border-color 0.3s;
+  }
+  .cursor-ring.active { width: 40px; height: 40px; border-color: rgba(255,255,255,0.25); }
+
+  #legend {
+    position: fixed; bottom: 36px; right: 36px; z-index: 60;
+    display: flex; flex-direction: column; gap: 6px;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+  #legend.visible { opacity: 1; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .legend-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div id="overlay"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div id="info-panel">
+  <div class="info-title">Ghost Fleet</div>
+</div>
+<div id="detail-panel"></div>
+<div id="legend"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ─── PCA ────────────────────────────────────────────────
+function computePCA(embeddings, dims = 3) {
+  const n = embeddings.length;
+  const d = embeddings[0].length;
+
+  const mean = new Float64Array(d);
+  for (const emb of embeddings) for (let i = 0; i < d; i++) mean[i] += emb[i];
+  for (let i = 0; i < d; i++) mean[i] /= n;
+
+  const centered = embeddings.map(emb => {
+    const c = new Float64Array(d);
+    for (let i = 0; i < d; i++) c[i] = emb[i] - mean[i];
+    return c;
+  });
+
+  const K = [];
+  for (let i = 0; i < n; i++) {
+    K[i] = new Float64Array(n);
+    for (let j = 0; j <= i; j++) {
+      let dot = 0;
+      for (let k = 0; k < d; k++) dot += centered[i][k] * centered[j][k];
+      K[i][j] = dot;
+      K[j][i] = dot;
+    }
+  }
+
+  const eigenvectors = [];
+  const eigenvalues = [];
+  const KWork = K.map(row => Float64Array.from(row));
+
+  for (let ev = 0; ev < dims; ev++) {
+    const v = new Float64Array(n);
+    for (let i = 0; i < n; i++) v[i] = Math.random() - 0.5;
+
+    for (let iter = 0; iter < 200; iter++) {
+      const Kv = new Float64Array(n);
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++) Kv[i] += KWork[i][j] * v[j];
+
+      let norm = 0;
+      for (let i = 0; i < n; i++) norm += Kv[i] * Kv[i];
+      norm = Math.sqrt(norm);
+      for (let i = 0; i < n; i++) v[i] = Kv[i] / norm;
+    }
+
+    const Kv = new Float64Array(n);
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++) Kv[i] += KWork[i][j] * v[j];
+    let lambda = 0;
+    for (let i = 0; i < n; i++) lambda += v[i] * Kv[i];
+
+    eigenvectors.push(v);
+    eigenvalues.push(lambda);
+
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++)
+        KWork[i][j] -= lambda * v[i] * v[j];
+  }
+
+  const basis = [];
+  for (let k = 0; k < dims; k++) {
+    const u = new Float64Array(d);
+    const sqrtLam = Math.sqrt(Math.abs(eigenvalues[k]) + 1e-10);
+    for (let i = 0; i < n; i++) {
+      const w = eigenvectors[k][i] / sqrtLam;
+      for (let j = 0; j < d; j++) u[j] += w * centered[i][j];
+    }
+    basis.push(u);
+  }
+
+  const positions = embeddings.map(emb => {
+    const coords = [];
+    for (let k = 0; k < dims; k++) {
+      let val = 0;
+      for (let i = 0; i < d; i++) val += (emb[i] - mean[i]) * basis[k][i];
+      coords.push(val);
+    }
+    return coords;
+  });
+
+  return { positions, mean, basis };
+}
+
+function projectPoint(embedding, pcaResult) {
+  const d = embedding.length;
+  const coords = [];
+  for (let k = 0; k < pcaResult.basis.length; k++) {
+    let val = 0;
+    for (let i = 0; i < d; i++) val += (embedding[i] - pcaResult.mean[i]) * pcaResult.basis[k][i];
+    coords.push(val);
+  }
+  return coords;
+}
+
+// ─── THREE.JS SETUP ─────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.9;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0c0c0f);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 2, 14);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.03;
+controls.rotateSpeed = 0.4;
+controls.zoomSpeed = 0.6;
+controls.minDistance = 3;
+controls.maxDistance = 80;
+controls.enablePan = true;
+controls.panSpeed = 0.3;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.15;
+
+// ─── POST-PROCESSING ────────────────────────────────────
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.35, 0.8, 0.3
+);
+composer.addPass(bloom);
+
+// ─── SOFT BLOB TEXTURE ──────────────────────────────────
+function createBlobTexture() {
+  const size = 128, canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.25, 'rgba(255,255,255,0.85)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.4)');
+  grad.addColorStop(0.75, 'rgba(255,255,255,0.1)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(canvas);
+}
+const blobTex = createBlobTexture();
+
+// ─── CONSTANTS ──────────────────────────────────────────
+const PARTICLES_PER_FP = 18;
+const FP_SPREAD = 1.2;
+const SCALE = 15;
+const CLUSTER_PALETTE = [
+  new THREE.Color(0x6e8efb),  // blue
+  new THREE.Color(0xf76e6e),  // coral
+  new THREE.Color(0x5edba6),  // green
+  new THREE.Color(0xf0c75e),  // gold
+  new THREE.Color(0xc084fc),  // purple
+  new THREE.Color(0x67e8f9),  // cyan
+  new THREE.Color(0xfb923c),  // orange
+  new THREE.Color(0xf472b6),  // pink
+];
+
+// ─── STATE ──────────────────────────────────────────────
+let fleetData = null;
+let pcaResult = null;
+let memberPositions = [];
+const memberLabels = [];
+let memberColors = [];
+const particleData = [];
+let blobGeo, blobMat, blobPoints;
+const pairwiseLines = [];
+let centroidMarker = null;
+let centroidPos = null;
+let selectedMember = null;
+
+// ─── LIGHTING ───────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x334455, 1.2));
+const pt1 = new THREE.PointLight(0x6e8efb, 0.6, 80);
+pt1.position.set(10, 15, 5);
+scene.add(pt1);
+const pt2 = new THREE.PointLight(0xf76e6e, 0.4, 60);
+pt2.position.set(-10, -5, 10);
+scene.add(pt2);
+
+// ─── DUST PARTICLES ─────────────────────────────────────
+{
+  const dustCount = 150;
+  const dustGeo = new THREE.BufferGeometry();
+  const dustPos = new Float32Array(dustCount * 3);
+  for (let i = 0; i < dustCount; i++) {
+    const r = 30 + Math.random() * 100;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    dustPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+    dustPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    dustPos[i*3+2] = r * Math.cos(phi);
+  }
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = new THREE.PointsMaterial({
+    size: 0.08, color: 0x334455, transparent: true, opacity: 0.2, sizeAttenuation: true,
+  });
+  scene.add(new THREE.Points(dustGeo, dustMat));
+}
+
+// ─── DATA LOADING ───────────────────────────────────────
+async function loadData() {
+  const res = await fetch('/api/data');
+  const data = await res.json();
+  fleetData = data.fleet;
+
+  const embeddings = fleetData.members.map(m => m.embedding);
+  pcaResult = computePCA(embeddings, 3);
+
+  memberPositions = pcaResult.positions.map(coords =>
+    new THREE.Vector3(coords[0] * SCALE, coords[1] * SCALE, coords[2] * SCALE)
+  );
+
+  // Assign colors based on clusters or index
+  assignColors();
+
+  // Project centroid
+  const centroidCoords = projectPoint(fleetData.centroid, pcaResult);
+  centroidPos = new THREE.Vector3(
+    centroidCoords[0] * SCALE,
+    centroidCoords[1] * SCALE,
+    centroidCoords[2] * SCALE
+  );
+
+  buildParticles();
+  buildPairwiseLines();
+  buildCentroid();
+  buildLabels();
+  buildInfoPanel();
+  buildLegend();
+
+  // Fade in
+  setTimeout(() => {
+    document.getElementById('overlay').classList.add('fade');
+    document.getElementById('info-panel').classList.add('visible');
+    document.getElementById('legend').classList.add('visible');
+  }, 300);
+}
+
+function assignColors() {
+  if (fleetData.clusters && fleetData.clusters.length > 1) {
+    const clusterMap = {};
+    fleetData.clusters.forEach((cl, ci) => {
+      cl.memberIds.forEach(id => { clusterMap[id] = ci; });
+    });
+    memberColors = fleetData.members.map(m => {
+      const ci = clusterMap[m.id] ?? 0;
+      return CLUSTER_PALETTE[ci % CLUSTER_PALETTE.length].clone();
+    });
+  } else {
+    // Try to derive color from fingerprint's dominant palette color
+    memberColors = fleetData.members.map((m, i) => {
+      const fp = m.fingerprint;
+      if (fp.palette?.dominant?.length > 0) {
+        const dom = fp.palette.dominant[0];
+        if (dom.oklch) {
+          const [l, c, h] = dom.oklch;
+          const color = new THREE.Color();
+          color.setHSL(h / 360, Math.min(1, c * 3), Math.max(0.3, Math.min(0.7, l)));
+          return color;
+        }
+      }
+      return CLUSTER_PALETTE[i % CLUSTER_PALETTE.length].clone();
+    });
+  }
+}
+
+// ─── PARTICLES ──────────────────────────────────────────
+function buildParticles() {
+  const n = fleetData.members.length;
+  const totalParticles = n * PARTICLES_PER_FP;
+  const positions = new Float32Array(totalParticles * 3);
+  const colors = new Float32Array(totalParticles * 3);
+  const sizes = new Float32Array(totalParticles);
+
+  let idx = 0;
+  fleetData.members.forEach((member, mIdx) => {
+    const center = memberPositions[mIdx];
+    const baseColor = memberColors[mIdx];
+
+    for (let i = 0; i < PARTICLES_PER_FP; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = FP_SPREAD * Math.random() ** 0.5;
+
+      const x = center.x + r * Math.sin(phi) * Math.cos(theta);
+      const y = center.y + r * Math.sin(phi) * Math.sin(theta);
+      const z = center.z + r * Math.cos(phi);
+
+      positions[idx * 3] = x;
+      positions[idx * 3 + 1] = y;
+      positions[idx * 3 + 2] = z;
+
+      const c = baseColor.clone();
+      const hsl = {};
+      c.getHSL(hsl);
+      c.setHSL(
+        hsl.h + (Math.random() - 0.5) * 0.04,
+        Math.min(1, hsl.s + (Math.random() - 0.5) * 0.15),
+        Math.min(1, Math.max(0, hsl.l + (Math.random() - 0.5) * 0.12))
+      );
+      colors[idx * 3] = c.r;
+      colors[idx * 3 + 1] = c.g;
+      colors[idx * 3 + 2] = c.b;
+
+      const baseSize = 2.5 + Math.random() * 2.5;
+      sizes[idx] = baseSize;
+
+      particleData.push({
+        memberIdx: mIdx,
+        basePos: new THREE.Vector3(x, y, z),
+        targetPos: new THREE.Vector3(x, y, z),
+        homePos: new THREE.Vector3(x, y, z),
+        pos: new THREE.Vector3(x, y, z),
+        vel: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.002,
+          (Math.random() - 0.5) * 0.002,
+          (Math.random() - 0.5) * 0.002
+        ),
+        scale: 1,
+        targetScale: 1,
+        baseScale: baseSize,
+        phase: Math.random() * Math.PI * 2,
+      });
+
+      idx++;
+    }
+  });
+
+  blobGeo = new THREE.BufferGeometry();
+  blobGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  blobGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  blobGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  blobMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTexture: { value: blobTex },
+      uScale: { value: renderer.getPixelRatio() },
+    },
+    vertexShader: `
+      attribute float size;
+      varying vec3 vColor;
+      uniform float uScale;
+      void main() {
+        vColor = color;
+        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * uScale * (280.0 / -mvPos.z);
+        gl_Position = projectionMatrix * mvPos;
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uTexture;
+      varying vec3 vColor;
+      void main() {
+        vec4 tex = texture2D(uTexture, gl_PointCoord);
+        if (tex.a < 0.01) discard;
+        gl_FragColor = vec4(vColor * tex.rgb, tex.a * 0.85);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    vertexColors: true,
+  });
+
+  blobPoints = new THREE.Points(blobGeo, blobMat);
+  scene.add(blobPoints);
+}
+
+// ─── PAIRWISE LINES ─────────────────────────────────────
+function buildPairwiseLines() {
+  const maxPairs = fleetData.members.length > 20 ? 30 : fleetData.pairwise.length;
+  const pairs = fleetData.pairwise.slice(0, maxPairs);
+
+  const memberIdxMap = {};
+  fleetData.members.forEach((m, i) => { memberIdxMap[m.id] = i; });
+
+  pairs.forEach(pair => {
+    const aIdx = memberIdxMap[pair.a];
+    const bIdx = memberIdxMap[pair.b];
+    if (aIdx === undefined || bIdx === undefined) return;
+
+    const posA = memberPositions[aIdx];
+    const posB = memberPositions[bIdx];
+
+    const opacity = Math.max(0.03, (1 - pair.distance) * 0.25);
+    const color = pair.distance < 0.1 ? 0x5edba6
+      : pair.distance < 0.3 ? 0xf0c75e
+      : 0xf76e6e;
+
+    const geo = new THREE.BufferGeometry().setFromPoints([posA, posB]);
+    const mat = new THREE.LineBasicMaterial({
+      color, transparent: true, opacity, linewidth: 1,
+    });
+    const line = new THREE.Line(geo, mat);
+    line.userData = { pair, aIdx, bIdx };
+    pairwiseLines.push(line);
+    scene.add(line);
+  });
+}
+
+// ─── CENTROID ───────────────────────────────────────────
+function buildCentroid() {
+  const geo = new THREE.IcosahedronGeometry(0.4, 1);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xffffff, wireframe: true, transparent: true, opacity: 0.15,
+  });
+  centroidMarker = new THREE.Mesh(geo, mat);
+  centroidMarker.position.copy(centroidPos);
+  scene.add(centroidMarker);
+
+  // Subtle ring around centroid
+  const ringGeo = new THREE.RingGeometry(0.6, 0.65, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.06, side: THREE.DoubleSide,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.copy(centroidPos);
+  ring.lookAt(camera.position);
+  centroidMarker.add(ring);
+}
+
+// ─── LABELS ─────────────────────────────────────────────
+function buildLabels() {
+  fleetData.members.forEach((member, i) => {
+    const el = document.createElement('div');
+    el.className = 'fingerprint-label';
+    el.textContent = member.id;
+    document.body.appendChild(el);
+    memberLabels.push(el);
+  });
+}
+
+// ─── INFO PANEL ─────────────────────────────────────────
+function buildInfoPanel() {
+  const panel = document.getElementById('info-panel');
+  const n = fleetData.members.length;
+  const spread = (fleetData.spread * 100).toFixed(1);
+  const clusterCount = fleetData.clusters?.length ?? 0;
+
+  panel.innerHTML = `
+    <div class="info-title">Ghost Fleet</div>
+    <div class="info-stat"><span>${n}</span> fingerprints</div>
+    <div class="info-stat">spread <span>${spread}%</span></div>
+    ${clusterCount > 1 ? `<div class="info-stat"><span>${clusterCount}</span> clusters</div>` : ''}
+  `;
+}
+
+// ─── LEGEND ─────────────────────────────────────────────
+function buildLegend() {
+  const legend = document.getElementById('legend');
+  fleetData.members.forEach((member, i) => {
+    const color = memberColors[i];
+    const hex = `#${color.getHexString()}`;
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${hex}"></div>${member.id}`;
+    legend.appendChild(item);
+  });
+}
+
+// ─── DETAIL PANEL ───────────────────────────────────────
+function showDetail(memberIdx) {
+  const panel = document.getElementById('detail-panel');
+  const member = fleetData.members[memberIdx];
+
+  // Find pairwise distances for this member
+  const distances = {};
+  fleetData.pairwise.forEach(p => {
+    if (p.a === member.id || p.b === member.id) {
+      const otherId = p.a === member.id ? p.b : p.a;
+      distances[otherId] = p.distance;
+    }
+  });
+
+  // Per-dimension data from pairwise (use first pair involving this member)
+  const relevantPair = fleetData.pairwise.find(p => p.a === member.id || p.b === member.id);
+  const dims = relevantPair?.dimensions ?? {};
+
+  const dimNames = ['palette', 'spacing', 'typography', 'surfaces', 'architecture'];
+  const dimColors = {
+    palette: '#6e8efb',
+    spacing: '#5edba6',
+    typography: '#f0c75e',
+    surfaces: '#c084fc',
+    architecture: '#67e8f9',
+  };
+
+  panel.innerHTML = `
+    <div class="detail-title">${member.id}</div>
+    ${dimNames.map(d => {
+      const val = dims[d] ?? 0;
+      const pct = (val * 100).toFixed(1);
+      const color = dimColors[d];
+      return `
+        <div class="detail-row">
+          <span class="detail-dim">${d}</span>
+          <div class="detail-bar">
+            <div class="detail-bar-fill" style="width:${Math.min(100, val * 100)}%;background:${color}"></div>
+          </div>
+          <span class="detail-val">${pct}%</span>
+        </div>
+      `;
+    }).join('')}
+  `;
+  panel.classList.add('visible');
+}
+
+function hideDetail() {
+  document.getElementById('detail-panel').classList.remove('visible');
+}
+
+// ─── INTERACTION ────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredMember = -1;
+
+function getClosestMember(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  let closest = -1;
+  let closestDist = Infinity;
+
+  memberPositions.forEach((pos, i) => {
+    const projected = pos.clone().project(camera);
+    const dx = projected.x - mouse.x;
+    const dy = projected.y - mouse.y;
+    const screenDist = Math.sqrt(dx * dx + dy * dy);
+    if (screenDist < 0.12 && screenDist < closestDist) {
+      closestDist = screenDist;
+      closest = i;
+    }
+  });
+
+  return closest;
+}
+
+window.addEventListener('mousemove', (e) => {
+  const cursorRing = document.getElementById('cursorRing');
+  cursorRing.style.left = `${e.clientX}px`;
+  cursorRing.style.top = `${e.clientY}px`;
+
+  const closest = getClosestMember(e);
+  hoveredMember = closest;
+
+  cursorRing.classList.toggle('active', closest >= 0);
+
+  // Update label highlights
+  memberLabels.forEach((el, i) => {
+    if (selectedMember !== null) {
+      el.classList.toggle('highlight', i === selectedMember);
+      el.classList.toggle('dim', i !== selectedMember);
+    } else {
+      el.classList.toggle('highlight', i === closest);
+      el.classList.remove('dim');
+    }
+  });
+});
+
+window.addEventListener('click', (e) => {
+  const closest = getClosestMember(e);
+
+  if (closest >= 0 && closest !== selectedMember) {
+    selectedMember = closest;
+    showDetail(closest);
+
+    // Dim non-selected particles
+    particleData.forEach(p => {
+      p.targetScale = p.memberIdx === closest ? 1.3 : 0.3;
+    });
+
+    // Highlight connected lines
+    pairwiseLines.forEach(line => {
+      const { aIdx, bIdx } = line.userData;
+      const connected = aIdx === closest || bIdx === closest;
+      line.material.opacity = connected ? 0.3 : 0.02;
+    });
+
+    // Animate camera toward selected
+    const target = memberPositions[closest];
+    animateCameraTo(target);
+  } else {
+    // Deselect
+    selectedMember = null;
+    hideDetail();
+
+    particleData.forEach(p => { p.targetScale = 1; });
+    pairwiseLines.forEach(line => {
+      const d = line.userData.pair.distance;
+      line.material.opacity = Math.max(0.03, (1 - d) * 0.25);
+    });
+  }
+});
+
+function animateCameraTo(target) {
+  const startTarget = controls.target.clone();
+  const endTarget = target.clone().multiplyScalar(0.6);
+  const duration = 1500;
+  const start = performance.now();
+
+  function step(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const ease = t * t * (3 - 2 * t); // smoothstep
+    controls.target.lerpVectors(startTarget, endTarget, ease);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ─── ANIMATION LOOP ─────────────────────────────────────
+const FRAME_INTERVAL = 1 / 30;
+let lastFrame = 0;
+const bloomTarget = 0.35;
+
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+
+  const elapsed = timestamp * 0.001;
+  if (timestamp - lastFrame < FRAME_INTERVAL * 1000) return;
+  lastFrame = timestamp;
+
+  // Update particle positions
+  const posAttr = blobGeo?.getAttribute('position');
+  const sizeAttr = blobGeo?.getAttribute('size');
+  if (!posAttr || !sizeAttr) return;
+
+  for (let i = 0; i < particleData.length; i++) {
+    const p = particleData[i];
+
+    p.scale += (p.targetScale - p.scale) * 0.06;
+    p.basePos.lerp(p.targetPos, 0.02);
+
+    const orbit = elapsed * 0.12 + p.phase;
+    p.pos.x = p.basePos.x + Math.sin(orbit) * 0.15 + p.vel.x * elapsed * 4;
+    p.pos.y = p.basePos.y + Math.sin(elapsed * 0.25 + p.phase) * 0.1 + Math.cos(orbit * 0.7) * 0.08;
+    p.pos.z = p.basePos.z + Math.cos(orbit) * 0.15 + p.vel.z * elapsed * 4;
+    p.pos.lerp(p.basePos, 0.001);
+
+    posAttr.setXYZ(i, p.pos.x, p.pos.y, p.pos.z);
+    sizeAttr.setX(i, p.baseScale * p.scale);
+  }
+
+  posAttr.needsUpdate = true;
+  sizeAttr.needsUpdate = true;
+
+  // Centroid rotation
+  if (centroidMarker) {
+    centroidMarker.rotation.y = elapsed * 0.2;
+    centroidMarker.rotation.x = elapsed * 0.1;
+    centroidMarker.material.opacity = 0.12 + Math.sin(elapsed * 0.8) * 0.04;
+  }
+
+  // Label projection
+  memberLabels.forEach((el, i) => {
+    const pos = memberPositions[i].clone().project(camera);
+    if (pos.z > 1) { el.classList.remove('visible'); return; }
+    el.classList.add('visible');
+    const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+    el.style.left = `${x + 14}px`;
+    el.style.top = `${y - 8}px`;
+  });
+
+  // Bloom
+  bloom.strength += (bloomTarget - bloom.strength) * 0.03;
+
+  controls.update();
+  composer.render();
+}
+
+// ─── RESIZE ─────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── INIT ───────────────────────────────────────────────
+loadData().then(() => {
+  requestAnimationFrame(animate);
+});
+
+</script>
+</body>
+</html>

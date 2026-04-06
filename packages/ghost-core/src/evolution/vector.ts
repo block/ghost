@@ -4,7 +4,7 @@ import type { DesignFingerprint, DriftVector } from "../types.js";
  * Embedding dimension ranges per design dimension.
  * Mirrors the layout in fingerprint/embedding.ts.
  */
-const DIMENSION_RANGES: Record<string, [number, number]> = {
+export const DIMENSION_RANGES: Record<string, [number, number]> = {
   palette: [0, 21], // dominant (0-11) + neutrals (12-17) + qualitative (18-20)
   spacing: [21, 31],
   typography: [31, 41],

@@ -27,6 +27,7 @@ import {
   divergeCommand,
   fleetCommand,
 } from "./evolution-commands.js";
+import { vizCommand } from "./viz-command.js";
 
 const scanCommand = defineCommand({
   meta: {
@@ -252,6 +253,7 @@ const main = defineCommand({
     ack: ackCommand,
     adopt: adoptCommand,
     diverge: divergeCommand,
+    viz: vizCommand,
   },
 });
 
