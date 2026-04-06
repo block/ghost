@@ -1,0 +1,1444 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "ghost-ui",
+  "items": [
+    {
+      "name": "styles-main",
+      "type": "registry:style",
+      "dependencies": ["tw-animate-css"],
+      "devDependencies": ["tailwindcss"],
+      "files": [
+        {
+          "type": "registry:theme",
+          "target": "app/globals.css",
+          "path": "src/styles/main.css"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "type": "registry:lib",
+          "target": "lib/utils.ts",
+          "path": "src/lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-accordion", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/accordion.tsx",
+          "path": "src/components/ui/accordion.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-alert-dialog"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/alert-dialog.tsx",
+          "path": "src/components/ui/alert-dialog.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/alert.tsx",
+          "path": "src/components/ui/alert.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-aspect-ratio"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/aspect-ratio.tsx",
+          "path": "src/components/ui/aspect-ratio.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-avatar"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/avatar.tsx",
+          "path": "src/components/ui/avatar.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/badge.tsx",
+          "path": "src/components/ui/badge.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/breadcrumb.tsx",
+          "path": "src/components/ui/breadcrumb.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils", "separator"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/button-group.tsx",
+          "path": "src/components/ui/button-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/button.tsx",
+          "path": "src/components/ui/button.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/calendar.tsx",
+          "path": "src/components/ui/calendar.tsx"
+        }
+      ],
+      "categories": ["display", "input"]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/card.tsx",
+          "path": "src/components/ui/card.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "dependencies": ["embla-carousel-react", "lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/carousel.tsx",
+          "path": "src/components/ui/carousel.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "dependencies": ["recharts"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/chart.tsx",
+          "path": "src/components/ui/chart.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-checkbox", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/checkbox.tsx",
+          "path": "src/components/ui/checkbox.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/collapsible.tsx",
+          "path": "src/components/ui/collapsible.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "dependencies": ["cmdk", "lucide-react"],
+      "registryDependencies": ["utils", "dialog"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/command.tsx",
+          "path": "src/components/ui/command.tsx"
+        }
+      ],
+      "categories": ["input", "navigation"]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-context-menu", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/context-menu.tsx",
+          "path": "src/components/ui/context-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dialog", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/dialog.tsx",
+          "path": "src/components/ui/dialog.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "dependencies": ["vaul"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/drawer.tsx",
+          "path": "src/components/ui/drawer.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dropdown-menu", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/dropdown-menu.tsx",
+          "path": "src/components/ui/dropdown-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-label", "@radix-ui/react-slot"],
+      "registryDependencies": ["utils", "label"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/form.tsx",
+          "path": "src/components/ui/form.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-hover-card"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/hover-card.tsx",
+          "path": "src/components/ui/hover-card.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["utils", "button", "input", "textarea"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input-group.tsx",
+          "path": "src/components/ui/input-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "dependencies": ["input-otp", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input-otp.tsx",
+          "path": "src/components/ui/input-otp.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input.tsx",
+          "path": "src/components/ui/input.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-label"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/label.tsx",
+          "path": "src/components/ui/label.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-menubar", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/menubar.tsx",
+          "path": "src/components/ui/menubar.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-navigation-menu",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/navigation-menu.tsx",
+          "path": "src/components/ui/navigation-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/pagination.tsx",
+          "path": "src/components/ui/pagination.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-popover"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/popover.tsx",
+          "path": "src/components/ui/popover.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-progress"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/progress.tsx",
+          "path": "src/components/ui/progress.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-radio-group", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/radio-group.tsx",
+          "path": "src/components/ui/radio-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/resizable.tsx",
+          "path": "src/components/ui/resizable.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-scroll-area"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/scroll-area.tsx",
+          "path": "src/components/ui/scroll-area.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-select", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/select.tsx",
+          "path": "src/components/ui/select.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-separator"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/separator.tsx",
+          "path": "src/components/ui/separator.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dialog", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sheet.tsx",
+          "path": "src/components/ui/sheet.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "input",
+        "separator",
+        "sheet",
+        "skeleton",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sidebar.tsx",
+          "path": "src/components/ui/sidebar.tsx"
+        }
+      ],
+      "categories": ["navigation", "layout"]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/skeleton.tsx",
+          "path": "src/components/ui/skeleton.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slider"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/slider.tsx",
+          "path": "src/components/ui/slider.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "dependencies": ["next-themes", "sonner"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sonner.tsx",
+          "path": "src/components/ui/sonner.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/spinner.tsx",
+          "path": "src/components/ui/spinner.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-switch"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/switch.tsx",
+          "path": "src/components/ui/switch.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/table.tsx",
+          "path": "src/components/ui/table.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-tabs"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/tabs.tsx",
+          "path": "src/components/ui/tabs.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/textarea.tsx",
+          "path": "src/components/ui/textarea.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-toggle-group",
+        "class-variance-authority"
+      ],
+      "registryDependencies": ["utils", "toggle"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/toggle-group.tsx",
+          "path": "src/components/ui/toggle-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-toggle", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/toggle.tsx",
+          "path": "src/components/ui/toggle.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-tooltip"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/tooltip.tsx",
+          "path": "src/components/ui/tooltip.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "agent",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "accordion", "badge"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/agent.tsx",
+          "path": "src/components/ai-elements/agent.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "artifact",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/artifact.tsx",
+          "path": "src/components/ai-elements/artifact.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "attachments",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "button", "hover-card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/attachments.tsx",
+          "path": "src/components/ai-elements/attachments.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "chat"]
+    },
+    {
+      "name": "audio-player",
+      "type": "registry:ui",
+      "dependencies": ["ai", "media-chrome"],
+      "registryDependencies": ["utils", "button", "button-group"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/audio-player.tsx",
+          "path": "src/components/ai-elements/audio-player.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "canvas",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/canvas.tsx",
+          "path": "src/components/ai-elements/canvas.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "chain-of-thought",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/chain-of-thought.tsx",
+          "path": "src/components/ai-elements/chain-of-thought.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "checkpoint",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "separator", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/checkpoint.tsx",
+          "path": "src/components/ai-elements/checkpoint.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react", "shiki"],
+      "registryDependencies": ["utils", "button", "select"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/code-block.tsx",
+          "path": "src/components/ai-elements/code-block.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "commit",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "avatar", "button", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/commit.tsx",
+          "path": "src/components/ai-elements/commit.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "confirmation",
+      "type": "registry:ui",
+      "dependencies": ["ai"],
+      "registryDependencies": ["utils", "alert", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/confirmation.tsx",
+          "path": "src/components/ai-elements/confirmation.tsx"
+        }
+      ],
+      "categories": ["ai", "feedback"]
+    },
+    {
+      "name": "connection",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/connection.tsx",
+          "path": "src/components/ai-elements/connection.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "context",
+      "type": "registry:ui",
+      "dependencies": ["ai", "tokenlens"],
+      "registryDependencies": ["utils", "button", "hover-card", "progress"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/context.tsx",
+          "path": "src/components/ai-elements/context.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "controls",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/controls.tsx",
+          "path": "src/components/ai-elements/controls.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "conversation",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react", "use-stick-to-bottom"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/conversation.tsx",
+          "path": "src/components/ai-elements/conversation.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "edge",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/edge.tsx",
+          "path": "src/components/ai-elements/edge.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "environment-variables",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "button", "switch"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/environment-variables.tsx",
+          "path": "src/components/ai-elements/environment-variables.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "file-tree",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/file-tree.tsx",
+          "path": "src/components/ai-elements/file-tree.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "image",
+      "type": "registry:ui",
+      "dependencies": ["ai"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/image.tsx",
+          "path": "src/components/ai-elements/image.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "inline-citation",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "carousel", "hover-card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/inline-citation.tsx",
+          "path": "src/components/ai-elements/inline-citation.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "jsx-preview",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/jsx-preview.tsx",
+          "path": "src/components/ai-elements/jsx-preview.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "message",
+      "type": "registry:ui",
+      "dependencies": [
+        "@streamdown/cjk",
+        "@streamdown/code",
+        "@streamdown/math",
+        "@streamdown/mermaid",
+        "ai",
+        "lucide-react",
+        "streamdown"
+      ],
+      "registryDependencies": ["utils", "button", "button-group", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/message.tsx",
+          "path": "src/components/ai-elements/message.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "mic-selector",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "button", "command", "popover"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/mic-selector.tsx",
+          "path": "src/components/ai-elements/mic-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "model-selector",
+      "type": "registry:ui",
+      "registryDependencies": ["utils", "command", "dialog"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/model-selector.tsx",
+          "path": "src/components/ai-elements/model-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input"]
+    },
+    {
+      "name": "node",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils", "card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/node.tsx",
+          "path": "src/components/ai-elements/node.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "open-in-chat",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "dropdown-menu"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/open-in-chat.tsx",
+          "path": "src/components/ai-elements/open-in-chat.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "package-info",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/package-info.tsx",
+          "path": "src/components/ai-elements/package-info.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "panel",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/panel.tsx",
+          "path": "src/components/ai-elements/panel.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "persona",
+      "type": "registry:ui",
+      "dependencies": ["@rive-app/react-webgl2"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/persona.tsx",
+          "path": "src/components/ai-elements/persona.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "plan",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "card", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/plan.tsx",
+          "path": "src/components/ai-elements/plan.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "prompt-input",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react", "nanoid"],
+      "registryDependencies": [
+        "utils",
+        "command",
+        "dropdown-menu",
+        "hover-card",
+        "input-group",
+        "select",
+        "spinner",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/prompt-input.tsx",
+          "path": "src/components/ai-elements/prompt-input.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "chat"]
+    },
+    {
+      "name": "queue",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "collapsible", "scroll-area"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/queue.tsx",
+          "path": "src/components/ai-elements/queue.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "reasoning",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "@streamdown/cjk",
+        "@streamdown/code",
+        "@streamdown/math",
+        "@streamdown/mermaid",
+        "lucide-react",
+        "streamdown"
+      ],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/reasoning.tsx",
+          "path": "src/components/ai-elements/reasoning.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "sandbox",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "collapsible", "tabs"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/sandbox.tsx",
+          "path": "src/components/ai-elements/sandbox.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "schema-display",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/schema-display.tsx",
+          "path": "src/components/ai-elements/schema-display.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "shimmer",
+      "type": "registry:ui",
+      "dependencies": ["motion"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/shimmer.tsx",
+          "path": "src/components/ai-elements/shimmer.tsx"
+        }
+      ],
+      "categories": ["ai", "feedback"]
+    },
+    {
+      "name": "snippet",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "input-group"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/snippet.tsx",
+          "path": "src/components/ai-elements/snippet.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "sources",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/sources.tsx",
+          "path": "src/components/ai-elements/sources.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "speech-input",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "spinner"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/speech-input.tsx",
+          "path": "src/components/ai-elements/speech-input.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "stack-trace",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "button", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/stack-trace.tsx",
+          "path": "src/components/ai-elements/stack-trace.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "suggestion",
+      "type": "registry:ui",
+      "registryDependencies": ["utils", "button", "scroll-area"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/suggestion.tsx",
+          "path": "src/components/ai-elements/suggestion.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "task",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/task.tsx",
+          "path": "src/components/ai-elements/task.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "terminal",
+      "type": "registry:ui",
+      "dependencies": ["ansi-to-react", "lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/terminal.tsx",
+          "path": "src/components/ai-elements/terminal.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "test-results",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/test-results.tsx",
+          "path": "src/components/ai-elements/test-results.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "tool",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/tool.tsx",
+          "path": "src/components/ai-elements/tool.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/toolbar.tsx",
+          "path": "src/components/ai-elements/toolbar.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "transcription",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-use-controllable-state", "ai"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/transcription.tsx",
+          "path": "src/components/ai-elements/transcription.tsx"
+        }
+      ],
+      "categories": ["ai", "chat", "media"]
+    },
+    {
+      "name": "voice-selector",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "command",
+        "dialog",
+        "spinner"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/voice-selector.tsx",
+          "path": "src/components/ai-elements/voice-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "web-preview",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "collapsible",
+        "input",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/web-preview.tsx",
+          "path": "src/components/ai-elements/web-preview.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    }
+  ]
+}
