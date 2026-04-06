@@ -20,7 +20,8 @@
       "Bash(pnpm:*)",
       "Bash(npx:*)",
       "Bash(grep -v \"^$\")",
-      "Bash(grep -v \"warning$\")"
+      "Bash(grep -v \"warning$\")",
+      "Bash(gh pr:*)"
     ]
   }
 }
