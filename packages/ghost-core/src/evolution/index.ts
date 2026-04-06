@@ -9,4 +9,4 @@ export {
   writeSyncManifest,
 } from "./sync.js";
 export { computeTemporalComparison } from "./temporal.js";
-export { computeDriftVectors } from "./vector.js";
+export { computeDriftVectors, DIMENSION_RANGES } from "./vector.js";
