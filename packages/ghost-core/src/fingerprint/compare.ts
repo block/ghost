@@ -1,8 +1,13 @@
+import { computeDriftVectors } from "../evolution/vector.js";
 import type {
   DesignFingerprint,
   DimensionDelta,
   FingerprintComparison,
 } from "../types.js";
+
+export interface CompareOptions {
+  includeVectors?: boolean;
+}
 
 // Dimension weights — palette and spacing have higher visual impact
 const WEIGHTS: Record<string, number> = {
@@ -16,6 +21,7 @@ const WEIGHTS: Record<string, number> = {
 export function compareFingerprints(
   source: DesignFingerprint,
   target: DesignFingerprint,
+  options?: CompareOptions,
 ): FingerprintComparison {
   const dimensions: Record<string, DimensionDelta> = {};
 
@@ -33,7 +39,19 @@ export function compareFingerprints(
 
   const summary = buildSummary(dimensions, distance);
 
-  return { source, target, distance, dimensions, summary };
+  const result: FingerprintComparison = {
+    source,
+    target,
+    distance,
+    dimensions,
+    summary,
+  };
+
+  if (options?.includeVectors) {
+    result.vectors = computeDriftVectors(source, target);
+  }
+
+  return result;
 }
 
 function comparePalette(

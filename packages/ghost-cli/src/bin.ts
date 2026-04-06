@@ -4,18 +4,29 @@ import { readFile, writeFile } from "node:fs/promises";
 import type { DesignFingerprint } from "@ghost/core";
 import {
   compareFingerprints,
+  computeTemporalComparison,
   formatCLIReport,
   formatComparison,
   formatComparisonJSON,
   formatFingerprint,
   formatFingerprintJSON,
   formatJSONReport,
+  formatTemporalComparison,
+  formatTemporalComparisonJSON,
   loadConfig,
   profile,
   profileRegistry,
+  readHistory,
+  readSyncManifest,
   scan,
 } from "@ghost/core";
 import { defineCommand, runMain } from "citty";
+import {
+  ackCommand,
+  adoptCommand,
+  divergeCommand,
+  fleetCommand,
+} from "./evolution-commands.js";
 
 const scanCommand = defineCommand({
   meta: {
@@ -82,6 +93,12 @@ const profileCommand = defineCommand({
       description: "Write fingerprint to file",
       alias: "o",
     },
+    emit: {
+      type: "boolean",
+      description:
+        "Write .ghost-fingerprint.json to project root (publishable artifact)",
+      default: false,
+    },
     format: {
       type: "string",
       description: "Output format: cli or json",
@@ -110,7 +127,7 @@ const profileCommand = defineCommand({
           configPath: args.config,
           requireDesignSystems: false,
         });
-        fingerprint = await profile(config);
+        fingerprint = await profile(config, { emit: args.emit });
       }
 
       const output =
@@ -121,6 +138,10 @@ const profileCommand = defineCommand({
       if (args.output) {
         await writeFile(args.output, formatFingerprintJSON(fingerprint));
         console.log(`Fingerprint written to ${args.output}`);
+      }
+
+      if (args.emit) {
+        console.log("Published .ghost-fingerprint.json");
       }
 
       process.stdout.write(`${output}\n`);
@@ -150,6 +171,16 @@ const compareCommand = defineCommand({
       description: "Path to target fingerprint JSON",
       required: true,
     },
+    temporal: {
+      type: "boolean",
+      description: "Include temporal data: velocity, trajectory, ack status",
+      default: false,
+    },
+    "history-dir": {
+      type: "string",
+      description:
+        "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
+    },
     format: {
       type: "string",
       description: "Output format: cli or json",
@@ -164,7 +195,32 @@ const compareCommand = defineCommand({
       const source: DesignFingerprint = JSON.parse(sourceData);
       const target: DesignFingerprint = JSON.parse(targetData);
 
-      const comparison = compareFingerprints(source, target);
+      const comparison = compareFingerprints(source, target, {
+        includeVectors: args.temporal,
+      });
+
+      if (args.temporal) {
+        const historyDir = args["history-dir"] ?? process.cwd();
+        const [history, manifest] = await Promise.all([
+          readHistory(historyDir),
+          readSyncManifest(historyDir),
+        ]);
+
+        const temporal = computeTemporalComparison({
+          comparison,
+          history,
+          manifest,
+        });
+
+        const output =
+          args.format === "json"
+            ? formatTemporalComparisonJSON(temporal)
+            : formatTemporalComparison(temporal);
+
+        process.stdout.write(`${output}\n`);
+        process.exit(temporal.distance > 0.5 ? 1 : 0);
+        return;
+      }
 
       const output =
         args.format === "json"
@@ -192,6 +248,10 @@ const main = defineCommand({
     scan: scanCommand,
     profile: profileCommand,
     compare: compareCommand,
+    fleet: fleetCommand,
+    ack: ackCommand,
+    adopt: adoptCommand,
+    diverge: divergeCommand,
   },
 });
 

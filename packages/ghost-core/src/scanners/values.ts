@@ -138,9 +138,9 @@ function detectHardcodedColors(
     // Skip comments
     if (trimmed.startsWith("/*") || trimmed.startsWith("//")) continue;
 
-    let match: RegExpExecArray | null;
     COLOR_REGEX.lastIndex = 0;
-    while ((match = COLOR_REGEX.exec(line)) !== null) {
+    let match: RegExpExecArray | null = COLOR_REGEX.exec(line);
+    while (match !== null) {
       const colorValue = match[0];
       const tokenName = reverseMap.get(colorValue);
       const suggestion = tokenName ? `var(${tokenName})` : undefined;
@@ -155,6 +155,7 @@ function detectHardcodedColors(
         line: i + 1,
         suggestion,
       });
+      match = COLOR_REGEX.exec(line);
     }
   }
 

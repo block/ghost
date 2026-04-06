@@ -82,6 +82,7 @@ export interface VisualScanConfig {
 }
 
 export interface GhostConfig {
+  parent?: ParentSource;
   designSystems?: DesignSystemConfig[];
   scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
@@ -206,6 +207,45 @@ export interface LLMProvider {
   ) => Promise<DesignFingerprint>;
 }
 
+// --- Parent / lineage types ---
+
+export type ParentSource =
+  | { type: "default" }
+  | { type: "url"; url: string }
+  | { type: "path"; path: string }
+  | { type: "package"; name: string };
+
+// --- History types ---
+
+export interface FingerprintHistoryEntry {
+  fingerprint: DesignFingerprint;
+  parentRef?: ParentSource;
+  comparisonToParent?: {
+    distance: number;
+    dimensions: Record<string, number>;
+  };
+}
+
+// --- Sync / acknowledgment types ---
+
+export type DimensionStance = "aligned" | "accepted" | "diverging";
+
+export interface DimensionAck {
+  distance: number;
+  stance: DimensionStance;
+  ackedAt: string;
+  reason?: string;
+}
+
+export interface SyncManifest {
+  parent: ParentSource;
+  ackedAt: string;
+  parentFingerprintId: string;
+  childFingerprintId: string;
+  dimensions: Record<string, DimensionAck>;
+  overallDistance: number;
+}
+
 // --- Comparison types ---
 
 export interface DimensionDelta {
@@ -220,6 +260,59 @@ export interface FingerprintComparison {
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
+  vectors?: DriftVector[];
+}
+
+// --- Temporal / drift vector types ---
+
+export interface DriftVector {
+  dimension: string;
+  magnitude: number;
+  embeddingDelta: number[];
+}
+
+export interface DriftVelocity {
+  dimension: string;
+  rate: number;
+  direction: "converging" | "diverging" | "stable";
+  windowDays: number;
+}
+
+export interface TemporalComparison extends FingerprintComparison {
+  velocity: DriftVelocity[];
+  daysSinceAck: number | null;
+  exceedsAckedBounds: boolean;
+  exceedingDimensions: string[];
+  trajectory: "converging" | "diverging" | "stable" | "oscillating";
+}
+
+// --- Fleet types ---
+
+export interface FleetMember {
+  id: string;
+  fingerprint: DesignFingerprint;
+  parentRef?: ParentSource;
+  distanceToParent?: number;
+}
+
+export interface FleetPair {
+  a: string;
+  b: string;
+  distance: number;
+  dimensions: Record<string, number>;
+}
+
+export interface FleetCluster {
+  memberIds: string[];
+  centroid: number[];
+}
+
+export interface FleetComparison {
+  members: FleetMember[];
+  pairwise: FleetPair[];
+  centroid: number[];
+  spread: number;
+  clusters?: FleetCluster[];
 }
 
 // --- Drift report types ---
