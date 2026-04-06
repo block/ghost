@@ -11,7 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --build && cp -r src/viz dist/viz"
   },
   "dependencies": {
     "@ghost/core": "workspace:*",

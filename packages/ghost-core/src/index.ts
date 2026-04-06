@@ -6,6 +6,7 @@ export {
   compareFleet,
   computeDriftVectors,
   computeTemporalComparison,
+  DIMENSION_RANGES,
   emitFingerprint,
   normalizeParentSource,
   readHistory,
