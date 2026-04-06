@@ -77,6 +77,7 @@ function mergeDefaults(raw: GhostConfig): GhostConfig {
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
     visual: raw.visual,
     llm: raw.llm,
+    embedding: raw.embedding,
     extractors: raw.extractors,
   };
 }

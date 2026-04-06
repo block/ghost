@@ -18,7 +18,9 @@
       "Bash(mv pre-push.pre-entire pre-push)",
       "Bash(mv prepare-commit-msg.pre-entire prepare-commit-msg)",
       "Bash(pnpm:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -v \"warning$\")"
     ]
   }
 }

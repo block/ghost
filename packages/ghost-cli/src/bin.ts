@@ -93,7 +93,18 @@ const profileCommand = defineCommand({
       let fingerprint: DesignFingerprint;
 
       if (args.registry) {
-        fingerprint = await profileRegistry(args.registry);
+        // Still load config if available — for embedding settings
+        let embeddingConfig: import("@ghost/core").EmbeddingConfig | undefined;
+        try {
+          const config = await loadConfig({
+            configPath: args.config,
+            requireDesignSystems: false,
+          });
+          embeddingConfig = config.embedding;
+        } catch {
+          // No config file is fine when --registry is provided
+        }
+        fingerprint = await profileRegistry(args.registry, embeddingConfig);
       } else {
         const config = await loadConfig({
           configPath: args.config,

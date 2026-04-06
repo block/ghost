@@ -3,6 +3,8 @@ export { detectExtractors, extract } from "./extractors/index.js";
 export {
   compareFingerprints,
   computeEmbedding,
+  computeSemanticEmbedding,
+  describeFingerprint,
   embeddingDistance,
   fingerprintFromRegistry,
 } from "./fingerprint/index.js";
@@ -29,6 +31,7 @@ export type {
   DimensionDelta,
   DriftReport,
   DriftSummary,
+  EmbeddingConfig,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,

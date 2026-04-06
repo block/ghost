@@ -88,6 +88,7 @@ export interface GhostConfig {
   ignore: string[];
   visual?: VisualScanConfig;
   llm?: LLMConfig;
+  embedding?: EmbeddingConfig;
   extractors?: string[];
 }
 
@@ -187,6 +188,12 @@ export interface Extractor {
 
 export interface LLMConfig {
   provider: "anthropic" | "openai";
+  model?: string;
+  apiKey?: string;
+}
+
+export interface EmbeddingConfig {
+  provider: "openai" | "voyage";
   model?: string;
   apiKey?: string;
 }
