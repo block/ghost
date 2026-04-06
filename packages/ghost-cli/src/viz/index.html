@@ -396,7 +396,7 @@ function buildParticles() {
   const sizes = new Float32Array(totalParticles);
 
   let idx = 0;
-  fleetData.members.forEach((member, mIdx) => {
+  fleetData.members.forEach((_member, mIdx) => {
     const center = memberPositions[mIdx];
     const baseColor = memberColors[mIdx];
 
@@ -543,10 +543,10 @@ function buildCentroid() {
 
 // ─── LABELS ─────────────────────────────────────────────
 function buildLabels() {
-  fleetData.members.forEach((member, i) => {
+  fleetData.members.forEach((_member) => {
     const el = document.createElement('div');
     el.className = 'fingerprint-label';
-    el.textContent = member.id;
+    el.textContent = _member.id;
     document.body.appendChild(el);
     memberLabels.push(el);
   });
