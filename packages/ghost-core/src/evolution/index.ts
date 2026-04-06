@@ -1,0 +1,12 @@
+export { emitFingerprint } from "./emit.js";
+export { compareFleet } from "./fleet.js";
+export { appendHistory, readHistory, readRecentHistory } from "./history.js";
+export { normalizeParentSource, resolveParent } from "./parent.js";
+export {
+  acknowledge,
+  checkBounds,
+  readSyncManifest,
+  writeSyncManifest,
+} from "./sync.js";
+export { computeTemporalComparison } from "./temporal.js";
+export { computeDriftVectors } from "./vector.js";

@@ -1,3 +1,5 @@
+import { emitFingerprint } from "./evolution/emit.js";
+import { appendHistory } from "./evolution/history.js";
 import { extract } from "./extractors/index.js";
 import { computeSemanticEmbedding } from "./fingerprint/embed-api.js";
 import { computeEmbedding } from "./fingerprint/embedding.js";
@@ -9,6 +11,11 @@ import type {
   EmbeddingConfig,
   GhostConfig,
 } from "./types.js";
+
+export interface ProfileOptions {
+  cwd?: string;
+  emit?: boolean;
+}
 
 /**
  * Compute the embedding for a fingerprint.
@@ -35,8 +42,12 @@ async function embedFingerprint(
  */
 export async function profile(
   config: GhostConfig,
-  cwd: string = process.cwd(),
+  cwdOrOptions: string | ProfileOptions = {},
 ): Promise<DesignFingerprint> {
+  const opts =
+    typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
+  const cwd = opts.cwd ?? process.cwd();
+
   const material = await extract(cwd, {
     ignore: config.ignore,
     extractorNames: config.extractors,
@@ -44,32 +55,42 @@ export async function profile(
     styleEntry: config.designSystems?.[0]?.styleEntry,
   });
 
+  let fingerprint: DesignFingerprint;
+
   if (config.llm) {
     const provider = createProvider(config.llm);
     const projectId = config.designSystems?.[0]?.name ?? "project";
-    const fingerprint = await provider.interpret(material, projectId);
-
+    fingerprint = await provider.interpret(material, projectId);
     fingerprint.embedding = await embedFingerprint(
       fingerprint,
       config.embedding,
     );
-
-    return fingerprint;
-  }
-
-  // Deterministic fallback — if we have a registry, use it
-  if (config.designSystems?.[0]?.registry) {
+  } else if (config.designSystems?.[0]?.registry) {
     const registry = await resolveRegistry(config.designSystems[0].registry);
-    const fingerprint = fingerprintFromRegistry(registry);
+    fingerprint = fingerprintFromRegistry(registry);
     fingerprint.embedding = await embedFingerprint(
       fingerprint,
       config.embedding,
     );
-    return fingerprint;
+  } else {
+    fingerprint = await fingerprintFromExtraction(material, config.embedding);
   }
 
-  // Deterministic extraction-only fingerprint (limited but functional)
-  return fingerprintFromExtraction(material, config.embedding);
+  // Emit publishable fingerprint if requested
+  if (opts.emit) {
+    await emitFingerprint(fingerprint, cwd);
+  }
+
+  // Always append to history
+  await appendHistory(
+    {
+      fingerprint,
+      parentRef: config.parent,
+    },
+    cwd,
+  );
+
+  return fingerprint;
 }
 
 /**

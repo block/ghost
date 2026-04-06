@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { createJiti } from "jiti";
+import { normalizeParentSource } from "./evolution/parent.js";
 import type { GhostConfig } from "./types.js";
 
 const CONFIG_FILES = ["ghost.config.ts", "ghost.config.js", "ghost.config.mjs"];
@@ -71,6 +72,9 @@ function validateDesignSystems(raw: GhostConfig): void {
 
 function mergeDefaults(raw: GhostConfig): GhostConfig {
   return {
+    parent: normalizeParentSource(
+      raw.parent as GhostConfig["parent"] | string | undefined,
+    ),
     designSystems: raw.designSystems,
     scan: { ...DEFAULT_CONFIG.scan, ...raw.scan },
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
