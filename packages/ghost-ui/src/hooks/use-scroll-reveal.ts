@@ -45,7 +45,7 @@ export function useScrollReveal<T extends HTMLElement>(
           delay,
           ease,
           onComplete: () => {
-            gsap.set(el, { clearProps: "transition" });
+            gsap.set(el, { clearProps: "transform,opacity,transition" });
           },
         });
       },
@@ -96,7 +96,7 @@ export function useStaggerReveal<T extends HTMLElement>(
           stagger,
           ease,
           onComplete: () => {
-            gsap.set(children, { clearProps: "transition" });
+            gsap.set(children, { clearProps: "transform,opacity,transition" });
           },
         });
       },

@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import registryData from "../../registry.json";
 
 // ── Types ──
@@ -28,6 +26,27 @@ type RegistryItem = {
   type: string;
   files?: { path: string }[];
 };
+
+// ── Raw source imports via Vite glob ──
+
+const rawSources: Record<string, string> = {};
+
+const uiModules = import.meta.glob("/src/components/ui/**/*.tsx", {
+  query: "?raw",
+  eager: true,
+}) as Record<string, { default: string }>;
+
+const aiModules = import.meta.glob("/src/components/ai-elements/**/*.tsx", {
+  query: "?raw",
+  eager: true,
+}) as Record<string, { default: string }>;
+
+for (const [key, mod] of Object.entries({ ...uiModules, ...aiModules })) {
+  // Glob keys are like "/src/components/ui/button.tsx"
+  // Registry paths are like "src/components/ui/button.tsx"
+  const normalized = key.startsWith("/") ? key.slice(1) : key;
+  rawSources[normalized] = mod.default;
+}
 
 // ── Extraction helpers ──
 
@@ -103,12 +122,14 @@ function extractVariants(source: string): VariantDef[] {
       i - 1,
     );
 
-    // Extract value names (keys of the object)
-    const valueRe = /["']?([\w-]+)["']?\s*:/g;
+    // Extract value names (keys of the object, anchored to line start to skip Tailwind prefixes like hover:)
+    const valueRe = /^\s*["']?([\w-]+)["']?\s*:/gm;
     const values: string[] = [];
     let valueMatch;
     while ((valueMatch = valueRe.exec(groupContent)) !== null) {
-      values.push(valueMatch[1]);
+      if (!values.includes(valueMatch[1])) {
+        values.push(valueMatch[1]);
+      }
     }
 
     if (values.length > 0) {
@@ -143,14 +164,8 @@ export function getComponentSpec(slug: string): ComponentSpec | null {
   if (!item?.files?.[0]?.path) return null;
 
   const filePath = item.files[0].path;
-  const fullPath = path.join(process.cwd(), filePath);
-
-  let source: string;
-  try {
-    source = fs.readFileSync(fullPath, "utf-8");
-  } catch {
-    return null;
-  }
+  const source = rawSources[filePath];
+  if (!source) return null;
 
   return {
     exports: extractExports(source),
