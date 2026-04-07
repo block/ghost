@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "task",
+  "dependencies": ["lucide-react"],
+  "registryDependencies": ["utils", "collapsible"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/task.tsx",
+      "content": "\"use client\";\n\nimport { ChevronDownIcon, SearchIcon } from \"lucide-react\";\nimport type { ComponentProps } from \"react\";\nimport {\n  Collapsible,\n  CollapsibleContent,\n  CollapsibleTrigger,\n} from \"@/components/ui/collapsible\";\nimport { cn } from \"@/lib/utils\";\n\nexport type TaskItemFileProps = ComponentProps<\"div\">;\n\nexport const TaskItemFile = ({\n  children,\n  className,\n  ...props\n}: TaskItemFileProps) => (\n  <div\n    className={cn(\n      \"inline-flex items-center gap-1 rounded-md border bg-secondary px-1.5 py-0.5 text-foreground text-xs\",\n      className,\n    )}\n    {...props}\n  >\n    {children}\n  </div>\n);\n\nexport type TaskItemProps = ComponentProps<\"div\">;\n\nexport const TaskItem = ({ children, className, ...props }: TaskItemProps) => (\n  <div className={cn(\"text-muted-foreground text-sm\", className)} {...props}>\n    {children}\n  </div>\n);\n\nexport type TaskProps = ComponentProps<typeof Collapsible>;\n\nexport const Task = ({\n  defaultOpen = true,\n  className,\n  ...props\n}: TaskProps) => (\n  <Collapsible className={cn(className)} defaultOpen={defaultOpen} {...props} />\n);\n\nexport type TaskTriggerProps = ComponentProps<typeof CollapsibleTrigger> & {\n  title: string;\n};\n\nexport const TaskTrigger = ({\n  children,\n  className,\n  title,\n  ...props\n}: TaskTriggerProps) => (\n  <CollapsibleTrigger asChild className={cn(\"group\", className)} {...props}>\n    {children ?? (\n      <div className=\"flex w-full cursor-pointer items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground\">\n        <SearchIcon className=\"size-4\" />\n        <p className=\"text-sm\">{title}</p>\n        <ChevronDownIcon className=\"size-4 transition-transform group-data-[state=open]:rotate-180\" />\n      </div>\n    )}\n  </CollapsibleTrigger>\n);\n\nexport type TaskContentProps = ComponentProps<typeof CollapsibleContent>;\n\nexport const TaskContent = ({\n  children,\n  className,\n  ...props\n}: TaskContentProps) => (\n  <CollapsibleContent\n    className={cn(\n      \"data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-popover-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in\",\n      className,\n    )}\n    {...props}\n  >\n    <div className=\"mt-4 space-y-2 border-muted border-l-2 pl-4\">\n      {children}\n    </div>\n  </CollapsibleContent>\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/task.tsx"
+    }
+  ],
+  "categories": ["ai", "display"],
+  "type": "registry:ui"
+}

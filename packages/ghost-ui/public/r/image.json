@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "image",
+  "dependencies": ["ai"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/image.tsx",
+      "content": "import type { Experimental_GeneratedImage } from \"ai\";\nimport { cn } from \"@/lib/utils\";\n\nexport type ImageProps = Experimental_GeneratedImage & {\n  className?: string;\n  alt?: string;\n};\n\nexport const Image = ({\n  base64,\n  uint8Array: _uint8Array,\n  mediaType,\n  ...props\n}: ImageProps) => (\n  <img\n    {...props}\n    alt={props.alt}\n    className={cn(\n      \"h-auto max-w-full overflow-hidden rounded-md\",\n      props.className,\n    )}\n    src={`data:${mediaType};base64,${base64}`}\n  />\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/image.tsx"
+    }
+  ],
+  "categories": ["ai", "media"],
+  "type": "registry:ui"
+}

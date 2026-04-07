@@ -1,5 +1,36 @@
 // --- Registry types (mirrors shadcn registry schema) ---
 
+export type RegistryItemType =
+  | "registry:ui"
+  | "registry:style"
+  | "registry:lib"
+  | "registry:base"
+  | "registry:font"
+  | "registry:block"
+  | "registry:component"
+  | "registry:hook"
+  | "registry:theme"
+  | "registry:file"
+  | "registry:page"
+  | "registry:item";
+
+export interface FontDescriptor {
+  family: string;
+  provider: string;
+  import: string;
+  variable: string;
+  weight?: string[];
+  subsets?: string[];
+  selector?: string;
+  dependency?: string;
+}
+
+export interface CSSVarsMap {
+  theme?: Record<string, string>;
+  light?: Record<string, string>;
+  dark?: Record<string, string>;
+}
+
 export interface Registry {
   $schema?: string;
   name: string;
@@ -9,12 +40,31 @@ export interface Registry {
 
 export interface RegistryItem {
   name: string;
-  type: "registry:ui" | "registry:style" | "registry:lib";
+  type: RegistryItemType;
   dependencies?: string[];
   devDependencies?: string[];
   registryDependencies?: string[];
   files: RegistryFile[];
   categories?: string[];
+  // v4 fields
+  font?: FontDescriptor;
+  cssVars?: CSSVarsMap;
+  css?: string;
+  meta?: Record<string, unknown>;
+  title?: string;
+  description?: string;
+  author?: string;
+}
+
+export interface ComponentMeta {
+  name: string;
+  description?: string;
+  categories: string[];
+  exports: string[];
+  variants: { name: string; options: string[] }[];
+  dataSlots: string[];
+  dependencies: string[];
+  registryDependencies: string[];
 }
 
 export interface RegistryFile {
@@ -44,6 +94,7 @@ export type TokenCategory =
   | "animation"
   | "color"
   | "font"
+  | "font-face"
   | "chart"
   | "sidebar"
   | "other";

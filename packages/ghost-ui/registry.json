@@ -1,0 +1,2204 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "ghost-ui",
+  "homepage": "https://github.com/block/ghost",
+  "items": [
+    {
+      "name": "ghost-ui-base",
+      "type": "registry:base",
+      "title": "Ghost UI",
+      "description": "Magazine-inspired design system — pill geometry, HK Grotesk typography, 4-tier shadow hierarchy",
+      "author": "block",
+      "style": "ghost",
+      "iconLibrary": "lucide",
+      "baseColor": "neutral",
+      "registryDependencies": ["styles-main", "font-hk-grotesk", "utils"],
+      "dependencies": ["tw-animate-css", "clsx", "tailwind-merge"],
+      "devDependencies": ["tailwindcss"],
+      "files": [],
+      "cssVars": {
+        "theme": {
+          "--color-white": "#ffffff",
+          "--color-black": "#000000",
+          "--color-gray-50": "#f5f5f5",
+          "--color-gray-100": "#f0f0f0",
+          "--color-gray-200": "#e8e8e8",
+          "--color-gray-300": "#e5e5e5",
+          "--color-gray-400": "#cccccc",
+          "--color-gray-500": "#999999",
+          "--color-gray-600": "#666666",
+          "--color-gray-700": "#333333",
+          "--color-gray-800": "#232323",
+          "--color-gray-900": "#1a1a1a",
+          "--color-red-100": "#ff6b6b",
+          "--color-red-200": "#f94b4b",
+          "--color-blue-100": "#7cacff",
+          "--color-blue-200": "#5c98f9",
+          "--color-green-100": "#a3d795",
+          "--color-green-200": "#91cb80",
+          "--color-yellow-100": "#ffd966",
+          "--color-yellow-200": "#fbcd44",
+          "--color-background": "var(--background)",
+          "--color-foreground": "var(--foreground)",
+          "--color-card": "var(--card)",
+          "--color-card-foreground": "var(--card-foreground)",
+          "--color-popover": "var(--popover)",
+          "--color-popover-foreground": "var(--popover-foreground)",
+          "--color-primary": "var(--primary)",
+          "--color-primary-foreground": "var(--primary-foreground)",
+          "--color-secondary": "var(--secondary)",
+          "--color-secondary-foreground": "var(--secondary-foreground)",
+          "--color-muted": "var(--muted)",
+          "--color-muted-foreground": "var(--muted-foreground)",
+          "--color-accent": "var(--accent)",
+          "--color-accent-foreground": "var(--accent-foreground)",
+          "--color-destructive": "var(--destructive)",
+          "--color-destructive-foreground": "var(--destructive-foreground)",
+          "--color-border": "var(--border)",
+          "--color-input": "var(--input)",
+          "--color-background-default": "var(--background-default)",
+          "--color-background-alt": "var(--background-alt)",
+          "--color-background-medium": "var(--background-medium)",
+          "--color-background-inverse": "var(--background-inverse)",
+          "--color-background-muted": "var(--background-muted)",
+          "--color-background-danger": "var(--background-danger)",
+          "--color-background-success": "var(--background-success)",
+          "--color-background-info": "var(--background-info)",
+          "--color-background-warning": "var(--background-warning)",
+          "--color-background-accent": "var(--background-accent)",
+          "--color-border-accent": "var(--border-accent)",
+          "--color-text-accent": "var(--text-accent)",
+          "--color-border-default": "var(--border-default)",
+          "--color-border-input": "var(--border-input)",
+          "--color-border-input-hover": "var(--border-input-hover)",
+          "--color-border-strong": "var(--border-strong)",
+          "--color-border-card": "var(--border-card)",
+          "--color-border-inverse": "var(--border-inverse)",
+          "--color-border-danger": "var(--border-danger)",
+          "--color-border-success": "var(--border-success)",
+          "--color-border-warning": "var(--border-warning)",
+          "--color-border-info": "var(--border-info)",
+          "--color-text-default": "var(--text-default)",
+          "--color-text-muted": "var(--text-muted)",
+          "--color-text-alt": "var(--text-alt)",
+          "--color-text-inverse": "var(--text-inverse)",
+          "--color-text-danger": "var(--text-danger)",
+          "--color-text-success": "var(--text-success)",
+          "--color-text-warning": "var(--text-warning)",
+          "--color-text-info": "var(--text-info)",
+          "--color-dark-10": "var(--dark-10)",
+          "--color-dark-40": "var(--dark-40)",
+          "--color-dark-04": "var(--dark-04)",
+          "--color-surface-dark": "var(--surface-dark)",
+          "--color-surface-dark-text": "var(--surface-dark-text)",
+          "--color-surface-dark-muted": "var(--surface-dark-muted)",
+          "--color-surface-dark-border": "var(--surface-dark-border)",
+          "--font-sans": "\"HK Grotesk\", sans-serif",
+          "--font-mono": "\"Geist Mono\", monospace",
+          "--font-serif": "serif",
+          "--font-display": "\"HK Grotesk\", sans-serif",
+          "--radius-pill": "999px",
+          "--radius-button": "999px",
+          "--radius-input": "999px",
+          "--radius-card": "20px",
+          "--radius-card-lg": "24px",
+          "--radius-card-sm": "14px",
+          "--radius-dropdown": "10px",
+          "--radius-modal": "16px",
+          "--radius-sm": "calc(var(--radius) - 4px)",
+          "--radius-md": "calc(var(--radius) - 2px)",
+          "--radius-lg": "var(--radius)",
+          "--radius-xl": "calc(var(--radius) + 4px)",
+          "--color-ring": "var(--ring)",
+          "--shadow-mini": "var(--shadow-mini)",
+          "--shadow-mini-inset": "var(--shadow-mini-inset)",
+          "--shadow-btn": "var(--shadow-btn)",
+          "--shadow-card": "var(--shadow-card)",
+          "--shadow-elevated": "var(--shadow-elevated)",
+          "--shadow-popover": "var(--shadow-popover)",
+          "--shadow-modal": "var(--shadow-modal)",
+          "--shadow-kbd": "var(--shadow-kbd)",
+          "--shadow-date-field-focus": "var(--shadow-date-field-focus)",
+          "--spacing-input": "3.25rem",
+          "--spacing-input-sm": "2.75rem",
+          "--spacing-button": "2.75rem",
+          "--spacing-button-sm": "2rem",
+          "--text-xxs": "10px",
+          "--color-chart-1": "var(--chart-1)",
+          "--color-chart-2": "var(--chart-2)",
+          "--color-chart-3": "var(--chart-3)",
+          "--color-chart-4": "var(--chart-4)",
+          "--color-chart-5": "var(--chart-5)",
+          "--color-sidebar": "var(--sidebar)",
+          "--color-sidebar-foreground": "var(--sidebar-foreground)",
+          "--color-sidebar-primary": "var(--sidebar-primary)",
+          "--color-sidebar-primary-foreground": "var(--sidebar-primary-foreground)",
+          "--color-sidebar-accent": "var(--sidebar-accent)",
+          "--color-sidebar-accent-foreground": "var(--sidebar-accent-foreground)",
+          "--color-sidebar-border": "var(--sidebar-border)",
+          "--color-sidebar-ring": "var(--sidebar-ring)",
+          "--breakpoint-desktop": "1440px",
+          "--animate-accordion-down": "accordion-down 0.2s ease-out",
+          "--animate-accordion-up": "accordion-up 0.2s ease-out",
+          "--animate-caret-blink": "caret-blink 1s ease-out infinite",
+          "--animate-scale-in": "scale-in 0.2s ease",
+          "--animate-scale-out": "scale-out 0.15s ease",
+          "--animate-fade-in": "fade-in 0.2s ease",
+          "--animate-fade-out": "fade-out 0.15s ease",
+          "--animate-enter-from-left": "enter-from-left 0.2s ease",
+          "--animate-enter-from-right": "enter-from-right 0.2s ease",
+          "--animate-exit-to-left": "exit-to-left 0.2s ease",
+          "--animate-exit-to-right": "exit-to-right 0.2s ease",
+          "--animate-word-reveal": "word-reveal 0.4s ease-out"
+        },
+        "light": {
+          "--radius": "20px",
+          "--background-accent": "var(--color-gray-900)",
+          "--border-accent": "var(--color-gray-900)",
+          "--text-accent": "var(--color-gray-900)",
+          "--background-default": "var(--color-white)",
+          "--background-alt": "var(--color-gray-50)",
+          "--background-medium": "var(--color-gray-400)",
+          "--background-muted": "var(--color-gray-100)",
+          "--background-inverse": "var(--color-black)",
+          "--background-danger": "var(--color-red-200)",
+          "--background-success": "var(--color-green-200)",
+          "--background-info": "var(--color-blue-200)",
+          "--background-warning": "var(--color-yellow-200)",
+          "--border-default": "var(--color-gray-200)",
+          "--border-input": "var(--color-gray-300)",
+          "--border-input-hover": "var(--color-gray-400)",
+          "--border-strong": "var(--color-gray-900)",
+          "--border-card": "var(--color-gray-200)",
+          "--border-inverse": "var(--color-black)",
+          "--border-danger": "var(--color-red-200)",
+          "--border-success": "var(--color-green-200)",
+          "--border-warning": "var(--color-yellow-200)",
+          "--border-info": "var(--color-blue-200)",
+          "--text-default": "var(--color-gray-900)",
+          "--text-muted": "var(--color-gray-500)",
+          "--text-alt": "var(--color-gray-600)",
+          "--text-inverse": "var(--color-white)",
+          "--text-danger": "var(--color-red-200)",
+          "--text-success": "var(--color-green-200)",
+          "--text-warning": "var(--color-yellow-200)",
+          "--text-info": "var(--color-blue-200)",
+          "--ring": "var(--border-strong)",
+          "--dark-10": "rgba(26, 26, 26, 0.1)",
+          "--dark-40": "rgba(26, 26, 26, 0.4)",
+          "--dark-04": "rgba(26, 26, 26, 0.04)",
+          "--shadow-mini": "0 2px 8px rgba(76, 76, 76, 0.15)",
+          "--shadow-mini-inset": "0 1px 4px rgba(76, 76, 76, 0.1) inset",
+          "--shadow-btn": "0 2px 8px rgba(76, 76, 76, 0.15)",
+          "--shadow-card": "0 2px 8px rgba(76, 76, 76, 0.15)",
+          "--shadow-elevated": "0 3px 12px rgba(76, 76, 76, 0.22)",
+          "--shadow-popover": "0 8px 30px rgba(0, 0, 0, 0.12)",
+          "--shadow-modal": "0 20px 60px rgba(0, 0, 0, 0.2)",
+          "--shadow-kbd": "0 2px 8px rgba(76, 76, 76, 0.15)",
+          "--shadow-date-field-focus": "0 0 0 3px rgba(26, 26, 26, 0.15)",
+          "--surface-dark": "#0a0a0a",
+          "--surface-dark-text": "#f5f5f5",
+          "--surface-dark-muted": "rgba(255, 255, 255, 0.5)",
+          "--surface-dark-border": "rgba(255, 255, 255, 0.08)",
+          "--chart-1": "#f6b44a",
+          "--chart-2": "#7585ff",
+          "--chart-3": "#d76a6a",
+          "--chart-4": "#d185e0",
+          "--chart-5": "#91cb80",
+          "--background": "var(--background-default)",
+          "--foreground": "var(--text-default)",
+          "--card": "var(--background-default)",
+          "--card-foreground": "var(--text-default)",
+          "--popover": "var(--background-default)",
+          "--popover-foreground": "var(--text-default)",
+          "--primary": "var(--background-accent)",
+          "--primary-foreground": "var(--text-inverse)",
+          "--secondary": "var(--background-muted)",
+          "--secondary-foreground": "var(--text-default)",
+          "--muted": "var(--background-muted)",
+          "--muted-foreground": "var(--text-muted)",
+          "--accent": "var(--background-muted)",
+          "--accent-foreground": "var(--text-default)",
+          "--destructive": "var(--background-danger)",
+          "--destructive-foreground": "#ffffff",
+          "--border": "var(--border-default)",
+          "--input": "var(--border-input)",
+          "--sidebar": "var(--background-default)",
+          "--sidebar-foreground": "var(--text-default)",
+          "--sidebar-primary": "var(--background-accent)",
+          "--sidebar-primary-foreground": "var(--text-inverse)",
+          "--sidebar-accent": "var(--background-muted)",
+          "--sidebar-accent-foreground": "var(--text-default)",
+          "--sidebar-border": "var(--border-default)",
+          "--sidebar-ring": "var(--border-default)",
+          "--heading-display-font-size": "clamp(64px, 8vw, 96px)",
+          "--heading-display-line-height": "0.88",
+          "--heading-display-letter-spacing": "-0.05em",
+          "--heading-display-font-weight": "900",
+          "--heading-section-font-size": "clamp(44px, 5vw, 64px)",
+          "--heading-section-line-height": "0.95",
+          "--heading-section-letter-spacing": "-0.035em",
+          "--heading-section-font-weight": "700",
+          "--heading-sub-font-size": "clamp(28px, 3vw, 40px)",
+          "--heading-sub-line-height": "1",
+          "--heading-sub-letter-spacing": "-0.02em",
+          "--heading-sub-font-weight": "700",
+          "--heading-card-font-size": "clamp(20px, 2vw, 28px)",
+          "--heading-card-line-height": "1.1",
+          "--heading-card-letter-spacing": "-0.01em",
+          "--heading-card-font-weight": "600",
+          "--display-size": "clamp(3rem, 12vw, 12rem)",
+          "--display-line-height": "0.85",
+          "--display-letter-spacing": "-0.05em",
+          "--body-reading-size": "clamp(1rem, 1.3vw, 1.25rem)",
+          "--body-reading-line-height": "1.65",
+          "--body-reading-letter-spacing": "-0.01em",
+          "--label-font-size": "11px",
+          "--label-letter-spacing": "0.12em",
+          "--label-font-weight": "600",
+          "--label-line-height": "1.2",
+          "--pullquote-size": "clamp(1.5rem, 3vw, 2.5rem)",
+          "--pullquote-line-height": "1.3",
+          "--pullquote-weight": "300",
+          "--pullquote-letter-spacing": "-0.02em",
+          "--page-container-max-width": "1440px",
+          "--page-container-side-gutter": "20px",
+          "--section-padding-vertical": "100px",
+          "--section-heading-margin-bottom": "75px",
+          "--ease-spring": "cubic-bezier(0.33, 1, 0.68, 1)",
+          "--duration-fast": "0.15s",
+          "--duration-normal": "0.2s",
+          "--duration-slow": "0.4s"
+        },
+        "dark": {
+          "--background-accent": "var(--color-white)",
+          "--border-accent": "var(--color-white)",
+          "--text-accent": "var(--color-white)",
+          "--background": "var(--background-default)",
+          "--foreground": "var(--text-default)",
+          "--card": "var(--background-default)",
+          "--card-foreground": "var(--text-default)",
+          "--popover": "var(--background-default)",
+          "--popover-foreground": "var(--text-default)",
+          "--primary": "var(--background-accent)",
+          "--primary-foreground": "var(--text-inverse)",
+          "--secondary": "var(--background-muted)",
+          "--secondary-foreground": "var(--text-default)",
+          "--muted": "var(--background-muted)",
+          "--muted-foreground": "var(--text-muted)",
+          "--accent": "var(--background-muted)",
+          "--accent-foreground": "var(--text-default)",
+          "--destructive": "var(--background-danger)",
+          "--destructive-foreground": "#ffffff",
+          "--border": "var(--border-default)",
+          "--input": "var(--border-input)",
+          "--background-default": "var(--color-black)",
+          "--background-alt": "var(--color-gray-800)",
+          "--background-medium": "var(--color-gray-700)",
+          "--background-muted": "var(--color-gray-800)",
+          "--background-inverse": "var(--color-white)",
+          "--background-danger": "var(--color-red-100)",
+          "--background-success": "var(--color-green-100)",
+          "--background-info": "var(--color-blue-100)",
+          "--background-warning": "var(--color-yellow-100)",
+          "--border-default": "var(--color-gray-700)",
+          "--border-input": "var(--color-gray-700)",
+          "--border-input-hover": "var(--color-gray-600)",
+          "--border-strong": "var(--color-white)",
+          "--border-card": "var(--color-gray-700)",
+          "--border-inverse": "var(--color-white)",
+          "--border-danger": "var(--color-red-200)",
+          "--border-success": "var(--color-green-200)",
+          "--border-warning": "var(--color-yellow-200)",
+          "--border-info": "var(--color-blue-200)",
+          "--text-default": "var(--color-white)",
+          "--text-muted": "var(--color-gray-500)",
+          "--text-alt": "var(--color-gray-500)",
+          "--text-inverse": "var(--color-black)",
+          "--text-danger": "var(--color-red-100)",
+          "--text-success": "var(--color-green-100)",
+          "--text-warning": "var(--color-yellow-100)",
+          "--text-info": "var(--color-blue-100)",
+          "--ring": "var(--border-strong)",
+          "--dark-10": "rgba(242, 242, 242, 0.1)",
+          "--dark-40": "rgba(242, 242, 242, 0.4)",
+          "--dark-04": "rgba(242, 242, 242, 0.04)",
+          "--shadow-mini": "0 2px 8px rgba(0, 0, 0, 0.4)",
+          "--shadow-mini-inset": "0 1px 4px rgba(0, 0, 0, 0.5) inset",
+          "--shadow-btn": "0 2px 8px rgba(0, 0, 0, 0.3)",
+          "--shadow-card": "0 2px 8px rgba(0, 0, 0, 0.4)",
+          "--shadow-elevated": "0 3px 12px rgba(0, 0, 0, 0.5)",
+          "--shadow-popover": "0 8px 30px rgba(0, 0, 0, 0.4)",
+          "--shadow-modal": "0 20px 60px rgba(0, 0, 0, 0.6)",
+          "--shadow-kbd": "0 2px 8px rgba(0, 0, 0, 0.4)",
+          "--shadow-date-field-focus": "0 0 0 3px rgba(244, 244, 245, 0.1)",
+          "--chart-1": "#f6b44a",
+          "--chart-2": "#7585ff",
+          "--chart-3": "#d76a6a",
+          "--chart-4": "#d185e0",
+          "--chart-5": "#91cb80",
+          "--sidebar": "var(--background-default)",
+          "--sidebar-foreground": "var(--text-default)",
+          "--sidebar-primary": "var(--background-accent)",
+          "--sidebar-primary-foreground": "var(--text-inverse)",
+          "--sidebar-accent": "var(--background-muted)",
+          "--sidebar-accent-foreground": "var(--text-default)",
+          "--sidebar-border": "var(--border-default)",
+          "--sidebar-ring": "var(--border-default)"
+        }
+      }
+    },
+    {
+      "name": "styles-main",
+      "type": "registry:style",
+      "dependencies": ["tw-animate-css"],
+      "devDependencies": ["tailwindcss"],
+      "registryDependencies": ["font-hk-grotesk"],
+      "files": [
+        {
+          "type": "registry:theme",
+          "target": "app/globals.css",
+          "path": "src/styles/main.css"
+        }
+      ]
+    },
+    {
+      "name": "font-hk-grotesk-faces",
+      "type": "registry:style",
+      "files": [
+        {
+          "type": "registry:theme",
+          "target": "styles/font-faces.css",
+          "path": "src/styles/font-faces.css"
+        }
+      ]
+    },
+    {
+      "name": "font-hk-grotesk",
+      "type": "registry:font",
+      "font": {
+        "family": "HK Grotesk",
+        "provider": "google",
+        "import": "HK_Grotesk",
+        "variable": "--font-hk-grotesk",
+        "weight": ["300", "400", "500", "600", "700", "800", "900"],
+        "subsets": ["latin"]
+      },
+      "meta": {
+        "selfHosted": true
+      },
+      "registryDependencies": ["font-hk-grotesk-faces"],
+      "files": [
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-Light.woff2",
+          "target": "public/fonts/HKGrotesk-Light.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-Regular.woff2",
+          "target": "public/fonts/HKGrotesk-Regular.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-Medium.woff2",
+          "target": "public/fonts/HKGrotesk-Medium.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-SemiBold.woff2",
+          "target": "public/fonts/HKGrotesk-SemiBold.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-Bold.woff2",
+          "target": "public/fonts/HKGrotesk-Bold.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-ExtraBold.woff2",
+          "target": "public/fonts/HKGrotesk-ExtraBold.woff2"
+        },
+        {
+          "type": "registry:file",
+          "path": "src/fonts/HKGrotesk-Black.woff2",
+          "target": "public/fonts/HKGrotesk-Black.woff2"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "type": "registry:lib",
+          "target": "lib/utils.ts",
+          "path": "src/lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "theme-warm-sand",
+      "type": "registry:theme",
+      "title": "Warm Sand",
+      "description": "Earthy terracotta warmth",
+      "cssVars": {
+        "light": {
+          "--background-accent": "#9C5930",
+          "--border-accent": "#9C5930",
+          "--text-accent": "#9C5930",
+          "--background-default": "#FBF5EC",
+          "--background-alt": "#F5ECDF",
+          "--background-medium": "#C4A882",
+          "--background-muted": "#F0E4D4",
+          "--background-inverse": "#3D2B1F",
+          "--border-default": "#E2D4C0",
+          "--border-input": "#D4C2AA",
+          "--border-input-hover": "#C4A882",
+          "--border-strong": "#3D2B1F",
+          "--border-card": "#E2D4C0",
+          "--border-inverse": "#3D2B1F",
+          "--text-default": "#3D2B1F",
+          "--text-muted": "#8B7355",
+          "--text-alt": "#6B5940",
+          "--text-inverse": "#FBF5EC",
+          "--chart-1": "#D4853A",
+          "--chart-2": "#7B9EA8",
+          "--chart-3": "#C46B5A",
+          "--chart-4": "#A8856B",
+          "--chart-5": "#8BAA72"
+        },
+        "dark": {
+          "--background-accent": "#D4853A",
+          "--border-accent": "#D4853A",
+          "--text-accent": "#D4853A",
+          "--background-default": "#1C1410",
+          "--background-alt": "#2A1F18",
+          "--background-medium": "#4A382A",
+          "--background-muted": "#2A1F18",
+          "--background-inverse": "#FBF5EC",
+          "--border-default": "#3A2C20",
+          "--border-input": "#3A2C20",
+          "--border-input-hover": "#5A4530",
+          "--border-strong": "#D4853A",
+          "--border-card": "#3A2C20",
+          "--border-inverse": "#FBF5EC",
+          "--text-default": "#F0E4D4",
+          "--text-muted": "#8B7355",
+          "--text-alt": "#8B7355",
+          "--text-inverse": "#1C1410",
+          "--chart-1": "#D4853A",
+          "--chart-2": "#7B9EA8",
+          "--chart-3": "#C46B5A",
+          "--chart-4": "#A8856B",
+          "--chart-5": "#8BAA72"
+        }
+      },
+      "files": []
+    },
+    {
+      "name": "theme-ocean",
+      "type": "registry:theme",
+      "title": "Ocean",
+      "description": "Cool blues and teals",
+      "cssVars": {
+        "light": {
+          "--background-accent": "#1B6B8A",
+          "--border-accent": "#1B6B8A",
+          "--text-accent": "#1B6B8A",
+          "--background-default": "#F4F9FB",
+          "--background-alt": "#EAF3F8",
+          "--background-medium": "#8BB8CA",
+          "--background-muted": "#E4F0F5",
+          "--background-inverse": "#0F3442",
+          "--border-default": "#C8DEE8",
+          "--border-input": "#B0D0DE",
+          "--border-input-hover": "#8BB8CA",
+          "--border-strong": "#0F3442",
+          "--border-card": "#C8DEE8",
+          "--border-inverse": "#0F3442",
+          "--text-default": "#0F3442",
+          "--text-muted": "#5A8A9C",
+          "--text-alt": "#3A6A7C",
+          "--text-inverse": "#F4F9FB",
+          "--chart-1": "#2E9AB8",
+          "--chart-2": "#5B78D8",
+          "--chart-3": "#E07A5F",
+          "--chart-4": "#7BC4B8",
+          "--chart-5": "#A8C256"
+        },
+        "dark": {
+          "--background-accent": "#3AB4D8",
+          "--border-accent": "#3AB4D8",
+          "--text-accent": "#3AB4D8",
+          "--background-default": "#0A1E28",
+          "--background-alt": "#112A36",
+          "--background-medium": "#2A5060",
+          "--background-muted": "#112A36",
+          "--background-inverse": "#F4F9FB",
+          "--border-default": "#1A3A4A",
+          "--border-input": "#1A3A4A",
+          "--border-input-hover": "#3A6070",
+          "--border-strong": "#3AB4D8",
+          "--border-card": "#1A3A4A",
+          "--border-inverse": "#F4F9FB",
+          "--text-default": "#E4F0F5",
+          "--text-muted": "#5A8A9C",
+          "--text-alt": "#5A8A9C",
+          "--text-inverse": "#0A1E28",
+          "--chart-1": "#3AB4D8",
+          "--chart-2": "#7B92E8",
+          "--chart-3": "#E07A5F",
+          "--chart-4": "#7BC4B8",
+          "--chart-5": "#A8C256"
+        }
+      },
+      "files": []
+    },
+    {
+      "name": "theme-midnight-luxe",
+      "type": "registry:theme",
+      "title": "Midnight Luxe",
+      "description": "Deep purples and golds",
+      "cssVars": {
+        "light": {
+          "--background-accent": "#1E1528",
+          "--border-accent": "#1E1528",
+          "--text-accent": "#1E1528",
+          "--background-default": "#F8F6F9",
+          "--background-alt": "#F0ECF4",
+          "--background-medium": "#B8A8C8",
+          "--background-muted": "#EDE8F2",
+          "--background-inverse": "#1E1528",
+          "--border-default": "#DDD4E6",
+          "--border-input": "#CCC0D8",
+          "--border-input-hover": "#B8A8C8",
+          "--border-strong": "#1E1528",
+          "--border-card": "#DDD4E6",
+          "--border-inverse": "#1E1528",
+          "--text-default": "#1E1528",
+          "--text-muted": "#7A6B8A",
+          "--text-alt": "#5A4B6A",
+          "--text-inverse": "#F8F6F9",
+          "--background-warning": "#C5A24D",
+          "--chart-1": "#C5A24D",
+          "--chart-2": "#8B6CC1",
+          "--chart-3": "#D76A7A",
+          "--chart-4": "#5E8EC5",
+          "--chart-5": "#7CB88A"
+        },
+        "dark": {
+          "--background-accent": "#C5A24D",
+          "--border-accent": "#C5A24D",
+          "--text-accent": "#C5A24D",
+          "--background-default": "#0E0A14",
+          "--background-alt": "#1A1224",
+          "--background-medium": "#3A2A50",
+          "--background-muted": "#1A1224",
+          "--background-inverse": "#F8F6F9",
+          "--border-default": "#2A1E3A",
+          "--border-input": "#2A1E3A",
+          "--border-input-hover": "#4A3A60",
+          "--border-strong": "#C5A24D",
+          "--border-card": "#2A1E3A",
+          "--border-inverse": "#F8F6F9",
+          "--text-default": "#EDE8F2",
+          "--text-muted": "#7A6B8A",
+          "--text-alt": "#7A6B8A",
+          "--text-inverse": "#0E0A14",
+          "--background-warning": "#C5A24D",
+          "--chart-1": "#C5A24D",
+          "--chart-2": "#A88DE0",
+          "--chart-3": "#E08090",
+          "--chart-4": "#7AAEE5",
+          "--chart-5": "#8BD09A"
+        }
+      },
+      "files": []
+    },
+    {
+      "name": "theme-neon-brutalist",
+      "type": "registry:theme",
+      "title": "Neon Brutalist",
+      "description": "High contrast, sharp edges",
+      "cssVars": {
+        "light": {
+          "--background-accent": "#FF3A00",
+          "--border-accent": "#FF3A00",
+          "--text-accent": "#FF3A00",
+          "--background-default": "#ffffff",
+          "--background-alt": "#F0F0F0",
+          "--background-medium": "#CCCCCC",
+          "--background-muted": "#F0F0F0",
+          "--background-inverse": "#000000",
+          "--border-default": "#000000",
+          "--border-input": "#000000",
+          "--border-input-hover": "#FF3A00",
+          "--border-strong": "#000000",
+          "--border-card": "#000000",
+          "--border-inverse": "#000000",
+          "--text-default": "#000000",
+          "--text-muted": "#555555",
+          "--text-alt": "#333333",
+          "--text-inverse": "#ffffff",
+          "--radius": "0px",
+          "--radius-pill": "0px",
+          "--radius-button": "0px",
+          "--radius-input": "0px",
+          "--radius-card": "0px",
+          "--radius-card-lg": "0px",
+          "--radius-card-sm": "0px",
+          "--radius-dropdown": "0px",
+          "--radius-modal": "0px",
+          "--chart-1": "#FF3A00",
+          "--chart-2": "#00E5FF",
+          "--chart-3": "#FFE600",
+          "--chart-4": "#FF00AA",
+          "--chart-5": "#00FF66"
+        },
+        "dark": {
+          "--background-accent": "#FF5722",
+          "--border-accent": "#FF5722",
+          "--text-accent": "#FF5722",
+          "--background-default": "#0A0A0A",
+          "--background-alt": "#141414",
+          "--background-medium": "#333333",
+          "--background-muted": "#141414",
+          "--background-inverse": "#ffffff",
+          "--border-default": "#ffffff",
+          "--border-input": "#ffffff",
+          "--border-input-hover": "#FF5722",
+          "--border-strong": "#ffffff",
+          "--border-card": "#444444",
+          "--border-inverse": "#ffffff",
+          "--text-default": "#ffffff",
+          "--text-muted": "#AAAAAA",
+          "--text-alt": "#AAAAAA",
+          "--text-inverse": "#000000",
+          "--radius": "0px",
+          "--radius-pill": "0px",
+          "--radius-button": "0px",
+          "--radius-input": "0px",
+          "--radius-card": "0px",
+          "--radius-card-lg": "0px",
+          "--radius-card-sm": "0px",
+          "--radius-dropdown": "0px",
+          "--radius-modal": "0px",
+          "--chart-1": "#FF5722",
+          "--chart-2": "#00E5FF",
+          "--chart-3": "#FFE600",
+          "--chart-4": "#FF00AA",
+          "--chart-5": "#00FF66"
+        }
+      },
+      "files": []
+    },
+    {
+      "name": "theme-soft-pastel",
+      "type": "registry:theme",
+      "title": "Soft Pastel",
+      "description": "Gentle, muted pastels",
+      "cssVars": {
+        "light": {
+          "--background-accent": "#8B7EC8",
+          "--border-accent": "#8B7EC8",
+          "--text-accent": "#8B7EC8",
+          "--background-default": "#FAFAFA",
+          "--background-alt": "#F5F2FA",
+          "--background-medium": "#C8BEE0",
+          "--background-muted": "#F0EDF8",
+          "--background-inverse": "#3A3552",
+          "--border-default": "#E0DAF0",
+          "--border-input": "#D2CAE4",
+          "--border-input-hover": "#C8BEE0",
+          "--border-strong": "#3A3552",
+          "--border-card": "#E0DAF0",
+          "--border-inverse": "#3A3552",
+          "--text-default": "#3A3552",
+          "--text-muted": "#8A82A0",
+          "--text-alt": "#6A6280",
+          "--text-inverse": "#FAFAFA",
+          "--background-danger": "#E8A0A0",
+          "--background-success": "#A0D8A0",
+          "--background-info": "#A0C0E8",
+          "--background-warning": "#E8D0A0",
+          "--border-danger": "#E8A0A0",
+          "--border-success": "#A0D8A0",
+          "--border-warning": "#E8D0A0",
+          "--border-info": "#A0C0E8",
+          "--text-danger": "#C07070",
+          "--text-success": "#70A870",
+          "--text-warning": "#C0A060",
+          "--text-info": "#7090C0",
+          "--radius-card": "16px",
+          "--radius-card-lg": "20px",
+          "--radius-card-sm": "14px",
+          "--radius-dropdown": "14px",
+          "--radius-modal": "20px",
+          "--chart-1": "#C8A8E0",
+          "--chart-2": "#A8C8E8",
+          "--chart-3": "#E8B0B0",
+          "--chart-4": "#B0D8B0",
+          "--chart-5": "#E8D0A8"
+        },
+        "dark": {
+          "--background-accent": "#A898E0",
+          "--border-accent": "#A898E0",
+          "--text-accent": "#A898E0",
+          "--background-default": "#14121C",
+          "--background-alt": "#1E1A2A",
+          "--background-medium": "#3A3452",
+          "--background-muted": "#1E1A2A",
+          "--background-inverse": "#FAFAFA",
+          "--border-default": "#2A2640",
+          "--border-input": "#2A2640",
+          "--border-input-hover": "#4A4468",
+          "--border-strong": "#A898E0",
+          "--border-card": "#2A2640",
+          "--border-inverse": "#FAFAFA",
+          "--text-default": "#E8E4F4",
+          "--text-muted": "#8A82A0",
+          "--text-alt": "#8A82A0",
+          "--text-inverse": "#14121C",
+          "--background-danger": "#D08080",
+          "--background-success": "#80C080",
+          "--background-info": "#80A8D8",
+          "--background-warning": "#D8C080",
+          "--border-danger": "#D08080",
+          "--border-success": "#80C080",
+          "--border-warning": "#D8C080",
+          "--border-info": "#80A8D8",
+          "--text-danger": "#E0A0A0",
+          "--text-success": "#A0D8A0",
+          "--text-warning": "#E0C880",
+          "--text-info": "#A0C0E8",
+          "--radius-card": "16px",
+          "--radius-card-lg": "20px",
+          "--radius-card-sm": "14px",
+          "--radius-dropdown": "14px",
+          "--radius-modal": "20px",
+          "--chart-1": "#C8A8E0",
+          "--chart-2": "#A8C8E8",
+          "--chart-3": "#E8B0B0",
+          "--chart-4": "#B0D8B0",
+          "--chart-5": "#E8D0A8"
+        }
+      },
+      "files": []
+    },
+    {
+      "name": "accordion",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-accordion", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/accordion.tsx",
+          "path": "src/components/ui/accordion.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-alert-dialog"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/alert-dialog.tsx",
+          "path": "src/components/ui/alert-dialog.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/alert.tsx",
+          "path": "src/components/ui/alert.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-aspect-ratio"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/aspect-ratio.tsx",
+          "path": "src/components/ui/aspect-ratio.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "avatar",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-avatar"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/avatar.tsx",
+          "path": "src/components/ui/avatar.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/badge.tsx",
+          "path": "src/components/ui/badge.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "breadcrumb",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/breadcrumb.tsx",
+          "path": "src/components/ui/breadcrumb.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "button-group",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils", "separator"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/button-group.tsx",
+          "path": "src/components/ui/button-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/button.tsx",
+          "path": "src/components/ui/button.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/calendar.tsx",
+          "path": "src/components/ui/calendar.tsx"
+        }
+      ],
+      "categories": ["display", "input"]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/card.tsx",
+          "path": "src/components/ui/card.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "carousel",
+      "type": "registry:ui",
+      "dependencies": ["embla-carousel-react", "lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/carousel.tsx",
+          "path": "src/components/ui/carousel.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "chart",
+      "type": "registry:ui",
+      "dependencies": ["recharts"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/chart.tsx",
+          "path": "src/components/ui/chart.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-checkbox", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/checkbox.tsx",
+          "path": "src/components/ui/checkbox.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/collapsible.tsx",
+          "path": "src/components/ui/collapsible.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "command",
+      "type": "registry:ui",
+      "dependencies": ["cmdk", "lucide-react"],
+      "registryDependencies": ["utils", "dialog"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/command.tsx",
+          "path": "src/components/ui/command.tsx"
+        }
+      ],
+      "categories": ["input", "navigation"]
+    },
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-context-menu", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/context-menu.tsx",
+          "path": "src/components/ui/context-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dialog", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/dialog.tsx",
+          "path": "src/components/ui/dialog.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "dependencies": ["vaul"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/drawer.tsx",
+          "path": "src/components/ui/drawer.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dropdown-menu", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/dropdown-menu.tsx",
+          "path": "src/components/ui/dropdown-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "form",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-label", "@radix-ui/react-slot"],
+      "registryDependencies": ["utils", "label"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/form.tsx",
+          "path": "src/components/ui/form.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-hover-card"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/hover-card.tsx",
+          "path": "src/components/ui/hover-card.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["utils", "button", "input", "textarea"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input-group.tsx",
+          "path": "src/components/ui/input-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "input-otp",
+      "type": "registry:ui",
+      "dependencies": ["input-otp", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input-otp.tsx",
+          "path": "src/components/ui/input-otp.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/input.tsx",
+          "path": "src/components/ui/input.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-label"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/label.tsx",
+          "path": "src/components/ui/label.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-menubar", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/menubar.tsx",
+          "path": "src/components/ui/menubar.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-navigation-menu",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/navigation-menu.tsx",
+          "path": "src/components/ui/navigation-menu.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "pagination",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/pagination.tsx",
+          "path": "src/components/ui/pagination.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-popover"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/popover.tsx",
+          "path": "src/components/ui/popover.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "progress",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-progress"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/progress.tsx",
+          "path": "src/components/ui/progress.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "radio-group",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-radio-group", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/radio-group.tsx",
+          "path": "src/components/ui/radio-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/resizable.tsx",
+          "path": "src/components/ui/resizable.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-scroll-area"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/scroll-area.tsx",
+          "path": "src/components/ui/scroll-area.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "select",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-select", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/select.tsx",
+          "path": "src/components/ui/select.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-separator"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/separator.tsx",
+          "path": "src/components/ui/separator.tsx"
+        }
+      ],
+      "categories": ["layout"]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-dialog", "lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sheet.tsx",
+          "path": "src/components/ui/sheet.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "input",
+        "separator",
+        "sheet",
+        "skeleton",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sidebar.tsx",
+          "path": "src/components/ui/sidebar.tsx"
+        }
+      ],
+      "categories": ["navigation", "layout"]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/skeleton.tsx",
+          "path": "src/components/ui/skeleton.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slider"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/slider.tsx",
+          "path": "src/components/ui/slider.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "dependencies": ["next-themes", "sonner"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/sonner.tsx",
+          "path": "src/components/ui/sonner.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/spinner.tsx",
+          "path": "src/components/ui/spinner.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "switch",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-switch"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/switch.tsx",
+          "path": "src/components/ui/switch.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/table.tsx",
+          "path": "src/components/ui/table.tsx"
+        }
+      ],
+      "categories": ["display"]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-tabs"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/tabs.tsx",
+          "path": "src/components/ui/tabs.tsx"
+        }
+      ],
+      "categories": ["navigation"]
+    },
+    {
+      "name": "textarea",
+      "type": "registry:ui",
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/textarea.tsx",
+          "path": "src/components/ui/textarea.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-toggle-group",
+        "class-variance-authority"
+      ],
+      "registryDependencies": ["utils", "toggle"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/toggle-group.tsx",
+          "path": "src/components/ui/toggle-group.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-toggle", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/toggle.tsx",
+          "path": "src/components/ui/toggle.tsx"
+        }
+      ],
+      "categories": ["input"]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-tooltip"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/tooltip.tsx",
+          "path": "src/components/ui/tooltip.tsx"
+        }
+      ],
+      "categories": ["feedback"]
+    },
+    {
+      "name": "agent",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "accordion", "badge"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/agent.tsx",
+          "path": "src/components/ai-elements/agent.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "artifact",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/artifact.tsx",
+          "path": "src/components/ai-elements/artifact.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "attachments",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "button", "hover-card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/attachments.tsx",
+          "path": "src/components/ai-elements/attachments.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "chat"]
+    },
+    {
+      "name": "audio-player",
+      "type": "registry:ui",
+      "dependencies": ["ai", "media-chrome"],
+      "registryDependencies": ["utils", "button", "button-group"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/audio-player.tsx",
+          "path": "src/components/ai-elements/audio-player.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "canvas",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/canvas.tsx",
+          "path": "src/components/ai-elements/canvas.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "chain-of-thought",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/chain-of-thought.tsx",
+          "path": "src/components/ai-elements/chain-of-thought.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "checkpoint",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "separator", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/checkpoint.tsx",
+          "path": "src/components/ai-elements/checkpoint.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "code-block",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react", "shiki"],
+      "registryDependencies": ["utils", "button", "select"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/code-block.tsx",
+          "path": "src/components/ai-elements/code-block.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "commit",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "avatar", "button", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/commit.tsx",
+          "path": "src/components/ai-elements/commit.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "confirmation",
+      "type": "registry:ui",
+      "dependencies": ["ai"],
+      "registryDependencies": ["utils", "alert", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/confirmation.tsx",
+          "path": "src/components/ai-elements/confirmation.tsx"
+        }
+      ],
+      "categories": ["ai", "feedback"]
+    },
+    {
+      "name": "connection",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/connection.tsx",
+          "path": "src/components/ai-elements/connection.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "context",
+      "type": "registry:ui",
+      "dependencies": ["ai", "tokenlens"],
+      "registryDependencies": ["utils", "button", "hover-card", "progress"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/context.tsx",
+          "path": "src/components/ai-elements/context.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "controls",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/controls.tsx",
+          "path": "src/components/ai-elements/controls.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "conversation",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react", "use-stick-to-bottom"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/conversation.tsx",
+          "path": "src/components/ai-elements/conversation.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "edge",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/edge.tsx",
+          "path": "src/components/ai-elements/edge.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "environment-variables",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "button", "switch"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/environment-variables.tsx",
+          "path": "src/components/ai-elements/environment-variables.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "file-tree",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/file-tree.tsx",
+          "path": "src/components/ai-elements/file-tree.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "image",
+      "type": "registry:ui",
+      "dependencies": ["ai"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/image.tsx",
+          "path": "src/components/ai-elements/image.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "inline-citation",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "carousel", "hover-card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/inline-citation.tsx",
+          "path": "src/components/ai-elements/inline-citation.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "jsx-preview",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/jsx-preview.tsx",
+          "path": "src/components/ai-elements/jsx-preview.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "message",
+      "type": "registry:ui",
+      "dependencies": [
+        "@streamdown/cjk",
+        "@streamdown/code",
+        "@streamdown/math",
+        "@streamdown/mermaid",
+        "ai",
+        "lucide-react",
+        "streamdown"
+      ],
+      "registryDependencies": ["utils", "button", "button-group", "tooltip"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/message.tsx",
+          "path": "src/components/ai-elements/message.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "mic-selector",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "button", "command", "popover"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/mic-selector.tsx",
+          "path": "src/components/ai-elements/mic-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "model-selector",
+      "type": "registry:ui",
+      "registryDependencies": ["utils", "command", "dialog"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/model-selector.tsx",
+          "path": "src/components/ai-elements/model-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input"]
+    },
+    {
+      "name": "node",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils", "card"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/node.tsx",
+          "path": "src/components/ai-elements/node.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "open-in-chat",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "dropdown-menu"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/open-in-chat.tsx",
+          "path": "src/components/ai-elements/open-in-chat.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "package-info",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/package-info.tsx",
+          "path": "src/components/ai-elements/package-info.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "panel",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/panel.tsx",
+          "path": "src/components/ai-elements/panel.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "persona",
+      "type": "registry:ui",
+      "dependencies": ["@rive-app/react-webgl2"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/persona.tsx",
+          "path": "src/components/ai-elements/persona.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    },
+    {
+      "name": "plan",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "card", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/plan.tsx",
+          "path": "src/components/ai-elements/plan.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "prompt-input",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react", "nanoid"],
+      "registryDependencies": [
+        "utils",
+        "command",
+        "dropdown-menu",
+        "hover-card",
+        "input-group",
+        "select",
+        "spinner",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/prompt-input.tsx",
+          "path": "src/components/ai-elements/prompt-input.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "chat"]
+    },
+    {
+      "name": "queue",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "collapsible", "scroll-area"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/queue.tsx",
+          "path": "src/components/ai-elements/queue.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "reasoning",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "@streamdown/cjk",
+        "@streamdown/code",
+        "@streamdown/math",
+        "@streamdown/mermaid",
+        "lucide-react",
+        "streamdown"
+      ],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/reasoning.tsx",
+          "path": "src/components/ai-elements/reasoning.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "sandbox",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "collapsible", "tabs"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/sandbox.tsx",
+          "path": "src/components/ai-elements/sandbox.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "schema-display",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/schema-display.tsx",
+          "path": "src/components/ai-elements/schema-display.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "shimmer",
+      "type": "registry:ui",
+      "dependencies": ["motion"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/shimmer.tsx",
+          "path": "src/components/ai-elements/shimmer.tsx"
+        }
+      ],
+      "categories": ["ai", "feedback"]
+    },
+    {
+      "name": "snippet",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "input-group"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/snippet.tsx",
+          "path": "src/components/ai-elements/snippet.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "sources",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/sources.tsx",
+          "path": "src/components/ai-elements/sources.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "speech-input",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "button", "spinner"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/speech-input.tsx",
+          "path": "src/components/ai-elements/speech-input.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "stack-trace",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": ["utils", "button", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/stack-trace.tsx",
+          "path": "src/components/ai-elements/stack-trace.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "suggestion",
+      "type": "registry:ui",
+      "registryDependencies": ["utils", "button", "scroll-area"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/suggestion.tsx",
+          "path": "src/components/ai-elements/suggestion.tsx"
+        }
+      ],
+      "categories": ["ai", "chat"]
+    },
+    {
+      "name": "task",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/task.tsx",
+          "path": "src/components/ai-elements/task.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "terminal",
+      "type": "registry:ui",
+      "dependencies": ["ansi-to-react", "lucide-react"],
+      "registryDependencies": ["utils", "button"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/terminal.tsx",
+          "path": "src/components/ai-elements/terminal.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "test-results",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/test-results.tsx",
+          "path": "src/components/ai-elements/test-results.tsx"
+        }
+      ],
+      "categories": ["ai", "code"]
+    },
+    {
+      "name": "tool",
+      "type": "registry:ui",
+      "dependencies": ["ai", "lucide-react"],
+      "registryDependencies": ["utils", "badge", "collapsible"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/tool.tsx",
+          "path": "src/components/ai-elements/tool.tsx"
+        }
+      ],
+      "categories": ["ai", "display"]
+    },
+    {
+      "name": "toolbar",
+      "type": "registry:ui",
+      "dependencies": ["@xyflow/react"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/toolbar.tsx",
+          "path": "src/components/ai-elements/toolbar.tsx"
+        }
+      ],
+      "categories": ["ai", "layout"]
+    },
+    {
+      "name": "transcription",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-use-controllable-state", "ai"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/transcription.tsx",
+          "path": "src/components/ai-elements/transcription.tsx"
+        }
+      ],
+      "categories": ["ai", "chat", "media"]
+    },
+    {
+      "name": "voice-selector",
+      "type": "registry:ui",
+      "dependencies": [
+        "@radix-ui/react-use-controllable-state",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "command",
+        "dialog",
+        "spinner"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/voice-selector.tsx",
+          "path": "src/components/ai-elements/voice-selector.tsx"
+        }
+      ],
+      "categories": ["ai", "input", "media"]
+    },
+    {
+      "name": "web-preview",
+      "type": "registry:ui",
+      "dependencies": ["lucide-react"],
+      "registryDependencies": [
+        "utils",
+        "button",
+        "collapsible",
+        "input",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ai-elements/web-preview.tsx",
+          "path": "src/components/ai-elements/web-preview.tsx"
+        }
+      ],
+      "categories": ["ai", "media"]
+    }
+  ]
+}
