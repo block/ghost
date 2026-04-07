@@ -573,6 +573,24 @@
   }
 }
 
+@keyframes fadeToFull {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeToSubtle {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.08;
+  }
+}
+
 @layer base {
   *,
   ::after,
