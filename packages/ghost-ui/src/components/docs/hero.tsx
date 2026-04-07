@@ -66,22 +66,6 @@ export function Hero() {
       {/* Subtle gradient overlay for depth */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
 
-      {/* Plus grid background */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07] dark:hidden"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 16v8M16 20h8' stroke='black' stroke-width='0.5' fill='none'/%3E%3C/svg%3E")`,
-          backgroundSize: "80px 80px",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07] hidden dark:block"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 16v8M16 20h8' stroke='white' stroke-width='0.5' fill='none'/%3E%3C/svg%3E")`,
-          backgroundSize: "80px 80px",
-        }}
-      />
-
       {/* Circle behind heading */}
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(70vw,600px)] aspect-square rounded-full border border-foreground/15" />
 

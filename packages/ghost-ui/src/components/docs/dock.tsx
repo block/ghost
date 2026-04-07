@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpen,
   Home,
   LayoutGrid,
   Monitor,
@@ -36,6 +37,7 @@ import { cn } from "@/lib/utils";
 
 const nav: { name: string; path: string; icon: LucideIcon }[] = [
   { name: "Home", path: "/", icon: Home },
+  { name: "Docs", path: "/docs", icon: BookOpen },
   { name: "Foundations", path: "/foundations", icon: Palette },
   { name: "Components", path: "/components", icon: LayoutGrid },
 ];
@@ -207,6 +209,54 @@ export function Dock() {
             >
               <Palette className="mr-2 size-4" />
               Typography
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandGroup heading="Documentation">
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              Docs Overview
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/getting-started");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              Getting Started
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/cli");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              CLI Reference
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/concepts");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              Core Concepts
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/self-hosting");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              Self-Hosting
             </CommandItem>
           </CommandGroup>
 
