@@ -3,6 +3,7 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
+import { CycloidCanvas } from "./cycloid-canvas";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -66,8 +67,8 @@ export function Hero() {
       {/* Subtle gradient overlay for depth */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
 
-      {/* Circle behind heading */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(70vw,600px)] aspect-square rounded-full border border-foreground/15" />
+      {/* Generative cycloid drawing */}
+      <CycloidCanvas />
 
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1
