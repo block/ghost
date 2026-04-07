@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build registry
+        run: pnpm --filter @ghost/ui build:registry
       - name: Build Ghost UI
         run: pnpm --filter @ghost/ui build
         env:
