@@ -6,6 +6,7 @@ import type {
   Registry,
   RegistryItem,
   ResolvedRegistry,
+  TokenCategory,
 } from "../types.js";
 import { parseCSS } from "./css.js";
 
@@ -25,9 +26,19 @@ async function resolveItemContent(
   item: RegistryItem,
   registryDir: string,
 ): Promise<RegistryItem> {
+  // registry:font items carry structured metadata, not file content
+  if (item.type === "registry:font" && item.files.length === 0) {
+    return item;
+  }
+
   const resolvedFiles = await Promise.all(
     item.files.map(async (file) => {
       if (file.content) return file;
+
+      // Skip binary files (e.g., woff2 font files)
+      if (file.path.match(/\.(woff2?|ttf|otf|eot)$/)) {
+        return file;
+      }
 
       // Try built output first: out/r/[name].json
       const builtPath = join(registryDir, "out", "r", `${item.name}.json`);
@@ -81,7 +92,44 @@ async function resolveItemContentFromURL(
   }
 }
 
+function extractCSSVarsTokens(
+  vars: Record<string, string>,
+  selector: string,
+): CSSToken[] {
+  // Build a synthetic CSS string and parse it to reuse categorization logic
+  const lines = Object.entries(vars).map(([k, v]) => `  ${k}: ${v};`);
+  const css = `${selector} {\n${lines.join("\n")}\n}`;
+  return parseCSS(css);
+}
+
+function extractFontTokens(items: RegistryItem[]): CSSToken[] {
+  const tokens: CSSToken[] = [];
+  for (const item of items) {
+    if (item.type !== "registry:font" || !item.font) continue;
+    tokens.push({
+      name: item.font.variable,
+      value: item.font.family,
+      resolvedValue: item.font.family,
+      selector: ":root",
+      category: "font" as TokenCategory,
+    });
+    if (item.font.weight) {
+      tokens.push({
+        name: `${item.font.variable}-weights`,
+        value: item.font.weight.join(", "),
+        resolvedValue: item.font.weight.join(", "),
+        selector: ":root",
+        category: "font-face" as TokenCategory,
+      });
+    }
+  }
+  return tokens;
+}
+
 function extractStyleTokens(items: RegistryItem[]): CSSToken[] {
+  const tokens: CSSToken[] = [];
+
+  // Extract from registry:style items (CSS file content)
   for (const item of items) {
     if (item.type !== "registry:style") continue;
     for (const file of item.files) {
@@ -89,11 +137,29 @@ function extractStyleTokens(items: RegistryItem[]): CSSToken[] {
         file.content &&
         (file.path.endsWith(".css") || file.type === "registry:theme")
       ) {
-        return parseCSS(file.content);
+        tokens.push(...parseCSS(file.content));
       }
     }
   }
-  return [];
+
+  // Extract from registry:base items (cssVars maps)
+  for (const item of items) {
+    if (item.type !== "registry:base" || !item.cssVars) continue;
+    if (item.cssVars.theme) {
+      tokens.push(...extractCSSVarsTokens(item.cssVars.theme, "@theme"));
+    }
+    if (item.cssVars.light) {
+      tokens.push(...extractCSSVarsTokens(item.cssVars.light, ":root"));
+    }
+    if (item.cssVars.dark) {
+      tokens.push(...extractCSSVarsTokens(item.cssVars.dark, ".dark"));
+    }
+  }
+
+  // Extract from registry:font items
+  tokens.push(...extractFontTokens(items));
+
+  return tokens;
 }
 
 export async function resolveRegistry(

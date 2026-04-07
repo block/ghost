@@ -22,6 +22,7 @@ const CATEGORY_PREFIXES: [string, TokenCategory][] = [
   ["--duration-", "animation"],
   ["--ease-", "animation"],
   ["--color-", "color"],
+  ["--font-face-", "font-face"],
   ["--font-", "font"],
   ["--chart-", "chart"],
   ["--sidebar-", "sidebar"],
