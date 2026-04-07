@@ -1,8 +1,8 @@
 # Ghost
 
-**Design drift detection and fingerprinting for design systems.**
+**Design drift detection, fingerprinting, and design language tooling for design systems.**
 
-Ghost detects unintentional divergence between a parent design language and its consumer implementations. It scans for drift across values, structure, and visual dimensions, generates design fingerprints for comparison, and tracks how systems evolve over time.
+Ghost is a monorepo for understanding and managing design systems at scale. It detects unintentional divergence between a parent design language and its consumer implementations, generates design fingerprints for quantitative comparison, tracks how systems evolve over time, and ships a reference design language as a shadcn-compatible component registry.
 
 ## Why Ghost?
 
@@ -14,6 +14,7 @@ Design languages drift. Teams override tokens, hardcode colors, restructure comp
 - **Fleet analysis** - Compare fingerprints across an ecosystem to identify clusters and outliers
 - **LLM-powered interpretation** - Optionally use Claude or OpenAI for richer fingerprint generation
 - **3D visualization** - Explore fingerprint similarity space in an interactive Three.js viewer
+- **Reference design language** - A full shadcn-compatible registry with 97 components, design tokens, and a live catalogue
 
 ## Getting Started
 
@@ -55,6 +56,13 @@ ghost compare system-a.json system-b.json
 
 ```bash
 ghost viz system-a.json system-b.json system-c.json
+```
+
+**Run the ghost-ui catalogue:**
+
+```bash
+just dev
+# or: cd packages/ghost-ui && pnpm dev
 ```
 
 ## CLI Commands
@@ -138,6 +146,47 @@ Ghost tracks design lineage through:
 
 Compare fingerprints across multiple systems to get an ecosystem-wide view. Ghost calculates pairwise distances, identifies a centroid, and optionally clusters systems by similarity.
 
+## Ghost UI
+
+Ghost UI (`@ghost/ui`) is the project's reference design language — a shadcn-compatible component registry that serves both as a living design system and as a concrete target for Ghost's drift detection and fingerprinting tools.
+
+### What's included
+
+- **49 primitive components** - Foundational UI building blocks (accordion, button, card, dialog, form, table, tabs, etc.) built on Radix UI and styled with Tailwind CSS
+- **48 AI-native elements** - Purpose-built components for conversational and agentic interfaces (prompt input, message, code block, chain of thought, file tree, terminal, tool, etc.)
+- **Design tokens** - A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support
+- **Theme system** - Runtime theme switching with presets, a live theme panel for editing tokens, and CSS variable export
+- **HK Grotesk typeface** - Self-hosted display font (300–900 weights) paired with system sans-serif for body text
+- **Live catalogue** - An interactive documentation site (React + Vite) with component demos, foundations pages, and a bento showcase
+
+### Registry
+
+Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](https://ui.shadcn.com/docs/registry). Consumers can install individual components directly:
+
+```bash
+npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
+```
+
+Ghost itself can profile the registry to generate a fingerprint, then scan downstream consumers against it to detect drift:
+
+```bash
+ghost profile --registry ./packages/ghost-ui/registry.json
+ghost scan --config ghost.config.ts
+```
+
+### Catalogue development
+
+```bash
+# dev server with hot reload
+just dev
+
+# production build
+just build-ui
+
+# rebuild the shadcn registry
+just build-registry
+```
+
 ## Project Structure
 
 ```
@@ -154,6 +203,20 @@ packages/
   ghost-cli/           CLI interface
     src/
       viz/             3D visualization (Three.js, PCA projection)
+  ghost-ui/            Reference design language (@ghost/ui)
+    src/
+      components/
+        ui/            Primitive components (Radix + Tailwind)
+        ai-elements/   AI-native components (chat, code, agents)
+        theme/         ThemeProvider and theme toggle
+        theme-panel/   Live token editor panel
+        docs/          Catalogue pages, demos, and bento showcase
+      contexts/        Theme and theme-panel context providers
+      hooks/           Shared React hooks
+      lib/             Utilities, registry helpers, theme presets
+      styles/          Design tokens and global CSS
+      fonts/           HK Grotesk woff2 files
+    registry.json      shadcn-compatible component registry
 ```
 
 ## Development
@@ -170,7 +233,12 @@ pnpm test
 
 # lint and format
 pnpm check
+
+# run ghost-ui dev server
+just dev
 ```
+
+A `justfile` is included for common workflows — run `just` to see all available recipes.
 
 ## Project Resources
 
