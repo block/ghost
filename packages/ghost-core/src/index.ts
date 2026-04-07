@@ -1,4 +1,6 @@
 export { defineConfig, loadConfig } from "./config.js";
+export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
+export { diff } from "./diff.js";
 export {
   acknowledge,
   appendHistory,
@@ -29,6 +31,7 @@ export { createProvider } from "./llm/index.js";
 export type { ProfileOptions } from "./profile.js";
 export { profile, profileRegistry } from "./profile.js";
 export { formatReport as formatCLIReport } from "./reporters/cli.js";
+export { formatDiffCLI, formatDiffJSON } from "./reporters/diff.js";
 export {
   formatComparison,
   formatComparisonJSON,
@@ -50,7 +53,9 @@ export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
 export type {
   ColorRamp,
+  ComponentMeta,
   CSSToken,
+  CSSVarsMap,
   DesignFingerprint,
   DesignSystemConfig,
   DesignSystemReport,
@@ -72,6 +77,7 @@ export type {
   FleetComparison,
   FleetMember,
   FleetPair,
+  FontDescriptor,
   GhostConfig,
   LLMConfig,
   LLMProvider,
@@ -79,6 +85,7 @@ export type {
   Registry,
   RegistryFile,
   RegistryItem,
+  RegistryItemType,
   ResolvedRegistry,
   RuleSeverity,
   ScanOptions,

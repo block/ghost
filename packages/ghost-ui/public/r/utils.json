@@ -1,0 +1,14 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "utils",
+  "dependencies": ["clsx", "tailwind-merge"],
+  "files": [
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { type ClassValue, clsx } from \"clsx\";\nimport { twMerge } from \"tailwind-merge\";\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n\nexport const copyToClipboard = (text: string) => {\n  if (window === undefined) return;\n  window.navigator.clipboard.writeText(text);\n};\n\nexport function getComponentName(name: string) {\n  // convert kebab-case to title case\n  return name.replace(/-/g, \" \");\n}\n\nexport function getRandomIndex(array: any[]) {\n  return Math.floor(Math.random() * array.length);\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:lib"
+}

@@ -22,9 +22,23 @@
       }
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
+    }
+  },
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/ghost-ui/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }

@@ -1,0 +1,102 @@
+"use client";
+
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef } from "react";
+
+gsap.registerPlugin(ScrollTrigger);
+
+export function Hero() {
+  const containerRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+      // Animate each line of the heading
+      const lines = headingRef.current?.querySelectorAll(".hero-line");
+      if (lines) {
+        gsap.set(lines, { y: 120, opacity: 0, rotateX: -15 });
+        tl.to(lines, {
+          y: 0,
+          opacity: 1,
+          rotateX: 0,
+          duration: 1.2,
+          stagger: 0.12,
+        });
+      }
+
+      // Parallax on scroll — heading moves up faster
+      if (headingRef.current) {
+        gsap.to(headingRef.current, {
+          y: -80,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.8,
+          },
+        });
+      }
+
+      // Fade out on scroll
+      if (containerRef.current) {
+        gsap.to(containerRef.current, {
+          opacity: 0,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "60% top",
+            end: "bottom top",
+            scrub: 0.5,
+          },
+        });
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section
+      ref={containerRef}
+      className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 lg:px-10"
+      id="home"
+    >
+      {/* Subtle gradient overlay for depth */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
+
+      {/* Plus grid background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07] dark:hidden"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 16v8M16 20h8' stroke='black' stroke-width='0.5' fill='none'/%3E%3C/svg%3E")`,
+          backgroundSize: "80px 80px",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.07] hidden dark:block"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 16v8M16 20h8' stroke='white' stroke-width='0.5' fill='none'/%3E%3C/svg%3E")`,
+          backgroundSize: "80px 80px",
+        }}
+      />
+
+      {/* Circle behind heading */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(70vw,600px)] aspect-square rounded-full border border-foreground/15" />
+
+      <div className="relative z-10 flex w-full flex-col items-center">
+        <h1
+          ref={headingRef}
+          className="font-display font-black uppercase leading-[0.88] tracking-[-0.04em] text-center"
+          style={{
+            fontSize: "clamp(3.5rem, 11vw, 10rem)",
+            perspective: "600px",
+          }}
+        >
+          <span className="hero-line block">Ghost UI</span>
+        </h1>
+      </div>
+    </section>
+  );
+}

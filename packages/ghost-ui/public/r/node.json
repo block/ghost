@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "node",
+  "dependencies": ["@xyflow/react"],
+  "registryDependencies": ["utils", "card"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/node.tsx",
+      "content": "import { Handle, Position, useNodeId } from \"@xyflow/react\";\nimport type { ComponentProps } from \"react\";\nimport {\n  Card,\n  CardAction,\n  CardContent,\n  CardDescription,\n  CardFooter,\n  CardHeader,\n  CardTitle,\n} from \"@/components/ui/card\";\nimport { cn } from \"@/lib/utils\";\n\nexport type NodeProps = ComponentProps<typeof Card> & {\n  handles: {\n    target: boolean;\n    source: boolean;\n  };\n};\n\nexport const Node = ({ handles, className, ...props }: NodeProps) => {\n  const nodeId = useNodeId();\n  const isInsideFlow = nodeId !== null;\n\n  return (\n    <Card\n      className={cn(\n        \"node-container relative size-full h-auto w-sm gap-0 rounded-md p-0\",\n        className,\n      )}\n      {...props}\n    >\n      {isInsideFlow && handles.target && (\n        <Handle position={Position.Left} type=\"target\" />\n      )}\n      {isInsideFlow && handles.source && (\n        <Handle position={Position.Right} type=\"source\" />\n      )}\n      {props.children}\n    </Card>\n  );\n};\n\nexport type NodeHeaderProps = ComponentProps<typeof CardHeader>;\n\nexport const NodeHeader = ({ className, ...props }: NodeHeaderProps) => (\n  <CardHeader\n    className={cn(\"gap-0.5 rounded-t-md border-b bg-secondary p-3!\", className)}\n    {...props}\n  />\n);\n\nexport type NodeTitleProps = ComponentProps<typeof CardTitle>;\n\nexport const NodeTitle = (props: NodeTitleProps) => <CardTitle {...props} />;\n\nexport type NodeDescriptionProps = ComponentProps<typeof CardDescription>;\n\nexport const NodeDescription = (props: NodeDescriptionProps) => (\n  <CardDescription {...props} />\n);\n\nexport type NodeActionProps = ComponentProps<typeof CardAction>;\n\nexport const NodeAction = (props: NodeActionProps) => <CardAction {...props} />;\n\nexport type NodeContentProps = ComponentProps<typeof CardContent>;\n\nexport const NodeContent = ({ className, ...props }: NodeContentProps) => (\n  <CardContent className={cn(\"p-3\", className)} {...props} />\n);\n\nexport type NodeFooterProps = ComponentProps<typeof CardFooter>;\n\nexport const NodeFooter = ({ className, ...props }: NodeFooterProps) => (\n  <CardFooter\n    className={cn(\"rounded-b-md border-t bg-secondary p-3!\", className)}\n    {...props}\n  />\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/node.tsx"
+    }
+  ],
+  "categories": ["ai", "layout"],
+  "type": "registry:ui"
+}
