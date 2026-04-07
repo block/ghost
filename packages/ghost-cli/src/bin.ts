@@ -5,9 +5,12 @@ import type { DesignFingerprint } from "@ghost/core";
 import {
   compareFingerprints,
   computeTemporalComparison,
+  diff,
   formatCLIReport,
   formatComparison,
   formatComparisonJSON,
+  formatDiffCLI,
+  formatDiffJSON,
   formatFingerprint,
   formatFingerprintJSON,
   formatJSONReport,
@@ -239,6 +242,54 @@ const compareCommand = defineCommand({
   },
 });
 
+const diffCommand = defineCommand({
+  meta: {
+    name: "diff",
+    description:
+      "Compare local components against registry with drift analysis",
+  },
+  args: {
+    component: {
+      type: "positional",
+      description: "Component name (optional, all if omitted)",
+      required: false,
+    },
+    config: {
+      type: "string",
+      description: "Path to ghost config file",
+      alias: "c",
+    },
+    format: {
+      type: "string",
+      description: "Output format: cli or json",
+      default: "cli",
+    },
+  },
+  async run({ args }) {
+    try {
+      const config = await loadConfig(args.config);
+      const results = await diff(config, args.component || undefined);
+
+      const output =
+        args.format === "json"
+          ? formatDiffJSON(results)
+          : formatDiffCLI(results);
+
+      process.stdout.write(output);
+
+      const hasBreaking = results.some((r) =>
+        r.components.some((c) => c.severity === "error"),
+      );
+      process.exit(hasBreaking ? 1 : 0);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  },
+});
+
 const main = defineCommand({
   meta: {
     name: "ghost",
@@ -249,6 +300,7 @@ const main = defineCommand({
     scan: scanCommand,
     profile: profileCommand,
     compare: compareCommand,
+    diff: diffCommand,
     fleet: fleetCommand,
     ack: ackCommand,
     adopt: adoptCommand,

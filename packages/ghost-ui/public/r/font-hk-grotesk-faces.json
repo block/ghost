@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font-hk-grotesk-faces",
+  "files": [
+    {
+      "path": "src/styles/font-faces.css",
+      "content": "/* ── HK Grotesk ── */\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-Light.woff2\") format(\"woff2\");\n  font-weight: 300;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-Regular.woff2\") format(\"woff2\");\n  font-weight: 400;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-Medium.woff2\") format(\"woff2\");\n  font-weight: 500;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-SemiBold.woff2\") format(\"woff2\");\n  font-weight: 600;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-Bold.woff2\") format(\"woff2\");\n  font-weight: 700;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-ExtraBold.woff2\") format(\"woff2\");\n  font-weight: 800;\n  font-style: normal;\n  font-display: swap;\n}\n@font-face {\n  font-family: \"HK Grotesk\";\n  src: url(\"../fonts/HKGrotesk-Black.woff2\") format(\"woff2\");\n  font-weight: 900;\n  font-style: normal;\n  font-display: swap;\n}\n",
+      "type": "registry:theme",
+      "target": "styles/font-faces.css"
+    }
+  ],
+  "type": "registry:style"
+}

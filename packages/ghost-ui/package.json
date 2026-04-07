@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "build:registry": "shadcn build",
+    "build:base": "node scripts/build-base-vars.mjs",
+    "build:presets": "node scripts/build-presets.mjs",
+    "generate:skills": "node scripts/generate-skills.mjs",
+    "build:registry": "npm run build:base && npm run build:presets && npm run generate:skills && shadcn build",
     "typecheck": "tsc --noEmit",
     "generate:icons": "npx tsx scripts/generate-icons.ts"
   },
