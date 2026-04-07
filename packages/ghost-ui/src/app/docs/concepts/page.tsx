@@ -211,7 +211,7 @@ function RadarChart({
   const maxR = 110;
 
   return (
-    <svg viewBox="0 0 300 300" className="w-full max-w-[320px] mx-auto">
+    <svg viewBox="-20 0 340 300" className="w-full max-w-[320px] mx-auto">
       {/* Grid rings */}
       {[0.25, 0.5, 0.75, 1].map((s) => (
         <polygon
