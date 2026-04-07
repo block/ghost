@@ -1,6 +1,57 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ── HK Grotesk ── */
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HK Grotesk";
+  src: url("../fonts/HKGrotesk-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -362,10 +413,10 @@
   --color-surface-dark-border: var(--surface-dark-border);
 
   /* fonts */
-  --font-sans: "Geist", sans-serif;
+  --font-sans: "HK Grotesk", sans-serif;
   --font-mono: "Geist Mono", monospace;
   --font-serif: serif;
-  --font-display: "Geist", sans-serif;
+  --font-display: "HK Grotesk", sans-serif;
 
   /* shape — pill-first radius system */
   --radius-pill: 999px;

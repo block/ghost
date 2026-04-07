@@ -39,6 +39,20 @@ test:
 test-watch:
     pnpm test:watch
 
+# ── Run ──────────────────────────────────────────────────────
+
+# Run ghost-ui catalogue dev server
+dev:
+    cd packages/ghost-ui && pnpm dev
+
+# Build ghost-ui catalogue (static export)
+build-ui:
+    cd packages/ghost-ui && pnpm build
+
+# Build ghost-ui shadcn registry
+build-registry:
+    cd packages/ghost-ui && pnpm build:registry
+
 # ── Utilities ────────────────────────────────────────────────
 
 # Clean build artifacts
