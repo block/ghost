@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "checkpoint",
+  "dependencies": ["lucide-react"],
+  "registryDependencies": ["utils", "button", "separator", "tooltip"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/checkpoint.tsx",
+      "content": "\"use client\";\n\nimport type { LucideProps } from \"lucide-react\";\nimport { BookmarkIcon } from \"lucide-react\";\nimport type { ComponentProps, HTMLAttributes } from \"react\";\nimport { Button } from \"@/components/ui/button\";\nimport { Separator } from \"@/components/ui/separator\";\nimport {\n  Tooltip,\n  TooltipContent,\n  TooltipTrigger,\n} from \"@/components/ui/tooltip\";\nimport { cn } from \"@/lib/utils\";\n\nexport type CheckpointProps = HTMLAttributes<HTMLDivElement>;\n\nexport const Checkpoint = ({\n  className,\n  children,\n  ...props\n}: CheckpointProps) => (\n  <div\n    className={cn(\n      \"flex items-center gap-0.5 overflow-hidden text-muted-foreground\",\n      className,\n    )}\n    {...props}\n  >\n    {children}\n    <Separator />\n  </div>\n);\n\nexport type CheckpointIconProps = LucideProps;\n\nexport const CheckpointIcon = ({\n  className,\n  children,\n  ...props\n}: CheckpointIconProps) =>\n  children ?? (\n    <BookmarkIcon className={cn(\"size-4 shrink-0\", className)} {...props} />\n  );\n\nexport type CheckpointTriggerProps = ComponentProps<typeof Button> & {\n  tooltip?: string;\n};\n\nexport const CheckpointTrigger = ({\n  children,\n  variant = \"ghost\",\n  size = \"sm\",\n  tooltip,\n  ...props\n}: CheckpointTriggerProps) =>\n  tooltip ? (\n    <Tooltip>\n      <TooltipTrigger asChild>\n        <Button size={size} type=\"button\" variant={variant} {...props}>\n          {children}\n        </Button>\n      </TooltipTrigger>\n      <TooltipContent align=\"start\" side=\"bottom\">\n        {tooltip}\n      </TooltipContent>\n    </Tooltip>\n  ) : (\n    <Button size={size} type=\"button\" variant={variant} {...props}>\n      {children}\n    </Button>\n  );\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/checkpoint.tsx"
+    }
+  ],
+  "categories": ["ai", "display"],
+  "type": "registry:ui"
+}
