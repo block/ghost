@@ -3,7 +3,6 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
-import { CycloidCanvas } from "./cycloid-canvas";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -67,8 +66,25 @@ export function Hero() {
       {/* Subtle gradient overlay for depth */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
 
-      {/* Generative cycloid drawing */}
-      <CycloidCanvas />
+      {/* Concentric circles */}
+      <div className="pointer-events-none absolute inset-0 h-full w-full">
+        {[3, 4, 5].map((i) => {
+          const size = Math.pow(i, 1.6) * 12;
+          return (
+            <div
+              key={i}
+              className="absolute left-1/2 top-1/2 rounded-full border border-[var(--foreground)]"
+              style={{
+                width: `${size}vmin`,
+                height: `${size}vmin`,
+                transform: "translate(-50%, -50%)",
+                opacity: 0,
+                animation: `fadeToSubtle 0.6s ease-out ${i * 0.3}s forwards`,
+              }}
+            />
+          );
+        })}
+      </div>
 
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1
@@ -85,7 +101,7 @@ export function Hero() {
           className="mt-4 text-center text-muted-foreground leading-relaxed whitespace-nowrap"
           style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)" }}
         >
-          Design drift detection for decentralized systems.
+          design language and drift detection for decentralized systems.
         </p>
       </div>
     </section>
