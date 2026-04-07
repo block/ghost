@@ -6,6 +6,7 @@ import type { RegistryItem, VisualScanConfig } from "../types.js";
 
 // Dynamic import helper — bypasses TypeScript's compile-time module resolution
 // so optional peer dependencies don't cause build errors when not installed.
+// biome-ignore lint/suspicious/noExplicitAny: dynamic imports return unknown module shapes
 async function optionalImport(id: string): Promise<any> {
   return import(/* webpackIgnore: true */ id);
 }
@@ -213,10 +214,13 @@ export default defineConfig({
     });
 
     // Dynamically import optional dependencies
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic imports with unknown module shapes
     let createServer: any;
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic imports with unknown module shapes
     let chromium: any;
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic imports with unknown module shapes
     let pixelmatch: any;
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic imports with unknown module shapes
     let PNG: any;
 
     try {
@@ -285,6 +289,7 @@ export default defineConfig({
           timeout: config.timeout,
         });
         await regPage
+          // biome-ignore lint/suspicious/noExplicitAny: browser context global
           .waitForFunction(() => (window as any).__GHOST_READY === true, {
             timeout: config.timeout,
           })
@@ -298,6 +303,7 @@ export default defineConfig({
           timeout: config.timeout,
         });
         await conPage
+          // biome-ignore lint/suspicious/noExplicitAny: browser context global
           .waitForFunction(() => (window as any).__GHOST_READY === true, {
             timeout: config.timeout,
           })
@@ -420,6 +426,7 @@ root.render(<App />);
 `;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: dynamically imported PNG constructor
 function resizePng(PNG: any, img: any, width: number, height: number): any {
   if (img.width === width && img.height === height) return img;
 
@@ -432,10 +439,10 @@ function resizePng(PNG: any, img: any, width: number, height: number): any {
     for (let x = 0; x < img.width; x++) {
       const srcIdx = (y * img.width + x) * 4;
       const dstIdx = (y * width + x) * 4;
-      resized.data[dstIdx] = img.data[srcIdx]!;
-      resized.data[dstIdx + 1] = img.data[srcIdx + 1]!;
-      resized.data[dstIdx + 2] = img.data[srcIdx + 2]!;
-      resized.data[dstIdx + 3] = img.data[srcIdx + 3]!;
+      resized.data[dstIdx] = img.data[srcIdx];
+      resized.data[dstIdx + 1] = img.data[srcIdx + 1];
+      resized.data[dstIdx + 2] = img.data[srcIdx + 2];
+      resized.data[dstIdx + 3] = img.data[srcIdx + 3];
     }
   }
 
