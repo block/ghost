@@ -85,7 +85,7 @@ export default function DocsIndex() {
         {/* Hero card — full-width */}
         <Link
           to={hero.href}
-          className="doc-card group relative rounded-[var(--radius-card)] border border-border-card bg-card p-10 md:p-12 flex flex-col md:flex-row md:items-center gap-6 transition-all duration-200 hover:scale-[1.01] hover:shadow-elevated overflow-hidden"
+          className="doc-card group relative rounded-[var(--radius-card)] border border-border-card hover:border-foreground/25 bg-card p-10 md:p-12 flex flex-col md:flex-row md:items-center gap-6 transition-colors duration-300 overflow-hidden"
         >
           <div className="flex-1">
             <span
@@ -101,7 +101,12 @@ export default function DocsIndex() {
               className="font-display font-black tracking-[-0.04em] leading-[0.92] mt-2"
               style={{ fontSize: "var(--heading-card-font-size)" }}
             >
-              {hero.name}
+              <span className="relative inline-block">
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
+                  {hero.name}
+                </span>
+                <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
+              </span>
             </h3>
             <p className="mt-3 max-w-[48ch] text-muted-foreground leading-relaxed">
               {hero.description}
@@ -118,13 +123,16 @@ export default function DocsIndex() {
             <Link
               key={item.href}
               to={item.href}
-              className="doc-card group rounded-[var(--radius-card-sm)] border border-border-card bg-card p-10 transition-all duration-200 hover:scale-[1.03] hover:shadow-elevated"
+              className="doc-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
             >
               <div className="mb-6 text-muted-foreground group-hover:text-foreground transition-colors duration-200">
                 {item.icon}
               </div>
-              <span className="font-display text-lg font-bold tracking-tight">
-                {item.name}
+              <span className="relative inline-block font-display text-lg font-bold tracking-tight">
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
+                  {item.name}
+                </span>
+                <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
               </span>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 {item.description}
