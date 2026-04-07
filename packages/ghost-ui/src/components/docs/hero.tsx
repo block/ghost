@@ -79,8 +79,14 @@ export function Hero() {
             perspective: "600px",
           }}
         >
-          <span className="hero-line block">Ghost UI</span>
+          <span className="hero-line block">Ghost</span>
         </h1>
+        <p
+          className="mt-4 text-center text-muted-foreground leading-relaxed whitespace-nowrap"
+          style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)" }}
+        >
+          Design drift detection for decentralized systems.
+        </p>
       </div>
     </section>
   );
