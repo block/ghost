@@ -5,25 +5,30 @@ import { useEffect, useRef } from "react";
 const MAX_POINTS = 2000;
 const BASE_OPACITY = 0.15;
 const FADE_SEGMENTS = 32;
-const ANGLE_PER_MS = 0.0008; // fixed speed regardless of frame rate
-const TRANSITION_MS = 800; // duration of lerp between shapes
+const ANGLE_PER_MS = 0.0012; // fixed speed regardless of frame rate
 
-// Each entry: [r value, angle for one full closed shape]
-const RATIO_TABLE: [number, number][] = [
-  [0.2, 2 * Math.PI], // 4 petals
-  [0.25, 2 * Math.PI], // 3 petals
-  [0.3, 6 * Math.PI], // 7 petals over 3 revs
-  [1 / 3, 2 * Math.PI], // 2 petals
-  [0.4, 4 * Math.PI], // 3 petals over 2 revs
-  [0.5, 2 * Math.PI], // 1 petal (ellipse-like)
+const DEG5 = (5 * Math.PI) / 180; // 5° in radians
+
+// Curated sequence: builds from simple → complex → resolves back
+// Each entry: [r, d, revolution angle]
+// Revolutions stagger by 5° each for visual variety
+const SEQUENCE: [number, number, number][] = [
+  [0.5, 0.35, 6 * Math.PI], // 1 petal — gentle ellipse opener
+  [1 / 3, 0.25, 6 * Math.PI + DEG5], // 2 petals — symmetric, tighter
+  [0.25, 0.2, 6 * Math.PI + DEG5 * 2], // 3 petals — opening up
+  [0.2, 0.16, 6 * Math.PI + DEG5 * 3], // 4 petals — building density
+  [0.3, 0.27, 6 * Math.PI + DEG5 * 4], // 7 petals — peak complexity
+  [0.4, 0.32, 6 * Math.PI + DEG5 * 5], // 3 petals — unwinding
+  [1 / 3, 0.15, 6 * Math.PI + DEG5 * 6], // 2 petals tight — settling
+  [0.25, 0.22, 6 * Math.PI + DEG5 * 7], // 3 petals — gentle resolve
 ];
 
+let seqIndex = 0;
+
 function pickShape() {
-  const entry = RATIO_TABLE[Math.floor(Math.random() * RATIO_TABLE.length)];
-  const r = entry[0];
-  const revolution = entry[1];
-  const d = r * (0.3 + Math.random() * 0.7);
-  return { r, d, revolution };
+  const entry = SEQUENCE[seqIndex];
+  seqIndex = (seqIndex + 1) % SEQUENCE.length;
+  return { r: entry[0], d: entry[1], revolution: entry[2] };
 }
 
 function resolveColor(): string {
@@ -42,11 +47,9 @@ export function CycloidCanvas() {
     if (!ctx) return;
 
     // --- State ---
-    let prevShape = pickShape();
-    let nextShape = prevShape;
+    let shape = pickShape();
     let angle = 0;
     let shapeStartAngle = 0;
-    let transitionElapsed = TRANSITION_MS; // start fully settled
 
     const xs = new Float32Array(MAX_POINTS);
     const ys = new Float32Array(MAX_POINTS);
@@ -93,27 +96,14 @@ export function CycloidCanvas() {
       const cssW = canvas.width / dpr;
       const cssH = canvas.height / dpr;
 
-      // Check if we completed a full shape — begin transition to next
-      const activeRevolution = nextShape.revolution;
-      if (
-        transitionElapsed >= TRANSITION_MS &&
-        angle - shapeStartAngle >= activeRevolution
-      ) {
-        prevShape = nextShape;
-        nextShape = pickShape();
+      // Check if we completed a full shape — snap to next
+      if (angle - shapeStartAngle >= shape.revolution) {
+        shape = pickShape();
         shapeStartAngle = angle;
-        transitionElapsed = 0;
       }
 
-      // Advance transition timer
-      transitionElapsed = Math.min(transitionElapsed + dt, TRANSITION_MS);
-
-      // Interpolate params: brief lerp at start of each shape, then locked
-      const t = Math.min(transitionElapsed / TRANSITION_MS, 1);
-      // Smooth ease-in-out
-      const ease = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-      const r = prevShape.r + (nextShape.r - prevShape.r) * ease;
-      const d = prevShape.d + (nextShape.d - prevShape.d) * ease;
+      const r = shape.r;
+      const d = shape.d;
 
       // Advance angle at fixed rate
       const deltaAngle = ANGLE_PER_MS * dt;
@@ -186,10 +176,14 @@ export function CycloidCanvas() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      aria-hidden="true"
-    />
+    <div className="pointer-events-none absolute inset-0 h-full w-full">
+      <div className="absolute left-1/2 top-0 h-full w-px bg-[var(--foreground)] opacity-[0.08]" />
+      <div className="absolute top-1/2 left-0 w-full h-px bg-[var(--foreground)] opacity-[0.08]" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+      />
+    </div>
   );
 }
