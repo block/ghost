@@ -18,7 +18,7 @@ export function TypographyDemos() {
               Display
             </p>
             <p className="text-sm text-muted-foreground mt-4">
-              Display / 64–96px / Black (900) / HK Grotesk / -0.05em / 0.88 lh
+              Display / 64–96px / Black (900) /-0.05em / 0.88 lh
             </p>
           </div>
           <div className="pb-8">
@@ -29,7 +29,7 @@ export function TypographyDemos() {
               Section heading
             </p>
             <p className="text-sm text-muted-foreground mt-3">
-              Section / 44–64px / Bold (700) / HK Grotesk / -0.035em / 0.95 lh
+              Section / 44–64px / Bold (700) /-0.035em / 0.95 lh
             </p>
           </div>
           <div className="pb-8">
@@ -40,7 +40,7 @@ export function TypographyDemos() {
               Subsection heading
             </p>
             <p className="text-sm text-muted-foreground mt-3">
-              Sub / 28–40px / Bold (700) / HK Grotesk / -0.02em / 1.0 lh
+              Sub / 28–40px / Bold (700) /-0.02em / 1.0 lh
             </p>
           </div>
           <div className="pb-8">
@@ -51,7 +51,7 @@ export function TypographyDemos() {
               Card heading
             </p>
             <p className="text-sm text-muted-foreground mt-3">
-              Card / 20–28px / Semibold (600) / HK Grotesk / -0.01em / 1.1 lh
+              Card / 20–28px / Semibold (600) /-0.01em / 1.1 lh
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export function TypographyDemos() {
               </p>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              11px / Semibold (600) / HK Grotesk / uppercase / +0.12em tracking
+              11px / Semibold (600) / uppercase / +0.12em tracking
             </p>
           </div>
         </div>
@@ -274,13 +274,13 @@ export function TypographyDemos() {
         <div className="space-y-8 divide-y divide-border-default">
           <div className="pb-8">
             <p className="text-3xl font-sans font-medium">
-              HK Grotesk — The quick brown fox jumps over the lazy dog
+              The quick brown fox jumps over the lazy dog
             </p>
             <p className="text-sm text-muted-foreground mt-2">font-sans</p>
           </div>
           <div className="pb-8">
             <p className="text-3xl font-display font-medium">
-              HK Grotesk — The quick brown fox
+              The quick brown fox jumps over the lazy dog
             </p>
             <p className="text-sm text-muted-foreground mt-2">font-display</p>
           </div>

@@ -147,7 +147,7 @@ export function ComponentPageShell({
         <div className="shell-header pt-6 pb-4 sm:pt-8 sm:pb-6">
           <div className="flex items-center gap-3 mb-3">
             <Link
-              to="/components"
+              to="/ui/components"
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <NavigationBackIcon className="size-4" />
@@ -337,7 +337,7 @@ export function ComponentPageShell({
                     {component.registryDependencies.map((dep) => (
                       <Link
                         key={dep}
-                        to={`/components/${dep}`}
+                        to={`/ui/components/${dep}`}
                         className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono transition-colors hover:bg-accent hover:text-accent-foreground"
                       >
                         {dep}
@@ -376,7 +376,7 @@ export function ComponentPageShell({
           <div className="flex items-center justify-between border-t pt-6 pb-16">
             {prev ? (
               <Link
-                to={`/components/${prev.slug}`}
+                to={`/ui/components/${prev.slug}`}
                 className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <NavigationBackIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
@@ -394,7 +394,7 @@ export function ComponentPageShell({
             )}
             {next ? (
               <Link
-                to={`/components/${next.slug}`}
+                to={`/ui/components/${next.slug}`}
                 className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-right"
               >
                 <div className="flex flex-col items-end">

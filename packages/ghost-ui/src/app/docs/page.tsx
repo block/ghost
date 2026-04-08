@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  BookOpen,
-  Compass,
-  Fingerprint,
-  Layers,
-  Rocket,
-  Server,
-} from "lucide-react";
+import { BookOpen, Fingerprint, Rocket, Server } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -16,7 +9,7 @@ import { useStaggerReveal } from "@/hooks/use-scroll-reveal";
 
 const hero = {
   name: "Core Concepts",
-  href: "/docs/concepts",
+  href: "/tools/drift/concepts",
   description:
     "Fingerprints, drift detection, evolution tracking, and fleet observability — the ideas behind Ghost.",
   hook: "Start here",
@@ -31,38 +24,24 @@ const sections: {
 }[] = [
   {
     name: "Getting Started",
-    href: "/docs/getting-started",
+    href: "/tools/drift/getting-started",
     description:
       "Install Ghost, create your first config, and run your first drift scan in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
-    href: "/docs/cli",
+    href: "/tools/drift/cli",
     description:
       "All nine commands — scan, profile, compare, diff, ack, adopt, diverge, fleet, and viz.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Self-Hosting",
-    href: "/docs/self-hosting",
+    href: "/tools/drift/self-hosting",
     description:
       "Run Ghost UI as your own design system documentation site with your registry and tokens.",
     icon: <Server className="size-8" strokeWidth={1.5} />,
-  },
-  {
-    name: "Ghost UI",
-    href: "/components",
-    description:
-      "Browse the component catalogue — 49 primitives and 48 AI-native elements ready to use.",
-    icon: <Layers className="size-8" strokeWidth={1.5} />,
-  },
-  {
-    name: "Foundations",
-    href: "/foundations",
-    description:
-      "Color, typography, and the design tokens that underpin every Ghost UI component.",
-    icon: <Compass className="size-8" strokeWidth={1.5} />,
   },
 ];
 
@@ -76,8 +55,8 @@ export default function DocsIndex() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="Documentation"
-        title="Ghost"
+        kicker="Drift Engine"
+        title="Drift Engine"
         description="Autonomous design drift detection for decentralised design ecosystems. Ghost fingerprints design systems, tracks their evolution, and surfaces divergence before it compounds."
       />
 

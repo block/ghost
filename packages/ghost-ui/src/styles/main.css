@@ -363,10 +363,12 @@
   --color-surface-dark-border: var(--surface-dark-border);
 
   /* fonts */
-  --font-sans: "HK Grotesk", sans-serif;
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Geist Mono", monospace;
   --font-serif: serif;
-  --font-display: "HK Grotesk", sans-serif;
+  --font-display:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* shape — pill-first radius system */
   --radius-pill: 999px;

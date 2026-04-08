@@ -28,10 +28,10 @@ function getDemoSource(
 export default function ComponentPage() {
   const { name } = useParams<{ name: string }>();
 
-  if (!name) return <Navigate to="/components" replace />;
+  if (!name) return <Navigate to="/ui/components" replace />;
 
   const component = getComponent(name);
-  if (!component) return <Navigate to="/components" replace />;
+  if (!component) return <Navigate to="/ui/components" replace />;
 
   const category = getCategory(component.primaryCategory);
   const siblings = getComponentsByCategory(component.primaryCategory);
