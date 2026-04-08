@@ -28,6 +28,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build registry
         run: pnpm --filter @ghost/ui build:registry
+      - name: Copy registry.json to public for static serving
+        run: cp packages/ghost-ui/registry.json packages/ghost-ui/public/registry.json
       - name: Build Ghost UI
         run: pnpm --filter @ghost/ui build
         env:
