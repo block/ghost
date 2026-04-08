@@ -4,7 +4,7 @@
 
 Ghost UI is a magazine-inspired design system built on shadcn/ui with:
 - **Pill geometry**: 999px border-radius on buttons, inputs, and pills
-- **HK Grotesk typography**: Self-hosted, 7 weights (300-900), magazine-scale heading hierarchy
+- **System font stack**: consumers bring their own typeface, magazine-scale heading hierarchy
 - **4-tier shadow hierarchy**: mini, card, elevated, modal
 - **97 components** across 9 categories
 - **323+ CSS custom properties** with full light/dark mode support

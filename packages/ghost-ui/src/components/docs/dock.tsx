@@ -2,14 +2,13 @@
 
 import type { LucideIcon } from "lucide-react";
 import {
-  BookOpen,
   Home,
-  LayoutGrid,
   Monitor,
   Moon,
   Palette,
   Search,
   Sun,
+  Wrench,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
@@ -37,9 +36,8 @@ import { cn } from "@/lib/utils";
 
 const nav: { name: string; path: string; icon: LucideIcon }[] = [
   { name: "Home", path: "/", icon: Home },
-  { name: "Docs", path: "/docs", icon: BookOpen },
-  { name: "Foundations", path: "/foundations", icon: Palette },
-  { name: "Components", path: "/components", icon: LayoutGrid },
+  { name: "Tools", path: "/tools", icon: Wrench },
+  { name: "Design Language", path: "/ui", icon: Palette },
 ];
 
 export function Dock() {
@@ -194,7 +192,7 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/foundations/colors");
+                navigate("/ui/foundations/colors");
                 setSearchOpen(false);
               }}
             >
@@ -203,7 +201,7 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/foundations/typography");
+                navigate("/ui/foundations/typography");
                 setSearchOpen(false);
               }}
             >
@@ -212,50 +210,50 @@ export function Dock() {
             </CommandItem>
           </CommandGroup>
 
-          <CommandGroup heading="Documentation">
+          <CommandGroup heading="Drift Engine">
             <CommandItem
               onSelect={() => {
-                navigate("/docs");
+                navigate("/tools/drift");
                 setSearchOpen(false);
               }}
             >
-              <BookOpen className="mr-2 size-4" />
-              Docs Overview
+              <Wrench className="mr-2 size-4" />
+              Drift Engine
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/docs/getting-started");
+                navigate("/tools/drift/getting-started");
                 setSearchOpen(false);
               }}
             >
-              <BookOpen className="mr-2 size-4" />
+              <Wrench className="mr-2 size-4" />
               Getting Started
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/docs/cli");
+                navigate("/tools/drift/cli");
                 setSearchOpen(false);
               }}
             >
-              <BookOpen className="mr-2 size-4" />
+              <Wrench className="mr-2 size-4" />
               CLI Reference
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/docs/concepts");
+                navigate("/tools/drift/concepts");
                 setSearchOpen(false);
               }}
             >
-              <BookOpen className="mr-2 size-4" />
+              <Wrench className="mr-2 size-4" />
               Core Concepts
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/docs/self-hosting");
+                navigate("/tools/drift/self-hosting");
                 setSearchOpen(false);
               }}
             >
-              <BookOpen className="mr-2 size-4" />
+              <Wrench className="mr-2 size-4" />
               Self-Hosting
             </CommandItem>
           </CommandGroup>
@@ -269,7 +267,7 @@ export function Dock() {
                   <CommandItem
                     key={item.slug}
                     onSelect={() => {
-                      navigate(`/components/${item.slug}`);
+                      navigate(`/ui/components/${item.slug}`);
                       setSearchOpen(false);
                     }}
                   >

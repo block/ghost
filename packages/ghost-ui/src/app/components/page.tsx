@@ -123,7 +123,7 @@ export default function ComponentsIndex() {
 function ComponentPill({ slug, name }: { slug: string; name: string }) {
   return (
     <Link
-      to={`/components/${slug}`}
+      to={`/ui/components/${slug}`}
       className="component-card group relative inline-block overflow-hidden rounded-full border border-border-card hover:border-foreground/25 bg-card px-4 py-1.5 transition-colors duration-300"
     >
       <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
