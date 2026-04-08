@@ -1,0 +1,30 @@
+/* ── Cash Sans (via block.xyz CDN) — dev site only ── */
+@font-face {
+  font-family: "Cash Sans";
+  src: url("https://cdn.block.xyz/fonts/cashsans/CashSans-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cash Sans";
+  src: url("https://cdn.block.xyz/fonts/cashsans/CashSans-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cash Sans";
+  src: url("https://cdn.block.xyz/fonts/cashsans/CashSans-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: "Cash Sans", system-ui, sans-serif;
+  --font-display: "Cash Sans", system-ui, sans-serif;
+}
