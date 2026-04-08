@@ -206,12 +206,12 @@ export default defineConfig({
 
           <p>
             Next:{" "}
-            <Link to="/docs/concepts" className="font-semibold">
+            <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
             to understand fingerprints, drift, and evolution in depth. Or jump
             to the{" "}
-            <Link to="/docs/cli" className="font-semibold">
+            <Link to="/tools/drift/cli" className="font-semibold">
               CLI Reference
             </Link>{" "}
             for every command and flag.

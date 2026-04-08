@@ -102,10 +102,7 @@ pnpm build:registry`}
         </DocSection>
 
         <DocSection title="Fonts">
-          <p>
-            Ghost UI uses self-hosted HK Grotesk (WOFF2). Font files live in{" "}
-            <code>src/fonts/</code>. To use your own typeface:
-          </p>
+          <p>Ghost UI defaults to system fonts. To use a custom typeface:</p>
           <ol>
             <li>Add your font files to the fonts directory</li>
             <li>
@@ -191,11 +188,11 @@ RUN echo 'server { listen 80; location / { try_files $uri /index.html; } }' \\
 
           <p>
             See{" "}
-            <Link to="/docs/getting-started" className="font-semibold">
+            <Link to="/tools/drift/getting-started" className="font-semibold">
               Getting Started
             </Link>{" "}
             for the consumer-side setup, or browse the{" "}
-            <Link to="/components" className="font-semibold">
+            <Link to="/ui/components" className="font-semibold">
               Component Catalogue
             </Link>{" "}
             to see what ships out of the box.

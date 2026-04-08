@@ -7,12 +7,12 @@
       "name": "ghost-ui-base",
       "type": "registry:base",
       "title": "Ghost UI",
-      "description": "Magazine-inspired design system — pill geometry, HK Grotesk typography, 4-tier shadow hierarchy",
+      "description": "ghost design language",
       "author": "block",
       "style": "ghost",
       "iconLibrary": "lucide",
       "baseColor": "neutral",
-      "registryDependencies": ["styles-main", "font-hk-grotesk", "utils"],
+      "registryDependencies": ["styles-main", "font-faces", "utils"],
       "dependencies": ["tw-animate-css", "clsx", "tailwind-merge"],
       "devDependencies": ["tailwindcss"],
       "files": [],
@@ -93,10 +93,10 @@
           "--color-surface-dark-text": "var(--surface-dark-text)",
           "--color-surface-dark-muted": "var(--surface-dark-muted)",
           "--color-surface-dark-border": "var(--surface-dark-border)",
-          "--font-sans": "\"HK Grotesk\", sans-serif",
+          "--font-sans": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
           "--font-mono": "\"Geist Mono\", monospace",
           "--font-serif": "serif",
-          "--font-display": "\"HK Grotesk\", sans-serif",
+          "--font-display": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
           "--radius-pill": "999px",
           "--radius-button": "999px",
           "--radius-input": "999px",
@@ -353,7 +353,7 @@
       "type": "registry:style",
       "dependencies": ["tw-animate-css"],
       "devDependencies": ["tailwindcss"],
-      "registryDependencies": ["font-hk-grotesk"],
+      "registryDependencies": ["font-faces"],
       "files": [
         {
           "type": "registry:theme",
@@ -363,66 +363,13 @@
       ]
     },
     {
-      "name": "font-hk-grotesk-faces",
+      "name": "font-faces",
       "type": "registry:style",
       "files": [
         {
           "type": "registry:theme",
           "target": "styles/font-faces.css",
           "path": "src/styles/font-faces.css"
-        }
-      ]
-    },
-    {
-      "name": "font-hk-grotesk",
-      "type": "registry:font",
-      "font": {
-        "family": "HK Grotesk",
-        "provider": "google",
-        "import": "HK_Grotesk",
-        "variable": "--font-hk-grotesk",
-        "weight": ["300", "400", "500", "600", "700", "800", "900"],
-        "subsets": ["latin"]
-      },
-      "meta": {
-        "selfHosted": true
-      },
-      "registryDependencies": ["font-hk-grotesk-faces"],
-      "files": [
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-Light.woff2",
-          "target": "public/fonts/HKGrotesk-Light.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-Regular.woff2",
-          "target": "public/fonts/HKGrotesk-Regular.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-Medium.woff2",
-          "target": "public/fonts/HKGrotesk-Medium.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-SemiBold.woff2",
-          "target": "public/fonts/HKGrotesk-SemiBold.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-Bold.woff2",
-          "target": "public/fonts/HKGrotesk-Bold.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-ExtraBold.woff2",
-          "target": "public/fonts/HKGrotesk-ExtraBold.woff2"
-        },
-        {
-          "type": "registry:file",
-          "path": "src/fonts/HKGrotesk-Black.woff2",
-          "target": "public/fonts/HKGrotesk-Black.woff2"
         }
       ]
     },
