@@ -101,7 +101,7 @@ export function Hero() {
           className="mt-4 text-center text-muted-foreground leading-relaxed whitespace-nowrap"
           style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)" }}
         >
-          design language and drift detection for decentralized systems.
+          design infrastructure for decentralized systems.
         </p>
       </div>
     </section>

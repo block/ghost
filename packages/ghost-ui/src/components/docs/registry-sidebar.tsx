@@ -31,9 +31,9 @@ import {
 
 const topNav = [
   { name: "home", path: "/" },
-  { name: "colors", path: "/foundations/colors" },
-  { name: "typography", path: "/foundations/typography" },
-  { name: "all components", path: "/components" },
+  { name: "colors", path: "/ui/foundations/colors" },
+  { name: "typography", path: "/ui/foundations/typography" },
+  { name: "all components", path: "/ui/components" },
 ];
 
 export function RegistrySidebar() {
@@ -170,9 +170,12 @@ function CategorySection({
                 <SidebarMenuItem key={item.slug}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === `/components/${item.slug}`}
+                    isActive={pathname === `/ui/components/${item.slug}`}
                   >
-                    <Link to={`/components/${item.slug}`} onClick={onNavigate}>
+                    <Link
+                      to={`/ui/components/${item.slug}`}
+                      onClick={onNavigate}
+                    >
                       {item.name}
                     </Link>
                   </SidebarMenuButton>

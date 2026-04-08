@@ -18,7 +18,7 @@ export default function TypographyPage() {
         <AnimatedPageHeader
           kicker="Foundations"
           title="Typography"
-          description="Magazine-grade hierarchy with HK Grotesk. Display for headers, Regular for body, Mono for data."
+          description="Magazine-grade hierarchy. Display for headers, Regular for body, Mono for data."
         />
       </SectionWrapper>
 

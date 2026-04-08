@@ -309,11 +309,11 @@ ghost viz *.json --port 8080`}
 
           <p>
             See{" "}
-            <Link to="/docs/concepts" className="font-semibold">
+            <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
             for the ideas behind these commands, or{" "}
-            <Link to="/docs/getting-started" className="font-semibold">
+            <Link to="/tools/drift/getting-started" className="font-semibold">
               Getting Started
             </Link>{" "}
             for a guided walkthrough.
