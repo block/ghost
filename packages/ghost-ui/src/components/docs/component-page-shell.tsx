@@ -135,7 +135,7 @@ export function ComponentPageShell({
     return () => ctx.revert();
   }, [component.slug]);
 
-  const installCommand = `npx shadcn@latest add ${component.slug}`;
+  const installCommand = `npx shadcn@latest add --registry https://block.github.io/ghost/r/registry.json ${component.slug}`;
 
   // Filter exports to only component names (capitalized), exclude variant exports
   const componentExports =
@@ -144,8 +144,36 @@ export function ComponentPageShell({
     ) ?? [];
 
   return (
+    <>
+      {/* ── Prev / Next (floating sides, xl+) ── */}
+      {prev && (
+        <Link
+          to={`/ui/components/${prev.slug}`}
+          className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-40 group flex-col items-start gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <span className="flex size-10 items-center justify-center rounded-full border bg-background/80 backdrop-blur-sm group-hover:border-foreground/25 transition-all duration-200 shadow-sm">
+            <NavigationBackIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
+          </span>
+          <span className="text-xs font-medium max-w-[6rem] leading-tight text-left">
+            {prev.name}
+          </span>
+        </Link>
+      )}
+      {next && (
+        <Link
+          to={`/ui/components/${next.slug}`}
+          className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 group flex-col items-end gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <span className="flex size-10 items-center justify-center rounded-full border bg-background/80 backdrop-blur-sm group-hover:border-foreground/25 transition-all duration-200 shadow-sm">
+            <NavigationBackIcon className="size-4 rotate-180 transition-transform group-hover:translate-x-0.5" />
+          </span>
+          <span className="text-xs font-medium max-w-[6rem] leading-tight text-right">
+            {next.name}
+          </span>
+        </Link>
+      )}
     <SectionWrapper>
-      <div ref={shellRef}>
+      <div ref={shellRef} className="mx-auto max-w-3xl">
         {/* ── Header ── */}
         <div className="shell-header pt-6 pb-4 sm:pt-8 sm:pb-6">
           <div className="flex items-center gap-3 mb-3">
@@ -166,11 +194,6 @@ export function ComponentPageShell({
               >
                 {categoryName}
               </span>
-              {component.isAI && (
-                <span className="inline-flex items-center rounded-full bg-foreground text-background px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
-                  AI
-                </span>
-              )}
             </div>
           </div>
 
@@ -499,8 +522,8 @@ export function ComponentPageShell({
             </div>
           )}
 
-          {/* ── Prev / Next ── */}
-          <div className="flex items-center justify-between border-t pt-6 pb-16">
+          {/* ── Prev / Next (bottom, below xl) ── */}
+          <div className="flex items-center justify-between border-t pt-6 pb-16 xl:hidden">
             {prev ? (
               <Link
                 to={`/ui/components/${prev.slug}`}
@@ -536,8 +559,12 @@ export function ComponentPageShell({
               <div />
             )}
           </div>
+
+          {/* spacer for bottom nav hidden on xl */}
+          <div className="hidden xl:block pb-16" />
         </div>
       </div>
     </SectionWrapper>
+    </>
   );
 }
