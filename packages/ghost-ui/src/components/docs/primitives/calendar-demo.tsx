@@ -40,7 +40,7 @@ export function CalendarDemo() {
         selected={range}
         onSelect={setRange}
         numberOfMonths={3}
-        className="hidden rounded-md border @4xl:flex [&>div]:gap-5"
+        className="hidden rounded-md border @2xl:flex [&>div]:gap-5"
       />
     </div>
   );
