@@ -45,12 +45,14 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "from",
         type: '"user" | "assistant" | "system"',
-        description: "The role of the message sender, controls alignment and styling.",
+        description:
+          "The role of the message sender, controls alignment and styling.",
       },
       {
         name: "children",
         type: "ReactNode",
-        description: "Message sub-components (MessageContent, MessageActions, etc.).",
+        description:
+          "Message sub-components (MessageContent, MessageActions, etc.).",
       },
     ],
     composedWith: [
@@ -181,12 +183,14 @@ const docs: Record<string, ComponentDoc> = {
         name: "isStreaming",
         type: "boolean",
         default: "false",
-        description: "Whether the model is currently generating reasoning tokens.",
+        description:
+          "Whether the model is currently generating reasoning tokens.",
       },
       {
         name: "duration",
         type: "number",
-        description: "Elapsed thinking time in seconds, shown in the trigger label.",
+        description:
+          "Elapsed thinking time in seconds, shown in the trigger label.",
       },
       {
         name: "open",
@@ -267,7 +271,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "language",
         type: "BundledLanguage",
-        description: 'The programming language for syntax highlighting (e.g. "tsx", "python").',
+        description:
+          'The programming language for syntax highlighting (e.g. "tsx", "python").',
       },
       {
         name: "showLineNumbers",
@@ -281,7 +286,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "with-diff",
         title: "Multi-Language",
-        description: "CodeBlock with a language selector for multiple snippets.",
+        description:
+          "CodeBlock with a language selector for multiple snippets.",
       },
     ],
   },
@@ -305,7 +311,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "children",
         type: "ReactNode",
-        description: "Agent sub-components (AgentHeader, AgentContent, AgentTools, etc.).",
+        description:
+          "Agent sub-components (AgentHeader, AgentContent, AgentTools, etc.).",
       },
     ],
     composedWith: ["code-block", "message"],
@@ -343,7 +350,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "onClear",
         type: "() => void",
-        description: "Callback to clear the terminal; enables the clear button when provided.",
+        description:
+          "Callback to clear the terminal; enables the clear button when provided.",
       },
     ],
     composedWith: ["code-block", "agent", "message"],
@@ -410,7 +418,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "children",
         type: "ReactNode",
-        description: "Artifact sub-components (ArtifactHeader, ArtifactContent, etc.).",
+        description:
+          "Artifact sub-components (ArtifactHeader, ArtifactContent, etc.).",
       },
     ],
     composedWith: ["code-block", "file-tree", "message"],
@@ -446,7 +455,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "usage",
         type: "LanguageModelUsage",
-        description: "Detailed token usage breakdown (input, output, reasoning, cache).",
+        description:
+          "Detailed token usage breakdown (input, output, reasoning, cache).",
       },
       {
         name: "modelId",
@@ -480,7 +490,8 @@ const docs: Record<string, ComponentDoc> = {
         name: "isStreaming",
         type: "boolean",
         default: "false",
-        description: "Enables shimmer animation on title and description while streaming.",
+        description:
+          "Enables shimmer animation on title and description while streaming.",
       },
       {
         name: "open",
@@ -519,13 +530,15 @@ const docs: Record<string, ComponentDoc> = {
         name: "appearance",
         type: '"default" | "icon"',
         default: '"default"',
-        description: 'Set to "icon" for square icon-only buttons that scale with size.',
+        description:
+          'Set to "icon" for square icon-only buttons that scale with size.',
       },
       {
         name: "asChild",
         type: "boolean",
         default: "false",
-        description: "Merge props onto child element instead of rendering a <button>.",
+        description:
+          "Merge props onto child element instead of rendering a <button>.",
       },
     ],
     composedWith: ["dialog", "card"],
@@ -553,7 +566,8 @@ const docs: Record<string, ComponentDoc> = {
       {
         name: "children",
         type: "ReactNode",
-        description: "Card sub-components (CardHeader, CardContent, CardFooter, etc.).",
+        description:
+          "Card sub-components (CardHeader, CardContent, CardFooter, etc.).",
       },
     ],
     composedWith: ["button", "dialog"],

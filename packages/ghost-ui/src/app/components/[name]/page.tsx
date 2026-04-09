@@ -1,11 +1,11 @@
 import { Navigate, useParams } from "react-router";
 import { ComponentPageShell } from "@/components/docs/component-page-shell";
+import { getComponentDoc } from "@/lib/component-docs";
 import {
   getCategory,
   getComponent,
   getComponentsByCategory,
 } from "@/lib/component-registry";
-import { getComponentDoc } from "@/lib/component-docs";
 import { getComponentSpec } from "@/lib/component-source";
 
 // ── Import demo source files as raw strings at build time ──
