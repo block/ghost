@@ -15,11 +15,12 @@ import {
   CodeBlockCopyButton,
   CodeBlockHeader,
 } from "@/components/ai-elements/code-block";
-import { DemoLoader } from "@/components/docs/demo-loader";
+import { DemoLoader, ExampleLoader } from "@/components/docs/demo-loader";
 import { ComponentErrorBoundary } from "@/components/docs/error-boundary";
 import { SectionWrapper } from "@/components/docs/wrappers";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import type { ComponentDoc } from "@/lib/component-docs";
 import { ComponentEntry } from "@/lib/component-registry";
 import type { ComponentSpec } from "@/lib/component-source";
 import { cn } from "@/lib/utils";
@@ -101,6 +102,7 @@ export function ComponentPageShell({
   spec,
   prev,
   next,
+  docs,
 }: {
   component: ComponentEntry;
   categoryName: string;
@@ -108,6 +110,7 @@ export function ComponentPageShell({
   spec: ComponentSpec | null;
   prev: { slug: string; name: string } | null;
   next: { slug: string; name: string } | null;
+  docs?: ComponentDoc;
 }) {
   const [activeTab, setActiveTab] = useState<"preview" | "source" | "demo">(
     "preview",
@@ -177,6 +180,14 @@ export function ComponentPageShell({
           >
             {component.name}
           </h1>
+          {docs?.description && (
+            <p
+              className="mt-3 text-muted-foreground leading-relaxed"
+              style={{ fontSize: "clamp(0.875rem, 1.5vw, 1rem)" }}
+            >
+              {docs.description}
+            </p>
+          )}
         </div>
 
         <div className="shell-content space-y-6">
@@ -207,6 +218,21 @@ export function ComponentPageShell({
               />
             </Button>
           </div>
+
+          {docs?.usage && (
+            <div className="rounded-lg border overflow-hidden">
+              <CodeBlock code={docs.usage} language="tsx">
+                <CodeBlockHeader>
+                  <span className="text-xs font-mono text-muted-foreground">
+                    Usage
+                  </span>
+                  <CodeBlockActions>
+                    <CodeBlockCopyButton />
+                  </CodeBlockActions>
+                </CodeBlockHeader>
+              </CodeBlock>
+            </div>
+          )}
 
           {/* ── Tabs: Preview / Source / Demo Code ── */}
           <div>
@@ -371,6 +397,107 @@ export function ComponentPageShell({
               )}
             </div>
           </div>
+
+          {docs && docs.props.length > 0 && (
+            <div className="border rounded-lg divide-y divide-border/50">
+              <div className="px-4 py-3">
+                <h2
+                  className="font-display uppercase text-muted-foreground"
+                  style={{
+                    fontSize: "var(--label-font-size)",
+                    letterSpacing: "var(--label-letter-spacing)",
+                    fontWeight: "var(--label-font-weight)",
+                  }}
+                >
+                  Props
+                </h2>
+              </div>
+              <div className="px-4 py-1">
+                {docs.props.map((prop) => (
+                  <SpecRow key={prop.name} label={prop.name} mono>
+                    <div className="flex flex-col gap-0.5">
+                      <code className="text-xs text-muted-foreground">
+                        {prop.type}
+                      </code>
+                      {prop.default && (
+                        <span className="text-xs text-muted-foreground">
+                          Default: <code className="font-mono">{prop.default}</code>
+                        </span>
+                      )}
+                      <span className="text-sm">{prop.description}</span>
+                    </div>
+                  </SpecRow>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {docs && docs.composedWith.length > 0 && (
+            <div className="border rounded-lg divide-y divide-border/50">
+              <div className="px-4 py-3">
+                <h2
+                  className="font-display uppercase text-muted-foreground"
+                  style={{
+                    fontSize: "var(--label-font-size)",
+                    letterSpacing: "var(--label-letter-spacing)",
+                    fontWeight: "var(--label-font-weight)",
+                  }}
+                >
+                  Works With
+                </h2>
+              </div>
+              <div className="px-4 py-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {docs.composedWith.map((slug) => (
+                    <Link
+                      key={slug}
+                      to={`/ui/components/${slug}`}
+                      className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {slug}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {docs && docs.examples.length > 0 && (
+            <div className="space-y-6">
+              <h2
+                className="font-display uppercase text-muted-foreground"
+                style={{
+                  fontSize: "var(--label-font-size)",
+                  letterSpacing: "var(--label-letter-spacing)",
+                  fontWeight: "var(--label-font-weight)",
+                }}
+              >
+                Examples
+              </h2>
+              {docs.examples.map((example) => (
+                <div key={example.name} className="space-y-3">
+                  <div>
+                    <h3 className="text-sm font-medium">{example.title}</h3>
+                    {example.description && (
+                      <p className="text-xs text-muted-foreground">
+                        {example.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="rounded-lg border p-6">
+                    <ComponentErrorBoundary
+                      name={`${component.slug}-${example.name}`}
+                    >
+                      <ExampleLoader
+                        componentSlug={component.slug}
+                        exampleName={example.name}
+                      />
+                    </ComponentErrorBoundary>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* ── Prev / Next ── */}
           <div className="flex items-center justify-between border-t pt-6 pb-16">
