@@ -100,7 +100,7 @@ export default function DesignLanguageIndex() {
       <AnimatedPageHeader
         kicker="Design Language"
         title="Ghost UI"
-        description="A shared design language for our tools."
+        description="The shared design language across Ghost — foundations, primitives, and AI-native components."
       />
 
       <div
