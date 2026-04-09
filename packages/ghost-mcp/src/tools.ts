@@ -1,24 +1,32 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
-  searchItems,
-  getRegistryItem,
-  getComponentSource,
   getCategoriesWithCounts,
+  getComponentSource,
+  getRegistryItem,
   getThemePreset,
+  searchItems,
 } from "./data.js";
 
-const REGISTRY_URL =
-  "https://block.github.io/ghost/r/registry.json";
+const REGISTRY_URL = "https://block.github.io/ghost/r/registry.json";
 
 export function registerTools(server: McpServer): void {
   server.tool(
     "search_components",
     "Search Ghost UI components by name, category, or AI filter",
     {
-      query: z.string().optional().describe("Substring to match against component names"),
-      category: z.string().optional().describe("Filter by category (e.g. input, layout, ai)"),
-      aiOnly: z.boolean().optional().describe("Only return AI-category components"),
+      query: z
+        .string()
+        .optional()
+        .describe("Substring to match against component names"),
+      category: z
+        .string()
+        .optional()
+        .describe("Filter by category (e.g. input, layout, ai)"),
+      aiOnly: z
+        .boolean()
+        .optional()
+        .describe("Only return AI-category components"),
     },
     async ({ query, category, aiOnly }) => {
       const results = searchItems(query, category, aiOnly);
