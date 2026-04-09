@@ -121,9 +121,7 @@ export function getCategoriesWithCounts(): Record<
   return result;
 }
 
-export function getThemePreset(
-  name: string,
-): RegistryCssVars | undefined {
+export function getThemePreset(name: string): RegistryCssVars | undefined {
   const item = registry.items.find(
     (i) => i.type === "registry:theme" && i.name === name,
   );
