@@ -1,9 +1,9 @@
 import {
   PromptInput,
-  PromptInputTextarea,
+  PromptInputActionAddAttachments,
   PromptInputFooter,
   PromptInputSubmit,
-  PromptInputActionAddAttachments,
+  PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 

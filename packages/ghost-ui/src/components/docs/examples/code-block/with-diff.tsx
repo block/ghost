@@ -11,7 +11,10 @@ import {
   CodeBlockLanguageSelectorValue,
 } from "@/components/ai-elements/code-block";
 
-const snippets: Record<string, { code: string; language: "typescript" | "python" | "rust" }> = {
+const snippets: Record<
+  string,
+  { code: string; language: "typescript" | "python" | "rust" }
+> = {
   typescript: {
     code: `function fibonacci(n: number): number {
   if (n <= 1) return n;
@@ -51,7 +54,11 @@ export default function CodeBlockWithDiff() {
 
   return (
     <div className="w-full max-w-xl">
-      <CodeBlock code={snippet.code} language={snippet.language} showLineNumbers>
+      <CodeBlock
+        code={snippet.code}
+        language={snippet.language}
+        showLineNumbers
+      >
         <CodeBlockHeader>
           <CodeBlockLanguageSelector value={lang} onValueChange={setLang}>
             <CodeBlockLanguageSelectorTrigger>
