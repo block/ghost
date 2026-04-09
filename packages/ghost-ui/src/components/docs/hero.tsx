@@ -3,18 +3,12 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef } from "react";
-import { getAllComponents } from "@/lib/component-registry";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Hero() {
   const containerRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-
-  const allComponents = getAllComponents();
-  const totalCount = allComponents.length;
-  const aiCount = allComponents.filter((c) => c.isAI).length;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -31,13 +25,6 @@ export function Hero() {
           duration: 1.2,
           stagger: 0.12,
         });
-      }
-
-      // Animate stats bar
-      const stats = containerRef.current?.querySelector(".hero-stats");
-      if (stats) {
-        gsap.set(stats, { y: 20, opacity: 0 });
-        tl.to(stats, { y: 0, opacity: 1, duration: 0.8 }, "-=0.4");
       }
 
       // Parallax on scroll — heading moves up faster
@@ -116,18 +103,6 @@ export function Hero() {
         >
           tooling for decentralized design
         </p>
-        <div
-          ref={statsRef}
-          className="hero-stats mt-6 flex items-center justify-center gap-x-5 gap-y-2 flex-wrap text-sm text-muted-foreground"
-        >
-          <span>{totalCount} Components</span>
-          <span className="hidden h-3 w-px bg-border sm:block" aria-hidden />
-          <span>{aiCount} AI-Native</span>
-          <span className="hidden h-3 w-px bg-border sm:block" aria-hidden />
-          <span>5 Theme Presets</span>
-          <span className="hidden h-3 w-px bg-border sm:block" aria-hidden />
-          <span>shadcn Compatible</span>
-        </div>
       </div>
     </section>
   );

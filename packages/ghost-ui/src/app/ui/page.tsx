@@ -111,11 +111,14 @@ export default function DesignLanguageIndex() {
           <Link
             key={item.href}
             to={item.href}
-            className="dl-card group rounded-[var(--radius-card-sm)] border border-border-card bg-card p-10 transition-all duration-200 hover:scale-[1.03] hover:shadow-elevated"
+            className="dl-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
           >
             <div className="mb-6">{item.visual}</div>
-            <span className="font-display text-lg font-bold tracking-tight">
-              {item.name}
+            <span className="relative inline-block font-display text-lg font-bold tracking-tight">
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
+                {item.name}
+              </span>
+              <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
             </span>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               {item.description}
