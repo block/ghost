@@ -1,7 +1,8 @@
 import { buildReverseValueMap, buildTokenMap } from "../resolvers/css.js";
 import type { CSSToken, RuleSeverity, ValueDrift } from "../types.js";
 
-const COLOR_REGEX = /#(?:[0-9a-fA-F]{3,8})\b|rgba?\([^)]+\)|hsla?\([^)]+\)/g;
+const COLOR_REGEX =
+  /#(?:[0-9a-fA-F]{3,8})\b|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)|oklab\([^)]+\)|lch\([^)]+\)|lab\([^)]+\)|color\([^)]+\)/g;
 
 export interface ValuesScannerOptions {
   registryTokens: CSSToken[];

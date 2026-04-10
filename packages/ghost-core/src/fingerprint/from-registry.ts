@@ -12,27 +12,81 @@ import {
 } from "./colors.js";
 import { computeEmbedding } from "./embedding.js";
 
+// Exact token name → semantic role mapping
 const SEMANTIC_ROLES: Record<string, string> = {
+  // Surface/background tokens
   "--background-default": "surface",
   "--background-alt": "surface-alt",
   "--background-accent": "accent",
+  "--background": "surface",
+  "--bg": "surface",
+  "--bg-accent": "accent",
+  // shadcn conventions
+  "--primary": "primary",
+  "--primary-foreground": "primary-foreground",
+  "--secondary": "secondary",
+  "--secondary-foreground": "secondary-foreground",
+  "--accent": "accent",
+  "--accent-foreground": "accent-foreground",
+  "--muted": "muted",
+  "--muted-foreground": "muted-foreground",
+  "--destructive": "destructive",
+  "--destructive-foreground": "destructive-foreground",
+  "--card": "surface",
+  "--card-foreground": "text",
+  "--popover": "surface-alt",
+  "--popover-foreground": "text",
+  "--foreground": "text",
+  "--input": "border",
+  "--ring": "ring",
+  // Text tokens
   "--text-default": "text",
   "--text-muted": "text-muted",
   "--text-inverse": "text-inverse",
   "--text-danger": "danger",
+  // Border tokens
   "--border-default": "border",
   "--border-strong": "border-strong",
+  "--border": "border",
+  // Brand tokens
+  "--brand": "primary",
+  "--brand-primary": "primary",
+  "--brand-secondary": "secondary",
 };
+
+// Prefix-based fallback: tokens starting with these prefixes get a role
+// derived from the prefix + suffix (e.g., "--color-success" → "success")
+const SEMANTIC_ROLE_PREFIXES: [string, (name: string) => string][] = [
+  ["--background-", (n) => `surface-${n.replace("--background-", "")}`],
+  ["--text-", (n) => `text-${n.replace("--text-", "")}`],
+  ["--border-", (n) => `border-${n.replace("--border-", "")}`],
+  ["--color-", (n) => n.replace("--color-", "")],
+];
 
 function resolveTokenValue(token: CSSToken): string {
   return token.resolvedValue ?? token.value;
 }
 
+function resolveSemanticRole(tokenName: string): string | null {
+  // Exact match first
+  const exact = SEMANTIC_ROLES[tokenName];
+  if (exact) return exact;
+
+  // Prefix-based fallback
+  for (const [prefix, derive] of SEMANTIC_ROLE_PREFIXES) {
+    if (tokenName.startsWith(prefix)) return derive(tokenName);
+  }
+
+  return null;
+}
+
 function extractSemanticColors(tokens: CSSToken[]): SemanticColor[] {
   const colors: SemanticColor[] = [];
+  const seen = new Set<string>();
   for (const token of tokens) {
-    const role = SEMANTIC_ROLES[token.name];
-    if (role) {
+    const role = resolveSemanticRole(token.name);
+    if (role && !seen.has(role)) {
+      seen.add(role);
       colors.push(colorToSemanticColor(role, resolveTokenValue(token)));
     }
   }
@@ -40,10 +94,24 @@ function extractSemanticColors(tokens: CSSToken[]): SemanticColor[] {
 }
 
 function extractDominantColors(tokens: CSSToken[]): SemanticColor[] {
-  // Dominant = non-neutral, non-text semantic colors
-  const dominantRoles = ["accent", "danger"];
+  // Dominant = brand, accent, primary, destructive — not neutral/text/border/surface roles
+  const dominantRoles = [
+    "primary",
+    "secondary",
+    "accent",
+    "destructive",
+    "danger",
+    "ring",
+  ];
+  const neutralPrefixes = ["surface", "text", "border", "muted"];
   const all = extractSemanticColors(tokens);
-  const dominant = all.filter((c) => dominantRoles.includes(c.role));
+  const dominant = all.filter(
+    (c) =>
+      dominantRoles.includes(c.role) ||
+      (!neutralPrefixes.some((p) => c.role.startsWith(p)) &&
+        c.oklch &&
+        c.oklch[1] > 0.04), // has meaningful chroma
+  );
   // If no explicit dominant, use first non-neutral color
   if (dominant.length === 0 && all.length > 0) {
     return [all[0]];
@@ -103,6 +171,34 @@ function extractSpacing(tokens: CSSToken[]): {
   }
 
   return { scale: unique, regularity, baseUnit };
+}
+
+function classifyLineHeight(
+  tokens: CSSToken[],
+): "tight" | "normal" | "loose" {
+  const lineHeightValues: number[] = [];
+  for (const token of tokens) {
+    if (
+      token.category === "typography" &&
+      (token.name.includes("line-height") || token.name.includes("leading"))
+    ) {
+      const val = resolveTokenValue(token);
+      const num = Number.parseFloat(val);
+      if (!Number.isNaN(num)) {
+        // Unitless values (1.2, 1.5) or percentage-like
+        // Values > 3 are likely px — normalize against a 16px base
+        lineHeightValues.push(num > 3 ? num / 16 : num);
+      }
+    }
+  }
+
+  if (lineHeightValues.length === 0) return "normal";
+
+  const avg =
+    lineHeightValues.reduce((a, b) => a + b, 0) / lineHeightValues.length;
+  if (avg < 1.3) return "tight";
+  if (avg > 1.7) return "loose";
+  return "normal";
 }
 
 function extractBorderRadii(tokens: CSSToken[]): number[] {
@@ -210,7 +306,7 @@ export function fingerprintFromRegistry(
       families: typography.families,
       sizeRamp: typography.sizeRamp,
       weightDistribution: typography.weightDistribution,
-      lineHeightPattern: "normal", // default for registry
+      lineHeightPattern: classifyLineHeight(tokens),
     },
 
     surfaces: {

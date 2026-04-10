@@ -12,12 +12,12 @@ const EMBEDDING_SIZE = 64;
  *
  * Dimensions (64 total):
  *  [0-11]   Palette: dominant colors OKLCH (up to 4 colors x 3 channels)
- *  [12-17]  Palette: neutral ramp features (count, min/max lightness, spread)
+ *  [12-17]  Palette: neutral ramp features (count, has neutrals, ramp density, lightness min/max/range)
  *  [18-20]  Palette: qualitative (saturation profile, contrast, semantic count)
- *  [21-30]  Spacing: scale features (count, min, max, regularity, base unit, distribution)
- *  [31-40]  Typography: families count, size ramp features, weight distribution
- *  [41-48]  Surfaces: radii features, shadow complexity, border usage
- *  [49-63]  Architecture: tokenization, component count, methodology, categories
+ *  [21-30]  Spacing: scale features (count, min, max, regularity, base unit, median, spread, step ratio, density, range ratio)
+ *  [31-40]  Typography: families count, size ramp features, weight distribution, line height, weight spread, ramp range
+ *  [41-48]  Surfaces: radii features, shadow complexity, border usage, radii spread, radii median, max radius
+ *  [49-63]  Architecture: tokenization, component count, methodology, categories, category diversity entropy, component density
  */
 export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   const vec: number[] = new Array(EMBEDDING_SIZE).fill(0);
@@ -37,12 +37,28 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   }
 
   // --- Palette: neutral ramp (6 dims) ---
-  vec[i++] = Math.min(fingerprint.palette.neutrals.count / 10, 1);
-  // Parse lightness from neutral steps (use oklch if available from semantic colors)
   const neutralCount = fingerprint.palette.neutrals.count;
+  vec[i++] = Math.min(neutralCount / 10, 1); // normalized count
   vec[i++] = neutralCount > 0 ? 1 : 0; // has neutrals
   vec[i++] = Math.min(neutralCount / 20, 1); // ramp density
-  i += 3; // reserved for neutral lightness range
+
+  // Estimate lightness range from neutral steps using semantic colors as proxy
+  const neutralLightnesses = fingerprint.palette.semantic
+    .filter(
+      (c) =>
+        c.oklch &&
+        (c.role.startsWith("surface") ||
+          c.role.startsWith("text") ||
+          c.role === "muted"),
+    )
+    .map((c) => c.oklch![0]);
+  if (neutralLightnesses.length >= 2) {
+    vec[i++] = Math.min(...neutralLightnesses); // min lightness
+    vec[i++] = Math.max(...neutralLightnesses); // max lightness
+    vec[i++] = Math.max(...neutralLightnesses) - Math.min(...neutralLightnesses); // lightness range
+  } else {
+    i += 3;
+  }
 
   // --- Palette: qualitative (3 dims) ---
   vec[i++] =
@@ -69,13 +85,56 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
       : 0;
   vec[i++] = spacing.regularity;
   vec[i++] = spacing.baseUnit ? Math.min(spacing.baseUnit / 16, 1) : 0;
-  // Distribution: quartile features
+  // Median value
   const spacingMid =
     spacing.scale.length > 0
       ? spacing.scale[Math.floor(spacing.scale.length / 2)] / 100
       : 0;
   vec[i++] = Math.min(spacingMid, 1);
-  i += 4; // reserved
+  // Spread (stddev-like): how varied is the scale?
+  if (spacing.scale.length >= 2) {
+    const mean =
+      spacing.scale.reduce((a, b) => a + b, 0) / spacing.scale.length;
+    const variance =
+      spacing.scale.reduce((sum, v) => sum + (v - mean) ** 2, 0) /
+      spacing.scale.length;
+    vec[i++] = Math.min(Math.sqrt(variance) / 50, 1); // normalized spread
+  } else {
+    vec[i++] = 0;
+  }
+  // Step ratio: ratio between consecutive values (geometric vs linear)
+  if (spacing.scale.length >= 3) {
+    const ratios: number[] = [];
+    for (let s = 1; s < spacing.scale.length; s++) {
+      if (spacing.scale[s - 1] > 0) {
+        ratios.push(spacing.scale[s] / spacing.scale[s - 1]);
+      }
+    }
+    const avgRatio =
+      ratios.length > 0
+        ? ratios.reduce((a, b) => a + b, 0) / ratios.length
+        : 1;
+    vec[i++] = Math.min(avgRatio / 4, 1); // 2.0 = geometric doubling
+  } else {
+    vec[i++] = 0;
+  }
+  // Density: values per unit range
+  if (spacing.scale.length >= 2) {
+    const range =
+      spacing.scale[spacing.scale.length - 1] - spacing.scale[0];
+    vec[i++] = range > 0 ? Math.min(spacing.scale.length / range, 1) : 0;
+  } else {
+    vec[i++] = 0;
+  }
+  // Range ratio: max/min
+  if (spacing.scale.length >= 2 && spacing.scale[0] > 0) {
+    vec[i++] = Math.min(
+      spacing.scale[spacing.scale.length - 1] / spacing.scale[0] / 50,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
 
   // --- Typography (10 dims) ---
   const typo = fingerprint.typography;
@@ -104,7 +163,33 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
       : typo.lineHeightPattern === "normal"
         ? 0.5
         : 1;
-  i += 4; // reserved
+  // Weight count: how many distinct weights are used
+  vec[i++] = Math.min(Object.keys(typo.weightDistribution).length / 6, 1);
+  // Weight spread: range of weights used (100-900 scale)
+  const weightKeys = Object.keys(typo.weightDistribution).map(Number);
+  if (weightKeys.length >= 2) {
+    vec[i++] = (Math.max(...weightKeys) - Math.min(...weightKeys)) / 800;
+  } else {
+    vec[i++] = 0;
+  }
+  // Size ramp range ratio
+  if (typo.sizeRamp.length >= 2 && typo.sizeRamp[0] > 0) {
+    vec[i++] = Math.min(
+      typo.sizeRamp[typo.sizeRamp.length - 1] / typo.sizeRamp[0] / 10,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
+  // Size ramp median
+  if (typo.sizeRamp.length > 0) {
+    vec[i++] = Math.min(
+      typo.sizeRamp[Math.floor(typo.sizeRamp.length / 2)] / 100,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
 
   // --- Surfaces (8 dims) ---
   const surfaces = fingerprint.surfaces;
@@ -129,7 +214,35 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
       : surfaces.borderUsage === "moderate"
         ? 0.5
         : 0;
-  i += 3; // reserved
+  // Radii spread: range of border radii
+  if (surfaces.borderRadii.length >= 2) {
+    vec[i++] = Math.min(
+      (surfaces.borderRadii[surfaces.borderRadii.length - 1] -
+        surfaces.borderRadii[0]) /
+        32,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
+  // Radii median
+  if (surfaces.borderRadii.length > 0) {
+    vec[i++] = Math.min(
+      surfaces.borderRadii[Math.floor(surfaces.borderRadii.length / 2)] / 32,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
+  // Max radius (signals "pill" shapes — high max radius is distinctive)
+  if (surfaces.borderRadii.length > 0) {
+    vec[i++] = Math.min(
+      surfaces.borderRadii[surfaces.borderRadii.length - 1] / 100,
+      1,
+    );
+  } else {
+    vec[i++] = 0;
+  }
 
   // --- Architecture (15 dims) ---
   const arch = fingerprint.architecture;
@@ -152,6 +265,40 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
         : arch.namingPattern === "PascalCase"
           ? 0.67
           : 1;
+  // Category diversity entropy
+  const catValues = Object.values(arch.componentCategories);
+  const totalComponents = catValues.reduce((a, b) => a + b, 0);
+  if (totalComponents > 0 && catValues.length > 1) {
+    vec[i++] =
+      -catValues.reduce((ent, c) => {
+        const p = c / totalComponents;
+        return p > 0 ? ent + p * Math.log2(p) : ent;
+      }, 0) / Math.log2(catValues.length);
+  } else {
+    vec[i++] = 0;
+  }
+  // Component density: components per category
+  vec[i++] = catCount > 0 ? Math.min(arch.componentCount / catCount / 10, 1) : 0;
+  // Methodology count
+  vec[i++] = Math.min(arch.methodology.length / 4, 1);
+  // Has styled-components / emotion
+  vec[i++] = arch.methodology.includes("styled-components") || arch.methodology.includes("emotion") ? 1 : 0;
+  // Has CSS-in-JS (any)
+  vec[i++] =
+    arch.methodology.includes("styled-components") ||
+    arch.methodology.includes("emotion") ||
+    arch.methodology.includes("css-modules")
+      ? 1
+      : 0;
+  // Component scale bucket (small <10, medium 10-30, large 30+)
+  vec[i++] =
+    arch.componentCount < 10
+      ? 0
+      : arch.componentCount < 30
+        ? 0.5
+        : 1;
+  // Tokenization squared (amplifies differences at extremes)
+  vec[i++] = arch.tokenization * arch.tokenization;
 
   return vec;
 }

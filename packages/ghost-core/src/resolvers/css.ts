@@ -7,23 +7,51 @@ import postcss, {
 import type { CSSToken, TokenCategory } from "../types.js";
 
 const CATEGORY_PREFIXES: [string, TokenCategory][] = [
+  // Background / surface
   ["--background-", "background"],
+  ["--bg-", "background"],
+  // Border
   ["--border-", "border"],
+  // Text
   ["--text-", "text"],
+  // Shadow
   ["--shadow-", "shadow"],
+  // Radius (--radius, --radius-*, --rounded-*)
   ["--radius", "radius"],
+  ["--rounded-", "radius"],
+  // Spacing (--spacing-*, --space-*, --gap-*, --size-*, --pad-*, --margin-*)
   ["--spacing-", "spacing"],
+  ["--space-", "spacing"],
+  ["--gap-", "spacing"],
+  ["--size-", "spacing"],
+  ["--pad-", "spacing"],
+  ["--padding-", "spacing"],
+  ["--margin-", "spacing"],
+  // Typography
   ["--heading-", "typography"],
   ["--body-", "typography"],
   ["--label-", "typography"],
   ["--display-", "typography"],
   ["--pull-quote-", "typography"],
+  ["--line-height-", "typography"],
+  ["--leading-", "typography"],
+  ["--letter-spacing-", "typography"],
+  ["--tracking-", "typography"],
+  ["--font-size-", "typography"],
+  ["--text-size-", "typography"],
+  ["--font-weight-", "typography"],
+  // Animation
   ["--animate-", "animation"],
   ["--duration-", "animation"],
   ["--ease-", "animation"],
+  ["--transition-", "animation"],
+  // Color
   ["--color-", "color"],
+  // Font
   ["--font-face-", "font-face"],
+  ["--font-family-", "font"],
   ["--font-", "font"],
+  // Component-specific
   ["--chart-", "chart"],
   ["--sidebar-", "sidebar"],
 ];
