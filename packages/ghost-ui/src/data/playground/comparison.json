@@ -1,0 +1,129 @@
+{
+  "distance": 0.3435958333333333,
+  "dimensions": {
+    "palette": {
+      "dimension": "palette",
+      "distance": 0.14531944444444445,
+      "description": "Minor palette variations"
+    },
+    "spacing": {
+      "dimension": "spacing",
+      "distance": 0.75,
+      "description": "Significant spacing divergence"
+    },
+    "typography": {
+      "dimension": "typography",
+      "distance": 0,
+      "description": "Typography systems match"
+    },
+    "surfaces": {
+      "dimension": "surfaces",
+      "distance": 1,
+      "description": "Distinct surface language"
+    },
+    "architecture": {
+      "dimension": "architecture",
+      "distance": 0,
+      "description": "Architecturally aligned"
+    }
+  },
+  "summary": "Significant divergence — different design decisions across multiple dimensions.",
+  "vectors": [
+    {
+      "dimension": "palette",
+      "magnitude": 0.8400427825671797,
+      "embeddingDelta": [
+        0.371,
+        0.227,
+        -0.1738888888888889,
+        -0.661,
+        -0.211,
+        -0.06944444444444445,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "dimension": "spacing",
+      "magnitude": 1.5143645532037522,
+      "embeddingDelta": [
+        1,
+        0.04,
+        0.96,
+        0.5,
+        0.25,
+        0.24,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "dimension": "typography",
+      "magnitude": 0,
+      "embeddingDelta": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "dimension": "surfaces",
+      "magnitude": 0.7909646009778188,
+      "embeddingDelta": [
+        0.6000000000000001,
+        -0.5,
+        0.125,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "dimension": "architecture",
+      "magnitude": 0,
+      "embeddingDelta": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "sourceId": "test-ds",
+  "targetId": "consumer"
+}

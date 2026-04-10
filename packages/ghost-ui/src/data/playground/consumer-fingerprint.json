@@ -1,0 +1,224 @@
+{
+  "id": "consumer",
+  "source": "registry",
+  "timestamp": "2026-04-10T03:34:12.999Z",
+  "palette": {
+    "dominant": [
+      {
+        "role": "accent",
+        "value": "#e74c3c",
+        "oklch": [
+          0.589,
+          0.227,
+          27.3
+        ]
+      }
+    ],
+    "neutrals": {
+      "steps": [
+        "#ffffff",
+        "#000000",
+        "#f5f5f5",
+        "#e8e8e8",
+        "#999999",
+        "#1a1a1a"
+      ],
+      "count": 6
+    },
+    "semantic": [
+      {
+        "role": "surface",
+        "value": "#ffffff",
+        "oklch": [
+          1,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "surface-alt",
+        "value": "#f5f5f5",
+        "oklch": [
+          0.97,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "accent",
+        "value": "#1a1a1a",
+        "oklch": [
+          0.218,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "border",
+        "value": "#e8e8e8",
+        "oklch": [
+          0.931,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "border-strong",
+        "value": "#1a1a1a",
+        "oklch": [
+          0.218,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "text",
+        "value": "#1a1a1a",
+        "oklch": [
+          0.218,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "text-muted",
+        "value": "#999999",
+        "oklch": [
+          0.683,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "text-inverse",
+        "value": "#ffffff",
+        "oklch": [
+          1,
+          0,
+          89.9
+        ]
+      },
+      {
+        "role": "danger",
+        "value": "#f94b4b",
+        "oklch": [
+          0.661,
+          0.211,
+          25
+        ]
+      }
+    ],
+    "saturationProfile": "vibrant",
+    "contrast": "high"
+  },
+  "spacing": {
+    "scale": [
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      32,
+      48,
+      64,
+      96
+    ],
+    "regularity": 0.5,
+    "baseUnit": 4
+  },
+  "typography": {
+    "families": [],
+    "sizeRamp": [],
+    "weightDistribution": {},
+    "lineHeightPattern": "normal"
+  },
+  "surfaces": {
+    "borderRadii": [
+      4,
+      8,
+      16,
+      24
+    ],
+    "shadowComplexity": "layered",
+    "borderUsage": "moderate"
+  },
+  "architecture": {
+    "tokenization": 1,
+    "methodology": [
+      "css-custom-properties"
+    ],
+    "componentCount": 2,
+    "componentCategories": {
+      "input": 1,
+      "display": 1
+    },
+    "namingPattern": "kebab-case"
+  },
+  "embedding": [
+    0.589,
+    0.227,
+    0.07583333333333334,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0.6,
+    1,
+    0.3,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0.9,
+    1,
+    0.04,
+    0.96,
+    0.5,
+    0.25,
+    0.24,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0.5,
+    0,
+    0,
+    0,
+    0,
+    0.8,
+    0.125,
+    0.75,
+    1,
+    0.5,
+    0,
+    0,
+    0,
+    1,
+    0.04,
+    0,
+    1,
+    0,
+    0,
+    0.2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ]
+}

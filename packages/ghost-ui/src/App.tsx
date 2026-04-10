@@ -10,6 +10,7 @@ import ColorsPage from "@/app/foundations/colors/page";
 import FoundationsIndex from "@/app/foundations/page";
 import TypographyPage from "@/app/foundations/typography/page";
 import HomePage from "@/app/page";
+import PlaygroundPage from "@/app/tools/playground/page";
 import ToolsIndex from "@/app/tools/page";
 import DesignLanguageIndex from "@/app/ui/page";
 import { Dock } from "@/components/docs/dock";
@@ -35,6 +36,7 @@ export function App() {
 
           {/* Tools */}
           <Route path="tools" element={<ToolsIndex />} />
+          <Route path="tools/playground" element={<PlaygroundPage />} />
           <Route path="tools/drift" element={<DriftEngineIndex />} />
           <Route
             path="tools/drift/getting-started"
