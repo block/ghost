@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-04-10T03:34:13.004Z",
+  "systems": [
+    {
+      "designSystem": "test-ds",
+      "values": [
+        {
+          "token": "--border-default",
+          "rule": "token-override",
+          "severity": "warn",
+          "message": "Token \"--border-default\" value differs from registry",
+          "registryValue": "var(--color-gray-200)",
+          "consumerValue": "var(--color-gray-500)",
+          "selector": ":root",
+          "file": "/Users/nahiyan/Development/ghost/packages/ghost-core/test/fixtures/consumer-drifted/src/styles/main.css"
+        },
+        {
+          "token": "#ff6b6b",
+          "rule": "hardcoded-color",
+          "severity": "error",
+          "message": "Hardcoded color \"#ff6b6b\" found",
+          "consumerValue": "#ff6b6b",
+          "file": "/Users/nahiyan/Development/ghost/packages/ghost-core/test/fixtures/consumer-drifted/src/styles/main.css",
+          "line": 26
+        },
+        {
+          "token": "rgb(255, 255, 255)",
+          "rule": "hardcoded-color",
+          "severity": "error",
+          "message": "Hardcoded color \"rgb(255, 255, 255)\" found",
+          "consumerValue": "rgb(255, 255, 255)",
+          "file": "/Users/nahiyan/Development/ghost/packages/ghost-core/test/fixtures/consumer-drifted/src/styles/main.css",
+          "line": 27
+        },
+        {
+          "token": "--text-inverse",
+          "rule": "missing-token",
+          "severity": "warn",
+          "message": "Token \"--text-inverse\" defined in registry but missing from consumer",
+          "registryValue": "var(--color-white)",
+          "file": "/Users/nahiyan/Development/ghost/packages/ghost-core/test/fixtures/consumer-drifted/src/styles/main.css"
+        },
+        {
+          "token": "--text-danger",
+          "rule": "missing-token",
+          "severity": "warn",
+          "message": "Token \"--text-danger\" defined in registry but missing from consumer",
+          "registryValue": "var(--color-red-200)",
+          "file": "/Users/nahiyan/Development/ghost/packages/ghost-core/test/fixtures/consumer-drifted/src/styles/main.css"
+        }
+      ],
+      "structure": [
+        {
+          "component": "button",
+          "rule": "structural-divergence",
+          "severity": "error",
+          "message": "Component \"button\" has diverged from registry (+3, -1)",
+          "diff": "Index: components/ui/button.tsx\n===================================================================\n--- components/ui/button.tsx\tregistry\n+++ components/ui/button.tsx\tconsumer\n@@ -2,14 +2,16 @@\n import { Slot } from \"@radix-ui/react-slot\";\n import { cva, type VariantProps } from \"class-variance-authority\";\n import { cn } from \"@/lib/utils\";\n \n+/* DRIFT: added a \"destructive\" variant and changed default border-radius */\n const buttonVariants = cva(\n-  \"inline-flex items-center justify-center rounded-full text-sm transition-all\",\n+  \"inline-flex items-center justify-center rounded-lg text-sm transition-all\",\n   {\n     variants: {\n       variant: {\n         default: \"bg-primary text-primary-foreground hover:bg-primary/90\",\n+        destructive: \"bg-red-500 text-white hover:bg-red-600\",\n         outline: \"border border-input bg-background hover:bg-muted\",\n         ghost: \"hover:bg-muted\",\n       },\n       size: {\n",
+          "linesAdded": 3,
+          "linesRemoved": 1,
+          "registryFile": "src/components/ui/button.tsx",
+          "consumerFile": "components/ui/button.tsx"
+        },
+        {
+          "component": "card",
+          "rule": "missing-component",
+          "severity": "warn",
+          "message": "Component \"card\" not found at components/ui/card.tsx",
+          "linesAdded": 0,
+          "linesRemoved": 0,
+          "registryFile": "src/components/ui/card.tsx",
+          "consumerFile": "components/ui/card.tsx"
+        }
+      ],
+      "visual": []
+    }
+  ],
+  "summary": {
+    "errors": 3,
+    "warnings": 4,
+    "info": 0,
+    "tokensScanned": 19,
+    "componentsScanned": 2
+  }
+}

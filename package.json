@@ -17,12 +17,14 @@
     "check": "biome check . && pnpm typecheck && pnpm check:file-sizes",
     "check:file-sizes": "node scripts/check-file-sizes.mjs",
     "fmt": "biome format --write .",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "generate:playground": "tsx packages/ghost-core/scripts/generate-demo-fixtures.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",
     "@types/node": "^22.0.0",
     "lefthook": "^2.1.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }
