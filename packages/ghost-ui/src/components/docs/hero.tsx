@@ -101,7 +101,7 @@ export function Hero() {
           className="mt-4 text-center text-muted-foreground leading-relaxed whitespace-nowrap"
           style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)" }}
         >
-          design infrastructure for decentralized systems.
+          tooling for decentralized design
         </p>
       </div>
     </section>
