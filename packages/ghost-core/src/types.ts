@@ -247,6 +247,28 @@ export interface DesignFingerprint {
   embedding: number[];
 }
 
+// --- Sampled material (LLM-first pipeline) ---
+
+export interface SampledFile {
+  path: string;
+  content: string;
+  reason: string;
+}
+
+export interface SampledMaterial {
+  files: SampledFile[];
+  metadata: {
+    totalFiles: number;
+    sampledFiles: number;
+    targetType: TargetType;
+    packageJson?: {
+      name?: string;
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+  };
+}
+
 // --- AI enrichment types ---
 
 export interface DesignLanguageProfile {
@@ -339,8 +361,8 @@ export interface EmbeddingConfig {
 export interface LLMProvider {
   name: string;
   interpret: (
-    material: ExtractedMaterial,
-    schema: string,
+    material: SampledMaterial,
+    projectId: string,
   ) => Promise<DesignFingerprint>;
 }
 

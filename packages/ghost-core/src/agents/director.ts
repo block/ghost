@@ -5,9 +5,9 @@ import type {
   DesignFingerprint,
   EnrichedComparison,
   EnrichedFingerprint,
-  ExtractedMaterial,
   FleetComparison,
   FleetMember,
+  SampledMaterial,
   Target,
 } from "../types.js";
 import type { ComparisonInput } from "./comparison.js";
@@ -40,7 +40,7 @@ export class Director {
     target: Target,
     ctx: AgentContext,
   ): Promise<{
-    extraction: AgentResult<ExtractedMaterial>;
+    extraction: AgentResult<SampledMaterial>;
     fingerprint: AgentResult<EnrichedFingerprint>;
   }> {
     const extraction = await this.extractionAgent.execute(target, ctx);

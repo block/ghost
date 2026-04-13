@@ -22,7 +22,6 @@ export function createProvider(config: LLMConfig): LLMProvider {
 export { createAnthropicProvider } from "./anthropic.js";
 export { createOpenAIProvider } from "./openai.js";
 export { buildFingerprintPrompt, FINGERPRINT_SCHEMA } from "./prompt.js";
-export { summarizeMaterial } from "./summarize.js";
 export { analyzeStructure } from "./analyze-structure.js";
 export type { StructuralAnalysis } from "./analyze-structure.js";
 export { validateFingerprint } from "./validate-fingerprint.js";

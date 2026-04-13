@@ -75,11 +75,21 @@ ${fingerprintSummary}
 ${componentSample}`;
 
     // Use the provider's interpret method as a general-purpose call
-    // We send this as a raw completion and parse the JSON response
+    // Convert ExtractedMaterial to SampledMaterial format
+    const sampledFiles = material.componentFiles.slice(0, 5).map((f) => ({
+      path: f.path,
+      content: f.content,
+      reason: "Component file for structural analysis",
+    }));
+
     const response = await provider.interpret(
       {
-        ...material,
-        componentFiles: material.componentFiles.slice(0, 5),
+        files: sampledFiles,
+        metadata: {
+          totalFiles: material.componentFiles.length,
+          sampledFiles: sampledFiles.length,
+          targetType: "path",
+        },
       },
       fullPrompt,
     );

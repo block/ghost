@@ -103,7 +103,36 @@ export async function profileWithAnalysis(
   if (config.llm) {
     const provider = createProvider(config.llm);
     const projectId = config.targets?.[0]?.name ?? "project";
-    fingerprint = await provider.interpret(material, projectId);
+    // Convert ExtractedMaterial → SampledMaterial for the provider
+    const sampled = {
+      files: [
+        ...material.styleFiles.map((f) => ({
+          path: f.path,
+          content: f.content,
+          reason: "Style file",
+        })),
+        ...material.configFiles.map((f) => ({
+          path: f.path,
+          content: f.content,
+          reason: "Config file",
+        })),
+        ...material.componentFiles.slice(0, 5).map((f) => ({
+          path: f.path,
+          content: f.content,
+          reason: "Component file",
+        })),
+      ],
+      metadata: {
+        totalFiles:
+          material.styleFiles.length +
+          material.configFiles.length +
+          material.componentFiles.length,
+        sampledFiles: 0,
+        targetType: "path" as const,
+      },
+    };
+    sampled.metadata.sampledFiles = sampled.files.length;
+    fingerprint = await provider.interpret(sampled, projectId);
     fingerprint.embedding = await embedFingerprint(
       fingerprint,
       config.embedding,
@@ -160,15 +189,13 @@ export async function profileRegistry(
 }
 
 /**
- * Profile any target using the agent pipeline.
+ * Profile any target using the LLM-first agent pipeline.
  *
  * This is the primary entry point for Ghost v2.
  * Accepts a Target object or a string (auto-resolved via resolveTarget).
- * Config is optional — uses defaults if not provided.
  *
- * Uses Director → ExtractionAgent → FingerprintAgent pipeline.
- * Without LLM config, runs a single deterministic pass.
- * With LLM config, runs multi-turn enrichment with self-correction.
+ * **Requires an LLM API key** (ANTHROPIC_API_KEY or OPENAI_API_KEY).
+ * The pipeline: ExtractionAgent (walk + sample) → FingerprintAgent (LLM interpret → validate → embed).
  */
 export async function profileTarget(
   targetOrString: Target | string,
@@ -179,16 +206,14 @@ export async function profileTarget(
       ? resolveTarget(targetOrString)
       : targetOrString;
 
+  // Resolve LLM config — require an API key
+  const llmConfig = resolveLLMConfig(config?.llm);
+
   const ctx: AgentContext = {
-    llm: config?.llm ?? ({ provider: "anthropic" } as LLMConfig),
+    llm: llmConfig,
     embedding: config?.embedding,
     verbose: config?.agents?.verbose ?? false,
   };
-
-  // If no LLM API key, run without LLM
-  if (!config?.llm?.apiKey && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
-    ctx.llm = undefined as unknown as LLMConfig;
-  }
 
   const director = new Director();
   const result = await director.profile(target, ctx);
@@ -205,6 +230,41 @@ export async function profileTarget(
       ...result.fingerprint.warnings,
     ],
   };
+}
+
+/**
+ * Resolve LLM config, requiring an API key.
+ * Checks config, then env vars. Throws if no key found.
+ */
+function resolveLLMConfig(llm?: LLMConfig): LLMConfig {
+  // Explicit config with key
+  if (llm?.apiKey) return llm;
+
+  // Check env vars
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+
+  if (anthropicKey) {
+    return {
+      provider: llm?.provider ?? "anthropic",
+      model: llm?.model,
+      apiKey: anthropicKey,
+    };
+  }
+
+  if (openaiKey) {
+    return {
+      provider: llm?.provider ?? "openai",
+      model: llm?.model,
+      apiKey: openaiKey,
+    };
+  }
+
+  throw new Error(
+    "Ghost requires an LLM API key for fingerprinting. " +
+      "Set ANTHROPIC_API_KEY or OPENAI_API_KEY environment variable, " +
+      "or configure llm.apiKey in ghost.config.ts.",
+  );
 }
 
 /**

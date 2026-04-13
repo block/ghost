@@ -1,10 +1,9 @@
 import type {
   DesignFingerprint,
-  ExtractedMaterial,
   LLMProvider,
+  SampledMaterial,
 } from "../types.js";
 import { buildFingerprintPrompt } from "./prompt.js";
-import { summarizeMaterial } from "./summarize.js";
 
 interface OpenAIClient {
   chat: {
@@ -38,7 +37,7 @@ export function createOpenAIProvider(options: {
     name: "openai",
 
     async interpret(
-      material: ExtractedMaterial,
+      material: SampledMaterial,
       projectId: string,
     ): Promise<DesignFingerprint> {
       // Dynamic import — openai is an optional peer dependency
@@ -53,8 +52,11 @@ export function createOpenAIProvider(options: {
 
       const client = new sdk.default({ apiKey });
 
-      const summarized = summarizeMaterial(material);
-      const prompt = buildFingerprintPrompt(projectId, summarized);
+      const fileContents = material.files
+        .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
+        .join("\n\n");
+
+      const prompt = buildFingerprintPrompt(projectId, fileContents);
 
       const response = await client.chat.completions.create({
         model,
