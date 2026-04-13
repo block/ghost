@@ -187,6 +187,7 @@ export interface DesignFingerprint {
     borderRadii: number[];
     shadowComplexity: "none" | "subtle" | "layered";
     borderUsage: "minimal" | "moderate" | "heavy";
+    borderTokenCount?: number;
   };
 
   architecture: {
@@ -279,13 +280,15 @@ export interface FingerprintHistoryEntry {
 
 // --- Sync / acknowledgment types ---
 
-export type DimensionStance = "aligned" | "accepted" | "diverging";
+export type DimensionStance = "aligned" | "accepted" | "diverging" | "reconverging";
 
 export interface DimensionAck {
   distance: number;
   stance: DimensionStance;
   ackedAt: string;
   reason?: string;
+  tolerance?: number;
+  divergedAt?: string;
 }
 
 export interface SyncManifest {

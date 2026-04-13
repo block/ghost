@@ -17,6 +17,8 @@ export {
   resolveParent,
   writeSyncManifest,
 } from "./evolution/index.js";
+export type { CheckBoundsOptions } from "./evolution/index.js";
+export type { FleetClusterOptions } from "./evolution/index.js";
 export { detectExtractors, extract } from "./extractors/index.js";
 export type { CompareOptions } from "./fingerprint/compare.js";
 export {
@@ -26,10 +28,21 @@ export {
   describeFingerprint,
   embeddingDistance,
   fingerprintFromRegistry,
+  inferSemanticRole,
 } from "./fingerprint/index.js";
-export { createProvider } from "./llm/index.js";
-export type { ProfileOptions } from "./profile.js";
-export { profile, profileRegistry } from "./profile.js";
+export type { RoleCandidate } from "./fingerprint/index.js";
+export {
+  analyzeStructure,
+  createProvider,
+  validateFingerprint,
+} from "./llm/index.js";
+export type {
+  FingerprintValidation,
+  StructuralAnalysis,
+  ValidationIssue,
+} from "./llm/index.js";
+export type { ProfileOptions, ProfileResult } from "./profile.js";
+export { profile, profileRegistry, profileWithAnalysis } from "./profile.js";
 export { formatReport as formatCLIReport } from "./reporters/cli.js";
 export { formatDiffCLI, formatDiffJSON } from "./reporters/diff.js";
 export {
@@ -49,6 +62,7 @@ export {
 } from "./reporters/temporal.js";
 export { parseCSS } from "./resolvers/css.js";
 export { resolveRegistry } from "./resolvers/registry.js";
+export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
 export type {
