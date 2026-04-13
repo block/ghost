@@ -16,10 +16,14 @@ export async function materializeNpm(
 
   try {
     // Download and extract the package tarball
-    execSync(`npm pack ${packageName} --pack-destination "${tempDir}"`, {
-      stdio: "pipe",
-      timeout: 60000,
-    });
+    // Use public registry explicitly to avoid corporate proxy issues
+    execSync(
+      `npm pack ${packageName} --pack-destination "${tempDir}" --registry https://registry.npmjs.org`,
+      {
+        stdio: "pipe",
+        timeout: 120000,
+      },
+    );
 
     // Find the tarball
     const files = await readdir(tempDir);

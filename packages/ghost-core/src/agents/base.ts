@@ -94,6 +94,16 @@ export abstract class BaseAgent<TInput, TOutput>
       metadata: { agent: this.name, event: "done", status: state.status },
     });
 
+    if (state.status === "failed" && !state.result) {
+      const reasons = [
+        ...state.warnings,
+        ...state.reasoning,
+      ].filter(Boolean);
+      throw new Error(
+        `[${this.name}] Agent failed: ${reasons[0] ?? "unknown error"}`,
+      );
+    }
+
     return this.toResult(state, duration);
   }
 

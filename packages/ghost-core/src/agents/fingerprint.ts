@@ -143,8 +143,12 @@ Generate a natural-language design language profile when possible.`;
     // Try to build from tokens first
     const allTokens = [];
     for (const file of material.styleFiles) {
-      const tokens = parseCSS(file.content);
-      allTokens.push(...tokens);
+      try {
+        const tokens = parseCSS(file.content);
+        allTokens.push(...tokens);
+      } catch {
+        // SCSS or malformed CSS — skip
+      }
     }
 
     if (allTokens.length > 0) {

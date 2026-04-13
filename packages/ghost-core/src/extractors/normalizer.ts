@@ -27,13 +27,17 @@ export function normalizeTokens(
           )
             continue;
 
-          const cssTokens = parseCSS(file.content);
-          for (const token of cssTokens) {
-            tokens.push({
-              ...token,
-              originalFormat: "css-custom-properties",
-              sourceFile: file.path,
-            });
+          try {
+            const cssTokens = parseCSS(file.content);
+            for (const token of cssTokens) {
+              tokens.push({
+                ...token,
+                originalFormat: "css-custom-properties",
+                sourceFile: file.path,
+              });
+            }
+          } catch {
+            // PostCSS can't parse SCSS or malformed CSS — skip gracefully
           }
           processedFiles.add(file.path);
         }
