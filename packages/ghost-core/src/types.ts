@@ -1,3 +1,27 @@
+// --- Target system ---
+
+export type TargetType =
+  | "path"
+  | "url"
+  | "registry"
+  | "npm"
+  | "github"
+  | "figma"
+  | "doc-site";
+
+export interface TargetOptions {
+  branch?: string;
+  crawlDepth?: number;
+  figmaToken?: string;
+}
+
+export interface Target {
+  type: TargetType;
+  value: string;
+  name?: string;
+  options?: TargetOptions;
+}
+
 // --- Registry types (mirrors shadcn registry schema) ---
 
 export type RegistryItemType =
@@ -107,16 +131,32 @@ export interface CSSToken {
   category: TokenCategory;
 }
 
+// --- Format detection ---
+
+export type TokenFormat =
+  | "css-custom-properties"
+  | "tailwind-config"
+  | "style-dictionary"
+  | "w3c-design-tokens"
+  | "shadcn-registry"
+  | "figma-variables"
+  | "unknown";
+
+export interface DetectedFormat {
+  format: TokenFormat;
+  confidence: number;
+  evidence: string;
+  files: string[];
+}
+
+export interface NormalizedToken extends CSSToken {
+  originalFormat: TokenFormat;
+  sourceFile?: string;
+}
+
 // --- Config types ---
 
 export type RuleSeverity = "error" | "warn" | "off";
-
-export interface DesignSystemConfig {
-  name: string;
-  registry: string;
-  componentDir: string;
-  styleEntry: string;
-}
 
 export interface ScanOptions {
   values: boolean;
@@ -133,8 +173,8 @@ export interface VisualScanConfig {
 }
 
 export interface GhostConfig {
-  parent?: ParentSource;
-  designSystems?: DesignSystemConfig[];
+  targets?: Target[];
+  parent?: Target;
   scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
@@ -142,6 +182,12 @@ export interface GhostConfig {
   llm?: LLMConfig;
   embedding?: EmbeddingConfig;
   extractors?: string[];
+  agents?: AgentsConfig;
+}
+
+export interface AgentsConfig {
+  maxIterations?: number;
+  verbose?: boolean;
 }
 
 // --- Fingerprint types ---
@@ -201,12 +247,48 @@ export interface DesignFingerprint {
   embedding: number[];
 }
 
+// --- AI enrichment types ---
+
+export interface DesignLanguageProfile {
+  summary: string;
+  personality: string[];
+  closestKnownSystems: string[];
+}
+
+export interface EnrichedFingerprint extends DesignFingerprint {
+  languageProfile?: DesignLanguageProfile;
+  detectedFormats?: DetectedFormat[];
+  targetType: TargetType;
+}
+
+export type DivergenceClass =
+  | "accidental-drift"
+  | "intentional-variant"
+  | "evolution-lag"
+  | "incompatible";
+
+export interface EnrichedComparison extends FingerprintComparison {
+  classification: DivergenceClass;
+  explanations: Record<string, string>;
+}
+
 // --- Extractor types ---
 
 export interface ExtractedFile {
   path: string;
   content: string;
-  type: "css" | "scss" | "tailwind-config" | "component" | "config" | "other";
+  type:
+    | "css"
+    | "scss"
+    | "tailwind-config"
+    | "component"
+    | "config"
+    | "json-tokens"
+    | "style-dictionary"
+    | "w3c-tokens"
+    | "figma-variables"
+    | "documentation"
+    | "other";
 }
 
 export interface ExtractedMaterial {
@@ -218,6 +300,9 @@ export interface ExtractedMaterial {
     componentLibrary: string | null;
     tokenCount: number;
     componentCount: number;
+    targetType?: TargetType;
+    detectedFormats?: DetectedFormat[];
+    sourceUrl?: string;
   };
 }
 
@@ -259,19 +344,35 @@ export interface LLMProvider {
   ) => Promise<DesignFingerprint>;
 }
 
-// --- Parent / lineage types ---
+// --- Agent types ---
 
-export type ParentSource =
-  | { type: "default" }
-  | { type: "url"; url: string }
-  | { type: "path"; path: string }
-  | { type: "package"; name: string };
+export interface AgentMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AgentContext {
+  llm: LLMConfig;
+  embedding?: EmbeddingConfig;
+  verbose?: boolean;
+  onMessage?: (msg: AgentMessage) => void;
+}
+
+export interface AgentResult<T> {
+  data: T;
+  confidence: number;
+  warnings: string[];
+  reasoning: string[];
+  iterations: number;
+  duration: number;
+}
 
 // --- History types ---
 
 export interface FingerprintHistoryEntry {
   fingerprint: DesignFingerprint;
-  parentRef?: ParentSource;
+  parentRef?: Target;
   comparisonToParent?: {
     distance: number;
     dimensions: Record<string, number>;
@@ -280,7 +381,11 @@ export interface FingerprintHistoryEntry {
 
 // --- Sync / acknowledgment types ---
 
-export type DimensionStance = "aligned" | "accepted" | "diverging" | "reconverging";
+export type DimensionStance =
+  | "aligned"
+  | "accepted"
+  | "diverging"
+  | "reconverging";
 
 export interface DimensionAck {
   distance: number;
@@ -292,7 +397,7 @@ export interface DimensionAck {
 }
 
 export interface SyncManifest {
-  parent: ParentSource;
+  parent: Target;
   ackedAt: string;
   parentFingerprintId: string;
   childFingerprintId: string;
@@ -345,7 +450,7 @@ export interface TemporalComparison extends FingerprintComparison {
 export interface FleetMember {
   id: string;
   fingerprint: DesignFingerprint;
-  parentRef?: ParentSource;
+  parentRef?: Target;
   distanceToParent?: number;
 }
 

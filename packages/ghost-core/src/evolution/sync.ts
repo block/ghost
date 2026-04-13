@@ -7,8 +7,8 @@ import type {
   DimensionAck,
   DimensionStance,
   FingerprintComparison,
-  ParentSource,
   SyncManifest,
+  Target,
 } from "../types.js";
 
 const SYNC_FILENAME = ".ghost-sync.json";
@@ -52,7 +52,7 @@ export async function writeSyncManifest(
 export async function acknowledge(opts: {
   child: DesignFingerprint;
   parent: DesignFingerprint;
-  parentRef: ParentSource;
+  parentRef: Target;
   dimension?: string;
   stance?: DimensionStance;
   reason?: string;

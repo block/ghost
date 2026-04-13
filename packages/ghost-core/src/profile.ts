@@ -1,3 +1,5 @@
+import { Director } from "./agents/director.js";
+import { resolveTarget } from "./config.js";
 import { emitFingerprint } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
 import { extract } from "./extractors/index.js";
@@ -11,15 +13,28 @@ import { validateFingerprint } from "./llm/validate-fingerprint.js";
 import type { FingerprintValidation } from "./llm/validate-fingerprint.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import type {
+  AgentContext,
+  AgentResult,
   DesignFingerprint,
   EmbeddingConfig,
+  EnrichedFingerprint,
   ExtractedMaterial,
   GhostConfig,
+  LLMConfig,
+  Target,
 } from "./types.js";
 
 export interface ProfileOptions {
   cwd?: string;
   emit?: boolean;
+  registry?: string;
+}
+
+export interface ProfileTargetResult {
+  fingerprint: EnrichedFingerprint;
+  confidence: number;
+  reasoning: string[];
+  warnings: string[];
 }
 
 export interface ProfileResult {
@@ -45,17 +60,13 @@ async function embedFingerprint(
 /**
  * Profile a repository — extract design material and produce a fingerprint.
  *
- * If LLM config is present, uses LLM to interpret the extracted material,
- * then runs structural analysis and fingerprint validation as enrichment.
+ * Works in zero-config mode: just pass a config (defaults are fine) and a cwd.
  *
+ * If LLM config is present, uses LLM to interpret the extracted material.
  * Otherwise, attempts a deterministic fingerprint from CSS tokens.
- * Deterministic validation still runs (no LLM needed for that).
- *
- * If embedding config is present, uses an embedding API for the vector.
- * Otherwise, falls back to a deterministic 64-dim feature vector.
  *
  * Returns DesignFingerprint for backward compatibility.
- * Use profileWithAnalysis() for the enriched result with validation and structural analysis.
+ * Use profileWithAnalysis() for the enriched result.
  */
 export async function profile(
   config: GhostConfig,
@@ -67,11 +78,6 @@ export async function profile(
 
 /**
  * Profile a repository with optional AI-powered enrichment.
- *
- * Returns the fingerprint along with:
- * - validation: confidence score, issues, and suggestions (always runs, deterministic)
- * - structuralAnalysis: composition patterns, grid detection, visual hierarchy
- *   (runs when LLM config is present, falls back to deterministic detection)
  */
 export async function profileWithAnalysis(
   config: GhostConfig,
@@ -81,25 +87,29 @@ export async function profileWithAnalysis(
     typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
   const cwd = opts.cwd ?? process.cwd();
 
+  // Determine registry from options or first target
+  const registryPath =
+    opts.registry ??
+    config.targets?.find((t) => t.type === "registry" || t.type === "url")
+      ?.value;
+
   const material = await extract(cwd, {
     ignore: config.ignore,
     extractorNames: config.extractors,
-    componentDir: config.designSystems?.[0]?.componentDir,
-    styleEntry: config.designSystems?.[0]?.styleEntry,
   });
 
   let fingerprint: DesignFingerprint;
 
   if (config.llm) {
     const provider = createProvider(config.llm);
-    const projectId = config.designSystems?.[0]?.name ?? "project";
+    const projectId = config.targets?.[0]?.name ?? "project";
     fingerprint = await provider.interpret(material, projectId);
     fingerprint.embedding = await embedFingerprint(
       fingerprint,
       config.embedding,
     );
-  } else if (config.designSystems?.[0]?.registry) {
-    const registry = await resolveRegistry(config.designSystems[0].registry);
+  } else if (registryPath) {
+    const registry = await resolveRegistry(registryPath);
     fingerprint = fingerprintFromRegistry(registry);
     fingerprint.embedding = await embedFingerprint(
       fingerprint,
@@ -147,6 +157,54 @@ export async function profileRegistry(
   const fingerprint = fingerprintFromRegistry(registry);
   fingerprint.embedding = await embedFingerprint(fingerprint, embeddingConfig);
   return fingerprint;
+}
+
+/**
+ * Profile any target using the agent pipeline.
+ *
+ * This is the primary entry point for Ghost v2.
+ * Accepts a Target object or a string (auto-resolved via resolveTarget).
+ * Config is optional — uses defaults if not provided.
+ *
+ * Uses Director → ExtractionAgent → FingerprintAgent pipeline.
+ * Without LLM config, runs a single deterministic pass.
+ * With LLM config, runs multi-turn enrichment with self-correction.
+ */
+export async function profileTarget(
+  targetOrString: Target | string,
+  config?: GhostConfig,
+): Promise<ProfileTargetResult> {
+  const target =
+    typeof targetOrString === "string"
+      ? resolveTarget(targetOrString)
+      : targetOrString;
+
+  const ctx: AgentContext = {
+    llm: config?.llm ?? ({ provider: "anthropic" } as LLMConfig),
+    embedding: config?.embedding,
+    verbose: config?.agents?.verbose ?? false,
+  };
+
+  // If no LLM API key, run without LLM
+  if (!config?.llm?.apiKey && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
+    ctx.llm = undefined as unknown as LLMConfig;
+  }
+
+  const director = new Director();
+  const result = await director.profile(target, ctx);
+
+  return {
+    fingerprint: result.fingerprint.data,
+    confidence: result.fingerprint.confidence,
+    reasoning: [
+      ...result.extraction.reasoning,
+      ...result.fingerprint.reasoning,
+    ],
+    warnings: [
+      ...result.extraction.warnings,
+      ...result.fingerprint.warnings,
+    ],
+  };
 }
 
 /**

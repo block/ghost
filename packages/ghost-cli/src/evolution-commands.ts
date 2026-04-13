@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import type { DesignFingerprint, DimensionStance } from "@ghost/core";
+import type { DesignFingerprint, DimensionStance, Target } from "@ghost/core";
 import {
   acknowledge,
   compareFleet,
@@ -45,19 +45,22 @@ export const ackCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const config = await loadConfig({
-        configPath: args.config,
-        requireDesignSystems: false,
-      });
+      const config = await loadConfig(args.config);
 
-      const parentRef = config.parent ?? { type: "default" as const };
-      const parentFp = await resolveParent(parentRef);
+      if (!config.parent) {
+        console.error(
+          "Error: No parent declared. Set `parent` in ghost.config.ts or use --parent.",
+        );
+        process.exit(2);
+      }
+
+      const parentFp = await resolveParent(config.parent);
       const childFp = await profile(config);
 
       const { manifest, comparison } = await acknowledge({
         child: childFp,
         parent: parentFp,
-        parentRef,
+        parentRef: config.parent,
         dimension: args.dimension,
         stance: args.stance as DimensionStance,
         reason: args.reason,
@@ -130,13 +133,10 @@ export const adoptCommand = defineCommand({
       const sourceData = await readFile(args.source, "utf-8");
       const newParent: DesignFingerprint = JSON.parse(sourceData);
 
-      const config = await loadConfig({
-        configPath: args.config,
-        requireDesignSystems: false,
-      });
+      const config = await loadConfig(args.config);
       const childFp = await profile(config);
 
-      const newParentRef = { type: "path" as const, path: args.source };
+      const newParentRef: Target = { type: "path", value: args.source };
 
       const { manifest, comparison } = await acknowledge({
         child: childFp,
@@ -198,19 +198,22 @@ export const divergeCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const config = await loadConfig({
-        configPath: args.config,
-        requireDesignSystems: false,
-      });
+      const config = await loadConfig(args.config);
 
-      const parentRef = config.parent ?? { type: "default" as const };
-      const parentFp = await resolveParent(parentRef);
+      if (!config.parent) {
+        console.error(
+          "Error: No parent declared. Set `parent` in ghost.config.ts or use --parent.",
+        );
+        process.exit(2);
+      }
+
+      const parentFp = await resolveParent(config.parent);
       const childFp = await profile(config);
 
       const { manifest } = await acknowledge({
         child: childFp,
         parent: parentFp,
-        parentRef,
+        parentRef: config.parent,
         dimension: args.dimension,
         stance: "diverging",
         reason: args.reason,
