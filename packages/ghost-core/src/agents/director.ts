@@ -1,4 +1,7 @@
 import { compareFleet } from "../evolution/fleet.js";
+import { extract } from "../stages/extract.js";
+import { compare as compareStage } from "../stages/compare.js";
+import { comply as complyStage } from "../stages/comply.js";
 import type {
   AgentContext,
   AgentResult,
@@ -10,28 +13,20 @@ import type {
   SampledMaterial,
   Target,
 } from "../types.js";
-import type { ComparisonInput } from "./comparison.js";
-import { ComparisonAgent } from "./comparison.js";
-import type { ComplianceInput, ComplianceReport } from "./compliance.js";
-import { ComplianceAgent } from "./compliance.js";
+import type { ComplianceInput, ComplianceReport } from "../stages/comply.js";
 import type { DiscoveredSystem, DiscoveryInput } from "./discovery.js";
 import { DiscoveryAgent } from "./discovery.js";
-import { ExtractionAgent } from "./extraction.js";
 import { FingerprintAgent } from "./fingerprint.js";
 
 /**
- * Director Agent — orchestrates agent pipelines.
+ * Director — orchestrates the fingerprinting pipeline.
  *
- * Routes high-level user intent to the appropriate sequence of agents.
- * Handles multi-step workflows like "profile X and compare to Y".
- * Parallelizes independent agent calls where possible.
+ * Uses plain stage functions for deterministic steps (extract, compare, comply)
+ * and agents for LLM-powered steps (fingerprint, discovery).
  */
 export class Director {
-  private extractionAgent = new ExtractionAgent();
   private fingerprintAgent = new FingerprintAgent();
-  private comparisonAgent = new ComparisonAgent();
   private discoveryAgent = new DiscoveryAgent();
-  private complianceAgent = new ComplianceAgent();
 
   /**
    * Profile a target: extract → fingerprint
@@ -43,7 +38,9 @@ export class Director {
     extraction: AgentResult<SampledMaterial>;
     fingerprint: AgentResult<EnrichedFingerprint>;
   }> {
-    const extraction = await this.extractionAgent.execute(target, ctx);
+    const extractionResult = await extract(target);
+    const extraction = stageToAgentResult(extractionResult);
+
     const fingerprint = await this.fingerprintAgent.execute(
       extraction.data,
       ctx,
@@ -65,29 +62,22 @@ export class Director {
     target: AgentResult<EnrichedFingerprint>;
     comparison: AgentResult<EnrichedComparison>;
   }> {
-    // Profile both in parallel
     const [sourceResult, targetResult] = await Promise.all([
       this.profile(sourceTarget, ctx),
       this.profile(targetTarget, ctx),
     ]);
 
-    // Compare
-    const comparisonInput: ComparisonInput = {
+    const comparisonResult = await compareStage({
       source: sourceResult.fingerprint.data,
       target: targetResult.fingerprint.data,
       sourceLabel: sourceTarget.name ?? sourceTarget.value,
       targetLabel: targetTarget.name ?? targetTarget.value,
-    };
-
-    const comparison = await this.comparisonAgent.execute(
-      comparisonInput,
-      ctx,
-    );
+    });
 
     return {
       source: sourceResult.fingerprint,
       target: targetResult.fingerprint,
-      comparison,
+      comparison: stageToAgentResult(comparisonResult),
     };
   }
 
@@ -104,15 +94,12 @@ export class Director {
   }> {
     const { fingerprint } = await this.profile(target, ctx);
 
-    const comparison = await this.comparisonAgent.execute(
-      {
-        source: parentFingerprint,
-        target: fingerprint.data,
-      },
-      ctx,
-    );
+    const comparisonResult = await compareStage({
+      source: parentFingerprint,
+      target: fingerprint.data,
+    });
 
-    return { fingerprint, comparison };
+    return { fingerprint, comparison: stageToAgentResult(comparisonResult) };
   }
 
   /**
@@ -138,15 +125,15 @@ export class Director {
   }> {
     const { fingerprint } = await this.profile(target, ctx);
 
-    const compliance = await this.complianceAgent.execute(
-      {
-        ...input,
-        fingerprint: fingerprint.data,
-      },
-      ctx,
-    );
+    const complianceResult = await complyStage({
+      ...input,
+      fingerprint: fingerprint.data,
+    });
 
-    return { fingerprint, compliance };
+    return {
+      fingerprint,
+      compliance: stageToAgentResult(complianceResult),
+    };
   }
 
   /**
@@ -164,7 +151,6 @@ export class Director {
     }>;
     fleet: FleetComparison;
   }> {
-    // Profile all targets in parallel
     const profileResults = await Promise.all(
       targets.map(async (target) => {
         const result = await this.profile(target, ctx);
@@ -172,14 +158,12 @@ export class Director {
       }),
     );
 
-    // Build fleet members
     const fleetMembers: FleetMember[] = profileResults.map((r) => ({
       id: r.target.name ?? r.target.value,
       fingerprint: r.fingerprint.data,
       parentRef: r.target,
     }));
 
-    // Run fleet comparison
     const fleetResult = compareFleet(fleetMembers, {
       cluster: options?.cluster ?? true,
     });
@@ -189,4 +173,14 @@ export class Director {
       fleet: fleetResult,
     };
   }
+}
+
+/** Convert a StageResult to an AgentResult for backward compatibility. */
+function stageToAgentResult<T>(
+  stage: import("../stages/types.js").StageResult<T>,
+): AgentResult<T> {
+  return {
+    ...stage,
+    iterations: 1,
+  };
 }

@@ -155,3 +155,91 @@ Set "id" to "${projectId}".
 
 ${fileContents}`;
 }
+
+/**
+ * Build a signal-aware prompt that includes pre-extracted deterministic signals.
+ * The LLM validates, corrects, and fills gaps rather than parsing from scratch.
+ */
+export function buildSignalAwarePrompt(
+  projectId: string,
+  fileContents: string,
+  signals: import("../signals/types.js").DeterministicSignals,
+  platform?: string,
+): string {
+  const platformNote = platform === "ios"
+    ? "\n**Platform: iOS/SwiftUI.** Values are in pt. Use iOS methodology vocabulary.\n"
+    : platform === "multiplatform"
+      ? "\n**Platform: Multi-platform** (web + iOS). Combine signals from both.\n"
+      : "";
+
+  // Format pre-extracted signals
+  const signalSections: string[] = [];
+
+  if (signals.partial.palette) {
+    const p = signals.partial.palette;
+    signalSections.push(`### Pre-extracted Colors (${p.semantic.length} semantic, ${p.dominant.length} dominant)
+${p.semantic.map((c) => `- ${c.role}: ${c.value}${c.oklch ? ` → oklch(${c.oklch.join(", ")})` : ""}`).join("\n")}
+Saturation: ${p.saturationProfile}, Contrast: ${p.contrast}`);
+  }
+
+  if (signals.partial.spacing) {
+    const s = signals.partial.spacing;
+    signalSections.push(`### Pre-extracted Spacing
+Scale: [${s.scale.join(", ")}], Base unit: ${s.baseUnit ?? "unknown"}, Regularity: ${(s.regularity * 100).toFixed(0)}%`);
+  }
+
+  if (signals.partial.typography) {
+    const t = signals.partial.typography;
+    signalSections.push(`### Pre-extracted Typography
+Families: [${t.families.join(", ")}], Size ramp: [${t.sizeRamp.join(", ")}]
+Weights: ${Object.entries(t.weightDistribution).map(([w, c]) => `${w}(×${c})`).join(", ") || "none detected"}`);
+  }
+
+  if (signals.partial.surfaces) {
+    const s = signals.partial.surfaces;
+    signalSections.push(`### Pre-extracted Surfaces
+Border radii: [${s.borderRadii.join(", ")}], Shadows: ${s.shadowComplexity}`);
+  }
+
+  if (signals.methodologySignals.length > 0) {
+    signalSections.push(`### Detected Methodologies
+${signals.methodologySignals.join(", ")}`);
+  }
+
+  if (signals.componentNames.length > 0) {
+    signalSections.push(`### Detected Components (${signals.componentNames.length})
+${signals.componentNames.slice(0, 30).join(", ")}${signals.componentNames.length > 30 ? "..." : ""}`);
+  }
+
+  const focusNote = signals.llmFocusAreas.length > 0
+    ? `\n**Focus areas:** The following dimensions need your analysis: ${signals.llmFocusAreas.join(", ")}. The pre-extracted signals above may be incomplete for these.\n`
+    : "\n**All dimensions have pre-extracted data.** Validate, correct errors, and fill qualitative fields.\n";
+
+  return `You are a design system analyst. Analyze the source files below and produce a structured design fingerprint.
+${platformNote}
+## Pre-extracted Signals (deterministic)
+
+The following signals were extracted programmatically from the source files. They are generally accurate but may contain errors or miss patterns that require interpretation.
+
+${signalSections.join("\n\n")}
+${focusNote}
+## Your Task
+
+1. **Validate** the pre-extracted signals against the source files. Fix any errors.
+2. **Complete** missing dimensions${signals.llmFocusAreas.length > 0 ? ` (especially: ${signals.llmFocusAreas.join(", ")})` : ""}.
+3. **Fill qualitative fields**: saturationProfile, contrast, lineHeightPattern, borderUsage, tokenization score, naming pattern.
+4. **Convert colors to OKLCH** if not already converted.
+5. Output the complete fingerprint JSON.
+
+## Output Format
+
+Return ONLY a valid JSON object matching this schema (no markdown, no explanation):
+
+${FINGERPRINT_SCHEMA}
+
+Set "id" to "${projectId}".
+
+## Source Files
+
+${fileContents}`;
+}
