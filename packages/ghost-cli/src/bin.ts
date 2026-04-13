@@ -5,8 +5,6 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 // Load .env from project root if present.
-// The library (ghost-core) reads process.env — this is the only place .env files are loaded.
-// Supports: .env, .env.local (local takes precedence)
 for (const envFile of [".env", ".env.local"]) {
   const envPath = resolve(process.cwd(), envFile);
   if (existsSync(envPath)) {
@@ -18,7 +16,7 @@ for (const envFile of [".env", ".env.local"]) {
   }
 }
 
-import type { DesignFingerprint } from "@ghost/core";
+import type { DesignFingerprint, EmbeddingConfig } from "@ghost/core";
 import {
   compareFingerprints,
   computeTemporalComparison,
@@ -26,8 +24,13 @@ import {
   formatCLIReport,
   formatComparison,
   formatComparisonJSON,
+  formatComplianceCLI,
+  formatComplianceJSON,
+  formatComplianceSARIF,
   formatDiffCLI,
   formatDiffJSON,
+  formatDiscoveryCLI,
+  formatDiscoveryJSON,
   formatFingerprint,
   formatFingerprintJSON,
   formatJSONReport,
@@ -36,8 +39,10 @@ import {
   loadConfig,
   profile,
   profileRegistry,
+  profileTarget,
   readHistory,
   readSyncManifest,
+  resolveTarget,
   scan,
 } from "@ghost/core";
 import { defineCommand, runMain } from "citty";
@@ -95,9 +100,16 @@ const scanCommand = defineCommand({
 const profileCommand = defineCommand({
   meta: {
     name: "profile",
-    description: "Generate a design fingerprint for a project",
+    description:
+      "Generate a design fingerprint for any target (directory, URL, npm package, GitHub repo)",
   },
   args: {
+    target: {
+      type: "positional",
+      description:
+        "Target to profile: path, URL, npm package, or owner/repo (defaults to current directory)",
+      required: false,
+    },
     config: {
       type: "string",
       description: "Path to ghost config file",
@@ -120,6 +132,16 @@ const profileCommand = defineCommand({
         "Write .ghost-fingerprint.json to project root (publishable artifact)",
       default: false,
     },
+    ai: {
+      type: "boolean",
+      description: "Enable AI-powered enrichment (requires LLM API key)",
+      default: false,
+    },
+    verbose: {
+      type: "boolean",
+      description: "Show agent reasoning",
+      default: false,
+    },
     format: {
       type: "string",
       description: "Output format: cli or json",
@@ -131,23 +153,46 @@ const profileCommand = defineCommand({
       let fingerprint: DesignFingerprint;
 
       if (args.registry) {
-        // Still load config if available — for embedding settings
-        let embeddingConfig: import("@ghost/core").EmbeddingConfig | undefined;
+        let embeddingConfig: EmbeddingConfig | undefined;
         try {
-          const config = await loadConfig({
-            configPath: args.config,
-            requireDesignSystems: false,
-          });
+          const config = await loadConfig(args.config);
           embeddingConfig = config.embedding;
         } catch {
-          // No config file is fine when --registry is provided
+          // No config file is fine
         }
         fingerprint = await profileRegistry(args.registry, embeddingConfig);
+      } else if (args.target && args.target !== ".") {
+        // Use the new target-based pipeline
+        const config = await loadConfig(args.config);
+        const target = resolveTarget(args.target);
+
+        if (args.verbose) {
+          console.log(
+            `Profiling ${target.type}: ${target.value}`,
+          );
+        }
+
+        const result = await profileTarget(target, config);
+        fingerprint = result.fingerprint;
+
+        if (args.verbose) {
+          console.log(
+            `Confidence: ${result.confidence.toFixed(2)}`,
+          );
+          for (const r of result.reasoning) {
+            console.log(`  ${r}`);
+          }
+          if (result.warnings.length > 0) {
+            console.log("Warnings:");
+            for (const w of result.warnings) {
+              console.log(`  ⚠ ${w}`);
+            }
+          }
+          console.log();
+        }
       } else {
-        const config = await loadConfig({
-          configPath: args.config,
-          requireDesignSystems: false,
-        });
+        // Default: profile current directory with legacy pipeline
+        const config = await loadConfig(args.config);
         fingerprint = await profile(config, { emit: args.emit });
       }
 
@@ -307,17 +352,157 @@ const diffCommand = defineCommand({
   },
 });
 
+const discoverCommand = defineCommand({
+  meta: {
+    name: "discover",
+    description: "Find public design systems matching a query",
+  },
+  args: {
+    query: {
+      type: "positional",
+      description: "Search query (e.g., 'react', 'material', 'minimal')",
+      required: false,
+    },
+    format: {
+      type: "string",
+      description: "Output format: cli or json",
+      default: "cli",
+    },
+  },
+  async run({ args }) {
+    try {
+      const { Director } = await import("@ghost/core");
+      const config = await loadConfig().catch(() => undefined);
+      const director = new Director();
+      const result = await director.discover(
+        { query: args.query || undefined },
+        { llm: config?.llm ?? (undefined as never) },
+      );
+
+      const output =
+        args.format === "json"
+          ? formatDiscoveryJSON(result.data)
+          : formatDiscoveryCLI(result.data);
+
+      process.stdout.write(`${output}\n`);
+      process.exit(0);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  },
+});
+
+const complyCommand = defineCommand({
+  meta: {
+    name: "comply",
+    description: "Check design system compliance against rules and parent",
+  },
+  args: {
+    target: {
+      type: "positional",
+      description:
+        "Target to check (path, URL, npm package, owner/repo). Defaults to current directory.",
+      required: false,
+    },
+    against: {
+      type: "string",
+      description: "Path to parent fingerprint JSON to check drift against",
+    },
+    "max-drift": {
+      type: "string",
+      description: "Maximum overall drift distance (default: 0.3)",
+      default: "0.3",
+    },
+    config: {
+      type: "string",
+      description: "Path to ghost config file",
+      alias: "c",
+    },
+    format: {
+      type: "string",
+      description: "Output format: cli, json, or sarif",
+      default: "cli",
+    },
+    verbose: {
+      type: "boolean",
+      description: "Show agent reasoning",
+      default: false,
+    },
+  },
+  async run({ args }) {
+    try {
+      const { Director } = await import("@ghost/core");
+      const config = await loadConfig(args.config);
+      const targetStr = args.target || ".";
+      const target = resolveTarget(targetStr);
+
+      // Load parent fingerprint if --against provided
+      let parentFingerprint: DesignFingerprint | undefined;
+      if (args.against) {
+        const data = await readFile(args.against, "utf-8");
+        parentFingerprint = JSON.parse(data);
+      }
+
+      const director = new Director();
+      const { fingerprint, compliance } = await director.comply(
+        target,
+        {
+          parentFingerprint,
+          thresholds: {
+            maxOverallDrift: Number.parseFloat(args["max-drift"]),
+          },
+        },
+        {
+          llm: config.llm ?? (undefined as never),
+          embedding: config.embedding,
+          verbose: args.verbose,
+        },
+      );
+
+      if (args.verbose) {
+        console.log(`Profiled ${target.type}: ${target.value}`);
+        console.log(
+          `Confidence: ${fingerprint.confidence.toFixed(2)}`,
+        );
+        console.log();
+      }
+
+      let output: string;
+      if (args.format === "sarif") {
+        output = formatComplianceSARIF(compliance.data);
+      } else if (args.format === "json") {
+        output = formatComplianceJSON(compliance.data);
+      } else {
+        output = formatComplianceCLI(compliance.data);
+      }
+
+      process.stdout.write(`${output}\n`);
+      process.exit(compliance.data.passed ? 0 : 1);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  },
+});
+
 const main = defineCommand({
   meta: {
     name: "ghost",
-    version: "0.1.0",
-    description: "Design drift detection",
+    version: "0.2.0",
+    description: "Universal design system fingerprinting and drift detection",
   },
   subCommands: {
     scan: scanCommand,
     profile: profileCommand,
     compare: compareCommand,
     diff: diffCommand,
+    discover: discoverCommand,
+    comply: complyCommand,
     fleet: fleetCommand,
     ack: ackCommand,
     adopt: adoptCommand,

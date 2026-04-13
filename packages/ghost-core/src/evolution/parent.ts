@@ -1,54 +1,56 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { DesignFingerprint, ParentSource } from "../types.js";
+import { resolveTarget } from "../config.js";
+import type { DesignFingerprint, Target } from "../types.js";
 
 /**
- * Resolve a ParentSource to a DesignFingerprint.
+ * Resolve a Target to a DesignFingerprint.
  *
- * - "default": looks for .ghost-fingerprint.json in cwd (ghostui implied)
  * - "path": reads a local .ghost-fingerprint.json or fingerprint JSON file
  * - "url": fetches a remote fingerprint JSON
- * - "package": resolves node_modules/<name>/.ghost-fingerprint.json
+ * - "npm": resolves node_modules/<name>/.ghost-fingerprint.json
+ * - "github": not yet supported for direct resolution (use profile flow instead)
  */
 export async function resolveParent(
-  source: ParentSource,
+  target: Target,
   cwd: string = process.cwd(),
 ): Promise<DesignFingerprint> {
-  switch (source.type) {
-    case "default":
-      throw new Error(
-        "No parent declared. Set `parent` in ghost.config.ts or use --parent.",
-      );
-
+  switch (target.type) {
     case "path": {
-      const resolved = resolve(cwd, source.path);
+      const resolved = resolve(cwd, target.value);
       // If it points to a directory, look for .ghost-fingerprint.json inside it
-      const target = resolved.endsWith(".json")
+      const filePath = resolved.endsWith(".json")
         ? resolved
         : resolve(resolved, ".ghost-fingerprint.json");
-      return readFingerprintFile(target);
+      return readFingerprintFile(filePath);
     }
 
-    case "url": {
-      const response = await fetch(source.url);
+    case "url":
+    case "registry": {
+      const response = await fetch(target.value);
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch parent fingerprint from ${source.url}: ${response.status}`,
+          `Failed to fetch parent fingerprint from ${target.value}: ${response.status}`,
         );
       }
       return (await response.json()) as DesignFingerprint;
     }
 
-    case "package": {
+    case "npm": {
       // Resolve from node_modules
-      const target = resolve(
+      const filePath = resolve(
         cwd,
         "node_modules",
-        source.name,
+        target.value,
         ".ghost-fingerprint.json",
       );
-      return readFingerprintFile(target);
+      return readFingerprintFile(filePath);
     }
+
+    default:
+      throw new Error(
+        `Cannot resolve parent fingerprint from target type "${target.type}". Use "ghost profile" to generate one first.`,
+      );
   }
 }
 
@@ -64,19 +66,15 @@ async function readFingerprintFile(path: string): Promise<DesignFingerprint> {
 }
 
 /**
- * Normalize a config parent value to a ParentSource.
- * Accepts the discriminated union directly, or a string shorthand:
- *   - starts with http → url
- *   - otherwise → path
+ * Normalize a config parent value to a Target.
+ * Accepts a Target directly, or a string shorthand resolved via resolveTarget().
  */
 export function normalizeParentSource(
-  value: ParentSource | string | undefined,
-): ParentSource {
-  if (!value) return { type: "default" };
+  value: Target | string | undefined,
+): Target | undefined {
+  if (!value) return undefined;
   if (typeof value === "string") {
-    return value.startsWith("http")
-      ? { type: "url", url: value }
-      : { type: "path", path: value };
+    return resolveTarget(value);
   }
   return value;
 }

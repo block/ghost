@@ -1,4 +1,25 @@
-export { defineConfig, loadConfig } from "./config.js";
+export {
+  BaseAgent,
+  ComparisonAgent,
+  ComplianceAgent,
+  Director,
+  DiscoveryAgent,
+  ExtractionAgent,
+  FingerprintAgent,
+} from "./agents/index.js";
+export type {
+  Agent,
+  AgentState,
+  ComparisonInput,
+  ComplianceInput,
+  ComplianceReport,
+  ComplianceRule,
+  ComplianceThresholds,
+  ComplianceViolation,
+  DiscoveredSystem,
+  DiscoveryInput,
+} from "./agents/index.js";
+export { defineConfig, loadConfig, resolveTarget } from "./config.js";
 export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
 export { diff } from "./diff.js";
 export {
@@ -19,7 +40,15 @@ export {
 } from "./evolution/index.js";
 export type { CheckBoundsOptions } from "./evolution/index.js";
 export type { FleetClusterOptions } from "./evolution/index.js";
-export { detectExtractors, extract } from "./extractors/index.js";
+export {
+  detectExtractors,
+  detectFormats,
+  extract,
+  extractFromTarget,
+  normalizeTokens,
+  walkAndCategorize,
+  walkDirectory,
+} from "./extractors/index.js";
 export type { CompareOptions } from "./fingerprint/compare.js";
 export {
   compareFingerprints,
@@ -41,9 +70,18 @@ export type {
   StructuralAnalysis,
   ValidationIssue,
 } from "./llm/index.js";
-export type { ProfileOptions, ProfileResult } from "./profile.js";
-export { profile, profileRegistry, profileWithAnalysis } from "./profile.js";
+export type { ProfileOptions, ProfileResult, ProfileTargetResult } from "./profile.js";
+export { profile, profileRegistry, profileTarget, profileWithAnalysis } from "./profile.js";
 export { formatReport as formatCLIReport } from "./reporters/cli.js";
+export {
+  formatComplianceCLI,
+  formatComplianceJSON,
+  formatComplianceSARIF,
+} from "./reporters/compliance.js";
+export {
+  formatDiscoveryCLI,
+  formatDiscoveryJSON,
+} from "./reporters/discovery.js";
 export { formatDiffCLI, formatDiffJSON } from "./reporters/diff.js";
 export {
   formatComparison,
@@ -66,21 +104,29 @@ export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
 export type {
+  AgentContext,
+  AgentMessage,
+  AgentResult,
+  AgentsConfig,
   ColorRamp,
   ComponentMeta,
   CSSToken,
   CSSVarsMap,
   DesignFingerprint,
-  DesignSystemConfig,
+  DesignLanguageProfile,
   DesignSystemReport,
+  DetectedFormat,
   DimensionAck,
   DimensionDelta,
   DimensionStance,
+  DivergenceClass,
   DriftReport,
   DriftSummary,
   DriftVector,
   DriftVelocity,
   EmbeddingConfig,
+  EnrichedComparison,
+  EnrichedFingerprint,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
@@ -95,7 +141,7 @@ export type {
   GhostConfig,
   LLMConfig,
   LLMProvider,
-  ParentSource,
+  NormalizedToken,
   Registry,
   RegistryFile,
   RegistryItem,
@@ -106,8 +152,12 @@ export type {
   SemanticColor,
   StructureDrift,
   SyncManifest,
+  Target,
+  TargetOptions,
+  TargetType,
   TemporalComparison,
   TokenCategory,
+  TokenFormat,
   ValueDrift,
   VisualDrift,
   VisualScanConfig,
