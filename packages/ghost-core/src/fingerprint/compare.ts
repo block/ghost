@@ -148,17 +148,8 @@ function compareTypography(
 ): DimensionDelta {
   const distances: number[] = [];
 
-  // Family match
-  const sharedFamilies = a.typography.families.filter((f) =>
-    b.typography.families.includes(f),
-  );
-  const allFamilies = new Set([
-    ...a.typography.families,
-    ...b.typography.families,
-  ]);
-  distances.push(
-    allFamilies.size > 0 ? 1 - sharedFamilies.length / allFamilies.size : 0,
-  );
+  // Family match — fuzzy comparison
+  distances.push(1 - fontListSimilarity(a.typography.families, b.typography.families));
 
   // Size ramp similarity
   const aRamp = new Set(a.typography.sizeRamp);
@@ -273,6 +264,135 @@ function compareArchitecture(
           ? "Minor architectural differences"
           : "Fundamentally different architecture",
   };
+}
+
+// --- Font matching ---
+
+const FONT_SUFFIXES = /\s*\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
+
+/** Normalize font family name for fuzzy comparison */
+function normalizeFontFamily(name: string): string {
+  return name
+    .replace(/['"]/g, "")
+    .replace(FONT_SUFFIXES, "")
+    .trim()
+    .toLowerCase();
+}
+
+/** Levenshtein distance between two strings */
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    new Array(n + 1).fill(0),
+  );
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+// Font category lookup for common fonts
+const FONT_CATEGORIES: Record<string, string> = {
+  // Sans-serif
+  inter: "sans-serif", arial: "sans-serif", helvetica: "sans-serif",
+  roboto: "sans-serif", "open sans": "sans-serif", lato: "sans-serif",
+  nunito: "sans-serif", poppins: "sans-serif", montserrat: "sans-serif",
+  raleway: "sans-serif", ubuntu: "sans-serif", manrope: "sans-serif",
+  geist: "sans-serif", "dm sans": "sans-serif", "plus jakarta sans": "sans-serif",
+  "source sans": "sans-serif", "work sans": "sans-serif",
+  "hk grotesk": "sans-serif", "cash sans": "sans-serif",
+  "sf pro": "sans-serif", "system-ui": "sans-serif", "sans-serif": "sans-serif",
+  // Serif
+  georgia: "serif", "times new roman": "serif", garamond: "serif",
+  "playfair display": "serif", merriweather: "serif", lora: "serif",
+  "source serif": "serif", "dm serif": "serif", serif: "serif",
+  // Monospace
+  "jetbrains mono": "monospace", "fira code": "monospace", "source code": "monospace",
+  "geist mono": "monospace", "dm mono": "monospace", "ibm plex mono": "monospace",
+  "sf mono": "monospace", menlo: "monospace", consolas: "monospace",
+  monaco: "monospace", "courier new": "monospace", monospace: "monospace",
+  // Display
+  "playfair": "display", "bebas neue": "display",
+};
+
+function getFontCategory(normalizedName: string): string | null {
+  // Exact match
+  if (FONT_CATEGORIES[normalizedName]) return FONT_CATEGORIES[normalizedName];
+  // Partial match: check if any known font is a prefix
+  for (const [font, cat] of Object.entries(FONT_CATEGORIES)) {
+    if (normalizedName.startsWith(font) || font.startsWith(normalizedName)) {
+      return cat;
+    }
+  }
+  return null;
+}
+
+/**
+ * Compute similarity between two font names (0 = no match, 1 = identical).
+ * Uses normalization, Levenshtein distance, and category fallback.
+ */
+function fontSimilarity(a: string, b: string): number {
+  const normA = normalizeFontFamily(a);
+  const normB = normalizeFontFamily(b);
+
+  // Exact match after normalization
+  if (normA === normB) return 1.0;
+
+  // Levenshtein-based similarity
+  const maxLen = Math.max(normA.length, normB.length);
+  if (maxLen === 0) return 1.0;
+  const dist = levenshtein(normA, normB);
+  const similarity = 1 - dist / maxLen;
+
+  // If names are very similar (>= 0.7), use that score
+  if (similarity >= 0.7) return similarity;
+
+  // Category fallback: same category = 0.3 floor
+  const catA = getFontCategory(normA);
+  const catB = getFontCategory(normB);
+  if (catA && catB && catA === catB) return Math.max(similarity, 0.3);
+
+  return similarity;
+}
+
+/**
+ * Compute font list similarity using best-match pairing.
+ * Each font in list A is matched to its best counterpart in list B.
+ */
+function fontListSimilarity(aFonts: string[], bFonts: string[]): number {
+  if (aFonts.length === 0 && bFonts.length === 0) return 1;
+  if (aFonts.length === 0 || bFonts.length === 0) return 0;
+
+  // For each font in A, find best match in B
+  let totalSim = 0;
+  for (const fa of aFonts) {
+    let bestSim = 0;
+    for (const fb of bFonts) {
+      bestSim = Math.max(bestSim, fontSimilarity(fa, fb));
+    }
+    totalSim += bestSim;
+  }
+  // Symmetric: also match B→A and average
+  let totalSimReverse = 0;
+  for (const fb of bFonts) {
+    let bestSim = 0;
+    for (const fa of aFonts) {
+      bestSim = Math.max(bestSim, fontSimilarity(fa, fb));
+    }
+    totalSimReverse += bestSim;
+  }
+
+  const avgA = totalSim / aFonts.length;
+  const avgB = totalSimReverse / bFonts.length;
+  return (avgA + avgB) / 2;
 }
 
 // --- Helpers ---

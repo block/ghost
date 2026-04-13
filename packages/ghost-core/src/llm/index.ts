@@ -23,3 +23,10 @@ export { createAnthropicProvider } from "./anthropic.js";
 export { createOpenAIProvider } from "./openai.js";
 export { buildFingerprintPrompt, FINGERPRINT_SCHEMA } from "./prompt.js";
 export { summarizeMaterial } from "./summarize.js";
+export { analyzeStructure } from "./analyze-structure.js";
+export type { StructuralAnalysis } from "./analyze-structure.js";
+export { validateFingerprint } from "./validate-fingerprint.js";
+export type {
+  FingerprintValidation,
+  ValidationIssue,
+} from "./validate-fingerprint.js";

@@ -1,6 +1,23 @@
 #!/usr/bin/env node
 
+import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+// Load .env from project root if present.
+// The library (ghost-core) reads process.env — this is the only place .env files are loaded.
+// Supports: .env, .env.local (local takes precedence)
+for (const envFile of [".env", ".env.local"]) {
+  const envPath = resolve(process.cwd(), envFile);
+  if (existsSync(envPath)) {
+    try {
+      process.loadEnvFile(envPath);
+    } catch {
+      // Node < 20.12 or malformed file — silently skip
+    }
+  }
+}
+
 import type { DesignFingerprint } from "@ghost/core";
 import {
   compareFingerprints,

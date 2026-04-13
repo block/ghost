@@ -11,86 +11,38 @@ import {
   colorToSemanticColor,
 } from "./colors.js";
 import { computeEmbedding } from "./embedding.js";
-
-// Exact token name → semantic role mapping
-const SEMANTIC_ROLES: Record<string, string> = {
-  // Surface/background tokens
-  "--background-default": "surface",
-  "--background-alt": "surface-alt",
-  "--background-accent": "accent",
-  "--background": "surface",
-  "--bg": "surface",
-  "--bg-accent": "accent",
-  // shadcn conventions
-  "--primary": "primary",
-  "--primary-foreground": "primary-foreground",
-  "--secondary": "secondary",
-  "--secondary-foreground": "secondary-foreground",
-  "--accent": "accent",
-  "--accent-foreground": "accent-foreground",
-  "--muted": "muted",
-  "--muted-foreground": "muted-foreground",
-  "--destructive": "destructive",
-  "--destructive-foreground": "destructive-foreground",
-  "--card": "surface",
-  "--card-foreground": "text",
-  "--popover": "surface-alt",
-  "--popover-foreground": "text",
-  "--foreground": "text",
-  "--input": "border",
-  "--ring": "ring",
-  // Text tokens
-  "--text-default": "text",
-  "--text-muted": "text-muted",
-  "--text-inverse": "text-inverse",
-  "--text-danger": "danger",
-  // Border tokens
-  "--border-default": "border",
-  "--border-strong": "border-strong",
-  "--border": "border",
-  // Brand tokens
-  "--brand": "primary",
-  "--brand-primary": "primary",
-  "--brand-secondary": "secondary",
-};
-
-// Prefix-based fallback: tokens starting with these prefixes get a role
-// derived from the prefix + suffix (e.g., "--color-success" → "success")
-const SEMANTIC_ROLE_PREFIXES: [string, (name: string) => string][] = [
-  ["--background-", (n) => `surface-${n.replace("--background-", "")}`],
-  ["--text-", (n) => `text-${n.replace("--text-", "")}`],
-  ["--border-", (n) => `border-${n.replace("--border-", "")}`],
-  ["--color-", (n) => n.replace("--color-", "")],
-];
+import { inferSemanticRole } from "./semantic-roles.js";
 
 function resolveTokenValue(token: CSSToken): string {
   return token.resolvedValue ?? token.value;
 }
 
-function resolveSemanticRole(tokenName: string): string | null {
-  // Exact match first
-  const exact = SEMANTIC_ROLES[tokenName];
-  if (exact) return exact;
-
-  // Prefix-based fallback
-  for (const [prefix, derive] of SEMANTIC_ROLE_PREFIXES) {
-    if (tokenName.startsWith(prefix)) return derive(tokenName);
-  }
-
-  return null;
+function resolveSemanticRole(tokenName: string, tokenValue?: string): string | null {
+  const candidate = inferSemanticRole(tokenName, tokenValue);
+  return candidate ? candidate.role : null;
 }
 
 function extractSemanticColors(tokens: CSSToken[]): SemanticColor[] {
   const colors: SemanticColor[] = [];
   const seen = new Set<string>();
   for (const token of tokens) {
-    const role = resolveSemanticRole(token.name);
+    const value = resolveTokenValue(token);
+    const role = resolveSemanticRole(token.name, value);
     if (role && !seen.has(role)) {
       seen.add(role);
-      colors.push(colorToSemanticColor(role, resolveTokenValue(token)));
+      colors.push(colorToSemanticColor(role, value));
     }
   }
   return colors;
+}
+
+/**
+ * Sigmoid weight for chroma-based dominant color detection.
+ * Produces a soft boundary around 0.04 instead of a hard cutoff.
+ * At 0.03 → 0.27, at 0.04 → 0.5, at 0.05 → 0.73
+ */
+function chromaWeight(chroma: number): number {
+  return 1 / (1 + Math.exp(-50 * (chroma - 0.04)));
 }
 
 function extractDominantColors(tokens: CSSToken[]): SemanticColor[] {
@@ -105,14 +57,21 @@ function extractDominantColors(tokens: CSSToken[]): SemanticColor[] {
   ];
   const neutralPrefixes = ["surface", "text", "border", "muted"];
   const all = extractSemanticColors(tokens);
-  const dominant = all.filter(
-    (c) =>
-      dominantRoles.includes(c.role) ||
-      (!neutralPrefixes.some((p) => c.role.startsWith(p)) &&
-        c.oklch &&
-        c.oklch[1] > 0.04), // has meaningful chroma
-  );
-  // If no explicit dominant, use first non-neutral color
+
+  // Score each color: explicit dominant role = 1.0, otherwise use chroma weight
+  const scored = all
+    .map((c) => {
+      if (dominantRoles.includes(c.role)) return { color: c, score: 1 };
+      if (neutralPrefixes.some((p) => c.role.startsWith(p))) return { color: c, score: 0 };
+      const weight = c.oklch ? chromaWeight(c.oklch[1]) : 0;
+      return { color: c, score: weight };
+    })
+    .filter((s) => s.score > 0.3) // soft threshold: include colors with >= 30% confidence
+    .sort((a, b) => b.score - a.score);
+
+  const dominant = scored.map((s) => s.color);
+
+  // If no dominant, use first non-neutral color
   if (dominant.length === 0 && all.length > 0) {
     return [all[0]];
   }
@@ -131,6 +90,63 @@ function extractNeutralRamp(tokens: CSSToken[]): ColorRamp {
     .filter((v) => !v.startsWith("var("));
 
   return { steps: grayTokens, count: grayTokens.length };
+}
+
+/**
+ * Compute coefficient of variation for an array of numbers.
+ */
+function coefficientOfVariation(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  if (mean === 0) return 0;
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance) / mean;
+}
+
+/**
+ * Score how regular a spacing scale is.
+ * Recognizes linear, geometric, Fibonacci, and golden ratio progressions.
+ */
+function scoreSpacingRegularity(scale: number[]): number {
+  if (scale.length < 3) return scale.length === 2 ? 0.8 : 0;
+
+  const diffs = scale.slice(1).map((v, i) => v - scale[i]);
+  const ratios = scale.slice(1).map((v, i) => (scale[i] > 0 ? v / scale[i] : 0)).filter((r) => r > 0);
+
+  if (ratios.length === 0) return 0;
+
+  const diffCV = coefficientOfVariation(diffs);
+  const ratioCV = coefficientOfVariation(ratios);
+
+  // Linear: constant difference (CV of diffs < 0.15)
+  if (diffCV < 0.15) return 1.0;
+
+  // Geometric: constant ratio (CV of ratios < 0.15)
+  if (ratioCV < 0.15) return 1.0;
+
+  // Fibonacci-like: each value ≈ sum of two previous (within 10%)
+  if (scale.length >= 3) {
+    const fibScores: boolean[] = [];
+    for (let i = 2; i < scale.length; i++) {
+      const expected = scale[i - 1] + scale[i - 2];
+      fibScores.push(Math.abs(scale[i] - expected) / expected < 0.1);
+    }
+    if (fibScores.every(Boolean)) return 1.0;
+    if (fibScores.filter(Boolean).length / fibScores.length > 0.7) return 0.8;
+  }
+
+  // Golden ratio: ratios ≈ 1.618 (within 15%)
+  const goldenRatio = 1.618;
+  const goldenScores = ratios.map((r) => Math.abs(r - goldenRatio) / goldenRatio < 0.15);
+  if (goldenScores.every(Boolean)) return 1.0;
+  if (goldenScores.filter(Boolean).length / goldenScores.length > 0.7) return 0.8;
+
+  // Near-linear or near-geometric
+  if (diffCV < 0.3) return 0.8;
+  if (ratioCV < 0.3) return 0.8;
+
+  // Partial regularity based on ratio consistency
+  return Math.max(0.3, Math.min(0.7, 1 - ratioCV));
 }
 
 function extractSpacing(tokens: CSSToken[]): {
@@ -157,18 +173,7 @@ function extractSpacing(tokens: CSSToken[]): {
     if (minDiff > 0) baseUnit = minDiff;
   }
 
-  // Regularity: how well does the scale follow a consistent step pattern?
-  let regularity = 0;
-  if (baseUnit && unique.length >= 2) {
-    const expectedSteps = unique.map((v) => Math.round(v / baseUnit));
-    const isRegular = expectedSteps.every(
-      (s, i) =>
-        i === 0 ||
-        s === expectedSteps[i - 1] + 1 ||
-        s === expectedSteps[i - 1] * 2,
-    );
-    regularity = isRegular ? 1 : 0.5;
-  }
+  const regularity = scoreSpacingRegularity(unique);
 
   return { scale: unique, regularity, baseUnit };
 }
@@ -286,6 +291,7 @@ export function fingerprintFromRegistry(
 
   const typography = extractTypography(tokens);
   const spacing = extractSpacing(tokens);
+  const borderTokenCount = tokens.filter((t) => t.category === "border").length;
 
   const fingerprint: Omit<DesignFingerprint, "embedding"> = {
     id: registry.name,
@@ -313,11 +319,12 @@ export function fingerprintFromRegistry(
       borderRadii: extractBorderRadii(tokens),
       shadowComplexity: classifyShadowComplexity(tokens),
       borderUsage:
-        tokens.filter((t) => t.category === "border").length > 3
+        borderTokenCount > 3
           ? "heavy"
-          : tokens.filter((t) => t.category === "border").length > 0
+          : borderTokenCount > 0
             ? "moderate"
             : "minimal",
+      borderTokenCount,
     },
 
     architecture: {
