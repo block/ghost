@@ -60,6 +60,11 @@ language: palette, spacing, typography, surfaces, and architecture.`;
           ? await computeSemanticEmbedding(fingerprint, ctx.embedding)
           : computeEmbedding(fingerprint);
 
+        // Set platform from detection
+        if (input.metadata.detectedPlatform) {
+          fingerprint.platform = input.metadata.detectedPlatform;
+        }
+
         const enriched: EnrichedFingerprint = {
           ...fingerprint,
           targetType: input.metadata.targetType,
@@ -192,16 +197,19 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       issues.push("No font families detected");
     }
 
-    // Check for unreasonable values
+    // Check for unreasonable values (widened bounds for iOS pt values)
+    const spacingMax = fp.platform === "ios" ? 1000 : 500;
+    const radiusMax = fp.platform === "ios" ? 500 : 200;
+
     for (const s of fp.spacing.scale) {
-      if (s < 0 || s > 500) {
+      if (s < 0 || s > spacingMax) {
         issues.push(`Unreasonable spacing value: ${s}`);
         break;
       }
     }
 
     for (const r of fp.surfaces.borderRadii) {
-      if (r < 0 || r > 100) {
+      if (r < 0 || r > radiusMax) {
         issues.push(`Unreasonable border radius: ${r}`);
         break;
       }

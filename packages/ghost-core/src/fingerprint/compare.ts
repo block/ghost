@@ -216,6 +216,21 @@ function compareSurfaces(
   };
 }
 
+// Cross-platform methodology equivalences: iOS concept → web concept
+const METHODOLOGY_EQUIVALENCES: Record<string, string> = {
+  "swiftui-inline": "css-in-js",
+  "view-modifiers": "css-modules",
+  "swift-enums": "css-custom-properties",
+  "asset-catalog": "css-custom-properties",
+  "environment-theming": "styled-components",
+};
+
+/** Normalize methodology strings for cross-platform comparison */
+function normalizeMethodology(methods: string[], crossPlatform: boolean): Set<string> {
+  if (!crossPlatform) return new Set(methods);
+  return new Set(methods.map((m) => METHODOLOGY_EQUIVALENCES[m] ?? m));
+}
+
 function compareArchitecture(
   a: DesignFingerprint,
   b: DesignFingerprint,
@@ -227,9 +242,10 @@ function compareArchitecture(
     Math.abs(a.architecture.tokenization - b.architecture.tokenization),
   );
 
-  // Methodology overlap
-  const aMethods = new Set(a.architecture.methodology);
-  const bMethods = new Set(b.architecture.methodology);
+  // Methodology overlap (with cross-platform normalization)
+  const crossPlatform = a.platform !== b.platform && a.platform !== undefined && b.platform !== undefined;
+  const aMethods = normalizeMethodology(a.architecture.methodology, crossPlatform);
+  const bMethods = normalizeMethodology(b.architecture.methodology, crossPlatform);
   const allMethods = new Set([...aMethods, ...bMethods]);
   const sharedMethods = [...allMethods].filter(
     (m) => aMethods.has(m) && bMethods.has(m),
@@ -321,6 +337,9 @@ const FONT_CATEGORIES: Record<string, string> = {
   monaco: "monospace", "courier new": "monospace", monospace: "monospace",
   // Display
   "playfair": "display", "bebas neue": "display",
+  // Apple system fonts
+  "san francisco": "sans-serif", "sf compact": "sans-serif",
+  "new york": "serif", system: "sans-serif",
 };
 
 function getFontCategory(normalizedName: string): string | null {

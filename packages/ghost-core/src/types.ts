@@ -203,10 +203,13 @@ export interface ColorRamp {
   count: number;
 }
 
+export type Platform = "web" | "ios" | "android" | "multiplatform";
+
 export interface DesignFingerprint {
   id: string;
   source: "registry" | "extraction" | "llm";
   timestamp: string;
+  platform?: Platform;
 
   palette: {
     dominant: SemanticColor[];
@@ -261,10 +264,15 @@ export interface SampledMaterial {
     totalFiles: number;
     sampledFiles: number;
     targetType: TargetType;
+    detectedPlatform?: Platform;
     packageJson?: {
       name?: string;
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
+    };
+    packageSwift?: {
+      name?: string;
+      dependencies?: string[];
     };
   };
 }
@@ -310,6 +318,9 @@ export interface ExtractedFile {
     | "w3c-tokens"
     | "figma-variables"
     | "documentation"
+    | "swift"
+    | "xcassets"
+    | "xcconfig"
     | "other";
 }
 

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { ExtractedFile, SampledMaterial, TargetType } from "../types.js";
+import type { ExtractedFile, Platform, SampledMaterial, TargetType } from "../types.js";
 import { walkDirectory } from "./walker.js";
 
 const MAX_FILE_SIZE = 3000;
@@ -48,6 +48,26 @@ export async function sampleDirectory(
   } catch {
     // Skip if can't read
   }
+
+  // Read Package.swift if present (Swift Package Manager)
+  let packageSwift: SampledMaterial["metadata"]["packageSwift"];
+  try {
+    const swiftPkgPath = join(dir, "Package.swift");
+    if (existsSync(swiftPkgPath)) {
+      const raw = await readFile(swiftPkgPath, "utf-8");
+      const nameMatch = raw.match(/name:\s*"([^"]+)"/);
+      const depMatches = [...raw.matchAll(/\.package\(\s*url:\s*"([^"]+)"/g)];
+      packageSwift = {
+        name: nameMatch?.[1],
+        dependencies: depMatches.map((m) => m[1]),
+      };
+    }
+  } catch {
+    // Skip if can't read
+  }
+
+  // Detect platform from file extensions
+  const detectedPlatform = detectPlatform(allFiles);
 
   // Score each file
   const scored: ScoredFile[] = allFiles.map((file) => {
@@ -119,6 +139,27 @@ export async function sampleDirectory(
     }
   }
 
+  // Always include Package.swift summary if available
+  if (packageSwift) {
+    const swiftPkgPath = join(dir, "Package.swift");
+    if (!selected.some((s) => s.file.path === "Package.swift")) {
+      try {
+        const raw = await readFile(swiftPkgPath, "utf-8");
+        selected.unshift({
+          file: {
+            path: "Package.swift",
+            content: truncateFile(raw),
+            type: "config",
+          },
+          score: 7,
+          reason: "Swift package manifest — dependency detection",
+        });
+      } catch {
+        // Skip
+      }
+    }
+  }
+
   return {
     files: selected.map((s) => ({
       path: s.file.path,
@@ -129,9 +170,37 @@ export async function sampleDirectory(
       totalFiles: allFiles.length,
       sampledFiles: selected.length,
       targetType,
+      detectedPlatform,
       packageJson,
+      packageSwift,
     },
   };
+}
+
+/**
+ * Detect the project platform from file extension distribution.
+ */
+function detectPlatform(files: ExtractedFile[]): Platform | undefined {
+  let webCount = 0;
+  let nativeCount = 0;
+
+  for (const file of files) {
+    const name = file.path.toLowerCase();
+    if (name.endsWith(".swift") || name.includes(".xcassets") || name.endsWith(".xcconfig")) {
+      nativeCount++;
+    } else if (
+      name.endsWith(".tsx") || name.endsWith(".jsx") ||
+      name.endsWith(".vue") || name.endsWith(".svelte") ||
+      name.endsWith(".css") || name.endsWith(".scss")
+    ) {
+      webCount++;
+    }
+  }
+
+  if (nativeCount > 0 && webCount > 0) return "multiplatform";
+  if (nativeCount > 0) return "ios";
+  if (webCount > 0) return "web";
+  return undefined;
 }
 
 /**
@@ -141,9 +210,36 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
   const name = file.path.toLowerCase();
   const baseName = name.split("/").pop() ?? "";
 
-  // Theme/token files — highest priority
-  if (/theme|tokens?|variables|design-tokens|primitives/i.test(baseName)) {
+  // Theme/token files — highest priority (web + native naming conventions)
+  if (/theme|tokens?|variables|design-tokens|primitives|colorscheme|designsystem|styleguide/i.test(baseName)) {
     return { score: 10, reason: "Theme/token definition file" };
+  }
+
+  // Asset catalog color definitions
+  if (file.type === "xcassets") {
+    if (/color-space|components/.test(file.content)) {
+      return { score: 9, reason: "Asset catalog color definition" };
+    }
+    return { score: 5, reason: "Asset catalog file" };
+  }
+
+  // Swift files with theming infrastructure
+  if (file.type === "swift") {
+    if (/@Environment|ViewModifier|extension\s+Color/i.test(file.content)) {
+      return { score: 8, reason: "Swift theming infrastructure (Environment/ViewModifier)" };
+    }
+    if (/colors?|palette|spacing|typography|theme|tokens?|font|style/i.test(baseName)) {
+      return { score: 7, reason: "Swift file with design-related name" };
+    }
+    if (/static\s+(?:let|var)\s+\w+.*(?:Color|CGFloat|Font|UIFont)/i.test(file.content)) {
+      return { score: 5, reason: "Swift file with design token definitions" };
+    }
+    return { score: 3, reason: "Swift component file (architecture sample)" };
+  }
+
+  // xcconfig files
+  if (file.type === "xcconfig") {
+    return { score: 3, reason: "Xcode build configuration" };
   }
 
   // CSS/SCSS with custom properties

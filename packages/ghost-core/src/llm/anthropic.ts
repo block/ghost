@@ -54,7 +54,7 @@ export function createAnthropicProvider(options: {
         .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
         .join("\n\n");
 
-      const prompt = buildFingerprintPrompt(projectId, fileContents);
+      const prompt = buildFingerprintPrompt(projectId, fileContents, material.metadata.detectedPlatform);
 
       const response = await client.messages.create({
         model,

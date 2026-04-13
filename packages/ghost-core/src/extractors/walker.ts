@@ -14,11 +14,18 @@ const IGNORE_DIRS = [
   "coverage",
   ".turbo",
   "__pycache__",
+  // iOS / Swift
+  "DerivedData",
+  ".build",
+  ".xcarchive",
+  "Pods",
+  ".swiftpm",
+  "xcuserdata",
 ];
 
 const STYLE_EXTENSIONS = [".css", ".scss", ".less"];
-const CONFIG_EXTENSIONS = [".json", ".yaml", ".yml"];
-const COMPONENT_EXTENSIONS = [".tsx", ".jsx", ".vue", ".svelte"];
+const CONFIG_EXTENSIONS = [".json", ".yaml", ".yml", ".xcconfig"];
+const COMPONENT_EXTENSIONS = [".tsx", ".jsx", ".vue", ".svelte", ".swift"];
 const SCRIPT_EXTENSIONS = [".ts", ".js", ".mjs", ".cjs"];
 
 const TAILWIND_CONFIG_NAMES = [
@@ -94,8 +101,22 @@ function classifyFile(
     return "css";
   }
 
+  // Swift files
+  if (name.endsWith(".swift")) {
+    return "swift";
+  }
+
+  // xcconfig files
+  if (name.endsWith(".xcconfig")) {
+    return "xcconfig";
+  }
+
   // JSON files — sniff content for token formats
   if (name.endsWith(".json")) {
+    // Asset catalog color sets (inside .xcassets directories)
+    if (filePath.includes(".xcassets") && (content.includes('"color-space"') || content.includes('"components"'))) {
+      return "xcassets";
+    }
     if (content.includes('"$schema"') && content.includes("registry")) {
       return "config";
     }
@@ -109,8 +130,8 @@ function classifyFile(
     return "json-tokens";
   }
 
-  // Components
-  if (COMPONENT_EXTENSIONS.some((ext) => name.endsWith(ext))) {
+  // Components (web frameworks)
+  if ([".tsx", ".jsx", ".vue", ".svelte"].some((ext) => name.endsWith(ext))) {
     return "component";
   }
 
@@ -180,9 +201,11 @@ export async function walkAndCategorize(
     switch (file.type) {
       case "css":
       case "scss":
+      case "xcassets":
         styleFiles.push(file);
         break;
       case "component":
+      case "swift":
         componentFiles.push(file);
         break;
       case "tailwind-config":
@@ -191,6 +214,7 @@ export async function walkAndCategorize(
       case "style-dictionary":
       case "w3c-tokens":
       case "figma-variables":
+      case "xcconfig":
         configFiles.push(file);
         break;
       default:

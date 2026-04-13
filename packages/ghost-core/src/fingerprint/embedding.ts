@@ -284,10 +284,12 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   vec[i++] = arch.tokenization;
   vec[i++] = logNorm(arch.componentCount, NORM.componentCountLogBase);
   // Methodology encoding
-  vec[i++] = arch.methodology.includes("tailwind") ? 1 : 0;
-  vec[i++] = arch.methodology.includes("css-custom-properties") ? 1 : 0;
-  vec[i++] = arch.methodology.includes("scss") ? 1 : 0;
-  vec[i++] = arch.methodology.includes("css-modules") ? 1 : 0;
+  // Methodology encoding — platform-neutral concepts
+  // Each dimension represents a design pattern, not a specific technology
+  vec[i++] = arch.methodology.includes("tailwind") || arch.methodology.includes("swiftui-utility") ? 1 : 0; // utility framework
+  vec[i++] = arch.methodology.includes("css-custom-properties") || arch.methodology.includes("swift-enums") || arch.methodology.includes("asset-catalog") ? 1 : 0; // design tokens
+  vec[i++] = arch.methodology.includes("scss") || arch.methodology.includes("swift-codegen") ? 1 : 0; // preprocessor / build-time generation
+  vec[i++] = arch.methodology.includes("css-modules") || arch.methodology.includes("view-modifiers") ? 1 : 0; // scoped styles
   // Category diversity
   const catCount = Object.keys(arch.componentCategories).length;
   vec[i++] = Math.min(catCount / NORM.catCountMax, 1);
@@ -316,13 +318,15 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   vec[i++] = catCount > 0 ? Math.min(arch.componentCount / catCount / NORM.componentDensityMax, 1) : 0;
   // Methodology count
   vec[i++] = Math.min(arch.methodology.length / NORM.methodologyCountMax, 1);
-  // Has styled-components / emotion
-  vec[i++] = arch.methodology.includes("styled-components") || arch.methodology.includes("emotion") ? 1 : 0;
-  // Has CSS-in-JS (any)
+  // Has runtime theming (styled-components, emotion, SwiftUI @Environment)
+  vec[i++] = arch.methodology.includes("styled-components") || arch.methodology.includes("emotion") || arch.methodology.includes("environment-theming") ? 1 : 0;
+  // Has programmatic styles (CSS-in-JS, SwiftUI inline)
   vec[i++] =
     arch.methodology.includes("styled-components") ||
     arch.methodology.includes("emotion") ||
-    arch.methodology.includes("css-modules")
+    arch.methodology.includes("css-modules") ||
+    arch.methodology.includes("swiftui-inline") ||
+    arch.methodology.includes("view-modifiers")
       ? 1
       : 0;
   // Component scale bucket (small <10, medium 10-30, large 30+)

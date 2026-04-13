@@ -7,6 +7,11 @@ import type { DesignFingerprint } from "../types.js";
  * The description is structured to emphasize design-relevant signals
  * and minimize noise from identifiers or timestamps.
  */
+/** Unit label based on platform */
+function unitLabel(fp: DesignFingerprint): string {
+  return fp.platform === "ios" ? "pt" : "px";
+}
+
 export function describeFingerprint(fp: DesignFingerprint): string {
   const sections: string[] = [];
 
@@ -72,14 +77,15 @@ function describeSpacing(fp: DesignFingerprint): string {
   const { spacing } = fp;
   const parts: string[] = [];
 
+  const u = unitLabel(fp);
   if (spacing.scale.length > 0) {
-    parts.push(`Spacing scale: ${spacing.scale.join(", ")}px.`);
+    parts.push(`Spacing scale: ${spacing.scale.join(", ")}${u}.`);
   } else {
     parts.push("No spacing scale detected.");
   }
 
   if (spacing.baseUnit) {
-    parts.push(`Base unit: ${spacing.baseUnit}px.`);
+    parts.push(`Base unit: ${spacing.baseUnit}${u}.`);
   }
 
   const regularity =
@@ -104,8 +110,9 @@ function describeTypography(fp: DesignFingerprint): string {
   if (typography.sizeRamp.length > 0) {
     const min = typography.sizeRamp[0];
     const max = typography.sizeRamp[typography.sizeRamp.length - 1];
+    const u = unitLabel(fp);
     parts.push(
-      `Type scale: ${typography.sizeRamp.length} sizes from ${min}px to ${max}px.`,
+      `Type scale: ${typography.sizeRamp.length} sizes from ${min}${u} to ${max}${u}.`,
     );
   }
 
@@ -126,9 +133,10 @@ function describeSurfaces(fp: DesignFingerprint): string {
   const { surfaces } = fp;
   const parts: string[] = [];
 
+  const u = unitLabel(fp);
   if (surfaces.borderRadii.length > 0) {
     parts.push(
-      `Border radii: ${surfaces.borderRadii.map((r) => `${r}px`).join(", ")}.`,
+      `Border radii: ${surfaces.borderRadii.map((r) => `${r}${u}`).join(", ")}.`,
     );
   } else {
     parts.push("No border radii detected.");
@@ -148,7 +156,7 @@ function describeArchitecture(fp: DesignFingerprint): string {
   parts.push(`${pct}% tokenized.`);
 
   if (architecture.methodology.length > 0) {
-    parts.push(`CSS methodology: ${architecture.methodology.join(", ")}.`);
+    parts.push(`Style methodology: ${architecture.methodology.join(", ")}.`);
   }
 
   parts.push(`${architecture.componentCount} components.`);
