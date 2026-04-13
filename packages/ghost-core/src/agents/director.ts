@@ -25,7 +25,6 @@ import { FingerprintAgent } from "./fingerprint.js";
  * and agents for LLM-powered steps (fingerprint, discovery).
  */
 export class Director {
-  private fingerprintAgent = new FingerprintAgent();
   private discoveryAgent = new DiscoveryAgent();
 
   /**
@@ -41,7 +40,9 @@ export class Director {
     const extractionResult = await extract(target);
     const extraction = stageToAgentResult(extractionResult);
 
-    const fingerprint = await this.fingerprintAgent.execute(
+    // Create a fresh agent per profile — FingerprintAgent has per-run state
+    // that would collide if two profiles run in parallel on the same instance.
+    const fingerprint = await new FingerprintAgent().execute(
       extraction.data,
       ctx,
     );
