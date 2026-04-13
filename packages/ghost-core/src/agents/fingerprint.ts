@@ -57,14 +57,31 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       return this.initialInterpretation(state, input, ctx);
     }
 
-    // If we have a pending fingerprint from a previous iteration (no tool calls),
-    // proceed to validation
-    if (this.pendingFingerprint && !this.hasPendingToolCalls(state)) {
+    // If we have a pending fingerprint, proceed to validation
+    if (this.pendingFingerprint) {
       return this.validateAndFinalize(state, input, ctx);
     }
 
-    // Tool call/response cycle
-    if (this.chatMessages.length > 0 && ctx.llm?.provider) {
+    // Safety: if we've used too many iterations without a result, fall back to interpret()
+    if (state.iterations >= 5 && !this.pendingFingerprint && ctx.llm) {
+      state.reasoning.push("Tool use loop exhausted — falling back to single-shot interpret()");
+      try {
+        const provider = createProvider(ctx.llm);
+        const signals = extractSignals(input);
+        const projectId = input.metadata.packageJson?.name ?? "project";
+        const fingerprint = await provider.interpret(input, projectId, signals);
+        this.pendingFingerprint = fingerprint;
+        state.confidence = 0.7;
+        return state; // Next iteration will hit validateAndFinalize
+      } catch (err) {
+        state.warnings.push(`Fallback interpret failed: ${err instanceof Error ? err.message : String(err)}`);
+        state.status = "failed";
+        return state;
+      }
+    }
+
+    // Tool call/response cycle — only if LLM requested tool use
+    if (this.chatMessages.length > 0 && this.hasPendingToolCalls(state) && ctx.llm?.provider) {
       return this.toolUseLoop(state, input, ctx);
     }
 
@@ -101,60 +118,12 @@ language: palette, spacing, typography, surfaces, and architecture.`;
         `Extracted ${signals.tokens.length} tokens deterministically (coverage: ${Object.entries(signals.coverage).map(([k, v]) => `${k}=${(v * 100).toFixed(0)}%`).join(", ")})`,
       );
 
-      // If provider supports chat() with tools, use agentic path
-      if (provider.chat) {
-        // Build tool context for this run
-        this.toolCtx = {
-          sourceDir: input.metadata.targetType === "path"
-            ? "." // Will be resolved at tool execution time
-            : ".", // For non-path targets, materialized dir is gone — tools use sampled material
-          material: input,
-          signals,
-        };
-
-        const fileContents = input.files
-          .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
-          .join("\n\n");
-
-        const prompt = buildSignalAwarePrompt(
-          projectId,
-          fileContents,
-          signals,
-          input.metadata.detectedPlatform,
-        );
-
-        this.chatMessages = [{ role: "user", content: prompt }];
-
-        const response = await provider.chat(
-          this.chatMessages,
-          getToolDefinitions(),
-        );
-
-        if (response.tool_calls?.length) {
-          // LLM wants to use tools — continue in next iteration
-          this.chatMessages.push({
-            role: "assistant",
-            content: response.content ?? "",
-            tool_calls: response.tool_calls,
-          });
-          state.reasoning.push(
-            `LLM requested ${response.tool_calls.length} tool(s): ${response.tool_calls.map((tc) => tc.name).join(", ")}`,
-          );
-          state.confidence = 0.5;
-          return state;
-        }
-
-        // No tool calls — parse fingerprint directly
-        if (response.content) {
-          this.pendingFingerprint = this.parseFingerprint(response.content);
-          state.confidence = 0.75;
-        }
-      } else {
-        // Fallback: single-shot interpret() with signals
-        const fingerprint = await provider.interpret(input, projectId, signals);
-        this.pendingFingerprint = fingerprint;
-        state.confidence = 0.75;
-      }
+      // Use interpret() with pre-extracted signals
+      // The signal-aware prompt gives the LLM structured data to validate
+      // rather than parsing raw files from scratch.
+      const fingerprint = await provider.interpret(input, projectId, signals);
+      this.pendingFingerprint = fingerprint;
+      state.confidence = 0.75;
 
       if (this.pendingFingerprint) {
         state.reasoning.push(
