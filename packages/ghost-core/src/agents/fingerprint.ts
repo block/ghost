@@ -1,7 +1,8 @@
 import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
 import { createProvider } from "../llm/index.js";
-import { validateFingerprint } from "../llm/validate-fingerprint.js";
+import { buildSignalAwarePrompt } from "../llm/prompt.js";
+import { extractSignals } from "../signals/index.js";
 import type {
   AgentContext,
   DesignFingerprint,
@@ -10,28 +11,41 @@ import type {
   SampledMaterial,
 } from "../types.js";
 import { BaseAgent } from "./base.js";
+import {
+  executeTool,
+  getToolDefinitions,
+  MAX_TOOL_CALLS,
+} from "./tools/index.js";
+import type { ChatMessage, ToolContext } from "./tools/types.js";
 import type { AgentState } from "./types.js";
 
 /**
  * Fingerprint Agent — "What design language is this?"
  *
- * LLM-first: sends sampled files to the LLM for interpretation,
- * validates the output, self-heals if issues found, and generates
- * a natural-language design language profile.
+ * Extracts deterministic signals, then uses LLM with tool access
+ * for interpretation, validation, and gap-filling.
  *
- * Step 0: LLM interprets sampled material → DesignFingerprint
- * Step 1: Validate + compute embedding. If issues → re-prompt LLM with corrections.
- * Step 2: Generate DesignLanguageProfile
+ * Iteration model:
+ *   0: Extract signals → LLM interpret (with tools available)
+ *   1..N: Tool call/response cycles if LLM requests more data
+ *   N+1: Validate + compute embedding
+ *   N+2: Generate language profile
  */
 export class FingerprintAgent extends BaseAgent<
   SampledMaterial,
   EnrichedFingerprint
 > {
   name = "fingerprint";
-  maxIterations = 3;
+  maxIterations = 8;
   systemPrompt = `You are a design fingerprinting agent. You analyze source files
 from design systems and produce structured fingerprints capturing their visual
 language: palette, spacing, typography, surfaces, and architecture.`;
+
+  // State preserved across iterations for tool-use loop
+  private chatMessages: ChatMessage[] = [];
+  private toolCallCount = 0;
+  private toolCtx: ToolContext | null = null;
+  private pendingFingerprint: DesignFingerprint | null = null;
 
   protected async step(
     state: AgentState<EnrichedFingerprint>,
@@ -39,147 +53,266 @@ language: palette, spacing, typography, surfaces, and architecture.`;
     ctx: AgentContext,
   ): Promise<AgentState<EnrichedFingerprint>> {
     if (state.iterations === 0) {
-      // Step 0: LLM interpretation
-      if (!ctx.llm) {
-        state.warnings.push(
-          "No LLM configured. Ghost v2 requires an LLM API key for fingerprinting.",
-        );
-        state.status = "failed";
-        return state;
-      }
+      // Step 0: Extract signals and send to LLM
+      return this.initialInterpretation(state, input, ctx);
+    }
 
-      try {
-        const provider = createProvider(ctx.llm);
-        const projectId =
-          input.metadata.packageJson?.name ?? "project";
+    // If we have a pending fingerprint from a previous iteration (no tool calls),
+    // proceed to validation
+    if (this.pendingFingerprint && !this.hasPendingToolCalls(state)) {
+      return this.validateAndFinalize(state, input, ctx);
+    }
 
-        const fingerprint = await provider.interpret(input, projectId);
+    // Tool call/response cycle
+    if (this.chatMessages.length > 0 && ctx.llm?.provider) {
+      return this.toolUseLoop(state, input, ctx);
+    }
 
-        // Compute embedding
-        fingerprint.embedding = ctx.embedding
-          ? await computeSemanticEmbedding(fingerprint, ctx.embedding)
-          : computeEmbedding(fingerprint);
+    // Fallback: complete
+    state.status = "completed";
+    return state;
+  }
 
-        // Set platform from detection
-        if (input.metadata.detectedPlatform) {
-          fingerprint.platform = input.metadata.detectedPlatform;
-        }
+  private async initialInterpretation(
+    state: AgentState<EnrichedFingerprint>,
+    input: SampledMaterial,
+    ctx: AgentContext,
+  ): Promise<AgentState<EnrichedFingerprint>> {
+    if (!ctx.llm) {
+      state.warnings.push(
+        "No LLM configured. Ghost v2 requires an LLM API key for fingerprinting.",
+      );
+      state.status = "failed";
+      return state;
+    }
 
-        const enriched: EnrichedFingerprint = {
-          ...fingerprint,
-          targetType: input.metadata.targetType,
+    // Reset per-run state
+    this.chatMessages = [];
+    this.toolCallCount = 0;
+    this.pendingFingerprint = null;
+
+    try {
+      const provider = createProvider(ctx.llm);
+      const projectId = input.metadata.packageJson?.name ?? "project";
+
+      // Extract deterministic signals
+      const signals = extractSignals(input);
+      state.reasoning.push(
+        `Extracted ${signals.tokens.length} tokens deterministically (coverage: ${Object.entries(signals.coverage).map(([k, v]) => `${k}=${(v * 100).toFixed(0)}%`).join(", ")})`,
+      );
+
+      // If provider supports chat() with tools, use agentic path
+      if (provider.chat) {
+        // Build tool context for this run
+        this.toolCtx = {
+          sourceDir: input.metadata.targetType === "path"
+            ? "." // Will be resolved at tool execution time
+            : ".", // For non-path targets, materialized dir is gone — tools use sampled material
+          material: input,
+          signals,
         };
 
-        state.result = enriched;
+        const fileContents = input.files
+          .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
+          .join("\n\n");
+
+        const prompt = buildSignalAwarePrompt(
+          projectId,
+          fileContents,
+          signals,
+          input.metadata.detectedPlatform,
+        );
+
+        this.chatMessages = [{ role: "user", content: prompt }];
+
+        const response = await provider.chat(
+          this.chatMessages,
+          getToolDefinitions(),
+        );
+
+        if (response.tool_calls?.length) {
+          // LLM wants to use tools — continue in next iteration
+          this.chatMessages.push({
+            role: "assistant",
+            content: response.content ?? "",
+            tool_calls: response.tool_calls,
+          });
+          state.reasoning.push(
+            `LLM requested ${response.tool_calls.length} tool(s): ${response.tool_calls.map((tc) => tc.name).join(", ")}`,
+          );
+          state.confidence = 0.5;
+          return state;
+        }
+
+        // No tool calls — parse fingerprint directly
+        if (response.content) {
+          this.pendingFingerprint = this.parseFingerprint(response.content);
+          state.confidence = 0.75;
+        }
+      } else {
+        // Fallback: single-shot interpret() with signals
+        const fingerprint = await provider.interpret(input, projectId, signals);
+        this.pendingFingerprint = fingerprint;
         state.confidence = 0.75;
+      }
+
+      if (this.pendingFingerprint) {
         state.reasoning.push(
-          `LLM produced fingerprint: ${fingerprint.palette.dominant.length} dominant colors, ` +
-            `${fingerprint.spacing.scale.length} spacing steps, ` +
-            `${fingerprint.typography.families.length} font families, ` +
-            `${fingerprint.surfaces.borderRadii.length} radii`,
+          `LLM produced fingerprint: ${this.pendingFingerprint.palette.dominant.length} dominant colors, ` +
+            `${this.pendingFingerprint.spacing.scale.length} spacing steps, ` +
+            `${this.pendingFingerprint.typography.families.length} font families`,
         );
-
-        // Check if we should validate and refine
-        const nonZero = fingerprint.embedding.filter((v) => v !== 0).length;
-        if (nonZero >= 30) {
-          // Good enough — skip validation iteration
-          state.confidence = 0.85;
-        }
-      } catch (err) {
-        state.warnings.push(
-          `LLM interpretation failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        state.status = "failed";
       }
-
-      return state;
+    } catch (err) {
+      state.warnings.push(
+        `LLM interpretation failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      state.status = "failed";
     }
 
-    if (state.iterations === 1 && state.result) {
-      // Step 1: Validate and self-heal
-      try {
-        const issues = this.validateOutput(state.result);
+    return state;
+  }
 
-        if (issues.length > 0) {
-          state.reasoning.push(
-            `Validation found ${issues.length} issue(s): ${issues.join("; ")}`,
-          );
-
-          // Attempt self-healing: re-prompt LLM with issues
-          try {
-            const provider = createProvider(ctx.llm);
-            const correctionPrompt = this.buildCorrectionPrompt(
-              state.result,
-              issues,
-              input,
-            );
-
-            // Re-interpret with corrections
-            const corrected = await provider.interpret(
-              {
-                ...input,
-                files: [
-                  {
-                    path: "_correction_context",
-                    content: correctionPrompt,
-                    reason: "Correction context from validation",
-                  },
-                  ...input.files,
-                ],
-              },
-              state.result.id,
-            );
-
-            // Recompute embedding
-            corrected.embedding = ctx.embedding
-              ? await computeSemanticEmbedding(corrected, ctx.embedding)
-              : computeEmbedding(corrected);
-
-            state.result = {
-              ...corrected,
-              targetType: state.result.targetType,
-              languageProfile: state.result.languageProfile,
-            };
-            state.confidence = Math.min(state.confidence + 0.1, 0.95);
-            state.reasoning.push("Self-healed fingerprint after validation");
-          } catch {
-            state.reasoning.push(
-              "Self-healing failed, keeping original fingerprint",
-            );
-          }
-        } else {
-          state.confidence = 0.9;
-          state.reasoning.push("Validation passed — no issues found");
-        }
-      } catch {
-        // Validation itself failed — proceed with what we have
-      }
-
-      return state;
-    }
-
-    if (state.iterations === 2 && state.result) {
-      // Step 2: Generate DesignLanguageProfile
-      try {
-        const profile = await this.generateLanguageProfile(input, ctx);
-        if (profile) {
-          state.result = { ...state.result, languageProfile: profile };
-          state.reasoning.push(
-            `Language profile: "${profile.summary.slice(0, 80)}..."`,
-          );
-        }
-      } catch (err) {
-        state.warnings.push(
-          `Language profile failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-
+  private async toolUseLoop(
+    state: AgentState<EnrichedFingerprint>,
+    input: SampledMaterial,
+    ctx: AgentContext,
+  ): Promise<AgentState<EnrichedFingerprint>> {
+    if (!ctx.llm || !this.toolCtx) {
       state.status = "completed";
       return state;
     }
 
-    state.status = "completed";
+    try {
+      const provider = createProvider(ctx.llm);
+      if (!provider.chat) {
+        state.status = "completed";
+        return state;
+      }
+
+      // Execute pending tool calls from last assistant message
+      const lastMessage = this.chatMessages[this.chatMessages.length - 1];
+      if (lastMessage?.tool_calls) {
+        for (const call of lastMessage.tool_calls) {
+          if (this.toolCallCount >= MAX_TOOL_CALLS) {
+            this.chatMessages.push({
+              role: "tool",
+              content: "Tool call budget exhausted. Please produce the fingerprint with available data.",
+              tool_call_id: call.id,
+            });
+            continue;
+          }
+
+          const result = await executeTool(call, this.toolCtx);
+          this.chatMessages.push({
+            role: "tool",
+            content: result.content,
+            tool_call_id: call.id,
+          });
+          this.toolCallCount++;
+          state.reasoning.push(`Tool ${call.name}: ${result.content.slice(0, 100)}...`);
+        }
+      }
+
+      // Send tool results back to LLM
+      const response = await provider.chat(
+        this.chatMessages,
+        getToolDefinitions(),
+      );
+
+      if (response.tool_calls?.length && this.toolCallCount < MAX_TOOL_CALLS) {
+        // More tool calls requested
+        this.chatMessages.push({
+          role: "assistant",
+          content: response.content ?? "",
+          tool_calls: response.tool_calls,
+        });
+        state.reasoning.push(
+          `LLM requested ${response.tool_calls.length} more tool(s): ${response.tool_calls.map((tc) => tc.name).join(", ")}`,
+        );
+        return state;
+      }
+
+      // LLM returned content — parse as fingerprint
+      if (response.content) {
+        this.pendingFingerprint = this.parseFingerprint(response.content);
+        state.confidence = 0.8;
+        state.reasoning.push("LLM produced fingerprint after tool use");
+      }
+    } catch (err) {
+      state.warnings.push(
+        `Tool use loop error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
     return state;
+  }
+
+  private async validateAndFinalize(
+    state: AgentState<EnrichedFingerprint>,
+    input: SampledMaterial,
+    ctx: AgentContext,
+  ): Promise<AgentState<EnrichedFingerprint>> {
+    if (!this.pendingFingerprint) {
+      state.status = "failed";
+      state.warnings.push("No fingerprint to validate");
+      return state;
+    }
+
+    const fp = this.pendingFingerprint;
+
+    // Compute embedding
+    fp.embedding = ctx.embedding
+      ? await computeSemanticEmbedding(fp, ctx.embedding)
+      : computeEmbedding(fp);
+
+    // Set platform from detection
+    if (input.metadata.detectedPlatform) {
+      fp.platform = input.metadata.detectedPlatform;
+    }
+
+    // Validate
+    const issues = this.validateOutput(fp);
+    if (issues.length > 0) {
+      state.reasoning.push(
+        `Validation: ${issues.length} issue(s): ${issues.join("; ")}`,
+      );
+      // Self-healing could go here in the future
+    } else {
+      state.confidence = Math.min(state.confidence + 0.1, 0.95);
+      state.reasoning.push("Validation passed");
+    }
+
+    const enriched: EnrichedFingerprint = {
+      ...fp,
+      targetType: input.metadata.targetType,
+    };
+
+    state.result = enriched;
+    state.status = "completed";
+
+    // Clean up
+    this.pendingFingerprint = null;
+    this.chatMessages = [];
+    this.toolCtx = null;
+
+    return state;
+  }
+
+  private hasPendingToolCalls(state: AgentState<EnrichedFingerprint>): boolean {
+    const last = this.chatMessages[this.chatMessages.length - 1];
+    return !!(last?.tool_calls?.length);
+  }
+
+  private parseFingerprint(text: string): DesignFingerprint {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON from LLM response");
+    }
+    const fingerprint: DesignFingerprint = JSON.parse(jsonMatch[0]);
+    fingerprint.source = "llm";
+    fingerprint.timestamp = new Date().toISOString();
+    return fingerprint;
   }
 
   private validateOutput(fp: DesignFingerprint): string[] {
@@ -225,68 +358,5 @@ language: palette, spacing, typography, surfaces, and architecture.`;
     }
 
     return issues;
-  }
-
-  private buildCorrectionPrompt(
-    fp: DesignFingerprint,
-    issues: string[],
-    _input: SampledMaterial,
-  ): string {
-    return `The previous fingerprint had these validation issues:
-${issues.map((i) => `- ${i}`).join("\n")}
-
-Previous output (for reference):
-${JSON.stringify(fp, null, 2).slice(0, 2000)}
-
-Please re-analyze the source files and correct these issues. Look more carefully
-for design tokens, colors, spacing values, and typography definitions that may
-be stored in non-standard formats (JS objects, SCSS variables, JSON configs).`;
-  }
-
-  private async generateLanguageProfile(
-    input: SampledMaterial,
-    ctx: AgentContext,
-  ): Promise<DesignLanguageProfile | null> {
-    if (!ctx.llm) return null;
-
-    try {
-      const provider = createProvider(ctx.llm);
-
-      // Use a focused prompt for language profile
-      const profileInput: SampledMaterial = {
-        ...input,
-        files: [
-          {
-            path: "_task",
-            content: `Instead of a fingerprint, produce a design language profile as JSON:
-{
-  "summary": "2-3 sentence description of this design system's visual language",
-  "personality": ["3-5 adjectives like: minimal, bold, geometric, organic, corporate, playful"],
-  "closestKnownSystems": ["1-3 well-known systems this resembles: shadcn, Material Design, Ant Design, etc."]
-}
-
-Be specific. "A muted, geometric system with tight spacing" beats "A modern design system."
-Return ONLY the JSON object.`,
-            reason: "Task override for language profile",
-          },
-          ...input.files.slice(0, 5), // Only need a few files for this
-        ],
-      };
-
-      // Abuse the interpret method but parse the response differently
-      // This is a bit hacky — ideally we'd have a separate LLM call
-      const result = await provider.interpret(
-        profileInput,
-        "language-profile",
-      );
-
-      // The provider will return a DesignFingerprint, but with the task override
-      // it should return a language profile. Since we can't change the return type,
-      // extract from the raw response instead.
-      // For now, generate from the fingerprint we already have.
-      return null;
-    } catch {
-      return null;
-    }
   }
 }

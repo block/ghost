@@ -374,7 +374,13 @@ export interface LLMProvider {
   interpret: (
     material: SampledMaterial,
     projectId: string,
+    signals?: import("./signals/types.js").DeterministicSignals,
   ) => Promise<DesignFingerprint>;
+  /** Multi-turn chat with tool use support. Optional — only needed for agentic fingerprinting. */
+  chat?: (
+    messages: import("./agents/tools/types.js").ChatMessage[],
+    tools?: import("./agents/tools/types.js").ToolDefinition[],
+  ) => Promise<import("./agents/tools/types.js").ChatResponse>;
 }
 
 // --- Agent types ---
