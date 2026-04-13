@@ -342,7 +342,8 @@ language: palette, spacing, typography, surfaces, and architecture.`;
     }
 
     for (const r of fp.surfaces.borderRadii) {
-      if (r < 0 || r > radiusMax) {
+      // 9999/999 are common "pill" values — allow them
+      if (r < 0 || (r > radiusMax && r !== 999 && r !== 9999)) {
         issues.push(`Unreasonable border radius: ${r}`);
         break;
       }

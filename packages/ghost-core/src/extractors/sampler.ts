@@ -5,6 +5,7 @@ import type { ExtractedFile, Platform, SampledMaterial, TargetType } from "../ty
 import { walkDirectory } from "./walker.js";
 
 const MAX_FILE_SIZE = 3000;
+const MAX_FILE_SIZE_HIGH_PRIORITY = 20_000; // Theme/token files get more space
 const MAX_TOTAL_CHARS = 120_000; // ~30K tokens
 const MAX_COMPONENT_SAMPLES = 5;
 
@@ -92,7 +93,9 @@ export async function sampleDirectory(
       componentCount++;
     }
 
-    const content = truncateFile(item.file.content);
+    // High-priority files (score >= 8: theme, token, config) get more space
+    const fileLimit = item.score >= 8 ? MAX_FILE_SIZE_HIGH_PRIORITY : MAX_FILE_SIZE;
+    const content = truncateFile(item.file.content, fileLimit);
     if (totalChars + content.length > MAX_TOTAL_CHARS) {
       // Try to fit with aggressive truncation
       const remaining = MAX_TOTAL_CHARS - totalChars;
@@ -211,8 +214,13 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
   const baseName = name.split("/").pop() ?? "";
 
   // Theme/token files — highest priority (web + native naming conventions)
-  if (/theme|tokens?|variables|design-tokens|primitives|colorscheme|designsystem|styleguide/i.test(baseName)) {
+  if (/theme|tokens?|variables|design-tokens|primitives|colorscheme|designsystem|styleguide|styles-main/i.test(baseName)) {
     return { score: 10, reason: "Theme/token definition file" };
+  }
+
+  // shadcn registry style files — contain embedded CSS with full token definitions
+  if (file.type === "config" && file.content.includes('"registry:style"')) {
+    return { score: 10, reason: "Registry style file with embedded CSS tokens" };
   }
 
   // Asset catalog color definitions
@@ -321,11 +329,11 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
  * Truncate a file to fit within context budget.
  * For small files, return as-is. For large files, take the start + end.
  */
-function truncateFile(content: string): string {
-  if (content.length <= MAX_FILE_SIZE) return content;
+function truncateFile(content: string, limit: number = MAX_FILE_SIZE): string {
+  if (content.length <= limit) return content;
 
-  const headSize = Math.floor(MAX_FILE_SIZE * 0.8);
-  const tailSize = MAX_FILE_SIZE - headSize - 20; // 20 chars for separator
+  const headSize = Math.floor(limit * 0.8);
+  const tailSize = limit - headSize - 20; // 20 chars for separator
 
   const head = content.slice(0, headSize);
   const tail = content.slice(-tailSize);
