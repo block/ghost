@@ -6,3 +6,4 @@ dist
 packages/ghost-ui/public/r/
 .env
 .env.local
+packages/ghost-ui/.ghost/

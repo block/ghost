@@ -1,122 +1,76 @@
-import { extractFromTarget } from "../extractors/index.js";
-import { detectFormats } from "../extractors/format-detector.js";
-import { createProvider } from "../llm/index.js";
-import type { AgentContext, ExtractedMaterial, Target } from "../types.js";
+import { sampleDirectory } from "../extractors/sampler.js";
+import { materializeGithub } from "../extractors/sources/github.js";
+import { materializeNpm } from "../extractors/sources/npm.js";
+import { materializeUrl } from "../extractors/sources/url.js";
+import type { AgentContext, SampledMaterial, Target } from "../types.js";
 import { BaseAgent } from "./base.js";
 import type { AgentState } from "./types.js";
 
 /**
  * Extraction Agent — "What materials exist here?"
  *
- * Takes any Target and produces ExtractedMaterial.
- * Multi-turn: if initial extraction has low confidence,
- * uses LLM to interpret ambiguous files.
+ * Takes any Target, materializes it to a local directory,
+ * walks the files, and returns a smart sample of the most
+ * design-relevant files for LLM interpretation.
+ *
+ * This agent is purely mechanical — no LLM calls.
+ * Always completes in a single iteration.
  */
-export class ExtractionAgent extends BaseAgent<Target, ExtractedMaterial> {
+export class ExtractionAgent extends BaseAgent<Target, SampledMaterial> {
   name = "extraction";
-  maxIterations = 3;
-  systemPrompt = `You are a design system extraction agent. Your job is to extract
-design materials (tokens, colors, spacing, typography, components) from any source.
-
-When the deterministic extraction has low confidence, analyze the raw files and
-identify design tokens that the parser missed. Look for:
-- Color values in JS/TS theme objects
-- Spacing scales in configuration files
-- Typography definitions in non-standard formats
-- Token naming patterns that don't follow CSS custom property conventions`;
+  maxIterations = 1;
+  systemPrompt = "File extraction agent — walks and samples design-relevant files from any target.";
 
   protected async step(
-    state: AgentState<ExtractedMaterial>,
+    state: AgentState<SampledMaterial>,
     input: Target,
-    ctx: AgentContext,
-  ): Promise<AgentState<ExtractedMaterial>> {
-    if (state.iterations === 0) {
-      // First iteration: deterministic extraction
-      try {
-        const material = await extractFromTarget(input);
+    _ctx: AgentContext,
+  ): Promise<AgentState<SampledMaterial>> {
+    try {
+      // Materialize remote targets to local directory
+      const localDir = await this.materialize(input);
 
-        const confidence = this.assessConfidence(material);
-        state.result = material;
-        state.confidence = confidence;
-        state.reasoning.push(
-          `Extracted ${material.metadata.tokenCount} tokens, ${material.metadata.componentCount} components from ${input.type}:${input.value}`,
-        );
+      // Sample the most informative files
+      const material = await sampleDirectory(localDir, input.type);
 
-        if (confidence >= 0.7 || !ctx.llm) {
-          state.status = "completed";
-        } else {
-          state.reasoning.push(
-            `Low confidence (${confidence.toFixed(2)}), will attempt LLM-assisted extraction`,
-          );
-        }
-      } catch (err) {
-        state.warnings.push(
-          `Deterministic extraction failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        if (!ctx.llm) {
-          state.status = "failed";
-        }
+      state.result = material;
+      state.confidence = material.files.length > 0 ? 0.9 : 0.3;
+      state.reasoning.push(
+        `Sampled ${material.metadata.sampledFiles} of ${material.metadata.totalFiles} files from ${input.type}:${input.value}`,
+      );
+
+      if (material.files.length === 0) {
+        state.warnings.push("No design-relevant files found in target");
       }
 
-      return state;
-    }
-
-    // Subsequent iterations: LLM-assisted extraction
-    if (ctx.llm && state.result) {
-      try {
-        const provider = createProvider(ctx.llm);
-        // Ask LLM to find additional tokens from config/component files
-        const material = state.result;
-        const configContent = material.configFiles
-          .map((f) => `--- ${f.path} ---\n${f.content.slice(0, 2000)}`)
-          .join("\n\n");
-
-        if (configContent.trim()) {
-          state.reasoning.push(
-            "Analyzing config files with LLM for additional token extraction",
-          );
-          // The LLM enrichment would parse the response and merge tokens
-          // For now, mark as completed with the deterministic result
-          state.confidence = Math.min(state.confidence + 0.15, 1.0);
-        }
-
-        state.status = "completed";
-      } catch (err) {
-        state.warnings.push(
-          `LLM-assisted extraction failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        state.status = "completed"; // Still return deterministic result
-      }
-    } else {
-      state.status = state.result ? "completed" : "failed";
+      state.status = "completed";
+    } catch (err) {
+      state.warnings.push(
+        `Extraction failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      state.status = "failed";
     }
 
     return state;
   }
 
-  private assessConfidence(material: ExtractedMaterial): number {
-    let confidence = 0.3; // Base confidence for any extraction
-
-    // Tokens found
-    if (material.metadata.tokenCount > 0) {
-      confidence += Math.min(material.metadata.tokenCount * 0.005, 0.3);
+  private async materialize(target: Target): Promise<string> {
+    switch (target.type) {
+      case "path":
+        return target.value;
+      case "url":
+      case "registry":
+        return materializeUrl(target.value);
+      case "npm":
+        return materializeNpm(target.value);
+      case "github":
+        return materializeGithub(target.value, target.options?.branch);
+      case "figma":
+        throw new Error("Figma extraction not yet implemented");
+      case "doc-site":
+        return materializeUrl(target.value);
+      default:
+        throw new Error(`Unsupported target type: ${target.type}`);
     }
-
-    // Components found
-    if (material.metadata.componentCount > 0) {
-      confidence += Math.min(material.metadata.componentCount * 0.01, 0.2);
-    }
-
-    // Known framework
-    if (material.metadata.framework) {
-      confidence += 0.1;
-    }
-
-    // Known component library
-    if (material.metadata.componentLibrary) {
-      confidence += 0.1;
-    }
-
-    return Math.min(confidence, 1.0);
   }
 }

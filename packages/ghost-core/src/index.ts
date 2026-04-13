@@ -42,10 +42,9 @@ export type { CheckBoundsOptions } from "./evolution/index.js";
 export type { FleetClusterOptions } from "./evolution/index.js";
 export {
   detectExtractors,
-  detectFormats,
   extract,
   extractFromTarget,
-  normalizeTokens,
+  sampleDirectory,
   walkAndCategorize,
   walkDirectory,
 } from "./extractors/index.js";
@@ -142,6 +141,8 @@ export type {
   LLMConfig,
   LLMProvider,
   NormalizedToken,
+  SampledFile,
+  SampledMaterial,
   Registry,
   RegistryFile,
   RegistryItem,
