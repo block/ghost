@@ -8,9 +8,9 @@ export const FINGERPRINT_SCHEMA = `{
   "timestamp": "string — ISO 8601",
 
   "palette": {
-    "dominant": [{ "role": "string (primary, secondary, accent, etc.)", "value": "string (resolved color)", "oklch": [L, C, H] }],
+    "dominant": [{ "role": "string (primary, secondary, accent, etc.)", "value": "string (resolved hex/rgb color — e.g. #1a1a1a, rgb(255,0,0))" }],
     "neutrals": { "steps": ["string — color values lightest to darkest"], "count": "number" },
-    "semantic": [{ "role": "string (surface, danger, warning, success, info, text, border, etc.)", "value": "string", "oklch": [L, C, H] }],
+    "semantic": [{ "role": "string (surface, danger, warning, success, info, text, border, etc.)", "value": "string (resolved hex/rgb color)" }],
     "saturationProfile": "muted | vibrant | mixed",
     "contrast": "high | moderate | low"
   },
@@ -136,7 +136,7 @@ systemRed=#FF3B30, systemOrange=#FF9500, systemYellow=#FFCC00, systemGreen=#34C7
 
 - **Populate ALL fields.** Every design system has colors, spacing, typography, and surfaces — find them even if they're in unexpected places.
 - **Convert units to logical units** where possible. For web: \`1rem\` = 16px, \`0.5rem\` = 8px. For iOS: use pt values directly (px and pt are numerically equivalent for fingerprinting).
-- **Convert colors to OKLCH** for the oklch field. If you can't determine the exact OKLCH values, provide your best approximation.
+- **Resolve colors to hex or rgb.** Output color values as resolved hex (#1a1a1a) or rgb(r,g,b). Do NOT output oklch — color space conversion is handled post-processing.
 - **Count real components** in the source. Look at file names, exports, and directory structure (Views, Screens, Components).
 - **Rate tokenization honestly.** If most styles are hardcoded in components rather than referencing tokens, tokenization should be low.
 - Spacing values should be **numbers** (not strings).
@@ -228,7 +228,7 @@ ${focusNote}
 1. **Validate** the pre-extracted signals against the source files. Fix any errors.
 2. **Complete** missing dimensions${signals.llmFocusAreas.length > 0 ? ` (especially: ${signals.llmFocusAreas.join(", ")})` : ""}.
 3. **Fill qualitative fields**: saturationProfile, contrast, lineHeightPattern, borderUsage, tokenization score, naming pattern.
-4. **Convert colors to OKLCH** if not already converted.
+4. **Resolve colors to hex or rgb** — do NOT convert to oklch, that's handled in post-processing.
 5. Output the complete fingerprint JSON.
 
 ## Output Format

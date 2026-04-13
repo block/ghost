@@ -1,3 +1,4 @@
+import { parseColorToOklch } from "../fingerprint/colors.js";
 import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
 import { createProvider } from "../llm/index.js";
@@ -230,6 +231,10 @@ language: palette, spacing, typography, surfaces, and architecture.`;
 
     const fp = this.pendingFingerprint;
 
+    // Recompute all oklch tuples from value strings using deterministic math.
+    // Don't trust the LLM's mental color space conversion.
+    recomputeOklch(fp);
+
     // Compute embedding
     fp.embedding = ctx.embedding
       ? await computeSemanticEmbedding(fp, ctx.embedding)
@@ -328,5 +333,21 @@ language: palette, spacing, typography, surfaces, and architecture.`;
     }
 
     return issues;
+  }
+}
+
+/**
+ * Recompute all oklch tuples from color value strings using deterministic math.
+ * The LLM is asked to provide color values but not to do color space conversion —
+ * we handle that precisely here.
+ */
+function recomputeOklch(fp: DesignFingerprint): void {
+  for (const color of fp.palette.dominant) {
+    const oklch = parseColorToOklch(color.value);
+    if (oklch) color.oklch = oklch;
+  }
+  for (const color of fp.palette.semantic) {
+    const oklch = parseColorToOklch(color.value);
+    if (oklch) color.oklch = oklch;
   }
 }

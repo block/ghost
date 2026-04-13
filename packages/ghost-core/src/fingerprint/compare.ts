@@ -9,13 +9,16 @@ export interface CompareOptions {
   includeVectors?: boolean;
 }
 
-// Dimension weights — palette and spacing have higher visual impact
+// Dimension weights — visual dimensions only.
+// Architecture (methodology, tokenization, naming) is implementation detail,
+// not visual language. It's still computed and reported but excluded from
+// the overall visual distance.
 const WEIGHTS: Record<string, number> = {
-  palette: 0.3,
-  spacing: 0.2,
-  typography: 0.2,
+  palette: 0.35,
+  spacing: 0.25,
+  typography: 0.25,
   surfaces: 0.15,
-  architecture: 0.15,
+  architecture: 0, // reported but not in visual distance
 };
 
 export function compareFingerprints(
@@ -60,20 +63,35 @@ function comparePalette(
 ): DimensionDelta {
   const distances: number[] = [];
 
-  // Compare dominant colors by OKLCH delta-E
-  const maxDominant = Math.max(
-    a.palette.dominant.length,
-    b.palette.dominant.length,
-  );
-  if (maxDominant > 0) {
-    for (let i = 0; i < maxDominant; i++) {
-      const ca = a.palette.dominant[i];
-      const cb = b.palette.dominant[i];
-      if (ca?.oklch && cb?.oklch) {
-        distances.push(oklchDistance(ca.oklch, cb.oklch));
-      } else if (ca || cb) {
-        distances.push(1); // one is missing
-      }
+  // Compare dominant colors by role, then by position for unmatched
+  const aByRole = new Map(a.palette.dominant.map((c) => [c.role, c]));
+  const bByRole = new Map(b.palette.dominant.map((c) => [c.role, c]));
+  const allDominantRoles = new Set([...aByRole.keys(), ...bByRole.keys()]);
+  const matchedA = new Set<string>();
+  const matchedB = new Set<string>();
+
+  // First pass: match by role name
+  for (const role of allDominantRoles) {
+    const ca = aByRole.get(role);
+    const cb = bByRole.get(role);
+    if (ca?.oklch && cb?.oklch) {
+      distances.push(oklchDistance(ca.oklch, cb.oklch));
+      matchedA.add(role);
+      matchedB.add(role);
+    }
+  }
+
+  // Second pass: unmatched colors count as missing
+  const unmatchedA = a.palette.dominant.filter((c) => !matchedA.has(c.role));
+  const unmatchedB = b.palette.dominant.filter((c) => !matchedB.has(c.role));
+  const unmatchedCount = Math.max(unmatchedA.length, unmatchedB.length);
+  for (let i = 0; i < unmatchedCount; i++) {
+    const ca = unmatchedA[i];
+    const cb = unmatchedB[i];
+    if (ca?.oklch && cb?.oklch) {
+      distances.push(oklchDistance(ca.oklch, cb.oklch));
+    } else {
+      distances.push(1);
     }
   }
 
