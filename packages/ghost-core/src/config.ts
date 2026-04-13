@@ -24,27 +24,41 @@ export function defineConfig(config: GhostConfig): GhostConfig {
 }
 
 /**
- * Auto-detect a Target from a string input.
+ * Resolve a target string into a typed Target.
  *
- * - starts with / or ./ or ../ → path
- * - exists as a local path → path
- * - starts with http(s):// → url
- * - contains figma.com → figma
- * - matches owner/repo pattern (single slash, no dots) → github
- * - starts with @ or plain word → npm
+ * Explicit prefixes (recommended):
+ *   github:owner/repo    → GitHub clone
+ *   npm:package-name     → npm pack
+ *   figma:file-url       → Figma API
+ *
+ * Unambiguous patterns (no prefix needed):
+ *   /absolute/path       → local path
+ *   ./relative/path      → local path
+ *   ../parent/path       → local path
+ *   https://...          → URL
+ *
+ * Ambiguous inputs without a prefix will throw an error
+ * with a suggestion to use a prefix.
  */
 export function resolveTarget(input: string): Target {
-  // Explicit path prefixes
+  // Explicit prefixes — unambiguous, preferred
+  const prefixMatch = input.match(/^(github|npm|figma|path|url):(.+)$/);
+  if (prefixMatch) {
+    const [, prefix, value] = prefixMatch;
+    return { type: prefix as Target["type"], value };
+  }
+
+  // Unambiguous: absolute or relative paths
   if (input.startsWith("/") || input.startsWith("./") || input.startsWith("../")) {
     return { type: "path", value: input };
   }
 
-  // Check if it exists as a local path (handles "packages/foo", "src/styles", etc.)
+  // Unambiguous: exists as local path
   if (existsSync(resolve(process.cwd(), input))) {
     return { type: "path", value: input };
   }
 
-  // URLs
+  // Unambiguous: URLs
   if (input.startsWith("http://") || input.startsWith("https://")) {
     if (input.includes("figma.com")) {
       return { type: "figma", value: input };
@@ -52,23 +66,24 @@ export function resolveTarget(input: string): Target {
     return { type: "url", value: input };
   }
 
-  // npm scoped packages
-  if (input.startsWith("@")) {
+  // Unambiguous: npm scoped packages (@scope/name)
+  if (input.startsWith("@") && input.includes("/")) {
     return { type: "npm", value: input };
   }
 
-  // GitHub: owner/repo pattern — single slash, no dots in path segments
-  if (input.includes("/") && !input.includes(".") && input.split("/").length === 2) {
-    return { type: "github", value: input };
+  // Ambiguous — require a prefix
+  const suggestions: string[] = [];
+  if (input.includes("/")) {
+    suggestions.push(`  github:${input}    (GitHub repo)`);
+    suggestions.push(`  path:${input}      (local path)`);
+  } else {
+    suggestions.push(`  npm:${input}       (npm package)`);
+    suggestions.push(`  github:owner/${input}  (GitHub repo)`);
   }
 
-  // Plain word → npm
-  if (!input.includes("/")) {
-    return { type: "npm", value: input };
-  }
-
-  // Fallback: treat as path
-  return { type: "path", value: input };
+  throw new Error(
+    `Ambiguous target "${input}". Use an explicit prefix:\n${suggestions.join("\n")}`,
+  );
 }
 
 interface LoadConfigOptions {

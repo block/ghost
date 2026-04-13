@@ -12,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import { Director } from "../../src/agents/director.js";
 import { resolveTarget } from "../../src/config.js";
 import { extractFromTarget } from "../../src/extractors/index.js";
-import { detectFormats } from "../../src/extractors/format-detector.js";
 import { compareFingerprints } from "../../src/fingerprint/compare.js";
 import type { AgentContext, EnrichedFingerprint, Target } from "../../src/types.js";
 
@@ -137,57 +136,47 @@ describe("GitHub design systems", { timeout: 180_000 }, () => {
 // ─── resolveTarget auto-detection ───────────────────────────────────
 
 describe("resolveTarget", () => {
-  it("detects npm scoped packages", () => {
+  it("resolves explicit prefixes", () => {
+    expect(resolveTarget("github:primer/css")).toEqual({ type: "github", value: "primer/css" });
+    expect(resolveTarget("npm:antd")).toEqual({ type: "npm", value: "antd" });
+    expect(resolveTarget("npm:@primer/css")).toEqual({ type: "npm", value: "@primer/css" });
+    expect(resolveTarget("path:./src")).toEqual({ type: "path", value: "./src" });
+  });
+
+  it("resolves scoped npm packages without prefix", () => {
     expect(resolveTarget("@radix-ui/themes").type).toBe("npm");
     expect(resolveTarget("@carbon/styles").type).toBe("npm");
   });
 
-  it("detects npm unscoped packages", () => {
-    expect(resolveTarget("evergreen-ui").type).toBe("npm");
-    expect(resolveTarget("antd").type).toBe("npm");
+  it("resolves URLs without prefix", () => {
+    expect(resolveTarget("https://ui.shadcn.com/registry.json").type).toBe("url");
   });
 
-  it("detects GitHub repos", () => {
-    expect(resolveTarget("shadcn-ui/ui").type).toBe("github");
-    expect(resolveTarget("radix-ui/themes").type).toBe("github");
-    expect(resolveTarget("primer/css").type).toBe("github");
-  });
-
-  it("detects URLs", () => {
-    expect(resolveTarget("https://ui.shadcn.com/registry.json").type).toBe(
-      "url",
-    );
-  });
-
-  it("detects paths", () => {
+  it("resolves explicit paths without prefix", () => {
     expect(resolveTarget("./packages/ghost-ui").type).toBe("path");
     expect(resolveTarget("/tmp/something").type).toBe("path");
   });
 
-  it("detects figma URLs", () => {
+  it("resolves figma URLs", () => {
     expect(resolveTarget("https://figma.com/file/abc123").type).toBe("figma");
+  });
+
+  it("throws on ambiguous input without prefix", () => {
+    expect(() => resolveTarget("primer/css")).toThrow("Ambiguous target");
+    expect(() => resolveTarget("antd")).toThrow("Ambiguous target");
   });
 });
 
 // ─── Extraction pipeline ────────────────────────────────────────────
 
 describe("extraction pipeline", { timeout: 120_000 }, () => {
-  it("extracts from GitHub and detects formats", async () => {
+  it("extracts and samples from GitHub", async () => {
     const target: Target = { type: "github", value: "primer/css" };
     const material = await extractFromTarget(target, { maxFiles: 30 });
 
-    expect(material.styleFiles.length).toBeGreaterThan(0);
+    expect(material.files.length).toBeGreaterThan(0);
     expect(material.metadata.targetType).toBe("github");
-
-    const allFiles = [
-      ...material.styleFiles,
-      ...material.componentFiles,
-      ...material.configFiles,
-    ];
-    const formats = detectFormats(allFiles);
-    expect(formats.length).toBeGreaterThan(0);
-    // Primer has CSS custom properties
-    expect(formats.some((f) => f.format === "css-custom-properties")).toBe(true);
+    expect(material.metadata.sampledFiles).toBeGreaterThan(0);
   });
 });
 
