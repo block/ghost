@@ -1,7 +1,42 @@
 "use client";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const exampleModules = import.meta.glob<{ default: React.ComponentType }>(
+  "/src/components/docs/examples/**/*.tsx",
+);
+
+const LoadingSkeleton = () => (
+  <div className="flex w-full flex-col gap-4 py-8">
+    <Skeleton className="h-8 w-48" />
+    <Skeleton className="h-48 w-full" />
+  </div>
+);
+
+export function ExampleLoader({
+  componentSlug,
+  exampleName,
+}: {
+  componentSlug: string;
+  exampleName: string;
+}) {
+  const path = `/src/components/docs/examples/${componentSlug}/${exampleName}.tsx`;
+  const loader = exampleModules[path];
+
+  const LazyComponent = useMemo(() => {
+    if (!loader) return null;
+    return lazy(loader);
+  }, [loader]);
+
+  if (!LazyComponent) return null;
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <LazyComponent />
+    </Suspense>
+  );
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const wrap = (imp: Promise<any>, name: string) =>

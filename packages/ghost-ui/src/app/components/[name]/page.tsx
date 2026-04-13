@@ -1,5 +1,6 @@
 import { Navigate, useParams } from "react-router";
 import { ComponentPageShell } from "@/components/docs/component-page-shell";
+import { getComponentDoc } from "@/lib/component-docs";
 import {
   getCategory,
   getComponent,
@@ -42,6 +43,7 @@ export default function ComponentPage() {
 
   const demoSource = getDemoSource(component.slug, component.demoSource);
   const spec = getComponentSpec(component.slug);
+  const docs = getComponentDoc(name);
 
   return (
     <ComponentPageShell
@@ -51,6 +53,7 @@ export default function ComponentPage() {
       spec={spec}
       prev={prev ? { slug: prev.slug, name: prev.name } : null}
       next={next ? { slug: next.slug, name: next.name } : null}
+      docs={docs}
     />
   );
 }

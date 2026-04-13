@@ -15,11 +15,12 @@ import {
   CodeBlockCopyButton,
   CodeBlockHeader,
 } from "@/components/ai-elements/code-block";
-import { DemoLoader } from "@/components/docs/demo-loader";
+import { DemoLoader, ExampleLoader } from "@/components/docs/demo-loader";
 import { ComponentErrorBoundary } from "@/components/docs/error-boundary";
 import { SectionWrapper } from "@/components/docs/wrappers";
 import { Button } from "@/components/ui/button";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import type { ComponentDoc } from "@/lib/component-docs";
 import { ComponentEntry } from "@/lib/component-registry";
 import type { ComponentSpec } from "@/lib/component-source";
 import { cn } from "@/lib/utils";
@@ -101,6 +102,7 @@ export function ComponentPageShell({
   spec,
   prev,
   next,
+  docs,
 }: {
   component: ComponentEntry;
   categoryName: string;
@@ -108,6 +110,7 @@ export function ComponentPageShell({
   spec: ComponentSpec | null;
   prev: { slug: string; name: string } | null;
   next: { slug: string; name: string } | null;
+  docs?: ComponentDoc;
 }) {
   const [activeTab, setActiveTab] = useState<"preview" | "source" | "demo">(
     "preview",
@@ -132,7 +135,7 @@ export function ComponentPageShell({
     return () => ctx.revert();
   }, [component.slug]);
 
-  const installCommand = `npx shadcn@latest add ${component.slug}`;
+  const installCommand = `npx shadcn@latest add --registry https://block.github.io/ghost/r/registry.json ${component.slug}`;
 
   // Filter exports to only component names (capitalized), exclude variant exports
   const componentExports =
@@ -141,276 +144,434 @@ export function ComponentPageShell({
     ) ?? [];
 
   return (
-    <SectionWrapper>
-      <div ref={shellRef}>
-        {/* ── Header ── */}
-        <div className="shell-header pt-6 pb-4 sm:pt-8 sm:pb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <Link
-              to="/ui/components"
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <NavigationBackIcon className="size-4" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <span
-                className="font-display uppercase text-muted-foreground"
-                style={{
-                  fontSize: "var(--label-font-size)",
-                  letterSpacing: "var(--label-letter-spacing)",
-                  fontWeight: "var(--label-font-weight)",
-                }}
+    <>
+      {/* ── Prev / Next (floating sides, xl+) ── */}
+      {prev && (
+        <Link
+          to={`/ui/components/${prev.slug}`}
+          className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-40 group flex-col items-start gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <span className="flex size-10 items-center justify-center rounded-full border bg-background/80 backdrop-blur-sm group-hover:border-foreground/25 transition-all duration-200 shadow-sm">
+            <NavigationBackIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
+          </span>
+          <span className="text-xs font-medium max-w-[6rem] leading-tight text-left">
+            {prev.name}
+          </span>
+        </Link>
+      )}
+      {next && (
+        <Link
+          to={`/ui/components/${next.slug}`}
+          className="hidden xl:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 group flex-col items-end gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          <span className="flex size-10 items-center justify-center rounded-full border bg-background/80 backdrop-blur-sm group-hover:border-foreground/25 transition-all duration-200 shadow-sm">
+            <NavigationBackIcon className="size-4 rotate-180 transition-transform group-hover:translate-x-0.5" />
+          </span>
+          <span className="text-xs font-medium max-w-[6rem] leading-tight text-right">
+            {next.name}
+          </span>
+        </Link>
+      )}
+      <SectionWrapper>
+        <div ref={shellRef} className="mx-auto max-w-3xl">
+          {/* ── Header ── */}
+          <div className="shell-header pt-6 pb-4 sm:pt-8 sm:pb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Link
+                to="/ui/components"
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                {categoryName}
-              </span>
-              {component.isAI && (
-                <span className="inline-flex items-center rounded-full bg-foreground text-background px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
-                  AI
-                </span>
-              )}
-            </div>
-          </div>
-
-          <h1
-            className="font-display font-black tracking-[-0.04em] leading-[0.9]"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
-          >
-            {component.name}
-          </h1>
-        </div>
-
-        <div className="shell-content space-y-6">
-          {/* ── Install ── */}
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
-            <DownloadIcon className="size-3.5 shrink-0 text-muted-foreground" />
-            <code className="flex-1 text-[13px] font-mono truncate text-muted-foreground">
-              {installCommand}
-            </code>
-            <Button
-              appearance="icon"
-              variant="ghost"
-              size="icon-xs"
-              className="relative shrink-0 cursor-pointer"
-              onClick={() => copyToClipboard(installCommand)}
-            >
-              <CopyIcon
-                className={cn(
-                  "absolute size-3.5 transition duration-200",
-                  isCopied ? "scale-0" : "scale-100",
-                )}
-              />
-              <CheckIcon
-                className={cn(
-                  "absolute size-3.5 transition duration-200",
-                  !isCopied ? "scale-0" : "scale-100",
-                )}
-              />
-            </Button>
-          </div>
-
-          {/* ── Tabs: Preview / Source / Demo Code ── */}
-          <div>
-            <div className="flex items-center gap-1 border-b mb-0">
-              {(
-                [
-                  ["preview", "Preview"],
-                  ...(spec?.source ? [["source", "Source"]] : []),
-                  ...(demoSource ? [["demo", "Demo"]] : []),
-                ] as [string, string][]
-              ).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key as typeof activeTab)}
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium transition-colors relative cursor-pointer",
-                    activeTab === key
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                <NavigationBackIcon className="size-4" />
+              </Link>
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-display uppercase text-muted-foreground"
+                  style={{
+                    fontSize: "var(--label-font-size)",
+                    letterSpacing: "var(--label-letter-spacing)",
+                    fontWeight: "var(--label-font-weight)",
+                  }}
                 >
-                  {label}
-                  {activeTab === key && (
-                    <span className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
-                  )}
-                </button>
-              ))}
+                  {categoryName}
+                </span>
+              </div>
             </div>
 
-            <div className="pt-6">
-              {activeTab === "preview" && (
-                <ComponentErrorBoundary name={component.slug}>
-                  <DemoLoader name={component.slug} />
-                </ComponentErrorBoundary>
-              )}
-
-              {activeTab === "source" && spec?.source && (
-                <div className="rounded-lg border overflow-hidden">
-                  <CodeBlock code={spec.source} language="tsx" showLineNumbers>
-                    <CodeBlockHeader>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {spec.filePath}
-                      </span>
-                      <CodeBlockActions>
-                        <CodeBlockCopyButton />
-                      </CodeBlockActions>
-                    </CodeBlockHeader>
-                  </CodeBlock>
-                </div>
-              )}
-
-              {activeTab === "demo" && demoSource && (
-                <div className="rounded-lg border overflow-hidden">
-                  <CodeBlock code={demoSource} language="tsx" showLineNumbers>
-                    <CodeBlockHeader>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {component.slug}-demo.tsx
-                      </span>
-                      <CodeBlockActions>
-                        <CodeBlockCopyButton />
-                      </CodeBlockActions>
-                    </CodeBlockHeader>
-                  </CodeBlock>
-                </div>
-              )}
-            </div>
+            <h1
+              className="font-display font-black tracking-[-0.04em] leading-[0.9]"
+              style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}
+            >
+              {component.name}
+            </h1>
+            {docs?.description && (
+              <p
+                className="mt-3 text-muted-foreground leading-relaxed"
+                style={{ fontSize: "clamp(0.875rem, 1.5vw, 1rem)" }}
+              >
+                {docs.description}
+              </p>
+            )}
           </div>
 
-          {/* ── Spec Sheet ── */}
-          <div className="border rounded-lg divide-y divide-border/50">
-            <div className="px-4 py-3">
-              <h2
-                className="font-display uppercase text-muted-foreground"
-                style={{
-                  fontSize: "var(--label-font-size)",
-                  letterSpacing: "var(--label-letter-spacing)",
-                  fontWeight: "var(--label-font-weight)",
-                }}
+          <div className="shell-content space-y-6">
+            {/* ── Install ── */}
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2">
+              <DownloadIcon className="size-3.5 shrink-0 text-muted-foreground" />
+              <code className="flex-1 text-[13px] font-mono truncate text-muted-foreground">
+                {installCommand}
+              </code>
+              <Button
+                appearance="icon"
+                variant="ghost"
+                size="icon-xs"
+                className="relative shrink-0 cursor-pointer"
+                onClick={() => copyToClipboard(installCommand)}
               >
-                Specification
-              </h2>
+                <CopyIcon
+                  className={cn(
+                    "absolute size-3.5 transition duration-200",
+                    isCopied ? "scale-0" : "scale-100",
+                  )}
+                />
+                <CheckIcon
+                  className={cn(
+                    "absolute size-3.5 transition duration-200",
+                    !isCopied ? "scale-0" : "scale-100",
+                  )}
+                />
+              </Button>
             </div>
 
-            <div className="px-4 py-1">
-              {/* Variants */}
-              {spec && spec.variants.length > 0 && (
-                <SpecRow label="Variants">
-                  <VariantTable variants={spec.variants} />
-                </SpecRow>
-              )}
+            {docs?.usage && (
+              <div className="rounded-lg border overflow-hidden">
+                <CodeBlock code={docs.usage} language="tsx">
+                  <CodeBlockHeader>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      Usage
+                    </span>
+                    <CodeBlockActions>
+                      <CodeBlockCopyButton />
+                    </CodeBlockActions>
+                  </CodeBlockHeader>
+                </CodeBlock>
+              </div>
+            )}
 
-              {/* Sub-components */}
-              {componentExports.length > 1 && (
-                <SpecRow label="Exports" mono>
-                  <div className="flex flex-wrap gap-1.5">
-                    {componentExports.map((exp) => (
-                      <span
-                        key={exp}
-                        className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs"
-                      >
-                        {exp}
-                      </span>
-                    ))}
+            {/* ── Tabs: Preview / Source / Demo Code ── */}
+            <div>
+              <div className="flex items-center gap-1 border-b mb-0">
+                {(
+                  [
+                    ["preview", "Preview"],
+                    ...(spec?.source ? [["source", "Source"]] : []),
+                    ...(demoSource ? [["demo", "Demo"]] : []),
+                  ] as [string, string][]
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key as typeof activeTab)}
+                    className={cn(
+                      "px-3 py-2 text-sm font-medium transition-colors relative cursor-pointer",
+                      activeTab === key
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {label}
+                    {activeTab === key && (
+                      <span className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-6">
+                {activeTab === "preview" && (
+                  <ComponentErrorBoundary name={component.slug}>
+                    <DemoLoader name={component.slug} />
+                  </ComponentErrorBoundary>
+                )}
+
+                {activeTab === "source" && spec?.source && (
+                  <div className="rounded-lg border overflow-hidden">
+                    <CodeBlock
+                      code={spec.source}
+                      language="tsx"
+                      showLineNumbers
+                    >
+                      <CodeBlockHeader>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {spec.filePath}
+                        </span>
+                        <CodeBlockActions>
+                          <CodeBlockCopyButton />
+                        </CodeBlockActions>
+                      </CodeBlockHeader>
+                    </CodeBlock>
                   </div>
-                </SpecRow>
-              )}
+                )}
 
-              {/* Data slots */}
-              {spec && spec.dataSlots.length > 0 && (
-                <SpecRow label="Data Slots" mono>
-                  <div className="flex flex-wrap gap-1.5">
-                    {spec.dataSlots.map((slot) => (
-                      <span
-                        key={slot}
-                        className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs"
-                      >
-                        [data-slot=&quot;{slot}&quot;]
-                      </span>
-                    ))}
+                {activeTab === "demo" && demoSource && (
+                  <div className="rounded-lg border overflow-hidden">
+                    <CodeBlock code={demoSource} language="tsx" showLineNumbers>
+                      <CodeBlockHeader>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          {component.slug}-demo.tsx
+                        </span>
+                        <CodeBlockActions>
+                          <CodeBlockCopyButton />
+                        </CodeBlockActions>
+                      </CodeBlockHeader>
+                    </CodeBlock>
                   </div>
-                </SpecRow>
-              )}
+                )}
+              </div>
+            </div>
 
-              {/* Registry dependencies */}
-              {component.registryDependencies.length > 0 && (
-                <SpecRow label="Built With">
+            {/* ── Spec Sheet ── */}
+            <div className="border rounded-lg divide-y divide-border/50">
+              <div className="px-4 py-3">
+                <h2
+                  className="font-display uppercase text-muted-foreground"
+                  style={{
+                    fontSize: "var(--label-font-size)",
+                    letterSpacing: "var(--label-letter-spacing)",
+                    fontWeight: "var(--label-font-weight)",
+                  }}
+                >
+                  Specification
+                </h2>
+              </div>
+
+              <div className="px-4 py-1">
+                {/* Variants */}
+                {spec && spec.variants.length > 0 && (
+                  <SpecRow label="Variants">
+                    <VariantTable variants={spec.variants} />
+                  </SpecRow>
+                )}
+
+                {/* Sub-components */}
+                {componentExports.length > 1 && (
+                  <SpecRow label="Exports" mono>
+                    <div className="flex flex-wrap gap-1.5">
+                      {componentExports.map((exp) => (
+                        <span
+                          key={exp}
+                          className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs"
+                        >
+                          {exp}
+                        </span>
+                      ))}
+                    </div>
+                  </SpecRow>
+                )}
+
+                {/* Data slots */}
+                {spec && spec.dataSlots.length > 0 && (
+                  <SpecRow label="Data Slots" mono>
+                    <div className="flex flex-wrap gap-1.5">
+                      {spec.dataSlots.map((slot) => (
+                        <span
+                          key={slot}
+                          className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs"
+                        >
+                          [data-slot=&quot;{slot}&quot;]
+                        </span>
+                      ))}
+                    </div>
+                  </SpecRow>
+                )}
+
+                {/* Registry dependencies */}
+                {component.registryDependencies.length > 0 && (
+                  <SpecRow label="Built With">
+                    <div className="flex flex-wrap gap-1.5">
+                      {component.registryDependencies.map((dep) => (
+                        <Link
+                          key={dep}
+                          to={`/ui/components/${dep}`}
+                          className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                          {dep}
+                        </Link>
+                      ))}
+                    </div>
+                  </SpecRow>
+                )}
+
+                {/* npm Dependencies */}
+                {component.dependencies.length > 0 && (
+                  <SpecRow label="Packages" mono>
+                    <div className="flex flex-wrap gap-1.5">
+                      {component.dependencies.map((dep) => (
+                        <span
+                          key={dep}
+                          className="inline-flex items-center rounded-md border bg-muted/30 px-2 py-0.5 text-xs"
+                        >
+                          {dep}
+                        </span>
+                      ))}
+                    </div>
+                  </SpecRow>
+                )}
+
+                {/* File path */}
+                {spec?.filePath && (
+                  <SpecRow label="File" mono>
+                    <span className="text-muted-foreground">
+                      {spec.filePath}
+                    </span>
+                  </SpecRow>
+                )}
+              </div>
+            </div>
+
+            {docs && docs.props.length > 0 && (
+              <div className="border rounded-lg divide-y divide-border/50">
+                <div className="px-4 py-3">
+                  <h2
+                    className="font-display uppercase text-muted-foreground"
+                    style={{
+                      fontSize: "var(--label-font-size)",
+                      letterSpacing: "var(--label-letter-spacing)",
+                      fontWeight: "var(--label-font-weight)",
+                    }}
+                  >
+                    Props
+                  </h2>
+                </div>
+                <div className="px-4 py-1">
+                  {docs.props.map((prop) => (
+                    <SpecRow key={prop.name} label={prop.name} mono>
+                      <div className="flex flex-col gap-0.5">
+                        <code className="text-xs text-muted-foreground">
+                          {prop.type}
+                        </code>
+                        {prop.default && (
+                          <span className="text-xs text-muted-foreground">
+                            Default:{" "}
+                            <code className="font-mono">{prop.default}</code>
+                          </span>
+                        )}
+                        <span className="text-sm">{prop.description}</span>
+                      </div>
+                    </SpecRow>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {docs && docs.composedWith.length > 0 && (
+              <div className="border rounded-lg divide-y divide-border/50">
+                <div className="px-4 py-3">
+                  <h2
+                    className="font-display uppercase text-muted-foreground"
+                    style={{
+                      fontSize: "var(--label-font-size)",
+                      letterSpacing: "var(--label-letter-spacing)",
+                      fontWeight: "var(--label-font-weight)",
+                    }}
+                  >
+                    Works With
+                  </h2>
+                </div>
+                <div className="px-4 py-3">
                   <div className="flex flex-wrap gap-1.5">
-                    {component.registryDependencies.map((dep) => (
+                    {docs.composedWith.map((slug) => (
                       <Link
-                        key={dep}
-                        to={`/ui/components/${dep}`}
+                        key={slug}
+                        to={`/ui/components/${slug}`}
                         className="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono transition-colors hover:bg-accent hover:text-accent-foreground"
                       >
-                        {dep}
+                        {slug}
                       </Link>
                     ))}
                   </div>
-                </SpecRow>
-              )}
+                </div>
+              </div>
+            )}
 
-              {/* npm Dependencies */}
-              {component.dependencies.length > 0 && (
-                <SpecRow label="Packages" mono>
-                  <div className="flex flex-wrap gap-1.5">
-                    {component.dependencies.map((dep) => (
-                      <span
-                        key={dep}
-                        className="inline-flex items-center rounded-md border bg-muted/30 px-2 py-0.5 text-xs"
+            {docs && docs.examples.length > 0 && (
+              <div className="space-y-6">
+                <h2
+                  className="font-display uppercase text-muted-foreground"
+                  style={{
+                    fontSize: "var(--label-font-size)",
+                    letterSpacing: "var(--label-letter-spacing)",
+                    fontWeight: "var(--label-font-weight)",
+                  }}
+                >
+                  Examples
+                </h2>
+                {docs.examples.map((example) => (
+                  <div key={example.name} className="space-y-3">
+                    <div>
+                      <h3 className="text-sm font-medium">{example.title}</h3>
+                      {example.description && (
+                        <p className="text-xs text-muted-foreground">
+                          {example.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="rounded-lg border p-6">
+                      <ComponentErrorBoundary
+                        name={`${component.slug}-${example.name}`}
                       >
-                        {dep}
-                      </span>
-                    ))}
+                        <ExampleLoader
+                          componentSlug={component.slug}
+                          exampleName={example.name}
+                        />
+                      </ComponentErrorBoundary>
+                    </div>
                   </div>
-                </SpecRow>
-              )}
+                ))}
+              </div>
+            )}
 
-              {/* File path */}
-              {spec?.filePath && (
-                <SpecRow label="File" mono>
-                  <span className="text-muted-foreground">{spec.filePath}</span>
-                </SpecRow>
+            {/* ── Prev / Next (bottom, below xl) ── */}
+            <div className="flex items-center justify-between border-t pt-6 pb-16 xl:hidden">
+              {prev ? (
+                <Link
+                  to={`/ui/components/${prev.slug}`}
+                  className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <NavigationBackIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-muted-foreground">
+                      Previous
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {prev.name}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <div />
+              )}
+              {next ? (
+                <Link
+                  to={`/ui/components/${next.slug}`}
+                  className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-right"
+                >
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-muted-foreground">Next</span>
+                    <span className="font-medium text-foreground">
+                      {next.name}
+                    </span>
+                  </div>
+                  <NavigationBackIcon className="size-4 rotate-180 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ) : (
+                <div />
               )}
             </div>
-          </div>
 
-          {/* ── Prev / Next ── */}
-          <div className="flex items-center justify-between border-t pt-6 pb-16">
-            {prev ? (
-              <Link
-                to={`/ui/components/${prev.slug}`}
-                className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <NavigationBackIcon className="size-4 transition-transform group-hover:-translate-x-0.5" />
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">
-                    Previous
-                  </span>
-                  <span className="font-medium text-foreground">
-                    {prev.name}
-                  </span>
-                </div>
-              </Link>
-            ) : (
-              <div />
-            )}
-            {next ? (
-              <Link
-                to={`/ui/components/${next.slug}`}
-                className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-right"
-              >
-                <div className="flex flex-col items-end">
-                  <span className="text-xs text-muted-foreground">Next</span>
-                  <span className="font-medium text-foreground">
-                    {next.name}
-                  </span>
-                </div>
-                <NavigationBackIcon className="size-4 rotate-180 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            ) : (
-              <div />
-            )}
+            {/* spacer for bottom nav hidden on xl */}
+            <div className="hidden xl:block pb-16" />
           </div>
         </div>
-      </div>
-    </SectionWrapper>
+      </SectionWrapper>
+    </>
   );
 }
