@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 const nav: { name: string; path: string; icon: LucideIcon }[] = [
   { name: "Home", path: "/", icon: Home },
   { name: "Tools", path: "/tools", icon: Wrench },
-  { name: "Design Language", path: "/ui", icon: Palette },
+  { name: "UI", path: "/ui", icon: Palette },
 ];
 
 export function Dock() {
