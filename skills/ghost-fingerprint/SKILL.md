@@ -27,8 +27,20 @@ ghost profile github:shadcn-ui/ui
 # Profile an npm package
 ghost profile npm:@chakra-ui/react
 
+# Profile with AI enrichment (richer interpretation)
+ghost profile github:shadcn-ui/ui --ai --verbose
+
+# Save fingerprint to a file
+ghost profile . --output my-system.json
+
 # Profile with JSON output (machine-readable)
 ghost profile . --format json
+
+# Publish .ghost-fingerprint.json artifact
+ghost profile . --emit
+
+# Profile a shadcn registry directly
+ghost profile --registry https://ui.shadcn.com/registry.json
 
 # Extract specific dimensions from JSON output
 ghost profile . --format json | jq '.palette'
@@ -38,8 +50,8 @@ ghost profile . --format json | jq '.architecture'
 
 ## Prerequisites
 
-- `ghost` CLI installed: `npm install -g @ghost/cli` or use `npx ghost`
-- One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set
+- `ghost` CLI built: `pnpm install && pnpm build` (or `npm install -g ghost-cli`)
+- One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set (required for `--ai` flag)
 
 ## Understanding the output
 

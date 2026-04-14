@@ -18,20 +18,23 @@ Detect design drift between a project and its parent design system.
 ## Commands
 
 ```bash
-# Check compliance against a parent system
-ghost comply . --against github:shadcn-ui/ui
+# First, profile the parent to get a fingerprint file
+ghost profile github:shadcn-ui/ui --output parent.json
+
+# Check compliance against the parent fingerprint
+ghost comply . --against parent.json
 
 # Check compliance with custom thresholds
-ghost comply . --against github:shadcn-ui/ui --max-drift 0.3
-
-# Compare current state to a saved fingerprint
-ghost drift . --parent fingerprint.json
+ghost comply . --against parent.json --max-drift 0.3
 
 # Output as JSON for CI integration
-ghost comply . --against github:shadcn-ui/ui --format json
+ghost comply . --against parent.json --format json
 
 # Output as SARIF for GitHub Code Scanning
-ghost comply . --against github:shadcn-ui/ui --format sarif
+ghost comply . --against parent.json --format sarif
+
+# Check a remote target against a parent
+ghost comply github:my-org/my-app --against parent.json
 ```
 
 ## Understanding drift classifications
@@ -46,11 +49,11 @@ ghost comply . --against github:shadcn-ui/ui --format sarif
 When drift is intentional, acknowledge it to suppress future warnings:
 
 ```bash
-ghost ack palette --reason "Brand refresh: new primary color"
-ghost ack spacing --reason "Compact density variant"
+ghost ack --dimension palette --reason "Brand refresh: new primary color"
+ghost diverge spacing --reason "Compact density variant"
 ```
 
 ## Prerequisites
 
-- `ghost` CLI installed: `npm install -g @ghost/cli` or use `npx ghost`
+- `ghost` CLI built: `pnpm install && pnpm build` (or `npm install -g ghost-cli`)
 - One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set
