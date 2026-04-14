@@ -18,20 +18,27 @@ Compare two design systems and understand their differences.
 ## Commands
 
 ```bash
-# Compare two systems
-ghost compare github:shadcn-ui/ui npm:@chakra-ui/react
+# Profile two systems first, then compare the fingerprint files
+ghost profile github:shadcn-ui/ui --output shadcn.json
+ghost profile npm:@chakra-ui/react --output chakra.json
+ghost compare shadcn.json chakra.json
 
 # Compare local project against a known system
-ghost compare . github:shadcn-ui/ui
+ghost profile . --output local.json
+ghost profile github:shadcn-ui/ui --output shadcn.json
+ghost compare local.json shadcn.json
 
 # JSON output for programmatic use
-ghost compare github:shadcn-ui/ui npm:@radix-ui/themes --format json
+ghost compare shadcn.json chakra.json --format json
 
-# Fleet comparison (3+ systems at once)
-ghost fleet github:shadcn-ui/ui npm:@chakra-ui/react npm:@mantine/core
+# Include temporal analysis (velocity, trajectory)
+ghost compare shadcn.json chakra.json --temporal
+
+# Fleet comparison (3+ fingerprint files at once)
+ghost fleet shadcn.json chakra.json mantine.json
 
 # Fleet with clustering analysis
-ghost fleet github:shadcn-ui/ui npm:@chakra-ui/react npm:@mantine/core --cluster
+ghost fleet shadcn.json chakra.json mantine.json --cluster
 ```
 
 ## Understanding comparison output
@@ -44,5 +51,5 @@ The comparison shows:
 
 ## Prerequisites
 
-- `ghost` CLI installed: `npm install -g @ghost/cli` or use `npx ghost`
+- `ghost` CLI built: `pnpm install && pnpm build` (or `npm install -g ghost-cli`)
 - One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set

@@ -26,9 +26,6 @@ ghost discover "react design system"
 
 # JSON output
 ghost discover "vue components" --format json
-
-# Limit results
-ghost discover "design tokens" --limit 5
 ```
 
 ## Data sources
@@ -40,6 +37,6 @@ Ghost searches three sources progressively:
 
 ## Prerequisites
 
-- `ghost` CLI installed: `npm install -g @ghost/cli` or use `npx ghost`
+- `ghost` CLI built: `pnpm install && pnpm build` (or `npm install -g ghost-cli`)
 - Optional: `GITHUB_TOKEN` for GitHub search (avoids rate limits)
 - Optional: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` for LLM-powered discovery
