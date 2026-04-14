@@ -57,10 +57,6 @@ export async function analyzeStructure(
           lineHeightPattern: fingerprint.typography.lineHeightPattern,
         },
         surfaces: fingerprint.surfaces,
-        architecture: {
-          methodology: fingerprint.architecture.methodology,
-          componentCount: fingerprint.architecture.componentCount,
-        },
       },
       null,
       2,

@@ -281,14 +281,6 @@ export function fingerprintFromRegistry(
   const semanticColors = extractSemanticColors(rootTokens);
   const allColors = [...semanticColors, ...extractDominantColors(tokens)];
 
-  const uiItems = registry.items.filter((i) => i.type === "registry:ui");
-  const categories: Record<string, number> = {};
-  for (const item of uiItems) {
-    for (const cat of item.categories ?? ["uncategorized"]) {
-      categories[cat] = (categories[cat] ?? 0) + 1;
-    }
-  }
-
   const typography = extractTypography(tokens);
   const spacing = extractSpacing(tokens);
   const borderTokenCount = tokens.filter((t) => t.category === "border").length;
@@ -326,14 +318,6 @@ export function fingerprintFromRegistry(
             : "minimal",
       borderTokenCount,
     },
-
-    architecture: {
-      tokenization: 1, // registry is fully tokenized by definition
-      methodology: ["css-custom-properties"],
-      componentCount: uiItems.length,
-      componentCategories: categories,
-      namingPattern: detectNamingPattern(uiItems.map((i) => i.name)),
-    },
   };
 
   return {
@@ -342,15 +326,3 @@ export function fingerprintFromRegistry(
   };
 }
 
-function detectNamingPattern(names: string[]): string {
-  if (names.length === 0) return "unknown";
-
-  const allKebab = names.every((n) => /^[a-z][a-z0-9-]*$/.test(n));
-  const allCamel = names.every((n) => /^[a-z][a-zA-Z0-9]*$/.test(n));
-  const allPascal = names.every((n) => /^[A-Z][a-zA-Z0-9]*$/.test(n));
-
-  if (allKebab) return "kebab-case";
-  if (allPascal) return "PascalCase";
-  if (allCamel) return "camelCase";
-  return "mixed";
-}

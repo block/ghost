@@ -38,7 +38,6 @@ export interface ComplianceInput {
 }
 
 export interface ComplianceThresholds {
-  minTokenization?: number;
   minSemanticColors?: number;
   minSpacingScale?: number;
   maxDriftPerDimension?: number;
@@ -48,7 +47,6 @@ export interface ComplianceThresholds {
 }
 
 const DEFAULT_THRESHOLDS: ComplianceThresholds = {
-  minTokenization: 0.1,
   minSemanticColors: 3,
   minSpacingScale: 3,
   maxDriftPerDimension: 0.5,
@@ -74,12 +72,10 @@ export async function comply(
   const thresholds = { ...DEFAULT_THRESHOLDS, ...input.thresholds };
 
   // Built-in quality checks
-  violations.push(...checkTokenization(input.fingerprint, thresholds));
   violations.push(...checkPalette(input.fingerprint, thresholds));
   violations.push(...checkSpacing(input.fingerprint, thresholds));
   violations.push(...checkTypography(input.fingerprint, thresholds));
   violations.push(...checkSurfaces(input.fingerprint, thresholds));
-  violations.push(...checkArchitecture(input.fingerprint, thresholds));
 
   // Custom rules
   if (input.rules) {
@@ -122,38 +118,6 @@ export async function comply(
 }
 
 // --- Quality checks ---
-
-function checkTokenization(
-  fp: DesignFingerprint,
-  t: ComplianceThresholds,
-): ComplianceViolation[] {
-  const violations: ComplianceViolation[] = [];
-
-  if (t.minTokenization && fp.architecture.tokenization < t.minTokenization) {
-    violations.push({
-      rule: "low-tokenization",
-      severity: "warning",
-      message: `Tokenization ratio is ${(fp.architecture.tokenization * 100).toFixed(0)}% (threshold: ${(t.minTokenization * 100).toFixed(0)}%)`,
-      suggestion:
-        "Extract repeated values into CSS custom properties or design tokens",
-      dimension: "architecture",
-      value: fp.architecture.tokenization,
-    });
-  }
-
-  if (fp.architecture.tokenization === 0) {
-    violations.push({
-      rule: "no-tokens",
-      severity: "error",
-      message: "No design tokens detected — design system has no token layer",
-      suggestion:
-        "Define a token system using CSS custom properties, Style Dictionary, or similar",
-      dimension: "architecture",
-    });
-  }
-
-  return violations;
-}
 
 function checkPalette(
   fp: DesignFingerprint,
@@ -269,33 +233,6 @@ function checkSurfaces(
   return violations;
 }
 
-function checkArchitecture(
-  fp: DesignFingerprint,
-  _t: ComplianceThresholds,
-): ComplianceViolation[] {
-  const violations: ComplianceViolation[] = [];
-
-  if (fp.architecture.methodology.length === 0) {
-    violations.push({
-      rule: "unknown-methodology",
-      severity: "info",
-      message: "No CSS methodology detected (Tailwind, CSS Modules, etc.)",
-      dimension: "architecture",
-    });
-  }
-
-  if (fp.architecture.namingPattern === "unknown") {
-    violations.push({
-      rule: "unknown-naming",
-      severity: "info",
-      message:
-        "Could not detect a consistent naming pattern for components",
-      dimension: "architecture",
-    });
-  }
-
-  return violations;
-}
 
 function checkDrift(
   child: DesignFingerprint,

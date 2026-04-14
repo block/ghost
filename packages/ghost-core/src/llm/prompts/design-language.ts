@@ -17,8 +17,6 @@ export function buildDesignLanguagePrompt(
   const spacing = fingerprint.spacing;
   const typography = fingerprint.typography;
   const surfaces = fingerprint.surfaces;
-  const arch = fingerprint.architecture;
-
   return `Analyze this design system fingerprint and describe its design language.
 
 ## Fingerprint Summary
@@ -43,12 +41,6 @@ export function buildDesignLanguagePrompt(
 - Border radii: ${surfaces.borderRadii.length > 0 ? surfaces.borderRadii.join(", ") : "none"}
 - Shadow complexity: ${surfaces.shadowComplexity}
 - Border usage: ${surfaces.borderUsage}
-
-**Architecture:**
-- Tokenization: ${(arch.tokenization * 100).toFixed(0)}%
-- Methodology: ${arch.methodology.join(", ") || "unknown"}
-- Components: ${arch.componentCount}
-- Naming: ${arch.namingPattern}
 
 ## Material Context
 - Framework: ${material.metadata.framework ?? "unknown"}

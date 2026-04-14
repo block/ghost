@@ -80,18 +80,6 @@ export function validateFingerprint(
     });
   }
 
-  // Check: component count seems low relative to files
-  if (
-    fingerprint.architecture.componentCount < material.metadata.componentCount * 0.5 &&
-    material.metadata.componentCount > 5
-  ) {
-    issues.push({
-      dimension: "architecture",
-      severity: "info",
-      message: `Fingerprint shows ${fingerprint.architecture.componentCount} components but ${material.metadata.componentCount} component files were found.`,
-    });
-  }
-
   // Check: embedding has too many zero dimensions
   const zeroDims = fingerprint.embedding.filter((v) => v === 0).length;
   if (zeroDims > fingerprint.embedding.length * 0.6) {

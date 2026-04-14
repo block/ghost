@@ -203,13 +203,10 @@ export interface ColorRamp {
   count: number;
 }
 
-export type Platform = "web" | "ios" | "android" | "multiplatform";
-
 export interface DesignFingerprint {
   id: string;
   source: "registry" | "extraction" | "llm";
   timestamp: string;
-  platform?: Platform;
 
   palette: {
     dominant: SemanticColor[];
@@ -239,14 +236,6 @@ export interface DesignFingerprint {
     borderTokenCount?: number;
   };
 
-  architecture: {
-    tokenization: number;
-    methodology: string[];
-    componentCount: number;
-    componentCategories: Record<string, number>;
-    namingPattern: string;
-  };
-
   embedding: number[];
 }
 
@@ -264,7 +253,6 @@ export interface SampledMaterial {
     totalFiles: number;
     sampledFiles: number;
     targetType: TargetType;
-    detectedPlatform?: Platform;
     packageJson?: {
       name?: string;
       dependencies?: Record<string, string>;

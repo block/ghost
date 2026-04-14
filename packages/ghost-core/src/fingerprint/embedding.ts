@@ -4,13 +4,12 @@ import { contrastScore, saturationScore } from "./colors.js";
 type FingerprintInput = Omit<DesignFingerprint, "embedding">;
 
 // Fixed embedding size for comparability
-const EMBEDDING_SIZE = 64;
+const EMBEDDING_SIZE = 49;
 
 // Normalization constants — centralized for discoverability and tuning
 const NORM = {
   // Log-base for count normalization (count → log2(count+1) / log2(base))
   spacingCountLogBase: 32,
-  componentCountLogBase: 200,
   // Linear divisors
   spacingValueMax: 100,
   spacingSpreadMax: 50,
@@ -27,9 +26,6 @@ const NORM = {
   radiiCountMax: 5,
   stepRatioMax: 4,
   spacingRangeRatioMax: 50,
-  catCountMax: 10,
-  componentDensityMax: 10,
-  methodologyCountMax: 4,
   semanticCountMax: 10,
   neutralCountMax: 10,
   neutralDensityMax: 20,
@@ -53,7 +49,6 @@ function logNorm(count: number, logBase: number): number {
  *  [21-30]  Spacing: scale features (count, min, max, regularity, base unit, median, spread, step ratio, density, range ratio)
  *  [31-40]  Typography: families count, size ramp features, weight distribution, line height, weight spread, ramp range
  *  [41-48]  Surfaces: radii features, shadow complexity, border usage, radii spread, radii median, max radius
- *  [49-63]  Architecture: tokenization, component count, methodology, categories, category diversity entropy, component density
  */
 export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   const vec: number[] = new Array(EMBEDDING_SIZE).fill(0);
@@ -278,66 +273,6 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   } else {
     vec[i++] = 0;
   }
-
-  // --- Architecture (15 dims) ---
-  const arch = fingerprint.architecture;
-  vec[i++] = arch.tokenization;
-  vec[i++] = logNorm(arch.componentCount, NORM.componentCountLogBase);
-  // Methodology encoding
-  // Methodology encoding — platform-neutral concepts
-  // Each dimension represents a design pattern, not a specific technology
-  vec[i++] = arch.methodology.includes("tailwind") || arch.methodology.includes("swiftui-utility") ? 1 : 0; // utility framework
-  vec[i++] = arch.methodology.includes("css-custom-properties") || arch.methodology.includes("swift-enums") || arch.methodology.includes("asset-catalog") ? 1 : 0; // design tokens
-  vec[i++] = arch.methodology.includes("scss") || arch.methodology.includes("swift-codegen") ? 1 : 0; // preprocessor / build-time generation
-  vec[i++] = arch.methodology.includes("css-modules") || arch.methodology.includes("view-modifiers") ? 1 : 0; // scoped styles
-  // Category diversity
-  const catCount = Object.keys(arch.componentCategories).length;
-  vec[i++] = Math.min(catCount / NORM.catCountMax, 1);
-  // Naming pattern
-  vec[i++] =
-    arch.namingPattern === "kebab-case"
-      ? 0
-      : arch.namingPattern === "camelCase"
-        ? 0.33
-        : arch.namingPattern === "PascalCase"
-          ? 0.67
-          : 1;
-  // Category diversity entropy
-  const catValues = Object.values(arch.componentCategories);
-  const totalComponents = catValues.reduce((a, b) => a + b, 0);
-  if (totalComponents > 0 && catValues.length > 1) {
-    vec[i++] =
-      -catValues.reduce((ent, c) => {
-        const p = c / totalComponents;
-        return p > 0 ? ent + p * Math.log2(p) : ent;
-      }, 0) / Math.log2(catValues.length);
-  } else {
-    vec[i++] = 0;
-  }
-  // Component density: components per category
-  vec[i++] = catCount > 0 ? Math.min(arch.componentCount / catCount / NORM.componentDensityMax, 1) : 0;
-  // Methodology count
-  vec[i++] = Math.min(arch.methodology.length / NORM.methodologyCountMax, 1);
-  // Has runtime theming (styled-components, emotion, SwiftUI @Environment)
-  vec[i++] = arch.methodology.includes("styled-components") || arch.methodology.includes("emotion") || arch.methodology.includes("environment-theming") ? 1 : 0;
-  // Has programmatic styles (CSS-in-JS, SwiftUI inline)
-  vec[i++] =
-    arch.methodology.includes("styled-components") ||
-    arch.methodology.includes("emotion") ||
-    arch.methodology.includes("css-modules") ||
-    arch.methodology.includes("swiftui-inline") ||
-    arch.methodology.includes("view-modifiers")
-      ? 1
-      : 0;
-  // Component scale bucket (small <10, medium 10-30, large 30+)
-  vec[i++] =
-    arch.componentCount < 10
-      ? 0
-      : arch.componentCount < 30
-        ? 0.5
-        : 1;
-  // Tokenization — sqrt to amplify low-end differences where it matters
-  vec[i++] = Math.sqrt(arch.tokenization);
 
   return vec;
 }

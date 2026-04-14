@@ -1,4 +1,4 @@
-import { Director } from "./agents/director.js";
+import { resolve } from "node:path";
 import { resolveTarget } from "./config.js";
 import { emitFingerprint } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
@@ -13,14 +13,11 @@ import { validateFingerprint } from "./llm/validate-fingerprint.js";
 import type { FingerprintValidation } from "./llm/validate-fingerprint.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import type {
-  AgentContext,
-  AgentResult,
   DesignFingerprint,
   EmbeddingConfig,
   EnrichedFingerprint,
   ExtractedMaterial,
   GhostConfig,
-  LLMConfig,
   Target,
 } from "./types.js";
 
@@ -194,77 +191,41 @@ export async function profileRegistry(
  * This is the primary entry point for Ghost v2.
  * Accepts a Target object or a string (auto-resolved via resolveTarget).
  *
- * **Requires an LLM API key** (ANTHROPIC_API_KEY or OPENAI_API_KEY).
- * The pipeline: ExtractionAgent (walk + sample) → FingerprintAgent (LLM interpret → validate → embed).
+ * Uses the Claude Agent SDK — the agent explores the filesystem directly
+ * with Read/Glob/Grep tools to find and extract the visual language.
  */
 export async function profileTarget(
   targetOrString: Target | string,
   config?: GhostConfig,
 ): Promise<ProfileTargetResult> {
+  const { runFingerprintAgent } = await import("./agents/fingerprint-agent.js");
+
   const target =
     typeof targetOrString === "string"
       ? resolveTarget(targetOrString)
       : targetOrString;
 
-  // Resolve LLM config — require an API key
-  const llmConfig = resolveLLMConfig(config?.llm);
+  if (target.type !== "path") {
+    throw new Error(`Agent SDK profiling only supports local paths (got ${target.type})`);
+  }
 
-  const ctx: AgentContext = {
-    llm: llmConfig,
+  const targetDir = resolve(process.cwd(), target.value);
+  const projectId = target.name ?? target.value.split("/").pop() ?? "project";
+
+  const result = await runFingerprintAgent({
+    targetDir,
+    targetType: target.type,
+    projectId,
+    verbose: config?.agents?.verbose ?? true,
     embedding: config?.embedding,
-    verbose: config?.agents?.verbose ?? false,
-  };
-
-  const director = new Director();
-  const result = await director.profile(target, ctx);
+  });
 
   return {
-    fingerprint: result.fingerprint.data,
-    confidence: result.fingerprint.confidence,
-    reasoning: [
-      ...result.extraction.reasoning,
-      ...result.fingerprint.reasoning,
-    ],
-    warnings: [
-      ...result.extraction.warnings,
-      ...result.fingerprint.warnings,
-    ],
+    fingerprint: result.data,
+    confidence: result.confidence,
+    reasoning: result.reasoning,
+    warnings: result.warnings,
   };
-}
-
-/**
- * Resolve LLM config, requiring an API key.
- * Checks config, then env vars. Throws if no key found.
- */
-function resolveLLMConfig(llm?: LLMConfig): LLMConfig {
-  // Explicit config with key
-  if (llm?.apiKey) return llm;
-
-  // Check env vars
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-
-  if (anthropicKey) {
-    return {
-      provider: llm?.provider ?? "anthropic",
-      model: llm?.model,
-      apiKey: anthropicKey,
-    };
-  }
-
-  if (openaiKey) {
-    return {
-      provider: llm?.provider ?? "openai",
-      model: llm?.model,
-      apiKey: openaiKey,
-    };
-  }
-
-  throw new Error(
-    "Ghost requires an LLM API key for fingerprinting. " +
-      "Set ANTHROPIC_API_KEY or OPENAI_API_KEY environment variable, " +
-      "or configure llm.apiKey in ghost.config.ts.",
-  );
 }
 
 /**
@@ -318,16 +279,6 @@ async function fingerprintFromExtraction(
       borderRadii: [],
       shadowComplexity: "none",
       borderUsage: "minimal",
-    },
-
-    architecture: {
-      tokenization,
-      methodology: material.metadata.framework
-        ? [material.metadata.framework]
-        : [],
-      componentCount,
-      componentCategories: {},
-      namingPattern: "unknown",
     },
   };
 

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { ExtractedFile, Platform, SampledMaterial, TargetType } from "../types.js";
+import type { ExtractedFile, SampledMaterial, TargetType } from "../types.js";
 import { walkDirectory } from "./walker.js";
 
 const MAX_FILE_SIZE = 3000;
@@ -66,9 +66,6 @@ export async function sampleDirectory(
   } catch {
     // Skip if can't read
   }
-
-  // Detect platform from file extensions
-  const detectedPlatform = detectPlatform(allFiles);
 
   // Score each file
   const scored: ScoredFile[] = allFiles.map((file) => {
@@ -173,37 +170,10 @@ export async function sampleDirectory(
       totalFiles: allFiles.length,
       sampledFiles: selected.length,
       targetType,
-      detectedPlatform,
       packageJson,
       packageSwift,
     },
   };
-}
-
-/**
- * Detect the project platform from file extension distribution.
- */
-function detectPlatform(files: ExtractedFile[]): Platform | undefined {
-  let webCount = 0;
-  let nativeCount = 0;
-
-  for (const file of files) {
-    const name = file.path.toLowerCase();
-    if (name.endsWith(".swift") || name.includes(".xcassets") || name.endsWith(".xcconfig")) {
-      nativeCount++;
-    } else if (
-      name.endsWith(".tsx") || name.endsWith(".jsx") ||
-      name.endsWith(".vue") || name.endsWith(".svelte") ||
-      name.endsWith(".css") || name.endsWith(".scss")
-    ) {
-      webCount++;
-    }
-  }
-
-  if (nativeCount > 0 && webCount > 0) return "multiplatform";
-  if (nativeCount > 0) return "ios";
-  if (webCount > 0) return "web";
-  return undefined;
 }
 
 /**
@@ -242,7 +212,7 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
     if (/static\s+(?:let|var)\s+\w+.*(?:Color|CGFloat|Font|UIFont)/i.test(file.content)) {
       return { score: 5, reason: "Swift file with design token definitions" };
     }
-    return { score: 3, reason: "Swift component file (architecture sample)" };
+    return { score: 3, reason: "Swift component file" };
   }
 
   // xcconfig files
@@ -297,9 +267,9 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
     return { score: 2, reason: "Config file" };
   }
 
-  // Component files — sample a few for architecture signals
+  // Component files — sample a few for style signal
   if (file.type === "component") {
-    return { score: 3, reason: "Component file (architecture sample)" };
+    return { score: 3, reason: "Component file" };
   }
 
   // SCSS files (even without custom properties — may have $variables)

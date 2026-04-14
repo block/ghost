@@ -49,10 +49,10 @@ function makeFingerprint(
 }
 
 describe("computeEmbedding", () => {
-  it("produces 64-dimensional vector", () => {
+  it("produces 49-dimensional vector", () => {
     const fp = makeFingerprint();
     const embedding = computeEmbedding(fp);
-    expect(embedding).toHaveLength(64);
+    expect(embedding).toHaveLength(49);
   });
 
   it("all values are between 0 and 1", () => {
@@ -73,41 +73,16 @@ describe("computeEmbedding", () => {
 });
 
 describe("log-scaled normalization", () => {
-  it("component count: log-scaling differentiates mature systems", () => {
+  it("spacing count: log-scaling differentiates scale sizes", () => {
     const small = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 10 } }),
-    );
-    const medium = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 50 } }),
+      makeFingerprint({ spacing: { ...makeFingerprint().spacing, scale: [4, 8] } }),
     );
     const large = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 100 } }),
-    );
-    const huge = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 150 } }),
+      makeFingerprint({ spacing: { ...makeFingerprint().spacing, scale: [4, 8, 12, 16, 24, 32, 48, 64] } }),
     );
 
-    // Architecture component count is at index 50 (tokenization=49, componentCount=50)
-    // Log-scaling: large and huge should still be different
-    expect(large[50]).not.toEqual(huge[50]);
-    // Ordering preserved
-    expect(small[50]).toBeLessThan(medium[50]);
-    expect(medium[50]).toBeLessThan(large[50]);
-    expect(large[50]).toBeLessThan(huge[50]);
-  });
-
-  it("log-scaling avoids ceiling effect: 50 and 100 are distinguishable", () => {
-    const fp50 = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 50 } }),
-    );
-    const fp100 = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, componentCount: 100 } }),
-    );
-
-    // With old linear scaling (cap 50), both would map to 1.0 (identical)
-    // With log-scaling, they should be different
-    const delta = Math.abs(fp100[50] - fp50[50]);
-    expect(delta).toBeGreaterThan(0.05);
+    // Spacing count is at index 21
+    expect(small[21]).toBeLessThan(large[21]);
   });
 });
 
@@ -137,22 +112,22 @@ describe("border usage continuous scoring", () => {
   });
 });
 
-describe("tokenization sqrt", () => {
-  it("amplifies low-end differences", () => {
-    const low = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, tokenization: 0.25 } }),
-    );
-    const mid = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, tokenization: 0.5 } }),
-    );
-    const high = computeEmbedding(
-      makeFingerprint({ architecture: { ...makeFingerprint().architecture, tokenization: 0.75 } }),
+describe("embedding is purely visual", () => {
+  it("architecture changes do not affect embedding", () => {
+    const a = computeEmbedding(makeFingerprint());
+    const b = computeEmbedding(
+      makeFingerprint({
+        architecture: {
+          tokenization: 0.1,
+          methodology: ["scss"],
+          componentCount: 200,
+          componentCategories: { widgets: 200 },
+          namingPattern: "PascalCase",
+        },
+      }),
     );
 
-    // Last dimension (index 63) is sqrt(tokenization)
-    expect(low[63]).toBeCloseTo(0.5, 1); // sqrt(0.25) = 0.5
-    expect(mid[63]).toBeCloseTo(0.707, 1); // sqrt(0.5) ≈ 0.707
-    expect(high[63]).toBeCloseTo(0.866, 1); // sqrt(0.75) ≈ 0.866
+    expect(a).toEqual(b);
   });
 });
 

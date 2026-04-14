@@ -69,24 +69,6 @@ export function formatFingerprint(fp: DesignFingerprint): string {
   lines.push(`  Borders:     ${fp.surfaces.borderUsage}`);
   lines.push("");
 
-  // Architecture
-  lines.push(c(BOLD, "Architecture"));
-  lines.push(
-    `  Tokenization: ${(fp.architecture.tokenization * 100).toFixed(0)}%`,
-  );
-  lines.push(
-    `  Methodology:  ${fp.architecture.methodology.join(", ") || "(unknown)"}`,
-  );
-  lines.push(`  Components:   ${fp.architecture.componentCount}`);
-  const cats = Object.entries(fp.architecture.componentCategories);
-  if (cats.length > 0) {
-    lines.push(
-      `  Categories:   ${cats.map(([k, v]) => `${k} (${v})`).join(", ")}`,
-    );
-  }
-  lines.push(`  Naming:       ${fp.architecture.namingPattern}`);
-  lines.push("");
-
   return `${lines.join("\n")}\n`;
 }
 

@@ -38,7 +38,7 @@ export class FingerprintAgent extends BaseAgent<
   maxIterations = 8;
   systemPrompt = `You are a design fingerprinting agent. You analyze source files
 from design systems and produce structured fingerprints capturing their visual
-language: palette, spacing, typography, surfaces, and architecture.`;
+language: palette, spacing, typography, and surfaces.`;
 
   // State preserved across iterations for tool-use loop
   private chatMessages: ChatMessage[] = [];
@@ -232,11 +232,6 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       ? await computeSemanticEmbedding(fp, ctx.embedding)
       : computeEmbedding(fp);
 
-    // Set platform from detection
-    if (input.metadata.detectedPlatform) {
-      fp.platform = input.metadata.detectedPlatform;
-    }
-
     // Validate
     const issues = this.validateOutput(fp);
     if (issues.length > 0) {
@@ -296,9 +291,9 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       issues.push("No font families detected");
     }
 
-    // Check for unreasonable values (widened bounds for iOS pt values)
-    const spacingMax = fp.platform === "ios" ? 1000 : 500;
-    const radiusMax = fp.platform === "ios" ? 500 : 200;
+    // Check for unreasonable values
+    const spacingMax = 500;
+    const radiusMax = 200;
 
     for (const s of fp.spacing.scale) {
       if (s < 0 || s > spacingMax) {
@@ -315,14 +310,6 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       }
     }
 
-    if (
-      fp.architecture.tokenization < 0 ||
-      fp.architecture.tokenization > 1
-    ) {
-      issues.push(
-        `Tokenization out of range: ${fp.architecture.tokenization}`,
-      );
-    }
 
     return issues;
   }

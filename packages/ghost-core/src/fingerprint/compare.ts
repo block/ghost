@@ -9,16 +9,11 @@ export interface CompareOptions {
   includeVectors?: boolean;
 }
 
-// Dimension weights — visual dimensions only.
-// Architecture (methodology, tokenization, naming) is implementation detail,
-// not visual language. It's still computed and reported but excluded from
-// the overall visual distance.
 const WEIGHTS: Record<string, number> = {
   palette: 0.35,
   spacing: 0.25,
   typography: 0.25,
   surfaces: 0.15,
-  architecture: 0, // reported but not in visual distance
 };
 
 export function compareFingerprints(
@@ -32,7 +27,6 @@ export function compareFingerprints(
   dimensions.spacing = compareSpacing(source, target);
   dimensions.typography = compareTypography(source, target);
   dimensions.surfaces = compareSurfaces(source, target);
-  dimensions.architecture = compareArchitecture(source, target);
 
   // Weighted overall distance
   let distance = 0;
@@ -231,72 +225,6 @@ function compareSurfaces(
         : distance < 0.3
           ? "Minor surface differences"
           : "Distinct surface language",
-  };
-}
-
-// Cross-platform methodology equivalences: iOS concept → web concept
-const METHODOLOGY_EQUIVALENCES: Record<string, string> = {
-  "swiftui-inline": "css-in-js",
-  "view-modifiers": "css-modules",
-  "swift-enums": "css-custom-properties",
-  "asset-catalog": "css-custom-properties",
-  "environment-theming": "styled-components",
-};
-
-/** Normalize methodology strings for cross-platform comparison */
-function normalizeMethodology(methods: string[], crossPlatform: boolean): Set<string> {
-  if (!crossPlatform) return new Set(methods);
-  return new Set(methods.map((m) => METHODOLOGY_EQUIVALENCES[m] ?? m));
-}
-
-function compareArchitecture(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
-  const distances: number[] = [];
-
-  // Tokenization delta
-  distances.push(
-    Math.abs(a.architecture.tokenization - b.architecture.tokenization),
-  );
-
-  // Methodology overlap (with cross-platform normalization)
-  const crossPlatform = a.platform !== b.platform && a.platform !== undefined && b.platform !== undefined;
-  const aMethods = normalizeMethodology(a.architecture.methodology, crossPlatform);
-  const bMethods = normalizeMethodology(b.architecture.methodology, crossPlatform);
-  const allMethods = new Set([...aMethods, ...bMethods]);
-  const sharedMethods = [...allMethods].filter(
-    (m) => aMethods.has(m) && bMethods.has(m),
-  );
-  distances.push(
-    allMethods.size > 0 ? 1 - sharedMethods.length / allMethods.size : 0,
-  );
-
-  // Component count ratio
-  const maxCount = Math.max(
-    a.architecture.componentCount,
-    b.architecture.componentCount,
-  );
-  const minCount = Math.min(
-    a.architecture.componentCount,
-    b.architecture.componentCount,
-  );
-  distances.push(maxCount > 0 ? 1 - minCount / maxCount : 0);
-
-  // Naming pattern
-  if (a.architecture.namingPattern !== b.architecture.namingPattern)
-    distances.push(0.3);
-
-  const distance = avg(distances);
-  return {
-    dimension: "architecture",
-    distance,
-    description:
-      distance < 0.1
-        ? "Architecturally aligned"
-        : distance < 0.3
-          ? "Minor architectural differences"
-          : "Fundamentally different architecture",
   };
 }
 

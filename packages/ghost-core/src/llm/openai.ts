@@ -64,7 +64,7 @@ export function createOpenAIProvider(options: {
         .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
         .join("\n\n");
 
-      const prompt = buildFingerprintPrompt(projectId, fileContents, material.metadata.detectedPlatform);
+      const prompt = buildFingerprintPrompt(projectId, fileContents);
 
       const response = await client.chat.completions.create({
         model,
