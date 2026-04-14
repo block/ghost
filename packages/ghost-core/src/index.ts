@@ -102,8 +102,6 @@ export { resolveRegistry } from "./resolvers/registry.js";
 export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
-export { extractSignals } from "./signals/index.js";
-export type { DeterministicSignals, SignalCoverage } from "./signals/index.js";
 export { getToolDefinitions, FINGERPRINT_TOOLS } from "./agents/tools/index.js";
 export type {
   AgentTool,

@@ -2,8 +2,6 @@ import { parseColorToOklch } from "../fingerprint/colors.js";
 import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
 import { createProvider } from "../llm/index.js";
-import { buildSignalAwarePrompt } from "../llm/prompt.js";
-import { extractSignals } from "../signals/index.js";
 import type {
   AgentContext,
   DesignFingerprint,
@@ -68,9 +66,8 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       state.reasoning.push("Tool use loop exhausted — falling back to single-shot interpret()");
       try {
         const provider = createProvider(ctx.llm);
-        const signals = extractSignals(input);
         const projectId = input.metadata.packageJson?.name ?? "project";
-        const fingerprint = await provider.interpret(input, projectId, signals);
+        const fingerprint = await provider.interpret(input, projectId);
         this.pendingFingerprint = fingerprint;
         state.confidence = 0.7;
         return state; // Next iteration will hit validateAndFinalize
@@ -113,16 +110,11 @@ language: palette, spacing, typography, surfaces, and architecture.`;
       const provider = createProvider(ctx.llm);
       const projectId = input.metadata.packageJson?.name ?? "project";
 
-      // Extract deterministic signals
-      const signals = extractSignals(input);
       state.reasoning.push(
-        `Extracted ${signals.tokens.length} tokens deterministically (coverage: ${Object.entries(signals.coverage).map(([k, v]) => `${k}=${(v * 100).toFixed(0)}%`).join(", ")})`,
+        `Sending ${input.files.length} sampled files to LLM for extraction`,
       );
 
-      // Use interpret() with pre-extracted signals
-      // The signal-aware prompt gives the LLM structured data to validate
-      // rather than parsing raw files from scratch.
-      const fingerprint = await provider.interpret(input, projectId, signals);
+      const fingerprint = await provider.interpret(input, projectId);
       this.pendingFingerprint = fingerprint;
       state.confidence = 0.75;
 

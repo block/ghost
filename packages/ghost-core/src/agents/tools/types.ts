@@ -1,5 +1,4 @@
 import type { SampledMaterial } from "../../types.js";
-import type { DeterministicSignals } from "../../signals/types.js";
 
 /**
  * A tool the fingerprint agent can invoke during analysis.
@@ -26,8 +25,6 @@ export interface ToolContext {
   sourceDir: string;
   /** The originally sampled material */
   material: SampledMaterial;
-  /** Pre-extracted signals */
-  signals: DeterministicSignals;
 }
 
 export interface ToolResult {

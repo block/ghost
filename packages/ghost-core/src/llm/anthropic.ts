@@ -3,9 +3,8 @@ import type {
   LLMProvider,
   SampledMaterial,
 } from "../types.js";
-import type { DeterministicSignals } from "../signals/types.js";
 import type { ChatMessage, ChatResponse, ToolDefinition } from "../agents/tools/types.js";
-import { buildFingerprintPrompt, buildSignalAwarePrompt } from "./prompt.js";
+import { buildFingerprintPrompt } from "./prompt.js";
 
 interface AnthropicClient {
   messages: {
@@ -37,7 +36,6 @@ export function createAnthropicProvider(options: {
     async interpret(
       material: SampledMaterial,
       projectId: string,
-      signals?: DeterministicSignals,
     ): Promise<DesignFingerprint> {
       // Dynamic import — @anthropic-ai/sdk is an optional peer dependency
       let sdk: { default: new (opts: { apiKey: string }) => AnthropicClient };
@@ -57,9 +55,7 @@ export function createAnthropicProvider(options: {
         .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
         .join("\n\n");
 
-      const prompt = signals
-        ? buildSignalAwarePrompt(projectId, fileContents, signals, material.metadata.detectedPlatform)
-        : buildFingerprintPrompt(projectId, fileContents, material.metadata.detectedPlatform);
+      const prompt = buildFingerprintPrompt(projectId, fileContents, material.metadata.detectedPlatform);
 
       const response = await client.messages.create({
         model,

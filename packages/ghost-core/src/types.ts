@@ -374,7 +374,6 @@ export interface LLMProvider {
   interpret: (
     material: SampledMaterial,
     projectId: string,
-    signals?: import("./signals/types.js").DeterministicSignals,
   ) => Promise<DesignFingerprint>;
   /** Multi-turn chat with tool use support. Optional — only needed for agentic fingerprinting. */
   chat?: (
