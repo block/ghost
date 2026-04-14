@@ -70,7 +70,7 @@ export async function runFingerprintAgent(
     options: {
       allowedTools: ["Read", "Glob", "Grep"],
       cwd: options.targetDir,
-      maxTurns: 30,
+      maxTurns: 60,
     },
   })) {
     // Log tool usage for verbose output
