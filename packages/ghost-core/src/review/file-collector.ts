@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
-import { resolve, relative, extname } from "node:path";
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { extname, relative, resolve } from "node:path";
 import type { CollectedFile } from "../types.js";
 
 const REVIEWABLE_EXTENSIONS = new Set([
@@ -66,7 +66,7 @@ function parseChangedLines(diffOutput: string): Map<string, Set<number>> {
       if (match) {
         const start = Number(match[1]);
         const count = match[2] !== undefined ? Number(match[2]) : 1;
-        const lines = fileLines.get(currentFile)!;
+        const lines = fileLines.get(currentFile) ?? new Set<number>();
         for (let i = start; i < start + count; i++) {
           lines.add(i);
         }

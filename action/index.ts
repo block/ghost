@@ -15,14 +15,19 @@
 
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { review, formatGitHubPRComments, formatReviewSummary } from "@ghost/core";
+import {
+  formatGitHubPRComments,
+  formatReviewSummary,
+  review,
+} from "@ghost/core";
 
 async function run() {
   try {
     const token = core.getInput("github-token", { required: true });
-    const fingerprintPath = core.getInput("fingerprint") || ".ghost-fingerprint.json";
-    const deep = core.getInput("deep") === "true";
-    const anthropicApiKey = core.getInput("anthropic-api-key") || undefined;
+    const fingerprintPath =
+      core.getInput("fingerprint") || ".ghost-fingerprint.json";
+    const anthropicApiKey =
+      core.getInput("anthropic-api-key") || process.env.ANTHROPIC_API_KEY;
     const dimensionsInput = core.getInput("dimensions") || undefined;
     const base = core.getInput("base") || undefined;
 
@@ -41,16 +46,14 @@ async function run() {
       }
     }
 
-    // Run review
     const report = await review({
       diff: { base },
       fingerprintPath,
       config: {
-        deep,
         dimensions,
         changedLinesOnly: true,
       },
-      llmConfig: deep && anthropicApiKey
+      llmConfig: anthropicApiKey
         ? { provider: "anthropic", apiKey: anthropicApiKey }
         : undefined,
     });
@@ -92,9 +95,7 @@ async function run() {
       );
     }
   } catch (error) {
-    core.setFailed(
-      error instanceof Error ? error.message : String(error),
-    );
+    core.setFailed(error instanceof Error ? error.message : String(error));
   }
 }
 
