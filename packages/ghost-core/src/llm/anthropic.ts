@@ -1,9 +1,13 @@
 import type {
+  ChatMessage,
+  ChatResponse,
+  ToolDefinition,
+} from "../agents/tools/types.js";
+import type {
   DesignFingerprint,
   LLMProvider,
   SampledMaterial,
 } from "../types.js";
-import type { ChatMessage, ChatResponse, ToolDefinition } from "../agents/tools/types.js";
 import { buildFingerprintPrompt } from "./prompt.js";
 
 interface AnthropicClient {
@@ -13,7 +17,16 @@ interface AnthropicClient {
       max_tokens: number;
       messages: { role: string; content: unknown }[];
       tools?: unknown[];
-    }): Promise<{ content: { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[]; stop_reason?: string }>;
+    }): Promise<{
+      content: {
+        type: string;
+        text?: string;
+        id?: string;
+        name?: string;
+        input?: Record<string, unknown>;
+      }[];
+      stop_reason?: string;
+    }>;
   };
 }
 
@@ -101,7 +114,13 @@ export function createAnthropicProvider(options: {
         if (m.role === "tool") {
           return {
             role: "user" as const,
-            content: [{ type: "tool_result", tool_use_id: m.tool_call_id ?? "", content: m.content }],
+            content: [
+              {
+                type: "tool_result",
+                tool_use_id: m.tool_call_id ?? "",
+                content: m.content,
+              },
+            ],
           };
         }
         if (m.role === "assistant" && m.tool_calls?.length) {
@@ -134,17 +153,20 @@ export function createAnthropicProvider(options: {
 
       // Parse response
       const textBlocks = response.content.filter((b) => b.type === "text");
-      const toolUseBlocks = response.content.filter((b) => b.type === "tool_use");
+      const toolUseBlocks = response.content.filter(
+        (b) => b.type === "tool_use",
+      );
 
       return {
         content: textBlocks.map((b) => b.text ?? "").join("") || undefined,
-        tool_calls: toolUseBlocks.length > 0
-          ? toolUseBlocks.map((b) => ({
-              id: b.id ?? "",
-              name: b.name ?? "",
-              args: (b.input as Record<string, unknown>) ?? {},
-            }))
-          : undefined,
+        tool_calls:
+          toolUseBlocks.length > 0
+            ? toolUseBlocks.map((b) => ({
+                id: b.id ?? "",
+                name: b.name ?? "",
+                args: (b.input as Record<string, unknown>) ?? {},
+              }))
+            : undefined,
         stop_reason: response.stop_reason,
       };
     },

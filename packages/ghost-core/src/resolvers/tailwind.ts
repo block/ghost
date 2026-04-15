@@ -35,7 +35,10 @@ export async function resolveTailwindConfig(cwd: string): Promise<{
     // Use jiti for runtime loading of TS/ESM/CJS configs
     const { createJiti } = await import("jiti");
     const jiti = createJiti(cwd);
-    const config = await jiti.import(configPath, { default: true }) as Record<string, unknown>;
+    const config = (await jiti.import(configPath, { default: true })) as Record<
+      string,
+      unknown
+    >;
 
     const tokens: CSSToken[] = [];
 
@@ -47,8 +50,16 @@ export async function resolveTailwindConfig(cwd: string): Promise<{
     const merged: Record<string, unknown> = { ...theme };
     delete merged.extend;
     for (const [key, value] of Object.entries(extend)) {
-      if (typeof value === "object" && value !== null && typeof merged[key] === "object" && merged[key] !== null) {
-        merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) };
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        typeof merged[key] === "object" &&
+        merged[key] !== null
+      ) {
+        merged[key] = {
+          ...(merged[key] as Record<string, unknown>),
+          ...(value as Record<string, unknown>),
+        };
       } else {
         merged[key] = value;
       }
@@ -79,7 +90,12 @@ export async function resolveTailwindConfig(cwd: string): Promise<{
     for (const [themeKey, category] of Object.entries(categoryMap)) {
       const values = merged[themeKey];
       if (!values || typeof values !== "object") continue;
-      flattenThemeValues(values as Record<string, unknown>, `--tw-${themeKey}`, category, tokens);
+      flattenThemeValues(
+        values as Record<string, unknown>,
+        `--tw-${themeKey}`,
+        category,
+        tokens,
+      );
     }
 
     return { tokens, configPath };
@@ -126,7 +142,12 @@ function flattenThemeValues(
       });
     } else if (typeof value === "object" && value !== null) {
       // Nested object: recurse
-      flattenThemeValues(value as Record<string, unknown>, name, category, tokens);
+      flattenThemeValues(
+        value as Record<string, unknown>,
+        name,
+        category,
+        tokens,
+      );
     }
   }
 }

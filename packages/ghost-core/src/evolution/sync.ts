@@ -127,7 +127,7 @@ export function checkBounds(
   const opts: CheckBoundsOptions =
     typeof toleranceOrOptions === "number"
       ? { tolerance: toleranceOrOptions }
-      : toleranceOrOptions ?? {};
+      : (toleranceOrOptions ?? {});
 
   const globalTolerance = opts.tolerance ?? 0.05;
   const maxDivergenceDays = opts.maxDivergenceDays ?? null;

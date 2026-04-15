@@ -3,7 +3,6 @@ import { runExtractorTool } from "./run-extractor.js";
 import { searchFilesTool } from "./search-files.js";
 import type {
   AgentTool,
-  ChatResponse,
   ToolCall,
   ToolContext,
   ToolDefinition,

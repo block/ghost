@@ -20,13 +20,10 @@ export async function materializeGithub(
 
   try {
     const branchFlag = branch ? `--branch ${branch}` : "";
-    execSync(
-      `git clone --depth 1 ${branchFlag} "${url}" "${tempDir}"`,
-      {
-        stdio: "pipe",
-        timeout: 120000,
-      },
-    );
+    execSync(`git clone --depth 1 ${branchFlag} "${url}" "${tempDir}"`, {
+      stdio: "pipe",
+      timeout: 120000,
+    });
 
     return tempDir;
   } catch (err) {

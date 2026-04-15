@@ -188,8 +188,7 @@ function buildDiffTargets(config: GhostConfig): DiffOptions[] {
 
   return config.targets
     .filter(
-      (t) =>
-        t.type === "registry" || t.type === "url" || t.type === "path",
+      (t) => t.type === "registry" || t.type === "url" || t.type === "path",
     )
     .map((t) => ({
       registry: t.value,

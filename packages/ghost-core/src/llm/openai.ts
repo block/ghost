@@ -1,9 +1,13 @@
 import type {
+  ChatMessage,
+  ChatResponse,
+  ToolDefinition,
+} from "../agents/tools/types.js";
+import type {
   DesignFingerprint,
   LLMProvider,
   SampledMaterial,
 } from "../types.js";
-import type { ChatMessage, ChatResponse, ToolDefinition } from "../agents/tools/types.js";
 import { buildFingerprintPrompt } from "./prompt.js";
 
 interface OpenAIClient {
@@ -19,7 +23,10 @@ interface OpenAIClient {
         choices: {
           message?: {
             content?: string;
-            tool_calls?: { id: string; function: { name: string; arguments: string } }[];
+            tool_calls?: {
+              id: string;
+              function: { name: string; arguments: string };
+            }[];
           };
           finish_reason?: string;
         }[];

@@ -14,10 +14,7 @@ export interface Agent<TInput, TOutput> {
   name: string;
   maxIterations: number;
   systemPrompt: string;
-  execute(
-    input: TInput,
-    ctx: AgentContext,
-  ): Promise<AgentResult<TOutput>>;
+  execute(input: TInput, ctx: AgentContext): Promise<AgentResult<TOutput>>;
 }
 
 export type { AgentContext, AgentMessage, AgentResult };

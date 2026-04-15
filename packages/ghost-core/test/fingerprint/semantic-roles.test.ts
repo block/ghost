@@ -33,54 +33,56 @@ describe("inferSemanticRole", () => {
     it("handles MUI-style tokens", () => {
       const result = inferSemanticRole("--mui-palette-primary-main");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("primary");
-      expect(result!.confidence).toBe(0.9);
+      expect(result?.role).toBe("primary");
+      expect(result?.confidence).toBe(0.9);
     });
 
     it("handles Chakra-style tokens", () => {
       const result = inferSemanticRole("--chakra-colors-brand-500");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("brand");
-      expect(result!.confidence).toBe(0.9);
+      expect(result?.role).toBe("brand");
+      expect(result?.confidence).toBe(0.9);
     });
 
     it("handles background patterns", () => {
       const result = inferSemanticRole("--bg-primary");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("surface-primary");
+      expect(result?.role).toBe("surface-primary");
     });
 
     it("handles error/danger/destructive", () => {
-      expect(inferSemanticRole("--color-error")!.role).toBe("destructive");
-      expect(inferSemanticRole("--color-danger")!.role).toBe("destructive");
-      expect(inferSemanticRole("--color-destructive")!.role).toBe("destructive");
+      expect(inferSemanticRole("--color-error")?.role).toBe("destructive");
+      expect(inferSemanticRole("--color-danger")?.role).toBe("destructive");
+      expect(inferSemanticRole("--color-destructive")?.role).toBe(
+        "destructive",
+      );
     });
 
     it("handles warning/caution", () => {
-      expect(inferSemanticRole("--color-warning")!.role).toBe("warning");
-      expect(inferSemanticRole("--color-caution")!.role).toBe("warning");
+      expect(inferSemanticRole("--color-warning")?.role).toBe("warning");
+      expect(inferSemanticRole("--color-caution")?.role).toBe("warning");
     });
 
     it("handles success/positive", () => {
-      expect(inferSemanticRole("--color-success")!.role).toBe("success");
-      expect(inferSemanticRole("--color-positive")!.role).toBe("success");
+      expect(inferSemanticRole("--color-success")?.role).toBe("success");
+      expect(inferSemanticRole("--color-positive")?.role).toBe("success");
     });
 
     it("handles accent/highlight", () => {
-      expect(inferSemanticRole("--color-accent")!.role).toBe("accent");
-      expect(inferSemanticRole("--color-highlight")!.role).toBe("accent");
+      expect(inferSemanticRole("--color-accent")?.role).toBe("accent");
+      expect(inferSemanticRole("--color-highlight")?.role).toBe("accent");
     });
 
     it("handles text/foreground patterns", () => {
       const result = inferSemanticRole("--text-secondary");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("text-secondary");
+      expect(result?.role).toBe("text-secondary");
     });
 
     it("handles border patterns", () => {
       const result = inferSemanticRole("--border-subtle");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("border-subtle");
+      expect(result?.role).toBe("border-subtle");
     });
   });
 
@@ -88,14 +90,14 @@ describe("inferSemanticRole", () => {
     it("extracts from custom naming", () => {
       const result = inferSemanticRole("--app-primary-color");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("primary");
-      expect(result!.confidence).toBe(0.7);
+      expect(result?.role).toBe("primary");
+      expect(result?.confidence).toBe(0.7);
     });
 
     it("extracts surface from custom naming", () => {
       const result = inferSemanticRole("--my-surface-color");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("surface");
+      expect(result?.role).toBe("surface");
     });
   });
 
@@ -103,22 +105,22 @@ describe("inferSemanticRole", () => {
     it("classifies near-white as surface", () => {
       const result = inferSemanticRole("--custom-unknown", "#fafafa");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("surface");
-      expect(result!.confidence).toBe(0.6);
+      expect(result?.role).toBe("surface");
+      expect(result?.confidence).toBe(0.6);
     });
 
     it("classifies near-black as text", () => {
       const result = inferSemanticRole("--custom-unknown", "#0a0a0a");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("text");
-      expect(result!.confidence).toBe(0.6);
+      expect(result?.role).toBe("text");
+      expect(result?.confidence).toBe(0.6);
     });
 
     it("classifies high-chroma as dominant", () => {
       const result = inferSemanticRole("--custom-unknown", "#ff0000");
       expect(result).not.toBeNull();
-      expect(result!.role).toBe("dominant");
-      expect(result!.confidence).toBe(0.6);
+      expect(result?.role).toBe("dominant");
+      expect(result?.confidence).toBe(0.6);
     });
 
     it("returns null for unknown token with no color value", () => {

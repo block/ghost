@@ -1,7 +1,8 @@
 import { compareFleet } from "../evolution/fleet.js";
-import { extract } from "../stages/extract.js";
 import { compare as compareStage } from "../stages/compare.js";
+import type { ComplianceInput, ComplianceReport } from "../stages/comply.js";
 import { comply as complyStage } from "../stages/comply.js";
+import { extract } from "../stages/extract.js";
 import type {
   AgentContext,
   AgentResult,
@@ -13,7 +14,6 @@ import type {
   SampledMaterial,
   Target,
 } from "../types.js";
-import type { ComplianceInput, ComplianceReport } from "../stages/comply.js";
 import type { DiscoveredSystem, DiscoveryInput } from "./discovery.js";
 import { DiscoveryAgent } from "./discovery.js";
 import { FingerprintAgent } from "./fingerprint.js";

@@ -13,29 +13,29 @@ describe("parseColorToOklch", () => {
   it("parses 6-digit hex", () => {
     const result = parseColorToOklch("#ff0000");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(0.628, 1); // L
-    expect(result![1]).toBeGreaterThan(0.2); // C (red is saturated)
+    expect(result?.[0]).toBeCloseTo(0.628, 1); // L
+    expect(result?.[1]).toBeGreaterThan(0.2); // C (red is saturated)
   });
 
   it("parses 3-digit hex", () => {
     const result = parseColorToOklch("#fff");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(1, 1); // L ~1 for white
-    expect(result![1]).toBeCloseTo(0, 1); // C ~0 for white
+    expect(result?.[0]).toBeCloseTo(1, 1); // L ~1 for white
+    expect(result?.[1]).toBeCloseTo(0, 1); // C ~0 for white
   });
 
   // --- RGB ---
   it("parses rgb()", () => {
     const result = parseColorToOklch("rgb(0, 128, 0)");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeGreaterThan(0.4);
-    expect(result![1]).toBeGreaterThan(0.1);
+    expect(result?.[0]).toBeGreaterThan(0.4);
+    expect(result?.[1]).toBeGreaterThan(0.1);
   });
 
   it("parses rgba()", () => {
     const result = parseColorToOklch("rgba(255, 0, 0, 0.5)");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(0.628, 1);
+    expect(result?.[0]).toBeCloseTo(0.628, 1);
   });
 
   // --- HSL ---
@@ -43,14 +43,14 @@ describe("parseColorToOklch", () => {
     const result = parseColorToOklch("hsl(0, 100%, 50%)");
     expect(result).not.toBeNull();
     // Pure red: same as #ff0000
-    expect(result![0]).toBeCloseTo(0.628, 1);
-    expect(result![1]).toBeGreaterThan(0.2);
+    expect(result?.[0]).toBeCloseTo(0.628, 1);
+    expect(result?.[1]).toBeGreaterThan(0.2);
   });
 
   it("parses hsla()", () => {
     const result = parseColorToOklch("hsla(120, 100%, 25%, 0.8)");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeGreaterThan(0.3);
+    expect(result?.[0]).toBeGreaterThan(0.3);
   });
 
   it("parses hsl with deg unit", () => {
@@ -81,8 +81,8 @@ describe("parseColorToOklch", () => {
     );
     expect(result).not.toBeNull();
     // Midpoint between red and blue in OKLCH
-    expect(result![0]).toBeGreaterThan(0.2);
-    expect(result![1]).toBeGreaterThan(0.1);
+    expect(result?.[0]).toBeGreaterThan(0.2);
+    expect(result?.[1]).toBeGreaterThan(0.1);
   });
 
   it("parses color-mix with implicit second percentage", () => {
@@ -96,32 +96,32 @@ describe("parseColorToOklch", () => {
   it("parses named color: white", () => {
     const result = parseColorToOklch("white");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(1, 1);
+    expect(result?.[0]).toBeCloseTo(1, 1);
   });
 
   it("parses named color: black", () => {
     const result = parseColorToOklch("black");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(0, 1);
+    expect(result?.[0]).toBeCloseTo(0, 1);
   });
 
   it("parses named color: coral", () => {
     const result = parseColorToOklch("coral");
     expect(result).not.toBeNull();
-    expect(result![1]).toBeGreaterThan(0.1);
+    expect(result?.[1]).toBeGreaterThan(0.1);
   });
 
   // --- System colors ---
   it("parses system color: Canvas", () => {
     const result = parseColorToOklch("Canvas");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(1, 1); // maps to white
+    expect(result?.[0]).toBeCloseTo(1, 1); // maps to white
   });
 
   it("parses system color: CanvasText", () => {
     const result = parseColorToOklch("CanvasText");
     expect(result).not.toBeNull();
-    expect(result![0]).toBeCloseTo(0, 1); // maps to black
+    expect(result?.[0]).toBeCloseTo(0, 1); // maps to black
   });
 
   // --- Skipped values ---
@@ -170,14 +170,14 @@ describe("continuous scoring", () => {
 
     it("returns continuous values", () => {
       const low = saturationScore(makeColors([0.03, 0.04]));
-      const mid = saturationScore(makeColors([0.10, 0.12]));
-      const high = saturationScore(makeColors([0.20, 0.25]));
+      const mid = saturationScore(makeColors([0.1, 0.12]));
+      const high = saturationScore(makeColors([0.2, 0.25]));
       expect(low).toBeLessThan(mid);
       expect(mid).toBeLessThan(high);
     });
 
     it("caps at 1.0", () => {
-      expect(saturationScore(makeColors([0.30, 0.35]))).toBeLessThanOrEqual(1);
+      expect(saturationScore(makeColors([0.3, 0.35]))).toBeLessThanOrEqual(1);
     });
   });
 

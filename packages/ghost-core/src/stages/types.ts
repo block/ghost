@@ -17,5 +17,9 @@ export interface StageResult<T> {
  */
 export interface StageContext {
   verbose?: boolean;
-  onMessage?: (message: { role: string; content: string; metadata?: Record<string, unknown> }) => void;
+  onMessage?: (message: {
+    role: string;
+    content: string;
+    metadata?: Record<string, unknown>;
+  }) => void;
 }

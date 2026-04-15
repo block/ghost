@@ -185,12 +185,12 @@ function parseColorMix(value: string): [number, number, number] | null {
   const w2 = pct2 / total;
 
   // Interpolate hue via shortest arc
-  let h1 = color1[2];
-  let h2 = color2[2];
+  const h1 = color1[2];
+  const h2 = color2[2];
   let hDiff = h2 - h1;
   if (hDiff > 180) hDiff -= 360;
   if (hDiff < -180) hDiff += 360;
-  const hue = ((h1 + w2 * hDiff) % 360 + 360) % 360;
+  const hue = (((h1 + w2 * hDiff) % 360) + 360) % 360;
 
   return [
     Math.round((color1[0] * w1 + color2[0] * w2) * 1000) / 1000,
@@ -205,7 +205,11 @@ export function parseColorToOklch(
   const trimmed = value.trim().toLowerCase();
 
   // Skip CSS variables and transparent
-  if (trimmed.startsWith("var(") || trimmed === "transparent" || trimmed === "currentcolor") {
+  if (
+    trimmed.startsWith("var(") ||
+    trimmed === "transparent" ||
+    trimmed === "currentcolor"
+  ) {
     return null;
   }
 

@@ -114,7 +114,10 @@ function classifyFile(
   // JSON files — sniff content for token formats
   if (name.endsWith(".json")) {
     // Asset catalog color sets (inside .xcassets directories)
-    if (filePath.includes(".xcassets") && (content.includes('"color-space"') || content.includes('"components"'))) {
+    if (
+      filePath.includes(".xcassets") &&
+      (content.includes('"color-space"') || content.includes('"components"'))
+    ) {
       return "xcassets";
     }
     if (content.includes('"$schema"') && content.includes("registry")) {
@@ -122,7 +125,10 @@ function classifyFile(
     }
     if (content.includes('"$value"') && content.includes('"$type"')) {
       // Could be Style Dictionary or W3C
-      if (content.includes('"$description"') || content.includes('"$extensions"')) {
+      if (
+        content.includes('"$description"') ||
+        content.includes('"$extensions"')
+      ) {
         return "w3c-tokens";
       }
       return "style-dictionary";

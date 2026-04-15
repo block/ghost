@@ -9,9 +9,7 @@ import { join } from "node:path";
  * - CSS → saved as .css
  * - HTML → extracts <style> tags and linked stylesheets
  */
-export async function materializeUrl(
-  url: string,
-): Promise<string> {
+export async function materializeUrl(url: string): Promise<string> {
   const tempDir = await mkdtemp(join(tmpdir(), "ghost-url-"));
 
   try {
@@ -46,11 +44,7 @@ export async function materializeUrl(
           const sheetResponse = await fetch(sheetUrl);
           if (sheetResponse.ok) {
             const css = await sheetResponse.text();
-            await writeFile(
-              join(tempDir, `stylesheet-${i}.css`),
-              css,
-              "utf-8",
-            );
+            await writeFile(join(tempDir, `stylesheet-${i}.css`), css, "utf-8");
           }
         } catch {
           // Skip failed stylesheet fetches
@@ -94,8 +88,10 @@ function extractFromHTML(html: string): {
   }
 
   // Extract stylesheet links
-  const linkRegex = /<link[^>]+rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
-  const linkRegex2 = /<link[^>]+href=["']([^"']+)["'][^>]*rel=["']stylesheet["'][^>]*>/gi;
+  const linkRegex =
+    /<link[^>]+rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
+  const linkRegex2 =
+    /<link[^>]+href=["']([^"']+)["'][^>]*rel=["']stylesheet["'][^>]*>/gi;
 
   for (const regex of [linkRegex, linkRegex2]) {
     while ((match = regex.exec(html)) !== null) {

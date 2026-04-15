@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import type {
   ExtractedMaterial,
   Extractor,
@@ -13,7 +11,6 @@ import { materializeGithub } from "./sources/github.js";
 import { materializeNpm } from "./sources/npm.js";
 import { materializeUrl } from "./sources/url.js";
 import { tailwindExtractor } from "./tailwind.js";
-import { walkAndCategorize } from "./walker.js";
 
 // Ordered by specificity — more specific extractors first
 const BUILTIN_EXTRACTORS: Extractor[] = [tailwindExtractor, cssExtractor];

@@ -49,7 +49,11 @@ export function resolveTarget(input: string): Target {
   }
 
   // Unambiguous: absolute or relative paths
-  if (input.startsWith("/") || input.startsWith("./") || input.startsWith("../")) {
+  if (
+    input.startsWith("/") ||
+    input.startsWith("./") ||
+    input.startsWith("../")
+  ) {
     return { type: "path", value: input };
   }
 

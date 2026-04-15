@@ -78,7 +78,7 @@ ${componentSample}`;
       reason: "Component file for structural analysis",
     }));
 
-    const response = await provider.interpret(
+    const _response = await provider.interpret(
       {
         files: sampledFiles,
         metadata: {
@@ -122,8 +122,7 @@ function detectCompositionPatterns(material: ExtractedMaterial): string[] {
     patterns.push("compound-components");
   if (/render\w+\s*[=(]|children\s*\?\s*children\(/.test(allContent))
     patterns.push("render-props");
-  if (/data-slot|slot\s*=/.test(allContent))
-    patterns.push("slot-pattern");
+  if (/data-slot|slot\s*=/.test(allContent)) patterns.push("slot-pattern");
   if (/useVariants|cva\(|variants?\s*:/.test(allContent))
     patterns.push("variant-driven");
 
@@ -137,7 +136,8 @@ function detectVisualHierarchy(fp: DesignFingerprint): string[] {
   const hierarchy: string[] = [];
 
   if (fp.typography.sizeRamp.length >= 4) hierarchy.push("size-scale");
-  if (Object.keys(fp.typography.weightDistribution).length >= 3) hierarchy.push("weight-contrast");
+  if (Object.keys(fp.typography.weightDistribution).length >= 3)
+    hierarchy.push("weight-contrast");
   if (fp.palette.dominant.length >= 2) hierarchy.push("color-intensity");
   if (fp.surfaces.shadowComplexity !== "none") hierarchy.push("elevation");
   if (fp.spacing.scale.length >= 4) hierarchy.push("spatial-rhythm");

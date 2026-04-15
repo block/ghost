@@ -136,4 +136,3 @@ function describeSurfaces(fp: DesignFingerprint): string {
 
   return parts.join(" ");
 }
-

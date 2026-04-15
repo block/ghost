@@ -6,11 +6,11 @@ import { extract } from "./extractors/index.js";
 import { computeSemanticEmbedding } from "./fingerprint/embed-api.js";
 import { computeEmbedding } from "./fingerprint/embedding.js";
 import { fingerprintFromRegistry } from "./fingerprint/from-registry.js";
-import { analyzeStructure } from "./llm/analyze-structure.js";
 import type { StructuralAnalysis } from "./llm/analyze-structure.js";
+import { analyzeStructure } from "./llm/analyze-structure.js";
 import { createProvider } from "./llm/index.js";
-import { validateFingerprint } from "./llm/validate-fingerprint.js";
 import type { FingerprintValidation } from "./llm/validate-fingerprint.js";
+import { validateFingerprint } from "./llm/validate-fingerprint.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import type {
   DesignFingerprint,
@@ -206,7 +206,9 @@ export async function profileTarget(
       : targetOrString;
 
   if (target.type !== "path") {
-    throw new Error(`Agent SDK profiling only supports local paths (got ${target.type})`);
+    throw new Error(
+      `Agent SDK profiling only supports local paths (got ${target.type})`,
+    );
   }
 
   const targetDir = resolve(process.cwd(), target.value);
@@ -238,7 +240,7 @@ async function fingerprintFromExtraction(
 ): Promise<DesignFingerprint> {
   // Extract basic signals from CSS
   const tokenCount = material.metadata.tokenCount;
-  const componentCount = material.metadata.componentCount;
+  const _componentCount = material.metadata.componentCount;
 
   // Rough tokenization estimate: ratio of tokens to total style declarations
   let totalDeclarations = 0;
@@ -246,7 +248,7 @@ async function fingerprintFromExtraction(
     const matches = file.content.match(/[a-z-]+\s*:/g);
     if (matches) totalDeclarations += matches.length;
   }
-  const tokenization =
+  const _tokenization =
     totalDeclarations > 0 ? Math.min(tokenCount / totalDeclarations, 1) : 0;
 
   const partial: Omit<DesignFingerprint, "embedding"> = {

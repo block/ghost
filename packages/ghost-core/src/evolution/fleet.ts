@@ -224,10 +224,7 @@ function runKMeans(
  * Adaptive clustering using elbow method to select optimal K.
  * Falls back to K=2 if no clear elbow is found.
  */
-function clusterMembers(
-  members: FleetMember[],
-  maxK?: number,
-): FleetCluster[] {
+function clusterMembers(members: FleetMember[], maxK?: number): FleetCluster[] {
   if (members.length < 3) {
     return [
       {
@@ -241,7 +238,12 @@ function clusterMembers(
   const kMax = Math.min(maxK ?? 6, members.length - 1);
 
   // Run k-means for K=1 through kMax, collect WCSS
-  const results: { k: number; wcss: number; assignments: number[]; centroids: number[][] }[] = [];
+  const results: {
+    k: number;
+    wcss: number;
+    assignments: number[];
+    centroids: number[][];
+  }[] = [];
 
   for (let k = 1; k <= kMax; k++) {
     if (k === 1) {
@@ -281,7 +283,7 @@ function clusterMembers(
   for (let i = 0; i < members.length; i++) {
     const cluster = chosen.assignments[i];
     if (!clusterMap.has(cluster)) clusterMap.set(cluster, []);
-    clusterMap.get(cluster)!.push(members[i]);
+    clusterMap.get(cluster)?.push(members[i]);
   }
 
   return [...clusterMap.values()]

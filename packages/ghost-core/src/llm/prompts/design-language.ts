@@ -1,7 +1,4 @@
-import type {
-  DesignFingerprint,
-  ExtractedMaterial,
-} from "../../types.js";
+import type { DesignFingerprint, ExtractedMaterial } from "../../types.js";
 
 /**
  * Build a prompt for generating a DesignLanguageProfile.

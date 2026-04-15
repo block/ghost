@@ -65,7 +65,9 @@ export const searchFilesTool: AgentTool = {
           const fullPath = join(ctx.sourceDir, file.path);
           const content = await readFile(fullPath, "utf-8");
           const truncated =
-            content.length > 3000 ? `${content.slice(0, 3000)}\n... (truncated)` : content;
+            content.length > 3000
+              ? `${content.slice(0, 3000)}\n... (truncated)`
+              : content;
           results.push(`--- ${file.path} ---\n${truncated}`);
           totalSize += truncated.length;
         } catch {
@@ -74,8 +76,7 @@ export const searchFilesTool: AgentTool = {
       }
 
       return {
-        content:
-          `Found ${matches.length} file(s) matching "${pattern}":\n\n${results.join("\n\n")}`,
+        content: `Found ${matches.length} file(s) matching "${pattern}":\n\n${results.join("\n\n")}`,
         metadata: { matchCount: matches.length },
       };
     } catch (err) {

@@ -69,7 +69,9 @@ function makeComparison(
   return {
     source: fp,
     target: fp,
-    distance: Object.values(dimensions).reduce((a, b) => a + b, 0) / Object.keys(dimensions).length,
+    distance:
+      Object.values(dimensions).reduce((a, b) => a + b, 0) /
+      Object.keys(dimensions).length,
     dimensions: Object.fromEntries(
       Object.entries(dimensions).map(([key, dist]) => [
         key,

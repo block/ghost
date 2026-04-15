@@ -9,6 +9,7 @@
 import { parseColorToOklch } from "../fingerprint/colors.js";
 import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
+import { FINGERPRINT_SCHEMA } from "../llm/prompt.js";
 import type {
   AgentContext,
   AgentResult,
@@ -16,7 +17,6 @@ import type {
   EnrichedFingerprint,
   TargetType,
 } from "../types.js";
-import { FINGERPRINT_SCHEMA } from "../llm/prompt.js";
 
 const PROMPT = `You are producing a design fingerprint — a structured snapshot of how a project looks visually.
 
@@ -74,8 +74,14 @@ export async function runFingerprintAgent(
     },
   })) {
     // Log tool usage for verbose output
-    if (options.verbose && message.type === "assistant" && "message" in message) {
-      const msg = message.message as { content?: Array<{ type: string; name?: string; text?: string }> };
+    if (
+      options.verbose &&
+      message.type === "assistant" &&
+      "message" in message
+    ) {
+      const msg = message.message as {
+        content?: Array<{ type: string; name?: string; text?: string }>;
+      };
       if (Array.isArray(msg?.content)) {
         for (const block of msg.content) {
           if (block.type === "tool_use" && block.name) {

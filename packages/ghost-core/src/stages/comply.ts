@@ -98,7 +98,9 @@ export async function comply(
   }
 
   const errorCount = violations.filter((v) => v.severity === "error").length;
-  const warningCount = violations.filter((v) => v.severity === "warning").length;
+  const warningCount = violations.filter(
+    (v) => v.severity === "warning",
+  ).length;
   const score = Math.max(0, 1 - errorCount * 0.15 - warningCount * 0.05);
 
   return {
@@ -232,7 +234,6 @@ function checkSurfaces(
 
   return violations;
 }
-
 
 function checkDrift(
   child: DesignFingerprint,

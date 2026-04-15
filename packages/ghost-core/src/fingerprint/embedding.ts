@@ -82,11 +82,13 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
           c.role.startsWith("text") ||
           c.role === "muted"),
     )
-    .map((c) => c.oklch![0]);
+    .map((c) => c.oklch?.[0])
+    .filter((v): v is number => v != null);
   if (neutralLightnesses.length >= 2) {
     vec[i++] = Math.min(...neutralLightnesses);
     vec[i++] = Math.max(...neutralLightnesses);
-    vec[i++] = Math.max(...neutralLightnesses) - Math.min(...neutralLightnesses);
+    vec[i++] =
+      Math.max(...neutralLightnesses) - Math.min(...neutralLightnesses);
   } else {
     i += 3;
   }
@@ -98,22 +100,34 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   ];
   vec[i++] = saturationScore(allSemanticAndDominant);
   vec[i++] = contrastScore(allSemanticAndDominant);
-  vec[i++] = Math.min(fingerprint.palette.semantic.length / NORM.semanticCountMax, 1);
+  vec[i++] = Math.min(
+    fingerprint.palette.semantic.length / NORM.semanticCountMax,
+    1,
+  );
 
   // --- Spacing (10 dims) ---
   const spacing = fingerprint.spacing;
   vec[i++] = logNorm(spacing.scale.length, NORM.spacingCountLogBase);
-  vec[i++] = spacing.scale.length > 0 ? Math.min(spacing.scale[0] / NORM.spacingValueMax, 1) : 0;
   vec[i++] =
     spacing.scale.length > 0
-      ? Math.min(spacing.scale[spacing.scale.length - 1] / NORM.spacingValueMax, 1)
+      ? Math.min(spacing.scale[0] / NORM.spacingValueMax, 1)
+      : 0;
+  vec[i++] =
+    spacing.scale.length > 0
+      ? Math.min(
+          spacing.scale[spacing.scale.length - 1] / NORM.spacingValueMax,
+          1,
+        )
       : 0;
   vec[i++] = spacing.regularity;
-  vec[i++] = spacing.baseUnit ? Math.min(spacing.baseUnit / NORM.baseUnitMax, 1) : 0;
+  vec[i++] = spacing.baseUnit
+    ? Math.min(spacing.baseUnit / NORM.baseUnitMax, 1)
+    : 0;
   // Median value
   const spacingMid =
     spacing.scale.length > 0
-      ? spacing.scale[Math.floor(spacing.scale.length / 2)] / NORM.spacingValueMax
+      ? spacing.scale[Math.floor(spacing.scale.length / 2)] /
+        NORM.spacingValueMax
       : 0;
   vec[i++] = Math.min(spacingMid, 1);
   // Spread (stddev-like): how varied is the scale?
@@ -136,17 +150,14 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
       }
     }
     const avgRatio =
-      ratios.length > 0
-        ? ratios.reduce((a, b) => a + b, 0) / ratios.length
-        : 1;
+      ratios.length > 0 ? ratios.reduce((a, b) => a + b, 0) / ratios.length : 1;
     vec[i++] = Math.min(avgRatio / NORM.stepRatioMax, 1);
   } else {
     vec[i++] = 0;
   }
   // Density: values per unit range
   if (spacing.scale.length >= 2) {
-    const range =
-      spacing.scale[spacing.scale.length - 1] - spacing.scale[0];
+    const range = spacing.scale[spacing.scale.length - 1] - spacing.scale[0];
     vec[i++] = range > 0 ? Math.min(spacing.scale.length / range, 1) : 0;
   } else {
     vec[i++] = 0;
@@ -154,7 +165,9 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   // Range ratio: max/min
   if (spacing.scale.length >= 2 && spacing.scale[0] > 0) {
     vec[i++] = Math.min(
-      spacing.scale[spacing.scale.length - 1] / spacing.scale[0] / NORM.spacingRangeRatioMax,
+      spacing.scale[spacing.scale.length - 1] /
+        spacing.scale[0] /
+        NORM.spacingRangeRatioMax,
       1,
     );
   } else {
@@ -166,7 +179,10 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   vec[i++] = Math.min(typo.families.length / NORM.familyCountMax, 1);
   vec[i++] = Math.min(typo.sizeRamp.length / NORM.sizeRampCountMax, 1);
   // Size range
-  vec[i++] = typo.sizeRamp.length > 0 ? Math.min(typo.sizeRamp[0] / NORM.sizeRampMax, 1) : 0;
+  vec[i++] =
+    typo.sizeRamp.length > 0
+      ? Math.min(typo.sizeRamp[0] / NORM.sizeRampMax, 1)
+      : 0;
   vec[i++] =
     typo.sizeRamp.length > 0
       ? Math.min(typo.sizeRamp[typo.sizeRamp.length - 1] / NORM.sizeRampMax, 1)
@@ -189,7 +205,10 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
         ? 0.5
         : 1;
   // Weight count: how many distinct weights are used
-  vec[i++] = Math.min(Object.keys(typo.weightDistribution).length / NORM.weightCountMax, 1);
+  vec[i++] = Math.min(
+    Object.keys(typo.weightDistribution).length / NORM.weightCountMax,
+    1,
+  );
   // Weight spread: range of weights used (100-900 scale)
   const weightKeys = Object.keys(typo.weightDistribution).map(Number);
   if (weightKeys.length >= 2) {
@@ -200,7 +219,9 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   // Size ramp range ratio
   if (typo.sizeRamp.length >= 2 && typo.sizeRamp[0] > 0) {
     vec[i++] = Math.min(
-      typo.sizeRamp[typo.sizeRamp.length - 1] / typo.sizeRamp[0] / NORM.sizeRangeRatioMax,
+      typo.sizeRamp[typo.sizeRamp.length - 1] /
+        typo.sizeRamp[0] /
+        NORM.sizeRangeRatioMax,
       1,
     );
   } else {
@@ -225,7 +246,11 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
       : 0;
   vec[i++] =
     surfaces.borderRadii.length > 0
-      ? Math.min(surfaces.borderRadii[surfaces.borderRadii.length - 1] / NORM.radiusMinMax, 1)
+      ? Math.min(
+          surfaces.borderRadii[surfaces.borderRadii.length - 1] /
+            NORM.radiusMinMax,
+          1,
+        )
       : 0;
   vec[i++] =
     surfaces.shadowComplexity === "layered"
@@ -235,7 +260,10 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
         : 0;
   // Border usage — use continuous score if borderTokenCount available, else categorical fallback
   if (surfaces.borderTokenCount !== undefined) {
-    vec[i++] = Math.min(surfaces.borderTokenCount / NORM.borderTokenCountMax, 1);
+    vec[i++] = Math.min(
+      surfaces.borderTokenCount / NORM.borderTokenCountMax,
+      1,
+    );
   } else {
     vec[i++] =
       surfaces.borderUsage === "heavy"
@@ -258,7 +286,8 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   // Radii median
   if (surfaces.borderRadii.length > 0) {
     vec[i++] = Math.min(
-      surfaces.borderRadii[Math.floor(surfaces.borderRadii.length / 2)] / NORM.radiusMedian,
+      surfaces.borderRadii[Math.floor(surfaces.borderRadii.length / 2)] /
+        NORM.radiusMedian,
       1,
     );
   } else {
@@ -267,7 +296,8 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   // Max radius (signals "pill" shapes — high max radius is distinctive)
   if (surfaces.borderRadii.length > 0) {
     vec[i++] = Math.min(
-      surfaces.borderRadii[surfaces.borderRadii.length - 1] / NORM.radiusMaxPill,
+      surfaces.borderRadii[surfaces.borderRadii.length - 1] /
+        NORM.radiusMaxPill,
       1,
     );
   } else {

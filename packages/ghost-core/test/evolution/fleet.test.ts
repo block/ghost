@@ -73,8 +73,8 @@ describe("compareFleet", () => {
     ];
     const result = compareFleet(members, { cluster: true });
     expect(result.clusters).toBeDefined();
-    expect(result.clusters!.length).toBeGreaterThanOrEqual(1);
-    expect(result.clusters!.length).toBeLessThanOrEqual(3);
+    expect(result.clusters?.length).toBeGreaterThanOrEqual(1);
+    expect(result.clusters?.length).toBeLessThanOrEqual(3);
   });
 
   it("adaptive K: detects 3 natural clusters", () => {
@@ -93,7 +93,7 @@ describe("compareFleet", () => {
     const result = compareFleet(members, { cluster: { maxK: 5 } });
     expect(result.clusters).toBeDefined();
     // Should detect >= 2 clusters (ideally 3)
-    expect(result.clusters!.length).toBeGreaterThanOrEqual(2);
+    expect(result.clusters?.length).toBeGreaterThanOrEqual(2);
   });
 
   it("maxK option limits cluster count", () => {
@@ -106,7 +106,7 @@ describe("compareFleet", () => {
     ];
     const result = compareFleet(members, { cluster: { maxK: 3 } });
     expect(result.clusters).toBeDefined();
-    expect(result.clusters!.length).toBeLessThanOrEqual(3);
+    expect(result.clusters?.length).toBeLessThanOrEqual(3);
   });
 
   it("does not cluster with fewer than 3 members", () => {
@@ -123,7 +123,7 @@ describe("compareFleet", () => {
       makeFleetMember("d"),
     ];
     const result = compareFleet(members, { cluster: true });
-    const allIds = result.clusters!.flatMap((c) => c.memberIds);
+    const allIds = result.clusters?.flatMap((c) => c.memberIds);
     expect(allIds.sort()).toEqual(["a", "b", "c", "d"]);
   });
 });

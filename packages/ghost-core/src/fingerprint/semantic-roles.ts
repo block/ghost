@@ -48,16 +48,28 @@ const EXACT_ROLES: Record<string, string> = {
 };
 
 // Pattern-based rules: regex → role derivation
-const PATTERN_RULES: [RegExp, (match: RegExpMatchArray, name: string) => string][] = [
+const PATTERN_RULES: [
+  RegExp,
+  (match: RegExpMatchArray, name: string) => string,
+][] = [
   // Primary/brand
   [/--(?:color-)?primary(?:-|$)/, () => "primary"],
   [/--(?:color-)?brand(?:-|$)/, () => "primary"],
   // Surface/background
-  [/--(?:bg|background|surface)(?:-(.+))?$/, (m) => m[1] ? `surface-${m[1]}` : "surface"],
+  [
+    /--(?:bg|background|surface)(?:-(.+))?$/,
+    (m) => (m[1] ? `surface-${m[1]}` : "surface"),
+  ],
   // Text/foreground
-  [/--(?:text|fg|foreground)(?:-(.+))?$/, (m) => m[1] ? `text-${m[1]}` : "text"],
+  [
+    /--(?:text|fg|foreground)(?:-(.+))?$/,
+    (m) => (m[1] ? `text-${m[1]}` : "text"),
+  ],
   // Border/stroke
-  [/--(?:border|stroke|outline)(?:-(.+))?$/, (m) => m[1] ? `border-${m[1]}` : "border"],
+  [
+    /--(?:border|stroke|outline)(?:-(.+))?$/,
+    (m) => (m[1] ? `border-${m[1]}` : "border"),
+  ],
   // Semantic states
   [/--(?:color-)?(?:error|danger|destructive)/, () => "destructive"],
   [/--(?:color-)?(?:warning|caution|alert)/, () => "warning"],

@@ -112,10 +112,7 @@ export function registerTools(server: McpServer): void {
         .array(z.string())
         .optional()
         .describe("File paths to review (omit for git diff)"),
-      deep: z
-        .boolean()
-        .optional()
-        .describe("Enable LLM-powered deep review"),
+      deep: z.boolean().optional().describe("Enable LLM-powered deep review"),
       fingerprint: z
         .string()
         .optional()
@@ -123,7 +120,9 @@ export function registerTools(server: McpServer): void {
       dimensions: z
         .string()
         .optional()
-        .describe("Comma-separated dimensions: palette,spacing,typography,surfaces"),
+        .describe(
+          "Comma-separated dimensions: palette,spacing,typography,surfaces",
+        ),
       format: z
         .enum(["cli", "json", "github"])
         .optional()

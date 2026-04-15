@@ -1,6 +1,5 @@
-export { compare } from "./compare.js";
 export type { CompareInput } from "./compare.js";
-export { comply } from "./comply.js";
+export { compare } from "./compare.js";
 export type {
   ComplianceInput,
   ComplianceReport,
@@ -8,5 +7,6 @@ export type {
   ComplianceThresholds,
   ComplianceViolation,
 } from "./comply.js";
+export { comply } from "./comply.js";
 export { extract, materializeTarget } from "./extract.js";
 export type { StageContext, StageResult } from "./types.js";

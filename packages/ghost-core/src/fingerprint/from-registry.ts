@@ -17,7 +17,10 @@ function resolveTokenValue(token: CSSToken): string {
   return token.resolvedValue ?? token.value;
 }
 
-function resolveSemanticRole(tokenName: string, tokenValue?: string): string | null {
+function resolveSemanticRole(
+  tokenName: string,
+  tokenValue?: string,
+): string | null {
   const candidate = inferSemanticRole(tokenName, tokenValue);
   return candidate ? candidate.role : null;
 }
@@ -62,7 +65,8 @@ function extractDominantColors(tokens: CSSToken[]): SemanticColor[] {
   const scored = all
     .map((c) => {
       if (dominantRoles.includes(c.role)) return { color: c, score: 1 };
-      if (neutralPrefixes.some((p) => c.role.startsWith(p))) return { color: c, score: 0 };
+      if (neutralPrefixes.some((p) => c.role.startsWith(p)))
+        return { color: c, score: 0 };
       const weight = c.oklch ? chromaWeight(c.oklch[1]) : 0;
       return { color: c, score: weight };
     })
@@ -99,7 +103,8 @@ function coefficientOfVariation(values: number[]): number {
   if (values.length < 2) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   if (mean === 0) return 0;
-  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  const variance =
+    values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
   return Math.sqrt(variance) / mean;
 }
 
@@ -111,7 +116,10 @@ function scoreSpacingRegularity(scale: number[]): number {
   if (scale.length < 3) return scale.length === 2 ? 0.8 : 0;
 
   const diffs = scale.slice(1).map((v, i) => v - scale[i]);
-  const ratios = scale.slice(1).map((v, i) => (scale[i] > 0 ? v / scale[i] : 0)).filter((r) => r > 0);
+  const ratios = scale
+    .slice(1)
+    .map((v, i) => (scale[i] > 0 ? v / scale[i] : 0))
+    .filter((r) => r > 0);
 
   if (ratios.length === 0) return 0;
 
@@ -137,9 +145,12 @@ function scoreSpacingRegularity(scale: number[]): number {
 
   // Golden ratio: ratios ≈ 1.618 (within 15%)
   const goldenRatio = 1.618;
-  const goldenScores = ratios.map((r) => Math.abs(r - goldenRatio) / goldenRatio < 0.15);
+  const goldenScores = ratios.map(
+    (r) => Math.abs(r - goldenRatio) / goldenRatio < 0.15,
+  );
   if (goldenScores.every(Boolean)) return 1.0;
-  if (goldenScores.filter(Boolean).length / goldenScores.length > 0.7) return 0.8;
+  if (goldenScores.filter(Boolean).length / goldenScores.length > 0.7)
+    return 0.8;
 
   // Near-linear or near-geometric
   if (diffCV < 0.3) return 0.8;
@@ -178,9 +189,7 @@ function extractSpacing(tokens: CSSToken[]): {
   return { scale: unique, regularity, baseUnit };
 }
 
-function classifyLineHeight(
-  tokens: CSSToken[],
-): "tight" | "normal" | "loose" {
+function classifyLineHeight(tokens: CSSToken[]): "tight" | "normal" | "loose" {
   const lineHeightValues: number[] = [];
   for (const token of tokens) {
     if (
@@ -325,4 +334,3 @@ export function fingerprintFromRegistry(
     embedding: computeEmbedding(fingerprint),
   };
 }
-

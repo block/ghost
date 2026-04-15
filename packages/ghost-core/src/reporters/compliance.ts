@@ -37,9 +37,7 @@ export function formatComplianceCLI(report: ComplianceReport): string {
   if (report.violations.length === 0) {
     lines.push("No violations found.");
   } else {
-    lines.push(
-      `\x1b[1mViolations\x1b[0m (${report.violations.length})`,
-    );
+    lines.push(`\x1b[1mViolations\x1b[0m (${report.violations.length})`);
     lines.push("");
 
     for (const v of report.violations) {

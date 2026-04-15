@@ -33,10 +33,10 @@ import {
   formatDiscoveryJSON,
   formatFingerprint,
   formatFingerprintJSON,
+  formatGitHubPRComments,
   formatJSONReport,
   formatReviewCLI,
   formatReviewJSON,
-  formatGitHubPRComments,
   formatReviewSummary,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
@@ -172,18 +172,14 @@ const profileCommand = defineCommand({
         const target = resolveTarget(args.target);
 
         if (args.verbose) {
-          console.log(
-            `Profiling ${target.type}: ${target.value}`,
-          );
+          console.log(`Profiling ${target.type}: ${target.value}`);
         }
 
         const result = await profileTarget(target, config);
         fingerprint = result.fingerprint;
 
         if (args.verbose) {
-          console.log(
-            `Confidence: ${result.confidence.toFixed(2)}`,
-          );
+          console.log(`Confidence: ${result.confidence.toFixed(2)}`);
           for (const r of result.reasoning) {
             console.log(`  ${r}`);
           }
@@ -469,9 +465,7 @@ const complyCommand = defineCommand({
 
       if (args.verbose) {
         console.log(`Profiled ${target.type}: ${target.value}`);
-        console.log(
-          `Confidence: ${fingerprint.confidence.toFixed(2)}`,
-        );
+        console.log(`Confidence: ${fingerprint.confidence.toFixed(2)}`);
         console.log();
       }
 
@@ -504,8 +498,7 @@ const reviewCommand = defineCommand({
   args: {
     files: {
       type: "positional",
-      description:
-        "Files to review (omit to review git diff)",
+      description: "Files to review (omit to review git diff)",
       required: false,
     },
     fingerprint: {
@@ -573,7 +566,10 @@ const reviewCommand = defineCommand({
         files: files && files.length > 0 ? files : undefined,
         diff:
           !files || files.length === 0
-            ? { base: args.base as string | undefined, staged: args.staged as boolean }
+            ? {
+                base: args.base as string | undefined,
+                staged: args.staged as boolean,
+              }
             : undefined,
         fingerprintPath: args.fingerprint as string | undefined,
         config: {

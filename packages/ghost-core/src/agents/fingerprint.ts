@@ -5,7 +5,6 @@ import { createProvider } from "../llm/index.js";
 import type {
   AgentContext,
   DesignFingerprint,
-  DesignLanguageProfile,
   EnrichedFingerprint,
   SampledMaterial,
 } from "../types.js";
@@ -63,7 +62,9 @@ language: palette, spacing, typography, and surfaces.`;
 
     // Safety: if we've used too many iterations without a result, fall back to interpret()
     if (state.iterations >= 5 && !this.pendingFingerprint && ctx.llm) {
-      state.reasoning.push("Tool use loop exhausted — falling back to single-shot interpret()");
+      state.reasoning.push(
+        "Tool use loop exhausted — falling back to single-shot interpret()",
+      );
       try {
         const provider = createProvider(ctx.llm);
         const projectId = input.metadata.packageJson?.name ?? "project";
@@ -72,14 +73,20 @@ language: palette, spacing, typography, and surfaces.`;
         state.confidence = 0.7;
         return state; // Next iteration will hit validateAndFinalize
       } catch (err) {
-        state.warnings.push(`Fallback interpret failed: ${err instanceof Error ? err.message : String(err)}`);
+        state.warnings.push(
+          `Fallback interpret failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
         state.status = "failed";
         return state;
       }
     }
 
     // Tool call/response cycle — only if LLM requested tool use
-    if (this.chatMessages.length > 0 && this.hasPendingToolCalls(state) && ctx.llm?.provider) {
+    if (
+      this.chatMessages.length > 0 &&
+      this.hasPendingToolCalls(state) &&
+      ctx.llm?.provider
+    ) {
       return this.toolUseLoop(state, input, ctx);
     }
 
@@ -137,7 +144,7 @@ language: palette, spacing, typography, and surfaces.`;
 
   private async toolUseLoop(
     state: AgentState<EnrichedFingerprint>,
-    input: SampledMaterial,
+    _input: SampledMaterial,
     ctx: AgentContext,
   ): Promise<AgentState<EnrichedFingerprint>> {
     if (!ctx.llm || !this.toolCtx) {
@@ -159,7 +166,8 @@ language: palette, spacing, typography, and surfaces.`;
           if (this.toolCallCount >= MAX_TOOL_CALLS) {
             this.chatMessages.push({
               role: "tool",
-              content: "Tool call budget exhausted. Please produce the fingerprint with available data.",
+              content:
+                "Tool call budget exhausted. Please produce the fingerprint with available data.",
               tool_call_id: call.id,
             });
             continue;
@@ -172,7 +180,9 @@ language: palette, spacing, typography, and surfaces.`;
             tool_call_id: call.id,
           });
           this.toolCallCount++;
-          state.reasoning.push(`Tool ${call.name}: ${result.content.slice(0, 100)}...`);
+          state.reasoning.push(
+            `Tool ${call.name}: ${result.content.slice(0, 100)}...`,
+          );
         }
       }
 
@@ -260,9 +270,11 @@ language: palette, spacing, typography, and surfaces.`;
     return state;
   }
 
-  private hasPendingToolCalls(state: AgentState<EnrichedFingerprint>): boolean {
+  private hasPendingToolCalls(
+    _state: AgentState<EnrichedFingerprint>,
+  ): boolean {
     const last = this.chatMessages[this.chatMessages.length - 1];
-    return !!(last?.tool_calls?.length);
+    return !!last?.tool_calls?.length;
   }
 
   private parseFingerprint(text: string): DesignFingerprint {
@@ -309,7 +321,6 @@ language: palette, spacing, typography, and surfaces.`;
         break;
       }
     }
-
 
     return issues;
   }

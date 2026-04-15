@@ -57,10 +57,7 @@ export abstract class BaseAgent<TInput, TOutput>
     // Without LLM, agents run a single deterministic pass
     const effectiveMax = ctx.llm ? this.maxIterations : 1;
 
-    while (
-      state.status === "running" &&
-      state.iterations < effectiveMax
-    ) {
+    while (state.status === "running" && state.iterations < effectiveMax) {
       state = await this.step(state, input, ctx);
       state.iterations++;
 
@@ -95,10 +92,7 @@ export abstract class BaseAgent<TInput, TOutput>
     });
 
     if (state.status === "failed" && !state.result) {
-      const reasons = [
-        ...state.warnings,
-        ...state.reasoning,
-      ].filter(Boolean);
+      const reasons = [...state.warnings, ...state.reasoning].filter(Boolean);
       throw new Error(
         `[${this.name}] Agent failed: ${reasons[0] ?? "unknown error"}`,
       );

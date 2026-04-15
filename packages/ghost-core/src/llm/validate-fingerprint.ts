@@ -63,7 +63,10 @@ export function validateFingerprint(
   }
 
   // Check: spacing scale looks thin
-  if (fingerprint.spacing.scale.length < 3 && material.metadata.tokenCount > 10) {
+  if (
+    fingerprint.spacing.scale.length < 3 &&
+    material.metadata.tokenCount > 10
+  ) {
     issues.push({
       dimension: "spacing",
       severity: "warning",
@@ -76,7 +79,8 @@ export function validateFingerprint(
     issues.push({
       dimension: "typography",
       severity: "warning",
-      message: "No font families detected. Check if font tokens use standard naming.",
+      message:
+        "No font families detected. Check if font tokens use standard naming.",
     });
   }
 
@@ -94,7 +98,11 @@ export function validateFingerprint(
   }
 
   // Compute confidence: 1.0 minus penalty for each issue
-  const penalties: Record<string, number> = { error: 0.2, warning: 0.1, info: 0.05 };
+  const penalties: Record<string, number> = {
+    error: 0.2,
+    warning: 0.1,
+    info: 0.05,
+  };
   const totalPenalty = issues.reduce(
     (sum, issue) => sum + (penalties[issue.severity] ?? 0),
     0,

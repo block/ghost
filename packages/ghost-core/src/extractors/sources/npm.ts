@@ -9,9 +9,7 @@ import { join } from "node:path";
  *
  * Returns the path to the extracted package contents.
  */
-export async function materializeNpm(
-  packageName: string,
-): Promise<string> {
+export async function materializeNpm(packageName: string): Promise<string> {
   const tempDir = await mkdtemp(join(tmpdir(), "ghost-npm-"));
 
   try {

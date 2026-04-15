@@ -91,7 +91,8 @@ export async function sampleDirectory(
     }
 
     // High-priority files (score >= 8: theme, token, config) get more space
-    const fileLimit = item.score >= 8 ? MAX_FILE_SIZE_HIGH_PRIORITY : MAX_FILE_SIZE;
+    const fileLimit =
+      item.score >= 8 ? MAX_FILE_SIZE_HIGH_PRIORITY : MAX_FILE_SIZE;
     const content = truncateFile(item.file.content, fileLimit);
     if (totalChars + content.length > MAX_TOTAL_CHARS) {
       // Try to fit with aggressive truncation
@@ -184,13 +185,20 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
   const baseName = name.split("/").pop() ?? "";
 
   // Theme/token files — highest priority (web + native naming conventions)
-  if (/theme|tokens?|variables|design-tokens|primitives|colorscheme|designsystem|styleguide|styles-main/i.test(baseName)) {
+  if (
+    /theme|tokens?|variables|design-tokens|primitives|colorscheme|designsystem|styleguide|styles-main/i.test(
+      baseName,
+    )
+  ) {
     return { score: 10, reason: "Theme/token definition file" };
   }
 
   // shadcn registry style files — contain embedded CSS with full token definitions
   if (file.type === "config" && file.content.includes('"registry:style"')) {
-    return { score: 10, reason: "Registry style file with embedded CSS tokens" };
+    return {
+      score: 10,
+      reason: "Registry style file with embedded CSS tokens",
+    };
   }
 
   // Asset catalog color definitions
@@ -204,12 +212,23 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
   // Swift files with theming infrastructure
   if (file.type === "swift") {
     if (/@Environment|ViewModifier|extension\s+Color/i.test(file.content)) {
-      return { score: 8, reason: "Swift theming infrastructure (Environment/ViewModifier)" };
+      return {
+        score: 8,
+        reason: "Swift theming infrastructure (Environment/ViewModifier)",
+      };
     }
-    if (/colors?|palette|spacing|typography|theme|tokens?|font|style/i.test(baseName)) {
+    if (
+      /colors?|palette|spacing|typography|theme|tokens?|font|style/i.test(
+        baseName,
+      )
+    ) {
       return { score: 7, reason: "Swift file with design-related name" };
     }
-    if (/static\s+(?:let|var)\s+\w+.*(?:Color|CGFloat|Font|UIFont)/i.test(file.content)) {
+    if (
+      /static\s+(?:let|var)\s+\w+.*(?:Color|CGFloat|Font|UIFont)/i.test(
+        file.content,
+      )
+    ) {
       return { score: 5, reason: "Swift file with design token definitions" };
     }
     return { score: 3, reason: "Swift component file" };
@@ -226,7 +245,10 @@ function scoreFile(file: ExtractedFile): { score: number; reason: string } {
     const hasTailwind = /@tailwind|@theme|@apply/.test(file.content);
 
     if (hasCustomProps && hasTailwind) {
-      return { score: 9, reason: "CSS with custom properties + Tailwind directives" };
+      return {
+        score: 9,
+        reason: "CSS with custom properties + Tailwind directives",
+      };
     }
     if (hasCustomProps) {
       return { score: 8, reason: "CSS with custom properties" };

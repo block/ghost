@@ -183,7 +183,9 @@ async function searchGitHub(
   const response = await fetch(url, { headers });
   if (!response.ok) {
     if (response.status === 403) {
-      throw new Error("GitHub API rate limit exceeded. Set GITHUB_TOKEN for higher limits.");
+      throw new Error(
+        "GitHub API rate limit exceeded. Set GITHUB_TOKEN for higher limits.",
+      );
     }
     throw new Error(`GitHub search HTTP ${response.status}`);
   }
@@ -228,8 +230,7 @@ function searchCatalog(query?: string): DiscoveredSystem[] {
     {
       name: "Material UI",
       url: "https://github.com/mui/material-ui",
-      description:
-        "Ready-to-use React components implementing Material Design",
+      description: "Ready-to-use React components implementing Material Design",
       source: "catalog",
       stars: 94000,
     },
@@ -281,15 +282,15 @@ function searchCatalog(query?: string): DiscoveredSystem[] {
     {
       name: "Flowbite",
       url: "https://github.com/themesberg/flowbite",
-      description:
-        "Open-source UI component library based on Tailwind CSS",
+      description: "Open-source UI component library based on Tailwind CSS",
       source: "catalog",
       stars: 8000,
     },
     {
       name: "Park UI",
       url: "https://github.com/cschroeter/park-ui",
-      description: "Beautifully designed components built on Ark UI and Panda CSS",
+      description:
+        "Beautifully designed components built on Ark UI and Panda CSS",
       source: "catalog",
       stars: 2000,
     },
@@ -325,16 +326,14 @@ function searchCatalog(query?: string): DiscoveredSystem[] {
     {
       name: "Arco Design",
       url: "https://github.com/arco-design/arco-design",
-      description:
-        "A comprehensive React UI components library by ByteDance",
+      description: "A comprehensive React UI components library by ByteDance",
       source: "catalog",
       stars: 4800,
     },
     {
       name: "Semi Design",
       url: "https://github.com/DouyinFE/semi-design",
-      description:
-        "Modern, comprehensive, flexible design system by TikTok",
+      description: "Modern, comprehensive, flexible design system by TikTok",
       source: "catalog",
       stars: 8500,
     },
@@ -371,7 +370,8 @@ function mergeResults(
   return merged.sort((a, b) => {
     if (a.source === "catalog" && b.source !== "catalog") return -1;
     if (b.source === "catalog" && a.source !== "catalog") return 1;
-    if ((b.stars ?? 0) !== (a.stars ?? 0)) return (b.stars ?? 0) - (a.stars ?? 0);
+    if ((b.stars ?? 0) !== (a.stars ?? 0))
+      return (b.stars ?? 0) - (a.stars ?? 0);
     return a.name.localeCompare(b.name);
   });
 }

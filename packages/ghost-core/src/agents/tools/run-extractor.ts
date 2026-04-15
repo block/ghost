@@ -1,5 +1,5 @@
 import { parseCSS } from "../../resolvers/css.js";
-import type { CSSToken, SampledMaterial } from "../../types.js";
+import type { CSSToken } from "../../types.js";
 import type { AgentTool, ToolContext, ToolResult } from "./types.js";
 
 /**
@@ -17,7 +17,8 @@ export const runExtractorTool: AgentTool = {
     properties: {
       file_path: {
         type: "string",
-        description: "Path of the file to extract from (relative, as shown in the sample)",
+        description:
+          "Path of the file to extract from (relative, as shown in the sample)",
       },
       extractor: {
         type: "string",
@@ -54,11 +55,15 @@ export const runExtractorTool: AgentTool = {
           tokens = extractJSONTokens(file.content);
           break;
         default:
-          return { content: `Unknown extractor: ${extractor}. Use "css" or "json".` };
+          return {
+            content: `Unknown extractor: ${extractor}. Use "css" or "json".`,
+          };
       }
 
       if (tokens.length === 0) {
-        return { content: `No tokens extracted from ${filePath} using ${extractor} extractor.` };
+        return {
+          content: `No tokens extracted from ${filePath} using ${extractor} extractor.`,
+        };
       }
 
       const summary = tokens

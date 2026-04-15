@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { computeEmbedding, embeddingDistance } from "../../src/fingerprint/embedding.js";
+import {
+  computeEmbedding,
+  embeddingDistance,
+} from "../../src/fingerprint/embedding.js";
 import type { DesignFingerprint } from "../../src/types.js";
 
 function makeFingerprint(
@@ -10,7 +13,9 @@ function makeFingerprint(
     source: "registry",
     timestamp: new Date().toISOString(),
     palette: {
-      dominant: [{ role: "primary", value: "#3b82f6", oklch: [0.623, 0.214, 259.8] }],
+      dominant: [
+        { role: "primary", value: "#3b82f6", oklch: [0.623, 0.214, 259.8] },
+      ],
       neutrals: { steps: ["#fff", "#f5f5f5", "#e5e5e5", "#ccc"], count: 4 },
       semantic: [
         { role: "primary", value: "#3b82f6", oklch: [0.623, 0.214, 259.8] },
@@ -75,10 +80,17 @@ describe("computeEmbedding", () => {
 describe("log-scaled normalization", () => {
   it("spacing count: log-scaling differentiates scale sizes", () => {
     const small = computeEmbedding(
-      makeFingerprint({ spacing: { ...makeFingerprint().spacing, scale: [4, 8] } }),
+      makeFingerprint({
+        spacing: { ...makeFingerprint().spacing, scale: [4, 8] },
+      }),
     );
     const large = computeEmbedding(
-      makeFingerprint({ spacing: { ...makeFingerprint().spacing, scale: [4, 8, 12, 16, 24, 32, 48, 64] } }),
+      makeFingerprint({
+        spacing: {
+          ...makeFingerprint().spacing,
+          scale: [4, 8, 12, 16, 24, 32, 48, 64],
+        },
+      }),
     );
 
     // Spacing count is at index 21

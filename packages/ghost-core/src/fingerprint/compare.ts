@@ -161,7 +161,9 @@ function compareTypography(
   const distances: number[] = [];
 
   // Family match — fuzzy comparison
-  distances.push(1 - fontListSimilarity(a.typography.families, b.typography.families));
+  distances.push(
+    1 - fontListSimilarity(a.typography.families, b.typography.families),
+  );
 
   // Size ramp similarity
   const aRamp = new Set(a.typography.sizeRamp);
@@ -230,7 +232,8 @@ function compareSurfaces(
 
 // --- Font matching ---
 
-const FONT_SUFFIXES = /\s*\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
+const FONT_SUFFIXES =
+  /\s*\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
 
 /** Normalize font family name for fuzzy comparison */
 function normalizeFontFamily(name: string): string {
@@ -264,28 +267,59 @@ function levenshtein(a: string, b: string): number {
 // Font category lookup for common fonts
 const FONT_CATEGORIES: Record<string, string> = {
   // Sans-serif
-  inter: "sans-serif", arial: "sans-serif", helvetica: "sans-serif",
-  roboto: "sans-serif", "open sans": "sans-serif", lato: "sans-serif",
-  nunito: "sans-serif", poppins: "sans-serif", montserrat: "sans-serif",
-  raleway: "sans-serif", ubuntu: "sans-serif", manrope: "sans-serif",
-  geist: "sans-serif", "dm sans": "sans-serif", "plus jakarta sans": "sans-serif",
-  "source sans": "sans-serif", "work sans": "sans-serif",
-  "hk grotesk": "sans-serif", "cash sans": "sans-serif",
-  "sf pro": "sans-serif", "system-ui": "sans-serif", "sans-serif": "sans-serif",
+  inter: "sans-serif",
+  arial: "sans-serif",
+  helvetica: "sans-serif",
+  roboto: "sans-serif",
+  "open sans": "sans-serif",
+  lato: "sans-serif",
+  nunito: "sans-serif",
+  poppins: "sans-serif",
+  montserrat: "sans-serif",
+  raleway: "sans-serif",
+  ubuntu: "sans-serif",
+  manrope: "sans-serif",
+  geist: "sans-serif",
+  "dm sans": "sans-serif",
+  "plus jakarta sans": "sans-serif",
+  "source sans": "sans-serif",
+  "work sans": "sans-serif",
+  "hk grotesk": "sans-serif",
+  "cash sans": "sans-serif",
+  "sf pro": "sans-serif",
+  "system-ui": "sans-serif",
+  "sans-serif": "sans-serif",
   // Serif
-  georgia: "serif", "times new roman": "serif", garamond: "serif",
-  "playfair display": "serif", merriweather: "serif", lora: "serif",
-  "source serif": "serif", "dm serif": "serif", serif: "serif",
+  georgia: "serif",
+  "times new roman": "serif",
+  garamond: "serif",
+  "playfair display": "serif",
+  merriweather: "serif",
+  lora: "serif",
+  "source serif": "serif",
+  "dm serif": "serif",
+  serif: "serif",
   // Monospace
-  "jetbrains mono": "monospace", "fira code": "monospace", "source code": "monospace",
-  "geist mono": "monospace", "dm mono": "monospace", "ibm plex mono": "monospace",
-  "sf mono": "monospace", menlo: "monospace", consolas: "monospace",
-  monaco: "monospace", "courier new": "monospace", monospace: "monospace",
+  "jetbrains mono": "monospace",
+  "fira code": "monospace",
+  "source code": "monospace",
+  "geist mono": "monospace",
+  "dm mono": "monospace",
+  "ibm plex mono": "monospace",
+  "sf mono": "monospace",
+  menlo: "monospace",
+  consolas: "monospace",
+  monaco: "monospace",
+  "courier new": "monospace",
+  monospace: "monospace",
   // Display
-  "playfair": "display", "bebas neue": "display",
+  playfair: "display",
+  "bebas neue": "display",
   // Apple system fonts
-  "san francisco": "sans-serif", "sf compact": "sans-serif",
-  "new york": "serif", system: "sans-serif",
+  "san francisco": "sans-serif",
+  "sf compact": "sans-serif",
+  "new york": "serif",
+  system: "sans-serif",
 };
 
 function getFontCategory(normalizedName: string): string | null {

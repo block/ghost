@@ -566,11 +566,7 @@ export interface DriftReport {
 
 export type ReviewSeverity = "error" | "warning" | "info";
 
-export type ReviewDimension =
-  | "palette"
-  | "spacing"
-  | "typography"
-  | "surfaces";
+export type ReviewDimension = "palette" | "spacing" | "typography" | "surfaces";
 
 export interface ReviewFix {
   /** Replacement text for the affected line */

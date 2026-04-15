@@ -11,7 +11,9 @@ export function buildDivergencePrompt(
   const dims = Object.entries(comparison.dimensions)
     .filter(([_, d]) => d.distance > 0.05)
     .sort(([, a], [, b]) => b.distance - a.distance)
-    .map(([name, d]) => `  ${name}: ${d.distance.toFixed(3)} — ${d.description}`)
+    .map(
+      ([name, d]) => `  ${name}: ${d.distance.toFixed(3)} — ${d.description}`,
+    )
     .join("\n");
 
   return `Classify the divergence between two design systems.
