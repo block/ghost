@@ -5,10 +5,14 @@ const DEFAULT_LIMIT = 500;
 
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
-  // "packages/ghost-core/src/example.ts": {
-  //   limit: 600,
-  //   justification: "Reason for the exception",
-  // },
+  "packages/ghost-core/src/types.ts": {
+    limit: 700,
+    justification: "Canonical type barrel — all shared types in one file for discoverability",
+  },
+  "packages/ghost-cli/src/bin.ts": {
+    limit: 520,
+    justification: "CLI command registry — each command is small but there are 12 of them",
+  },
 };
 
 const DIRS_TO_CHECK = [
