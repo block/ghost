@@ -134,6 +134,7 @@ function mergeDefaults(raw: GhostConfig): GhostConfig {
     embedding: raw.embedding,
     extractors: raw.extractors,
     agents: raw.agents,
+    review: raw.review,
   };
 }
 

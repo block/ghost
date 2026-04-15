@@ -183,6 +183,7 @@ export interface GhostConfig {
   embedding?: EmbeddingConfig;
   extractors?: string[];
   agents?: AgentsConfig;
+  review?: ReviewConfig;
 }
 
 export interface AgentsConfig {
@@ -559,4 +560,101 @@ export interface DriftReport {
   timestamp: string;
   systems: DesignSystemReport[];
   summary: DriftSummary;
+}
+
+// --- Review types (fingerprint-informed design review) ---
+
+export type ReviewSeverity = "error" | "warning" | "info";
+
+export type ReviewDimension =
+  | "palette"
+  | "spacing"
+  | "typography"
+  | "surfaces";
+
+export interface ReviewFix {
+  /** Replacement text for the affected line */
+  replacement: string;
+  /** Explanation of what the fix does */
+  description: string;
+}
+
+export interface ReviewIssue {
+  /** Rule that produced this issue (e.g. "palette-drift", "spacing-drift") */
+  rule: string;
+  /** Which fingerprint dimension drifted */
+  dimension: ReviewDimension;
+  severity: ReviewSeverity;
+  /** Human-readable description */
+  message: string;
+  /** File path (relative to cwd) */
+  file: string;
+  /** 1-based line number */
+  line: number;
+  /** 1-based column */
+  column?: number;
+  /** The original source line */
+  source?: string;
+  /** The literal value found (e.g. "#3b82f6", "14px") */
+  found: string;
+  /** Nearest fingerprint value (e.g. "#2563eb", "16px") */
+  nearest?: string;
+  /** Semantic role of the nearest value if known (e.g. "primary", "surface") */
+  nearestRole?: string;
+  /** How far off (0-1 for colors via OKLCH distance, absolute px for spacing/typography/surfaces) */
+  distance?: number;
+  /** Concrete fix suggestion */
+  fix?: ReviewFix;
+  /** How this issue was detected */
+  phase: "match" | "deep";
+}
+
+export interface ReviewFileResult {
+  file: string;
+  issues: ReviewIssue[];
+  /** Whether this file was sent for deep LLM review */
+  deepReviewed: boolean;
+}
+
+export interface ReviewSummary {
+  filesScanned: number;
+  filesWithIssues: number;
+  totalIssues: number;
+  byDimension: Record<string, number>;
+  errors: number;
+  warnings: number;
+  fixesAvailable: number;
+}
+
+export interface ReviewReport {
+  timestamp: string;
+  /** ID of the fingerprint used as baseline */
+  fingerprint: string;
+  files: ReviewFileResult[];
+  summary: ReviewSummary;
+  /** Duration in ms */
+  duration: number;
+}
+
+export interface ReviewConfig {
+  /** Which dimensions to check */
+  dimensions?: {
+    palette?: boolean;
+    spacing?: boolean;
+    typography?: boolean;
+    surfaces?: boolean;
+  };
+  /** Only review files matching these globs */
+  include?: string[];
+  /** Ignore files matching these globs */
+  exclude?: string[];
+  /** Only report issues on changed lines (requires git diff context). Default: true */
+  changedLinesOnly?: boolean;
+}
+
+export interface CollectedFile {
+  path: string;
+  content: string;
+  /** Lines changed in the diff (1-based). Undefined = all lines are "changed". */
+  changedLines?: Set<number>;
 }

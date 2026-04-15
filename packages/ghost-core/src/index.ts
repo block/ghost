@@ -98,6 +98,16 @@ export {
   formatTemporalComparisonJSON,
 } from "./reporters/temporal.js";
 export { parseCSS } from "./resolvers/css.js";
+export { review } from "./review/index.js";
+export type { ReviewOptions } from "./review/index.js";
+export { formatReviewCLI } from "./reporters/review-cli.js";
+export { formatReviewJSON } from "./reporters/review-json.js";
+export {
+  formatGitHubPRComments,
+  formatIssueComment,
+  formatReviewSummary,
+} from "./reporters/github-pr.js";
+export type { GitHubPRComment } from "./reporters/github-pr.js";
 export { resolveRegistry } from "./resolvers/registry.js";
 export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export { scan } from "./scan.js";
@@ -184,4 +194,13 @@ export type {
   ValueDrift,
   VisualDrift,
   VisualScanConfig,
+  CollectedFile,
+  ReviewConfig,
+  ReviewDimension,
+  ReviewFileResult,
+  ReviewFix,
+  ReviewIssue,
+  ReviewReport,
+  ReviewSeverity,
+  ReviewSummary,
 } from "./types.js";
