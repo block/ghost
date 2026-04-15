@@ -1,4 +1,4 @@
-import type { DesignFingerprint, ReviewIssue } from "../types.js";
+import type { DesignFingerprint } from "../types.js";
 
 /**
  * Build the review prompt.
@@ -101,9 +101,7 @@ function formatFingerprint(fp: DesignFingerprint): string {
   }
   sections.push("");
   sections.push("**Neutral scale:**");
-  sections.push(
-    fp.palette.neutrals.steps.map((s) => `\`${s}\``).join(", "),
-  );
+  sections.push(fp.palette.neutrals.steps.map((s) => `\`${s}\``).join(", "));
   sections.push("");
   sections.push(
     `Saturation: ${fp.palette.saturationProfile} · Contrast: ${fp.palette.contrast}`,
@@ -113,9 +111,7 @@ function formatFingerprint(fp: DesignFingerprint): string {
   sections.push("");
   sections.push("### Spacing");
   sections.push("");
-  sections.push(
-    `Scale: ${fp.spacing.scale.map((v) => `${v}px`).join(", ")}`,
-  );
+  sections.push(`Scale: ${fp.spacing.scale.map((v) => `${v}px`).join(", ")}`);
   sections.push(
     `Base unit: ${fp.spacing.baseUnit ?? "none"}px · Regularity: ${fp.spacing.regularity}`,
   );

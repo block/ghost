@@ -235,12 +235,13 @@ function parseResponse(
       }
     }
 
-    issuesByFile.get(filePath)!.push(issue);
+    const fileIssues = issuesByFile.get(filePath);
+    if (fileIssues) fileIssues.push(issue);
   }
 
   return files.map((f) => ({
     file: f.path,
-    issues: issuesByFile.get(f.path)!.sort((a, b) => a.line - b.line),
+    issues: (issuesByFile.get(f.path) ?? []).sort((a, b) => a.line - b.line),
     deepReviewed: true,
   }));
 }
@@ -292,7 +293,13 @@ export async function review(options: ReviewOptions): Promise<ReviewReport> {
       batch.map((f) => ({ path: f.path, content: f.content })),
     );
 
-    const response = await provider.chat!(
+    if (!provider.chat) {
+      throw new Error(
+        "LLM provider does not support chat. Use anthropic or openai.",
+      );
+    }
+
+    const response = await provider.chat(
       [{ role: "user", content: prompt }],
       [],
     );
