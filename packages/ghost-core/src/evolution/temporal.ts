@@ -17,11 +17,13 @@ export function computeTemporalComparison(opts: {
   comparison: FingerprintComparison;
   history: FingerprintHistoryEntry[];
   manifest: SyncManifest | null;
+  stabilityThreshold?: number;
 }): TemporalComparison {
   const { comparison, history, manifest } = opts;
+  const stabilityThreshold = opts.stabilityThreshold ?? 0.01;
 
   const vectors = computeDriftVectors(comparison.source, comparison.target);
-  const velocity = computeVelocity(comparison, history);
+  const velocity = computeVelocity(comparison, history, stabilityThreshold);
   const trajectory = classifyTrajectory(velocity);
 
   let daysSinceAck: number | null = null;
@@ -57,6 +59,7 @@ export function computeTemporalComparison(opts: {
 function computeVelocity(
   current: FingerprintComparison,
   history: FingerprintHistoryEntry[],
+  stabilityThreshold: number = 0.01,
 ): DriftVelocity[] {
   if (history.length < 2) {
     // Not enough history to compute velocity — return stable for all dimensions
@@ -89,7 +92,7 @@ function computeVelocity(
     const rate = Math.abs(delta) / windowDays;
 
     let direction: "converging" | "diverging" | "stable";
-    if (Math.abs(delta) < 0.01) {
+    if (Math.abs(delta) < stabilityThreshold) {
       direction = "stable";
     } else if (delta < 0) {
       direction = "converging";

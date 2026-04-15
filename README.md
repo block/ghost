@@ -32,29 +32,51 @@ pnpm build
 
 ### Quick Start
 
-**Scan for drift:**
+**Profile a design system:**
 
 ```bash
-ghost scan --config ghost.config.ts
-```
+# Profile the current directory
+ghost profile .
 
-**Generate a design fingerprint:**
+# Profile a GitHub repo
+ghost profile github:shadcn-ui/ui
 
-```bash
-ghost profile --config ghost.config.ts
-# or from a shadcn registry directly
+# Profile with AI enrichment (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)
+ghost profile github:shadcn-ui/ui --ai --verbose
+
+# Profile a shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json
+
+# Save fingerprint to a file
+ghost profile . --output my-system.json
 ```
 
 **Compare two fingerprints:**
 
 ```bash
-ghost compare system-a.json system-b.json
+# Profile two systems, then compare
+ghost profile github:shadcn-ui/ui --output shadcn.json
+ghost profile npm:@chakra-ui/react --output chakra.json
+ghost compare shadcn.json chakra.json
 ```
 
-**Visualize a fleet:**
+**Check compliance against a parent:**
 
 ```bash
+ghost comply . --against parent-fingerprint.json
+ghost comply . --against parent-fingerprint.json --format sarif
+```
+
+**Scan for drift (config-based):**
+
+```bash
+ghost scan --config ghost.config.ts
+```
+
+**Fleet observability and visualization:**
+
+```bash
+ghost fleet system-a.json system-b.json system-c.json --cluster
 ghost viz system-a.json system-b.json system-c.json
 ```
 
@@ -67,46 +89,86 @@ just dev
 
 ## CLI Commands
 
-| Command         | Description                                                                  |
-| --------------- | ---------------------------------------------------------------------------- |
-| `ghost scan`    | Detect design drift against a registry                                        |
-| `ghost profile` | Generate a design fingerprint from a registry, codebase, or via LLM           |
-| `ghost compare` | Compare two fingerprints with optional temporal analysis                      |
-| `ghost ack`     | Acknowledge current drift and publish a stance (aligned, accepted, diverging) |
-| `ghost adopt`   | Shift parent baseline to a new fingerprint                                    |
-| `ghost diverge` | Mark a fingerprint dimension as intentionally diverging with reasoning         |
-| `ghost fleet`   | Compare N fingerprints for ecosystem-wide observability                        |
-| `ghost viz`     | Launch interactive 3D fingerprint visualization                               |
+| Command          | Description                                                                      |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `ghost scan`     | Scan for design drift against a registry                                          |
+| `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
+| `ghost compare`  | Compare two fingerprint JSON files with optional temporal analysis                 |
+| `ghost diff`     | Compare local components against registry with drift analysis                      |
+| `ghost comply`   | Check design system compliance against rules and a parent fingerprint              |
+| `ghost discover` | Find public design systems matching a query                                        |
+| `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
+| `ghost adopt`    | Shift parent baseline to a new fingerprint                                         |
+| `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
+| `ghost fleet`    | Compare N fingerprint files for ecosystem-level observability                      |
+| `ghost viz`      | Launch interactive 3D fingerprint visualization                                    |
+
+### Target Types
+
+`ghost profile` and `ghost comply` accept universal targets:
+
+```bash
+ghost profile .                          # current directory
+ghost profile ./path/to/project          # local path
+ghost profile github:shadcn-ui/ui        # GitHub repo
+ghost profile npm:@chakra-ui/react       # npm package
+ghost profile https://example.com        # URL
+ghost profile --registry registry.json   # shadcn registry directly
+```
+
+Use explicit prefixes (`github:`, `npm:`, `figma:`, `path:`, `url:`) when the input is ambiguous.
 
 ## Configuration
 
-Create a `ghost.config.ts` in your project root:
+Optionally create a `ghost.config.ts` in your project root to configure scanning targets, rules, and LLM settings.
 
 ```typescript
 import { defineConfig } from "@ghost/core";
 
 export default defineConfig({
-  parent: "default",
-  designSystems: [
-    {
-      name: "my-ui",
-      registry: "https://ui.shadcn.com/registry.json",
-      componentDir: "components/ui",
-      styleEntry: "src/styles/main.css",
-    },
+  // Parent design system to check drift against
+  parent: { type: "github", value: "shadcn-ui/ui" },
+
+  // Targets to scan
+  targets: [
+    { type: "path", value: "./packages/my-ui" },
   ],
+
   scan: {
     values: true,
     structure: true,
     visual: false,
+    analysis: false,
   },
+
   rules: {
     "hardcoded-color": "error",
     "token-override": "warn",
     "missing-token": "warn",
-    "structural-divergence": "warn",
+    "structural-divergence": "error",
     "missing-component": "warn",
+    "visual-regression": "warn",
   },
+
+  ignore: [],
+
+  // LLM provider for AI-powered profiling (optional)
+  llm: {
+    provider: "anthropic",
+    // model: "claude-sonnet-4-20250514",  // optional override
+    // apiKey: "..."  // defaults to ANTHROPIC_API_KEY env var
+  },
+
+  // Embedding provider for semantic comparison (optional)
+  // embedding: {
+  //   provider: "openai",
+  // },
+
+  // Agent settings (optional)
+  // agents: {
+  //   maxIterations: 40,
+  //   verbose: true,
+  // },
 });
 ```
 
@@ -187,12 +249,27 @@ just build-ui
 just build-registry
 ```
 
+## Ghost MCP
+
+Ghost MCP (`@ghost/mcp`) is a Model Context Protocol server that exposes the Ghost UI registry to AI assistants.
+
+**Tools:** `search_components`, `get_component`, `get_install_command`, `list_categories`, `get_theme`
+
+**Resources:** `ghost://registry` (full registry JSON), `ghost://skills` (skill docs)
+
+```bash
+# Run the MCP server (stdio transport)
+node packages/ghost-mcp/dist/bin.js
+```
+
 ## Project Structure
 
 ```
 packages/
   ghost-core/          Core library
     src/
+      agents/          Director, FingerprintAgent, DiscoveryAgent, ComparisonAgent, ComplianceAgent
+      stages/          Deterministic pipeline stages (extract, compare, comply)
       fingerprint/     Fingerprinting engine (embedding, comparison, extraction)
       evolution/       Evolution tracking (sync, temporal, fleet, history)
       scanners/        Drift scanners (values, structure, visual)
@@ -200,9 +277,15 @@ packages/
       resolvers/       Registry and CSS resolution
       llm/             LLM providers (Anthropic, OpenAI)
       reporters/       Output formatting (CLI, JSON, fingerprint, fleet)
-  ghost-cli/           CLI interface
+  ghost-cli/           CLI interface (citty)
     src/
+      bin.ts           Command definitions (scan, profile, compare, diff, comply, discover, etc.)
+      evolution-commands.ts  ack, adopt, diverge, fleet commands
       viz/             3D visualization (Three.js, PCA projection)
+  ghost-mcp/           MCP server for Ghost UI registry
+    src/
+      tools.ts         5 MCP tools (search, get, install, categories, theme)
+      resources.ts     2 MCP resources (registry, skills)
   ghost-ui/            Reference design language (@ghost/ui)
     src/
       components/
@@ -217,6 +300,11 @@ packages/
       styles/          Design tokens and global CSS
       fonts/           HK Grotesk woff2 files
     registry.json      shadcn-compatible component registry
+skills/                Claude Code skill definitions
+  ghost-fingerprint/   Profile any design system
+  ghost-compare/       Compare two design systems
+  ghost-drift-check/   Check design compliance
+  ghost-discover/      Find public design systems
 ```
 
 ## Development

@@ -29,6 +29,13 @@ export interface DiffResult {
   };
 }
 
+export interface DiffOptions {
+  registry: string;
+  componentDir: string;
+  styleEntry: string;
+  name?: string;
+}
+
 function classifyStructureDrift(
   drift: StructureDrift,
 ): "cosmetic" | "additive" | "breaking" {
@@ -72,28 +79,37 @@ function classificationToSeverity(
   }
 }
 
+/**
+ * Diff local components against a registry.
+ *
+ * Accepts explicit diff options or derives them from config.targets.
+ */
 export async function diff(
   config: GhostConfig,
   componentFilter?: string,
+  diffOptions?: DiffOptions[],
 ): Promise<DiffResult[]> {
   const results: DiffResult[] = [];
 
-  for (const ds of config.designSystems ?? []) {
-    const registry = await resolveRegistry(ds.registry);
+  // Build diff targets from config.targets or explicit parameter
+  const targets = diffOptions ?? buildDiffTargets(config);
+
+  for (const target of targets) {
+    const registry = await resolveRegistry(target.registry);
     const consumerDir = process.cwd();
 
     // Structure scan
     const structureDrifts = await scanStructure({
       registryItems: registry.items,
       consumerDir,
-      componentDir: ds.componentDir,
+      componentDir: target.componentDir,
       rules: config.rules,
       ignore: config.ignore,
     });
 
     // Value scan
     let valueDrifts: ValueDrift[] = [];
-    const styleEntryPath = resolve(consumerDir, ds.styleEntry);
+    const styleEntryPath = resolve(consumerDir, target.styleEntry);
     if (existsSync(styleEntryPath)) {
       const consumerCSS = await readFile(styleEntryPath, "utf-8");
       const consumerTokens = parseCSS(consumerCSS);
@@ -102,7 +118,7 @@ export async function diff(
         consumerTokens,
         consumerCSS,
         rules: config.rules,
-        styleFile: ds.styleEntry,
+        styleFile: target.styleEntry,
       });
     }
 
@@ -149,7 +165,7 @@ export async function diff(
       : uiItems.filter((i) => !divergedComponents.has(i.name)).length;
 
     results.push({
-      designSystem: ds.name,
+      designSystem: target.name ?? "unknown",
       components: Array.from(componentMap.values()),
       summary: {
         total: componentFilter ? 1 : uiItems.length,
@@ -165,4 +181,19 @@ export async function diff(
   }
 
   return results;
+}
+
+function buildDiffTargets(config: GhostConfig): DiffOptions[] {
+  if (!config.targets?.length) return [];
+
+  return config.targets
+    .filter(
+      (t) => t.type === "registry" || t.type === "url" || t.type === "path",
+    )
+    .map((t) => ({
+      registry: t.value,
+      componentDir: "components/ui",
+      styleEntry: "src/styles/main.css",
+      name: t.name ?? t.value,
+    }));
 }

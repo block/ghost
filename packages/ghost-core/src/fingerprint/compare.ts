@@ -9,13 +9,11 @@ export interface CompareOptions {
   includeVectors?: boolean;
 }
 
-// Dimension weights — palette and spacing have higher visual impact
 const WEIGHTS: Record<string, number> = {
-  palette: 0.3,
-  spacing: 0.2,
-  typography: 0.2,
+  palette: 0.35,
+  spacing: 0.25,
+  typography: 0.25,
   surfaces: 0.15,
-  architecture: 0.15,
 };
 
 export function compareFingerprints(
@@ -29,7 +27,6 @@ export function compareFingerprints(
   dimensions.spacing = compareSpacing(source, target);
   dimensions.typography = compareTypography(source, target);
   dimensions.surfaces = compareSurfaces(source, target);
-  dimensions.architecture = compareArchitecture(source, target);
 
   // Weighted overall distance
   let distance = 0;
@@ -60,20 +57,35 @@ function comparePalette(
 ): DimensionDelta {
   const distances: number[] = [];
 
-  // Compare dominant colors by OKLCH delta-E
-  const maxDominant = Math.max(
-    a.palette.dominant.length,
-    b.palette.dominant.length,
-  );
-  if (maxDominant > 0) {
-    for (let i = 0; i < maxDominant; i++) {
-      const ca = a.palette.dominant[i];
-      const cb = b.palette.dominant[i];
-      if (ca?.oklch && cb?.oklch) {
-        distances.push(oklchDistance(ca.oklch, cb.oklch));
-      } else if (ca || cb) {
-        distances.push(1); // one is missing
-      }
+  // Compare dominant colors by role, then by position for unmatched
+  const aByRole = new Map(a.palette.dominant.map((c) => [c.role, c]));
+  const bByRole = new Map(b.palette.dominant.map((c) => [c.role, c]));
+  const allDominantRoles = new Set([...aByRole.keys(), ...bByRole.keys()]);
+  const matchedA = new Set<string>();
+  const matchedB = new Set<string>();
+
+  // First pass: match by role name
+  for (const role of allDominantRoles) {
+    const ca = aByRole.get(role);
+    const cb = bByRole.get(role);
+    if (ca?.oklch && cb?.oklch) {
+      distances.push(oklchDistance(ca.oklch, cb.oklch));
+      matchedA.add(role);
+      matchedB.add(role);
+    }
+  }
+
+  // Second pass: unmatched colors count as missing
+  const unmatchedA = a.palette.dominant.filter((c) => !matchedA.has(c.role));
+  const unmatchedB = b.palette.dominant.filter((c) => !matchedB.has(c.role));
+  const unmatchedCount = Math.max(unmatchedA.length, unmatchedB.length);
+  for (let i = 0; i < unmatchedCount; i++) {
+    const ca = unmatchedA[i];
+    const cb = unmatchedB[i];
+    if (ca?.oklch && cb?.oklch) {
+      distances.push(oklchDistance(ca.oklch, cb.oklch));
+    } else {
+      distances.push(1);
     }
   }
 
@@ -148,16 +160,9 @@ function compareTypography(
 ): DimensionDelta {
   const distances: number[] = [];
 
-  // Family match
-  const sharedFamilies = a.typography.families.filter((f) =>
-    b.typography.families.includes(f),
-  );
-  const allFamilies = new Set([
-    ...a.typography.families,
-    ...b.typography.families,
-  ]);
+  // Family match — fuzzy comparison
   distances.push(
-    allFamilies.size > 0 ? 1 - sharedFamilies.length / allFamilies.size : 0,
+    1 - fontListSimilarity(a.typography.families, b.typography.families),
   );
 
   // Size ramp similarity
@@ -225,54 +230,168 @@ function compareSurfaces(
   };
 }
 
-function compareArchitecture(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
-  const distances: number[] = [];
+// --- Font matching ---
 
-  // Tokenization delta
-  distances.push(
-    Math.abs(a.architecture.tokenization - b.architecture.tokenization),
-  );
+const FONT_SUFFIXES =
+  /\s*\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
 
-  // Methodology overlap
-  const aMethods = new Set(a.architecture.methodology);
-  const bMethods = new Set(b.architecture.methodology);
-  const allMethods = new Set([...aMethods, ...bMethods]);
-  const sharedMethods = [...allMethods].filter(
-    (m) => aMethods.has(m) && bMethods.has(m),
-  );
-  distances.push(
-    allMethods.size > 0 ? 1 - sharedMethods.length / allMethods.size : 0,
-  );
+/** Normalize font family name for fuzzy comparison */
+function normalizeFontFamily(name: string): string {
+  return name
+    .replace(/['"]/g, "")
+    .replace(FONT_SUFFIXES, "")
+    .trim()
+    .toLowerCase();
+}
 
-  // Component count ratio
-  const maxCount = Math.max(
-    a.architecture.componentCount,
-    b.architecture.componentCount,
+/** Levenshtein distance between two strings */
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    new Array(n + 1).fill(0),
   );
-  const minCount = Math.min(
-    a.architecture.componentCount,
-    b.architecture.componentCount,
-  );
-  distances.push(maxCount > 0 ? 1 - minCount / maxCount : 0);
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
 
-  // Naming pattern
-  if (a.architecture.namingPattern !== b.architecture.namingPattern)
-    distances.push(0.3);
+// Font category lookup for common fonts
+const FONT_CATEGORIES: Record<string, string> = {
+  // Sans-serif
+  inter: "sans-serif",
+  arial: "sans-serif",
+  helvetica: "sans-serif",
+  roboto: "sans-serif",
+  "open sans": "sans-serif",
+  lato: "sans-serif",
+  nunito: "sans-serif",
+  poppins: "sans-serif",
+  montserrat: "sans-serif",
+  raleway: "sans-serif",
+  ubuntu: "sans-serif",
+  manrope: "sans-serif",
+  geist: "sans-serif",
+  "dm sans": "sans-serif",
+  "plus jakarta sans": "sans-serif",
+  "source sans": "sans-serif",
+  "work sans": "sans-serif",
+  "hk grotesk": "sans-serif",
+  "cash sans": "sans-serif",
+  "sf pro": "sans-serif",
+  "system-ui": "sans-serif",
+  "sans-serif": "sans-serif",
+  // Serif
+  georgia: "serif",
+  "times new roman": "serif",
+  garamond: "serif",
+  "playfair display": "serif",
+  merriweather: "serif",
+  lora: "serif",
+  "source serif": "serif",
+  "dm serif": "serif",
+  serif: "serif",
+  // Monospace
+  "jetbrains mono": "monospace",
+  "fira code": "monospace",
+  "source code": "monospace",
+  "geist mono": "monospace",
+  "dm mono": "monospace",
+  "ibm plex mono": "monospace",
+  "sf mono": "monospace",
+  menlo: "monospace",
+  consolas: "monospace",
+  monaco: "monospace",
+  "courier new": "monospace",
+  monospace: "monospace",
+  // Display
+  playfair: "display",
+  "bebas neue": "display",
+  // Apple system fonts
+  "san francisco": "sans-serif",
+  "sf compact": "sans-serif",
+  "new york": "serif",
+  system: "sans-serif",
+};
 
-  const distance = avg(distances);
-  return {
-    dimension: "architecture",
-    distance,
-    description:
-      distance < 0.1
-        ? "Architecturally aligned"
-        : distance < 0.3
-          ? "Minor architectural differences"
-          : "Fundamentally different architecture",
-  };
+function getFontCategory(normalizedName: string): string | null {
+  // Exact match
+  if (FONT_CATEGORIES[normalizedName]) return FONT_CATEGORIES[normalizedName];
+  // Partial match: check if any known font is a prefix
+  for (const [font, cat] of Object.entries(FONT_CATEGORIES)) {
+    if (normalizedName.startsWith(font) || font.startsWith(normalizedName)) {
+      return cat;
+    }
+  }
+  return null;
+}
+
+/**
+ * Compute similarity between two font names (0 = no match, 1 = identical).
+ * Uses normalization, Levenshtein distance, and category fallback.
+ */
+function fontSimilarity(a: string, b: string): number {
+  const normA = normalizeFontFamily(a);
+  const normB = normalizeFontFamily(b);
+
+  // Exact match after normalization
+  if (normA === normB) return 1.0;
+
+  // Levenshtein-based similarity
+  const maxLen = Math.max(normA.length, normB.length);
+  if (maxLen === 0) return 1.0;
+  const dist = levenshtein(normA, normB);
+  const similarity = 1 - dist / maxLen;
+
+  // If names are very similar (>= 0.7), use that score
+  if (similarity >= 0.7) return similarity;
+
+  // Category fallback: same category = 0.3 floor
+  const catA = getFontCategory(normA);
+  const catB = getFontCategory(normB);
+  if (catA && catB && catA === catB) return Math.max(similarity, 0.3);
+
+  return similarity;
+}
+
+/**
+ * Compute font list similarity using best-match pairing.
+ * Each font in list A is matched to its best counterpart in list B.
+ */
+function fontListSimilarity(aFonts: string[], bFonts: string[]): number {
+  if (aFonts.length === 0 && bFonts.length === 0) return 1;
+  if (aFonts.length === 0 || bFonts.length === 0) return 0;
+
+  // For each font in A, find best match in B
+  let totalSim = 0;
+  for (const fa of aFonts) {
+    let bestSim = 0;
+    for (const fb of bFonts) {
+      bestSim = Math.max(bestSim, fontSimilarity(fa, fb));
+    }
+    totalSim += bestSim;
+  }
+  // Symmetric: also match B→A and average
+  let totalSimReverse = 0;
+  for (const fb of bFonts) {
+    let bestSim = 0;
+    for (const fa of aFonts) {
+      bestSim = Math.max(bestSim, fontSimilarity(fa, fb));
+    }
+    totalSimReverse += bestSim;
+  }
+
+  const avgA = totalSim / aFonts.length;
+  const avgB = totalSimReverse / bFonts.length;
+  return (avgA + avgB) / 2;
 }
 
 // --- Helpers ---

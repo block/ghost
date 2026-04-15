@@ -2,8 +2,14 @@ import type {
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
+  SampledMaterial,
+  Target,
 } from "../types.js";
 import { cssExtractor } from "./css.js";
+import { sampleDirectory } from "./sampler.js";
+import { materializeGithub } from "./sources/github.js";
+import { materializeNpm } from "./sources/npm.js";
+import { materializeUrl } from "./sources/url.js";
 import { tailwindExtractor } from "./tailwind.js";
 
 // Ordered by specificity — more specific extractors first
@@ -19,6 +25,10 @@ export async function detectExtractors(cwd: string): Promise<Extractor[]> {
   return matched;
 }
 
+/**
+ * Extract design material from a local directory.
+ * Legacy API — used by the old profile() path.
+ */
 export async function extract(
   cwd: string,
   options?: ExtractorOptions & { extractorNames?: string[] },
@@ -43,9 +53,45 @@ export async function extract(
     }
   }
 
-  // Use the most specific extractor (first match)
   return extractors[0].extract(cwd, options);
 }
 
+/**
+ * Sample design-relevant files from any target for LLM interpretation.
+ * This is the v2 extraction pipeline — walk + sample, no parsing.
+ */
+export async function extractFromTarget(
+  target: Target,
+  options?: ExtractorOptions,
+): Promise<SampledMaterial> {
+  const localDir = await materializeTarget(target);
+  return sampleDirectory(localDir, target.type, {
+    maxFiles: options?.maxFiles ?? 200,
+    ignore: options?.ignore,
+  });
+}
+
+async function materializeTarget(target: Target): Promise<string> {
+  switch (target.type) {
+    case "path":
+      return target.value;
+    case "url":
+    case "registry":
+      return materializeUrl(target.value);
+    case "npm":
+      return materializeNpm(target.value);
+    case "github":
+      return materializeGithub(target.value, target.options?.branch);
+    case "figma":
+      throw new Error("Figma extraction not yet implemented");
+    case "doc-site":
+      return materializeUrl(target.value);
+    default:
+      throw new Error(`Unsupported target type: ${target.type}`);
+  }
+}
+
 export { cssExtractor } from "./css.js";
+export { sampleDirectory } from "./sampler.js";
 export { tailwindExtractor } from "./tailwind.js";
+export { walkAndCategorize, walkDirectory } from "./walker.js";

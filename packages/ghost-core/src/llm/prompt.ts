@@ -8,9 +8,9 @@ export const FINGERPRINT_SCHEMA = `{
   "timestamp": "string — ISO 8601",
 
   "palette": {
-    "dominant": [{ "role": "string (primary, secondary, accent, etc.)", "value": "string (resolved color)", "oklch": [L, C, H] }],
+    "dominant": [{ "role": "string (primary, secondary, accent, etc.)", "value": "string (resolved hex/rgb color — e.g. #1a1a1a, rgb(255,0,0))" }],
     "neutrals": { "steps": ["string — color values lightest to darkest"], "count": "number" },
-    "semantic": [{ "role": "string (surface, danger, warning, success, info, text, border, etc.)", "value": "string", "oklch": [L, C, H] }],
+    "semantic": [{ "role": "string (surface, danger, warning, success, info, text, border, etc.)", "value": "string (resolved hex/rgb color)" }],
     "saturationProfile": "muted | vibrant | mixed",
     "contrast": "high | moderate | low"
   },
@@ -32,41 +32,69 @@ export const FINGERPRINT_SCHEMA = `{
     "borderRadii": [4, 8, 12],
     "shadowComplexity": "none | subtle | layered",
     "borderUsage": "minimal | moderate | heavy"
-  },
-
-  "architecture": {
-    "tokenization": "number 0-1 — how much of the styling uses design tokens vs hardcoded values",
-    "methodology": ["string — e.g. tailwind, css-custom-properties, scss, css-modules"],
-    "componentCount": "number",
-    "componentCategories": { "input": 3, "layout": 2, "feedback": 1 },
-    "namingPattern": "kebab-case | camelCase | PascalCase | mixed"
   }
 }`;
 
 export function buildFingerprintPrompt(
   projectId: string,
-  summarizedMaterial: string,
+  fileContents: string,
 ): string {
-  return `You are a design system analyst. Analyze the following extracted design material from a software project and produce a structured design fingerprint.
+  return `You are a design system analyst. Analyze the following source files from a software project and produce a structured design fingerprint.
 
 ## Task
 
-Examine the CSS tokens, Tailwind classes, component code, and configuration to determine the project's visual language. Output a JSON object matching the schema below.
+Examine ALL the files below and extract the project's complete visual language. Output a JSON object matching the schema below.
+
+## How to read different formats
+
+### Web formats
+
+**CSS custom properties:**
+\`--color-primary: oklch(0.55 0.2 250)\` → primary color
+\`--spacing-4: 1rem\` → spacing scale step (16px)
+\`--radius-lg: 0.5rem\` → border radius (8px)
+
+**SCSS variables:**
+\`$color-primary: #0066cc\` → primary color
+\`$spacing-base: 8px\` → base spacing unit
+\`$font-family-sans: 'Inter', sans-serif\` → font family
+
+**Tailwind config / @theme blocks:**
+\`theme.extend.colors.primary: '#0066cc'\` → primary color
+\`theme.spacing: { 1: '4px', 2: '8px' }\` → spacing scale
+\`@theme { --color-primary: oklch(0.55 0.2 250) }\` → themed token
+
+**Tailwind class usage in components:**
+\`bg-slate-900\` → dark surface, color ~#0f172a
+\`rounded-lg\` → border radius ~8px
+\`text-sm\` → font size ~14px
+\`p-4\` → padding 16px (4 × 4px)
+\`font-semibold\` → weight 600
+\`shadow-lg\` → layered shadow
+
+**JavaScript/TypeScript theme objects:**
+\`const colors = { primary: { 500: '#3b82f6' } }\` → primary color
+\`export const spacing = [0, 4, 8, 16, 24, 32]\` → spacing scale
+\`const fontSizes = { sm: '0.875rem', base: '1rem' }\` → size ramp
+
+**JSON token files (Style Dictionary / W3C):**
+\`{ "color": { "primary": { "$value": "#0066cc", "$type": "color" } } }\` → primary color
+\`{ "spacing": { "sm": { "value": "8px" } } }\` → spacing
+
+**package.json dependencies** tell you the CSS methodology:
+- \`tailwindcss\` → Tailwind
+- \`@emotion/react\` or \`styled-components\` → CSS-in-JS
+- \`sass\` → SCSS
+- \`@vanilla-extract/css\` → Vanilla Extract
 
 ## Guidelines
 
-- **Palette**: Identify the dominant brand colors, neutral ramp (grays), and semantic colors (success, danger, warning, info, surface, text, border). Convert all colors to OKLCH for the oklch field. If a color is expressed as a CSS variable reference that cannot be resolved, note the variable name in the value field and omit oklch.
-- **Spacing**: Extract the spacing scale from tokens, Tailwind config, or class usage patterns. Detect the base unit (commonly 4px or 8px). Rate regularity from 0 (chaotic) to 1 (perfectly consistent scale).
-- **Typography**: List font families, the size ramp, weight distribution (how many usages of each weight), and whether line heights are tight (<1.3), normal (1.3-1.6), or loose (>1.6).
-- **Surfaces**: Extract border radii values, classify shadow complexity (none/subtle/layered based on number of shadow layers), and border usage frequency.
-- **Architecture**: Estimate tokenization (0 = all hardcoded, 1 = all tokenized), identify the CSS methodology, count components, categorize them, and detect the naming convention.
-
-When Tailwind classes are present, interpret them as design decisions:
-- \`bg-slate-900\` → dark surface color
-- \`rounded-lg\` → border radius ~8px
-- \`text-sm\` → font size ~14px
-- \`p-4\` → padding 16px (4 × 4px base)
-- \`font-semibold\` → weight 600
+- **Populate ALL fields.** Every design system has colors, spacing, typography, and surfaces — find them even if they're in unexpected places.
+- **Convert units to logical units** where possible: \`1rem\` = 16px, \`0.5rem\` = 8px.
+- **Resolve colors to hex or rgb.** Output color values as resolved hex (#1a1a1a) or rgb(r,g,b). Do NOT output oklch — color space conversion is handled post-processing.
+- Spacing values should be **numbers** (not strings).
+- Border radii should be **numbers**.
+- Typography size ramp should be **numbers**.
 
 ## Output Format
 
@@ -76,7 +104,7 @@ ${FINGERPRINT_SCHEMA}
 
 Set "id" to "${projectId}".
 
-## Extracted Material
+## Source Files
 
-${summarizedMaterial}`;
+${fileContents}`;
 }

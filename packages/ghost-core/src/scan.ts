@@ -12,26 +12,45 @@ import type {
   DriftSummary,
   GhostConfig,
   StructureDrift,
+  Target,
   ValueDrift,
   VisualDrift,
 } from "./types.js";
 
+export interface ScanTargetOptions {
+  registry: string;
+  componentDir: string;
+  styleEntry: string;
+  name?: string;
+}
+
+/**
+ * Scan for design drift.
+ *
+ * Requires explicit scan targets (registry, componentDir, styleEntry).
+ * These can come from config.targets or be passed directly.
+ */
 export async function scan(
   config: GhostConfig,
   cwd: string = process.cwd(),
+  scanTargets?: ScanTargetOptions[],
 ): Promise<DriftReport> {
+  // Build scan targets from config.targets or explicit parameter
+  const targets = scanTargets ?? buildScanTargets(config);
+
+  if (!targets.length) {
+    throw new Error(
+      "scan() requires at least one target with a registry. " +
+        "Configure targets in ghost.config.ts or pass scanTargets directly.",
+    );
+  }
+
   const systems: DesignSystemReport[] = [];
   let totalTokensScanned = 0;
   let totalComponentsScanned = 0;
 
-  if (!config.designSystems?.length) {
-    throw new Error(
-      "scan() requires at least one design system in config.designSystems",
-    );
-  }
-
-  for (const ds of config.designSystems) {
-    const registry = await resolveRegistry(ds.registry);
+  for (const target of targets) {
+    const registry = await resolveRegistry(target.registry);
 
     let values: ValueDrift[] = [];
     let structure: StructureDrift[] = [];
@@ -39,7 +58,7 @@ export async function scan(
 
     // Values scan
     if (config.scan.values) {
-      const styleEntryPath = resolve(cwd, ds.styleEntry);
+      const styleEntryPath = resolve(cwd, target.styleEntry);
       if (existsSync(styleEntryPath)) {
         const consumerCSS = await readFile(styleEntryPath, "utf-8");
         const consumerTokens = parseCSS(consumerCSS);
@@ -50,7 +69,7 @@ export async function scan(
           consumerTokens,
           consumerCSS,
           rules: config.rules,
-          styleFile: ds.styleEntry,
+          styleFile: target.styleEntry,
         });
       }
     }
@@ -63,7 +82,7 @@ export async function scan(
       structure = await scanStructure({
         registryItems: registry.items,
         consumerDir: cwd,
-        componentDir: ds.componentDir,
+        componentDir: target.componentDir,
         rules: config.rules,
         ignore: config.ignore,
       });
@@ -73,14 +92,14 @@ export async function scan(
     if (config.scan.visual) {
       const styleItem = registry.items.find((i) => i.type === "registry:style");
       const registryCSS = styleItem?.files[0]?.content ?? "";
-      const consumerCSS = existsSync(resolve(cwd, ds.styleEntry))
-        ? await readFile(resolve(cwd, ds.styleEntry), "utf-8")
+      const consumerCSS = existsSync(resolve(cwd, target.styleEntry))
+        ? await readFile(resolve(cwd, target.styleEntry), "utf-8")
         : "";
 
       visual = await scanVisual({
         registryItems: registry.items,
         consumerDir: cwd,
-        componentDir: ds.componentDir,
+        componentDir: target.componentDir,
         styleContent: registryCSS,
         consumerStyleContent: consumerCSS,
         rules: config.rules,
@@ -91,7 +110,7 @@ export async function scan(
     }
 
     systems.push({
-      designSystem: ds.name,
+      designSystem: target.name ?? "unknown",
       values,
       structure,
       visual,
@@ -109,6 +128,26 @@ export async function scan(
     systems,
     summary,
   };
+}
+
+/**
+ * Build ScanTargetOptions from config.targets.
+ * Only targets that include registry/componentDir/styleEntry in options are usable for scanning.
+ */
+function buildScanTargets(config: GhostConfig): ScanTargetOptions[] {
+  if (!config.targets?.length) return [];
+
+  return config.targets
+    .filter(
+      (t): t is Target & { type: "registry" | "url" | "path" } =>
+        t.type === "registry" || t.type === "url" || t.type === "path",
+    )
+    .map((t) => ({
+      registry: t.value,
+      componentDir: t.options?.branch ?? "components/ui",
+      styleEntry: "src/styles/main.css",
+      name: t.name ?? t.value,
+    }));
 }
 
 function computeSummary(

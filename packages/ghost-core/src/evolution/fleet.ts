@@ -7,13 +7,17 @@ import type {
   FleetPair,
 } from "../types.js";
 
+export interface FleetClusterOptions {
+  cluster?: boolean | { maxK?: number };
+}
+
 /**
  * Compare N fingerprints for an ecosystem-level view.
  * Computes pairwise distances, centroid, spread, and optional clusters.
  */
 export function compareFleet(
   members: FleetMember[],
-  options?: { cluster?: boolean },
+  options?: FleetClusterOptions,
 ): FleetComparison {
   const pairwise = computePairwise(members);
   const centroid = computeCentroid(members);
@@ -26,8 +30,13 @@ export function compareFleet(
     spread,
   };
 
-  if (options?.cluster && members.length >= 3) {
-    result.clusters = clusterMembers(members);
+  const shouldCluster =
+    options?.cluster === true ||
+    (typeof options?.cluster === "object" && options.cluster);
+  if (shouldCluster && members.length >= 3) {
+    const maxK =
+      typeof options?.cluster === "object" ? options.cluster.maxK : undefined;
+    result.clusters = clusterMembers(members, maxK);
   }
 
   return result;
@@ -99,11 +108,123 @@ function computeSpread(members: FleetMember[], centroid: number[]): number {
 }
 
 /**
- * Basic k-means-style clustering (k=2 for now).
- * Splits the fleet into two groups by finding the two most distant members
- * and assigning the rest to the nearest one.
+ * K-means++ initialization: select initial centroids with probability
+ * proportional to squared distance from nearest existing centroid.
  */
-function clusterMembers(members: FleetMember[]): FleetCluster[] {
+function kmeansppInit(embeddings: number[][], k: number): number[][] {
+  const centroids: number[][] = [];
+
+  // First centroid: pick randomly (deterministically use first for reproducibility)
+  centroids.push([...embeddings[0]]);
+
+  for (let c = 1; c < k; c++) {
+    // Compute squared distances to nearest centroid for each point
+    const distances = embeddings.map((emb) => {
+      let minDist = Infinity;
+      for (const centroid of centroids) {
+        const dist = embeddingDistance(emb, centroid);
+        minDist = Math.min(minDist, dist * dist);
+      }
+      return minDist;
+    });
+
+    // Pick the point with maximum distance (deterministic version of weighted random)
+    let maxDist = -1;
+    let maxIdx = 0;
+    for (let i = 0; i < distances.length; i++) {
+      if (distances[i] > maxDist) {
+        maxDist = distances[i];
+        maxIdx = i;
+      }
+    }
+    centroids.push([...embeddings[maxIdx]]);
+  }
+
+  return centroids;
+}
+
+/**
+ * Compute within-cluster sum of squared distances (WCSS).
+ */
+function computeWCSS(
+  embeddings: number[][],
+  assignments: number[],
+  centroids: number[][],
+): number {
+  let wcss = 0;
+  for (let i = 0; i < embeddings.length; i++) {
+    const dist = embeddingDistance(embeddings[i], centroids[assignments[i]]);
+    wcss += dist * dist;
+  }
+  return wcss;
+}
+
+/**
+ * Run k-means with iterative refinement.
+ * Returns cluster assignments and final centroids.
+ */
+function runKMeans(
+  embeddings: number[][],
+  k: number,
+  maxIterations: number = 10,
+): { assignments: number[]; centroids: number[][] } {
+  const dim = embeddings[0].length;
+  let centroids = kmeansppInit(embeddings, k);
+  let assignments = new Array(embeddings.length).fill(0);
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    // Assignment step: assign each point to nearest centroid
+    const newAssignments = embeddings.map((emb) => {
+      let minDist = Infinity;
+      let minIdx = 0;
+      for (let c = 0; c < centroids.length; c++) {
+        const dist = embeddingDistance(emb, centroids[c]);
+        if (dist < minDist) {
+          minDist = dist;
+          minIdx = c;
+        }
+      }
+      return minIdx;
+    });
+
+    // Check convergence
+    const changed = newAssignments.some((a, i) => a !== assignments[i]);
+    assignments = newAssignments;
+    if (!changed) break;
+
+    // Update step: recompute centroids
+    const newCentroids: number[][] = Array.from({ length: k }, () =>
+      new Array(dim).fill(0),
+    );
+    const counts = new Array(k).fill(0);
+
+    for (let i = 0; i < embeddings.length; i++) {
+      const c = assignments[i];
+      counts[c]++;
+      for (let d = 0; d < dim; d++) {
+        newCentroids[c][d] += embeddings[i][d];
+      }
+    }
+
+    for (let c = 0; c < k; c++) {
+      if (counts[c] > 0) {
+        for (let d = 0; d < dim; d++) {
+          newCentroids[c][d] /= counts[c];
+        }
+      }
+    }
+
+    centroids = newCentroids;
+  }
+
+  return { assignments, centroids };
+}
+
+/**
+ * Adaptive clustering using elbow method to select optimal K.
+ * Falls back to K=2 if no clear elbow is found.
+ */
+function clusterMembers(members: FleetMember[], maxK?: number): FleetCluster[] {
   if (members.length < 3) {
     return [
       {
@@ -113,61 +234,62 @@ function clusterMembers(members: FleetMember[]): FleetCluster[] {
     ];
   }
 
-  // Find the two most distant members as initial centroids
-  let maxDist = -1;
-  let seedA = 0;
-  let seedB = 1;
+  const embeddings = members.map((m) => m.fingerprint.embedding);
+  const kMax = Math.min(maxK ?? 6, members.length - 1);
 
-  for (let i = 0; i < members.length; i++) {
-    for (let j = i + 1; j < members.length; j++) {
-      const dist = embeddingDistance(
-        members[i].fingerprint.embedding,
-        members[j].fingerprint.embedding,
-      );
-      if (dist > maxDist) {
-        maxDist = dist;
-        seedA = i;
-        seedB = j;
+  // Run k-means for K=1 through kMax, collect WCSS
+  const results: {
+    k: number;
+    wcss: number;
+    assignments: number[];
+    centroids: number[][];
+  }[] = [];
+
+  for (let k = 1; k <= kMax; k++) {
+    if (k === 1) {
+      // K=1: everything in one cluster
+      const centroid = computeCentroid(members);
+      const assignments = new Array(members.length).fill(0);
+      const wcss = computeWCSS(embeddings, assignments, [centroid]);
+      results.push({ k, wcss, assignments, centroids: [centroid] });
+    } else {
+      const { assignments, centroids } = runKMeans(embeddings, k);
+      const wcss = computeWCSS(embeddings, assignments, centroids);
+      results.push({ k, wcss, assignments, centroids });
+    }
+  }
+
+  // Elbow method: find K where marginal WCSS decrease drops below 20%
+  let bestK = 2;
+  if (results.length >= 3) {
+    for (let i = 1; i < results.length - 1; i++) {
+      const prevDecrease = results[i - 1].wcss - results[i].wcss;
+      const nextDecrease = results[i].wcss - results[i + 1].wcss;
+      if (prevDecrease > 0 && nextDecrease / prevDecrease < 0.2) {
+        bestK = results[i].k;
+        break;
       }
     }
-  }
-
-  // Assign each member to the nearest seed
-  const groupA: FleetMember[] = [];
-  const groupB: FleetMember[] = [];
-
-  for (let i = 0; i < members.length; i++) {
-    const distToA = embeddingDistance(
-      members[i].fingerprint.embedding,
-      members[seedA].fingerprint.embedding,
-    );
-    const distToB = embeddingDistance(
-      members[i].fingerprint.embedding,
-      members[seedB].fingerprint.embedding,
-    );
-
-    if (distToA <= distToB) {
-      groupA.push(members[i]);
-    } else {
-      groupB.push(members[i]);
+    // If no elbow found, default to K=2
+    if (bestK === 2 && results.length > 1) {
+      bestK = 2;
     }
   }
 
-  const clusters: FleetCluster[] = [];
+  const chosen = results.find((r) => r.k === bestK) ?? results[1] ?? results[0];
 
-  if (groupA.length > 0) {
-    clusters.push({
-      memberIds: groupA.map((m) => m.id),
-      centroid: computeCentroid(groupA),
-    });
+  // Build clusters from assignments
+  const clusterMap = new Map<number, FleetMember[]>();
+  for (let i = 0; i < members.length; i++) {
+    const cluster = chosen.assignments[i];
+    if (!clusterMap.has(cluster)) clusterMap.set(cluster, []);
+    clusterMap.get(cluster)?.push(members[i]);
   }
 
-  if (groupB.length > 0) {
-    clusters.push({
-      memberIds: groupB.map((m) => m.id),
-      centroid: computeCentroid(groupB),
-    });
-  }
-
-  return clusters;
+  return [...clusterMap.values()]
+    .filter((group) => group.length > 0)
+    .map((group) => ({
+      memberIds: group.map((m) => m.id),
+      centroid: computeCentroid(group),
+    }));
 }

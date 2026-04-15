@@ -19,6 +19,7 @@
     "build": "tsc --build"
   },
   "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.105",
     "diff": "^7.0.0",
     "jiti": "^2.4.0",
     "pixelmatch": "^6.0.0",

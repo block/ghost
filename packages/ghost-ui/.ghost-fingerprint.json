@@ -1,0 +1,81 @@
+{
+  "id": "ghost-ui",
+  "source": "extraction",
+  "timestamp": "2026-04-15T00:00:00.000Z",
+  "palette": {
+    "dominant": [
+      { "role": "primary", "value": "#1a1a1a" },
+      { "role": "surface", "value": "#ffffff" },
+      { "role": "surface-alt", "value": "#f5f5f5" }
+    ],
+    "neutrals": {
+      "steps": [
+        "#ffffff",
+        "#f5f5f5",
+        "#f0f0f0",
+        "#e8e8e8",
+        "#e5e5e5",
+        "#cccccc",
+        "#999999",
+        "#666666",
+        "#333333",
+        "#232323",
+        "#1a1a1a",
+        "#000000"
+      ],
+      "count": 12
+    },
+    "semantic": [
+      { "role": "surface", "value": "#ffffff" },
+      { "role": "surface-alt", "value": "#f5f5f5" },
+      { "role": "surface-muted", "value": "#f0f0f0" },
+      { "role": "surface-inverse", "value": "#000000" },
+      { "role": "text", "value": "#1a1a1a" },
+      { "role": "text-muted", "value": "#999999" },
+      { "role": "text-inverse", "value": "#ffffff" },
+      { "role": "border", "value": "#e8e8e8" },
+      { "role": "border-strong", "value": "#1a1a1a" },
+      { "role": "destructive", "value": "#f94b4b" },
+      { "role": "destructive-light", "value": "#ff6b6b" },
+      { "role": "success", "value": "#91cb80" },
+      { "role": "success-light", "value": "#a3d795" },
+      { "role": "info", "value": "#5c98f9" },
+      { "role": "info-light", "value": "#7cacff" },
+      { "role": "warning", "value": "#fbcd44" },
+      { "role": "warning-light", "value": "#ffd966" },
+      { "role": "chart-1", "value": "#f6b44a" },
+      { "role": "chart-2", "value": "#7585ff" },
+      { "role": "chart-3", "value": "#d76a6a" },
+      { "role": "chart-4", "value": "#d185e0" },
+      { "role": "chart-5", "value": "#91cb80" }
+    ],
+    "saturationProfile": "muted",
+    "contrast": "high"
+  },
+  "spacing": {
+    "scale": [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 75, 80, 96, 100],
+    "regularity": 0.8,
+    "baseUnit": 4
+  },
+  "typography": {
+    "families": ["system-ui", "Geist Mono"],
+    "sizeRamp": [
+      10, 11, 12, 14, 16, 18, 20, 24, 28, 30, 36, 40, 44, 48, 64, 96
+    ],
+    "weightDistribution": {
+      "300": 1,
+      "400": 5,
+      "500": 3,
+      "600": 3,
+      "700": 2,
+      "900": 1
+    },
+    "lineHeightPattern": "normal"
+  },
+  "surfaces": {
+    "borderRadii": [0, 10, 14, 16, 20, 24, 999],
+    "shadowComplexity": "layered",
+    "borderUsage": "moderate"
+  },
+  "embedding": []
+}

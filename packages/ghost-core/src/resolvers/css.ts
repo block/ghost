@@ -7,31 +7,81 @@ import postcss, {
 import type { CSSToken, TokenCategory } from "../types.js";
 
 const CATEGORY_PREFIXES: [string, TokenCategory][] = [
+  // Background / surface
   ["--background-", "background"],
+  ["--bg-", "background"],
+  // Border
   ["--border-", "border"],
+  // Text
   ["--text-", "text"],
+  // Shadow
   ["--shadow-", "shadow"],
+  // Radius (--radius, --radius-*, --rounded-*)
   ["--radius", "radius"],
+  ["--rounded-", "radius"],
+  // Spacing (--spacing-*, --space-*, --gap-*, --size-*, --pad-*, --margin-*)
   ["--spacing-", "spacing"],
+  ["--space-", "spacing"],
+  ["--gap-", "spacing"],
+  ["--size-", "spacing"],
+  ["--pad-", "spacing"],
+  ["--padding-", "spacing"],
+  ["--margin-", "spacing"],
+  // Typography
   ["--heading-", "typography"],
   ["--body-", "typography"],
   ["--label-", "typography"],
   ["--display-", "typography"],
   ["--pull-quote-", "typography"],
+  ["--line-height-", "typography"],
+  ["--leading-", "typography"],
+  ["--letter-spacing-", "typography"],
+  ["--tracking-", "typography"],
+  ["--font-size-", "typography"],
+  ["--text-size-", "typography"],
+  ["--font-weight-", "typography"],
+  // Animation
   ["--animate-", "animation"],
   ["--duration-", "animation"],
   ["--ease-", "animation"],
+  ["--transition-", "animation"],
+  // Color
   ["--color-", "color"],
+  // Font
   ["--font-face-", "font-face"],
+  ["--font-family-", "font"],
   ["--font-", "font"],
+  // Component-specific
   ["--chart-", "chart"],
   ["--sidebar-", "sidebar"],
 ];
 
-function categorize(name: string): TokenCategory {
+// Value-based patterns for fallback categorization
+const COLOR_VALUE_PATTERN =
+  /^(?:#[0-9a-fA-F]{3,8}|(?:rgb|rgba|hsl|hsla|oklch|color-mix)\s*\()/;
+const SMALL_LENGTH_PATTERN = /^[\d.]+(?:px|rem|em)$/;
+
+function categorize(name: string, value?: string): TokenCategory {
   for (const [prefix, category] of CATEGORY_PREFIXES) {
     if (name.startsWith(prefix)) return category;
   }
+
+  // Value-based fallback: if name doesn't match, try to infer from value
+  if (value) {
+    const trimmed = value.trim();
+    if (COLOR_VALUE_PATTERN.test(trimmed)) return "color";
+    if (SMALL_LENGTH_PATTERN.test(trimmed)) {
+      const num = Number.parseFloat(trimmed);
+      if (!Number.isNaN(num)) {
+        // Small values (< 24px) are likely spacing or radius
+        // Larger values are likely typography sizes
+        if (num <= 2) return "radius"; // 0, 0.5, 1, 2 — likely radii
+        if (num <= 96) return "spacing";
+        return "typography";
+      }
+    }
+  }
+
   return "other";
 }
 
@@ -64,7 +114,7 @@ export function parseCSS(css: string): CSSToken[] {
       name: decl.prop,
       value: decl.value,
       selector,
-      category: categorize(decl.prop),
+      category: categorize(decl.prop, decl.value),
     });
   });
 

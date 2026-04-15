@@ -9,7 +9,6 @@ export const DIMENSION_RANGES: Record<string, [number, number]> = {
   spacing: [21, 31],
   typography: [31, 41],
   surfaces: [41, 49],
-  architecture: [49, 64],
 };
 
 /**

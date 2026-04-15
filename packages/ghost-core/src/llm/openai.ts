@@ -1,10 +1,14 @@
 import type {
+  ChatMessage,
+  ChatResponse,
+  ToolDefinition,
+} from "../agents/tools/types.js";
+import type {
   DesignFingerprint,
-  ExtractedMaterial,
   LLMProvider,
+  SampledMaterial,
 } from "../types.js";
 import { buildFingerprintPrompt } from "./prompt.js";
-import { summarizeMaterial } from "./summarize.js";
 
 interface OpenAIClient {
   chat: {
@@ -12,10 +16,20 @@ interface OpenAIClient {
       create(opts: {
         model: string;
         max_tokens: number;
-        response_format: { type: string };
-        messages: { role: string; content: string }[];
+        response_format?: { type: string };
+        messages: { role: string; content: string; tool_call_id?: string }[];
+        tools?: unknown[];
       }): Promise<{
-        choices: { message?: { content?: string } }[];
+        choices: {
+          message?: {
+            content?: string;
+            tool_calls?: {
+              id: string;
+              function: { name: string; arguments: string };
+            }[];
+          };
+          finish_reason?: string;
+        }[];
       }>;
     };
   };
@@ -38,7 +52,7 @@ export function createOpenAIProvider(options: {
     name: "openai",
 
     async interpret(
-      material: ExtractedMaterial,
+      material: SampledMaterial,
       projectId: string,
     ): Promise<DesignFingerprint> {
       // Dynamic import — openai is an optional peer dependency
@@ -53,8 +67,11 @@ export function createOpenAIProvider(options: {
 
       const client = new sdk.default({ apiKey });
 
-      const summarized = summarizeMaterial(material);
-      const prompt = buildFingerprintPrompt(projectId, summarized);
+      const fileContents = material.files
+        .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
+        .join("\n\n");
+
+      const prompt = buildFingerprintPrompt(projectId, fileContents);
 
       const response = await client.chat.completions.create({
         model,
@@ -82,6 +99,64 @@ export function createOpenAIProvider(options: {
       fingerprint.timestamp = new Date().toISOString();
 
       return fingerprint;
+    },
+
+    async chat(
+      messages: ChatMessage[],
+      tools?: ToolDefinition[],
+    ): Promise<ChatResponse> {
+      let sdk: { default: new (opts: { apiKey: string }) => OpenAIClient };
+      try {
+        sdk = await (Function('return import("openai")')() as Promise<
+          typeof sdk
+        >);
+      } catch {
+        throw new Error("OpenAI SDK not installed. Run: pnpm add openai");
+      }
+
+      const client = new sdk.default({ apiKey });
+
+      // Convert messages to OpenAI format
+      const openaiMessages = messages.map((m) => {
+        if (m.role === "tool") {
+          return {
+            role: "tool" as const,
+            content: m.content,
+            tool_call_id: m.tool_call_id ?? "",
+          };
+        }
+        return { role: m.role, content: m.content };
+      });
+
+      // Convert tools to OpenAI function format
+      const openaiTools = tools?.map((t) => ({
+        type: "function" as const,
+        function: {
+          name: t.name,
+          description: t.description,
+          parameters: t.input_schema,
+        },
+      }));
+
+      const response = await client.chat.completions.create({
+        model,
+        max_tokens: 4096,
+        messages: openaiMessages,
+        ...(openaiTools?.length ? { tools: openaiTools } : {}),
+      });
+
+      const choice = response.choices[0];
+      const msg = choice?.message;
+
+      return {
+        content: msg?.content ?? undefined,
+        tool_calls: msg?.tool_calls?.map((tc) => ({
+          id: tc.id,
+          name: tc.function.name,
+          args: JSON.parse(tc.function.arguments),
+        })),
+        stop_reason: choice?.finish_reason ?? undefined,
+      };
     },
   };
 }

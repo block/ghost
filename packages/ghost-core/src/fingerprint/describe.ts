@@ -22,9 +22,6 @@ export function describeFingerprint(fp: DesignFingerprint): string {
   // Surfaces
   sections.push(describeSurfaces(fp));
 
-  // Architecture
-  sections.push(describeArchitecture(fp));
-
   return sections.filter(Boolean).join(" ");
 }
 
@@ -136,30 +133,6 @@ function describeSurfaces(fp: DesignFingerprint): string {
 
   parts.push(`Shadow complexity: ${surfaces.shadowComplexity}.`);
   parts.push(`Border usage: ${surfaces.borderUsage}.`);
-
-  return parts.join(" ");
-}
-
-function describeArchitecture(fp: DesignFingerprint): string {
-  const { architecture } = fp;
-  const parts: string[] = [];
-
-  const pct = Math.round(architecture.tokenization * 100);
-  parts.push(`${pct}% tokenized.`);
-
-  if (architecture.methodology.length > 0) {
-    parts.push(`CSS methodology: ${architecture.methodology.join(", ")}.`);
-  }
-
-  parts.push(`${architecture.componentCount} components.`);
-
-  const cats = Object.entries(architecture.componentCategories);
-  if (cats.length > 0) {
-    const catStr = cats.map(([k, v]) => `${k} (${v})`).join(", ");
-    parts.push(`Categories: ${catStr}.`);
-  }
-
-  parts.push(`Naming: ${architecture.namingPattern}.`);
 
   return parts.join(" ");
 }

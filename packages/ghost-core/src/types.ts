@@ -1,3 +1,27 @@
+// --- Target system ---
+
+export type TargetType =
+  | "path"
+  | "url"
+  | "registry"
+  | "npm"
+  | "github"
+  | "figma"
+  | "doc-site";
+
+export interface TargetOptions {
+  branch?: string;
+  crawlDepth?: number;
+  figmaToken?: string;
+}
+
+export interface Target {
+  type: TargetType;
+  value: string;
+  name?: string;
+  options?: TargetOptions;
+}
+
 // --- Registry types (mirrors shadcn registry schema) ---
 
 export type RegistryItemType =
@@ -107,16 +131,32 @@ export interface CSSToken {
   category: TokenCategory;
 }
 
+// --- Format detection ---
+
+export type TokenFormat =
+  | "css-custom-properties"
+  | "tailwind-config"
+  | "style-dictionary"
+  | "w3c-design-tokens"
+  | "shadcn-registry"
+  | "figma-variables"
+  | "unknown";
+
+export interface DetectedFormat {
+  format: TokenFormat;
+  confidence: number;
+  evidence: string;
+  files: string[];
+}
+
+export interface NormalizedToken extends CSSToken {
+  originalFormat: TokenFormat;
+  sourceFile?: string;
+}
+
 // --- Config types ---
 
 export type RuleSeverity = "error" | "warn" | "off";
-
-export interface DesignSystemConfig {
-  name: string;
-  registry: string;
-  componentDir: string;
-  styleEntry: string;
-}
 
 export interface ScanOptions {
   values: boolean;
@@ -133,8 +173,8 @@ export interface VisualScanConfig {
 }
 
 export interface GhostConfig {
-  parent?: ParentSource;
-  designSystems?: DesignSystemConfig[];
+  targets?: Target[];
+  parent?: Target;
   scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
@@ -142,6 +182,13 @@ export interface GhostConfig {
   llm?: LLMConfig;
   embedding?: EmbeddingConfig;
   extractors?: string[];
+  agents?: AgentsConfig;
+  review?: ReviewConfig;
+}
+
+export interface AgentsConfig {
+  maxIterations?: number;
+  verbose?: boolean;
 }
 
 // --- Fingerprint types ---
@@ -187,17 +234,61 @@ export interface DesignFingerprint {
     borderRadii: number[];
     shadowComplexity: "none" | "subtle" | "layered";
     borderUsage: "minimal" | "moderate" | "heavy";
-  };
-
-  architecture: {
-    tokenization: number;
-    methodology: string[];
-    componentCount: number;
-    componentCategories: Record<string, number>;
-    namingPattern: string;
+    borderTokenCount?: number;
   };
 
   embedding: number[];
+}
+
+// --- Sampled material (LLM-first pipeline) ---
+
+export interface SampledFile {
+  path: string;
+  content: string;
+  reason: string;
+}
+
+export interface SampledMaterial {
+  files: SampledFile[];
+  metadata: {
+    totalFiles: number;
+    sampledFiles: number;
+    targetType: TargetType;
+    packageJson?: {
+      name?: string;
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    packageSwift?: {
+      name?: string;
+      dependencies?: string[];
+    };
+  };
+}
+
+// --- AI enrichment types ---
+
+export interface DesignLanguageProfile {
+  summary: string;
+  personality: string[];
+  closestKnownSystems: string[];
+}
+
+export interface EnrichedFingerprint extends DesignFingerprint {
+  languageProfile?: DesignLanguageProfile;
+  detectedFormats?: DetectedFormat[];
+  targetType: TargetType;
+}
+
+export type DivergenceClass =
+  | "accidental-drift"
+  | "intentional-variant"
+  | "evolution-lag"
+  | "incompatible";
+
+export interface EnrichedComparison extends FingerprintComparison {
+  classification: DivergenceClass;
+  explanations: Record<string, string>;
 }
 
 // --- Extractor types ---
@@ -205,7 +296,21 @@ export interface DesignFingerprint {
 export interface ExtractedFile {
   path: string;
   content: string;
-  type: "css" | "scss" | "tailwind-config" | "component" | "config" | "other";
+  type:
+    | "css"
+    | "scss"
+    | "tailwind-config"
+    | "component"
+    | "config"
+    | "json-tokens"
+    | "style-dictionary"
+    | "w3c-tokens"
+    | "figma-variables"
+    | "documentation"
+    | "swift"
+    | "xcassets"
+    | "xcconfig"
+    | "other";
 }
 
 export interface ExtractedMaterial {
@@ -217,6 +322,9 @@ export interface ExtractedMaterial {
     componentLibrary: string | null;
     tokenCount: number;
     componentCount: number;
+    targetType?: TargetType;
+    detectedFormats?: DetectedFormat[];
+    sourceUrl?: string;
   };
 }
 
@@ -253,24 +361,45 @@ export interface EmbeddingConfig {
 export interface LLMProvider {
   name: string;
   interpret: (
-    material: ExtractedMaterial,
-    schema: string,
+    material: SampledMaterial,
+    projectId: string,
   ) => Promise<DesignFingerprint>;
+  /** Multi-turn chat with tool use support. Optional — only needed for agentic fingerprinting. */
+  chat?: (
+    messages: import("./agents/tools/types.js").ChatMessage[],
+    tools?: import("./agents/tools/types.js").ToolDefinition[],
+  ) => Promise<import("./agents/tools/types.js").ChatResponse>;
 }
 
-// --- Parent / lineage types ---
+// --- Agent types ---
 
-export type ParentSource =
-  | { type: "default" }
-  | { type: "url"; url: string }
-  | { type: "path"; path: string }
-  | { type: "package"; name: string };
+export interface AgentMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AgentContext {
+  llm: LLMConfig;
+  embedding?: EmbeddingConfig;
+  verbose?: boolean;
+  onMessage?: (msg: AgentMessage) => void;
+}
+
+export interface AgentResult<T> {
+  data: T;
+  confidence: number;
+  warnings: string[];
+  reasoning: string[];
+  iterations: number;
+  duration: number;
+}
 
 // --- History types ---
 
 export interface FingerprintHistoryEntry {
   fingerprint: DesignFingerprint;
-  parentRef?: ParentSource;
+  parentRef?: Target;
   comparisonToParent?: {
     distance: number;
     dimensions: Record<string, number>;
@@ -279,17 +408,23 @@ export interface FingerprintHistoryEntry {
 
 // --- Sync / acknowledgment types ---
 
-export type DimensionStance = "aligned" | "accepted" | "diverging";
+export type DimensionStance =
+  | "aligned"
+  | "accepted"
+  | "diverging"
+  | "reconverging";
 
 export interface DimensionAck {
   distance: number;
   stance: DimensionStance;
   ackedAt: string;
   reason?: string;
+  tolerance?: number;
+  divergedAt?: string;
 }
 
 export interface SyncManifest {
-  parent: ParentSource;
+  parent: Target;
   ackedAt: string;
   parentFingerprintId: string;
   childFingerprintId: string;
@@ -342,7 +477,7 @@ export interface TemporalComparison extends FingerprintComparison {
 export interface FleetMember {
   id: string;
   fingerprint: DesignFingerprint;
-  parentRef?: ParentSource;
+  parentRef?: Target;
   distanceToParent?: number;
 }
 
@@ -425,4 +560,97 @@ export interface DriftReport {
   timestamp: string;
   systems: DesignSystemReport[];
   summary: DriftSummary;
+}
+
+// --- Review types (fingerprint-informed design review) ---
+
+export type ReviewSeverity = "error" | "warning" | "info";
+
+export type ReviewDimension = "palette" | "spacing" | "typography" | "surfaces";
+
+export interface ReviewFix {
+  /** Replacement text for the affected line */
+  replacement: string;
+  /** Explanation of what the fix does */
+  description: string;
+}
+
+export interface ReviewIssue {
+  /** Rule that produced this issue (e.g. "palette-drift", "spacing-drift") */
+  rule: string;
+  /** Which fingerprint dimension drifted */
+  dimension: ReviewDimension;
+  severity: ReviewSeverity;
+  /** Human-readable description */
+  message: string;
+  /** File path (relative to cwd) */
+  file: string;
+  /** 1-based line number */
+  line: number;
+  /** 1-based column */
+  column?: number;
+  /** The original source line */
+  source?: string;
+  /** The literal value found (e.g. "#3b82f6", "14px") */
+  found: string;
+  /** Nearest fingerprint value (e.g. "#2563eb", "16px") */
+  nearest?: string;
+  /** Semantic role of the nearest value if known (e.g. "primary", "surface") */
+  nearestRole?: string;
+  /** How far off (0-1 for colors via OKLCH distance, absolute px for spacing/typography/surfaces) */
+  distance?: number;
+  /** Concrete fix suggestion */
+  fix?: ReviewFix;
+  /** How this issue was detected */
+  phase: "match" | "deep";
+}
+
+export interface ReviewFileResult {
+  file: string;
+  issues: ReviewIssue[];
+  /** Whether this file was sent for deep LLM review */
+  deepReviewed: boolean;
+}
+
+export interface ReviewSummary {
+  filesScanned: number;
+  filesWithIssues: number;
+  totalIssues: number;
+  byDimension: Record<string, number>;
+  errors: number;
+  warnings: number;
+  fixesAvailable: number;
+}
+
+export interface ReviewReport {
+  timestamp: string;
+  /** ID of the fingerprint used as baseline */
+  fingerprint: string;
+  files: ReviewFileResult[];
+  summary: ReviewSummary;
+  /** Duration in ms */
+  duration: number;
+}
+
+export interface ReviewConfig {
+  /** Which dimensions to check */
+  dimensions?: {
+    palette?: boolean;
+    spacing?: boolean;
+    typography?: boolean;
+    surfaces?: boolean;
+  };
+  /** Only review files matching these globs */
+  include?: string[];
+  /** Ignore files matching these globs */
+  exclude?: string[];
+  /** Only report issues on changed lines (requires git diff context). Default: true */
+  changedLinesOnly?: boolean;
+}
+
+export interface CollectedFile {
+  path: string;
+  content: string;
+  /** Lines changed in the diff (1-based). Undefined = all lines are "changed". */
+  changedLines?: Set<number>;
 }
