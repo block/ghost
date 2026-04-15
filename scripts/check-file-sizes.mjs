@@ -7,11 +7,13 @@ const DEFAULT_LIMIT = 500;
 const EXCEPTIONS = {
   "packages/ghost-core/src/types.ts": {
     limit: 700,
-    justification: "Canonical type barrel — all shared types in one file for discoverability",
+    justification:
+      "Canonical type barrel — all shared types in one file for discoverability",
   },
   "packages/ghost-cli/src/bin.ts": {
     limit: 520,
-    justification: "CLI command registry — each command is small but there are 12 of them",
+    justification:
+      "CLI command registry — each command is small but there are 12 of them",
   },
 };
 
