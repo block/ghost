@@ -204,10 +204,49 @@ export interface ColorRamp {
   count: number;
 }
 
+// --- Observation & decision types (three-layer fingerprint) ---
+
+export interface DesignObservation {
+  /** Holistic summary of the design language */
+  summary: string;
+  /** Personality traits (e.g. "utilitarian", "restrained", "playful") */
+  personality: string[];
+  /** What makes this system visually distinctive */
+  distinctiveTraits: string[];
+  /** Closest well-known design systems for reference */
+  closestSystems: string[];
+}
+
+export interface DesignDecision {
+  /** Freeform dimension name — LLM chooses what's relevant (e.g. "color-strategy", "motion", "density") */
+  dimension: string;
+  /** The decision stated abstractly, implementation-agnostic */
+  decision: string;
+  /** Evidence from the source code supporting this decision */
+  evidence: string[];
+  /**
+   * Semantic embedding of `${dimension}: ${decision}`.
+   * Computed at profile time when an embedding provider is configured,
+   * and used by compareDecisions for paraphrase-robust matching.
+   */
+  embedding?: number[];
+}
+
 export interface DesignFingerprint {
   id: string;
   source: "registry" | "extraction" | "llm";
   timestamp: string;
+  /** When profiled from multiple sources, lists what was combined */
+  sources?: string[];
+
+  // --- Three-layer model: observation → decisions → values ---
+
+  /** Layer 1: Holistic read of the design language */
+  observation?: DesignObservation;
+  /** Layer 2: Abstract design decisions, implementation-agnostic */
+  decisions?: DesignDecision[];
+
+  // --- Layer 3: Concrete values ---
 
   palette: {
     dominant: SemanticColor[];
@@ -246,6 +285,15 @@ export interface SampledFile {
   path: string;
   content: string;
   reason: string;
+  /** Which source this file came from (multi-source profiling) */
+  sourceLabel?: string;
+}
+
+export interface SourceInfo {
+  label: string;
+  targetType: TargetType;
+  fileCount: number;
+  sampledCount: number;
 }
 
 export interface SampledMaterial {
@@ -254,6 +302,8 @@ export interface SampledMaterial {
     totalFiles: number;
     sampledFiles: number;
     targetType: TargetType;
+    /** When profiled from multiple sources, per-source breakdown */
+    sources?: SourceInfo[];
     packageJson?: {
       name?: string;
       dependencies?: Record<string, string>;
@@ -268,14 +318,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface DesignLanguageProfile {
-  summary: string;
-  personality: string[];
-  closestKnownSystems: string[];
-}
-
 export interface EnrichedFingerprint extends DesignFingerprint {
-  languageProfile?: DesignLanguageProfile;
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -360,12 +403,8 @@ export interface EmbeddingConfig {
 
 export interface LLMProvider {
   name: string;
-  interpret: (
-    material: SampledMaterial,
-    projectId: string,
-  ) => Promise<DesignFingerprint>;
-  /** Multi-turn chat with tool use support. Optional — only needed for agentic fingerprinting. */
-  chat?: (
+  /** Multi-turn chat with tool use support. All fingerprinting flows through this. */
+  chat: (
     messages: import("./agents/tools/types.js").ChatMessage[],
     tools?: import("./agents/tools/types.js").ToolDefinition[],
   ) => Promise<import("./agents/tools/types.js").ChatResponse>;
@@ -383,6 +422,8 @@ export interface AgentContext {
   llm: LLMConfig;
   embedding?: EmbeddingConfig;
   verbose?: boolean;
+  /** Override the agent's default max iterations (escape hatch) */
+  maxIterations?: number;
   onMessage?: (msg: AgentMessage) => void;
 }
 

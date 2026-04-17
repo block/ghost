@@ -7,9 +7,12 @@
  */
 
 import { parseColorToOklch } from "../fingerprint/colors.js";
-import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
+import {
+  computeSemanticEmbedding,
+  embedTexts,
+} from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
-import { FINGERPRINT_SCHEMA } from "../llm/prompt.js";
+import { THREE_LAYER_SCHEMA } from "../llm/prompt.js";
 import type {
   AgentContext,
   AgentResult,
@@ -18,34 +21,42 @@ import type {
   TargetType,
 } from "../types.js";
 
-const PROMPT = `You are producing a design fingerprint — a structured snapshot of how a project looks visually.
+const PROMPT = `You are producing a design fingerprint — a comprehensive extraction of the design language present in a codebase.
 
-Explore the codebase at the current directory to find where visual design values are defined. Read those definitions and report exactly what you find.
+Explore the codebase at the current directory. Find where visual design values are defined — theme files, CSS variables, token definitions, component styles. Read those definitions and form a complete picture.
 
-## What a fingerprint captures
+## Three-Layer Fingerprint
 
-1. **Palette** — the color values defined in this project. Find the actual hex values declared as variables, tokens, or constants. Report the neutral/gray scale, semantic roles (danger, success, surface, text, border), and which colors dominate.
+Your output has three layers, produced in order:
 
-2. **Spacing** — the spacing scale in px. Find where spacing is defined as a system (variables, token sets, scales).
+### Layer 1: Observation
+First, form a holistic understanding. What design language is this? What personality does it project? What's distinctive? What known systems does it resemble? Write freely — this is your subjective read.
 
-3. **Typography** — font family declarations, the size scale in px, font weight usage, and line-height tendency (tight/normal/loose).
+### Layer 2: Design Decisions
+Based on your observation, identify the abstract design decisions. These are the principles and rules — not the specific values, but the decisions those values serve. State each implementation-agnostically.
 
-4. **Surfaces** — border radius values in px (include pill values like 999), shadow complexity (none/subtle/layered), and border usage level.
+Surface whatever dimensions you find relevant. There is no fixed list. Common dimensions include color-strategy, spatial-system, typography-voice, surface-hierarchy, density, motion, elevation, interactive-patterns — but use whatever fits. If a dimension is notably absent (e.g. no animation), note that absence as a decision.
+
+For each decision, cite specific evidence from the files you read.
+
+### Layer 3: Values
+Extract the concrete tokens — hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer.
 
 ## Important
 
 - Read the actual value definitions. If a variable references another variable, follow the chain.
 - Only report values you found in the source. Do not guess or fill in defaults.
+- Resolve colors to hex (e.g. #1a1a1a). Do NOT output oklch.
+- Convert rem/em to px (1rem = 16px). Output spacing and radii as numbers.
 
 ## Output
 
 Respond with ONLY a JSON object matching this schema:
 
-${FINGERPRINT_SCHEMA}
+${THREE_LAYER_SCHEMA}
 
 Set "id" to "PROJECT_ID".
-Set "source" to "llm".
-Colors must be hex (e.g. #1a1a1a).`;
+Set "source" to "llm".`;
 
 export interface FingerprintAgentOptions {
   targetDir: string;
@@ -109,14 +120,38 @@ export async function runFingerprintAgent(
     throw new Error("Failed to extract JSON from agent result");
   }
 
-  const fp: DesignFingerprint = JSON.parse(jsonMatch[0]);
+  const raw = JSON.parse(jsonMatch[0]);
+  const fp: DesignFingerprint = raw;
   fp.source = "llm";
   fp.timestamp = new Date().toISOString();
+
+  // Preserve observation and decisions from the three-layer output
+  if (raw.observation && typeof raw.observation.summary === "string") {
+    fp.observation = raw.observation;
+  }
+  if (Array.isArray(raw.decisions) && raw.decisions.length > 0) {
+    fp.decisions = raw.decisions;
+  }
 
   // Recompute oklch from hex values deterministically
   recomputeOklch(fp);
 
-  // Compute embedding
+  // Embed design decisions for paraphrase-robust comparison downstream.
+  if (options.embedding && fp.decisions && fp.decisions.length > 0) {
+    try {
+      const texts = fp.decisions.map((d) => `${d.dimension}: ${d.decision}`);
+      const vectors = await embedTexts(texts, options.embedding);
+      for (let i = 0; i < fp.decisions.length; i++) {
+        fp.decisions[i].embedding = vectors[i];
+      }
+    } catch (err) {
+      reasoning.push(
+        `Decision embedding failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  // Compute fingerprint-level embedding
   fp.embedding = options.embedding
     ? await computeSemanticEmbedding(fp, options.embedding)
     : computeEmbedding(fp);

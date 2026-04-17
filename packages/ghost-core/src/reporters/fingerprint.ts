@@ -19,7 +19,37 @@ export function formatFingerprint(fp: DesignFingerprint): string {
 
   lines.push(c(BOLD, `Design Fingerprint: ${fp.id}`));
   lines.push(c(DIM, `Source: ${fp.source} | ${fp.timestamp}`));
+  if (fp.sources?.length) {
+    lines.push(c(DIM, `Synthesized from: ${fp.sources.join(", ")}`));
+  }
   lines.push("");
+
+  // Observation (Layer 1)
+  if (fp.observation) {
+    lines.push(c(BOLD, "Observation"));
+    lines.push(`  ${fp.observation.summary}`);
+    if (fp.observation.personality.length > 0) {
+      lines.push(`  Personality:  ${fp.observation.personality.join(", ")}`);
+    }
+    if (fp.observation.distinctiveTraits.length > 0) {
+      for (const trait of fp.observation.distinctiveTraits) {
+        lines.push(`  ${c(DIM, "-")} ${trait}`);
+      }
+    }
+    if (fp.observation.closestSystems.length > 0) {
+      lines.push(`  Resembles:    ${fp.observation.closestSystems.join(", ")}`);
+    }
+    lines.push("");
+  }
+
+  // Design Decisions (Layer 2)
+  if (fp.decisions && fp.decisions.length > 0) {
+    lines.push(c(BOLD, "Design Decisions"));
+    for (const d of fp.decisions) {
+      lines.push(`  ${c(YELLOW, d.dimension.padEnd(22))} ${d.decision}`);
+    }
+    lines.push("");
+  }
 
   // Palette
   lines.push(c(BOLD, "Palette"));

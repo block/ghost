@@ -279,6 +279,12 @@ function extractTypography(tokens: CSSToken[]): {
   };
 }
 
+/**
+ * Build a fingerprint deterministically from a resolved registry.
+ *
+ * This produces the values layer only — observation and decisions require
+ * LLM analysis and are not available for deterministic fingerprints.
+ */
 export function fingerprintFromRegistry(
   registry: ResolvedRegistry,
 ): DesignFingerprint {

@@ -1,4 +1,5 @@
 import { listFilesTool } from "./list-files.js";
+import { readFileTool } from "./read-file.js";
 import { runExtractorTool } from "./run-extractor.js";
 import { searchFilesTool } from "./search-files.js";
 import type {
@@ -22,6 +23,7 @@ export type {
 /** All available fingerprint agent tools. */
 export const FINGERPRINT_TOOLS: AgentTool[] = [
   searchFilesTool,
+  readFileTool,
   runExtractorTool,
   listFilesTool,
 ];
@@ -47,5 +49,5 @@ export async function executeTool(
   return tool.execute(call.args, ctx);
 }
 
-/** Maximum number of tool calls per fingerprint run. */
-export const MAX_TOOL_CALLS = 3;
+/** Default maximum number of tool calls per fingerprint run. */
+export const DEFAULT_MAX_TOOL_CALLS = 50;
