@@ -164,7 +164,7 @@ const RADAR_CATEGORIES = [
   { label: "Spacing", angle: -18 },
   { label: "Typography", angle: 54 },
   { label: "Surfaces", angle: 126 },
-  { label: "Architecture", angle: 198 },
+  { label: "Decisions", angle: 198 },
 ];
 
 function polarToCartesian(
@@ -659,10 +659,45 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 2</ChapterLabel>
         <ChapterTitle>The Fingerprint</ChapterTitle>
         <ChapterLead>
-          Ghost reads your design system and turns it into a shape — a
-          64-dimensional numeric vector we call a fingerprint. Similar systems
-          make similar shapes. Different ones don't.
+          Ghost sends your design system through an LLM and records what it
+          sees, in three layers: a holistic observation, the abstract design
+          decisions behind it, and the concrete values. Similar systems produce
+          similar fingerprints. Different ones don't.
         </ChapterLead>
+        <div className="reveal mb-10 grid sm:grid-cols-3 gap-4">
+          {[
+            {
+              layer: "Layer 1",
+              name: "Observation",
+              desc: "A holistic read: personality, distinctive traits, closest reference systems.",
+            },
+            {
+              layer: "Layer 2",
+              name: "Decisions",
+              desc: "Abstract, implementation-agnostic choices — stated in words, not hex codes.",
+            },
+            {
+              layer: "Layer 3",
+              name: "Values",
+              desc: "Concrete tokens: palette, spacing, typography, surfaces.",
+            },
+          ].map((l) => (
+            <div
+              key={l.name}
+              className="rounded-[var(--radius-card-sm)] border border-border-card bg-card p-5"
+            >
+              <div className="font-mono text-xs uppercase text-muted-foreground mb-1">
+                {l.layer}
+              </div>
+              <div className="font-display text-base font-semibold mb-2">
+                {l.name}
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {l.desc}
+              </p>
+            </div>
+          ))}
+        </div>
         <FingerprintSection />
         <div className="reveal mt-10 grid sm:grid-cols-5 gap-4">
           {[
@@ -670,7 +705,11 @@ export default function ConceptsPage() {
             { cat: "Spacing", pct: "20%", desc: "Scale, rhythm, base unit" },
             { cat: "Typography", pct: "20%", desc: "Families, sizes, weights" },
             { cat: "Surfaces", pct: "15%", desc: "Radii, shadows, borders" },
-            { cat: "Architecture", pct: "15%", desc: "Tokens, methodology" },
+            {
+              cat: "Decisions",
+              pct: "15%",
+              desc: "Abstract design choices",
+            },
           ].map((c) => (
             <div
               key={c.cat}
@@ -690,10 +729,25 @@ export default function ConceptsPage() {
           ))}
         </div>
         <p className="reveal mt-6 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          These weights reflect visual impact — palette matters most because
-          color is the first thing people notice. When comparing two
-          fingerprints, Ghost uses these weights to compute a single distance
-          score.
+          Palette weighs heaviest — color is the first thing people notice.
+          Decisions contribute when both fingerprints have them embedded;
+          otherwise they're reported qualitatively and excluded from the scalar
+          so unscored text doesn't pollute the number.
+        </p>
+        <p className="reveal mt-4 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
+          Decisions are matched semantically. Each one is embedded at profile
+          time, and{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+            compare
+          </code>{" "}
+          pairs them by cosine similarity above a{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+            0.75
+          </code>{" "}
+          threshold — so{" "}
+          <em>"achromatic chrome with chromatic accents"</em> matches{" "}
+          <em>"neutral UI, color reserved for data"</em> without the wording
+          having to line up.
         </p>
       </Chapter>
 
