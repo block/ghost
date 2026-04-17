@@ -24,8 +24,8 @@ export interface ToolParameters {
 }
 
 export interface ToolContext {
-  /** The source directory on disk (for file access) */
-  sourceDir: string;
+  /** Source directories on disk, keyed by label. Single-source = one entry. */
+  sourceDirs: { label: string; dir: string }[];
   /** The originally sampled material */
   material: SampledMaterial;
 }

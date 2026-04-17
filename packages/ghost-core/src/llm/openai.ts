@@ -3,12 +3,7 @@ import type {
   ChatResponse,
   ToolDefinition,
 } from "../agents/tools/types.js";
-import type {
-  DesignFingerprint,
-  LLMProvider,
-  SampledMaterial,
-} from "../types.js";
-import { buildFingerprintPrompt } from "./prompt.js";
+import type { LLMProvider } from "../types.js";
 
 interface OpenAIClient {
   chat: {
@@ -50,56 +45,6 @@ export function createOpenAIProvider(options: {
 
   return {
     name: "openai",
-
-    async interpret(
-      material: SampledMaterial,
-      projectId: string,
-    ): Promise<DesignFingerprint> {
-      // Dynamic import — openai is an optional peer dependency
-      let sdk: { default: new (opts: { apiKey: string }) => OpenAIClient };
-      try {
-        sdk = await (Function('return import("openai")')() as Promise<
-          typeof sdk
-        >);
-      } catch {
-        throw new Error("OpenAI SDK not installed. Run: pnpm add openai");
-      }
-
-      const client = new sdk.default({ apiKey });
-
-      const fileContents = material.files
-        .map((f) => `--- ${f.path} (${f.reason}) ---\n${f.content}`)
-        .join("\n\n");
-
-      const prompt = buildFingerprintPrompt(projectId, fileContents);
-
-      const response = await client.chat.completions.create({
-        model,
-        max_tokens: 4096,
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a design system analyst. Always respond with valid JSON.",
-          },
-          { role: "user", content: prompt },
-        ],
-      });
-
-      const text = response.choices[0]?.message?.content ?? "";
-
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("Failed to extract JSON from LLM response");
-      }
-
-      const fingerprint: DesignFingerprint = JSON.parse(jsonMatch[0]);
-      fingerprint.source = "llm";
-      fingerprint.timestamp = new Date().toISOString();
-
-      return fingerprint;
-    },
 
     async chat(
       messages: ChatMessage[],

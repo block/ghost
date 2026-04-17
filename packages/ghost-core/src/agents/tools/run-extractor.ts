@@ -25,6 +25,11 @@ export const runExtractorTool: AgentTool = {
         description: "Which extractor to run",
         enum: ["css", "json"],
       },
+      source: {
+        type: "string",
+        description:
+          "Source label when multiple sources exist (e.g. 'npm:@arcade/tokens'). Required if the same path appears in more than one source.",
+      },
     },
     required: ["file_path", "extractor"],
   },
@@ -35,14 +40,34 @@ export const runExtractorTool: AgentTool = {
   ): Promise<ToolResult> {
     const filePath = String(args.file_path ?? "");
     const extractor = String(args.extractor ?? "");
+    const sourceFilter = args.source ? String(args.source) : undefined;
 
-    // Find the file in sampled material
-    const file = ctx.material.files.find((f) => f.path === filePath);
-    if (!file) {
+    // Find the file in sampled material — match on path, and source when given.
+    const candidates = ctx.material.files.filter((f) => {
+      if (f.path !== filePath) return false;
+      if (sourceFilter && f.sourceLabel !== sourceFilter) return false;
+      return true;
+    });
+
+    if (candidates.length === 0) {
+      const available = ctx.material.files
+        .map((f) => (f.sourceLabel ? `${f.path} [${f.sourceLabel}]` : f.path))
+        .join(", ");
       return {
-        content: `File "${filePath}" not found in sampled material. Available files: ${ctx.material.files.map((f) => f.path).join(", ")}`,
+        content: `File "${filePath}"${sourceFilter ? ` in source "${sourceFilter}"` : ""} not found in sampled material. Available: ${available}`,
       };
     }
+
+    if (candidates.length > 1) {
+      const sources = candidates
+        .map((f) => f.sourceLabel ?? "(unlabeled)")
+        .join(", ");
+      return {
+        content: `Ambiguous: "${filePath}" exists in multiple sources (${sources}). Pass the "source" argument to disambiguate.`,
+      };
+    }
+
+    const file = candidates[0];
 
     try {
       let tokens: CSSToken[] = [];

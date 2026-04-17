@@ -2,21 +2,15 @@ import { resolve } from "node:path";
 import { resolveTarget } from "./config.js";
 import { emitFingerprint } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
-import { extract } from "./extractors/index.js";
 import { computeSemanticEmbedding } from "./fingerprint/embed-api.js";
 import { computeEmbedding } from "./fingerprint/embedding.js";
 import { fingerprintFromRegistry } from "./fingerprint/from-registry.js";
-import type { StructuralAnalysis } from "./llm/analyze-structure.js";
-import { analyzeStructure } from "./llm/analyze-structure.js";
-import { createProvider } from "./llm/index.js";
 import type { FingerprintValidation } from "./llm/validate-fingerprint.js";
-import { validateFingerprint } from "./llm/validate-fingerprint.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import type {
   DesignFingerprint,
   EmbeddingConfig,
   EnrichedFingerprint,
-  ExtractedMaterial,
   GhostConfig,
   Target,
 } from "./types.js";
@@ -37,7 +31,6 @@ export interface ProfileTargetResult {
 export interface ProfileResult {
   fingerprint: DesignFingerprint;
   validation?: FingerprintValidation;
-  structuralAnalysis?: StructuralAnalysis;
 }
 
 /**
@@ -57,109 +50,36 @@ async function embedFingerprint(
 /**
  * Profile a repository — extract design material and produce a fingerprint.
  *
- * Works in zero-config mode: just pass a config (defaults are fine) and a cwd.
- *
- * If LLM config is present, uses LLM to interpret the extracted material.
- * Otherwise, attempts a deterministic fingerprint from CSS tokens.
- *
- * Returns DesignFingerprint for backward compatibility.
- * Use profileWithAnalysis() for the enriched result.
+ * AI-only: requires config.llm. For deterministic registry-to-fingerprint
+ * (shadcn-style), pass `registry` in options or use profileRegistry directly.
  */
 export async function profile(
   config: GhostConfig,
   cwdOrOptions: string | ProfileOptions = {},
 ): Promise<DesignFingerprint> {
-  const result = await profileWithAnalysis(config, cwdOrOptions);
-  return result.fingerprint;
-}
-
-/**
- * Profile a repository with optional AI-powered enrichment.
- */
-export async function profileWithAnalysis(
-  config: GhostConfig,
-  cwdOrOptions: string | ProfileOptions = {},
-): Promise<ProfileResult> {
   const opts =
     typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
   const cwd = opts.cwd ?? process.cwd();
 
-  // Determine registry from options or first target
-  const registryPath =
-    opts.registry ??
-    config.targets?.find((t) => t.type === "registry" || t.type === "url")
-      ?.value;
-
-  const material = await extract(cwd, {
-    ignore: config.ignore,
-    extractorNames: config.extractors,
-  });
-
-  let fingerprint: DesignFingerprint;
-
-  if (config.llm) {
-    const provider = createProvider(config.llm);
-    const projectId = config.targets?.[0]?.name ?? "project";
-    // Convert ExtractedMaterial → SampledMaterial for the provider
-    const sampled = {
-      files: [
-        ...material.styleFiles.map((f) => ({
-          path: f.path,
-          content: f.content,
-          reason: "Style file",
-        })),
-        ...material.configFiles.map((f) => ({
-          path: f.path,
-          content: f.content,
-          reason: "Config file",
-        })),
-        ...material.componentFiles.slice(0, 5).map((f) => ({
-          path: f.path,
-          content: f.content,
-          reason: "Component file",
-        })),
-      ],
-      metadata: {
-        totalFiles:
-          material.styleFiles.length +
-          material.configFiles.length +
-          material.componentFiles.length,
-        sampledFiles: 0,
-        targetType: "path" as const,
-      },
-    };
-    sampled.metadata.sampledFiles = sampled.files.length;
-    fingerprint = await provider.interpret(sampled, projectId);
-    fingerprint.embedding = await embedFingerprint(
-      fingerprint,
-      config.embedding,
-    );
-  } else if (registryPath) {
-    const registry = await resolveRegistry(registryPath);
-    fingerprint = fingerprintFromRegistry(registry);
-    fingerprint.embedding = await embedFingerprint(
-      fingerprint,
-      config.embedding,
-    );
-  } else {
-    fingerprint = await fingerprintFromExtraction(material, config.embedding);
+  // Explicit registry path takes the deterministic registry-to-fingerprint path
+  // (a separate feature — not a fallback).
+  if (opts.registry) {
+    return profileRegistry(opts.registry, config.embedding);
   }
 
-  // Run enrichment: validation (always) and structural analysis (when LLM available)
-  const validation = validateFingerprint(fingerprint, material, config.llm);
-
-  let structuralAnalysis: StructuralAnalysis | undefined;
-  if (config.llm) {
-    const analysis = await analyzeStructure(material, fingerprint, config.llm);
-    if (analysis) structuralAnalysis = analysis;
+  if (!config.llm) {
+    throw new Error(
+      "Ghost is AI-only. Configure an LLM provider (set ANTHROPIC_API_KEY or OPENAI_API_KEY, or llm in ghost.config.ts).",
+    );
   }
 
-  // Emit publishable fingerprint if requested
+  const result = await profileTarget({ type: "path", value: cwd }, config);
+  const fingerprint = result.fingerprint;
+
   if (opts.emit) {
     await emitFingerprint(fingerprint, cwd);
   }
 
-  // Always append to history
   await appendHistory(
     {
       fingerprint,
@@ -168,12 +88,13 @@ export async function profileWithAnalysis(
     cwd,
   );
 
-  return { fingerprint, validation, structuralAnalysis };
+  return fingerprint;
 }
 
 /**
  * Profile a registry deterministically — no LLM needed.
- * Optionally uses embedding API if config provided.
+ * Registry-to-fingerprint is a distinct feature for shadcn-style registries
+ * (not a fallback for source-code profiling).
  */
 export async function profileRegistry(
   registryPath: string,
@@ -188,11 +109,9 @@ export async function profileRegistry(
 /**
  * Profile any target using the LLM-first agent pipeline.
  *
- * This is the primary entry point for Ghost v2.
  * Accepts a Target object or a string (auto-resolved via resolveTarget).
- *
- * Uses the Claude Agent SDK — the agent explores the filesystem directly
- * with Read/Glob/Grep tools to find and extract the visual language.
+ * The agent explores the filesystem with Read/Glob/Grep tools to find and
+ * extract the visual language — no upfront sampling, no deterministic fallback.
  */
 export async function profileTarget(
   targetOrString: Target | string,
@@ -231,66 +150,45 @@ export async function profileTarget(
 }
 
 /**
- * Build a basic fingerprint from extracted material without LLM.
- * Less accurate than LLM interpretation but works offline.
+ * Profile multiple targets into a single unified fingerprint.
+ *
+ * Materializes all targets, samples across them, and lets the fingerprint
+ * agent explore every source directory via its tools to synthesize one
+ * coherent fingerprint.
+ *
+ * Usage:
+ *   ghost profile npm:@arcade/tokens github:cashapp/arcade-ios ./local-impl
  */
-async function fingerprintFromExtraction(
-  material: ExtractedMaterial,
-  embeddingConfig?: EmbeddingConfig,
-): Promise<DesignFingerprint> {
-  // Extract basic signals from CSS
-  const tokenCount = material.metadata.tokenCount;
-  const _componentCount = material.metadata.componentCount;
+export async function profileMultiTarget(
+  targets: Target[],
+  config?: GhostConfig,
+  options?: { maxIterations?: number },
+): Promise<ProfileTargetResult> {
+  const { Director } = await import("./agents/director.js");
 
-  // Rough tokenization estimate: ratio of tokens to total style declarations
-  let totalDeclarations = 0;
-  for (const file of material.styleFiles) {
-    const matches = file.content.match(/[a-z-]+\s*:/g);
-    if (matches) totalDeclarations += matches.length;
+  if (!config?.llm) {
+    throw new Error(
+      "Ghost is AI-only. Configure an LLM provider to profile targets.",
+    );
   }
-  const _tokenization =
-    totalDeclarations > 0 ? Math.min(tokenCount / totalDeclarations, 1) : 0;
 
-  const partial: Omit<DesignFingerprint, "embedding"> = {
-    id: "project",
-    source: "extraction",
-    timestamp: new Date().toISOString(),
-
-    palette: {
-      dominant: [],
-      neutrals: { steps: [], count: 0 },
-      semantic: [],
-      saturationProfile: "mixed",
-      contrast: "moderate",
-    },
-
-    spacing: {
-      scale: [],
-      regularity: 0,
-      baseUnit: null,
-    },
-
-    typography: {
-      families: [],
-      sizeRamp: [],
-      weightDistribution: {},
-      lineHeightPattern: "normal",
-    },
-
-    surfaces: {
-      borderRadii: [],
-      shadowComplexity: "none",
-      borderUsage: "minimal",
-    },
+  const ctx = {
+    llm: config.llm,
+    embedding: config.embedding,
+    verbose: config.agents?.verbose,
+    maxIterations: options?.maxIterations ?? config.agents?.maxIterations,
   };
 
-  const fingerprint: DesignFingerprint = {
-    ...partial,
-    embedding: computeEmbedding(partial),
+  const director = new Director();
+  const result = await director.profile(targets, ctx);
+
+  return {
+    fingerprint: result.fingerprint.data,
+    confidence: result.fingerprint.confidence,
+    reasoning: [
+      ...result.extraction.reasoning,
+      ...result.fingerprint.reasoning,
+    ],
+    warnings: [...result.extraction.warnings, ...result.fingerprint.warnings],
   };
-
-  // Upgrade to semantic embedding if configured
-  fingerprint.embedding = await embedFingerprint(fingerprint, embeddingConfig);
-
-  return fingerprint;
 }

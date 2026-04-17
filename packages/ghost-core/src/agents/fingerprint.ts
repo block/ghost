@@ -1,7 +1,11 @@
 import { parseColorToOklch } from "../fingerprint/colors.js";
-import { computeSemanticEmbedding } from "../fingerprint/embed-api.js";
+import {
+  computeSemanticEmbedding,
+  embedTexts,
+} from "../fingerprint/embed-api.js";
 import { computeEmbedding } from "../fingerprint/embedding.js";
 import { createProvider } from "../llm/index.js";
+import { THREE_LAYER_SCHEMA } from "../llm/prompt.js";
 import type {
   AgentContext,
   DesignFingerprint,
@@ -10,9 +14,9 @@ import type {
 } from "../types.js";
 import { BaseAgent } from "./base.js";
 import {
+  DEFAULT_MAX_TOOL_CALLS,
   executeTool,
   getToolDefinitions,
-  MAX_TOOL_CALLS,
 } from "./tools/index.js";
 import type { ChatMessage, ToolContext } from "./tools/types.js";
 import type { AgentState } from "./types.js";
@@ -20,28 +24,39 @@ import type { AgentState } from "./types.js";
 /**
  * Fingerprint Agent — "What design language is this?"
  *
- * Extracts deterministic signals, then uses LLM with tool access
- * for interpretation, validation, and gap-filling.
+ * Agentic-first approach: the agent explores source directories using tools
+ * (list_files, search_files, read_file, run_extractor) to discover and
+ * extract the visual language. The initial sample provides a starting map,
+ * not the complete input.
  *
  * Iteration model:
- *   0: Extract signals → LLM interpret (with tools available)
- *   1..N: Tool call/response cycles if LLM requests more data
- *   N+1: Validate + compute embedding
- *   N+2: Generate language profile
+ *   0: Build overview from sampled material → send to LLM with tools
+ *   1..N: Tool call/response cycles as the LLM explores
+ *   N+1: LLM produces fingerprint JSON → validate + compute embedding
  */
 export class FingerprintAgent extends BaseAgent<
   SampledMaterial,
   EnrichedFingerprint
 > {
   name = "fingerprint";
-  maxIterations = 8;
+  maxIterations = 99;
   systemPrompt = `You are a design fingerprinting agent. You analyze source files
-from design systems and produce structured fingerprints capturing their visual
-language: palette, spacing, typography, and surfaces.`;
+from design systems and produce three-layer fingerprints: an observation of the
+design language, abstract design decisions, and concrete token values.
+
+You have tools to explore the source directories: list_files, search_files,
+read_file, and run_extractor. Use them to find design tokens, theme files,
+color definitions, spacing scales, typography configs, and surface treatments.
+
+First form a holistic understanding of the design language. Then identify the
+abstract design decisions (implementation-agnostic principles). Finally extract
+the concrete values. When you have gathered enough signal, produce a JSON
+fingerprint matching the schema.`;
 
   // State preserved across iterations for tool-use loop
   private chatMessages: ChatMessage[] = [];
   private toolCallCount = 0;
+  private maxToolCalls = DEFAULT_MAX_TOOL_CALLS;
   private toolCtx: ToolContext | null = null;
   private pendingFingerprint: DesignFingerprint | null = null;
 
@@ -51,8 +66,7 @@ language: palette, spacing, typography, and surfaces.`;
     ctx: AgentContext,
   ): Promise<AgentState<EnrichedFingerprint>> {
     if (state.iterations === 0) {
-      // Step 0: Extract signals and send to LLM
-      return this.initialInterpretation(state, input, ctx);
+      return this.initialExploration(state, input, ctx);
     }
 
     // If we have a pending fingerprint, proceed to validation
@@ -60,42 +74,23 @@ language: palette, spacing, typography, and surfaces.`;
       return this.validateAndFinalize(state, input, ctx);
     }
 
-    // Safety: if we've used too many iterations without a result, fall back to interpret()
-    if (state.iterations >= 5 && !this.pendingFingerprint && ctx.llm) {
-      state.reasoning.push(
-        "Tool use loop exhausted — falling back to single-shot interpret()",
-      );
-      try {
-        const provider = createProvider(ctx.llm);
-        const projectId = input.metadata.packageJson?.name ?? "project";
-        const fingerprint = await provider.interpret(input, projectId);
-        this.pendingFingerprint = fingerprint;
-        state.confidence = 0.7;
-        return state; // Next iteration will hit validateAndFinalize
-      } catch (err) {
-        state.warnings.push(
-          `Fallback interpret failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        state.status = "failed";
-        return state;
-      }
-    }
-
-    // Tool call/response cycle — only if LLM requested tool use
+    // Tool call/response cycle — the primary path
     if (
       this.chatMessages.length > 0 &&
-      this.hasPendingToolCalls(state) &&
+      this.hasPendingToolCalls() &&
       ctx.llm?.provider
     ) {
       return this.toolUseLoop(state, input, ctx);
     }
 
-    // Fallback: complete
+    // No pending tool calls and no fingerprint — the exploration is done.
+    // If the last assistant message had content but didn't parse as JSON,
+    // we've already surfaced that in a warning; just complete.
     state.status = "completed";
     return state;
   }
 
-  private async initialInterpretation(
+  private async initialExploration(
     state: AgentState<EnrichedFingerprint>,
     input: SampledMaterial,
     ctx: AgentContext,
@@ -115,26 +110,84 @@ language: palette, spacing, typography, and surfaces.`;
 
     try {
       const provider = createProvider(ctx.llm);
+
+      // Build the overview prompt with file map and top files pre-read
+      const overview = this.buildOverview(input);
       const projectId = input.metadata.packageJson?.name ?? "project";
 
+      const userMessage = `Analyze this project and produce a three-layer design fingerprint.
+
+## Project: ${projectId}
+
+${overview}
+
+## Your Task
+
+Use the available tools to explore these source${input.metadata.sources && input.metadata.sources.length > 1 ? "s" : ""} and build a complete picture of the visual language. Work in three layers:
+
+### Layer 1: Observation
+Form a holistic understanding. What design language is this? What personality does it project? What's distinctive? What known systems does it resemble?
+
+### Layer 2: Design Decisions
+Identify the abstract design decisions — the principles and rules, not the specific values. Surface whatever dimensions are relevant (color-strategy, spatial-system, typography-voice, motion, density, elevation, etc.). If a dimension is notably absent, note it. Cite evidence.
+
+### Layer 3: Values
+Extract the concrete tokens:
+1. **Palette** — color definitions (tokens, variables, constants)
+2. **Spacing** — spacing scales and base units
+3. **Typography** — font families, size ramps, weight distributions
+4. **Surfaces** — border radii, shadow styles, border usage patterns
+
+When you have enough signal, output a JSON fingerprint matching this schema:
+
+${THREE_LAYER_SCHEMA}
+
+Set "id" to "${projectId}".
+
+**Important:** Resolve colors to hex or rgb. Convert rem/em to px (1rem = 16px). Output spacing and radii as numbers.`;
+
+      this.chatMessages = [{ role: "user", content: userMessage }];
+
       state.reasoning.push(
-        `Sending ${input.files.length} sampled files to LLM for extraction`,
+        `Starting exploration with ${input.files.length} overview files across ${input.metadata.sources?.length ?? 1} source(s)`,
       );
 
-      const fingerprint = await provider.interpret(input, projectId);
-      this.pendingFingerprint = fingerprint;
-      state.confidence = 0.75;
+      // Send to LLM with tools
+      const response = await provider.chat(
+        this.chatMessages,
+        getToolDefinitions(),
+      );
 
-      if (this.pendingFingerprint) {
+      if (response.tool_calls?.length) {
+        this.chatMessages.push({
+          role: "assistant",
+          content: response.content ?? "",
+          tool_calls: response.tool_calls,
+        });
         state.reasoning.push(
-          `LLM produced fingerprint: ${this.pendingFingerprint.palette.dominant.length} dominant colors, ` +
-            `${this.pendingFingerprint.spacing.scale.length} spacing steps, ` +
-            `${this.pendingFingerprint.typography.families.length} font families`,
+          `LLM requested ${response.tool_calls.length} tool(s): ${response.tool_calls.map((tc) => tc.name).join(", ")}`,
         );
+      } else if (response.content) {
+        // LLM produced a fingerprint directly from the overview
+        this.chatMessages.push({
+          role: "assistant",
+          content: response.content,
+        });
+        try {
+          this.pendingFingerprint = this.parseFingerprint(response.content);
+          state.confidence = 0.8;
+          state.reasoning.push(
+            "LLM produced fingerprint from overview (no tool use needed)",
+          );
+        } catch {
+          state.reasoning.push(
+            "LLM responded but didn't produce valid JSON yet",
+          );
+        }
       }
     } catch (err) {
       state.warnings.push(
-        `LLM interpretation failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Initial exploration failed: ${err instanceof Error ? err.message : String(err)}`,
       );
       state.status = "failed";
     }
@@ -154,16 +207,12 @@ language: palette, spacing, typography, and surfaces.`;
 
     try {
       const provider = createProvider(ctx.llm);
-      if (!provider.chat) {
-        state.status = "completed";
-        return state;
-      }
 
       // Execute pending tool calls from last assistant message
       const lastMessage = this.chatMessages[this.chatMessages.length - 1];
       if (lastMessage?.tool_calls) {
         for (const call of lastMessage.tool_calls) {
-          if (this.toolCallCount >= MAX_TOOL_CALLS) {
+          if (this.toolCallCount >= this.maxToolCalls) {
             this.chatMessages.push({
               role: "tool",
               content:
@@ -192,7 +241,10 @@ language: palette, spacing, typography, and surfaces.`;
         getToolDefinitions(),
       );
 
-      if (response.tool_calls?.length && this.toolCallCount < MAX_TOOL_CALLS) {
+      if (
+        response.tool_calls?.length &&
+        this.toolCallCount < this.maxToolCalls
+      ) {
         // More tool calls requested
         this.chatMessages.push({
           role: "assistant",
@@ -207,9 +259,36 @@ language: palette, spacing, typography, and surfaces.`;
 
       // LLM returned content — parse as fingerprint
       if (response.content) {
-        this.pendingFingerprint = this.parseFingerprint(response.content);
-        state.confidence = 0.8;
-        state.reasoning.push("LLM produced fingerprint after tool use");
+        this.chatMessages.push({
+          role: "assistant",
+          content: response.content,
+        });
+        try {
+          this.pendingFingerprint = this.parseFingerprint(response.content);
+          state.confidence = 0.85;
+          state.reasoning.push(
+            "LLM produced fingerprint after tool exploration",
+          );
+        } catch {
+          // If tool budget exhausted but no valid JSON, ask one more time
+          if (this.toolCallCount >= this.maxToolCalls) {
+            this.chatMessages.push({
+              role: "user",
+              content:
+                "Please produce the fingerprint JSON now with all the data you have gathered.",
+            });
+            const finalResponse = await provider.chat(this.chatMessages, []);
+            if (finalResponse.content) {
+              this.pendingFingerprint = this.parseFingerprint(
+                finalResponse.content,
+              );
+              state.confidence = 0.8;
+              state.reasoning.push(
+                "LLM produced fingerprint after final prompt",
+              );
+            }
+          }
+        }
       }
     } catch (err) {
       state.warnings.push(
@@ -237,7 +316,23 @@ language: palette, spacing, typography, and surfaces.`;
     // Don't trust the LLM's mental color space conversion.
     recomputeOklch(fp);
 
-    // Compute embedding
+    // Embed design decisions so compare can match them by cosine similarity.
+    // Batched into one API call. No-op when no embedding provider configured.
+    if (ctx.embedding && fp.decisions && fp.decisions.length > 0) {
+      try {
+        const texts = fp.decisions.map((d) => `${d.dimension}: ${d.decision}`);
+        const vectors = await embedTexts(texts, ctx.embedding);
+        for (let i = 0; i < fp.decisions.length; i++) {
+          fp.decisions[i].embedding = vectors[i];
+        }
+      } catch (err) {
+        state.warnings.push(
+          `Decision embedding failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+
+    // Compute fingerprint-level embedding
     fp.embedding = ctx.embedding
       ? await computeSemanticEmbedding(fp, ctx.embedding)
       : computeEmbedding(fp);
@@ -248,7 +343,6 @@ language: palette, spacing, typography, and surfaces.`;
       state.reasoning.push(
         `Validation: ${issues.length} issue(s): ${issues.join("; ")}`,
       );
-      // Self-healing could go here in the future
     } else {
       state.confidence = Math.min(state.confidence + 0.1, 0.95);
       state.reasoning.push("Validation passed");
@@ -270,11 +364,76 @@ language: palette, spacing, typography, and surfaces.`;
     return state;
   }
 
-  private hasPendingToolCalls(
-    _state: AgentState<EnrichedFingerprint>,
-  ): boolean {
+  /**
+   * Set the tool context for this agent run.
+   * Must be called before execute() when tools should be available.
+   */
+  setToolContext(toolCtx: ToolContext): void {
+    this.toolCtx = toolCtx;
+  }
+
+  private hasPendingToolCalls(): boolean {
     const last = this.chatMessages[this.chatMessages.length - 1];
     return !!last?.tool_calls?.length;
+  }
+
+  /**
+   * Build an overview of the sampled material for the LLM's first message.
+   * Includes source labels, a file map, and the top files pre-read.
+   */
+  private buildOverview(input: SampledMaterial): string {
+    const parts: string[] = [];
+
+    // Source summary
+    if (input.metadata.sources && input.metadata.sources.length > 1) {
+      parts.push("## Sources\n");
+      parts.push("This design system spans multiple sources:\n");
+      for (const src of input.metadata.sources) {
+        parts.push(
+          `- **${src.label}** (${src.targetType}) — ${src.fileCount} files, ${src.sampledCount} sampled`,
+        );
+      }
+      parts.push("");
+    }
+
+    // Top files pre-read (the sampled material).
+    // Note: path column is the clean relative path — the `source:` suffix is
+    // metadata. When calling tools, pass the path unchanged and pass `source`
+    // separately for multi-source lookups.
+    if (input.files.length > 0) {
+      parts.push("## Pre-sampled Files (highest design-signal density)\n");
+      const multi = (input.metadata.sources?.length ?? 1) > 1;
+      for (const f of input.files) {
+        const srcSuffix =
+          multi && f.sourceLabel ? `  [source: ${f.sourceLabel}]` : "";
+        parts.push(`--- ${f.path}${srcSuffix}  (${f.reason}) ---`);
+        parts.push(f.content);
+        parts.push("");
+      }
+    }
+
+    // Package manifest hints
+    if (input.metadata.packageJson?.name) {
+      parts.push(`Package: ${input.metadata.packageJson.name}`);
+      const deps = {
+        ...input.metadata.packageJson.dependencies,
+        ...input.metadata.packageJson.devDependencies,
+      };
+      const designDeps = Object.keys(deps).filter((d) =>
+        /tailwind|styled|emotion|chakra|mui|radix|shadcn|vanilla-extract|sass|postcss/i.test(
+          d,
+        ),
+      );
+      if (designDeps.length > 0) {
+        parts.push(`Design-related dependencies: ${designDeps.join(", ")}`);
+      }
+    }
+
+    if (input.metadata.packageSwift?.name) {
+      parts.push(`Swift Package: ${input.metadata.packageSwift.name}`);
+    }
+
+    return parts.join("\n");
   }
 
   private parseFingerprint(text: string): DesignFingerprint {
@@ -282,9 +441,19 @@ language: palette, spacing, typography, and surfaces.`;
     if (!jsonMatch) {
       throw new Error("Failed to extract JSON from LLM response");
     }
-    const fingerprint: DesignFingerprint = JSON.parse(jsonMatch[0]);
+    const raw = JSON.parse(jsonMatch[0]);
+    const fingerprint: DesignFingerprint = raw;
     fingerprint.source = "llm";
     fingerprint.timestamp = new Date().toISOString();
+
+    // Preserve three-layer fields
+    if (raw.observation && typeof raw.observation.summary === "string") {
+      fingerprint.observation = raw.observation;
+    }
+    if (Array.isArray(raw.decisions) && raw.decisions.length > 0) {
+      fingerprint.decisions = raw.decisions;
+    }
+
     return fingerprint;
   }
 

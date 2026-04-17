@@ -16,13 +16,15 @@ export function buildReviewPrompt(
     .map((f) => `--- ${f.path} ---\n${f.content}`)
     .join("\n\n");
 
+  const intentSpec = formatDesignIntent(fingerprint);
+
   return `You are a design system reviewer. You compare source code against a design fingerprint and identify every place the code deviates from the design language.
 
 ## The Design Language
 
 This is the complete visual language specification for this project. Every value in the code should trace back to one of these:
 
-${fpSpec}
+${intentSpec}${fpSpec}
 
 ## What Constitutes Drift
 
@@ -82,6 +84,33 @@ Return ONLY a valid JSON array. No markdown, no explanation, no preamble. Each e
 \`\`\`
 
 If no issues are found, return: []`;
+}
+
+function formatDesignIntent(fp: DesignFingerprint): string {
+  const sections: string[] = [];
+
+  if (fp.observation) {
+    sections.push("### Design Intent\n");
+    sections.push(fp.observation.summary);
+    sections.push("");
+  }
+
+  if (fp.decisions && fp.decisions.length > 0) {
+    if (!fp.observation) {
+      sections.push("### Design Decisions\n");
+    } else {
+      sections.push("**Design Decisions:**");
+    }
+    for (const d of fp.decisions) {
+      sections.push(`- **${d.dimension}**: ${d.decision}`);
+    }
+    sections.push("");
+    sections.push(
+      "When reviewing, consider whether code violates these design decisions — not just whether individual values are missing from the palette.\n",
+    );
+  }
+
+  return sections.length > 0 ? `${sections.join("\n")}\n` : "";
 }
 
 function formatFingerprint(fp: DesignFingerprint): string {

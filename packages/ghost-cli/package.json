@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "@ghost/core": "workspace:*",
-    "citty": "^0.2.0"
+    "cac": "^6.7.14"
   }
 }

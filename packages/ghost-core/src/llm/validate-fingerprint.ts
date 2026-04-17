@@ -97,6 +97,54 @@ export function validateFingerprint(
     );
   }
 
+  // Check: observation quality (soft checks)
+  if (fingerprint.observation) {
+    if (!fingerprint.observation.summary) {
+      issues.push({
+        dimension: "observation",
+        severity: "info",
+        message: "Observation summary is empty.",
+      });
+    }
+    if (
+      fingerprint.observation.personality.length < 2 ||
+      fingerprint.observation.personality.length > 8
+    ) {
+      issues.push({
+        dimension: "observation",
+        severity: "info",
+        message: `Observation has ${fingerprint.observation.personality.length} personality traits (expected 2-6).`,
+      });
+    }
+  }
+
+  // Check: decision quality (soft checks)
+  if (fingerprint.decisions && fingerprint.decisions.length > 0) {
+    for (const d of fingerprint.decisions) {
+      if (!d.dimension || !d.decision) {
+        issues.push({
+          dimension: "decisions",
+          severity: "info",
+          message:
+            "A design decision is missing its dimension or decision text.",
+        });
+        break;
+      }
+      if (!d.evidence || d.evidence.length === 0) {
+        issues.push({
+          dimension: "decisions",
+          severity: "info",
+          message: `Decision "${d.dimension}" has no evidence cited.`,
+        });
+        break;
+      }
+    }
+  } else if (fingerprint.source === "llm") {
+    suggestions.push(
+      "Fingerprint has no design decisions. Consider using the three-layer agent pipeline for richer analysis.",
+    );
+  }
+
   // Compute confidence: 1.0 minus penalty for each issue
   const penalties: Record<string, number> = {
     error: 0.2,

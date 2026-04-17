@@ -28,26 +28,41 @@ export class Director {
   private discoveryAgent = new DiscoveryAgent();
 
   /**
-   * Profile a target: extract → fingerprint
+   * Profile one or more targets as a single design language.
+   *
+   * One target → standard fingerprint. Multiple targets → synthesized
+   * fingerprint across the combined sources (e.g. tokens package + iOS impl + web impl).
+   * The fingerprint agent explores all materialized source directories via its tools.
    */
   async profile(
-    target: Target,
+    targets: Target[],
     ctx: AgentContext,
   ): Promise<{
     extraction: AgentResult<SampledMaterial>;
     fingerprint: AgentResult<EnrichedFingerprint>;
+    dirs: { label: string; dir: string }[];
   }> {
-    const extractionResult = await extract(target);
+    const extractionResult = await extract(targets);
     const extraction = stageToAgentResult(extractionResult);
 
-    // Create a fresh agent per profile — FingerprintAgent has per-run state
-    // that would collide if two profiles run in parallel on the same instance.
-    const fingerprint = await new FingerprintAgent().execute(
-      extraction.data,
-      ctx,
-    );
+    // Fresh agent per call — FingerprintAgent holds per-run state that
+    // would collide if two profiles ran in parallel on the same instance.
+    const agent = new FingerprintAgent();
+    agent.setToolContext({
+      sourceDirs: extractionResult.dirs,
+      material: extraction.data,
+    });
 
-    return { extraction, fingerprint };
+    const fingerprint = await agent.execute(extraction.data, ctx);
+
+    // Stamp source provenance when more than one target contributed
+    if (targets.length > 1) {
+      fingerprint.data.sources = targets.map(
+        (t) => t.name ?? `${t.type}:${t.value}`,
+      );
+    }
+
+    return { extraction, fingerprint, dirs: extractionResult.dirs };
   }
 
   /**
@@ -64,8 +79,8 @@ export class Director {
     comparison: AgentResult<EnrichedComparison>;
   }> {
     const [sourceResult, targetResult] = await Promise.all([
-      this.profile(sourceTarget, ctx),
-      this.profile(targetTarget, ctx),
+      this.profile([sourceTarget], ctx),
+      this.profile([targetTarget], ctx),
     ]);
 
     const comparisonResult = await compareStage({
@@ -93,7 +108,7 @@ export class Director {
     fingerprint: AgentResult<EnrichedFingerprint>;
     comparison: AgentResult<EnrichedComparison>;
   }> {
-    const { fingerprint } = await this.profile(target, ctx);
+    const { fingerprint } = await this.profile([target], ctx);
 
     const comparisonResult = await compareStage({
       source: parentFingerprint,
@@ -124,7 +139,7 @@ export class Director {
     fingerprint: AgentResult<EnrichedFingerprint>;
     compliance: AgentResult<ComplianceReport>;
   }> {
-    const { fingerprint } = await this.profile(target, ctx);
+    const { fingerprint } = await this.profile([target], ctx);
 
     const complianceResult = await complyStage({
       ...input,
@@ -154,7 +169,7 @@ export class Director {
   }> {
     const profileResults = await Promise.all(
       targets.map(async (target) => {
-        const result = await this.profile(target, ctx);
+        const result = await this.profile([target], ctx);
         return { target, fingerprint: result.fingerprint };
       }),
     );

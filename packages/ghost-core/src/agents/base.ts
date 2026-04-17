@@ -55,7 +55,10 @@ export abstract class BaseAgent<TInput, TOutput>
 
     // Determine effective max iterations
     // Without LLM, agents run a single deterministic pass
-    const effectiveMax = ctx.llm ? this.maxIterations : 1;
+    // ctx.maxIterations overrides the agent default (escape hatch)
+    const effectiveMax = ctx.llm
+      ? (ctx.maxIterations ?? this.maxIterations)
+      : 1;
 
     while (state.status === "running" && state.iterations < effectiveMax) {
       state = await this.step(state, input, ctx);
