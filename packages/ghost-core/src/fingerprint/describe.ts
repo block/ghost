@@ -10,16 +10,26 @@ import type { DesignFingerprint } from "../types.js";
 export function describeFingerprint(fp: DesignFingerprint): string {
   const sections: string[] = [];
 
-  // Palette
+  // Observation (Layer 1) — prepend when available for richer semantic embedding
+  if (fp.observation) {
+    sections.push(fp.observation.summary);
+    if (fp.observation.distinctiveTraits.length > 0) {
+      sections.push(`${fp.observation.distinctiveTraits.join(". ")}.`);
+    }
+  }
+
+  // Design decisions (Layer 2)
+  if (fp.decisions && fp.decisions.length > 0) {
+    const decisionText = fp.decisions
+      .map((d) => `${d.dimension}: ${d.decision}`)
+      .join(". ");
+    sections.push(`${decisionText}.`);
+  }
+
+  // Values (Layer 3)
   sections.push(describePalette(fp));
-
-  // Spacing
   sections.push(describeSpacing(fp));
-
-  // Typography
   sections.push(describeTypography(fp));
-
-  // Surfaces
   sections.push(describeSurfaces(fp));
 
   return sections.filter(Boolean).join(" ");

@@ -6,14 +6,24 @@ const DEFAULT_LIMIT = 500;
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
   "packages/ghost-core/src/types.ts": {
-    limit: 700,
+    limit: 720,
     justification:
-      "Canonical type barrel — all shared types in one file for discoverability",
+      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types",
   },
   "packages/ghost-cli/src/bin.ts": {
-    limit: 520,
+    limit: 580,
     justification:
-      "CLI command registry — each command is small but there are 12 of them",
+      "CLI command registry — each command is small but there are 12 of them, plus multi-target profile parsing",
+  },
+  "packages/ghost-core/src/agents/fingerprint.ts": {
+    limit: 550,
+    justification:
+      "Agentic fingerprinting — overview builder, tool loop, and three-layer prompt are tightly coupled to the agent",
+  },
+  "packages/ghost-core/src/fingerprint/compare.ts": {
+    limit: 600,
+    justification:
+      "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 

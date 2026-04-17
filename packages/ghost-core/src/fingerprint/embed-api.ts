@@ -18,21 +18,37 @@ export async function computeSemanticEmbedding(
   config: EmbeddingConfig,
 ): Promise<number[]> {
   const text = describeFingerprint(fingerprint);
+  const [vec] = await embedTexts([text], config);
+  return vec;
+}
+
+/**
+ * Embed a batch of texts in one API call.
+ *
+ * Returns one vector per input in the same order. Used to embed design
+ * decisions at profile time so compare can match them by cosine similarity
+ * without making API calls during comparison.
+ */
+export async function embedTexts(
+  texts: string[],
+  config: EmbeddingConfig,
+): Promise<number[][]> {
+  if (texts.length === 0) return [];
 
   switch (config.provider) {
     case "openai":
-      return embedViaOpenAI(text, config);
+      return embedViaOpenAI(texts, config);
     case "voyage":
-      return embedViaVoyage(text, config);
+      return embedViaVoyage(texts, config);
     default:
       throw new Error(`Unknown embedding provider: ${config.provider}`);
   }
 }
 
 async function embedViaOpenAI(
-  text: string,
+  texts: string[],
   config: EmbeddingConfig,
-): Promise<number[]> {
+): Promise<number[][]> {
   const apiKey = config.apiKey ?? process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -48,7 +64,7 @@ async function embedViaOpenAI(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ input: text, model }),
+    body: JSON.stringify({ input: texts, model }),
   });
 
   if (!response.ok) {
@@ -57,16 +73,21 @@ async function embedViaOpenAI(
   }
 
   const data = (await response.json()) as {
-    data: { embedding: number[] }[];
+    data: { embedding: number[]; index: number }[];
   };
 
-  return data.data[0].embedding;
+  // OpenAI returns results with `index` matching input position
+  const ordered = new Array<number[]>(texts.length);
+  for (const item of data.data) {
+    ordered[item.index] = item.embedding;
+  }
+  return ordered;
 }
 
 async function embedViaVoyage(
-  text: string,
+  texts: string[],
   config: EmbeddingConfig,
-): Promise<number[]> {
+): Promise<number[][]> {
   const apiKey = config.apiKey ?? process.env.VOYAGE_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -82,7 +103,7 @@ async function embedViaVoyage(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ input: [text], model }),
+    body: JSON.stringify({ input: texts, model }),
   });
 
   if (!response.ok) {
@@ -91,8 +112,9 @@ async function embedViaVoyage(
   }
 
   const data = (await response.json()) as {
-    data: { embedding: number[] }[];
+    data: { embedding: number[]; index?: number }[];
   };
 
-  return data.data[0].embedding;
+  // Voyage preserves input order in `data[]`
+  return data.data.map((d) => d.embedding);
 }

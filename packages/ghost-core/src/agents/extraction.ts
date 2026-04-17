@@ -19,7 +19,7 @@ export class ExtractionAgent extends BaseAgent<Target, SampledMaterial> {
     _ctx: AgentContext,
   ): Promise<AgentState<SampledMaterial>> {
     try {
-      const result = await extract(input);
+      const result = await extract([input]);
       state.result = result.data;
       state.confidence = result.confidence;
       state.warnings.push(...result.warnings);

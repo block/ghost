@@ -16,6 +16,15 @@ const WEIGHTS: Record<string, number> = {
   surfaces: 0.15,
 };
 
+/** Redistributed weights when both fingerprints have design decisions */
+const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
+  decisions: 0.15,
+  palette: 0.3,
+  spacing: 0.2,
+  typography: 0.2,
+  surfaces: 0.15,
+};
+
 export function compareFingerprints(
   source: DesignFingerprint,
   target: DesignFingerprint,
@@ -23,14 +32,32 @@ export function compareFingerprints(
 ): FingerprintComparison {
   const dimensions: Record<string, DimensionDelta> = {};
 
+  // Compare decisions when both fingerprints have them.
+  // Decisions only contribute to the weighted distance when both sides have
+  // embeddings — otherwise we record a qualitative delta without a scalar
+  // that would pollute the number.
+  const bothHaveDecisions =
+    (source.decisions?.length ?? 0) > 0 && (target.decisions?.length ?? 0) > 0;
+  const bothEmbedded =
+    bothHaveDecisions &&
+    (source.decisions ?? []).every((d) => Array.isArray(d.embedding)) &&
+    (target.decisions ?? []).every((d) => Array.isArray(d.embedding));
+
+  if (bothHaveDecisions) {
+    dimensions.decisions = compareDecisions(source, target, bothEmbedded);
+  }
+
   dimensions.palette = comparePalette(source, target);
   dimensions.spacing = compareSpacing(source, target);
   dimensions.typography = compareTypography(source, target);
   dimensions.surfaces = compareSurfaces(source, target);
 
+  // Only use decision-inclusive weights when decisions are actually scored
+  const weights = bothEmbedded ? WEIGHTS_WITH_DECISIONS : WEIGHTS;
+
   // Weighted overall distance
   let distance = 0;
-  for (const [key, weight] of Object.entries(WEIGHTS)) {
+  for (const [key, weight] of Object.entries(weights)) {
     distance += (dimensions[key]?.distance ?? 0) * weight;
   }
 
@@ -228,6 +255,104 @@ function compareSurfaces(
           ? "Minor surface differences"
           : "Distinct surface language",
   };
+}
+
+// --- Decision matching ---
+
+/** Minimum cosine similarity to consider two decisions "the same dimension". */
+const DECISION_MATCH_THRESHOLD = 0.75;
+
+/**
+ * Compare design decisions between two fingerprints.
+ *
+ * When `bothEmbedded` is true: match decisions pairwise by cosine similarity
+ * of their embeddings. Distance blends unmatched coverage with the cosine
+ * distance of matched pairs. Deterministic and paraphrase-robust.
+ *
+ * When `bothEmbedded` is false: record a qualitative delta but return distance 0
+ * so decisions don't pollute the weighted scalar. Callers exclude this dimension
+ * from the weighted distance (see `WEIGHTS` vs `WEIGHTS_WITH_DECISIONS`).
+ */
+function compareDecisions(
+  a: DesignFingerprint,
+  b: DesignFingerprint,
+  bothEmbedded: boolean,
+): DimensionDelta {
+  const aDecs = a.decisions ?? [];
+  const bDecs = b.decisions ?? [];
+
+  if (!bothEmbedded) {
+    return {
+      dimension: "decisions",
+      distance: 0,
+      description: `Decisions present (${aDecs.length} vs ${bDecs.length}) but embeddings missing — not scored`,
+    };
+  }
+
+  // Greedy one-to-one match: for each decision in A, find the best unmatched
+  // decision in B above threshold. Stable and O(n*m), which is fine for
+  // fingerprints with ~5–15 decisions.
+  const matchedB = new Set<number>();
+  const matchedCosines: number[] = [];
+
+  for (const da of aDecs) {
+    let bestJ = -1;
+    let bestCos = DECISION_MATCH_THRESHOLD;
+    for (let j = 0; j < bDecs.length; j++) {
+      if (matchedB.has(j)) continue;
+      const cos = cosineSimilarity(
+        da.embedding as number[],
+        bDecs[j].embedding as number[],
+      );
+      if (cos > bestCos) {
+        bestCos = cos;
+        bestJ = j;
+      }
+    }
+    if (bestJ >= 0) {
+      matchedB.add(bestJ);
+      matchedCosines.push(bestCos);
+    }
+  }
+
+  const matchCount = matchedCosines.length;
+  const totalDecs = aDecs.length + bDecs.length;
+
+  // Coverage: fraction of decisions that went unmatched (normalised across both sides).
+  const coverageDistance = totalDecs > 0 ? 1 - (2 * matchCount) / totalDecs : 0;
+
+  // Agreement: mean cosine distance across matched pairs.
+  const agreementDistance =
+    matchCount > 0
+      ? matchedCosines.reduce((sum, cos) => sum + (1 - cos), 0) / matchCount
+      : 1;
+
+  const distance = coverageDistance * 0.4 + agreementDistance * 0.6;
+
+  let description: string;
+  if (distance < 0.1) description = "Design decisions align closely";
+  else if (distance < 0.3)
+    description = "Minor differences in design decisions";
+  else if (distance < 0.5)
+    description = "Moderate divergence in design philosophy";
+  else description = "Fundamentally different design decisions";
+
+  return { dimension: "decisions", distance, description };
+}
+
+/** Cosine similarity between two equal-length vectors. Returns 0 for zero-norm. */
+function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length || a.length === 0) return 0;
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom > 0 ? dot / denom : 0;
 }
 
 // --- Font matching ---

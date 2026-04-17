@@ -73,14 +73,9 @@ export {
 } from "./fingerprint/index.js";
 export type {
   FingerprintValidation,
-  StructuralAnalysis,
   ValidationIssue,
 } from "./llm/index.js";
-export {
-  analyzeStructure,
-  createProvider,
-  validateFingerprint,
-} from "./llm/index.js";
+export { createProvider, validateFingerprint } from "./llm/index.js";
 export type {
   ProfileOptions,
   ProfileResult,
@@ -88,9 +83,9 @@ export type {
 } from "./profile.js";
 export {
   profile,
+  profileMultiTarget,
   profileRegistry,
   profileTarget,
-  profileWithAnalysis,
 } from "./profile.js";
 export { formatReport as formatCLIReport } from "./reporters/cli.js";
 export {
@@ -155,8 +150,9 @@ export type {
   ComponentMeta,
   CSSToken,
   CSSVarsMap,
+  DesignDecision,
   DesignFingerprint,
-  DesignLanguageProfile,
+  DesignObservation,
   DesignSystemReport,
   DetectedFormat,
   DimensionAck,
@@ -203,6 +199,7 @@ export type {
   SampledMaterial,
   ScanOptions,
   SemanticColor,
+  SourceInfo,
   StructureDrift,
   SyncManifest,
   Target,
