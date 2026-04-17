@@ -744,10 +744,9 @@ export default function ConceptsPage() {
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             0.75
           </code>{" "}
-          threshold — so{" "}
-          <em>"achromatic chrome with chromatic accents"</em> matches{" "}
-          <em>"neutral UI, color reserved for data"</em> without the wording
-          having to line up.
+          threshold — so <em>"achromatic chrome with chromatic accents"</em>{" "}
+          matches <em>"neutral UI, color reserved for data"</em> without the
+          wording having to line up.
         </p>
       </Chapter>
 
