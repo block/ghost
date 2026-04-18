@@ -11,7 +11,7 @@ export default function GettingStartedPage() {
       <AnimatedPageHeader
         kicker="Docs"
         title="Getting Started"
-        description="Install Ghost, create a config, and run your first drift scan."
+        description="Profile a design system, emit an expression, and gate generated UI against it — in under five minutes."
       />
 
       <DocProse>
@@ -26,30 +26,153 @@ export default function GettingStartedPage() {
           <pre>
             <code>pnpm add -g @ghost/cli</code>
           </pre>
+          <p>
+            AI-powered commands (<code>profile --ai</code>, <code>comply</code>,{" "}
+            <code>discover</code>, <code>generate</code>, <code>verify</code>)
+            need <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code>{" "}
+            in your environment. Ghost auto-loads <code>.env</code> and{" "}
+            <code>.env.local</code> from the working directory.
+          </p>
         </DocSection>
 
-        <DocSection title="Create a Config">
+        <DocSection title="Profile Your First System">
           <p>
-            Create a <code>ghost.config.ts</code> file in your project root.
-            This tells Ghost where your design system lives and what to scan:
+            Ghost is zero-config for profiling. Point it at any target — a
+            directory, GitHub repo, npm package, URL, or shadcn registry — and
+            it produces an <code>expression.md</code>: the canonical fingerprint
+            artifact.
+          </p>
+          <pre>
+            <code>
+              {`# The current directory — writes ./expression.md
+ghost profile . --emit
+
+# A GitHub repo with AI enrichment
+ghost profile github:shadcn-ui/ui --ai --output shadcn.expression.md
+
+# A shadcn registry directly
+ghost profile --registry https://ui.shadcn.com/registry.json`}
+            </code>
+          </pre>
+          <p>
+            An <strong>expression</strong> is a Markdown file with YAML
+            frontmatter (the machine layer: 64-dim vector, palette, spacing,
+            typography, surfaces) plus a prose body in three layers: Character,
+            Signature / Observation, Decisions, Values. Humans can read it. LLMs
+            can consume it. Deterministic tools can diff it.
+          </p>
+        </DocSection>
+
+        <DocSection title="Compare Two Systems">
+          <p>
+            Once you have two expressions, compare them to see exactly where
+            they diverge:
+          </p>
+          <pre>
+            <code>
+              ghost compare parent.expression.md consumer.expression.md
+            </code>
+          </pre>
+          <p>
+            <code>compare</code> weights palette, spacing, typography, surfaces,
+            and embedded decisions, and returns a scalar distance plus
+            per-dimension deltas. Add <code>--temporal</code> for velocity and
+            trajectory (requires <code>.ghost/history.jsonl</code>).
+          </p>
+        </DocSection>
+
+        <DocSection title="Check Compliance Against a Parent">
+          <p>
+            <code>comply</code> profiles a target, compares to a parent
+            expression, and exits non-zero if drift exceeds a threshold. Drop-in
+            for CI:
+          </p>
+          <pre>
+            <code>
+              {`ghost comply . --against parent.expression.md
+ghost comply . --against parent.expression.md --format sarif`}
+            </code>
+          </pre>
+          <p>
+            SARIF output plugs into GitHub code scanning and most CI platforms.
+          </p>
+        </DocSection>
+
+        <DocSection title="Review UI Against an Expression">
+          <p>
+            <code>ghost review</code> checks files for visual language drift —
+            hardcoded colors outside the palette, spacing values off the scale,
+            typography choices that violate the expression's decisions.
+            Zero-config: it reads <code>./expression.md</code> in the current
+            directory and only flags changed lines by default.
+          </p>
+          <pre>
+            <code>
+              {`# Review uncommitted changes
+ghost review
+
+# Review staged changes only, emit GitHub PR comments
+ghost review --staged --format github
+
+# Check specific files against a different expression
+ghost review src/app/page.tsx -f design.expression.md`}
+            </code>
+          </pre>
+        </DocSection>
+
+        <DocSection title="The Generation Loop">
+          <p>
+            Ghost doubles as pipeline infrastructure for AI-generated UI. Three
+            commands wire it together:
+          </p>
+          <ol>
+            <li>
+              <code>ghost context</code> — emit a grounding bundle from an
+              expression (skill, prompt, or full bundle) that any generator can
+              consume
+            </li>
+            <li>
+              Run any generator (<code>ghost generate</code>, Cursor, v0, or
+              in-house) with the bundle in context
+            </li>
+            <li>
+              <code>ghost review</code> gates the output.{" "}
+              <code>ghost verify</code> runs the whole loop across a standard
+              prompt suite and aggregates per-dimension drift.
+            </li>
+          </ol>
+          <pre>
+            <code>
+              {`# Emit a Claude Code skill bundle from an expression
+ghost context expression.md --format skill --out skills/my-design
+
+# Reference generator with self-review
+ghost generate "pricing page with three tiers" --out pricing.html
+
+# Verify the expression against the standard prompt suite
+ghost verify`}
+            </code>
+          </pre>
+        </DocSection>
+
+        <DocSection title="Advanced: Config-Driven Scanning">
+          <p>
+            For long-lived projects, <code>scan</code> and <code>diff</code>{" "}
+            read a <code>ghost.config.ts</code> that describes your parent
+            registry, scan modes, and rule severity:
           </p>
           <pre>
             <code>
               {`import { defineConfig } from "@ghost/core";
 
 export default defineConfig({
-  designSystems: [
-    {
-      name: "my-ds",
-      registry: "https://ui.example.com/registry.json",
-      componentDir: "src/components/ui",
-      styleEntry: "src/styles/globals.css",
-    },
-  ],
+  parent: { type: "github", value: "shadcn-ui/ui" },
+  targets: [{ type: "path", value: "./packages/my-ui" }],
+
   scan: {
     values: true,      // detect token overrides & hardcoded colors
     structure: true,   // diff component files against registry
-    visual: false,     // pixel-level comparison (requires Playwright)
+    visual: false,     // pixel-level comparison (Playwright)
     analysis: false,   // LLM-aided interpretation
   },
   rules: {
@@ -59,148 +182,18 @@ export default defineConfig({
     "structural-divergence": "error",
     "missing-component": "warn",
   },
+
+  // Optional: LLM and embedding providers
+  llm: { provider: "anthropic" },
+  // embedding: { provider: "openai" },
 });`}
             </code>
           </pre>
-        </DocSection>
-
-        <DocSection title="Configuration Reference">
-          <table>
-            <thead>
-              <tr>
-                <th>Option</th>
-                <th>Type</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <code>designSystems</code>
-                </td>
-                <td>array</td>
-                <td>
-                  One or more design systems to scan. Each needs a name,
-                  registry URL or path, component directory, and style entry
-                  point.
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>parent</code>
-                </td>
-                <td>object</td>
-                <td>
-                  Parent baseline source. Type can be{" "}
-                  <code>&quot;default&quot;</code>, <code>&quot;url&quot;</code>
-                  , <code>&quot;path&quot;</code>, or{" "}
-                  <code>&quot;package&quot;</code>.
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>scan</code>
-                </td>
-                <td>object</td>
-                <td>
-                  Toggle scan modes: <code>values</code>, <code>structure</code>
-                  , <code>visual</code>, <code>analysis</code>.
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>rules</code>
-                </td>
-                <td>object</td>
-                <td>
-                  Set severity per rule: <code>&quot;error&quot;</code>,{" "}
-                  <code>&quot;warn&quot;</code>, or <code>&quot;off&quot;</code>
-                  .
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>ignore</code>
-                </td>
-                <td>string[]</td>
-                <td>Glob patterns for files to skip during scans.</td>
-              </tr>
-              <tr>
-                <td>
-                  <code>visual</code>
-                </td>
-                <td>object</td>
-                <td>
-                  Visual scan settings: <code>threshold</code>,{" "}
-                  <code>viewport</code>, <code>timeout</code>,{" "}
-                  <code>outputDir</code>.
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>llm</code>
-                </td>
-                <td>object</td>
-                <td>
-                  LLM provider config for analysis: <code>provider</code> (
-                  <code>&quot;anthropic&quot;</code> |{" "}
-                  <code>&quot;openai&quot;</code>), <code>model</code>,{" "}
-                  <code>apiKey</code>.
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <code>embedding</code>
-                </td>
-                <td>object</td>
-                <td>
-                  Embedding provider for semantic fingerprints:{" "}
-                  <code>provider</code>, <code>model</code>, <code>apiKey</code>
-                  .
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </DocSection>
-
-        <DocSection title="Run Your First Scan">
           <p>
-            With your config in place, run a drift scan to see how your local
-            components compare to the registry:
-          </p>
-          <pre>
-            <code>ghost scan</code>
-          </pre>
-          <p>
-            Ghost will check your values and structure against the parent
-            registry and print a report. Pass <code>--format json</code> for
+            With a config in place, <code>ghost scan</code> runs all enabled
+            scanners and prints a report. Pass <code>--format json</code> for
             machine-readable output.
           </p>
-        </DocSection>
-
-        <DocSection title="Generate a Fingerprint">
-          <p>
-            A fingerprint is a 64-dimensional vector that captures your design
-            system's identity — palette, spacing, typography, surfaces, and
-            architecture:
-          </p>
-          <pre>
-            <code>ghost profile</code>
-          </pre>
-          <p>
-            This writes a fingerprint to stdout. Add <code>--emit</code> to save
-            a <code>.ghost-fingerprint.json</code> file for later comparison.
-          </p>
-        </DocSection>
-
-        <DocSection title="Compare Two Systems">
-          <p>
-            Once you have two fingerprint files, compare them to see exactly
-            where they diverge:
-          </p>
-          <pre>
-            <code>ghost compare parent.json consumer.json</code>
-          </pre>
 
           <hr />
 
@@ -209,8 +202,8 @@ export default defineConfig({
             <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
-            to understand fingerprints, drift, and evolution in depth. Or jump
-            to the{" "}
+            for the three-layer fingerprint model and the generation-loop
+            architecture. Or jump to the{" "}
             <Link to="/tools/drift/cli" className="font-semibold">
               CLI Reference
             </Link>{" "}

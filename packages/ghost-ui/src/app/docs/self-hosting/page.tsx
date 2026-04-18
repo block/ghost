@@ -167,20 +167,23 @@ RUN echo 'server { listen 80; location / { try_files $uri /index.html; } }' \\
         <DocSection title="Connect to Ghost">
           <p>
             Once your design system is running as a Ghost UI site, you can use
-            Ghost's core tooling to track drift between this parent and any
-            consumers:
+            Ghost's core tooling to fingerprint the parent and track drift
+            across consumers:
           </p>
           <ol>
             <li>
               Publish your <code>registry.json</code> at a stable URL
             </li>
             <li>
-              In consumer projects, point <code>ghost.config.ts</code> to your
-              registry URL
+              Profile the registry to an <code>expression.md</code>:{" "}
+              <code>
+                ghost profile --registry https://your-host/registry.json --emit
+              </code>
             </li>
             <li>
-              Run <code>ghost scan</code> and <code>ghost profile</code> to
-              detect drift
+              Check consumers against it with{" "}
+              <code>ghost comply . --against parent.expression.md</code>, or
+              gate PRs with <code>ghost review</code>
             </li>
           </ol>
 

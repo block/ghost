@@ -2,14 +2,15 @@
 
 **Autonomous perception of organic drift across decentralized design consumers.**
 
-Ghost makes design systems legible. It continuously detects divergence between a parent design language and its consumers, generates quantitative fingerprints for comparison, tracks how systems evolve over time, and ships a reference design language as a shadcn-compatible component registry.
+Ghost makes design systems legible. It fingerprints design systems into human-readable `expression.md` artifacts, detects divergence between a parent design language and its consumers, gates AI-generated UI against the expression, tracks how systems evolve over time, and ships a reference design language as a shadcn-compatible component registry.
 
 ## Why Ghost?
 
 Design languages drift — and drift degrades trust. When interfaces lose coherence, the experience suffers regardless of how good the underlying capabilities are. Ghost perceives this drift across an ecosystem so teams can reason about it and act with intent.
 
+- **Human-readable fingerprints** — Every system is captured as an `expression.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
 - **Continuous scanning** — Detect token overrides, hardcoded values, structural divergence, and pixel-level visual regressions across every consumer
-- **Design fingerprinting** — Generate a 64-dimensional profile of any design system — a continuous signal, not a binary check
+- **Generation loop** — Use expressions as grounding for AI-driven UI generation: `ghost context` emits a skill/prompt bundle, any generator produces, `ghost review` gates the output, `ghost verify` aggregates drift across a standard prompt suite
 - **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent system. Every stance is published with reasoning and full lineage
 - **Fleet observability** — Compare fingerprints across an ecosystem to see the full picture: clusters, outliers, and how consumers relate to each other and the source
 - **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer fingerprint generation and drift analysis
@@ -71,6 +72,29 @@ ghost comply . --against parent.expression.md
 ghost comply . --against parent.expression.md --format sarif
 ```
 
+**Review UI changes against an expression:**
+
+```bash
+# Zero-config: reads ./expression.md, only flags changed lines
+ghost review
+
+# Staged-only, emit GitHub PR comments
+ghost review --staged --format github
+```
+
+**Generation loop — ground, generate, gate, verify:**
+
+```bash
+# Emit a Claude Code / MCP skill bundle from an expression
+ghost context expression.md --format skill --out skills/my-design
+
+# Reference generator with built-in self-review retries
+ghost generate "pricing page with three tiers" --out pricing.html
+
+# Run the generate→review loop across the standard prompt suite
+ghost verify
+```
+
 **Scan for drift (config-based):**
 
 ```bash
@@ -80,8 +104,8 @@ ghost scan --config ghost.config.ts
 **Fleet observability and visualization:**
 
 ```bash
-ghost fleet system-a.json system-b.json system-c.json --cluster
-ghost viz system-a.json system-b.json system-c.json
+ghost fleet system-a.expression.md system-b.expression.md system-c.expression.md --cluster
+ghost viz system-a.expression.md system-b.expression.md system-c.expression.md
 ```
 
 **Run the ghost-ui catalogue:**
@@ -95,16 +119,20 @@ just dev
 
 | Command          | Description                                                                      |
 | ---------------- | -------------------------------------------------------------------------------- |
-| `ghost scan`     | Scan for design drift against a registry                                          |
 | `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost compare`  | Compare two fingerprint files (`.expression.md` or legacy `.json`)                 |
+| `ghost scan`     | Scan for design drift against a registry (config-driven)                           |
 | `ghost diff`     | Compare local components against registry with drift analysis                      |
-| `ghost comply`   | Check design system compliance against rules and a parent fingerprint              |
+| `ghost compare`  | Compare two expressions (`.expression.md` or legacy `.json`)                       |
+| `ghost comply`   | Check a target's compliance against a parent expression (CLI, JSON, SARIF)         |
 | `ghost discover` | Find public design systems matching a query                                        |
+| `ghost fleet`    | Compare N expressions for ecosystem-wide analysis                                  |
+| `ghost review`   | Review files for visual language drift against an expression (CI gate)             |
+| `ghost context`  | Emit a grounding skill / prompt / bundle from an expression                        |
+| `ghost generate` | Reference generator — LLM → HTML with self-review retries against an expression    |
+| `ghost verify`   | Run the generate→review loop across a prompt suite and aggregate per-dim drift     |
 | `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
-| `ghost adopt`    | Shift parent baseline to a new fingerprint                                         |
+| `ghost adopt`    | Shift parent baseline to a new expression                                          |
 | `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
-| `ghost fleet`    | Compare N fingerprint files (`.expression.md` or `.json`) for ecosystem analysis   |
 | `ghost viz`      | Launch interactive 3D fingerprint visualization                                    |
 
 ### Target Types
@@ -178,17 +206,20 @@ export default defineConfig({
 
 ## How It Works
 
-### Scanning
+### The Expression
 
-Ghost perceives drift at three levels:
+Ghost's canonical artifact is **`expression.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. It's human-readable, LLM-consumable, and diff-friendly:
 
-1. **Values** — Detects hardcoded colors, token overrides, and missing tokens by comparing styles against the registry
-2. **Structure** — Diffs component files between a consumer implementation and the registry source
-3. **Visual** — Renders components with Playwright and performs pixel-level comparison using pixelmatch
+- **Frontmatter** — 64-dimensional embedding, palette, spacing, typography, surfaces, provenance. What deterministic tools read
+- **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand
+- **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves
+- **`# Observation`** — prose paired with the frontmatter data, dimension by dimension
+- **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare` can match semantically
+- **`# Values`** — do / don't rules, used as hard gates in `ghost review`
 
-### Fingerprinting
+Generate one with `ghost profile . --emit`. See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec.
 
-A fingerprint is captured in an **`expression.md`** file — a Markdown document with YAML frontmatter (the machine layer: 64-dim vector, palette, spacing, typography, surfaces) plus an optional prose body (Character, Signature, Decisions, Values). The machine layer is a continuous representation of the system's design characteristics:
+The 64-dim machine vector splits like this:
 
 | Dimensions | Category     | What it captures                                               |
 | ---------- | ------------ | -------------------------------------------------------------- |
@@ -198,12 +229,39 @@ A fingerprint is captured in an **`expression.md`** file — a Markdown document
 | 41-48      | Surfaces     | Border radii, shadow complexity, border usage                  |
 | 49-63      | Architecture | Tokenization ratio, methodology, component count, naming       |
 
-Fingerprints can be generated deterministically from extracted material, from a shadcn-compatible registry, or with LLM assistance for richer interpretation.
+### Scanning
+
+Ghost perceives drift at three levels:
+
+1. **Values** — Detects hardcoded colors, token overrides, and missing tokens by comparing styles against the registry
+2. **Structure** — Diffs component files between a consumer implementation and the registry source
+3. **Visual** — Renders components with Playwright and performs pixel-level comparison using pixelmatch
+
+### Generation Loop
+
+Ghost doubles as pipeline infrastructure for AI-driven UI generation — the expression grounds the generator, and `ghost review` gates the output:
+
+```
+expression.md ──► [ghost context] ──► SKILL.md / tokens.css / prompt.md
+                                          │
+                                          ▼
+                                   any generator
+                               (ghost generate, Cursor,
+                                v0, in-house tool)
+                                          │
+                                          ▼ HTML / JSX
+                                   [ghost review] ──► drift disposition
+                                                      (block / annotate /
+                                                       ack / adopt)
+```
+
+Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the schema-discipline mechanism for expressions. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Intent Tracking
 
 Ghost tracks design lineage and published intent through:
 
+- **`expression.md`** — The current fingerprint artifact (replaces the legacy `.ghost-fingerprint.json`, still readable for back-compat)
 - **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning
 - **`.ghost/history.jsonl`** — Append-only fingerprint history for temporal analysis
 - **Temporal comparison** — Velocity and trajectory classification to understand where a system is heading, not just where it is
@@ -281,11 +339,15 @@ packages/
       resolvers/       Registry and CSS resolution
       llm/             LLM providers (Anthropic, OpenAI)
       reporters/       Output formatting (CLI, JSON, fingerprint, fleet)
-  ghost-cli/           CLI interface (citty)
+  ghost-cli/           CLI interface (cac)
     src/
-      bin.ts           Command definitions (scan, profile, compare, diff, comply, discover, etc.)
-      evolution-commands.ts  ack, adopt, diverge, fleet commands
-      viz/             3D visualization (Three.js, PCA projection)
+      bin.ts                 profile, scan, diff, compare, comply, discover
+      review-command.ts      review (expression-aware drift gate)
+      context-command.ts     context (emit skill / prompt / bundle)
+      generate-command.ts    generate (reference LLM generator with self-review)
+      verify-command.ts      verify (generate→review loop over prompt suite)
+      evolution-commands.ts  ack, adopt, diverge, fleet
+      viz/                   3D visualization (Three.js, PCA projection)
   ghost-mcp/           MCP server for Ghost UI registry
     src/
       tools.ts         5 MCP tools (search, get, install, categories, theme)
@@ -309,6 +371,10 @@ skills/                Claude Code skill definitions
   ghost-compare/       Compare two design systems
   ghost-drift-check/   Check design compliance
   ghost-discover/      Find public design systems
+  ghost-review/        Review files for drift against an expression
+docs/
+  expression-format.md The expression.md spec
+  generation-loop.md   Context → generate → review → verify pipeline
 ```
 
 ## Development
