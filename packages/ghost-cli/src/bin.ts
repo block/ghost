@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 // Load .env from project root if present.
@@ -37,6 +37,7 @@ import {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
   loadConfig,
+  loadExpression,
   profile,
   profileMultiTarget,
   profileRegistry,
@@ -45,6 +46,7 @@ import {
   readSyncManifest,
   resolveTarget,
   scan,
+  serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
 import {
@@ -96,7 +98,11 @@ cli
   .option("-o, --output <file>", "Write fingerprint to file")
   .option(
     "--emit",
-    "Write .ghost-fingerprint.json to project root (publishable artifact)",
+    "Write expression.md to project root (publishable artifact)",
+  )
+  .option(
+    "--emit-legacy",
+    "Write legacy .ghost-fingerprint.json instead of expression.md (deprecated escape hatch)",
   )
   .option("--ai", "Enable AI-powered enrichment (requires LLM API key)")
   .option(
@@ -126,7 +132,10 @@ cli
 
         if (targetStrings.length === 1 && targetStrings[0] === ".") {
           const config = await loadConfig(opts.config);
-          fingerprint = await profile(config, { emit: opts.emit });
+          fingerprint = await profile(config, {
+            emit: opts.emit || opts.emitLegacy,
+            emitFormat: opts.emitLegacy ? "json" : "md",
+          });
         } else if (targetStrings.length === 1) {
           const config = await loadConfig(opts.config);
           const target = resolveTarget(targetStrings[0]);
@@ -164,12 +173,18 @@ cli
           : formatFingerprint(fingerprint);
 
       if (opts.output) {
-        await writeFile(opts.output, formatFingerprintJSON(fingerprint));
+        const content = opts.output.endsWith(".md")
+          ? serializeExpression(fingerprint)
+          : formatFingerprintJSON(fingerprint);
+        await writeFile(opts.output, content);
         console.log(`Fingerprint written to ${opts.output}`);
       }
 
-      if (opts.emit) {
-        console.log("Published .ghost-fingerprint.json");
+      if (opts.emit || opts.emitLegacy) {
+        const filename = opts.emitLegacy
+          ? ".ghost-fingerprint.json"
+          : "expression.md";
+        console.log(`Published ${filename}`);
       }
 
       process.stdout.write(`${output}\n`);
@@ -214,11 +229,10 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (source: string, target: string, opts) => {
     try {
-      const sourceData = await readFile(source, "utf-8");
-      const targetData = await readFile(target, "utf-8");
-
-      const src: DesignFingerprint = JSON.parse(sourceData);
-      const tgt: DesignFingerprint = JSON.parse(targetData);
+      const [src, tgt] = await Promise.all([
+        loadExpression(source),
+        loadExpression(target),
+      ]);
 
       const comparison = compareFingerprints(src, tgt, {
         includeVectors: opts.temporal,
@@ -350,8 +364,7 @@ cli
 
       let parentFingerprint: DesignFingerprint | undefined;
       if (opts.against) {
-        const data = await readFile(opts.against, "utf-8");
-        parentFingerprint = JSON.parse(data);
+        parentFingerprint = await loadExpression(opts.against);
       }
 
       const director = new Director();
