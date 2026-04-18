@@ -33,7 +33,7 @@ const sections: {
     name: "CLI Reference",
     href: "/tools/drift/cli",
     description:
-      "All nine commands — scan, profile, compare, diff, ack, adopt, diverge, fleet, and viz.",
+      "Every command — profile, compare, comply, review, context, generate, verify, fleet, viz, and more.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -57,7 +57,7 @@ export default function DocsIndex() {
       <AnimatedPageHeader
         kicker="Drift Engine"
         title="Drift Engine"
-        description="Autonomous design drift detection for decentralised design ecosystems. Ghost fingerprints design systems, tracks their evolution, and surfaces divergence before it compounds."
+        description="Ghost fingerprints design systems into human-readable expressions, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
       />
 
       <div ref={ref} className="pb-16 overflow-visible space-y-4">
