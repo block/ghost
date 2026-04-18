@@ -49,13 +49,16 @@ import {
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
+import { registerContextCommand } from "./context-command.js";
 import {
   registerAckCommand,
   registerAdoptCommand,
   registerDivergeCommand,
   registerFleetCommand,
 } from "./evolution-commands.js";
+import { registerGenerateCommand } from "./generate-command.js";
 import { registerReviewCommand } from "./review-command.js";
+import { registerVerifyCommand } from "./verify-command.js";
 import { registerVizCommand } from "./viz-command.js";
 
 const cli = cac("ghost");
@@ -415,6 +418,9 @@ registerAckCommand(cli);
 registerAdoptCommand(cli);
 registerDivergeCommand(cli);
 registerVizCommand(cli);
+registerContextCommand(cli);
+registerGenerateCommand(cli);
+registerVerifyCommand(cli);
 
 cli.help();
 cli.version("0.2.0");
