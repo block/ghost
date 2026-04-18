@@ -1,14 +1,20 @@
-import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { resolveTarget } from "../config.js";
+import {
+  EXPRESSION_FILENAME,
+  LEGACY_FINGERPRINT_FILENAME,
+  loadExpression,
+  parseExpression,
+} from "../expression/index.js";
 import type { DesignFingerprint, Target } from "../types.js";
 
 /**
  * Resolve a Target to a DesignFingerprint.
  *
- * - "path": reads a local .ghost-fingerprint.json or fingerprint JSON file
- * - "url": fetches a remote fingerprint JSON
- * - "npm": resolves node_modules/<name>/.ghost-fingerprint.json
+ * - "path": reads a local expression.md (preferred), falling back to the
+ *   legacy .ghost-fingerprint.json, or a direct file path to either.
+ * - "url": fetches a remote fingerprint JSON or expression.md (by extension)
+ * - "npm": resolves node_modules/<name>/expression.md, then legacy JSON
  * - "github": not yet supported for direct resolution (use profile flow instead)
  */
 export async function resolveParent(
@@ -18,11 +24,11 @@ export async function resolveParent(
   switch (target.type) {
     case "path": {
       const resolved = resolve(cwd, target.value);
-      // If it points to a directory, look for .ghost-fingerprint.json inside it
-      const filePath = resolved.endsWith(".json")
-        ? resolved
-        : resolve(resolved, ".ghost-fingerprint.json");
-      return readFingerprintFile(filePath);
+      if (resolved.endsWith(".md") || resolved.endsWith(".json")) {
+        return readFingerprintFile(resolved);
+      }
+      // Directory: prefer expression.md, fall back to legacy JSON
+      return readFingerprintFromDir(resolved);
     }
 
     case "url":
@@ -33,18 +39,14 @@ export async function resolveParent(
           `Failed to fetch parent fingerprint from ${target.value}: ${response.status}`,
         );
       }
+      if (target.value.endsWith(".md")) {
+        return parseExpression(await response.text()).fingerprint;
+      }
       return (await response.json()) as DesignFingerprint;
     }
 
     case "npm": {
-      // Resolve from node_modules
-      const filePath = resolve(
-        cwd,
-        "node_modules",
-        target.value,
-        ".ghost-fingerprint.json",
-      );
-      return readFingerprintFile(filePath);
+      return readFingerprintFromDir(resolve(cwd, "node_modules", target.value));
     }
 
     default:
@@ -56,12 +58,21 @@ export async function resolveParent(
 
 async function readFingerprintFile(path: string): Promise<DesignFingerprint> {
   try {
-    const data = await readFile(path, "utf-8");
-    return JSON.parse(data) as DesignFingerprint;
+    return await loadExpression(path);
   } catch (err) {
     throw new Error(
       `Could not read fingerprint at ${path}: ${err instanceof Error ? err.message : String(err)}`,
     );
+  }
+}
+
+async function readFingerprintFromDir(dir: string): Promise<DesignFingerprint> {
+  const mdPath = resolve(dir, EXPRESSION_FILENAME);
+  try {
+    return await loadExpression(mdPath);
+  } catch {
+    const jsonPath = resolve(dir, LEGACY_FINGERPRINT_FILENAME);
+    return readFingerprintFile(jsonPath);
   }
 }
 

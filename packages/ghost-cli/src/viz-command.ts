@@ -3,8 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { DesignFingerprint } from "@ghost/core";
-import { compareFleet, DIMENSION_RANGES } from "@ghost/core";
+import { compareFleet, DIMENSION_RANGES, loadExpression } from "@ghost/core";
 import type { CAC } from "cac";
 
 export function registerVizCommand(cli: CAC): void {
@@ -26,8 +25,7 @@ export function registerVizCommand(cli: CAC): void {
 
         const members = await Promise.all(
           paths.map(async (p) => {
-            const data = await readFile(p, "utf-8");
-            const fingerprint: DesignFingerprint = JSON.parse(data);
+            const fingerprint = await loadExpression(p);
             return { id: fingerprint.id, fingerprint };
           }),
         );

@@ -98,15 +98,23 @@ The `review` module (`packages/ghost-core/src/review/`) provides fingerprint-inf
 - **file-collector.ts** — git diff parsing to resolve changed files and line numbers
 - **pipeline.ts** — orchestrates: resolve fingerprint → collect files → match → (optional) deep review → report
 
-Zero-config: `ghost review` looks for `.ghost-fingerprint.json` in cwd. Generate with `ghost profile . --emit`.
+Zero-config: `ghost review` looks for `expression.md` in cwd, with a deprecation-warned fallback to legacy `.ghost-fingerprint.json`. Generate with `ghost profile . --emit`.
+
+## Expression format
+
+The canonical fingerprint artifact is **`expression.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-layer prose body (Character → Signature → Decisions → Values). See `docs/expression-format.md` for the spec.
+
+- `ghost profile . --emit` writes `expression.md`
+- `ghost profile . --emit-legacy` writes legacy `.ghost-fingerprint.json` (deprecated escape hatch)
+- Readers accept both `.md` and `.json` via `loadExpression()` — file extension dispatches
 
 ## Key Conventions
 
-- Fingerprints are 64-dimensional vectors stored as JSON (`DesignFingerprint` type)
-- `compare`, `fleet`, and `viz` commands take **file paths** to fingerprint JSON, not target strings
-- `profile` outputs fingerprints; pipe to `--output <file>` to save for later comparison
-- `--against` on `comply` takes a **file path** to a parent fingerprint JSON
+- Fingerprints are 64-dimensional vectors. The canonical on-disk form is `expression.md`; `.ghost-fingerprint.json` is a legacy format still accepted by readers.
+- `compare`, `fleet`, and `viz` commands take **file paths** to expression.md or legacy JSON, not target strings
+- `profile` outputs fingerprints; pipe to `--output <file>` to save (extension `.md` → MD, else JSON)
+- `--against` on `comply` takes a **file path** to a parent expression.md or JSON
 - `--ai` enables LLM-powered enrichment on `profile`; `--verbose` shows agent reasoning
-- `review` reads `.ghost-fingerprint.json` by default; `--fingerprint <path>` overrides
+- `review` reads `expression.md` by default; `--fingerprint <path>` overrides
 - `review --deep` requires `ANTHROPIC_API_KEY` for LLM-powered nuanced analysis
 - `review --staged` checks only staged changes; `--base main` diffs against a branch

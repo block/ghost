@@ -52,6 +52,21 @@ export {
   resolveParent,
   writeSyncManifest,
 } from "./evolution/index.js";
+export type {
+  BodyData,
+  ExpressionMeta,
+  FrontmatterData,
+  ParsedExpression,
+} from "./expression/index.js";
+export {
+  EXPRESSION_FILENAME,
+  LEGACY_FINGERPRINT_FILENAME,
+  loadExpression,
+  parseBody,
+  parseExpression,
+  serializeExpression,
+  splitRaw,
+} from "./expression/index.js";
 export {
   detectExtractors,
   extract,
@@ -154,6 +169,7 @@ export type {
   DesignFingerprint,
   DesignObservation,
   DesignSystemReport,
+  DesignValues,
   DetectedFormat,
   DimensionAck,
   DimensionDelta,
