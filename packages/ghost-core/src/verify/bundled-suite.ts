@@ -1,0 +1,140 @@
+/**
+ * Bundled copy of suite-v0.1.json, inlined so it ships with compiled core.
+ *
+ * When editing the suite, edit `suite-v0.1.json` AND mirror changes here.
+ * The JSON file is the canonical artifact (for external consumers and
+ * version control diffs); this TS module is the runtime carrier.
+ */
+export const BUNDLED_SUITE = {
+  version: "0.1",
+  description:
+    "Ghost standard prompt suite — UI construction tasks for drift benchmarking. Dimensions tag which fingerprint dimensions each prompt is expected to stress.",
+  prompts: [
+    {
+      id: "pricing-page-3-tier",
+      prompt:
+        "Build a pricing page with three tiers: Free, Pro, Enterprise. Include feature lists and a primary CTA per tier.",
+      dimensions: ["spacing", "typography", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "form-validation-states",
+      prompt:
+        "Build a sign-up form with email, password, and confirm-password fields. Show an inline error on the email field and a success state on the password field.",
+      dimensions: ["palette", "typography", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "nav-bar-dropdown",
+      prompt:
+        "Build a top navigation bar with a logo on the left, three links (Home, Products, About), and a Products dropdown menu that reveals three sub-links on hover.",
+      dimensions: ["spacing", "surfaces", "typography"],
+      tier: "core",
+    },
+    {
+      id: "hero-cta",
+      prompt:
+        "Build a marketing hero section with a large headline, a subheadline paragraph, and two buttons: a primary CTA and a secondary link.",
+      dimensions: ["typography", "spacing", "palette"],
+      tier: "core",
+    },
+    {
+      id: "data-table-sort-filter",
+      prompt:
+        "Build a data table with five columns (Name, Status, Role, Last active, Actions) and eight rows of sample data. Include a search input and a sortable Name column header.",
+      dimensions: ["spacing", "typography", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "empty-state-no-results",
+      prompt:
+        "Build an empty state for a search that returned no results. Include an icon or illustration placeholder, a headline, body copy, and a reset-search button.",
+      dimensions: ["typography", "spacing", "palette"],
+      tier: "core",
+    },
+    {
+      id: "toast-success",
+      prompt:
+        "Build a success toast notification that says 'Changes saved'. Show it fixed to the bottom-right of the viewport.",
+      dimensions: ["palette", "surfaces", "spacing"],
+      tier: "core",
+    },
+    {
+      id: "modal-destructive",
+      prompt:
+        "Build a destructive confirmation modal: title 'Delete account?', body text explaining consequences, Cancel and Delete buttons. The Delete button should be the destructive variant.",
+      dimensions: ["palette", "surfaces", "typography"],
+      tier: "core",
+    },
+    {
+      id: "card-grid",
+      prompt:
+        "Build a responsive grid of six cards. Each card has an image placeholder, a title, a paragraph of description, and a 'Read more' link.",
+      dimensions: ["spacing", "surfaces", "typography"],
+      tier: "core",
+    },
+    {
+      id: "badges-chips",
+      prompt:
+        "Build a row of six status badges: Active (success), Pending (warning), Failed (destructive), New (info), Draft (neutral), Archived (muted).",
+      dimensions: ["palette", "typography", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "auth-sign-in",
+      prompt:
+        "Build a sign-in card: logo, heading 'Welcome back', email + password fields, a 'Forgot password?' link, a primary Sign in button, and a 'New here? Create account' secondary link below.",
+      dimensions: ["spacing", "typography", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "sidebar-nav",
+      prompt:
+        "Build a vertical sidebar navigation with six items (Home, Projects, Team, Calendar, Reports, Settings). Show an icon and label per item. Mark 'Projects' as the active item.",
+      dimensions: ["spacing", "palette", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "breadcrumb",
+      prompt:
+        "Build a breadcrumb trail: Home → Projects → Acme → Overview. The final segment is the current page (not a link).",
+      dimensions: ["typography", "spacing", "palette"],
+      tier: "core",
+    },
+    {
+      id: "stats-kpi",
+      prompt:
+        "Build a row of four KPI cards: Revenue $128,450 (+12.4%), Users 8,231 (+3.1%), Conversion 4.2% (-0.3%), Churn 1.8% (flat). Trend arrows and colors reflect direction.",
+      dimensions: ["typography", "palette", "spacing"],
+      tier: "core",
+    },
+    {
+      id: "dropdown-menu",
+      prompt:
+        "Build a dropdown menu opened from an 'Options' button. Menu items: Edit, Duplicate, Share, a separator, then Delete (destructive).",
+      dimensions: ["surfaces", "palette", "spacing"],
+      tier: "core",
+    },
+    {
+      id: "pagination",
+      prompt:
+        "Build pagination controls showing pages 1, 2, 3, …, 10 with current page 3. Include Previous and Next buttons.",
+      dimensions: ["typography", "spacing", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "tabs",
+      prompt:
+        "Build a tabbed interface with three tabs (Overview, Activity, Settings). 'Activity' is active. Below the tabs, show a simple content panel with a heading and a paragraph.",
+      dimensions: ["typography", "spacing", "surfaces"],
+      tier: "core",
+    },
+    {
+      id: "footer",
+      prompt:
+        "Build a site footer with three columns of links (Product, Company, Legal), a copyright line, and a subtle border above.",
+      dimensions: ["typography", "spacing", "palette"],
+      tier: "core",
+    },
+  ],
+} as const;
