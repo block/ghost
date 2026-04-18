@@ -18,6 +18,8 @@ import type {
 export interface ProfileOptions {
   cwd?: string;
   emit?: boolean;
+  /** Emit file format. Default: "md" (expression.md). "json" is deprecated. */
+  emitFormat?: "md" | "json";
   registry?: string;
 }
 
@@ -77,7 +79,7 @@ export async function profile(
   const fingerprint = result.fingerprint;
 
   if (opts.emit) {
-    await emitFingerprint(fingerprint, cwd);
+    await emitFingerprint(fingerprint, cwd, { format: opts.emitFormat });
   }
 
   await appendHistory(

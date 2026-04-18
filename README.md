@@ -47,24 +47,28 @@ ghost profile github:shadcn-ui/ui --ai --verbose
 # Profile a shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json
 
-# Save fingerprint to a file
-ghost profile . --output my-system.json
+# Save a fingerprint as expression.md (recommended)
+ghost profile . --emit                   # writes ./expression.md
+ghost profile . --output my-system.md    # or write to a specific path
 ```
 
 **Compare two fingerprints:**
 
 ```bash
 # Profile two systems, then compare
-ghost profile github:shadcn-ui/ui --output shadcn.json
-ghost profile npm:@chakra-ui/react --output chakra.json
+ghost profile github:shadcn-ui/ui --output shadcn.expression.md
+ghost profile npm:@chakra-ui/react --output chakra.expression.md
+ghost compare shadcn.expression.md chakra.expression.md
+
+# Legacy JSON still works
 ghost compare shadcn.json chakra.json
 ```
 
 **Check compliance against a parent:**
 
 ```bash
-ghost comply . --against parent-fingerprint.json
-ghost comply . --against parent-fingerprint.json --format sarif
+ghost comply . --against parent.expression.md
+ghost comply . --against parent.expression.md --format sarif
 ```
 
 **Scan for drift (config-based):**
@@ -93,14 +97,14 @@ just dev
 | ---------------- | -------------------------------------------------------------------------------- |
 | `ghost scan`     | Scan for design drift against a registry                                          |
 | `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost compare`  | Compare two fingerprint JSON files with optional temporal analysis                 |
+| `ghost compare`  | Compare two fingerprint files (`.expression.md` or legacy `.json`)                 |
 | `ghost diff`     | Compare local components against registry with drift analysis                      |
 | `ghost comply`   | Check design system compliance against rules and a parent fingerprint              |
 | `ghost discover` | Find public design systems matching a query                                        |
 | `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
 | `ghost adopt`    | Shift parent baseline to a new fingerprint                                         |
 | `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
-| `ghost fleet`    | Compare N fingerprint files for ecosystem-level observability                      |
+| `ghost fleet`    | Compare N fingerprint files (`.expression.md` or `.json`) for ecosystem analysis   |
 | `ghost viz`      | Launch interactive 3D fingerprint visualization                                    |
 
 ### Target Types
@@ -184,7 +188,7 @@ Ghost perceives drift at three levels:
 
 ### Fingerprinting
 
-A fingerprint is a 64-dimensional vector — a continuous representation of a system's design characteristics:
+A fingerprint is captured in an **`expression.md`** file — a Markdown document with YAML frontmatter (the machine layer: 64-dim vector, palette, spacing, typography, surfaces) plus an optional prose body (Character, Signature, Decisions, Values). The machine layer is a continuous representation of the system's design characteristics:
 
 | Dimensions | Category     | What it captures                                               |
 | ---------- | ------------ | -------------------------------------------------------------- |

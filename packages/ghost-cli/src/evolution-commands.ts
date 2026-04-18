@@ -1,11 +1,11 @@
-import { readFile } from "node:fs/promises";
-import type { DesignFingerprint, DimensionStance, Target } from "@ghost/core";
+import type { DimensionStance, Target } from "@ghost/core";
 import {
   acknowledge,
   compareFleet,
   formatFleetComparison,
   formatFleetComparisonJSON,
   loadConfig,
+  loadExpression,
   profile,
   resolveParent,
 } from "@ghost/core";
@@ -92,8 +92,7 @@ export function registerAdoptCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const sourceData = await readFile(source, "utf-8");
-        const newParent: DesignFingerprint = JSON.parse(sourceData);
+        const newParent = await loadExpression(source);
 
         const config = await loadConfig(opts.config);
         const childFp = await profile(config);
@@ -209,8 +208,7 @@ export function registerFleetCommand(cli: CAC): void {
 
         const members = await Promise.all(
           paths.map(async (p) => {
-            const data = await readFile(p, "utf-8");
-            const fingerprint: DesignFingerprint = JSON.parse(data);
+            const fingerprint = await loadExpression(p);
             return { id: fingerprint.id, fingerprint };
           }),
         );

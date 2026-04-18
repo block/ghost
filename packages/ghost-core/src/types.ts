@@ -232,6 +232,13 @@ export interface DesignDecision {
   embedding?: number[];
 }
 
+export interface DesignValues {
+  /** Stances the system holds — "Do use warm neutrals." */
+  do: string[];
+  /** Stances the system rejects — "Don't mix sans-serif into headlines." */
+  dont: string[];
+}
+
 export interface DesignFingerprint {
   id: string;
   source: "registry" | "extraction" | "llm";
@@ -245,6 +252,12 @@ export interface DesignFingerprint {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
+  /**
+   * Layer 3 (stance): the Do's and Don'ts — what the system refuses. Sourced
+   * from `# Values` in an expression.md; consumed by `ghost review` to cite
+   * rule names when flagging violations.
+   */
+  values?: DesignValues;
 
   // --- Layer 3: Concrete values ---
 

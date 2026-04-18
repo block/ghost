@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import {
+  EXPRESSION_FILENAME,
+  LEGACY_FINGERPRINT_FILENAME,
+  loadExpression,
+} from "../expression/index.js";
 import { createProvider } from "../llm/index.js";
 import type {
   CollectedFile,
@@ -43,18 +47,23 @@ async function resolveFingerprint(
 ): Promise<DesignFingerprint> {
   if (options.fingerprint) return options.fingerprint;
 
-  const fpPath = options.fingerprintPath
-    ? resolve(cwd, options.fingerprintPath)
-    : resolve(cwd, ".ghost-fingerprint.json");
+  if (options.fingerprintPath) {
+    return loadExpression(resolve(cwd, options.fingerprintPath));
+  }
 
-  if (existsSync(fpPath)) {
-    const raw = await readFile(fpPath, "utf-8");
-    return JSON.parse(raw) as DesignFingerprint;
+  const mdPath = resolve(cwd, EXPRESSION_FILENAME);
+  if (existsSync(mdPath)) return loadExpression(mdPath);
+
+  const jsonPath = resolve(cwd, LEGACY_FINGERPRINT_FILENAME);
+  if (existsSync(jsonPath)) {
+    console.warn(
+      `[ghost] Reading legacy ${LEGACY_FINGERPRINT_FILENAME}. Migrate to ${EXPRESSION_FILENAME} by running \`ghost profile . --emit\`.`,
+    );
+    return loadExpression(jsonPath);
   }
 
   throw new Error(
-    "No fingerprint found. Run `ghost profile . --emit` to generate .ghost-fingerprint.json, " +
-      "or pass --fingerprint <path> explicitly.",
+    `No fingerprint found. Run \`ghost profile . --emit\` to generate ${EXPRESSION_FILENAME}, or pass --fingerprint <path> explicitly.`,
   );
 }
 
