@@ -867,10 +867,73 @@ export default function ConceptsPage() {
         </p>
       </Chapter>
 
+      {/* ── Chapter 6: The Generation Loop ────────────────────────── */}
+      <Chapter className="border-t border-border/40">
+        <ChapterLabel>Chapter 6</ChapterLabel>
+        <ChapterTitle>The Generation Loop</ChapterTitle>
+        <ChapterLead>
+          An expression isn't just a measurement — it's a grounding artifact.
+          Ghost wires it into AI-driven UI generation as pipeline
+          infrastructure: the expression feeds the generator; the review gate
+          catches drift before it lands.
+        </ChapterLead>
+        <div className="reveal grid sm:grid-cols-4 gap-4">
+          {[
+            {
+              step: "context",
+              name: "Ground",
+              desc: "Emit a skill, prompt, or full bundle from expression.md — whatever the generator consumes.",
+            },
+            {
+              step: "generate",
+              name: "Produce",
+              desc: "Any generator: ghost generate, Cursor, v0, or in-house. The bundle rides in context.",
+            },
+            {
+              step: "review",
+              name: "Gate",
+              desc: "Hardcoded colors, off-scale spacing, off-brand type — flagged line-by-line on the diff.",
+            },
+            {
+              step: "verify",
+              name: "Audit",
+              desc: "Run the loop over a prompt suite. Per-dimension drift says where the expression leaks.",
+            },
+          ].map((s) => (
+            <div
+              key={s.step}
+              className="group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-5 transition-colors duration-300"
+            >
+              <code className="font-mono text-xs uppercase text-muted-foreground">
+                ghost {s.step}
+              </code>
+              <div className="relative inline-block font-display text-base font-semibold mt-2">
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
+                  {s.name}
+                </span>
+                <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+                {s.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+            verify
+          </code>{" "}
+          is the schema-discipline mechanism. Each dimension gets classified as{" "}
+          <em>tight</em> (expression reproduces faithfully), <em>leaky</em>{" "}
+          (generator drifts here often — tighten Decisions or Values), or{" "}
+          <em>uncaptured</em> (the expression under-specifies this dimension).
+        </p>
+      </Chapter>
+
       {/* ── Closing ───────────────────────────────────────────────── */}
       <Chapter className="border-t border-border/40">
         <ChapterLabel>That's Ghost</ChapterLabel>
-        <ChapterTitle>Fingerprint. Scan. Decide. Repeat.</ChapterTitle>
+        <ChapterTitle>Fingerprint. Ground. Review. Repeat.</ChapterTitle>
         <ChapterLead>
           Ghost doesn't tell you what to do — it gives you the information to
           decide. Align, accept, or diverge. The choice is yours. The visibility
@@ -879,12 +942,12 @@ export default function ConceptsPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              file: "ghost.config.ts",
-              desc: "How to detect drift",
+              file: "expression.md",
+              desc: "What the system looks like, in three layers",
             },
             {
-              file: ".ghost-fingerprint.json",
-              desc: "What the system looks like",
+              file: "ghost.config.ts",
+              desc: "How to scan (optional)",
             },
             {
               file: ".ghost-sync.json",
