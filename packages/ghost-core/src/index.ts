@@ -30,6 +30,16 @@ export type {
 } from "./agents/tools/index.js";
 export { FINGERPRINT_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
+export type {
+  ContextFormat,
+  WriteContextOptions,
+  WriteContextResult,
+} from "./context/index.js";
+export {
+  buildSkillMd,
+  buildTokensCss,
+  writeContextBundle,
+} from "./context/index.js";
 export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
 export { diff } from "./diff.js";
 export type {
@@ -86,6 +96,18 @@ export {
   fingerprintFromRegistry,
   inferSemanticRole,
 } from "./fingerprint/index.js";
+export type {
+  BuildGenerationPromptOptions,
+  GenerateAttempt,
+  GenerateFormat,
+  GenerateOptions,
+  GenerateResult,
+} from "./generate/index.js";
+export {
+  buildGenerationPrompt,
+  extractHtml,
+  generate,
+} from "./generate/index.js";
 export type {
   FingerprintValidation,
   ValidationIssue,
@@ -228,3 +250,19 @@ export type {
   VisualDrift,
   VisualScanConfig,
 } from "./types.js";
+export type {
+  DimensionRollup,
+  DriftClassification,
+  PromptResult,
+  PromptSuite,
+  SuiteDimension,
+  SuitePrompt,
+  VerifyAggregate,
+  VerifyOptions,
+} from "./verify/index.js";
+export {
+  aggregate as aggregateVerify,
+  formatVerifyCLI,
+  loadPromptSuite,
+  verify,
+} from "./verify/index.js";

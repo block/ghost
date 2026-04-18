@@ -11,6 +11,7 @@ const REVIEWABLE_EXTENSIONS = new Set([
   ".svelte",
   ".css",
   ".scss",
+  ".html",
 ]);
 
 function isReviewable(filePath: string): boolean {
