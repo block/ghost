@@ -2,7 +2,7 @@
  * @ghost/ui — reference component library for Ghost.
  *
  * Re-exports 49 atomic UI components, 48 AI-native elements, theme primitives,
- * and shared hooks/utils. Consumer apps (apps/catalogue, apps/docs) import from
+ * and shared hooks/utils. Consumer apps (apps/docs) import from
  * here. The library is bundled by Vite lib mode; see vite.lib.config.ts.
  *
  * CSS is shipped separately:

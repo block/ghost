@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 
 /**
  * Library build for @ghost/ui. Separate from the SPA build (vite.config.ts)
- * while we're mid-migration to apps/catalogue + apps/docs.
+ * while we keep the shadcn registry build attached to the same package.
  *
  * - Entry: src/index.ts
  * - Output: dist-lib/ (ESM)

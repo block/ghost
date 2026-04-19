@@ -38,7 +38,7 @@ Pre-push hook: `just check`, `just test`, `just build` (parallel).
 
 ## Justfile
 
-Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `test`, `dev` (ghost-ui catalogue), `build-ui`, `build-registry`, `clean`, `ci`.
+Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `test`, `dev` (docs site at apps/docs), `build-ui` (docs build), `build-lib` (@ghost/ui library), `build-registry`, `build-pages`, `clean`, `ci`.
 
 ## Architecture
 
@@ -54,9 +54,10 @@ Typical pipeline: `target → extract (stage) → fingerprint (agent) → compar
 | Package | Description |
 |---------|-------------|
 | `packages/ghost-core` | Core library: agents, stages, fingerprinting, scanners, extractors, evolution, LLM providers, reporters |
-| `packages/ghost-cli` | CLI (citty-based), 12 subcommands |
-| `packages/ghost-ui` | Reference design language — 97 shadcn-compatible components, design tokens, live catalogue |
+| `packages/ghost-cli` | CLI (cac-based), 11 consolidated subcommands |
+| `packages/ghost-ui` | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, shipped via `dist-lib/` + shadcn `registry.json` |
 | `packages/ghost-mcp` | MCP server exposing Ghost UI registry to AI assistants (6 tools, 2 resources) |
+| `apps/docs` | The deployed docs site (`@ghost/docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `@ghost/ui`. |
 | `action/` | GitHub Action for automated PR design review |
 
 ## CLI Commands
