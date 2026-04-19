@@ -35,10 +35,10 @@ ghost compare shadcn.json chakra.json --format json
 ghost compare shadcn.json chakra.json --temporal
 
 # Fleet comparison (3+ fingerprint files at once)
-ghost fleet shadcn.json chakra.json mantine.json
+ghost compare shadcn.json chakra.json mantine.json
 
 # Fleet with clustering analysis
-ghost fleet shadcn.json chakra.json mantine.json --cluster
+ghost compare shadcn.json chakra.json mantine.json --cluster
 ```
 
 ## Understanding comparison output

@@ -1,6 +1,6 @@
 # The `expression.md` format
 
-A Ghost **expression** is a single Markdown file that captures what a design system is trying to say. It replaces the opaque `.ghost-fingerprint.json` with something humans can read and edit, and something LLMs can consume natively — while preserving a structured machine layer for `ghost compare`, `ghost review`, `ghost fleet`, and friends.
+A Ghost **expression** is a single Markdown file that captures what a design system is trying to say. It replaces the opaque `.ghost-fingerprint.json` with something humans can read and edit, and something LLMs can consume natively — while preserving a structured machine layer for `ghost compare`, `ghost review`, and friends.
 
 The file has two parts, and each owns **different data**:
 
@@ -336,9 +336,10 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 |---|---|
 | `ghost profile . --emit` | Write `expression.md` (frontmatter machine-facts + body prose) |
 | `ghost lint [path]` | Check schema validity, orphan prose, missing rationale, stray evidence in body, broken palette citations |
-| `ghost expr-diff <a> <b>` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
-| `ghost compare <a> <b>` | Vector distance (quantitative — use `expr-diff` for qualitative) |
-| `ghost context [path]` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `tokens.css`) |
+| `ghost compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
+| `ghost compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
+| `ghost emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `tokens.css`) |
+| `ghost emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
 
 Programmatic API (`@ghost/core`): `loadExpression`, `parseExpression`, `serializeExpression`, `lintExpression`, `compareExpressions`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
 

@@ -1,9 +1,6 @@
 import type { DimensionStance, Target } from "@ghost/core";
 import {
   acknowledge,
-  compareFleet,
-  formatFleetComparison,
-  formatFleetComparisonJSON,
   loadConfig,
   loadExpression,
   profile,
@@ -181,46 +178,6 @@ export function registerDivergeCommand(cli: CAC): void {
           console.log("Updated .ghost-sync.json");
         }
 
-        process.exit(0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
-}
-
-export function registerFleetCommand(cli: CAC): void {
-  cli
-    .command(
-      "fleet [...fingerprints]",
-      "Compare N fingerprints for an ecosystem-level view",
-    )
-    .option("--cluster", "Include cluster analysis")
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (paths: string[], opts) => {
-      try {
-        if (paths.length < 2) {
-          console.error("Error: fleet requires at least 2 fingerprint paths");
-          process.exit(2);
-        }
-
-        const members = await Promise.all(
-          paths.map(async (p) => {
-            const { fingerprint } = await loadExpression(p);
-            return { id: fingerprint.id, fingerprint };
-          }),
-        );
-
-        const fleet = compareFleet(members, { cluster: Boolean(opts.cluster) });
-
-        const output =
-          opts.format === "json"
-            ? formatFleetComparisonJSON(fleet)
-            : formatFleetComparison(fleet);
-
-        process.stdout.write(`${output}\n`);
         process.exit(0);
       } catch (err) {
         console.error(

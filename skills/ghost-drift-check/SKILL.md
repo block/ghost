@@ -22,19 +22,19 @@ Detect design drift between a project and its parent design system.
 ghost profile github:shadcn-ui/ui --output parent.json
 
 # Check compliance against the parent fingerprint
-ghost comply . --against parent.json
+ghost review project . --against parent.json
 
 # Check compliance with custom thresholds
-ghost comply . --against parent.json --max-drift 0.3
+ghost review project . --against parent.json --max-drift 0.3
 
 # Output as JSON for CI integration
-ghost comply . --against parent.json --format json
+ghost review project . --against parent.json --format json
 
 # Output as SARIF for GitHub Code Scanning
-ghost comply . --against parent.json --format sarif
+ghost review project . --against parent.json --format sarif
 
 # Check a remote target against a parent
-ghost comply github:my-org/my-app --against parent.json
+ghost review project github:my-org/my-app --against parent.json
 ```
 
 ## Understanding drift classifications
