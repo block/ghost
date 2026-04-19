@@ -110,7 +110,7 @@ The canonical fingerprint artifact is **`expression.md`** — a human-readable, 
 
 ## Key Conventions
 
-- Fingerprints are 64-dimensional vectors. The canonical on-disk form is `expression.md`; `.ghost-fingerprint.json` is a legacy format still accepted by readers.
+- Fingerprints are 49-dimensional vectors (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/fingerprint/embedding.ts`). The canonical on-disk form is `expression.md`; `.ghost-fingerprint.json` is a legacy format still accepted by readers.
 - `compare`, `fleet`, and `viz` commands take **file paths** to expression.md or legacy JSON, not target strings
 - `profile` outputs fingerprints; pipe to `--output <file>` to save (extension `.md` → MD, else JSON)
 - `--against` on `comply` takes a **file path** to a parent expression.md or JSON

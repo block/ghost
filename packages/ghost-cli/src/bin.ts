@@ -56,7 +56,9 @@ import {
   registerDivergeCommand,
   registerFleetCommand,
 } from "./evolution-commands.js";
+import { registerExprDiffCommand } from "./expr-diff-command.js";
 import { registerGenerateCommand } from "./generate-command.js";
+import { registerLintCommand } from "./lint-command.js";
 import { registerReviewCommand } from "./review-command.js";
 import { registerVerifyCommand } from "./verify-command.js";
 import { registerVizCommand } from "./viz-command.js";
@@ -232,10 +234,12 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (source: string, target: string, opts) => {
     try {
-      const [src, tgt] = await Promise.all([
+      const [srcParsed, tgtParsed] = await Promise.all([
         loadExpression(source),
         loadExpression(target),
       ]);
+      const src = srcParsed.fingerprint;
+      const tgt = tgtParsed.fingerprint;
 
       const comparison = compareFingerprints(src, tgt, {
         includeVectors: opts.temporal,
@@ -367,7 +371,7 @@ cli
 
       let parentFingerprint: DesignFingerprint | undefined;
       if (opts.against) {
-        parentFingerprint = await loadExpression(opts.against);
+        parentFingerprint = (await loadExpression(opts.against)).fingerprint;
       }
 
       const director = new Director();
@@ -421,6 +425,8 @@ registerVizCommand(cli);
 registerContextCommand(cli);
 registerGenerateCommand(cli);
 registerVerifyCommand(cli);
+registerLintCommand(cli);
+registerExprDiffCommand(cli);
 
 cli.help();
 cli.version("0.2.0");

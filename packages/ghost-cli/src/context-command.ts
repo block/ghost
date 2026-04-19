@@ -1,5 +1,4 @@
 import { resolve } from "node:path";
-import type { ContextFormat } from "@ghost/core";
 import { loadExpression, writeContextBundle } from "@ghost/core";
 import type { CAC } from "cac";
 
@@ -10,10 +9,11 @@ export function registerContextCommand(cli: CAC): void {
       "Emit a grounding skill bundle from an expression (for downstream generators)",
     )
     .option("-o, --out <dir>", "Output directory (default: ./ghost-context)")
+    .option("--no-tokens", "Skip tokens.css output")
+    .option("--readme", "Include README.md")
     .option(
-      "--format <fmt>",
-      "Output format: skill | prompt | bundle (default: skill)",
-      { default: "skill" },
+      "--prompt-only",
+      "Emit only prompt.md (skips SKILL.md / expression.md / tokens.css)",
     )
     .option(
       "--name <name>",
@@ -29,22 +29,19 @@ export function registerContextCommand(cli: CAC): void {
           process.cwd(),
           (opts.out as string | undefined) ?? "ghost-context",
         );
-        const format = (opts.format as string) ?? "skill";
-        if (format !== "skill" && format !== "prompt" && format !== "bundle") {
-          throw new Error(
-            `Invalid --format '${format}'. Use skill, prompt, or bundle.`,
-          );
-        }
 
-        const fingerprint = await loadExpression(expressionPath);
+        const { fingerprint } = await loadExpression(expressionPath);
         const result = await writeContextBundle(fingerprint, {
           outDir,
-          format: format as ContextFormat,
+          tokens: opts.tokens !== false,
+          readme: Boolean(opts.readme),
+          promptOnly: Boolean(opts.promptOnly),
           name: opts.name as string | undefined,
+          sourcePath: expressionPath,
         });
 
         process.stdout.write(
-          `Wrote ${result.files.length} file${result.files.length === 1 ? "" : "s"} (format: ${result.format}) to ${result.outDir}:\n`,
+          `Wrote ${result.files.length} file${result.files.length === 1 ? "" : "s"} to ${result.outDir}:\n`,
         );
         for (const f of result.files) {
           process.stdout.write(`  ${f}\n`);
