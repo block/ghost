@@ -16,8 +16,16 @@ import { z } from "zod";
  *     schema bump. Body links to fragment files via ordinary markdown
  *     links (`[label](path.md)`) — the same progressive-disclosure model
  *     agent skills use.
+ *
+ * v5: decision evidence moves from frontmatter into the body. Each
+ *     `### Dimension` block now carries prose rationale followed by an
+ *     optional `**Evidence:**` bullet list. Frontmatter `decisions[]` keeps
+ *     only `dimension` + optional `embedding` — no more visible overlap
+ *     between the YAML `decisions:` block and the `# Decisions` prose
+ *     section. Body is authoritative for everything human-readable per
+ *     dimension; frontmatter is lean machine-only metadata.
  */
-export const EXPRESSION_SCHEMA_VERSION = 4;
+export const EXPRESSION_SCHEMA_VERSION = 5;
 
 const SemanticColorSchema = z.object({
   role: z.string(),
@@ -70,20 +78,21 @@ const DesignObservationSchema = z
   .strict();
 
 /**
- * Frontmatter decision: dimension slug + evidence + optional embedding.
- * The prose rationale lives in the body under `### dimension`.
+ * Frontmatter decision: dimension slug + optional embedding only.
+ * Both the prose rationale AND the evidence bullets live in the body
+ * under `### dimension` → `**Evidence:**`. Evidence in frontmatter is
+ * rejected by the strict schema.
  */
 const DesignDecisionSchema = z
   .object({
     dimension: z.string(),
-    evidence: z.array(z.string()),
     embedding: z.array(z.number()).optional(),
   })
   .strict();
 
 /**
  * Semantic slot → token binding. Each role names a slot ("h1", "card",
- * "button") and binds tokens from the fingerprint dimensions. Every
+ * "button") and binds tokens from the expression dimensions. Every
  * sub-block is optional — a role can be partial when the source only
  * supplies some tokens.
  */
@@ -160,17 +169,17 @@ export const FrontmatterSchema = z
     /** Loose passthrough bag for LLM-authored extensions. Opaque to readers. */
     metadata: z.record(z.string(), z.unknown()).optional(),
 
-    // fingerprint — required
+    // expression — required
     id: z.string(),
     source: z.enum(["registry", "extraction", "llm", "unknown"]),
     timestamp: z.string(),
     sources: z.array(z.string()).optional(),
 
-    // fingerprint — narrative tags (optional; prose lives in body)
+    // expression — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
 
-    // fingerprint — structured (required)
+    // expression — structured (required)
     palette: PaletteSchema,
     spacing: SpacingSchema,
     typography: TypographySchema,
@@ -194,7 +203,7 @@ export const FrontmatterSchema = z
 
 /**
  * Relaxed schema for files that declare `extends:`. Children may omit any
- * fingerprint field they're inheriting from the parent. The merged result
+ * expression field they're inheriting from the parent. The merged result
  * is re-validated against the strict FrontmatterSchema.
  */
 export const PartialFrontmatterSchema = z

@@ -1,4 +1,4 @@
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import type {
   DivergenceClass,
   EnrichedComparison,
@@ -14,7 +14,7 @@ export interface CompareInput {
 }
 
 /**
- * Compare two design fingerprints and classify divergence.
+ * Compare two expressions and classify divergence.
  *
  * Runs deterministic comparison (OKLCH distances, Jaccard overlap,
  * methodology matching) and generates per-dimension explanations.
@@ -27,7 +27,7 @@ export async function compare(
 ): Promise<StageResult<EnrichedComparison>> {
   const startTime = Date.now();
 
-  const comparison = compareFingerprints(input.source, input.target, {
+  const comparison = compareExpressions(input.source, input.target, {
     includeVectors: true,
   });
 

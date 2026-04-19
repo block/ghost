@@ -15,7 +15,7 @@ export type ExtractResult = StageResult<SampledMaterial> & {
  *
  * Materializes each target in parallel, samples design-signal files from each,
  * and returns a combined SampledMaterial plus the materialized source directories
- * (so the fingerprint agent's tools can read files from any source).
+ * (so the expression agent's tools can read files from any source).
  *
  * Single-source and multi-source share the same shape — callers don't branch.
  *

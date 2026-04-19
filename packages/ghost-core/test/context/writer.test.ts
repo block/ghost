@@ -6,7 +6,7 @@ import { buildSkillMd, writeContextBundle } from "../../src/context/index.js";
 import { buildTokensCss } from "../../src/context/tokens-css.js";
 import type { Expression } from "../../src/types.js";
 
-const FINGERPRINT: Expression = {
+const EXPRESSION: Expression = {
   id: "sample-ds",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -65,7 +65,7 @@ afterEach(async () => {
 
 describe("writeContextBundle", () => {
   it("default: emits SKILL.md + expression.md + tokens.css", async () => {
-    const res = await writeContextBundle(FINGERPRINT, { outDir: dir });
+    const res = await writeContextBundle(EXPRESSION, { outDir: dir });
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toEqual(["SKILL.md", "expression.md", "tokens.css"]);
 
@@ -76,7 +76,7 @@ describe("writeContextBundle", () => {
   });
 
   it("--no-tokens: emits SKILL.md + expression.md only", async () => {
-    const res = await writeContextBundle(FINGERPRINT, {
+    const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       tokens: false,
     });
@@ -88,7 +88,7 @@ describe("writeContextBundle", () => {
   });
 
   it("--readme: adds README.md on top of the default bundle", async () => {
-    const res = await writeContextBundle(FINGERPRINT, {
+    const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       readme: true,
     });
@@ -102,7 +102,7 @@ describe("writeContextBundle", () => {
   });
 
   it("--prompt-only: emits a single prompt.md", async () => {
-    const res = await writeContextBundle(FINGERPRINT, {
+    const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       promptOnly: true,
     });
@@ -116,12 +116,12 @@ describe("writeContextBundle", () => {
   });
 
   it("honors --name override in SKILL frontmatter", async () => {
-    const md = buildSkillMd(FINGERPRINT, "my-custom-name", false);
+    const md = buildSkillMd(EXPRESSION, "my-custom-name", false);
     expect(md).toMatch(/^---\nname: my-custom-name\n/);
   });
 
   it("tokens.css carries a provenance header with source path and timestamp", async () => {
-    const res = await writeContextBundle(FINGERPRINT, {
+    const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       sourcePath: "/path/to/expression.md",
       generator: "ghost@0.9.0",
@@ -136,7 +136,7 @@ describe("writeContextBundle", () => {
   });
 
   it("legacy format: 'bundle' still emits README + tokens (back-compat)", async () => {
-    const res = await writeContextBundle(FINGERPRINT, {
+    const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       format: "bundle",
     });
@@ -147,9 +147,9 @@ describe("writeContextBundle", () => {
 });
 
 describe("buildTokensCss", () => {
-  it("emits only dimensions present on the fingerprint", () => {
+  it("emits only dimensions present on the expression", () => {
     const minimal: Expression = {
-      ...FINGERPRINT,
+      ...EXPRESSION,
       typography: {
         families: [],
         sizeRamp: [],

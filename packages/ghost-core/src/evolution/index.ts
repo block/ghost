@@ -1,4 +1,4 @@
-export { emitFingerprint } from "./emit.js";
+export { emitExpression } from "./emit.js";
 export type { FleetClusterOptions } from "./fleet.js";
 export { compareFleet } from "./fleet.js";
 export { appendHistory, readHistory, readRecentHistory } from "./history.js";

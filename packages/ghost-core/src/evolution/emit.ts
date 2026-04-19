@@ -10,25 +10,25 @@ import { EXPRESSION_SCHEMA_VERSION } from "../expression/schema.js";
 import type { Expression } from "../types.js";
 
 /**
- * Write a fingerprint as a publishable artifact (expression.md) to the
+ * Write an expression as a publishable artifact (expression.md) to the
  * project root. Other projects can reference this file as their parent.
  */
-export async function emitFingerprint(
-  fingerprint: Expression,
+export async function emitExpression(
+  expression: Expression,
   cwd: string = process.cwd(),
 ): Promise<string> {
   const target = resolve(cwd, EXPRESSION_FILENAME);
-  await writeFile(target, serializeExpression(fingerprint), "utf-8");
+  await writeFile(target, serializeExpression(expression), "utf-8");
 
   // v4: the 49-dim embedding lives in a sibling `embedding.md` referenced
   // from the expression body. Readers fall back to recompute if it's missing.
-  if (fingerprint.embedding && fingerprint.embedding.length > 0) {
+  if (expression.embedding && expression.embedding.length > 0) {
     const embeddingPath = resolve(dirname(target), EMBEDDING_FRAGMENT_FILENAME);
     await writeFile(
       embeddingPath,
       serializeEmbeddingFragment(
-        fingerprint.embedding,
-        fingerprint.id,
+        expression.embedding,
+        expression.id,
         EXPRESSION_SCHEMA_VERSION,
       ),
       "utf-8",

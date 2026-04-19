@@ -9,8 +9,8 @@ import type { CAC } from "cac";
 export function registerVizCommand(cli: CAC): void {
   cli
     .command(
-      "viz [...fingerprints]",
-      "Launch interactive 3D visualization of design fingerprints",
+      "viz [...expressions]",
+      "Launch interactive 3D visualization of design expressions",
     )
     .option("--port <n>", "Port for the visualization server", {
       default: "3333",
@@ -19,14 +19,14 @@ export function registerVizCommand(cli: CAC): void {
     .action(async (paths: string[], opts) => {
       try {
         if (paths.length < 2) {
-          console.error("Error: viz requires at least 2 fingerprint paths");
+          console.error("Error: viz requires at least 2 expression paths");
           process.exit(2);
         }
 
         const members = await Promise.all(
           paths.map(async (p) => {
-            const { fingerprint } = await loadExpression(p);
-            return { id: fingerprint.id, fingerprint };
+            const { expression } = await loadExpression(p);
+            return { id: expression.id, expression };
           }),
         );
 
@@ -36,8 +36,8 @@ export function registerVizCommand(cli: CAC): void {
           fleet: {
             members: fleet.members.map((m) => ({
               id: m.id,
-              embedding: m.fingerprint.embedding,
-              fingerprint: m.fingerprint,
+              embedding: m.expression.embedding,
+              expression: m.expression,
             })),
             pairwise: fleet.pairwise,
             centroid: fleet.centroid,
@@ -72,7 +72,7 @@ export function registerVizCommand(cli: CAC): void {
         server.listen(port, () => {
           const url = `http://localhost:${port}`;
           console.log(`\n  Ghost Viz → ${url}`);
-          console.log(`  ${members.length} fingerprints loaded`);
+          console.log(`  ${members.length} expressions loaded`);
           console.log("  Press Ctrl+C to stop\n");
 
           // cac negated-boolean options land as `open` (the opposite of --no-open)

@@ -10,7 +10,7 @@ Expression drifts. When a system's identity spreads across consumers — each ev
 
 - **Human-readable expressions** — Every system is captured as an `expression.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
 - **Continuous perception** — Profile each consumer over time. Surface drift at the values (hardcoded colors, token overrides, missing tokens), structural (component divergence), and visual (pixel-level regressions) levels
-- **Grounded generation** — Use expressions as grounding for AI-driven generation. `ghost emit context-bundle` writes prompt/skill material; any generator produces; `ghost review` surfaces drift in the output; `ghost review suite` aggregates drift across a standard prompt suite to classify dimensions as tight, leaky, or uncaptured
+- **Grounded generation** — Use expressions as grounding for AI-driven generation. `ghost emit context-bundle` writes prompt/skill material; any generator produces; `ghost review` surfaces drift in the output; `ghost verify` aggregates drift across a standard prompt suite to classify dimensions as tight, leaky, or uncaptured
 - **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent expression. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal
 - **Fleet intelligence** — Compare expressions across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself
 - **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer expression generation and drift analysis
@@ -76,8 +76,16 @@ ghost review --staged --format github
 ghost review project . --against parent.expression.md
 ghost review project . --against parent.expression.md --format sarif
 
-# suite scope: drive the generate→review loop across a bundled prompt suite
-ghost review suite
+# verify: drive the generate→review loop across a bundled prompt suite
+ghost verify
+```
+
+**Local components vs registry:**
+
+```bash
+# Diff the local component tree against the configured registry
+ghost drift
+ghost drift --component Button
 ```
 
 **Generation loop — ground, generate, observe:**
@@ -109,8 +117,10 @@ just dev
 | Command          | Description                                                                      |
 | ---------------- | -------------------------------------------------------------------------------- |
 | `ghost profile`  | Generate an expression for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost compare`  | Compare 2+ expressions (pairwise, fleet, semantic, temporal, or components-vs-registry via flags) |
-| `ghost review`   | Unified drift perception. Scopes: `files` (default, PR drift check), `project [target] --against parent.md` (target coherence against a parent), `suite [expression]` (prompt-suite verification) |
+| `ghost compare`  | Compare 2+ expressions (pairwise, fleet, semantic, or temporal via flags)          |
+| `ghost review`   | Unified drift perception. Scopes: `files` (default, PR drift check), `project [target] --against parent.md` (target coherence against a parent) |
+| `ghost drift`    | Diff local components against the registry — reports breaking changes              |
+| `ghost verify`   | Run the bundled prompt suite against an expression (classifies each dimension as tight/leaky/uncaptured) |
 | `ghost discover` | Find public design systems matching a query                                        |
 | `ghost emit`     | Derive artifacts from expression.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens.css + prompt.md) |
 | `ghost generate` | Reference generator — LLM → HTML with self-review retries against an expression    |
@@ -146,7 +156,7 @@ export default defineConfig({
   // Parent design system to compare components against
   parent: { type: "github", value: "shadcn-ui/ui" },
 
-  // Targets for `ghost compare --components`
+  // Targets for `ghost drift`
   targets: [
     { type: "path", value: "./packages/my-ui" },
   ],
@@ -231,7 +241,7 @@ expression.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.
                                                        adopt / diverge)
 ```
 
-Run `ghost review suite` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the expression where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the expression where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Intent Tracking
 

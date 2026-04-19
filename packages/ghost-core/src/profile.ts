@@ -2,8 +2,8 @@ import { resolve } from "node:path";
 import { resolveTarget } from "./config.js";
 import { computeSemanticEmbedding } from "./embedding/embed-api.js";
 import { computeEmbedding } from "./embedding/embedding.js";
-import { fingerprintFromRegistry } from "./embedding/from-registry.js";
-import { emitFingerprint } from "./evolution/emit.js";
+import { expressionFromRegistry } from "./embedding/from-registry.js";
+import { emitExpression } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
 import type { ExpressionValidation } from "./llm/validate-expression.js";
 import { resolveRegistry } from "./resolvers/registry.js";
@@ -22,35 +22,35 @@ export interface ProfileOptions {
 }
 
 export interface ProfileTargetResult {
-  fingerprint: EnrichedExpression;
+  expression: EnrichedExpression;
   confidence: number;
   reasoning: string[];
   warnings: string[];
 }
 
 export interface ProfileResult {
-  fingerprint: Expression;
+  expression: Expression;
   validation?: ExpressionValidation;
 }
 
 /**
- * Compute the embedding for a fingerprint.
+ * Compute the embedding for an expression.
  * Uses semantic embedding API if configured, otherwise falls back to deterministic.
  */
-async function embedFingerprint(
-  fingerprint: Expression,
+async function embedExpression(
+  expression: Expression,
   embeddingConfig?: EmbeddingConfig,
 ): Promise<number[]> {
   if (embeddingConfig) {
-    return computeSemanticEmbedding(fingerprint, embeddingConfig);
+    return computeSemanticEmbedding(expression, embeddingConfig);
   }
-  return computeEmbedding(fingerprint);
+  return computeEmbedding(expression);
 }
 
 /**
- * Profile a repository — extract design material and produce a fingerprint.
+ * Profile a repository — extract design material and produce an expression.
  *
- * AI-only: requires config.llm. For deterministic registry-to-fingerprint
+ * AI-only: requires config.llm. For deterministic registry-to-expression
  * (shadcn-style), pass `registry` in options or use profileRegistry directly.
  */
 export async function profile(
@@ -61,7 +61,7 @@ export async function profile(
     typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
   const cwd = opts.cwd ?? process.cwd();
 
-  // Explicit registry path takes the deterministic registry-to-fingerprint path
+  // Explicit registry path takes the deterministic registry-to-expression path
   // (a separate feature — not a fallback).
   if (opts.registry) {
     return profileRegistry(opts.registry, config.embedding);
@@ -74,26 +74,26 @@ export async function profile(
   }
 
   const result = await profileTarget({ type: "path", value: cwd }, config);
-  const fingerprint = result.fingerprint;
+  const expression = result.expression;
 
   if (opts.emit) {
-    await emitFingerprint(fingerprint, cwd);
+    await emitExpression(expression, cwd);
   }
 
   await appendHistory(
     {
-      fingerprint,
+      expression,
       parentRef: config.parent,
     },
     cwd,
   );
 
-  return fingerprint;
+  return expression;
 }
 
 /**
  * Profile a registry deterministically — no LLM needed.
- * Registry-to-fingerprint is a distinct feature for shadcn-style registries
+ * Registry-to-expression is a distinct feature for shadcn-style registries
  * (not a fallback for source-code profiling).
  */
 export async function profileRegistry(
@@ -101,9 +101,9 @@ export async function profileRegistry(
   embeddingConfig?: EmbeddingConfig,
 ): Promise<Expression> {
   const registry = await resolveRegistry(registryPath);
-  const fingerprint = fingerprintFromRegistry(registry);
-  fingerprint.embedding = await embedFingerprint(fingerprint, embeddingConfig);
-  return fingerprint;
+  const expression = expressionFromRegistry(registry);
+  expression.embedding = await embedExpression(expression, embeddingConfig);
+  return expression;
 }
 
 /**
@@ -142,7 +142,7 @@ export async function profileTarget(
   });
 
   return {
-    fingerprint: result.data,
+    expression: result.data,
     confidence: result.confidence,
     reasoning: result.reasoning,
     warnings: result.warnings,
@@ -150,11 +150,11 @@ export async function profileTarget(
 }
 
 /**
- * Profile multiple targets into a single unified fingerprint.
+ * Profile multiple targets into a single unified expression.
  *
- * Materializes all targets, samples across them, and lets the fingerprint
+ * Materializes all targets, samples across them, and lets the expression
  * agent explore every source directory via its tools to synthesize one
- * coherent fingerprint.
+ * coherent expression.
  *
  * Usage:
  *   ghost profile npm:@arcade/tokens github:cashapp/arcade-ios ./local-impl
@@ -183,12 +183,9 @@ export async function profileMultiTarget(
   const result = await director.profile(targets, ctx);
 
   return {
-    fingerprint: result.fingerprint.data,
-    confidence: result.fingerprint.confidence,
-    reasoning: [
-      ...result.extraction.reasoning,
-      ...result.fingerprint.reasoning,
-    ],
-    warnings: [...result.extraction.warnings, ...result.fingerprint.warnings],
+    expression: result.expression.data,
+    confidence: result.expression.confidence,
+    reasoning: [...result.extraction.reasoning, ...result.expression.reasoning],
+    warnings: [...result.extraction.warnings, ...result.expression.warnings],
   };
 }

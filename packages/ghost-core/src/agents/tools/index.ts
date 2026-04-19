@@ -20,8 +20,8 @@ export type {
   ToolResult,
 } from "./types.js";
 
-/** All available fingerprint agent tools. */
-export const FINGERPRINT_TOOLS: AgentTool[] = [
+/** All available expression agent tools. */
+export const EXPRESSION_TOOLS: AgentTool[] = [
   searchFilesTool,
   readFileTool,
   runExtractorTool,
@@ -30,7 +30,7 @@ export const FINGERPRINT_TOOLS: AgentTool[] = [
 
 /** Convert tools to LLM-provider-neutral definitions. */
 export function getToolDefinitions(): ToolDefinition[] {
-  return FINGERPRINT_TOOLS.map((tool) => ({
+  return EXPRESSION_TOOLS.map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.parameters,
@@ -42,12 +42,12 @@ export async function executeTool(
   call: ToolCall,
   ctx: ToolContext,
 ): Promise<ToolResult> {
-  const tool = FINGERPRINT_TOOLS.find((t) => t.name === call.name);
+  const tool = EXPRESSION_TOOLS.find((t) => t.name === call.name);
   if (!tool) {
     return { content: `Unknown tool: ${call.name}` };
   }
   return tool.execute(call.args, ctx);
 }
 
-/** Default maximum number of tool calls per fingerprint run. */
+/** Default maximum number of tool calls per expression run. */
 export const DEFAULT_MAX_TOOL_CALLS = 50;

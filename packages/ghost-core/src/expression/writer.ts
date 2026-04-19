@@ -35,7 +35,7 @@ export interface SerializeOptions {
  * way for the two sides to drift.
  */
 export function serializeExpression(
-  fingerprint: Expression,
+  expression: Expression,
   options: SerializeOptions = {},
 ): string {
   const meta: ExpressionMeta = {
@@ -44,8 +44,8 @@ export function serializeExpression(
   };
   const extractEmbedding = options.extractEmbedding ?? true;
   const forFrontmatter = extractEmbedding
-    ? stripEmbedding(fingerprint)
-    : fingerprint;
+    ? stripEmbedding(expression)
+    : expression;
   const obj = mergeFrontmatter(forFrontmatter, meta);
   const yaml = stringifyYaml(obj, { lineWidth: 0 }).trimEnd();
 
@@ -54,10 +54,10 @@ export function serializeExpression(
   }
 
   const body = buildBody(
-    fingerprint.observation,
-    fingerprint.decisions,
-    fingerprint.values,
-    extractEmbedding && (fingerprint.embedding?.length ?? 0) > 0,
+    expression.observation,
+    expression.decisions,
+    expression.values,
+    extractEmbedding && (expression.embedding?.length ?? 0) > 0,
   );
   return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
 }
@@ -111,13 +111,25 @@ function buildBody(
 }
 
 /**
- * Body carries prose only — dimension header + rationale paragraph. Evidence
- * lives in the frontmatter (machine-fact); we don't mirror it here to avoid
- * re-introducing the duplication schema 3 was designed to eliminate.
+ * Body carries the full per-dimension story: rationale prose followed by an
+ * `**Evidence:**` bullet list (schema 5). Each evidence string becomes one
+ * bullet, wrapped in backticks so token-name citations render as code.
+ * Evidence is skipped entirely when empty.
  */
 function formatDecision(d: DesignDecision): string {
   const title = unslug(d.dimension);
-  return `### ${title}\n${d.decision.trim()}`;
+  const prose = d.decision.trim();
+  const evidence = d.evidence?.filter((e) => e?.trim()) ?? [];
+  if (!evidence.length) return `### ${title}\n${prose}`;
+  const bullets = evidence.map((e) => `- ${fenceEvidence(e)}`).join("\n");
+  return `### ${title}\n${prose}\n\n**Evidence:**\n${bullets}`;
+}
+
+/** Wrap evidence strings in backticks when they aren't already fenced. */
+function fenceEvidence(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.startsWith("`") && trimmed.endsWith("`")) return trimmed;
+  return `\`${trimmed.replace(/`/g, "\\`")}\``;
 }
 
 function unslug(s: string): string {

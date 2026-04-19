@@ -1,4 +1,4 @@
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import type {
   DriftVelocity,
   ExpressionComparison,
@@ -10,7 +10,7 @@ import { checkBounds } from "./sync.js";
 import { computeDriftVectors } from "./vector.js";
 
 /**
- * Enrich a fingerprint comparison with temporal data:
+ * Enrich an expression comparison with temporal data:
  * velocity, trajectory, ack status, and drift vectors.
  */
 export function computeTemporalComparison(opts: {
@@ -74,16 +74,16 @@ function computeVelocity(
   const oldest = history[0];
   const newest = history[history.length - 1];
 
-  const oldestDate = new Date(oldest.fingerprint.timestamp);
-  const newestDate = new Date(newest.fingerprint.timestamp);
+  const oldestDate = new Date(oldest.expression.timestamp);
+  const newestDate = new Date(newest.expression.timestamp);
   const windowDays = Math.max(
     (newestDate.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24),
     1,
   );
 
-  // Compare the oldest history entry's fingerprint against the current source
+  // Compare the oldest history entry's expression against the current source
   // to get a "then" comparison, and use the current comparison as "now"
-  const oldComparison = compareFingerprints(current.source, oldest.fingerprint);
+  const oldComparison = compareExpressions(current.source, oldest.expression);
 
   return Object.keys(current.dimensions).map((dimension) => {
     const oldDistance = oldComparison.dimensions[dimension]?.distance ?? 0;

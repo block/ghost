@@ -9,7 +9,7 @@ import { type ExpressionMeta, splitFrontmatter } from "./frontmatter.js";
 import { EXPRESSION_SCHEMA_VERSION, validateFrontmatter } from "./schema.js";
 
 export interface ParsedExpression {
-  fingerprint: Expression;
+  expression: Expression;
   meta: ExpressionMeta;
   /**
    * Structured view of the body as it was read from disk. Kept for lint
@@ -78,7 +78,7 @@ function isDelimiter(line: string): boolean {
 }
 
 /**
- * Parse a raw expression.md string into a Expression plus metadata and
+ * Parse a raw expression.md string into an Expression plus metadata and
  * structured body.
  *
  * Contract (schema 3): frontmatter and body own disjoint fields.
@@ -87,7 +87,7 @@ function isDelimiter(line: string): boolean {
  *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
  *     traits, `### dimension` → decision rationale, `# Values` → Do/Don't.
  *
- * The returned fingerprint unions both sources. Since the two sides never
+ * The returned expression unions both sources. Since the two sides never
  * carry the same field, there is no precedence rule — each field has one
  * home.
  *
@@ -110,14 +110,14 @@ export function parseExpression(
     validateFrontmatter(yamlObj, { partial });
   }
 
-  const { meta, fingerprint } = splitFrontmatter(yamlObj);
+  const { meta, expression } = splitFrontmatter(yamlObj);
   const body = parseBody(bodyText);
-  const merged = applyBody(fingerprint, body);
-  return { fingerprint: merged, meta, body, bodyRaw: bodyText };
+  const merged = applyBody(expression, body);
+  return { expression: merged, meta, body, bodyRaw: bodyText };
 }
 
 /**
- * Fold body-owned prose fields into the fingerprint. The body provides
+ * Fold body-owned prose fields into the expression. The body provides
  * Character/Signature prose for `observation`, rationale for `decisions`
  * (keyed by dimension), and `# Values`. Frontmatter-only dimensions keep
  * their evidence but get no body prose (decision text left empty).
@@ -157,9 +157,11 @@ function mergeObservation(
 }
 
 /**
- * Merge the frontmatter decision skeletons (dimension + evidence) with the
- * body's rationale (prose keyed by `### dimension`). Frontmatter order wins;
- * body-only decisions append at the end.
+ * Merge the frontmatter decision skeletons (dimension + optional embedding)
+ * with the body's rationale and evidence (keyed by `### dimension`).
+ * Frontmatter order wins; body-only decisions append at the end.
+ *
+ * Schema 5: evidence comes from the body, embedding (if any) from the YAML.
  */
 function mergeDecisions(
   fromYaml: DesignDecision[] | undefined,
@@ -179,7 +181,7 @@ function mergeDecisions(
     out.push({
       dimension: y.dimension,
       decision: b?.decision ?? "",
-      evidence: y.evidence ?? [],
+      evidence: b?.evidence ?? [],
       ...(y.embedding ? { embedding: y.embedding } : {}),
     });
   }

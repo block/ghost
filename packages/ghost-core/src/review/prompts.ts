@@ -3,22 +3,22 @@ import type { Expression } from "../types.js";
 /**
  * Build the review prompt.
  *
- * The fingerprint IS the rule set. Claude IS the reviewer.
+ * The expression IS the rule set. Claude IS the reviewer.
  * No regex pre-filtering — the LLM sees the full design language spec
  * and the full source code, and produces the review.
  */
 export function buildReviewPrompt(
-  fingerprint: Expression,
+  expression: Expression,
   files: { path: string; content: string }[],
 ): string {
-  const fpSpec = formatFingerprint(fingerprint);
+  const fpSpec = formatExpression(expression);
   const fileContents = files
     .map((f) => `--- ${f.path} ---\n${f.content}`)
     .join("\n\n");
 
-  const intentSpec = formatDesignIntent(fingerprint);
+  const intentSpec = formatDesignIntent(expression);
 
-  return `You are a design system reviewer. You compare source code against a design fingerprint and identify every place the code deviates from the design language.
+  return `You are a design system reviewer. You compare source code against a design expression and identify every place the code deviates from the design language.
 
 ## The Design Language
 
@@ -28,7 +28,7 @@ ${intentSpec}${fpSpec}
 
 ## What Constitutes Drift
 
-A value drifts when it doesn't match the fingerprint. Specifically:
+A value drifts when it doesn't match the expression. Specifically:
 
 ### Palette
 - Any hardcoded color (hex, rgb, hsl, oklch) that isn't in the palette above
@@ -53,7 +53,7 @@ A value drifts when it doesn't match the fingerprint. Specifically:
 
 - Only flag values that are **actually hardcoded** in the source. Tailwind utility classes like \`bg-primary\`, \`p-4\`, \`text-sm\`, \`rounded-lg\` reference the design system's token layer — do NOT flag these.
 - CSS variable references (\`var(--...)\`) are token usage — do NOT flag these.
-- For each issue, provide the **nearest correct value** from the fingerprint and a **concrete fix** (the full corrected line of code).
+- For each issue, provide the **nearest correct value** from the expression and a **concrete fix** (the full corrected line of code).
 - Be precise about line numbers. Every line number must correspond to actual content in the file.
 - If a file has no drift, do not invent issues. Return an empty array.
 
@@ -74,7 +74,7 @@ Return ONLY a valid JSON array. No markdown, no explanation, no preamble. Each e
   "file": "exact file path from above",
   "line": 1-based line number,
   "found": "the literal value found",
-  "nearest": "the correct value from the fingerprint",
+  "nearest": "the correct value from the expression",
   "nearestRole": "semantic role if applicable (e.g. primary, destructive, neutral)",
   "fix": {
     "replacement": "the full corrected line of code",
@@ -142,7 +142,7 @@ function formatDesignIntent(fp: Expression): string {
   return sections.length > 0 ? `${sections.join("\n")}\n` : "";
 }
 
-function formatFingerprint(fp: Expression): string {
+function formatExpression(fp: Expression): string {
   const sections: string[] = [];
 
   // Palette

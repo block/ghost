@@ -45,14 +45,14 @@ and (by default) runs `ghost review` against its own output. If `errors > 0`,
 it injects drift feedback and retries. Hard-capped to 3 retries.
 
 Not meant to compete with Cursor / v0 / in-house tools. It exists so the loop
-is provable end-to-end, and so `ghost review suite` has something to drive.
+is provable end-to-end, and so `ghost verify` has something to drive.
 
 Flags:
 - `--no-review` — skip self-review (drift-blind, fast)
 - `--retries <n>` — max retries, default 2, capped at 3
 - `--json` — structured output with per-attempt drift counts
 
-### `ghost review suite [expression] --n <count>`
+### `ghost verify [expression] --n <count>`
 
 Run the generate→review loop over a versioned prompt suite (bundled v0.1,
 ~18 prompts). Aggregates drift per dimension and classifies:
@@ -62,7 +62,7 @@ Run the generate→review loop over a versioned prompt suite (bundled v0.1,
 - **uncaptured** (≥ 3): expression likely under-specifies this dimension
 
 Output is a per-dimension report plus actionable recommendations. The killer
-demo: run `review suite` on a mature expression, intentionally drop a section
+demo: run `verify` on a mature expression, intentionally drop a section
 (e.g. motion), re-run, watch drift rise in dimensions that lost grounding.
 
 ## The standard prompt suite
@@ -100,6 +100,6 @@ generator's context; the generator produces; `ghost review` gates the output.
 Drift disposition belongs to the pipeline owner (block, annotate,
 require `ghost ack`).
 
-**Expression maintenance**: run `ghost review suite` periodically. When a dimension
+**Expression maintenance**: run `ghost verify` periodically. When a dimension
 shows up consistently leaky, the expression needs more Decisions or Values
 rules for that dimension.

@@ -13,7 +13,7 @@ import {
 import type { Expression } from "../../src/types.js";
 
 const BASE_EXPRESSION = `---
-schema: 4
+schema: 5
 id: base
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z
@@ -36,7 +36,6 @@ surfaces:
 embedding: [0]
 decisions:
   - dimension: inline-rule
-    evidence: []
 ---
 
 # Decisions
@@ -60,7 +59,7 @@ describe("decision fragments", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("assembles decisions/*.md into the fingerprint", async () => {
+  it("assembles decisions/*.md into the expression", async () => {
     const expressionPath = join(dir, "expression.md");
     await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
     await mkdir(join(dir, "decisions"), { recursive: true });
@@ -82,12 +81,12 @@ No cool grays anywhere.
       "utf-8",
     );
 
-    const { fingerprint } = await loadExpression(expressionPath);
-    const dims = fingerprint.decisions?.map((d) => d.dimension) ?? [];
+    const { expression } = await loadExpression(expressionPath);
+    const dims = expression.decisions?.map((d) => d.dimension) ?? [];
     expect(dims).toContain("inline-rule");
     expect(dims).toContain("warm-neutrals");
     expect(dims).toContain("from-filename");
-    const warm = fingerprint.decisions?.find(
+    const warm = expression.decisions?.find(
       (d) => d.dimension === "warm-neutrals",
     );
     expect(warm?.evidence).toEqual(["#111", "#222"]);
@@ -109,8 +108,8 @@ Overridden by fragment.
       "utf-8",
     );
 
-    const { fingerprint } = await loadExpression(expressionPath);
-    const rule = fingerprint.decisions?.find(
+    const { expression } = await loadExpression(expressionPath);
+    const rule = expression.decisions?.find(
       (d) => d.dimension === "inline-rule",
     );
     expect(rule?.decision).toBe("Overridden by fragment.");
@@ -126,18 +125,18 @@ Overridden by fragment.
       "utf-8",
     );
 
-    const { fingerprint } = await loadExpression(expressionPath, {
+    const { expression } = await loadExpression(expressionPath, {
       noFragments: true,
     });
-    const dims = fingerprint.decisions?.map((d) => d.dimension) ?? [];
+    const dims = expression.decisions?.map((d) => d.dimension) ?? [];
     expect(dims).not.toContain("extra");
   });
 
   it("ignores absent decisions/ directory silently", async () => {
     const expressionPath = join(dir, "expression.md");
     await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
-    const { fingerprint } = await loadExpression(expressionPath);
-    expect(fingerprint.decisions).toHaveLength(1);
+    const { expression } = await loadExpression(expressionPath);
+    expect(expression.decisions).toHaveLength(1);
   });
 });
 
@@ -199,9 +198,9 @@ describe("embedding fragment", () => {
       "utf-8",
     );
 
-    const { fingerprint } = await loadExpression(expressionPath);
+    const { expression } = await loadExpression(expressionPath);
     // The sibling vector wins over the recomputed one
-    expect(fingerprint.embedding).toEqual(vector);
+    expect(expression.embedding).toEqual(vector);
   });
 
   it("loader recomputes the embedding when no sibling file exists", async () => {
@@ -209,10 +208,10 @@ describe("embedding fragment", () => {
     const md = serializeExpression(V4_FINGERPRINT);
     await writeFile(expressionPath, md, "utf-8");
 
-    const { fingerprint } = await loadExpression(expressionPath);
+    const { expression } = await loadExpression(expressionPath);
     // No sibling; loader falls back to computeEmbedding — which produces a
     // 49-dim vector. Length tells us the recompute path fired.
-    expect(fingerprint.embedding).toHaveLength(49);
+    expect(expression.embedding).toHaveLength(49);
   });
 
   it("noEmbeddingBackfill skips both fragment read and recompute", async () => {
@@ -220,11 +219,11 @@ describe("embedding fragment", () => {
     const md = serializeExpression(V4_FINGERPRINT);
     await writeFile(expressionPath, md, "utf-8");
 
-    const { fingerprint } = await loadExpression(expressionPath, {
+    const { expression } = await loadExpression(expressionPath, {
       noEmbeddingBackfill: true,
     });
     // Frontmatter had no embedding and backfill is off — stays empty.
-    expect(fingerprint.embedding ?? []).toHaveLength(0);
+    expect(expression.embedding ?? []).toHaveLength(0);
   });
 });
 
@@ -246,10 +245,10 @@ describe("fragment body-link discovery", () => {
 
 describe("serializeEmbeddingFragment", () => {
   it("produces a frontmatter-only file with vector and provenance", () => {
-    const raw = serializeEmbeddingFragment([0.1, 0.2, 0.3], "sys", 4);
+    const raw = serializeEmbeddingFragment([0.1, 0.2, 0.3], "sys", 5);
     expect(raw).toMatch(/^---\n/);
     expect(raw).toMatch(/\n---\n$/);
-    expect(raw).toContain("schema: 4");
+    expect(raw).toContain("schema: 5");
     expect(raw).toContain("kind: embedding");
     expect(raw).toContain("of: sys");
     expect(raw).toContain("dimensions: 3");

@@ -19,20 +19,17 @@ for (const envFile of [".env", ".env.local"]) {
 import type { EmbeddingConfig, Expression } from "@ghost/core";
 import {
   compareExpressions,
-  compareFingerprints,
   compareFleet,
   computeTemporalComparison,
-  diff,
+  diffExpressions,
   EMBEDDING_FRAGMENT_FILENAME,
   EXPRESSION_SCHEMA_VERSION,
   formatComparison,
   formatComparisonJSON,
-  formatDiffCLI,
-  formatDiffJSON,
   formatDiscoveryCLI,
   formatDiscoveryJSON,
+  formatExpression,
   formatExpressionJSON,
-  formatFingerprint,
   formatFleetComparison,
   formatFleetComparisonJSON,
   formatSemanticDiff,
@@ -52,6 +49,7 @@ import {
 } from "@ghost/core";
 import { cac } from "cac";
 import { selectCompareMode } from "./compare-mode.js";
+import { registerDriftCommand } from "./drift-command.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
@@ -61,6 +59,7 @@ import {
 import { registerGenerateCommand } from "./generate-command.js";
 import { registerLintCommand } from "./lint-command.js";
 import { registerReviewCommand } from "./review-command.js";
+import { registerVerifyCommand } from "./verify-command.js";
 import { registerVizCommand } from "./viz-command.js";
 
 const cli = cac("ghost");
@@ -69,14 +68,14 @@ const cli = cac("ghost");
 cli
   .command(
     "profile [...targets]",
-    "Generate a design fingerprint — accepts one or more targets (directory, URL, npm package, GitHub repo)",
+    "Generate a design expression — accepts one or more targets (directory, URL, npm package, GitHub repo)",
   )
   .option("-c, --config <path>", "Path to ghost config file")
   .option(
     "-r, --registry <path>",
     "Path or URL to a registry.json (profiles registry directly)",
   )
-  .option("-o, --output <file>", "Write fingerprint to file")
+  .option("-o, --output <file>", "Write expression to file")
   .option(
     "--emit",
     "Write expression.md to project root (publishable artifact)",
@@ -90,7 +89,7 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (targets: string[], opts) => {
     try {
-      let fingerprint: Expression;
+      let expression: Expression;
 
       if (opts.registry) {
         let embeddingConfig: EmbeddingConfig | undefined;
@@ -100,7 +99,7 @@ cli
         } catch {
           // No config file is fine
         }
-        fingerprint = await profileRegistry(opts.registry, embeddingConfig);
+        expression = await profileRegistry(opts.registry, embeddingConfig);
       } else {
         const targetStrings = targets.length > 0 ? targets : ["."];
         const maxIterations = opts.maxIterations
@@ -109,7 +108,7 @@ cli
 
         if (targetStrings.length === 1 && targetStrings[0] === ".") {
           const config = await loadConfig(opts.config);
-          fingerprint = await profile(config, { emit: opts.emit });
+          expression = await profile(config, { emit: opts.emit });
         } else if (targetStrings.length === 1) {
           const config = await loadConfig(opts.config);
           const target = resolveTarget(targetStrings[0]);
@@ -119,7 +118,7 @@ cli
           }
 
           const result = await profileTarget(target, config);
-          fingerprint = result.fingerprint;
+          expression = result.expression;
 
           if (opts.verbose) printVerboseResult(result);
         } else {
@@ -135,7 +134,7 @@ cli
           const result = await profileMultiTarget(ts, config, {
             maxIterations,
           });
-          fingerprint = result.fingerprint;
+          expression = result.expression;
 
           if (opts.verbose) printVerboseResult(result);
         }
@@ -143,21 +142,21 @@ cli
 
       const output =
         opts.format === "json"
-          ? formatExpressionJSON(fingerprint)
-          : formatFingerprint(fingerprint);
+          ? formatExpressionJSON(expression)
+          : formatExpression(expression);
 
       if (opts.output) {
         const isMd = opts.output.endsWith(".md");
         const content = isMd
-          ? serializeExpression(fingerprint)
-          : formatExpressionJSON(fingerprint);
+          ? serializeExpression(expression)
+          : formatExpressionJSON(expression);
         await writeFile(opts.output, content);
-        console.log(`Fingerprint written to ${opts.output}`);
+        console.log(`Expression written to ${opts.output}`);
 
         // v4: when writing an expression.md, drop the embedding next to it
         // as a sibling fragment file. Keeps the index lean and the vector
         // cacheable — loaders fall back to recompute if missing.
-        if (isMd && fingerprint.embedding?.length) {
+        if (isMd && expression.embedding?.length) {
           const { dirname, resolve: resolvePath } = await import("node:path");
           const embeddingPath = resolvePath(
             dirname(opts.output),
@@ -166,8 +165,8 @@ cli
           await writeFile(
             embeddingPath,
             serializeEmbeddingFragment(
-              fingerprint.embedding,
-              fingerprint.id,
+              expression.embedding,
+              expression.id,
               EXPRESSION_SCHEMA_VERSION,
             ),
           );
@@ -208,15 +207,14 @@ function printVerboseResult(result: {
 
 // --- compare ---
 // Unified comparison verb. Modes (flag-dispatched):
-//   default (N=2):         pairwise fingerprint distance
+//   default (N=2):         pairwise expression distance
 //   --temporal (N=2):      pairwise + velocity/trajectory/ack
 //   --semantic (N=2):      semantic expression diff
 //   N≥3 or --cluster:      fleet comparison (pairwise matrix + optional clusters)
-//   --components:          local components vs registry (no fingerprint args)
 cli
   .command(
-    "compare [...fingerprints]",
-    "Compare two or more fingerprints (N≥3 = fleet). Use --components for local vs registry.",
+    "compare [...expressions]",
+    "Compare two or more expressions (N≥3 = fleet).",
   )
   .option(
     "--temporal",
@@ -228,18 +226,11 @@ cli
   )
   .option("--semantic", "Semantic diff of decisions/values/palette (N=2 only)")
   .option("--cluster", "Include cluster analysis (N≥3)")
-  .option(
-    "--components",
-    "Compare local components against registry (ignores fingerprint args)",
-  )
-  .option("--component <name>", "Limit --components to one component")
-  .option("-c, --config <path>", "Path to ghost config file (for --components)")
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (fingerprints: string[], opts) => {
+  .action(async (expressions: string[], opts) => {
     try {
       const dispatch = selectCompareMode({
-        fingerprintCount: fingerprints.length,
-        components: Boolean(opts.components),
+        expressionCount: expressions.length,
         cluster: Boolean(opts.cluster),
         semantic: Boolean(opts.semantic),
         temporal: Boolean(opts.temporal),
@@ -250,25 +241,11 @@ cli
         process.exit(2);
       }
 
-      if (dispatch.mode === "components") {
-        const config = await loadConfig(opts.config);
-        const results = await diff(config, opts.component || undefined);
-        const output =
-          opts.format === "json"
-            ? formatDiffJSON(results)
-            : formatDiffCLI(results);
-        process.stdout.write(output);
-        const hasBreaking = results.some((r) =>
-          r.components.some((c) => c.severity === "error"),
-        );
-        process.exit(hasBreaking ? 1 : 0);
-      }
-
       if (dispatch.mode === "fleet") {
         const members = await Promise.all(
-          fingerprints.map(async (p) => {
-            const { fingerprint } = await loadExpression(p);
-            return { id: fingerprint.id, fingerprint };
+          expressions.map(async (p) => {
+            const { expression } = await loadExpression(p);
+            return { id: expression.id, expression };
           }),
         );
         const fleet = compareFleet(members, { cluster: Boolean(opts.cluster) });
@@ -280,17 +257,17 @@ cli
         process.exit(0);
       }
 
-      // Pairwise modes (N=2): load both fingerprints once.
-      const [a, b] = fingerprints;
+      // Pairwise modes (N=2): load both expressions once.
+      const [a, b] = expressions;
       const [aParsed, bParsed] = await Promise.all([
         loadExpression(a),
         loadExpression(b),
       ]);
-      const src = aParsed.fingerprint;
-      const tgt = bParsed.fingerprint;
+      const src = aParsed.expression;
+      const tgt = bParsed.expression;
 
       if (dispatch.mode === "semantic") {
-        const semantic = compareExpressions(src, tgt);
+        const semantic = diffExpressions(src, tgt);
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(semantic, null, 2)}\n`);
         } else {
@@ -299,7 +276,7 @@ cli
         process.exit(semantic.unchanged ? 0 : 1);
       }
 
-      const comparison = compareFingerprints(src, tgt, {
+      const comparison = compareExpressions(src, tgt, {
         includeVectors: dispatch.mode === "temporal",
       });
 
@@ -372,6 +349,8 @@ cli
 
 // Commands defined in other files register themselves on the same cli instance
 registerReviewCommand(cli);
+registerDriftCommand(cli);
+registerVerifyCommand(cli);
 registerAckCommand(cli);
 registerAdoptCommand(cli);
 registerDivergeCommand(cli);

@@ -4,7 +4,7 @@ import { lintExpression } from "../../src/expression/index.js";
 const HEADER = `---
 name: Claude
 slug: claude
-schema: 4
+schema: 5
 id: claude
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z`;
@@ -43,8 +43,7 @@ describe("lintExpression", () => {
   personality: []
   closestSystems: []
 decisions:
-  - dimension: warm-neutrals
-    evidence: ["#141413"]`,
+  - dimension: warm-neutrals`,
       `# Character
 
 Warm, editorial
@@ -57,6 +56,9 @@ Warm, editorial
 
 ### warm-neutrals
 No cool grays
+
+**Evidence:**
+- \`#141413\`
 `,
     );
     const report = lintExpression(md);
@@ -64,7 +66,7 @@ No cool grays
   });
 
   it("flags stale schema version", () => {
-    const md = build("", "").replace("schema: 4", "schema: 3");
+    const md = build("", "").replace("schema: 5", "schema: 3");
     const report = lintExpression(md);
     expect(
       report.issues.some((i) => i.rule === "schema-version-mismatch"),
@@ -72,55 +74,34 @@ No cool grays
     expect(report.errors).toBeGreaterThan(0);
   });
 
-  it("flags missing rationale when a frontmatter decision has no body block", () => {
+  it("flags a dimension declared in frontmatter with no matching body block", () => {
     const md = build(
       `\ndecisions:
-  - dimension: warm-neutrals
-    evidence: ["#141413"]`,
+  - dimension: warm-neutrals`,
       `# Only a stray heading`,
     );
     const report = lintExpression(md);
     expect(
       report.issues.some(
-        (i) =>
-          i.rule === "missing-rationale" && /warm-neutrals/.test(i.message),
+        (i) => i.rule === "orphan-dimension" && /warm-neutrals/.test(i.message),
       ),
     ).toBe(true);
   });
 
-  it("flags orphan prose when the body has a ### with no frontmatter entry", () => {
+  it("does not flag body `### dimension` when frontmatter omits the entry", () => {
     const md = build(
       ``,
       `# Decisions
 
 ### stray-thought
-Rationale with no frontmatter entry.
+Rationale without frontmatter decisions[] entry — body is authoritative.
 `,
     );
     const report = lintExpression(md);
-    expect(
-      report.issues.some(
-        (i) => i.rule === "orphan-prose" && /stray-thought/.test(i.message),
-      ),
-    ).toBe(true);
-  });
-
-  it("flags legacy **Evidence:** bullets in the body", () => {
-    const md = build(
-      `\ndecisions:
-  - dimension: warm-neutrals
-    evidence: ["#141413"]`,
-      `# Decisions
-
-### warm-neutrals
-No cool grays
-
-**Evidence:** #141413
-`,
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "stray-evidence-in-body")).toBe(
-      true,
+    // Schema 5: body ### headings are authoritative and can stand alone;
+    // only unmatched frontmatter slugs are flagged.
+    expect(report.issues.some((i) => i.rule === "orphan-dimension")).toBe(
+      false,
     );
   });
 
@@ -140,15 +121,17 @@ values:
     expect(report.errors).toBeGreaterThan(0);
   });
 
-  it("flags evidence that cites a hex not in palette", () => {
+  it("flags body evidence that cites a hex not in palette", () => {
     const md = build(
       `\ndecisions:
-  - dimension: bad-cite
-    evidence: ["#000000"]`,
+  - dimension: bad-cite`,
       `# Decisions
 
 ### bad-cite
 refers to a ghost color
+
+**Evidence:**
+- \`#000000\`
 `,
     );
     const report = lintExpression(md);

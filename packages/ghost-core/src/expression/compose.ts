@@ -1,7 +1,7 @@
 import type { DesignDecision, Expression } from "../types.js";
 
 /**
- * Merge a child fingerprint on top of a parent. Precedence rules:
+ * Merge a child expression on top of a parent. Precedence rules:
  *
  *   • Scalars / arrays      → child replaces when present, else parent
  *   • decisions             → merged by `dimension` slug; child wins per-dim,

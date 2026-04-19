@@ -26,4 +26,4 @@ export type {
   ExpressionValidation,
   ValidationIssue,
 } from "./validate-expression.js";
-export { validateFingerprint } from "./validate-expression.js";
+export { validateExpression } from "./validate-expression.js";

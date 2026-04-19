@@ -14,10 +14,10 @@ function c(code: string, text: string): string {
   return useColor ? `${code}${text}${RESET}` : text;
 }
 
-export function formatFingerprint(fp: Expression): string {
+export function formatExpression(fp: Expression): string {
   const lines: string[] = [];
 
-  lines.push(c(BOLD, `Design Fingerprint: ${fp.id}`));
+  lines.push(c(BOLD, `Expression: ${fp.id}`));
   lines.push(c(DIM, `Source: ${fp.source} | ${fp.timestamp}`));
   if (fp.sources?.length) {
     lines.push(c(DIM, `Synthesized from: ${fp.sources.join(", ")}`));
@@ -141,7 +141,7 @@ export function formatExpressionJSON(fp: Expression): string {
 }
 
 export function formatComparisonJSON(comp: ExpressionComparison): string {
-  // Omit full fingerprints from JSON comparison to keep it concise
+  // Omit full expressions from JSON comparison to keep it concise
   return JSON.stringify(
     {
       source: comp.source.id,

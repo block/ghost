@@ -1,7 +1,7 @@
 import type { SampledMaterial } from "../../types.js";
 
 /**
- * A tool the fingerprint agent can invoke during analysis.
+ * A tool the expression agent can invoke during analysis.
  */
 export interface AgentTool {
   name: string;

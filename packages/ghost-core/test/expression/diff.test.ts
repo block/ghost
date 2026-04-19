@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareExpressions } from "../../src/expression/index.js";
+import { diffExpressions } from "../../src/expression/index.js";
 import type { Expression } from "../../src/types.js";
 
 const BASE: Expression = {
@@ -44,23 +44,25 @@ const BASE: Expression = {
   embedding: [0.1, 0.2],
 };
 
-describe("compareExpressions", () => {
-  it("returns unchanged=true for an identical fingerprint", () => {
-    const diff = compareExpressions(BASE, structuredClone(BASE));
+describe("diffExpressions", () => {
+  it("returns unchanged=true for an identical expression", () => {
+    const diff = diffExpressions(BASE, structuredClone(BASE));
     expect(diff.unchanged).toBe(true);
   });
 
   it("detects added and removed decisions by dimension", () => {
     const b: Expression = structuredClone(BASE);
+    const first = BASE.decisions?.[0];
+    if (!first) throw new Error("BASE must have a first decision");
     b.decisions = [
-      BASE.decisions![0],
+      first,
       {
         dimension: "new-thing",
         decision: "Something new",
         evidence: [],
       },
     ];
-    const diff = compareExpressions(BASE, b);
+    const diff = diffExpressions(BASE, b);
     expect(diff.decisions.added.map((d) => d.dimension)).toEqual(["new-thing"]);
     expect(diff.decisions.removed.map((d) => d.dimension)).toEqual([
       "serif-headlines",
@@ -69,9 +71,11 @@ describe("compareExpressions", () => {
 
   it("detects modified decisions (both prose and evidence deltas)", () => {
     const b: Expression = structuredClone(BASE);
-    b.decisions![0].decision = "No cool grays, no cool whites.";
-    b.decisions![0].evidence = ["#141413", "#4d4c48", "#5e5d59"];
-    const diff = compareExpressions(BASE, b);
+    const d0 = b.decisions?.[0];
+    if (!d0) throw new Error("BASE must have a first decision");
+    d0.decision = "No cool grays, no cool whites.";
+    d0.evidence = ["#141413", "#4d4c48", "#5e5d59"];
+    const diff = diffExpressions(BASE, b);
     expect(diff.decisions.modified).toHaveLength(1);
     expect(diff.decisions.modified[0].dimension).toBe("warm-neutrals");
     expect(diff.decisions.modified[0].decisionChanged).toBe(true);
@@ -82,7 +86,7 @@ describe("compareExpressions", () => {
     const b: Expression = structuredClone(BASE);
     b.values!.do = ["Use warm neutrals", "New rule"];
     b.values!.dont = ["Use cool grays"];
-    const diff = compareExpressions(BASE, b);
+    const diff = diffExpressions(BASE, b);
     expect(diff.values.doAdded).toEqual(["New rule"]);
     expect(diff.values.doRemoved).toEqual(["Reserve accent for CTAs"]);
     expect(diff.values.dontRemoved).toEqual(["Use pure white"]);
@@ -95,7 +99,7 @@ describe("compareExpressions", () => {
       { role: "error", value: "#b53333" },
       { role: "focus", value: "#3898ec" },
     ];
-    const diff = compareExpressions(BASE, b);
+    const diff = diffExpressions(BASE, b);
     expect(diff.palette.dominantChanged).toEqual([
       { role: "accent", from: "#c96442", to: "#d15a40" },
     ]);
@@ -108,7 +112,7 @@ describe("compareExpressions", () => {
     const b: Expression = structuredClone(BASE);
     b.spacing.scale = [4, 8, 16, 24, 32];
     b.surfaces.shadowComplexity = "layered";
-    const diff = compareExpressions(BASE, b);
+    const diff = diffExpressions(BASE, b);
     const fields = diff.tokens.map((t) => t.field);
     expect(fields).toContain("spacing.scale");
     expect(fields).toContain("surfaces.shadowComplexity");

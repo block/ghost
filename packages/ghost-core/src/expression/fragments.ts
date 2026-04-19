@@ -22,7 +22,7 @@ import { splitRaw } from "./parser.js";
  *   No cool blue-grays anywhere. Every gray carries a warm undertone.
  *
  * The file's markdown body becomes the decision's prose. The assembled
- * decisions are then merged into the main fingerprint's `decisions` via
+ * decisions are then merged into the main expression's `decisions` via
  * the same by-dimension rules as extends composition.
  */
 export async function loadDecisionFragments(
@@ -87,17 +87,17 @@ export const EMBEDDING_FRAGMENT_FILENAME = "embedding.md";
 /**
  * Serialize an embedding vector to a fragment file. The file carries only
  * a `vector:` array — no prose body. `of:` ties it back to the parent
- * fingerprint id so the link isn't ambiguous.
+ * expression id so the link isn't ambiguous.
  */
 export function serializeEmbeddingFragment(
   embedding: number[],
-  fingerprintId: string,
+  expressionId: string,
   schemaVersion: number,
 ): string {
   const lines: string[] = ["---"];
   lines.push(`schema: ${schemaVersion}`);
   lines.push("kind: embedding");
-  lines.push(`of: ${fingerprintId}`);
+  lines.push(`of: ${expressionId}`);
   lines.push(`dimensions: ${embedding.length}`);
   lines.push("vector:");
   for (const v of embedding) {

@@ -27,9 +27,9 @@ export interface ReviewOptions {
   diff?: { base?: string; staged?: boolean };
   /** Working directory. Default: process.cwd() */
   cwd?: string;
-  /** Explicit fingerprint object */
-  fingerprint?: Expression;
-  /** Path to fingerprint JSON file */
+  /** Explicit expression object */
+  expression?: Expression;
+  /** Path to an expression.md file */
   expressionPath?: string;
   /** Review config overrides */
   config?: ReviewConfig;
@@ -37,19 +37,19 @@ export interface ReviewOptions {
   llmConfig?: LLMConfig;
 }
 
-async function resolveFingerprint(
+async function resolveExpression(
   options: ReviewOptions,
   cwd: string,
 ): Promise<Expression> {
-  if (options.fingerprint) return options.fingerprint;
+  if (options.expression) return options.expression;
 
   if (options.expressionPath) {
     return (await loadExpression(resolve(cwd, options.expressionPath)))
-      .fingerprint;
+      .expression;
   }
 
   const mdPath = resolve(cwd, EXPRESSION_FILENAME);
-  if (existsSync(mdPath)) return (await loadExpression(mdPath)).fingerprint;
+  if (existsSync(mdPath)) return (await loadExpression(mdPath)).expression;
 
   throw new Error(
     `No ${EXPRESSION_FILENAME} found. Run \`ghost profile . --emit\` to generate one, or pass --expression <path> explicitly.`,
@@ -245,16 +245,16 @@ function parseResponse(
 }
 
 /**
- * Run a fingerprint-informed design review.
+ * Run an expression-informed design review.
  *
- * Sends the design fingerprint + source files to the LLM.
- * The fingerprint IS the rule set. The LLM IS the reviewer.
+ * Sends the expression + source files to the LLM.
+ * The expression IS the rule set. The LLM IS the reviewer.
  */
 export async function review(options: ReviewOptions): Promise<ReviewReport> {
   const startTime = Date.now();
   const cwd = options.cwd ?? process.cwd();
 
-  const fingerprint = await resolveFingerprint(options, cwd);
+  const expression = await resolveExpression(options, cwd);
   const llmConfig = resolveLLMConfig(options);
   const provider = createProvider(llmConfig);
 
@@ -274,7 +274,7 @@ export async function review(options: ReviewOptions): Promise<ReviewReport> {
   if (collected.length === 0) {
     return {
       timestamp: new Date().toISOString(),
-      fingerprint: fingerprint.id,
+      expression: expression.id,
       files: [],
       summary: computeSummary([]),
       duration: Date.now() - startTime,
@@ -287,7 +287,7 @@ export async function review(options: ReviewOptions): Promise<ReviewReport> {
 
   for (const batch of batches) {
     const prompt = buildReviewPrompt(
-      fingerprint,
+      expression,
       batch.map((f) => ({ path: f.path, content: f.content })),
     );
 
@@ -309,7 +309,7 @@ export async function review(options: ReviewOptions): Promise<ReviewReport> {
 
   return {
     timestamp: new Date().toISOString(),
-    fingerprint: fingerprint.id,
+    expression: expression.id,
     files: allFileResults,
     summary: computeSummary(allFileResults),
     duration: Date.now() - startTime,

@@ -70,19 +70,32 @@ function slug(s: string): string {
 }
 
 /**
- * Parse a `### Dimension\nprose…` block. Evidence lives in the frontmatter
- * under `decisions[].evidence` — if a body block contains `**Evidence:**`
- * bullets (legacy schema-2 files), they're stripped from the prose but
- * not carried in the return value. Lint flags them separately.
+ * Parse a `### Dimension\nprose…\n**Evidence:**\n- …` block.
+ *
+ * Schema 5: evidence lives in the body as a `**Evidence:**` bullet list
+ * following the rationale prose. Backtick fencing used for citation
+ * formatting is stripped so the serialized value matches the in-memory
+ * one (round-trip safe).
  */
 function parseDecision(sec: Section): DesignDecision {
-  const evidenceRe = /\*\*Evidence:\*\*\s*[\s\S]*$/i;
+  const evidenceRe = /\*\*Evidence:\*\*\s*([\s\S]*)$/i;
+  const match = sec.body.match(evidenceRe);
   const prose = sec.body.replace(evidenceRe, "").trim();
+  const evidence = match ? parseBullets(match[1]).map(unfence) : [];
   return {
     dimension: slug(sec.heading),
     decision: prose,
-    evidence: [],
+    evidence,
   };
+}
+
+/** Remove surrounding backticks (citation fencing) added by the writer. */
+function unfence(s: string): string {
+  const trimmed = s.trim();
+  if (trimmed.length >= 2 && trimmed.startsWith("`") && trimmed.endsWith("`")) {
+    return trimmed.slice(1, -1).replace(/\\`/g, "`");
+  }
+  return trimmed;
 }
 
 /** Parse a markdown body into structured BodyData. */

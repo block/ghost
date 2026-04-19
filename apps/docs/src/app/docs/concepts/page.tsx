@@ -909,7 +909,7 @@ export default function ConceptsPage() {
               desc: "Hardcoded colors, off-scale spacing, off-brand type — flagged line-by-line on the diff.",
             },
             {
-              step: "review suite",
+              step: "verify",
               name: "Audit",
               desc: "Run the loop over a prompt suite. Per-dimension drift says where the expression leaks.",
             },
@@ -935,7 +935,7 @@ export default function ConceptsPage() {
         </div>
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            review suite
+            verify
           </code>{" "}
           is the schema-discipline mechanism. Each dimension gets classified as{" "}
           <em>tight</em> (expression reproduces faithfully), <em>leaky</em>{" "}

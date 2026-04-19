@@ -23,7 +23,7 @@ import {
 } from "@ghost/core";
 
 function resolveExpressionInput(): string {
-  return core.getInput("fingerprint") || EXPRESSION_FILENAME;
+  return core.getInput("expression") || EXPRESSION_FILENAME;
 }
 
 async function run() {

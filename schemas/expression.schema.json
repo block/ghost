@@ -72,12 +72,6 @@
           "dimension": {
             "type": "string"
           },
-          "evidence": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
           "embedding": {
             "type": "array",
             "items": {
@@ -85,7 +79,7 @@
             }
           }
         },
-        "required": ["dimension", "evidence"],
+        "required": ["dimension"],
         "additionalProperties": false
       }
     },

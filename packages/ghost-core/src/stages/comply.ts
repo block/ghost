@@ -1,4 +1,4 @@
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import type { Expression } from "../types.js";
 import type { StageContext, StageResult } from "./types.js";
 
@@ -6,7 +6,7 @@ export interface ComplianceRule {
   name: string;
   description: string;
   severity: "error" | "warning" | "info";
-  check: (fingerprint: Expression) => ComplianceViolation | null;
+  check: (expression: Expression) => ComplianceViolation | null;
 }
 
 export interface ComplianceViolation {
@@ -30,9 +30,9 @@ export interface ComplianceReport {
 }
 
 export interface ComplianceInput {
-  fingerprint: Expression;
+  expression: Expression;
   rules?: ComplianceRule[];
-  parentFingerprint?: Expression;
+  parentExpression?: Expression;
   maxDriftDistance?: number;
   thresholds?: ComplianceThresholds;
 }
@@ -56,7 +56,7 @@ const DEFAULT_THRESHOLDS: ComplianceThresholds = {
 };
 
 /**
- * Check a fingerprint against quality rules and parent drift thresholds.
+ * Check an expression against quality rules and parent drift thresholds.
  *
  * Runs built-in quality checks, custom rules, and drift comparison.
  * Produces a compliance report with violations, score, and pass/fail.
@@ -72,25 +72,25 @@ export async function comply(
   const thresholds = { ...DEFAULT_THRESHOLDS, ...input.thresholds };
 
   // Built-in quality checks
-  violations.push(...checkPalette(input.fingerprint, thresholds));
-  violations.push(...checkSpacing(input.fingerprint, thresholds));
-  violations.push(...checkTypography(input.fingerprint, thresholds));
-  violations.push(...checkSurfaces(input.fingerprint, thresholds));
+  violations.push(...checkPalette(input.expression, thresholds));
+  violations.push(...checkSpacing(input.expression, thresholds));
+  violations.push(...checkTypography(input.expression, thresholds));
+  violations.push(...checkSurfaces(input.expression, thresholds));
 
   // Custom rules
   if (input.rules) {
     for (const rule of input.rules) {
-      const violation = rule.check(input.fingerprint);
+      const violation = rule.check(input.expression);
       if (violation) violations.push(violation);
     }
   }
 
   // Drift checks against parent
   let driftSummary: ComplianceReport["driftSummary"];
-  if (input.parentFingerprint) {
+  if (input.parentExpression) {
     const driftResult = checkDrift(
-      input.fingerprint,
-      input.parentFingerprint,
+      input.expression,
+      input.parentExpression,
       thresholds,
     );
     violations.push(...driftResult.violations);
@@ -244,7 +244,7 @@ function checkDrift(
   summary: ComplianceReport["driftSummary"];
 } {
   const violations: ComplianceViolation[] = [];
-  const comparison = compareFingerprints(parent, child);
+  const comparison = compareExpressions(parent, child);
 
   const maxOverall = t.maxOverallDrift ?? 0.3;
   const maxPerDim = t.maxDriftPerDimension ?? 0.5;

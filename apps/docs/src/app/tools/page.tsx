@@ -11,7 +11,7 @@ const tools = [
     name: "Drift Engine",
     href: "/tools/drift",
     description:
-      "Fingerprint design systems, track their evolution, and surface divergence before it compounds.",
+      "Express design systems, track their evolution, and surface divergence before it compounds.",
     icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
   },
 ];

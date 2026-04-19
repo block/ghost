@@ -1,13 +1,13 @@
 import type { Expression } from "../types.js";
 
 /**
- * Render a Expression as a standardized natural language description.
+ * Render an Expression as a standardized natural language description.
  * This text is fed to embedding models to produce semantic vectors.
  *
  * The description is structured to emphasize design-relevant signals
  * and minimize noise from identifiers or timestamps.
  */
-export function describeFingerprint(fp: Expression): string {
+export function describeExpression(fp: Expression): string {
   const sections: string[] = [];
 
   // Observation (Layer 1) — prepend when available for richer semantic embedding

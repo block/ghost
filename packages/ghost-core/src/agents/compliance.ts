@@ -7,7 +7,7 @@ export interface ComplianceRule {
   name: string;
   description: string;
   severity: "error" | "warning" | "info";
-  check: (fingerprint: Expression) => ComplianceViolation | null;
+  check: (expression: Expression) => ComplianceViolation | null;
 }
 
 export interface ComplianceViolation {
@@ -31,9 +31,9 @@ export interface ComplianceReport {
 }
 
 export interface ComplianceInput {
-  fingerprint: Expression;
+  expression: Expression;
   rules?: ComplianceRule[];
-  parentFingerprint?: Expression;
+  parentExpression?: Expression;
   maxDriftDistance?: number;
   thresholds?: ComplianceThresholds;
 }

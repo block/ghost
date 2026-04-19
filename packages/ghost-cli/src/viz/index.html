@@ -31,16 +31,16 @@
   }
   .info-stat span { color: rgba(255,255,255,0.85); }
 
-  .fingerprint-label {
+  .expression-label {
     position: fixed; pointer-events: none; z-index: 55;
     font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
     color: rgba(255,255,255,0.4);
     white-space: nowrap; display: none;
     transition: color 0.3s, opacity 0.3s;
   }
-  .fingerprint-label.visible { display: block; }
-  .fingerprint-label.highlight { color: rgba(255,255,255,0.9); z-index: 56; }
-  .fingerprint-label.dim { color: rgba(255,255,255,0.1); }
+  .expression-label.visible { display: block; }
+  .expression-label.highlight { color: rgba(255,255,255,0.9); z-index: 56; }
+  .expression-label.dim { color: rgba(255,255,255,0.1); }
 
   #detail-panel {
     position: fixed; bottom: 36px; left: 36px; z-index: 60;
@@ -370,9 +370,9 @@ function assignColors() {
       return CLUSTER_PALETTE[ci % CLUSTER_PALETTE.length].clone();
     });
   } else {
-    // Try to derive color from fingerprint's dominant palette color
+    // Try to derive color from expression's dominant palette color
     memberColors = fleetData.members.map((m, i) => {
-      const fp = m.fingerprint;
+      const fp = m.expression;
       if (fp.palette?.dominant?.length > 0) {
         const dom = fp.palette.dominant[0];
         if (dom.oklch) {
@@ -545,7 +545,7 @@ function buildCentroid() {
 function buildLabels() {
   fleetData.members.forEach((_member) => {
     const el = document.createElement('div');
-    el.className = 'fingerprint-label';
+    el.className = 'expression-label';
     el.textContent = _member.id;
     document.body.appendChild(el);
     memberLabels.push(el);
@@ -561,7 +561,7 @@ function buildInfoPanel() {
 
   panel.innerHTML = `
     <div class="info-title">Ghost Fleet</div>
-    <div class="info-stat"><span>${n}</span> fingerprints</div>
+    <div class="info-stat"><span>${n}</span> expressions</div>
     <div class="info-stat">spread <span>${spread}%</span></div>
     ${clusterCount > 1 ? `<div class="info-stat"><span>${clusterCount}</span> clusters</div>` : ''}
   `;

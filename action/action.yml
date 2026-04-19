@@ -7,7 +7,7 @@ inputs:
     description: "GitHub token for posting review comments"
     required: true
     default: ${{ github.token }}
-  fingerprint:
+  expression:
     description: "Path to expression.md. Defaults to ./expression.md."
     required: false
   anthropic-api-key:

@@ -1,5 +1,3 @@
-import { writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import type { Expression } from "@ghost/core";
 import {
   Director,
@@ -10,22 +8,19 @@ import {
   formatReviewCLI,
   formatReviewJSON,
   formatReviewSummary,
-  formatVerifyCLI,
   loadConfig,
   loadExpression,
-  loadPromptSuite,
   resolveTarget,
   review,
-  verify,
 } from "@ghost/core";
 import type { CAC } from "cac";
 
-const SCOPES = new Set(["files", "project", "suite"]);
-export type ReviewScope = "files" | "project" | "suite";
+const SCOPES = new Set(["files", "project"]);
+export type ReviewScope = "files" | "project";
 
 /**
  * Parse the positional args to determine scope + remaining positionals.
- * First arg is treated as scope if it matches files|project|suite; otherwise
+ * First arg is treated as scope if it matches files|project; otherwise
  * everything is treated as files-scope positionals (code paths to review).
  * Exported for unit testing.
  */
@@ -44,7 +39,7 @@ export function registerReviewCommand(cli: CAC): void {
   cli
     .command(
       "review [...args]",
-      "Check drift against expression.md. Scopes: files (default) | project | suite",
+      "Check drift against expression.md. Scopes: files (default) | project",
     )
     // files scope
     .option(
@@ -75,29 +70,6 @@ export function registerReviewCommand(cli: CAC): void {
       { default: "0.3" },
     )
     .option("-c, --config <path>", "Path to ghost config file (project scope)")
-    // suite scope
-    .option(
-      "--suite <path>",
-      "Path to a prompt suite JSON (suite scope, default: bundled v0.1)",
-    )
-    .option(
-      "-n, --n <count>",
-      "Subsample first N prompts (suite scope, default: run all)",
-    )
-    .option(
-      "--concurrency <n>",
-      "Max in-flight generate+review calls (suite scope, default: 3)",
-      { default: "3" },
-    )
-    .option(
-      "--retries <n>",
-      "Self-review retries per prompt (suite scope, default: 1)",
-      { default: "1" },
-    )
-    .option(
-      "-o, --out <file>",
-      "Write report to file (suite scope, default: stdout)",
-    )
     // shared
     .option(
       "--format <fmt>",
@@ -111,11 +83,6 @@ export function registerReviewCommand(cli: CAC): void {
 
         if (scope === "project") {
           await runProject(positional, opts);
-          return;
-        }
-
-        if (scope === "suite") {
-          await runSuite(positional, opts);
           return;
         }
 
@@ -180,16 +147,16 @@ async function runProject(
   const targetStr = positional[0] ?? ".";
   const resolvedTarget = resolveTarget(targetStr);
 
-  let parentFingerprint: Expression | undefined;
+  let parentExpression: Expression | undefined;
   if (opts.against) {
-    parentFingerprint = (await loadExpression(opts.against)).fingerprint;
+    parentExpression = (await loadExpression(opts.against)).expression;
   }
 
   const director = new Director();
-  const { fingerprint, compliance } = await director.comply(
+  const { expression, compliance } = await director.comply(
     resolvedTarget,
     {
-      parentFingerprint,
+      parentExpression,
       thresholds: {
         maxOverallDrift: Number.parseFloat(String(opts.maxDrift)),
       },
@@ -204,7 +171,7 @@ async function runProject(
 
   if (opts.verbose) {
     console.log(`Profiled ${resolvedTarget.type}: ${resolvedTarget.value}`);
-    console.log(`Confidence: ${fingerprint.confidence.toFixed(2)}`);
+    console.log(`Confidence: ${expression.confidence.toFixed(2)}`);
     console.log();
   }
 
@@ -219,59 +186,6 @@ async function runProject(
 
   process.stdout.write(`${output}\n`);
   process.exit(compliance.data.passed ? 0 : 1);
-}
-
-// --- suite scope (prompt-suite verification, was `verify`) ---
-
-async function runSuite(positional: string[], opts: ReviewOpts): Promise<void> {
-  const expressionPath = resolve(
-    process.cwd(),
-    positional[0] || "expression.md",
-  );
-  const { fingerprint } = await loadExpression(expressionPath);
-  const suite = await loadPromptSuite(opts.suite);
-  const concurrency = Number.parseInt(String(opts.concurrency ?? "3"), 10);
-  const retries = Number.parseInt(String(opts.retries ?? "1"), 10);
-  const n = opts.n ? Number.parseInt(String(opts.n), 10) : undefined;
-
-  const total =
-    n !== undefined && n > 0
-      ? Math.min(n, suite.prompts.length)
-      : suite.prompts.length;
-
-  process.stderr.write(
-    `Running ${total} prompt${total === 1 ? "" : "s"} at concurrency ${concurrency}…\n`,
-  );
-
-  const result = await verify({
-    fingerprint,
-    suite,
-    n,
-    concurrency,
-    retries,
-    onProgress: (p, done) => {
-      const status = p.passed ? "✓" : "✗";
-      process.stderr.write(
-        `  [${done}/${total}] ${status} ${p.id} (${(p.durationMs / 1000).toFixed(1)}s)\n`,
-      );
-    },
-  });
-
-  if (opts.out) {
-    const outPath = resolve(process.cwd(), opts.out);
-    await writeFile(outPath, JSON.stringify(result, null, 2), "utf-8");
-    process.stderr.write(`Report written to ${outPath}\n`);
-  }
-
-  if (opts.format === "json") {
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-  } else {
-    process.stdout.write(
-      `${formatVerifyCLI(result, { showPrompts: opts.verbose })}\n`,
-    );
-  }
-
-  process.exit(result.failed > 0 ? 1 : 0);
 }
 
 // --- helpers ---
@@ -307,12 +221,6 @@ interface ReviewOpts {
   against?: string;
   maxDrift?: string;
   config?: string;
-  // suite
-  suite?: string;
-  n?: string;
-  concurrency?: string;
-  retries?: string;
-  out?: string;
   // shared
   format?: string;
   verbose?: boolean;

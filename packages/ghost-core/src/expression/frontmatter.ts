@@ -2,7 +2,7 @@ import type { Expression } from "../types.js";
 
 /**
  * Expression-level metadata — lives in the frontmatter alongside the
- * machine-layer of Expression but is not part of the fingerprint.
+ * machine-layer of Expression but is not part of the structured content.
  */
 export interface ExpressionMeta {
   name?: string;
@@ -22,7 +22,7 @@ export interface ExpressionMeta {
 
 export interface FrontmatterData {
   meta: ExpressionMeta;
-  fingerprint: Expression;
+  expression: Expression;
 }
 
 /**
@@ -31,7 +31,7 @@ export interface FrontmatterData {
  * values) are populated from the markdown body by `applyBody` — they are
  * deliberately NOT listed here.
  */
-const FINGERPRINT_KEYS = new Set<keyof Expression>([
+const EXPRESSION_KEYS = new Set<keyof Expression>([
   "id",
   "source",
   "timestamp",
@@ -57,7 +57,7 @@ export function splitFrontmatter(
   const fp: Record<string, unknown> = {};
 
   for (const [k, v] of Object.entries(raw)) {
-    if (FINGERPRINT_KEYS.has(k as keyof Expression)) {
+    if (EXPRESSION_KEYS.has(k as keyof Expression)) {
       fp[k] = v;
     } else if (
       k === "name" ||
@@ -83,17 +83,17 @@ export function splitFrontmatter(
 
   return {
     meta,
-    fingerprint: fp as unknown as Expression,
+    expression: fp as unknown as Expression,
   };
 }
 
 /**
- * Build a plain object for YAML serialization from a fingerprint + meta.
- * Meta comes first for readability; then fingerprint fields, with prose
+ * Build a plain object for YAML serialization from an expression + meta.
+ * Meta comes first for readability; then expression fields, with prose
  * fields stripped — those belong in the markdown body.
  */
 export function mergeFrontmatter(
-  fingerprint: Expression,
+  expression: Expression,
   meta: ExpressionMeta = {},
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -121,7 +121,7 @@ export function mergeFrontmatter(
     "embedding",
   ];
   for (const key of ordered) {
-    const v = fingerprint[key];
+    const v = expression[key];
     if (v === undefined) continue;
     if (key === "observation") {
       const stripped = stripObservationProse(v as Expression["observation"]);
@@ -146,15 +146,16 @@ function stripObservationProse(
   return Object.keys(out).length ? out : undefined;
 }
 
+/**
+ * Schema 5: frontmatter decisions[] carries dimension + optional embedding
+ * only. Prose rationale and evidence bullets both live in the body.
+ */
 function stripDecisionProse(
   decisions: Expression["decisions"],
 ): Array<Record<string, unknown>> | undefined {
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {
-    const out: Record<string, unknown> = {
-      dimension: d.dimension,
-      evidence: d.evidence ?? [],
-    };
+    const out: Record<string, unknown> = { dimension: d.dimension };
     if (d.embedding) out.embedding = d.embedding;
     return out;
   });

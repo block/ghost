@@ -43,7 +43,7 @@ const FP: Expression = {
 describe("buildGenerationPrompt", () => {
   it("includes all four layers + tokens + user prompt", () => {
     const p = buildGenerationPrompt({
-      fingerprint: FP,
+      expression: FP,
       userPrompt: "Build a pricing page.",
       format: "html",
     });
@@ -61,7 +61,7 @@ describe("buildGenerationPrompt", () => {
   it("injects retry feedback when retryFeedback is passed", () => {
     const review: ReviewReport = {
       timestamp: "2026-04-17T00:00:00.000Z",
-      fingerprint: "fp",
+      expression: "fp",
       files: [
         {
           file: "artifact.html",
@@ -92,7 +92,7 @@ describe("buildGenerationPrompt", () => {
       duration: 10,
     };
     const p = buildGenerationPrompt({
-      fingerprint: FP,
+      expression: FP,
       userPrompt: "x",
       format: "html",
       retryFeedback: review,

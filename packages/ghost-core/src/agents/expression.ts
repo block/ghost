@@ -22,7 +22,7 @@ import type { ChatMessage, ToolContext } from "./tools/types.js";
 import type { AgentState } from "./types.js";
 
 /**
- * Fingerprint Agent — "What design language is this?"
+ * Expression Agent — "What design language is this?"
  *
  * Agentic-first approach: the agent explores source directories using tools
  * (list_files, search_files, read_file, run_extractor) to discover and
@@ -32,16 +32,16 @@ import type { AgentState } from "./types.js";
  * Iteration model:
  *   0: Build overview from sampled material → send to LLM with tools
  *   1..N: Tool call/response cycles as the LLM explores
- *   N+1: LLM produces fingerprint JSON → validate + compute embedding
+ *   N+1: LLM produces expression JSON → validate + compute embedding
  */
 export class ExpressionAgent extends BaseAgent<
   SampledMaterial,
   EnrichedExpression
 > {
-  name = "fingerprint";
+  name = "expression";
   maxIterations = 99;
-  systemPrompt = `You are a design fingerprinting agent. You analyze source files
-from design systems and produce three-layer fingerprints: an observation of the
+  systemPrompt = `You are a design expression agent. You analyze source files
+from design systems and produce three-layer expressions: an observation of the
 design language, abstract design decisions, and concrete token values.
 
 You have tools to explore the source directories: list_files, search_files,
@@ -51,14 +51,14 @@ color definitions, spacing scales, typography configs, and surface treatments.
 First form a holistic understanding of the design language. Then identify the
 abstract design decisions (implementation-agnostic principles). Finally extract
 the concrete values. When you have gathered enough signal, produce a JSON
-fingerprint matching the schema.`;
+expression matching the schema.`;
 
   // State preserved across iterations for tool-use loop
   private chatMessages: ChatMessage[] = [];
   private toolCallCount = 0;
   private maxToolCalls = DEFAULT_MAX_TOOL_CALLS;
   private toolCtx: ToolContext | null = null;
-  private pendingFingerprint: Expression | null = null;
+  private pendingExpression: Expression | null = null;
 
   protected async step(
     state: AgentState<EnrichedExpression>,
@@ -69,8 +69,8 @@ fingerprint matching the schema.`;
       return this.initialExploration(state, input, ctx);
     }
 
-    // If we have a pending fingerprint, proceed to validation
-    if (this.pendingFingerprint) {
+    // If we have a pending expression, proceed to validation
+    if (this.pendingExpression) {
       return this.validateAndFinalize(state, input, ctx);
     }
 
@@ -83,7 +83,7 @@ fingerprint matching the schema.`;
       return this.toolUseLoop(state, input, ctx);
     }
 
-    // No pending tool calls and no fingerprint — the exploration is done.
+    // No pending tool calls and no expression — the exploration is done.
     // If the last assistant message had content but didn't parse as JSON,
     // we've already surfaced that in a warning; just complete.
     state.status = "completed";
@@ -97,7 +97,7 @@ fingerprint matching the schema.`;
   ): Promise<AgentState<EnrichedExpression>> {
     if (!ctx.llm) {
       state.warnings.push(
-        "No LLM configured. Ghost v2 requires an LLM API key for fingerprinting.",
+        "No LLM configured. Ghost v2 requires an LLM API key for expression generation.",
       );
       state.status = "failed";
       return state;
@@ -106,7 +106,7 @@ fingerprint matching the schema.`;
     // Reset per-run state
     this.chatMessages = [];
     this.toolCallCount = 0;
-    this.pendingFingerprint = null;
+    this.pendingExpression = null;
 
     try {
       const provider = createProvider(ctx.llm);
@@ -115,7 +115,7 @@ fingerprint matching the schema.`;
       const overview = this.buildOverview(input);
       const projectId = input.metadata.packageJson?.name ?? "project";
 
-      const userMessage = `Analyze this project and produce a three-layer design fingerprint.
+      const userMessage = `Analyze this project and produce a three-layer design expression.
 
 ## Project: ${projectId}
 
@@ -138,7 +138,7 @@ Extract the concrete tokens:
 3. **Typography** — font families, size ramps, weight distributions
 4. **Surfaces** — border radii, shadow styles, border usage patterns
 
-When you have enough signal, output a JSON fingerprint matching this schema:
+When you have enough signal, output a JSON expression matching this schema:
 
 ${THREE_LAYER_SCHEMA}
 
@@ -168,16 +168,16 @@ Set "id" to "${projectId}".
           `LLM requested ${response.tool_calls.length} tool(s): ${response.tool_calls.map((tc) => tc.name).join(", ")}`,
         );
       } else if (response.content) {
-        // LLM produced a fingerprint directly from the overview
+        // LLM produced a expression directly from the overview
         this.chatMessages.push({
           role: "assistant",
           content: response.content,
         });
         try {
-          this.pendingFingerprint = this.parseFingerprint(response.content);
+          this.pendingExpression = this.parseExpression(response.content);
           state.confidence = 0.8;
           state.reasoning.push(
-            "LLM produced fingerprint from overview (no tool use needed)",
+            "LLM produced expression from overview (no tool use needed)",
           );
         } catch {
           state.reasoning.push(
@@ -216,7 +216,7 @@ Set "id" to "${projectId}".
             this.chatMessages.push({
               role: "tool",
               content:
-                "Tool call budget exhausted. Please produce the fingerprint with available data.",
+                "Tool call budget exhausted. Please produce the expression with available data.",
               tool_call_id: call.id,
             });
             continue;
@@ -257,17 +257,17 @@ Set "id" to "${projectId}".
         return state;
       }
 
-      // LLM returned content — parse as fingerprint
+      // LLM returned content — parse as expression
       if (response.content) {
         this.chatMessages.push({
           role: "assistant",
           content: response.content,
         });
         try {
-          this.pendingFingerprint = this.parseFingerprint(response.content);
+          this.pendingExpression = this.parseExpression(response.content);
           state.confidence = 0.85;
           state.reasoning.push(
-            "LLM produced fingerprint after tool exploration",
+            "LLM produced expression after tool exploration",
           );
         } catch {
           // If tool budget exhausted but no valid JSON, ask one more time
@@ -275,16 +275,16 @@ Set "id" to "${projectId}".
             this.chatMessages.push({
               role: "user",
               content:
-                "Please produce the fingerprint JSON now with all the data you have gathered.",
+                "Please produce the expression JSON now with all the data you have gathered.",
             });
             const finalResponse = await provider.chat(this.chatMessages, []);
             if (finalResponse.content) {
-              this.pendingFingerprint = this.parseFingerprint(
+              this.pendingExpression = this.parseExpression(
                 finalResponse.content,
               );
               state.confidence = 0.8;
               state.reasoning.push(
-                "LLM produced fingerprint after final prompt",
+                "LLM produced expression after final prompt",
               );
             }
           }
@@ -304,13 +304,13 @@ Set "id" to "${projectId}".
     input: SampledMaterial,
     ctx: AgentContext,
   ): Promise<AgentState<EnrichedExpression>> {
-    if (!this.pendingFingerprint) {
+    if (!this.pendingExpression) {
       state.status = "failed";
-      state.warnings.push("No fingerprint to validate");
+      state.warnings.push("No expression to validate");
       return state;
     }
 
-    const fp = this.pendingFingerprint;
+    const fp = this.pendingExpression;
 
     // Recompute all oklch tuples from value strings using deterministic math.
     // Don't trust the LLM's mental color space conversion.
@@ -332,7 +332,7 @@ Set "id" to "${projectId}".
       }
     }
 
-    // Compute fingerprint-level embedding
+    // Compute expression-level embedding
     fp.embedding = ctx.embedding
       ? await computeSemanticEmbedding(fp, ctx.embedding)
       : computeEmbedding(fp);
@@ -357,7 +357,7 @@ Set "id" to "${projectId}".
     state.status = "completed";
 
     // Clean up
-    this.pendingFingerprint = null;
+    this.pendingExpression = null;
     this.chatMessages = [];
     this.toolCtx = null;
 
@@ -436,28 +436,28 @@ Set "id" to "${projectId}".
     return parts.join("\n");
   }
 
-  private parseFingerprint(text: string): Expression {
+  private parseExpression(text: string): Expression {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Failed to extract JSON from LLM response");
     }
     const raw = JSON.parse(jsonMatch[0]);
-    const fingerprint: Expression = raw;
-    fingerprint.source = "llm";
-    fingerprint.timestamp = new Date().toISOString();
+    const expression: Expression = raw;
+    expression.source = "llm";
+    expression.timestamp = new Date().toISOString();
 
     // Preserve three-layer fields
     if (raw.observation && typeof raw.observation.summary === "string") {
-      fingerprint.observation = raw.observation;
+      expression.observation = raw.observation;
     }
     if (Array.isArray(raw.decisions) && raw.decisions.length > 0) {
-      fingerprint.decisions = raw.decisions;
+      expression.decisions = raw.decisions;
     }
     if (Array.isArray(raw.roles) && raw.roles.length > 0) {
-      fingerprint.roles = raw.roles;
+      expression.roles = raw.roles;
     }
 
-    return fingerprint;
+    return expression;
   }
 
   private validateOutput(fp: Expression): string[] {

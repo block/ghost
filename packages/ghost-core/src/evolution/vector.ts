@@ -2,7 +2,7 @@ import type { DriftVector, Expression } from "../types.js";
 
 /**
  * Embedding dimension ranges per design dimension.
- * Mirrors the layout in fingerprint/embedding.ts.
+ * Mirrors the layout in embedding/embedding.ts.
  */
 export const DIMENSION_RANGES: Record<string, [number, number]> = {
   palette: [0, 21], // dominant (0-11) + neutrals (12-17) + qualitative (18-20)
@@ -12,7 +12,7 @@ export const DIMENSION_RANGES: Record<string, [number, number]> = {
 };
 
 /**
- * Compute per-dimension drift vectors from two fingerprints' embeddings.
+ * Compute per-dimension drift vectors from two expressions' embeddings.
  * Each vector captures the direction and magnitude of change in embedding space
  * for a specific design dimension.
  */

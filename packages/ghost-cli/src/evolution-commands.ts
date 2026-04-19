@@ -82,14 +82,14 @@ export function registerAdoptCommand(cli: CAC): void {
   cli
     .command(
       "adopt <source>",
-      "Shift parent reference — adopt a new fingerprint as baseline",
+      "Shift parent reference — adopt a new expression as baseline",
     )
     .option("-c, --config <path>", "Path to ghost config file")
     .option("-d, --dimension <name>", "Adopt only for a specific dimension")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const { fingerprint: newParent } = await loadExpression(source);
+        const { expression: newParent } = await loadExpression(source);
 
         const config = await loadConfig(opts.config);
         const childFp = await profile(config);

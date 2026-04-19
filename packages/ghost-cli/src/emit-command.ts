@@ -59,7 +59,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "--name <name>",
-      "Override the skill name (default: fingerprint id) (context-bundle)",
+      "Override the skill name (default: expression id) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {
@@ -75,11 +75,11 @@ export function registerEmitCommand(cli: CAC): void {
         );
 
         if (parsed.kind === "review-command") {
-          const parsed = await loadExpression(expressionPath, {
+          const loaded = await loadExpression(expressionPath, {
             noEmbeddingBackfill: true,
           });
           const content = emitReviewCommand({
-            fingerprint: parsed.fingerprint,
+            expression: loaded.expression,
           });
 
           if (opts.stdout) {
@@ -103,8 +103,8 @@ export function registerEmitCommand(cli: CAC): void {
           (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
         );
 
-        const { fingerprint } = await loadExpression(expressionPath);
-        const result = await writeContextBundle(fingerprint, {
+        const { expression } = await loadExpression(expressionPath);
+        const result = await writeContextBundle(expression, {
           outDir,
           tokens: opts.tokens !== false,
           readme: Boolean(opts.readme),

@@ -44,7 +44,7 @@ function makeFleetMember(
     embedding,
   };
 
-  return { id, fingerprint: fp };
+  return { id, expression: fp };
 }
 
 describe("compareFleet", () => {

@@ -19,10 +19,10 @@ import { DiscoveryAgent } from "./discovery.js";
 import { ExpressionAgent } from "./expression.js";
 
 /**
- * Director — orchestrates the fingerprinting pipeline.
+ * Director — orchestrates the expression pipeline.
  *
  * Uses plain stage functions for deterministic steps (extract, compare, comply)
- * and agents for LLM-powered steps (fingerprint, discovery).
+ * and agents for LLM-powered steps (expression, discovery).
  */
 export class Director {
   private discoveryAgent = new DiscoveryAgent();
@@ -30,16 +30,16 @@ export class Director {
   /**
    * Profile one or more targets as a single design language.
    *
-   * One target → standard fingerprint. Multiple targets → synthesized
-   * fingerprint across the combined sources (e.g. tokens package + iOS impl + web impl).
-   * The fingerprint agent explores all materialized source directories via its tools.
+   * One target → standard expression. Multiple targets → synthesized
+   * expression across the combined sources (e.g. tokens package + iOS impl + web impl).
+   * The expression agent explores all materialized source directories via its tools.
    */
   async profile(
     targets: Target[],
     ctx: AgentContext,
   ): Promise<{
     extraction: AgentResult<SampledMaterial>;
-    fingerprint: AgentResult<EnrichedExpression>;
+    expression: AgentResult<EnrichedExpression>;
     dirs: { label: string; dir: string }[];
   }> {
     const extractionResult = await extract(targets);
@@ -53,20 +53,20 @@ export class Director {
       material: extraction.data,
     });
 
-    const fingerprint = await agent.execute(extraction.data, ctx);
+    const expression = await agent.execute(extraction.data, ctx);
 
     // Stamp source provenance when more than one target contributed
     if (targets.length > 1) {
-      fingerprint.data.sources = targets.map(
+      expression.data.sources = targets.map(
         (t) => t.name ?? `${t.type}:${t.value}`,
       );
     }
 
-    return { extraction, fingerprint, dirs: extractionResult.dirs };
+    return { extraction, expression, dirs: extractionResult.dirs };
   }
 
   /**
-   * Compare two targets: (extract → fingerprint) × 2 → compare
+   * Compare two targets: (extract → express) × 2 → compare
    * Runs the two profile pipelines in parallel.
    */
   async compare(
@@ -84,42 +84,42 @@ export class Director {
     ]);
 
     const comparisonResult = await compareStage({
-      source: sourceResult.fingerprint.data,
-      target: targetResult.fingerprint.data,
+      source: sourceResult.expression.data,
+      target: targetResult.expression.data,
       sourceLabel: sourceTarget.name ?? sourceTarget.value,
       targetLabel: targetTarget.name ?? targetTarget.value,
     });
 
     return {
-      source: sourceResult.fingerprint,
-      target: targetResult.fingerprint,
+      source: sourceResult.expression,
+      target: targetResult.expression,
       comparison: stageToAgentResult(comparisonResult),
     };
   }
 
   /**
-   * Profile a target and compare against a known fingerprint.
+   * Profile a target and compare against a known expression.
    */
   async drift(
     target: Target,
-    parentFingerprint: Expression,
+    parentExpression: Expression,
     ctx: AgentContext,
   ): Promise<{
-    fingerprint: AgentResult<EnrichedExpression>;
+    expression: AgentResult<EnrichedExpression>;
     comparison: AgentResult<EnrichedComparison>;
   }> {
-    const { fingerprint } = await this.profile([target], ctx);
+    const { expression } = await this.profile([target], ctx);
 
     const comparisonResult = await compareStage({
-      source: parentFingerprint,
-      target: fingerprint.data,
+      source: parentExpression,
+      target: expression.data,
     });
 
-    return { fingerprint, comparison: stageToAgentResult(comparisonResult) };
+    return { expression, comparison: stageToAgentResult(comparisonResult) };
   }
 
   /**
-   * Discover design systems matching a query or similar to a fingerprint.
+   * Discover design systems matching a query or similar to an expression.
    */
   async discover(
     input: DiscoveryInput,
@@ -133,21 +133,21 @@ export class Director {
    */
   async comply(
     target: Target,
-    input: Omit<ComplianceInput, "fingerprint">,
+    input: Omit<ComplianceInput, "expression">,
     ctx: AgentContext,
   ): Promise<{
-    fingerprint: AgentResult<EnrichedExpression>;
+    expression: AgentResult<EnrichedExpression>;
     compliance: AgentResult<ComplianceReport>;
   }> {
-    const { fingerprint } = await this.profile([target], ctx);
+    const { expression } = await this.profile([target], ctx);
 
     const complianceResult = await complyStage({
       ...input,
-      fingerprint: fingerprint.data,
+      expression: expression.data,
     });
 
     return {
-      fingerprint,
+      expression,
       compliance: stageToAgentResult(complianceResult),
     };
   }
@@ -163,20 +163,20 @@ export class Director {
   ): Promise<{
     members: Array<{
       target: Target;
-      fingerprint: AgentResult<EnrichedExpression>;
+      expression: AgentResult<EnrichedExpression>;
     }>;
     fleet: FleetComparison;
   }> {
     const profileResults = await Promise.all(
       targets.map(async (target) => {
         const result = await this.profile([target], ctx);
-        return { target, fingerprint: result.fingerprint };
+        return { target, expression: result.expression };
       }),
     );
 
     const fleetMembers: FleetMember[] = profileResults.map((r) => ({
       id: r.target.name ?? r.target.value,
-      fingerprint: r.fingerprint.data,
+      expression: r.expression.data,
       parentRef: r.target,
     }));
 

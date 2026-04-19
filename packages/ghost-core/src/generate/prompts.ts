@@ -8,7 +8,7 @@ import type {
 export type GenerateFormat = "html";
 
 export interface BuildGenerationPromptOptions {
-  fingerprint: Expression;
+  expression: Expression;
   userPrompt: string;
   format: GenerateFormat;
   /** Feedback from a previous review round, when retrying. */
@@ -27,7 +27,7 @@ export interface BuildGenerationPromptOptions {
 export function buildGenerationPrompt(
   options: BuildGenerationPromptOptions,
 ): string {
-  const { fingerprint, userPrompt, format, retryFeedback } = options;
+  const { expression, userPrompt, format, retryFeedback } = options;
 
   const parts: string[] = [];
 
@@ -35,22 +35,22 @@ export function buildGenerationPrompt(
     `You are generating a ${format.toUpperCase()} artifact in the design language described below. Return a single fenced \`\`\`${format} code block containing a complete, standalone document. No prose, no commentary.`,
   );
 
-  const summary = fingerprint.observation?.summary?.trim();
+  const summary = expression.observation?.summary?.trim();
   if (summary) parts.push(`## Character\n\n${summary}`);
 
-  const traits = fingerprint.observation?.distinctiveTraits ?? [];
+  const traits = expression.observation?.distinctiveTraits ?? [];
   if (traits.length)
     parts.push(`## Signature\n\n${traits.map((t) => `- ${t}`).join("\n")}`);
 
-  const decisions = fingerprint.decisions ?? [];
+  const decisions = expression.decisions ?? [];
   if (decisions.length)
     parts.push(`## Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
 
-  const values = fingerprint.values;
+  const values = expression.values;
   if (values && (values.do.length || values.dont.length))
     parts.push(`## Values\n\n${formatValues(values)}`);
 
-  parts.push(`## Tokens\n\n${formatTokens(fingerprint)}`);
+  parts.push(`## Tokens\n\n${formatTokens(expression)}`);
 
   parts.push(`## Task\n\n${userPrompt}`);
 
@@ -101,27 +101,27 @@ function formatValues(values: DesignValues): string {
   return [doBlock, dontBlock].filter(Boolean).join("\n\n");
 }
 
-function formatTokens(fingerprint: Expression): string {
+function formatTokens(expression: Expression): string {
   const lines: string[] = [];
-  const semantic = fingerprint.palette?.semantic ?? [];
+  const semantic = expression.palette?.semantic ?? [];
   if (semantic.length) {
     lines.push("**Semantic colors**");
     for (const c of semantic) lines.push(`- \`${c.role}\`: ${c.value}`);
   }
-  const dominant = fingerprint.palette?.dominant ?? [];
+  const dominant = expression.palette?.dominant ?? [];
   if (dominant.length) {
     lines.push("\n**Dominant brand**");
     for (const c of dominant) lines.push(`- \`${c.role}\`: ${c.value}`);
   }
-  const spacing = fingerprint.spacing?.scale ?? [];
+  const spacing = expression.spacing?.scale ?? [];
   if (spacing.length)
     lines.push(`\n**Spacing scale:** ${spacing.join(", ")}px`);
-  const sizeRamp = fingerprint.typography?.sizeRamp ?? [];
+  const sizeRamp = expression.typography?.sizeRamp ?? [];
   if (sizeRamp.length) lines.push(`\n**Type scale:** ${sizeRamp.join(", ")}px`);
-  const families = fingerprint.typography?.families ?? [];
+  const families = expression.typography?.families ?? [];
   if (families.length)
     lines.push(`\n**Font families:** ${families.join(", ")}`);
-  const radii = fingerprint.surfaces?.borderRadii ?? [];
+  const radii = expression.surfaces?.borderRadii ?? [];
   if (radii.length) lines.push(`\n**Border radii:** ${radii.join(", ")}px`);
   return lines.join("\n");
 }

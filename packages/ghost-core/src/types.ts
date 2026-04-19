@@ -175,7 +175,7 @@ export interface AgentsConfig {
   verbose?: boolean;
 }
 
-// --- Fingerprint types ---
+// --- Expression types ---
 
 export interface SemanticColor {
   role: string;
@@ -188,7 +188,7 @@ export interface ColorRamp {
   count: number;
 }
 
-// --- Observation & decision types (three-layer fingerprint) ---
+// --- Observation & decision types (three-layer expression) ---
 
 export interface DesignObservation {
   /** Holistic summary of the design language */
@@ -235,7 +235,7 @@ export interface DesignValues {
 export interface DesignRole {
   /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
   name: string;
-  /** Tokens the slot binds, grouped by fingerprint dimension. */
+  /** Tokens the slot binds, grouped by expression dimension. */
   tokens: {
     typography?: {
       family?: string;
@@ -448,7 +448,7 @@ export interface EmbeddingConfig {
 
 export interface LLMProvider {
   name: string;
-  /** Multi-turn chat with tool use support. All fingerprinting flows through this. */
+  /** Multi-turn chat with tool use support. All expression generation flows through this. */
   chat: (
     messages: import("./agents/tools/types.js").ChatMessage[],
     tools?: import("./agents/tools/types.js").ToolDefinition[],
@@ -484,7 +484,7 @@ export interface AgentResult<T> {
 // --- History types ---
 
 export interface ExpressionHistoryEntry {
-  fingerprint: Expression;
+  expression: Expression;
   parentRef?: Target;
   comparisonToParent?: {
     distance: number;
@@ -562,7 +562,7 @@ export interface TemporalComparison extends ExpressionComparison {
 
 export interface FleetMember {
   id: string;
-  fingerprint: Expression;
+  expression: Expression;
   parentRef?: Target;
   distanceToParent?: number;
 }
@@ -614,7 +614,7 @@ export interface StructureDrift {
   consumerFile?: string;
 }
 
-// --- Review types (fingerprint-informed design review) ---
+// --- Review types (expression-informed design review) ---
 
 export type ReviewSeverity = "error" | "warning" | "info";
 
@@ -630,7 +630,7 @@ export interface ReviewFix {
 export interface ReviewIssue {
   /** Rule that produced this issue (e.g. "palette-drift", "spacing-drift") */
   rule: string;
-  /** Which fingerprint dimension drifted */
+  /** Which expression dimension drifted */
   dimension: ReviewDimension;
   severity: ReviewSeverity;
   /** Human-readable description */
@@ -645,7 +645,7 @@ export interface ReviewIssue {
   source?: string;
   /** The literal value found (e.g. "#3b82f6", "14px") */
   found: string;
-  /** Nearest fingerprint value (e.g. "#2563eb", "16px") */
+  /** Nearest expression value (e.g. "#2563eb", "16px") */
   nearest?: string;
   /** Semantic role of the nearest value if known (e.g. "primary", "surface") */
   nearestRole?: string;
@@ -676,8 +676,8 @@ export interface ReviewSummary {
 
 export interface ReviewReport {
   timestamp: string;
-  /** ID of the fingerprint used as baseline */
-  fingerprint: string;
+  /** ID of the expression used as baseline */
+  expression: string;
   files: ReviewFileResult[];
   summary: ReviewSummary;
   /** Duration in ms */

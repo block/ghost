@@ -58,16 +58,16 @@ export function lintExpression(
     return finalize(rawIssues, strict, off);
   }
 
-  const { fingerprint, body } = parsed;
+  const { expression, body } = parsed;
   const rawYaml = toRawFrontmatter(raw);
   const { body: bodyText } = splitRawSafe(raw);
 
   checkSchemaVersion(rawYaml, rawIssues);
   checkSchemaValidity(rawYaml, rawIssues);
-  checkDecisionPartition(fingerprint, body, rawIssues);
+  checkDecisionPartition(expression, body, rawIssues);
   checkStrayEvidenceInBody(bodyText, rawIssues);
-  checkEvidenceHexes(fingerprint, rawIssues);
-  checkUnusedPalette(fingerprint, rawIssues);
+  checkEvidenceHexes(expression, rawIssues);
+  checkUnusedPalette(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -148,8 +148,11 @@ function checkSchemaValidity(
 }
 
 /**
- * Decisions are partitioned: dimension + evidence in frontmatter, rationale
- * in body. Warn when the two sides don't line up on a given dimension.
+ * Schema 5: each dimension lives in exactly one place — a `### Dimension`
+ * body block carrying prose + optional `**Evidence:**` bullets. Frontmatter
+ * `decisions[]` only carries the dimension slug + optional embedding. Warn
+ * when a dimension appears in frontmatter but not the body (orphan slug) or
+ * when a body block has no rationale at all.
  */
 function checkDecisionPartition(
   fp: Expression,
@@ -160,38 +163,32 @@ function checkDecisionPartition(
   const bodyDims = new Set((body.decisions ?? []).map((d) => d.dimension));
   merged.forEach((d, idx) => {
     const hasProse = Boolean(d.decision?.trim());
-    const hasEvidence = (d.evidence?.length ?? 0) > 0;
     const fromBody = bodyDims.has(d.dimension);
-    if (!hasProse && hasEvidence) {
+    if (!fromBody) {
+      issues.push({
+        severity: "warning",
+        rule: "orphan-dimension",
+        message: `Decision \`${d.dimension}\` is declared in frontmatter but has no \`### ${d.dimension}\` block in the body.`,
+        path: `decisions[${idx}]`,
+      });
+    } else if (!hasProse) {
       issues.push({
         severity: "warning",
         rule: "missing-rationale",
-        message: `Decision \`${d.dimension}\` has evidence in the frontmatter but no \`### ${d.dimension}\` block in the body.`,
-        path: `decisions[${idx}]`,
-      });
-    }
-    if (fromBody && !hasEvidence) {
-      issues.push({
-        severity: "warning",
-        rule: "orphan-prose",
-        message: `Body has \`### ${d.dimension}\` prose but the frontmatter decisions[] has no matching entry — add \`- dimension: ${d.dimension}\` with its evidence.`,
+        message: `Body has \`### ${d.dimension}\` but no rationale prose.`,
         path: `decisions[${idx}]`,
       });
     }
   });
 }
 
-const STRAY_EVIDENCE_RE = /^\s*\*\*Evidence:\*\*/im;
-
-function checkStrayEvidenceInBody(bodyText: string, issues: LintIssue[]): void {
-  if (STRAY_EVIDENCE_RE.test(bodyText)) {
-    issues.push({
-      severity: "warning",
-      rule: "stray-evidence-in-body",
-      message:
-        "Legacy `**Evidence:**` bullets found in body. Evidence belongs in the frontmatter `decisions[].evidence` — remove from body.",
-    });
-  }
+// Schema 5 allows `**Evidence:**` in the body — it's where evidence now lives.
+// The lint check that used to flag it as legacy is retired.
+function checkStrayEvidenceInBody(
+  _bodyText: string,
+  _issues: LintIssue[],
+): void {
+  // no-op; body evidence is canonical as of schema 5.
 }
 
 const HEX_RE = /#[0-9a-f]{3,8}\b/gi;

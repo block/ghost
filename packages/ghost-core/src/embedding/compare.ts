@@ -16,7 +16,7 @@ const WEIGHTS: Record<string, number> = {
   surfaces: 0.15,
 };
 
-/** Redistributed weights when both fingerprints have design decisions */
+/** Redistributed weights when both expressions have design decisions */
 const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
   decisions: 0.15,
   palette: 0.3,
@@ -25,14 +25,14 @@ const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
   surfaces: 0.15,
 };
 
-export function compareFingerprints(
+export function compareExpressions(
   source: Expression,
   target: Expression,
   options?: CompareOptions,
 ): ExpressionComparison {
   const dimensions: Record<string, DimensionDelta> = {};
 
-  // Compare decisions when both fingerprints have them.
+  // Compare decisions when both expressions have them.
   // Decisions only contribute to the weighted distance when both sides have
   // embeddings — otherwise we record a qualitative delta without a scalar
   // that would pollute the number.
@@ -251,7 +251,7 @@ function compareSurfaces(a: Expression, b: Expression): DimensionDelta {
 const DECISION_MATCH_THRESHOLD = 0.75;
 
 /**
- * Compare design decisions between two fingerprints.
+ * Compare design decisions between two expressions.
  *
  * When `bothEmbedded` is true: match decisions pairwise by cosine similarity
  * of their embeddings. Distance blends unmatched coverage with the cosine
@@ -279,7 +279,7 @@ function compareDecisions(
 
   // Greedy one-to-one match: for each decision in A, find the best unmatched
   // decision in B above threshold. Stable and O(n*m), which is fine for
-  // fingerprints with ~5–15 decisions.
+  // expressions with ~5–15 decisions.
   const matchedB = new Set<number>();
   const matchedCosines: number[] = [];
 

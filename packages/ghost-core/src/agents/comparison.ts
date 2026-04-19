@@ -21,7 +21,7 @@ export class ComparisonAgent extends BaseAgent<
   name = "comparison";
   maxIterations = 2;
   systemPrompt = `You are a design comparison agent. Your job is to compare two
-design fingerprints and explain the differences.
+design expressions and explain the differences.
 
 For each divergent dimension, classify the divergence:
 - accidental-drift: unintentional differences (hardcoded values, overrides)

@@ -8,7 +8,7 @@
 export const BUNDLED_SUITE = {
   version: "0.1",
   description:
-    "Ghost standard prompt suite — UI construction tasks for drift benchmarking. Dimensions tag which fingerprint dimensions each prompt is expected to stress.",
+    "Ghost standard prompt suite — UI construction tasks for drift benchmarking. Dimensions tag which expression dimensions each prompt is expected to stress.",
   prompts: [
     {
       id: "pricing-page-3-tier",

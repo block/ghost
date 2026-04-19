@@ -1,5 +1,5 @@
 /**
- * Three-layer fingerprint prompt: observation → decisions → values.
+ * Three-layer expression prompt: observation → decisions → values.
  * The LLM observes the design language holistically, extracts abstract
  * design decisions, then extracts concrete values.
  */
@@ -65,11 +65,11 @@ export function buildThreeLayerPrompt(
   projectId: string,
   fileContents: string,
 ): string {
-  return `You are a design system analyst producing a three-layer design fingerprint.
+  return `You are a design system analyst producing a three-layer design expression.
 
 ## Your Task
 
-Examine ALL the source files below and produce a structured fingerprint that captures this project's design language at three levels of abstraction.
+Examine ALL the source files below and produce a structured expression that captures this project's design language at three levels of abstraction.
 
 ### Layer 1: Observation
 
@@ -91,7 +91,7 @@ Finally, extract the concrete tokens — the specific hex codes, pixel values, f
 
 ### Layer 4: Roles (slot → token bindings)
 
-Ground the abstract tokens by naming *which* tokens belong to *which* semantic slot. A role maps a slot (h1, body, card, button, input, …) to the specific tokens it uses. This is what bridges the fingerprint to rendering: the size ramp alone is ingredients; a role says "h1 = ramp step 52px, weight 500."
+Ground the abstract tokens by naming *which* tokens belong to *which* semantic slot. A role maps a slot (h1, body, card, button, input, …) to the specific tokens it uses. This is what bridges the expression to rendering: the size ramp alone is ingredients; a role says "h1 = ramp step 52px, weight 500."
 
 Read component files (e.g. \`h1\` className usage, \`<Card>\` / \`<Button>\` styling) and record:
 - **name**: the semantic slot (prefer HTML-like names or archetype names — "h1", "body", "card", "button", "input", "list-row")

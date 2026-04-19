@@ -1,5 +1,5 @@
 ---
-schema: 4
+schema: 5
 kind: embedding
 of: ghost-ui
 dimensions: 49

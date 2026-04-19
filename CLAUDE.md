@@ -64,9 +64,11 @@ Typical pipeline: `target → extract (stage) → expression (agent) → compare
 
 | Command | Description |
 |---------|-------------|
-| `ghost review [scope]` | Unified drift detection. Scopes: `files` (default, code review), `project [target] --against parent.md` (target compliance, CLI/JSON/SARIF), `suite [expression]` (prompt-suite verification) |
+| `ghost review [scope]` | Unified drift detection. Scopes: `files` (default, code review), `project [target] --against parent.md` (target compliance, CLI/JSON/SARIF) |
 | `ghost profile [target]` | Generate an expression — accepts paths, `github:owner/repo`, `npm:package`, URLs |
-| `ghost compare [...expressions]` | Unified comparison — pairwise (N=2), fleet (N≥3 or `--cluster`), `--semantic`, `--temporal`, or `--components` (local vs registry) |
+| `ghost compare [...expressions]` | Unified comparison — pairwise (N=2), fleet (N≥3 or `--cluster`), `--semantic`, `--temporal` |
+| `ghost drift` | Diff local components against the registry — reports breaking changes |
+| `ghost verify [expression]` | Run the bundled prompt suite through generate→review and classify each dimension as tight/leaky/uncaptured |
 | `ghost discover [query]` | Find public design systems |
 | `ghost emit <kind>` | Derive artifacts from expression.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens + prompt) |
 | `ghost generate <prompt>` | LLM-generate UI artifact from expression with self-review retries |
@@ -109,11 +111,12 @@ The canonical expression artifact is **`expression.md`** — a human-readable, L
 ## Key Conventions
 
 - Each expression carries a 49-dimensional embedding vector (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/embedding/embedding.ts`). The canonical on-disk form is `expression.md`.
-- `compare` and `viz` take **file paths** to expression.md, not target strings. `compare` auto-detects mode from flag / N: `--semantic` or `--temporal` require N=2; N≥3 or `--cluster` runs fleet; `--components` compares local components vs registry (no expression args)
+- `compare` and `viz` take **file paths** to expression.md, not target strings. `compare` auto-detects mode from flag / N: `--semantic` or `--temporal` require N=2; N≥3 or `--cluster` runs fleet
 - `profile` outputs an expression; pipe to `--output <file>` to save (must end in `.md`)
 - `--against` on `review project` takes a **file path** to a parent expression.md
 - `--ai` enables LLM-powered enrichment on `profile`; `--verbose` shows agent reasoning
 - `review` (files scope) reads `expression.md` by default; `--expression <path>` overrides
 - `review project` profiles the target and compares against `--against <parent.md>`
-- `review suite` drives the generate→review loop across a bundled prompt suite
+- `verify` drives the generate→review loop across a bundled prompt suite
+- `drift` diffs the local component tree against the configured registry (no expression args)
 - `review --staged` checks only staged changes; `--base main` diffs against a branch

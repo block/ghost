@@ -1,7 +1,7 @@
 import type { Expression } from "../types.js";
 
 export interface EmitReviewInput {
-  fingerprint: Expression;
+  expression: Expression;
 }
 
 /**
@@ -16,13 +16,13 @@ export interface EmitReviewInput {
  * radii and weights. Universal accessibility rules are out of scope —
  * those belong in Rams or a sibling a11y skill.
  *
- * Pure: deterministic over the same fingerprint. The fingerprint is
+ * Pure: deterministic over the same expression. The expression is
  * expected to be the unioned result of `loadExpression` — body prose
  * (Character summary, per-decision rationale) is already folded into
  * `observation.summary` and `decisions[].decision`.
  */
 export function emitReviewCommand(input: EmitReviewInput): string {
-  const { fingerprint: fp } = input;
+  const { expression: fp } = input;
   const id = fp.id;
   const personality = (fp.observation?.personality ?? []).join(", ");
   const cousins = (fp.observation?.closestSystems ?? []).join(", ");

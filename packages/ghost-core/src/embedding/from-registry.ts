@@ -280,14 +280,12 @@ function extractTypography(tokens: CSSToken[]): {
 }
 
 /**
- * Build a fingerprint deterministically from a resolved registry.
+ * Build an expression deterministically from a resolved registry.
  *
  * This produces the values layer only — observation and decisions require
- * LLM analysis and are not available for deterministic fingerprints.
+ * LLM analysis and are not available for deterministic expressions.
  */
-export function fingerprintFromRegistry(
-  registry: ResolvedRegistry,
-): Expression {
+export function expressionFromRegistry(registry: ResolvedRegistry): Expression {
   const tokens = registry.tokens;
   const rootTokens = tokens.filter(
     (t) => t.selector === ":root" || t.selector === "@theme",
@@ -300,7 +298,7 @@ export function fingerprintFromRegistry(
   const spacing = extractSpacing(tokens);
   const borderTokenCount = tokens.filter((t) => t.category === "border").length;
 
-  const fingerprint: Omit<Expression, "embedding"> = {
+  const expression: Omit<Expression, "embedding"> = {
     id: registry.name,
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -336,7 +334,7 @@ export function fingerprintFromRegistry(
   };
 
   return {
-    ...fingerprint,
-    embedding: computeEmbedding(fingerprint),
+    ...expression,
+    embedding: computeEmbedding(expression),
   };
 }

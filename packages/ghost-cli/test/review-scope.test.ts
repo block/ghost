@@ -55,17 +55,10 @@ describe("parseScope", () => {
     });
   });
 
-  it("picks suite scope", () => {
+  it("treats 'suite' as a file path now that it has its own verb (ghost verify)", () => {
     expect(parseScope(["suite"])).toEqual({
-      scope: "suite",
-      positional: [],
-    });
-  });
-
-  it("picks suite scope with expression path", () => {
-    expect(parseScope(["suite", "expression.md"])).toEqual({
-      scope: "suite",
-      positional: ["expression.md"],
+      scope: "files",
+      positional: ["suite"],
     });
   });
 

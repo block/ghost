@@ -94,7 +94,7 @@ export function formatReviewSummary(report: ReviewReport): string {
 
   parts.push("");
   parts.push(
-    `<sub>Reviewed against fingerprint \`${report.fingerprint}\` in ${report.duration}ms</sub>`,
+    `<sub>Reviewed against expression \`${report.expression}\` in ${report.duration}ms</sub>`,
   );
 
   return parts.join("\n");

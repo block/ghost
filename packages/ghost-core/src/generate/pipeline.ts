@@ -11,7 +11,7 @@ import { buildGenerationPrompt, type GenerateFormat } from "./prompts.js";
 const MAX_RETRIES_HARD_CAP = 3;
 
 export interface GenerateOptions {
-  fingerprint: Expression;
+  expression: Expression;
   /** What to build, e.g. "a pricing page with three tiers". */
   userPrompt: string;
   /** Output format. Only "html" supported in Phase B. */
@@ -64,7 +64,7 @@ export async function generate(
 
   for (let i = 0; i <= retries; i++) {
     const prompt = buildGenerationPrompt({
-      fingerprint: options.fingerprint,
+      expression: options.expression,
       userPrompt: options.userPrompt,
       format,
       retryFeedback: lastReview,
@@ -79,11 +79,7 @@ export async function generate(
 
     let reviewReport: ReviewReport | undefined;
     if (selfReview) {
-      reviewReport = await reviewArtifact(
-        artifact,
-        options.fingerprint,
-        format,
-      );
+      reviewReport = await reviewArtifact(artifact, options.expression, format);
     }
 
     attempts.push({ attempt: i + 1, artifact, reviewReport });
@@ -111,7 +107,7 @@ export async function generate(
 
 async function reviewArtifact(
   artifact: string,
-  fingerprint: Expression,
+  expression: Expression,
   format: GenerateFormat,
 ): Promise<ReviewReport> {
   const dir = await mkdtemp(join(tmpdir(), "ghost-generate-"));
@@ -121,7 +117,7 @@ async function reviewArtifact(
     return await review({
       files: [file],
       cwd: dir,
-      fingerprint,
+      expression,
       config: { changedLinesOnly: false },
     });
   } finally {

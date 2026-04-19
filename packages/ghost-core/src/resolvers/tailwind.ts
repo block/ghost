@@ -13,7 +13,7 @@ const TAILWIND_CONFIG_PATTERNS = [
  * Resolve a Tailwind CSS config file and extract design tokens.
  * Uses jiti for dynamic TypeScript/ESM loading.
  * Returns CSSToken[] in the same format as CSS parsing, so they can
- * be fed directly into fingerprintFromRegistry.
+ * be fed directly into expressionFromRegistry.
  */
 export async function resolveTailwindConfig(cwd: string): Promise<{
   tokens: CSSToken[];

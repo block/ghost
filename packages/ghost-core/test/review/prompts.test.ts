@@ -66,7 +66,7 @@ describe("buildReviewPrompt — signature + values injection", () => {
     expect(prompt).toContain("quote the exact rule text");
   });
 
-  it("omits signature/values sections when the fingerprint has none", () => {
+  it("omits signature/values sections when the expression has none", () => {
     const prompt = buildReviewPrompt(BASE, FILES);
     expect(prompt).not.toContain("Signature moves");
     expect(prompt).not.toContain("Values — what this system refuses");

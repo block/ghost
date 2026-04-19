@@ -15,7 +15,7 @@ import { validateFrontmatter } from "./schema.js";
 function assertMarkdownPath(path: string): void {
   if (!path.endsWith(".md")) {
     throw new Error(
-      `Expression files must be Markdown (.md). Got: ${path}. The legacy .ghost-fingerprint.json format has been removed — regenerate with \`ghost profile . --emit\`.`,
+      `Expression files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate with \`ghost profile . --emit\`.`,
     );
   }
 }
@@ -30,7 +30,7 @@ export type {
   SemanticDiff,
   TokenChange,
 } from "./diff.js";
-export { compareExpressions, formatSemanticDiff } from "./diff.js";
+export { diffExpressions, formatSemanticDiff } from "./diff.js";
 export {
   EMBEDDING_FRAGMENT_FILENAME,
   embeddingSiblingPath,
@@ -84,7 +84,7 @@ export interface LoadOptions {
  * dimension, palette roles merged by role.
  *
  * If a `decisions/` directory sits next to the expression.md, each .md
- * inside is assembled into the fingerprint's decisions[], merged by
+ * inside is assembled into the expression's decisions[], merged by
  * dimension — allowing large systems to split their rules across files.
  */
 export async function loadExpression(
@@ -103,16 +103,16 @@ export async function loadExpression(
   if (!options.noFragments) {
     const fragments = await loadDecisionFragments(expressionDir);
     if (fragments.length) {
-      parsed.fingerprint.decisions = mergeDecisionsByDimension(
-        parsed.fingerprint.decisions ?? [],
+      parsed.expression.decisions = mergeDecisionsByDimension(
+        parsed.expression.decisions ?? [],
         fragments,
       );
     }
   }
 
   if (!options.noEmbeddingBackfill) {
-    parsed.fingerprint.embedding = await resolveEmbedding(
-      parsed.fingerprint,
+    parsed.expression.embedding = await resolveEmbedding(
+      parsed.expression,
       expressionDir,
       parsed.bodyRaw,
     );
@@ -133,12 +133,12 @@ export async function loadExpression(
  * be rebuilt any time from source-of-truth data.
  */
 async function resolveEmbedding(
-  fingerprint: Expression,
+  expression: Expression,
   expressionDir: string,
   bodyRaw: string | undefined,
 ): Promise<number[]> {
-  if (fingerprint.embedding && fingerprint.embedding.length > 0) {
-    return fingerprint.embedding;
+  if (expression.embedding && expression.embedding.length > 0) {
+    return expression.embedding;
   }
   const referenced = bodyRaw
     ? resolveEmbeddingReference(bodyRaw, expressionDir)
@@ -148,16 +148,16 @@ async function resolveEmbedding(
     if (fromFragment) return fromFragment;
   }
   // Only attempt to recompute when the structured blocks are all present.
-  // Partial fingerprints (e.g. an extends-child loaded with noExtends:true)
+  // Partial expressions (e.g. an extends-child loaded with noExtends:true)
   // don't have enough signal yet — leave the embedding empty and let the
   // caller resolve it after composing.
   if (
-    fingerprint.palette &&
-    fingerprint.spacing &&
-    fingerprint.typography &&
-    fingerprint.surfaces
+    expression.palette &&
+    expression.spacing &&
+    expression.typography &&
+    expression.surfaces
   ) {
-    return computeEmbedding(fingerprint);
+    return computeEmbedding(expression);
   }
   return [];
 }
@@ -207,9 +207,9 @@ async function loadWithExtends(
   const parentPath = resolve(dirname(absolute), child.meta.extends);
   const parent = await loadWithExtends(parentPath, visited);
 
-  const merged = mergeExpression(parent.fingerprint, child.fingerprint);
+  const merged = mergeExpression(parent.expression, child.expression);
   // The merged result must satisfy the strict YAML schema. The in-memory
-  // fingerprint may carry body-owned prose (summary, decision rationale,
+  // expression may carry body-owned prose (summary, decision rationale,
   // values) that the schema forbids — strip it via mergeFrontmatter before
   // validating.
   validateFrontmatter(mergeFrontmatter(merged));
@@ -217,7 +217,7 @@ async function loadWithExtends(
   // Meta merge: child wins on everything except extends (dropped after resolve)
   const { extends: _dropped, ...childMeta } = child.meta;
   return {
-    fingerprint: merged,
+    expression: merged,
     meta: { ...parent.meta, ...childMeta },
     body: child.body,
     bodyRaw: child.bodyRaw,

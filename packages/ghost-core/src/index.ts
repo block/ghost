@@ -28,7 +28,7 @@ export type {
   ToolDefinition,
   ToolResult,
 } from "./agents/tools/index.js";
-export { FINGERPRINT_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
+export { EXPRESSION_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
 export type {
   ContextFormat,
@@ -45,12 +45,12 @@ export { diff } from "./diff.js";
 export type { CompareOptions } from "./embedding/compare.js";
 export type { RoleCandidate } from "./embedding/index.js";
 export {
-  compareFingerprints,
+  compareExpressions,
   computeEmbedding,
   computeSemanticEmbedding,
-  describeFingerprint,
+  describeExpression,
   embeddingDistance,
-  fingerprintFromRegistry,
+  expressionFromRegistry,
   inferSemanticRole,
 } from "./embedding/index.js";
 export type {
@@ -65,7 +65,7 @@ export {
   computeDriftVectors,
   computeTemporalComparison,
   DIMENSION_RANGES,
-  emitFingerprint,
+  emitExpression,
   normalizeParentSource,
   readHistory,
   readRecentHistory,
@@ -89,7 +89,7 @@ export type {
   TokenChange,
 } from "./expression/index.js";
 export {
-  compareExpressions,
+  diffExpressions,
   EMBEDDING_FRAGMENT_FILENAME,
   EXPRESSION_FILENAME,
   EXPRESSION_SCHEMA_VERSION,
@@ -133,7 +133,7 @@ export type {
   ExpressionValidation,
   ValidationIssue,
 } from "./llm/index.js";
-export { createProvider, validateFingerprint } from "./llm/index.js";
+export { createProvider, validateExpression } from "./llm/index.js";
 export type {
   ProfileOptions,
   ProfileResult,
@@ -158,9 +158,9 @@ export {
 export {
   formatComparison,
   formatComparisonJSON,
+  formatExpression,
   formatExpressionJSON,
-  formatFingerprint,
-} from "./reporters/fingerprint.js";
+} from "./reporters/expression.js";
 export {
   formatFleetComparison,
   formatFleetComparisonJSON,

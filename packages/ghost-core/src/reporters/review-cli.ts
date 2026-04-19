@@ -82,7 +82,7 @@ export function formatReviewCLI(report: ReviewReport): string {
   lines.push("");
   lines.push(
     c.bold("Ghost Design Review") +
-      c.dim(` — against fingerprint ${report.fingerprint}`),
+      c.dim(` — against expression ${report.expression}`),
   );
   lines.push("");
 
@@ -93,7 +93,7 @@ export function formatReviewCLI(report: ReviewReport): string {
     lines.push(c.green("  No design drift detected."));
     lines.push("");
     lines.push(
-      c.dim(`  Scanned ${summary.filesScanned} files against fingerprint.`),
+      c.dim(`  Scanned ${summary.filesScanned} files against expression.`),
     );
     lines.push("");
     return lines.join("\n");

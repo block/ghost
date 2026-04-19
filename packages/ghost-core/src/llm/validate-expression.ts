@@ -13,14 +13,14 @@ export interface ValidationIssue {
 }
 
 /**
- * Validate a deterministic fingerprint against the raw extracted material.
- * Uses heuristic checks to identify potential gaps in the fingerprint.
+ * Validate a deterministic expression against the raw extracted material.
+ * Uses heuristic checks to identify potential gaps in the expression.
  *
  * This is a deterministic implementation that doesn't require LLM.
  * When LLM config is provided, it can optionally be enriched with LLM analysis.
  */
-export function validateFingerprint(
-  fingerprint: Expression,
+export function validateExpression(
+  expression: Expression,
   material: ExtractedMaterial,
   _llmConfig?: LLMConfig,
 ): ExpressionValidation {
@@ -28,11 +28,11 @@ export function validateFingerprint(
   const suggestions: string[] = [];
 
   // Check: do we have enough semantic colors?
-  if (fingerprint.palette.semantic.length < 3) {
+  if (expression.palette.semantic.length < 3) {
     issues.push({
       dimension: "palette",
       severity: "warning",
-      message: `Only ${fingerprint.palette.semantic.length} semantic colors detected. Most design systems have 5+.`,
+      message: `Only ${expression.palette.semantic.length} semantic colors detected. Most design systems have 5+.`,
     });
     suggestions.push(
       "Check if token naming conventions match the semantic role detection patterns.",
@@ -47,9 +47,9 @@ export function validateFingerprint(
     if (matches) unparsedColorCount += matches.length;
   }
   const parsedColorCount =
-    fingerprint.palette.dominant.length +
-    fingerprint.palette.semantic.length +
-    fingerprint.palette.neutrals.count;
+    expression.palette.dominant.length +
+    expression.palette.semantic.length +
+    expression.palette.neutrals.count;
   if (unparsedColorCount > parsedColorCount * 3) {
     issues.push({
       dimension: "palette",
@@ -60,18 +60,18 @@ export function validateFingerprint(
 
   // Check: spacing scale looks thin
   if (
-    fingerprint.spacing.scale.length < 3 &&
+    expression.spacing.scale.length < 3 &&
     material.metadata.tokenCount > 10
   ) {
     issues.push({
       dimension: "spacing",
       severity: "warning",
-      message: `Only ${fingerprint.spacing.scale.length} spacing values detected despite ${material.metadata.tokenCount} total tokens.`,
+      message: `Only ${expression.spacing.scale.length} spacing values detected despite ${material.metadata.tokenCount} total tokens.`,
     });
   }
 
   // Check: no typography detected
-  if (fingerprint.typography.families.length === 0) {
+  if (expression.typography.families.length === 0) {
     issues.push({
       dimension: "typography",
       severity: "warning",
@@ -81,21 +81,21 @@ export function validateFingerprint(
   }
 
   // Check: embedding has too many zero dimensions
-  const zeroDims = fingerprint.embedding.filter((v) => v === 0).length;
-  if (zeroDims > fingerprint.embedding.length * 0.6) {
+  const zeroDims = expression.embedding.filter((v) => v === 0).length;
+  if (zeroDims > expression.embedding.length * 0.6) {
     issues.push({
       dimension: "embedding",
       severity: "warning",
-      message: `${zeroDims}/${fingerprint.embedding.length} embedding dimensions are zero. Fingerprint may lack discriminative power.`,
+      message: `${zeroDims}/${expression.embedding.length} embedding dimensions are zero. Expression may lack discriminative power.`,
     });
     suggestions.push(
-      "Consider enriching the fingerprint with more token categories or using semantic embedding.",
+      "Consider enriching the expression with more token categories or using semantic embedding.",
     );
   }
 
   // Check: observation quality (soft checks)
-  if (fingerprint.observation) {
-    if (!fingerprint.observation.summary) {
+  if (expression.observation) {
+    if (!expression.observation.summary) {
       issues.push({
         dimension: "observation",
         severity: "info",
@@ -103,20 +103,20 @@ export function validateFingerprint(
       });
     }
     if (
-      fingerprint.observation.personality.length < 2 ||
-      fingerprint.observation.personality.length > 8
+      expression.observation.personality.length < 2 ||
+      expression.observation.personality.length > 8
     ) {
       issues.push({
         dimension: "observation",
         severity: "info",
-        message: `Observation has ${fingerprint.observation.personality.length} personality traits (expected 2-6).`,
+        message: `Observation has ${expression.observation.personality.length} personality traits (expected 2-6).`,
       });
     }
   }
 
   // Check: decision quality (soft checks)
-  if (fingerprint.decisions && fingerprint.decisions.length > 0) {
-    for (const d of fingerprint.decisions) {
+  if (expression.decisions && expression.decisions.length > 0) {
+    for (const d of expression.decisions) {
       if (!d.dimension || !d.decision) {
         issues.push({
           dimension: "decisions",
@@ -135,9 +135,9 @@ export function validateFingerprint(
         break;
       }
     }
-  } else if (fingerprint.source === "llm") {
+  } else if (expression.source === "llm") {
     suggestions.push(
-      "Fingerprint has no design decisions. Consider using the three-layer agent pipeline for richer analysis.",
+      "Expression has no design decisions. Consider using the three-layer agent pipeline for richer analysis.",
     );
   }
 

@@ -14,14 +14,14 @@ describe("emitReviewCommand", () => {
     const parsed = await loadExpression(GHOST_UI_EXPRESSION, {
       noEmbeddingBackfill: true,
     });
-    const out = emitReviewCommand({ fingerprint: parsed.fingerprint });
+    const out = emitReviewCommand({ expression: parsed.expression });
 
     expect(out).toMatchSnapshot();
   });
 
   it("opens with the description frontmatter and an H1 role prompt", () => {
-    const fp = minimalFingerprint();
-    const out = emitReviewCommand({ fingerprint: fp });
+    const fp = minimalExpression();
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out.startsWith("---\ndescription: Drift review for ")).toBe(true);
     expect(out).toMatch(/^# minimal drift review$/m);
@@ -29,13 +29,13 @@ describe("emitReviewCommand", () => {
   });
 
   it("includes only true semantic hues in the serious rules table", () => {
-    const fp = minimalFingerprint();
+    const fp = minimalExpression();
     fp.palette.semantic = [
       { role: "danger", value: "#ff0000" },
       { role: "surface-muted", value: "#f5f5f5" },
       { role: "text-alt", value: "#666666" },
     ];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).toMatch(/\| danger must use the semantic token \| `#ff0000`/);
     expect(out).not.toMatch(/surface-muted must use the semantic token/);
@@ -43,18 +43,18 @@ describe("emitReviewCommand", () => {
   });
 
   it("elides the Serious palette table when no true semantic hues exist", () => {
-    const fp = minimalFingerprint();
+    const fp = minimalExpression();
     fp.palette.semantic = [{ role: "surface-muted", value: "#f5f5f5" }];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).not.toMatch(/^### Serious$/m);
   });
 
   it("drops universal sections when the expression has no data for them", () => {
-    const fp = minimalFingerprint();
+    const fp = minimalExpression();
     fp.surfaces.borderRadii = [];
     fp.spacing.scale = [];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).not.toMatch(/Shape language/);
     expect(out).not.toMatch(/Spacing drift/);
@@ -62,21 +62,21 @@ describe("emitReviewCommand", () => {
   });
 
   it("inlines the Character paragraph when observation.summary is present", () => {
-    const fp = minimalFingerprint();
+    const fp = minimalExpression();
     fp.observation = {
       summary: "A spartan, monospaced system driven by code-native aesthetics.",
       personality: ["spartan", "monospaced"],
       distinctiveTraits: [],
       closestSystems: [],
     };
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).toMatch(/A spartan, monospaced system/);
     expect(out).toMatch(/reads as \*spartan, monospaced\*/);
   });
 
   it("omits covered dimensions from the Other dimensions section", () => {
-    const fp = minimalFingerprint();
+    const fp = minimalExpression();
     fp.decisions = [
       {
         dimension: "color-strategy",
@@ -89,7 +89,7 @@ describe("emitReviewCommand", () => {
         evidence: [],
       },
     ];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     // color-strategy appears as the palette rationale, not in "Other dimensions"
     expect(out).toMatch(/> Use color sparingly\./);
@@ -108,7 +108,7 @@ describe("emitReviewCommand", () => {
   });
 });
 
-function minimalFingerprint(): Expression {
+function minimalExpression(): Expression {
   return {
     id: "minimal",
     source: "llm",

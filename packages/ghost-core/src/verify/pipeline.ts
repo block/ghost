@@ -12,7 +12,7 @@ import {
 } from "./suite.js";
 
 export interface VerifyOptions {
-  fingerprint: Expression;
+  expression: Expression;
   /** Prompt suite to run. Defaults to bundled v0.1. */
   suite?: PromptSuite;
   /** Subsample n prompts (from the start). If absent, runs all. */
@@ -48,7 +48,7 @@ export async function verify(options: VerifyOptions): Promise<VerifyAggregate> {
       const p = selected[i];
       results[i] = await runOne(
         p,
-        options.fingerprint,
+        options.expression,
         retries,
         options.llmConfig,
       );
@@ -68,14 +68,14 @@ export async function verify(options: VerifyOptions): Promise<VerifyAggregate> {
 
 async function runOne(
   p: SuitePrompt,
-  fingerprint: Expression,
+  expression: Expression,
   retries: number,
   llmConfig?: LLMConfig,
 ): Promise<PromptResult> {
   const start = Date.now();
   try {
     const result = await generate({
-      fingerprint,
+      expression,
       userPrompt: p.prompt,
       format: "html",
       selfReview: true,

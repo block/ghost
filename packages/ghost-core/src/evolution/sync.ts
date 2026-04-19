@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import type {
   DimensionAck,
   DimensionStance,
@@ -60,7 +60,7 @@ export async function acknowledge(opts: {
   cwd?: string;
 }): Promise<{ manifest: SyncManifest; comparison: ExpressionComparison }> {
   const cwd = opts.cwd ?? process.cwd();
-  const comparison = compareFingerprints(opts.parent, opts.child);
+  const comparison = compareExpressions(opts.parent, opts.child);
   const now = new Date().toISOString();
 
   // Load existing manifest to preserve previous acks

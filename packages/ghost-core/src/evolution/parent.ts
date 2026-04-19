@@ -8,7 +8,7 @@ import {
 import type { Expression, Target } from "../types.js";
 
 /**
- * Resolve a Target to a Expression.
+ * Resolve a Target to an Expression.
  *
  * - "path": reads a local expression.md, or a directory containing one.
  * - "url": fetches a remote expression.md
@@ -36,7 +36,7 @@ export async function resolveParent(
           `Failed to fetch parent expression from ${target.value}: ${response.status}`,
         );
       }
-      return parseExpression(await response.text()).fingerprint;
+      return parseExpression(await response.text()).expression;
     }
 
     case "npm": {
@@ -52,7 +52,7 @@ export async function resolveParent(
 
 async function readExpressionFile(path: string): Promise<Expression> {
   try {
-    return (await loadExpression(path)).fingerprint;
+    return (await loadExpression(path)).expression;
   } catch (err) {
     throw new Error(
       `Could not read expression at ${path}: ${err instanceof Error ? err.message : String(err)}`,

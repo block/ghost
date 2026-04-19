@@ -71,13 +71,13 @@ describe("mergeExpression", () => {
     };
     const merged = mergeExpression(PARENT, child);
     expect(merged.decisions).toHaveLength(3);
-    const warm = merged.decisions!.find((d) => d.dimension === "warm-neutrals");
+    const warm = merged.decisions?.find((d) => d.dimension === "warm-neutrals");
     expect(warm?.decision).toBe("Now no warm grays either.");
-    const serif = merged.decisions!.find(
+    const serif = merged.decisions?.find(
       (d) => d.dimension === "serif-headlines",
     );
     expect(serif?.decision).toBe("Serif 500 on all heads.");
-    const newRule = merged.decisions!.find((d) => d.dimension === "new-rule");
+    const newRule = merged.decisions?.find((d) => d.dimension === "new-rule");
     expect(newRule).toBeDefined();
   });
 
@@ -162,7 +162,7 @@ describe("loadExpression extends resolution", () => {
     const childPath = join(dir, "child.expression.md");
 
     const parentMd = `---
-schema: 4
+schema: 5
 id: parent
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z
@@ -186,24 +186,24 @@ surfaces:
 embedding: [0.1]
 decisions:
   - dimension: warm
-    evidence: ["#111"]
 ---
 
 # Decisions
 
 ### warm
 parent warm rule
+
+**Evidence:**
+- \`#111\`
 `;
 
     const childMd = `---
-schema: 4
+schema: 5
 extends: ./parent.expression.md
 id: child
 decisions:
   - dimension: warm
-    evidence: ["#222"]
   - dimension: child-new
-    evidence: []
 ---
 
 # Decisions
@@ -218,18 +218,18 @@ a new decision
     await writeFile(parentPath, parentMd, "utf-8");
     await writeFile(childPath, childMd, "utf-8");
 
-    const { fingerprint, meta } = await loadExpression(childPath);
+    const { expression, meta } = await loadExpression(childPath);
     expect(meta.extends).toBeUndefined(); // stripped after resolve
-    expect(fingerprint.id).toBe("child");
+    expect(expression.id).toBe("child");
     // Inherited from parent
-    expect(fingerprint.palette.dominant).toHaveLength(1);
-    expect(fingerprint.palette.dominant[0].value).toBe("#c96442");
-    expect(fingerprint.spacing.scale).toEqual([8, 16]);
+    expect(expression.palette.dominant).toHaveLength(1);
+    expect(expression.palette.dominant[0].value).toBe("#c96442");
+    expect(expression.spacing.scale).toEqual([8, 16]);
     // Decision overrides
-    const warm = fingerprint.decisions?.find((d) => d.dimension === "warm");
+    const warm = expression.decisions?.find((d) => d.dimension === "warm");
     expect(warm?.decision).toBe("child overrides warm");
     // New child decision
-    const added = fingerprint.decisions?.find(
+    const added = expression.decisions?.find(
       (d) => d.dimension === "child-new",
     );
     expect(added).toBeDefined();
@@ -241,7 +241,7 @@ a new decision
     await writeFile(
       aPath,
       `---
-schema: 4
+schema: 5
 extends: ./b.expression.md
 id: a
 ---
@@ -251,7 +251,7 @@ id: a
     await writeFile(
       bPath,
       `---
-schema: 4
+schema: 5
 extends: ./a.expression.md
 id: b
 ---
@@ -264,21 +264,21 @@ id: b
   it("noExtends: true skips parent resolution", async () => {
     const parentPath = join(dir, "parent.expression.md");
     const childPath = join(dir, "child.expression.md");
-    await writeFile(parentPath, "---\nschema: 4\nid: parent\n---\n", "utf-8");
+    await writeFile(parentPath, "---\nschema: 5\nid: parent\n---\n", "utf-8");
     await writeFile(
       childPath,
       `---
-schema: 4
+schema: 5
 extends: ./parent.expression.md
 id: child
 ---
 `,
       "utf-8",
     );
-    const { fingerprint, meta } = await loadExpression(childPath, {
+    const { expression, meta } = await loadExpression(childPath, {
       noExtends: true,
     });
-    expect(fingerprint.id).toBe("child");
+    expect(expression.id).toBe("child");
     expect(meta.extends).toBe("./parent.expression.md");
   });
 });

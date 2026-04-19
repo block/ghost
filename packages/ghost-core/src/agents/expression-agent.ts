@@ -1,5 +1,5 @@
 /**
- * Fingerprint Agent — powered by Claude Agent SDK.
+ * Expression Agent — powered by Claude Agent SDK.
  *
  * Instead of sampling files and stuffing them into a prompt,
  * this gives the LLM filesystem tools and lets it explore the
@@ -21,11 +21,11 @@ import type {
   TargetType,
 } from "../types.js";
 
-const PROMPT = `You are producing a design fingerprint — a comprehensive extraction of the design language present in a codebase.
+const PROMPT = `You are producing a design expression — a comprehensive extraction of the design language present in a codebase.
 
 Explore the codebase at the current directory. Find where visual design values are defined — theme files, CSS variables, token definitions, component styles. Read those definitions and form a complete picture.
 
-## Three-Layer Fingerprint
+## Three-Layer Expression
 
 Your output has three layers, produced in order:
 
@@ -124,7 +124,7 @@ export async function runExpressionAgent(
     throw new Error("Agent did not produce a result");
   }
 
-  // Parse fingerprint from result
+  // Parse expression from result
   const jsonMatch = resultText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error("Failed to extract JSON from agent result");
@@ -164,7 +164,7 @@ export async function runExpressionAgent(
     }
   }
 
-  // Compute fingerprint-level embedding
+  // Compute expression-level embedding
   fp.embedding = options.embedding
     ? await computeSemanticEmbedding(fp, options.embedding)
     : computeEmbedding(fp);

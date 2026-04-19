@@ -47,13 +47,13 @@ export interface SemanticDiff {
 }
 
 /**
- * Produce a semantic diff between two fingerprints — decisions added/
+ * Produce a semantic diff between two expressions — decisions added/
  * removed/modified (matched by dimension slug), values deltas, palette
  * role swaps, and token-scale changes. This is *not* a vector distance
- * calculation (see compareFingerprints for that) — it's the qualitative
+ * calculation (see compareExpressions for that) — it's the qualitative
  * "what changed in meaning" that shows up in PR reviews.
  */
-export function compareExpressions(a: Expression, b: Expression): SemanticDiff {
+export function diffExpressions(a: Expression, b: Expression): SemanticDiff {
   const decisions = diffDecisions(a.decisions ?? [], b.decisions ?? []);
   const values = diffValues(a.values, b.values);
   const palette = diffPalette(a, b);

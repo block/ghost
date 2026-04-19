@@ -28,7 +28,7 @@ export default function GettingStartedPage() {
           </pre>
           <p>
             AI-powered commands (<code>profile --ai</code>,{" "}
-            <code>review project</code>, <code>review suite</code>,{" "}
+            <code>review project</code>, <code>verify</code>,{" "}
             <code>discover</code>, <code>generate</code>) need{" "}
             <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> in
             your environment. Ghost auto-loads <code>.env</code> and{" "}
@@ -103,7 +103,7 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
               Emits CLI, JSON, or SARIF for CI.
             </li>
             <li>
-              <code>ghost review suite [expression]</code> — drives the
+              <code>ghost verify [expression]</code> — drives the
               generate→review loop across a bundled prompt suite (~18 prompts)
               and classifies each dimension as <em>tight</em>, <em>leaky</em>,
               or <em>uncaptured</em>. The schema-discipline mechanism for
@@ -122,9 +122,9 @@ ghost review project . --against parent.expression.md
 ghost review project . --against parent.expression.md --format sarif
 
 # suite — drive the loop across the bundled prompt suite
-ghost review suite
-ghost review suite -n 5
-ghost review suite --out suite-report.json`}
+ghost verify
+ghost verify -n 5
+ghost verify --out suite-report.json`}
             </code>
           </pre>
           <p>
@@ -147,8 +147,8 @@ ghost review suite --out suite-report.json`}
             </li>
             <li>
               <code>ghost review</code> gates the output.{" "}
-              <code>ghost review suite</code> runs the whole loop across a
-              standard prompt suite and aggregates per-dimension drift.
+              <code>ghost verify</code> runs the whole loop across a standard
+              prompt suite and aggregates per-dimension drift.
             </li>
           </ol>
           <pre>
@@ -160,7 +160,7 @@ ghost emit context-bundle --out skills/my-design
 ghost generate "pricing page with three tiers" --out pricing.html
 
 # Drive the suite against the standard prompt set
-ghost review suite`}
+ghost verify`}
             </code>
           </pre>
         </DocSection>
@@ -168,9 +168,9 @@ ghost review suite`}
         <DocSection title="Advanced: Config-Driven Component Diff">
           <p>
             For projects consuming a shadcn-style registry,{" "}
-            <code>ghost compare --components</code> reads a{" "}
-            <code>ghost.config.ts</code> that points at the parent registry and
-            compares local component files against it:
+            <code>ghost drift</code> reads a <code>ghost.config.ts</code> that
+            points at the parent registry and compares local component files
+            against it:
           </p>
           <pre>
             <code>
@@ -195,9 +195,9 @@ export default defineConfig({
             </code>
           </pre>
           <p>
-            With a config in place, <code>ghost compare --components</code>{" "}
-            surfaces structural drift against the parent registry. Pass{" "}
-            <code>--format json</code> for machine-readable output.
+            With a config in place, <code>ghost drift</code> surfaces structural
+            drift against the parent registry. Pass <code>--format json</code>{" "}
+            for machine-readable output.
           </p>
 
           <hr />

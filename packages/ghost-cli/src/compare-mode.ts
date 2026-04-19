@@ -5,20 +5,14 @@
  * invoking cac or touching the filesystem.
  */
 
-export type CompareMode =
-  | "components"
-  | "fleet"
-  | "semantic"
-  | "temporal"
-  | "pairwise";
+export type CompareMode = "fleet" | "semantic" | "temporal" | "pairwise";
 
 export type CompareDispatch =
   | { ok: true; mode: CompareMode }
   | { ok: false; error: string };
 
 export interface CompareModeInput {
-  fingerprintCount: number;
-  components?: boolean;
+  expressionCount: number;
   cluster?: boolean;
   semantic?: boolean;
   temporal?: boolean;
@@ -27,31 +21,25 @@ export interface CompareModeInput {
 /**
  * Decide which compare mode to run given the flags + positional count.
  * Precedence:
- *   1. --components (ignores fingerprint args entirely)
- *   2. Requires N ≥ 2 otherwise
- *   3. Fleet if N ≥ 3 or --cluster (rejects --temporal / --semantic)
- *   4. --semantic (N=2, rejects --temporal)
- *   5. --temporal (N=2)
- *   6. default pairwise
+ *   1. Requires N ≥ 2
+ *   2. Fleet if N ≥ 3 or --cluster (rejects --temporal / --semantic)
+ *   3. --semantic (N=2, rejects --temporal)
+ *   4. --temporal (N=2)
+ *   5. default pairwise
  */
 export function selectCompareMode(input: CompareModeInput): CompareDispatch {
-  if (input.components) {
-    return { ok: true, mode: "components" };
-  }
-
-  if (input.fingerprintCount < 2) {
+  if (input.expressionCount < 2) {
     return {
       ok: false,
-      error:
-        "compare requires at least 2 fingerprint paths (or use --components).",
+      error: "compare requires at least 2 expression paths.",
     };
   }
 
-  if (input.fingerprintCount >= 3 || input.cluster) {
+  if (input.expressionCount >= 3 || input.cluster) {
     if (input.temporal || input.semantic) {
       return {
         ok: false,
-        error: "--temporal and --semantic require exactly 2 fingerprints.",
+        error: "--temporal and --semantic require exactly 2 expressions.",
       };
     }
     return { ok: true, mode: "fleet" };

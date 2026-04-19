@@ -7,7 +7,7 @@ function stubReport(byDim: Record<string, number>): ReviewReport {
   const total = Object.values(byDim).reduce((a, b) => a + b, 0);
   return {
     timestamp: "2026-04-17T00:00:00.000Z",
-    fingerprint: "fp",
+    expression: "fp",
     files: [],
     summary: {
       filesScanned: 1,

@@ -21,7 +21,7 @@ ghost review [scope]           # unified drift detection
                                #   scopes: files (default), project, suite
 
 # Compare
-ghost compare <a> <b> [...]    # N-way fingerprint / expression comparison
+ghost compare <a> <b> [...]    # N-way expression comparison
                                #   flags: --semantic, --cluster, --temporal
 
 # Govern
@@ -79,7 +79,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 - Extend `compare` to accept N arguments.
   - When N=2: pairwise (current behavior).
   - When N≥3 or `--cluster`: fleet comparison (current `compareFleet`).
-- Add `--semantic` flag to `compare`: dispatches to `compareExpressions` instead of `compareFingerprints`.
+- Add `--semantic` flag to `compare`: dispatches to `diffExpressions` instead of `compareExpressions` (vector).
 - Add `--components` flag to `compare`: dispatches to the existing `diff()` codepath (local vs registry).
 - Remove old files: `expr-diff-command.ts`, fleet bits in `evolution-commands.ts` (keep ack/adopt/diverge), scan logic.
 
@@ -89,7 +89,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 - `packages/ghost-cli/src/evolution-commands.ts` — remove `registerFleetCommand`
 - `packages/ghost-core/src/scan.ts` — delete (verify no imports)
 - `packages/ghost-core/src/index.ts` — drop `scan` export
-- Docs: `README.md`, `packages/ghost-ui/src/app/docs/cli/page.tsx`, `skills/ghost-fingerprint/SKILL.md`
+- Docs: `README.md`, `apps/docs/src/app/docs/cli/page.tsx`, `skills/ghost-profile/SKILL.md`
 - Tests: remove/update scan tests, expr-diff tests; add compare-with-N tests
 
 **Public API note:** `scan` is exported from ghost-core. Removing it is a breaking change at the library level. Since ghost is 0.2.0, acceptable. Flag in release notes.
@@ -137,7 +137,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 ```
 Common:
   --format <fmt>          cli | json | github | sarif (not all scopes support all)
-  --fingerprint <path>    override expression source
+  --expression <path>     override expression source
 
 review files [files]
   --staged                staged changes only
@@ -204,7 +204,7 @@ Per phase, rewrite:
 - `README.md` — CLI reference table
 - `CLAUDE.md` — CLI commands table
 - `packages/ghost-ui/src/app/docs/cli/page.tsx` — full CLI docs page
-- `skills/ghost-fingerprint/SKILL.md`
+- `skills/ghost-profile/SKILL.md`
 - Any mentions in `docs/*.md`
 
 Docs rewrite is the single biggest non-code task per phase. Roughly 1:1 time with the code work.

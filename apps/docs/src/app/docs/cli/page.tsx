@@ -75,9 +75,9 @@ export default function CLIReferencePage() {
           </p>
           <p>
             Commands are zero-config and default to <code>./expression.md</code>{" "}
-            in the current directory. <code>compare --components</code> is the
-            one exception — it still reads a <code>ghost.config.ts</code> for
-            the registry target.
+            in the current directory. <code>drift</code> is the one exception —
+            it still reads a <code>ghost.config.ts</code> for the registry
+            target.
           </p>
         </DocSection>
 
@@ -193,10 +193,10 @@ ghost compare a.expression.md b.expression.md --semantic
 ghost compare *.expression.md --cluster
 
 # Local components vs registry
-ghost compare --components
+ghost drift
 
 # Single component diff
-ghost compare --components --component button`}
+ghost drift --component button`}
           />
 
           <CommandSection
@@ -223,8 +223,8 @@ ghost discover "similar to shadcn"`}
             <code>ghost emit context-bundle</code> produces a grounding bundle,
             any generator (including <code>ghost generate</code>) produces,{" "}
             <code>ghost review</code> gates the output, and{" "}
-            <code>ghost review suite</code> runs the whole loop over a standard
-            prompt suite to aggregate drift. See{" "}
+            <code>ghost verify</code> runs the whole loop over a standard prompt
+            suite to aggregate drift. See{" "}
             <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
@@ -415,9 +415,9 @@ ghost review project . --against parent.expression.md
 ghost review project . --against parent.expression.md --format sarif
 
 # suite scope — drive generate→review across a prompt suite
-ghost review suite
-ghost review suite -n 5
-ghost review suite --out suite-report.json`}
+ghost verify
+ghost verify -n 5
+ghost verify --out suite-report.json`}
           />
         </DocSection>
 

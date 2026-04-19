@@ -106,17 +106,14 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "review_files",
-    "Review files for visual language drift against a design fingerprint. Returns the CLI command to run — the review itself is executed via the ghost CLI, not this MCP server.",
+    "Review files for visual language drift against a design expression. Returns the CLI command to run — the review itself is executed via the ghost CLI, not this MCP server.",
     {
       files: z
         .array(z.string())
         .optional()
         .describe("File paths to review (omit for git diff)"),
       deep: z.boolean().optional().describe("Enable LLM-powered deep review"),
-      fingerprint: z
-        .string()
-        .optional()
-        .describe("Path to fingerprint JSON file"),
+      expression: z.string().optional().describe("Path to expression.md file"),
       dimensions: z
         .string()
         .optional()
@@ -128,11 +125,11 @@ export function registerTools(server: McpServer): void {
         .optional()
         .describe("Output format"),
     },
-    async ({ files, deep, fingerprint, dimensions, format }) => {
+    async ({ files, deep, expression, dimensions, format }) => {
       const parts = ["ghost", "review"];
       if (files && files.length > 0) parts.push(files.join(","));
       if (deep) parts.push("--deep");
-      if (fingerprint) parts.push("--fingerprint", fingerprint);
+      if (expression) parts.push("--expression", expression);
       if (dimensions) parts.push("--dimensions", dimensions);
       if (format) parts.push("--format", format);
 
