@@ -143,20 +143,13 @@ Optionally create a `ghost.config.ts` in your project root to configure scanning
 import { defineConfig } from "@ghost/core";
 
 export default defineConfig({
-  // Parent design system to check drift against
+  // Parent design system to compare components against
   parent: { type: "github", value: "shadcn-ui/ui" },
 
-  // Targets to scan
+  // Targets for `ghost compare --components`
   targets: [
     { type: "path", value: "./packages/my-ui" },
   ],
-
-  scan: {
-    values: true,
-    structure: true,
-    visual: false,
-    analysis: false,
-  },
 
   rules: {
     "hardcoded-color": "error",
@@ -164,7 +157,6 @@ export default defineConfig({
     "missing-token": "warn",
     "structural-divergence": "error",
     "missing-component": "warn",
-    "visual-regression": "warn",
   },
 
   ignore: [],

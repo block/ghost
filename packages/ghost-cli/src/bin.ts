@@ -51,6 +51,7 @@ import {
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
+import { selectCompareMode } from "./compare-mode.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
@@ -236,8 +237,20 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (fingerprints: string[], opts) => {
     try {
-      // --- Mode: --components (local components vs registry) ---
-      if (opts.components) {
+      const dispatch = selectCompareMode({
+        fingerprintCount: fingerprints.length,
+        components: Boolean(opts.components),
+        cluster: Boolean(opts.cluster),
+        semantic: Boolean(opts.semantic),
+        temporal: Boolean(opts.temporal),
+      });
+
+      if (!dispatch.ok) {
+        console.error(`Error: ${dispatch.error}`);
+        process.exit(2);
+      }
+
+      if (dispatch.mode === "components") {
         const config = await loadConfig(opts.config);
         const results = await diff(config, opts.component || undefined);
         const output =
@@ -249,24 +262,9 @@ cli
           r.components.some((c) => c.severity === "error"),
         );
         process.exit(hasBreaking ? 1 : 0);
-        return;
       }
 
-      if (fingerprints.length < 2) {
-        console.error(
-          "Error: compare requires at least 2 fingerprint paths (or use --components).",
-        );
-        process.exit(2);
-      }
-
-      // --- Mode: fleet (N≥3 or --cluster) ---
-      if (fingerprints.length >= 3 || opts.cluster) {
-        if (opts.temporal || opts.semantic) {
-          console.error(
-            "Error: --temporal and --semantic require exactly 2 fingerprints.",
-          );
-          process.exit(2);
-        }
+      if (dispatch.mode === "fleet") {
         const members = await Promise.all(
           fingerprints.map(async (p) => {
             const { fingerprint } = await loadExpression(p);
@@ -280,10 +278,9 @@ cli
             : formatFleetComparison(fleet);
         process.stdout.write(`${output}\n`);
         process.exit(0);
-        return;
       }
 
-      // --- Pairwise modes (N=2) ---
+      // Pairwise modes (N=2): load both fingerprints once.
       const [a, b] = fingerprints;
       const [aParsed, bParsed] = await Promise.all([
         loadExpression(a),
@@ -292,14 +289,7 @@ cli
       const src = aParsed.fingerprint;
       const tgt = bParsed.fingerprint;
 
-      // --- Mode: --semantic ---
-      if (opts.semantic) {
-        if (opts.temporal) {
-          console.error(
-            "Error: --semantic and --temporal are mutually exclusive.",
-          );
-          process.exit(2);
-        }
+      if (dispatch.mode === "semantic") {
         const semantic = compareExpressions(src, tgt);
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(semantic, null, 2)}\n`);
@@ -307,15 +297,13 @@ cli
           process.stdout.write(formatSemanticDiff(semantic));
         }
         process.exit(semantic.unchanged ? 0 : 1);
-        return;
       }
 
-      // --- Mode: --temporal ---
       const comparison = compareFingerprints(src, tgt, {
-        includeVectors: opts.temporal,
+        includeVectors: dispatch.mode === "temporal",
       });
 
-      if (opts.temporal) {
+      if (dispatch.mode === "temporal") {
         const historyDir = opts.historyDir ?? process.cwd();
         const [history, manifest] = await Promise.all([
           readHistory(historyDir),
@@ -335,10 +323,9 @@ cli
 
         process.stdout.write(`${output}\n`);
         process.exit(temporal.distance > 0.5 ? 1 : 0);
-        return;
       }
 
-      // --- Mode: default pairwise ---
+      // dispatch.mode === "pairwise"
       const output =
         opts.format === "json"
           ? formatComparisonJSON(comparison)

@@ -21,7 +21,24 @@ import {
 import type { CAC } from "cac";
 
 const SCOPES = new Set(["files", "project", "suite"]);
-type Scope = "files" | "project" | "suite";
+export type ReviewScope = "files" | "project" | "suite";
+
+/**
+ * Parse the positional args to determine scope + remaining positionals.
+ * First arg is treated as scope if it matches files|project|suite; otherwise
+ * everything is treated as files-scope positionals (code paths to review).
+ * Exported for unit testing.
+ */
+export function parseScope(args: string[]): {
+  scope: ReviewScope;
+  positional: string[];
+} {
+  const first = args[0];
+  if (first && SCOPES.has(first)) {
+    return { scope: first as ReviewScope, positional: args.slice(1) };
+  }
+  return { scope: "files", positional: args };
+}
 
 export function registerReviewCommand(cli: CAC): void {
   cli
@@ -110,14 +127,6 @@ export function registerReviewCommand(cli: CAC): void {
         process.exit(2);
       }
     });
-}
-
-function parseScope(args: string[]): { scope: Scope; positional: string[] } {
-  const first = args[0];
-  if (first && SCOPES.has(first)) {
-    return { scope: first as Scope, positional: args.slice(1) };
-  }
-  return { scope: "files", positional: args };
 }
 
 // --- files scope (code drift in files) ---
