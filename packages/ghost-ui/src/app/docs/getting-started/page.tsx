@@ -56,7 +56,7 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
           </pre>
           <p>
             An <strong>expression</strong> is a Markdown file with YAML
-            frontmatter (the machine layer: 64-dim vector, palette, spacing,
+            frontmatter (the machine layer: 49-dim vector, palette, spacing,
             typography, surfaces) plus a prose body in three layers: Character,
             Signature / Observation, Decisions, Values. Humans can read it. LLMs
             can consume it. Deterministic tools can diff it.

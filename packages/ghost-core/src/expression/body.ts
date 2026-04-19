@@ -1,4 +1,4 @@
-import type { DesignDecision, DesignObservation } from "../types.js";
+import type { DesignDecision } from "../types.js";
 
 /**
  * Structured read of an expression.md body. Anything the body holds that
@@ -9,11 +9,9 @@ export interface BodyData {
   character?: string;
   /** From `# Signature` bullets — maps to DesignObservation.distinctiveTraits */
   signature?: string[];
-  /** From `# Observation` subsections (## Palette, ## Typography, etc.) */
-  observationProse?: Record<string, string>;
   /** From `# Decisions` ### blocks — maps to DesignFingerprint.decisions */
   decisions?: DesignDecision[];
-  /** From `# Values` Do/Don't — not yet stored on the fingerprint type */
+  /** From `# Values` Do/Don't — maps to DesignFingerprint.values */
   values?: { do: string[]; dont: string[] };
 }
 
@@ -107,13 +105,6 @@ export function parseBody(md: string): BodyData {
       out.character = sec.body;
     } else if (h.startsWith("signature")) {
       out.signature = parseBullets(sec.body);
-    } else if (h.startsWith("observation")) {
-      const subs = sectionsAt(sec.body, 2);
-      if (subs.length) {
-        out.observationProse = Object.fromEntries(
-          subs.map((s) => [slug(s.heading), s.body]),
-        );
-      }
     } else if (h.startsWith("decisions")) {
       const blocks = sectionsAt(sec.body, 3);
       if (blocks.length) out.decisions = blocks.map(parseDecision);
@@ -130,18 +121,4 @@ export function parseBody(md: string): BodyData {
     }
   }
   return out;
-}
-
-/** Merge BodyData into a partial DesignObservation. */
-export function applyObservation(
-  body: BodyData,
-  existing?: DesignObservation,
-): DesignObservation | undefined {
-  if (!body.character && !body.signature && !existing) return existing;
-  return {
-    summary: body.character ?? existing?.summary ?? "",
-    personality: existing?.personality ?? [],
-    distinctiveTraits: body.signature ?? existing?.distinctiveTraits ?? [],
-    closestSystems: existing?.closestSystems ?? [],
-  };
 }

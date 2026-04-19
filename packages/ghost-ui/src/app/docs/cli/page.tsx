@@ -84,7 +84,7 @@ export default function CLIReferencePage() {
         <DocSection title="Profiling">
           <CommandSection
             name="profile"
-            description="Generate a design fingerprint from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 64-dimensional vector plus a three-layer prose expression (Character, Signature, Decisions, Values)."
+            description="Generate a design fingerprint from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a three-layer prose expression (Character, Signature, Decisions, Values)."
             usage="ghost profile [...targets] [options]"
             flags={[
               {
@@ -546,7 +546,7 @@ ghost adopt new-parent.expression.md`}
         <DocSection title="Visualization">
           <CommandSection
             name="viz"
-            description="Launch an interactive 3D visualization of fingerprint embeddings using Three.js. Projects the 64-dimensional vectors into 3D space via PCA."
+            description="Launch an interactive 3D visualization of fingerprint embeddings using Three.js. Projects the 49-dimensional vectors into 3D space via PCA."
             usage="ghost viz <fp1> <fp2> [fp3...] [options]"
             flags={[
               {

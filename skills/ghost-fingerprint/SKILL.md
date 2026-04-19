@@ -63,4 +63,4 @@ The fingerprint contains 5 dimensions:
 4. **Surfaces**: Border radii, shadow complexity, border usage
 5. **Architecture**: Tokenization score (0-1), CSS methodology, component count, naming pattern
 
-A **64-dimensional embedding** vector enables quantitative comparison between systems.
+A **49-dimensional embedding** vector enables quantitative comparison between systems.

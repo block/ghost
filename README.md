@@ -210,7 +210,7 @@ export default defineConfig({
 
 Ghost's canonical artifact is **`expression.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. It's human-readable, LLM-consumable, and diff-friendly:
 
-- **Frontmatter** — 64-dimensional embedding, palette, spacing, typography, surfaces, provenance. What deterministic tools read
+- **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. What deterministic tools read
 - **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand
 - **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves
 - **`# Observation`** — prose paired with the frontmatter data, dimension by dimension
@@ -219,15 +219,14 @@ Ghost's canonical artifact is **`expression.md`** — a Markdown document with Y
 
 Generate one with `ghost profile . --emit`. See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec.
 
-The 64-dim machine vector splits like this:
+The 49-dim machine vector splits like this:
 
-| Dimensions | Category     | What it captures                                               |
-| ---------- | ------------ | -------------------------------------------------------------- |
-| 0-20       | Palette      | Dominant colors (OKLCH), neutrals, semantic coverage, contrast |
-| 21-30      | Spacing      | Scale values, regularity, base unit, distribution              |
-| 31-40      | Typography   | Font families, size ramp, weight distribution, line heights    |
-| 41-48      | Surfaces     | Border radii, shadow complexity, border usage                  |
-| 49-63      | Architecture | Tokenization ratio, methodology, component count, naming       |
+| Dimensions | Category   | What it captures                                               |
+| ---------- | ---------- | -------------------------------------------------------------- |
+| 0-20       | Palette    | Dominant colors (OKLCH), neutrals, semantic coverage, contrast |
+| 21-30      | Spacing    | Scale values, regularity, base unit, distribution              |
+| 31-40      | Typography | Font families, size ramp, weight distribution, line heights   |
+| 41-48      | Surfaces   | Border radii, shadow complexity, border usage                  |
 
 ### Scanning
 

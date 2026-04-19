@@ -25,7 +25,7 @@ export function registerVizCommand(cli: CAC): void {
 
         const members = await Promise.all(
           paths.map(async (p) => {
-            const fingerprint = await loadExpression(p);
+            const { fingerprint } = await loadExpression(p);
             return { id: fingerprint.id, fingerprint };
           }),
         );

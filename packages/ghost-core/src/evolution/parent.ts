@@ -58,7 +58,7 @@ export async function resolveParent(
 
 async function readFingerprintFile(path: string): Promise<DesignFingerprint> {
   try {
-    return await loadExpression(path);
+    return (await loadExpression(path)).fingerprint;
   } catch (err) {
     throw new Error(
       `Could not read fingerprint at ${path}: ${err instanceof Error ? err.message : String(err)}`,
@@ -69,7 +69,7 @@ async function readFingerprintFile(path: string): Promise<DesignFingerprint> {
 async function readFingerprintFromDir(dir: string): Promise<DesignFingerprint> {
   const mdPath = resolve(dir, EXPRESSION_FILENAME);
   try {
-    return await loadExpression(mdPath);
+    return (await loadExpression(mdPath)).fingerprint;
   } catch {
     const jsonPath = resolve(dir, LEGACY_FINGERPRINT_FILENAME);
     return readFingerprintFile(jsonPath);

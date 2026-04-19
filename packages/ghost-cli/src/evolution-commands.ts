@@ -92,7 +92,7 @@ export function registerAdoptCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const newParent = await loadExpression(source);
+        const { fingerprint: newParent } = await loadExpression(source);
 
         const config = await loadConfig(opts.config);
         const childFp = await profile(config);
@@ -208,7 +208,7 @@ export function registerFleetCommand(cli: CAC): void {
 
         const members = await Promise.all(
           paths.map(async (p) => {
-            const fingerprint = await loadExpression(p);
+            const { fingerprint } = await loadExpression(p);
             return { id: fingerprint.id, fingerprint };
           }),
         );

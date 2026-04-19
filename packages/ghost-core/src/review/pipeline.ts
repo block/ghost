@@ -48,18 +48,19 @@ async function resolveFingerprint(
   if (options.fingerprint) return options.fingerprint;
 
   if (options.fingerprintPath) {
-    return loadExpression(resolve(cwd, options.fingerprintPath));
+    return (await loadExpression(resolve(cwd, options.fingerprintPath)))
+      .fingerprint;
   }
 
   const mdPath = resolve(cwd, EXPRESSION_FILENAME);
-  if (existsSync(mdPath)) return loadExpression(mdPath);
+  if (existsSync(mdPath)) return (await loadExpression(mdPath)).fingerprint;
 
   const jsonPath = resolve(cwd, LEGACY_FINGERPRINT_FILENAME);
   if (existsSync(jsonPath)) {
     console.warn(
       `[ghost] Reading legacy ${LEGACY_FINGERPRINT_FILENAME}. Migrate to ${EXPRESSION_FILENAME} by running \`ghost profile . --emit\`.`,
     );
-    return loadExpression(jsonPath);
+    return (await loadExpression(jsonPath)).fingerprint;
   }
 
   throw new Error(

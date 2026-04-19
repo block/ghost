@@ -8,18 +8,39 @@ import type {
 } from "../types.js";
 import { buildTokensCss } from "./tokens-css.js";
 
+/**
+ * @deprecated Legacy union retained for API compatibility with existing
+ * CLI flags. Prefer the boolean flag options (`tokens`, `readme`,
+ * `promptOnly`) on WriteContextOptions.
+ */
 export type ContextFormat = "skill" | "prompt" | "bundle";
 
 export interface WriteContextOptions {
   outDir: string;
-  format?: ContextFormat;
-  /** Override the skill name. Defaults to fingerprint id/slug. */
+  /** Emit tokens.css. Default: true. */
+  tokens?: boolean;
+  /** Emit README.md. Default: false. */
+  readme?: boolean;
+  /** Emit only prompt.md (skips SKILL.md / expression.md / tokens.css). Default: false. */
+  promptOnly?: boolean;
+  /** Override the skill name. Default: derived from fingerprint.id. */
   name?: string;
+  /**
+   * @deprecated Pass `tokens`, `readme`, `promptOnly` instead.
+   * Still honored for one release to avoid breaking callers:
+   *   "skill"  → tokens:true, readme:false
+   *   "bundle" → tokens:true, readme:true
+   *   "prompt" → promptOnly:true
+   */
+  format?: ContextFormat;
+  /** Source path (e.g. "./expression.md") — surfaced in generated file headers. */
+  sourcePath?: string;
+  /** Generator version string — surfaced in generated file headers. */
+  generator?: string;
 }
 
 export interface WriteContextResult {
   outDir: string;
-  format: ContextFormat;
   files: string[];
 }
 
@@ -27,49 +48,89 @@ export async function writeContextBundle(
   fingerprint: DesignFingerprint,
   options: WriteContextOptions,
 ): Promise<WriteContextResult> {
-  const format = options.format ?? "skill";
-  const outDir = options.outDir;
-  const name = options.name ?? defaultSkillName(fingerprint);
-
-  await mkdir(outDir, { recursive: true });
+  const resolved = resolveFlags(options, fingerprint);
+  await mkdir(options.outDir, { recursive: true });
   const files: string[] = [];
 
-  if (format === "prompt") {
-    const p = join(outDir, "prompt.md");
-    await writeFile(p, buildPromptMd(fingerprint, name));
+  if (resolved.promptOnly) {
+    const p = join(options.outDir, "prompt.md");
+    await writeFile(p, buildPromptMd(fingerprint, resolved.name));
     files.push(p);
-    return { outDir, format, files };
+    return { outDir: options.outDir, files };
   }
 
-  // skill and bundle share SKILL.md + expression.md
-  const skillPath = join(outDir, "SKILL.md");
-  await writeFile(skillPath, buildSkillMd(fingerprint, name, format));
+  const skillPath = join(options.outDir, "SKILL.md");
+  await writeFile(
+    skillPath,
+    buildSkillMd(fingerprint, resolved.name, resolved.tokens),
+  );
   files.push(skillPath);
 
-  const exprPath = join(outDir, "expression.md");
+  const exprPath = join(options.outDir, "expression.md");
   await writeFile(exprPath, serializeExpression(fingerprint));
   files.push(exprPath);
 
-  if (format === "bundle") {
-    const cssPath = join(outDir, "tokens.css");
-    await writeFile(cssPath, buildTokensCss(fingerprint));
+  if (resolved.tokens) {
+    const cssPath = join(options.outDir, "tokens.css");
+    await writeFile(
+      cssPath,
+      buildTokensCss(fingerprint, {
+        sourcePath: options.sourcePath,
+        generator: options.generator,
+      }),
+    );
     files.push(cssPath);
+  }
 
-    const readmePath = join(outDir, "README.md");
-    await writeFile(readmePath, buildReadmeMd(fingerprint, name));
+  if (resolved.readme) {
+    const readmePath = join(options.outDir, "README.md");
+    await writeFile(readmePath, buildReadmeMd(fingerprint, resolved.name));
     files.push(readmePath);
   }
 
-  return { outDir, format, files };
+  return { outDir: options.outDir, files };
+}
+
+interface ResolvedFlags {
+  name: string;
+  tokens: boolean;
+  readme: boolean;
+  promptOnly: boolean;
+}
+
+function resolveFlags(
+  options: WriteContextOptions,
+  fp?: DesignFingerprint,
+): ResolvedFlags {
+  // Legacy format flag takes precedence if explicitly set by an old caller.
+  let tokens = options.tokens ?? true;
+  let readme = options.readme ?? false;
+  let promptOnly = options.promptOnly ?? false;
+  if (options.format) {
+    if (options.format === "prompt") {
+      promptOnly = true;
+    } else if (options.format === "skill") {
+      tokens = false;
+      readme = false;
+    } else if (options.format === "bundle") {
+      tokens = true;
+      readme = true;
+    }
+  }
+  return {
+    name: options.name ?? defaultSkillName(fp),
+    tokens,
+    readme,
+    promptOnly,
+  };
 }
 
 export function buildSkillMd(
   fingerprint: DesignFingerprint,
   name: string,
-  format: ContextFormat,
+  includesCss: boolean,
 ): string {
   const description = buildSkillDescription(fingerprint, name);
-  const includesCss = format === "bundle";
   const fileList = [
     "- `expression.md` — canonical design language (YAML tokens + Character/Signature/Decisions/Values)",
     ...(includesCss
@@ -77,7 +138,6 @@ export function buildSkillMd(
           "- `tokens.css` — CSS custom properties derived from expression tokens",
         ]
       : []),
-    ...(includesCss ? ["- `README.md` — summary of this bundle"] : []),
   ].join("\n");
 
   const body = `This skill grounds UI generation in the **${name}** design language.
@@ -177,8 +237,8 @@ function buildSkillDescription(
   return `Use this skill to generate UI in the ${name} design language${traitPhrase}. Contains the canonical expression, token reference, and Do/Don't rules.`;
 }
 
-function defaultSkillName(fingerprint: DesignFingerprint): string {
-  const candidate = fingerprint.id || "design-language";
+function defaultSkillName(fingerprint?: DesignFingerprint): string {
+  const candidate = fingerprint?.id || "design-language";
   return candidate
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")

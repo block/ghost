@@ -39,7 +39,7 @@ export function registerVerifyCommand(cli: CAC): void {
           process.cwd(),
           expressionArg || "expression.md",
         );
-        const fingerprint = await loadExpression(expressionPath);
+        const { fingerprint } = await loadExpression(expressionPath);
         const suite = await loadPromptSuite(opts.suite as string | undefined);
         const concurrency = Number.parseInt(
           String(opts.concurrency ?? "3"),

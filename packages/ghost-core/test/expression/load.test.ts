@@ -38,7 +38,7 @@ const SAMPLE_FINGERPRINT: DesignFingerprint = {
 const SAMPLE_MD = `---
 name: Claude
 slug: claude
-schema: 1
+schema: 2
 generator: ghost@0.8.0
 confidence: 0.87
 id: claude
@@ -117,34 +117,38 @@ describe("parseExpression", () => {
     expect(meta.confidence).toBe(0.87);
   });
 
-  it("merges Character into observation.summary", () => {
-    const { fingerprint } = parseExpression(SAMPLE_MD);
-    expect(fingerprint.observation?.summary).toContain("literary salon");
-  });
-
-  it("merges Signature bullets into observation.distinctiveTraits", () => {
-    const { fingerprint } = parseExpression(SAMPLE_MD);
-    expect(fingerprint.observation?.distinctiveTraits).toEqual([
+  it("exposes body Character/Signature via ParsedExpression.body (diagnostic)", () => {
+    const { body } = parseExpression(SAMPLE_MD);
+    expect(body.character).toContain("literary salon");
+    expect(body.signature).toEqual([
       "Warm ring-shadows instead of drop-shadows",
       "Editorial serif/sans split",
       "Light/dark section alternation",
     ]);
   });
 
-  it("parses Decisions with evidence (both comma-separated and bulleted)", () => {
+  it("does NOT merge body narrative into the fingerprint (frontmatter authoritative)", () => {
     const { fingerprint } = parseExpression(SAMPLE_MD);
-    expect(fingerprint.decisions).toHaveLength(2);
-    const warm = fingerprint.decisions?.[0];
+    // SAMPLE_MD has no `observation:` in frontmatter — body is informational only
+    expect(fingerprint.observation).toBeUndefined();
+    expect(fingerprint.decisions).toBeUndefined();
+    expect(fingerprint.values).toBeUndefined();
+  });
+
+  it("parses body Decisions with evidence into ParsedExpression.body", () => {
+    const { body } = parseExpression(SAMPLE_MD);
+    expect(body.decisions).toHaveLength(2);
+    const warm = body.decisions?.[0];
     expect(warm?.dimension).toBe("warm-only-neutrals");
     expect(warm?.evidence.length).toBeGreaterThan(0);
-    const serif = fingerprint.decisions?.[1];
+    const serif = body.decisions?.[1];
     expect(serif?.evidence).toEqual([
       "H1-H6 all serif 500",
       "Buttons and labels sans 400-500",
     ]);
   });
 
-  it("parses Values Do/Don't lists", () => {
+  it("parses Values Do/Don't lists into ParsedExpression.body", () => {
     const { body } = parseExpression(SAMPLE_MD);
     expect(body.values?.do).toHaveLength(2);
     expect(body.values?.dont).toContain("Use cool blue-grays anywhere");
@@ -153,13 +157,119 @@ describe("parseExpression", () => {
   it("throws when the frontmatter delimiter is missing", () => {
     expect(() => parseExpression("# just a heading")).toThrow(/frontmatter/i);
   });
+
+  it("rejects stale schema versions with a helpful error", () => {
+    const stale = SAMPLE_MD.replace("schema: 2", "schema: 1");
+    expect(() => parseExpression(stale)).toThrow(
+      /schema version mismatch.*schema: 1.*schema: 2/s,
+    );
+  });
+
+  it("surfaces the bad field path when validation fails", () => {
+    const bad = SAMPLE_MD.replace(
+      "saturationProfile: muted",
+      "saturationProfile: electric",
+    );
+    expect(() => parseExpression(bad)).toThrow(/palette\.saturationProfile/);
+  });
+
+  it("skipValidation bypasses both schema gate and zod (for lint tooling)", () => {
+    const stale = SAMPLE_MD.replace("schema: 2", "schema: 1");
+    expect(() =>
+      parseExpression(stale, { skipValidation: true }),
+    ).not.toThrow();
+  });
+
+  it("tolerates an hrule `---` in the markdown body (not confused with frontmatter close)", () => {
+    const withHrule = `${SAMPLE_MD}\n\n---\n\nSome trailing paragraph after an hrule.\n`;
+    const { fingerprint, body } = parseExpression(withHrule);
+    expect(fingerprint.id).toBe("claude");
+    // The body parse should have captured everything after the frontmatter.
+    expect(body.character).toContain("literary salon");
+  });
+
+  it("throws when the frontmatter is opened but never closed", () => {
+    const unterminated = `---\nid: foo\nsource: unknown\n`;
+    expect(() => parseExpression(unterminated)).toThrow(/unterminated/i);
+  });
+
+  it("frontmatter wins over body when they disagree (frontmatter-authoritative contract)", () => {
+    const md = `---
+id: claude
+source: llm
+timestamp: 2026-04-17T00:00:00.000Z
+observation:
+  summary: "FRONTMATTER WINS"
+  personality: []
+  distinctiveTraits: ["authoritative frontmatter trait"]
+  closestSystems: []
+decisions:
+  - dimension: frontmatter-decision
+    decision: "This came from YAML"
+    evidence: ["yaml-evidence"]
+values:
+  do: ["YAML-do"]
+  dont: ["YAML-dont"]
+palette:
+  dominant: []
+  neutrals: { steps: [], count: 0 }
+  semantic: []
+  saturationProfile: muted
+  contrast: moderate
+spacing: { scale: [], baseUnit: null, regularity: 0 }
+typography:
+  families: []
+  sizeRamp: []
+  weightDistribution: {}
+  lineHeightPattern: normal
+surfaces:
+  borderRadii: []
+  shadowComplexity: none
+  borderUsage: minimal
+embedding: []
+---
+
+# Character
+
+BODY LOSES — this should never reach the fingerprint.
+
+# Signature
+
+- body trait that should be ignored
+
+# Decisions
+
+### body decision
+This should not appear.
+
+# Values
+
+## Do
+- body-do
+
+## Don't
+- body-dont
+`;
+    const { fingerprint, body } = parseExpression(md);
+    expect(fingerprint.observation?.summary).toBe("FRONTMATTER WINS");
+    expect(fingerprint.observation?.distinctiveTraits).toEqual([
+      "authoritative frontmatter trait",
+    ]);
+    expect(fingerprint.decisions).toHaveLength(1);
+    expect(fingerprint.decisions?.[0].dimension).toBe("frontmatter-decision");
+    expect(fingerprint.values?.do).toEqual(["YAML-do"]);
+    expect(fingerprint.values?.dont).toEqual(["YAML-dont"]);
+    // Body is still exposed for diagnostic tools
+    expect(body.character).toContain("BODY LOSES");
+    expect(body.decisions?.[0].dimension).toBe("body-decision");
+  });
 });
 
 describe("loadExpression", () => {
   it("parses .md files as expressions", async () => {
     const path = join(tmpdir(), `ghost-test-${Date.now()}.md`);
     await writeFile(path, SAMPLE_MD, "utf-8");
-    const fp = await loadExpression(path);
+    const { fingerprint: fp } = await loadExpression(path);
     expect(fp.id).toBe("claude");
     expect(fp.palette.dominant[0].value).toBe("#c96442");
   });
@@ -167,7 +277,7 @@ describe("loadExpression", () => {
   it("parses .json files via legacy passthrough", async () => {
     const path = join(tmpdir(), `ghost-test-${Date.now()}.json`);
     await writeFile(path, JSON.stringify(SAMPLE_FINGERPRINT), "utf-8");
-    const fp = await loadExpression(path);
+    const { fingerprint: fp } = await loadExpression(path);
     expect(fp.id).toBe(SAMPLE_FINGERPRINT.id);
     expect(fp.palette.neutrals.count).toBe(3);
     expect(fp.embedding).toHaveLength(8);
@@ -194,7 +304,7 @@ describe("serializeExpression round-trip", () => {
     };
 
     const md = serializeExpression(fpWithProse, {
-      meta: { name: "Claude", slug: "claude", schema: 1 },
+      meta: { name: "Claude", slug: "claude" },
     });
 
     const { fingerprint, meta } = parseExpression(md);
