@@ -47,6 +47,11 @@ For each decision, cite specific evidence from the files you read. Prefer eviden
 ### Layer 3: Tokens
 Extract the concrete tokens — hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer. Every palette entry (dominant, neutrals, semantic) should be cited in at least one decision's evidence, or dropped from the palette — uncited neutrals are noise.
 
+### Layer 4: Roles (slot → token bindings)
+Open a handful of component files and record which tokens bind to which semantic slot. A role names a slot ("h1", "body", "card", "button", "input", "list-row") and lists the specific tokens it uses — size, radius, padding, colors. This turns the token layer from ingredients into a recipe: "h1 = serif 52 / 500" rather than just "these sizes exist."
+
+Only emit roles you directly observed. Omit subfields you can't infer. Prefer HTML-like or archetype names. Evidence should cite the component file (path or path:line). A codebase with no component files may produce an empty roles list — don't fabricate.
+
 ## Important
 
 - Read the actual value definitions. If a variable references another variable, follow the chain.
@@ -130,12 +135,15 @@ export async function runFingerprintAgent(
   fp.source = "llm";
   fp.timestamp = new Date().toISOString();
 
-  // Preserve observation and decisions from the three-layer output
+  // Preserve observation, decisions, and roles from the three-layer output
   if (raw.observation && typeof raw.observation.summary === "string") {
     fp.observation = raw.observation;
   }
   if (Array.isArray(raw.decisions) && raw.decisions.length > 0) {
     fp.decisions = raw.decisions;
+  }
+  if (Array.isArray(raw.roles) && raw.roles.length > 0) {
+    fp.roles = raw.roles;
   }
 
   // Recompute oklch from hex values deterministically

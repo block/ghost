@@ -82,6 +82,56 @@ const DesignDecisionSchema = z
   .strict();
 
 /**
+ * Semantic slot → token binding. Each role names a slot ("h1", "card",
+ * "button") and binds tokens from the fingerprint dimensions. Every
+ * sub-block is optional — a role can be partial when the source only
+ * supplies some tokens.
+ */
+const DesignRoleSchema = z
+  .object({
+    name: z.string(),
+    tokens: z
+      .object({
+        typography: z
+          .object({
+            family: z.string().optional(),
+            size: z.number().optional(),
+            weight: z.number().optional(),
+            lineHeight: z.number().optional(),
+          })
+          .strict()
+          .optional(),
+        spacing: z
+          .object({
+            padding: z.number().optional(),
+            gap: z.number().optional(),
+            margin: z.number().optional(),
+          })
+          .strict()
+          .optional(),
+        surfaces: z
+          .object({
+            borderRadius: z.number().optional(),
+            shadow: z.enum(["none", "subtle", "layered"]).optional(),
+            borderWidth: z.number().optional(),
+          })
+          .strict()
+          .optional(),
+        palette: z
+          .object({
+            background: z.string().optional(),
+            foreground: z.string().optional(),
+            border: z.string().optional(),
+          })
+          .strict()
+          .optional(),
+      })
+      .strict(),
+    evidence: z.array(z.string()),
+  })
+  .strict();
+
+/**
  * Schema for the YAML frontmatter in an expression.md file. Covers the
  * machine-layer of DesignFingerprint plus expression-level metadata.
  *
@@ -125,6 +175,14 @@ export const FrontmatterSchema = z
     spacing: SpacingSchema,
     typography: TypographySchema,
     surfaces: SurfacesSchema,
+
+    /**
+     * Semantic slot → token bindings. Optional. The bridge from abstract
+     * tokens to rendering: each role names a slot and binds tokens from
+     * the dimensions above.
+     */
+    roles: z.array(DesignRoleSchema).optional(),
+
     /**
      * Optional at root — loader falls back to sibling `embedding.md` or
      * recomputes from structured blocks. Present embeddings are trusted
@@ -162,6 +220,7 @@ export const PartialFrontmatterSchema = z
     spacing: SpacingSchema.optional(),
     typography: TypographySchema.optional(),
     surfaces: SurfacesSchema.optional(),
+    roles: z.array(DesignRoleSchema).optional(),
     embedding: z.array(z.number()).optional(),
   })
   .strict();

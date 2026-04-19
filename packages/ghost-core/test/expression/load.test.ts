@@ -404,4 +404,65 @@ describe("serializeExpression round-trip", () => {
     expect(fingerprint.values?.do).toEqual(fpWithValues.values?.do);
     expect(fingerprint.values?.dont).toEqual(fpWithValues.values?.dont);
   });
+
+  it("round-trips roles (slot → token bindings) through serialize → parse", () => {
+    const fpWithRoles: DesignFingerprint = {
+      ...SAMPLE_FINGERPRINT,
+      roles: [
+        {
+          name: "h1",
+          tokens: {
+            typography: { family: "Anthropic Serif", size: 64, weight: 500 },
+            spacing: { margin: 32 },
+          },
+          evidence: ["components/Heading.tsx:12"],
+        },
+        {
+          name: "card",
+          tokens: {
+            surfaces: { borderRadius: 16, shadow: "subtle" },
+            spacing: { padding: 24 },
+            palette: { background: "#f5f4ed" },
+          },
+          evidence: ["components/ui/card.tsx"],
+        },
+      ],
+    };
+    const md = serializeExpression(fpWithRoles, { extractEmbedding: false });
+    const yamlSection = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
+    expect(yamlSection).toMatch(/^roles:/m);
+    expect(yamlSection).toContain("name: h1");
+    expect(yamlSection).toContain("name: card");
+
+    const { fingerprint } = parseExpression(md);
+    expect(fingerprint.roles).toHaveLength(2);
+    expect(fingerprint.roles?.[0].name).toBe("h1");
+    expect(fingerprint.roles?.[0].tokens.typography?.size).toBe(64);
+    expect(fingerprint.roles?.[0].evidence).toEqual([
+      "components/Heading.tsx:12",
+    ]);
+    expect(fingerprint.roles?.[1].tokens.surfaces?.borderRadius).toBe(16);
+    expect(fingerprint.roles?.[1].tokens.surfaces?.shadow).toBe("subtle");
+    expect(fingerprint.roles?.[1].tokens.palette?.background).toBe("#f5f4ed");
+  });
+
+  it("rejects unknown keys in role token sub-blocks (strict schema)", () => {
+    const fpBad = {
+      ...SAMPLE_FINGERPRINT,
+      roles: [
+        {
+          name: "h1",
+          tokens: {
+            // @ts-expect-error — intentional bad input
+            typography: { family: "Serif", bogus: 42 },
+          },
+          evidence: [],
+        },
+      ],
+    } as DesignFingerprint;
+    const md = serializeExpression(fpBad, { extractEmbedding: false });
+    expect(() => parseExpression(md)).toThrow(
+      /Invalid expression frontmatter[\s\S]*roles/,
+    );
+  });
 });

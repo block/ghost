@@ -53,6 +53,7 @@ import {
 } from "@ghost/core";
 import { cac } from "cac";
 import { registerContextCommand } from "./context-command.js";
+import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
   registerAdoptCommand,
@@ -450,6 +451,7 @@ registerGenerateCommand(cli);
 registerVerifyCommand(cli);
 registerLintCommand(cli);
 registerExprDiffCommand(cli);
+registerEmitCommand(cli);
 
 cli.help();
 cli.version("0.2.0");
