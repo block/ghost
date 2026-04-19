@@ -41,21 +41,13 @@ test-watch:
 
 # ── Run ──────────────────────────────────────────────────────
 
-# Run catalogue dev server (design language showcase)
+# Run catalogue dev server (design language + drift docs)
 dev:
     pnpm -F @ghost/catalogue dev
-
-# Run docs dev server (drift tooling docs)
-dev-docs:
-    pnpm -F @ghost/docs dev
 
 # Build catalogue (static export)
 build-ui:
     pnpm -F @ghost/catalogue build
-
-# Build docs (static VitePress export)
-build-docs:
-    pnpm -F @ghost/docs build
 
 # Build @ghost/ui library (dist-lib + types)
 build-lib:
@@ -65,15 +57,13 @@ build-lib:
 build-registry:
     pnpm -F @ghost/ui build:registry
 
-# Build catalogue + docs into unified dist/ for GitHub Pages
+# Build catalogue for GitHub Pages (base=/ghost/)
 build-pages:
     DEPLOY_BASE="/ghost/" pnpm -F @ghost/catalogue build
-    DEPLOY_BASE="/ghost/" pnpm -F @ghost/docs build
     rm -rf dist
     mkdir -p dist
     cp -r apps/catalogue/dist/. dist/
     cp dist/index.html dist/404.html
-    cp -r apps/docs/.vitepress/dist dist/docs
 
 # ── Utilities ────────────────────────────────────────────────
 

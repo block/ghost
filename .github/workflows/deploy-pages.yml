@@ -1,7 +1,8 @@
 name: Deploy to GitHub Pages
 
-# Builds apps/catalogue and apps/docs with DEPLOY_BASE=/ghost/, stitches them
-# into a single dist/ tree (catalogue at /, docs at /docs/), and uploads.
+# Builds apps/catalogue with DEPLOY_BASE=/ghost/ and uploads the dist as
+# the Pages artifact. The catalogue is the single deployed site — it owns
+# all routes including drift docs (/tools/drift/*).
 
 on:
   push:
@@ -41,22 +42,12 @@ jobs:
           DEPLOY_BASE: /ghost/
         run: pnpm --filter @ghost/catalogue build
 
-      - name: Build docs (base=/ghost/docs/)
-        env:
-          DEPLOY_BASE: /ghost/
-        run: pnpm --filter @ghost/docs build
-
-      - name: Stitch dist/ tree
-        run: |
-          rm -rf dist
-          mkdir -p dist
-          cp -r apps/catalogue/dist/. dist/
-          cp dist/index.html dist/404.html
-          cp -r apps/docs/.vitepress/dist dist/docs
+      - name: SPA fallback
+        run: cp apps/catalogue/dist/index.html apps/catalogue/dist/404.html
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
-          path: dist
+          path: apps/catalogue/dist
 
   deploy:
     needs: build
