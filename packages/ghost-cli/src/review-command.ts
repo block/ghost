@@ -1,6 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { DesignFingerprint } from "@ghost/core";
+import type { Expression } from "@ghost/core";
 import {
   Director,
   formatComplianceCLI,
@@ -48,8 +48,8 @@ export function registerReviewCommand(cli: CAC): void {
     )
     // files scope
     .option(
-      "-f, --fingerprint <path>",
-      "Source expression path (default: ./expression.md, with fallback to legacy .ghost-fingerprint.json)",
+      "-e, --expression <path>",
+      "Source expression path (default: ./expression.md)",
     )
     .option("--staged", "Review staged changes only (files scope)")
     .option(
@@ -144,7 +144,7 @@ async function runFiles(positional: string[], opts: ReviewOpts): Promise<void> {
           base: opts.base,
           staged: Boolean(opts.staged),
         },
-    fingerprintPath: opts.fingerprint,
+    expressionPath: opts.expression,
     config: {
       dimensions,
       changedLinesOnly: !opts.all,
@@ -180,7 +180,7 @@ async function runProject(
   const targetStr = positional[0] ?? ".";
   const resolvedTarget = resolveTarget(targetStr);
 
-  let parentFingerprint: DesignFingerprint | undefined;
+  let parentFingerprint: Expression | undefined;
   if (opts.against) {
     parentFingerprint = (await loadExpression(opts.against)).fingerprint;
   }
@@ -298,7 +298,7 @@ function parseDimensions(raw: unknown): Record<string, boolean> | undefined {
 
 interface ReviewOpts {
   // files
-  fingerprint?: string;
+  expression?: string;
   staged?: boolean;
   base?: string;
   dimensions?: string;

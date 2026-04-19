@@ -1,4 +1,4 @@
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 /**
  * Build the review prompt.
@@ -8,7 +8,7 @@ import type { DesignFingerprint } from "../types.js";
  * and the full source code, and produces the review.
  */
 export function buildReviewPrompt(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   files: { path: string; content: string }[],
 ): string {
   const fpSpec = formatFingerprint(fingerprint);
@@ -86,7 +86,7 @@ Return ONLY a valid JSON array. No markdown, no explanation, no preamble. Each e
 If no issues are found, return: []`;
 }
 
-function formatDesignIntent(fp: DesignFingerprint): string {
+function formatDesignIntent(fp: Expression): string {
   const sections: string[] = [];
 
   if (fp.observation?.summary) {
@@ -142,7 +142,7 @@ function formatDesignIntent(fp: DesignFingerprint): string {
   return sections.length > 0 ? `${sections.join("\n")}\n` : "";
 }
 
-function formatFingerprint(fp: DesignFingerprint): string {
+function formatFingerprint(fp: Expression): string {
   const sections: string[] = [];
 
   // Palette

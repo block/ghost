@@ -1,14 +1,14 @@
-import { compareFingerprints } from "../fingerprint/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
   DivergenceClass,
   EnrichedComparison,
-  FingerprintComparison,
+  ExpressionComparison,
 } from "../types.js";
 import type { StageContext, StageResult } from "./types.js";
 
 export interface CompareInput {
-  source: import("../types.js").DesignFingerprint;
-  target: import("../types.js").DesignFingerprint;
+  source: import("../types.js").Expression;
+  target: import("../types.js").Expression;
   sourceLabel?: string;
   targetLabel?: string;
 }
@@ -57,7 +57,7 @@ function classifyDivergence(distance: number): DivergenceClass {
 }
 
 function generateExplanations(
-  comparison: FingerprintComparison,
+  comparison: ExpressionComparison,
 ): Record<string, string> {
   const explanations: Record<string, string> = {};
 

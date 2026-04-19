@@ -1,8 +1,8 @@
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 /**
  * Expression-level metadata — lives in the frontmatter alongside the
- * machine-layer of DesignFingerprint but is not part of the fingerprint.
+ * machine-layer of Expression but is not part of the fingerprint.
  */
 export interface ExpressionMeta {
   name?: string;
@@ -22,16 +22,16 @@ export interface ExpressionMeta {
 
 export interface FrontmatterData {
   meta: ExpressionMeta;
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
 }
 
 /**
- * DesignFingerprint fields that are populated from YAML frontmatter. Prose
+ * Expression fields that are populated from YAML frontmatter. Prose
  * fields (observation.summary, observation.distinctiveTraits, decisions[].decision,
  * values) are populated from the markdown body by `applyBody` — they are
  * deliberately NOT listed here.
  */
-const FINGERPRINT_KEYS = new Set<keyof DesignFingerprint>([
+const FINGERPRINT_KEYS = new Set<keyof Expression>([
   "id",
   "source",
   "timestamp",
@@ -47,7 +47,7 @@ const FINGERPRINT_KEYS = new Set<keyof DesignFingerprint>([
 ]);
 
 /**
- * Split a frontmatter object into the DesignFingerprint proper
+ * Split a frontmatter object into the Expression proper
  * and expression-level metadata (name, slug, etc.).
  */
 export function splitFrontmatter(
@@ -57,7 +57,7 @@ export function splitFrontmatter(
   const fp: Record<string, unknown> = {};
 
   for (const [k, v] of Object.entries(raw)) {
-    if (FINGERPRINT_KEYS.has(k as keyof DesignFingerprint)) {
+    if (FINGERPRINT_KEYS.has(k as keyof Expression)) {
       fp[k] = v;
     } else if (
       k === "name" ||
@@ -83,7 +83,7 @@ export function splitFrontmatter(
 
   return {
     meta,
-    fingerprint: fp as unknown as DesignFingerprint,
+    fingerprint: fp as unknown as Expression,
   };
 }
 
@@ -93,7 +93,7 @@ export function splitFrontmatter(
  * fields stripped — those belong in the markdown body.
  */
 export function mergeFrontmatter(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   meta: ExpressionMeta = {},
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -106,7 +106,7 @@ export function mergeFrontmatter(
     out.metadata = meta.metadata;
   }
 
-  const ordered: (keyof DesignFingerprint)[] = [
+  const ordered: (keyof Expression)[] = [
     "id",
     "source",
     "timestamp",
@@ -124,12 +124,10 @@ export function mergeFrontmatter(
     const v = fingerprint[key];
     if (v === undefined) continue;
     if (key === "observation") {
-      const stripped = stripObservationProse(
-        v as DesignFingerprint["observation"],
-      );
+      const stripped = stripObservationProse(v as Expression["observation"]);
       if (stripped) out.observation = stripped;
     } else if (key === "decisions") {
-      const stripped = stripDecisionProse(v as DesignFingerprint["decisions"]);
+      const stripped = stripDecisionProse(v as Expression["decisions"]);
       if (stripped?.length) out.decisions = stripped;
     } else {
       out[key] = v;
@@ -139,7 +137,7 @@ export function mergeFrontmatter(
 }
 
 function stripObservationProse(
-  obs: DesignFingerprint["observation"],
+  obs: Expression["observation"],
 ): Record<string, unknown> | undefined {
   if (!obs) return undefined;
   const out: Record<string, unknown> = {};
@@ -149,7 +147,7 @@ function stripObservationProse(
 }
 
 function stripDecisionProse(
-  decisions: DesignFingerprint["decisions"],
+  decisions: Expression["decisions"],
 ): Array<Record<string, unknown>> | undefined {
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {

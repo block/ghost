@@ -1,5 +1,5 @@
 name: "Ghost Design Review"
-description: "Review pull requests for visual language drift against a design fingerprint"
+description: "Review pull requests for visual language drift against a design expression"
 author: "Ghost"
 
 inputs:
@@ -8,7 +8,7 @@ inputs:
     required: true
     default: ${{ github.token }}
   fingerprint:
-    description: "Path to fingerprint file (expression.md or legacy .ghost-fingerprint.json). Defaults to expression.md with fallback to the legacy JSON."
+    description: "Path to expression.md. Defaults to ./expression.md."
     required: false
   anthropic-api-key:
     description: "Anthropic API key (or set ANTHROPIC_API_KEY env var)"

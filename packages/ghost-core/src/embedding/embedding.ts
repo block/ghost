@@ -1,7 +1,7 @@
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 import { contrastScore, saturationScore } from "./colors.js";
 
-type FingerprintInput = Omit<DesignFingerprint, "embedding">;
+type ExpressionInput = Omit<Expression, "embedding">;
 
 // Fixed embedding size for comparability
 const EMBEDDING_SIZE = 49;
@@ -50,7 +50,7 @@ function logNorm(count: number, logBase: number): number {
  *  [31-40]  Typography: families count, size ramp features, weight distribution, line height, weight spread, ramp range
  *  [41-48]  Surfaces: radii features, shadow complexity, border usage, radii spread, radii median, max radius
  */
-export function computeEmbedding(fingerprint: FingerprintInput): number[] {
+export function computeEmbedding(fingerprint: ExpressionInput): number[] {
   const vec: number[] = new Array(EMBEDDING_SIZE).fill(0);
   let i = 0;
 

@@ -1,14 +1,10 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  EXPRESSION_FILENAME,
-  LEGACY_FINGERPRINT_FILENAME,
-  loadExpression,
-} from "../expression/index.js";
+import { EXPRESSION_FILENAME, loadExpression } from "../expression/index.js";
 import { createProvider } from "../llm/index.js";
 import type {
   CollectedFile,
-  DesignFingerprint,
+  Expression,
   LLMConfig,
   ReviewConfig,
   ReviewDimension,
@@ -32,9 +28,9 @@ export interface ReviewOptions {
   /** Working directory. Default: process.cwd() */
   cwd?: string;
   /** Explicit fingerprint object */
-  fingerprint?: DesignFingerprint;
+  fingerprint?: Expression;
   /** Path to fingerprint JSON file */
-  fingerprintPath?: string;
+  expressionPath?: string;
   /** Review config overrides */
   config?: ReviewConfig;
   /** LLM config. Required — review is LLM-powered. */
@@ -44,27 +40,19 @@ export interface ReviewOptions {
 async function resolveFingerprint(
   options: ReviewOptions,
   cwd: string,
-): Promise<DesignFingerprint> {
+): Promise<Expression> {
   if (options.fingerprint) return options.fingerprint;
 
-  if (options.fingerprintPath) {
-    return (await loadExpression(resolve(cwd, options.fingerprintPath)))
+  if (options.expressionPath) {
+    return (await loadExpression(resolve(cwd, options.expressionPath)))
       .fingerprint;
   }
 
   const mdPath = resolve(cwd, EXPRESSION_FILENAME);
   if (existsSync(mdPath)) return (await loadExpression(mdPath)).fingerprint;
 
-  const jsonPath = resolve(cwd, LEGACY_FINGERPRINT_FILENAME);
-  if (existsSync(jsonPath)) {
-    console.warn(
-      `[ghost] Reading legacy ${LEGACY_FINGERPRINT_FILENAME}. Migrate to ${EXPRESSION_FILENAME} by running \`ghost profile . --emit\`.`,
-    );
-    return (await loadExpression(jsonPath)).fingerprint;
-  }
-
   throw new Error(
-    `No fingerprint found. Run \`ghost profile . --emit\` to generate ${EXPRESSION_FILENAME}, or pass --fingerprint <path> explicitly.`,
+    `No ${EXPRESSION_FILENAME} found. Run \`ghost profile . --emit\` to generate one, or pass --expression <path> explicitly.`,
   );
 }
 

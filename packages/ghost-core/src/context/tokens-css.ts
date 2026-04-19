@@ -1,4 +1,4 @@
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 export interface TokensCssOptions {
   /** Source path (e.g. "./expression.md") — surfaced in the provenance header. */
@@ -16,7 +16,7 @@ export interface TokensCssOptions {
  * the source — the header warns readers not to edit.
  */
 export function buildTokensCss(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   options: TokensCssOptions = {},
 ): string {
   const sections: string[] = [];

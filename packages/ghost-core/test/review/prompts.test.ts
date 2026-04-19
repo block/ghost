@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildReviewPrompt } from "../../src/review/prompts.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
-const BASE: DesignFingerprint = {
+const BASE: Expression = {
   id: "test",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -32,7 +32,7 @@ const FILES = [{ path: "src/Button.tsx", content: "<button/>" }];
 
 describe("buildReviewPrompt — signature + values injection", () => {
   it("injects signature traits and tells the LLM they outrank value mismatches", () => {
-    const fp: DesignFingerprint = {
+    const fp: Expression = {
       ...BASE,
       observation: {
         summary: "Warm, editorial.",
@@ -51,7 +51,7 @@ describe("buildReviewPrompt — signature + values injection", () => {
   });
 
   it("injects Do/Don't and instructs values-violation rule citation", () => {
-    const fp: DesignFingerprint = {
+    const fp: Expression = {
       ...BASE,
       values: {
         do: ["Keep all neutrals warm-toned"],

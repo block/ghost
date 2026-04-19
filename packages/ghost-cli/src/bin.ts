@@ -16,7 +16,7 @@ for (const envFile of [".env", ".env.local"]) {
   }
 }
 
-import type { DesignFingerprint, EmbeddingConfig } from "@ghost/core";
+import type { EmbeddingConfig, Expression } from "@ghost/core";
 import {
   compareExpressions,
   compareFingerprints,
@@ -31,8 +31,8 @@ import {
   formatDiffJSON,
   formatDiscoveryCLI,
   formatDiscoveryJSON,
+  formatExpressionJSON,
   formatFingerprint,
-  formatFingerprintJSON,
   formatFleetComparison,
   formatFleetComparisonJSON,
   formatSemanticDiff,
@@ -90,7 +90,7 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (targets: string[], opts) => {
     try {
-      let fingerprint: DesignFingerprint;
+      let fingerprint: Expression;
 
       if (opts.registry) {
         let embeddingConfig: EmbeddingConfig | undefined;
@@ -143,14 +143,14 @@ cli
 
       const output =
         opts.format === "json"
-          ? formatFingerprintJSON(fingerprint)
+          ? formatExpressionJSON(fingerprint)
           : formatFingerprint(fingerprint);
 
       if (opts.output) {
         const isMd = opts.output.endsWith(".md");
         const content = isMd
           ? serializeExpression(fingerprint)
-          : formatFingerprintJSON(fingerprint);
+          : formatExpressionJSON(fingerprint);
         await writeFile(opts.output, content);
         console.log(`Fingerprint written to ${opts.output}`);
 

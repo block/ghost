@@ -1,4 +1,4 @@
-import type { DesignDecision, DesignFingerprint } from "../types.js";
+import type { DesignDecision, Expression } from "../types.js";
 
 export interface DecisionChange {
   dimension: string;
@@ -53,10 +53,7 @@ export interface SemanticDiff {
  * calculation (see compareFingerprints for that) — it's the qualitative
  * "what changed in meaning" that shows up in PR reviews.
  */
-export function compareExpressions(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): SemanticDiff {
+export function compareExpressions(a: Expression, b: Expression): SemanticDiff {
   const decisions = diffDecisions(a.decisions ?? [], b.decisions ?? []);
   const values = diffValues(a.values, b.values);
   const palette = diffPalette(a, b);
@@ -123,8 +120,8 @@ function diffDecisions(
 }
 
 function diffValues(
-  a: DesignFingerprint["values"],
-  b: DesignFingerprint["values"],
+  a: Expression["values"],
+  b: Expression["values"],
 ): SemanticDiff["values"] {
   const aDo = new Set(a?.do ?? []);
   const bDo = new Set(b?.do ?? []);
@@ -138,10 +135,7 @@ function diffValues(
   };
 }
 
-function diffPalette(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): SemanticDiff["palette"] {
+function diffPalette(a: Expression, b: Expression): SemanticDiff["palette"] {
   const fromDominant = byRole(a.palette?.dominant ?? []);
   const toDominant = byRole(b.palette?.dominant ?? []);
   const fromSemantic = byRole(a.palette?.semantic ?? []);
@@ -189,7 +183,7 @@ function changedColors(
   return out;
 }
 
-function diffTokens(a: DesignFingerprint, b: DesignFingerprint): TokenChange[] {
+function diffTokens(a: Expression, b: Expression): TokenChange[] {
   const out: TokenChange[] = [];
   const pairs: Array<[string, unknown, unknown]> = [
     ["spacing.scale", a.spacing?.scale, b.spacing?.scale],

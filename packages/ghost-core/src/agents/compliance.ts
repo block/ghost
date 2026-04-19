@@ -1,5 +1,5 @@
 import { comply } from "../stages/comply.js";
-import type { AgentContext, DesignFingerprint } from "../types.js";
+import type { AgentContext, Expression } from "../types.js";
 import { BaseAgent } from "./base.js";
 import type { AgentState } from "./types.js";
 
@@ -7,7 +7,7 @@ export interface ComplianceRule {
   name: string;
   description: string;
   severity: "error" | "warning" | "info";
-  check: (fingerprint: DesignFingerprint) => ComplianceViolation | null;
+  check: (fingerprint: Expression) => ComplianceViolation | null;
 }
 
 export interface ComplianceViolation {
@@ -31,9 +31,9 @@ export interface ComplianceReport {
 }
 
 export interface ComplianceInput {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   rules?: ComplianceRule[];
-  parentFingerprint?: DesignFingerprint;
+  parentFingerprint?: Expression;
   maxDriftDistance?: number;
   thresholds?: ComplianceThresholds;
 }

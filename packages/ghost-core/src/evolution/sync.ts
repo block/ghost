@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareFingerprints } from "../fingerprint/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
-  DesignFingerprint,
   DimensionAck,
   DimensionStance,
-  FingerprintComparison,
+  Expression,
+  ExpressionComparison,
   SyncManifest,
   Target,
 } from "../types.js";
@@ -50,15 +50,15 @@ export async function writeSyncManifest(
  * the rest are preserved from the existing manifest or set to "accepted".
  */
 export async function acknowledge(opts: {
-  child: DesignFingerprint;
-  parent: DesignFingerprint;
+  child: Expression;
+  parent: Expression;
   parentRef: Target;
   dimension?: string;
   stance?: DimensionStance;
   reason?: string;
   tolerance?: number;
   cwd?: string;
-}): Promise<{ manifest: SyncManifest; comparison: FingerprintComparison }> {
+}): Promise<{ manifest: SyncManifest; comparison: ExpressionComparison }> {
   const cwd = opts.cwd ?? process.cwd();
   const comparison = compareFingerprints(opts.parent, opts.child);
   const now = new Date().toISOString();
@@ -92,8 +92,8 @@ export async function acknowledge(opts: {
   const manifest: SyncManifest = {
     parent: opts.parentRef,
     ackedAt: now,
-    parentFingerprintId: opts.parent.id,
-    childFingerprintId: opts.child.id,
+    parentExpressionId: opts.parent.id,
+    childExpressionId: opts.child.id,
     dimensions,
     overallDistance: comparison.distance,
   };
@@ -121,7 +121,7 @@ export interface CheckBoundsOptions {
  */
 export function checkBounds(
   manifest: SyncManifest,
-  current: FingerprintComparison,
+  current: ExpressionComparison,
   toleranceOrOptions?: number | CheckBoundsOptions,
 ): { exceeded: boolean; dimensions: string[]; reconverging: string[] } {
   const opts: CheckBoundsOptions =

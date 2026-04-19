@@ -23,7 +23,7 @@ export { createAnthropicProvider } from "./anthropic.js";
 export { createOpenAIProvider } from "./openai.js";
 export { buildThreeLayerPrompt, THREE_LAYER_SCHEMA } from "./prompt.js";
 export type {
-  FingerprintValidation,
+  ExpressionValidation,
   ValidationIssue,
-} from "./validate-fingerprint.js";
-export { validateFingerprint } from "./validate-fingerprint.js";
+} from "./validate-expression.js";
+export { validateFingerprint } from "./validate-expression.js";

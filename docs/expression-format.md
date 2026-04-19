@@ -1,6 +1,6 @@
 # The `expression.md` format
 
-A Ghost **expression** is a single Markdown file that captures what a design system is trying to say. It replaces the opaque `.ghost-fingerprint.json` with something humans can read and edit, and something LLMs can consume natively — while preserving a structured machine layer for `ghost compare`, `ghost review`, and friends.
+A Ghost **expression** is a single Markdown file that captures what a design system is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost compare`, `ghost review`, and friends.
 
 The file has two parts, and each owns **different data**:
 
@@ -9,7 +9,7 @@ The file has two parts, and each owns **different data**:
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
-Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-config default for every Ghost command that reads a fingerprint.
+Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-config default for every Ghost command that reads an expression.
 
 Current schema version: **4**.
 
@@ -19,9 +19,9 @@ Schema 4 extracts the 49-dimensional `embedding` into a sibling `embedding.md` f
 
 ## The partition (the one rule)
 
-The frontmatter and the body own disjoint fields. The reader unions them into a single in-memory fingerprint.
+The frontmatter and the body own disjoint fields. The reader unions them into a single in-memory Expression.
 
-| Fingerprint field | Lives in | Section / key |
+| Expression field | Lives in | Section / key |
 |---|---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
 | `observation.personality`, `observation.closestSystems` | Frontmatter | `observation:` |
@@ -59,7 +59,7 @@ metadata:                          # optional — loose extension bag
   tone: magazine
   era: 2020s-editorial
 
-# --- fingerprint: identity ---
+# --- expression: identity ---
 id: claude
 source: llm                       # registry | extraction | llm | unknown
 timestamp: 2026-04-18T00:00:00Z
@@ -67,7 +67,7 @@ sources:                          # optional, lists the targets that were combin
   - github:anthropics/claude-code
   - https://claude.ai
 
-# --- fingerprint: narrative tags ---
+# --- expression: narrative tags ---
 # NOTE: prose (summary, distinctiveTraits, decision rationale, values)
 # lives in the body under # Character, # Signature, ### blocks, # Values.
 observation:
@@ -80,7 +80,7 @@ decisions:
   - dimension: serif-headlines
     evidence: ["H1-H6 serif 500"]
 
-# --- fingerprint: structured tokens ---
+# --- expression: structured tokens ---
 palette:
   dominant:
     - { role: accent, value: '#c96442' }
@@ -110,7 +110,7 @@ surfaces:
   shadowComplexity: subtle          # none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
-# --- fingerprint: role bindings (optional) ---
+# --- expression: role bindings (optional) ---
 # Semantic slot → token bindings. Bridges abstract tokens to rendering:
 # a role names a slot (h1, card, button, …) and binds specific tokens
 # from the dimensions above. Each sub-block is optional; omit what you
@@ -128,7 +128,7 @@ roles:
       palette: { background: '#f5f4ed' }
     evidence: ["components/ui/card.tsx"]
 
-# --- fingerprint: vector layer ---
+# --- expression: vector layer ---
 # embedding is OPTIONAL at root in v4. Readers load it from the sibling
 # `embedding.md` fragment (referenced in the body) or recompute from the
 # structural blocks above. Omitting it keeps this file lean.
@@ -143,7 +143,7 @@ roles:
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
 **Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`, `values`. These live in the body.
 
-When `extends:` is present, required fingerprint fields may be omitted — the child inherits them from the parent. The merged result is re-validated against the strict schema.
+When `extends:` is present, required expression fields may be omitted — the child inherits them from the parent. The merged result is re-validated against the strict schema.
 
 ---
 
@@ -194,7 +194,7 @@ The body may also carry a `# Fragments` section that lists sibling files by mark
 - [embedding](embedding.md) — 49-dim vector for compare/fleet/viz
 ```
 
-Readers walk these links to progressively load sibling content. The current v4 writer always emits a link to `embedding.md` when the fingerprint carries an embedding (see [Embedding fragment](#embedding-fragment)). Future fragment types (palette, typography, motion, …) follow the same pattern: an entry in `# Fragments`, an own-validated file next to `expression.md`.
+Readers walk these links to progressively load sibling content. The current v4 writer always emits a link to `embedding.md` when the expression carries an embedding (see [Embedding fragment](#embedding-fragment)). Future fragment types (palette, typography, motion, …) follow the same pattern: an entry in `# Fragments`, an own-validated file next to `expression.md`.
 
 Link rules:
 
@@ -207,7 +207,7 @@ Link rules:
 
 ## Roles — the slot → token bridge
 
-Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the fingerprint stops being an inventory and becomes something a renderer can act on.
+Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the expression stops being an inventory and becomes something a renderer can act on.
 
 **Shape.** Each role has three parts:
 
@@ -229,7 +229,7 @@ Schema 4 extracts the 49-dimensional embedding into `embedding.md` next to the e
 ---
 schema: 4
 kind: embedding
-of: claude               # parent fingerprint id
+of: claude               # parent expression id
 dimensions: 49
 vector:
   - 0.218

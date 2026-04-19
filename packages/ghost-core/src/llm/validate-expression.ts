@@ -1,10 +1,6 @@
-import type {
-  DesignFingerprint,
-  ExtractedMaterial,
-  LLMConfig,
-} from "../types.js";
+import type { Expression, ExtractedMaterial, LLMConfig } from "../types.js";
 
-export interface FingerprintValidation {
+export interface ExpressionValidation {
   confidence: number;
   issues: ValidationIssue[];
   suggestions: string[];
@@ -24,10 +20,10 @@ export interface ValidationIssue {
  * When LLM config is provided, it can optionally be enriched with LLM analysis.
  */
 export function validateFingerprint(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   material: ExtractedMaterial,
   _llmConfig?: LLMConfig,
-): FingerprintValidation {
+): ExpressionValidation {
   const issues: ValidationIssue[] = [];
   const suggestions: string[] = [];
 

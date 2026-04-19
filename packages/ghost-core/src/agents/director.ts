@@ -6,9 +6,9 @@ import { extract } from "../stages/extract.js";
 import type {
   AgentContext,
   AgentResult,
-  DesignFingerprint,
   EnrichedComparison,
-  EnrichedFingerprint,
+  EnrichedExpression,
+  Expression,
   FleetComparison,
   FleetMember,
   SampledMaterial,
@@ -16,7 +16,7 @@ import type {
 } from "../types.js";
 import type { DiscoveredSystem, DiscoveryInput } from "./discovery.js";
 import { DiscoveryAgent } from "./discovery.js";
-import { FingerprintAgent } from "./fingerprint.js";
+import { ExpressionAgent } from "./expression.js";
 
 /**
  * Director — orchestrates the fingerprinting pipeline.
@@ -39,15 +39,15 @@ export class Director {
     ctx: AgentContext,
   ): Promise<{
     extraction: AgentResult<SampledMaterial>;
-    fingerprint: AgentResult<EnrichedFingerprint>;
+    fingerprint: AgentResult<EnrichedExpression>;
     dirs: { label: string; dir: string }[];
   }> {
     const extractionResult = await extract(targets);
     const extraction = stageToAgentResult(extractionResult);
 
-    // Fresh agent per call — FingerprintAgent holds per-run state that
+    // Fresh agent per call — ExpressionAgent holds per-run state that
     // would collide if two profiles ran in parallel on the same instance.
-    const agent = new FingerprintAgent();
+    const agent = new ExpressionAgent();
     agent.setToolContext({
       sourceDirs: extractionResult.dirs,
       material: extraction.data,
@@ -74,8 +74,8 @@ export class Director {
     targetTarget: Target,
     ctx: AgentContext,
   ): Promise<{
-    source: AgentResult<EnrichedFingerprint>;
-    target: AgentResult<EnrichedFingerprint>;
+    source: AgentResult<EnrichedExpression>;
+    target: AgentResult<EnrichedExpression>;
     comparison: AgentResult<EnrichedComparison>;
   }> {
     const [sourceResult, targetResult] = await Promise.all([
@@ -102,10 +102,10 @@ export class Director {
    */
   async drift(
     target: Target,
-    parentFingerprint: DesignFingerprint,
+    parentFingerprint: Expression,
     ctx: AgentContext,
   ): Promise<{
-    fingerprint: AgentResult<EnrichedFingerprint>;
+    fingerprint: AgentResult<EnrichedExpression>;
     comparison: AgentResult<EnrichedComparison>;
   }> {
     const { fingerprint } = await this.profile([target], ctx);
@@ -136,7 +136,7 @@ export class Director {
     input: Omit<ComplianceInput, "fingerprint">,
     ctx: AgentContext,
   ): Promise<{
-    fingerprint: AgentResult<EnrichedFingerprint>;
+    fingerprint: AgentResult<EnrichedExpression>;
     compliance: AgentResult<ComplianceReport>;
   }> {
     const { fingerprint } = await this.profile([target], ctx);
@@ -163,7 +163,7 @@ export class Director {
   ): Promise<{
     members: Array<{
       target: Target;
-      fingerprint: AgentResult<EnrichedFingerprint>;
+      fingerprint: AgentResult<EnrichedExpression>;
     }>;
     fleet: FleetComparison;
   }> {

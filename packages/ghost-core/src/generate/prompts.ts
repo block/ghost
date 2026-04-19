@@ -1,14 +1,14 @@
 import type {
   DesignDecision,
-  DesignFingerprint,
   DesignValues,
+  Expression,
   ReviewReport,
 } from "../types.js";
 
 export type GenerateFormat = "html";
 
 export interface BuildGenerationPromptOptions {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   userPrompt: string;
   format: GenerateFormat;
   /** Feedback from a previous review round, when retrying. */
@@ -101,7 +101,7 @@ function formatValues(values: DesignValues): string {
   return [doBlock, dontBlock].filter(Boolean).join("\n\n");
 }
 
-function formatTokens(fingerprint: DesignFingerprint): string {
+function formatTokens(fingerprint: Expression): string {
   const lines: string[] = [];
   const semantic = fingerprint.palette?.semantic ?? [];
   if (semantic.length) {

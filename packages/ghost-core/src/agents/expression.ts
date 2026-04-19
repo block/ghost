@@ -1,15 +1,15 @@
-import { parseColorToOklch } from "../fingerprint/colors.js";
+import { parseColorToOklch } from "../embedding/colors.js";
 import {
   computeSemanticEmbedding,
   embedTexts,
-} from "../fingerprint/embed-api.js";
-import { computeEmbedding } from "../fingerprint/embedding.js";
+} from "../embedding/embed-api.js";
+import { computeEmbedding } from "../embedding/embedding.js";
 import { createProvider } from "../llm/index.js";
 import { THREE_LAYER_SCHEMA } from "../llm/prompt.js";
 import type {
   AgentContext,
-  DesignFingerprint,
-  EnrichedFingerprint,
+  EnrichedExpression,
+  Expression,
   SampledMaterial,
 } from "../types.js";
 import { BaseAgent } from "./base.js";
@@ -34,9 +34,9 @@ import type { AgentState } from "./types.js";
  *   1..N: Tool call/response cycles as the LLM explores
  *   N+1: LLM produces fingerprint JSON → validate + compute embedding
  */
-export class FingerprintAgent extends BaseAgent<
+export class ExpressionAgent extends BaseAgent<
   SampledMaterial,
-  EnrichedFingerprint
+  EnrichedExpression
 > {
   name = "fingerprint";
   maxIterations = 99;
@@ -58,13 +58,13 @@ fingerprint matching the schema.`;
   private toolCallCount = 0;
   private maxToolCalls = DEFAULT_MAX_TOOL_CALLS;
   private toolCtx: ToolContext | null = null;
-  private pendingFingerprint: DesignFingerprint | null = null;
+  private pendingFingerprint: Expression | null = null;
 
   protected async step(
-    state: AgentState<EnrichedFingerprint>,
+    state: AgentState<EnrichedExpression>,
     input: SampledMaterial,
     ctx: AgentContext,
-  ): Promise<AgentState<EnrichedFingerprint>> {
+  ): Promise<AgentState<EnrichedExpression>> {
     if (state.iterations === 0) {
       return this.initialExploration(state, input, ctx);
     }
@@ -91,10 +91,10 @@ fingerprint matching the schema.`;
   }
 
   private async initialExploration(
-    state: AgentState<EnrichedFingerprint>,
+    state: AgentState<EnrichedExpression>,
     input: SampledMaterial,
     ctx: AgentContext,
-  ): Promise<AgentState<EnrichedFingerprint>> {
+  ): Promise<AgentState<EnrichedExpression>> {
     if (!ctx.llm) {
       state.warnings.push(
         "No LLM configured. Ghost v2 requires an LLM API key for fingerprinting.",
@@ -196,10 +196,10 @@ Set "id" to "${projectId}".
   }
 
   private async toolUseLoop(
-    state: AgentState<EnrichedFingerprint>,
+    state: AgentState<EnrichedExpression>,
     _input: SampledMaterial,
     ctx: AgentContext,
-  ): Promise<AgentState<EnrichedFingerprint>> {
+  ): Promise<AgentState<EnrichedExpression>> {
     if (!ctx.llm || !this.toolCtx) {
       state.status = "completed";
       return state;
@@ -300,10 +300,10 @@ Set "id" to "${projectId}".
   }
 
   private async validateAndFinalize(
-    state: AgentState<EnrichedFingerprint>,
+    state: AgentState<EnrichedExpression>,
     input: SampledMaterial,
     ctx: AgentContext,
-  ): Promise<AgentState<EnrichedFingerprint>> {
+  ): Promise<AgentState<EnrichedExpression>> {
     if (!this.pendingFingerprint) {
       state.status = "failed";
       state.warnings.push("No fingerprint to validate");
@@ -348,7 +348,7 @@ Set "id" to "${projectId}".
       state.reasoning.push("Validation passed");
     }
 
-    const enriched: EnrichedFingerprint = {
+    const enriched: EnrichedExpression = {
       ...fp,
       targetType: input.metadata.targetType,
     };
@@ -436,13 +436,13 @@ Set "id" to "${projectId}".
     return parts.join("\n");
   }
 
-  private parseFingerprint(text: string): DesignFingerprint {
+  private parseFingerprint(text: string): Expression {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Failed to extract JSON from LLM response");
     }
     const raw = JSON.parse(jsonMatch[0]);
-    const fingerprint: DesignFingerprint = raw;
+    const fingerprint: Expression = raw;
     fingerprint.source = "llm";
     fingerprint.timestamp = new Date().toISOString();
 
@@ -460,7 +460,7 @@ Set "id" to "${projectId}".
     return fingerprint;
   }
 
-  private validateOutput(fp: DesignFingerprint): string[] {
+  private validateOutput(fp: Expression): string[] {
     const issues: string[] = [];
 
     if (fp.palette.dominant.length === 0 && fp.palette.semantic.length === 0) {
@@ -503,7 +503,7 @@ Set "id" to "${projectId}".
  * The LLM is asked to provide color values but not to do color space conversion —
  * we handle that precisely here.
  */
-function recomputeOklch(fp: DesignFingerprint): void {
+function recomputeOklch(fp: Expression): void {
   for (const color of fp.palette.dominant) {
     const oklch = parseColorToOklch(color.value);
     if (oklch) color.oklch = oklch;

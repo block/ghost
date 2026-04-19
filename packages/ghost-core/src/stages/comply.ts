@@ -1,12 +1,12 @@
-import { compareFingerprints } from "../fingerprint/compare.js";
-import type { DesignFingerprint } from "../types.js";
+import { compareFingerprints } from "../embedding/compare.js";
+import type { Expression } from "../types.js";
 import type { StageContext, StageResult } from "./types.js";
 
 export interface ComplianceRule {
   name: string;
   description: string;
   severity: "error" | "warning" | "info";
-  check: (fingerprint: DesignFingerprint) => ComplianceViolation | null;
+  check: (fingerprint: Expression) => ComplianceViolation | null;
 }
 
 export interface ComplianceViolation {
@@ -30,9 +30,9 @@ export interface ComplianceReport {
 }
 
 export interface ComplianceInput {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   rules?: ComplianceRule[];
-  parentFingerprint?: DesignFingerprint;
+  parentFingerprint?: Expression;
   maxDriftDistance?: number;
   thresholds?: ComplianceThresholds;
 }
@@ -122,7 +122,7 @@ export async function comply(
 // --- Quality checks ---
 
 function checkPalette(
-  fp: DesignFingerprint,
+  fp: Expression,
   t: ComplianceThresholds,
 ): ComplianceViolation[] {
   const violations: ComplianceViolation[] = [];
@@ -154,7 +154,7 @@ function checkPalette(
 }
 
 function checkSpacing(
-  fp: DesignFingerprint,
+  fp: Expression,
   t: ComplianceThresholds,
 ): ComplianceViolation[] {
   const violations: ComplianceViolation[] = [];
@@ -187,7 +187,7 @@ function checkSpacing(
 }
 
 function checkTypography(
-  fp: DesignFingerprint,
+  fp: Expression,
   t: ComplianceThresholds,
 ): ComplianceViolation[] {
   const violations: ComplianceViolation[] = [];
@@ -217,7 +217,7 @@ function checkTypography(
 }
 
 function checkSurfaces(
-  fp: DesignFingerprint,
+  fp: Expression,
   t: ComplianceThresholds,
 ): ComplianceViolation[] {
   const violations: ComplianceViolation[] = [];
@@ -236,8 +236,8 @@ function checkSurfaces(
 }
 
 function checkDrift(
-  child: DesignFingerprint,
-  parent: DesignFingerprint,
+  child: Expression,
+  parent: Expression,
   t: ComplianceThresholds,
 ): {
   violations: ComplianceViolation[];

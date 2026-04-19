@@ -6,18 +6,18 @@
  * codebase itself to extract the visual language.
  */
 
-import { parseColorToOklch } from "../fingerprint/colors.js";
+import { parseColorToOklch } from "../embedding/colors.js";
 import {
   computeSemanticEmbedding,
   embedTexts,
-} from "../fingerprint/embed-api.js";
-import { computeEmbedding } from "../fingerprint/embedding.js";
+} from "../embedding/embed-api.js";
+import { computeEmbedding } from "../embedding/embedding.js";
 import { THREE_LAYER_SCHEMA } from "../llm/prompt.js";
 import type {
   AgentContext,
   AgentResult,
-  DesignFingerprint,
-  EnrichedFingerprint,
+  EnrichedExpression,
+  Expression,
   TargetType,
 } from "../types.js";
 
@@ -68,7 +68,7 @@ ${THREE_LAYER_SCHEMA}
 Set "id" to "PROJECT_ID".
 Set "source" to "llm".`;
 
-export interface FingerprintAgentOptions {
+export interface ExpressionAgentOptions {
   targetDir: string;
   targetType: TargetType;
   projectId: string;
@@ -76,9 +76,9 @@ export interface FingerprintAgentOptions {
   embedding?: AgentContext["embedding"];
 }
 
-export async function runFingerprintAgent(
-  options: FingerprintAgentOptions,
-): Promise<AgentResult<EnrichedFingerprint>> {
+export async function runExpressionAgent(
+  options: ExpressionAgentOptions,
+): Promise<AgentResult<EnrichedExpression>> {
   const { query } = await import("@anthropic-ai/claude-agent-sdk");
 
   const startTime = Date.now();
@@ -131,7 +131,7 @@ export async function runFingerprintAgent(
   }
 
   const raw = JSON.parse(jsonMatch[0]);
-  const fp: DesignFingerprint = raw;
+  const fp: Expression = raw;
   fp.source = "llm";
   fp.timestamp = new Date().toISOString();
 
@@ -169,7 +169,7 @@ export async function runFingerprintAgent(
     ? await computeSemanticEmbedding(fp, options.embedding)
     : computeEmbedding(fp);
 
-  const enriched: EnrichedFingerprint = {
+  const enriched: EnrichedExpression = {
     ...fp,
     targetType: options.targetType,
   };
@@ -184,7 +184,7 @@ export async function runFingerprintAgent(
   };
 }
 
-function recomputeOklch(fp: DesignFingerprint): void {
+function recomputeOklch(fp: Expression): void {
   for (const color of fp.palette.dominant) {
     const oklch = parseColorToOklch(color.value);
     if (oklch) color.oklch = oklch;

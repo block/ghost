@@ -1,16 +1,16 @@
 import { resolve } from "node:path";
 import { resolveTarget } from "./config.js";
+import { computeSemanticEmbedding } from "./embedding/embed-api.js";
+import { computeEmbedding } from "./embedding/embedding.js";
+import { fingerprintFromRegistry } from "./embedding/from-registry.js";
 import { emitFingerprint } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
-import { computeSemanticEmbedding } from "./fingerprint/embed-api.js";
-import { computeEmbedding } from "./fingerprint/embedding.js";
-import { fingerprintFromRegistry } from "./fingerprint/from-registry.js";
-import type { FingerprintValidation } from "./llm/validate-fingerprint.js";
+import type { ExpressionValidation } from "./llm/validate-expression.js";
 import { resolveRegistry } from "./resolvers/registry.js";
 import type {
-  DesignFingerprint,
   EmbeddingConfig,
-  EnrichedFingerprint,
+  EnrichedExpression,
+  Expression,
   GhostConfig,
   Target,
 } from "./types.js";
@@ -22,15 +22,15 @@ export interface ProfileOptions {
 }
 
 export interface ProfileTargetResult {
-  fingerprint: EnrichedFingerprint;
+  fingerprint: EnrichedExpression;
   confidence: number;
   reasoning: string[];
   warnings: string[];
 }
 
 export interface ProfileResult {
-  fingerprint: DesignFingerprint;
-  validation?: FingerprintValidation;
+  fingerprint: Expression;
+  validation?: ExpressionValidation;
 }
 
 /**
@@ -38,7 +38,7 @@ export interface ProfileResult {
  * Uses semantic embedding API if configured, otherwise falls back to deterministic.
  */
 async function embedFingerprint(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   embeddingConfig?: EmbeddingConfig,
 ): Promise<number[]> {
   if (embeddingConfig) {
@@ -56,7 +56,7 @@ async function embedFingerprint(
 export async function profile(
   config: GhostConfig,
   cwdOrOptions: string | ProfileOptions = {},
-): Promise<DesignFingerprint> {
+): Promise<Expression> {
   const opts =
     typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
   const cwd = opts.cwd ?? process.cwd();
@@ -99,7 +99,7 @@ export async function profile(
 export async function profileRegistry(
   registryPath: string,
   embeddingConfig?: EmbeddingConfig,
-): Promise<DesignFingerprint> {
+): Promise<Expression> {
   const registry = await resolveRegistry(registryPath);
   const fingerprint = fingerprintFromRegistry(registry);
   fingerprint.embedding = await embedFingerprint(fingerprint, embeddingConfig);
@@ -117,7 +117,7 @@ export async function profileTarget(
   targetOrString: Target | string,
   config?: GhostConfig,
 ): Promise<ProfileTargetResult> {
-  const { runFingerprintAgent } = await import("./agents/fingerprint-agent.js");
+  const { runExpressionAgent } = await import("./agents/expression-agent.js");
 
   const target =
     typeof targetOrString === "string"
@@ -133,7 +133,7 @@ export async function profileTarget(
   const targetDir = resolve(process.cwd(), target.value);
   const projectId = target.name ?? target.value.split("/").pop() ?? "project";
 
-  const result = await runFingerprintAgent({
+  const result = await runExpressionAgent({
     targetDir,
     targetType: target.type,
     projectId,

@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { loadExpression, mergeExpression } from "../../src/expression/index.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
-const PARENT: DesignFingerprint = {
+const PARENT: Expression = {
   id: "parent",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -49,13 +49,13 @@ const PARENT: DesignFingerprint = {
 
 describe("mergeExpression", () => {
   it("child scalar replaces parent scalar", () => {
-    const child: Partial<DesignFingerprint> = { id: "child" };
+    const child: Partial<Expression> = { id: "child" };
     const merged = mergeExpression(PARENT, child);
     expect(merged.id).toBe("child");
   });
 
   it("decisions merge by dimension: child wins per-dim, parent-only kept", () => {
-    const child: Partial<DesignFingerprint> = {
+    const child: Partial<Expression> = {
       decisions: [
         {
           dimension: "warm-neutrals",
@@ -82,7 +82,7 @@ describe("mergeExpression", () => {
   });
 
   it("palette.dominant merges by role", () => {
-    const child: Partial<DesignFingerprint> = {
+    const child: Partial<Expression> = {
       palette: {
         dominant: [{ role: "accent", value: "#ff0000" }],
         neutrals: PARENT.palette.neutrals,
@@ -99,7 +99,7 @@ describe("mergeExpression", () => {
   });
 
   it("values replace wholesale when child has them", () => {
-    const child: Partial<DesignFingerprint> = {
+    const child: Partial<Expression> = {
       values: { do: ["new-do"], dont: [] },
     };
     const merged = mergeExpression(PARENT, child);
@@ -108,7 +108,7 @@ describe("mergeExpression", () => {
   });
 
   it("roles merge by name: child wins per-slot, parent-only roles kept", () => {
-    const parentWithRoles: DesignFingerprint = {
+    const parentWithRoles: Expression = {
       ...PARENT,
       roles: [
         {
@@ -123,7 +123,7 @@ describe("mergeExpression", () => {
         },
       ],
     };
-    const child: Partial<DesignFingerprint> = {
+    const child: Partial<Expression> = {
       roles: [
         {
           name: "h1",

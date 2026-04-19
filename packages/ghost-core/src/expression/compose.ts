@@ -1,4 +1,4 @@
-import type { DesignDecision, DesignFingerprint } from "../types.js";
+import type { DesignDecision, Expression } from "../types.js";
 
 /**
  * Merge a child fingerprint on top of a parent. Precedence rules:
@@ -14,10 +14,10 @@ import type { DesignDecision, DesignFingerprint } from "../types.js";
  * they don't touch to remain, while overrides swap in cleanly.
  */
 export function mergeExpression(
-  parent: DesignFingerprint,
-  child: Partial<DesignFingerprint>,
-): DesignFingerprint {
-  const merged: DesignFingerprint = {
+  parent: Expression,
+  child: Partial<Expression>,
+): Expression {
+  const merged: Expression = {
     ...parent,
     ...stripUndefined(child),
   };
@@ -93,7 +93,7 @@ function stripUndefined<T extends object>(obj: T): Partial<T> {
   return out;
 }
 
-function emptyPalette(): DesignFingerprint["palette"] {
+function emptyPalette(): Expression["palette"] {
   return {
     dominant: [],
     neutrals: { steps: [], count: 0 },

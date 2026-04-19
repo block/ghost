@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
-import { computeEmbedding } from "../fingerprint/embedding.js";
-import type { DesignDecision, DesignFingerprint } from "../types.js";
+import { computeEmbedding } from "../embedding/embedding.js";
+import type { DesignDecision, Expression } from "../types.js";
 import { mergeExpression } from "./compose.js";
 import {
   loadDecisionFragments,
@@ -11,6 +11,14 @@ import {
 import { mergeFrontmatter } from "./frontmatter.js";
 import { type ParsedExpression, parseExpression } from "./parser.js";
 import { validateFrontmatter } from "./schema.js";
+
+function assertMarkdownPath(path: string): void {
+  if (!path.endsWith(".md")) {
+    throw new Error(
+      `Expression files must be Markdown (.md). Got: ${path}. The legacy .ghost-fingerprint.json format has been removed — regenerate with \`ghost profile . --emit\`.`,
+    );
+  }
+}
 
 export type { BodyData } from "./body.js";
 export { parseBody } from "./body.js";
@@ -54,8 +62,6 @@ export { serializeExpression } from "./writer.js";
 
 /** Canonical filename for the emitted expression. */
 export const EXPRESSION_FILENAME = "expression.md";
-/** Legacy filename retained for back-compat during the transition. */
-export const LEGACY_FINGERPRINT_FILENAME = ".ghost-fingerprint.json";
 
 export interface LoadOptions {
   /** Skip `extends:` resolution. Default: false (extends chains are resolved). */
@@ -71,9 +77,7 @@ export interface LoadOptions {
 }
 
 /**
- * Load a ParsedExpression from disk, dispatching on file extension.
- * - `.md` → parsed as an expression (frontmatter + meta + body)
- * - anything else → parsed as legacy JSON (meta and body empty)
+ * Load a ParsedExpression from disk.
  *
  * If the file declares `extends:`, the parent is loaded recursively and
  * merged per the rules in compose.ts: child wins, decisions merged by
@@ -87,34 +91,31 @@ export async function loadExpression(
   path: string,
   options: LoadOptions = {},
 ): Promise<ParsedExpression> {
+  assertMarkdownPath(path);
+
   const parsed = options.noExtends
     ? await loadRaw(path)
     : await loadWithExtends(path, new Set());
 
-  if (path.endsWith(".md")) {
-    const absolute = isAbsolute(path) ? path : resolve(path);
-    const expressionDir = dirname(absolute);
+  const absolute = isAbsolute(path) ? path : resolve(path);
+  const expressionDir = dirname(absolute);
 
-    if (!options.noFragments) {
-      const fragments = await loadDecisionFragments(expressionDir);
-      if (fragments.length) {
-        parsed.fingerprint.decisions = mergeDecisionsByDimension(
-          parsed.fingerprint.decisions ?? [],
-          fragments,
-        );
-      }
-    }
-
-    if (!options.noEmbeddingBackfill) {
-      parsed.fingerprint.embedding = await resolveEmbedding(
-        parsed.fingerprint,
-        expressionDir,
-        parsed.bodyRaw,
+  if (!options.noFragments) {
+    const fragments = await loadDecisionFragments(expressionDir);
+    if (fragments.length) {
+      parsed.fingerprint.decisions = mergeDecisionsByDimension(
+        parsed.fingerprint.decisions ?? [],
+        fragments,
       );
     }
-  } else if (!options.noEmbeddingBackfill && !parsed.fingerprint.embedding) {
-    // Legacy JSON without embedding — recompute from structure.
-    parsed.fingerprint.embedding = computeEmbedding(parsed.fingerprint);
+  }
+
+  if (!options.noEmbeddingBackfill) {
+    parsed.fingerprint.embedding = await resolveEmbedding(
+      parsed.fingerprint,
+      expressionDir,
+      parsed.bodyRaw,
+    );
   }
 
   return parsed;
@@ -132,7 +133,7 @@ export async function loadExpression(
  * be rebuilt any time from source-of-truth data.
  */
 async function resolveEmbedding(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   expressionDir: string,
   bodyRaw: string | undefined,
 ): Promise<number[]> {
@@ -179,18 +180,16 @@ function mergeDecisionsByDimension(
 }
 
 async function loadRaw(path: string): Promise<ParsedExpression> {
+  assertMarkdownPath(path);
   const raw = await readFile(path, "utf-8");
-  if (path.endsWith(".md")) {
-    return parseExpression(raw);
-  }
-  const fingerprint = JSON.parse(raw) as DesignFingerprint;
-  return { fingerprint, meta: {}, body: {}, bodyRaw: "" };
+  return parseExpression(raw);
 }
 
 async function loadWithExtends(
   path: string,
   visited: Set<string>,
 ): Promise<ParsedExpression> {
+  assertMarkdownPath(path);
   const absolute = isAbsolute(path) ? path : resolve(path);
   if (visited.has(absolute)) {
     throw new Error(
@@ -200,11 +199,6 @@ async function loadWithExtends(
   visited.add(absolute);
 
   const raw = await readFile(absolute, "utf-8");
-  if (!absolute.endsWith(".md")) {
-    const fingerprint = JSON.parse(raw) as DesignFingerprint;
-    return { fingerprint, meta: {}, body: {}, bodyRaw: "" };
-  }
-
   const child = parseExpression(raw);
   if (!child.meta.extends) {
     return child;

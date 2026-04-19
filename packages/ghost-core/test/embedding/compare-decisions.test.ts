@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { compareFingerprints } from "../../src/fingerprint/compare.js";
-import type { DesignDecision, DesignFingerprint } from "../../src/types.js";
+import { compareFingerprints } from "../../src/embedding/compare.js";
+import type { DesignDecision, Expression } from "../../src/types.js";
 
 /**
  * Minimal fingerprint skeleton — identical palette/spacing/typography/surfaces
@@ -9,7 +9,7 @@ import type { DesignDecision, DesignFingerprint } from "../../src/types.js";
 function baseFingerprint(
   id: string,
   decisions: DesignDecision[] = [],
-): DesignFingerprint {
+): Expression {
   return {
     id,
     source: "llm",

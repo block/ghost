@@ -1,10 +1,10 @@
-import type { FingerprintComparison } from "../../types.js";
+import type { ExpressionComparison } from "../../types.js";
 
 /**
  * Build a prompt for classifying divergence between two design systems.
  */
 export function buildDivergencePrompt(
-  comparison: FingerprintComparison,
+  comparison: ExpressionComparison,
   sourceLabel?: string,
   targetLabel?: string,
 ): string {

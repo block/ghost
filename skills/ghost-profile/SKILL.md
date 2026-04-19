@@ -1,12 +1,12 @@
 ---
-name: ghost-fingerprint
-description: Profile any design system (local path, GitHub repo, npm package, URL) to generate a structured fingerprint of its visual language — colors, spacing, typography, surfaces, and architecture. Use when the user asks about a project's design system, visual language, design tokens, or styling approach.
+name: ghost-profile
+description: Profile any design system (local path, GitHub repo, npm package, URL) to generate a structured expression of its visual language — colors, spacing, typography, surfaces, and architecture. Use when the user asks about a project's design system, visual language, design tokens, or styling approach.
 license: MIT
 ---
 
-# Ghost Fingerprint
+# Ghost Profile
 
-Generate a structured design fingerprint for any project or design system.
+Generate a structured design expression for any project or design system.
 
 ## When to use
 
@@ -30,13 +30,13 @@ ghost profile npm:@chakra-ui/react
 # Profile with AI enrichment (richer interpretation)
 ghost profile github:shadcn-ui/ui --ai --verbose
 
-# Save fingerprint to a file
-ghost profile . --output my-system.json
+# Save expression to a file
+ghost profile . --output my-system.md
 
 # Profile with JSON output (machine-readable)
 ghost profile . --format json
 
-# Publish .ghost-fingerprint.json artifact
+# Publish expression.md artifact
 ghost profile . --emit
 
 # Profile a shadcn registry directly
@@ -55,7 +55,7 @@ ghost profile . --format json | jq '.architecture'
 
 ## Understanding the output
 
-The fingerprint contains 5 dimensions:
+The expression contains 5 dimensions:
 
 1. **Palette**: Dominant colors, semantic colors (primary, accent, etc.), saturation profile, contrast level
 2. **Spacing**: Scale values, regularity score, base unit

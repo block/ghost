@@ -10,7 +10,7 @@ import {
   serializeEmbeddingFragment,
   serializeExpression,
 } from "../../src/expression/index.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
 const BASE_EXPRESSION = `---
 schema: 4
@@ -141,7 +141,7 @@ Overridden by fragment.
   });
 });
 
-const V4_FINGERPRINT: DesignFingerprint = {
+const V4_FINGERPRINT: Expression = {
   id: "v4-sample",
   source: "llm",
   timestamp: "2026-04-19T00:00:00.000Z",

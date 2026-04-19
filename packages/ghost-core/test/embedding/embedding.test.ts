@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   computeEmbedding,
   embeddingDistance,
-} from "../../src/fingerprint/embedding.js";
-import type { DesignFingerprint } from "../../src/types.js";
+} from "../../src/embedding/embedding.js";
+import type { Expression } from "../../src/types.js";
 
 function makeFingerprint(
-  overrides: Partial<Omit<DesignFingerprint, "embedding">> = {},
-): Omit<DesignFingerprint, "embedding"> {
+  overrides: Partial<Omit<Expression, "embedding">> = {},
+): Omit<Expression, "embedding"> {
   return {
     id: "test",
     source: "registry",

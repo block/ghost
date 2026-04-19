@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { loadExpression } from "../../src/expression/index.js";
 import { emitReviewCommand } from "../../src/stages/emit-review.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
 const GHOST_UI_EXPRESSION = fileURLToPath(
   new URL("../../../ghost-ui/expression.md", import.meta.url),
@@ -108,7 +108,7 @@ describe("emitReviewCommand", () => {
   });
 });
 
-function minimalFingerprint(): DesignFingerprint {
+function minimalFingerprint(): Expression {
   return {
     id: "minimal",
     source: "llm",
