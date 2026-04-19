@@ -453,6 +453,9 @@ Set "id" to "${projectId}".
     if (Array.isArray(raw.decisions) && raw.decisions.length > 0) {
       fingerprint.decisions = raw.decisions;
     }
+    if (Array.isArray(raw.roles) && raw.roles.length > 0) {
+      fingerprint.roles = raw.roles;
+    }
 
     return fingerprint;
   }

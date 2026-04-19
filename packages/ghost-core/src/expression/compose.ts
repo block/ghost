@@ -30,6 +30,14 @@ export function mergeExpression(
     );
   }
 
+  if (parent.roles || child.roles) {
+    merged.roles = mergeByKey(
+      parent.roles ?? [],
+      child.roles ?? [],
+      (r) => r.name,
+    );
+  }
+
   if (parent.palette || child.palette) {
     const pPal = parent.palette;
     const cPal = child.palette;

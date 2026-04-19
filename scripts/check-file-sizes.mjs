@@ -6,9 +6,9 @@ const DEFAULT_LIMIT = 500;
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
   "packages/ghost-core/src/types.ts": {
-    limit: 720,
+    limit: 780,
     justification:
-      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types",
+      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
   },
   "packages/ghost-cli/src/bin.ts": {
     limit: 580,

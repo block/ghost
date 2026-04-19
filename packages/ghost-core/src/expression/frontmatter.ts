@@ -42,6 +42,7 @@ const FINGERPRINT_KEYS = new Set<keyof DesignFingerprint>([
   "spacing",
   "typography",
   "surfaces",
+  "roles",
   "embedding",
 ]);
 
@@ -116,6 +117,7 @@ export function mergeFrontmatter(
     "spacing",
     "typography",
     "surfaces",
+    "roles",
     "embedding",
   ];
   for (const key of ordered) {

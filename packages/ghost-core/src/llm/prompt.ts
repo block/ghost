@@ -45,7 +45,20 @@ export const THREE_LAYER_SCHEMA = `{
     "borderRadii": [4, 8, 12],
     "shadowComplexity": "none | subtle | layered",
     "borderUsage": "minimal | moderate | heavy"
-  }
+  },
+
+  "roles": [
+    {
+      "name": "string — semantic slot: h1, h2, body, caption, card, button, input, list-row, etc.",
+      "tokens": {
+        "typography": { "family": "string?", "size": "number? px", "weight": "number?", "lineHeight": "number?" },
+        "spacing": { "padding": "number?", "gap": "number?", "margin": "number?" },
+        "surfaces": { "borderRadius": "number?", "shadow": "none|subtle|layered?", "borderWidth": "number?" },
+        "palette": { "background": "hex?", "foreground": "hex?", "border": "hex?" }
+      },
+      "evidence": ["string — file:line or file path where this binding was observed"]
+    }
+  ]
 }`;
 
 export function buildThreeLayerPrompt(
@@ -75,6 +88,17 @@ For each decision, cite specific evidence from the source files.
 ### Layer 3: Tokens
 
 Finally, extract the concrete tokens — the specific hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer. Every palette entry (dominant, neutrals, semantic) should be cited in at least one decision's evidence, or dropped from the palette — uncited neutrals are noise.
+
+### Layer 4: Roles (slot → token bindings)
+
+Ground the abstract tokens by naming *which* tokens belong to *which* semantic slot. A role maps a slot (h1, body, card, button, input, …) to the specific tokens it uses. This is what bridges the fingerprint to rendering: the size ramp alone is ingredients; a role says "h1 = ramp step 52px, weight 500."
+
+Read component files (e.g. \`h1\` className usage, \`<Card>\` / \`<Button>\` styling) and record:
+- **name**: the semantic slot (prefer HTML-like names or archetype names — "h1", "body", "card", "button", "input", "list-row")
+- **tokens**: only the sub-fields you can actually infer from the source; omit rather than guess
+- **evidence**: the file (and line when practical) where you observed the binding
+
+Only emit roles you have direct evidence for. A plausible-but-unobserved role is worse than a missing one. A system with no component files may produce no roles — that's fine.
 
 ## How to Read Different Formats
 

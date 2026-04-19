@@ -189,6 +189,7 @@ export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
 export type {
   CompareInput,
+  EmitReviewInput,
   StageContext,
   StageResult,
 } from "./stages/index.js";
@@ -196,6 +197,7 @@ export type {
 export {
   compare as compareStage,
   comply as complyStage,
+  emitReviewCommand,
   extract as extractStage,
   materializeTarget,
 } from "./stages/index.js";

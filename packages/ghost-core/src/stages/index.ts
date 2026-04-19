@@ -8,6 +8,8 @@ export type {
   ComplianceViolation,
 } from "./comply.js";
 export { comply } from "./comply.js";
+export type { EmitReviewInput } from "./emit-review.js";
+export { emitReviewCommand } from "./emit-review.js";
 export type { ExtractResult } from "./extract.js";
 export { extract, materializeTarget } from "./extract.js";
 export type { StageContext, StageResult } from "./types.js";
