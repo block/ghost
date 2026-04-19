@@ -182,8 +182,8 @@ RUN echo 'server { listen 80; location / { try_files $uri /index.html; } }' \\
             </li>
             <li>
               Check consumers against it with{" "}
-              <code>ghost comply . --against parent.expression.md</code>, or
-              gate PRs with <code>ghost review</code>
+              <code>ghost review project . --against parent.expression.md</code>
+              , or gate PRs with <code>ghost review</code>
             </li>
           </ol>
 

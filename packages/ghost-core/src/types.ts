@@ -630,14 +630,6 @@ export interface StructureDrift {
   consumerFile?: string;
 }
 
-export interface DriftSummary {
-  errors: number;
-  warnings: number;
-  info: number;
-  componentsScanned: number;
-  tokensScanned: number;
-}
-
 export interface VisualDrift {
   component: string;
   rule: string;
@@ -649,19 +641,6 @@ export interface VisualDrift {
   consumerFile?: string;
   diffImagePath?: string;
   error?: string;
-}
-
-export interface DesignSystemReport {
-  designSystem: string;
-  values: ValueDrift[];
-  structure: StructureDrift[];
-  visual: VisualDrift[];
-}
-
-export interface DriftReport {
-  timestamp: string;
-  systems: DesignSystemReport[];
-  summary: DriftSummary;
 }
 
 // --- Review types (fingerprint-informed design review) ---

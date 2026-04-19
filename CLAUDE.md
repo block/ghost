@@ -63,18 +63,17 @@ Typical pipeline: `target → extract (stage) → fingerprint (agent) → compar
 
 | Command | Description |
 |---------|-------------|
-| `ghost review [files]` | Review files for visual language drift against a fingerprint (zero-config) |
-| `ghost scan` | Scan for design drift (requires `ghost.config.ts`) |
+| `ghost review [scope]` | Unified drift detection. Scopes: `files` (default, code review), `project [target] --against parent.md` (target compliance, CLI/JSON/SARIF), `suite [expression]` (prompt-suite verification) |
 | `ghost profile [target]` | Generate a fingerprint — accepts paths, `github:owner/repo`, `npm:package`, URLs |
-| `ghost compare <a.json> <b.json>` | Compare two fingerprint JSON files |
-| `ghost diff [component]` | Compare local components against registry |
-| `ghost comply [target]` | Check compliance; `--against parent.json` for drift checking |
+| `ghost compare [...expressions]` | Unified comparison — pairwise (N=2), fleet (N≥3 or `--cluster`), `--semantic`, `--temporal`, or `--components` (local vs registry) |
 | `ghost discover [query]` | Find public design systems |
-| `ghost fleet <a.json> <b.json> ...` | Ecosystem-level comparison (2+ fingerprint files) |
+| `ghost emit <kind>` | Derive artifacts from expression.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens + prompt) |
+| `ghost generate <prompt>` | LLM-generate UI artifact from expression with self-review retries |
+| `ghost lint [expression]` | Lint expression.md schema and body/frontmatter drift |
 | `ghost ack` | Acknowledge drift, record stance (aligned/accepted/diverging) |
-| `ghost adopt <fingerprint.json>` | Adopt a new parent baseline |
+| `ghost adopt <expression.md>` | Adopt a new parent baseline |
 | `ghost diverge <dimension>` | Declare intentional divergence with reasoning |
-| `ghost viz <a.json> <b.json> ...` | 3D fingerprint visualization (Three.js) |
+| `ghost viz <a.md> <b.md> ...` | 3D fingerprint visualization (Three.js) |
 
 ## Target Types
 
@@ -85,7 +84,7 @@ The `resolveTarget()` function in `packages/ghost-core/src/config.ts` accepts:
 - `figma:file-url` — Figma file
 - `./path` or `/absolute/path` — local directory
 - `https://...` — URL
-- `.` — current directory (default for `profile` and `comply`)
+- `.` — current directory (default for `profile` and `review project`)
 
 Use explicit prefixes when the input is ambiguous.
 
@@ -105,16 +104,16 @@ Zero-config: `ghost review` looks for `expression.md` in cwd, with a deprecation
 The canonical fingerprint artifact is **`expression.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-layer prose body (Character → Signature → Decisions → Values). See `docs/expression-format.md` for the spec.
 
 - `ghost profile . --emit` writes `expression.md`
-- `ghost profile . --emit-legacy` writes legacy `.ghost-fingerprint.json` (deprecated escape hatch)
-- Readers accept both `.md` and `.json` via `loadExpression()` — file extension dispatches
+- Readers accept both `.md` and legacy `.ghost-fingerprint.json` via `loadExpression()` — file extension dispatches. Writing legacy JSON is no longer supported; consume `expression.md` instead
 
 ## Key Conventions
 
 - Fingerprints are 49-dimensional vectors (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/fingerprint/embedding.ts`). The canonical on-disk form is `expression.md`; `.ghost-fingerprint.json` is a legacy format still accepted by readers.
-- `compare`, `fleet`, and `viz` commands take **file paths** to expression.md or legacy JSON, not target strings
+- `compare` and `viz` take **file paths** to expression.md or legacy JSON, not target strings. `compare` auto-detects mode from flag / N: `--semantic` or `--temporal` require N=2; N≥3 or `--cluster` runs fleet; `--components` compares local components vs registry (no fingerprint args)
 - `profile` outputs fingerprints; pipe to `--output <file>` to save (extension `.md` → MD, else JSON)
-- `--against` on `comply` takes a **file path** to a parent expression.md or JSON
+- `--against` on `review project` takes a **file path** to a parent expression.md or JSON
 - `--ai` enables LLM-powered enrichment on `profile`; `--verbose` shows agent reasoning
-- `review` reads `expression.md` by default; `--fingerprint <path>` overrides
-- `review --deep` requires `ANTHROPIC_API_KEY` for LLM-powered nuanced analysis
+- `review` (files scope) reads `expression.md` by default; `--fingerprint <path>` overrides
+- `review project` profiles the target and compares against `--against <parent.md>`
+- `review suite` drives the generate→review loop across a bundled prompt suite
 - `review --staged` checks only staged changes; `--base main` diffs against a branch

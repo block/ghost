@@ -142,6 +142,6 @@ Drift score: XX/100
 
 ---
 
-Generated from \`expression.md\` (10 decisions). Re-run \`ghost emit review\` after expression updates.
+Generated from \`expression.md\` (10 decisions). Re-run \`ghost emit review-command\` after expression updates.
 "
 `;

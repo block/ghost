@@ -146,7 +146,6 @@ export {
   profileRegistry,
   profileTarget,
 } from "./profile.js";
-export { formatReport as formatCLIReport } from "./reporters/cli.js";
 export {
   formatComplianceCLI,
   formatComplianceJSON,
@@ -173,7 +172,6 @@ export {
   formatIssueComment,
   formatReviewSummary,
 } from "./reporters/github-pr.js";
-export { formatReport as formatJSONReport } from "./reporters/json.js";
 export { formatReviewCLI } from "./reporters/review-cli.js";
 export { formatReviewJSON } from "./reporters/review-json.js";
 export {
@@ -185,7 +183,6 @@ export { resolveRegistry } from "./resolvers/registry.js";
 export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export type { ReviewOptions } from "./review/index.js";
 export { review } from "./review/index.js";
-export { scan } from "./scan.js";
 export { scanVisual } from "./scanners/visual.js";
 export type {
   CompareInput,
@@ -214,15 +211,12 @@ export type {
   DesignDecision,
   DesignFingerprint,
   DesignObservation,
-  DesignSystemReport,
   DesignValues,
   DetectedFormat,
   DimensionAck,
   DimensionDelta,
   DimensionStance,
   DivergenceClass,
-  DriftReport,
-  DriftSummary,
   DriftVector,
   DriftVelocity,
   EmbeddingConfig,

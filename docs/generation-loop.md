@@ -7,7 +7,7 @@ gate. The three new commands wire it together.
 ## Pipeline shape
 
 ```
-expression.md  ──►  [ghost context]  ──►  SKILL.md / tokens.css / prompt.md
+expression.md  ──►  [ghost emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
                                               │
                                               ▼
                                        any generator
@@ -22,18 +22,20 @@ expression.md  ──►  [ghost context]  ──►  SKILL.md / tokens.css / pr
 
 ## Commands
 
-### `ghost context [expression] --format skill|prompt|bundle`
+### `ghost emit context-bundle [flags]`
 
-Emit a grounding bundle any generator can consume.
+Emit a grounding bundle any generator can consume. Default output writes
+`SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
 
-- `skill` — `SKILL.md` + `expression.md` (user-invocable Agent Skill)
-- `prompt` — single `prompt.md` combining Character, Signature, Decisions,
-  Values, and a token table. For generators that accept a plain text prompt.
-- `bundle` — `SKILL.md` + `expression.md` + `tokens.css` + `README.md` (full
-  kit, Arcade-style)
+Flags:
+- `--out <dir>` — output directory (default: `./ghost-context`)
+- `--prompt-only` — single `prompt.md` only; skips `SKILL.md` / `expression.md` / `tokens.css`
+- `--no-tokens` — skip `tokens.css`
+- `--readme` — include `README.md`
+- `--name <name>` — override the skill name (default: fingerprint id)
 
-Defaults to `skill`. Point a Claude Code or MCP client at the output directory
-and the agent reads `SKILL.md`.
+Point a Claude Code or MCP client at the output directory and the agent
+reads `SKILL.md`.
 
 ### `ghost generate <prompt> --expression <path>`
 
@@ -43,14 +45,14 @@ and (by default) runs `ghost review` against its own output. If `errors > 0`,
 it injects drift feedback and retries. Hard-capped to 3 retries.
 
 Not meant to compete with Cursor / v0 / in-house tools. It exists so the loop
-is provable end-to-end, and so `ghost verify` has something to drive.
+is provable end-to-end, and so `ghost review suite` has something to drive.
 
 Flags:
 - `--no-review` — skip self-review (drift-blind, fast)
 - `--retries <n>` — max retries, default 2, capped at 3
 - `--json` — structured output with per-attempt drift counts
 
-### `ghost verify [expression] --n <count>`
+### `ghost review suite [expression] --n <count>`
 
 Run the generate→review loop over a versioned prompt suite (bundled v0.1,
 ~18 prompts). Aggregates drift per dimension and classifies:
@@ -60,8 +62,8 @@ Run the generate→review loop over a versioned prompt suite (bundled v0.1,
 - **uncaptured** (≥ 3): expression likely under-specifies this dimension
 
 Output is a per-dimension report plus actionable recommendations. The killer
-demo: run `verify` on a mature expression, intentionally drop a section (e.g.
-motion), re-verify, watch drift rise in dimensions that lost grounding.
+demo: run `review suite` on a mature expression, intentionally drop a section
+(e.g. motion), re-run, watch drift rise in dimensions that lost grounding.
 
 ## The standard prompt suite
 
@@ -93,11 +95,11 @@ over-specified. Verify is the schema-discipline mechanism.
 **CI**: `ghost review --against expression.md` as a required check on PRs
 that touch UI files.
 
-**In a generation pipeline**: `ghost context` emits the skill bundle into the
+**In a generation pipeline**: `ghost emit context-bundle` writes the skill bundle into the
 generator's context; the generator produces; `ghost review` gates the output.
 Drift disposition belongs to the pipeline owner (block, annotate,
 require `ghost ack`).
 
-**Expression maintenance**: run `ghost verify` periodically. When a dimension
+**Expression maintenance**: run `ghost review suite` periodically. When a dimension
 shows up consistently leaky, the expression needs more Decisions or Values
 rules for that dimension.

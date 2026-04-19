@@ -18,24 +18,24 @@ for (const envFile of [".env", ".env.local"]) {
 
 import type { DesignFingerprint, EmbeddingConfig } from "@ghost/core";
 import {
+  compareExpressions,
   compareFingerprints,
+  compareFleet,
   computeTemporalComparison,
   diff,
   EMBEDDING_FRAGMENT_FILENAME,
   EXPRESSION_SCHEMA_VERSION,
-  formatCLIReport,
   formatComparison,
   formatComparisonJSON,
-  formatComplianceCLI,
-  formatComplianceJSON,
-  formatComplianceSARIF,
   formatDiffCLI,
   formatDiffJSON,
   formatDiscoveryCLI,
   formatDiscoveryJSON,
   formatFingerprint,
   formatFingerprintJSON,
-  formatJSONReport,
+  formatFleetComparison,
+  formatFleetComparisonJSON,
+  formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
   loadConfig,
@@ -47,51 +47,22 @@ import {
   readHistory,
   readSyncManifest,
   resolveTarget,
-  scan,
   serializeEmbeddingFragment,
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
-import { registerContextCommand } from "./context-command.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
   registerAdoptCommand,
   registerDivergeCommand,
-  registerFleetCommand,
 } from "./evolution-commands.js";
-import { registerExprDiffCommand } from "./expr-diff-command.js";
 import { registerGenerateCommand } from "./generate-command.js";
 import { registerLintCommand } from "./lint-command.js";
 import { registerReviewCommand } from "./review-command.js";
-import { registerVerifyCommand } from "./verify-command.js";
 import { registerVizCommand } from "./viz-command.js";
 
 const cli = cac("ghost");
-
-// --- scan ---
-cli
-  .command("scan", "Scan for design drift")
-  .option("-c, --config <path>", "Path to ghost config file")
-  .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .option("--no-color", "Disable colored output")
-  .action(async (opts) => {
-    try {
-      const config = await loadConfig(opts.config);
-      const report = await scan(config);
-      const output =
-        opts.format === "json"
-          ? formatJSONReport(report)
-          : formatCLIReport(report);
-      process.stdout.write(output);
-      process.exit(report.summary.errors > 0 ? 1 : 0);
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      process.exit(2);
-    }
-  });
 
 // --- profile ---
 cli
@@ -108,10 +79,6 @@ cli
   .option(
     "--emit",
     "Write expression.md to project root (publishable artifact)",
-  )
-  .option(
-    "--emit-legacy",
-    "Write legacy .ghost-fingerprint.json instead of expression.md (deprecated escape hatch)",
   )
   .option("--ai", "Enable AI-powered enrichment (requires LLM API key)")
   .option(
@@ -141,10 +108,7 @@ cli
 
         if (targetStrings.length === 1 && targetStrings[0] === ".") {
           const config = await loadConfig(opts.config);
-          fingerprint = await profile(config, {
-            emit: opts.emit || opts.emitLegacy,
-            emitFormat: opts.emitLegacy ? "json" : "md",
-          });
+          fingerprint = await profile(config, { emit: opts.emit });
         } else if (targetStrings.length === 1) {
           const config = await loadConfig(opts.config);
           const target = resolveTarget(targetStrings[0]);
@@ -209,11 +173,8 @@ cli
         }
       }
 
-      if (opts.emit || opts.emitLegacy) {
-        const filename = opts.emitLegacy
-          ? ".ghost-fingerprint.json"
-          : "expression.md";
-        console.log(`Published ${filename}`);
+      if (opts.emit) {
+        console.log("Published expression.md");
       }
 
       process.stdout.write(`${output}\n`);
@@ -245,26 +206,111 @@ function printVerboseResult(result: {
 }
 
 // --- compare ---
+// Unified comparison verb. Modes (flag-dispatched):
+//   default (N=2):         pairwise fingerprint distance
+//   --temporal (N=2):      pairwise + velocity/trajectory/ack
+//   --semantic (N=2):      semantic expression diff
+//   N≥3 or --cluster:      fleet comparison (pairwise matrix + optional clusters)
+//   --components:          local components vs registry (no fingerprint args)
 cli
-  .command("compare <source> <target>", "Compare two design fingerprints")
+  .command(
+    "compare [...fingerprints]",
+    "Compare two or more fingerprints (N≥3 = fleet). Use --components for local vs registry.",
+  )
   .option(
     "--temporal",
-    "Include temporal data: velocity, trajectory, ack status",
+    "Include temporal data: velocity, trajectory, ack status (N=2 only)",
   )
   .option(
     "--history-dir <dir>",
     "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
   )
+  .option("--semantic", "Semantic diff of decisions/values/palette (N=2 only)")
+  .option("--cluster", "Include cluster analysis (N≥3)")
+  .option(
+    "--components",
+    "Compare local components against registry (ignores fingerprint args)",
+  )
+  .option("--component <name>", "Limit --components to one component")
+  .option("-c, --config <path>", "Path to ghost config file (for --components)")
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (source: string, target: string, opts) => {
+  .action(async (fingerprints: string[], opts) => {
     try {
-      const [srcParsed, tgtParsed] = await Promise.all([
-        loadExpression(source),
-        loadExpression(target),
-      ]);
-      const src = srcParsed.fingerprint;
-      const tgt = tgtParsed.fingerprint;
+      // --- Mode: --components (local components vs registry) ---
+      if (opts.components) {
+        const config = await loadConfig(opts.config);
+        const results = await diff(config, opts.component || undefined);
+        const output =
+          opts.format === "json"
+            ? formatDiffJSON(results)
+            : formatDiffCLI(results);
+        process.stdout.write(output);
+        const hasBreaking = results.some((r) =>
+          r.components.some((c) => c.severity === "error"),
+        );
+        process.exit(hasBreaking ? 1 : 0);
+        return;
+      }
 
+      if (fingerprints.length < 2) {
+        console.error(
+          "Error: compare requires at least 2 fingerprint paths (or use --components).",
+        );
+        process.exit(2);
+      }
+
+      // --- Mode: fleet (N≥3 or --cluster) ---
+      if (fingerprints.length >= 3 || opts.cluster) {
+        if (opts.temporal || opts.semantic) {
+          console.error(
+            "Error: --temporal and --semantic require exactly 2 fingerprints.",
+          );
+          process.exit(2);
+        }
+        const members = await Promise.all(
+          fingerprints.map(async (p) => {
+            const { fingerprint } = await loadExpression(p);
+            return { id: fingerprint.id, fingerprint };
+          }),
+        );
+        const fleet = compareFleet(members, { cluster: Boolean(opts.cluster) });
+        const output =
+          opts.format === "json"
+            ? formatFleetComparisonJSON(fleet)
+            : formatFleetComparison(fleet);
+        process.stdout.write(`${output}\n`);
+        process.exit(0);
+        return;
+      }
+
+      // --- Pairwise modes (N=2) ---
+      const [a, b] = fingerprints;
+      const [aParsed, bParsed] = await Promise.all([
+        loadExpression(a),
+        loadExpression(b),
+      ]);
+      const src = aParsed.fingerprint;
+      const tgt = bParsed.fingerprint;
+
+      // --- Mode: --semantic ---
+      if (opts.semantic) {
+        if (opts.temporal) {
+          console.error(
+            "Error: --semantic and --temporal are mutually exclusive.",
+          );
+          process.exit(2);
+        }
+        const semantic = compareExpressions(src, tgt);
+        if (opts.format === "json") {
+          process.stdout.write(`${JSON.stringify(semantic, null, 2)}\n`);
+        } else {
+          process.stdout.write(formatSemanticDiff(semantic));
+        }
+        process.exit(semantic.unchanged ? 0 : 1);
+        return;
+      }
+
+      // --- Mode: --temporal ---
       const comparison = compareFingerprints(src, tgt, {
         includeVectors: opts.temporal,
       });
@@ -292,6 +338,7 @@ cli
         return;
       }
 
+      // --- Mode: default pairwise ---
       const output =
         opts.format === "json"
           ? formatComparisonJSON(comparison)
@@ -299,38 +346,6 @@ cli
 
       process.stdout.write(`${output}\n`);
       process.exit(comparison.distance > 0.5 ? 1 : 0);
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      process.exit(2);
-    }
-  });
-
-// --- diff ---
-cli
-  .command(
-    "diff [component]",
-    "Compare local components against registry with drift analysis",
-  )
-  .option("-c, --config <path>", "Path to ghost config file")
-  .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (component: string | undefined, opts) => {
-    try {
-      const config = await loadConfig(opts.config);
-      const results = await diff(config, component || undefined);
-
-      const output =
-        opts.format === "json"
-          ? formatDiffJSON(results)
-          : formatDiffCLI(results);
-
-      process.stdout.write(output);
-
-      const hasBreaking = results.some((r) =>
-        r.components.some((c) => c.severity === "error"),
-      );
-      process.exit(hasBreaking ? 1 : 0);
     } catch (err) {
       console.error(
         `Error: ${err instanceof Error ? err.message : String(err)}`,
@@ -368,89 +383,14 @@ cli
     }
   });
 
-// --- comply ---
-cli
-  .command(
-    "comply [target]",
-    "Check design system compliance against rules and parent",
-  )
-  .option(
-    "--against <path>",
-    "Path to parent fingerprint JSON to check drift against",
-  )
-  .option("--max-drift <n>", "Maximum overall drift distance (default: 0.3)", {
-    default: "0.3",
-  })
-  .option("-c, --config <path>", "Path to ghost config file")
-  .option("--format <fmt>", "Output format: cli, json, or sarif", {
-    default: "cli",
-  })
-  .option("-v, --verbose", "Show agent reasoning")
-  .action(async (target: string | undefined, opts) => {
-    try {
-      const { Director } = await import("@ghost/core");
-      const config = await loadConfig(opts.config);
-      const targetStr = target || ".";
-      const resolvedTarget = resolveTarget(targetStr);
-
-      let parentFingerprint: DesignFingerprint | undefined;
-      if (opts.against) {
-        parentFingerprint = (await loadExpression(opts.against)).fingerprint;
-      }
-
-      const director = new Director();
-      const { fingerprint, compliance } = await director.comply(
-        resolvedTarget,
-        {
-          parentFingerprint,
-          thresholds: {
-            maxOverallDrift: Number.parseFloat(String(opts.maxDrift)),
-          },
-        },
-        {
-          llm: config.llm ?? (undefined as never),
-          embedding: config.embedding,
-          verbose: opts.verbose,
-        },
-      );
-
-      if (opts.verbose) {
-        console.log(`Profiled ${resolvedTarget.type}: ${resolvedTarget.value}`);
-        console.log(`Confidence: ${fingerprint.confidence.toFixed(2)}`);
-        console.log();
-      }
-
-      let output: string;
-      if (opts.format === "sarif") {
-        output = formatComplianceSARIF(compliance.data);
-      } else if (opts.format === "json") {
-        output = formatComplianceJSON(compliance.data);
-      } else {
-        output = formatComplianceCLI(compliance.data);
-      }
-
-      process.stdout.write(`${output}\n`);
-      process.exit(compliance.data.passed ? 0 : 1);
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      process.exit(2);
-    }
-  });
-
 // Commands defined in other files register themselves on the same cli instance
 registerReviewCommand(cli);
-registerFleetCommand(cli);
 registerAckCommand(cli);
 registerAdoptCommand(cli);
 registerDivergeCommand(cli);
 registerVizCommand(cli);
-registerContextCommand(cli);
 registerGenerateCommand(cli);
-registerVerifyCommand(cli);
 registerLintCommand(cli);
-registerExprDiffCommand(cli);
 registerEmitCommand(cli);
 
 cli.help();
