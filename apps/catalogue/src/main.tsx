@@ -7,7 +7,7 @@ import "./styles/dev-fonts.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
+    <BrowserRouter basename={import.meta.env.BASE_URL || "/"}>
       <App />
     </BrowserRouter>
   </StrictMode>,
