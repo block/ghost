@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist-lib",
+    "rootDir": "./src",
+    "incremental": false,
+    "composite": false
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-lib",
+    "src/App.tsx",
+    "src/main.tsx",
+    "src/app/**/*",
+    "src/components/docs/**/*",
+    "src/components/theme-panel/**/*"
+  ]
+}
