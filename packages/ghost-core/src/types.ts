@@ -158,27 +158,11 @@ export interface NormalizedToken extends CSSToken {
 
 export type RuleSeverity = "error" | "warn" | "off";
 
-export interface ScanOptions {
-  values: boolean;
-  structure: boolean;
-  visual: boolean;
-  analysis: boolean;
-}
-
-export interface VisualScanConfig {
-  threshold?: number;
-  viewport?: { width: number; height: number };
-  timeout?: number;
-  outputDir?: string;
-}
-
 export interface GhostConfig {
   targets?: Target[];
   parent?: Target;
-  scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
-  visual?: VisualScanConfig;
   llm?: LLMConfig;
   embedding?: EmbeddingConfig;
   extractors?: string[];
@@ -628,19 +612,6 @@ export interface StructureDrift {
   linesRemoved: number;
   registryFile?: string;
   consumerFile?: string;
-}
-
-export interface VisualDrift {
-  component: string;
-  rule: string;
-  severity: RuleSeverity;
-  message: string;
-  diffPercentage: number;
-  threshold: number;
-  registryFile?: string;
-  consumerFile?: string;
-  diffImagePath?: string;
-  error?: string;
 }
 
 // --- Review types (fingerprint-informed design review) ---

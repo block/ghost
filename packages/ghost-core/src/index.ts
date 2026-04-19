@@ -183,7 +183,6 @@ export { resolveRegistry } from "./resolvers/registry.js";
 export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
 export type { ReviewOptions } from "./review/index.js";
 export { review } from "./review/index.js";
-export { scanVisual } from "./scanners/visual.js";
 export type {
   CompareInput,
   EmitReviewInput,
@@ -253,7 +252,6 @@ export type {
   RuleSeverity,
   SampledFile,
   SampledMaterial,
-  ScanOptions,
   SemanticColor,
   SourceInfo,
   StructureDrift,
@@ -265,8 +263,6 @@ export type {
   TokenCategory,
   TokenFormat,
   ValueDrift,
-  VisualDrift,
-  VisualScanConfig,
 } from "./types.js";
 export type {
   DimensionRollup,
