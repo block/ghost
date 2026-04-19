@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`emitReviewCommand > produces a stable artifact for the ghost-ui expression 1`] = `
+"---
+description: Drift review for ghost-ui — fitted to this system's design expression
+---
+
+# ghost-ui drift review
+
+You are a drift reviewer for the **ghost-ui** design system. This system reads as *monochromatic, editorial, restrained, pill-shaped, magazine-like, themeable* — closest cousins: Vercel Geist, Linear, Apple Human Interface Guidelines.
+
+A monochromatic, magazine-inspired design system that treats color as communication rather than decoration. The default palette is entirely achromatic — near-black on white — with hue reserved exclusively for semantic states and chart data. Pill-shaped interactive elements contrast with moderately rounded containers, and display typography pushes extreme negative tracking and ultra-tight line-heights for an editorial, high-fashion feel. It is maximally themeable at runtime through CSS custom property injection, with five bundled preset themes that prove the base architecture's range.
+
+Your job: check code for **drift** from the values below — hardcoded hexes, off-ramp spacing, typography outside the scale, radii outside the set. You are **not** checking accessibility or universal design rules; use \`/rams\` or a dedicated a11y skill for that.
+
+## Mode
+
+If \`$ARGUMENTS\` is provided, analyze that specific file.
+If \`$ARGUMENTS\` is empty, ask the user which file(s) to review, or offer to scan recently changed components.
+
+## 1. Palette drift
+
+> Treat hue as opt-in communication, not ambient decoration — the default theme is pure achromatic, so every bit of chromatic color that appears carries semantic meaning (danger, success, info, warning). Brand personality is expressed through luminance contrast and shape rather than a signature hue, which makes the system maximally themeable without color conflicts.
+
+**Allowed colors** (21 total — prefer semantic tokens over raw hex):
+
+- Dominant: \`#1a1a1a\` (primary), \`#ffffff\` (background), \`#000000\` (inverse)
+- Neutrals (ramp): \`#ffffff\`, \`#f5f5f5\`, \`#f0f0f0\`, \`#e8e8e8\`, \`#e5e5e5\`, \`#cccccc\`, \`#999999\`, \`#666666\`, \`#333333\`, \`#232323\`, \`#1a1a1a\`, \`#000000\`
+- Semantic hues: \`#f94b4b\` (danger), \`#91cb80\` (success), \`#5c98f9\` (info), \`#fbcd44\` (warning)
+
+### Critical
+
+| Check | Allowed | What to look for |
+|-------|---------|------------------|
+| Off-palette hex in JSX/CSS | \`#1a1a1a\`, \`#ffffff\`, \`#000000\`, \`#f5f5f5\`, \`#f0f0f0\`, \`#e8e8e8\`, \`#e5e5e5\`, \`#cccccc\`, \`#999999\`, \`#666666\`, \`#333333\`, … (see list above) | Any \`#[0-9a-fA-F]{3,8}\` literal not in the allowed list |
+| Tailwind arbitrary color | use semantic tokens | \`bg-[#...]\`, \`text-[#...]\`, \`border-[#...]\` with arbitrary hex |
+| Named Tailwind color for semantic role | use semantic token | \`text-red-500\`, \`bg-green-600\`, etc. when a matching semantic token exists |
+
+### Serious
+
+| Check | Allowed | What to look for |
+|-------|---------|------------------|
+| danger must use the semantic token | \`#f94b4b\` | Raw \`#f94b4b\` or near-equivalent hardcoded; prefer the \`danger\` token |
+| success must use the semantic token | \`#91cb80\` | Raw \`#91cb80\` or near-equivalent hardcoded; prefer the \`success\` token |
+| info must use the semantic token | \`#5c98f9\` | Raw \`#5c98f9\` or near-equivalent hardcoded; prefer the \`info\` token |
+| warning must use the semantic token | \`#fbcd44\` | Raw \`#fbcd44\` or near-equivalent hardcoded; prefer the \`warning\` token |
+
+## 2. Shape language (radius)
+
+> Apply a pill-first radius philosophy that visually separates interactive elements from structural containers — buttons, inputs, and badges fully round to 999px, while cards, modals, and dropdowns use moderate radii (10–24px), so users intuit what is tappable versus what is a surface.
+
+**Allowed radii**: \`10px\`, \`14px\`, \`16px\`, \`20px\`, \`24px\`, \`999px (pill)\`
+
+### Critical
+
+| Check | Allowed | What to look for |
+|-------|---------|------------------|
+| Custom radius value | \`10px\`, \`14px\`, \`16px\`, \`20px\`, \`24px\`, \`999px (pill)\` | \`rounded-[Npx]\`, \`border-radius: Npx\`, or \`--radius: Npx\` outside the set |
+| Interactive element not pill | \`rounded-full\` / \`rounded-pill\` | \`<Button>\` / \`<Input>\` / \`<Badge>\` with \`rounded-md\`, \`rounded-lg\`, or custom radius |
+
+## 3. Spacing drift
+
+> Prefer explicit component-height tokens over padding arithmetic, so button/input sizing is decoupled from content and surrounding spacing — interactive elements declare fixed heights (h-8, h-9, h-10) and containers use generous internal padding (p-6), creating a compact-controls / spacious-layout rhythm.
+
+**Scale**: \`2px\`, \`4px\`, \`6px\`, \`8px\`, \`12px\`, \`16px\`, \`20px\`, \`24px\`, \`32px\`, \`36px\`, \`40px\`, \`52px\`, \`75px\`, \`100px\` — base unit \`4px\`
+
+### Critical
+
+| Check | Allowed | What to look for |
+|-------|---------|------------------|
+| Off-scale padding/margin/gap | scale above | \`p-[Npx]\`, \`m-[Npx]\`, \`gap-[Npx]\` with N not in the scale |
+| Arbitrary width/height on primitives | tokens on the scale | \`w-[Npx]\` / \`h-[Npx]\` / \`size-[Npx]\` with N not in the scale |
+
+## 4. Typography drift
+
+> Use a magazine-scale type hierarchy where display headings are dramatically tight (sub-1.0 line-heights, heavy negative tracking) and body text is relaxed for long-form readability, creating an editorial rhythm that alternates between bold visual impact and comfortable reading.
+
+**Families**: \`system-ui\`, \`Geist Mono\`, \`HK Grotesk\`
+**Size ramp**: \`10px\`, \`11px\`, \`12px\`, \`14px\`, \`16px\`, \`18px\`, \`20px\`, \`28px\`, \`40px\`, \`64px\`, \`96px\`
+**Weights**: \`300\`, \`400\`, \`600\`, \`700\`, \`900\`
+
+### Critical
+
+| Check | Allowed | What to look for |
+|-------|---------|------------------|
+| Off-ramp font-size | ramp above | \`text-[Npx]\` or \`font-size: Npx\` outside the ramp |
+| Foreign font family | families above | \`font-family: ...\` or \`font-[...]\` introducing a new family |
+| Non-canonical weight | \`300\`, \`400\`, \`600\`, \`700\`, \`900\` | \`font-weight: N\` or \`font-[weight]\` outside the distribution |
+
+## 5. Other dimensions
+
+### surface-hierarchy
+
+Name surfaces by intent rather than by shade number — backgrounds, borders, and text each have their own semantic vocabulary (default, alt, muted, medium, inverse, accent) decoupling usage intent from visual weight, so a theme preset can remap all values without breaking component logic.
+
+### elevation
+
+Name shadows by their structural role rather than by intensity level, and double shadow opacity in dark mode rather than removing them — this ensures depth cues remain legible on dark surfaces while giving designers a vocabulary tied to component context.
+
+### motion
+
+Keep transitions functional and brief — three duration tiers (fast/normal/slow) with a single spring easing. Animations exist for structural reveals (accordion, scale-in, fade) and entrance transitions but not for decorative micro-interactions, keeping the editorial tone serious.
+
+### theming-architecture
+
+Separate a semantic variable layer from a Tailwind mapping layer, so the entire visual language can be swapped at runtime through CSS custom property injection without modifying component code — proven by five built-in theme presets that override 30+ variables each.
+
+### interactive-patterns
+
+Standardize focus states as a subtle 1px ring at half opacity using the ring-ring token, applied uniformly across all interactive elements — this replaces browser default outlines with a consistent, brand-aware focus indicator that works in both light and dark modes.
+
+## Output format
+
+\`\`\`
+═══════════════════════════════════════════════════
+GHOST-UI DRIFT REVIEW: [filename]
+═══════════════════════════════════════════════════
+
+CRITICAL (X issues)
+───────────────────
+[PALETTE] Line 24: Off-palette color
+  className="bg-[#3b82f6]"
+  Fix: use the info semantic token
+
+SERIOUS (X issues)
+──────────────────
+...
+
+═══════════════════════════════════════════════════
+SUMMARY: X critical, X serious
+Drift score: XX/100
+═══════════════════════════════════════════════════
+\`\`\`
+
+## Guidelines
+
+1. Read the file(s) first before making assessments
+2. Be specific with line numbers and code snippets
+3. Suggest the canonical token, not just "use a different color"
+4. Do not flag accessibility or universal-design issues here — this is drift-only
+5. If asked, offer to fix directly
+
+---
+
+Generated from \`expression.md\` (10 decisions). Re-run \`ghost emit review\` after expression updates.
+"
+`;
