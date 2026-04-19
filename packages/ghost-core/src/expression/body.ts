@@ -1,17 +1,19 @@
 import type { DesignDecision } from "../types.js";
 
 /**
- * Structured read of an expression.md body. Anything the body holds that
- * isn't in the frontmatter lives here.
+ * Structured read of an expression.md body. Contract (schema 3): the body
+ * is authoritative for prose — # Character, # Signature, decision rationale,
+ * and # Values. Machine-facts (dimensions slugs, evidence, tokens) live in
+ * the frontmatter and are joined in by `applyBody` during parse.
  */
 export interface BodyData {
-  /** From `# Character` — maps to DesignObservation.summary */
+  /** From `# Character` — authoritative source for DesignObservation.summary */
   character?: string;
-  /** From `# Signature` bullets — maps to DesignObservation.distinctiveTraits */
+  /** From `# Signature` bullets — authoritative for DesignObservation.distinctiveTraits */
   signature?: string[];
-  /** From `# Decisions` ### blocks — maps to DesignFingerprint.decisions */
+  /** From `# Decisions` `### slug` blocks — dimension + prose rationale (no evidence) */
   decisions?: DesignDecision[];
-  /** From `# Values` Do/Don't — maps to DesignFingerprint.values */
+  /** From `# Values` `## Do` / `## Don't` — authoritative for DesignFingerprint.values */
   values?: { do: string[]; dont: string[] };
 }
 
@@ -67,31 +69,19 @@ function slug(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Parse `### Dimension\n  prose\n  **Evidence:** …` into a DesignDecision. */
+/**
+ * Parse a `### Dimension\nprose…` block. Evidence lives in the frontmatter
+ * under `decisions[].evidence` — if a body block contains `**Evidence:**`
+ * bullets (legacy schema-2 files), they're stripped from the prose but
+ * not carried in the return value. Lint flags them separately.
+ */
 function parseDecision(sec: Section): DesignDecision {
-  const evidenceRe = /\*\*Evidence:\*\*\s*([\s\S]*)$/i;
-  const match = evidenceRe.exec(sec.body);
-  const prose = match ? sec.body.replace(match[0], "").trim() : sec.body.trim();
-
-  const evidence: string[] = [];
-  if (match) {
-    const raw = match[1].trim();
-    if (/\n\s*-\s/.test(raw) || /^\s*-\s/.test(raw)) {
-      evidence.push(...parseBullets(raw));
-    } else {
-      evidence.push(
-        ...raw
-          .split(/[,;]|\n/)
-          .map((s) => s.trim())
-          .filter(Boolean),
-      );
-    }
-  }
-
+  const evidenceRe = /\*\*Evidence:\*\*\s*[\s\S]*$/i;
+  const prose = sec.body.replace(evidenceRe, "").trim();
   return {
     dimension: slug(sec.heading),
     decision: prose,
-    evidence,
+    evidence: [],
   };
 }
 

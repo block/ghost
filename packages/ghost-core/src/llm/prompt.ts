@@ -72,9 +72,9 @@ State each decision implementation-agnostically. "Achromatic UI chrome with chro
 
 For each decision, cite specific evidence from the source files.
 
-### Layer 3: Values
+### Layer 3: Tokens
 
-Finally, extract the concrete tokens — the specific hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer.
+Finally, extract the concrete tokens — the specific hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer. Every palette entry (dominant, neutrals, semantic) should be cited in at least one decision's evidence, or dropped from the palette — uncited neutrals are noise.
 
 ## How to Read Different Formats
 

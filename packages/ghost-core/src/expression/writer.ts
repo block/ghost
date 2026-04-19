@@ -5,6 +5,7 @@ import type {
   DesignObservation,
   DesignValues,
 } from "../types.js";
+import { EMBEDDING_FRAGMENT_FILENAME } from "./fragments.js";
 import { type ExpressionMeta, mergeFrontmatter } from "./frontmatter.js";
 import { EXPRESSION_SCHEMA_VERSION } from "./schema.js";
 
@@ -12,17 +13,26 @@ export interface SerializeOptions {
   meta?: ExpressionMeta;
   /** Omit the human-readable body (frontmatter-only output). Default: false. */
   frontmatterOnly?: boolean;
+  /**
+   * Extract the embedding out of the frontmatter and append a body link
+   * to a sibling `embedding.md`. Default: true for v4 output. Set to
+   * false to keep the embedding inline (e.g. for in-memory round-trips
+   * that don't emit sibling files).
+   */
+  extractEmbedding?: boolean;
 }
 
 /**
  * Serialize a DesignFingerprint to an expression.md string.
  *
- * Contract (schema 2): frontmatter is authoritative. Every field on the
- * fingerprint is emitted to YAML. The markdown body below the frontmatter
- * is a human-readable mirror of the narrative fields (Character, Signature,
- * Decisions, Values) — rendered for readers and LLM prompts, but never
- * consulted by parseExpression. If the body and frontmatter ever disagree,
- * the frontmatter wins.
+ * Contract (schema 3): frontmatter and body own disjoint fields.
+ *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
+ *     evidence, personality/closestSystems tags, embedding).
+ *   • Body carries prose (# Character, # Signature, # Decisions rationale,
+ *     # Values Do/Don't).
+ *
+ * Each field has exactly one home — so there is no precedence rule and no
+ * way for the two sides to drift.
  */
 export function serializeExpression(
   fingerprint: DesignFingerprint,
@@ -32,7 +42,11 @@ export function serializeExpression(
     schema: EXPRESSION_SCHEMA_VERSION,
     ...options.meta,
   };
-  const obj = mergeFrontmatter(fingerprint, meta);
+  const extractEmbedding = options.extractEmbedding ?? true;
+  const forFrontmatter = extractEmbedding
+    ? stripEmbedding(fingerprint)
+    : fingerprint;
+  const obj = mergeFrontmatter(forFrontmatter, meta);
   const yaml = stringifyYaml(obj, { lineWidth: 0 }).trimEnd();
 
   if (options.frontmatterOnly) {
@@ -43,14 +57,21 @@ export function serializeExpression(
     fingerprint.observation,
     fingerprint.decisions,
     fingerprint.values,
+    extractEmbedding && (fingerprint.embedding?.length ?? 0) > 0,
   );
   return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
+}
+
+function stripEmbedding(fp: DesignFingerprint): DesignFingerprint {
+  const { embedding: _dropped, ...rest } = fp;
+  return rest as DesignFingerprint;
 }
 
 function buildBody(
   observation: DesignObservation | undefined,
   decisions: DesignDecision[] | undefined,
   values: DesignValues | undefined,
+  embeddingExtracted: boolean,
 ): string {
   const parts: string[] = [];
   if (observation?.summary?.trim()) {
@@ -63,8 +84,11 @@ function buildBody(
     parts.push(`# Signature\n\n${bullets}`);
   }
   if (decisions?.length) {
-    const blocks = decisions.map(formatDecision).join("\n\n");
-    parts.push(`# Decisions\n\n${blocks}`);
+    const blocks = decisions
+      .filter((d) => d.decision?.trim())
+      .map(formatDecision)
+      .join("\n\n");
+    if (blocks) parts.push(`# Decisions\n\n${blocks}`);
   }
   if (values && (values.do.length > 0 || values.dont.length > 0)) {
     const doBlock = values.do.length
@@ -76,18 +100,24 @@ function buildBody(
     const section = [doBlock, dontBlock].filter(Boolean).join("\n\n");
     parts.push(`# Values\n\n${section}`);
   }
+  if (embeddingExtracted) {
+    // Mirrors the agent-skills pattern: the index references its siblings
+    // via ordinary markdown links. Readers scan the body to discover fragments.
+    parts.push(
+      `# Fragments\n\n- [embedding](${EMBEDDING_FRAGMENT_FILENAME}) — 49-dim vector for compare/fleet/viz`,
+    );
+  }
   return parts.join("\n\n");
 }
 
+/**
+ * Body carries prose only — dimension header + rationale paragraph. Evidence
+ * lives in the frontmatter (machine-fact); we don't mirror it here to avoid
+ * re-introducing the duplication schema 3 was designed to eliminate.
+ */
 function formatDecision(d: DesignDecision): string {
   const title = unslug(d.dimension);
-  const header = `### ${title}`;
-  const prose = d.decision.trim();
-  if (!d.evidence?.length) {
-    return `${header}\n${prose}`;
-  }
-  const evidence = d.evidence.map((e) => `- ${e}`).join("\n");
-  return `${header}\n${prose}\n\n**Evidence:**\n${evidence}`;
+  return `### ${title}\n${d.decision.trim()}`;
 }
 
 function unslug(s: string): string {

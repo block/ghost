@@ -1,8 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
+import { computeEmbedding } from "../fingerprint/embedding.js";
 import type { DesignDecision, DesignFingerprint } from "../types.js";
 import { mergeExpression } from "./compose.js";
-import { loadDecisionFragments } from "./fragments.js";
+import {
+  loadDecisionFragments,
+  loadEmbeddingFragment,
+  resolveEmbeddingReference,
+} from "./fragments.js";
+import { mergeFrontmatter } from "./frontmatter.js";
 import { type ParsedExpression, parseExpression } from "./parser.js";
 import { validateFrontmatter } from "./schema.js";
 
@@ -17,7 +23,15 @@ export type {
   TokenChange,
 } from "./diff.js";
 export { compareExpressions, formatSemanticDiff } from "./diff.js";
-export { loadDecisionFragments } from "./fragments.js";
+export {
+  EMBEDDING_FRAGMENT_FILENAME,
+  embeddingSiblingPath,
+  findFragmentLinks,
+  loadDecisionFragments,
+  loadEmbeddingFragment,
+  resolveEmbeddingReference,
+  serializeEmbeddingFragment,
+} from "./fragments.js";
 export type { ExpressionMeta, FrontmatterData } from "./frontmatter.js";
 export type {
   LintIssue,
@@ -48,6 +62,12 @@ export interface LoadOptions {
   noExtends?: boolean;
   /** Skip `decisions/` fragment auto-assembly. Default: false. */
   noFragments?: boolean;
+  /**
+   * Skip embedding backfill. When true, a missing `embedding` stays empty;
+   * useful for read-only tooling (lint, diff-on-disk) that doesn't need
+   * the vector.
+   */
+  noEmbeddingBackfill?: boolean;
 }
 
 /**
@@ -71,18 +91,74 @@ export async function loadExpression(
     ? await loadRaw(path)
     : await loadWithExtends(path, new Set());
 
-  if (!options.noFragments && path.endsWith(".md")) {
+  if (path.endsWith(".md")) {
     const absolute = isAbsolute(path) ? path : resolve(path);
-    const fragments = await loadDecisionFragments(dirname(absolute));
-    if (fragments.length) {
-      parsed.fingerprint.decisions = mergeDecisionsByDimension(
-        parsed.fingerprint.decisions ?? [],
-        fragments,
+    const expressionDir = dirname(absolute);
+
+    if (!options.noFragments) {
+      const fragments = await loadDecisionFragments(expressionDir);
+      if (fragments.length) {
+        parsed.fingerprint.decisions = mergeDecisionsByDimension(
+          parsed.fingerprint.decisions ?? [],
+          fragments,
+        );
+      }
+    }
+
+    if (!options.noEmbeddingBackfill) {
+      parsed.fingerprint.embedding = await resolveEmbedding(
+        parsed.fingerprint,
+        expressionDir,
+        parsed.bodyRaw,
       );
     }
+  } else if (!options.noEmbeddingBackfill && !parsed.fingerprint.embedding) {
+    // Legacy JSON without embedding — recompute from structure.
+    parsed.fingerprint.embedding = computeEmbedding(parsed.fingerprint);
   }
 
   return parsed;
+}
+
+/**
+ * Resolve the embedding for an expression.md in order:
+ *   1. Inline `embedding:` in frontmatter (trust as cache).
+ *   2. Explicit body link to `embedding.md` (fragment file).
+ *   3. Conventional sibling `embedding.md` next to expression.md.
+ *   4. Recompute from the structured blocks.
+ *
+ * This matches the agent-skills progressive-disclosure model — the thin
+ * index file references a sibling, but the sibling is optional and can
+ * be rebuilt any time from source-of-truth data.
+ */
+async function resolveEmbedding(
+  fingerprint: DesignFingerprint,
+  expressionDir: string,
+  bodyRaw: string | undefined,
+): Promise<number[]> {
+  if (fingerprint.embedding && fingerprint.embedding.length > 0) {
+    return fingerprint.embedding;
+  }
+  const referenced = bodyRaw
+    ? resolveEmbeddingReference(bodyRaw, expressionDir)
+    : null;
+  if (referenced) {
+    const fromFragment = await loadEmbeddingFragment(expressionDir, referenced);
+    if (fromFragment) return fromFragment;
+  }
+  // Only attempt to recompute when the structured blocks are all present.
+  // Partial fingerprints (e.g. an extends-child loaded with noExtends:true)
+  // don't have enough signal yet — leave the embedding empty and let the
+  // caller resolve it after composing.
+  if (
+    fingerprint.palette &&
+    fingerprint.spacing &&
+    fingerprint.typography &&
+    fingerprint.surfaces
+  ) {
+    return computeEmbedding(fingerprint);
+  }
+  return [];
 }
 
 function mergeDecisionsByDimension(
@@ -108,7 +184,7 @@ async function loadRaw(path: string): Promise<ParsedExpression> {
     return parseExpression(raw);
   }
   const fingerprint = JSON.parse(raw) as DesignFingerprint;
-  return { fingerprint, meta: {}, body: {} };
+  return { fingerprint, meta: {}, body: {}, bodyRaw: "" };
 }
 
 async function loadWithExtends(
@@ -126,7 +202,7 @@ async function loadWithExtends(
   const raw = await readFile(absolute, "utf-8");
   if (!absolute.endsWith(".md")) {
     const fingerprint = JSON.parse(raw) as DesignFingerprint;
-    return { fingerprint, meta: {}, body: {} };
+    return { fingerprint, meta: {}, body: {}, bodyRaw: "" };
   }
 
   const child = parseExpression(raw);
@@ -138,9 +214,11 @@ async function loadWithExtends(
   const parent = await loadWithExtends(parentPath, visited);
 
   const merged = mergeExpression(parent.fingerprint, child.fingerprint);
-  // The merged result must satisfy the strict schema — if the chain
-  // doesn't fill in everything required, fail loudly here.
-  validateFrontmatter(toValidatable(merged));
+  // The merged result must satisfy the strict YAML schema. The in-memory
+  // fingerprint may carry body-owned prose (summary, decision rationale,
+  // values) that the schema forbids — strip it via mergeFrontmatter before
+  // validating.
+  validateFrontmatter(mergeFrontmatter(merged));
 
   // Meta merge: child wins on everything except extends (dropped after resolve)
   const { extends: _dropped, ...childMeta } = child.meta;
@@ -148,14 +226,6 @@ async function loadWithExtends(
     fingerprint: merged,
     meta: { ...parent.meta, ...childMeta },
     body: child.body,
+    bodyRaw: child.bodyRaw,
   };
-}
-
-/**
- * Convert a DesignFingerprint back into the shape zod expects for
- * validation. The two shapes are isomorphic; this cast is just to satisfy
- * the partial/strict schema variance.
- */
-function toValidatable(fp: DesignFingerprint): Record<string, unknown> {
-  return fp as unknown as Record<string, unknown>;
 }

@@ -4,7 +4,7 @@ import { lintExpression } from "../../src/expression/index.js";
 const HEADER = `---
 name: Claude
 slug: claude
-schema: 2
+schema: 4
 id: claude
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z`;
@@ -37,16 +37,13 @@ function build(frontmatterExtras: string, body: string): string {
 }
 
 describe("lintExpression", () => {
-  it("reports no issues on a clean file", () => {
+  it("reports no errors on a clean file", () => {
     const md = build(
       `\nobservation:
-  summary: "Warm, editorial"
   personality: []
-  distinctiveTraits: ["warm-only neutrals"]
   closestSystems: []
 decisions:
   - dimension: warm-neutrals
-    decision: "No cool grays"
     evidence: ["#141413"]`,
       `# Character
 
@@ -60,17 +57,14 @@ Warm, editorial
 
 ### warm-neutrals
 No cool grays
-**Evidence:** #141413
 `,
     );
     const report = lintExpression(md);
     expect(report.errors).toBe(0);
-    // body-sync, schema, evidence should all be clean
-    expect(report.issues.filter((i) => i.severity === "error")).toHaveLength(0);
   });
 
   it("flags stale schema version", () => {
-    const md = build("", "").replace("schema: 2", "schema: 1");
+    const md = build("", "").replace("schema: 4", "schema: 3");
     const report = lintExpression(md);
     expect(
       report.issues.some((i) => i.rule === "schema-version-mismatch"),
@@ -78,34 +72,83 @@ No cool grays
     expect(report.errors).toBeGreaterThan(0);
   });
 
-  it("flags missing body mirror when frontmatter has narrative", () => {
+  it("flags missing rationale when a frontmatter decision has no body block", () => {
     const md = build(
-      `\nobservation:
-  summary: "Warm, editorial"
-  personality: []
-  distinctiveTraits: ["warm-only neutrals"]
-  closestSystems: []`,
+      `\ndecisions:
+  - dimension: warm-neutrals
+    evidence: ["#141413"]`,
       `# Only a stray heading`,
     );
     const report = lintExpression(md);
     expect(
       report.issues.some(
-        (i) => i.rule === "body-sync" && i.path === "observation.summary",
+        (i) =>
+          i.rule === "missing-rationale" && /warm-neutrals/.test(i.message),
       ),
     ).toBe(true);
+  });
+
+  it("flags orphan prose when the body has a ### with no frontmatter entry", () => {
+    const md = build(
+      ``,
+      `# Decisions
+
+### stray-thought
+Rationale with no frontmatter entry.
+`,
+    );
+    const report = lintExpression(md);
+    expect(
+      report.issues.some(
+        (i) => i.rule === "orphan-prose" && /stray-thought/.test(i.message),
+      ),
+    ).toBe(true);
+  });
+
+  it("flags legacy **Evidence:** bullets in the body", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals
+    evidence: ["#141413"]`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays
+
+**Evidence:** #141413
+`,
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "stray-evidence-in-body")).toBe(
+      true,
+    );
+  });
+
+  it("rejects prose (summary, decision, values) in the frontmatter via schema-invalid", () => {
+    const md = build(
+      `\nobservation:
+  summary: "prose in YAML — should fail"
+  personality: []
+  closestSystems: []
+values:
+  do: ["stray YAML"]
+  dont: []`,
+      ``,
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
   });
 
   it("flags evidence that cites a hex not in palette", () => {
     const md = build(
       `\ndecisions:
   - dimension: bad-cite
-    decision: "refers to a ghost color"
     evidence: ["#000000"]`,
       `# Decisions
 
 ### bad-cite
 refers to a ghost color
-**Evidence:** #000000
 `,
     );
     const report = lintExpression(md);
@@ -115,7 +158,6 @@ refers to a ghost color
   it("flags palette colors not cited in any decision as info", () => {
     const md = build("", "");
     const report = lintExpression(md);
-    // With no decisions at all, every palette color is unused
     const unused = report.issues.filter((i) => i.rule === "unused-palette");
     expect(unused.length).toBeGreaterThan(0);
     expect(unused.every((i) => i.severity === "info")).toBe(true);

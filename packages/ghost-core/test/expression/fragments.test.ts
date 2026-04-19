@@ -2,10 +2,18 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { loadExpression } from "../../src/expression/index.js";
+import {
+  EMBEDDING_FRAGMENT_FILENAME,
+  EXPRESSION_SCHEMA_VERSION,
+  findFragmentLinks,
+  loadExpression,
+  serializeEmbeddingFragment,
+  serializeExpression,
+} from "../../src/expression/index.js";
+import type { DesignFingerprint } from "../../src/types.js";
 
 const BASE_EXPRESSION = `---
-schema: 2
+schema: 4
 id: base
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z
@@ -28,9 +36,13 @@ surfaces:
 embedding: [0]
 decisions:
   - dimension: inline-rule
-    decision: "from the main file"
     evidence: []
 ---
+
+# Decisions
+
+### inline-rule
+from the main file
 `;
 
 describe("decision fragments", () => {
@@ -126,5 +138,121 @@ Overridden by fragment.
     await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
     const { fingerprint } = await loadExpression(expressionPath);
     expect(fingerprint.decisions).toHaveLength(1);
+  });
+});
+
+const V4_FINGERPRINT: DesignFingerprint = {
+  id: "v4-sample",
+  source: "llm",
+  timestamp: "2026-04-19T00:00:00.000Z",
+  palette: {
+    dominant: [{ role: "accent", value: "#c96442" }],
+    neutrals: { steps: ["#111", "#222"], count: 2 },
+    semantic: [],
+    saturationProfile: "muted",
+    contrast: "moderate",
+  },
+  spacing: { scale: [4, 8], baseUnit: 8, regularity: 1 },
+  typography: {
+    families: ["Serif"],
+    sizeRamp: [14, 16],
+    weightDistribution: { 400: 1 },
+    lineHeightPattern: "normal",
+  },
+  surfaces: {
+    borderRadii: [8],
+    shadowComplexity: "subtle",
+    borderUsage: "moderate",
+  },
+  embedding: Array.from({ length: 8 }, (_, i) => i / 10),
+};
+
+describe("embedding fragment", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(
+      tmpdir(),
+      `ghost-emb-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("loader reads the vector from a sibling embedding.md when frontmatter omits it", async () => {
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_FINGERPRINT);
+    await writeFile(expressionPath, md, "utf-8");
+
+    const vector = [0.9, 0.8, 0.7, 0.6, 0.5];
+    const fragPath = join(dir, EMBEDDING_FRAGMENT_FILENAME);
+    await writeFile(
+      fragPath,
+      serializeEmbeddingFragment(
+        vector,
+        V4_FINGERPRINT.id,
+        EXPRESSION_SCHEMA_VERSION,
+      ),
+      "utf-8",
+    );
+
+    const { fingerprint } = await loadExpression(expressionPath);
+    // The sibling vector wins over the recomputed one
+    expect(fingerprint.embedding).toEqual(vector);
+  });
+
+  it("loader recomputes the embedding when no sibling file exists", async () => {
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_FINGERPRINT);
+    await writeFile(expressionPath, md, "utf-8");
+
+    const { fingerprint } = await loadExpression(expressionPath);
+    // No sibling; loader falls back to computeEmbedding — which produces a
+    // 49-dim vector. Length tells us the recompute path fired.
+    expect(fingerprint.embedding).toHaveLength(49);
+  });
+
+  it("noEmbeddingBackfill skips both fragment read and recompute", async () => {
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_FINGERPRINT);
+    await writeFile(expressionPath, md, "utf-8");
+
+    const { fingerprint } = await loadExpression(expressionPath, {
+      noEmbeddingBackfill: true,
+    });
+    // Frontmatter had no embedding and backfill is off — stays empty.
+    expect(fingerprint.embedding ?? []).toHaveLength(0);
+  });
+});
+
+describe("fragment body-link discovery", () => {
+  it("finds markdown links targeting .md files", () => {
+    const body = `
+# Fragments
+
+- [embedding](embedding.md)
+- [palette details](fragments/palette.md)
+- [external](https://example.com/skip.md)
+- [anchor](#skip)
+- [image](logo.png)
+`;
+    const links = findFragmentLinks(body);
+    expect(links).toEqual(["embedding.md", "fragments/palette.md"]);
+  });
+});
+
+describe("serializeEmbeddingFragment", () => {
+  it("produces a frontmatter-only file with vector and provenance", () => {
+    const raw = serializeEmbeddingFragment([0.1, 0.2, 0.3], "sys", 4);
+    expect(raw).toMatch(/^---\n/);
+    expect(raw).toMatch(/\n---\n$/);
+    expect(raw).toContain("schema: 4");
+    expect(raw).toContain("kind: embedding");
+    expect(raw).toContain("of: sys");
+    expect(raw).toContain("dimensions: 3");
+    expect(raw).toContain("vector:");
   });
 });
