@@ -30,7 +30,7 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@22.19.17)(jiti@2.6.1)(lightningcss@1.32.0)(msw@2.12.14(@types/node@22.19.17)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.3)
 
-  apps/catalogue:
+  apps/docs:
     dependencies:
       '@ghost/ui':
         specifier: workspace:*
@@ -121,7 +121,7 @@ importers:
         version: 1.2.2(@types/react@19.1.2)(react@19.1.0)
       '@rive-app/react-webgl2':
         specifier: ^4.27.3
-        version: 4.27.3(react@19.1.0)
+        version: 4.28.0(react@19.1.0)
       '@streamdown/cjk':
         specifier: ^1.0.3
         version: 1.0.3(@types/mdast@4.0.4)(micromark-util-types@2.0.2)(micromark@4.0.2)(react@19.1.0)(unified@11.0.5)
@@ -142,7 +142,7 @@ importers:
         version: 12.10.2(@types/react@19.1.2)(immer@11.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       ai:
         specifier: ^6.0.141
-        version: 6.0.146(zod@4.3.6)
+        version: 6.0.158(zod@4.3.6)
       ansi-to-react:
         specifier: ^6.2.6
         version: 6.2.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -169,7 +169,7 @@ importers:
         version: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lucide-react:
         specifier: ^1.7.0
-        version: 1.7.0(react@19.1.0)
+        version: 1.8.0(react@19.1.0)
       media-chrome:
         specifier: ^4.18.3
         version: 4.18.3(react@19.1.0)
@@ -564,20 +564,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/gateway@3.0.88':
-    resolution: {integrity: sha512-AFoj7xdWAtCQcy0jJ235ENSakYM8D28qBX+rB+/rX4r8qe/LXgl0e5UivOqxAlIM5E9jnQdYxIPuj3XFtGk/yg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   '@ai-sdk/gateway@3.0.95':
     resolution: {integrity: sha512-ZmUNNbZl3V42xwQzPaNUi+s8eqR2lnrxf0bvB6YbLXpLjHYv0k2Y78t12cNOfY0bxGeuVVTLyk856uLuQIuXEQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider-utils@4.0.22':
-    resolution: {integrity: sha512-B2OTFcRw/Pdka9ZTjpXv6T6qZ6RruRuLokyb8HwW+aoW9ndJ3YasA3/mVswyJw7VMBF8ofXgqvcrCt9KYvFifg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2058,18 +2046,10 @@ packages:
       react-redux:
         optional: true
 
-  '@rive-app/react-webgl2@4.27.3':
-    resolution: {integrity: sha512-f+i0w/iipxwJWOH2J+0u2se0OdTM5PNWqwndRMO6EwOG5YsHHOc9opmFQCViiwkzT6Sr3vU/hqdrZy8tno6exw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
-
   '@rive-app/react-webgl2@4.28.0':
     resolution: {integrity: sha512-YzuhkgpBCs/gZzN9jLexNNkO8NyST8XJ4WM3h9A7EEg/fjXGmhfE9dw5S5lk18MjEV+Vv4Rbe8IXoP3ko1jkDg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0
-
-  '@rive-app/webgl2@2.35.4':
-    resolution: {integrity: sha512-1dX1axIC6WgrvCkBsH1tjHjPz3xXGoDUuu3CZMdnlCOtGmASq4WM7LOPvuggmLgGl5mLHX9VF7Nr/AakpcMeUw==}
 
   '@rive-app/webgl2@2.37.1':
     resolution: {integrity: sha512-ll7HBYQfhxKUPYspJpICajIrPfPyg63rj3obqulRjwrzlmwXljoOl8CQgUofZi/pNM1Cfz3Und+nB8irK8tuQg==}
@@ -2673,12 +2653,6 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
-
-  ai@6.0.146:
-    resolution: {integrity: sha512-70DE8k1rR0N3mXxyyfjYAx/FxRln/kQ5ym18lt1ys1eUklcPuoIXGbUBwdfCbmkt6YF3jCDZ5+OgkWieP/NGDw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
 
   ai@6.0.158:
     resolution: {integrity: sha512-gLTp1UXFtMqKUi3XHs33K7UFglbvojkxF/aq337TxnLGOhHIW9+GyP2jwW4hYX87f1es+wId3VQoPRRu9zEStQ==}
@@ -3936,11 +3910,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lucide-react@1.7.0:
-    resolution: {integrity: sha512-yI7BeItCLZJTXikmK4KNUGCKoGzSvbKlfCvw44bU4fXAL6v3gYS4uHD1jzsLkfwODYwI6Drw5Tu9Z5ulDe0TSg==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   lucide-react@1.8.0:
     resolution: {integrity: sha512-WuvlsjngSk7TnTBJ1hsCy3ql9V9VOdcPkd3PKcSmM34vJD8KG6molxz7m7zbYFgICwsanQWmJ13JlYs4Zp7Arw==}
@@ -5266,25 +5235,11 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@3.0.88(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.22(zod@4.3.6)
-      '@vercel/oidc': 3.1.0
-      zod: 4.3.6
-
   '@ai-sdk/gateway@3.0.95(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
       '@vercel/oidc': 3.1.0
-      zod: 4.3.6
-
-  '@ai-sdk/provider-utils@4.0.22(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
       zod: 4.3.6
 
   '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':
@@ -6685,17 +6640,10 @@ snapshots:
       react: 19.1.0
       react-redux: 9.2.0(@types/react@19.1.2)(react@19.1.0)(redux@5.0.1)
 
-  '@rive-app/react-webgl2@4.27.3(react@19.1.0)':
-    dependencies:
-      '@rive-app/webgl2': 2.35.4
-      react: 19.1.0
-
   '@rive-app/react-webgl2@4.28.0(react@19.1.0)':
     dependencies:
       '@rive-app/webgl2': 2.37.1
       react: 19.1.0
-
-  '@rive-app/webgl2@2.35.4': {}
 
   '@rive-app/webgl2@2.37.1': {}
 
@@ -7298,14 +7246,6 @@ snapshots:
   acorn@8.16.0: {}
 
   agent-base@7.1.4: {}
-
-  ai@6.0.146(zod@4.3.6):
-    dependencies:
-      '@ai-sdk/gateway': 3.0.88(zod@4.3.6)
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.22(zod@4.3.6)
-      '@opentelemetry/api': 1.9.0
-      zod: 4.3.6
 
   ai@6.0.158(zod@4.3.6):
     dependencies:
@@ -8567,10 +8507,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-react@1.7.0(react@19.1.0):
-    dependencies:
-      react: 19.1.0
 
   lucide-react@1.8.0(react@19.1.0):
     dependencies:

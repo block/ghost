@@ -97,11 +97,11 @@ ghost compare system-a.expression.md system-b.expression.md system-c.expression.
 ghost viz system-a.expression.md system-b.expression.md system-c.expression.md
 ```
 
-**Run the ghost-ui catalogue:**
+**Run the docs site (design language + drift tooling + component catalogue):**
 
 ```bash
 just dev
-# or: cd packages/ghost-ui && pnpm dev
+# or: pnpm -F @ghost/docs dev
 ```
 
 ## CLI Commands
@@ -257,7 +257,7 @@ Ghost UI (`@ghost/ui`) is the project's reference design language — atomic, co
 - **Design tokens** — A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support
 - **Theme system** — Runtime theme switching with presets, a live theme panel for editing tokens, and CSS variable export
 - **HK Grotesk typeface** — Self-hosted display font (300–900 weights) paired with system sans-serif for body text
-- **Live catalogue** — An interactive documentation site (React + Vite) with component demos, foundations pages, and a bento showcase
+- **Docs site** — Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase — one visual language, one deploy
 
 ### Registry
 
@@ -274,7 +274,7 @@ ghost profile --registry ./packages/ghost-ui/registry.json --emit
 ghost review project ./consumer-app --against expression.md
 ```
 
-### Catalogue development
+### Docs site development
 
 ```bash
 # dev server with hot reload
@@ -310,38 +310,46 @@ packages/
       stages/          Deterministic pipeline stages (extract, compare, comply)
       fingerprint/     Fingerprinting engine (embedding, comparison, extraction)
       evolution/       Evolution tracking (sync, temporal, fleet, history)
-      scanners/        Drift scanners (values, structure, visual)
+      scanners/        Component scanners (values, structure)
       extractors/      Material extraction (CSS, Tailwind)
       resolvers/       Registry and CSS resolution
       llm/             LLM providers (Anthropic, OpenAI)
       reporters/       Output formatting (CLI, JSON, fingerprint, fleet)
-  ghost-cli/           CLI interface (cac)
+  ghost-cli/           CLI interface (cac) — 11 unified verbs
     src/
-      bin.ts                 profile, scan, diff, compare, comply, discover
-      review-command.ts      review (expression-aware drift signal)
-      context-command.ts     context (emit skill / prompt / bundle)
+      bin.ts                 profile, compare, discover
+      review-command.ts      review (files | project | suite scopes)
+      emit-command.ts        emit (review-command | context-bundle kinds)
       generate-command.ts    generate (reference LLM generator with self-review)
-      verify-command.ts      verify (generate→review loop over prompt suite)
-      evolution-commands.ts  ack, adopt, diverge, fleet
+      evolution-commands.ts  ack, adopt, diverge
       viz/                   3D visualization (Three.js, PCA projection)
+      compare-mode.ts        Pure compare-mode dispatch (testable)
   ghost-mcp/           MCP server for Ghost UI registry
     src/
       tools.ts         5 MCP tools (search, get, install, categories, theme)
       resources.ts     2 MCP resources (registry, skills)
-  ghost-ui/            Reference design language (@ghost/ui)
+  ghost-ui/            Reference component library (@ghost/ui)
     src/
+      index.ts         Public API — all primitives, theme, hooks
       components/
-        ui/            Primitive components (Radix + Tailwind)
-        ai-elements/   AI-native components (chat, code, agents)
-        theme/         ThemeProvider and theme toggle
-        theme-panel/   Live token editor panel
-        docs/          Catalogue pages, demos, and bento showcase
-      contexts/        Theme and theme-panel context providers
+        ui/            49 primitive components (Radix + Tailwind)
+        ai-elements/   48 AI-native components (chat, code, agents)
+        theme/         ThemeProvider, ThemeToggle
       hooks/           Shared React hooks
-      lib/             Utilities, registry helpers, theme presets
-      styles/          Design tokens and global CSS
+      lib/             cn + theme presets/defaults/utils
+      styles/          Design tokens, global CSS
       fonts/           HK Grotesk woff2 files
     registry.json      shadcn-compatible component registry
+apps/
+  docs/                Deployed site (@ghost/docs) — one aesthetic, all content
+    src/
+      app/             Routes: /, /tools, /tools/drift/*, /ui/*
+      components/
+        docs/          Page layout, demos, bento showcase
+        theme-panel/   Live token editor panel
+      contexts/        Theme and theme-panel context
+      lib/             component-registry, theme metadata
+    vite.config.ts     base = DEPLOY_BASE env
 skills/                Claude Code skill definitions
   ghost-fingerprint/   Profile any design system
   ghost-compare/       Compare two design systems
@@ -350,7 +358,7 @@ skills/                Claude Code skill definitions
   ghost-review/        Review files for drift against an expression
 docs/
   expression-format.md The expression.md spec
-  generation-loop.md   Context → generate → review → verify pipeline
+  generation-loop.md   Emit → generate → review pipeline
 ```
 
 ## Development
