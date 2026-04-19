@@ -106,6 +106,40 @@ describe("mergeExpression", () => {
     expect(merged.values?.do).toEqual(["new-do"]);
     expect(merged.values?.dont).toEqual([]);
   });
+
+  it("roles merge by name: child wins per-slot, parent-only roles kept", () => {
+    const parentWithRoles: DesignFingerprint = {
+      ...PARENT,
+      roles: [
+        {
+          name: "h1",
+          tokens: { typography: { family: "Serif", size: 32 } },
+          evidence: ["parent.tsx"],
+        },
+        {
+          name: "body",
+          tokens: { typography: { family: "Sans", size: 16 } },
+          evidence: ["parent.tsx"],
+        },
+      ],
+    };
+    const child: Partial<DesignFingerprint> = {
+      roles: [
+        {
+          name: "h1",
+          tokens: { typography: { family: "Serif", size: 64 } },
+          evidence: ["child.tsx"],
+        },
+      ],
+    };
+    const merged = mergeExpression(parentWithRoles, child);
+    expect(merged.roles).toHaveLength(2);
+    const h1 = merged.roles?.find((r) => r.name === "h1");
+    expect(h1?.tokens.typography?.size).toBe(64);
+    expect(h1?.evidence).toEqual(["child.tsx"]);
+    const body = merged.roles?.find((r) => r.name === "body");
+    expect(body?.tokens.typography?.size).toBe(16);
+  });
 });
 
 describe("loadExpression extends resolution", () => {

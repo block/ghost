@@ -273,6 +273,95 @@
       "required": ["borderRadii", "shadowComplexity", "borderUsage"],
       "additionalProperties": false
     },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "object",
+            "properties": {
+              "typography": {
+                "type": "object",
+                "properties": {
+                  "family": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "weight": {
+                    "type": "number"
+                  },
+                  "lineHeight": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "spacing": {
+                "type": "object",
+                "properties": {
+                  "padding": {
+                    "type": "number"
+                  },
+                  "gap": {
+                    "type": "number"
+                  },
+                  "margin": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "surfaces": {
+                "type": "object",
+                "properties": {
+                  "borderRadius": {
+                    "type": "number"
+                  },
+                  "shadow": {
+                    "type": "string",
+                    "enum": ["none", "subtle", "layered"]
+                  },
+                  "borderWidth": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "palette": {
+                "type": "object",
+                "properties": {
+                  "background": {
+                    "type": "string"
+                  },
+                  "foreground": {
+                    "type": "string"
+                  },
+                  "border": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "tokens", "evidence"],
+        "additionalProperties": false
+      }
+    },
     "embedding": {
       "type": "array",
       "items": {

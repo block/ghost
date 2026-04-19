@@ -31,6 +31,7 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
 | `values.do`, `values.dont` | **Body** | `# Values` → `## Do` / `## Don't` |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter | top-level |
+| `roles[]` (slot → token bindings) | Frontmatter | `roles:` |
 | `embedding` (49-dim vector) | **Sibling file** | `embedding.md` (referenced from `# Fragments`) |
 | `metadata` (loose extension bag) | Frontmatter | top-level, open-ended |
 
@@ -109,6 +110,24 @@ surfaces:
   shadowComplexity: subtle          # none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
+# --- fingerprint: role bindings (optional) ---
+# Semantic slot → token bindings. Bridges abstract tokens to rendering:
+# a role names a slot (h1, card, button, …) and binds specific tokens
+# from the dimensions above. Each sub-block is optional; omit what you
+# cannot infer from source. Agents populate these from component files.
+roles:
+  - name: h1
+    tokens:
+      typography: { family: Anthropic Serif, size: 52, weight: 500 }
+      spacing: { margin: 32 }
+    evidence: ["components/Heading.tsx:12"]
+  - name: card
+    tokens:
+      surfaces: { borderRadius: 16, shadow: subtle }
+      spacing: { padding: 24 }
+      palette: { background: '#f5f4ed' }
+    evidence: ["components/ui/card.tsx"]
+
 # --- fingerprint: vector layer ---
 # embedding is OPTIONAL at root in v4. Readers load it from the sibling
 # `embedding.md` fragment (referenced in the body) or recompute from the
@@ -120,6 +139,7 @@ surfaces:
 **Required-but-conditional:** `schema` (if present, must equal 4). Missing `schema:` is warned but accepted.
 **Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.closestSystems`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
+**Optional role bindings:** `roles[]`. Each role requires `name` and `evidence[]`; token sub-blocks (`typography`, `spacing`, `surfaces`, `palette`) are independently optional and strict — unknown keys reject.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
 **Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`, `values`. These live in the body.
 
@@ -182,6 +202,22 @@ Link rules:
 - Absolute URLs (`http://…`) and anchors (`#foo`) are ignored.
 - Paths are resolved relative to the expression.md directory.
 - One level deep — avoid nested chains.
+
+---
+
+## Roles — the slot → token bridge
+
+Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the fingerprint stops being an inventory and becomes something a renderer can act on.
+
+**Shape.** Each role has three parts:
+
+- `name` — the slot. Prefer HTML-like or archetype names: `h1`, `h2`, `body`, `caption`, `card`, `button`, `input`, `list-row`.
+- `tokens` — the bindings, grouped by dimension. Each sub-block (`typography`, `spacing`, `surfaces`, `palette`) is independently optional and every field inside is optional. A role can be partial when the source only supplies some tokens.
+- `evidence` — where the binding was observed. File paths or `path:line` references.
+
+**Authoring contract.** Only emit roles with direct source evidence. A plausible-but-unobserved role is worse than a missing one. A codebase with no component files may produce no roles at all — that is truthful.
+
+**Strictness.** The `tokens` sub-blocks are zod `.strict()` — unknown keys reject, so the schema stays disciplined as it grows. Add a field to the schema before emitting it.
 
 ---
 
