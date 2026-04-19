@@ -24,10 +24,8 @@
     "**/*.css"
   ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc --build tsconfig.lib.json",
-    "preview": "vite preview",
+    "build": "vite build --config vite.lib.config.ts && tsc --build tsconfig.lib.json && node scripts/resolve-dts-paths.mjs",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc --build tsconfig.lib.json && node scripts/resolve-dts-paths.mjs",
     "build:base": "node scripts/build-base-vars.mjs",
     "build:presets": "node scripts/build-presets.mjs",
     "generate:skills": "node scripts/generate-skills.mjs",

@@ -58,7 +58,6 @@ export * from "./components/ai-elements/toolbar.js";
 export * from "./components/ai-elements/transcription.js";
 export * from "./components/ai-elements/voice-selector.js";
 export * from "./components/ai-elements/web-preview.js";
-export { ThemeControls } from "./components/theme/ThemeControls.js";
 export { ThemeToggle } from "./components/theme/ThemeToggle.js";
 // --- UI primitives ---
 export * from "./components/ui/accordion.js";
@@ -122,4 +121,4 @@ export * from "./lib/theme-presets.js";
 export { ThemeProvider, useTheme } from "./lib/theme-provider.js";
 export * from "./lib/theme-utils.js";
 // --- Lib / utils ---
-export { cn } from "./lib/utils.js";
+export * from "./lib/utils.js";
