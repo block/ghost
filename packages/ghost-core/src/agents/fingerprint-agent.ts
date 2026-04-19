@@ -33,14 +33,19 @@ Your output has three layers, produced in order:
 First, form a holistic understanding. What design language is this? What personality does it project? What's distinctive? What known systems does it resemble? Write freely — this is your subjective read.
 
 ### Layer 2: Design Decisions
-Based on your observation, identify the abstract design decisions. These are the principles and rules — not the specific values, but the decisions those values serve. State each implementation-agnostically.
+Based on your observation, identify the abstract design decisions. These are the principles and patterns the system encodes — not the values themselves, but the patterns those values serve. State each implementation-agnostically.
+
+**Abstract, don't restate.** A good decision names the *pattern*; a weak decision restates the *fact*.
+
+  ✗ Weak:   "Spacing follows a 4px base grid with Tailwind's default scale." (restates a fact visible in the tokens)
+  ✓ Strong: "Prefer explicit component-height tokens over padding arithmetic, so button/input sizing is decoupled from surrounding spacing." (names the pattern and its consequence)
 
 Surface whatever dimensions you find relevant. There is no fixed list. Common dimensions include color-strategy, spatial-system, typography-voice, surface-hierarchy, density, motion, elevation, interactive-patterns — but use whatever fits. If a dimension is notably absent (e.g. no animation), note that absence as a decision.
 
-For each decision, cite specific evidence from the files you read.
+For each decision, cite specific evidence from the files you read. Prefer evidence that's a concrete token definition with its variable name and value (e.g. "--radius-pill: 999px"); put behavioral observations in the decision prose, not in evidence.
 
-### Layer 3: Values
-Extract the concrete tokens — hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer.
+### Layer 3: Tokens
+Extract the concrete tokens — hex codes, pixel values, font stacks, border radii. This is the greppable implementation layer. Every palette entry (dominant, neutrals, semantic) should be cited in at least one decision's evidence, or dropped from the palette — uncited neutrals are noise.
 
 ## Important
 

@@ -20,6 +20,16 @@
     "confidence": {
       "type": "number"
     },
+    "extends": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
     "id": {
       "type": "string"
     },
@@ -39,16 +49,7 @@
     "observation": {
       "type": "object",
       "properties": {
-        "summary": {
-          "type": "string"
-        },
         "personality": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "distinctiveTraits": {
           "type": "array",
           "items": {
             "type": "string"
@@ -61,12 +62,6 @@
           }
         }
       },
-      "required": [
-        "summary",
-        "personality",
-        "distinctiveTraits",
-        "closestSystems"
-      ],
       "additionalProperties": false
     },
     "decisions": {
@@ -75,9 +70,6 @@
         "type": "object",
         "properties": {
           "dimension": {
-            "type": "string"
-          },
-          "decision": {
             "type": "string"
           },
           "evidence": {
@@ -93,28 +85,9 @@
             }
           }
         },
-        "required": ["dimension", "decision", "evidence"],
+        "required": ["dimension", "evidence"],
         "additionalProperties": false
       }
-    },
-    "values": {
-      "type": "object",
-      "properties": {
-        "do": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "dont": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": ["do", "dont"],
-      "additionalProperties": false
     },
     "palette": {
       "type": "object",
@@ -314,10 +287,9 @@
     "palette",
     "spacing",
     "typography",
-    "surfaces",
-    "embedding"
+    "surfaces"
   ],
   "additionalProperties": false,
   "title": "Ghost Expression Frontmatter",
-  "description": "Schema for YAML frontmatter in Ghost expression.md files (schema version 2)."
+  "description": "Schema for YAML frontmatter in Ghost expression.md files (schema version 4)."
 }

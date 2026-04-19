@@ -18,7 +18,7 @@ const { toJsonSchema } = await import(
 const schema = toJsonSchema();
 schema.title = "Ghost Expression Frontmatter";
 schema.description =
-  "Schema for YAML frontmatter in Ghost expression.md files (schema version 2).";
+  "Schema for YAML frontmatter in Ghost expression.md files (schema version 4).";
 
 const outDir = resolve(root, "schemas");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });

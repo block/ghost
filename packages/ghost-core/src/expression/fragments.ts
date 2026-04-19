@@ -1,5 +1,12 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { basename, extname, join } from "node:path";
+import {
+  basename,
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  resolve,
+} from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { DesignDecision } from "../types.js";
 import { splitRaw } from "./parser.js";
@@ -69,4 +76,119 @@ function parseFragment(
   if (!dimension || !decisionText) return null;
 
   return { dimension, decision: decisionText, evidence };
+}
+
+/**
+ * Canonical filename for the embedding fragment sibling of expression.md.
+ * Holds the 49-dim vector as YAML so the root expression.md stays lean.
+ */
+export const EMBEDDING_FRAGMENT_FILENAME = "embedding.md";
+
+/**
+ * Serialize an embedding vector to a fragment file. The file carries only
+ * a `vector:` array — no prose body. `of:` ties it back to the parent
+ * fingerprint id so the link isn't ambiguous.
+ */
+export function serializeEmbeddingFragment(
+  embedding: number[],
+  fingerprintId: string,
+  schemaVersion: number,
+): string {
+  const lines: string[] = ["---"];
+  lines.push(`schema: ${schemaVersion}`);
+  lines.push("kind: embedding");
+  lines.push(`of: ${fingerprintId}`);
+  lines.push(`dimensions: ${embedding.length}`);
+  lines.push("vector:");
+  for (const v of embedding) {
+    lines.push(`  - ${v}`);
+  }
+  lines.push("---");
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Parse an embedding.md fragment and return the vector. Returns null if
+ * the file doesn't exist, doesn't carry a `vector:` array, or the array
+ * isn't all numbers.
+ */
+export async function loadEmbeddingFragment(
+  expressionDir: string,
+  referencedPath?: string,
+): Promise<number[] | null> {
+  const candidate = referencedPath
+    ? isAbsolute(referencedPath)
+      ? referencedPath
+      : resolve(expressionDir, referencedPath)
+    : join(expressionDir, EMBEDDING_FRAGMENT_FILENAME);
+
+  let raw: string;
+  try {
+    raw = await readFile(candidate, "utf-8");
+  } catch {
+    return null;
+  }
+
+  let yamlObj: Record<string, unknown>;
+  try {
+    const { frontmatter } = splitRaw(raw);
+    yamlObj = (parseYaml(frontmatter) ?? {}) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+
+  const vec = yamlObj.vector;
+  if (!Array.isArray(vec)) return null;
+  if (!vec.every((v) => typeof v === "number")) return null;
+  return vec as number[];
+}
+
+/**
+ * Scan an expression body for markdown fragment links `[label](path)`.
+ * Returns relative paths (no resolution). Used to progressively discover
+ * which fragment files the author has chosen to attach — mirrors the
+ * agent-skills pattern of references-as-body-links.
+ *
+ * Only `.md` targets are treated as fragments. Absolute URLs (http://…)
+ * and anchors (#foo) are ignored.
+ */
+export function findFragmentLinks(body: string): string[] {
+  const out: string[] = [];
+  const re = /\[([^\]]+)\]\(([^)]+)\)/g;
+  for (const m of body.matchAll(re)) {
+    const target = m[2].trim();
+    if (!target.endsWith(".md")) continue;
+    if (/^[a-z]+:\/\//i.test(target)) continue;
+    if (target.startsWith("#")) continue;
+    out.push(target);
+  }
+  return out;
+}
+
+/**
+ * Resolve the embedding fragment path from a body — prefers an explicit
+ * body link named `embedding.md` (or ending in `/embedding.md`), falls
+ * back to the conventional sibling filename. Used by the loader to decide
+ * where to read the vector from.
+ */
+export function resolveEmbeddingReference(
+  body: string,
+  expressionDir: string,
+): string | null {
+  const links = findFragmentLinks(body);
+  const match = links.find(
+    (p) =>
+      p.endsWith(`/${EMBEDDING_FRAGMENT_FILENAME}`) ||
+      p === EMBEDDING_FRAGMENT_FILENAME,
+  );
+  if (match) {
+    return isAbsolute(match) ? match : resolve(expressionDir, match);
+  }
+  // No body link — conventional sibling.
+  return join(expressionDir, EMBEDDING_FRAGMENT_FILENAME);
+}
+
+/** Directory-relative utility for writers that emit a fragment next to a target file. */
+export function embeddingSiblingPath(expressionPath: string): string {
+  return join(dirname(expressionPath), EMBEDDING_FRAGMENT_FILENAME);
 }

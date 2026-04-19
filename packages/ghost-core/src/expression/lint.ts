@@ -29,9 +29,14 @@ export interface LintOptions {
 }
 
 /**
- * Lint an expression.md string for schema correctness, body/frontmatter
- * drift, and soft-content quality issues. Unlike parseExpression, this
- * never throws — every problem surfaces as a structured issue.
+ * Lint an expression.md string for schema correctness and partition
+ * violations. Unlike parseExpression, this never throws — every problem
+ * surfaces as a structured issue.
+ *
+ * Under schema 3 the body/frontmatter partition is enforced by zod-strict.
+ * Lint adds softer rules: orphan prose (body block with no frontmatter
+ * entry), missing rationale (frontmatter entry with no body block),
+ * legacy `**Evidence:**` bullets in the body, and broken palette citations.
  */
 export function lintExpression(
   raw: string,
@@ -55,10 +60,12 @@ export function lintExpression(
 
   const { fingerprint, body } = parsed;
   const rawYaml = toRawFrontmatter(raw);
+  const { body: bodyText } = splitRawSafe(raw);
 
   checkSchemaVersion(rawYaml, rawIssues);
   checkSchemaValidity(rawYaml, rawIssues);
-  checkBodyFrontmatterSync(fingerprint, body, rawIssues);
+  checkDecisionPartition(fingerprint, body, rawIssues);
+  checkStrayEvidenceInBody(bodyText, rawIssues);
   checkEvidenceHexes(fingerprint, rawIssues);
   checkUnusedPalette(fingerprint, rawIssues);
 
@@ -89,6 +96,14 @@ function toRawFrontmatter(raw: string): Record<string, unknown> {
     return (parseYaml(frontmatter) ?? {}) as Record<string, unknown>;
   } catch {
     return {};
+  }
+}
+
+function splitRawSafe(raw: string): { frontmatter: string; body: string } {
+  try {
+    return splitRaw(raw);
+  } catch {
+    return { frontmatter: "", body: "" };
   }
 }
 
@@ -132,58 +147,49 @@ function checkSchemaValidity(
   }
 }
 
-function checkBodyFrontmatterSync(
+/**
+ * Decisions are partitioned: dimension + evidence in frontmatter, rationale
+ * in body. Warn when the two sides don't line up on a given dimension.
+ */
+function checkDecisionPartition(
   fp: DesignFingerprint,
   body: BodyData,
   issues: LintIssue[],
 ): void {
-  const hasSummary = Boolean(fp.observation?.summary?.trim());
-  if (hasSummary && !body.character?.trim()) {
-    issues.push({
-      severity: "warning",
-      rule: "body-sync",
-      message:
-        "Frontmatter has observation.summary but body is missing `# Character`. The body is the human-readable mirror — regenerate or add it.",
-      path: "observation.summary",
-    });
-  }
+  const merged = fp.decisions ?? [];
+  const bodyDims = new Set((body.decisions ?? []).map((d) => d.dimension));
+  merged.forEach((d, idx) => {
+    const hasProse = Boolean(d.decision?.trim());
+    const hasEvidence = (d.evidence?.length ?? 0) > 0;
+    const fromBody = bodyDims.has(d.dimension);
+    if (!hasProse && hasEvidence) {
+      issues.push({
+        severity: "warning",
+        rule: "missing-rationale",
+        message: `Decision \`${d.dimension}\` has evidence in the frontmatter but no \`### ${d.dimension}\` block in the body.`,
+        path: `decisions[${idx}]`,
+      });
+    }
+    if (fromBody && !hasEvidence) {
+      issues.push({
+        severity: "warning",
+        rule: "orphan-prose",
+        message: `Body has \`### ${d.dimension}\` prose but the frontmatter decisions[] has no matching entry — add \`- dimension: ${d.dimension}\` with its evidence.`,
+        path: `decisions[${idx}]`,
+      });
+    }
+  });
+}
 
-  const fpTraits = fp.observation?.distinctiveTraits ?? [];
-  const bodyTraits = body.signature ?? [];
-  if (fpTraits.length && bodyTraits.length === 0) {
-    issues.push({
-      severity: "warning",
-      rule: "body-sync",
-      message:
-        "Frontmatter has distinctiveTraits but body is missing `# Signature` bullets.",
-      path: "observation.distinctiveTraits",
-    });
-  }
+const STRAY_EVIDENCE_RE = /^\s*\*\*Evidence:\*\*/im;
 
-  const fpDecisions = fp.decisions ?? [];
-  const bodyDecisions = body.decisions ?? [];
-  if (fpDecisions.length && bodyDecisions.length === 0) {
+function checkStrayEvidenceInBody(bodyText: string, issues: LintIssue[]): void {
+  if (STRAY_EVIDENCE_RE.test(bodyText)) {
     issues.push({
       severity: "warning",
-      rule: "body-sync",
+      rule: "stray-evidence-in-body",
       message:
-        "Frontmatter has decisions but body is missing `# Decisions` blocks.",
-      path: "decisions",
-    });
-  }
-
-  const fpValues = fp.values;
-  if (
-    fpValues &&
-    (fpValues.do.length > 0 || fpValues.dont.length > 0) &&
-    !body.values
-  ) {
-    issues.push({
-      severity: "warning",
-      rule: "body-sync",
-      message:
-        "Frontmatter has values but body is missing `# Values` Do/Don't lists.",
-      path: "values",
+        "Legacy `**Evidence:**` bullets found in body. Evidence belongs in the frontmatter `decisions[].evidence` — remove from body.",
     });
   }
 }

@@ -1,5 +1,9 @@
 import { parse as parseYaml } from "yaml";
-import type { DesignFingerprint } from "../types.js";
+import type {
+  DesignDecision,
+  DesignFingerprint,
+  DesignObservation,
+} from "../types.js";
 import { type BodyData, parseBody } from "./body.js";
 import { type ExpressionMeta, splitFrontmatter } from "./frontmatter.js";
 import { EXPRESSION_SCHEMA_VERSION, validateFrontmatter } from "./schema.js";
@@ -7,8 +11,18 @@ import { EXPRESSION_SCHEMA_VERSION, validateFrontmatter } from "./schema.js";
 export interface ParsedExpression {
   fingerprint: DesignFingerprint;
   meta: ExpressionMeta;
-  /** Parsed body content. Informational only — the frontmatter is authoritative. */
+  /**
+   * Structured view of the body as it was read from disk. Kept for lint
+   * tooling that wants to check orphan prose or missing rationale against
+   * the frontmatter machine-layer.
+   */
   body: BodyData;
+  /**
+   * The raw markdown body (everything after the frontmatter). Surfaced so
+   * the loader can scan for fragment links (e.g. `[embedding](embedding.md)`)
+   * without re-reading the file.
+   */
+  bodyRaw: string;
 }
 
 export interface ParseOptions {
@@ -67,11 +81,15 @@ function isDelimiter(line: string): boolean {
  * Parse a raw expression.md string into a DesignFingerprint plus metadata and
  * structured body.
  *
- * Contract (schema 2): frontmatter is authoritative. Every field on the
- * returned fingerprint comes from the YAML. The body is parsed into BodyData
- * for downstream tooling (lint, diff) but is NEVER merged into the
- * fingerprint. If the body says one thing and the frontmatter another, the
- * frontmatter wins.
+ * Contract (schema 3): frontmatter and body own disjoint fields.
+ *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
+ *     personality/closestSystems tags, embedding.
+ *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
+ *     traits, `### dimension` → decision rationale, `# Values` → Do/Don't.
+ *
+ * The returned fingerprint unions both sources. Since the two sides never
+ * carry the same field, there is no precedence rule — each field has one
+ * home.
  *
  * Parse-time checks (unless `skipValidation`):
  *   1. Schema version gate — rejects non-matching `schema:` values.
@@ -94,7 +112,89 @@ export function parseExpression(
 
   const { meta, fingerprint } = splitFrontmatter(yamlObj);
   const body = parseBody(bodyText);
-  return { fingerprint, meta, body };
+  const merged = applyBody(fingerprint, body);
+  return { fingerprint: merged, meta, body, bodyRaw: bodyText };
+}
+
+/**
+ * Fold body-owned prose fields into the fingerprint. The body provides
+ * Character/Signature prose for `observation`, rationale for `decisions`
+ * (keyed by dimension), and `# Values`. Frontmatter-only dimensions keep
+ * their evidence but get no body prose (decision text left empty).
+ */
+export function applyBody(
+  fp: DesignFingerprint,
+  body: BodyData,
+): DesignFingerprint {
+  const observation = mergeObservation(fp.observation, body);
+  const decisions = mergeDecisions(fp.decisions, body.decisions ?? []);
+  const values = body.values ?? fp.values;
+
+  const out: DesignFingerprint = { ...fp };
+  if (observation) out.observation = observation;
+  else delete out.observation;
+  if (decisions?.length) out.decisions = decisions;
+  else delete out.decisions;
+  if (values && (values.do.length || values.dont.length)) out.values = values;
+  else delete out.values;
+  return out;
+}
+
+function mergeObservation(
+  yamlObs: DesignObservation | undefined,
+  body: BodyData,
+): DesignObservation | undefined {
+  const summary = body.character?.trim() ?? "";
+  const distinctiveTraits = body.signature ?? [];
+  const personality = yamlObs?.personality ?? [];
+  const closestSystems = yamlObs?.closestSystems ?? [];
+  if (
+    !summary &&
+    distinctiveTraits.length === 0 &&
+    personality.length === 0 &&
+    closestSystems.length === 0
+  ) {
+    return undefined;
+  }
+  return { summary, personality, distinctiveTraits, closestSystems };
+}
+
+/**
+ * Merge the frontmatter decision skeletons (dimension + evidence) with the
+ * body's rationale (prose keyed by `### dimension`). Frontmatter order wins;
+ * body-only decisions append at the end.
+ */
+function mergeDecisions(
+  fromYaml: DesignDecision[] | undefined,
+  fromBody: DesignDecision[],
+): DesignDecision[] | undefined {
+  const hasYaml = (fromYaml?.length ?? 0) > 0;
+  const hasBody = fromBody.length > 0;
+  if (!hasYaml && !hasBody) return undefined;
+
+  const bodyByDim = new Map(fromBody.map((d) => [d.dimension, d]));
+  const seen = new Set<string>();
+  const out: DesignDecision[] = [];
+
+  for (const y of fromYaml ?? []) {
+    seen.add(y.dimension);
+    const b = bodyByDim.get(y.dimension);
+    out.push({
+      dimension: y.dimension,
+      decision: b?.decision ?? "",
+      evidence: y.evidence ?? [],
+      ...(y.embedding ? { embedding: y.embedding } : {}),
+    });
+  }
+  for (const b of fromBody) {
+    if (seen.has(b.dimension)) continue;
+    out.push({
+      dimension: b.dimension,
+      decision: b.decision,
+      evidence: b.evidence ?? [],
+    });
+  }
+  return out;
 }
 
 function checkSchemaVersion(raw: Record<string, unknown>): void {

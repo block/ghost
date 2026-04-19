@@ -128,7 +128,7 @@ describe("loadExpression extends resolution", () => {
     const childPath = join(dir, "child.expression.md");
 
     const parentMd = `---
-schema: 2
+schema: 4
 id: parent
 source: llm
 timestamp: 2026-04-17T00:00:00.000Z
@@ -152,23 +152,33 @@ surfaces:
 embedding: [0.1]
 decisions:
   - dimension: warm
-    decision: "parent warm rule"
     evidence: ["#111"]
 ---
+
+# Decisions
+
+### warm
+parent warm rule
 `;
 
     const childMd = `---
-schema: 2
+schema: 4
 extends: ./parent.expression.md
 id: child
 decisions:
   - dimension: warm
-    decision: "child overrides warm"
     evidence: ["#222"]
   - dimension: child-new
-    decision: "a new decision"
     evidence: []
 ---
+
+# Decisions
+
+### warm
+child overrides warm
+
+### child-new
+a new decision
 `;
 
     await writeFile(parentPath, parentMd, "utf-8");
@@ -197,7 +207,7 @@ decisions:
     await writeFile(
       aPath,
       `---
-schema: 2
+schema: 4
 extends: ./b.expression.md
 id: a
 ---
@@ -207,7 +217,7 @@ id: a
     await writeFile(
       bPath,
       `---
-schema: 2
+schema: 4
 extends: ./a.expression.md
 id: b
 ---
@@ -220,11 +230,11 @@ id: b
   it("noExtends: true skips parent resolution", async () => {
     const parentPath = join(dir, "parent.expression.md");
     const childPath = join(dir, "child.expression.md");
-    await writeFile(parentPath, "---\nschema: 2\nid: parent\n---\n", "utf-8");
+    await writeFile(parentPath, "---\nschema: 4\nid: parent\n---\n", "utf-8");
     await writeFile(
       childPath,
       `---
-schema: 2
+schema: 4
 extends: ./parent.expression.md
 id: child
 ---

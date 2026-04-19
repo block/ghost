@@ -21,6 +21,8 @@ import {
   compareFingerprints,
   computeTemporalComparison,
   diff,
+  EMBEDDING_FRAGMENT_FILENAME,
+  EXPRESSION_SCHEMA_VERSION,
   formatCLIReport,
   formatComparison,
   formatComparisonJSON,
@@ -46,6 +48,7 @@ import {
   readSyncManifest,
   resolveTarget,
   scan,
+  serializeEmbeddingFragment,
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
@@ -178,11 +181,31 @@ cli
           : formatFingerprint(fingerprint);
 
       if (opts.output) {
-        const content = opts.output.endsWith(".md")
+        const isMd = opts.output.endsWith(".md");
+        const content = isMd
           ? serializeExpression(fingerprint)
           : formatFingerprintJSON(fingerprint);
         await writeFile(opts.output, content);
         console.log(`Fingerprint written to ${opts.output}`);
+
+        // v4: when writing an expression.md, drop the embedding next to it
+        // as a sibling fragment file. Keeps the index lean and the vector
+        // cacheable — loaders fall back to recompute if missing.
+        if (isMd && fingerprint.embedding?.length) {
+          const { dirname, resolve: resolvePath } = await import("node:path");
+          const embeddingPath = resolvePath(
+            dirname(opts.output),
+            EMBEDDING_FRAGMENT_FILENAME,
+          );
+          await writeFile(
+            embeddingPath,
+            serializeEmbeddingFragment(
+              fingerprint.embedding,
+              fingerprint.id,
+              EXPRESSION_SCHEMA_VERSION,
+            ),
+          );
+        }
       }
 
       if (opts.emit || opts.emitLegacy) {
