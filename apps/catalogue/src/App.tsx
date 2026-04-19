@@ -16,11 +16,14 @@ function ComponentRedirect() {
   return <Navigate to={`/ui/components/${name}`} replace />;
 }
 
-// External-redirect helper: used to send visitors who hit /tools/drift (or
-// the legacy /docs/* paths) to the standalone apps/docs site. At build
-// time Vite inlines VITE_DOCS_BASE_URL; in dev it defaults to /docs/.
+// External-redirect helper: send visitors who hit /tools/drift (or the
+// legacy /docs/* paths) to the standalone apps/docs site. Default is
+// `${BASE_URL}docs/` — e.g. "/docs/" in dev, "/ghost/docs/" on Pages.
+// Override with VITE_DOCS_BASE_URL for e.g. a separate Vercel project.
 function DocsRedirect({ to = "" }: { to?: string }) {
-  const docsBase = import.meta.env.VITE_DOCS_BASE_URL ?? "/docs/";
+  const baseUrl = import.meta.env.BASE_URL ?? "/";
+  const defaultDocsBase = `${baseUrl.replace(/\/$/, "")}/docs/`;
+  const docsBase = import.meta.env.VITE_DOCS_BASE_URL ?? defaultDocsBase;
   if (typeof window !== "undefined") {
     window.location.href = `${docsBase.replace(/\/$/, "")}/${to}`.replace(
       /\/+$/,
