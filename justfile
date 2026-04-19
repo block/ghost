@@ -41,17 +41,21 @@ test-watch:
 
 # ── Run ──────────────────────────────────────────────────────
 
-# Run ghost-ui catalogue dev server
+# Run catalogue dev server (design language showcase)
 dev:
-    cd packages/ghost-ui && pnpm dev
+    pnpm -F @ghost/catalogue dev
 
-# Build ghost-ui catalogue (static export)
+# Build catalogue (static export)
 build-ui:
-    cd packages/ghost-ui && pnpm build
+    pnpm -F @ghost/catalogue build
+
+# Build @ghost/ui library (dist-lib + types)
+build-lib:
+    pnpm -F @ghost/ui build:lib
 
 # Build ghost-ui shadcn registry
 build-registry:
-    cd packages/ghost-ui && pnpm build:registry
+    pnpm -F @ghost/ui build:registry
 
 # ── Utilities ────────────────────────────────────────────────
 

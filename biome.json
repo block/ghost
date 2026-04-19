@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/ghost-ui/**"],
+      "includes": ["packages/ghost-ui/**", "apps/catalogue/**"],
       "linter": {
         "enabled": false
       }
