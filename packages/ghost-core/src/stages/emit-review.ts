@@ -308,7 +308,7 @@ function footer(fp: DesignFingerprint): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`expression.md\` (${count} decisions). Re-run \`ghost emit review\` after expression updates.`;
+Generated from \`expression.md\` (${count} decisions). Re-run \`ghost emit review-command\` after expression updates.`;
 }
 
 // --- helpers ------------------------------------------------------------

@@ -75,9 +75,10 @@ export default function CLIReferencePage() {
             <code>.ghost-fingerprint.json</code>; readers dispatch on extension.
           </p>
           <p>
-            <code>scan</code> and <code>diff</code> still read a{" "}
-            <code>ghost.config.ts</code>; everything else is zero-config and
-            defaults to <code>./expression.md</code> in the current directory.
+            Commands are zero-config and default to <code>./expression.md</code>{" "}
+            in the current directory. <code>compare --components</code> is the
+            one exception — it still reads a <code>ghost.config.ts</code> for
+            the registry target.
           </p>
         </DocSection>
 
@@ -105,11 +106,6 @@ export default function CLIReferencePage() {
                 flag: "--emit",
                 description:
                   "Write expression.md to project root (publishable artifact)",
-              },
-              {
-                flag: "--emit-legacy",
-                description:
-                  "Write legacy .ghost-fingerprint.json instead (deprecated escape hatch)",
               },
               {
                 flag: "--ai",
@@ -141,114 +137,68 @@ ghost profile github:anthropics/claude-code https://claude.ai --output claude.ex
 # Profile a remote shadcn registry directly
 ghost profile -r https://ui.shadcn.com/registry.json`}
           />
-
-          <CommandSection
-            name="scan"
-            description="Scan for design drift driven by a ghost.config.ts. Runs the configured scanners (values, structure, visual) against the parent registry."
-            usage="ghost scan [options]"
-            flags={[
-              {
-                flag: "-c, --config <path>",
-                description: "Path to ghost config file",
-              },
-              {
-                flag: "--format",
-                description: 'Output format: "cli" (default) or "json"',
-              },
-              { flag: "--no-color", description: "Disable colored output" },
-            ]}
-            example={`# Scan with default config
-ghost scan
-
-# JSON output for CI
-ghost scan --format json`}
-          />
-
-          <CommandSection
-            name="diff"
-            description="Compare local component implementations against the parent registry, showing line-level changes and drift classification."
-            usage="ghost diff [component] [options]"
-            flags={[
-              {
-                flag: "-c, --config <path>",
-                description: "Path to ghost config file",
-              },
-              {
-                flag: "--format",
-                description: 'Output format: "cli" (default) or "json"',
-              },
-            ]}
-            example={`# Diff all components
-ghost diff
-
-# Diff a specific component
-ghost diff button`}
-          />
         </DocSection>
 
-        <DocSection title="Comparison & Compliance">
+        <DocSection title="Comparison">
           <CommandSection
             name="compare"
-            description="Compare two expressions with weighted distance across palette, spacing, typography, surfaces, and embedded decisions. Optionally include temporal analysis (velocity, trajectory, ack status)."
-            usage="ghost compare <source> <target> [options]"
+            description="Unified comparison verb. Mode is flag-dispatched: pairwise (N=2), fleet (N≥3 or --cluster), semantic diff (--semantic), temporal (--temporal), or local-components-vs-registry (--components)."
+            usage="ghost compare [...fingerprints] [options]"
             flags={[
               {
                 flag: "--temporal",
                 description:
-                  "Include temporal data: velocity, trajectory, ack status",
+                  "Include temporal data: velocity, trajectory, ack status (N=2 only)",
               },
               {
-                flag: "--history-dir",
+                flag: "--history-dir <dir>",
                 description:
                   "Directory containing .ghost/history.jsonl (default: cwd)",
+              },
+              {
+                flag: "--semantic",
+                description:
+                  "Semantic diff of decisions/values/palette (N=2 only)",
+              },
+              {
+                flag: "--cluster",
+                description: "Include cluster analysis (N≥3)",
+              },
+              {
+                flag: "--components",
+                description:
+                  "Compare local components against registry (reads ghost.config.ts; ignores fingerprint args)",
+              },
+              {
+                flag: "--component <name>",
+                description: "Limit --components to one component",
+              },
+              {
+                flag: "-c, --config <path>",
+                description: "Path to ghost config file (for --components)",
               },
               {
                 flag: "--format",
                 description: 'Output format: "cli" (default) or "json"',
               },
             ]}
-            example={`# Compare two expressions
+            example={`# Pairwise (N=2)
 ghost compare parent.expression.md consumer.expression.md
 
 # With temporal drift analysis
 ghost compare parent.expression.md consumer.expression.md --temporal
 
-# Legacy JSON fingerprints still work
-ghost compare parent.json consumer.json`}
-          />
+# Semantic diff (decisions / values / palette)
+ghost compare a.expression.md b.expression.md --semantic
 
-          <CommandSection
-            name="comply"
-            description="Check a target's compliance against a parent expression and threshold. Profiles the target, compares, and exits non-zero if drift exceeds --max-drift. Emits CLI, JSON, or SARIF for CI."
-            usage="ghost comply [target] [options]"
-            flags={[
-              {
-                flag: "--against <path>",
-                description:
-                  "Path to parent expression.md or JSON to check drift against",
-              },
-              {
-                flag: "--max-drift <n>",
-                description: "Maximum overall drift distance (default: 0.3)",
-              },
-              {
-                flag: "-c, --config <path>",
-                description: "Path to ghost config file",
-              },
-              {
-                flag: "--format",
-                description: 'Output format: "cli", "json", or "sarif"',
-              },
-              {
-                flag: "-v, --verbose",
-                description: "Show agent reasoning",
-              },
-            ]}
-            example={`# Check current directory against a parent
-ghost comply . --against parent.expression.md
+# Fleet (N≥3) with clustering
+ghost compare *.expression.md --cluster
 
-# Emit SARIF for GitHub code scanning
-ghost comply . --against parent.expression.md --format sarif`}
+# Local components vs registry
+ghost compare --components
+
+# Single component diff
+ghost compare --components --component button`}
           />
 
           <CommandSection
@@ -267,36 +217,16 @@ ghost discover "brutalist editorial"
 # List systems near a reference
 ghost discover "similar to shadcn"`}
           />
-
-          <CommandSection
-            name="fleet"
-            description="Compare multiple expressions for ecosystem-wide observability. Computes pairwise distances, centroid, and optional k-means clustering."
-            usage="ghost fleet <fp1> <fp2> [fp3...] [options]"
-            flags={[
-              {
-                flag: "--cluster",
-                description: "Enable k-means clustering analysis",
-              },
-              {
-                flag: "--format",
-                description: 'Output format: "cli" (default) or "json"',
-              },
-            ]}
-            example={`# Compare three design systems
-ghost fleet ds-a.expression.md ds-b.expression.md ds-c.expression.md
-
-# With clustering
-ghost fleet *.expression.md --cluster`}
-          />
         </DocSection>
 
         <DocSection title="Generation Loop">
           <p>
             Ghost sits as pipeline infrastructure for AI-driven UI generation.{" "}
-            <code>context</code> emits a grounding bundle, any generator
-            produces, <code>review</code> gates the output, and{" "}
-            <code>verify</code> runs the whole loop over a standard prompt suite
-            to aggregate drift. See{" "}
+            <code>ghost emit context-bundle</code> produces a grounding bundle,
+            any generator (including <code>ghost generate</code>) produces,{" "}
+            <code>ghost review</code> gates the output, and{" "}
+            <code>ghost review suite</code> runs the whole loop over a standard
+            prompt suite to aggregate drift. See{" "}
             <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
@@ -304,33 +234,55 @@ ghost fleet *.expression.md --cluster`}
           </p>
 
           <CommandSection
-            name="context"
-            description="Emit a grounding skill bundle from an expression — for Claude Code, MCP clients, v0, Cursor, or any in-house generator."
-            usage="ghost context [expression] [options]"
+            name="emit"
+            description="Derive artifacts from expression.md. Kinds: review-command (a per-project drift-review slash command at .claude/commands/design-review.md) and context-bundle (SKILL.md + tokens.css + optional prompt.md for Claude Code, MCP, v0, Cursor, or any in-house generator)."
+            usage="ghost emit <kind> [options]"
             flags={[
               {
-                flag: "-o, --out <dir>",
-                description: "Output directory (default: ./ghost-context)",
+                flag: "-e, --expression <path>",
+                description:
+                  "Source expression file (default: ./expression.md)",
               },
               {
-                flag: "--format <fmt>",
+                flag: "-o, --out <path>",
                 description:
-                  'Output format: "skill" (default), "prompt", or "bundle"',
+                  "Output path (review-command → .claude/commands/design-review.md; context-bundle → ./ghost-context/)",
+              },
+              {
+                flag: "--stdout",
+                description:
+                  "Write to stdout instead of a file (review-command only)",
+              },
+              {
+                flag: "--no-tokens",
+                description: "Skip tokens.css output (context-bundle)",
+              },
+              {
+                flag: "--readme",
+                description: "Include README.md (context-bundle)",
+              },
+              {
+                flag: "--prompt-only",
+                description:
+                  "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
               },
               {
                 flag: "--name <name>",
                 description:
-                  "Override the skill name (default: fingerprint id)",
+                  "Override the skill name — default: fingerprint id (context-bundle)",
               },
             ]}
-            example={`# Emit a Claude Code skill bundle
-ghost context expression.md
+            example={`# Emit a per-project design-review slash command
+ghost emit review-command
 
-# Emit a single prompt.md for plain-text LLM context
-ghost context expression.md --format prompt
+# Emit a Claude Code / MCP skill bundle
+ghost emit context-bundle
 
-# Full Arcade-style bundle: SKILL.md + expression.md + tokens.css + README
-ghost context expression.md --format bundle --out dist/context`}
+# Single prompt.md for plain-text LLM context
+ghost emit context-bundle --prompt-only
+
+# Custom output directory
+ghost emit context-bundle --out dist/context`}
           />
 
           <CommandSection
@@ -377,90 +329,97 @@ ghost generate "dashboard" --json`}
 
           <CommandSection
             name="review"
-            description="Review files for visual language drift against an expression. Zero-config: reads ./expression.md by default. Used both as a CI gate and as the self-review step inside ghost generate."
-            usage="ghost review [files] [options]"
+            description="Unified drift detection with three scopes: files (default, code-level PR review), project (target-level compliance against a parent), suite (drive the generate→review loop across a prompt suite, classifying each dimension as tight, leaky, or uncaptured). First positional arg picks the scope; otherwise defaults to files."
+            usage="ghost review [scope] [positional] [options]"
             flags={[
+              // files
               {
                 flag: "-f, --fingerprint <path>",
                 description:
-                  "Path to expression or fingerprint (default: ./expression.md)",
+                  "[files] Path to expression or fingerprint (default: ./expression.md)",
               },
               {
                 flag: "--staged",
-                description: "Review staged changes only",
+                description: "[files] Review staged changes only",
               },
               {
                 flag: "-b, --base <ref>",
-                description: "Base ref for git diff (default: HEAD)",
+                description: "[files] Base ref for git diff (default: HEAD)",
               },
               {
                 flag: "--dimensions <list>",
                 description:
-                  "Comma-separated: palette, spacing, typography, surfaces",
+                  "[files] Comma-separated: palette, spacing, typography, surfaces",
               },
               {
                 flag: "--all",
                 description:
-                  "Report issues on all lines, not just changed lines",
+                  "[files] Report issues on all lines, not just changed lines",
+              },
+              // project
+              {
+                flag: "--against <path>",
+                description:
+                  "[project] Parent expression path to check drift against",
               },
               {
-                flag: "--format <fmt>",
-                description: 'Output format: "cli" (default), "json", "github"',
+                flag: "--max-drift <n>",
+                description:
+                  "[project] Maximum overall drift distance (default: 0.3)",
               },
-            ]}
-            example={`# Review uncommitted changes in the current repo
-ghost review
-
-# Review specific files against a different expression
-ghost review src/components/hero.tsx -f design.expression.md
-
-# Emit GitHub PR review comments for the Action
-ghost review --staged --format github`}
-          />
-
-          <CommandSection
-            name="verify"
-            description="Run the generate → review loop across a versioned prompt suite and aggregate per-dimension drift. Classifies each dimension as tight, leaky, or uncaptured — the schema-discipline mechanism for expressions."
-            usage="ghost verify [expression] [options]"
-            flags={[
+              {
+                flag: "-c, --config <path>",
+                description: "[project] Path to ghost config file",
+              },
+              // suite
               {
                 flag: "--suite <path>",
                 description:
-                  "Path to a prompt suite JSON (default: bundled v0.1)",
+                  "[suite] Path to a prompt suite JSON (default: bundled v0.1)",
               },
               {
                 flag: "-n, --n <count>",
-                description: "Subsample first N prompts (default: run all)",
+                description:
+                  "[suite] Subsample first N prompts (default: run all)",
               },
               {
                 flag: "--concurrency <n>",
-                description: "Max in-flight generate+review calls (default: 3)",
+                description:
+                  "[suite] Max in-flight generate+review calls (default: 3)",
               },
               {
                 flag: "--retries <n>",
-                description: "Self-review retries per prompt (default: 1)",
+                description:
+                  "[suite] Self-review retries per prompt (default: 1)",
               },
               {
                 flag: "-o, --out <file>",
-                description: "Write JSON report to file",
+                description: "[suite] Write JSON report to file",
+              },
+              // shared
+              {
+                flag: "--format <fmt>",
+                description:
+                  'Output format: "cli" (default), "json", "github" (files only), "sarif" (project only)',
               },
               {
-                flag: "--json",
-                description: "Emit JSON report to stdout",
-              },
-              {
-                flag: "--verbose",
-                description: "Show per-prompt results",
+                flag: "-v, --verbose",
+                description: "Verbose output",
               },
             ]}
-            example={`# Run the full bundled suite against ./expression.md
-ghost verify
+            example={`# files scope (default) — review uncommitted changes
+ghost review
+ghost review --staged --format github
+ghost review src/components/hero.tsx -f design.expression.md
 
-# Quick sample of 5 prompts
-ghost verify -n 5
+# project scope — target-level compliance against a parent
+ghost review project . --against parent.expression.md
+ghost review project . --against parent.expression.md --format sarif
 
-# Save a full JSON report
-ghost verify --out verify-report.json`}
+# suite scope — drive generate→review across a prompt suite
+ghost review suite
+ghost review suite -n 5
+ghost review suite --out suite-report.json`}
           />
         </DocSection>
 

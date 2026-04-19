@@ -27,10 +27,11 @@ export default function GettingStartedPage() {
             <code>pnpm add -g @ghost/cli</code>
           </pre>
           <p>
-            AI-powered commands (<code>profile --ai</code>, <code>comply</code>,{" "}
-            <code>discover</code>, <code>generate</code>, <code>verify</code>)
-            need <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code>{" "}
-            in your environment. Ghost auto-loads <code>.env</code> and{" "}
+            AI-powered commands (<code>profile --ai</code>,{" "}
+            <code>review project</code>, <code>review suite</code>,{" "}
+            <code>discover</code>, <code>generate</code>) need{" "}
+            <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> in
+            your environment. Ghost auto-loads <code>.env</code> and{" "}
             <code>.env.local</code> from the working directory.
           </p>
         </DocSection>
@@ -81,55 +82,64 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
           </p>
         </DocSection>
 
-        <DocSection title="Check Compliance Against a Parent">
+        <DocSection title="Review Drift — One Verb, Three Scopes">
           <p>
-            <code>comply</code> profiles a target, compares to a parent
-            expression, and exits non-zero if drift exceeds a threshold. Drop-in
-            for CI:
+            <code>ghost review</code> is the unified drift-detection verb. The
+            first positional argument picks the scope; it defaults to{" "}
+            <code>files</code>.
           </p>
+          <ul>
+            <li>
+              <code>ghost review</code> (files scope, default) — checks files in
+              a PR for visual language drift: hardcoded colors outside the
+              palette, spacing off the scale, typography that violates
+              decisions. Reads <code>./expression.md</code>; flags changed lines
+              only by default.
+            </li>
+            <li>
+              <code>ghost review project [target] --against parent.md</code> —
+              target-level compliance. Profiles the target, compares to the
+              parent, exits non-zero if drift exceeds <code>--max-drift</code>.
+              Emits CLI, JSON, or SARIF for CI.
+            </li>
+            <li>
+              <code>ghost review suite [expression]</code> — drives the
+              generate→review loop across a bundled prompt suite (~18 prompts)
+              and classifies each dimension as <em>tight</em>, <em>leaky</em>,
+              or <em>uncaptured</em>. The schema-discipline mechanism for
+              expressions.
+            </li>
+          </ul>
           <pre>
             <code>
-              {`ghost comply . --against parent.expression.md
-ghost comply . --against parent.expression.md --format sarif`}
-            </code>
-          </pre>
-          <p>
-            SARIF output plugs into GitHub code scanning and most CI platforms.
-          </p>
-        </DocSection>
-
-        <DocSection title="Review UI Against an Expression">
-          <p>
-            <code>ghost review</code> checks files for visual language drift —
-            hardcoded colors outside the palette, spacing values off the scale,
-            typography choices that violate the expression's decisions.
-            Zero-config: it reads <code>./expression.md</code> in the current
-            directory and only flags changed lines by default.
-          </p>
-          <pre>
-            <code>
-              {`# Review uncommitted changes
+              {`# files — review uncommitted changes
 ghost review
-
-# Review staged changes only, emit GitHub PR comments
 ghost review --staged --format github
+ghost review src/app/page.tsx -f design.expression.md
 
-# Check specific files against a different expression
-ghost review src/app/page.tsx -f design.expression.md`}
+# project — drop-in CI gate against a parent
+ghost review project . --against parent.expression.md
+ghost review project . --against parent.expression.md --format sarif
+
+# suite — drive the loop across the bundled prompt suite
+ghost review suite
+ghost review suite -n 5
+ghost review suite --out suite-report.json`}
             </code>
           </pre>
+          <p>
+            SARIF output from <code>review project</code> plugs into GitHub code
+            scanning and most CI platforms.
+          </p>
         </DocSection>
 
         <DocSection title="The Generation Loop">
-          <p>
-            Ghost doubles as pipeline infrastructure for AI-generated UI. Three
-            commands wire it together:
-          </p>
+          <p>Ghost doubles as pipeline infrastructure for AI-generated UI:</p>
           <ol>
             <li>
-              <code>ghost context</code> — emit a grounding bundle from an
-              expression (skill, prompt, or full bundle) that any generator can
-              consume
+              <code>ghost emit context-bundle</code> — emit a grounding bundle
+              from an expression (SKILL.md + tokens.css + optional prompt.md)
+              that any generator can consume
             </li>
             <li>
               Run any generator (<code>ghost generate</code>, Cursor, v0, or
@@ -137,29 +147,30 @@ ghost review src/app/page.tsx -f design.expression.md`}
             </li>
             <li>
               <code>ghost review</code> gates the output.{" "}
-              <code>ghost verify</code> runs the whole loop across a standard
-              prompt suite and aggregates per-dimension drift.
+              <code>ghost review suite</code> runs the whole loop across a
+              standard prompt suite and aggregates per-dimension drift.
             </li>
           </ol>
           <pre>
             <code>
               {`# Emit a Claude Code skill bundle from an expression
-ghost context expression.md --format skill --out skills/my-design
+ghost emit context-bundle --out skills/my-design
 
 # Reference generator with self-review
 ghost generate "pricing page with three tiers" --out pricing.html
 
-# Verify the expression against the standard prompt suite
-ghost verify`}
+# Drive the suite against the standard prompt set
+ghost review suite`}
             </code>
           </pre>
         </DocSection>
 
-        <DocSection title="Advanced: Config-Driven Scanning">
+        <DocSection title="Advanced: Config-Driven Component Diff">
           <p>
-            For long-lived projects, <code>scan</code> and <code>diff</code>{" "}
-            read a <code>ghost.config.ts</code> that describes your parent
-            registry, scan modes, and rule severity:
+            For projects consuming a shadcn-style registry,{" "}
+            <code>ghost compare --components</code> reads a{" "}
+            <code>ghost.config.ts</code> that points at the parent registry and
+            compares local component files against it:
           </p>
           <pre>
             <code>
@@ -169,12 +180,6 @@ export default defineConfig({
   parent: { type: "github", value: "shadcn-ui/ui" },
   targets: [{ type: "path", value: "./packages/my-ui" }],
 
-  scan: {
-    values: true,      // detect token overrides & hardcoded colors
-    structure: true,   // diff component files against registry
-    visual: false,     // pixel-level comparison (Playwright)
-    analysis: false,   // LLM-aided interpretation
-  },
   rules: {
     "hardcoded-color": "error",
     "token-override": "warn",
@@ -190,9 +195,9 @@ export default defineConfig({
             </code>
           </pre>
           <p>
-            With a config in place, <code>ghost scan</code> runs all enabled
-            scanners and prints a report. Pass <code>--format json</code> for
-            machine-readable output.
+            With a config in place, <code>ghost compare --components</code>{" "}
+            surfaces structural drift against the parent registry. Pass{" "}
+            <code>--format json</code> for machine-readable output.
           </p>
 
           <hr />

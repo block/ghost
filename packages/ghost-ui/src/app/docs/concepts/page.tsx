@@ -761,15 +761,16 @@ export default function ConceptsPage() {
         </ChapterLead>
         <ScanSection />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          Run all three with{" "}
+          Run these through{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost scan
+            ghost review
           </code>{" "}
-          or pick one with{" "}
+          (files in a PR) or{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost scan --values
-          </code>
-          . Each scan produces a structured report you can pipe into CI.
+            ghost review project
+          </code>{" "}
+          (whole target against a parent). Each produces a structured report you
+          can pipe into CI.
         </p>
       </Chapter>
 
@@ -857,9 +858,13 @@ export default function ConceptsPage() {
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Run{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost fleet
+            ghost compare
           </code>{" "}
-          with multiple registries to see the full picture, or{" "}
+          with three or more expressions (add{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+            --cluster
+          </code>
+          ) to see the full picture, or{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             ghost viz
           </code>{" "}

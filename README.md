@@ -10,7 +10,7 @@ Design languages drift — and drift degrades trust. When interfaces lose cohere
 
 - **Human-readable fingerprints** — Every system is captured as an `expression.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
 - **Continuous scanning** — Detect token overrides, hardcoded values, structural divergence, and pixel-level visual regressions across every consumer
-- **Generation loop** — Use expressions as grounding for AI-driven UI generation: `ghost context` emits a skill/prompt bundle, any generator produces, `ghost review` gates the output, `ghost verify` aggregates drift across a standard prompt suite
+- **Generation loop** — Use expressions as grounding for AI-driven UI generation: `ghost emit context-bundle` writes a skill/prompt bundle, any generator produces, `ghost review` gates the output, `ghost review suite` aggregates drift across a standard prompt suite
 - **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent system. Every stance is published with reasoning and full lineage
 - **Fleet observability** — Compare fingerprints across an ecosystem to see the full picture: clusters, outliers, and how consumers relate to each other and the source
 - **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer fingerprint generation and drift analysis
@@ -65,46 +65,35 @@ ghost compare shadcn.expression.md chakra.expression.md
 ghost compare shadcn.json chakra.json
 ```
 
-**Check compliance against a parent:**
+**Review drift — one verb, three scopes:**
 
 ```bash
-ghost comply . --against parent.expression.md
-ghost comply . --against parent.expression.md --format sarif
-```
-
-**Review UI changes against an expression:**
-
-```bash
-# Zero-config: reads ./expression.md, only flags changed lines
+# files scope (default): zero-config PR review against ./expression.md
 ghost review
-
-# Staged-only, emit GitHub PR comments
 ghost review --staged --format github
+
+# project scope: target-level compliance against a parent (CLI/JSON/SARIF)
+ghost review project . --against parent.expression.md
+ghost review project . --against parent.expression.md --format sarif
+
+# suite scope: drive the generate→review loop across a bundled prompt suite
+ghost review suite
 ```
 
-**Generation loop — ground, generate, gate, verify:**
+**Generation loop — ground, generate, gate:**
 
 ```bash
 # Emit a Claude Code / MCP skill bundle from an expression
-ghost context expression.md --format skill --out skills/my-design
+ghost emit context-bundle --out skills/my-design
 
 # Reference generator with built-in self-review retries
 ghost generate "pricing page with three tiers" --out pricing.html
-
-# Run the generate→review loop across the standard prompt suite
-ghost verify
-```
-
-**Scan for drift (config-based):**
-
-```bash
-ghost scan --config ghost.config.ts
 ```
 
 **Fleet observability and visualization:**
 
 ```bash
-ghost fleet system-a.expression.md system-b.expression.md system-c.expression.md --cluster
+ghost compare system-a.expression.md system-b.expression.md system-c.expression.md --cluster
 ghost viz system-a.expression.md system-b.expression.md system-c.expression.md
 ```
 
@@ -120,16 +109,12 @@ just dev
 | Command          | Description                                                                      |
 | ---------------- | -------------------------------------------------------------------------------- |
 | `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost scan`     | Scan for design drift against a registry (config-driven)                           |
-| `ghost diff`     | Compare local components against registry with drift analysis                      |
-| `ghost compare`  | Compare two expressions (`.expression.md` or legacy `.json`)                       |
-| `ghost comply`   | Check a target's compliance against a parent expression (CLI, JSON, SARIF)         |
+| `ghost compare`  | Compare 2+ expressions (pairwise, fleet, semantic, temporal, or components-vs-registry via flags) |
+| `ghost review`   | Unified drift check. Scopes: `files` (default, PR review), `project [target] --against parent.md` (target compliance), `suite [expression]` (prompt-suite verification) |
 | `ghost discover` | Find public design systems matching a query                                        |
-| `ghost fleet`    | Compare N expressions for ecosystem-wide analysis                                  |
-| `ghost review`   | Review files for visual language drift against an expression (CI gate)             |
-| `ghost context`  | Emit a grounding skill / prompt / bundle from an expression                        |
+| `ghost emit`     | Derive artifacts from expression.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens.css + prompt.md) |
 | `ghost generate` | Reference generator — LLM → HTML with self-review retries against an expression    |
-| `ghost verify`   | Run the generate→review loop across a prompt suite and aggregate per-dim drift     |
+| `ghost lint`     | Lint expression.md schema and body/frontmatter drift                               |
 | `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
 | `ghost adopt`    | Shift parent baseline to a new expression                                          |
 | `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
@@ -137,7 +122,7 @@ just dev
 
 ### Target Types
 
-`ghost profile` and `ghost comply` accept universal targets:
+`ghost profile` and `ghost review project` accept universal targets:
 
 ```bash
 ghost profile .                          # current directory
@@ -241,7 +226,7 @@ Ghost perceives drift at three levels:
 Ghost doubles as pipeline infrastructure for AI-driven UI generation — the expression grounds the generator, and `ghost review` gates the output:
 
 ```
-expression.md ──► [ghost context] ──► SKILL.md / tokens.css / prompt.md
+expression.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
                                           │
                                           ▼
                                    any generator
@@ -254,7 +239,7 @@ expression.md ──► [ghost context] ──► SKILL.md / tokens.css / prompt
                                                        ack / adopt)
 ```
 
-Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the schema-discipline mechanism for expressions. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+Run `ghost review suite` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the schema-discipline mechanism for expressions. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Intent Tracking
 
@@ -290,11 +275,11 @@ Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](
 npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
 ```
 
-Ghost itself can profile the registry to generate a fingerprint, then scan downstream consumers against it to detect drift:
+Ghost itself can profile the registry to generate a fingerprint, then check downstream consumers against it to detect drift:
 
 ```bash
-ghost profile --registry ./packages/ghost-ui/registry.json
-ghost scan --config ghost.config.ts
+ghost profile --registry ./packages/ghost-ui/registry.json --emit
+ghost review project ./consumer-app --against expression.md
 ```
 
 ### Catalogue development
