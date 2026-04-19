@@ -352,23 +352,23 @@ function FingerprintSection() {
   );
 }
 
-/* ──────────────────── 3. The Scan — Three lenses ─────────────────────── */
+/* ──────────────────── 3. The Review — Three scopes ───────────────────── */
 
-type ScanLens = "values" | "structure" | "visual";
+type ReviewScope = "files" | "project" | "suite";
 
-const SCAN_LENSES: {
-  id: ScanLens;
+const REVIEW_SCOPES: {
+  id: ReviewScope;
   name: string;
   what: string;
   catches: string;
   visual: React.ReactNode;
 }[] = [
   {
-    id: "values",
-    name: "Values",
-    what: "Compares design tokens against the parent registry.",
+    id: "files",
+    name: "Files",
+    what: "Scans code changes against the expression. Zero-config: reads ./expression.md; flags changed lines by default.",
     catches:
-      "Hardcoded colors, overridden tokens, missing tokens — the invisible constants that quietly diverge.",
+      "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the expression's decisions.",
     visual: (
       <div className="space-y-2 font-mono text-xs">
         <div className="flex items-center gap-2">
@@ -382,56 +382,62 @@ const SCAN_LENSES: {
         <div className="flex items-center gap-2">
           <span className="w-4 h-4 rounded bg-red-200 border border-border-card" />
           <span className="text-red-400">
-            #ef4444 ← hardcoded, should be a token
+            #ef4444 ← hardcoded, not in palette
           </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-4 h-4 rounded border border-dashed border-muted-foreground" />
           <span className="text-muted-foreground">
-            --accent: <span className="italic">missing</span>
+            padding: 13px <span className="italic">← off scale</span>
           </span>
         </div>
       </div>
     ),
   },
   {
-    id: "structure",
-    name: "Structure",
-    what: "Diffs component files between your code and the parent.",
+    id: "project",
+    name: "Project",
+    what: "Profiles a whole target and compares its fingerprint against a parent expression. CI gate with CLI, JSON, or SARIF output.",
     catches:
-      "Added props, removed variants, altered APIs — changes to what components can do.",
+      "Cumulative drift across an entire system — per-dimension deltas and a threshold gate you can fail builds on.",
     visual: (
       <div className="font-mono text-xs space-y-1">
-        <div className="text-muted-foreground">Button.tsx</div>
-        <div className="pl-3 border-l-2 border-green-400/50 text-green-400/80">
-          + variant: "ghost" | "outline" |{" "}
-          <span className="font-bold">"brand"</span>
+        <div className="text-muted-foreground">
+          Overall drift: <span className="text-foreground">0.17</span> / 0.3
+          threshold
         </div>
-        <div className="pl-3 border-l-2 border-muted-foreground/30 text-muted-foreground/50">
-          &nbsp; size: "sm" | "md" | "lg"
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground mt-2">
+          palette{" "}
+          <span className="text-green-400/80">= 0.05 &nbsp; aligned</span>
         </div>
-        <div className="pl-3 border-l-2 border-red-400/50 text-red-400/80">
-          - loading?: boolean
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground">
+          spacing{" "}
+          <span className="text-yellow-400/80">~ 0.22 &nbsp; drifting</span>
+        </div>
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground">
+          surfaces{" "}
+          <span className="text-red-400/80">≠ 0.41 &nbsp; diverged</span>
         </div>
       </div>
     ),
   },
   {
-    id: "visual",
-    name: "Visual",
-    what: "Renders components and performs pixel-level comparison.",
+    id: "suite",
+    name: "Suite",
+    what: "Drives the generate→review loop across a bundled prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
     catches:
-      "Subtle rendering differences from CSS specificity, font rendering, or layout shifts — things code diffs miss.",
+      "Gaps in the expression — dimensions the generator drifts on because the Decisions or Values under-specify them.",
     visual: (
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-20 rounded-lg bg-muted/50 border border-border-card flex items-center justify-center text-xs text-muted-foreground">
-          Expected
+      <div className="font-mono text-xs space-y-1">
+        <div className="text-muted-foreground">18 prompts · 14 passed</div>
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground mt-2">
+          palette <span className="text-green-400/80">tight (0.4)</span>
         </div>
-        <div className="text-muted-foreground text-lg">→</div>
-        <div className="flex-1 h-20 rounded-lg bg-muted/50 border border-border-card flex items-center justify-center relative overflow-hidden">
-          <span className="text-xs text-muted-foreground">Actual</span>
-          <div className="absolute inset-0 bg-red-400/10 mix-blend-multiply" />
-          <div className="absolute top-3 right-4 w-8 h-3 rounded bg-red-400/30" />
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground">
+          spacing <span className="text-yellow-400/80">leaky (2.1)</span>
+        </div>
+        <div className="pl-3 border-l-2 border-border-card text-muted-foreground">
+          motion <span className="text-red-400/80">uncaptured (3.7)</span>
         </div>
       </div>
     ),
@@ -439,14 +445,14 @@ const SCAN_LENSES: {
 ];
 
 function ScanSection() {
-  const [active, setActive] = useState<ScanLens>("values");
-  const lens = SCAN_LENSES.find((l) => l.id === active)!;
+  const [active, setActive] = useState<ReviewScope>("files");
+  const lens = REVIEW_SCOPES.find((l) => l.id === active)!;
 
   return (
     <div className="reveal">
       {/* Tab bar */}
       <div className="flex gap-1 rounded-full bg-muted/50 border border-border-card p-1 w-fit mb-8">
-        {SCAN_LENSES.map((l) => (
+        {REVIEW_SCOPES.map((l) => (
           <button
             key={l.id}
             type="button"
@@ -468,7 +474,7 @@ function ScanSection() {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h4 className="font-display font-semibold text-foreground mb-2">
-              {lens.name} scan
+              ghost review {lens.id}
             </h4>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
               {lens.what}
@@ -750,27 +756,30 @@ export default function ConceptsPage() {
         </p>
       </Chapter>
 
-      {/* ── Chapter 3: The Scan ───────────────────────────────────── */}
+      {/* ── Chapter 3: The Review ────────────────────────────────── */}
       <Chapter className="border-t border-border/40">
         <ChapterLabel>Chapter 3</ChapterLabel>
-        <ChapterTitle>The Scan</ChapterTitle>
+        <ChapterTitle>The Review</ChapterTitle>
         <ChapterLead>
-          Once Ghost knows what your system looks like, it can check for drift.
-          Three complementary scans — like three different lenses on the same
-          microscope — each catch different kinds of divergence.
+          One verb — <code>ghost review</code> — asks three scopes of question
+          about drift. From the tight (this PR) to the broad (the whole
+          expression's schema discipline). Same answer shape every time.
         </ChapterLead>
         <ScanSection />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          Run these through{" "}
+          Each scope exits with a structured report you can pipe into CI:{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost review
+            --format json
           </code>{" "}
-          (files in a PR) or{" "}
+          for machines,{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost review project
+            --format sarif
           </code>{" "}
-          (whole target against a parent). Each produces a structured report you
-          can pipe into CI.
+          (project scope) for GitHub code scanning, or{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+            --format github
+          </code>{" "}
+          (files scope) for inline PR comments.
         </p>
       </Chapter>
 
@@ -885,9 +894,9 @@ export default function ConceptsPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              step: "context",
+              step: "emit context-bundle",
               name: "Ground",
-              desc: "Emit a skill, prompt, or full bundle from expression.md — whatever the generator consumes.",
+              desc: "Write SKILL.md + tokens.css + prompt.md from expression.md — whatever the generator consumes.",
             },
             {
               step: "generate",
@@ -900,7 +909,7 @@ export default function ConceptsPage() {
               desc: "Hardcoded colors, off-scale spacing, off-brand type — flagged line-by-line on the diff.",
             },
             {
-              step: "verify",
+              step: "review suite",
               name: "Audit",
               desc: "Run the loop over a prompt suite. Per-dimension drift says where the expression leaks.",
             },
@@ -926,7 +935,7 @@ export default function ConceptsPage() {
         </div>
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            verify
+            review suite
           </code>{" "}
           is the schema-discipline mechanism. Each dimension gets classified as{" "}
           <em>tight</em> (expression reproduces faithfully), <em>leaky</em>{" "}
@@ -951,16 +960,16 @@ export default function ConceptsPage() {
               desc: "What the system looks like, in three layers",
             },
             {
-              file: "ghost.config.ts",
-              desc: "How to scan (optional)",
-            },
-            {
               file: ".ghost-sync.json",
               desc: "How you intend to diverge",
             },
             {
               file: ".ghost/history.jsonl",
               desc: "How the system evolved",
+            },
+            {
+              file: "ghost.config.ts",
+              desc: "Parent reference for component diff (optional)",
             },
           ].map((a) => (
             <div

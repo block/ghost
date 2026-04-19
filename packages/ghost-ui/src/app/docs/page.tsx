@@ -26,14 +26,14 @@ const sections: {
     name: "Getting Started",
     href: "/tools/drift/getting-started",
     description:
-      "Install Ghost, create your first config, and run your first drift scan in under five minutes.",
+      "Install Ghost, profile your first system, and gate a PR against the expression — in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/tools/drift/cli",
     description:
-      "Every command — profile, compare, comply, review, context, generate, verify, fleet, viz, and more.",
+      "Every command — profile, compare, review (files · project · suite), emit, generate, lint, ack, adopt, diverge, viz.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
