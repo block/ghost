@@ -7,14 +7,14 @@ import {
   serializeExpression,
 } from "../expression/index.js";
 import { EXPRESSION_SCHEMA_VERSION } from "../expression/schema.js";
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 /**
  * Write a fingerprint as a publishable artifact (expression.md) to the
  * project root. Other projects can reference this file as their parent.
  */
 export async function emitFingerprint(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   cwd: string = process.cwd(),
 ): Promise<string> {
   const target = resolve(cwd, EXPRESSION_FILENAME);

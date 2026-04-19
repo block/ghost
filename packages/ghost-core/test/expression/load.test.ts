@@ -7,9 +7,9 @@ import {
   parseExpression,
   serializeExpression,
 } from "../../src/expression/index.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
-const SAMPLE_FINGERPRINT: DesignFingerprint = {
+const SAMPLE_FINGERPRINT: Expression = {
   id: "claude",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -254,19 +254,18 @@ describe("loadExpression", () => {
     expect(fp.palette.dominant[0].value).toBe("#c96442");
   });
 
-  it("parses .json files via legacy passthrough", async () => {
+  it("rejects non-.md paths with a clear error", async () => {
     const path = join(tmpdir(), `ghost-test-${Date.now()}.json`);
     await writeFile(path, JSON.stringify(SAMPLE_FINGERPRINT), "utf-8");
-    const { fingerprint: fp } = await loadExpression(path);
-    expect(fp.id).toBe(SAMPLE_FINGERPRINT.id);
-    expect(fp.palette.neutrals.count).toBe(3);
-    expect(fp.embedding).toHaveLength(8);
+    await expect(loadExpression(path)).rejects.toThrow(
+      /must be Markdown \(\.md\)/,
+    );
   });
 });
 
 describe("serializeExpression round-trip", () => {
   it("preserves every structured field when serialized and re-parsed", () => {
-    const fpWithProse: DesignFingerprint = {
+    const fpWithProse: Expression = {
       ...SAMPLE_FINGERPRINT,
       observation: {
         summary: "Warm, editorial, unhurried.",
@@ -322,7 +321,7 @@ describe("serializeExpression round-trip", () => {
 
   it("emits a frontmatter-only file when observation, decisions, and embedding are absent", () => {
     const { embedding: _drop, ...noEmbedding } = SAMPLE_FINGERPRINT;
-    const md = serializeExpression(noEmbedding as DesignFingerprint);
+    const md = serializeExpression(noEmbedding as Expression);
     expect(md).toMatch(/^---\n/);
     expect(md).toMatch(/\n---\n$/);
     expect(md).not.toMatch(/^# Character/m);
@@ -349,7 +348,7 @@ describe("serializeExpression round-trip", () => {
   });
 
   it("emits prose in body only — no duplication in frontmatter", () => {
-    const fpWithProse: DesignFingerprint = {
+    const fpWithProse: Expression = {
       ...SAMPLE_FINGERPRINT,
       observation: {
         summary: "Warm and editorial.",
@@ -386,7 +385,7 @@ describe("serializeExpression round-trip", () => {
   });
 
   it("round-trips values (Do/Don't) through serialize → parse", () => {
-    const fpWithValues: DesignFingerprint = {
+    const fpWithValues: Expression = {
       ...SAMPLE_FINGERPRINT,
       values: {
         do: [
@@ -406,7 +405,7 @@ describe("serializeExpression round-trip", () => {
   });
 
   it("round-trips roles (slot → token bindings) through serialize → parse", () => {
-    const fpWithRoles: DesignFingerprint = {
+    const fpWithRoles: Expression = {
       ...SAMPLE_FINGERPRINT,
       roles: [
         {
@@ -459,7 +458,7 @@ describe("serializeExpression round-trip", () => {
           evidence: [],
         },
       ],
-    } as DesignFingerprint;
+    } as Expression;
     const md = serializeExpression(fpBad, { extractEmbedding: false });
     expect(() => parseExpression(md)).toThrow(
       /Invalid expression frontmatter[\s\S]*roles/,

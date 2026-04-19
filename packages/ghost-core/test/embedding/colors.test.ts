@@ -5,7 +5,7 @@ import {
   contrastScore,
   parseColorToOklch,
   saturationScore,
-} from "../../src/fingerprint/colors.js";
+} from "../../src/embedding/colors.js";
 import type { SemanticColor } from "../../src/types.js";
 
 describe("parseColorToOklch", () => {

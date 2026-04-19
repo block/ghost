@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createProvider } from "../llm/index.js";
 import { review } from "../review/pipeline.js";
-import type { DesignFingerprint, LLMConfig, ReviewReport } from "../types.js";
+import type { Expression, LLMConfig, ReviewReport } from "../types.js";
 import { extractHtml } from "./parser.js";
 import { buildGenerationPrompt, type GenerateFormat } from "./prompts.js";
 
@@ -11,7 +11,7 @@ import { buildGenerationPrompt, type GenerateFormat } from "./prompts.js";
 const MAX_RETRIES_HARD_CAP = 3;
 
 export interface GenerateOptions {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   /** What to build, e.g. "a pricing page with three tiers". */
   userPrompt: string;
   /** Output format. Only "html" supported in Phase B. */
@@ -111,7 +111,7 @@ export async function generate(
 
 async function reviewArtifact(
   artifact: string,
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   format: GenerateFormat,
 ): Promise<ReviewReport> {
   const dir = await mkdtemp(join(tmpdir(), "ghost-generate-"));

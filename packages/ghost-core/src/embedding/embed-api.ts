@@ -1,4 +1,4 @@
-import type { DesignFingerprint, EmbeddingConfig } from "../types.js";
+import type { EmbeddingConfig, Expression } from "../types.js";
 import { describeFingerprint } from "./describe.js";
 
 /**
@@ -14,7 +14,7 @@ import { describeFingerprint } from "./describe.js";
  *   - voyage: Uses voyage-3 (default). Set VOYAGE_API_KEY env var.
  */
 export async function computeSemanticEmbedding(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   config: EmbeddingConfig,
 ): Promise<number[]> {
   const text = describeFingerprint(fingerprint);

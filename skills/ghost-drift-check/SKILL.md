@@ -18,10 +18,10 @@ Detect design drift between a project and its parent design system.
 ## Commands
 
 ```bash
-# First, profile the parent to get a fingerprint file
+# First, profile the parent to get a expression file
 ghost profile github:shadcn-ui/ui --output parent.json
 
-# Check compliance against the parent fingerprint
+# Check compliance against the parent expression
 ghost review project . --against parent.json
 
 # Check compliance with custom thresholds

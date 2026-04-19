@@ -1,8 +1,8 @@
 import { computeDriftVectors } from "../evolution/vector.js";
 import type {
-  DesignFingerprint,
   DimensionDelta,
-  FingerprintComparison,
+  Expression,
+  ExpressionComparison,
 } from "../types.js";
 
 export interface CompareOptions {
@@ -26,10 +26,10 @@ const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
 };
 
 export function compareFingerprints(
-  source: DesignFingerprint,
-  target: DesignFingerprint,
+  source: Expression,
+  target: Expression,
   options?: CompareOptions,
-): FingerprintComparison {
+): ExpressionComparison {
   const dimensions: Record<string, DimensionDelta> = {};
 
   // Compare decisions when both fingerprints have them.
@@ -63,7 +63,7 @@ export function compareFingerprints(
 
   const summary = buildSummary(dimensions, distance);
 
-  const result: FingerprintComparison = {
+  const result: ExpressionComparison = {
     source,
     target,
     distance,
@@ -78,10 +78,7 @@ export function compareFingerprints(
   return result;
 }
 
-function comparePalette(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
+function comparePalette(a: Expression, b: Expression): DimensionDelta {
   const distances: number[] = [];
 
   // Compare dominant colors by role, then by position for unmatched
@@ -147,10 +144,7 @@ function comparePalette(
   return { dimension: "palette", distance, description };
 }
 
-function compareSpacing(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
+function compareSpacing(a: Expression, b: Expression): DimensionDelta {
   const distances: number[] = [];
 
   // Scale similarity (Jaccard-like)
@@ -181,10 +175,7 @@ function compareSpacing(
   };
 }
 
-function compareTypography(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
+function compareTypography(a: Expression, b: Expression): DimensionDelta {
   const distances: number[] = [];
 
   // Family match — fuzzy comparison
@@ -220,10 +211,7 @@ function compareTypography(
   };
 }
 
-function compareSurfaces(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
-): DimensionDelta {
+function compareSurfaces(a: Expression, b: Expression): DimensionDelta {
   const distances: number[] = [];
 
   // Border radii overlap
@@ -274,8 +262,8 @@ const DECISION_MATCH_THRESHOLD = 0.75;
  * from the weighted distance (see `WEIGHTS` vs `WEIGHTS_WITH_DECISIONS`).
  */
 function compareDecisions(
-  a: DesignFingerprint,
-  b: DesignFingerprint,
+  a: Expression,
+  b: Expression,
   bothEmbedded: boolean,
 ): DimensionDelta {
   const aDecs = a.decisions ?? [];
@@ -539,8 +527,8 @@ function avg(values: number[]): number {
 }
 
 function describePaletteChange(
-  _a: DesignFingerprint,
-  _b: DesignFingerprint,
+  _a: Expression,
+  _b: Expression,
   distance: number,
 ): string {
   if (distance < 0.1) return "Color palettes are nearly identical";

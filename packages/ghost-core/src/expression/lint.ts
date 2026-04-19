@@ -1,5 +1,5 @@
 import { parse as parseYaml } from "yaml";
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 import type { BodyData } from "./body.js";
 import { parseExpression, splitRaw } from "./parser.js";
 import { EXPRESSION_SCHEMA_VERSION, FrontmatterSchema } from "./schema.js";
@@ -152,7 +152,7 @@ function checkSchemaValidity(
  * in body. Warn when the two sides don't line up on a given dimension.
  */
 function checkDecisionPartition(
-  fp: DesignFingerprint,
+  fp: Expression,
   body: BodyData,
   issues: LintIssue[],
 ): void {
@@ -196,7 +196,7 @@ function checkStrayEvidenceInBody(bodyText: string, issues: LintIssue[]): void {
 
 const HEX_RE = /#[0-9a-f]{3,8}\b/gi;
 
-function checkEvidenceHexes(fp: DesignFingerprint, issues: LintIssue[]): void {
+function checkEvidenceHexes(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
   if (paletteHexes.size === 0) return;
 
@@ -219,7 +219,7 @@ function checkEvidenceHexes(fp: DesignFingerprint, issues: LintIssue[]): void {
   });
 }
 
-function checkUnusedPalette(fp: DesignFingerprint, issues: LintIssue[]): void {
+function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
   if (paletteHexes.size === 0) return;
 
@@ -244,7 +244,7 @@ function checkUnusedPalette(fp: DesignFingerprint, issues: LintIssue[]): void {
   }
 }
 
-function collectPaletteHexes(fp: DesignFingerprint): Set<string> {
+function collectPaletteHexes(fp: Expression): Set<string> {
   const out = new Set<string>();
   for (const c of fp.palette?.dominant ?? []) out.add(c.value.toLowerCase());
   for (const c of fp.palette?.semantic ?? []) out.add(c.value.toLowerCase());

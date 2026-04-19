@@ -13,7 +13,7 @@ export interface BodyData {
   signature?: string[];
   /** From `# Decisions` `### slug` blocks — dimension + prose rationale (no evidence) */
   decisions?: DesignDecision[];
-  /** From `# Values` `## Do` / `## Don't` — authoritative for DesignFingerprint.values */
+  /** From `# Values` `## Do` / `## Don't` — authoritative for Expression.values */
   values?: { do: string[]; dont: string[] };
 }
 

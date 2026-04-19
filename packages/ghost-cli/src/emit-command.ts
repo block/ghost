@@ -11,8 +11,26 @@ const DEFAULT_EXPRESSION = "expression.md";
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 const DEFAULT_CONTEXT_OUT = "ghost-context";
 
-const SUPPORTED_KINDS = ["review-command", "context-bundle"] as const;
-type Kind = (typeof SUPPORTED_KINDS)[number];
+export const SUPPORTED_KINDS = ["review-command", "context-bundle"] as const;
+export type EmitKind = (typeof SUPPORTED_KINDS)[number];
+
+export type ParseEmitKindResult =
+  | { ok: true; kind: EmitKind }
+  | { ok: false; error: string };
+
+/**
+ * Validate the positional emit kind against the supported set.
+ * Exported for unit testing.
+ */
+export function parseEmitKind(raw: string): ParseEmitKindResult {
+  if ((SUPPORTED_KINDS as readonly string[]).includes(raw)) {
+    return { ok: true, kind: raw as EmitKind };
+  }
+  return {
+    ok: false,
+    error: `unknown emit kind '${raw}'. Supported: ${SUPPORTED_KINDS.join(", ")}`,
+  };
+}
 
 export function registerEmitCommand(cli: CAC): void {
   cli
@@ -45,10 +63,9 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .action(async (kind: string, opts) => {
       try {
-        if (!SUPPORTED_KINDS.includes(kind as Kind)) {
-          console.error(
-            `Error: unknown emit kind '${kind}'. Supported: ${SUPPORTED_KINDS.join(", ")}`,
-          );
+        const parsed = parseEmitKind(kind);
+        if (!parsed.ok) {
+          console.error(`Error: ${parsed.error}`);
           process.exit(2);
         }
 
@@ -57,7 +74,7 @@ export function registerEmitCommand(cli: CAC): void {
           opts.expression ?? DEFAULT_EXPRESSION,
         );
 
-        if (kind === "review-command") {
+        if (parsed.kind === "review-command") {
           const parsed = await loadExpression(expressionPath, {
             noEmbeddingBackfill: true,
           });

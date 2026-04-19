@@ -18,7 +18,7 @@ Compare two design systems and understand their differences.
 ## Commands
 
 ```bash
-# Profile two systems first, then compare the fingerprint files
+# Profile two systems first, then compare the expression files
 ghost profile github:shadcn-ui/ui --output shadcn.json
 ghost profile npm:@chakra-ui/react --output chakra.json
 ghost compare shadcn.json chakra.json
@@ -34,7 +34,7 @@ ghost compare shadcn.json chakra.json --format json
 # Include temporal analysis (velocity, trajectory)
 ghost compare shadcn.json chakra.json --temporal
 
-# Fleet comparison (3+ fingerprint files at once)
+# Fleet comparison (3+ expression files at once)
 ghost compare shadcn.json chakra.json mantine.json
 
 # Fleet with clustering analysis

@@ -1,5 +1,5 @@
 import { generate } from "../generate/index.js";
-import type { DesignFingerprint, LLMConfig } from "../types.js";
+import type { Expression, LLMConfig } from "../types.js";
 import {
   aggregate,
   type PromptResult,
@@ -12,7 +12,7 @@ import {
 } from "./suite.js";
 
 export interface VerifyOptions {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   /** Prompt suite to run. Defaults to bundled v0.1. */
   suite?: PromptSuite;
   /** Subsample n prompts (from the start). If absent, runs all. */
@@ -68,7 +68,7 @@ export async function verify(options: VerifyOptions): Promise<VerifyAggregate> {
 
 async function runOne(
   p: SuitePrompt,
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   retries: number,
   llmConfig?: LLMConfig,
 ): Promise<PromptResult> {

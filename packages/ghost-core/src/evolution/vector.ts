@@ -1,4 +1,4 @@
-import type { DesignFingerprint, DriftVector } from "../types.js";
+import type { DriftVector, Expression } from "../types.js";
 
 /**
  * Embedding dimension ranges per design dimension.
@@ -17,8 +17,8 @@ export const DIMENSION_RANGES: Record<string, [number, number]> = {
  * for a specific design dimension.
  */
 export function computeDriftVectors(
-  source: DesignFingerprint,
-  target: DesignFingerprint,
+  source: Expression,
+  target: Expression,
 ): DriftVector[] {
   const vectors: DriftVector[] = [];
 

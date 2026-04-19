@@ -71,8 +71,7 @@ export default function CLIReferencePage() {
             Ghost's canonical artifact is <code>expression.md</code> — a
             Markdown file with YAML frontmatter (machine layer) and a
             three-layer prose body. Most commands accept a path to an{" "}
-            <code>expression.md</code> or legacy{" "}
-            <code>.ghost-fingerprint.json</code>; readers dispatch on extension.
+            <code>expression.md</code>.
           </p>
           <p>
             Commands are zero-config and default to <code>./expression.md</code>{" "}
@@ -85,7 +84,7 @@ export default function CLIReferencePage() {
         <DocSection title="Profiling">
           <CommandSection
             name="profile"
-            description="Generate a design fingerprint from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a three-layer prose expression (Character, Signature, Decisions, Values)."
+            description="Generate a design expression from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a three-layer prose expression (Character, Signature, Decisions, Values)."
             usage="ghost profile [...targets] [options]"
             flags={[
               {
@@ -99,8 +98,7 @@ export default function CLIReferencePage() {
               },
               {
                 flag: "-o, --output <file>",
-                description:
-                  "Write fingerprint to a file (.md → expression, else JSON)",
+                description: "Write expression to a file (must end in .md)",
               },
               {
                 flag: "--emit",
@@ -131,7 +129,7 @@ ghost profile . --emit
 # Profile a GitHub repo with AI enrichment
 ghost profile github:shadcn-ui/ui --ai --verbose
 
-# Profile multiple sources into a single fingerprint
+# Profile multiple sources into a single expression
 ghost profile github:anthropics/claude-code https://claude.ai --output claude.expression.md
 
 # Profile a remote shadcn registry directly
@@ -143,7 +141,7 @@ ghost profile -r https://ui.shadcn.com/registry.json`}
           <CommandSection
             name="compare"
             description="Unified comparison verb. Mode is flag-dispatched: pairwise (N=2), fleet (N≥3 or --cluster), semantic diff (--semantic), temporal (--temporal), or local-components-vs-registry (--components)."
-            usage="ghost compare [...fingerprints] [options]"
+            usage="ghost compare [...expressions] [options]"
             flags={[
               {
                 flag: "--temporal",
@@ -167,7 +165,7 @@ ghost profile -r https://ui.shadcn.com/registry.json`}
               {
                 flag: "--components",
                 description:
-                  "Compare local components against registry (reads ghost.config.ts; ignores fingerprint args)",
+                  "Compare local components against registry (reads ghost.config.ts; ignores expression args)",
               },
               {
                 flag: "--component <name>",
@@ -269,7 +267,7 @@ ghost discover "similar to shadcn"`}
               {
                 flag: "--name <name>",
                 description:
-                  "Override the skill name — default: fingerprint id (context-bundle)",
+                  "Override the skill name — default: expression id (context-bundle)",
               },
             ]}
             example={`# Emit a per-project design-review slash command
@@ -334,9 +332,9 @@ ghost generate "dashboard" --json`}
             flags={[
               // files
               {
-                flag: "-f, --fingerprint <path>",
+                flag: "-e, --expression <path>",
                 description:
-                  "[files] Path to expression or fingerprint (default: ./expression.md)",
+                  "[files] Path to expression (default: ./expression.md)",
               },
               {
                 flag: "--staged",
@@ -505,7 +503,7 @@ ghost adopt new-parent.expression.md`}
         <DocSection title="Visualization">
           <CommandSection
             name="viz"
-            description="Launch an interactive 3D visualization of fingerprint embeddings using Three.js. Projects the 49-dimensional vectors into 3D space via PCA."
+            description="Launch an interactive 3D visualization of expression embeddings using Three.js. Projects the 49-dimensional vectors into 3D space via PCA."
             usage="ghost viz <fp1> <fp2> [fp3...] [options]"
             flags={[
               {

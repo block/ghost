@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { extractHtml } from "../../src/generate/parser.js";
 import { buildGenerationPrompt } from "../../src/generate/prompts.js";
-import type { DesignFingerprint, ReviewReport } from "../../src/types.js";
+import type { Expression, ReviewReport } from "../../src/types.js";
 
-const FP: DesignFingerprint = {
+const FP: Expression = {
   id: "fp",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",

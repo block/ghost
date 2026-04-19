@@ -1,15 +1,15 @@
 import { parse as parseYaml } from "yaml";
 import type {
   DesignDecision,
-  DesignFingerprint,
   DesignObservation,
+  Expression,
 } from "../types.js";
 import { type BodyData, parseBody } from "./body.js";
 import { type ExpressionMeta, splitFrontmatter } from "./frontmatter.js";
 import { EXPRESSION_SCHEMA_VERSION, validateFrontmatter } from "./schema.js";
 
 export interface ParsedExpression {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   meta: ExpressionMeta;
   /**
    * Structured view of the body as it was read from disk. Kept for lint
@@ -78,7 +78,7 @@ function isDelimiter(line: string): boolean {
 }
 
 /**
- * Parse a raw expression.md string into a DesignFingerprint plus metadata and
+ * Parse a raw expression.md string into a Expression plus metadata and
  * structured body.
  *
  * Contract (schema 3): frontmatter and body own disjoint fields.
@@ -122,15 +122,12 @@ export function parseExpression(
  * (keyed by dimension), and `# Values`. Frontmatter-only dimensions keep
  * their evidence but get no body prose (decision text left empty).
  */
-export function applyBody(
-  fp: DesignFingerprint,
-  body: BodyData,
-): DesignFingerprint {
+export function applyBody(fp: Expression, body: BodyData): Expression {
   const observation = mergeObservation(fp.observation, body);
   const decisions = mergeDecisions(fp.decisions, body.decisions ?? []);
   const values = body.values ?? fp.values;
 
-  const out: DesignFingerprint = { ...fp };
+  const out: Expression = { ...fp };
   if (observation) out.observation = observation;
   else delete out.observation;
   if (decisions?.length) out.decisions = decisions;

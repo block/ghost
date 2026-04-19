@@ -16,8 +16,8 @@ export {
   ComplianceAgent,
   Director,
   DiscoveryAgent,
+  ExpressionAgent,
   ExtractionAgent,
-  FingerprintAgent,
 } from "./agents/index.js";
 export type {
   AgentTool,
@@ -42,6 +42,17 @@ export {
 } from "./context/index.js";
 export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
 export { diff } from "./diff.js";
+export type { CompareOptions } from "./embedding/compare.js";
+export type { RoleCandidate } from "./embedding/index.js";
+export {
+  compareFingerprints,
+  computeEmbedding,
+  computeSemanticEmbedding,
+  describeFingerprint,
+  embeddingDistance,
+  fingerprintFromRegistry,
+  inferSemanticRole,
+} from "./embedding/index.js";
 export type {
   CheckBoundsOptions,
   FleetClusterOptions,
@@ -86,7 +97,6 @@ export {
   FrontmatterSchema,
   findFragmentLinks,
   formatSemanticDiff,
-  LEGACY_FINGERPRINT_FILENAME,
   lintExpression,
   loadEmbeddingFragment,
   loadExpression,
@@ -107,17 +117,6 @@ export {
   walkAndCategorize,
   walkDirectory,
 } from "./extractors/index.js";
-export type { CompareOptions } from "./fingerprint/compare.js";
-export type { RoleCandidate } from "./fingerprint/index.js";
-export {
-  compareFingerprints,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  describeFingerprint,
-  embeddingDistance,
-  fingerprintFromRegistry,
-  inferSemanticRole,
-} from "./fingerprint/index.js";
 export type {
   BuildGenerationPromptOptions,
   GenerateAttempt,
@@ -131,7 +130,7 @@ export {
   generate,
 } from "./generate/index.js";
 export type {
-  FingerprintValidation,
+  ExpressionValidation,
   ValidationIssue,
 } from "./llm/index.js";
 export { createProvider, validateFingerprint } from "./llm/index.js";
@@ -159,8 +158,8 @@ export {
 export {
   formatComparison,
   formatComparisonJSON,
+  formatExpressionJSON,
   formatFingerprint,
-  formatFingerprintJSON,
 } from "./reporters/fingerprint.js";
 export {
   formatFleetComparison,
@@ -208,7 +207,6 @@ export type {
   CSSToken,
   CSSVarsMap,
   DesignDecision,
-  DesignFingerprint,
   DesignObservation,
   DesignValues,
   DetectedFormat,
@@ -220,13 +218,14 @@ export type {
   DriftVelocity,
   EmbeddingConfig,
   EnrichedComparison,
-  EnrichedFingerprint,
+  EnrichedExpression,
+  Expression,
+  ExpressionComparison,
+  ExpressionHistoryEntry,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
-  FingerprintComparison,
-  FingerprintHistoryEntry,
   FleetCluster,
   FleetComparison,
   FleetMember,

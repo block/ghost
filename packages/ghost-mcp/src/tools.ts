@@ -144,7 +144,7 @@ export function registerTools(server: McpServer): void {
             text: JSON.stringify({
               command: cmd,
               description:
-                "Run this command to review files for visual language drift against the design fingerprint. Requires .ghost-fingerprint.json in the project (generate with: ghost profile . --emit).",
+                "Run this command to review files for visual language drift against the design expression. Requires expression.md in the project (generate with: ghost profile . --emit).",
             }),
           },
         ],

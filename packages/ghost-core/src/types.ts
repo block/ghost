@@ -263,7 +263,7 @@ export interface DesignRole {
   evidence: string[];
 }
 
-export interface DesignFingerprint {
+export interface Expression {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
@@ -363,7 +363,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface EnrichedFingerprint extends DesignFingerprint {
+export interface EnrichedExpression extends Expression {
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -374,7 +374,7 @@ export type DivergenceClass =
   | "evolution-lag"
   | "incompatible";
 
-export interface EnrichedComparison extends FingerprintComparison {
+export interface EnrichedComparison extends ExpressionComparison {
   classification: DivergenceClass;
   explanations: Record<string, string>;
 }
@@ -483,8 +483,8 @@ export interface AgentResult<T> {
 
 // --- History types ---
 
-export interface FingerprintHistoryEntry {
-  fingerprint: DesignFingerprint;
+export interface ExpressionHistoryEntry {
+  fingerprint: Expression;
   parentRef?: Target;
   comparisonToParent?: {
     distance: number;
@@ -512,8 +512,8 @@ export interface DimensionAck {
 export interface SyncManifest {
   parent: Target;
   ackedAt: string;
-  parentFingerprintId: string;
-  childFingerprintId: string;
+  parentExpressionId: string;
+  childExpressionId: string;
   dimensions: Record<string, DimensionAck>;
   overallDistance: number;
 }
@@ -526,9 +526,9 @@ export interface DimensionDelta {
   description: string;
 }
 
-export interface FingerprintComparison {
-  source: DesignFingerprint;
-  target: DesignFingerprint;
+export interface ExpressionComparison {
+  source: Expression;
+  target: Expression;
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
@@ -550,7 +550,7 @@ export interface DriftVelocity {
   windowDays: number;
 }
 
-export interface TemporalComparison extends FingerprintComparison {
+export interface TemporalComparison extends ExpressionComparison {
   velocity: DriftVelocity[];
   daysSinceAck: number | null;
   exceedsAckedBounds: boolean;
@@ -562,7 +562,7 @@ export interface TemporalComparison extends FingerprintComparison {
 
 export interface FleetMember {
   id: string;
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
   parentRef?: Target;
   distanceToParent?: number;
 }

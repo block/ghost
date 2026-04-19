@@ -40,8 +40,8 @@ export default function GettingStartedPage() {
           <p>
             Ghost is zero-config for profiling. Point it at any target — a
             directory, GitHub repo, npm package, URL, or shadcn registry — and
-            it produces an <code>expression.md</code>: the canonical fingerprint
-            artifact.
+            it produces an <code>expression.md</code>: the canonical design
+            expression artifact.
           </p>
           <pre>
             <code>
@@ -207,7 +207,7 @@ export default defineConfig({
             <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
-            for the three-layer fingerprint model and the generation-loop
+            for the three-layer expression model and the generation-loop
             architecture. Or jump to the{" "}
             <Link to="/tools/drift/cli" className="font-semibold">
               CLI Reference

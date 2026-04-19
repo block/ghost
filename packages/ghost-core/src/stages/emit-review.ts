@@ -1,7 +1,7 @@
-import type { DesignFingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 export interface EmitReviewInput {
-  fingerprint: DesignFingerprint;
+  fingerprint: Expression;
 }
 
 /**
@@ -88,7 +88,7 @@ const TRUE_SEMANTIC_ROLES = new Set([
   "error",
 ]);
 
-function paletteSection(fp: DesignFingerprint): string {
+function paletteSection(fp: Expression): string {
   const allowed = allowedPalette(fp);
   const allowedList = allowed.map((h) => `\`${h}\``).join(", ");
   const dominant = fp.palette.dominant
@@ -141,7 +141,7 @@ function paletteSection(fp: DesignFingerprint): string {
   return lines.join("\n");
 }
 
-function allowedPalette(fp: DesignFingerprint): string[] {
+function allowedPalette(fp: Expression): string[] {
   const all = [
     ...fp.palette.dominant.map((c) => c.value),
     ...fp.palette.neutrals.steps,
@@ -152,7 +152,7 @@ function allowedPalette(fp: DesignFingerprint): string[] {
 
 // --- Radius -------------------------------------------------------------
 
-function radiusSection(fp: DesignFingerprint): string {
+function radiusSection(fp: Expression): string {
   const radii = fp.surfaces.borderRadii;
   if (!radii?.length) return "";
   const labeled = radii.map((r) => (r >= 999 ? "999px (pill)" : `${r}px`));
@@ -182,7 +182,7 @@ function radiusSection(fp: DesignFingerprint): string {
 
 // --- Spacing ------------------------------------------------------------
 
-function spacingSection(fp: DesignFingerprint): string {
+function spacingSection(fp: Expression): string {
   const scale = fp.spacing.scale;
   if (!scale?.length) return "";
   const allowedList = scale.map((s) => `\`${s}px\``).join(", ");
@@ -207,7 +207,7 @@ function spacingSection(fp: DesignFingerprint): string {
 
 // --- Typography ---------------------------------------------------------
 
-function typographySection(fp: DesignFingerprint): string {
+function typographySection(fp: Expression): string {
   const t = fp.typography;
   if (!t) return "";
   const families = t.families
@@ -254,7 +254,7 @@ const COVERED_DIMENSIONS = new Set([
   "typography",
 ]);
 
-function otherDimensions(fp: DesignFingerprint): string {
+function otherDimensions(fp: Expression): string {
   const blocks: string[] = [];
   for (const d of fp.decisions ?? []) {
     if (COVERED_DIMENSIONS.has(d.dimension)) continue;
@@ -304,7 +304,7 @@ function guidelines(): string {
 5. If asked, offer to fix directly`;
 }
 
-function footer(fp: DesignFingerprint): string {
+function footer(fp: Expression): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
@@ -314,7 +314,7 @@ Generated from \`expression.md\` (${count} decisions). Re-run \`ghost emit revie
 // --- helpers ------------------------------------------------------------
 
 function findRationale(
-  fp: DesignFingerprint,
+  fp: Expression,
   candidates: string[],
 ): string | undefined {
   for (const dim of candidates) {

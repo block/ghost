@@ -167,8 +167,8 @@ RUN echo 'server { listen 80; location / { try_files $uri /index.html; } }' \\
         <DocSection title="Connect to Ghost">
           <p>
             Once your design system is running as a Ghost UI site, you can use
-            Ghost's core tooling to fingerprint the parent and track drift
-            across consumers:
+            Ghost's core tooling to profile the parent and track drift across
+            consumers:
           </p>
           <ol>
             <li>

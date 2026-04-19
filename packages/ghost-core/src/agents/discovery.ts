@@ -14,7 +14,7 @@ export interface DiscoveredSystem {
 
 export interface DiscoveryInput {
   query?: string;
-  similarTo?: import("../types.js").DesignFingerprint;
+  similarTo?: import("../types.js").Expression;
   maxResults?: number;
 }
 

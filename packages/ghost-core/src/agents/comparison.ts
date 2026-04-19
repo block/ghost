@@ -1,15 +1,11 @@
 import { compare } from "../stages/compare.js";
-import type {
-  AgentContext,
-  DesignFingerprint,
-  EnrichedComparison,
-} from "../types.js";
+import type { AgentContext, EnrichedComparison, Expression } from "../types.js";
 import { BaseAgent } from "./base.js";
 import type { AgentState } from "./types.js";
 
 export interface ComparisonInput {
-  source: DesignFingerprint;
-  target: DesignFingerprint;
+  source: Expression;
+  target: Expression;
   sourceLabel?: string;
   targetLabel?: string;
 }

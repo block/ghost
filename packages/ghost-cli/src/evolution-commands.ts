@@ -48,7 +48,7 @@ export function registerAckCommand(cli: CAC): void {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
           console.log(
-            `Acknowledged drift from "${manifest.parentFingerprintId}"`,
+            `Acknowledged drift from "${manifest.parentExpressionId}"`,
           );
           console.log(`Overall distance: ${comparison.distance.toFixed(3)}`);
           console.log();

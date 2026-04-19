@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inferSemanticRole } from "../../src/fingerprint/semantic-roles.js";
+import { inferSemanticRole } from "../../src/embedding/semantic-roles.js";
 
 describe("inferSemanticRole", () => {
   describe("Layer 1: exact match (shadcn)", () => {

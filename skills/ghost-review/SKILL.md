@@ -1,12 +1,12 @@
 ---
 name: ghost-review
-description: Review code for visual language drift against a design fingerprint. Detects hardcoded colors, off-scale spacing, mismatched typography, and inconsistent surfaces — then suggests the correct value from the design system. Use when reviewing PRs, checking design consistency, or when the user asks "does this match our design system?"
+description: Review code for visual language drift against a design expression. Detects hardcoded colors, off-scale spacing, mismatched typography, and inconsistent surfaces — then suggests the correct value from the design system. Use when reviewing PRs, checking design consistency, or when the user asks "does this match our design system?"
 license: Apache-2.0
 ---
 
 # Ghost Design Review
 
-Review code for visual language drift against a design system fingerprint.
+Review code for visual language drift against a design system expression.
 
 ## When to use
 
@@ -18,15 +18,15 @@ Review code for visual language drift against a design system fingerprint.
 
 ## How it works
 
-Ghost uses a **design fingerprint** (`.ghost-fingerprint.json`) as the source of truth for the visual language. It scans changed files and flags any hardcoded value that doesn't match the fingerprint's palette, spacing scale, type ramp, or surface radii.
+Ghost uses a **design expression** (`expression.md`) as the source of truth for the visual language. It scans changed files and flags any hardcoded value that doesn't match the expression's palette, spacing scale, type ramp, or surface radii.
 
-The fingerprint IS the rule set — different project, different fingerprint, different rules.
+The expression IS the rule set — different project, different expression, different rules.
 
 ## Prerequisites
 
 - Ghost CLI built: `pnpm install && pnpm build` in the ghost repo
-- A fingerprint file: run `ghost profile . --emit` to generate `.ghost-fingerprint.json`
-- Commit the fingerprint to the repo so `ghost review` can find it
+- An expression file: run `ghost profile . --emit` to generate `expression.md`
+- Commit the expression to the repo so `ghost review` can find it
 
 ## Commands
 
@@ -61,7 +61,7 @@ ghost review --format github
 
 ## What it checks
 
-Ghost reviews across four fingerprint dimensions:
+Ghost reviews across four expression dimensions:
 
 ### Palette
 Detects hardcoded color values not in the design palette. Supports hex, rgb, hsl, oklch in CSS, JSX style props, and Tailwind arbitrary values (`bg-[#xxx]`).
@@ -113,5 +113,5 @@ export default defineConfig({
 ## Workflow
 
 1. Profile your project: `ghost profile . --emit`
-2. Commit `.ghost-fingerprint.json`
+2. Commit `expression.md`
 3. Run `ghost review` on every PR (or use the GitHub Action)

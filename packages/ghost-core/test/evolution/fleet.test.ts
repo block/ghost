@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { compareFleet } from "../../src/evolution/fleet.js";
-import type { DesignFingerprint, FleetMember } from "../../src/types.js";
+import type { Expression, FleetMember } from "../../src/types.js";
 
 function makeFleetMember(
   id: string,
@@ -11,7 +11,7 @@ function makeFleetMember(
     embedding[Number(idx)] = val;
   }
 
-  const fp: DesignFingerprint = {
+  const fp: Expression = {
     id,
     source: "registry",
     timestamp: new Date().toISOString(),

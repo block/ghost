@@ -1,9 +1,9 @@
 import { stringify as stringifyYaml } from "yaml";
 import type {
   DesignDecision,
-  DesignFingerprint,
   DesignObservation,
   DesignValues,
+  Expression,
 } from "../types.js";
 import { EMBEDDING_FRAGMENT_FILENAME } from "./fragments.js";
 import { type ExpressionMeta, mergeFrontmatter } from "./frontmatter.js";
@@ -23,7 +23,7 @@ export interface SerializeOptions {
 }
 
 /**
- * Serialize a DesignFingerprint to an expression.md string.
+ * Serialize a Expression to an expression.md string.
  *
  * Contract (schema 3): frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
@@ -35,7 +35,7 @@ export interface SerializeOptions {
  * way for the two sides to drift.
  */
 export function serializeExpression(
-  fingerprint: DesignFingerprint,
+  fingerprint: Expression,
   options: SerializeOptions = {},
 ): string {
   const meta: ExpressionMeta = {
@@ -62,9 +62,9 @@ export function serializeExpression(
   return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
 }
 
-function stripEmbedding(fp: DesignFingerprint): DesignFingerprint {
+function stripEmbedding(fp: Expression): Expression {
   const { embedding: _dropped, ...rest } = fp;
-  return rest as DesignFingerprint;
+  return rest as Expression;
 }
 
 function buildBody(

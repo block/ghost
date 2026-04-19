@@ -1,8 +1,8 @@
-import { compareFingerprints } from "../fingerprint/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
   DriftVelocity,
-  FingerprintComparison,
-  FingerprintHistoryEntry,
+  ExpressionComparison,
+  ExpressionHistoryEntry,
   SyncManifest,
   TemporalComparison,
 } from "../types.js";
@@ -14,8 +14,8 @@ import { computeDriftVectors } from "./vector.js";
  * velocity, trajectory, ack status, and drift vectors.
  */
 export function computeTemporalComparison(opts: {
-  comparison: FingerprintComparison;
-  history: FingerprintHistoryEntry[];
+  comparison: ExpressionComparison;
+  history: ExpressionHistoryEntry[];
   manifest: SyncManifest | null;
   stabilityThreshold?: number;
 }): TemporalComparison {
@@ -57,8 +57,8 @@ export function computeTemporalComparison(opts: {
  * Uses the oldest and most recent entries to calculate rate of change.
  */
 function computeVelocity(
-  current: FingerprintComparison,
-  history: FingerprintHistoryEntry[],
+  current: ExpressionComparison,
+  history: ExpressionHistoryEntry[],
   stabilityThreshold: number = 0.01,
 ): DriftVelocity[] {
   if (history.length < 2) {

@@ -1,4 +1,4 @@
-import type { DesignFingerprint, FingerprintComparison } from "../types.js";
+import type { Expression, ExpressionComparison } from "../types.js";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -14,7 +14,7 @@ function c(code: string, text: string): string {
   return useColor ? `${code}${text}${RESET}` : text;
 }
 
-export function formatFingerprint(fp: DesignFingerprint): string {
+export function formatFingerprint(fp: Expression): string {
   const lines: string[] = [];
 
   lines.push(c(BOLD, `Design Fingerprint: ${fp.id}`));
@@ -102,7 +102,7 @@ export function formatFingerprint(fp: DesignFingerprint): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatComparison(comp: FingerprintComparison): string {
+export function formatComparison(comp: ExpressionComparison): string {
   const lines: string[] = [];
 
   lines.push(c(BOLD, `Comparison: ${comp.source.id} vs ${comp.target.id}`));
@@ -136,11 +136,11 @@ export function formatComparison(comp: FingerprintComparison): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatFingerprintJSON(fp: DesignFingerprint): string {
+export function formatExpressionJSON(fp: Expression): string {
   return JSON.stringify(fp, null, 2);
 }
 
-export function formatComparisonJSON(comp: FingerprintComparison): string {
+export function formatComparisonJSON(comp: ExpressionComparison): string {
   // Omit full fingerprints from JSON comparison to keep it concise
   return JSON.stringify(
     {

@@ -133,7 +133,7 @@ const DesignRoleSchema = z
 
 /**
  * Schema for the YAML frontmatter in an expression.md file. Covers the
- * machine-layer of DesignFingerprint plus expression-level metadata.
+ * machine-layer of Expression plus expression-level metadata.
  *
  * Note: narrative prose fields (observation.summary, distinctiveTraits,
  * decisions[].decision, values) are NOT allowed here — they belong in

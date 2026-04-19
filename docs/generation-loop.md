@@ -32,7 +32,7 @@ Flags:
 - `--prompt-only` — single `prompt.md` only; skips `SKILL.md` / `expression.md` / `tokens.css`
 - `--no-tokens` — skip `tokens.css`
 - `--readme` — include `README.md`
-- `--name <name>` — override the skill name (default: fingerprint id)
+- `--name <name>` — override the skill name (default: expression id)
 
 Point a Claude Code or MCP client at the output directory and the agent
 reads `SKILL.md`.
@@ -67,7 +67,7 @@ demo: run `review suite` on a mature expression, intentionally drop a section
 
 ## The standard prompt suite
 
-Versioned JSON of UI-construction tasks, each tagged with the fingerprint
+Versioned JSON of UI-construction tasks, each tagged with the expression
 dimensions it stresses. Bundled inside core (see
 `packages/ghost-core/src/verify/suite-v0.1.json`), also available as a runtime
 TS constant (`BUNDLED_SUITE`) so it ships with compiled output.

@@ -157,7 +157,7 @@ function DriftSpotlight() {
   );
 }
 
-/* ─────────────────── 2. The Fingerprint — Radar ─────────────────────── */
+/* ─────────────────── 2. The Expression — Radar ─────────────────────── */
 
 const RADAR_CATEGORIES = [
   { label: "Palette", angle: -90 },
@@ -283,7 +283,7 @@ function RadarChart({
   );
 }
 
-function FingerprintSection() {
+function ExpressionSection() {
   const [animated, setAnimated] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -397,7 +397,7 @@ const REVIEW_SCOPES: {
   {
     id: "project",
     name: "Project",
-    what: "Profiles a whole target and compares its fingerprint against a parent expression. CI gate with CLI, JSON, or SARIF output.",
+    what: "Profiles a whole target and compares its expression against a parent. CI gate with CLI, JSON, or SARIF output.",
     catches:
       "Cumulative drift across an entire system — per-dimension deltas and a threshold gate you can fail builds on.",
     visual: (
@@ -660,15 +660,15 @@ export default function ConceptsPage() {
         </p>
       </Chapter>
 
-      {/* ── Chapter 2: The Fingerprint ────────────────────────────── */}
+      {/* ── Chapter 2: The Expression ────────────────────────────── */}
       <Chapter className="border-t border-border/40">
         <ChapterLabel>Chapter 2</ChapterLabel>
-        <ChapterTitle>The Fingerprint</ChapterTitle>
+        <ChapterTitle>The Expression</ChapterTitle>
         <ChapterLead>
           Ghost sends your design system through an LLM and records what it
           sees, in three layers: a holistic observation, the abstract design
           decisions behind it, and the concrete values. Similar systems produce
-          similar fingerprints. Different ones don't.
+          similar expressions. Different ones don't.
         </ChapterLead>
         <div className="reveal mb-10 grid sm:grid-cols-3 gap-4">
           {[
@@ -704,7 +704,7 @@ export default function ConceptsPage() {
             </div>
           ))}
         </div>
-        <FingerprintSection />
+        <ExpressionSection />
         <div className="reveal mt-10 grid sm:grid-cols-5 gap-4">
           {[
             { cat: "Palette", pct: "30%", desc: "Colors, neutrals, contrast" },
@@ -736,7 +736,7 @@ export default function ConceptsPage() {
         </div>
         <p className="reveal mt-6 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Palette weighs heaviest — color is the first thing people notice.
-          Decisions contribute when both fingerprints have them embedded;
+          Decisions contribute when both expressions have them embedded;
           otherwise they're reported qualitatively and excluded from the scalar
           so unscored text doesn't pollute the number.
         </p>
@@ -947,7 +947,7 @@ export default function ConceptsPage() {
       {/* ── Closing ───────────────────────────────────────────────── */}
       <Chapter className="border-t border-border/40">
         <ChapterLabel>That's Ghost</ChapterLabel>
-        <ChapterTitle>Fingerprint. Ground. Review. Repeat.</ChapterTitle>
+        <ChapterTitle>Express. Ground. Review. Repeat.</ChapterTitle>
         <ChapterLead>
           Ghost doesn't tell you what to do — it gives you the information to
           decide. Align, accept, or diverge. The choice is yours. The visibility

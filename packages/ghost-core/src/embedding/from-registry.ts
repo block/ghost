@@ -1,7 +1,7 @@
 import type {
   ColorRamp,
   CSSToken,
-  DesignFingerprint,
+  Expression,
   ResolvedRegistry,
   SemanticColor,
 } from "../types.js";
@@ -287,7 +287,7 @@ function extractTypography(tokens: CSSToken[]): {
  */
 export function fingerprintFromRegistry(
   registry: ResolvedRegistry,
-): DesignFingerprint {
+): Expression {
   const tokens = registry.tokens;
   const rootTokens = tokens.filter(
     (t) => t.selector === ":root" || t.selector === "@theme",
@@ -300,7 +300,7 @@ export function fingerprintFromRegistry(
   const spacing = extractSpacing(tokens);
   const borderTokenCount = tokens.filter((t) => t.category === "border").length;
 
-  const fingerprint: Omit<DesignFingerprint, "embedding"> = {
+  const fingerprint: Omit<Expression, "embedding"> = {
     id: registry.name,
     source: "registry",
     timestamp: new Date().toISOString(),

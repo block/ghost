@@ -4,9 +4,9 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildSkillMd, writeContextBundle } from "../../src/context/index.js";
 import { buildTokensCss } from "../../src/context/tokens-css.js";
-import type { DesignFingerprint } from "../../src/types.js";
+import type { Expression } from "../../src/types.js";
 
-const FINGERPRINT: DesignFingerprint = {
+const FINGERPRINT: Expression = {
   id: "sample-ds",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -148,7 +148,7 @@ describe("writeContextBundle", () => {
 
 describe("buildTokensCss", () => {
   it("emits only dimensions present on the fingerprint", () => {
-    const minimal: DesignFingerprint = {
+    const minimal: Expression = {
       ...FINGERPRINT,
       typography: {
         families: [],
