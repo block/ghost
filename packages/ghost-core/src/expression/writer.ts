@@ -6,59 +6,45 @@ import type {
   DesignValues,
 } from "../types.js";
 import { type ExpressionMeta, mergeFrontmatter } from "./frontmatter.js";
+import { EXPRESSION_SCHEMA_VERSION } from "./schema.js";
 
 export interface SerializeOptions {
   meta?: ExpressionMeta;
+  /** Omit the human-readable body (frontmatter-only output). Default: false. */
+  frontmatterOnly?: boolean;
 }
 
 /**
  * Serialize a DesignFingerprint to an expression.md string.
  *
- * Fields split:
- * - Frontmatter: id, source, timestamp, sources, palette, spacing,
- *   typography, surfaces, embedding, and residual observation fields
- *   (personality, closestSystems).
- * - Body: Character (observation.summary), Signature (distinctiveTraits),
- *   Decisions (dimension + decision + evidence).
- *
- * The body is authoritative on read for summary/distinctiveTraits/decisions;
- * the writer therefore emits those fields only in the body to keep the
- * frontmatter diff-friendly.
+ * Contract (schema 2): frontmatter is authoritative. Every field on the
+ * fingerprint is emitted to YAML. The markdown body below the frontmatter
+ * is a human-readable mirror of the narrative fields (Character, Signature,
+ * Decisions, Values) — rendered for readers and LLM prompts, but never
+ * consulted by parseExpression. If the body and frontmatter ever disagree,
+ * the frontmatter wins.
  */
 export function serializeExpression(
   fingerprint: DesignFingerprint,
   options: SerializeOptions = {},
 ): string {
-  const { observation, decisions, values, ...core } = fingerprint;
-  const residualObservation = stripBodyFields(observation);
-
-  const forFrontmatter: DesignFingerprint = {
-    ...(core as DesignFingerprint),
-    ...(residualObservation ? { observation: residualObservation } : {}),
+  const meta: ExpressionMeta = {
+    schema: EXPRESSION_SCHEMA_VERSION,
+    ...options.meta,
   };
-
-  const obj = mergeFrontmatter(forFrontmatter, options.meta);
+  const obj = mergeFrontmatter(fingerprint, meta);
   const yaml = stringifyYaml(obj, { lineWidth: 0 }).trimEnd();
-  const body = buildBody(observation, decisions, values);
 
-  const out = body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
-  return out;
-}
+  if (options.frontmatterOnly) {
+    return `---\n${yaml}\n---\n`;
+  }
 
-/** Return observation with summary+distinctiveTraits removed, or undefined if empty. */
-function stripBodyFields(
-  obs: DesignObservation | undefined,
-): DesignObservation | undefined {
-  if (!obs) return undefined;
-  const personality = obs.personality ?? [];
-  const closestSystems = obs.closestSystems ?? [];
-  if (personality.length === 0 && closestSystems.length === 0) return undefined;
-  return {
-    summary: "",
-    personality,
-    distinctiveTraits: [],
-    closestSystems,
-  };
+  const body = buildBody(
+    fingerprint.observation,
+    fingerprint.decisions,
+    fingerprint.values,
+  );
+  return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
 }
 
 function buildBody(

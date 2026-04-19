@@ -30,7 +30,7 @@ export function registerGenerateCommand(cli: CAC): void {
           process.cwd(),
           (opts.expression as string | undefined) ?? "expression.md",
         );
-        const fingerprint = await loadExpression(expressionPath);
+        const { fingerprint } = await loadExpression(expressionPath);
         const format = (opts.format as string) ?? "html";
         if (format !== "html") {
           throw new Error(

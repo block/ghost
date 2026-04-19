@@ -11,6 +11,8 @@ export interface ExpressionMeta {
   schema?: number;
   generator?: string;
   confidence?: number;
+  /** Path to a parent expression.md to inherit from. Resolved by loadExpression. */
+  extends?: string;
 }
 
 export interface FrontmatterData {
@@ -25,6 +27,7 @@ const FINGERPRINT_KEYS = new Set<keyof DesignFingerprint>([
   "sources",
   "observation",
   "decisions",
+  "values",
   "palette",
   "spacing",
   "typography",
@@ -45,7 +48,12 @@ export function splitFrontmatter(
   for (const [k, v] of Object.entries(raw)) {
     if (FINGERPRINT_KEYS.has(k as keyof DesignFingerprint)) {
       fp[k] = v;
-    } else if (k === "name" || k === "slug" || k === "generator") {
+    } else if (
+      k === "name" ||
+      k === "slug" ||
+      k === "generator" ||
+      k === "extends"
+    ) {
       meta[k] = v as string;
     } else if (k === "schema" || k === "confidence") {
       meta[k] = v as number;
@@ -58,7 +66,7 @@ export function splitFrontmatter(
 
   if (!fp.id && meta.slug) fp.id = meta.slug;
   if (!fp.timestamp) fp.timestamp = new Date().toISOString();
-  if (!fp.source) fp.source = "llm";
+  if (!fp.source) fp.source = "unknown";
 
   return {
     meta,
@@ -89,6 +97,7 @@ export function mergeFrontmatter(
     "sources",
     "observation",
     "decisions",
+    "values",
     "palette",
     "spacing",
     "typography",

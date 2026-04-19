@@ -241,7 +241,7 @@ export interface DesignValues {
 
 export interface DesignFingerprint {
   id: string;
-  source: "registry" | "extraction" | "llm";
+  source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
   /** When profiled from multiple sources, lists what was combined */
   sources?: string[];

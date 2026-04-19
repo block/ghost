@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "schema": {
+      "type": "number"
+    },
+    "generator": {
+      "type": "string"
+    },
+    "generated": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["registry", "extraction", "llm", "unknown"]
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "distinctiveTraits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "closestSystems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "summary",
+        "personality",
+        "distinctiveTraits",
+        "closestSystems"
+      ],
+      "additionalProperties": false
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "embedding": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": ["dimension", "decision", "evidence"],
+        "additionalProperties": false
+      }
+    },
+    "values": {
+      "type": "object",
+      "properties": {
+        "do": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dont": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["do", "dont"],
+      "additionalProperties": false
+    },
+    "palette": {
+      "type": "object",
+      "properties": {
+        "dominant": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "oklch": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": ["role", "value"],
+            "additionalProperties": false
+          }
+        },
+        "neutrals": {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": ["steps", "count"],
+          "additionalProperties": false
+        },
+        "semantic": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "oklch": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": ["role", "value"],
+            "additionalProperties": false
+          }
+        },
+        "saturationProfile": {
+          "type": "string",
+          "enum": ["muted", "vibrant", "mixed"]
+        },
+        "contrast": {
+          "type": "string",
+          "enum": ["high", "moderate", "low"]
+        }
+      },
+      "required": [
+        "dominant",
+        "neutrals",
+        "semantic",
+        "saturationProfile",
+        "contrast"
+      ],
+      "additionalProperties": false
+    },
+    "spacing": {
+      "type": "object",
+      "properties": {
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "regularity": {
+          "type": "number"
+        },
+        "baseUnit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["scale", "regularity", "baseUnit"],
+      "additionalProperties": false
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "families": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sizeRamp": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "weightDistribution": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "lineHeightPattern": {
+          "type": "string",
+          "enum": ["tight", "normal", "loose"]
+        }
+      },
+      "required": [
+        "families",
+        "sizeRamp",
+        "weightDistribution",
+        "lineHeightPattern"
+      ],
+      "additionalProperties": false
+    },
+    "surfaces": {
+      "type": "object",
+      "properties": {
+        "borderRadii": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "shadowComplexity": {
+          "type": "string",
+          "enum": ["none", "subtle", "layered"]
+        },
+        "borderUsage": {
+          "type": "string",
+          "enum": ["minimal", "moderate", "heavy"]
+        },
+        "borderTokenCount": {
+          "type": "number"
+        }
+      },
+      "required": ["borderRadii", "shadowComplexity", "borderUsage"],
+      "additionalProperties": false
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "source",
+    "timestamp",
+    "palette",
+    "spacing",
+    "typography",
+    "surfaces",
+    "embedding"
+  ],
+  "additionalProperties": false,
+  "title": "Ghost Expression Frontmatter",
+  "description": "Schema for YAML frontmatter in Ghost expression.md files (schema version 2)."
+}

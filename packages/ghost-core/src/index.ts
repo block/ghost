@@ -64,18 +64,34 @@ export {
 } from "./evolution/index.js";
 export type {
   BodyData,
+  ColorChange,
+  DecisionChange,
   ExpressionMeta,
   FrontmatterData,
+  FrontmatterShape,
+  LintIssue,
+  LintOptions,
+  LintReport,
+  LintSeverity,
   ParsedExpression,
+  SemanticDiff,
+  TokenChange,
 } from "./expression/index.js";
 export {
+  compareExpressions,
   EXPRESSION_FILENAME,
+  EXPRESSION_SCHEMA_VERSION,
+  FrontmatterSchema,
+  formatSemanticDiff,
   LEGACY_FINGERPRINT_FILENAME,
+  lintExpression,
   loadExpression,
   parseBody,
   parseExpression,
   serializeExpression,
   splitRaw,
+  toJsonSchema,
+  validateFrontmatter,
 } from "./expression/index.js";
 export {
   detectExtractors,
