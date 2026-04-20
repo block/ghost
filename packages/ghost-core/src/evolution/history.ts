@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { ExpressionHistoryEntry } from "../types.js";
+import type { FingerprintHistoryEntry } from "../types.js";
 
 const GHOST_DIR = ".ghost";
 const HISTORY_FILE = "history.jsonl";
@@ -11,11 +11,11 @@ function historyPath(cwd: string): string {
 }
 
 /**
- * Append an expression history entry to .ghost/history.jsonl.
+ * Append an fingerprint history entry to .ghost/history.jsonl.
  * Creates the .ghost directory if it doesn't exist.
  */
 export async function appendHistory(
-  entry: ExpressionHistoryEntry,
+  entry: FingerprintHistoryEntry,
   cwd: string = process.cwd(),
 ): Promise<void> {
   const dir = resolve(cwd, GHOST_DIR);
@@ -32,7 +32,7 @@ export async function appendHistory(
  */
 export async function readHistory(
   cwd: string = process.cwd(),
-): Promise<ExpressionHistoryEntry[]> {
+): Promise<FingerprintHistoryEntry[]> {
   const path = historyPath(cwd);
   if (!existsSync(path)) return [];
 
@@ -40,7 +40,7 @@ export async function readHistory(
   return content
     .split("\n")
     .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as ExpressionHistoryEntry);
+    .map((line) => JSON.parse(line) as FingerprintHistoryEntry);
 }
 
 /**
@@ -49,7 +49,7 @@ export async function readHistory(
 export async function readRecentHistory(
   count: number,
   cwd: string = process.cwd(),
-): Promise<ExpressionHistoryEntry[]> {
+): Promise<FingerprintHistoryEntry[]> {
   const all = await readHistory(cwd);
   return all.slice(-count);
 }

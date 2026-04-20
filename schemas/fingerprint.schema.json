@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "generator": {
+      "type": "string"
+    },
+    "generated": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "extends": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["registry", "extraction", "llm", "unknown"]
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "personality": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "closestSystems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "type": "string"
+          },
+          "embedding": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": ["dimension"],
+        "additionalProperties": false
+      }
+    },
+    "palette": {
+      "type": "object",
+      "properties": {
+        "dominant": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "oklch": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": ["role", "value"],
+            "additionalProperties": false
+          }
+        },
+        "neutrals": {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": ["steps", "count"],
+          "additionalProperties": false
+        },
+        "semantic": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "oklch": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": ["role", "value"],
+            "additionalProperties": false
+          }
+        },
+        "saturationProfile": {
+          "type": "string",
+          "enum": ["muted", "vibrant", "mixed"]
+        },
+        "contrast": {
+          "type": "string",
+          "enum": ["high", "moderate", "low"]
+        }
+      },
+      "required": [
+        "dominant",
+        "neutrals",
+        "semantic",
+        "saturationProfile",
+        "contrast"
+      ],
+      "additionalProperties": false
+    },
+    "spacing": {
+      "type": "object",
+      "properties": {
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "regularity": {
+          "type": "number"
+        },
+        "baseUnit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["scale", "regularity", "baseUnit"],
+      "additionalProperties": false
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "families": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sizeRamp": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "weightDistribution": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "lineHeightPattern": {
+          "type": "string",
+          "enum": ["tight", "normal", "loose"]
+        }
+      },
+      "required": [
+        "families",
+        "sizeRamp",
+        "weightDistribution",
+        "lineHeightPattern"
+      ],
+      "additionalProperties": false
+    },
+    "surfaces": {
+      "type": "object",
+      "properties": {
+        "borderRadii": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "shadowComplexity": {
+          "type": "string",
+          "enum": ["none", "subtle", "layered"]
+        },
+        "borderUsage": {
+          "type": "string",
+          "enum": ["minimal", "moderate", "heavy"]
+        },
+        "borderTokenCount": {
+          "type": "number"
+        }
+      },
+      "required": ["borderRadii", "shadowComplexity", "borderUsage"],
+      "additionalProperties": false
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tokens": {
+            "type": "object",
+            "properties": {
+              "typography": {
+                "type": "object",
+                "properties": {
+                  "family": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "weight": {
+                    "type": "number"
+                  },
+                  "lineHeight": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "spacing": {
+                "type": "object",
+                "properties": {
+                  "padding": {
+                    "type": "number"
+                  },
+                  "gap": {
+                    "type": "number"
+                  },
+                  "margin": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "surfaces": {
+                "type": "object",
+                "properties": {
+                  "borderRadius": {
+                    "type": "number"
+                  },
+                  "shadow": {
+                    "type": "string",
+                    "enum": ["none", "subtle", "layered"]
+                  },
+                  "borderWidth": {
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "palette": {
+                "type": "object",
+                "properties": {
+                  "background": {
+                    "type": "string"
+                  },
+                  "foreground": {
+                    "type": "string"
+                  },
+                  "border": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "tokens", "evidence"],
+        "additionalProperties": false
+      }
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "source",
+    "timestamp",
+    "palette",
+    "spacing",
+    "typography",
+    "surfaces"
+  ],
+  "additionalProperties": false,
+  "title": "Ghost Fingerprint Frontmatter",
+  "description": "Schema for YAML frontmatter in Ghost fingerprint.md files."
+}

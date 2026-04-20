@@ -163,19 +163,11 @@ export interface GhostConfig {
   parent?: Target;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
-  llm?: LLMConfig;
   embedding?: EmbeddingConfig;
   extractors?: string[];
-  agents?: AgentsConfig;
-  review?: ReviewConfig;
 }
 
-export interface AgentsConfig {
-  maxIterations?: number;
-  verbose?: boolean;
-}
-
-// --- Expression types ---
+// --- Fingerprint types ---
 
 export interface SemanticColor {
   role: string;
@@ -188,7 +180,7 @@ export interface ColorRamp {
   count: number;
 }
 
-// --- Observation & decision types (three-layer expression) ---
+// --- Observation & decision types (three-layer fingerprint) ---
 
 export interface DesignObservation {
   /** Holistic summary of the design language */
@@ -228,7 +220,7 @@ export interface DesignDecision {
 export interface DesignRole {
   /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
   name: string;
-  /** Tokens the slot binds, grouped by expression dimension. */
+  /** Tokens the slot binds, grouped by fingerprint dimension. */
   tokens: {
     typography?: {
       family?: string;
@@ -256,7 +248,7 @@ export interface DesignRole {
   evidence: string[];
 }
 
-export interface Expression {
+export interface Fingerprint {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
@@ -350,7 +342,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface EnrichedExpression extends Expression {
+export interface EnrichedFingerprint extends Fingerprint {
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -361,7 +353,7 @@ export type DivergenceClass =
   | "evolution-lag"
   | "incompatible";
 
-export interface EnrichedComparison extends ExpressionComparison {
+export interface EnrichedComparison extends FingerprintComparison {
   classification: DivergenceClass;
   explanations: Record<string, string>;
 }
@@ -419,13 +411,7 @@ export interface Extractor {
   ) => Promise<ExtractedMaterial>;
 }
 
-// --- LLM types ---
-
-export interface LLMConfig {
-  provider: "anthropic" | "openai";
-  model?: string;
-  apiKey?: string;
-}
+// --- Embedding config (used by the semantic-roles helper in embed-api.ts) ---
 
 export interface EmbeddingConfig {
   provider: "openai" | "voyage";
@@ -433,45 +419,10 @@ export interface EmbeddingConfig {
   apiKey?: string;
 }
 
-export interface LLMProvider {
-  name: string;
-  /** Multi-turn chat with tool use support. All expression generation flows through this. */
-  chat: (
-    messages: import("./llm/types.js").ChatMessage[],
-    tools?: import("./llm/types.js").ToolDefinition[],
-  ) => Promise<import("./llm/types.js").ChatResponse>;
-}
-
-// --- Agent types ---
-
-export interface AgentMessage {
-  role: "system" | "user" | "assistant" | "tool";
-  content: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface AgentContext {
-  llm: LLMConfig;
-  embedding?: EmbeddingConfig;
-  verbose?: boolean;
-  /** Override the agent's default max iterations (escape hatch) */
-  maxIterations?: number;
-  onMessage?: (msg: AgentMessage) => void;
-}
-
-export interface AgentResult<T> {
-  data: T;
-  confidence: number;
-  warnings: string[];
-  reasoning: string[];
-  iterations: number;
-  duration: number;
-}
-
 // --- History types ---
 
-export interface ExpressionHistoryEntry {
-  expression: Expression;
+export interface FingerprintHistoryEntry {
+  fingerprint: Fingerprint;
   parentRef?: Target;
   comparisonToParent?: {
     distance: number;
@@ -499,8 +450,8 @@ export interface DimensionAck {
 export interface SyncManifest {
   parent: Target;
   ackedAt: string;
-  parentExpressionId: string;
-  childExpressionId: string;
+  parentFingerprintId: string;
+  childFingerprintId: string;
   dimensions: Record<string, DimensionAck>;
   overallDistance: number;
 }
@@ -513,9 +464,9 @@ export interface DimensionDelta {
   description: string;
 }
 
-export interface ExpressionComparison {
-  source: Expression;
-  target: Expression;
+export interface FingerprintComparison {
+  source: Fingerprint;
+  target: Fingerprint;
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
@@ -537,7 +488,7 @@ export interface DriftVelocity {
   windowDays: number;
 }
 
-export interface TemporalComparison extends ExpressionComparison {
+export interface TemporalComparison extends FingerprintComparison {
   velocity: DriftVelocity[];
   daysSinceAck: number | null;
   exceedsAckedBounds: boolean;
@@ -549,7 +500,7 @@ export interface TemporalComparison extends ExpressionComparison {
 
 export interface FleetMember {
   id: string;
-  expression: Expression;
+  fingerprint: Fingerprint;
   parentRef?: Target;
   distanceToParent?: number;
 }
@@ -599,97 +550,4 @@ export interface StructureDrift {
   linesRemoved: number;
   registryFile?: string;
   consumerFile?: string;
-}
-
-// --- Review types (expression-informed design review) ---
-
-export type ReviewSeverity = "error" | "warning" | "info";
-
-export type ReviewDimension = "palette" | "spacing" | "typography" | "surfaces";
-
-export interface ReviewFix {
-  /** Replacement text for the affected line */
-  replacement: string;
-  /** Explanation of what the fix does */
-  description: string;
-}
-
-export interface ReviewIssue {
-  /** Rule that produced this issue (e.g. "palette-drift", "spacing-drift") */
-  rule: string;
-  /** Which expression dimension drifted */
-  dimension: ReviewDimension;
-  severity: ReviewSeverity;
-  /** Human-readable description */
-  message: string;
-  /** File path (relative to cwd) */
-  file: string;
-  /** 1-based line number */
-  line: number;
-  /** 1-based column */
-  column?: number;
-  /** The original source line */
-  source?: string;
-  /** The literal value found (e.g. "#3b82f6", "14px") */
-  found: string;
-  /** Nearest expression value (e.g. "#2563eb", "16px") */
-  nearest?: string;
-  /** Semantic role of the nearest value if known (e.g. "primary", "surface") */
-  nearestRole?: string;
-  /** How far off (0-1 for colors via OKLCH distance, absolute px for spacing/typography/surfaces) */
-  distance?: number;
-  /** Concrete fix suggestion */
-  fix?: ReviewFix;
-  /** How this issue was detected */
-  phase: "match" | "deep";
-}
-
-export interface ReviewFileResult {
-  file: string;
-  issues: ReviewIssue[];
-  /** Whether this file was sent for deep LLM review */
-  deepReviewed: boolean;
-}
-
-export interface ReviewSummary {
-  filesScanned: number;
-  filesWithIssues: number;
-  totalIssues: number;
-  byDimension: Record<string, number>;
-  errors: number;
-  warnings: number;
-  fixesAvailable: number;
-}
-
-export interface ReviewReport {
-  timestamp: string;
-  /** ID of the expression used as baseline */
-  expression: string;
-  files: ReviewFileResult[];
-  summary: ReviewSummary;
-  /** Duration in ms */
-  duration: number;
-}
-
-export interface ReviewConfig {
-  /** Which dimensions to check */
-  dimensions?: {
-    palette?: boolean;
-    spacing?: boolean;
-    typography?: boolean;
-    surfaces?: boolean;
-  };
-  /** Only review files matching these globs */
-  include?: string[];
-  /** Ignore files matching these globs */
-  exclude?: string[];
-  /** Only report issues on changed lines (requires git diff context). Default: true */
-  changedLinesOnly?: boolean;
-}
-
-export interface CollectedFile {
-  path: string;
-  content: string;
-  /** Lines changed in the diff (1-based). Undefined = all lines are "changed". */
-  changedLines?: Set<number>;
 }

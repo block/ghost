@@ -12,3 +12,6 @@ packages/ghost-ui/.ghost/
 # Claude Code local harness state
 .claude/scheduled_tasks.lock
 .claude/worktrees/
+
+# Emitted skill bundle — re-generate with `ghost emit skill`
+.claude/skills/

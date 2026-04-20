@@ -11,7 +11,7 @@ export default function GettingStartedPage() {
       <AnimatedPageHeader
         kicker="Docs"
         title="Getting Started"
-        description="Profile a design system, emit an expression, and gate generated UI against it — in under five minutes."
+        description="Profile a design system, emit an fingerprint, and gate generated UI against it — in under five minutes."
       />
 
       <DocProse>
@@ -40,23 +40,23 @@ export default function GettingStartedPage() {
           <p>
             Ghost is zero-config for profiling. Point it at any target — a
             directory, GitHub repo, npm package, URL, or shadcn registry — and
-            it produces an <code>expression.md</code>: the canonical design
-            expression artifact.
+            it produces an <code>fingerprint.md</code>: the canonical design
+            fingerprint artifact.
           </p>
           <pre>
             <code>
-              {`# The current directory — writes ./expression.md
+              {`# The current directory — writes ./fingerprint.md
 ghost profile . --emit
 
 # A GitHub repo (AI-only, agent explores the repo)
-ghost profile github:shadcn-ui/ui --output shadcn.expression.md
+ghost profile github:shadcn-ui/ui --output shadcn.fingerprint.md
 
 # A shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json`}
             </code>
           </pre>
           <p>
-            An <strong>expression</strong> is a Markdown file with YAML
+            An <strong>fingerprint</strong> is a Markdown file with YAML
             frontmatter (the machine layer: 49-dim vector, palette, spacing,
             typography, surfaces) plus a prose body: Character, Signature /
             Observation, Decisions. Humans can read it. LLMs can consume it.
@@ -66,12 +66,12 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
 
         <DocSection title="Compare Two Systems">
           <p>
-            Once you have two expressions, compare them to see exactly where
+            Once you have two fingerprints, compare them to see exactly where
             they diverge:
           </p>
           <pre>
             <code>
-              ghost compare parent.expression.md consumer.expression.md
+              ghost compare parent.fingerprint.md consumer.fingerprint.md
             </code>
           </pre>
           <p>
@@ -93,8 +93,8 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
               <code>ghost review</code> (files scope, default) — checks files in
               a PR for visual language drift: hardcoded colors outside the
               palette, spacing off the scale, typography that violates
-              decisions. Reads <code>./expression.md</code>; flags changed lines
-              only by default.
+              decisions. Reads <code>./fingerprint.md</code>; flags changed
+              lines only by default.
             </li>
             <li>
               <code>ghost review project [target] --against parent.md</code> —
@@ -103,11 +103,11 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
               Emits CLI, JSON, or SARIF for CI.
             </li>
             <li>
-              <code>ghost verify [expression]</code> — drives the
+              <code>ghost verify [fingerprint]</code> — drives the
               generate→review loop across a bundled prompt suite (~18 prompts)
               and classifies each dimension as <em>tight</em>, <em>leaky</em>,
               or <em>uncaptured</em>. The schema-discipline mechanism for
-              expressions.
+              fingerprints.
             </li>
           </ul>
           <pre>
@@ -115,11 +115,11 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
               {`# files — review uncommitted changes
 ghost review
 ghost review --staged --format github
-ghost review src/app/page.tsx -f design.expression.md
+ghost review src/app/page.tsx -f design.fingerprint.md
 
 # project — drop-in CI gate against a parent
-ghost review project . --against parent.expression.md
-ghost review project . --against parent.expression.md --format sarif
+ghost review project . --against parent.fingerprint.md
+ghost review project . --against parent.fingerprint.md --format sarif
 
 # suite — drive the loop across the bundled prompt suite
 ghost verify
@@ -138,7 +138,7 @@ ghost verify --out suite-report.json`}
           <ol>
             <li>
               <code>ghost emit context-bundle</code> — emit a grounding bundle
-              from an expression (SKILL.md + tokens.css + optional prompt.md)
+              from an fingerprint (SKILL.md + tokens.css + optional prompt.md)
               that any generator can consume
             </li>
             <li>
@@ -153,7 +153,7 @@ ghost verify --out suite-report.json`}
           </ol>
           <pre>
             <code>
-              {`# Emit a Claude Code skill bundle from an expression
+              {`# Emit a Claude Code skill bundle from an fingerprint
 ghost emit context-bundle --out skills/my-design
 
 # Reference generator with self-review
@@ -207,7 +207,7 @@ export default defineConfig({
             <Link to="/tools/drift/concepts" className="font-semibold">
               Core Concepts
             </Link>{" "}
-            for the three-layer expression model and the generation-loop
+            for the three-layer fingerprint model and the generation-loop
             architecture. Or jump to the{" "}
             <Link to="/tools/drift/cli" className="font-semibold">
               CLI Reference

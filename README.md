@@ -1,21 +1,21 @@
 # Ghost
 
-**Autonomous perception of organic drift across a decentralized fleet of expression consumers.**
+**Autonomous perception of organic drift across a decentralized fleet of fingerprint consumers.**
 
-Ghost makes expression legible. It profiles a system's identity into a human-readable `expression.md`, perceives drift across a decentralized fleet of consumers, tracks the stance each consumer takes toward its parent (acknowledge, adopt, diverge), and surfaces fleet-wide signal the parent can heal from. Current scope: visual/UI expression. The reference expression, Ghost UI, ships as a shadcn-compatible component registry. The format and the perception architecture are identity-agnostic; visual is the first instantiation.
+Ghost makes fingerprint legible. It profiles a system's identity into a human-readable `fingerprint.md`, perceives drift across a decentralized fleet of consumers, tracks the stance each consumer takes toward its parent (acknowledge, adopt, diverge), and surfaces fleet-wide signal the parent can heal from. Current scope: visual/UI fingerprint. The reference fingerprint, Ghost UI, ships as a shadcn-compatible component registry. The format and the perception architecture are identity-agnostic; visual is the first instantiation.
 
 ## Why Ghost?
 
-Expression drifts. When a system's identity spreads across consumers — each evolving, each adapting — coherence degrades and trust follows. Ghost perceives this drift across a decentralized fleet so the parent can reason about what's happening and heal proactively. No central gatekeeper; observation and recorded intent instead.
+Fingerprint drifts. When a system's identity spreads across consumers — each evolving, each adapting — coherence degrades and trust follows. Ghost perceives this drift across a decentralized fleet so the parent can reason about what's happening and heal proactively. No central gatekeeper; observation and recorded intent instead.
 
-- **Human-readable expressions** — Every system is captured as an `expression.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
+- **Human-readable fingerprints** — Every system is captured as a `fingerprint.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
 - **Continuous perception** — Profile each consumer over time. Surface drift at the values (hardcoded colors, token overrides, missing tokens), structural (component divergence), and visual (pixel-level regressions) levels
-- **Grounded generation** — Use expressions as grounding for AI-driven generation. `ghost emit context-bundle` writes prompt/skill material; any generator produces; `ghost review` surfaces drift in the output; `ghost verify` aggregates drift across a standard prompt suite to classify dimensions as tight, leaky, or uncaptured
-- **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent expression. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal
-- **Fleet intelligence** — Compare expressions across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself
-- **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer expression generation and drift analysis
-- **3D visualization** — Explore expression similarity space in an interactive Three.js viewer
-- **Reference expression (Ghost UI)** — A shadcn-compatible registry of atomic components, design tokens, and a live catalogue. Serves as the canonical baseline Ghost profiles and tests itself against in its current visual scope
+- **Grounded generation** — Use fingerprints as grounding for AI-driven generation. `ghost emit context-bundle` writes prompt/skill material; any generator produces; `ghost review` surfaces drift in the output; `ghost verify` aggregates drift across a standard prompt suite to classify dimensions as tight, leaky, or uncaptured
+- **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent fingerprint. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal
+- **Fleet intelligence** — Compare fingerprints across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself
+- **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer fingerprint generation and drift analysis
+- **3D visualization** — Explore fingerprint similarity space in an interactive Three.js viewer
+- **Reference fingerprint (Ghost UI)** — A shadcn-compatible registry of atomic components, design tokens, and a live catalogue. Serves as the canonical baseline Ghost profiles and tests itself against in its current visual scope
 
 ## Getting Started
 
@@ -48,18 +48,18 @@ ghost profile github:shadcn-ui/ui --verbose
 # Profile a shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json
 
-# Save an expression to disk (recommended)
-ghost profile . --emit                   # writes ./expression.md
+# Save a fingerprint to disk (recommended)
+ghost profile . --emit                   # writes ./fingerprint.md
 ghost profile . --output my-system.md    # or write to a specific path
 ```
 
-**Compare two expressions:**
+**Compare two fingerprints:**
 
 ```bash
 # Profile two systems, then compare
-ghost profile github:shadcn-ui/ui --output shadcn.expression.md
-ghost profile npm:@chakra-ui/react --output chakra.expression.md
-ghost compare shadcn.expression.md chakra.expression.md
+ghost profile github:shadcn-ui/ui --output shadcn.fingerprint.md
+ghost profile npm:@chakra-ui/react --output chakra.fingerprint.md
+ghost compare shadcn.fingerprint.md chakra.fingerprint.md
 
 # Legacy JSON still works
 ghost compare shadcn.json chakra.json
@@ -68,13 +68,13 @@ ghost compare shadcn.json chakra.json
 **Review drift — one verb, three scopes:**
 
 ```bash
-# files scope (default): zero-config PR review against ./expression.md
+# files scope (default): zero-config PR review against ./fingerprint.md
 ghost review
 ghost review --staged --format github
 
 # project scope: target-level coherence against a parent (CLI/JSON/SARIF)
-ghost review project . --against parent.expression.md
-ghost review project . --against parent.expression.md --format sarif
+ghost review project . --against parent.fingerprint.md
+ghost review project . --against parent.fingerprint.md --format sarif
 
 # verify: drive the generate→review loop across a bundled prompt suite
 ghost verify
@@ -91,7 +91,7 @@ ghost drift --component Button
 **Generation loop — ground, generate, observe:**
 
 ```bash
-# Emit a Claude Code / MCP skill bundle from an expression
+# Emit a Claude Code / MCP skill bundle from a fingerprint
 ghost emit context-bundle --out skills/my-design
 
 # Reference generator with built-in self-review retries
@@ -101,8 +101,8 @@ ghost generate "pricing page with three tiers" --out pricing.html
 **Fleet observability and visualization:**
 
 ```bash
-ghost compare system-a.expression.md system-b.expression.md system-c.expression.md --cluster
-ghost viz system-a.expression.md system-b.expression.md system-c.expression.md
+ghost compare system-a.fingerprint.md system-b.fingerprint.md system-c.fingerprint.md --cluster
+ghost viz system-a.fingerprint.md system-b.fingerprint.md system-c.fingerprint.md
 ```
 
 **Run the docs site (design language + drift tooling + component catalogue):**
@@ -116,19 +116,19 @@ just dev
 
 | Command          | Description                                                                      |
 | ---------------- | -------------------------------------------------------------------------------- |
-| `ghost profile`  | Generate an expression for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost compare`  | Compare 2+ expressions (pairwise, fleet, semantic, or temporal via flags)          |
+| `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
+| `ghost compare`  | Compare 2+ fingerprints (pairwise, fleet, semantic, or temporal via flags)          |
 | `ghost review`   | Unified drift perception. Scopes: `files` (default, PR drift check), `project [target] --against parent.md` (target coherence against a parent) |
 | `ghost drift`    | Diff local components against the registry — reports breaking changes              |
-| `ghost verify`   | Run the bundled prompt suite against an expression (classifies each dimension as tight/leaky/uncaptured) |
+| `ghost verify`   | Run the bundled prompt suite against a fingerprint (classifies each dimension as tight/leaky/uncaptured) |
 | `ghost discover` | Find public design systems matching a query                                        |
-| `ghost emit`     | Derive artifacts from expression.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens.css + prompt.md) |
-| `ghost generate` | Reference generator — LLM → HTML with self-review retries against an expression    |
-| `ghost lint`     | Lint expression.md schema and body/frontmatter drift                               |
+| `ghost emit`     | Derive artifacts from fingerprint.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens.css + prompt.md) |
+| `ghost generate` | Reference generator — LLM → HTML with self-review retries against a fingerprint    |
+| `ghost lint`     | Lint fingerprint.md schema and body/frontmatter drift                               |
 | `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
-| `ghost adopt`    | Shift parent baseline to a new expression                                          |
+| `ghost adopt`    | Shift parent baseline to a new fingerprint                                          |
 | `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
-| `ghost viz`      | Launch interactive 3D expression visualization                                     |
+| `ghost viz`      | Launch interactive 3D fingerprint visualization                                     |
 
 ### Target Types
 
@@ -193,9 +193,9 @@ export default defineConfig({
 
 ## How It Works
 
-### The Expression
+### The Fingerprint
 
-Ghost's canonical artifact is **`expression.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. It's human-readable, LLM-consumable, and diff-friendly:
+Ghost's canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. It's human-readable, LLM-consumable, and diff-friendly:
 
 - **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. What deterministic tools read
 - **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand
@@ -203,7 +203,7 @@ Ghost's canonical artifact is **`expression.md`** — a Markdown document with Y
 - **`# Observation`** — prose paired with the frontmatter data, dimension by dimension
 - **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare` can match semantically
 
-Generate one with `ghost profile . --emit`. See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec.
+Generate one with `ghost profile . --emit`. See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec.
 
 The 49-dim machine vector splits like this:
 
@@ -224,10 +224,10 @@ Ghost perceives drift at three levels:
 
 ### Generation Loop
 
-Ghost doubles as pipeline infrastructure for AI-driven generation — the expression grounds the generator, and `ghost review` surfaces drift in the output so humans can decide whether to acknowledge, adopt, or diverge:
+Ghost doubles as pipeline infrastructure for AI-driven generation — the fingerprint grounds the generator, and `ghost review` surfaces drift in the output so humans can decide whether to acknowledge, adopt, or diverge:
 
 ```
-expression.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
+fingerprint.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
                                           │
                                           ▼
                                    any generator
@@ -240,20 +240,20 @@ expression.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.
                                                        adopt / diverge)
 ```
 
-Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the expression where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Intent Tracking
 
 Ghost tracks design lineage and published intent through:
 
-- **`expression.md`** — The canonical expression artifact
+- **`fingerprint.md`** — The canonical fingerprint artifact
 - **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning
-- **`.ghost/history.jsonl`** — Append-only expression history for temporal analysis
+- **`.ghost/history.jsonl`** — Append-only fingerprint history for temporal analysis
 - **Temporal comparison** — Velocity and trajectory classification to understand where a system is heading, not just where it is
 
 ### Fleet Observability
 
-Compare expressions across multiple systems to make an ecosystem legible. Ghost calculates pairwise distances, identifies a centroid, and clusters systems by similarity — surfacing which consumers are coherent, which are drifting, and where gaps exist.
+Compare fingerprints across multiple systems to make an ecosystem legible. Ghost calculates pairwise distances, identifies a centroid, and clusters systems by similarity — surfacing which consumers are coherent, which are drifting, and where gaps exist.
 
 ## Ghost UI
 
@@ -276,11 +276,11 @@ Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](
 npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
 ```
 
-Ghost itself can profile the registry to generate an expression, then check downstream consumers against it to detect drift:
+Ghost itself can profile the registry to generate a fingerprint, then check downstream consumers against it to detect drift:
 
 ```bash
 ghost profile --registry ./packages/ghost-ui/registry.json --emit
-ghost review project ./consumer-app --against expression.md
+ghost review project ./consumer-app --against fingerprint.md
 ```
 
 ### Docs site development
@@ -323,7 +323,7 @@ packages/
       extractors/      Material extraction (CSS, Tailwind)
       resolvers/       Registry and CSS resolution
       llm/             LLM providers (Anthropic, OpenAI)
-      reporters/       Output formatting (CLI, JSON, expression, fleet)
+      reporters/       Output formatting (CLI, JSON, fingerprint, fleet)
   ghost-cli/           CLI interface (cac) — 11 unified verbs
     src/
       bin.ts                 profile, compare, discover
@@ -364,9 +364,9 @@ skills/                Claude Code skill definitions
   ghost-compare/       Compare two design systems
   ghost-drift-check/   Check design compliance
   ghost-discover/      Find public design systems
-  ghost-review/        Review files for drift against an expression
+  ghost-review/        Review files for drift against a fingerprint
 docs/
-  expression-format.md The expression.md spec
+  fingerprint-format.md The fingerprint.md spec
   generation-loop.md   Emit → generate → review pipeline
 ```
 

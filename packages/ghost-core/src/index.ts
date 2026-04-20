@@ -1,9 +1,3 @@
-export type {
-  DiscoveredSystem,
-  DiscoveryInput,
-  DiscoveryResult,
-} from "./agents/index.js";
-export { discover } from "./agents/index.js";
 export type { CompareOptions, CompareResult } from "./compare.js";
 export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
@@ -21,10 +15,10 @@ export {
 } from "./context/index.js";
 export type { RoleCandidate } from "./embedding/index.js";
 export {
-  compareExpressions,
+  compareFingerprints,
   computeEmbedding,
   computeSemanticEmbedding,
-  describeExpression,
+  describeFingerprint,
   embeddingDistance,
   inferSemanticRole,
 } from "./embedding/index.js";
@@ -40,7 +34,7 @@ export {
   computeDriftVectors,
   computeTemporalComparison,
   DIMENSION_RANGES,
-  emitExpression,
+  emitFingerprint,
   normalizeParentSource,
   readHistory,
   readRecentHistory,
@@ -52,114 +46,52 @@ export type {
   BodyData,
   ColorChange,
   DecisionChange,
-  ExpressionMeta,
+  FingerprintMeta,
   FrontmatterData,
   FrontmatterShape,
   LintIssue,
   LintOptions,
   LintReport,
   LintSeverity,
-  ParsedExpression,
+  ParsedFingerprint,
   SemanticDiff,
   TokenChange,
-} from "./expression/index.js";
+} from "./fingerprint/index.js";
 export {
-  diffExpressions,
+  diffFingerprints,
   EMBEDDING_FRAGMENT_FILENAME,
-  EXPRESSION_FILENAME,
-  EXPRESSION_SCHEMA_VERSION,
   embeddingSiblingPath,
+  FINGERPRINT_FILENAME,
   FrontmatterSchema,
   findFragmentLinks,
   formatSemanticDiff,
-  lintExpression,
+  lintFingerprint,
   loadEmbeddingFragment,
-  loadExpression,
+  loadFingerprint,
   parseBody,
-  parseExpression,
+  parseFingerprint,
   resolveEmbeddingReference,
   serializeEmbeddingFragment,
-  serializeExpression,
+  serializeFingerprint,
   splitRaw,
   toJsonSchema,
   validateFrontmatter,
-} from "./expression/index.js";
-export {
-  sampleDirectory,
-  walkAndCategorize,
-  walkDirectory,
-} from "./extractors/index.js";
-export type { StagedSource, StagedTargets } from "./extractors/stage.js";
-export { stageTargets } from "./extractors/stage.js";
-export type {
-  BuildGenerationPromptOptions,
-  GenerateAttempt,
-  GenerateFormat,
-  GenerateOptions,
-  GenerateResult,
-} from "./generate/index.js";
-export {
-  buildGenerationPrompt,
-  extractHtml,
-  generate,
-} from "./generate/index.js";
-export type {
-  ExpressionValidation,
-  ValidationIssue,
-} from "./llm/index.js";
-export { createProvider, validateExpression } from "./llm/index.js";
-export type {
-  ProfileOptions,
-  ProfileResult,
-  ProfileTargetResult,
-} from "./profile.js";
-export { profile, profileTarget, profileTargets } from "./profile.js";
-export {
-  formatComplianceCLI,
-  formatComplianceJSON,
-  formatComplianceSARIF,
-} from "./reporters/compliance.js";
-export {
-  formatDiscoveryCLI,
-  formatDiscoveryJSON,
-} from "./reporters/discovery.js";
+} from "./fingerprint/index.js";
 export {
   formatComparison,
   formatComparisonJSON,
-  formatExpression,
-  formatExpressionJSON,
-} from "./reporters/expression.js";
+  formatFingerprint,
+  formatFingerprintJSON,
+} from "./reporters/fingerprint.js";
 export {
   formatFleetComparison,
   formatFleetComparisonJSON,
 } from "./reporters/fleet.js";
-export type { GitHubPRComment } from "./reporters/github-pr.js";
-export {
-  formatGitHubPRComments,
-  formatIssueComment,
-  formatReviewSummary,
-} from "./reporters/github-pr.js";
-export { formatReviewCLI } from "./reporters/review-cli.js";
-export { formatReviewJSON } from "./reporters/review-json.js";
 export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
 } from "./reporters/temporal.js";
 export type {
-  ComplianceInput,
-  ComplianceReport,
-  ComplianceRule,
-  ComplianceThresholds,
-  ComplianceViolation,
-  ReviewOptions,
-} from "./review/index.js";
-export { comply, review } from "./review/index.js";
-export type {
-  AgentContext,
-  AgentMessage,
-  AgentResult,
-  AgentsConfig,
-  CollectedFile,
   ColorRamp,
   ComponentMeta,
   CSSToken,
@@ -175,36 +107,26 @@ export type {
   DriftVelocity,
   EmbeddingConfig,
   EnrichedComparison,
-  EnrichedExpression,
-  Expression,
-  ExpressionComparison,
-  ExpressionHistoryEntry,
+  EnrichedFingerprint,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
+  Fingerprint,
+  FingerprintComparison,
+  FingerprintHistoryEntry,
   FleetCluster,
   FleetComparison,
   FleetMember,
   FleetPair,
   FontDescriptor,
   GhostConfig,
-  LLMConfig,
-  LLMProvider,
   NormalizedToken,
   Registry,
   RegistryFile,
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
-  ReviewConfig,
-  ReviewDimension,
-  ReviewFileResult,
-  ReviewFix,
-  ReviewIssue,
-  ReviewReport,
-  ReviewSeverity,
-  ReviewSummary,
   RuleSeverity,
   SampledFile,
   SampledMaterial,
@@ -220,19 +142,3 @@ export type {
   TokenFormat,
   ValueDrift,
 } from "./types.js";
-export type {
-  DimensionRollup,
-  DriftClassification,
-  PromptResult,
-  PromptSuite,
-  SuiteDimension,
-  SuitePrompt,
-  VerifyAggregate,
-  VerifyOptions,
-} from "./verify/index.js";
-export {
-  aggregate as aggregateVerify,
-  formatVerifyCLI,
-  loadPromptSuite,
-  verify,
-} from "./verify/index.js";

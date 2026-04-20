@@ -11,17 +11,17 @@ branch: refactor/fingerprint (or a follow-up branch)
 
 ```
 # Produce
-ghost profile [targets]        # extract expression.md from target(s) (unchanged)
-ghost emit <kind>              # derive static artifacts from expression.md
+ghost profile [targets]        # extract fingerprint.md from target(s) (unchanged)
+ghost emit <kind>              # derive static artifacts from fingerprint.md
                                #   kinds: review-command, context-bundle
-ghost generate <prompt>        # LLM-produce UI artifact from expression (unchanged)
+ghost generate <prompt>        # LLM-produce UI artifact from fingerprint (unchanged)
 
 # Check
 ghost review [scope]           # unified drift detection
                                #   scopes: files (default), project, suite
 
 # Compare
-ghost compare <a> <b> [...]    # N-way expression comparison
+ghost compare <a> <b> [...]    # N-way fingerprint comparison
                                #   flags: --semantic, --cluster, --temporal
 
 # Govern
@@ -30,7 +30,7 @@ ghost adopt <source>
 ghost diverge <dim>
 
 # Utility
-ghost lint [expression]        # expression.md hygiene (unchanged)
+ghost lint [fingerprint]        # fingerprint.md hygiene (unchanged)
 ghost discover [query]         # find public systems (unchanged)
 ghost viz <...>                # 3D visualization (unchanged)
 ```
@@ -51,14 +51,14 @@ ghost viz <...>                # 3D visualization (unchanged)
 | `fleet a b c …` | `compare a b c … [--cluster]` | merged; N ≥ 2 auto-fleet |
 | `diff [component]` | `compare --components [component]` | merged (rarely used) |
 | `comply [target] [--against]` | `review project [target] [--against]` | merged into review |
-| `verify [expression]` | `review suite [expression]` | merged into review |
+| `verify [fingerprint]` | `review suite [fingerprint]` | merged into review |
 | `review [files]` | `review [files]` or `review files [files]` | kept as default scope |
 | `discover [query]` | `discover [query]` | unchanged |
 | `ack` | `ack` | unchanged |
 | `adopt <source>` | `adopt <source>` | unchanged |
 | `diverge <dim>` | `diverge <dim>` | unchanged |
 | `viz <…>` | `viz <…>` | unchanged |
-| `context [expr]` | `emit context-bundle [--expression …]` | merged into emit |
+| `context [expr]` | `emit context-bundle [--fingerprint …]` | merged into emit |
 | `emit <kind>` (currently only `review`) | `emit <kind>` | kind renamed `review` → `review-command` for clarity |
 | `generate <prompt>` | `generate <prompt>` | unchanged |
 | `lint [expr]` | `lint [expr]` | unchanged |
@@ -79,7 +79,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 - Extend `compare` to accept N arguments.
   - When N=2: pairwise (current behavior).
   - When N≥3 or `--cluster`: fleet comparison (current `compareFleet`).
-- Add `--semantic` flag to `compare`: dispatches to `diffExpressions` instead of `compareExpressions` (vector).
+- Add `--semantic` flag to `compare`: dispatches to `diffFingerprints` instead of `compareFingerprints` (vector).
 - Add `--components` flag to `compare`: dispatches to the existing `diff()` codepath (local vs registry).
 - Remove old files: `expr-diff-command.ts`, fleet bits in `evolution-commands.ts` (keep ack/adopt/diverge), scan logic.
 
@@ -129,7 +129,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 - Introduce scope subcommands on `review`:
   - `ghost review` / `ghost review files [files]` — current review behavior (code drift in files)
   - `ghost review project [target] [--against parent.md]` — current comply behavior
-  - `ghost review suite [expression] [--suite …]` — current verify behavior
+  - `ghost review suite [fingerprint] [--suite …]` — current verify behavior
 - First positional is treated as scope name if it matches `files|project|suite`; otherwise treated as file list (backward compat for bare `ghost review src/`).
 - Keep `comply` and `verify` as deprecated aliases for one release.
 
@@ -137,7 +137,7 @@ Each phase is one PR. Phases are independent; stopping at any point leaves the C
 ```
 Common:
   --format <fmt>          cli | json | github | sarif (not all scopes support all)
-  --expression <path>     override expression source
+  --fingerprint <path>     override fingerprint source
 
 review files [files]
   --staged                staged changes only
@@ -150,7 +150,7 @@ review project [target]
   --max-drift <n>         threshold (default: 0.3)
   --verbose               agent reasoning
 
-review suite [expression]
+review suite [fingerprint]
   --suite <path>          custom suite json
   -n <count>              subsample
   --concurrency <n>
@@ -178,7 +178,7 @@ Not verb-level but worth doing while the CLI is unstable.
 **Changes:**
 - Unify output flags:
   - Drop `--emit-legacy` (legacy format is read-only supported; don't write it).
-  - Keep `--emit` as "write expression.md to project root" convenience.
+  - Keep `--emit` as "write fingerprint.md to project root" convenience.
   - Keep `--output <file>` for explicit path; extension (.md / .json) picks format.
   - Drop `--format` on profile — it conflicts with `--output`. Use `--output -.json` or `-.md` if a user really wants to choose.
 
@@ -238,7 +238,7 @@ Total code time estimate: ~1–2 days per phase including docs and tests. Phase 
 ## Not in scope
 
 - Renaming `profile` (parked — keeping `profile`).
-- Renaming `expression.md`.
+- Renaming `fingerprint.md`.
 - New commands.
 - Changing the library API (`@ghost/core` exports).
 - Touching the Director orchestration layer.

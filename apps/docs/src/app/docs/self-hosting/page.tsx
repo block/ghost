@@ -175,14 +175,16 @@ RUN echo 'server { listen 80; location / { try_files $uri /index.html; } }' \\
               Publish your <code>registry.json</code> at a stable URL
             </li>
             <li>
-              Profile the registry to an <code>expression.md</code>:{" "}
+              Profile the registry to an <code>fingerprint.md</code>:{" "}
               <code>
                 ghost profile --registry https://your-host/registry.json --emit
               </code>
             </li>
             <li>
               Check consumers against it with{" "}
-              <code>ghost review project . --against parent.expression.md</code>
+              <code>
+                ghost review project . --against parent.fingerprint.md
+              </code>
               , or gate PRs with <code>ghost review</code>
             </li>
           </ol>

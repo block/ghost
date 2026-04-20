@@ -68,23 +68,23 @@ export default function CLIReferencePage() {
       <DocProse>
         <DocSection title="Overview">
           <p>
-            Ghost's canonical artifact is <code>expression.md</code> — a
+            Ghost's canonical artifact is <code>fingerprint.md</code> — a
             Markdown file with YAML frontmatter (machine layer) and a
             three-layer prose body. Most commands accept a path to an{" "}
-            <code>expression.md</code>.
+            <code>fingerprint.md</code>.
           </p>
           <p>
-            Commands are zero-config and default to <code>./expression.md</code>{" "}
-            in the current directory. <code>drift</code> is the one exception —
-            it still reads a <code>ghost.config.ts</code> for the registry
-            target.
+            Commands are zero-config and default to{" "}
+            <code>./fingerprint.md</code> in the current directory.{" "}
+            <code>drift</code> is the one exception — it still reads a{" "}
+            <code>ghost.config.ts</code> for the registry target.
           </p>
         </DocSection>
 
         <DocSection title="Profiling">
           <CommandSection
             name="profile"
-            description="Generate a design expression from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a prose expression (Character, Signature, Decisions)."
+            description="Generate a design fingerprint from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a prose fingerprint (Character, Signature, Decisions)."
             usage="ghost profile [...targets] [options]"
             flags={[
               {
@@ -98,12 +98,12 @@ export default function CLIReferencePage() {
               },
               {
                 flag: "-o, --output <file>",
-                description: "Write expression to a file (must end in .md)",
+                description: "Write fingerprint to a file (must end in .md)",
               },
               {
                 flag: "--emit",
                 description:
-                  "Write expression.md to project root (publishable artifact)",
+                  "Write fingerprint.md to project root (publishable artifact)",
               },
               {
                 flag: "--max-iterations <n>",
@@ -118,14 +118,14 @@ export default function CLIReferencePage() {
                 description: 'Output format: "cli" (default) or "json"',
               },
             ]}
-            example={`# Profile the current directory, save expression.md
+            example={`# Profile the current directory, save fingerprint.md
 ghost profile . --emit
 
 # Profile a GitHub repo (verbose shows the agent's reasoning)
 ghost profile github:shadcn-ui/ui --verbose
 
-# Profile multiple sources into a single expression
-ghost profile github:anthropics/claude-code https://claude.ai --output claude.expression.md
+# Profile multiple sources into a single fingerprint
+ghost profile github:anthropics/claude-code https://claude.ai --output claude.fingerprint.md
 
 # Profile a remote shadcn registry directly
 ghost profile -r https://ui.shadcn.com/registry.json`}
@@ -136,7 +136,7 @@ ghost profile -r https://ui.shadcn.com/registry.json`}
           <CommandSection
             name="compare"
             description="Unified comparison verb. Mode is flag-dispatched: pairwise (N=2), fleet (N≥3 or --cluster), semantic diff (--semantic), temporal (--temporal), or local-components-vs-registry (--components)."
-            usage="ghost compare [...expressions] [options]"
+            usage="ghost compare [...fingerprints] [options]"
             flags={[
               {
                 flag: "--temporal",
@@ -160,7 +160,7 @@ ghost profile -r https://ui.shadcn.com/registry.json`}
               {
                 flag: "--components",
                 description:
-                  "Compare local components against registry (reads ghost.config.ts; ignores expression args)",
+                  "Compare local components against registry (reads ghost.config.ts; ignores fingerprint args)",
               },
               {
                 flag: "--component <name>",
@@ -176,16 +176,16 @@ ghost profile -r https://ui.shadcn.com/registry.json`}
               },
             ]}
             example={`# Pairwise (N=2)
-ghost compare parent.expression.md consumer.expression.md
+ghost compare parent.fingerprint.md consumer.fingerprint.md
 
 # With temporal drift analysis
-ghost compare parent.expression.md consumer.expression.md --temporal
+ghost compare parent.fingerprint.md consumer.fingerprint.md --temporal
 
 # Semantic diff (decisions / values / palette)
-ghost compare a.expression.md b.expression.md --semantic
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
 
 # Fleet (N≥3) with clustering
-ghost compare *.expression.md --cluster
+ghost compare *.fingerprint.md --cluster
 
 # Local components vs registry
 ghost drift
@@ -228,13 +228,13 @@ ghost discover "similar to shadcn"`}
 
           <CommandSection
             name="emit"
-            description="Derive artifacts from expression.md. Kinds: review-command (a per-project drift-review slash command at .claude/commands/design-review.md) and context-bundle (SKILL.md + tokens.css + optional prompt.md for Claude Code, MCP, v0, Cursor, or any in-house generator)."
+            description="Derive artifacts from fingerprint.md. Kinds: review-command (a per-project drift-review slash command at .claude/commands/design-review.md) and context-bundle (SKILL.md + tokens.css + optional prompt.md for Claude Code, MCP, v0, Cursor, or any in-house generator)."
             usage="ghost emit <kind> [options]"
             flags={[
               {
-                flag: "-e, --expression <path>",
+                flag: "-e, --fingerprint <path>",
                 description:
-                  "Source expression file (default: ./expression.md)",
+                  "Source fingerprint file (default: ./fingerprint.md)",
               },
               {
                 flag: "-o, --out <path>",
@@ -257,12 +257,12 @@ ghost discover "similar to shadcn"`}
               {
                 flag: "--prompt-only",
                 description:
-                  "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
+                  "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
               },
               {
                 flag: "--name <name>",
                 description:
-                  "Override the skill name — default: expression id (context-bundle)",
+                  "Override the skill name — default: fingerprint id (context-bundle)",
               },
             ]}
             example={`# Emit a per-project design-review slash command
@@ -280,12 +280,13 @@ ghost emit context-bundle --out dist/context`}
 
           <CommandSection
             name="generate"
-            description="Reference generator. Loads an expression, builds a system prompt from Character/Signature/Decisions + tokens, calls the LLM, and (by default) runs ghost review against its own output, injecting drift feedback and retrying."
+            description="Reference generator. Loads an fingerprint, builds a system prompt from Character/Signature/Decisions + tokens, calls the LLM, and (by default) runs ghost review against its own output, injecting drift feedback and retrying."
             usage="ghost generate <prompt> [options]"
             flags={[
               {
-                flag: "-e, --expression <path>",
-                description: "Path to expression.md (default: ./expression.md)",
+                flag: "-e, --fingerprint <path>",
+                description:
+                  "Path to fingerprint.md (default: ./fingerprint.md)",
               },
               {
                 flag: "-o, --out <file>",
@@ -310,7 +311,7 @@ ghost emit context-bundle --out dist/context`}
                   "Emit structured JSON {artifact, attempts, passed}",
               },
             ]}
-            example={`# Generate a pricing page against the current expression
+            example={`# Generate a pricing page against the current fingerprint
 ghost generate "pricing page with three tiers" --out pricing.html
 
 # Fast path: skip the self-review loop
@@ -327,9 +328,9 @@ ghost generate "dashboard" --json`}
             flags={[
               // files
               {
-                flag: "-e, --expression <path>",
+                flag: "-e, --fingerprint <path>",
                 description:
-                  "[files] Path to expression (default: ./expression.md)",
+                  "[files] Path to fingerprint (default: ./fingerprint.md)",
               },
               {
                 flag: "--staged",
@@ -353,7 +354,7 @@ ghost generate "dashboard" --json`}
               {
                 flag: "--against <path>",
                 description:
-                  "[project] Parent expression path to check drift against",
+                  "[project] Parent fingerprint path to check drift against",
               },
               {
                 flag: "--max-drift <n>",
@@ -403,11 +404,11 @@ ghost generate "dashboard" --json`}
             example={`# files scope (default) — review uncommitted changes
 ghost review
 ghost review --staged --format github
-ghost review src/components/hero.tsx -f design.expression.md
+ghost review src/components/hero.tsx -f design.fingerprint.md
 
 # project scope — target-level compliance against a parent
-ghost review project . --against parent.expression.md
-ghost review project . --against parent.expression.md --format sarif
+ghost review project . --against parent.fingerprint.md
+ghost review project . --against parent.fingerprint.md --format sarif
 
 # suite scope — drive generate→review across a prompt suite
 ghost verify
@@ -453,7 +454,7 @@ ghost ack -d typography --stance diverging --reason "Brand refresh requires diff
 
           <CommandSection
             name="adopt"
-            description="Shift the parent baseline to a new expression. Use this when the parent design system has been updated and you want to re-anchor your drift measurements."
+            description="Shift the parent baseline to a new fingerprint. Use this when the parent design system has been updated and you want to re-anchor your drift measurements."
             usage="ghost adopt <source> [options]"
             flags={[
               {
@@ -469,8 +470,8 @@ ghost ack -d typography --stance diverging --reason "Brand refresh requires diff
                 description: 'Output format: "cli" (default) or "json"',
               },
             ]}
-            example={`# Adopt a new parent expression
-ghost adopt new-parent.expression.md`}
+            example={`# Adopt a new parent fingerprint
+ghost adopt new-parent.fingerprint.md`}
           />
 
           <CommandSection
@@ -498,7 +499,7 @@ ghost adopt new-parent.expression.md`}
         <DocSection title="Visualization">
           <CommandSection
             name="viz"
-            description="Launch an interactive 3D visualization of expression embeddings using Three.js. Projects the 49-dimensional vectors into 3D space via PCA."
+            description="Launch an interactive 3D visualization of fingerprint embeddings using Three.js. Projects the 49-dimensional vectors into 3D space via PCA."
             usage="ghost viz <fp1> <fp2> [fp3...] [options]"
             flags={[
               {
@@ -510,11 +511,11 @@ ghost adopt new-parent.expression.md`}
                 description: "Don't auto-open the browser",
               },
             ]}
-            example={`# Visualize two expressions
-ghost viz parent.expression.md consumer.expression.md
+            example={`# Visualize two fingerprints
+ghost viz parent.fingerprint.md consumer.fingerprint.md
 
 # Visualize a fleet on a custom port
-ghost viz *.expression.md --port 8080`}
+ghost viz *.fingerprint.md --port 8080`}
           />
 
           <hr />

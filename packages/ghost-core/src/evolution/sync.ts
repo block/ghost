@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareExpressions } from "../embedding/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
   DimensionAck,
   DimensionStance,
-  Expression,
-  ExpressionComparison,
+  Fingerprint,
+  FingerprintComparison,
   SyncManifest,
   Target,
 } from "../types.js";
@@ -50,17 +50,17 @@ export async function writeSyncManifest(
  * the rest are preserved from the existing manifest or set to "accepted".
  */
 export async function acknowledge(opts: {
-  child: Expression;
-  parent: Expression;
+  child: Fingerprint;
+  parent: Fingerprint;
   parentRef: Target;
   dimension?: string;
   stance?: DimensionStance;
   reason?: string;
   tolerance?: number;
   cwd?: string;
-}): Promise<{ manifest: SyncManifest; comparison: ExpressionComparison }> {
+}): Promise<{ manifest: SyncManifest; comparison: FingerprintComparison }> {
   const cwd = opts.cwd ?? process.cwd();
-  const comparison = compareExpressions(opts.parent, opts.child);
+  const comparison = compareFingerprints(opts.parent, opts.child);
   const now = new Date().toISOString();
 
   // Load existing manifest to preserve previous acks
@@ -92,8 +92,8 @@ export async function acknowledge(opts: {
   const manifest: SyncManifest = {
     parent: opts.parentRef,
     ackedAt: now,
-    parentExpressionId: opts.parent.id,
-    childExpressionId: opts.child.id,
+    parentFingerprintId: opts.parent.id,
+    childFingerprintId: opts.child.id,
     dimensions,
     overallDistance: comparison.distance,
   };
@@ -121,7 +121,7 @@ export interface CheckBoundsOptions {
  */
 export function checkBounds(
   manifest: SyncManifest,
-  current: ExpressionComparison,
+  current: FingerprintComparison,
   toleranceOrOptions?: number | CheckBoundsOptions,
 ): { exceeded: boolean; dimensions: string[]; reconverging: string[] } {
   const opts: CheckBoundsOptions =

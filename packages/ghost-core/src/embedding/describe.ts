@@ -1,13 +1,13 @@
-import type { Expression } from "../types.js";
+import type { Fingerprint } from "../types.js";
 
 /**
- * Render an Expression as a standardized natural language description.
+ * Render an Fingerprint as a standardized natural language description.
  * This text is fed to embedding models to produce semantic vectors.
  *
  * The description is structured to emphasize design-relevant signals
  * and minimize noise from identifiers or timestamps.
  */
-export function describeExpression(fp: Expression): string {
+export function describeFingerprint(fp: Fingerprint): string {
   const sections: string[] = [];
 
   // Observation (Layer 1) — prepend when available for richer semantic embedding
@@ -35,7 +35,7 @@ export function describeExpression(fp: Expression): string {
   return sections.filter(Boolean).join(" ");
 }
 
-function describePalette(fp: Expression): string {
+function describePalette(fp: Fingerprint): string {
   const parts: string[] = [];
 
   const { palette } = fp;
@@ -75,7 +75,7 @@ function describePalette(fp: Expression): string {
   return parts.join(" ");
 }
 
-function describeSpacing(fp: Expression): string {
+function describeSpacing(fp: Fingerprint): string {
   const { spacing } = fp;
   const parts: string[] = [];
 
@@ -100,7 +100,7 @@ function describeSpacing(fp: Expression): string {
   return parts.join(" ");
 }
 
-function describeTypography(fp: Expression): string {
+function describeTypography(fp: Fingerprint): string {
   const { typography } = fp;
   const parts: string[] = [];
 
@@ -129,7 +129,7 @@ function describeTypography(fp: Expression): string {
   return parts.join(" ");
 }
 
-function describeSurfaces(fp: Expression): string {
+function describeSurfaces(fp: Fingerprint): string {
   const { surfaces } = fp;
   const parts: string[] = [];
 

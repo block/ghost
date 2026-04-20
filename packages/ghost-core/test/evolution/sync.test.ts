@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { checkBounds } from "../../src/evolution/sync.js";
 import type {
   DimensionAck,
-  Expression,
-  ExpressionComparison,
+  Fingerprint,
+  FingerprintComparison,
   SyncManifest,
 } from "../../src/types.js";
 
@@ -23,8 +23,8 @@ function makeManifest(
   return {
     parent: { type: "default" },
     ackedAt: new Date().toISOString(),
-    parentExpressionId: "parent",
-    childExpressionId: "child",
+    parentFingerprintId: "parent",
+    childFingerprintId: "child",
     dimensions: fullDimensions,
     overallDistance: 0.2,
   };
@@ -32,8 +32,8 @@ function makeManifest(
 
 function makeComparison(
   dimensions: Record<string, number>,
-): ExpressionComparison {
-  const fp: Expression = {
+): FingerprintComparison {
+  const fp: Fingerprint = {
     id: "test",
     source: "registry",
     timestamp: new Date().toISOString(),

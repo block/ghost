@@ -157,7 +157,7 @@ function DriftSpotlight() {
   );
 }
 
-/* ─────────────────── 2. The Expression — Radar ─────────────────────── */
+/* ─────────────────── 2. The Fingerprint — Radar ─────────────────────── */
 
 const RADAR_CATEGORIES = [
   { label: "Palette", angle: -90 },
@@ -366,9 +366,9 @@ const REVIEW_SCOPES: {
   {
     id: "files",
     name: "Files",
-    what: "Scans code changes against the expression. Zero-config: reads ./expression.md; flags changed lines by default.",
+    what: "Scans code changes against the fingerprint. Zero-config: reads ./fingerprint.md; flags changed lines by default.",
     catches:
-      "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the expression's decisions.",
+      "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the fingerprint's decisions.",
     visual: (
       <div className="space-y-2 font-mono text-xs">
         <div className="flex items-center gap-2">
@@ -397,7 +397,7 @@ const REVIEW_SCOPES: {
   {
     id: "project",
     name: "Project",
-    what: "Profiles a whole target and compares its expression against a parent. CI gate with CLI, JSON, or SARIF output.",
+    what: "Profiles a whole target and compares its fingerprint against a parent. CI gate with CLI, JSON, or SARIF output.",
     catches:
       "Cumulative drift across an entire system — per-dimension deltas and a threshold gate you can fail builds on.",
     visual: (
@@ -426,7 +426,7 @@ const REVIEW_SCOPES: {
     name: "Suite",
     what: "Drives the generate→review loop across a bundled prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
     catches:
-      "Gaps in the expression — dimensions the generator drifts on because the Decisions under-specify them.",
+      "Gaps in the fingerprint — dimensions the generator drifts on because the Decisions under-specify them.",
     visual: (
       <div className="font-mono text-xs space-y-1">
         <div className="text-muted-foreground">18 prompts · 14 passed</div>
@@ -660,15 +660,15 @@ export default function ConceptsPage() {
         </p>
       </Chapter>
 
-      {/* ── Chapter 2: The Expression ────────────────────────────── */}
+      {/* ── Chapter 2: The Fingerprint ────────────────────────────── */}
       <Chapter className="border-t border-border/40">
         <ChapterLabel>Chapter 2</ChapterLabel>
-        <ChapterTitle>The Expression</ChapterTitle>
+        <ChapterTitle>The Fingerprint</ChapterTitle>
         <ChapterLead>
           Ghost sends your design system through an LLM and records what it
           sees, in three layers: a holistic observation, the abstract design
           decisions behind it, and the concrete values. Similar systems produce
-          similar expressions. Different ones don't.
+          similar fingerprints. Different ones don't.
         </ChapterLead>
         <div className="reveal mb-10 grid sm:grid-cols-3 gap-4">
           {[
@@ -736,7 +736,7 @@ export default function ConceptsPage() {
         </div>
         <p className="reveal mt-6 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Palette weighs heaviest — color is the first thing people notice.
-          Decisions contribute when both expressions have them embedded;
+          Decisions contribute when both fingerprints have them embedded;
           otherwise they're reported qualitatively and excluded from the scalar
           so unscored text doesn't pollute the number.
         </p>
@@ -763,7 +763,7 @@ export default function ConceptsPage() {
         <ChapterLead>
           One verb — <code>ghost review</code> — asks three scopes of question
           about drift. From the tight (this PR) to the broad (the whole
-          expression's schema discipline). Same answer shape every time.
+          fingerprint's schema discipline). Same answer shape every time.
         </ChapterLead>
         <ScanSection />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
@@ -869,7 +869,7 @@ export default function ConceptsPage() {
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             ghost compare
           </code>{" "}
-          with three or more expressions (add{" "}
+          with three or more fingerprints (add{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             --cluster
           </code>
@@ -886,9 +886,9 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 6</ChapterLabel>
         <ChapterTitle>The Generation Loop</ChapterTitle>
         <ChapterLead>
-          An expression isn't just a measurement — it's a grounding artifact.
+          An fingerprint isn't just a measurement — it's a grounding artifact.
           Ghost wires it into AI-driven UI generation as pipeline
-          infrastructure: the expression feeds the generator; the review gate
+          infrastructure: the fingerprint feeds the generator; the review gate
           catches drift before it lands.
         </ChapterLead>
         <div className="reveal grid sm:grid-cols-4 gap-4">
@@ -896,7 +896,7 @@ export default function ConceptsPage() {
             {
               step: "emit context-bundle",
               name: "Ground",
-              desc: "Write SKILL.md + tokens.css + prompt.md from expression.md — whatever the generator consumes.",
+              desc: "Write SKILL.md + tokens.css + prompt.md from fingerprint.md — whatever the generator consumes.",
             },
             {
               step: "generate",
@@ -911,7 +911,7 @@ export default function ConceptsPage() {
             {
               step: "verify",
               name: "Audit",
-              desc: "Run the loop over a prompt suite. Per-dimension drift says where the expression leaks.",
+              desc: "Run the loop over a prompt suite. Per-dimension drift says where the fingerprint leaks.",
             },
           ].map((s) => (
             <div
@@ -938,9 +938,9 @@ export default function ConceptsPage() {
             verify
           </code>{" "}
           is the schema-discipline mechanism. Each dimension gets classified as{" "}
-          <em>tight</em> (expression reproduces faithfully), <em>leaky</em>{" "}
+          <em>tight</em> (fingerprint reproduces faithfully), <em>leaky</em>{" "}
           (generator drifts here often — tighten Decisions), or{" "}
-          <em>uncaptured</em> (the expression under-specifies this dimension).
+          <em>uncaptured</em> (the fingerprint under-specifies this dimension).
         </p>
       </Chapter>
 
@@ -956,7 +956,7 @@ export default function ConceptsPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              file: "expression.md",
+              file: "fingerprint.md",
               desc: "What the system looks like, in three layers",
             },
             {

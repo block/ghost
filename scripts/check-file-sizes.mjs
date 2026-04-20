@@ -8,14 +8,14 @@ const EXCEPTIONS = {
   "packages/ghost-core/src/types.ts": {
     limit: 780,
     justification:
-      "Canonical type barrel — all shared types in one file for discoverability, including three-layer expression types and role bindings",
+      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
   },
   "packages/ghost-cli/src/bin.ts": {
     limit: 580,
     justification:
       "CLI command registry — each command is small but there are 12 of them, plus multi-target profile parsing",
   },
-  "packages/ghost-core/src/agents/expression.ts": {
+  "packages/ghost-core/src/agents/fingerprint.ts": {
     limit: 550,
     justification:
       "ExpressionAgent — overview builder, tool loop, and three-layer prompt are tightly coupled to the agent",
@@ -23,7 +23,7 @@ const EXCEPTIONS = {
   "packages/ghost-core/src/embedding/compare.ts": {
     limit: 600,
     justification:
-      "Expression comparison — cosine-based decision matching alongside existing value comparison",
+      "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 

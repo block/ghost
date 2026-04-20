@@ -16,13 +16,21 @@ describe("parseEmitKind", () => {
     });
   });
 
+  it("accepts skill", () => {
+    expect(parseEmitKind("skill")).toEqual({
+      ok: true,
+      kind: "skill",
+    });
+  });
+
   it("rejects unknown kinds with a helpful error", () => {
-    const result = parseEmitKind("skill");
+    const result = parseEmitKind("nope");
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain("unknown emit kind 'skill'");
+      expect(result.error).toContain("unknown emit kind 'nope'");
       expect(result.error).toContain("review-command");
       expect(result.error).toContain("context-bundle");
+      expect(result.error).toContain("skill");
     }
   });
 

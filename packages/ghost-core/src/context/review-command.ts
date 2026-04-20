@@ -1,11 +1,11 @@
-import type { Expression } from "../types.js";
+import type { Fingerprint } from "../types.js";
 
 export interface EmitReviewInput {
-  expression: Expression;
+  fingerprint: Fingerprint;
 }
 
 /**
- * Emit a project-fitted drift-review slash command from an expression.
+ * Emit a project-fitted drift-review slash command from an fingerprint.
  *
  * Produces a single Markdown file styled after Rams' `/rams` slash command
  * — role prompt, per-dimension rule tables, output template, guidelines —
@@ -16,13 +16,13 @@ export interface EmitReviewInput {
  * radii and weights. Universal accessibility rules are out of scope —
  * those belong in Rams or a sibling a11y skill.
  *
- * Pure: deterministic over the same expression. The expression is
- * expected to be the unioned result of `loadExpression` — body prose
+ * Pure: deterministic over the same fingerprint. The fingerprint is
+ * expected to be the unioned result of `loadFingerprint` — body prose
  * (Character summary, per-decision rationale) is already folded into
  * `observation.summary` and `decisions[].decision`.
  */
 export function emitReviewCommand(input: EmitReviewInput): string {
-  const { expression: fp } = input;
+  const { fingerprint: fp } = input;
   const id = fp.id;
   const personality = (fp.observation?.personality ?? []).join(", ");
   const cousins = (fp.observation?.closestSystems ?? []).join(", ");
@@ -46,7 +46,7 @@ export function emitReviewCommand(input: EmitReviewInput): string {
 
 function frontmatter(id: string): string {
   return `---
-description: Drift review for ${id} — fitted to this system's design expression
+description: Drift review for ${id} — fitted to this system's design fingerprint
 ---`;
 }
 
@@ -88,7 +88,7 @@ const TRUE_SEMANTIC_ROLES = new Set([
   "error",
 ]);
 
-function paletteSection(fp: Expression): string {
+function paletteSection(fp: Fingerprint): string {
   const allowed = allowedPalette(fp);
   const allowedList = allowed.map((h) => `\`${h}\``).join(", ");
   const dominant = fp.palette.dominant
@@ -141,7 +141,7 @@ function paletteSection(fp: Expression): string {
   return lines.join("\n");
 }
 
-function allowedPalette(fp: Expression): string[] {
+function allowedPalette(fp: Fingerprint): string[] {
   const all = [
     ...fp.palette.dominant.map((c) => c.value),
     ...fp.palette.neutrals.steps,
@@ -152,7 +152,7 @@ function allowedPalette(fp: Expression): string[] {
 
 // --- Radius -------------------------------------------------------------
 
-function radiusSection(fp: Expression): string {
+function radiusSection(fp: Fingerprint): string {
   const radii = fp.surfaces.borderRadii;
   if (!radii?.length) return "";
   const labeled = radii.map((r) => (r >= 999 ? "999px (pill)" : `${r}px`));
@@ -182,7 +182,7 @@ function radiusSection(fp: Expression): string {
 
 // --- Spacing ------------------------------------------------------------
 
-function spacingSection(fp: Expression): string {
+function spacingSection(fp: Fingerprint): string {
   const scale = fp.spacing.scale;
   if (!scale?.length) return "";
   const allowedList = scale.map((s) => `\`${s}px\``).join(", ");
@@ -207,7 +207,7 @@ function spacingSection(fp: Expression): string {
 
 // --- Typography ---------------------------------------------------------
 
-function typographySection(fp: Expression): string {
+function typographySection(fp: Fingerprint): string {
   const t = fp.typography;
   if (!t) return "";
   const families = t.families
@@ -254,7 +254,7 @@ const COVERED_DIMENSIONS = new Set([
   "typography",
 ]);
 
-function otherDimensions(fp: Expression): string {
+function otherDimensions(fp: Fingerprint): string {
   const blocks: string[] = [];
   for (const d of fp.decisions ?? []) {
     if (COVERED_DIMENSIONS.has(d.dimension)) continue;
@@ -304,17 +304,17 @@ function guidelines(): string {
 5. If asked, offer to fix directly`;
 }
 
-function footer(fp: Expression): string {
+function footer(fp: Fingerprint): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`expression.md\` (${count} decisions). Re-run \`ghost emit review-command\` after expression updates.`;
+Generated from \`fingerprint.md\` (${count} decisions). Re-run \`ghost emit review-command\` after fingerprint updates.`;
 }
 
 // --- helpers ------------------------------------------------------------
 
 function findRationale(
-  fp: Expression,
+  fp: Fingerprint,
   candidates: string[],
 ): string | undefined {
   for (const dim of candidates) {

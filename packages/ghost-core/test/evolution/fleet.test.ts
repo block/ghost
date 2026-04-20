@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { compareFleet } from "../../src/evolution/fleet.js";
-import type { Expression, FleetMember } from "../../src/types.js";
+import type { Fingerprint, FleetMember } from "../../src/types.js";
 
 function makeFleetMember(
   id: string,
@@ -11,7 +11,7 @@ function makeFleetMember(
     embedding[Number(idx)] = val;
   }
 
-  const fp: Expression = {
+  const fp: Fingerprint = {
     id,
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -44,7 +44,7 @@ function makeFleetMember(
     embedding,
   };
 
-  return { id, expression: fp };
+  return { id, fingerprint: fp };
 }
 
 describe("compareFleet", () => {
