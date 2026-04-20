@@ -1,0 +1,174 @@
+---
+title: CLI Reference
+description: Six deterministic primitives. Everything interpretive lives in the skill bundle.
+kicker: Docs
+section: drift
+order: 20
+slug: cli
+---
+
+<DocSection title="Overview">
+
+Ghost's CLI is a set of deterministic primitives. It never calls an LLM.
+The canonical artifact is `fingerprint.md` — a Markdown file with two
+layers: a machine layer (YAML frontmatter: 49-dim vector + palette,
+spacing, typography, surfaces, roles) and a prose body with three
+sections (Character, Signature, Decisions). Most commands accept a path
+to a `fingerprint.md`; they default to `./fingerprint.md` in the current
+directory.
+
+Workflows like _profile_, _review_, _verify_, _generate_, and _discover_
+are skill recipes your host agent runs — not CLI verbs. Install them once
+with `ghost emit skill`.
+
+The tables below are generated from the CLI source at build time. If a
+flag changes in `bin.ts`, the next `pnpm dump:cli-help` run regenerates
+this reference — so these docs can't drift from the binary.
+
+</DocSection>
+
+<DocSection title="Comparison">
+
+Pairwise distance (N=2) or fleet analysis (N≥3) over fingerprint
+embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
+and `--temporal` add qualitative enrichment for N=2.
+
+<CliHelp command="compare" hideDescription />
+
+```bash
+# Pairwise (N=2)
+ghost compare parent.fingerprint.md consumer.fingerprint.md
+
+# Qualitative diff of decisions + palette
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
+
+# Velocity + trajectory
+ghost compare before.fingerprint.md after.fingerprint.md --temporal
+
+# Fleet (N≥3) — pairwise matrix + centroid
+ghost compare *.fingerprint.md
+```
+
+</DocSection>
+
+<DocSection title="Validation">
+
+Validate `fingerprint.md` schema + body/frontmatter coherence. Use this
+before declaring a fingerprint valid — the profile recipe ends by calling
+it.
+
+<CliHelp command="lint" hideDescription />
+
+```bash
+# Default — reads ./fingerprint.md
+ghost lint
+
+# Specific file, JSON output
+ghost lint path/to/fingerprint.md --format json
+```
+
+</DocSection>
+
+<DocSection title="Intent — ack / adopt / diverge">
+
+These three verbs write per-dimension stances to `.ghost-sync.json`. `ack`
+and `diverge` need a parent declared in `ghost.config.ts`; `adopt` takes
+the new parent as its argument.
+
+Acknowledge current drift — record your intentional stance (aligned,
+accepted, or diverging). Reads the parent from `ghost.config.ts` and the
+local `fingerprint.md`.
+
+<CliHelp command="ack" hideDescription />
+
+```bash
+# Acknowledge all dimensions as aligned
+ghost ack --stance aligned --reason "Initial baseline"
+
+# Mark typography as intentionally diverging
+ghost ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
+```
+
+Shift the parent baseline to a new fingerprint. Use this when the parent
+design language has been updated and you want to re-anchor your drift
+measurements.
+
+<CliHelp command="adopt" hideDescription />
+
+```bash
+# Adopt a new parent fingerprint
+ghost adopt new-parent.fingerprint.md
+```
+
+Mark a specific dimension as intentionally diverging. Shorthand for
+`ack --stance diverging` that also records a reason.
+
+<CliHelp command="diverge" hideDescription />
+
+```bash
+ghost diverge palette --reason "Dark-mode-first palette for this product"
+```
+
+</DocSection>
+
+<DocSection title="Emit — derive artifacts from fingerprint.md">
+
+Derive an artifact from `fingerprint.md`. Kinds: `review-command` (a
+per-project slash command at `.claude/commands/design-review.md`),
+`context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
+generator), or `skill` (the `ghost-drift` agentskills.io bundle — install
+this into your host agent).
+
+<CliHelp command="emit" hideDescription />
+
+```bash
+# Install the ghost-drift skill into your host agent
+ghost emit skill
+
+# Emit a per-project design-review slash command
+ghost emit review-command
+
+# Emit a grounding bundle any generator can consume
+ghost emit context-bundle
+
+# Single prompt.md for plain-text LLM context
+ghost emit context-bundle --prompt-only
+
+# Custom output directory
+ghost emit context-bundle --out dist/context
+```
+
+</DocSection>
+
+<DocSection title="Skill recipes (host agent)">
+
+These aren't CLI verbs — they're instruction files inside the skill bundle
+that your host agent follows. Install the bundle with `ghost emit skill`,
+then ask your agent in plain English:
+
+| Recipe     | Trigger                                                |
+| ---------- | ------------------------------------------------------ |
+| `profile`  | "profile this design language" / "write a fingerprint.md" |
+| `review`   | "review this PR for drift"                              |
+| `verify`   | "verify generated UI against the fingerprint"           |
+| `generate` | "generate a component matching our design"              |
+| `discover` | "find design languages like Linear"                       |
+| `compare`  | "why did these two fingerprints drift?"                 |
+
+Source for each recipe lives under
+`packages/ghost-cli/src/skill-bundle/references/`. The agent executes the
+steps with its normal tools and calls `ghost` for any deterministic work.
+
+Each recipe also declares `handoffs` in its frontmatter — structured
+next-step suggestions that point at another skill (e.g. `profile` →
+`compare`) or a CLI invocation (e.g. `profile` →
+`ghost emit review-command`). Hosts that read the field can surface the
+next action inline; hosts that ignore unknown frontmatter see no change.
+
+---
+
+See [Core Concepts](/tools/drift/concepts) for the ideas behind these
+primitives, or [Getting Started](/tools/drift/getting-started) for a
+guided walkthrough.
+
+</DocSection>

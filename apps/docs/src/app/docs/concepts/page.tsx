@@ -150,7 +150,7 @@ function DriftSpotlight() {
           <span className="font-semibold text-foreground">border-radius</span>{" "}
           changed from <code className="font-mono">8px</code> to{" "}
           <code className="font-mono">6px</code>. Tiny? Yes. But multiply this
-          by 50 components across 3 apps, and your design system dissolves.
+          by 50 components across 3 apps, and your design language dissolves.
         </div>
       </div>
     </div>
@@ -366,7 +366,7 @@ const REVIEW_SCOPES: {
   {
     id: "files",
     name: "Files",
-    what: "Scans code changes against the fingerprint. Zero-config: reads ./fingerprint.md; flags changed lines by default.",
+    what: "The host agent diffs changed files against the fingerprint. Zero-config: reads ./fingerprint.md; flags changed lines by default.",
     catches:
       "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the fingerprint's decisions.",
     visual: (
@@ -397,9 +397,9 @@ const REVIEW_SCOPES: {
   {
     id: "project",
     name: "Project",
-    what: "Profiles a whole target and compares its fingerprint against a parent. CI gate with CLI, JSON, or SARIF output.",
+    what: "The agent profiles a whole target, then ghost compare returns per-dimension deltas against a parent. CI-friendly via --format json.",
     catches:
-      "Cumulative drift across an entire system — per-dimension deltas and a threshold gate you can fail builds on.",
+      "Cumulative drift across an entire system — per-dimension deltas and a distance you can fail builds on.",
     visual: (
       <div className="font-mono text-xs space-y-1">
         <div className="text-muted-foreground">
@@ -424,7 +424,7 @@ const REVIEW_SCOPES: {
   {
     id: "suite",
     name: "Suite",
-    what: "Drives the generate→review loop across a bundled prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
+    what: "The verify recipe drives the generate→review loop across a prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
     catches:
       "Gaps in the fingerprint — dimensions the generator drifts on because the Decisions under-specify them.",
     visual: (
@@ -474,7 +474,7 @@ function ScanSection() {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h4 className="font-display font-semibold text-foreground mb-2">
-              ghost review {lens.id}
+              review — {lens.name.toLowerCase()}
             </h4>
             <p className="text-sm text-muted-foreground leading-relaxed mb-3">
               {lens.what}
@@ -639,8 +639,8 @@ export default function ConceptsPage() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="Concepts"
-        title="How Ghost Works"
-        description="Design systems drift silently. Ghost gives you the language — and the tools — to see it, measure it, and decide what to do about it."
+        title="How Ghost Drift Works"
+        description="Design languages drift silently. Ghost gives you the language — and the tools — to see it, measure it, and decide what to do about it."
       />
 
       {/* ── Chapter 1: The Problem ──────────────────────────────────── */}
@@ -648,14 +648,14 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 1</ChapterLabel>
         <ChapterTitle>The Problem</ChapterTitle>
         <ChapterLead>
-          Design systems don't break loudly. They erode — a color changed here,
-          a radius tweaked there. Six months later, your "shared" system is
-          three different systems wearing the same name.
+          Design languages don't break loudly. They erode — a color changed
+          here, a radius tweaked there. Six months later, your "shared" system
+          is three different systems wearing the same name.
         </ChapterLead>
         <DriftSpotlight />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           This is <strong className="text-foreground">drift</strong>. It's the
-          gap between what your design system says and what your apps actually
+          gap between what your design language says and what your apps actually
           render. Ghost exists to make that gap visible.
         </p>
       </Chapter>
@@ -665,10 +665,14 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 2</ChapterLabel>
         <ChapterTitle>The Fingerprint</ChapterTitle>
         <ChapterLead>
-          Ghost sends your design system through an LLM and records what it
-          sees, in three layers: a holistic observation, the abstract design
-          decisions behind it, and the concrete values. Similar systems produce
-          similar fingerprints. Different ones don't.
+          A host agent reads your design language and writes a{" "}
+          <code>fingerprint.md</code> — two layers on disk (YAML frontmatter for
+          machines, Markdown body for humans), capturing three perspectives at
+          once: a holistic observation, the abstract design decisions behind it,
+          and the concrete values. Ghost never calls an LLM itself — the agent
+          does, then the CLI compares, lints, and tracks intent
+          deterministically. Similar systems produce similar fingerprints.
+          Different ones don't.
         </ChapterLead>
         <div className="reveal mb-10 grid sm:grid-cols-3 gap-4">
           {[
@@ -761,25 +765,26 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 3</ChapterLabel>
         <ChapterTitle>The Review</ChapterTitle>
         <ChapterLead>
-          One verb — <code>ghost review</code> — asks three scopes of question
-          about drift. From the tight (this PR) to the broad (the whole
-          fingerprint's schema discipline). Same answer shape every time.
+          <em>Review</em> is a skill recipe your host agent runs — not a CLI
+          verb. It answers three scopes of drift question, from the tight (this
+          PR) to the broad (the whole fingerprint's schema discipline). Same
+          answer shape every time.
         </ChapterLead>
         <ScanSection />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          Each scope exits with a structured report you can pipe into CI:{" "}
+          The agent reaches for deterministic primitives as it needs them:{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            --format json
+            ghost compare
           </code>{" "}
-          for machines,{" "}
+          for distance,{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            --format sarif
+            ghost lint
           </code>{" "}
-          (project scope) for GitHub code scanning, or{" "}
+          for validation. For a per-project, pre-baked review command use{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            --format github
-          </code>{" "}
-          (files scope) for inline PR comments.
+            ghost emit review-command
+          </code>
+          .
         </p>
       </Chapter>
 
@@ -796,14 +801,14 @@ export default function ConceptsPage() {
           <StanceBubble
             symbol="="
             label="Aligned"
-            speaker="ghost ack --aligned"
+            speaker="ghost ack --stance aligned"
             message="We're tracking the parent. If this drifted, it's a bug — fix it."
             align="left"
           />
           <StanceBubble
             symbol="*"
             label="Accepted"
-            speaker="ghost ack --accepted"
+            speaker="ghost ack --stance accepted"
             message="We know this is different. We've reviewed it. It's a known trade-off, not an oversight."
             align="right"
           />
@@ -831,9 +836,9 @@ export default function ConceptsPage() {
         <ChapterLabel>Chapter 5</ChapterLabel>
         <ChapterTitle>The Fleet</ChapterTitle>
         <ChapterLead>
-          When your org has multiple design systems — a core plus product forks
-          — Ghost zooms out. It shows you who's a twin, who's the outlier, and
-          how the whole family is evolving.
+          When your org has multiple design languages — a core plus product
+          forks — Ghost zooms out. It shows you who's a twin, who's the outlier,
+          and how the whole family is evolving.
         </ChapterLead>
         <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card p-6 md:p-8">
           <FleetConstellation />
@@ -869,15 +874,8 @@ export default function ConceptsPage() {
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             ghost compare
           </code>{" "}
-          with three or more fingerprints (add{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            --cluster
-          </code>
-          ) to see the full picture, or{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost viz
-          </code>{" "}
-          to explore it interactively in 3D.
+          with three or more fingerprints to see the pairwise matrix, centroid,
+          and similarity clusters in one pass.
         </p>
       </Chapter>
 
@@ -894,24 +892,28 @@ export default function ConceptsPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              step: "emit context-bundle",
+              step: "ghost emit context-bundle",
+              kind: "CLI",
               name: "Ground",
               desc: "Write SKILL.md + tokens.css + prompt.md from fingerprint.md — whatever the generator consumes.",
             },
             {
-              step: "generate",
+              step: "generate (recipe)",
+              kind: "recipe",
               name: "Produce",
-              desc: "Any generator: ghost generate, Cursor, v0, or in-house. The bundle rides in context.",
+              desc: "Host agent, Cursor, v0, or in-house — whichever generator you already use. The bundle rides in context.",
             },
             {
-              step: "review",
+              step: "review (recipe)",
+              kind: "recipe",
               name: "Gate",
-              desc: "Hardcoded colors, off-scale spacing, off-brand type — flagged line-by-line on the diff.",
+              desc: "Hardcoded colors, off-scale spacing, off-brand type — flagged line-by-line on the diff by the agent.",
             },
             {
-              step: "verify",
+              step: "verify (recipe)",
+              kind: "recipe",
               name: "Audit",
-              desc: "Run the loop over a prompt suite. Per-dimension drift says where the fingerprint leaks.",
+              desc: "Drives the loop over a prompt suite. Per-dimension drift says where the fingerprint leaks.",
             },
           ].map((s) => (
             <div
@@ -919,7 +921,7 @@ export default function ConceptsPage() {
               className="group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-5 transition-colors duration-300"
             >
               <code className="font-mono text-xs uppercase text-muted-foreground">
-                ghost {s.step}
+                {s.step}
               </code>
               <div className="relative inline-block font-display text-base font-semibold mt-2">
                 <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
@@ -934,10 +936,14 @@ export default function ConceptsPage() {
           ))}
         </div>
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
+          Only{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            verify
+            emit context-bundle
           </code>{" "}
-          is the schema-discipline mechanism. Each dimension gets classified as{" "}
+          is a CLI verb. <em>Generate</em>, <em>review</em>, and <em>verify</em>{" "}
+          are skill recipes — instructions your host agent follows, calling the
+          deterministic primitives as it goes. <em>Verify</em> is the
+          schema-discipline mechanism: each dimension gets classified as{" "}
           <em>tight</em> (fingerprint reproduces faithfully), <em>leaky</em>{" "}
           (generator drifts here often — tighten Decisions), or{" "}
           <em>uncaptured</em> (the fingerprint under-specifies this dimension).

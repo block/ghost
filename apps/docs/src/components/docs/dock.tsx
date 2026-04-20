@@ -208,7 +208,7 @@ export function Dock() {
             </CommandItem>
           </CommandGroup>
 
-          <CommandGroup heading="Drift Engine">
+          <CommandGroup heading="Drift">
             <CommandItem
               onSelect={() => {
                 navigate("/tools/drift");
@@ -216,7 +216,7 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              Drift Engine
+              Drift
             </CommandItem>
             <CommandItem
               onSelect={() => {

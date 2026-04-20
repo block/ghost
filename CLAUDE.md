@@ -84,7 +84,7 @@ Six deterministic primitives. Everything else (profile, review, verify, generate
 - **Review** (flag drift in PR changes) — `src/skill-bundle/references/review.md`
 - **Verify** (generate → review loop) — `src/skill-bundle/references/verify.md`
 - **Generate** (produce UI from fingerprint) — `src/skill-bundle/references/generate.md`
-- **Discover** (find public design systems) — `src/skill-bundle/references/discover.md`
+- **Discover** (find public design languages) — `src/skill-bundle/references/discover.md`
 
 ## Target Types
 

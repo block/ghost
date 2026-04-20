@@ -1,6 +1,6 @@
 # The `fingerprint.md` format
 
-A Ghost **fingerprint** is a single Markdown file that captures what a design system is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost compare`, `ghost review`, and friends.
+A Ghost **fingerprint** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost compare`, `ghost lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
 
 The file has two parts, and each owns **different data**:
 
@@ -323,12 +323,13 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 
 | Command | Does |
 |---|---|
-| `ghost profile . --emit` | Write `fingerprint.md` (frontmatter machine-facts + body prose) |
+| `profile` recipe (host agent) | Write `fingerprint.md` (frontmatter machine-facts + body prose); the agent ends by calling `ghost lint` |
 | `ghost lint [path]` | Check schema validity, orphan prose, missing rationale, stray evidence in body, broken palette citations |
 | `ghost compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
 | `ghost compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
 | `ghost emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `fingerprint.md` + `tokens.css`) |
 | `ghost emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
+| `ghost emit skill` | Install the `ghost-drift` skill bundle into your host agent |
 
 Programmatic API (`@ghost/core`): `loadFingerprint`, `parseFingerprint`, `serializeFingerprint`, `lintFingerprint`, `compareFingerprints`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
 
@@ -339,7 +340,7 @@ Programmatic API (`@ghost/core`): `loadFingerprint`, `parseFingerprint`, `serial
 - **Duplication.** A field cannot live in both places. Trying to put prose in YAML is a validation error; the writer never emits prose there.
 - **Implementation-specific tokens.** No framework names, no CSS-in-JS specifics, no component library assumptions. Decisions are abstract ("warm-only neutrals"), not concrete ("`neutral-50` in `tailwind.config.js`").
 - **Confidence theatre.** If the generator isn't sure, omit `confidence` or set `source: unknown`. Fabricated `1.0` is worse than missing.
-- **Schema migration.** Schema 1, 2, and 3 files are rejected outright. Regenerate with `ghost profile . --emit`.
+- **Schema migration.** Schema 1, 2, and 3 files are rejected outright. Regenerate by running the `profile` recipe in your host agent.
 
 ---
 

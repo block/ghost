@@ -42,7 +42,7 @@ export function ThemePanel() {
           </button>
         </div>
         <p className="text-muted-foreground text-sm">
-          Customize the design system in real time.
+          Customize the design language in real time.
         </p>
       </div>
 

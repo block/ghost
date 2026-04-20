@@ -15,7 +15,7 @@ handoffs:
 
 # Recipe: Compare fingerprints
 
-**Goal:** answer "how different are these design systems?" or "how has ours drifted over time?"
+**Goal:** answer "how different are these design languages?" or "how has ours drifted over time?"
 
 ## Steps
 
@@ -35,7 +35,7 @@ Flags:
 
 Output: pairwise distance matrix, centroid, spread, and cluster assignments.
 
-Use for: comparing multiple downstream consumers of a parent design system (which are closest to parent, which have drifted most, do they cluster?).
+Use for: comparing multiple downstream consumers of a parent design language (which are closest to parent, which have drifted most, do they cluster?).
 
 ### Interpreting output
 

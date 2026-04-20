@@ -26,21 +26,21 @@ const sections: {
     name: "Getting Started",
     href: "/tools/drift/getting-started",
     description:
-      "Install Ghost, profile your first system, and gate a PR against the fingerprint — in under five minutes.",
+      "Install the skill bundle, write your first fingerprint.md, and track drift against a parent — in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/tools/drift/cli",
     description:
-      "Every command — profile, compare, review (files · project · suite), emit, generate, lint, ack, adopt, diverge, viz.",
+      "Six deterministic primitives — compare, lint, ack, adopt, diverge, emit. Plus the skill recipes the host agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Self-Hosting",
     href: "/tools/drift/self-hosting",
     description:
-      "Run Ghost UI as your own design system documentation site with your registry and tokens.",
+      "Run Ghost UI as your own design language documentation site with your registry and tokens.",
     icon: <Server className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -55,9 +55,9 @@ export default function DocsIndex() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="Drift Engine"
-        title="Drift Engine"
-        description="Ghost profiles design systems into human-readable fingerprints, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
+        kicker="Drift"
+        title="Drift"
+        description="Ghost profiles design languages into human-readable fingerprints, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
       />
 
       <div ref={ref} className="pb-16 overflow-visible space-y-4">

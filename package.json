@@ -14,8 +14,11 @@
     "test:watch": "vitest",
     "typecheck": "tsc --build",
     "build:ui": "pnpm --filter @ghost/ui build",
-    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes",
+    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes && pnpm check:docs && pnpm check:cli-manifest",
     "check:file-sizes": "node scripts/check-file-sizes.mjs",
+    "check:docs": "node scripts/check-docs-frontmatter.mjs",
+    "check:cli-manifest": "node scripts/dump-cli-help.mjs --check",
+    "dump:cli-help": "node scripts/dump-cli-help.mjs",
     "fmt": "biome format --write .",
     "lint": "biome lint ."
   },
@@ -23,9 +26,11 @@
     "@anthropic-ai/sdk": "^0.90.0",
     "@biomejs/biome": "^2.4.12",
     "@types/node": "^22.0.0",
+    "gray-matter": "^4.0.3",
     "lefthook": "^2.1.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.0.0",
+    "zod": "^4.3.6"
   }
 }

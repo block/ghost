@@ -1,0 +1,235 @@
+---
+title: Getting Started
+description: Install the skill bundle, write your first fingerprint.md, and track drift against a parent — in under five minutes.
+kicker: Docs
+section: drift
+order: 10
+slug: getting-started
+---
+
+<DocSection title="The Shape of Ghost">
+
+Ghost is split across two surfaces. The **CLI** is a set of deterministic
+primitives — six verbs that never call an LLM. The **skill bundle** is a set
+of [agentskills.io](https://agentskills.io)-compatible recipes your host
+agent (Claude Code, Cursor, Goose, Codex, …) follows for anything
+interpretive: profile, review, verify, generate, discover.
+
+You install Ghost in two steps: add the CLI, then emit the skill bundle into
+your agent.
+
+</DocSection>
+
+<DocSection title="Installation">
+
+Add the core library and CLI to your project:
+
+```bash
+pnpm add -D @ghost/core @ghost/cli
+```
+
+Or install globally to use `ghost` from anywhere:
+
+```bash
+pnpm add -g @ghost/cli
+```
+
+No API key is required for any CLI verb. If your host agent uses Anthropic
+or OpenAI models, it'll handle auth itself. Ghost auto-loads `.env` and
+`.env.local` from the working directory for a couple of optional variables
+(`OPENAI_API_KEY` / `VOYAGE_API_KEY` for paraphrase-robust semantic
+embeddings, `GITHUB_TOKEN` for parent fetching).
+
+</DocSection>
+
+<DocSection title="Install the Skill Bundle">
+
+`ghost emit skill` writes the `ghost-drift` skill bundle into your host
+agent's skill directory. Defaults to `.claude/skills/ghost-drift/`; use
+`--out` to target another location.
+
+```bash
+# Install into Claude Code (default)
+ghost emit skill
+
+# Or into a custom path for another agent
+ghost emit skill --out ~/.my-agent/skills/ghost-drift
+```
+
+The bundle contains a top-level `SKILL.md` entry point plus recipes under
+`references/` (`profile.md`, `review.md`, `verify.md`, `generate.md`,
+`discover.md`, `compare.md`) plus a schema reference (`schema.md`). Each
+recipe declares `handoffs` in its frontmatter so hosts can surface the
+next step inline — e.g. after `profile`, a prompt to `compare` against a
+parent, or to run `ghost emit review-command`. Once installed, ask your
+agent to "profile this design language" and it'll follow the recipe,
+calling `ghost` for any deterministic step.
+
+</DocSection>
+
+<DocSection title="Profile Your First System">
+
+Profiling is a skill recipe, not a CLI verb. Open your host agent in the
+project you want to profile and ask it something like:
+
+```text
+Profile this design language into a fingerprint.md
+```
+
+The `profile` recipe walks the agent through finding design sources
+(tailwind config, theme CSS, token files, component primitives), resolving
+variable chains end-to-end, and writing the fingerprint. The final step
+is always `ghost lint` — which the CLI runs for you, deterministically.
+
+A **fingerprint** is a two-layer Markdown file: YAML frontmatter is the
+machine layer (49-dim vector + palette, spacing, typography, surfaces,
+roles), and the body is prose organized into Character, Signature, and
+Decisions. Humans can read it. LLMs can consume it. Deterministic tools
+diff it.
+
+Here's a real fingerprint parsed and validated in your browser, right from
+this page (proof the CLI and the docs agree on the format):
+
+<FingerprintSample name="ghost-ui" />
+
+```bash
+# Validate the result (zero-config — reads ./fingerprint.md)
+ghost lint
+
+# Or validate a specific file
+ghost lint path/to/fingerprint.md --format json
+```
+
+</DocSection>
+
+<DocSection title="Compare Two Systems">
+
+Once you have two fingerprints, `compare` returns a scalar distance,
+per-dimension deltas, and (optionally) qualitative or temporal enrichment:
+
+```bash
+# Pairwise (N=2) — distance + per-dimension delta
+ghost compare parent.fingerprint.md consumer.fingerprint.md
+
+# Qualitative diff of decisions + palette
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
+
+# Velocity + trajectory (reads .ghost/history.jsonl)
+ghost compare before.fingerprint.md after.fingerprint.md --temporal
+
+# Fleet (N≥3) — pairwise matrix + centroid
+ghost compare *.fingerprint.md
+```
+
+`compare` weights palette, spacing, typography, surfaces, and embedded
+decisions. Decisions are matched semantically above a cosine-similarity
+threshold so wording doesn't have to line up.
+
+</DocSection>
+
+<DocSection title="Review Drift in a PR">
+
+Reviewing PRs is a skill recipe. Once the skill is installed, open a PR
+branch in your host agent and ask:
+
+```text
+Review this PR for design drift
+```
+
+The `review` recipe diffs changed files against the local `fingerprint.md`
+and flags hardcoded colors off the palette, spacing off the scale, and type
+choices that violate decisions. For a project-level check, ask for
+"target-level compliance" and the agent will compare a fresh fingerprint
+against a parent.
+
+If you want a repeatable, per-project slash command for your agent, emit one
+from the fingerprint itself:
+
+```bash
+# Writes .claude/commands/design-review.md
+ghost emit review-command
+```
+
+</DocSection>
+
+<DocSection title="Track Intent Toward a Parent">
+
+Drift without intent is noise; drift with intent is signal. Ghost tracks
+your stance toward a parent fingerprint in `.ghost-sync.json`:
+
+```bash
+# Record an overall stance (reads ghost.config.ts for the parent)
+ghost ack --stance aligned --reason "Initial baseline"
+
+# Shift the parent baseline
+ghost adopt new-parent.fingerprint.md
+
+# Mark a dimension as intentionally different
+ghost diverge typography --reason "Editorial product uses a different type scale"
+```
+
+`ack` and `diverge` need a parent declared in `ghost.config.ts`. `adopt`
+takes the parent as its argument.
+
+</DocSection>
+
+<DocSection title="The Generation Loop">
+
+Ghost doubles as pipeline infrastructure for AI-generated UI. The
+fingerprint grounds the generator; the `review` recipe gates the output.
+
+1. `ghost emit context-bundle` — emit a grounding bundle from a fingerprint
+   (SKILL.md + tokens.css + optional prompt.md) that any generator can
+   consume.
+2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
+   with the bundle in context.
+3. Use the `review` recipe to gate the output. Use the `verify` recipe to
+   run the loop across a prompt suite and aggregate per-dimension drift,
+   classifying each dimension as _tight_, _leaky_, or _uncaptured_.
+
+```bash
+# Emit a grounding bundle — default output: ./ghost-context/
+ghost emit context-bundle
+
+# Single prompt.md for plain-text LLM context
+ghost emit context-bundle --prompt-only
+
+# Custom output directory
+ghost emit context-bundle --out dist/context
+```
+
+</DocSection>
+
+<DocSection title="Optional: ghost.config.ts">
+
+`ack` and `diverge` need a parent declared. Most other verbs are
+zero-config.
+
+```ts
+import { defineConfig } from "@ghost/core";
+
+export default defineConfig({
+  parent: { type: "github", value: "shadcn-ui/ui" },
+
+  targets: [{ type: "path", value: "./packages/my-ui" }],
+
+  rules: {
+    "hardcoded-color": "error",
+    "token-override": "warn",
+    "missing-token": "warn",
+    "structural-divergence": "error",
+    "missing-component": "warn",
+  },
+
+  // Optional: paraphrase-robust semantic embeddings
+  // embedding: { provider: "openai" },
+});
+```
+
+---
+
+Next: [Core Concepts](/tools/drift/concepts) for the three-layer fingerprint
+model and the generation-loop architecture. Or jump to the
+[CLI Reference](/tools/drift/cli) for every deterministic verb and flag.
+
+</DocSection>

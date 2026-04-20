@@ -1,0 +1,238 @@
+{
+  "generatedAt": "2026-04-20T18:26:42.424Z",
+  "version": "0.2.0",
+  "commands": [
+    {
+      "name": "compare",
+      "rawName": "compare [...fingerprints]",
+      "description": "Compare two or more fingerprints (N≥3 = fleet).",
+      "options": [
+        {
+          "rawName": "--semantic",
+          "name": "semantic",
+          "description": "Qualitative diff of decisions + palette (N=2 only)",
+          "default": null,
+          "takesValue": false,
+          "negated": false
+        },
+        {
+          "rawName": "--temporal",
+          "name": "temporal",
+          "description": "Add velocity, trajectory, and ack bounds (N=2, reads .ghost/history.jsonl)",
+          "default": null,
+          "takesValue": false,
+          "negated": false
+        },
+        {
+          "rawName": "--history-dir <dir>",
+          "name": "historyDir",
+          "description": "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "lint",
+      "rawName": "lint [fingerprint]",
+      "description": "Validate fingerprint.md schema and body/frontmatter coherence",
+      "options": [
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "ack",
+      "rawName": "ack",
+      "description": "Acknowledge current drift — record intentional stance toward parent",
+      "options": [
+        {
+          "rawName": "-c, --config <path>",
+          "name": "config",
+          "description": "Path to ghost config file",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "-d, --dimension <name>",
+          "name": "dimension",
+          "description": "Acknowledge a specific dimension only",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--stance <stance>",
+          "name": "stance",
+          "description": "Stance: aligned, accepted, or diverging",
+          "default": "accepted",
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--reason <text>",
+          "name": "reason",
+          "description": "Reason for this acknowledgment",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "adopt",
+      "rawName": "adopt <source>",
+      "description": "Shift parent reference — adopt a new fingerprint as baseline",
+      "options": [
+        {
+          "rawName": "-d, --dimension <name>",
+          "name": "dimension",
+          "description": "Adopt only for a specific dimension",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "diverge",
+      "rawName": "diverge <dimension>",
+      "description": "Declare intentional divergence on a dimension",
+      "options": [
+        {
+          "rawName": "-c, --config <path>",
+          "name": "config",
+          "description": "Path to ghost config file",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "-r, --reason <text>",
+          "name": "reason",
+          "description": "Why this dimension is intentionally diverging",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "emit",
+      "rawName": "emit <kind>",
+      "description": "Emit a derived artifact from fingerprint.md (kinds: review-command, context-bundle, skill)",
+      "options": [
+        {
+          "rawName": "-e, --fingerprint <path>",
+          "name": "fingerprint",
+          "description": "Source fingerprint file (default: fingerprint.md)",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "-o, --out <path>",
+          "name": "out",
+          "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-drift/)",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        },
+        {
+          "rawName": "--stdout",
+          "name": "stdout",
+          "description": "Write to stdout instead of a file (review-command only)",
+          "default": null,
+          "takesValue": false,
+          "negated": false
+        },
+        {
+          "rawName": "--no-tokens",
+          "name": "tokens",
+          "description": "Skip tokens.css output (context-bundle)",
+          "default": true,
+          "takesValue": false,
+          "negated": true
+        },
+        {
+          "rawName": "--readme",
+          "name": "readme",
+          "description": "Include README.md (context-bundle)",
+          "default": null,
+          "takesValue": false,
+          "negated": false
+        },
+        {
+          "rawName": "--prompt-only",
+          "name": "promptOnly",
+          "description": "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
+          "default": null,
+          "takesValue": false,
+          "negated": false
+        },
+        {
+          "rawName": "--name <name>",
+          "name": "name",
+          "description": "Override the skill name (default: fingerprint id) (context-bundle)",
+          "default": null,
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    }
+  ],
+  "globalOptions": [
+    {
+      "rawName": "-h, --help",
+      "name": "help",
+      "description": "Display this message",
+      "default": null
+    },
+    {
+      "rawName": "-v, --version",
+      "name": "version",
+      "description": "Display version number",
+      "default": null
+    }
+  ]
+}
