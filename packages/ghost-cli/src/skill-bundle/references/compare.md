@@ -1,3 +1,18 @@
+---
+name: compare
+description: Interpret ghost compare output — pairwise distance or fleet analysis.
+handoffs:
+  - label: Accept the drift as aligned reality
+    command: ghost ack
+    prompt: Accept current drift across the board
+  - label: Adopt the other fingerprint as a new parent baseline
+    command: ghost adopt
+    prompt: Adopt the other fingerprint.md as the new parent baseline
+  - label: Declare a dimension intentionally divergent
+    command: ghost diverge
+    prompt: Record an intentional divergence on a specific dimension
+---
+
 # Recipe: Compare fingerprints
 
 **Goal:** answer "how different are these design systems?" or "how has ours drifted over time?"

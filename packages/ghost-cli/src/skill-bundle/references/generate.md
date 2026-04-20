@@ -1,3 +1,12 @@
+---
+name: generate
+description: Produce UI code that lives within fingerprint.md bounds.
+handoffs:
+  - label: Verify the generated UI matches the fingerprint
+    skill: verify
+    prompt: Verify the UI I just generated against fingerprint.md
+---
+
 # Recipe: Generate UI from a fingerprint.md
 
 **Goal:** produce a UI artifact (component, page, snippet) that lives within the `fingerprint.md` boundaries.
