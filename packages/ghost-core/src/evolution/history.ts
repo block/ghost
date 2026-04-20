@@ -11,7 +11,7 @@ function historyPath(cwd: string): string {
 }
 
 /**
- * Append a fingerprint history entry to .ghost/history.jsonl.
+ * Append an fingerprint history entry to .ghost/history.jsonl.
  * Creates the .ghost directory if it doesn't exist.
  */
 export async function appendHistory(

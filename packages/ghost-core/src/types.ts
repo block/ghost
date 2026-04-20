@@ -158,37 +158,13 @@ export interface NormalizedToken extends CSSToken {
 
 export type RuleSeverity = "error" | "warn" | "off";
 
-export interface ScanOptions {
-  values: boolean;
-  structure: boolean;
-  visual: boolean;
-  analysis: boolean;
-}
-
-export interface VisualScanConfig {
-  threshold?: number;
-  viewport?: { width: number; height: number };
-  timeout?: number;
-  outputDir?: string;
-}
-
 export interface GhostConfig {
   targets?: Target[];
   parent?: Target;
-  scan: ScanOptions;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
-  visual?: VisualScanConfig;
-  llm?: LLMConfig;
   embedding?: EmbeddingConfig;
   extractors?: string[];
-  agents?: AgentsConfig;
-  review?: ReviewConfig;
-}
-
-export interface AgentsConfig {
-  maxIterations?: number;
-  verbose?: boolean;
 }
 
 // --- Fingerprint types ---
@@ -232,9 +208,49 @@ export interface DesignDecision {
   embedding?: number[];
 }
 
-export interface DesignFingerprint {
+/**
+ * A semantic slot → token binding. Describes which concrete tokens a
+ * design system uses for a specific role (h1, body, card, button, …).
+ *
+ * This is the bridge between abstract tokens (`typography.sizeRamp: [14, 16, …]`)
+ * and renderable output: a role tells a renderer *which* ramp step belongs to
+ * *which* slot. All subfields are optional — the agent populates only what it
+ * can infer from the source.
+ */
+export interface DesignRole {
+  /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
+  name: string;
+  /** Tokens the slot binds, grouped by fingerprint dimension. */
+  tokens: {
+    typography?: {
+      family?: string;
+      size?: number;
+      weight?: number;
+      lineHeight?: number;
+    };
+    spacing?: {
+      padding?: number;
+      gap?: number;
+      margin?: number;
+    };
+    surfaces?: {
+      borderRadius?: number;
+      shadow?: "none" | "subtle" | "layered";
+      borderWidth?: number;
+    };
+    palette?: {
+      background?: string;
+      foreground?: string;
+      border?: string;
+    };
+  };
+  /** Evidence from the source — file paths or file:line references. */
+  evidence: string[];
+}
+
+export interface Fingerprint {
   id: string;
-  source: "registry" | "extraction" | "llm";
+  source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
   /** When profiled from multiple sources, lists what was combined */
   sources?: string[];
@@ -245,6 +261,14 @@ export interface DesignFingerprint {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
+
+  /**
+   * Semantic slot → token bindings. The bridge from abstract tokens to
+   * renderable output: each role names a slot ("h1", "card", "button") and
+   * binds tokens from the dimensions below. Optional — agents populate only
+   * roles they can infer from the source.
+   */
+  roles?: DesignRole[];
 
   // --- Layer 3: Concrete values ---
 
@@ -318,7 +342,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface EnrichedFingerprint extends DesignFingerprint {
+export interface EnrichedFingerprint extends Fingerprint {
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -387,13 +411,7 @@ export interface Extractor {
   ) => Promise<ExtractedMaterial>;
 }
 
-// --- LLM types ---
-
-export interface LLMConfig {
-  provider: "anthropic" | "openai";
-  model?: string;
-  apiKey?: string;
-}
+// --- Embedding config (used by the semantic-roles helper in embed-api.ts) ---
 
 export interface EmbeddingConfig {
   provider: "openai" | "voyage";
@@ -401,45 +419,10 @@ export interface EmbeddingConfig {
   apiKey?: string;
 }
 
-export interface LLMProvider {
-  name: string;
-  /** Multi-turn chat with tool use support. All fingerprinting flows through this. */
-  chat: (
-    messages: import("./agents/tools/types.js").ChatMessage[],
-    tools?: import("./agents/tools/types.js").ToolDefinition[],
-  ) => Promise<import("./agents/tools/types.js").ChatResponse>;
-}
-
-// --- Agent types ---
-
-export interface AgentMessage {
-  role: "system" | "user" | "assistant" | "tool";
-  content: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface AgentContext {
-  llm: LLMConfig;
-  embedding?: EmbeddingConfig;
-  verbose?: boolean;
-  /** Override the agent's default max iterations (escape hatch) */
-  maxIterations?: number;
-  onMessage?: (msg: AgentMessage) => void;
-}
-
-export interface AgentResult<T> {
-  data: T;
-  confidence: number;
-  warnings: string[];
-  reasoning: string[];
-  iterations: number;
-  duration: number;
-}
-
 // --- History types ---
 
 export interface FingerprintHistoryEntry {
-  fingerprint: DesignFingerprint;
+  fingerprint: Fingerprint;
   parentRef?: Target;
   comparisonToParent?: {
     distance: number;
@@ -482,8 +465,8 @@ export interface DimensionDelta {
 }
 
 export interface FingerprintComparison {
-  source: DesignFingerprint;
-  target: DesignFingerprint;
+  source: Fingerprint;
+  target: Fingerprint;
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
@@ -517,7 +500,7 @@ export interface TemporalComparison extends FingerprintComparison {
 
 export interface FleetMember {
   id: string;
-  fingerprint: DesignFingerprint;
+  fingerprint: Fingerprint;
   parentRef?: Target;
   distanceToParent?: number;
 }
@@ -567,131 +550,4 @@ export interface StructureDrift {
   linesRemoved: number;
   registryFile?: string;
   consumerFile?: string;
-}
-
-export interface DriftSummary {
-  errors: number;
-  warnings: number;
-  info: number;
-  componentsScanned: number;
-  tokensScanned: number;
-}
-
-export interface VisualDrift {
-  component: string;
-  rule: string;
-  severity: RuleSeverity;
-  message: string;
-  diffPercentage: number;
-  threshold: number;
-  registryFile?: string;
-  consumerFile?: string;
-  diffImagePath?: string;
-  error?: string;
-}
-
-export interface DesignSystemReport {
-  designSystem: string;
-  values: ValueDrift[];
-  structure: StructureDrift[];
-  visual: VisualDrift[];
-}
-
-export interface DriftReport {
-  timestamp: string;
-  systems: DesignSystemReport[];
-  summary: DriftSummary;
-}
-
-// --- Review types (fingerprint-informed design review) ---
-
-export type ReviewSeverity = "error" | "warning" | "info";
-
-export type ReviewDimension = "palette" | "spacing" | "typography" | "surfaces";
-
-export interface ReviewFix {
-  /** Replacement text for the affected line */
-  replacement: string;
-  /** Explanation of what the fix does */
-  description: string;
-}
-
-export interface ReviewIssue {
-  /** Rule that produced this issue (e.g. "palette-drift", "spacing-drift") */
-  rule: string;
-  /** Which fingerprint dimension drifted */
-  dimension: ReviewDimension;
-  severity: ReviewSeverity;
-  /** Human-readable description */
-  message: string;
-  /** File path (relative to cwd) */
-  file: string;
-  /** 1-based line number */
-  line: number;
-  /** 1-based column */
-  column?: number;
-  /** The original source line */
-  source?: string;
-  /** The literal value found (e.g. "#3b82f6", "14px") */
-  found: string;
-  /** Nearest fingerprint value (e.g. "#2563eb", "16px") */
-  nearest?: string;
-  /** Semantic role of the nearest value if known (e.g. "primary", "surface") */
-  nearestRole?: string;
-  /** How far off (0-1 for colors via OKLCH distance, absolute px for spacing/typography/surfaces) */
-  distance?: number;
-  /** Concrete fix suggestion */
-  fix?: ReviewFix;
-  /** How this issue was detected */
-  phase: "match" | "deep";
-}
-
-export interface ReviewFileResult {
-  file: string;
-  issues: ReviewIssue[];
-  /** Whether this file was sent for deep LLM review */
-  deepReviewed: boolean;
-}
-
-export interface ReviewSummary {
-  filesScanned: number;
-  filesWithIssues: number;
-  totalIssues: number;
-  byDimension: Record<string, number>;
-  errors: number;
-  warnings: number;
-  fixesAvailable: number;
-}
-
-export interface ReviewReport {
-  timestamp: string;
-  /** ID of the fingerprint used as baseline */
-  fingerprint: string;
-  files: ReviewFileResult[];
-  summary: ReviewSummary;
-  /** Duration in ms */
-  duration: number;
-}
-
-export interface ReviewConfig {
-  /** Which dimensions to check */
-  dimensions?: {
-    palette?: boolean;
-    spacing?: boolean;
-    typography?: boolean;
-    surfaces?: boolean;
-  };
-  /** Only review files matching these globs */
-  include?: string[];
-  /** Ignore files matching these globs */
-  exclude?: string[];
-  /** Only report issues on changed lines (requires git diff context). Default: true */
-  changedLinesOnly?: boolean;
-}
-
-export interface CollectedFile {
-  path: string;
-  content: string;
-  /** Lines changed in the diff (1-based). Undefined = all lines are "changed". */
-  changedLines?: Set<number>;
 }

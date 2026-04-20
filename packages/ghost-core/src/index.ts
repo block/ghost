@@ -1,37 +1,27 @@
-export type {
-  Agent,
-  AgentState,
-  ComparisonInput,
-  ComplianceInput,
-  ComplianceReport,
-  ComplianceRule,
-  ComplianceThresholds,
-  ComplianceViolation,
-  DiscoveredSystem,
-  DiscoveryInput,
-} from "./agents/index.js";
-export {
-  BaseAgent,
-  ComparisonAgent,
-  ComplianceAgent,
-  Director,
-  DiscoveryAgent,
-  ExtractionAgent,
-  FingerprintAgent,
-} from "./agents/index.js";
-export type {
-  AgentTool,
-  ChatMessage,
-  ChatResponse,
-  ToolCall,
-  ToolContext,
-  ToolDefinition,
-  ToolResult,
-} from "./agents/tools/index.js";
-export { FINGERPRINT_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
+export type { CompareOptions, CompareResult } from "./compare.js";
+export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
-export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
-export { diff } from "./diff.js";
+export type {
+  ContextFormat,
+  EmitReviewInput,
+  WriteContextOptions,
+  WriteContextResult,
+} from "./context/index.js";
+export {
+  buildSkillMd,
+  buildTokensCss,
+  emitReviewCommand,
+  writeContextBundle,
+} from "./context/index.js";
+export type { RoleCandidate } from "./embedding/index.js";
+export {
+  compareFingerprints,
+  computeEmbedding,
+  computeSemanticEmbedding,
+  describeFingerprint,
+  embeddingDistance,
+  inferSemanticRole,
+} from "./embedding/index.js";
 export type {
   CheckBoundsOptions,
   FleetClusterOptions,
@@ -52,52 +42,41 @@ export {
   resolveParent,
   writeSyncManifest,
 } from "./evolution/index.js";
-export {
-  detectExtractors,
-  extract,
-  extractFromTarget,
-  sampleDirectory,
-  walkAndCategorize,
-  walkDirectory,
-} from "./extractors/index.js";
-export type { CompareOptions } from "./fingerprint/compare.js";
-export type { RoleCandidate } from "./fingerprint/index.js";
-export {
-  compareFingerprints,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  describeFingerprint,
-  embeddingDistance,
-  fingerprintFromRegistry,
-  inferSemanticRole,
+export type {
+  BodyData,
+  ColorChange,
+  DecisionChange,
+  FingerprintMeta,
+  FrontmatterData,
+  FrontmatterShape,
+  LintIssue,
+  LintOptions,
+  LintReport,
+  LintSeverity,
+  ParsedFingerprint,
+  SemanticDiff,
+  TokenChange,
 } from "./fingerprint/index.js";
-export type {
-  FingerprintValidation,
-  ValidationIssue,
-} from "./llm/index.js";
-export { createProvider, validateFingerprint } from "./llm/index.js";
-export type {
-  ProfileOptions,
-  ProfileResult,
-  ProfileTargetResult,
-} from "./profile.js";
 export {
-  profile,
-  profileMultiTarget,
-  profileRegistry,
-  profileTarget,
-} from "./profile.js";
-export { formatReport as formatCLIReport } from "./reporters/cli.js";
-export {
-  formatComplianceCLI,
-  formatComplianceJSON,
-  formatComplianceSARIF,
-} from "./reporters/compliance.js";
-export { formatDiffCLI, formatDiffJSON } from "./reporters/diff.js";
-export {
-  formatDiscoveryCLI,
-  formatDiscoveryJSON,
-} from "./reporters/discovery.js";
+  diffFingerprints,
+  EMBEDDING_FRAGMENT_FILENAME,
+  embeddingSiblingPath,
+  FINGERPRINT_FILENAME,
+  FrontmatterSchema,
+  findFragmentLinks,
+  formatSemanticDiff,
+  lintFingerprint,
+  loadEmbeddingFragment,
+  loadFingerprint,
+  parseBody,
+  parseFingerprint,
+  resolveEmbeddingReference,
+  serializeEmbeddingFragment,
+  serializeFingerprint,
+  splitRaw,
+  toJsonSchema,
+  validateFrontmatter,
+} from "./fingerprint/index.js";
 export {
   formatComparison,
   formatComparisonJSON,
@@ -108,59 +87,22 @@ export {
   formatFleetComparison,
   formatFleetComparisonJSON,
 } from "./reporters/fleet.js";
-export type { GitHubPRComment } from "./reporters/github-pr.js";
-export {
-  formatGitHubPRComments,
-  formatIssueComment,
-  formatReviewSummary,
-} from "./reporters/github-pr.js";
-export { formatReport as formatJSONReport } from "./reporters/json.js";
-export { formatReviewCLI } from "./reporters/review-cli.js";
-export { formatReviewJSON } from "./reporters/review-json.js";
 export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
 } from "./reporters/temporal.js";
-export { parseCSS } from "./resolvers/css.js";
-export { resolveRegistry } from "./resolvers/registry.js";
-export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
-export type { ReviewOptions } from "./review/index.js";
-export { review } from "./review/index.js";
-export { scan } from "./scan.js";
-export { scanVisual } from "./scanners/visual.js";
 export type {
-  CompareInput,
-  StageContext,
-  StageResult,
-} from "./stages/index.js";
-// Pipeline stages — plain async functions replacing agent classes
-export {
-  compare as compareStage,
-  comply as complyStage,
-  extract as extractStage,
-  materializeTarget,
-} from "./stages/index.js";
-export type {
-  AgentContext,
-  AgentMessage,
-  AgentResult,
-  AgentsConfig,
-  CollectedFile,
   ColorRamp,
   ComponentMeta,
   CSSToken,
   CSSVarsMap,
   DesignDecision,
-  DesignFingerprint,
   DesignObservation,
-  DesignSystemReport,
   DetectedFormat,
   DimensionAck,
   DimensionDelta,
   DimensionStance,
   DivergenceClass,
-  DriftReport,
-  DriftSummary,
   DriftVector,
   DriftVelocity,
   EmbeddingConfig,
@@ -170,6 +112,7 @@ export type {
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
+  Fingerprint,
   FingerprintComparison,
   FingerprintHistoryEntry,
   FleetCluster,
@@ -178,26 +121,15 @@ export type {
   FleetPair,
   FontDescriptor,
   GhostConfig,
-  LLMConfig,
-  LLMProvider,
   NormalizedToken,
   Registry,
   RegistryFile,
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
-  ReviewConfig,
-  ReviewDimension,
-  ReviewFileResult,
-  ReviewFix,
-  ReviewIssue,
-  ReviewReport,
-  ReviewSeverity,
-  ReviewSummary,
   RuleSeverity,
   SampledFile,
   SampledMaterial,
-  ScanOptions,
   SemanticColor,
   SourceInfo,
   StructureDrift,
@@ -209,6 +141,4 @@ export type {
   TokenCategory,
   TokenFormat,
   ValueDrift,
-  VisualDrift,
-  VisualScanConfig,
 } from "./types.js";

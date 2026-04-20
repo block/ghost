@@ -1,4 +1,4 @@
-import { compareFingerprints } from "../fingerprint/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
   DriftVelocity,
   FingerprintComparison,
@@ -10,7 +10,7 @@ import { checkBounds } from "./sync.js";
 import { computeDriftVectors } from "./vector.js";
 
 /**
- * Enrich a fingerprint comparison with temporal data:
+ * Enrich an fingerprint comparison with temporal data:
  * velocity, trajectory, ack status, and drift vectors.
  */
 export function computeTemporalComparison(opts: {

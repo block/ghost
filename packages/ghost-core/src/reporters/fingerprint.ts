@@ -1,4 +1,4 @@
-import type { DesignFingerprint, FingerprintComparison } from "../types.js";
+import type { Fingerprint, FingerprintComparison } from "../types.js";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -14,10 +14,10 @@ function c(code: string, text: string): string {
   return useColor ? `${code}${text}${RESET}` : text;
 }
 
-export function formatFingerprint(fp: DesignFingerprint): string {
+export function formatFingerprint(fp: Fingerprint): string {
   const lines: string[] = [];
 
-  lines.push(c(BOLD, `Design Fingerprint: ${fp.id}`));
+  lines.push(c(BOLD, `Fingerprint: ${fp.id}`));
   lines.push(c(DIM, `Source: ${fp.source} | ${fp.timestamp}`));
   if (fp.sources?.length) {
     lines.push(c(DIM, `Synthesized from: ${fp.sources.join(", ")}`));
@@ -136,7 +136,7 @@ export function formatComparison(comp: FingerprintComparison): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatFingerprintJSON(fp: DesignFingerprint): string {
+export function formatFingerprintJSON(fp: Fingerprint): string {
   return JSON.stringify(fp, null, 2);
 }
 

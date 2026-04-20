@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-lib
 *.tsbuildinfo
 .DS_Store
 .claude/settings.local.json
@@ -7,3 +8,10 @@ packages/ghost-ui/public/r/
 .env
 .env.local
 packages/ghost-ui/.ghost/
+
+# Claude Code local harness state
+.claude/scheduled_tasks.lock
+.claude/worktrees/
+
+# Emitted skill bundle — re-generate with `ghost emit skill`
+.claude/skills/

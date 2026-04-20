@@ -6,9 +6,9 @@ const DEFAULT_LIMIT = 500;
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
   "packages/ghost-core/src/types.ts": {
-    limit: 720,
+    limit: 780,
     justification:
-      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types",
+      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
   },
   "packages/ghost-cli/src/bin.ts": {
     limit: 580,
@@ -18,9 +18,9 @@ const EXCEPTIONS = {
   "packages/ghost-core/src/agents/fingerprint.ts": {
     limit: 550,
     justification:
-      "Agentic fingerprinting — overview builder, tool loop, and three-layer prompt are tightly coupled to the agent",
+      "ExpressionAgent — overview builder, tool loop, and three-layer prompt are tightly coupled to the agent",
   },
-  "packages/ghost-core/src/fingerprint/compare.ts": {
+  "packages/ghost-core/src/embedding/compare.ts": {
     limit: 600,
     justification:
       "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",

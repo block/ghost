@@ -1,15 +1,19 @@
-import { readFile } from "node:fs/promises";
-import type { DesignFingerprint, DimensionStance, Target } from "@ghost/core";
+import { resolve } from "node:path";
+import type { DimensionStance, Target } from "@ghost/core";
 import {
   acknowledge,
-  compareFleet,
-  formatFleetComparison,
-  formatFleetComparisonJSON,
+  FINGERPRINT_FILENAME,
   loadConfig,
-  profile,
+  loadFingerprint,
   resolveParent,
 } from "@ghost/core";
 import type { CAC } from "cac";
+
+async function loadLocalExpression() {
+  const path = resolve(process.cwd(), FINGERPRINT_FILENAME);
+  const { fingerprint } = await loadFingerprint(path);
+  return fingerprint;
+}
 
 export function registerAckCommand(cli: CAC): void {
   cli
@@ -36,7 +40,7 @@ export function registerAckCommand(cli: CAC): void {
         }
 
         const parentFp = await resolveParent(config.parent);
-        const childFp = await profile(config);
+        const childFp = await loadLocalExpression();
 
         const { manifest, comparison } = await acknowledge({
           child: childFp,
@@ -87,16 +91,12 @@ export function registerAdoptCommand(cli: CAC): void {
       "adopt <source>",
       "Shift parent reference — adopt a new fingerprint as baseline",
     )
-    .option("-c, --config <path>", "Path to ghost config file")
     .option("-d, --dimension <name>", "Adopt only for a specific dimension")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const sourceData = await readFile(source, "utf-8");
-        const newParent: DesignFingerprint = JSON.parse(sourceData);
-
-        const config = await loadConfig(opts.config);
-        const childFp = await profile(config);
+        const { fingerprint: newParent } = await loadFingerprint(source);
+        const childFp = await loadLocalExpression();
 
         const newParentRef: Target = { type: "path", value: source };
 
@@ -155,7 +155,7 @@ export function registerDivergeCommand(cli: CAC): void {
         }
 
         const parentFp = await resolveParent(config.parent);
-        const childFp = await profile(config);
+        const childFp = await loadLocalExpression();
 
         const { manifest } = await acknowledge({
           child: childFp,
@@ -182,47 +182,6 @@ export function registerDivergeCommand(cli: CAC): void {
           console.log("Updated .ghost-sync.json");
         }
 
-        process.exit(0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
-}
-
-export function registerFleetCommand(cli: CAC): void {
-  cli
-    .command(
-      "fleet [...fingerprints]",
-      "Compare N fingerprints for an ecosystem-level view",
-    )
-    .option("--cluster", "Include cluster analysis")
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (paths: string[], opts) => {
-      try {
-        if (paths.length < 2) {
-          console.error("Error: fleet requires at least 2 fingerprint paths");
-          process.exit(2);
-        }
-
-        const members = await Promise.all(
-          paths.map(async (p) => {
-            const data = await readFile(p, "utf-8");
-            const fingerprint: DesignFingerprint = JSON.parse(data);
-            return { id: fingerprint.id, fingerprint };
-          }),
-        );
-
-        const fleet = compareFleet(members, { cluster: Boolean(opts.cluster) });
-
-        const output =
-          opts.format === "json"
-            ? formatFleetComparisonJSON(fleet)
-            : formatFleetComparison(fleet);
-
-        process.stdout.write(`${output}\n`);
         process.exit(0);
       } catch (err) {
         console.error(

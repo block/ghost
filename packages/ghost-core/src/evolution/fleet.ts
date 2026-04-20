@@ -1,5 +1,5 @@
-import { compareFingerprints } from "../fingerprint/compare.js";
-import { embeddingDistance } from "../fingerprint/embedding.js";
+import { compareFingerprints } from "../embedding/compare.js";
+import { embeddingDistance } from "../embedding/embedding.js";
 import type {
   FleetCluster,
   FleetComparison,

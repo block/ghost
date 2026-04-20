@@ -1,8 +1,8 @@
-import type { DesignFingerprint, DriftVector } from "../types.js";
+import type { DriftVector, Fingerprint } from "../types.js";
 
 /**
  * Embedding dimension ranges per design dimension.
- * Mirrors the layout in fingerprint/embedding.ts.
+ * Mirrors the layout in embedding/embedding.ts.
  */
 export const DIMENSION_RANGES: Record<string, [number, number]> = {
   palette: [0, 21], // dominant (0-11) + neutrals (12-17) + qualitative (18-20)
@@ -17,8 +17,8 @@ export const DIMENSION_RANGES: Record<string, [number, number]> = {
  * for a specific design dimension.
  */
 export function computeDriftVectors(
-  source: DesignFingerprint,
-  target: DesignFingerprint,
+  source: Fingerprint,
+  target: Fingerprint,
 ): DriftVector[] {
   const vectors: DriftVector[] = [];
 

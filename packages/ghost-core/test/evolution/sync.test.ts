@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { checkBounds } from "../../src/evolution/sync.js";
 import type {
-  DesignFingerprint,
   DimensionAck,
+  Fingerprint,
   FingerprintComparison,
   SyncManifest,
 } from "../../src/types.js";
@@ -33,7 +33,7 @@ function makeManifest(
 function makeComparison(
   dimensions: Record<string, number>,
 ): FingerprintComparison {
-  const fp: DesignFingerprint = {
+  const fp: Fingerprint = {
     id: "test",
     source: "registry",
     timestamp: new Date().toISOString(),

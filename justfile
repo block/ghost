@@ -41,17 +41,29 @@ test-watch:
 
 # ── Run ──────────────────────────────────────────────────────
 
-# Run ghost-ui catalogue dev server
+# Run docs dev server (design language + drift docs + component catalogue)
 dev:
-    cd packages/ghost-ui && pnpm dev
+    pnpm -F @ghost/docs dev
 
-# Build ghost-ui catalogue (static export)
+# Build docs site (static export)
 build-ui:
-    cd packages/ghost-ui && pnpm build
+    pnpm -F @ghost/docs build
+
+# Build @ghost/ui library (dist-lib + types)
+build-lib:
+    pnpm -F @ghost/ui build:lib
 
 # Build ghost-ui shadcn registry
 build-registry:
-    cd packages/ghost-ui && pnpm build:registry
+    pnpm -F @ghost/ui build:registry
+
+# Build docs site for GitHub Pages (base=/ghost/)
+build-pages:
+    DEPLOY_BASE="/ghost/" pnpm -F @ghost/docs build
+    rm -rf dist
+    mkdir -p dist
+    cp -r apps/docs/dist/. dist/
+    cp dist/index.html dist/404.html
 
 # ── Utilities ────────────────────────────────────────────────
 

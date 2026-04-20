@@ -105,54 +105,6 @@ export function registerTools(server: McpServer): void {
   );
 
   server.tool(
-    "review_files",
-    "Review files for visual language drift against a design fingerprint. Returns the CLI command to run — the review itself is executed via the ghost CLI, not this MCP server.",
-    {
-      files: z
-        .array(z.string())
-        .optional()
-        .describe("File paths to review (omit for git diff)"),
-      deep: z.boolean().optional().describe("Enable LLM-powered deep review"),
-      fingerprint: z
-        .string()
-        .optional()
-        .describe("Path to fingerprint JSON file"),
-      dimensions: z
-        .string()
-        .optional()
-        .describe(
-          "Comma-separated dimensions: palette,spacing,typography,surfaces",
-        ),
-      format: z
-        .enum(["cli", "json", "github"])
-        .optional()
-        .describe("Output format"),
-    },
-    async ({ files, deep, fingerprint, dimensions, format }) => {
-      const parts = ["ghost", "review"];
-      if (files && files.length > 0) parts.push(files.join(","));
-      if (deep) parts.push("--deep");
-      if (fingerprint) parts.push("--fingerprint", fingerprint);
-      if (dimensions) parts.push("--dimensions", dimensions);
-      if (format) parts.push("--format", format);
-
-      const cmd = parts.join(" ");
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify({
-              command: cmd,
-              description:
-                "Run this command to review files for visual language drift against the design fingerprint. Requires .ghost-fingerprint.json in the project (generate with: ghost profile . --emit).",
-            }),
-          },
-        ],
-      };
-    },
-  );
-
-  server.tool(
     "get_theme",
     "Get CSS variables for a Ghost UI theme preset",
     {

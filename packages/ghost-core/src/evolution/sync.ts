@@ -1,11 +1,11 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareFingerprints } from "../fingerprint/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
-  DesignFingerprint,
   DimensionAck,
   DimensionStance,
+  Fingerprint,
   FingerprintComparison,
   SyncManifest,
   Target,
@@ -50,8 +50,8 @@ export async function writeSyncManifest(
  * the rest are preserved from the existing manifest or set to "accepted".
  */
 export async function acknowledge(opts: {
-  child: DesignFingerprint;
-  parent: DesignFingerprint;
+  child: Fingerprint;
+  parent: Fingerprint;
   parentRef: Target;
   dimension?: string;
   stance?: DimensionStance;

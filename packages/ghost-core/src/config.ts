@@ -6,15 +6,12 @@ import type { GhostConfig, Target } from "./types.js";
 const CONFIG_FILES = ["ghost.config.ts", "ghost.config.js", "ghost.config.mjs"];
 
 const DEFAULT_CONFIG: GhostConfig = {
-  scan: { values: true, structure: true, visual: false, analysis: false },
   rules: {
     "hardcoded-color": "error",
     "token-override": "warn",
     "missing-token": "warn",
     "structural-divergence": "error",
     "missing-component": "warn",
-    "visual-regression": "warn",
-    "visual-render-failure": "warn",
   },
   ignore: [],
 };
@@ -130,15 +127,10 @@ function mergeDefaults(raw: GhostConfig): GhostConfig {
   return {
     targets: raw.targets,
     parent: normalizeParent(raw.parent as Target | string | undefined),
-    scan: { ...DEFAULT_CONFIG.scan, ...raw.scan },
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
-    visual: raw.visual,
-    llm: raw.llm,
     embedding: raw.embedding,
     extractors: raw.extractors,
-    agents: raw.agents,
-    review: raw.review,
   };
 }
 
