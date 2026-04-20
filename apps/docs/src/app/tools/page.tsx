@@ -8,10 +8,10 @@ import { SectionWrapper } from "@/components/docs/wrappers";
 
 const tools = [
   {
-    name: "Drift Engine",
+    name: "Drift",
     href: "/tools/drift",
     description:
-      "Express design systems, track their evolution, and surface divergence before it compounds.",
+      "Express design languages, track their evolution, and surface divergence before it compounds.",
     icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -28,7 +28,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Platform"
         title="Tools"
-        description="The engines that power your design infrastructure. Each tool solves a distinct problem in the design system lifecycle."
+        description="The engines that power your design infrastructure. Each tool solves a distinct problem in the design language lifecycle."
       />
 
       <div

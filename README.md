@@ -4,18 +4,25 @@
 
 Ghost makes fingerprint legible. It profiles a system's identity into a human-readable `fingerprint.md`, perceives drift across a decentralized fleet of consumers, tracks the stance each consumer takes toward its parent (acknowledge, adopt, diverge), and surfaces fleet-wide signal the parent can heal from. Current scope: visual/UI fingerprint. The reference fingerprint, Ghost UI, ships as a shadcn-compatible component registry. The format and the perception architecture are identity-agnostic; visual is the first instantiation.
 
+## BYOA — bring your own agent
+
+Ghost is split across two surfaces:
+
+- **The CLI** — a set of **deterministic primitives**. Six verbs. It never calls an LLM. It does vector distance, schema validation, and manifest writes. Same answer every time.
+- **A skill bundle** — [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, generate, discover). The host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the CLI for the arithmetic.
+
+No API key is required to use any CLI verb. Judgment work lives in whichever agent you already use; `ghost emit skill` installs the recipes there.
+
 ## Why Ghost?
 
 Fingerprint drifts. When a system's identity spreads across consumers — each evolving, each adapting — coherence degrades and trust follows. Ghost perceives this drift across a decentralized fleet so the parent can reason about what's happening and heal proactively. No central gatekeeper; observation and recorded intent instead.
 
-- **Human-readable fingerprints** — Every system is captured as a `fingerprint.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature / Observation, Decisions, Values). Humans read it, LLMs consume it, deterministic tools diff it
-- **Continuous perception** — Profile each consumer over time. Surface drift at the values (hardcoded colors, token overrides, missing tokens), structural (component divergence), and visual (pixel-level regressions) levels
-- **Grounded generation** — Use fingerprints as grounding for AI-driven generation. `ghost emit context-bundle` writes prompt/skill material; any generator produces; `ghost review` surfaces drift in the output; `ghost verify` aggregates drift across a standard prompt suite to classify dimensions as tight, leaky, or uncaptured
-- **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent fingerprint. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal
-- **Fleet intelligence** — Compare fingerprints across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself
-- **LLM-aided interpretation** — Optionally use Claude or OpenAI for richer fingerprint generation and drift analysis
-- **3D visualization** — Explore fingerprint similarity space in an interactive Three.js viewer
-- **Reference fingerprint (Ghost UI)** — A shadcn-compatible registry of atomic components, design tokens, and a live catalogue. Serves as the canonical baseline Ghost profiles and tests itself against in its current visual scope
+- **Human-readable fingerprints** — Every system is captured as a `fingerprint.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, LLMs consume it, deterministic tools diff it.
+- **Continuous perception** — Profile each consumer over time. Compare embeddings pairwise, across a fleet, or across history.
+- **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent fingerprint. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal.
+- **Fleet intelligence** — Compare fingerprints across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself.
+- **Grounded generation** — Use fingerprints as grounding for AI-driven generation. `ghost emit context-bundle` writes skill material for any generator; the review/verify recipes gate the output.
+- **Reference fingerprint (Ghost UI)** — A shadcn-compatible registry of atomic components, design tokens, and a live catalogue. Serves as the canonical baseline Ghost profiles and tests itself against in its current visual scope.
 
 ## Getting Started
 
@@ -31,81 +38,59 @@ pnpm install
 pnpm build
 ```
 
-### Quick Start
-
-**Profile a design system:**
+### Install the skill into your host agent
 
 ```bash
-# Profile the current directory
-ghost profile .
-
-# Profile a GitHub repo
-ghost profile github:shadcn-ui/ui
-
-# Verbose mode shows the agent's reasoning (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)
-ghost profile github:shadcn-ui/ui --verbose
-
-# Profile a shadcn registry directly
-ghost profile --registry https://ui.shadcn.com/registry.json
-
-# Save a fingerprint to disk (recommended)
-ghost profile . --emit                   # writes ./fingerprint.md
-ghost profile . --output my-system.md    # or write to a specific path
+# Writes the ghost-drift skill bundle to ./.claude/skills/ghost-drift
+ghost emit skill
 ```
 
-**Compare two fingerprints:**
+Once the skill is installed, ask your agent to "profile this design language" or "review this PR for design drift" and it will follow the recipe, calling `ghost` for any deterministic step.
+
+### Quick start
+
+**1. Profile your system** — ask your host agent (Claude Code, Cursor, etc.) to write a `fingerprint.md`. It'll follow the `profile` recipe and validate with `ghost lint` at the end.
+
+**2. Validate the result:**
 
 ```bash
-# Profile two systems, then compare
-ghost profile github:shadcn-ui/ui --output shadcn.fingerprint.md
-ghost profile npm:@chakra-ui/react --output chakra.fingerprint.md
-ghost compare shadcn.fingerprint.md chakra.fingerprint.md
-
-# Legacy JSON still works
-ghost compare shadcn.json chakra.json
+ghost lint                                   # defaults to ./fingerprint.md
+ghost lint path/to/fingerprint.md --format json
 ```
 
-**Review drift — one verb, three scopes:**
+**3. Compare fingerprints:**
 
 ```bash
-# files scope (default): zero-config PR review against ./fingerprint.md
-ghost review
-ghost review --staged --format github
+# Pairwise — per-dimension distance
+ghost compare parent.fingerprint.md consumer.fingerprint.md
 
-# project scope: target-level coherence against a parent (CLI/JSON/SARIF)
-ghost review project . --against parent.fingerprint.md
-ghost review project . --against parent.fingerprint.md --format sarif
+# Add qualitative interpretation of decisions + palette
+ghost compare a.md b.md --semantic
 
-# verify: drive the generate→review loop across a bundled prompt suite
-ghost verify
+# Add velocity / trajectory (reads .ghost/history.jsonl)
+ghost compare before.md after.md --temporal
+
+# Fleet (N≥3) — pairwise matrix + centroid
+ghost compare *.fingerprint.md
 ```
 
-**Local components vs registry:**
+**4. Track intent toward a parent:**
 
 ```bash
-# Diff the local component tree against the configured registry
-ghost drift
-ghost drift --component Button
+ghost ack --stance aligned --reason "Initial baseline"
+ghost adopt new-parent.fingerprint.md
+ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-**Generation loop — ground, generate, observe:**
+**5. Emit derived artifacts:**
 
 ```bash
-# Emit a Claude Code / MCP skill bundle from a fingerprint
-ghost emit context-bundle --out skills/my-design
-
-# Reference generator with built-in self-review retries
-ghost generate "pricing page with three tiers" --out pricing.html
+ghost emit review-command     # .claude/commands/design-review.md (per-project slash command)
+ghost emit context-bundle     # ghost-context/ (SKILL.md + tokens.css + prompt.md)
+ghost emit skill              # .claude/skills/ghost-drift (the agentskills.io skill bundle)
 ```
 
-**Fleet observability and visualization:**
-
-```bash
-ghost compare system-a.fingerprint.md system-b.fingerprint.md system-c.fingerprint.md --cluster
-ghost viz system-a.fingerprint.md system-b.fingerprint.md system-c.fingerprint.md
-```
-
-**Run the docs site (design language + drift tooling + component catalogue):**
+**Run the docs site locally:**
 
 ```bash
 just dev
@@ -114,52 +99,58 @@ just dev
 
 ## CLI Commands
 
-| Command          | Description                                                                      |
-| ---------------- | -------------------------------------------------------------------------------- |
-| `ghost profile`  | Generate a fingerprint for any target (directory, URL, npm package, GitHub repo)   |
-| `ghost compare`  | Compare 2+ fingerprints (pairwise, fleet, semantic, or temporal via flags)          |
-| `ghost review`   | Unified drift perception. Scopes: `files` (default, PR drift check), `project [target] --against parent.md` (target coherence against a parent) |
-| `ghost drift`    | Diff local components against the registry — reports breaking changes              |
-| `ghost verify`   | Run the bundled prompt suite against a fingerprint (classifies each dimension as tight/leaky/uncaptured) |
-| `ghost discover` | Find public design systems matching a query                                        |
-| `ghost emit`     | Derive artifacts from fingerprint.md — `review-command` (slash command) or `context-bundle` (SKILL.md + tokens.css + prompt.md) |
-| `ghost generate` | Reference generator — LLM → HTML with self-review retries against a fingerprint    |
-| `ghost lint`     | Lint fingerprint.md schema and body/frontmatter drift                               |
-| `ghost ack`      | Acknowledge current drift — record intentional stance toward parent                |
-| `ghost adopt`    | Shift parent baseline to a new fingerprint                                          |
-| `ghost diverge`  | Declare intentional divergence on a dimension with reasoning                       |
-| `ghost viz`      | Launch interactive 3D fingerprint visualization                                     |
+Six deterministic primitives. Everything else is a skill recipe the host agent runs.
 
-### Target Types
+| Command          | Description                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| `ghost compare`  | Pairwise distance (N=2) or fleet analysis (N≥3) over fingerprint embeddings. `--semantic` and `--temporal` add qualitative enrichment for N=2. |
+| `ghost lint`     | Validate `fingerprint.md` schema + body/frontmatter coherence. Use before declaring a fingerprint valid. |
+| `ghost ack`      | Record a stance toward the parent (aligned / accepted / diverging) in `.ghost-sync.json`. |
+| `ghost adopt`    | Shift parent baseline to a new fingerprint.                                        |
+| `ghost diverge`  | Declare intentional divergence on a dimension with reasoning.                      |
+| `ghost emit`     | Derive an artifact from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
 
-`ghost profile` and `ghost review project` accept universal targets:
+### Skill recipes — run by the host agent
 
-```bash
-ghost profile .                          # current directory
-ghost profile ./path/to/project          # local path
-ghost profile github:shadcn-ui/ui        # GitHub repo
-ghost profile npm:@chakra-ui/react       # npm package
-ghost profile https://example.com        # URL
-ghost profile --registry registry.json   # shadcn registry directly
-```
+Install once with `ghost emit skill`. Your agent then has:
 
-Use explicit prefixes (`github:`, `npm:`, `figma:`, `path:`, `url:`) when the input is ambiguous.
+| Recipe     | Triggered by                                    | Source |
+| ---------- | ----------------------------------------------- | ------ |
+| `profile`  | "profile this", "write a fingerprint.md"         | `packages/ghost-cli/src/skill-bundle/references/profile.md`  |
+| `review`   | "review this PR for drift"                       | `packages/ghost-cli/src/skill-bundle/references/review.md`   |
+| `verify`   | "verify generated UI against the fingerprint"    | `packages/ghost-cli/src/skill-bundle/references/verify.md`   |
+| `generate` | "generate a component matching our design"       | `packages/ghost-cli/src/skill-bundle/references/generate.md` |
+| `discover` | "find design languages like X"                   | `packages/ghost-cli/src/skill-bundle/references/discover.md` |
+| `compare`  | "why did these two fingerprints drift?"          | `packages/ghost-cli/src/skill-bundle/references/compare.md`  |
+
+These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus `ghost` for the deterministic steps.
+
+### Target types (for skill recipes that fetch externally)
+
+`resolveTarget()` in `packages/ghost-core/src/config.ts` accepts:
+
+- `github:owner/repo` — GitHub repository
+- `npm:package-name` — npm package
+- `figma:file-url` — Figma file
+- `./path` or `/absolute/path` — local directory
+- `https://…` — URL
+- `.` — current directory
+
+Used by `resolveParent` and by skill recipes that crawl a target. The CLI verbs themselves operate on `fingerprint.md` paths.
 
 ## Configuration
 
-Optionally create a `ghost.config.ts` in your project root to configure scanning targets, rules, and LLM settings.
+`ghost.config.ts` is optional. The CLI verbs that need it (`ack`, `diverge`) use it to locate the parent fingerprint; everything else is zero-config.
 
 ```typescript
 import { defineConfig } from "@ghost/core";
 
 export default defineConfig({
-  // Parent design system to compare components against
+  // Parent fingerprint to compare against
   parent: { type: "github", value: "shadcn-ui/ui" },
 
-  // Targets for `ghost drift`
-  targets: [
-    { type: "path", value: "./packages/my-ui" },
-  ],
+  // Optional scanning hints (unused by the six CLI verbs; available for recipes)
+  targets: [{ type: "path", value: "./packages/my-ui" }],
 
   rules: {
     "hardcoded-color": "error",
@@ -171,39 +162,30 @@ export default defineConfig({
 
   ignore: [],
 
-  // LLM provider for AI-powered profiling (optional)
-  llm: {
-    provider: "anthropic",
-    // model: "claude-sonnet-4-20250514",  // optional override
-    // apiKey: "..."  // defaults to ANTHROPIC_API_KEY env var
-  },
-
-  // Embedding provider for semantic comparison (optional)
-  // embedding: {
-  //   provider: "openai",
-  // },
-
-  // Agent settings (optional)
-  // agents: {
-  //   maxIterations: 40,
-  //   verbose: true,
-  // },
+  // Optional: use a real embedding model for paraphrase-robust `--semantic`
+  // embedding: { provider: "openai" },
 });
 ```
 
+### Environment variables
+
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY` — optional, consumed by `computeSemanticEmbedding` when a host writes a fingerprint.md and wants the enriched 49-dim vector.
+- `GITHUB_TOKEN` — optional, used by `resolveParent` when fetching a parent fingerprint from GitHub (avoids rate limits).
+
+The CLI auto-loads `.env` and `.env.local` from the working directory.
+
 ## How It Works
 
-### The Fingerprint
+### The fingerprint
 
-Ghost's canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. It's human-readable, LLM-consumable, and diff-friendly:
+The canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. What deterministic tools read
-- **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand
-- **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves
-- **`# Observation`** — prose paired with the frontmatter data, dimension by dimension
-- **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare` can match semantically
+- **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
+- **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand.
+- **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
+- **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare --semantic` can match semantically.
 
-Generate one with `ghost profile . --emit`. See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec.
+Generate one with the `profile` recipe. See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec. A condensed reference ships inside the skill bundle at `packages/ghost-cli/src/skill-bundle/references/schema.md`.
 
 The 49-dim machine vector splits like this:
 
@@ -211,62 +193,53 @@ The 49-dim machine vector splits like this:
 | ---------- | ---------- | -------------------------------------------------------------- |
 | 0-20       | Palette    | Dominant colors (OKLCH), neutrals, semantic coverage, contrast |
 | 21-30      | Spacing    | Scale values, regularity, base unit, distribution              |
-| 31-40      | Typography | Font families, size ramp, weight distribution, line heights   |
+| 31-40      | Typography | Font families, size ramp, weight distribution, line heights    |
 | 41-48      | Surfaces   | Border radii, shadow complexity, border usage                  |
 
-### Scanning
+### Generation loop
 
-Ghost perceives drift at three levels:
-
-1. **Values** — Detects hardcoded colors, token overrides, and missing tokens by comparing styles against the registry
-2. **Structure** — Diffs component files between a consumer implementation and the registry source
-3. **Visual** — Renders components with Playwright and performs pixel-level comparison using pixelmatch
-
-### Generation Loop
-
-Ghost doubles as pipeline infrastructure for AI-driven generation — the fingerprint grounds the generator, and `ghost review` surfaces drift in the output so humans can decide whether to acknowledge, adopt, or diverge:
+Ghost doubles as pipeline infrastructure for AI-driven generation. The fingerprint grounds the generator; the `review` recipe surfaces drift in the output so humans can decide whether to acknowledge, adopt, or diverge:
 
 ```
 fingerprint.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
                                           │
                                           ▼
                                    any generator
-                               (ghost generate, Cursor,
-                                v0, in-house tool)
+                            (host agent, Cursor, v0,
+                             in-house tool)
                                           │
                                           ▼ HTML / JSX
-                                   [ghost review] ──► drift signal
-                                                      (annotate / acknowledge /
-                                                       adopt / diverge)
+                                   [review recipe]  ──►  drift signal
+                                                        (annotate / acknowledge /
+                                                         adopt / diverge)
 ```
 
-Run `ghost verify` to drive the loop across a versioned prompt suite and classify each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+The `verify` recipe drives the loop across a prompt suite and classifies each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
-### Intent Tracking
+### Intent tracking
 
 Ghost tracks design lineage and published intent through:
 
-- **`fingerprint.md`** — The canonical fingerprint artifact
-- **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning
-- **`.ghost/history.jsonl`** — Append-only fingerprint history for temporal analysis
-- **Temporal comparison** — Velocity and trajectory classification to understand where a system is heading, not just where it is
+- **`fingerprint.md`** — The canonical fingerprint artifact.
+- **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning. Written by `ack` / `adopt` / `diverge`.
+- **`.ghost/history.jsonl`** — Append-only fingerprint history for temporal analysis. Read by `compare --temporal`.
 
-### Fleet Observability
+### Fleet observability
 
-Compare fingerprints across multiple systems to make an ecosystem legible. Ghost calculates pairwise distances, identifies a centroid, and clusters systems by similarity — surfacing which consumers are coherent, which are drifting, and where gaps exist.
+Run `ghost compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters — which consumers are coherent, which are drifting, and where the gaps are.
 
 ## Ghost UI
 
-Ghost UI (`@ghost/ui`) is the project's reference design language — atomic, composable interface primitives published as a shadcn-compatible registry. It serves as both a living design system and the concrete baseline Ghost scans consumers against.
+Ghost UI (`@ghost/ui`) is the project's reference design language — atomic, composable interface primitives published as a shadcn-compatible registry. It serves as both a living design language and the concrete baseline Ghost scans consumers against.
 
 ### What's included
 
-- **49 primitive components** — Foundational building blocks (accordion, button, card, dialog, form, table, tabs, etc.) built on Radix UI and styled with Tailwind CSS
-- **48 AI-native elements** — Components for conversational and agentic interfaces: prompt input, message, code block, chain of thought, file tree, terminal, tool, and more — the pieces intelligent interfaces compose from
-- **Design tokens** — A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support
-- **Theme system** — Runtime theme switching with presets, a live theme panel for editing tokens, and CSS variable export
-- **HK Grotesk typeface** — Self-hosted display font (300–900 weights) paired with system sans-serif for body text
-- **Docs site** — Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase — one visual language, one deploy
+- **49 primitive components** — Foundational building blocks (accordion, button, card, dialog, form, table, tabs, …) built on Radix UI and styled with Tailwind CSS.
+- **48 AI-native elements** — Components for conversational and agentic interfaces: prompt input, message, code block, chain of thought, file tree, terminal, tool, and more.
+- **Design tokens** — A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support.
+- **Theme system** — Runtime theme switching with presets, a live theme panel, and CSS variable export.
+- **HK Grotesk typeface** — Self-hosted display font (300–900 weights) paired with system sans-serif for body text.
+- **Docs site** — Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase.
 
 ### Registry
 
@@ -276,12 +249,7 @@ Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](
 npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
 ```
 
-Ghost itself can profile the registry to generate a fingerprint, then check downstream consumers against it to detect drift:
-
-```bash
-ghost profile --registry ./packages/ghost-ui/registry.json --emit
-ghost review project ./consumer-app --against fingerprint.md
-```
+Ghost itself can profile the registry to generate a fingerprint — the host agent runs the `profile` recipe against `./packages/ghost-ui/` — and check downstream consumers against it with the `review` recipe.
 
 ### Docs site development
 
@@ -313,61 +281,53 @@ node packages/ghost-mcp/dist/bin.js
 
 ```
 packages/
-  ghost-core/          Core library
+  ghost-core/          Core library — deterministic primitives
     src/
-      agents/          Director, ExpressionAgent, DiscoveryAgent, ComparisonAgent, ComplianceAgent
-      stages/          Deterministic pipeline stages (extract, compare, comply)
-      embedding/       Embedding engine (vectors, comparison, extraction)
-      evolution/       Evolution tracking (sync, temporal, fleet, history)
-      scanners/        Component scanners (values, structure)
-      extractors/      Material extraction (CSS, Tailwind)
-      resolvers/       Registry and CSS resolution
-      llm/             LLM providers (Anthropic, OpenAI)
-      reporters/       Output formatting (CLI, JSON, fingerprint, fleet)
-  ghost-cli/           CLI interface (cac) — 11 unified verbs
+      compare.ts       Embedding-based comparison (pairwise + fleet)
+      config.ts        Config loading + target resolution
+      embedding/       49-dim vector, optional semantic embedding
+      fingerprint/     parse / compose / diff / lint fingerprint.md
+      evolution/       history, ack manifest, fleet analysis, parent resolution
+      context/         artifact generators (review-command, context-bundle, tokens.css)
+      reporters/       output formatters for compare / fleet / temporal / fingerprint
+  ghost-cli/           CLI (cac) — 6 verbs
     src/
-      bin.ts                 profile, compare, discover
-      review-command.ts      review (files | project | suite scopes)
-      emit-command.ts        emit (review-command | context-bundle kinds)
-      generate-command.ts    generate (reference LLM generator with self-review)
-      evolution-commands.ts  ack, adopt, diverge
-      viz/                   3D visualization (Three.js, PCA projection)
-      compare-mode.ts        Pure compare-mode dispatch (testable)
+      bin.ts                  compare, lint
+      emit-command.ts         emit (review-command | context-bundle | skill)
+      evolution-commands.ts   ack, adopt, diverge
+      skill-bundle/           The shipped ghost-drift skill bundle
+        SKILL.md              Skill entry point
+        references/           profile / review / verify / generate / discover / compare / schema
+        assets/                fingerprint.template.md, other static assets
   ghost-mcp/           MCP server for Ghost UI registry
     src/
-      tools.ts         5 MCP tools (search, get, install, categories, theme)
-      resources.ts     2 MCP resources (registry, skills)
+      tools.ts         5 MCP tools
+      resources.ts     2 MCP resources
   ghost-ui/            Reference component library (@ghost/ui)
     src/
-      index.ts         Public API — all primitives, theme, hooks
+      index.ts
       components/
-        ui/            49 primitive components (Radix + Tailwind)
-        ai-elements/   48 AI-native components (chat, code, agents)
+        ui/            49 primitive components
+        ai-elements/   48 AI-native components
         theme/         ThemeProvider, ThemeToggle
-      hooks/           Shared React hooks
-      lib/             cn + theme presets/defaults/utils
+      hooks/
+      lib/             cn + theme presets / defaults / utils
       styles/          Design tokens, global CSS
       fonts/           HK Grotesk woff2 files
     registry.json      shadcn-compatible component registry
 apps/
-  docs/                Deployed site (@ghost/docs) — one aesthetic, all content
+  docs/                Deployed site (@ghost/docs)
     src/
       app/             Routes: /, /tools, /tools/drift/*, /ui/*
       components/
         docs/          Page layout, demos, bento showcase
         theme-panel/   Live token editor panel
-      contexts/        Theme and theme-panel context
-      lib/             component-registry, theme metadata
+      contexts/
+      lib/
     vite.config.ts     base = DEPLOY_BASE env
-skills/                Claude Code skill definitions
-  ghost-profile/       Profile any design system
-  ghost-compare/       Compare two design systems
-  ghost-drift-check/   Check design compliance
-  ghost-discover/      Find public design systems
-  ghost-review/        Review files for drift against a fingerprint
 docs/
-  fingerprint-format.md The fingerprint.md spec
-  generation-loop.md   Emit → generate → review pipeline
+  fingerprint-format.md  The fingerprint.md spec
+  generation-loop.md     Emit → generate → review pipeline
 ```
 
 ## Development
@@ -382,10 +342,10 @@ pnpm build
 # run tests
 pnpm test
 
-# lint and format
+# lint, format, typecheck, file-size check
 pnpm check
 
-# run ghost-ui dev server
+# run the docs site
 just dev
 ```
 

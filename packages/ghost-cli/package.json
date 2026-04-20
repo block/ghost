@@ -7,6 +7,12 @@
   "bin": {
     "ghost": "./dist/bin.js"
   },
+  "exports": {
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
   "files": [
     "dist"
   ],

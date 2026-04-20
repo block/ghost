@@ -1,9 +1,11 @@
 ---
 name: CLI Consolidation Plan
-status: draft — 2026-04-19
+status: historical — superseded by the BYOA refactor (commits 4245274, d938314, de3e1cc)
 owner: nahiyan
 branch: refactor/fingerprint (or a follow-up branch)
 ---
+
+> **Historical document.** This plan describes a pre-BYOA consolidation from 18 verbs to ~11. The final BYOA refactor cut the CLI further to **6 deterministic primitives** (`compare`, `lint`, `ack`, `adopt`, `diverge`, `emit`) and moved `profile`, `review`, `verify`, `generate`, and `discover` into skill recipes the host agent runs. Kept for history; don't treat its verb list as current. See the [README](../README.md) and the [CLI reference](../apps/docs/src/app/docs/cli/page.tsx) for the current surface.
 
 # Ghost CLI consolidation — 18 verbs → 9
 

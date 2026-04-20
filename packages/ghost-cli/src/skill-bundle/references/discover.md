@@ -1,6 +1,6 @@
 ---
 name: discover
-description: Find public design systems matching a query — for benchmarking, inspiration, or adoption.
+description: Find public design languages matching a query — for benchmarking, inspiration, or adoption.
 handoffs:
   - label: Profile a discovered system into its own fingerprint.md
     skill: profile
@@ -10,9 +10,9 @@ handoffs:
     prompt: Compare my fingerprint.md against the discovered system's fingerprint with --semantic
 ---
 
-# Recipe: Discover public design systems
+# Recipe: Discover public design languages
 
-**Goal:** find public design systems matching a query — for benchmarking, inspiration, or competitive analysis.
+**Goal:** find public design languages matching a query — for benchmarking, inspiration, or competitive analysis.
 
 Ghost's CLI does not search the web. You do, using your host harness's web-search capability.
 
@@ -22,7 +22,7 @@ Ghost's CLI does not search the web. You do, using your host harness's web-searc
 
 Use WebSearch (or whatever search tool your harness provides) for:
 
-- "<query> design system"
+- "<query> design language"
 - "<query> component library"
 - "<query> figma library"
 
