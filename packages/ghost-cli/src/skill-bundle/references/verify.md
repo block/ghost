@@ -1,3 +1,15 @@
+---
+name: verify
+description: Confirm generated UI stays within fingerprint.md bounds; iterate if not.
+handoffs:
+  - label: Regenerate with feedback from the review
+    skill: generate
+    prompt: Regenerate the UI using the review findings as constraints
+  - label: Update the fingerprint to capture an uncaptured decision
+    skill: profile
+    prompt: Add the missing decision to fingerprint.md and re-lint
+---
+
 # Recipe: Verify generated UI against the fingerprint
 
 **Goal:** confirm that generated UI (a component, a page, a variant) stays within the bounds of the local `fingerprint.md`. This is the "generate → review → iterate" loop.
