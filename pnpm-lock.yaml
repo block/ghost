@@ -17,6 +17,9 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
+      gray-matter:
+        specifier: ^4.0.3
+        version: 4.0.3
       lefthook:
         specifier: ^2.1.0
         version: 2.1.6
@@ -29,6 +32,9 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@22.19.17)(jiti@2.6.1)(lightningcss@1.32.0)(msw@2.13.4(@types/node@22.19.17)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.3)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
   apps/docs:
     dependencies:

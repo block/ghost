@@ -109,7 +109,7 @@ if (existsSync(SAMPLES_DIR)) {
 
 if (errors.length) {
   console.error("check-docs-frontmatter failed:\n");
-  for (const e of errors) console.error(e + "\n");
+  for (const e of errors) console.error(`${e}\n`);
   process.exit(1);
 }
 
