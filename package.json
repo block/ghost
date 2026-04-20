@@ -20,7 +20,7 @@
     "lint": "biome lint ."
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.88.0",
+    "@anthropic-ai/sdk": "^0.90.0",
     "@biomejs/biome": "^2.4.12",
     "@types/node": "^22.0.0",
     "lefthook": "^2.1.0",
