@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { emitReviewCommand } from "../../src/context/review-command.js";
 import { loadExpression } from "../../src/expression/index.js";
-import { emitReviewCommand } from "../../src/stages/emit-review.js";
 import type { Expression } from "../../src/types.js";
 
 const GHOST_UI_EXPRESSION = fileURLToPath(

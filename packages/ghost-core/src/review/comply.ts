@@ -1,6 +1,5 @@
 import { compareExpressions } from "../embedding/compare.js";
 import type { Expression } from "../types.js";
-import type { StageContext, StageResult } from "./types.js";
 
 export interface ComplianceRule {
   name: string;
@@ -57,27 +56,17 @@ const DEFAULT_THRESHOLDS: ComplianceThresholds = {
 
 /**
  * Check an expression against quality rules and parent drift thresholds.
- *
- * Runs built-in quality checks, custom rules, and drift comparison.
- * Produces a compliance report with violations, score, and pass/fail.
- *
  * Deterministic — no LLM calls.
  */
-export async function comply(
-  input: ComplianceInput,
-  _ctx?: StageContext,
-): Promise<StageResult<ComplianceReport>> {
-  const startTime = Date.now();
+export function comply(input: ComplianceInput): ComplianceReport {
   const violations: ComplianceViolation[] = [];
   const thresholds = { ...DEFAULT_THRESHOLDS, ...input.thresholds };
 
-  // Built-in quality checks
   violations.push(...checkPalette(input.expression, thresholds));
   violations.push(...checkSpacing(input.expression, thresholds));
   violations.push(...checkTypography(input.expression, thresholds));
   violations.push(...checkSurfaces(input.expression, thresholds));
 
-  // Custom rules
   if (input.rules) {
     for (const rule of input.rules) {
       const violation = rule.check(input.expression);
@@ -85,7 +74,6 @@ export async function comply(
     }
   }
 
-  // Drift checks against parent
   let driftSummary: ComplianceReport["driftSummary"];
   if (input.parentExpression) {
     const driftResult = checkDrift(
@@ -104,18 +92,10 @@ export async function comply(
   const score = Math.max(0, 1 - errorCount * 0.15 - warningCount * 0.05);
 
   return {
-    data: {
-      passed: errorCount === 0,
-      violations,
-      score,
-      driftSummary,
-    },
-    confidence: 0.85,
-    warnings: [],
-    reasoning: [
-      `${violations.length} violation(s): ${errorCount} errors, ${warningCount} warnings. Score: ${score.toFixed(2)}`,
-    ],
-    duration: Date.now() - startTime,
+    passed: errorCount === 0,
+    violations,
+    score,
+    driftSummary,
   };
 }
 

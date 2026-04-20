@@ -1,9 +1,5 @@
-import type {
-  ChatMessage,
-  ChatResponse,
-  ToolDefinition,
-} from "../agents/tools/types.js";
 import type { LLMProvider } from "../types.js";
+import type { ChatMessage, ChatResponse, ToolDefinition } from "./types.js";
 
 interface AnthropicClient {
   messages: {

@@ -1,7 +1,3 @@
-import type { AgentContext } from "../types.js";
-import { BaseAgent } from "./base.js";
-import type { AgentState } from "./types.js";
-
 export interface DiscoveredSystem {
   name: string;
   url: string;
@@ -18,93 +14,55 @@ export interface DiscoveryInput {
   maxResults?: number;
 }
 
+export interface DiscoveryResult {
+  systems: DiscoveredSystem[];
+  reasoning: string[];
+  warnings: string[];
+}
+
 /**
- * Discovery Agent — "What design systems exist?"
+ * Discover public design systems matching a query.
  *
- * Multi-turn search across npm registry, GitHub, and a curated catalog.
- * Iteration 1: search the curated catalog (fast, offline)
- * Iteration 2: search npm registry (if query provided)
- * Iteration 3: search GitHub (if query provided and LLM available)
+ * Hits the curated catalog first (always available, offline). When a query
+ * is provided, also searches npm and GitHub and merges/dedupes results.
  */
-export class DiscoveryAgent extends BaseAgent<
-  DiscoveryInput,
-  DiscoveredSystem[]
-> {
-  name = "discovery";
-  maxIterations = 3;
-  systemPrompt = `You are a design system discovery agent. Your job is to find
-public design systems matching given criteria. Search npm, GitHub, and the web.
-Combine results from multiple sources, deduplicate, and rank by relevance.`;
+export async function discover(
+  input: DiscoveryInput = {},
+): Promise<DiscoveryResult> {
+  const maxResults = input.maxResults ?? 20;
+  const reasoning: string[] = [];
+  const warnings: string[] = [];
 
-  protected async step(
-    state: AgentState<DiscoveredSystem[]>,
-    input: DiscoveryInput,
-    ctx: AgentContext,
-  ): Promise<AgentState<DiscoveredSystem[]>> {
-    const maxResults = input.maxResults ?? 20;
+  let systems = searchCatalog(input.query);
+  reasoning.push(`Found ${systems.length} systems in curated catalog`);
 
-    if (state.iterations === 0) {
-      // First iteration: curated catalog (always available)
-      const catalogResults = searchCatalog(input.query);
-      state.result = catalogResults;
-      state.confidence = catalogResults.length > 0 ? 0.6 : 0.2;
-      state.reasoning.push(
-        `Found ${catalogResults.length} systems in curated catalog`,
+  if (input.query) {
+    try {
+      const npmResults = await searchNpm(input.query, maxResults);
+      systems = mergeResults(systems, npmResults).slice(0, maxResults);
+      reasoning.push(
+        `Found ${npmResults.length} packages on npm, ${systems.length} total after dedup`,
       );
-
-      if (!input.query || !ctx.llm) {
-        state.status = "completed";
-      }
-
-      return state;
+    } catch (err) {
+      warnings.push(
+        `npm search failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
-    if (state.iterations === 1 && input.query) {
-      // Second iteration: npm registry search
-      try {
-        const npmResults = await searchNpm(input.query, maxResults);
-        const merged = mergeResults(state.result ?? [], npmResults);
-        state.result = merged.slice(0, maxResults);
-        state.confidence = Math.min(state.confidence + 0.2, 1.0);
-        state.reasoning.push(
-          `Found ${npmResults.length} packages on npm, ${merged.length} total after dedup`,
-        );
-      } catch (err) {
-        state.warnings.push(
-          `npm search failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-
-      if (!ctx.llm) {
-        state.status = "completed";
-      }
-
-      return state;
+    try {
+      const ghResults = await searchGitHub(input.query, maxResults);
+      systems = mergeResults(systems, ghResults).slice(0, maxResults);
+      reasoning.push(
+        `Found ${ghResults.length} repos on GitHub, ${systems.length} total after dedup`,
+      );
+    } catch (err) {
+      warnings.push(
+        `GitHub search failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
-
-    if (state.iterations === 2 && input.query) {
-      // Third iteration: GitHub search
-      try {
-        const ghResults = await searchGitHub(input.query, maxResults);
-        const merged = mergeResults(state.result ?? [], ghResults);
-        state.result = merged.slice(0, maxResults);
-        state.confidence = Math.min(state.confidence + 0.15, 1.0);
-        state.reasoning.push(
-          `Found ${ghResults.length} repos on GitHub, ${merged.length} total after dedup`,
-        );
-      } catch (err) {
-        state.warnings.push(
-          `GitHub search failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
-
-      state.status = "completed";
-      return state;
-    }
-
-    state.status = "completed";
-    return state;
   }
+
+  return { systems, reasoning, warnings };
 }
 
 // --- npm registry search ---
@@ -137,7 +95,6 @@ async function searchNpm(
     .filter((obj) => {
       const name = obj.package.name.toLowerCase();
       const desc = (obj.package.description ?? "").toLowerCase();
-      // Filter for design-system-like packages
       return (
         name.includes("ui") ||
         name.includes("design") ||
@@ -174,7 +131,6 @@ async function searchGitHub(
     "User-Agent": "ghost-cli",
   };
 
-  // Use GitHub token if available
   const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
   if (token) {
     headers.Authorization = `token ${token}`;
@@ -366,7 +322,6 @@ function mergeResults(
     }
   }
 
-  // Sort: catalog first (curated), then by stars, then by name
   return merged.sort((a, b) => {
     if (a.source === "catalog" && b.source !== "catalog") return -1;
     if (b.source === "catalog" && a.source !== "catalog") return 1;

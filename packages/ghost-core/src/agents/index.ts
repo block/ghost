@@ -1,16 +1,6 @@
-export { BaseAgent } from "./base.js";
-export type { ComparisonInput } from "./comparison.js";
-export { ComparisonAgent } from "./comparison.js";
 export type {
-  ComplianceInput,
-  ComplianceReport,
-  ComplianceRule,
-  ComplianceThresholds,
-  ComplianceViolation,
-} from "./compliance.js";
-export { ComplianceAgent } from "./compliance.js";
-export type { DiscoveredSystem, DiscoveryInput } from "./discovery.js";
-export { DiscoveryAgent } from "./discovery.js";
-export { ExpressionAgent } from "./expression.js";
-export { ExtractionAgent } from "./extraction.js";
-export type { Agent, AgentState } from "./types.js";
+  DiscoveredSystem,
+  DiscoveryInput,
+  DiscoveryResult,
+} from "./discovery.js";
+export { discover } from "./discovery.js";

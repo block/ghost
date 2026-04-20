@@ -437,9 +437,9 @@ export interface LLMProvider {
   name: string;
   /** Multi-turn chat with tool use support. All expression generation flows through this. */
   chat: (
-    messages: import("./agents/tools/types.js").ChatMessage[],
-    tools?: import("./agents/tools/types.js").ToolDefinition[],
-  ) => Promise<import("./agents/tools/types.js").ChatResponse>;
+    messages: import("./llm/types.js").ChatMessage[],
+    tools?: import("./llm/types.js").ToolDefinition[],
+  ) => Promise<import("./llm/types.js").ChatResponse>;
 }
 
 // --- Agent types ---

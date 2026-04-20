@@ -1,4 +1,4 @@
-import type { ComplianceReport } from "../agents/compliance.js";
+import type { ComplianceReport } from "../review/comply.js";
 
 const SEVERITY_ICONS: Record<string, string> = {
   error: "\x1b[31m✖\x1b[0m",

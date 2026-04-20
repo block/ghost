@@ -24,6 +24,7 @@ import type {
 const PROMPT = `You are producing a design expression — a comprehensive extraction of the design language present in a codebase.
 
 Explore the codebase at the current directory. Find where visual design values are defined — theme files, CSS variables, token definitions, component styles. Read those definitions and form a complete picture.
+SOURCES_HINT
 
 ## Three-Layer Expression
 
@@ -68,10 +69,21 @@ ${THREE_LAYER_SCHEMA}
 Set "id" to "PROJECT_ID".
 Set "source" to "llm".`;
 
+export interface ExpressionAgentSource {
+  label: string;
+  /** Subdir (relative to cwd) the source lives in, when multi-source. */
+  subdir?: string;
+}
+
 export interface ExpressionAgentOptions {
   targetDir: string;
   targetType: TargetType;
   projectId: string;
+  /**
+   * When profiling multiple sources staged side-by-side, describes each.
+   * Single-source runs can omit this.
+   */
+  sources?: ExpressionAgentSource[];
   verbose?: boolean;
   embedding?: AgentContext["embedding"];
 }
@@ -82,7 +94,10 @@ export async function runExpressionAgent(
   const { query } = await import("@anthropic-ai/claude-agent-sdk");
 
   const startTime = Date.now();
-  const prompt = PROMPT.replace("PROJECT_ID", options.projectId);
+  const prompt = PROMPT.replace("PROJECT_ID", options.projectId).replace(
+    "SOURCES_HINT",
+    buildSourcesHint(options.sources),
+  );
   const reasoning: string[] = [];
   let resultText = "";
 
@@ -135,6 +150,10 @@ export async function runExpressionAgent(
   fp.source = "llm";
   fp.timestamp = new Date().toISOString();
 
+  if (options.sources && options.sources.length > 1) {
+    fp.sources = options.sources.map((s) => s.label);
+  }
+
   // Preserve observation, decisions, and roles from the three-layer output
   if (raw.observation && typeof raw.observation.summary === "string") {
     fp.observation = raw.observation;
@@ -182,6 +201,14 @@ export async function runExpressionAgent(
     iterations: 1,
     duration: Date.now() - startTime,
   };
+}
+
+function buildSourcesHint(sources?: ExpressionAgentSource[]): string {
+  if (!sources || sources.length <= 1) return "";
+  const lines = sources
+    .map((s) => `  - ${s.subdir ?? s.label}/  (${s.label})`)
+    .join("\n");
+  return `\nThis run combines multiple sources, each materialized as a sibling subdirectory:\n${lines}\n\nExplore every subdirectory and synthesize a single coherent expression that reflects the combined design language. When describing evidence, include the source label so provenance stays clear.`;
 }
 
 function recomputeOklch(fp: Expression): void {

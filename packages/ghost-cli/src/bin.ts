@@ -16,7 +16,7 @@ for (const envFile of [".env", ".env.local"]) {
   }
 }
 
-import type { EmbeddingConfig, Expression } from "@ghost/core";
+import type { Expression } from "@ghost/core";
 import {
   compare,
   EMBEDDING_FRAGMENT_FILENAME,
@@ -35,28 +35,21 @@ import {
   loadConfig,
   loadExpression,
   profile,
-  profileMultiTarget,
-  profileRegistry,
-  profileTarget,
+  profileTargets,
   readHistory,
   readSyncManifest,
-  resolveTarget,
   serializeEmbeddingFragment,
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
-import { registerDriftCommand } from "./drift-command.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
   registerAdoptCommand,
   registerDivergeCommand,
 } from "./evolution-commands.js";
-import { registerGenerateCommand } from "./generate-command.js";
-import { registerLintCommand } from "./lint-command.js";
 import { registerReviewCommand } from "./review-command.js";
 import { registerVerifyCommand } from "./verify-command.js";
-import { registerVizCommand } from "./viz-command.js";
 
 const cli = cac("ghost");
 
@@ -67,72 +60,31 @@ cli
     "Generate a design expression — accepts one or more targets (directory, URL, npm package, GitHub repo)",
   )
   .option("-c, --config <path>", "Path to ghost config file")
-  .option(
-    "-r, --registry <path>",
-    "Path or URL to a registry.json (profiles registry directly)",
-  )
   .option("-o, --output <file>", "Write expression to file")
   .option(
     "--emit",
     "Write expression.md to project root (publishable artifact)",
   )
-  .option(
-    "--max-iterations <n>",
-    "Maximum agent iterations for exploration (default: 99). Lower for faster/cheaper runs.",
-  )
   .option("-v, --verbose", "Show agent reasoning")
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (targets: string[], opts) => {
     try {
+      const config = await loadConfig(opts.config);
       let expression: Expression;
 
-      if (opts.registry) {
-        let embeddingConfig: EmbeddingConfig | undefined;
-        try {
-          const cfg = await loadConfig(opts.config);
-          embeddingConfig = cfg.embedding;
-        } catch {
-          // No config file is fine
-        }
-        expression = await profileRegistry(opts.registry, embeddingConfig);
+      const targetStrings = targets.length > 0 ? targets : ["."];
+
+      if (targetStrings.length === 1 && targetStrings[0] === ".") {
+        expression = await profile(config, { emit: opts.emit });
       } else {
-        const targetStrings = targets.length > 0 ? targets : ["."];
-        const maxIterations = opts.maxIterations
-          ? Number.parseInt(String(opts.maxIterations), 10)
-          : undefined;
-
-        if (targetStrings.length === 1 && targetStrings[0] === ".") {
-          const config = await loadConfig(opts.config);
-          expression = await profile(config, { emit: opts.emit });
-        } else if (targetStrings.length === 1) {
-          const config = await loadConfig(opts.config);
-          const target = resolveTarget(targetStrings[0]);
-
-          if (opts.verbose) {
-            console.log(`Profiling ${target.type}: ${target.value}`);
-          }
-
-          const result = await profileTarget(target, config);
-          expression = result.expression;
-
-          if (opts.verbose) printVerboseResult(result);
-        } else {
-          const config = await loadConfig(opts.config);
-          const ts = targetStrings.map((s) => resolveTarget(s));
-
-          if (opts.verbose) {
-            console.log(`Profiling ${ts.length} sources:`);
-            for (const t of ts) console.log(`  ${t.type}: ${t.value}`);
-            console.log();
-          }
-
-          const result = await profileMultiTarget(ts, config, {
-            maxIterations,
-          });
-          expression = result.expression;
-
-          if (opts.verbose) printVerboseResult(result);
+        if (opts.verbose && targetStrings.length > 1) {
+          console.log(`Profiling ${targetStrings.length} sources:`);
+          for (const t of targetStrings) console.log(`  ${t}`);
+          console.log();
         }
+        const result = await profileTargets(targetStrings, config);
+        expression = result.expression;
+        if (opts.verbose) printVerboseResult(result);
       }
 
       const output =
@@ -281,45 +233,39 @@ cli
     }
   });
 
-// --- discover ---
-cli
-  .command("discover [query]", "Find public design systems matching a query")
-  .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (query: string | undefined, opts) => {
-    try {
-      const { DiscoveryAgent } = await import("@ghost/core");
-      const config = await loadConfig().catch(() => undefined);
-      const agent = new DiscoveryAgent();
-      const result = await agent.execute(
-        { query: query || undefined },
-        { llm: config?.llm ?? (undefined as never) },
-      );
+// --- discover (experimental, hidden from --help) ---
+const discoverCmd = cli
+  .command(
+    "discover [query]",
+    "(experimental) Find public design systems matching a query",
+  )
+  .option("--format <fmt>", "Output format: cli or json", { default: "cli" });
+// Hide from --help; still usable by name.
+(discoverCmd as unknown as { hidden?: boolean }).hidden = true;
+discoverCmd.action(async (query: string | undefined, opts) => {
+  try {
+    const { discover } = await import("@ghost/core");
+    const result = await discover({ query: query || undefined });
 
-      const output =
-        opts.format === "json"
-          ? formatDiscoveryJSON(result.data)
-          : formatDiscoveryCLI(result.data);
+    const output =
+      opts.format === "json"
+        ? formatDiscoveryJSON(result.systems)
+        : formatDiscoveryCLI(result.systems);
 
-      process.stdout.write(`${output}\n`);
-      process.exit(0);
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      process.exit(2);
-    }
-  });
+    process.stdout.write(`${output}\n`);
+    process.exit(0);
+  } catch (err) {
+    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(2);
+  }
+});
 
 // Commands defined in other files register themselves on the same cli instance
 registerReviewCommand(cli);
-registerDriftCommand(cli);
 registerVerifyCommand(cli);
 registerAckCommand(cli);
 registerAdoptCommand(cli);
 registerDivergeCommand(cli);
-registerVizCommand(cli);
-registerGenerateCommand(cli);
-registerLintCommand(cli);
 registerEmitCommand(cli);
 
 cli.help();

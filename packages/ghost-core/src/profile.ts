@@ -1,14 +1,10 @@
-import { resolve } from "node:path";
+import { relative } from "node:path";
+import { runExpressionAgent } from "./agents/expression-agent.js";
 import { resolveTarget } from "./config.js";
-import { computeSemanticEmbedding } from "./embedding/embed-api.js";
-import { computeEmbedding } from "./embedding/embedding.js";
-import { expressionFromRegistry } from "./embedding/from-registry.js";
 import { emitExpression } from "./evolution/emit.js";
 import { appendHistory } from "./evolution/history.js";
-import type { ExpressionValidation } from "./llm/validate-expression.js";
-import { resolveRegistry } from "./resolvers/registry.js";
+import { stageTargets } from "./extractors/stage.js";
 import type {
-  EmbeddingConfig,
   EnrichedExpression,
   Expression,
   GhostConfig,
@@ -18,7 +14,6 @@ import type {
 export interface ProfileOptions {
   cwd?: string;
   emit?: boolean;
-  registry?: string;
 }
 
 export interface ProfileTargetResult {
@@ -30,28 +25,12 @@ export interface ProfileTargetResult {
 
 export interface ProfileResult {
   expression: Expression;
-  validation?: ExpressionValidation;
 }
 
 /**
- * Compute the embedding for an expression.
- * Uses semantic embedding API if configured, otherwise falls back to deterministic.
- */
-async function embedExpression(
-  expression: Expression,
-  embeddingConfig?: EmbeddingConfig,
-): Promise<number[]> {
-  if (embeddingConfig) {
-    return computeSemanticEmbedding(expression, embeddingConfig);
-  }
-  return computeEmbedding(expression);
-}
-
-/**
- * Profile a repository — extract design material and produce an expression.
+ * Profile the current project — extract design material and produce an expression.
  *
- * AI-only: requires config.llm. For deterministic registry-to-expression
- * (shadcn-style), pass `registry` in options or use profileRegistry directly.
+ * AI-only: requires config.llm.
  */
 export async function profile(
   config: GhostConfig,
@@ -61,84 +40,57 @@ export async function profile(
     typeof cwdOrOptions === "string" ? { cwd: cwdOrOptions } : cwdOrOptions;
   const cwd = opts.cwd ?? process.cwd();
 
-  // Explicit registry path takes the deterministic registry-to-expression path
-  // (a separate feature — not a fallback).
-  if (opts.registry) {
-    return profileRegistry(opts.registry, config.embedding);
-  }
-
-  if (!config.llm) {
-    throw new Error(
-      "Ghost is AI-only. Configure an LLM provider (set ANTHROPIC_API_KEY or OPENAI_API_KEY, or llm in ghost.config.ts).",
-    );
-  }
-
-  const result = await profileTarget({ type: "path", value: cwd }, config);
+  const result = await profileTargets([{ type: "path", value: cwd }], config);
   const expression = result.expression;
 
   if (opts.emit) {
     await emitExpression(expression, cwd);
   }
 
-  await appendHistory(
-    {
-      expression,
-      parentRef: config.parent,
-    },
-    cwd,
-  );
+  await appendHistory({ expression, parentRef: config.parent }, cwd);
 
   return expression;
 }
 
 /**
- * Profile a registry deterministically — no LLM needed.
- * Registry-to-expression is a distinct feature for shadcn-style registries
- * (not a fallback for source-code profiling).
- */
-export async function profileRegistry(
-  registryPath: string,
-  embeddingConfig?: EmbeddingConfig,
-): Promise<Expression> {
-  const registry = await resolveRegistry(registryPath);
-  const expression = expressionFromRegistry(registry);
-  expression.embedding = await embedExpression(expression, embeddingConfig);
-  return expression;
-}
-
-/**
- * Profile any target using the LLM-first agent pipeline.
+ * Profile one or more targets with a single Agent SDK run.
  *
- * Accepts a Target object or a string (auto-resolved via resolveTarget).
- * The agent explores the filesystem with Read/Glob/Grep tools to find and
- * extract the visual language — no upfront sampling, no deterministic fallback.
+ * Single local path → agent runs against it directly.
+ * Single remote (github/npm/url) → materialized to a temp dir, agent runs there.
+ * N targets → materialized into sibling subdirs under one staging root;
+ *             the agent explores every subdirectory and synthesizes one
+ *             coherent expression.
  */
-export async function profileTarget(
-  targetOrString: Target | string,
-  config?: GhostConfig,
+export async function profileTargets(
+  targetsOrStrings: (Target | string)[],
+  config: GhostConfig,
 ): Promise<ProfileTargetResult> {
-  const { runExpressionAgent } = await import("./agents/expression-agent.js");
-
-  const target =
-    typeof targetOrString === "string"
-      ? resolveTarget(targetOrString)
-      : targetOrString;
-
-  if (target.type !== "path") {
+  if (!config.llm) {
     throw new Error(
-      `Agent SDK profiling only supports local paths (got ${target.type})`,
+      "Ghost is AI-only. Configure an LLM provider (set ANTHROPIC_API_KEY or OPENAI_API_KEY, or llm in ghost.config.ts).",
     );
   }
 
-  const targetDir = resolve(process.cwd(), target.value);
-  const projectId = target.name ?? target.value.split("/").pop() ?? "project";
+  const targets = targetsOrStrings.map((t) =>
+    typeof t === "string" ? resolveTarget(t) : t,
+  );
+
+  const staged = await stageTargets(targets);
+  const projectId = inferProjectId(targets);
 
   const result = await runExpressionAgent({
-    targetDir,
-    targetType: target.type,
+    targetDir: staged.cwd,
+    targetType: targets[0].type,
     projectId,
-    verbose: config?.agents?.verbose ?? true,
-    embedding: config?.embedding,
+    sources: staged.sources.map((s) => ({
+      label: s.label,
+      subdir:
+        staged.staged && staged.sources.length > 1
+          ? relative(staged.cwd, s.dir)
+          : undefined,
+    })),
+    verbose: config.agents?.verbose ?? true,
+    embedding: config.embedding,
   });
 
   return {
@@ -150,54 +102,28 @@ export async function profileTarget(
 }
 
 /**
- * Profile multiple targets into a single unified expression.
- *
- * Materializes all targets, samples across them, and lets the expression
- * agent explore every source directory via its tools to synthesize one
- * coherent expression.
- *
- * Usage:
- *   ghost profile npm:@arcade/tokens github:cashapp/arcade-ios ./local-impl
+ * Profile a single target. Thin wrapper over profileTargets for back-compat
+ * and CLI ergonomics.
  */
-export async function profileMultiTarget(
-  targets: Target[],
-  config?: GhostConfig,
-  options?: { maxIterations?: number },
+export async function profileTarget(
+  targetOrString: Target | string,
+  config: GhostConfig,
 ): Promise<ProfileTargetResult> {
-  if (!config?.llm) {
-    throw new Error(
-      "Ghost is AI-only. Configure an LLM provider to profile targets.",
-    );
+  return profileTargets([targetOrString], config);
+}
+
+function inferProjectId(targets: Target[]): string {
+  if (targets.length === 1) {
+    const t = targets[0];
+    if (t.name) return t.name;
+    if (t.type === "path") {
+      const parts = t.value.split("/").filter(Boolean);
+      return parts[parts.length - 1] ?? "project";
+    }
+    return t.value.split("/").pop() ?? "project";
   }
-
-  const { extract } = await import("./stages/extract.js");
-  const { ExpressionAgent } = await import("./agents/expression.js");
-
-  const ctx = {
-    llm: config.llm,
-    embedding: config.embedding,
-    verbose: config.agents?.verbose,
-    maxIterations: options?.maxIterations ?? config.agents?.maxIterations,
-  };
-
-  const extraction = await extract(targets);
-  const agent = new ExpressionAgent();
-  agent.setToolContext({
-    sourceDirs: extraction.dirs,
-    material: extraction.data,
-  });
-  const expression = await agent.execute(extraction.data, ctx);
-
-  if (targets.length > 1) {
-    expression.data.sources = targets.map(
-      (t) => t.name ?? `${t.type}:${t.value}`,
-    );
-  }
-
-  return {
-    expression: expression.data,
-    confidence: expression.confidence,
-    reasoning: [...extraction.reasoning, ...expression.reasoning],
-    warnings: [...extraction.warnings, ...expression.warnings],
-  };
+  return (
+    targets.find((t) => t.name)?.name ??
+    targets.map((t) => t.name ?? t.value.split("/").pop()).join("+")
+  );
 }

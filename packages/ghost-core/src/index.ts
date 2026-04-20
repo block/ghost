@@ -1,48 +1,24 @@
 export type {
-  Agent,
-  AgentState,
-  ComparisonInput,
-  ComplianceInput,
-  ComplianceReport,
-  ComplianceRule,
-  ComplianceThresholds,
-  ComplianceViolation,
   DiscoveredSystem,
   DiscoveryInput,
+  DiscoveryResult,
 } from "./agents/index.js";
-export {
-  BaseAgent,
-  ComparisonAgent,
-  ComplianceAgent,
-  DiscoveryAgent,
-  ExpressionAgent,
-  ExtractionAgent,
-} from "./agents/index.js";
-export type {
-  AgentTool,
-  ChatMessage,
-  ChatResponse,
-  ToolCall,
-  ToolContext,
-  ToolDefinition,
-  ToolResult,
-} from "./agents/tools/index.js";
-export { EXPRESSION_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
+export { discover } from "./agents/index.js";
 export type { CompareOptions, CompareResult } from "./compare.js";
 export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
 export type {
   ContextFormat,
+  EmitReviewInput,
   WriteContextOptions,
   WriteContextResult,
 } from "./context/index.js";
 export {
   buildSkillMd,
   buildTokensCss,
+  emitReviewCommand,
   writeContextBundle,
 } from "./context/index.js";
-export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
-export { diff } from "./diff.js";
 export type { RoleCandidate } from "./embedding/index.js";
 export {
   compareExpressions,
@@ -50,7 +26,6 @@ export {
   computeSemanticEmbedding,
   describeExpression,
   embeddingDistance,
-  expressionFromRegistry,
   inferSemanticRole,
 } from "./embedding/index.js";
 export type {
@@ -110,13 +85,12 @@ export {
   validateFrontmatter,
 } from "./expression/index.js";
 export {
-  detectExtractors,
-  extract,
-  extractFromTarget,
   sampleDirectory,
   walkAndCategorize,
   walkDirectory,
 } from "./extractors/index.js";
+export type { StagedSource, StagedTargets } from "./extractors/stage.js";
+export { stageTargets } from "./extractors/stage.js";
 export type {
   BuildGenerationPromptOptions,
   GenerateAttempt,
@@ -139,18 +113,12 @@ export type {
   ProfileResult,
   ProfileTargetResult,
 } from "./profile.js";
-export {
-  profile,
-  profileMultiTarget,
-  profileRegistry,
-  profileTarget,
-} from "./profile.js";
+export { profile, profileTarget, profileTargets } from "./profile.js";
 export {
   formatComplianceCLI,
   formatComplianceJSON,
   formatComplianceSARIF,
 } from "./reporters/compliance.js";
-export { formatDiffCLI, formatDiffJSON } from "./reporters/diff.js";
 export {
   formatDiscoveryCLI,
   formatDiscoveryJSON,
@@ -177,25 +145,15 @@ export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
 } from "./reporters/temporal.js";
-export { parseCSS } from "./resolvers/css.js";
-export { resolveRegistry } from "./resolvers/registry.js";
-export { detectTailwind, resolveTailwindConfig } from "./resolvers/tailwind.js";
-export type { ReviewOptions } from "./review/index.js";
-export { review } from "./review/index.js";
 export type {
-  CompareInput,
-  EmitReviewInput,
-  StageContext,
-  StageResult,
-} from "./stages/index.js";
-// Pipeline stages — plain async functions replacing agent classes
-export {
-  compare as compareStage,
-  comply as complyStage,
-  emitReviewCommand,
-  extract as extractStage,
-  materializeTarget,
-} from "./stages/index.js";
+  ComplianceInput,
+  ComplianceReport,
+  ComplianceRule,
+  ComplianceThresholds,
+  ComplianceViolation,
+  ReviewOptions,
+} from "./review/index.js";
+export { comply, review } from "./review/index.js";
 export type {
   AgentContext,
   AgentMessage,

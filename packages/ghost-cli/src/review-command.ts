@@ -1,8 +1,6 @@
 import type { Expression } from "@ghost/core";
 import {
-  complyStage,
-  ExpressionAgent,
-  extractStage,
+  comply,
   formatComplianceCLI,
   formatComplianceJSON,
   formatComplianceSARIF,
@@ -12,6 +10,7 @@ import {
   formatReviewSummary,
   loadConfig,
   loadExpression,
+  profileTargets,
   resolveTarget,
   review,
 } from "@ghost/core";
@@ -154,23 +153,10 @@ async function runProject(
     parentExpression = (await loadExpression(opts.against)).expression;
   }
 
-  const ctx = {
-    // biome-ignore lint/suspicious/noExplicitAny: mirror the pre-merge comply handler
-    llm: config.llm ?? (undefined as any),
-    embedding: config.embedding,
-    verbose: opts.verbose,
-  };
+  const profiled = await profileTargets([resolvedTarget], config);
 
-  const extraction = await extractStage([resolvedTarget]);
-  const agent = new ExpressionAgent();
-  agent.setToolContext({
-    sourceDirs: extraction.dirs,
-    material: extraction.data,
-  });
-  const expression = await agent.execute(extraction.data, ctx);
-
-  const compliance = await complyStage({
-    expression: expression.data,
+  const compliance = comply({
+    expression: profiled.expression,
     parentExpression,
     thresholds: {
       maxOverallDrift: Number.parseFloat(String(opts.maxDrift)),
@@ -179,21 +165,21 @@ async function runProject(
 
   if (opts.verbose) {
     console.log(`Profiled ${resolvedTarget.type}: ${resolvedTarget.value}`);
-    console.log(`Confidence: ${expression.confidence.toFixed(2)}`);
+    console.log(`Confidence: ${profiled.confidence.toFixed(2)}`);
     console.log();
   }
 
   let output: string;
   if (opts.format === "sarif") {
-    output = formatComplianceSARIF(compliance.data);
+    output = formatComplianceSARIF(compliance);
   } else if (opts.format === "json") {
-    output = formatComplianceJSON(compliance.data);
+    output = formatComplianceJSON(compliance);
   } else {
-    output = formatComplianceCLI(compliance.data);
+    output = formatComplianceCLI(compliance);
   }
 
   process.stdout.write(`${output}\n`);
-  process.exit(compliance.data.passed ? 0 : 1);
+  process.exit(compliance.passed ? 0 : 1);
 }
 
 // --- helpers ---
