@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { existsSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 // Load .env from project root if present.
@@ -16,30 +15,21 @@ for (const envFile of [".env", ".env.local"]) {
   }
 }
 
-import type { Expression } from "@ghost/core";
+import { readFile } from "node:fs/promises";
 import {
   compare,
-  EMBEDDING_FRAGMENT_FILENAME,
-  EXPRESSION_SCHEMA_VERSION,
+  FINGERPRINT_FILENAME,
   formatComparison,
   formatComparisonJSON,
-  formatDiscoveryCLI,
-  formatDiscoveryJSON,
-  formatExpression,
-  formatExpressionJSON,
   formatFleetComparison,
   formatFleetComparisonJSON,
   formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
-  loadConfig,
-  loadExpression,
-  profile,
-  profileTargets,
+  lintFingerprint,
+  loadFingerprint,
   readHistory,
   readSyncManifest,
-  serializeEmbeddingFragment,
-  serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
 import { registerEmitCommand } from "./emit-command.js";
@@ -48,117 +38,16 @@ import {
   registerAdoptCommand,
   registerDivergeCommand,
 } from "./evolution-commands.js";
-import { registerReviewCommand } from "./review-command.js";
-import { registerVerifyCommand } from "./verify-command.js";
 
 const cli = cac("ghost");
-
-// --- profile ---
-cli
-  .command(
-    "profile [...targets]",
-    "Generate a design expression — accepts one or more targets (directory, URL, npm package, GitHub repo)",
-  )
-  .option("-c, --config <path>", "Path to ghost config file")
-  .option("-o, --output <file>", "Write expression to file")
-  .option(
-    "--emit",
-    "Write expression.md to project root (publishable artifact)",
-  )
-  .option("-v, --verbose", "Show agent reasoning")
-  .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (targets: string[], opts) => {
-    try {
-      const config = await loadConfig(opts.config);
-      let expression: Expression;
-
-      const targetStrings = targets.length > 0 ? targets : ["."];
-
-      if (targetStrings.length === 1 && targetStrings[0] === ".") {
-        expression = await profile(config, { emit: opts.emit });
-      } else {
-        if (opts.verbose && targetStrings.length > 1) {
-          console.log(`Profiling ${targetStrings.length} sources:`);
-          for (const t of targetStrings) console.log(`  ${t}`);
-          console.log();
-        }
-        const result = await profileTargets(targetStrings, config);
-        expression = result.expression;
-        if (opts.verbose) printVerboseResult(result);
-      }
-
-      const output =
-        opts.format === "json"
-          ? formatExpressionJSON(expression)
-          : formatExpression(expression);
-
-      if (opts.output) {
-        const isMd = opts.output.endsWith(".md");
-        const content = isMd
-          ? serializeExpression(expression)
-          : formatExpressionJSON(expression);
-        await writeFile(opts.output, content);
-        console.log(`Expression written to ${opts.output}`);
-
-        // v4: when writing an expression.md, drop the embedding next to it
-        // as a sibling fragment file. Keeps the index lean and the vector
-        // cacheable — loaders fall back to recompute if missing.
-        if (isMd && expression.embedding?.length) {
-          const { dirname, resolve: resolvePath } = await import("node:path");
-          const embeddingPath = resolvePath(
-            dirname(opts.output),
-            EMBEDDING_FRAGMENT_FILENAME,
-          );
-          await writeFile(
-            embeddingPath,
-            serializeEmbeddingFragment(
-              expression.embedding,
-              expression.id,
-              EXPRESSION_SCHEMA_VERSION,
-            ),
-          );
-        }
-      }
-
-      if (opts.emit) {
-        console.log("Published expression.md");
-      }
-
-      process.stdout.write(`${output}\n`);
-      process.exit(0);
-    } catch (err) {
-      console.error(
-        `Error: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      process.exit(2);
-    }
-  });
-
-function printVerboseResult(result: {
-  confidence: number;
-  reasoning: string[];
-  warnings: string[];
-}) {
-  console.log(`Confidence: ${result.confidence.toFixed(2)}`);
-  for (const r of result.reasoning) {
-    console.log(`  ${r}`);
-  }
-  if (result.warnings.length > 0) {
-    console.log("Warnings:");
-    for (const w of result.warnings) {
-      console.log(`  ! ${w}`);
-    }
-  }
-  console.log();
-}
 
 // --- compare ---
 // N=2 → pairwise (with optional --semantic / --temporal enrichment).
 // N≥3 → fleet (pairwise matrix + clusters).
 cli
   .command(
-    "compare [...expressions]",
-    "Compare two or more expressions (N≥3 = fleet).",
+    "compare [...fingerprints]",
+    "Compare two or more fingerprints (N≥3 = fleet).",
   )
   .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
   .option(
@@ -170,12 +59,12 @@ cli
     "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
   )
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-  .action(async (expressions: string[], opts) => {
+  .action(async (fingerprints: string[], opts) => {
     try {
       const parsed = await Promise.all(
-        expressions.map((path) => loadExpression(path)),
+        fingerprints.map((path) => loadFingerprint(path)),
       );
-      const exprs = parsed.map((p) => p.expression);
+      const exprs = parsed.map((p) => p.fingerprint);
 
       let history: Awaited<ReturnType<typeof readHistory>> | undefined;
       let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null = null;
@@ -233,36 +122,49 @@ cli
     }
   });
 
-// --- discover (experimental, hidden from --help) ---
-const discoverCmd = cli
+// --- lint ---
+cli
   .command(
-    "discover [query]",
-    "(experimental) Find public design systems matching a query",
+    "lint [fingerprint]",
+    "Validate fingerprint.md schema and body/frontmatter coherence",
   )
-  .option("--format <fmt>", "Output format: cli or json", { default: "cli" });
-// Hide from --help; still usable by name.
-(discoverCmd as unknown as { hidden?: boolean }).hidden = true;
-discoverCmd.action(async (query: string | undefined, opts) => {
-  try {
-    const { discover } = await import("@ghost/core");
-    const result = await discover({ query: query || undefined });
+  .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+  .action(async (path: string | undefined, opts) => {
+    try {
+      const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
+      const raw = await readFile(target, "utf-8");
+      const report = lintFingerprint(raw);
 
-    const output =
-      opts.format === "json"
-        ? formatDiscoveryJSON(result.systems)
-        : formatDiscoveryCLI(result.systems);
+      if (opts.format === "json") {
+        process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      } else {
+        for (const issue of report.issues) {
+          const prefix =
+            issue.severity === "error"
+              ? "ERROR"
+              : issue.severity === "warning"
+                ? "WARN "
+                : "INFO ";
+          const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
+          process.stdout.write(
+            `${prefix} [${issue.rule}] ${issue.message}${pathSuffix}\n`,
+          );
+        }
+        process.stdout.write(
+          `\n${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info\n`,
+        );
+      }
 
-    process.stdout.write(`${output}\n`);
-    process.exit(0);
-  } catch (err) {
-    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(2);
-  }
-});
+      process.exit(report.errors > 0 ? 1 : 0);
+    } catch (err) {
+      console.error(
+        `Error: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      process.exit(2);
+    }
+  });
 
 // Commands defined in other files register themselves on the same cli instance
-registerReviewCommand(cli);
-registerVerifyCommand(cli);
 registerAckCommand(cli);
 registerAdoptCommand(cli);
 registerDivergeCommand(cli);

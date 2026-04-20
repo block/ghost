@@ -129,11 +129,8 @@ function mergeDefaults(raw: GhostConfig): GhostConfig {
     parent: normalizeParent(raw.parent as Target | string | undefined),
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
-    llm: raw.llm,
     embedding: raw.embedding,
     extractors: raw.extractors,
-    agents: raw.agents,
-    review: raw.review,
   };
 }
 

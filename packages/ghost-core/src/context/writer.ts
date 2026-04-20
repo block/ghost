@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { serializeExpression } from "../expression/writer.js";
-import type { DesignDecision, Expression } from "../types.js";
+import { serializeFingerprint } from "../fingerprint/writer.js";
+import type { DesignDecision, Fingerprint } from "../types.js";
 import { buildTokensCss } from "./tokens-css.js";
 
 /**
@@ -17,9 +17,9 @@ export interface WriteContextOptions {
   tokens?: boolean;
   /** Emit README.md. Default: false. */
   readme?: boolean;
-  /** Emit only prompt.md (skips SKILL.md / expression.md / tokens.css). Default: false. */
+  /** Emit only prompt.md (skips SKILL.md / fingerprint.md / tokens.css). Default: false. */
   promptOnly?: boolean;
-  /** Override the skill name. Default: derived from expression.id. */
+  /** Override the skill name. Default: derived from fingerprint.id. */
   name?: string;
   /**
    * @deprecated Pass `tokens`, `readme`, `promptOnly` instead.
@@ -29,7 +29,7 @@ export interface WriteContextOptions {
    *   "prompt" → promptOnly:true
    */
   format?: ContextFormat;
-  /** Source path (e.g. "./expression.md") — surfaced in generated file headers. */
+  /** Source path (e.g. "./fingerprint.md") — surfaced in generated file headers. */
   sourcePath?: string;
   /** Generator version string — surfaced in generated file headers. */
   generator?: string;
@@ -41,16 +41,16 @@ export interface WriteContextResult {
 }
 
 export async function writeContextBundle(
-  expression: Expression,
+  fingerprint: Fingerprint,
   options: WriteContextOptions,
 ): Promise<WriteContextResult> {
-  const resolved = resolveFlags(options, expression);
+  const resolved = resolveFlags(options, fingerprint);
   await mkdir(options.outDir, { recursive: true });
   const files: string[] = [];
 
   if (resolved.promptOnly) {
     const p = join(options.outDir, "prompt.md");
-    await writeFile(p, buildPromptMd(expression, resolved.name));
+    await writeFile(p, buildPromptMd(fingerprint, resolved.name));
     files.push(p);
     return { outDir: options.outDir, files };
   }
@@ -58,19 +58,19 @@ export async function writeContextBundle(
   const skillPath = join(options.outDir, "SKILL.md");
   await writeFile(
     skillPath,
-    buildSkillMd(expression, resolved.name, resolved.tokens),
+    buildSkillMd(fingerprint, resolved.name, resolved.tokens),
   );
   files.push(skillPath);
 
-  const exprPath = join(options.outDir, "expression.md");
-  await writeFile(exprPath, serializeExpression(expression));
+  const exprPath = join(options.outDir, "fingerprint.md");
+  await writeFile(exprPath, serializeFingerprint(fingerprint));
   files.push(exprPath);
 
   if (resolved.tokens) {
     const cssPath = join(options.outDir, "tokens.css");
     await writeFile(
       cssPath,
-      buildTokensCss(expression, {
+      buildTokensCss(fingerprint, {
         sourcePath: options.sourcePath,
         generator: options.generator,
       }),
@@ -80,7 +80,7 @@ export async function writeContextBundle(
 
   if (resolved.readme) {
     const readmePath = join(options.outDir, "README.md");
-    await writeFile(readmePath, buildReadmeMd(expression, resolved.name));
+    await writeFile(readmePath, buildReadmeMd(fingerprint, resolved.name));
     files.push(readmePath);
   }
 
@@ -96,7 +96,7 @@ interface ResolvedFlags {
 
 function resolveFlags(
   options: WriteContextOptions,
-  fp?: Expression,
+  fp?: Fingerprint,
 ): ResolvedFlags {
   // Legacy format flag takes precedence if explicitly set by an old caller.
   let tokens = options.tokens ?? true;
@@ -122,23 +122,23 @@ function resolveFlags(
 }
 
 export function buildSkillMd(
-  expression: Expression,
+  fingerprint: Fingerprint,
   name: string,
   includesCss: boolean,
 ): string {
-  const description = buildSkillDescription(expression, name);
+  const description = buildSkillDescription(fingerprint, name);
   const fileList = [
-    "- `expression.md` — canonical design language (YAML tokens + Character/Signature/Decisions/Values)",
+    "- `fingerprint.md` — canonical design language (YAML tokens + Character/Signature/Decisions/Values)",
     ...(includesCss
       ? [
-          "- `tokens.css` — CSS custom properties derived from expression tokens",
+          "- `tokens.css` — CSS custom properties derived from fingerprint tokens",
         ]
       : []),
   ].join("\n");
 
   const body = `This skill grounds UI generation in the **${name}** design language.
 
-Read \`expression.md\` first — it is the source of truth. It has four layered sections:
+Read \`fingerprint.md\` first — it is the source of truth. It has four layered sections:
 
 1. **Character** — who this system is (one-paragraph summary)
 2. **Signature** — what makes it distinctive (bullet list of traits)
@@ -166,24 +166,24 @@ user-invocable: true
 ${body}`;
 }
 
-function buildPromptMd(expression: Expression, name: string): string {
+function buildPromptMd(fingerprint: Fingerprint, name: string): string {
   const parts: string[] = [];
   parts.push(
     `You are generating UI in the **${name}** design language. Honor the rules below.`,
   );
 
-  const summary = expression.observation?.summary?.trim();
+  const summary = fingerprint.observation?.summary?.trim();
   if (summary) parts.push(`# Character\n\n${summary}`);
 
-  const traits = expression.observation?.distinctiveTraits ?? [];
+  const traits = fingerprint.observation?.distinctiveTraits ?? [];
   if (traits.length)
     parts.push(`# Signature\n\n${traits.map((t) => `- ${t}`).join("\n")}`);
 
-  const decisions = expression.decisions ?? [];
+  const decisions = fingerprint.decisions ?? [];
   if (decisions.length)
     parts.push(`# Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
 
-  parts.push(`# Tokens\n\n${formatTokens(expression)}`);
+  parts.push(`# Tokens\n\n${formatTokens(fingerprint)}`);
 
   parts.push(
     "# How to use this prompt\n\nWhen asked to build a component or screen, produce HTML that uses the tokens above. Cite the Decision that drove each non-trivial choice.",
@@ -192,8 +192,8 @@ function buildPromptMd(expression: Expression, name: string): string {
   return `${parts.join("\n\n")}\n`;
 }
 
-function buildReadmeMd(expression: Expression, name: string): string {
-  const traits = expression.observation?.distinctiveTraits ?? [];
+function buildReadmeMd(fingerprint: Fingerprint, name: string): string {
+  const traits = fingerprint.observation?.distinctiveTraits ?? [];
   const traitsLine = traits.length
     ? ` Signature traits: ${traits.slice(0, 3).join(", ")}.`
     : "";
@@ -204,30 +204,30 @@ Generated by \`ghost emit context-bundle\`. Grounding material for AI UI generat
 ## Files
 
 - \`SKILL.md\` — Agent Skill manifest (user-invocable)
-- \`expression.md\` — canonical design language (YAML frontmatter + Character/Signature/Decisions)
-- \`tokens.css\` — CSS custom properties derived from expression tokens
+- \`fingerprint.md\` — canonical design language (YAML frontmatter + Character/Signature/Decisions)
+- \`tokens.css\` — CSS custom properties derived from fingerprint tokens
 - \`README.md\` — this file
 
 ## Using this bundle
 
 **As a Claude Code / MCP skill:** point the client at this directory. The agent will read \`SKILL.md\` and follow its instructions.
 
-**As context for any LLM:** load \`expression.md\` into the system prompt. For more explicit grounding, concatenate with \`tokens.css\`.
+**As context for any LLM:** load \`fingerprint.md\` into the system prompt. For more explicit grounding, concatenate with \`tokens.css\`.
 
-**Feedback loop:** run \`ghost review\` against generated output with this \`expression.md\` as the expression. Drift signals whether the generator honored the system.
+**Feedback loop:** run \`ghost review\` against generated output with this \`fingerprint.md\` as the fingerprint. Drift signals whether the generator honored the system.
 `;
 }
 
-function buildSkillDescription(expression: Expression, name: string): string {
-  const traits = expression.observation?.distinctiveTraits ?? [];
+function buildSkillDescription(fingerprint: Fingerprint, name: string): string {
+  const traits = fingerprint.observation?.distinctiveTraits ?? [];
   const traitPhrase = traits.length
     ? ` (${traits.slice(0, 3).join(", ")})`
     : "";
-  return `Use this skill to generate UI in the ${name} design language${traitPhrase}. Contains the canonical expression and token reference.`;
+  return `Use this skill to generate UI in the ${name} design language${traitPhrase}. Contains the canonical fingerprint and token reference.`;
 }
 
-function defaultSkillName(expression?: Expression): string {
-  const candidate = expression?.id || "design-language";
+function defaultSkillName(fingerprint?: Fingerprint): string {
+  const candidate = fingerprint?.id || "design-language";
   return candidate
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -238,22 +238,22 @@ function formatDecision(d: DesignDecision): string {
   return `## ${d.dimension}\n${d.decision.trim()}`;
 }
 
-function formatTokens(expression: Expression): string {
+function formatTokens(fingerprint: Fingerprint): string {
   const lines: string[] = [];
-  const semantic = expression.palette?.semantic ?? [];
+  const semantic = fingerprint.palette?.semantic ?? [];
   if (semantic.length) {
     lines.push("**Semantic colors**");
     for (const c of semantic) lines.push(`- \`${c.role}\`: ${c.value}`);
   }
-  const spacing = expression.spacing?.scale ?? [];
+  const spacing = fingerprint.spacing?.scale ?? [];
   if (spacing.length)
     lines.push(`\n**Spacing scale:** ${spacing.join(", ")}px`);
-  const sizeRamp = expression.typography?.sizeRamp ?? [];
+  const sizeRamp = fingerprint.typography?.sizeRamp ?? [];
   if (sizeRamp.length) lines.push(`\n**Type scale:** ${sizeRamp.join(", ")}px`);
-  const families = expression.typography?.families ?? [];
+  const families = fingerprint.typography?.families ?? [];
   if (families.length)
     lines.push(`\n**Font families:** ${families.join(", ")}`);
-  const radii = expression.surfaces?.borderRadii ?? [];
+  const radii = fingerprint.surfaces?.borderRadii ?? [];
   if (radii.length) lines.push(`\n**Border radii:** ${radii.join(", ")}px`);
   return lines.join("\n");
 }

@@ -1,12 +1,19 @@
+import { resolve } from "node:path";
 import type { DimensionStance, Target } from "@ghost/core";
 import {
   acknowledge,
+  FINGERPRINT_FILENAME,
   loadConfig,
-  loadExpression,
-  profile,
+  loadFingerprint,
   resolveParent,
 } from "@ghost/core";
 import type { CAC } from "cac";
+
+async function loadLocalExpression() {
+  const path = resolve(process.cwd(), FINGERPRINT_FILENAME);
+  const { fingerprint } = await loadFingerprint(path);
+  return fingerprint;
+}
 
 export function registerAckCommand(cli: CAC): void {
   cli
@@ -33,7 +40,7 @@ export function registerAckCommand(cli: CAC): void {
         }
 
         const parentFp = await resolveParent(config.parent);
-        const childFp = await profile(config);
+        const childFp = await loadLocalExpression();
 
         const { manifest, comparison } = await acknowledge({
           child: childFp,
@@ -48,7 +55,7 @@ export function registerAckCommand(cli: CAC): void {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
           console.log(
-            `Acknowledged drift from "${manifest.parentExpressionId}"`,
+            `Acknowledged drift from "${manifest.parentFingerprintId}"`,
           );
           console.log(`Overall distance: ${comparison.distance.toFixed(3)}`);
           console.log();
@@ -82,17 +89,14 @@ export function registerAdoptCommand(cli: CAC): void {
   cli
     .command(
       "adopt <source>",
-      "Shift parent reference — adopt a new expression as baseline",
+      "Shift parent reference — adopt a new fingerprint as baseline",
     )
-    .option("-c, --config <path>", "Path to ghost config file")
     .option("-d, --dimension <name>", "Adopt only for a specific dimension")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const { expression: newParent } = await loadExpression(source);
-
-        const config = await loadConfig(opts.config);
-        const childFp = await profile(config);
+        const { fingerprint: newParent } = await loadFingerprint(source);
+        const childFp = await loadLocalExpression();
 
         const newParentRef: Target = { type: "path", value: source };
 
@@ -151,7 +155,7 @@ export function registerDivergeCommand(cli: CAC): void {
         }
 
         const parentFp = await resolveParent(config.parent);
-        const childFp = await profile(config);
+        const childFp = await loadLocalExpression();
 
         const { manifest } = await acknowledge({
           child: childFp,

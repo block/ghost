@@ -11,7 +11,7 @@ const hero = {
   name: "Core Concepts",
   href: "/tools/drift/concepts",
   description:
-    "Expressions, drift detection, evolution tracking, and fleet observability — the ideas behind Ghost.",
+    "Fingerprints, drift detection, evolution tracking, and fleet observability — the ideas behind Ghost.",
   hook: "Start here",
   icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
 };
@@ -26,7 +26,7 @@ const sections: {
     name: "Getting Started",
     href: "/tools/drift/getting-started",
     description:
-      "Install Ghost, profile your first system, and gate a PR against the expression — in under five minutes.",
+      "Install Ghost, profile your first system, and gate a PR against the fingerprint — in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -57,7 +57,7 @@ export default function DocsIndex() {
       <AnimatedPageHeader
         kicker="Drift Engine"
         title="Drift Engine"
-        description="Ghost profiles design systems into human-readable expressions, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
+        description="Ghost profiles design systems into human-readable fingerprints, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
       />
 
       <div ref={ref} className="pb-16 overflow-visible space-y-4">

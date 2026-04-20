@@ -1,8 +1,8 @@
-import { compareExpressions } from "../embedding/compare.js";
+import { compareFingerprints } from "../embedding/compare.js";
 import type {
   DriftVelocity,
-  ExpressionComparison,
-  ExpressionHistoryEntry,
+  FingerprintComparison,
+  FingerprintHistoryEntry,
   SyncManifest,
   TemporalComparison,
 } from "../types.js";
@@ -10,12 +10,12 @@ import { checkBounds } from "./sync.js";
 import { computeDriftVectors } from "./vector.js";
 
 /**
- * Enrich an expression comparison with temporal data:
+ * Enrich an fingerprint comparison with temporal data:
  * velocity, trajectory, ack status, and drift vectors.
  */
 export function computeTemporalComparison(opts: {
-  comparison: ExpressionComparison;
-  history: ExpressionHistoryEntry[];
+  comparison: FingerprintComparison;
+  history: FingerprintHistoryEntry[];
   manifest: SyncManifest | null;
   stabilityThreshold?: number;
 }): TemporalComparison {
@@ -57,8 +57,8 @@ export function computeTemporalComparison(opts: {
  * Uses the oldest and most recent entries to calculate rate of change.
  */
 function computeVelocity(
-  current: ExpressionComparison,
-  history: ExpressionHistoryEntry[],
+  current: FingerprintComparison,
+  history: FingerprintHistoryEntry[],
   stabilityThreshold: number = 0.01,
 ): DriftVelocity[] {
   if (history.length < 2) {
@@ -74,16 +74,16 @@ function computeVelocity(
   const oldest = history[0];
   const newest = history[history.length - 1];
 
-  const oldestDate = new Date(oldest.expression.timestamp);
-  const newestDate = new Date(newest.expression.timestamp);
+  const oldestDate = new Date(oldest.fingerprint.timestamp);
+  const newestDate = new Date(newest.fingerprint.timestamp);
   const windowDays = Math.max(
     (newestDate.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24),
     1,
   );
 
-  // Compare the oldest history entry's expression against the current source
+  // Compare the oldest history entry's fingerprint against the current source
   // to get a "then" comparison, and use the current comparison as "now"
-  const oldComparison = compareExpressions(current.source, oldest.expression);
+  const oldComparison = compareFingerprints(current.source, oldest.fingerprint);
 
   return Object.keys(current.dimensions).map((dimension) => {
     const oldDistance = oldComparison.dimensions[dimension]?.distance ?? 0;

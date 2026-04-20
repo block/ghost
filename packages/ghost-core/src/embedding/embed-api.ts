@@ -1,10 +1,10 @@
-import type { EmbeddingConfig, Expression } from "../types.js";
-import { describeExpression } from "./describe.js";
+import type { EmbeddingConfig, Fingerprint } from "../types.js";
+import { describeFingerprint } from "./describe.js";
 
 /**
- * Generate a semantic embedding for an expression using an external API.
+ * Generate a semantic embedding for an fingerprint using an external API.
  *
- * Converts the structured expression into a natural language description,
+ * Converts the structured fingerprint into a natural language description,
  * then sends it to an embedding model. The resulting vector captures semantic
  * similarity — two projects using `bg-slate-900` and `--color-gray-900: #0f172a`
  * will land nearby because the model understands they express the same intent.
@@ -14,10 +14,10 @@ import { describeExpression } from "./describe.js";
  *   - voyage: Uses voyage-3 (default). Set VOYAGE_API_KEY env var.
  */
 export async function computeSemanticEmbedding(
-  expression: Expression,
+  fingerprint: Fingerprint,
   config: EmbeddingConfig,
 ): Promise<number[]> {
-  const text = describeExpression(expression);
+  const text = describeFingerprint(fingerprint);
   const [vec] = await embedTexts([text], config);
   return vec;
 }
