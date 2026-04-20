@@ -81,11 +81,11 @@ function isDelimiter(line: string): boolean {
  * Parse a raw expression.md string into an Expression plus metadata and
  * structured body.
  *
- * Contract (schema 3): frontmatter and body own disjoint fields.
+ * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
  *     personality/closestSystems tags, embedding.
  *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
- *     traits, `### dimension` → decision rationale, `# Values` → Do/Don't.
+ *     traits, `### dimension` → decision rationale.
  *
  * The returned expression unions both sources. Since the two sides never
  * carry the same field, there is no precedence rule — each field has one
@@ -118,22 +118,19 @@ export function parseExpression(
 
 /**
  * Fold body-owned prose fields into the expression. The body provides
- * Character/Signature prose for `observation`, rationale for `decisions`
- * (keyed by dimension), and `# Values`. Frontmatter-only dimensions keep
- * their evidence but get no body prose (decision text left empty).
+ * Character/Signature prose for `observation` and rationale for `decisions`
+ * (keyed by dimension). Frontmatter-only dimensions keep their evidence
+ * but get no body prose (decision text left empty).
  */
 export function applyBody(fp: Expression, body: BodyData): Expression {
   const observation = mergeObservation(fp.observation, body);
   const decisions = mergeDecisions(fp.decisions, body.decisions ?? []);
-  const values = body.values ?? fp.values;
 
   const out: Expression = { ...fp };
   if (observation) out.observation = observation;
   else delete out.observation;
   if (decisions?.length) out.decisions = decisions;
   else delete out.decisions;
-  if (values && (values.do.length || values.dont.length)) out.values = values;
-  else delete out.values;
   return out;
 }
 

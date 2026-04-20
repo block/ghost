@@ -38,7 +38,7 @@ const SAMPLE_EXPRESSION: Expression = {
 // Schema 5: frontmatter carries machine-facts only (dimension slug +
 // optional embedding, personality/closestSystems tags). Prose + evidence
 // (Character, Signature, `### dimension` rationale + `**Evidence:**`
-// bullets, Values) all live in the body.
+// bullets) all live in the body.
 const SAMPLE_MD = `---
 name: Claude
 slug: claude
@@ -106,16 +106,6 @@ All headlines serif 500. UI sans 400-500.
 **Evidence:**
 - \`H1-H6 all serif 500\`
 - \`Buttons and labels sans 400-500\`
-
-# Values
-
-## Do
-- Use Parchment as primary background
-- Keep all neutrals warm-toned
-
-## Don't
-- Use cool blue-grays anywhere
-- Mix sans-serif into headlines
 `;
 
 describe("parseExpression", () => {
@@ -167,16 +157,7 @@ describe("parseExpression", () => {
     expect(warm?.decision).toContain("yellow-brown undertone");
   });
 
-  it("reads Values straight from the body (frontmatter carries no values)", () => {
-    const { expression } = parseExpression(SAMPLE_MD);
-    expect(expression.values?.do).toEqual([
-      "Use Parchment as primary background",
-      "Keep all neutrals warm-toned",
-    ]);
-    expect(expression.values?.dont).toContain("Use cool blue-grays anywhere");
-  });
-
-  it("rejects prose in the frontmatter (values, summary, decision rationale)", () => {
+  it("rejects prose in the frontmatter (summary, decision rationale)", () => {
     const bad = SAMPLE_MD.replace(
       "observation:\n  personality: [restrained, editorial]",
       `observation:\n  summary: "prose in YAML"\n  personality: [restrained, editorial]`,
@@ -226,7 +207,7 @@ describe("parseExpression", () => {
 
   it("frontmatter decision with no body block surfaces empty rationale and empty evidence", () => {
     // Strip the # Decisions section entirely
-    const md = SAMPLE_MD.replace(/# Decisions[\s\S]*?(?=# Values)/, "");
+    const md = SAMPLE_MD.replace(/# Decisions[\s\S]*$/, "");
     const { expression } = parseExpression(md);
     expect(expression.decisions).toHaveLength(2);
     expect(expression.decisions?.[0].decision).toBe("");
@@ -372,10 +353,6 @@ describe("serializeExpression round-trip", () => {
           evidence: ["#141413"],
         },
       ],
-      values: {
-        do: ["Use Parchment"],
-        dont: ["Use cool grays"],
-      },
     };
     const md = serializeExpression(fpWithProse);
     // Frontmatter has machine-facts only
@@ -383,7 +360,6 @@ describe("serializeExpression round-trip", () => {
     expect(yamlSection).not.toContain("summary:");
     expect(yamlSection).not.toContain("distinctiveTraits:");
     expect(yamlSection).not.toContain("No cool grays");
-    expect(yamlSection).not.toMatch(/^values:/m);
     expect(yamlSection).toContain("personality:");
     // Schema 5: evidence lives in the body, not the frontmatter
     expect(yamlSection).not.toContain("evidence:");
@@ -392,28 +368,6 @@ describe("serializeExpression round-trip", () => {
     expect(md).toMatch(/^### Warm neutrals\nNo cool grays\./m);
     expect(md).toContain("**Evidence:**");
     expect(md).toContain("`#141413`");
-    expect(md).toMatch(/^## Do\n- Use Parchment/m);
-    expect(md).toMatch(/^## Don't\n- Use cool grays/m);
-  });
-
-  it("round-trips values (Do/Don't) through serialize → parse", () => {
-    const fpWithValues: Expression = {
-      ...SAMPLE_EXPRESSION,
-      values: {
-        do: [
-          "Use Parchment as primary background",
-          "Keep all neutrals warm-toned",
-        ],
-        dont: ["Use cool blue-grays anywhere", "Mix sans into headline slots"],
-      },
-    };
-    const md = serializeExpression(fpWithValues);
-    expect(md).toMatch(/^# Values/m);
-    expect(md).toMatch(/^## Do/m);
-    expect(md).toMatch(/^## Don't/m);
-    const { expression } = parseExpression(md);
-    expect(expression.values?.do).toEqual(fpWithValues.values?.do);
-    expect(expression.values?.dont).toEqual(fpWithValues.values?.dont);
   });
 
   it("round-trips roles (slot → token bindings) through serialize → parse", () => {

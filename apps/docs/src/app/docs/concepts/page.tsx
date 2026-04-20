@@ -426,7 +426,7 @@ const REVIEW_SCOPES: {
     name: "Suite",
     what: "Drives the generate→review loop across a bundled prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
     catches:
-      "Gaps in the expression — dimensions the generator drifts on because the Decisions or Values under-specify them.",
+      "Gaps in the expression — dimensions the generator drifts on because the Decisions under-specify them.",
     visual: (
       <div className="font-mono text-xs space-y-1">
         <div className="text-muted-foreground">18 prompts · 14 passed</div>
@@ -684,8 +684,8 @@ export default function ConceptsPage() {
             },
             {
               layer: "Layer 3",
-              name: "Values",
-              desc: "Concrete tokens: palette, spacing, typography, surfaces.",
+              name: "Tokens",
+              desc: "Concrete values: palette, spacing, typography, surfaces.",
             },
           ].map((l) => (
             <div
@@ -939,7 +939,7 @@ export default function ConceptsPage() {
           </code>{" "}
           is the schema-discipline mechanism. Each dimension gets classified as{" "}
           <em>tight</em> (expression reproduces faithfully), <em>leaky</em>{" "}
-          (generator drifts here often — tighten Decisions or Values), or{" "}
+          (generator drifts here often — tighten Decisions), or{" "}
           <em>uncaptured</em> (the expression under-specifies this dimension).
         </p>
       </Chapter>

@@ -23,10 +23,6 @@ const EXPRESSION: Expression = {
       evidence: ["--bg: #000", "--fg: #f5f5f0"],
     },
   ],
-  values: {
-    do: ["Use warm neutrals."],
-    dont: ["Don't introduce saturated accents outside brand green."],
-  },
   palette: {
     dominant: [{ role: "accent", value: "#00d64f" }],
     neutrals: { steps: ["#000", "#111", "#222", "#f5f5f0"], count: 4 },
@@ -111,8 +107,6 @@ describe("writeContextBundle", () => {
     expect(prompt).toContain("# Character");
     expect(prompt).toContain("# Signature");
     expect(prompt).toContain("# Decisions");
-    expect(prompt).toContain("# Values");
-    expect(prompt).toContain("Don't introduce saturated accents");
   });
 
   it("honors --name override in SKILL frontmatter", async () => {

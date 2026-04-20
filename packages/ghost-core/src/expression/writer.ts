@@ -2,7 +2,6 @@ import { stringify as stringifyYaml } from "yaml";
 import type {
   DesignDecision,
   DesignObservation,
-  DesignValues,
   Expression,
 } from "../types.js";
 import { EMBEDDING_FRAGMENT_FILENAME } from "./fragments.js";
@@ -25,11 +24,10 @@ export interface SerializeOptions {
 /**
  * Serialize a Expression to an expression.md string.
  *
- * Contract (schema 3): frontmatter and body own disjoint fields.
+ * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
  *     evidence, personality/closestSystems tags, embedding).
- *   • Body carries prose (# Character, # Signature, # Decisions rationale,
- *     # Values Do/Don't).
+ *   • Body carries prose (# Character, # Signature, # Decisions rationale).
  *
  * Each field has exactly one home — so there is no precedence rule and no
  * way for the two sides to drift.
@@ -56,7 +54,6 @@ export function serializeExpression(
   const body = buildBody(
     expression.observation,
     expression.decisions,
-    expression.values,
     extractEmbedding && (expression.embedding?.length ?? 0) > 0,
   );
   return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
@@ -70,7 +67,6 @@ function stripEmbedding(fp: Expression): Expression {
 function buildBody(
   observation: DesignObservation | undefined,
   decisions: DesignDecision[] | undefined,
-  values: DesignValues | undefined,
   embeddingExtracted: boolean,
 ): string {
   const parts: string[] = [];
@@ -89,16 +85,6 @@ function buildBody(
       .map(formatDecision)
       .join("\n\n");
     if (blocks) parts.push(`# Decisions\n\n${blocks}`);
-  }
-  if (values && (values.do.length > 0 || values.dont.length > 0)) {
-    const doBlock = values.do.length
-      ? `## Do\n${values.do.map((v) => `- ${v}`).join("\n")}`
-      : "";
-    const dontBlock = values.dont.length
-      ? `## Don't\n${values.dont.map((v) => `- ${v}`).join("\n")}`
-      : "";
-    const section = [doBlock, dontBlock].filter(Boolean).join("\n\n");
-    parts.push(`# Values\n\n${section}`);
   }
   if (embeddingExtracted) {
     // Mirrors the agent-skills pattern: the index references its siblings

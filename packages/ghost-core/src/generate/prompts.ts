@@ -1,9 +1,4 @@
-import type {
-  DesignDecision,
-  DesignValues,
-  Expression,
-  ReviewReport,
-} from "../types.js";
+import type { DesignDecision, Expression, ReviewReport } from "../types.js";
 
 export type GenerateFormat = "html";
 
@@ -46,10 +41,6 @@ export function buildGenerationPrompt(
   if (decisions.length)
     parts.push(`## Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
 
-  const values = expression.values;
-  if (values && (values.do.length || values.dont.length))
-    parts.push(`## Values\n\n${formatValues(values)}`);
-
   parts.push(`## Tokens\n\n${formatTokens(expression)}`);
 
   parts.push(`## Task\n\n${userPrompt}`);
@@ -59,7 +50,7 @@ export function buildGenerationPrompt(
   }
 
   parts.push(
-    `## Output requirements\n\n- Single fenced \`\`\`${format} block.\n- Use tokens from the YAML frontmatter wherever values apply. Hard-coded off-token values will fail review.\n- Never violate a Don't.\n- The artifact must be self-contained: include any required CSS inline.`,
+    `## Output requirements\n\n- Single fenced \`\`\`${format} block.\n- Use tokens from the YAML frontmatter wherever values apply. Hard-coded off-token values will fail review.\n- The artifact must be self-contained: include any required CSS inline.`,
   );
 
   return parts.join("\n\n");
@@ -89,16 +80,6 @@ ${topIssues.join("\n")}`;
 
 function formatDecision(d: DesignDecision): string {
   return `### ${d.dimension}\n${d.decision.trim()}`;
-}
-
-function formatValues(values: DesignValues): string {
-  const doBlock = values.do.length
-    ? `### Do\n${values.do.map((v) => `- ${v}`).join("\n")}`
-    : "";
-  const dontBlock = values.dont.length
-    ? `### Don't\n${values.dont.map((v) => `- ${v}`).join("\n")}`
-    : "";
-  return [doBlock, dontBlock].filter(Boolean).join("\n\n");
 }
 
 function formatTokens(expression: Expression): string {

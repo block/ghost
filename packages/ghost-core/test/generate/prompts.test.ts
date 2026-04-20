@@ -14,10 +14,6 @@ const FP: Expression = {
     closestSystems: [],
   },
   decisions: [{ dimension: "color", decision: "Pure black bg.", evidence: [] }],
-  values: {
-    do: ["Use warm neutrals."],
-    dont: ["Don't use drop shadows on cards."],
-  },
   palette: {
     dominant: [{ role: "accent", value: "#00d64f" }],
     neutrals: { steps: ["#000", "#fff"], count: 2 },
@@ -41,7 +37,7 @@ const FP: Expression = {
 };
 
 describe("buildGenerationPrompt", () => {
-  it("includes all four layers + tokens + user prompt", () => {
+  it("includes observation + decisions + tokens + user prompt", () => {
     const p = buildGenerationPrompt({
       expression: FP,
       userPrompt: "Build a pricing page.",
@@ -50,10 +46,8 @@ describe("buildGenerationPrompt", () => {
     expect(p).toContain("## Character");
     expect(p).toContain("## Signature");
     expect(p).toContain("## Decisions");
-    expect(p).toContain("## Values");
     expect(p).toContain("## Tokens");
     expect(p).toContain("Build a pricing page.");
-    expect(p).toContain("Don't use drop shadows on cards.");
     expect(p).toContain("`surface`: #000");
     expect(p).toContain("Spacing scale:** 4, 8, 16");
   });

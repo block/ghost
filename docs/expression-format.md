@@ -5,7 +5,7 @@ A Ghost **expression** is a single Markdown file that captures what a design sys
 The file has two parts, and each owns **different data**:
 
 1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs, evidence, personality/closestSystems tags, embedding. Validated by zod. Read by deterministic tools.
-2. **Body (Markdown)** — the **prose layer**. Character paragraph, Signature bullets, Decision rationale, Values Do/Don't. Read by humans and LLMs.
+2. **Body (Markdown)** — the **prose layer**. Character paragraph, Signature bullets, Decision rationale. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
@@ -29,13 +29,12 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | `observation.distinctiveTraits` | **Body** | `# Signature` bullets |
 | `decisions[].dimension`, `decisions[].evidence`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
-| `values.do`, `values.dont` | **Body** | `# Values` → `## Do` / `## Don't` |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter | top-level |
 | `roles[]` (slot → token bindings) | Frontmatter | `roles:` |
 | `embedding` (49-dim vector) | **Sibling file** | `embedding.md` (referenced from `# Fragments`) |
 | `metadata` (loose extension bag) | Frontmatter | top-level, open-ended |
 
-The zod schema is `.strict()` on structural blocks — putting prose fields (summary, decision rationale, values) in YAML is a validation error. The writer enforces the other direction: serialization puts prose only in the body. The `metadata:` bag is the one escape hatch: a loose `Record<string, unknown>` for LLM-authored extensions (e.g. `tone: magazine`) that don't fit the strict blocks. It's opaque to comparisons — never feeds the embedding.
+The zod schema is `.strict()` on structural blocks — putting prose fields (summary, decision rationale) in YAML is a validation error. The writer enforces the other direction: serialization puts prose only in the body. The `metadata:` bag is the one escape hatch: a loose `Record<string, unknown>` for LLM-authored extensions (e.g. `tone: magazine`) that don't fit the strict blocks. It's opaque to comparisons — never feeds the embedding.
 
 Schema 1 and 2 tried to mirror narrative fields across both sides and pick a winner. That split was the source of every "did my edit count?" confusion. Schema 3 removed the duplication. Schema 4 then extracts the embedding into a sibling fragment so the index stays thin and agents can progressively disclose context (cheap metadata first, vector on demand).
 
@@ -68,8 +67,8 @@ sources:                          # optional, lists the targets that were combin
   - https://claude.ai
 
 # --- expression: narrative tags ---
-# NOTE: prose (summary, distinctiveTraits, decision rationale, values)
-# lives in the body under # Character, # Signature, ### blocks, # Values.
+# NOTE: prose (summary, distinctiveTraits, decision rationale) lives
+# in the body under # Character, # Signature, ### blocks.
 observation:
   personality: [restrained, editorial]
   closestSystems: [notion, linear]
@@ -141,7 +140,7 @@ roles:
 **Optional narrative tags:** `observation.personality`, `observation.closestSystems`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
 **Optional role bindings:** `roles[]`. Each role requires `name` and `evidence[]`; token sub-blocks (`typography`, `spacing`, `surfaces`, `palette`) are independently optional and strict — unknown keys reject.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
-**Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`, `values`. These live in the body.
+**Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`. These live in the body.
 
 When `extends:` is present, required expression fields may be omitted — the child inherits them from the parent. The merged result is re-validated against the strict schema.
 
@@ -168,16 +167,6 @@ Every gray carries a yellow-brown undertone. No cool blue-grays.
 
 ### serif-headlines
 All headlines use Serif 500. UI uses Sans 400–500.
-
-# Values
-
-## Do
-- Use Parchment (#f5f4ed) as the primary light background
-- Keep all neutrals warm-toned
-
-## Don't
-- Use cool blue-grays anywhere
-- Mix sans-serif into headline slots
 ```
 
 The parser matches `### dimension` blocks to frontmatter `decisions[].dimension` by slug. A body block without a frontmatter entry is appended to the decisions list with empty evidence (and flagged `orphan-prose` by `ghost lint`). A frontmatter entry without a body block carries empty rationale (flagged `missing-rationale`).

@@ -9,7 +9,6 @@ export type {
   ComplianceViolation,
 } from "./compliance.js";
 export { ComplianceAgent } from "./compliance.js";
-export { Director } from "./director.js";
 export type { DiscoveredSystem, DiscoveryInput } from "./discovery.js";
 export { DiscoveryAgent } from "./discovery.js";
 export { ExpressionAgent } from "./expression.js";

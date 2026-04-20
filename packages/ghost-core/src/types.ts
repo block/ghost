@@ -216,13 +216,6 @@ export interface DesignDecision {
   embedding?: number[];
 }
 
-export interface DesignValues {
-  /** Stances the system holds — "Do use warm neutrals." */
-  do: string[];
-  /** Stances the system rejects — "Don't mix sans-serif into headlines." */
-  dont: string[];
-}
-
 /**
  * A semantic slot → token binding. Describes which concrete tokens a
  * design system uses for a specific role (h1, body, card, button, …).
@@ -276,12 +269,6 @@ export interface Expression {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
-  /**
-   * Layer 3 (stance): the Do's and Don'ts — what the system refuses. Sourced
-   * from `# Values` in an expression.md; consumed by `ghost review` to cite
-   * rule names when flagging violations.
-   */
-  values?: DesignValues;
 
   /**
    * Semantic slot → token bindings. The bridge from abstract tokens to

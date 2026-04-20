@@ -27,8 +27,8 @@ ghost profile github:shadcn-ui/ui
 # Profile an npm package
 ghost profile npm:@chakra-ui/react
 
-# Profile with AI enrichment (richer interpretation)
-ghost profile github:shadcn-ui/ui --ai --verbose
+# Verbose shows the agent's reasoning
+ghost profile github:shadcn-ui/ui --verbose
 
 # Save expression to a file
 ghost profile . --output my-system.md
@@ -51,7 +51,7 @@ ghost profile . --format json | jq '.architecture'
 ## Prerequisites
 
 - `ghost` CLI built: `pnpm install && pnpm build` (or `npm install -g ghost-cli`)
-- One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set (required for `--ai` flag)
+- One of: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable set (required — Ghost is AI-only)
 
 ## Understanding the output
 

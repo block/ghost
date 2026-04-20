@@ -27,12 +27,6 @@ export interface SemanticDiff {
     removed: DesignDecision[];
     modified: DecisionChange[];
   };
-  values: {
-    doAdded: string[];
-    doRemoved: string[];
-    dontAdded: string[];
-    dontRemoved: string[];
-  };
   palette: {
     dominantAdded: Array<{ role: string; value: string }>;
     dominantRemoved: Array<{ role: string; value: string }>;
@@ -48,14 +42,13 @@ export interface SemanticDiff {
 
 /**
  * Produce a semantic diff between two expressions — decisions added/
- * removed/modified (matched by dimension slug), values deltas, palette
- * role swaps, and token-scale changes. This is *not* a vector distance
- * calculation (see compareExpressions for that) — it's the qualitative
- * "what changed in meaning" that shows up in PR reviews.
+ * removed/modified (matched by dimension slug), palette role swaps, and
+ * token-scale changes. This is *not* a vector distance calculation (see
+ * compareExpressions for that) — it's the qualitative "what changed in
+ * meaning" that shows up in PR reviews.
  */
 export function diffExpressions(a: Expression, b: Expression): SemanticDiff {
   const decisions = diffDecisions(a.decisions ?? [], b.decisions ?? []);
-  const values = diffValues(a.values, b.values);
   const palette = diffPalette(a, b);
   const tokens = diffTokens(a, b);
 
@@ -63,10 +56,6 @@ export function diffExpressions(a: Expression, b: Expression): SemanticDiff {
     decisions.added.length === 0 &&
     decisions.removed.length === 0 &&
     decisions.modified.length === 0 &&
-    values.doAdded.length === 0 &&
-    values.doRemoved.length === 0 &&
-    values.dontAdded.length === 0 &&
-    values.dontRemoved.length === 0 &&
     palette.dominantAdded.length === 0 &&
     palette.dominantRemoved.length === 0 &&
     palette.dominantChanged.length === 0 &&
@@ -76,7 +65,7 @@ export function diffExpressions(a: Expression, b: Expression): SemanticDiff {
     !palette.neutralsChanged &&
     tokens.length === 0;
 
-  return { decisions, values, palette, tokens, unchanged };
+  return { decisions, palette, tokens, unchanged };
 }
 
 function diffDecisions(
@@ -117,22 +106,6 @@ function diffDecisions(
   }
 
   return { added, removed, modified };
-}
-
-function diffValues(
-  a: Expression["values"],
-  b: Expression["values"],
-): SemanticDiff["values"] {
-  const aDo = new Set(a?.do ?? []);
-  const bDo = new Set(b?.do ?? []);
-  const aDont = new Set(a?.dont ?? []);
-  const bDont = new Set(b?.dont ?? []);
-  return {
-    doAdded: [...bDo].filter((x) => !aDo.has(x)),
-    doRemoved: [...aDo].filter((x) => !bDo.has(x)),
-    dontAdded: [...bDont].filter((x) => !aDont.has(x)),
-    dontRemoved: [...aDont].filter((x) => !bDont.has(x)),
-  };
 }
 
 function diffPalette(a: Expression, b: Expression): SemanticDiff["palette"] {
@@ -242,21 +215,6 @@ export function formatSemanticDiff(diff: SemanticDiff): string {
         lines.push(`      - evidence: ${m.evidenceRemoved.join(", ")}`);
       }
     }
-    lines.push("");
-  }
-
-  const v = diff.values;
-  if (
-    v.doAdded.length ||
-    v.doRemoved.length ||
-    v.dontAdded.length ||
-    v.dontRemoved.length
-  ) {
-    lines.push("Values:");
-    for (const item of v.doAdded) lines.push(`  + Do: ${item}`);
-    for (const item of v.doRemoved) lines.push(`  - Do: ${item}`);
-    for (const item of v.dontAdded) lines.push(`  + Don't: ${item}`);
-    for (const item of v.dontRemoved) lines.push(`  - Don't: ${item}`);
     lines.push("");
   }
 

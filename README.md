@@ -42,8 +42,8 @@ ghost profile .
 # Profile a GitHub repo
 ghost profile github:shadcn-ui/ui
 
-# Profile with AI enrichment (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)
-ghost profile github:shadcn-ui/ui --ai --verbose
+# Verbose mode shows the agent's reasoning (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)
+ghost profile github:shadcn-ui/ui --verbose
 
 # Profile a shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json
@@ -202,7 +202,6 @@ Ghost's canonical artifact is **`expression.md`** — a Markdown document with Y
 - **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves
 - **`# Observation`** — prose paired with the frontmatter data, dimension by dimension
 - **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare` can match semantically
-- **`# Values`** — do / don't rules, surfaced as hard-line signal in `ghost review`
 
 Generate one with `ghost profile . --emit`. See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec.
 

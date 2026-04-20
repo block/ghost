@@ -30,7 +30,7 @@ const BASE: Expression = {
 
 const FILES = [{ path: "src/Button.tsx", content: "<button/>" }];
 
-describe("buildReviewPrompt — signature + values injection", () => {
+describe("buildReviewPrompt — signature injection", () => {
   it("injects signature traits and tells the LLM they outrank value mismatches", () => {
     const fp: Expression = {
       ...BASE,
@@ -50,30 +50,8 @@ describe("buildReviewPrompt — signature + values injection", () => {
     expect(prompt).toContain("signature violation");
   });
 
-  it("injects Do/Don't and instructs values-violation rule citation", () => {
-    const fp: Expression = {
-      ...BASE,
-      values: {
-        do: ["Keep all neutrals warm-toned"],
-        dont: ["Use cool blue-grays anywhere"],
-      },
-    };
-    const prompt = buildReviewPrompt(fp, FILES);
-    expect(prompt).toContain("Values — what this system refuses");
-    expect(prompt).toContain("Keep all neutrals warm-toned");
-    expect(prompt).toContain("Use cool blue-grays anywhere");
-    expect(prompt).toContain("values-violation");
-    expect(prompt).toContain("quote the exact rule text");
-  });
-
-  it("omits signature/values sections when the expression has none", () => {
+  it("omits the signature section when the expression has none", () => {
     const prompt = buildReviewPrompt(BASE, FILES);
     expect(prompt).not.toContain("Signature moves");
-    expect(prompt).not.toContain("Values — what this system refuses");
-  });
-
-  it("lists values-violation in the output rule enum", () => {
-    const prompt = buildReviewPrompt(BASE, FILES);
-    expect(prompt).toMatch(/"rule":[^\n]*values-violation/);
   });
 });

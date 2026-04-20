@@ -18,10 +18,6 @@ const BASE: Expression = {
       evidence: ["H1-H6"],
     },
   ],
-  values: {
-    do: ["Use warm neutrals", "Reserve accent for CTAs"],
-    dont: ["Use pure white", "Use cool grays"],
-  },
   palette: {
     dominant: [{ role: "accent", value: "#c96442" }],
     neutrals: { steps: ["#141413", "#4d4c48"], count: 2 },
@@ -80,16 +76,6 @@ describe("diffExpressions", () => {
     expect(diff.decisions.modified[0].dimension).toBe("warm-neutrals");
     expect(diff.decisions.modified[0].decisionChanged).toBe(true);
     expect(diff.decisions.modified[0].evidenceAdded).toEqual(["#5e5d59"]);
-  });
-
-  it("detects value Do/Don't deltas", () => {
-    const b: Expression = structuredClone(BASE);
-    b.values!.do = ["Use warm neutrals", "New rule"];
-    b.values!.dont = ["Use cool grays"];
-    const diff = diffExpressions(BASE, b);
-    expect(diff.values.doAdded).toEqual(["New rule"]);
-    expect(diff.values.doRemoved).toEqual(["Reserve accent for CTAs"]);
-    expect(diff.values.dontRemoved).toEqual(["Use pure white"]);
   });
 
   it("detects palette role swaps and value changes", () => {

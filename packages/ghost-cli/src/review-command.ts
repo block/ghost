@@ -1,6 +1,8 @@
 import type { Expression } from "@ghost/core";
 import {
-  Director,
+  complyStage,
+  ExpressionAgent,
+  extractStage,
   formatComplianceCLI,
   formatComplianceJSON,
   formatComplianceSARIF,
@@ -152,22 +154,28 @@ async function runProject(
     parentExpression = (await loadExpression(opts.against)).expression;
   }
 
-  const director = new Director();
-  const { expression, compliance } = await director.comply(
-    resolvedTarget,
-    {
-      parentExpression,
-      thresholds: {
-        maxOverallDrift: Number.parseFloat(String(opts.maxDrift)),
-      },
+  const ctx = {
+    // biome-ignore lint/suspicious/noExplicitAny: mirror the pre-merge comply handler
+    llm: config.llm ?? (undefined as any),
+    embedding: config.embedding,
+    verbose: opts.verbose,
+  };
+
+  const extraction = await extractStage([resolvedTarget]);
+  const agent = new ExpressionAgent();
+  agent.setToolContext({
+    sourceDirs: extraction.dirs,
+    material: extraction.data,
+  });
+  const expression = await agent.execute(extraction.data, ctx);
+
+  const compliance = await complyStage({
+    expression: expression.data,
+    parentExpression,
+    thresholds: {
+      maxOverallDrift: Number.parseFloat(String(opts.maxDrift)),
     },
-    {
-      // biome-ignore lint/suspicious/noExplicitAny: mirror the pre-merge comply handler
-      llm: config.llm ?? (undefined as any),
-      embedding: config.embedding,
-      verbose: opts.verbose,
-    },
-  );
+  });
 
   if (opts.verbose) {
     console.log(`Profiled ${resolvedTarget.type}: ${resolvedTarget.value}`);

@@ -84,7 +84,7 @@ export default function CLIReferencePage() {
         <DocSection title="Profiling">
           <CommandSection
             name="profile"
-            description="Generate a design expression from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a three-layer prose expression (Character, Signature, Decisions, Values)."
+            description="Generate a design expression from one or more targets — a directory, URL, npm package, GitHub repo, or shadcn registry. Produces a 49-dimensional vector plus a prose expression (Character, Signature, Decisions)."
             usage="ghost profile [...targets] [options]"
             flags={[
               {
@@ -106,11 +106,6 @@ export default function CLIReferencePage() {
                   "Write expression.md to project root (publishable artifact)",
               },
               {
-                flag: "--ai",
-                description:
-                  "Enable AI-powered enrichment (requires ANTHROPIC_API_KEY or OPENAI_API_KEY)",
-              },
-              {
                 flag: "--max-iterations <n>",
                 description: "Cap agent exploration iterations (default: 99)",
               },
@@ -126,8 +121,8 @@ export default function CLIReferencePage() {
             example={`# Profile the current directory, save expression.md
 ghost profile . --emit
 
-# Profile a GitHub repo with AI enrichment
-ghost profile github:shadcn-ui/ui --ai --verbose
+# Profile a GitHub repo (verbose shows the agent's reasoning)
+ghost profile github:shadcn-ui/ui --verbose
 
 # Profile multiple sources into a single expression
 ghost profile github:anthropics/claude-code https://claude.ai --output claude.expression.md
@@ -285,7 +280,7 @@ ghost emit context-bundle --out dist/context`}
 
           <CommandSection
             name="generate"
-            description="Reference generator. Loads an expression, builds a system prompt from Character/Signature/Decisions/Values + tokens, calls the LLM, and (by default) runs ghost review against its own output, injecting drift feedback and retrying."
+            description="Reference generator. Loads an expression, builds a system prompt from Character/Signature/Decisions + tokens, calls the LLM, and (by default) runs ghost review against its own output, injecting drift feedback and retrying."
             usage="ghost generate <prompt> [options]"
             flags={[
               {

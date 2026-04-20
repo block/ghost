@@ -4,9 +4,9 @@ import { z } from "zod";
  * Current schema version. Bumped when the frontmatter contract changes
  * in a way existing files can't be read. Reader rejects unknown versions.
  *
- * v3: narrative prose (Character, Signature, decision rationale, Values)
- *     moved out of frontmatter into the markdown body. Frontmatter now
- *     carries only machine-facts (dimension slugs, evidence, tokens,
+ * v3: narrative prose (Character, Signature, decision rationale) moved
+ *     out of frontmatter into the markdown body. Frontmatter now carries
+ *     only machine-facts (dimension slugs, evidence, tokens,
  *     personality/closestSystems tags). Body owns prose outright — no
  *     duplication, no precedence rule.
  *
@@ -145,8 +145,8 @@ const DesignRoleSchema = z
  * machine-layer of Expression plus expression-level metadata.
  *
  * Note: narrative prose fields (observation.summary, distinctiveTraits,
- * decisions[].decision, values) are NOT allowed here — they belong in
- * the body. `.strict()` on nested schemas enforces this.
+ * decisions[].decision) are NOT allowed here — they belong in the body.
+ * `.strict()` on nested schemas enforces this.
  *
  * v4 changes:
  *   - `embedding` is optional at root; when absent, readers load it from

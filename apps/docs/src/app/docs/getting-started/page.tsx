@@ -27,12 +27,12 @@ export default function GettingStartedPage() {
             <code>pnpm add -g @ghost/cli</code>
           </pre>
           <p>
-            AI-powered commands (<code>profile --ai</code>,{" "}
-            <code>review project</code>, <code>verify</code>,{" "}
-            <code>discover</code>, <code>generate</code>) need{" "}
-            <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code> in
-            your environment. Ghost auto-loads <code>.env</code> and{" "}
-            <code>.env.local</code> from the working directory.
+            Ghost is AI-only for <code>profile</code>, <code>review</code>,{" "}
+            <code>verify</code>, <code>discover</code>, and{" "}
+            <code>generate</code>. Set <code>ANTHROPIC_API_KEY</code> or{" "}
+            <code>OPENAI_API_KEY</code> in your environment. Ghost auto-loads{" "}
+            <code>.env</code> and <code>.env.local</code> from the working
+            directory.
           </p>
         </DocSection>
 
@@ -48,8 +48,8 @@ export default function GettingStartedPage() {
               {`# The current directory — writes ./expression.md
 ghost profile . --emit
 
-# A GitHub repo with AI enrichment
-ghost profile github:shadcn-ui/ui --ai --output shadcn.expression.md
+# A GitHub repo (AI-only, agent explores the repo)
+ghost profile github:shadcn-ui/ui --output shadcn.expression.md
 
 # A shadcn registry directly
 ghost profile --registry https://ui.shadcn.com/registry.json`}
@@ -58,9 +58,9 @@ ghost profile --registry https://ui.shadcn.com/registry.json`}
           <p>
             An <strong>expression</strong> is a Markdown file with YAML
             frontmatter (the machine layer: 49-dim vector, palette, spacing,
-            typography, surfaces) plus a prose body in three layers: Character,
-            Signature / Observation, Decisions, Values. Humans can read it. LLMs
-            can consume it. Deterministic tools can diff it.
+            typography, surfaces) plus a prose body: Character, Signature /
+            Observation, Decisions. Humans can read it. LLMs can consume it.
+            Deterministic tools can diff it.
           </p>
         </DocSection>
 

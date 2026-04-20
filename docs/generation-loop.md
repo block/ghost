@@ -85,7 +85,6 @@ Each layer has a concrete job somewhere in the loop:
 | **Character** | Prompt context — shapes feel |
 | **Signature** | Numeric signal in review and verify |
 | **Decisions** | Lookup table the generator consults for specific choices |
-| **Values** | Hard gates in post-generation review (Do/Don't) |
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
 over-specified. Verify is the schema-discipline mechanism.

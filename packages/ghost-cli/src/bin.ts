@@ -18,10 +18,7 @@ for (const envFile of [".env", ".env.local"]) {
 
 import type { EmbeddingConfig, Expression } from "@ghost/core";
 import {
-  compareExpressions,
-  compareFleet,
-  computeTemporalComparison,
-  diffExpressions,
+  compare,
   EMBEDDING_FRAGMENT_FILENAME,
   EXPRESSION_SCHEMA_VERSION,
   formatComparison,
@@ -48,7 +45,6 @@ import {
   serializeExpression,
 } from "@ghost/core";
 import { cac } from "cac";
-import { selectCompareMode } from "./compare-mode.js";
 import { registerDriftCommand } from "./drift-command.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
@@ -80,7 +76,6 @@ cli
     "--emit",
     "Write expression.md to project root (publishable artifact)",
   )
-  .option("--ai", "Enable AI-powered enrichment (requires LLM API key)")
   .option(
     "--max-iterations <n>",
     "Maximum agent iterations for exploration (default: 99). Lower for faster/cheaper runs.",
@@ -206,110 +201,78 @@ function printVerboseResult(result: {
 }
 
 // --- compare ---
-// Unified comparison verb. Modes (flag-dispatched):
-//   default (N=2):         pairwise expression distance
-//   --temporal (N=2):      pairwise + velocity/trajectory/ack
-//   --semantic (N=2):      semantic expression diff
-//   N≥3 or --cluster:      fleet comparison (pairwise matrix + optional clusters)
+// N=2 → pairwise (with optional --semantic / --temporal enrichment).
+// N≥3 → fleet (pairwise matrix + clusters).
 cli
   .command(
     "compare [...expressions]",
     "Compare two or more expressions (N≥3 = fleet).",
   )
+  .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
   .option(
     "--temporal",
-    "Include temporal data: velocity, trajectory, ack status (N=2 only)",
+    "Add velocity, trajectory, and ack bounds (N=2, reads .ghost/history.jsonl)",
   )
   .option(
     "--history-dir <dir>",
     "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
   )
-  .option("--semantic", "Semantic diff of decisions/values/palette (N=2 only)")
-  .option("--cluster", "Include cluster analysis (N≥3)")
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (expressions: string[], opts) => {
     try {
-      const dispatch = selectCompareMode({
-        expressionCount: expressions.length,
-        cluster: Boolean(opts.cluster),
-        semantic: Boolean(opts.semantic),
-        temporal: Boolean(opts.temporal),
-      });
+      const parsed = await Promise.all(
+        expressions.map((path) => loadExpression(path)),
+      );
+      const exprs = parsed.map((p) => p.expression);
 
-      if (!dispatch.ok) {
-        console.error(`Error: ${dispatch.error}`);
-        process.exit(2);
+      let history: Awaited<ReturnType<typeof readHistory>> | undefined;
+      let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null = null;
+      if (opts.temporal) {
+        const historyDir = opts.historyDir ?? process.cwd();
+        [history, manifest] = await Promise.all([
+          readHistory(historyDir),
+          readSyncManifest(historyDir),
+        ]);
       }
 
-      if (dispatch.mode === "fleet") {
-        const members = await Promise.all(
-          expressions.map(async (p) => {
-            const { expression } = await loadExpression(p);
-            return { id: expression.id, expression };
-          }),
-        );
-        const fleet = compareFleet(members, { cluster: Boolean(opts.cluster) });
-        const output =
-          opts.format === "json"
-            ? formatFleetComparisonJSON(fleet)
-            : formatFleetComparison(fleet);
+      const result = compare(exprs, {
+        semantic: Boolean(opts.semantic),
+        history,
+        manifest,
+      });
+
+      const isJson = opts.format === "json";
+
+      if (result.mode === "fleet") {
+        const output = isJson
+          ? formatFleetComparisonJSON(result.fleet)
+          : formatFleetComparison(result.fleet);
         process.stdout.write(`${output}\n`);
         process.exit(0);
       }
 
-      // Pairwise modes (N=2): load both expressions once.
-      const [a, b] = expressions;
-      const [aParsed, bParsed] = await Promise.all([
-        loadExpression(a),
-        loadExpression(b),
-      ]);
-      const src = aParsed.expression;
-      const tgt = bParsed.expression;
-
-      if (dispatch.mode === "semantic") {
-        const semantic = diffExpressions(src, tgt);
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(semantic, null, 2)}\n`);
+      if (result.semantic) {
+        if (isJson) {
+          process.stdout.write(`${JSON.stringify(result.semantic, null, 2)}\n`);
         } else {
-          process.stdout.write(formatSemanticDiff(semantic));
+          process.stdout.write(formatSemanticDiff(result.semantic));
         }
-        process.exit(semantic.unchanged ? 0 : 1);
+        process.exit(result.semantic.unchanged ? 0 : 1);
       }
 
-      const comparison = compareExpressions(src, tgt, {
-        includeVectors: dispatch.mode === "temporal",
-      });
-
-      if (dispatch.mode === "temporal") {
-        const historyDir = opts.historyDir ?? process.cwd();
-        const [history, manifest] = await Promise.all([
-          readHistory(historyDir),
-          readSyncManifest(historyDir),
-        ]);
-
-        const temporal = computeTemporalComparison({
-          comparison,
-          history,
-          manifest,
-        });
-
-        const output =
-          opts.format === "json"
-            ? formatTemporalComparisonJSON(temporal)
-            : formatTemporalComparison(temporal);
-
+      if (result.temporal) {
+        const output = isJson
+          ? formatTemporalComparisonJSON(result.temporal)
+          : formatTemporalComparison(result.temporal);
         process.stdout.write(`${output}\n`);
-        process.exit(temporal.distance > 0.5 ? 1 : 0);
+        process.exit(result.temporal.distance > 0.5 ? 1 : 0);
       }
 
-      // dispatch.mode === "pairwise"
-      const output =
-        opts.format === "json"
-          ? formatComparisonJSON(comparison)
-          : formatComparison(comparison);
-
+      const output = isJson
+        ? formatComparisonJSON(result.comparison)
+        : formatComparison(result.comparison);
       process.stdout.write(`${output}\n`);
-      process.exit(comparison.distance > 0.5 ? 1 : 0);
+      process.exit(result.comparison.distance > 0.5 ? 1 : 0);
     } catch (err) {
       console.error(
         `Error: ${err instanceof Error ? err.message : String(err)}`,
@@ -324,10 +287,10 @@ cli
   .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
   .action(async (query: string | undefined, opts) => {
     try {
-      const { Director } = await import("@ghost/core");
+      const { DiscoveryAgent } = await import("@ghost/core");
       const config = await loadConfig().catch(() => undefined);
-      const director = new Director();
-      const result = await director.discover(
+      const agent = new DiscoveryAgent();
+      const result = await agent.execute(
         { query: query || undefined },
         { llm: config?.llm ?? (undefined as never) },
       );

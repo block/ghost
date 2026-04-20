@@ -14,7 +14,6 @@ export {
   BaseAgent,
   ComparisonAgent,
   ComplianceAgent,
-  Director,
   DiscoveryAgent,
   ExpressionAgent,
   ExtractionAgent,
@@ -29,6 +28,8 @@ export type {
   ToolResult,
 } from "./agents/tools/index.js";
 export { EXPRESSION_TOOLS, getToolDefinitions } from "./agents/tools/index.js";
+export type { CompareOptions, CompareResult } from "./compare.js";
+export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
 export type {
   ContextFormat,
@@ -42,7 +43,6 @@ export {
 } from "./context/index.js";
 export type { ComponentDiff, DiffResult, DiffSeverity } from "./diff.js";
 export { diff } from "./diff.js";
-export type { CompareOptions } from "./embedding/compare.js";
 export type { RoleCandidate } from "./embedding/index.js";
 export {
   compareExpressions,
@@ -208,7 +208,6 @@ export type {
   CSSVarsMap,
   DesignDecision,
   DesignObservation,
-  DesignValues,
   DetectedFormat,
   DimensionAck,
   DimensionDelta,

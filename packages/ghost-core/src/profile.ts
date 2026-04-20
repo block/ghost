@@ -164,13 +164,14 @@ export async function profileMultiTarget(
   config?: GhostConfig,
   options?: { maxIterations?: number },
 ): Promise<ProfileTargetResult> {
-  const { Director } = await import("./agents/director.js");
-
   if (!config?.llm) {
     throw new Error(
       "Ghost is AI-only. Configure an LLM provider to profile targets.",
     );
   }
+
+  const { extract } = await import("./stages/extract.js");
+  const { ExpressionAgent } = await import("./agents/expression.js");
 
   const ctx = {
     llm: config.llm,
@@ -179,13 +180,24 @@ export async function profileMultiTarget(
     maxIterations: options?.maxIterations ?? config.agents?.maxIterations,
   };
 
-  const director = new Director();
-  const result = await director.profile(targets, ctx);
+  const extraction = await extract(targets);
+  const agent = new ExpressionAgent();
+  agent.setToolContext({
+    sourceDirs: extraction.dirs,
+    material: extraction.data,
+  });
+  const expression = await agent.execute(extraction.data, ctx);
+
+  if (targets.length > 1) {
+    expression.data.sources = targets.map(
+      (t) => t.name ?? `${t.type}:${t.value}`,
+    );
+  }
 
   return {
-    expression: result.expression.data,
-    confidence: result.expression.confidence,
-    reasoning: [...result.extraction.reasoning, ...result.expression.reasoning],
-    warnings: [...result.extraction.warnings, ...result.expression.warnings],
+    expression: expression.data,
+    confidence: expression.confidence,
+    reasoning: [...extraction.reasoning, ...expression.reasoning],
+    warnings: [...extraction.warnings, ...expression.warnings],
   };
 }

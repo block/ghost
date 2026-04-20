@@ -17,7 +17,7 @@ pnpm --filter ghost-cli exec ghost <command>
 
 ## Environment Variables
 
-- `ANTHROPIC_API_KEY` — required for AI-powered profiling (`--ai` flag) and LLM agents
+- `ANTHROPIC_API_KEY` — required; Ghost is AI-only for profile/compare/review
 - `OPENAI_API_KEY` — alternative LLM provider
 - `GITHUB_TOKEN` — optional, for GitHub target resolution and discovery (avoids rate limits)
 
@@ -114,7 +114,7 @@ The canonical expression artifact is **`expression.md`** — a human-readable, L
 - `compare` and `viz` take **file paths** to expression.md, not target strings. `compare` auto-detects mode from flag / N: `--semantic` or `--temporal` require N=2; N≥3 or `--cluster` runs fleet
 - `profile` outputs an expression; pipe to `--output <file>` to save (must end in `.md`)
 - `--against` on `review project` takes a **file path** to a parent expression.md
-- `--ai` enables LLM-powered enrichment on `profile`; `--verbose` shows agent reasoning
+- `profile` is AI-only (LLM agent explores the target); `--verbose` shows agent reasoning
 - `review` (files scope) reads `expression.md` by default; `--expression <path>` overrides
 - `review project` profiles the target and compares against `--against <parent.md>`
 - `verify` drives the generate→review loop across a bundled prompt suite

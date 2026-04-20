@@ -67,7 +67,7 @@ Return ONLY a valid JSON array. No markdown, no explanation, no preamble. Each e
 
 \`\`\`
 {
-  "rule": "palette-drift | palette-role-misuse | spacing-drift | typography-drift | typography-family | typography-weight | surfaces-drift | surfaces-shadow | values-violation",
+  "rule": "palette-drift | palette-role-misuse | spacing-drift | typography-drift | typography-family | typography-weight | surfaces-drift | surfaces-shadow",
   "dimension": "palette | spacing | typography | surfaces",
   "severity": "error | warning",
   "message": "Clear, specific description",
@@ -119,23 +119,6 @@ function formatDesignIntent(fp: Expression): string {
     sections.push("");
     sections.push(
       "When reviewing, consider whether code violates these design decisions — not just whether individual values are missing from the palette.\n",
-    );
-  }
-
-  if (fp.values && (fp.values.do.length > 0 || fp.values.dont.length > 0)) {
-    sections.push("### Values — what this system refuses\n");
-    if (fp.values.do.length > 0) {
-      sections.push("**Do:**");
-      for (const v of fp.values.do) sections.push(`- ${v}`);
-      sections.push("");
-    }
-    if (fp.values.dont.length > 0) {
-      sections.push("**Don't:**");
-      for (const v of fp.values.dont) sections.push(`- ${v}`);
-      sections.push("");
-    }
-    sections.push(
-      "When you flag a violation of one of these Do/Don't rules, set `rule` to `values-violation`, tag `dimension` with the closest matching dimension (palette/spacing/typography/surfaces), and quote the exact rule text verbatim in the `message` (e.g. `violates: \"Don't mix sans-serif into headlines\"`). These stances are the sharpest drift signal — they encode what the system refuses.\n",
     );
   }
 

@@ -1,9 +1,9 @@
 import type { DesignDecision } from "../types.js";
 
 /**
- * Structured read of an expression.md body. Contract (schema 3): the body
- * is authoritative for prose — # Character, # Signature, decision rationale,
- * and # Values. Machine-facts (dimensions slugs, evidence, tokens) live in
+ * Structured read of an expression.md body. The body is authoritative for
+ * prose — # Character, # Signature, and per-dimension rationale under
+ * # Decisions. Machine-facts (dimension slugs, evidence, tokens) live in
  * the frontmatter and are joined in by `applyBody` during parse.
  */
 export interface BodyData {
@@ -13,8 +13,6 @@ export interface BodyData {
   signature?: string[];
   /** From `# Decisions` `### slug` blocks — dimension + prose rationale (no evidence) */
   decisions?: DesignDecision[];
-  /** From `# Values` `## Do` / `## Don't` — authoritative for Expression.values */
-  values?: { do: string[]; dont: string[] };
 }
 
 type Section = { heading: string; level: number; body: string };
@@ -111,16 +109,6 @@ export function parseBody(md: string): BodyData {
     } else if (h.startsWith("decisions")) {
       const blocks = sectionsAt(sec.body, 3);
       if (blocks.length) out.decisions = blocks.map(parseDecision);
-    } else if (h.startsWith("values")) {
-      const subs = sectionsAt(sec.body, 2);
-      const doSec = subs.find((s) => /^do$/i.test(s.heading.trim()));
-      const dontSec = subs.find((s) =>
-        /^(don['’]t|dont)$/i.test(s.heading.trim()),
-      );
-      out.values = {
-        do: doSec ? parseBullets(doSec.body) : [],
-        dont: dontSec ? parseBullets(dontSec.body) : [],
-      };
     }
   }
   return out;
