@@ -1,12 +1,16 @@
 # Ghost
 
-**Autonomous perception of organic drift across a decentralized fleet of fingerprint consumers.**
+**Proactive design intelligence. Agents author, self-govern against a design quality bar, and remediate drift before it compounds.**
 
-Ghost makes fingerprint legible. It profiles a system's identity into a human-readable `fingerprint.md`, perceives drift across a decentralized fleet of consumers, tracks the stance each consumer takes toward its parent (acknowledge, adopt, diverge), and surfaces fleet-wide signal the parent can heal from. Current scope: visual/UI fingerprint. The reference fingerprint, Ghost UI, ships as a shadcn-compatible component registry. The format and the perception architecture are identity-agnostic; visual is the first instantiation.
+More of the UI your users see is now authored by agents. That unlocks speed — and a new failure mode: design drifts silently. Each generation nudges away from your design language; each downstream consumer bends it a little further. Without a quality bar the agent can perceive, no one notices until coherence is already lost.
+
+Ghost closes that loop. It captures a design language as a **fingerprint** — a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions — and gives any agent the primitives to author against it, detect drift the moment it happens, and choose the right remediation: **acknowledge**, **adopt**, or **intentionally diverge**. Deterministic arithmetic lives in Ghost's CLI; the authoring, reviewing, and judgement live in whatever agent you already use.
+
+Current scope is visual/UI design languages. The reference design language, Ghost UI, ships as a shadcn-compatible component registry. The format and the detection architecture are identity-agnostic; visual is the first instantiation.
 
 ## BYOA — bring your own agent
 
-Ghost is split across two surfaces:
+Ghost splits the work the way agents need it split: **judgement in the agent, arithmetic in the CLI**.
 
 - **The CLI** — a set of **deterministic primitives**. Six verbs. It never calls an LLM. It does vector distance, schema validation, and manifest writes. Same answer every time.
 - **A skill bundle** — [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, generate, discover). The host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the CLI for the arithmetic.
@@ -15,14 +19,14 @@ No API key is required to use any CLI verb. Judgment work lives in whichever age
 
 ## Why Ghost?
 
-Fingerprint drifts. When a system's identity spreads across consumers — each evolving, each adapting — coherence degrades and trust follows. Ghost perceives this drift across a decentralized fleet so the parent can reason about what's happening and heal proactively. No central gatekeeper; observation and recorded intent instead.
+Ghost gives agents four capabilities the design-at-scale problem actually needs:
 
-- **Human-readable fingerprints** — Every system is captured as a `fingerprint.md`: YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, LLMs consume it, deterministic tools diff it.
-- **Continuous perception** — Profile each consumer over time. Compare embeddings pairwise, across a fleet, or across history.
-- **Intent tracking** — Acknowledge, adopt, or intentionally diverge from a parent fingerprint. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal.
-- **Fleet intelligence** — Compare fingerprints across an ecosystem to see clusters, outliers, and drift trajectories. The fleet view is the input to proactive healing: when consumers collectively drift toward something, the parent has reason to update itself.
-- **Grounded generation** — Use fingerprints as grounding for AI-driven generation. `ghost emit context-bundle` writes skill material for any generator; the review/verify recipes gate the output.
-- **Reference fingerprint (Ghost UI)** — A shadcn-compatible registry of atomic components, design tokens, and a live catalogue. Serves as the canonical baseline Ghost profiles and tests itself against in its current visual scope.
+- **Author against a real quality bar** — `ghost emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The fingerprint is the bar; the agent authors to it.
+- **Self-govern at author time** — the `review` and `verify` recipes run an agent's output against the fingerprint *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
+- **Detect drift at the right time** — PR-time (via `review`), generation-time (via `verify`), or fleet-time (via `compare` on N≥3 consumers). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
+- **Remediate with structured intent** — `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
+- **Human-readable, diff-friendly** — `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
+- **Reference design language (Ghost UI)** — a shadcn-compatible registry of atomic components, design tokens, and a live catalogue. The canonical baseline Ghost is built against and tested against.
 
 ## Getting Started
 
@@ -99,7 +103,7 @@ just dev
 
 ## CLI Commands
 
-Six deterministic primitives. Everything else is a skill recipe the host agent runs.
+Six deterministic primitives, grouped by the loop: **author** (`emit`), **detect** (`compare`, `lint`), **remediate** (`ack`, `adopt`, `diverge`). Everything interpretive is a skill recipe the host agent runs.
 
 | Command          | Description                                                                         |
 | ---------------- | ----------------------------------------------------------------------------------- |
@@ -112,16 +116,16 @@ Six deterministic primitives. Everything else is a skill recipe the host agent r
 
 ### Skill recipes — run by the host agent
 
-Install once with `ghost emit skill`. Your agent then has:
+Install once with `ghost emit skill`. Each recipe gives the agent a specific capability from the pitch — *author, self-govern, detect, remediate*:
 
-| Recipe     | Triggered by                                    | Source |
-| ---------- | ----------------------------------------------- | ------ |
-| `profile`  | "profile this", "write a fingerprint.md"         | `packages/ghost-cli/src/skill-bundle/references/profile.md`  |
-| `review`   | "review this PR for drift"                       | `packages/ghost-cli/src/skill-bundle/references/review.md`   |
-| `verify`   | "verify generated UI against the fingerprint"    | `packages/ghost-cli/src/skill-bundle/references/verify.md`   |
-| `generate` | "generate a component matching our design"       | `packages/ghost-cli/src/skill-bundle/references/generate.md` |
-| `discover` | "find design languages like X"                   | `packages/ghost-cli/src/skill-bundle/references/discover.md` |
-| `compare`  | "why did these two fingerprints drift?"          | `packages/ghost-cli/src/skill-bundle/references/compare.md`  |
+| Recipe     | Capability                         | Triggered by                                   | Source |
+| ---------- | ---------------------------------- | ---------------------------------------------- | ------ |
+| `profile`  | Author the quality bar             | "profile this", "write a fingerprint.md"        | `packages/ghost-cli/src/skill-bundle/references/profile.md`  |
+| `generate` | Author *against* the quality bar   | "generate a component matching our design"      | `packages/ghost-cli/src/skill-bundle/references/generate.md` |
+| `review`   | Self-govern at PR time             | "review this PR for drift"                      | `packages/ghost-cli/src/skill-bundle/references/review.md`   |
+| `verify`   | Self-govern at generation time     | "verify generated UI against the fingerprint"   | `packages/ghost-cli/src/skill-bundle/references/verify.md`   |
+| `compare`  | Detect drift across the fleet      | "why did these two fingerprints drift?"         | `packages/ghost-cli/src/skill-bundle/references/compare.md`  |
+| `discover` | Find quality bars worth borrowing  | "find design languages like X"                  | `packages/ghost-cli/src/skill-bundle/references/discover.md` |
 
 These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus `ghost` for the deterministic steps.
 
@@ -178,7 +182,7 @@ The CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ### The fingerprint
 
-The canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
+What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
 
 - **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
 - **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand.
@@ -196,9 +200,9 @@ The 49-dim machine vector splits like this:
 | 31-40      | Typography | Font families, size ramp, weight distribution, line heights    |
 | 41-48      | Surfaces   | Border radii, shadow complexity, border usage                  |
 
-### Generation loop
+### Author + self-govern loop
 
-Ghost doubles as pipeline infrastructure for AI-driven generation. The fingerprint grounds the generator; the `review` recipe surfaces drift in the output so humans can decide whether to acknowledge, adopt, or diverge:
+This is the literal loop the pitch describes: the agent authors UI, Ghost detects drift against the fingerprint, a human (or the agent itself) picks the remediation. The fingerprint grounds the generator; the `review` recipe surfaces drift in the output so a decision — *acknowledge, adopt, or diverge* — can be made at the right time.
 
 ```
 fingerprint.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
@@ -216,9 +220,9 @@ fingerprint.md ──► [ghost emit context-bundle] ──► SKILL.md / tokens
 
 The `verify` recipe drives the loop across a prompt suite and classifies each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
-### Intent tracking
+### Remediation
 
-Ghost tracks design lineage and published intent through:
+Three responses, each with recorded reasoning and full lineage — so a year from now you know whether a divergence was meant or missed:
 
 - **`fingerprint.md`** — The canonical fingerprint artifact.
 - **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning. Written by `ack` / `adopt` / `diverge`.
@@ -226,7 +230,7 @@ Ghost tracks design lineage and published intent through:
 
 ### Fleet observability
 
-Run `ghost compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters — which consumers are coherent, which are drifting, and where the gaps are.
+Drift at scale — the signal the parent design language heals from. Run `ghost compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters — which consumers are coherent, which are drifting, and where the gaps are.
 
 ## Ghost UI
 
