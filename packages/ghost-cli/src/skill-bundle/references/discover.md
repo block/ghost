@@ -1,3 +1,15 @@
+---
+name: discover
+description: Find public design systems matching a query — for benchmarking, inspiration, or adoption.
+handoffs:
+  - label: Profile a discovered system into its own fingerprint.md
+    skill: profile
+    prompt: Profile the discovered system into a fingerprint.md under discovered/
+  - label: Compare my fingerprint against a discovered system
+    skill: compare
+    prompt: Compare my fingerprint.md against the discovered system's fingerprint with --semantic
+---
+
 # Recipe: Discover public design systems
 
 **Goal:** find public design systems matching a query — for benchmarking, inspiration, or competitive analysis.

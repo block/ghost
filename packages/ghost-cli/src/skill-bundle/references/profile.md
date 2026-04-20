@@ -1,3 +1,15 @@
+---
+name: profile
+description: Write fingerprint.md from a project's design sources.
+handoffs:
+  - label: Compare against a parent or peer fingerprint
+    skill: compare
+    prompt: Compare the fingerprint.md I just wrote against a parent or peer
+  - label: Emit a project-scoped drift review command
+    command: ghost emit review-command
+    prompt: Emit a per-project review command derived from this fingerprint.md
+---
+
 # Recipe: Profile a project into fingerprint.md
 
 **Goal:** produce a valid `fingerprint.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost lint` for validation.

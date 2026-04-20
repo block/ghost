@@ -1,3 +1,21 @@
+---
+name: review
+description: Flag PR or working-tree changes that drift from the local fingerprint.md.
+handoffs:
+  - label: Regenerate drifting components to match the fingerprint
+    skill: verify
+    prompt: Regenerate the drifting code against fingerprint.md and re-review
+  - label: Accept the drift as aligned reality
+    command: ghost ack
+    prompt: Acknowledge that the current fingerprint.md no longer matches and record the drift
+  - label: Declare a dimension intentionally divergent
+    command: ghost diverge
+    prompt: Record an intentional divergence on a specific dimension so it stops flagging
+  - label: Adopt a new parent baseline
+    command: ghost adopt
+    prompt: Adopt the provided fingerprint.md as a new parent baseline
+---
+
 # Recipe: Review code changes for design drift
 
 **Goal:** flag frontend changes that drift from the local `fingerprint.md` and produce a review (chat summary or PR comments).
