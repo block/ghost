@@ -32,6 +32,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      - name: Build @ghost/core library
+        run: pnpm --filter @ghost/core build
+
       - name: Build @ghost/ui library
         run: pnpm --filter @ghost/ui build:lib
 
