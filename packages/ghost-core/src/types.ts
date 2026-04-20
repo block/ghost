@@ -189,7 +189,7 @@ export interface DesignObservation {
   personality: string[];
   /** What makes this system visually distinctive */
   distinctiveTraits: string[];
-  /** Closest well-known design systems for reference */
+  /** Closest well-known design languages for reference */
   closestSystems: string[];
 }
 
@@ -210,7 +210,7 @@ export interface DesignDecision {
 
 /**
  * A semantic slot → token binding. Describes which concrete tokens a
- * design system uses for a specific role (h1, body, card, button, …).
+ * design language uses for a specific role (h1, body, card, button, …).
  *
  * This is the bridge between abstract tokens (`typography.sizeRamp: [14, 16, …]`)
  * and renderable output: a role tells a renderer *which* ramp step belongs to

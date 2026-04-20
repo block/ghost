@@ -14,8 +14,11 @@
     "test:watch": "vitest",
     "typecheck": "tsc --build",
     "build:ui": "pnpm --filter @ghost/ui build",
-    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes",
+    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes && pnpm check:docs && pnpm check:cli-manifest",
     "check:file-sizes": "node scripts/check-file-sizes.mjs",
+    "check:docs": "node scripts/check-docs-frontmatter.mjs",
+    "check:cli-manifest": "node scripts/dump-cli-help.mjs --check",
+    "dump:cli-help": "node scripts/dump-cli-help.mjs",
     "fmt": "biome format --write .",
     "lint": "biome lint ."
   },

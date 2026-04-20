@@ -15,7 +15,7 @@ import { validateFrontmatter } from "./schema.js";
 function assertMarkdownPath(path: string): void {
   if (!path.endsWith(".md")) {
     throw new Error(
-      `Fingerprint files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate with \`ghost profile . --emit\`.`,
+      `Fingerprint files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost emit skill\`).`,
     );
   }
 }

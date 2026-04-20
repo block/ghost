@@ -1,6 +1,6 @@
 ---
 name: ghost-drift
-description: Detect and manage visual-language drift in design systems. Use when the user wants to write or update a fingerprint.md, review frontend code changes for design drift, compare design fingerprints, verify generated UI against a fingerprint, or discover public design systems. Triggers on phrases like "profile this design system", "check for drift", "review this PR for design issues", "write a fingerprint.md", "compare fingerprints", or whenever a `fingerprint.md` file is present and styling/design work is happening.
+description: Detect and manage visual-language drift in design languages. Use when the user wants to write or update a fingerprint.md, review frontend code changes for design drift, compare design fingerprints, verify generated UI against a fingerprint, or discover public design languages. Triggers on phrases like "profile this design language", "check for drift", "review this PR for design issues", "write a fingerprint.md", "compare fingerprints", or whenever a `fingerprint.md` file is present and styling/design work is happening.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -28,12 +28,12 @@ That's it. Six verbs. If you find yourself reaching for `ghost review` or `ghost
 
 When the user asks you to:
 
-- "Profile my design system" / "write a fingerprint.md" → [references/profile.md](references/profile.md)
+- "Profile my design language" / "write a fingerprint.md" → [references/profile.md](references/profile.md)
 - "Review this PR/these changes for drift" → [references/review.md](references/review.md)
 - "Verify this generated UI matches the fingerprint" → [references/verify.md](references/verify.md)
-- "Generate a component matching our design system" → [references/generate.md](references/generate.md)
+- "Generate a component matching our design language" → [references/generate.md](references/generate.md)
 - "Compare these two fingerprints" → run `ghost compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
-- "Find design systems like X" / "discover" → [references/discover.md](references/discover.md)
+- "Find design languages like X" / "discover" → [references/discover.md](references/discover.md)
 
 ## The fingerprint.md format
 

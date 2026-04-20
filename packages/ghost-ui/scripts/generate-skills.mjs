@@ -124,7 +124,7 @@ const markdown = `# Ghost UI — Agent Skills
 
 ## Overview
 
-Ghost UI is a magazine-inspired design system built on shadcn/ui with:
+Ghost UI is a magazine-inspired design language built on shadcn/ui with:
 - **Pill geometry**: 999px border-radius on buttons, inputs, and pills
 - **System font stack**: consumers bring their own typeface, magazine-scale heading hierarchy
 - **4-tier shadow hierarchy**: mini, card, elevated, modal

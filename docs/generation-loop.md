@@ -1,8 +1,13 @@
 # Generation Loop
 
 Ghost sits as pipeline infrastructure for AI-driven UI generation. The
-`fingerprint.md` is the grounding input; `ghost review` is the post-generation
-gate. The three new commands wire it together.
+`fingerprint.md` is the grounding input; the *review* recipe is the
+post-generation gate; the *verify* recipe drives the loop over a prompt
+suite to expose where the fingerprint leaks.
+
+Only the grounding step is a deterministic CLI verb (`ghost emit
+context-bundle`). *Generate*, *review*, and *verify* are skill recipes
+the host agent follows — installed with `ghost emit skill`.
 
 ## Pipeline shape
 
@@ -11,18 +16,18 @@ fingerprint.md  ──►  [ghost emit context-bundle]  ──►  SKILL.md / to
                                               │
                                               ▼
                                        any generator
-                                   (ghost generate, Cursor,
-                                    v0, in-house tool)
+                                  (host agent, Cursor, v0,
+                                   in-house tool)
                                               │
                                               ▼ HTML / JSX
-                                       [ghost review]  ──►  drift disposition
-                                                            (block / annotate
-                                                             / ack / adopt)
+                                       [review recipe]  ──►  drift disposition
+                                                             (block / annotate
+                                                              / ack / adopt)
 ```
 
-## Commands
+## Pieces
 
-### `ghost emit context-bundle [flags]`
+### `ghost emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
 `SKILL.md` + `fingerprint.md` + `tokens.css` into `./ghost-context/`.
@@ -37,44 +42,51 @@ Flags:
 Point a Claude Code or MCP client at the output directory and the agent
 reads `SKILL.md`.
 
-### `ghost generate <prompt> --fingerprint <path>`
+### The `generate` recipe
 
-Reference generator. Loads the fingerprint, builds a system prompt from
-Character/Signature/Decisions/Values + tokens, calls the LLM, extracts HTML,
-and (by default) runs `ghost review` against its own output. If `errors > 0`,
-it injects drift feedback and retries. Hard-capped to 3 retries.
+Driven by the host agent. Loads the fingerprint, builds a system prompt
+from Character/Signature/Decisions + tokens, asks the underlying model,
+extracts the artifact (HTML/JSX/etc.), and hands it to the `review` recipe
+for self-check. Retries with drift feedback until it passes or the agent
+gives up.
 
-Not meant to compete with Cursor / v0 / in-house tools. It exists so the loop
-is provable end-to-end, and so `ghost verify` has something to drive.
+Not a replacement for Cursor / v0 / in-house tools. It exists so the loop
+is provable end-to-end, and so the `verify` recipe has something to drive.
 
-Flags:
-- `--no-review` — skip self-review (drift-blind, fast)
-- `--retries <n>` — max retries, default 2, capped at 3
-- `--json` — structured output with per-attempt drift counts
+Source: `packages/ghost-cli/src/skill-bundle/references/generate.md`.
 
-### `ghost verify [fingerprint] --n <count>`
+### The `review` recipe
 
-Run the generate→review loop over a versioned prompt suite (bundled v0.1,
-~18 prompts). Aggregates drift per dimension and classifies:
+The agent diffs generated output against the fingerprint. Flags hardcoded
+colors outside the palette, spacing off the scale, and type choices that
+violate decisions. For pre-baked, per-project review commands use
+`ghost emit review-command` (which writes a slash command at
+`.claude/commands/design-review.md`).
+
+Source: `packages/ghost-cli/src/skill-bundle/references/review.md`.
+
+### The `verify` recipe
+
+Runs the generate→review loop over a versioned prompt suite. Aggregates
+drift per dimension and classifies:
 
 - **tight** (mean < 1): fingerprint reproduces faithfully
-- **leaky** (1–3): generator drifts here often — tighten Decisions or Values
+- **leaky** (1–3): generator drifts here often — tighten Decisions
 - **uncaptured** (≥ 3): fingerprint likely under-specifies this dimension
 
-Output is a per-dimension report plus actionable recommendations. The killer
-demo: run `verify` on a mature fingerprint, intentionally drop a section
-(e.g. motion), re-run, watch drift rise in dimensions that lost grounding.
+The killer demo: run `verify` on a mature fingerprint, intentionally drop
+a section (e.g. motion), re-run, watch drift rise in dimensions that lost
+grounding.
+
+Source: `packages/ghost-cli/src/skill-bundle/references/verify.md`.
 
 ## The standard prompt suite
 
-Versioned JSON of UI-construction tasks, each tagged with the fingerprint
-dimensions it stresses. Bundled inside core (see
-`packages/ghost-core/src/verify/suite-v0.1.json`), also available as a runtime
-TS constant (`BUNDLED_SUITE`) so it ships with compiled output.
-
-Tagging prompts with dimensions means we can distinguish *targeted* drift
-(a pricing-page prompt leaking spacing) from *incidental* drift (the same
-prompt leaking color, which it wasn't supposed to stress).
+A versioned set of UI-construction tasks, each tagged with the fingerprint
+dimensions it stresses. Tagging prompts with dimensions lets the agent
+distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
+*incidental* drift (the same prompt leaking color, which it wasn't
+supposed to stress).
 
 ## How the three-layer fingerprint format earns its keep
 
@@ -83,22 +95,23 @@ Each layer has a concrete job somewhere in the loop:
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Signature** | Numeric signal in review and verify |
+| **Signature** | Drift-sensitive moves the reviewer weights heavily |
 | **Decisions** | Lookup table the generator consults for specific choices |
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
-over-specified. Verify is the schema-discipline mechanism.
+over-specified. The `verify` recipe is the schema-discipline mechanism.
 
 ## Integration patterns
 
-**CI**: `ghost review --against fingerprint.md` as a required check on PRs
-that touch UI files.
+**CI**: a per-project `design-review` slash command emitted from
+`ghost emit review-command`, invoked by the host agent as a required
+check on PRs that touch UI files.
 
-**In a generation pipeline**: `ghost emit context-bundle` writes the skill bundle into the
-generator's context; the generator produces; `ghost review` gates the output.
-Drift disposition belongs to the pipeline owner (block, annotate,
-require `ghost ack`).
+**In a generation pipeline**: `ghost emit context-bundle` writes the
+skill bundle into the generator's context; the generator produces; the
+`review` recipe gates the output. Drift disposition belongs to the
+pipeline owner (block, annotate, require `ghost ack`).
 
-**Fingerprint maintenance**: run `ghost verify` periodically. When a dimension
-shows up consistently leaky, the fingerprint needs more Decisions or Values
-rules for that dimension.
+**Fingerprint maintenance**: run `verify` periodically. When a dimension
+shows up consistently leaky, the fingerprint needs more Decisions for
+that dimension.

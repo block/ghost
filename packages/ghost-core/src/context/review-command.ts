@@ -61,7 +61,7 @@ function header(
     : "";
   const lines = [`# ${id} drift review`, ""];
   lines.push(
-    `You are a drift reviewer for the **${id}** design system. ${taste}`.trim(),
+    `You are a drift reviewer for the **${id}** design language. ${taste}`.trim(),
   );
   if (character) lines.push("", character);
   lines.push(

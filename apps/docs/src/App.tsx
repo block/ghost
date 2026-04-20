@@ -2,11 +2,8 @@ import { ThemeProvider } from "@ghost/ui";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import ComponentPage from "@/app/components/[name]/page";
 import ComponentsIndex from "@/app/components/page";
-import CLIReferencePage from "@/app/docs/cli/page";
 import ConceptsPage from "@/app/docs/concepts/page";
-import GettingStartedPage from "@/app/docs/getting-started/page";
 import DriftEngineIndex from "@/app/docs/page";
-import SelfHostingPage from "@/app/docs/self-hosting/page";
 import ColorsPage from "@/app/foundations/colors/page";
 import FoundationsIndex from "@/app/foundations/page";
 import TypographyPage from "@/app/foundations/typography/page";
@@ -14,6 +11,7 @@ import HomePage from "@/app/page";
 import ToolsIndex from "@/app/tools/page";
 import DesignLanguageIndex from "@/app/ui/page";
 import { Dock } from "@/components/docs/dock";
+import { mdxDocsRoutes } from "@/routes/docs-routes";
 
 function ComponentRedirect() {
   const { name } = useParams<{ name: string }>();
@@ -36,16 +34,10 @@ export function App() {
           {/* Tools */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route path="tools/drift" element={<DriftEngineIndex />} />
-          <Route
-            path="tools/drift/getting-started"
-            element={<GettingStartedPage />}
-          />
-          <Route path="tools/drift/cli" element={<CLIReferencePage />} />
           <Route path="tools/drift/concepts" element={<ConceptsPage />} />
-          <Route
-            path="tools/drift/self-hosting"
-            element={<SelfHostingPage />}
-          />
+
+          {/* MDX-authored doc pages */}
+          {mdxDocsRoutes()}
 
           {/* Design Language */}
           <Route path="ui" element={<DesignLanguageIndex />} />

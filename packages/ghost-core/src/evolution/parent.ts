@@ -45,7 +45,7 @@ export async function resolveParent(
 
     default:
       throw new Error(
-        `Cannot resolve parent fingerprint from target type "${target.type}". Use "ghost profile" to generate one first.`,
+        `Cannot resolve parent fingerprint from target type "${target.type}". Generate one first by running the profile recipe in your host agent (install with "ghost emit skill").`,
       );
   }
 }
