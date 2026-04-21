@@ -33,20 +33,14 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # Intentionally no caching (no `cache:` on setup-node, no pnpm/action-setup
-      # which maintains its own cache store). GitHub's actions/cache is shared
-      # across branches and PRs, so in a publishing workflow a poisoned cache
-      # entry could be baked into the released tarball. We install cold each
-      # run; zizmor's cache-poisoning rule is satisfied and the extra ~30s is
-      # invisible on a release cadence.
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
-
-      # Corepack ships with Node and reads `packageManager` from the root
-      # package.json to install the exact pnpm version the repo pins —
-      # no registry action, no implicit cache.
-      - run: corepack enable
+      # No setup-node and no pnpm/action-setup — both would trip zizmor's
+      # cache-poisoning rule because any GitHub-official setup action is
+      # treated as cache-capable regardless of whether caching is enabled.
+      # ubuntu-latest ships Node 20 + corepack, which satisfies our
+      # engines.node (>=18). Corepack reads `packageManager` from root
+      # package.json to install the exact pinned pnpm version with no
+      # cross-branch cache store.
+      - run: node --version && corepack enable
 
       - run: pnpm install --frozen-lockfile
 
