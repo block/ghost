@@ -1,0 +1,78 @@
+name: Publish tarball to GitHub Release
+
+# Temporary distribution channel while npm publish is blocked. Packs
+# ghost-drift and attaches the .tgz to a GitHub Release, so consumers can:
+#
+#   npm install https://github.com/block/ghost/releases/download/<tag>/<file>.tgz
+#
+# Triggered by pushing a tag of the form `ghost-drift@<version>` or by
+# manual workflow_dispatch.
+
+on:
+  push:
+    tags:
+      - "ghost-drift@*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (must match packages/ghost-drift/package.json)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tarball-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tarball:
+    name: Pack and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # No setup-node and no pnpm/action-setup — both would trip zizmor's
+      # cache-poisoning rule because any GitHub-official setup action is
+      # treated as cache-capable regardless of whether caching is enabled.
+      # ubuntu-latest ships Node 20 + corepack, which satisfies our
+      # engines.node (>=18). Corepack reads `packageManager` from root
+      # package.json to install the exact pinned pnpm version with no
+      # cross-branch cache store.
+      - run: node --version && corepack enable
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter ghost-drift build
+
+      - name: Pack
+        run: pnpm --filter ghost-drift pack
+
+      # Resolve the release tag. Inputs from workflow_dispatch are attacker-
+      # controlled (anyone with Actions write can trigger). Pass them in via
+      # `env:` and reference as shell variables so they can't be interpolated
+      # as shell syntax — that's what the semgrep shell-injection rule wants.
+      - name: Resolve tag
+        id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            TAG="ghost-drift@$INPUT_VERSION"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            packages/ghost-drift/ghost-drift-*.tgz

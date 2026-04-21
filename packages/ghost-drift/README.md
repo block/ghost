@@ -10,11 +10,27 @@
 
 ## Install
 
+> While `ghost-drift` is being registered on the npm public registry, the package is distributed as a tarball attached to each [GitHub Release](https://github.com/block/ghost/releases). Install directly from the release URL:
+
 ```bash
-npm i -g ghost-drift
-# or
-pnpm add -D ghost-drift
+# latest release
+npm install https://github.com/block/ghost/releases/download/ghost-drift%400.1.1/ghost-drift-0.1.1.tgz
+
+# pnpm / yarn work the same
+pnpm add https://github.com/block/ghost/releases/download/ghost-drift%400.1.1/ghost-drift-0.1.1.tgz
 ```
+
+Or pin in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "ghost-drift": "https://github.com/block/ghost/releases/download/ghost-drift%400.1.1/ghost-drift-0.1.1.tgz"
+  }
+}
+```
+
+Once npm publishing is unblocked this will move to the registry — swap the URL for a plain `^0.1.1`.
 
 ## Use
 
