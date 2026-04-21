@@ -7,7 +7,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { PaperclipIcon } from "lucide-react";
 
 export function PromptInputDemo() {

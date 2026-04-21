@@ -11,7 +11,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { TrendingUp } from "lucide-react";
 import {
   Bar,

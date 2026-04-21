@@ -1,4 +1,4 @@
-import { Message, MessageContent, MessageResponse, Shimmer } from "@ghost/ui";
+import { Message, MessageContent, MessageResponse, Shimmer } from "ghost-ui";
 
 export default function MessageStreaming() {
   return (

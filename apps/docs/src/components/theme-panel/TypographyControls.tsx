@@ -1,6 +1,6 @@
 "use client";
 
-import { Slider } from "@ghost/ui";
+import { Slider } from "ghost-ui";
 import { useCallback, useState } from "react";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 

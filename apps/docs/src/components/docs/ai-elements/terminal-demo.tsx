@@ -7,7 +7,7 @@ import {
   TerminalCopyButton,
   TerminalHeader,
   TerminalTitle,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const buildOutput = `\x1b[32m$\x1b[0m next build
 \x1b[36minfo\x1b[0m  - Linting and checking validity of types...

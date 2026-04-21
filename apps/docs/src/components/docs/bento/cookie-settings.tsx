@@ -10,7 +10,7 @@ import {
   CardTitle,
   Label,
   Switch,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function CardsCookieSettings() {
   return (

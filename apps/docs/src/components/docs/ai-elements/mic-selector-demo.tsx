@@ -10,7 +10,7 @@ import {
   MicSelectorList,
   MicSelectorTrigger,
   MicSelectorValue,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function MicSelectorDemo() {
   return (

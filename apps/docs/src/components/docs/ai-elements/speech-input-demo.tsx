@@ -1,6 +1,6 @@
 "use client";
 
-import { SpeechInput } from "@ghost/ui";
+import { SpeechInput } from "ghost-ui";
 import { useState } from "react";
 
 export function SpeechInputDemo() {

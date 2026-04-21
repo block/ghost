@@ -12,7 +12,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Code2Icon, PlusIcon, TrashIcon } from "lucide-react";
 
 export function ContextMenuDemo() {

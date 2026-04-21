@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@ghost/ui";
+import { Button } from "ghost-ui";
 import * as React from "react";
 import { toast } from "sonner";
 

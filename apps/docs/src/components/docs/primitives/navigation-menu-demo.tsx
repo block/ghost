@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react";
 import * as React from "react";
 import { Link } from "react-router";

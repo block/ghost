@@ -1,4 +1,4 @@
-import { cn } from "@ghost/ui";
+import { cn } from "ghost-ui";
 import type { ReactNode } from "react";
 
 type Variant = "info" | "warning" | "wip";

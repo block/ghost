@@ -19,7 +19,7 @@ import {
   VoiceSelectorPreview,
   VoiceSelectorSeparator,
   VoiceSelectorTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { useState } from "react";
 
 const voices = [

@@ -14,7 +14,7 @@ import {
   InlineCitationCarouselPrev,
   InlineCitationSource,
   InlineCitationText,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const sources = [
   "https://en.wikipedia.org/wiki/Large_language_model",

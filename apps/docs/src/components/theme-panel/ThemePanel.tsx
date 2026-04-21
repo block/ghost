@@ -7,7 +7,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { XIcon } from "lucide-react";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 import { ColorControls } from "./ColorControls";

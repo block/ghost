@@ -1,6 +1,6 @@
 "use client";
 
-import { Suggestion, Suggestions } from "@ghost/ui";
+import { Suggestion, Suggestions } from "ghost-ui";
 
 export function SuggestionDemo() {
   return (

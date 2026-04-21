@@ -8,7 +8,7 @@ import {
   CodeBlockLanguageSelectorItem,
   CodeBlockLanguageSelectorTrigger,
   CodeBlockLanguageSelectorValue,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { useState } from "react";
 
 const snippets: Record<

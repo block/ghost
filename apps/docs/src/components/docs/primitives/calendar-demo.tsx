@@ -1,7 +1,7 @@
 "use client";
 
-import { Calendar } from "@ghost/ui";
 import { addDays } from "date-fns";
+import { Calendar } from "ghost-ui";
 import * as React from "react";
 import { type DateRange } from "react-day-picker";
 

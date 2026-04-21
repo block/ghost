@@ -7,7 +7,7 @@ import {
   AttachmentPreview,
   AttachmentRemove,
   Attachments,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const mockAttachments = [
   {

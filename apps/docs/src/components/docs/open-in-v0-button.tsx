@@ -1,4 +1,4 @@
-import { Button, cn } from "@ghost/ui";
+import { Button, cn } from "ghost-ui";
 
 export function OpenInV0Button({
   name,

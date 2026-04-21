@@ -1,6 +1,6 @@
 "use client";
 
-import { useScrollReveal } from "@ghost/ui";
+import { useScrollReveal } from "ghost-ui";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
 import { TypographyDemos } from "@/components/docs/foundations/typography";
 import { SectionWrapper } from "@/components/docs/wrappers";

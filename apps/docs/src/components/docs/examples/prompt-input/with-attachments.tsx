@@ -5,7 +5,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export default function PromptInputWithAttachments() {
   return (

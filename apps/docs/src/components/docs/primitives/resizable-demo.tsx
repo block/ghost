@@ -1,8 +1,4 @@
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@ghost/ui";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "ghost-ui";
 
 export function ResizableDemo() {
   return (

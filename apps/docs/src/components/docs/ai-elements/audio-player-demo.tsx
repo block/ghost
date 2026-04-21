@@ -12,7 +12,7 @@ import {
   AudioPlayerTimeDisplay,
   AudioPlayerTimeRange,
   AudioPlayerVolumeRange,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function AudioPlayerDemo() {
   return (

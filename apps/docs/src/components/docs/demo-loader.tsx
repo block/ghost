@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@ghost/ui";
+import { Skeleton } from "ghost-ui";
 import { lazy, Suspense, useMemo } from "react";
 
 const exampleModules = import.meta.glob<{ default: React.ComponentType }>(

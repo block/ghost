@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeToggle } from "@ghost/ui";
+import { ThemeToggle } from "ghost-ui";
 import { ThemePanel } from "@/components/theme-panel/ThemePanel";
 import { ThemePanelTrigger } from "@/components/theme-panel/ThemePanelTrigger";
 import { ThemePanelProvider } from "@/contexts/ThemePanelContext";

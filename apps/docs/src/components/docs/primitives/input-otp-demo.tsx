@@ -6,7 +6,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
   Label,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import * as React from "react";
 

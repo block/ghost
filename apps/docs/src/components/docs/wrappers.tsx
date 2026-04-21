@@ -1,4 +1,4 @@
-import { cn } from "@ghost/ui";
+import { cn } from "ghost-ui";
 import { ComponentProps } from "react";
 
 interface SectionWrapperProps extends ComponentProps<"div"> {

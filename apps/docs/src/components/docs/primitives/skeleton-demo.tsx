@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Skeleton } from "@ghost/ui";
+import { Card, CardContent, CardHeader, Skeleton } from "ghost-ui";
 
 export function SkeletonDemo() {
   return (

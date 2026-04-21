@@ -12,7 +12,7 @@ import {
   CardTitle,
   Input,
   Label,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { BathIcon, BedIcon, LandPlotIcon } from "lucide-react";
 export function CardDemo() {
   return (

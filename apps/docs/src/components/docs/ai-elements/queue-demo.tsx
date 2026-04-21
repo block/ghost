@@ -11,7 +11,7 @@ import {
   QueueSectionContent,
   QueueSectionLabel,
   QueueSectionTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { CheckCircleIcon, ListTodoIcon } from "lucide-react";
 
 export function QueueDemo() {

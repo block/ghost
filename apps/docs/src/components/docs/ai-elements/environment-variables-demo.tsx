@@ -12,7 +12,7 @@ import {
   EnvironmentVariablesTitle,
   EnvironmentVariablesToggle,
   EnvironmentVariableValue,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function EnvironmentVariablesDemo() {
   return (

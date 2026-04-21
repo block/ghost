@@ -1,6 +1,6 @@
 "use client";
 
-import { Shimmer } from "@ghost/ui";
+import { Shimmer } from "ghost-ui";
 
 export function ShimmerDemo() {
   return (

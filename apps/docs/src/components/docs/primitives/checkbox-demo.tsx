@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkbox, Label } from "@ghost/ui";
+import { Checkbox, Label } from "ghost-ui";
 
 export function CheckboxDemo() {
   return (

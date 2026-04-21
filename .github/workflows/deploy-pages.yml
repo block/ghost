@@ -32,19 +32,19 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Build @ghost/core library
-        run: pnpm --filter @ghost/core build
+      - name: Build ghost-drift library
+        run: pnpm --filter ghost-drift build
 
-      - name: Build @ghost/ui library
-        run: pnpm --filter @ghost/ui build:lib
+      - name: Build ghost-ui library
+        run: pnpm --filter ghost-ui build:lib
 
       - name: Build shadcn registry
-        run: pnpm --filter @ghost/ui build:registry
+        run: pnpm --filter ghost-ui build:registry
 
       - name: Build docs site (base=/ghost/)
         env:
           DEPLOY_BASE: /ghost/
-        run: pnpm --filter @ghost/docs build
+        run: pnpm --filter ghost-docs build
 
       - name: SPA fallback
         run: cp apps/docs/dist/index.html apps/docs/dist/404.html

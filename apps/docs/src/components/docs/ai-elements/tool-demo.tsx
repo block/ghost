@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Tool,
-  ToolContent,
-  ToolHeader,
-  ToolInput,
-  ToolOutput,
-} from "@ghost/ui";
+import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "ghost-ui";
 
 export function ToolDemo() {
   return (

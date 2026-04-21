@@ -1,5 +1,6 @@
 "use client";
 
+import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
 import {
   Button,
   Canvas,
@@ -8,8 +9,7 @@ import {
   NodeHeader,
   NodeTitle,
   Toolbar,
-} from "@ghost/ui";
-import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
+} from "ghost-ui";
 import { CopyIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useMemo } from "react";
 

@@ -6,7 +6,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@ghost/ui";
+} from "ghost-ui";
 import * as React from "react";
 
 export function CarouselDemo() {

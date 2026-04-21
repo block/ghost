@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const SHEET_SIDES = ["top", "right", "bottom", "left"] as const;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
 import {
   Canvas,
   Controls,
@@ -8,8 +9,7 @@ import {
   NodeDescription,
   NodeHeader,
   NodeTitle,
-} from "@ghost/ui";
-import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
+} from "ghost-ui";
 import { useMemo } from "react";
 
 const InputNode = () => (

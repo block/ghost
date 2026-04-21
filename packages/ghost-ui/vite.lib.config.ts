@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 /**
- * Library build for @ghost/ui. Separate from the SPA build (vite.config.ts)
+ * Library build for ghost-ui. Separate from the SPA build (vite.config.ts)
  * while we keep the shadcn registry build attached to the same package.
  *
  * - Entry: src/index.ts

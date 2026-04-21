@@ -13,7 +13,7 @@ import {
   ModelSelectorLogoGroup,
   ModelSelectorName,
   ModelSelectorTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function ModelSelectorDemo() {
   return (

@@ -9,7 +9,7 @@ import {
   PlanHeader,
   PlanTitle,
   PlanTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { CheckCircleIcon, CircleIcon } from "lucide-react";
 
 export function PlanDemo() {

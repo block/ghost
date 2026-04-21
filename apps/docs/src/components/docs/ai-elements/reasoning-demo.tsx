@@ -1,6 +1,6 @@
 "use client";
 
-import { Reasoning, ReasoningContent, ReasoningTrigger } from "@ghost/ui";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "ghost-ui";
 
 export function ReasoningDemo() {
   return (

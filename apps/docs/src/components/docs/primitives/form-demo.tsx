@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 import {
   Button,
   Calendar,
@@ -30,9 +32,7 @@ import {
   SelectValue,
   Switch,
   Textarea,
-} from "@ghost/ui";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
+} from "ghost-ui";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

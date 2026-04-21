@@ -1,5 +1,6 @@
 "use client";
 
+import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
 import {
   Canvas,
   Node,
@@ -7,8 +8,7 @@ import {
   NodeHeader,
   NodeTitle,
   Panel,
-} from "@ghost/ui";
-import { type NodeTypes, ReactFlowProvider } from "@xyflow/react";
+} from "ghost-ui";
 import { useMemo } from "react";
 
 const PlaceholderNode = () => (

@@ -7,7 +7,7 @@ import {
   CodeBlockFilename,
   CodeBlockHeader,
   CodeBlockTitle,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const typescriptCode = `interface User {
   id: string;

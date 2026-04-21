@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, Tooltip, TooltipContent, TooltipTrigger } from "@ghost/ui";
+import { cn, Tooltip, TooltipContent, TooltipTrigger } from "ghost-ui";
 import { ComponentProps } from "react";
 import { useShowTooltips } from "@/store/preferences-store";
 

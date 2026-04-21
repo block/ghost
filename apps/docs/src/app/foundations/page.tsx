@@ -1,6 +1,6 @@
 "use client";
 
-import { useStaggerReveal } from "@ghost/ui";
+import { useStaggerReveal } from "ghost-ui";
 import { type ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";

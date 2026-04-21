@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@ghost/ui";
+import { Progress } from "ghost-ui";
 import * as React from "react";
 
 export function ProgressDemo() {

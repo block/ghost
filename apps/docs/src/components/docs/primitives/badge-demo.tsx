@@ -1,4 +1,4 @@
-import { Badge } from "@ghost/ui";
+import { Badge } from "ghost-ui";
 import { AlertCircleIcon, ArrowRightIcon, CheckIcon } from "lucide-react";
 
 export function BadgeDemo() {

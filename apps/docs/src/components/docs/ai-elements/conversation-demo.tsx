@@ -4,7 +4,7 @@ import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { MessageSquareIcon } from "lucide-react";
 
 export function ConversationDemo() {

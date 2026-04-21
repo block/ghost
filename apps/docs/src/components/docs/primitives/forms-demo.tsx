@@ -20,7 +20,7 @@ import {
   SelectValue,
   Textarea,
   useTheme,
-} from "@ghost/ui";
+} from "ghost-ui";
 import * as React from "react";
 
 const plans = [

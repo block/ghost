@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@ghost/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "ghost-ui";
 
 export function AvatarDemo() {
   return (

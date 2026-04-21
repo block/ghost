@@ -1,4 +1,4 @@
-import { Label, Textarea } from "@ghost/ui";
+import { Label, Textarea } from "ghost-ui";
 
 export function TextareaDemo() {
   return (

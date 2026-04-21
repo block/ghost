@@ -13,7 +13,7 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { HelpCircleIcon, SettingsIcon, Trash2Icon } from "lucide-react";
 
 export function MenubarDemo() {

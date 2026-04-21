@@ -10,7 +10,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Line, LineChart } from "recharts";
 
 const data = [

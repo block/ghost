@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, PRESETS } from "@ghost/ui";
+import { cn, PRESETS } from "ghost-ui";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 
 export function PresetSelector() {

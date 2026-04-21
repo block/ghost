@@ -1,4 +1,4 @@
-import { Input } from "@ghost/ui";
+import { Input } from "ghost-ui";
 
 export function InputDemo() {
   return (

@@ -1,4 +1,4 @@
-import { Separator } from "@ghost/ui";
+import { Separator } from "ghost-ui";
 
 export function SeparatorDemo() {
   return (

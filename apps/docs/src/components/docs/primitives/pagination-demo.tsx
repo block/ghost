@@ -6,7 +6,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function PaginationDemo() {
   return (

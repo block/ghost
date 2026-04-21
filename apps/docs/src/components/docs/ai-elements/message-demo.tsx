@@ -6,7 +6,7 @@ import {
   MessageActions,
   MessageContent,
   MessageResponse,
-} from "@ghost/ui";
+} from "ghost-ui";
 import {
   CopyIcon,
   RefreshCwIcon,

@@ -43,23 +43,23 @@ test-watch:
 
 # Run docs dev server (design language + drift docs + component catalogue)
 dev:
-    pnpm -F @ghost/docs dev
+    pnpm -F ghost-docs dev
 
 # Build docs site (static export)
 build-ui:
-    pnpm -F @ghost/docs build
+    pnpm -F ghost-docs build
 
-# Build @ghost/ui library (dist-lib + types)
+# Build ghost-ui library (dist-lib + types)
 build-lib:
-    pnpm -F @ghost/ui build:lib
+    pnpm -F ghost-ui build:lib
 
 # Build ghost-ui shadcn registry
 build-registry:
-    pnpm -F @ghost/ui build:registry
+    pnpm -F ghost-ui build:registry
 
 # Build docs site for GitHub Pages (base=/ghost/)
 build-pages:
-    DEPLOY_BASE="/ghost/" pnpm -F @ghost/docs build
+    DEPLOY_BASE="/ghost/" pnpm -F ghost-docs build
     rm -rf dist
     mkdir -p dist
     cp -r apps/docs/dist/. dist/

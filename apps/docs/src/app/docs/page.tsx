@@ -1,6 +1,6 @@
 "use client";
 
-import { useStaggerReveal } from "@ghost/ui";
+import { useStaggerReveal } from "ghost-ui";
 import { BookOpen, Fingerprint, Rocket, Server } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";

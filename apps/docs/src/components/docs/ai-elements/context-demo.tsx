@@ -9,7 +9,7 @@ import {
   ContextInputUsage,
   ContextOutputUsage,
   ContextTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function ContextDemo() {
   return (

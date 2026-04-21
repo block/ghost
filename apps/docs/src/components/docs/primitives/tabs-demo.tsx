@@ -12,7 +12,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { AppWindowIcon, CodeIcon } from "lucide-react";
 
 export function TabsDemo() {

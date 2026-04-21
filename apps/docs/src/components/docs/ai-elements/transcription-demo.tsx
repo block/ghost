@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Transcription, TranscriptionSegment } from "@ghost/ui";
+import { Button, Transcription, TranscriptionSegment } from "ghost-ui";
 import { useState } from "react";
 
 const mockSegments = [

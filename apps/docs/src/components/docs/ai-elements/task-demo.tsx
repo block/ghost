@@ -6,7 +6,7 @@ import {
   TaskItem,
   TaskItemFile,
   TaskTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function TaskDemo() {
   return (
