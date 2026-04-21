@@ -5,14 +5,14 @@ Ghost sits as pipeline infrastructure for AI-driven UI generation. The
 post-generation gate; the *verify* recipe drives the loop over a prompt
 suite to expose where the fingerprint leaks.
 
-Only the grounding step is a deterministic CLI verb (`ghost emit
+Only the grounding step is a deterministic CLI verb (`ghost-drift emit
 context-bundle`). *Generate*, *review*, and *verify* are skill recipes
-the host agent follows — installed with `ghost emit skill`.
+the host agent follows — installed with `ghost-drift emit skill`.
 
 ## Pipeline shape
 
 ```
-fingerprint.md  ──►  [ghost emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
+fingerprint.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
                                               │
                                               ▼
                                        any generator
@@ -27,7 +27,7 @@ fingerprint.md  ──►  [ghost emit context-bundle]  ──►  SKILL.md / to
 
 ## Pieces
 
-### `ghost emit context-bundle [flags]` — the one CLI verb
+### `ghost-drift emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
 `SKILL.md` + `fingerprint.md` + `tokens.css` into `./ghost-context/`.
@@ -53,17 +53,17 @@ gives up.
 Not a replacement for Cursor / v0 / in-house tools. It exists so the loop
 is provable end-to-end, and so the `verify` recipe has something to drive.
 
-Source: `packages/ghost-cli/src/skill-bundle/references/generate.md`.
+Source: `packages/ghost-drift/src/skill-bundle/references/generate.md`.
 
 ### The `review` recipe
 
 The agent diffs generated output against the fingerprint. Flags hardcoded
 colors outside the palette, spacing off the scale, and type choices that
 violate decisions. For pre-baked, per-project review commands use
-`ghost emit review-command` (which writes a slash command at
+`ghost-drift emit review-command` (which writes a slash command at
 `.claude/commands/design-review.md`).
 
-Source: `packages/ghost-cli/src/skill-bundle/references/review.md`.
+Source: `packages/ghost-drift/src/skill-bundle/references/review.md`.
 
 ### The `verify` recipe
 
@@ -78,7 +78,7 @@ The killer demo: run `verify` on a mature fingerprint, intentionally drop
 a section (e.g. motion), re-run, watch drift rise in dimensions that lost
 grounding.
 
-Source: `packages/ghost-cli/src/skill-bundle/references/verify.md`.
+Source: `packages/ghost-drift/src/skill-bundle/references/verify.md`.
 
 ## The standard prompt suite
 
@@ -104,13 +104,13 @@ over-specified. The `verify` recipe is the schema-discipline mechanism.
 ## Integration patterns
 
 **CI**: a per-project `design-review` slash command emitted from
-`ghost emit review-command`, invoked by the host agent as a required
+`ghost-drift emit review-command`, invoked by the host agent as a required
 check on PRs that touch UI files.
 
-**In a generation pipeline**: `ghost emit context-bundle` writes the
+**In a generation pipeline**: `ghost-drift emit context-bundle` writes the
 skill bundle into the generator's context; the generator produces; the
 `review` recipe gates the output. Drift disposition belongs to the
-pipeline owner (block, annotate, require `ghost ack`).
+pipeline owner (block, annotate, require `ghost-drift ack`).
 
 **Fingerprint maintenance**: run `verify` periodically. When a dimension
 shows up consistently leaky, the fingerprint needs more Decisions for

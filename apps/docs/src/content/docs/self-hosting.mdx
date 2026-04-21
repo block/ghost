@@ -153,15 +153,15 @@ Profiling is a skill recipe your host agent runs; comparison and intent
 tracking are deterministic CLI verbs.
 
 1. Publish your `registry.json` at a stable URL.
-2. Install the skill bundle into your host agent with `ghost emit skill`,
+2. Install the skill bundle into your host agent with `ghost-drift emit skill`,
    then ask it to "profile this design language" pointed at your registry.
-   The recipe writes `fingerprint.md` and validates it with `ghost lint`.
+   The recipe writes `fingerprint.md` and validates it with `ghost-drift lint`.
 3. Have each consumer profile itself the same way, then run
-   `ghost compare parent.fingerprint.md consumer.fingerprint.md` to
+   `ghost-drift compare parent.fingerprint.md consumer.fingerprint.md` to
    measure drift. For PR-level gating, ask your host agent to "review
    this PR for design drift" — that's the `review` recipe, which you can
-   pre-bake into a per-project slash command with `ghost emit review-command`.
-4. Record intent with `ghost ack`, `ghost adopt`, or `ghost diverge` so
+   pre-bake into a per-project slash command with `ghost-drift emit review-command`.
+4. Record intent with `ghost-drift ack`, `ghost-drift adopt`, or `ghost-drift diverge` so
    drift with reasoning is preserved as signal, not noise.
 
 ---

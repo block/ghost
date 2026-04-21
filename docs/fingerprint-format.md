@@ -1,6 +1,6 @@
 # The `fingerprint.md` format
 
-A Ghost **fingerprint** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost compare`, `ghost lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
+A Ghost **fingerprint** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost-drift compare`, `ghost-drift lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
 
 The file has two parts, and each owns **different data**:
 
@@ -42,7 +42,7 @@ Schema 1 and 2 tried to mirror narrative fields across both sides and pick a win
 
 ## Frontmatter schema
 
-Validated by a zod schema (`packages/ghost-core/src/fingerprint/schema.ts`) and published as JSON Schema at `schemas/fingerprint.schema.json`. Below is the shape:
+Validated by a zod schema (`packages/ghost-drift/src/core/fingerprint/schema.ts`) and published as JSON Schema at `schemas/fingerprint.schema.json`. Below is the shape:
 
 ```yaml
 ---
@@ -169,9 +169,9 @@ Every gray carries a yellow-brown undertone. No cool blue-grays.
 All headlines use Serif 500. UI uses Sans 400–500.
 ```
 
-The parser matches `### dimension` blocks to frontmatter `decisions[].dimension` by slug. A body block without a frontmatter entry is appended to the decisions list with empty evidence (and flagged `orphan-prose` by `ghost lint`). A frontmatter entry without a body block carries empty rationale (flagged `missing-rationale`).
+The parser matches `### dimension` blocks to frontmatter `decisions[].dimension` by slug. A body block without a frontmatter entry is appended to the decisions list with empty evidence (and flagged `orphan-prose` by `ghost-drift lint`). A frontmatter entry without a body block carries empty rationale (flagged `missing-rationale`).
 
-**Evidence does not appear in the body.** It lives in the frontmatter under `decisions[].evidence`. Legacy `**Evidence:**` bullets from schema 2 files are flagged by `ghost lint` as `stray-evidence-in-body`.
+**Evidence does not appear in the body.** It lives in the frontmatter under `decisions[].evidence`. Legacy `**Evidence:**` bullets from schema 2 files are flagged by `ghost-drift lint` as `stray-evidence-in-body`.
 
 ### `# Fragments` section
 
@@ -261,7 +261,7 @@ decisions:
 Now we also forbid warm grays.
 ```
 
-**Merge rules** (see `packages/ghost-core/src/fingerprint/compose.ts`):
+**Merge rules** (see `packages/ghost-drift/src/core/fingerprint/compose.ts`):
 
 - **Scalars / arrays:** child replaces parent when present.
 - **`decisions[]`:** merged by `dimension` — child wins per-dim; parent-only decisions preserved.
@@ -323,15 +323,15 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 
 | Command | Does |
 |---|---|
-| `profile` recipe (host agent) | Write `fingerprint.md` (frontmatter machine-facts + body prose); the agent ends by calling `ghost lint` |
-| `ghost lint [path]` | Check schema validity, orphan prose, missing rationale, stray evidence in body, broken palette citations |
-| `ghost compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
-| `ghost compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
-| `ghost emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `fingerprint.md` + `tokens.css`) |
-| `ghost emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
-| `ghost emit skill` | Install the `ghost-drift` skill bundle into your host agent |
+| `profile` recipe (host agent) | Write `fingerprint.md` (frontmatter machine-facts + body prose); the agent ends by calling `ghost-drift lint` |
+| `ghost-drift lint [path]` | Check schema validity, orphan prose, missing rationale, stray evidence in body, broken palette citations |
+| `ghost-drift compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
+| `ghost-drift compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
+| `ghost-drift emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `fingerprint.md` + `tokens.css`) |
+| `ghost-drift emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
+| `ghost-drift emit skill` | Install the `ghost-drift` skill bundle into your host agent |
 
-Programmatic API (`@ghost/core`): `loadFingerprint`, `parseFingerprint`, `serializeFingerprint`, `lintFingerprint`, `compareFingerprints`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
+Programmatic API (`ghost-drift`): `loadFingerprint`, `parseFingerprint`, `serializeFingerprint`, `lintFingerprint`, `compareFingerprints`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
 
 ---
 
@@ -349,7 +349,7 @@ Programmatic API (`@ghost/core`): `loadFingerprint`, `parseFingerprint`, `serial
 `schemas/fingerprint.schema.json` is regenerated from the zod source:
 
 ```bash
-pnpm --filter @ghost/core build && node scripts/emit-fingerprint-schema.mjs
+pnpm --filter ghost-drift build && node scripts/emit-fingerprint-schema.mjs
 ```
 
 Point your editor at it via a comment or `yaml.schemas` config for autocomplete in the frontmatter.

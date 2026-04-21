@@ -19,7 +19,7 @@ directory.
 
 Workflows like _profile_, _review_, _verify_, _generate_, and _discover_
 are skill recipes your host agent runs — not CLI verbs. Install them once
-with `ghost emit skill`.
+with `ghost-drift emit skill`.
 
 The tables below are generated from the CLI source at build time. If a
 flag changes in `bin.ts`, the next `pnpm dump:cli-help` run regenerates
@@ -37,16 +37,16 @@ and `--temporal` add qualitative enrichment for N=2.
 
 ```bash
 # Pairwise (N=2)
-ghost compare parent.fingerprint.md consumer.fingerprint.md
+ghost-drift compare parent.fingerprint.md consumer.fingerprint.md
 
 # Qualitative diff of decisions + palette
-ghost compare a.fingerprint.md b.fingerprint.md --semantic
+ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
 
 # Velocity + trajectory
-ghost compare before.fingerprint.md after.fingerprint.md --temporal
+ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
 
 # Fleet (N≥3) — pairwise matrix + centroid
-ghost compare *.fingerprint.md
+ghost-drift compare *.fingerprint.md
 ```
 
 </DocSection>
@@ -61,10 +61,10 @@ it.
 
 ```bash
 # Default — reads ./fingerprint.md
-ghost lint
+ghost-drift lint
 
 # Specific file, JSON output
-ghost lint path/to/fingerprint.md --format json
+ghost-drift lint path/to/fingerprint.md --format json
 ```
 
 </DocSection>
@@ -83,10 +83,10 @@ local `fingerprint.md`.
 
 ```bash
 # Acknowledge all dimensions as aligned
-ghost ack --stance aligned --reason "Initial baseline"
+ghost-drift ack --stance aligned --reason "Initial baseline"
 
 # Mark typography as intentionally diverging
-ghost ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
+ghost-drift ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
 ```
 
 Shift the parent baseline to a new fingerprint. Use this when the parent
@@ -97,7 +97,7 @@ measurements.
 
 ```bash
 # Adopt a new parent fingerprint
-ghost adopt new-parent.fingerprint.md
+ghost-drift adopt new-parent.fingerprint.md
 ```
 
 Mark a specific dimension as intentionally diverging. Shorthand for
@@ -106,7 +106,7 @@ Mark a specific dimension as intentionally diverging. Shorthand for
 <CliHelp command="diverge" hideDescription />
 
 ```bash
-ghost diverge palette --reason "Dark-mode-first palette for this product"
+ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
 ```
 
 </DocSection>
@@ -123,19 +123,19 @@ this into your host agent).
 
 ```bash
 # Install the ghost-drift skill into your host agent
-ghost emit skill
+ghost-drift emit skill
 
 # Emit a per-project design-review slash command
-ghost emit review-command
+ghost-drift emit review-command
 
 # Emit a grounding bundle any generator can consume
-ghost emit context-bundle
+ghost-drift emit context-bundle
 
 # Single prompt.md for plain-text LLM context
-ghost emit context-bundle --prompt-only
+ghost-drift emit context-bundle --prompt-only
 
 # Custom output directory
-ghost emit context-bundle --out dist/context
+ghost-drift emit context-bundle --out dist/context
 ```
 
 </DocSection>
@@ -143,7 +143,7 @@ ghost emit context-bundle --out dist/context
 <DocSection title="Skill recipes (host agent)">
 
 These aren't CLI verbs — they're instruction files inside the skill bundle
-that your host agent follows. Install the bundle with `ghost emit skill`,
+that your host agent follows. Install the bundle with `ghost-drift emit skill`,
 then ask your agent in plain English:
 
 | Recipe     | Trigger                                                |
@@ -156,13 +156,13 @@ then ask your agent in plain English:
 | `compare`  | "why did these two fingerprints drift?"                 |
 
 Source for each recipe lives under
-`packages/ghost-cli/src/skill-bundle/references/`. The agent executes the
-steps with its normal tools and calls `ghost` for any deterministic work.
+`packages/ghost-drift/src/skill-bundle/references/`. The agent executes the
+steps with its normal tools and calls `ghost-drift` for any deterministic work.
 
 Each recipe also declares `handoffs` in its frontmatter — structured
 next-step suggestions that point at another skill (e.g. `profile` →
 `compare`) or a CLI invocation (e.g. `profile` →
-`ghost emit review-command`). Hosts that read the field can surface the
+`ghost-drift emit review-command`). Hosts that read the field can surface the
 next action inline; hosts that ignore unknown frontmatter see no change.
 
 ---

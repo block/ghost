@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Emit schemas/fingerprint.schema.json from the zod source of truth.
- * Run after changes to packages/ghost-core/src/fingerprint/schema.ts:
+ * Run after changes to packages/ghost-drift/src/core/fingerprint/schema.ts:
  *
- *   pnpm --filter @ghost/core build && node scripts/emit-fingerprint-schema.mjs
+ *   pnpm --filter ghost-drift build && node scripts/emit-fingerprint-schema.mjs
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
 const { toJsonSchema } = await import(
-  resolve(root, "packages/ghost-core/dist/fingerprint/schema.js")
+  resolve(root, "packages/ghost-drift/dist/core/fingerprint/schema.js")
 );
 
 const schema = toJsonSchema();

@@ -13,8 +13,7 @@
   },
   "files": [],
   "references": [
-    { "path": "packages/ghost-core" },
-    { "path": "packages/ghost-cli" },
+    { "path": "packages/ghost-drift" },
     { "path": "packages/ghost-mcp" }
   ]
 }

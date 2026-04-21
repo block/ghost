@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Walk the cac command registry from the built @ghost/cli package and
+// Walk the cac command registry from the built ghost-drift package and
 // emit a JSON manifest of commands, flags, and descriptions. The docs
 // site renders this manifest via <CliHelp command="…" />, so the CLI
 // is the single source of truth — adding a flag to bin.ts (via cli.ts)
@@ -10,10 +10,10 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
-const CLI_DIST = resolve(ROOT, "packages/ghost-cli/dist/cli.js");
+const CLI_DIST = resolve(ROOT, "packages/ghost-drift/dist/cli.js");
 if (!existsSync(CLI_DIST)) {
   console.error(
-    `ghost-cli dist not built. Run \`pnpm --filter ghost-cli build\` first.`,
+    `ghost-drift dist not built. Run \`pnpm --filter ghost-drift build\` first.`,
   );
   process.exit(1);
 }

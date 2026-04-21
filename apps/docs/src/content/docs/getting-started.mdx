@@ -25,13 +25,13 @@ your agent.
 Add the core library and CLI to your project:
 
 ```bash
-pnpm add -D @ghost/core @ghost/cli
+pnpm add -D ghost-drift
 ```
 
-Or install globally to use `ghost` from anywhere:
+Or install globally to use `ghost-drift` from anywhere:
 
 ```bash
-pnpm add -g @ghost/cli
+pnpm add -g ghost-drift
 ```
 
 No API key is required for any CLI verb. If your host agent uses Anthropic
@@ -44,16 +44,16 @@ embeddings, `GITHUB_TOKEN` for parent fetching).
 
 <DocSection title="Install the Skill Bundle">
 
-`ghost emit skill` writes the `ghost-drift` skill bundle into your host
+`ghost-drift emit skill` writes the `ghost-drift` skill bundle into your host
 agent's skill directory. Defaults to `.claude/skills/ghost-drift/`; use
 `--out` to target another location.
 
 ```bash
 # Install into Claude Code (default)
-ghost emit skill
+ghost-drift emit skill
 
 # Or into a custom path for another agent
-ghost emit skill --out ~/.my-agent/skills/ghost-drift
+ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
 ```
 
 The bundle contains a top-level `SKILL.md` entry point plus recipes under
@@ -61,9 +61,9 @@ The bundle contains a top-level `SKILL.md` entry point plus recipes under
 `discover.md`, `compare.md`) plus a schema reference (`schema.md`). Each
 recipe declares `handoffs` in its frontmatter so hosts can surface the
 next step inline — e.g. after `profile`, a prompt to `compare` against a
-parent, or to run `ghost emit review-command`. Once installed, ask your
+parent, or to run `ghost-drift emit review-command`. Once installed, ask your
 agent to "profile this design language" and it'll follow the recipe,
-calling `ghost` for any deterministic step.
+calling `ghost-drift` for any deterministic step.
 
 </DocSection>
 
@@ -79,25 +79,21 @@ Profile this design language into a fingerprint.md
 The `profile` recipe walks the agent through finding design sources
 (tailwind config, theme CSS, token files, component primitives), resolving
 variable chains end-to-end, and writing the fingerprint. The final step
-is always `ghost lint` — which the CLI runs for you, deterministically.
+is always `ghost-drift lint` — which the CLI runs for you, deterministically.
 
 A **fingerprint** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
 roles), and the body is prose organized into Character, Signature, and
 Decisions. Humans can read it. LLMs can consume it. Deterministic tools
-diff it.
-
-Here's a real fingerprint parsed and validated in your browser, right from
-this page (proof the CLI and the docs agree on the format):
-
-<FingerprintSample name="ghost-ui" />
+diff it. See [`packages/ghost-ui/fingerprint.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/fingerprint.md)
+in this repo for a full real-world example.
 
 ```bash
 # Validate the result (zero-config — reads ./fingerprint.md)
-ghost lint
+ghost-drift lint
 
 # Or validate a specific file
-ghost lint path/to/fingerprint.md --format json
+ghost-drift lint path/to/fingerprint.md --format json
 ```
 
 </DocSection>
@@ -109,16 +105,16 @@ per-dimension deltas, and (optionally) qualitative or temporal enrichment:
 
 ```bash
 # Pairwise (N=2) — distance + per-dimension delta
-ghost compare parent.fingerprint.md consumer.fingerprint.md
+ghost-drift compare parent.fingerprint.md consumer.fingerprint.md
 
 # Qualitative diff of decisions + palette
-ghost compare a.fingerprint.md b.fingerprint.md --semantic
+ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
 
 # Velocity + trajectory (reads .ghost/history.jsonl)
-ghost compare before.fingerprint.md after.fingerprint.md --temporal
+ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
 
 # Fleet (N≥3) — pairwise matrix + centroid
-ghost compare *.fingerprint.md
+ghost-drift compare *.fingerprint.md
 ```
 
 `compare` weights palette, spacing, typography, surfaces, and embedded
@@ -147,7 +143,7 @@ from the fingerprint itself:
 
 ```bash
 # Writes .claude/commands/design-review.md
-ghost emit review-command
+ghost-drift emit review-command
 ```
 
 </DocSection>
@@ -159,13 +155,13 @@ your stance toward a parent fingerprint in `.ghost-sync.json`:
 
 ```bash
 # Record an overall stance (reads ghost.config.ts for the parent)
-ghost ack --stance aligned --reason "Initial baseline"
+ghost-drift ack --stance aligned --reason "Initial baseline"
 
 # Shift the parent baseline
-ghost adopt new-parent.fingerprint.md
+ghost-drift adopt new-parent.fingerprint.md
 
 # Mark a dimension as intentionally different
-ghost diverge typography --reason "Editorial product uses a different type scale"
+ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
 `ack` and `diverge` need a parent declared in `ghost.config.ts`. `adopt`
@@ -178,7 +174,7 @@ takes the parent as its argument.
 Ghost doubles as pipeline infrastructure for AI-generated UI. The
 fingerprint grounds the generator; the `review` recipe gates the output.
 
-1. `ghost emit context-bundle` — emit a grounding bundle from a fingerprint
+1. `ghost-drift emit context-bundle` — emit a grounding bundle from a fingerprint
    (SKILL.md + tokens.css + optional prompt.md) that any generator can
    consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
@@ -189,13 +185,13 @@ fingerprint grounds the generator; the `review` recipe gates the output.
 
 ```bash
 # Emit a grounding bundle — default output: ./ghost-context/
-ghost emit context-bundle
+ghost-drift emit context-bundle
 
 # Single prompt.md for plain-text LLM context
-ghost emit context-bundle --prompt-only
+ghost-drift emit context-bundle --prompt-only
 
 # Custom output directory
-ghost emit context-bundle --out dist/context
+ghost-drift emit context-bundle --out dist/context
 ```
 
 </DocSection>
@@ -206,7 +202,7 @@ ghost emit context-bundle --out dist/context
 zero-config.
 
 ```ts
-import { defineConfig } from "@ghost/core";
+import { defineConfig } from "ghost-drift";
 
 export default defineConfig({
   parent: { type: "github", value: "shadcn-ui/ui" },
