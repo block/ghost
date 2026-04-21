@@ -33,15 +33,20 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-
-      # Intentionally no `cache: pnpm` — GitHub's actions cache is shared
-      # across branches/PRs, so in a publishing workflow a poisoned cache
-      # entry could be baked into the released tarball. Install fresh each
-      # run; zizmor flags this (rule: cache-poisoning).
+      # Intentionally no caching (no `cache:` on setup-node, no pnpm/action-setup
+      # which maintains its own cache store). GitHub's actions/cache is shared
+      # across branches and PRs, so in a publishing workflow a poisoned cache
+      # entry could be baked into the released tarball. We install cold each
+      # run; zizmor's cache-poisoning rule is satisfied and the extra ~30s is
+      # invisible on a release cadence.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
+
+      # Corepack ships with Node and reads `packageManager` from the root
+      # package.json to install the exact pnpm version the repo pins —
+      # no registry action, no implicit cache.
+      - run: corepack enable
 
       - run: pnpm install --frozen-lockfile
 
@@ -51,21 +56,29 @@ jobs:
       - name: Pack
         run: pnpm --filter ghost-drift pack
 
+      # Resolve the release tag. Inputs from workflow_dispatch are attacker-
+      # controlled (anyone with Actions write can trigger). Pass them in via
+      # `env:` and reference as shell variables so they can't be interpolated
+      # as shell syntax — that's what the semgrep shell-injection rule wants.
       - name: Resolve tag
         id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            TAG="${GITHUB_REF_NAME}"
+          if [ "$EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
           else
-            TAG="ghost-drift@${{ inputs.version }}"
+            TAG="ghost-drift@$INPUT_VERSION"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          gh release create "${{ steps.tag.outputs.tag }}" \
-            --title "${{ steps.tag.outputs.tag }}" \
+          gh release create "$TAG" \
+            --title "$TAG" \
             --generate-notes \
             packages/ghost-drift/ghost-drift-*.tgz
