@@ -47,8 +47,14 @@ jobs:
       - name: Build
         run: pnpm --filter ghost-drift build
 
+      # `pnpm --filter <pkg> pack` writes the tarball to the workspace root,
+      # not the package dir, in pnpm 10. Force it into a known staging dir so
+      # the release step can glob a single location deterministically.
       - name: Pack
-        run: pnpm --filter ghost-drift pack
+        run: |
+          mkdir -p dist-tarball
+          pnpm --filter ghost-drift pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
+          ls -la dist-tarball
 
       # Resolve the release tag. Inputs from workflow_dispatch are attacker-
       # controlled (anyone with Actions write can trigger). Pass them in via
@@ -75,4 +81,4 @@ jobs:
           gh release create "$TAG" \
             --title "$TAG" \
             --generate-notes \
-            packages/ghost-drift/ghost-drift-*.tgz
+            dist-tarball/ghost-drift-*.tgz
