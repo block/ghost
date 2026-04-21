@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle, Button } from "@ghost/ui";
+import { Alert, AlertDescription, AlertTitle, Button } from "ghost-ui";
 import {
   AlertCircleIcon,
   BookmarkCheckIcon,

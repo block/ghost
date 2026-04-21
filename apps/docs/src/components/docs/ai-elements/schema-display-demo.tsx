@@ -1,6 +1,6 @@
 "use client";
 
-import { SchemaDisplay } from "@ghost/ui";
+import { SchemaDisplay } from "ghost-ui";
 
 export function SchemaDisplayDemo() {
   return (

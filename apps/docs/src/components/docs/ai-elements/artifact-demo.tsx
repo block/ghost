@@ -9,7 +9,7 @@ import {
   ArtifactDescription,
   ArtifactHeader,
   ArtifactTitle,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { CopyIcon, DownloadIcon, ShareIcon } from "lucide-react";
 
 export function ArtifactDemo() {

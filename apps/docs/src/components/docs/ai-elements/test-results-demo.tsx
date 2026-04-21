@@ -14,7 +14,7 @@ import {
   TestSuite,
   TestSuiteContent,
   TestSuiteName,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function TestResultsDemo() {
   return (

@@ -10,7 +10,7 @@ import {
   DialogTrigger,
   Input,
   Label,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function DialogDemo() {
   return (

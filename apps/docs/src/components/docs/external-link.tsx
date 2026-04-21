@@ -1,4 +1,4 @@
-import { cn } from "@ghost/ui";
+import { cn } from "ghost-ui";
 import { ArrowUpRight } from "lucide-react";
 import { ComponentProps } from "react";
 

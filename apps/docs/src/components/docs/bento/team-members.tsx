@@ -19,7 +19,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { ChevronDown } from "lucide-react";
 
 export function CardsTeamMembers() {

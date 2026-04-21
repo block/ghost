@@ -1,6 +1,6 @@
 "use client";
 
-import { Source, Sources, SourcesContent, SourcesTrigger } from "@ghost/ui";
+import { Source, Sources, SourcesContent, SourcesTrigger } from "ghost-ui";
 
 export function SourcesDemo() {
   return (

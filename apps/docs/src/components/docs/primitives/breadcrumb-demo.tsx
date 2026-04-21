@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function BreadcrumbDemo() {
   return (

@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function CardsShare() {
   return (

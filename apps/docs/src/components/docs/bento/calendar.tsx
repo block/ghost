@@ -1,7 +1,7 @@
 "use client";
 
-import { Calendar, Card, CardContent } from "@ghost/ui";
 import { addDays } from "date-fns";
+import { Calendar, Card, CardContent } from "ghost-ui";
 
 const start = new Date(2023, 5, 5);
 

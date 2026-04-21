@@ -5,7 +5,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 

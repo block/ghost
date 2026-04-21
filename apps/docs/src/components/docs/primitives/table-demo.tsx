@@ -7,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const invoices = [
   {

@@ -11,7 +11,7 @@ import {
   StackTraceExpandButton,
   StackTraceFrames,
   StackTraceHeader,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const typeErrorTrace = `TypeError: Cannot read properties of undefined (reading 'map')
     at UserList (/src/components/UserList.tsx:24:18)

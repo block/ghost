@@ -6,7 +6,7 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { CalendarIcon } from "lucide-react";
 
 export function HoverCardDemo() {

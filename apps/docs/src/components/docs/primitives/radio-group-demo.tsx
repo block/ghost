@@ -1,4 +1,4 @@
-import { Label, RadioGroup, RadioGroupItem } from "@ghost/ui";
+import { Label, RadioGroup, RadioGroupItem } from "ghost-ui";
 
 const plans = [
   {

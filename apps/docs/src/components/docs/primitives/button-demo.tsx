@@ -1,4 +1,4 @@
-import { Button } from "@ghost/ui";
+import { Button } from "ghost-ui";
 import { ArrowRightIcon, Loader2Icon, SendIcon } from "lucide-react";
 
 export function ButtonDemo() {

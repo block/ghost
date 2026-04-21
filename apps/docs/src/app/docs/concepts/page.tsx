@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@ghost/ui";
+import { cn } from "ghost-ui";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
@@ -397,7 +397,7 @@ const REVIEW_SCOPES: {
   {
     id: "project",
     name: "Project",
-    what: "The agent profiles a whole target, then ghost compare returns per-dimension deltas against a parent. CI-friendly via --format json.",
+    what: "The agent profiles a whole target, then ghost-drift compare returns per-dimension deltas against a parent. CI-friendly via --format json.",
     catches:
       "Cumulative drift across an entire system — per-dimension deltas and a distance you can fail builds on.",
     visual: (
@@ -774,15 +774,15 @@ export default function ConceptsPage() {
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           The agent reaches for deterministic primitives as it needs them:{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost compare
+            ghost-drift compare
           </code>{" "}
           for distance,{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost lint
+            ghost-drift lint
           </code>{" "}
           for validation. For a per-project, pre-baked review command use{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost emit review-command
+            ghost-drift emit review-command
           </code>
           .
         </p>
@@ -801,21 +801,21 @@ export default function ConceptsPage() {
           <StanceBubble
             symbol="="
             label="Aligned"
-            speaker="ghost ack --stance aligned"
+            speaker="ghost-drift ack --stance aligned"
             message="We're tracking the parent. If this drifted, it's a bug — fix it."
             align="left"
           />
           <StanceBubble
             symbol="*"
             label="Accepted"
-            speaker="ghost ack --stance accepted"
+            speaker="ghost-drift ack --stance accepted"
             message="We know this is different. We've reviewed it. It's a known trade-off, not an oversight."
             align="right"
           />
           <StanceBubble
             symbol="~"
             label="Diverging"
-            speaker="ghost diverge"
+            speaker="ghost-drift diverge"
             message="This is ours now. We own it. Stop measuring it against the parent."
             align="left"
           />
@@ -872,7 +872,7 @@ export default function ConceptsPage() {
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Run{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost compare
+            ghost-drift compare
           </code>{" "}
           with three or more fingerprints to see the pairwise matrix, centroid,
           and similarity clusters in one pass.
@@ -892,7 +892,7 @@ export default function ConceptsPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              step: "ghost emit context-bundle",
+              step: "ghost-drift emit context-bundle",
               kind: "CLI",
               name: "Ground",
               desc: "Write SKILL.md + tokens.css + prompt.md from fingerprint.md — whatever the generator consumes.",

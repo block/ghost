@@ -7,7 +7,7 @@ import {
   WebPreviewNavigation,
   WebPreviewNavigationButton,
   WebPreviewUrl,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { ArrowLeftIcon, ArrowRightIcon, RefreshCwIcon } from "lucide-react";
 
 export function WebPreviewDemo() {

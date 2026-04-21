@@ -5,7 +5,7 @@ import {
   Message,
   MessageContent,
   MessageResponse,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const messages = [
   { id: "1", role: "user" as const, text: "What is TypeScript?" },

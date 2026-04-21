@@ -1,6 +1,6 @@
 "use client";
 
-import { Label, Slider } from "@ghost/ui";
+import { Label, Slider } from "ghost-ui";
 import * as React from "react";
 
 export function SliderDemo() {

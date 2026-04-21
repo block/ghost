@@ -12,7 +12,7 @@ import {
   OpenInT3,
   OpenInTrigger,
   OpenInv0,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function OpenInChatDemo() {
   return (

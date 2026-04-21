@@ -6,7 +6,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@ghost/ui";
+} from "ghost-ui";
 import {
   ChartBarIcon,
   ChartLineIcon,

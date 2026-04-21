@@ -15,7 +15,7 @@ import {
   SandboxTabsBar,
   SandboxTabsList,
   SandboxTabsTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 const codeSnippet = `import { useState } from "react";
 

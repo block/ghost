@@ -5,7 +5,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function PopoverDemo() {
   return (

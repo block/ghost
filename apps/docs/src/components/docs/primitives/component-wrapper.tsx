@@ -8,7 +8,7 @@ import {
   cn,
   getComponentName,
   useCopyToClipboard,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Check, Clipboard, Expand, Globe, Hash, Terminal } from "lucide-react";
 import * as React from "react";
 import { ComponentErrorBoundary } from "@/components/docs/error-boundary";

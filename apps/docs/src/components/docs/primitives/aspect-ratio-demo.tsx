@@ -1,4 +1,4 @@
-import { AspectRatio } from "@ghost/ui";
+import { AspectRatio } from "ghost-ui";
 
 export function AspectRatioDemo() {
   return (

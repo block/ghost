@@ -1,6 +1,6 @@
 "use client";
 
-import { FileTree, FileTreeFile, FileTreeFolder } from "@ghost/ui";
+import { FileTree, FileTreeFile, FileTreeFolder } from "ghost-ui";
 
 export function FileTreeDemo() {
   return (

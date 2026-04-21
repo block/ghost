@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@ghost/ui";
+import { ThemeProvider } from "ghost-ui";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import ComponentPage from "@/app/components/[name]/page";
 import ComponentsIndex from "@/app/components/page";

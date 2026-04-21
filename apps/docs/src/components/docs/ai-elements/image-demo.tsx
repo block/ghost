@@ -1,6 +1,6 @@
 "use client";
 
-import { Image } from "@ghost/ui";
+import { Image } from "ghost-ui";
 
 // A tiny 1x1 transparent PNG placeholder
 const PLACEHOLDER_BASE64 =

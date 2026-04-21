@@ -29,7 +29,7 @@ const docs: Record<string, ComponentDoc> = {
   MessageResponse,
   MessageActions,
   MessageAction,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Message from="assistant">
   <MessageContent>
@@ -82,7 +82,7 @@ const docs: Record<string, ComponentDoc> = {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Conversation>
   <ConversationContent>
@@ -122,7 +122,7 @@ const docs: Record<string, ComponentDoc> = {
   PromptInput,
   PromptInputTextarea,
   PromptInputActions,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <PromptInput onSubmit={(msg) => console.log(msg)}>
   <PromptInputTextarea placeholder="Ask anything..." />
@@ -172,7 +172,7 @@ const docs: Record<string, ComponentDoc> = {
   Reasoning,
   ReasoningTrigger,
   ReasoningContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Reasoning isStreaming={false} duration={12}>
   <ReasoningTrigger />
@@ -214,7 +214,7 @@ const docs: Record<string, ComponentDoc> = {
   ChainOfThoughtHeader,
   ChainOfThoughtContent,
   ChainOfThoughtStep,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <ChainOfThought>
   <ChainOfThoughtHeader>Reasoning steps</ChainOfThoughtHeader>
@@ -252,7 +252,7 @@ const docs: Record<string, ComponentDoc> = {
   CodeBlockHeader,
   CodeBlockActions,
   CodeBlockCopyButton,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <CodeBlock code="console.log('hello')" language="typescript">
   <CodeBlockHeader>
@@ -299,7 +299,7 @@ const docs: Record<string, ComponentDoc> = {
   AgentHeader,
   AgentContent,
   AgentInstructions,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Agent>
   <AgentHeader name="Research Agent" model="gpt-4o" />
@@ -326,7 +326,7 @@ const docs: Record<string, ComponentDoc> = {
   TerminalHeader,
   TerminalTitle,
   TerminalContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Terminal output="$ npm install\\n\\nup to date in 0.5s" />`,
     props: [
@@ -364,7 +364,7 @@ const docs: Record<string, ComponentDoc> = {
   FileTree,
   FileTreeFolder,
   FileTreeFile,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <FileTree defaultExpanded={new Set(["src"])}>
   <FileTreeFolder path="src" name="src">
@@ -405,7 +405,7 @@ const docs: Record<string, ComponentDoc> = {
   ArtifactTitle,
   ArtifactContent,
   ArtifactClose,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Artifact>
   <ArtifactHeader>
@@ -433,7 +433,7 @@ const docs: Record<string, ComponentDoc> = {
   ContextTrigger,
   ContextContent,
   ContextContentHeader,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Context usedTokens={4000} maxTokens={8000}>
   <ContextTrigger />
@@ -476,7 +476,7 @@ const docs: Record<string, ComponentDoc> = {
   PlanTitle,
   PlanDescription,
   PlanContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Plan defaultOpen>
   <PlanHeader>
@@ -510,7 +510,7 @@ const docs: Record<string, ComponentDoc> = {
   button: {
     description:
       "A versatile button with multiple visual variants, sizes, and an icon-only appearance mode.",
-    usage: `import { Button } from "@ghost/ui";
+    usage: `import { Button } from "ghost-ui";
 
 <Button variant="default" size="default">Click me</Button>`,
     props: [
@@ -553,7 +553,7 @@ const docs: Record<string, ComponentDoc> = {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Card>
   <CardHeader>
@@ -583,7 +583,7 @@ const docs: Record<string, ComponentDoc> = {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 <Dialog>
   <DialogTrigger asChild>
@@ -614,7 +614,7 @@ const docs: Record<string, ComponentDoc> = {
   input: {
     description:
       "A styled text input with focus ring, validation states, and file input support.",
-    usage: `import { Input } from "@ghost/ui";
+    usage: `import { Input } from "ghost-ui";
 
 <Input type="text" placeholder="Enter text..." />`,
     props: [
@@ -636,7 +636,7 @@ const docs: Record<string, ComponentDoc> = {
   tabs: {
     description:
       "A tabbed interface for switching between panels of related content.",
-    usage: `import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ghost/ui";
+    usage: `import { Tabs, TabsList, TabsTrigger, TabsContent } from "ghost-ui";
 
 <Tabs defaultValue="tab1">
   <TabsList>

@@ -1,4 +1,4 @@
-import { Label, Switch } from "@ghost/ui";
+import { Label, Switch } from "ghost-ui";
 
 export function SwitchDemo() {
   return (

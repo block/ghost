@@ -16,7 +16,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import {
   CheckIcon,
   ChevronDownIcon,

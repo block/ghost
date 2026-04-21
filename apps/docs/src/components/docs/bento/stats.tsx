@@ -7,7 +7,7 @@ import {
   CardTitle,
   ChartConfig,
   ChartContainer,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { useState } from "react";
 import { Bar, BarChart, Line, LineChart, Tooltip } from "recharts";
 

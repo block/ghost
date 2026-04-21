@@ -1,11 +1,11 @@
 "use client";
 
-import { Canvas, Edge, Node, NodeHeader, NodeTitle } from "@ghost/ui";
 import {
   type EdgeTypes,
   type NodeTypes,
   ReactFlowProvider,
 } from "@xyflow/react";
+import { Canvas, Edge, Node, NodeHeader, NodeTitle } from "ghost-ui";
 import { useMemo } from "react";
 
 const SimpleNode = ({ data }: { data: { label: string } }) => (

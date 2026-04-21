@@ -1,4 +1,4 @@
-import { ToggleGroup, ToggleGroupItem } from "@ghost/ui";
+import { ToggleGroup, ToggleGroupItem } from "ghost-ui";
 import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 
 export function ToggleGroupDemo() {

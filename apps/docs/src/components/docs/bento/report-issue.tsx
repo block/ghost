@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-} from "@ghost/ui";
+} from "ghost-ui";
 import * as React from "react";
 
 export function CardsReportIssue() {

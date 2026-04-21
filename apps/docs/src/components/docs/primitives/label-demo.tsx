@@ -1,4 +1,4 @@
-import { Checkbox, Input, Label, Textarea } from "@ghost/ui";
+import { Checkbox, Input, Label, Textarea } from "ghost-ui";
 
 export function LabelDemo() {
   return (

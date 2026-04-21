@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactFlowProvider } from "@xyflow/react";
 import {
   Badge,
   Button,
@@ -9,8 +10,7 @@ import {
   NodeFooter,
   NodeHeader,
   NodeTitle,
-} from "@ghost/ui";
-import { ReactFlowProvider } from "@xyflow/react";
+} from "ghost-ui";
 
 export function NodeDemo() {
   return (

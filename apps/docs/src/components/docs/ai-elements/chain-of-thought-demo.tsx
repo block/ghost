@@ -7,7 +7,7 @@ import {
   ChainOfThoughtSearchResult,
   ChainOfThoughtSearchResults,
   ChainOfThoughtStep,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { DatabaseIcon, FileTextIcon, SearchIcon } from "lucide-react";
 
 export function ChainOfThoughtDemo() {

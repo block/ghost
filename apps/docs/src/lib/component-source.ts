@@ -1,4 +1,4 @@
-import registryData from "@ghost/ui/registry.json";
+import registryData from "ghost-ui/registry.json";
 
 // ── Types ──
 

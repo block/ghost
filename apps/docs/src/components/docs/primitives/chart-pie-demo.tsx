@@ -9,7 +9,7 @@ import {
   CardTitle,
   ChartConfig,
   ChartContainer,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { TrendingUp } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 

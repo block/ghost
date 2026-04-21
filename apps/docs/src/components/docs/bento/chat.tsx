@@ -27,7 +27,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Check, Plus, Send } from "lucide-react";
 import * as React from "react";
 

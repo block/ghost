@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkpoint, CheckpointIcon, CheckpointTrigger } from "@ghost/ui";
+import { Checkpoint, CheckpointIcon, CheckpointTrigger } from "ghost-ui";
 
 export function CheckpointDemo() {
   return (

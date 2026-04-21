@@ -8,7 +8,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Minus, Plus } from "lucide-react";
 import * as React from "react";
 

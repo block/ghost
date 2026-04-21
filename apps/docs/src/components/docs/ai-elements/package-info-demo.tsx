@@ -6,7 +6,7 @@ import {
   PackageInfoDependencies,
   PackageInfoDependency,
   PackageInfoDescription,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function PackageInfoDemo() {
   return (

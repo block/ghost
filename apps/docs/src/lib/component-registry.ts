@@ -1,4 +1,4 @@
-import registryData from "@ghost/ui/registry.json";
+import registryData from "ghost-ui/registry.json";
 
 // ── Category metadata ──
 // Display order and names for the functional categories in registry.json.

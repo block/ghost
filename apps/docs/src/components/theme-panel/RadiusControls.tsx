@@ -1,6 +1,6 @@
 "use client";
 
-import { Slider } from "@ghost/ui";
+import { Slider } from "ghost-ui";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 
 export function RadiusControls() {

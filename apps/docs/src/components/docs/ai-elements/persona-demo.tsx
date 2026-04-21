@@ -1,7 +1,7 @@
 "use client";
 
-import type { PersonaState } from "@ghost/ui";
-import { Button, Persona } from "@ghost/ui";
+import type { PersonaState } from "ghost-ui";
+import { Button, Persona } from "ghost-ui";
 import { useState } from "react";
 
 const variants = [

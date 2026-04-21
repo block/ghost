@@ -12,7 +12,7 @@ import {
   scaleShadows,
   type ThemePreset,
   useTheme as useNextTheme,
-} from "@ghost/ui";
+} from "ghost-ui";
 import type React from "react";
 import {
   createContext,

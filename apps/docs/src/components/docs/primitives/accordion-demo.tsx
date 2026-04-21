@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function AccordionDemo() {
   return (

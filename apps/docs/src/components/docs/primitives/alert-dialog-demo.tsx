@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
   Button,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function AlertDialogDemo() {
   return (

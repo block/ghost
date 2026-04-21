@@ -17,7 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Icons } from "@/components/docs/icons";
 
 export function CardsPaymentMethod() {

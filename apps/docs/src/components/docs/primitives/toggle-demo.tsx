@@ -1,4 +1,4 @@
-import { Toggle } from "@ghost/ui";
+import { Toggle } from "ghost-ui";
 import {
   BoldIcon,
   BookmarkIcon,

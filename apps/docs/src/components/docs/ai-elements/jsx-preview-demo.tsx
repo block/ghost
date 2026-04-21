@@ -1,6 +1,6 @@
 "use client";
 
-import { JSXPreview, JSXPreviewContent, JSXPreviewError } from "@ghost/ui";
+import { JSXPreview, JSXPreviewContent, JSXPreviewError } from "ghost-ui";
 
 const validJsx = `<div style={{ padding: "1.5rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white", textAlign: "center" }}>
   <h2 style={{ margin: "0 0 0.5rem", fontSize: "1.25rem", fontWeight: 600 }}>Welcome Back</h2>

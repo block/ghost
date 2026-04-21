@@ -1,5 +1,6 @@
 "use client";
 
+import { addDays, format } from "date-fns";
 import {
   Button,
   Calendar,
@@ -7,8 +8,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@ghost/ui";
-import { addDays, format } from "date-fns";
+} from "ghost-ui";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import { DateRange } from "react-day-picker";

@@ -6,7 +6,7 @@ import {
   SnippetCopyButton,
   SnippetInput,
   SnippetText,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function SnippetDemo() {
   return (

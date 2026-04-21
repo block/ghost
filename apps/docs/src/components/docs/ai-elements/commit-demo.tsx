@@ -23,7 +23,7 @@ import {
   CommitMetadata,
   CommitSeparator,
   CommitTimestamp,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function CommitDemo() {
   return (

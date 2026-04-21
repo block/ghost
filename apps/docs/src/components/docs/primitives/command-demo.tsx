@@ -9,7 +9,7 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@ghost/ui";
+} from "ghost-ui";
 import {
   Calculator,
   Calendar,

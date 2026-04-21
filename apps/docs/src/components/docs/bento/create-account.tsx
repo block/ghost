@@ -10,7 +10,7 @@ import {
   CardTitle,
   Input,
   Label,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { Icons } from "@/components/docs/icons";
 
 export function CardsCreateAccount() {

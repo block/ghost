@@ -8,7 +8,7 @@ import {
   AgentOutput,
   AgentTool,
   AgentTools,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function AgentDemo() {
   return (

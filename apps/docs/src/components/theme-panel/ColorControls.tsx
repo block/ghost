@@ -5,7 +5,7 @@ import {
   DEFAULT_COLORS_LIGHT,
   getResolvedVariable,
   useTheme,
-} from "@ghost/ui";
+} from "ghost-ui";
 import { useEffect, useState } from "react";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 import { ColorSwatch } from "./ColorSwatch";

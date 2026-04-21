@@ -1,4 +1,4 @@
-import { ScrollArea, ScrollBar, Separator } from "@ghost/ui";
+import { ScrollArea, ScrollBar, Separator } from "ghost-ui";
 import * as React from "react";
 export function ScrollAreaDemo() {
   return (

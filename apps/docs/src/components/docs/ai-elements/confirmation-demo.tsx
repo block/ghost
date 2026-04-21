@@ -8,7 +8,7 @@ import {
   ConfirmationRejected,
   ConfirmationRequest,
   ConfirmationTitle,
-} from "@ghost/ui";
+} from "ghost-ui";
 
 export function ConfirmationDemo() {
   return (

@@ -20,7 +20,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@ghost/ui";
+} from "ghost-ui";
 import {
   BadgeCheckIcon,
   BellIcon,

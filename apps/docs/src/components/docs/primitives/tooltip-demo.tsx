@@ -1,4 +1,4 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "@ghost/ui";
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "ghost-ui";
 import { InfoIcon } from "lucide-react";
 
 export function TooltipDemo() {

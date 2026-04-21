@@ -1,6 +1,6 @@
 "use client";
 
-import { useIsMobile } from "@ghost/ui";
+import { useIsMobile } from "ghost-ui";
 import { lazy, Suspense } from "react";
 import { CardsChat } from "@/components/docs/bento/chat";
 import { CardsCookieSettings } from "@/components/docs/bento/cookie-settings";

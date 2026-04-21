@@ -8,7 +8,7 @@ import {
   CodeBlockHeader,
   cn,
   useCopyToClipboard,
-} from "@ghost/ui";
+} from "ghost-ui";
 import gsap from "gsap";
 import {
   Check as CheckIcon,

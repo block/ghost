@@ -12,7 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   useTheme,
-} from "@ghost/ui";
+} from "ghost-ui";
 import type { LucideIcon } from "lucide-react";
 import {
   Home,

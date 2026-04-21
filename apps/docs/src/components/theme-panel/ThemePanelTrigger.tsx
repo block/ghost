@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@ghost/ui";
+import { Button } from "ghost-ui";
 import { Palette } from "lucide-react";
 import { useThemePanel } from "@/contexts/ThemePanelContext";
 
