@@ -37,7 +37,7 @@ jobs:
       - run: pnpm --filter ghost-drift build
 
       - name: Create Release PR or publish
-        uses: changesets/action@e0538b8a655baa250543a7f1f2d045e66d4ca530 # v1.5.3
+        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
         with:
           publish: pnpm -r publish --access public --no-git-checks
           version: pnpm changeset version
