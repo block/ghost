@@ -1,5 +1,11 @@
 # ghost-drift
 
+## 0.1.1
+
+### Patch Changes
+
+- [#43](https://github.com/block/ghost/pull/43) [`a8d1726`](https://github.com/block/ghost/commit/a8d1726c2870cf74d347409e4e7fb6eb2958f454) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document the Node.js 18+ requirement in the package README so it's visible on the npm listing page without readers having to open the `engines` field in `package.json`.
+
 ## 0.1.0
 
 ### Minor Changes
