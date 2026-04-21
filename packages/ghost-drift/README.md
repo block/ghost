@@ -4,6 +4,10 @@
 
 `ghost-drift` captures a design language as a human-readable `fingerprint.md` (49-dim embedding + three-layer prose body) and gives any agent the primitives to detect drift against it. Judgement lives in whatever agent you already use; arithmetic lives here.
 
+## Requirements
+
+- Node.js **18+**
+
 ## Install
 
 ```bash
