@@ -1,0 +1,68 @@
+name: Publish tarball to GitHub Release
+
+# Temporary distribution channel while npm publish is blocked. Packs
+# ghost-drift and attaches the .tgz to a GitHub Release, so consumers can:
+#
+#   npm install https://github.com/block/ghost/releases/download/<tag>/<file>.tgz
+#
+# Triggered by pushing a tag of the form `ghost-drift@<version>` or by
+# manual workflow_dispatch.
+
+on:
+  push:
+    tags:
+      - "ghost-drift@*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (must match packages/ghost-drift/package.json)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tarball-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tarball:
+    name: Pack and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter ghost-drift build
+
+      - name: Pack
+        run: pnpm --filter ghost-drift pack
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="ghost-drift@${{ inputs.version }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            --title "${{ steps.tag.outputs.tag }}" \
+            --generate-notes \
+            packages/ghost-drift/ghost-drift-*.tgz
