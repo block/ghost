@@ -3,8 +3,6 @@ import { Link } from "react-router";
 import { Callout } from "@/components/docs/callout";
 import { CliHelp } from "@/components/docs/cli-help";
 import { DocSection } from "@/components/docs/docs-page-layout";
-import { FingerprintPreview } from "@/components/docs/fingerprint-preview";
-import { FingerprintSample } from "@/components/docs/fingerprint-sample";
 
 function InternalOrExternalLink({
   href,
@@ -41,6 +39,4 @@ export const mdxComponents: Record<string, any> = {
   Link,
   Callout,
   CliHelp,
-  FingerprintPreview,
-  FingerprintSample,
 };

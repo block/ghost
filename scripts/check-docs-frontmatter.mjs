@@ -1,13 +1,11 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { pathToFileURL } from "node:url";
 import matter from "gray-matter";
 import { z } from "zod";
 
 const ROOT = process.cwd();
 const DOCS_DIR = join(ROOT, "apps/docs/src/content/docs");
-const SAMPLES_DIR = join(ROOT, "apps/docs/src/content/fingerprint-samples");
 
 const Schema = z.object({
   title: z.string().min(1),
@@ -86,35 +84,10 @@ for (const { file, fm: _fm } of parsed) {
   }
 }
 
-if (existsSync(SAMPLES_DIR)) {
-  const coreDist = join(ROOT, "packages/ghost-core/dist/browser.js");
-  if (existsSync(coreDist)) {
-    const { lintFingerprint } = await import(pathToFileURL(coreDist).href);
-    const samples = readdirSync(SAMPLES_DIR).filter((n) => n.endsWith(".md"));
-    for (const name of samples) {
-      const path = join(SAMPLES_DIR, name);
-      const raw = readFileSync(path, "utf8");
-      const report = lintFingerprint(raw);
-      const errs = report.issues.filter((i) => i.severity === "error");
-      if (errs.length) {
-        errors.push(
-          `${relative(ROOT, path)}:\n  ${errs
-            .map((i) => `${i.code}: ${i.message}`)
-            .join("\n  ")}`,
-        );
-      }
-    }
-  }
-}
-
 if (errors.length) {
   console.error("check-docs-frontmatter failed:\n");
   for (const e of errors) console.error(`${e}\n`);
   process.exit(1);
 }
 
-console.log(
-  `check-docs-frontmatter: ${parsed.length} docs OK${
-    existsSync(SAMPLES_DIR) ? " + samples linted" : ""
-  }`,
-);
+console.log(`check-docs-frontmatter: ${parsed.length} docs OK`);
