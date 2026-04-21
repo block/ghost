@@ -1,6 +1,6 @@
 {
   "name": "ghost-drift",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Deterministic design drift detection — CLI + engine for fingerprinting, comparing, and tracking design languages across a fleet of projects",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
