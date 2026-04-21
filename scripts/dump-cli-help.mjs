@@ -43,9 +43,13 @@ const globalOptions = cli.globalCommand.options.map((o) => ({
   default: o.config?.default ?? null,
 }));
 
+// Intentionally omits `version`: the CLI reads its version from
+// package.json at runtime, so baking it in here would make every
+// Changesets-driven version bump drift the committed manifest and
+// fail CI. Command/flag shape is what the docs render — that's the
+// only signal the drift check needs to guard.
 const manifest = {
   generatedAt: new Date().toISOString(),
-  version: cli.globalCommand.versionNumber ?? null,
   commands,
   globalOptions,
 };
