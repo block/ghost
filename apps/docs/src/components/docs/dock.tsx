@@ -14,28 +14,14 @@ import {
   useTheme,
 } from "ghost-ui";
 import type { LucideIcon } from "lucide-react";
-import {
-  Home,
-  Monitor,
-  Moon,
-  Palette,
-  Search,
-  Sun,
-  Wrench,
-} from "lucide-react";
+import { Home, Monitor, Moon, Search, Sun, Wrench } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import {
-  categories,
-  getAllComponents,
-  getComponentsByCategory,
-} from "@/lib/component-registry";
 
 const nav: { name: string; path: string; icon: LucideIcon }[] = [
   { name: "Home", path: "/", icon: Home },
   { name: "Tools", path: "/tools", icon: Wrench },
-  { name: "UI", path: "/ui", icon: Palette },
 ];
 
 export function Dock() {
@@ -171,12 +157,12 @@ export function Dock() {
       <CommandDialog
         open={searchOpen}
         onOpenChange={setSearchOpen}
-        title="Search components"
-        description="Search for a component by name"
+        title="Search"
+        description="Jump to a page"
       >
-        <CommandInput placeholder="Search components..." />
+        <CommandInput placeholder="Search..." />
         <CommandList>
-          <CommandEmpty>No components found.</CommandEmpty>
+          <CommandEmpty>No matches.</CommandEmpty>
 
           <CommandGroup heading="Pages">
             <CommandItem
@@ -187,24 +173,6 @@ export function Dock() {
             >
               <Home className="mr-2 size-4" />
               Home
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/ui/foundations/colors");
-                setSearchOpen(false);
-              }}
-            >
-              <Palette className="mr-2 size-4" />
-              Colors
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/ui/foundations/typography");
-                setSearchOpen(false);
-              }}
-            >
-              <Palette className="mr-2 size-4" />
-              Typography
             </CommandItem>
           </CommandGroup>
 
@@ -245,36 +213,7 @@ export function Dock() {
               <Wrench className="mr-2 size-4" />
               Core Concepts
             </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools/drift/self-hosting");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              Self-Hosting
-            </CommandItem>
           </CommandGroup>
-
-          {categories.map((cat) => {
-            const items = getComponentsByCategory(cat.slug);
-            if (items.length === 0) return null;
-            return (
-              <CommandGroup key={cat.slug} heading={cat.name}>
-                {items.map((item) => (
-                  <CommandItem
-                    key={item.slug}
-                    onSelect={() => {
-                      navigate(`/ui/components/${item.slug}`);
-                      setSearchOpen(false);
-                    }}
-                  >
-                    {item.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            );
-          })}
         </CommandList>
       </CommandDialog>
     </>

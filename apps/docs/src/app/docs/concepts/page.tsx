@@ -677,17 +677,17 @@ export default function ConceptsPage() {
         <div className="reveal mb-10 grid sm:grid-cols-3 gap-4">
           {[
             {
-              layer: "Layer 1",
+              layer: "Perspective 1",
               name: "Observation",
               desc: "A holistic read: personality, distinctive traits, closest reference systems.",
             },
             {
-              layer: "Layer 2",
+              layer: "Perspective 2",
               name: "Decisions",
               desc: "Abstract, implementation-agnostic choices — stated in words, not hex codes.",
             },
             {
-              layer: "Layer 3",
+              layer: "Perspective 3",
               name: "Tokens",
               desc: "Concrete values: palette, spacing, typography, surfaces.",
             },

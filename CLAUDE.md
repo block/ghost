@@ -102,7 +102,7 @@ Used by `resolveParent` (parent fingerprint resolution) and legacy library consu
 
 ## Fingerprint format
 
-The canonical fingerprint artifact is **`fingerprint.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-layer prose body (Character → Signature → Decisions → Values). See `docs/fingerprint-format.md` for the full spec; a condensed reference ships inside the skill bundle at `packages/ghost-drift/src/skill-bundle/references/schema.md`.
+The canonical fingerprint artifact is **`fingerprint.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-section prose body (Character → Signature → Decisions). See `docs/fingerprint-format.md` for the full spec; a condensed reference ships inside the skill bundle at `packages/ghost-drift/src/skill-bundle/references/schema.md`.
 
 ## Releasing & Changesets
 

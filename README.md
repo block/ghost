@@ -1,19 +1,19 @@
 # Ghost
 
-**Proactive design intelligence. Agents author, self-govern against a design quality bar, and remediate drift before it compounds.**
+**Brand fidelity infrastructure for an agent-authored world. Every generation gets a fingerprint the harness can read, enforce, and check.**
 
-More of the UI your users see is now authored by agents. That unlocks speed — and a new failure mode: design drifts silently. Each generation nudges away from your design language; each downstream consumer bends it a little further. Without a quality bar the agent can perceive, no one notices until coherence is already lost.
+AI is becoming the primary author of shipped code. Humans sit in fewer diffs; the harness (guardrails, reviewers, verifiers) catches drift before it lands. In that world, ensuring every generation reflects a brand's voice is paramount. Fonts and spacing are the easy half. The hard half is character: the posture a product takes, what it refuses to do. That's where generations drift first.
 
-Ghost closes that loop. It captures a design language as a **fingerprint** — a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions — and gives any agent the primitives to author against it, detect drift the moment it happens, and choose the right remediation: **acknowledge**, **adopt**, or **intentionally diverge**. Deterministic arithmetic lives in Ghost's CLI; the authoring, reviewing, and judgement live in whatever agent you already use.
+Ghost closes that loop. It captures a brand as a **fingerprint**: a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **adopt**, or **intentionally diverge**. Power moves to the consumer: each team owns its fork, its trajectory, and its stance. The parent watches the fleet's pulse. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLI; judgment lives in whatever agent you already use.
 
-Current scope is visual/UI design languages. The reference design language, Ghost UI, ships as a shadcn-compatible component registry. The format and the detection architecture are identity-agnostic; visual is the first instantiation.
+Current scope is visual/UI brand expression. The reference, Ghost UI, ships as a shadcn-compatible component registry. The format and the detection architecture are identity-agnostic; visual is the first instantiation.
 
-## BYOA — bring your own agent
+## BYOA: bring your own agent
 
 Ghost splits the work the way agents need it split: **judgement in the agent, arithmetic in the CLI**.
 
-- **The CLI** — a set of **deterministic primitives**. Six verbs. It never calls an LLM. It does vector distance, schema validation, and manifest writes. Same answer every time.
-- **A skill bundle** — [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, generate, discover). The host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the CLI for the arithmetic.
+- **The CLI**: a set of **deterministic primitives**. Six verbs. It never calls an LLM. It does vector distance, schema validation, and manifest writes. Same answer every time.
+- **A skill bundle**: [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, generate, discover). The host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the CLI for the arithmetic.
 
 No API key is required to use any CLI verb. Judgment work lives in whichever agent you already use; `ghost-drift emit skill` installs the recipes there.
 
@@ -21,12 +21,12 @@ No API key is required to use any CLI verb. Judgment work lives in whichever age
 
 Ghost gives agents four capabilities the design-at-scale problem actually needs:
 
-- **Author against a real quality bar** — `ghost-drift emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The fingerprint is the bar; the agent authors to it.
-- **Self-govern at author time** — the `review` and `verify` recipes run an agent's output against the fingerprint *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
-- **Detect drift at the right time** — PR-time (via `review`), generation-time (via `verify`), or fleet-time (via `compare` on N≥3 consumers). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
-- **Remediate with structured intent** — `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
-- **Human-readable, diff-friendly** — `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
-- **Reference design language (Ghost UI)** — a shadcn-compatible registry of atomic components, design tokens, and a live catalogue. The canonical baseline Ghost is built against and tested against.
+- **Author against a real quality bar**: `ghost-drift emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The fingerprint is the bar; the agent authors to it.
+- **Self-govern at author time**: the `review` and `verify` recipes run an agent's output against the fingerprint *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
+- **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or fleet-time (via `compare` on N≥3 consumers). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
+- **Remediate with structured intent**: `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
+- **Human-readable, diff-friendly**: `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
+- **Reference design language (Ghost UI)**: a shadcn-compatible registry of atomic components, design tokens, and a live catalogue. The canonical baseline Ghost is built against and tested against.
 
 ## Getting Started
 
@@ -53,7 +53,7 @@ Once the skill is installed, ask your agent to "profile this design language" or
 
 ### Quick start
 
-**1. Profile your system** — ask your host agent (Claude Code, Cursor, etc.) to write a `fingerprint.md`. It'll follow the `profile` recipe and validate with `ghost-drift lint` at the end.
+**1. Profile your system**: ask your host agent (Claude Code, Cursor, etc.) to write a `fingerprint.md`. It'll follow the `profile` recipe and validate with `ghost-drift lint` at the end.
 
 **2. Validate the result:**
 
@@ -65,7 +65,7 @@ ghost-drift lint path/to/fingerprint.md --format json
 **3. Compare fingerprints:**
 
 ```bash
-# Pairwise — per-dimension distance
+# Pairwise: per-dimension distance
 ghost-drift compare parent.fingerprint.md consumer.fingerprint.md
 
 # Add qualitative interpretation of decisions + palette
@@ -74,7 +74,7 @@ ghost-drift compare a.md b.md --semantic
 # Add velocity / trajectory (reads .ghost/history.jsonl)
 ghost-drift compare before.md after.md --temporal
 
-# Fleet (N≥3) — pairwise matrix + centroid
+# Fleet (N≥3): pairwise matrix + centroid
 ghost-drift compare *.fingerprint.md
 ```
 
@@ -114,9 +114,9 @@ Six deterministic primitives, grouped by the loop: **author** (`emit`), **detect
 | `ghost-drift diverge`  | Declare intentional divergence on a dimension with reasoning.                      |
 | `ghost-drift emit`     | Derive an artifact from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
 
-### Skill recipes — run by the host agent
+### Skill recipes: run by the host agent
 
-Install once with `ghost-drift emit skill`. Each recipe gives the agent a specific capability from the pitch — *author, self-govern, detect, remediate*:
+Install once with `ghost-drift emit skill`. Each recipe gives the agent a specific capability from the pitch (*author, self-govern, detect, remediate*):
 
 | Recipe     | Capability                         | Triggered by                                   | Source |
 | ---------- | ---------------------------------- | ---------------------------------------------- | ------ |
@@ -133,12 +133,12 @@ These are instructions, not code. The agent executes them using its normal tools
 
 `resolveTarget()` in `packages/ghost-drift/src/core/config.ts` accepts:
 
-- `github:owner/repo` — GitHub repository
-- `npm:package-name` — npm package
-- `figma:file-url` — Figma file
-- `./path` or `/absolute/path` — local directory
-- `https://…` — URL
-- `.` — current directory
+- `github:owner/repo`: GitHub repository
+- `npm:package-name`: npm package
+- `figma:file-url`: Figma file
+- `./path` or `/absolute/path`: local directory
+- `https://…`: URL
+- `.`: current directory
 
 Used by `resolveParent` and by skill recipes that crawl a target. The CLI verbs themselves operate on `fingerprint.md` paths.
 
@@ -173,8 +173,8 @@ export default defineConfig({
 
 ### Environment variables
 
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY` — optional, consumed by `computeSemanticEmbedding` when a host writes a fingerprint.md and wants the enriched 49-dim vector.
-- `GITHUB_TOKEN` — optional, used by `resolveParent` when fetching a parent fingerprint from GitHub (avoids rate limits).
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` when a host writes a fingerprint.md and wants the enriched 49-dim vector.
+- `GITHUB_TOKEN`: optional, used by `resolveParent` when fetching a parent fingerprint from GitHub (avoids rate limits).
 
 The CLI auto-loads `.env` and `.env.local` from the working directory.
 
@@ -182,12 +182,12 @@ The CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ### The fingerprint
 
-What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`fingerprint.md`** — a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
+What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`fingerprint.md`**: a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter** — 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
-- **`# Character`** — the opening atmosphere read: evocative, not technical. What an agent quotes to stay on-brand.
-- **`# Signature`** — 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
-- **`# Decisions`** — abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare --semantic` can match semantically.
+- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
+- **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
+- **`# Signature`**: 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
+- **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare --semantic` can match semantically.
 
 Generate one with the `profile` recipe. See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec. A condensed reference ships inside the skill bundle at `packages/ghost-drift/src/skill-bundle/references/schema.md`.
 
@@ -202,7 +202,7 @@ The 49-dim machine vector splits like this:
 
 ### Author + self-govern loop
 
-This is the literal loop the pitch describes: the agent authors UI, Ghost detects drift against the fingerprint, a human (or the agent itself) picks the remediation. The fingerprint grounds the generator; the `review` recipe surfaces drift in the output so a decision — *acknowledge, adopt, or diverge* — can be made at the right time.
+This is the literal loop the pitch describes: the agent authors UI, Ghost detects drift against the fingerprint, a human (or the agent itself) picks the remediation. The fingerprint grounds the generator; the `review` recipe surfaces drift in the output so a decision (*acknowledge, adopt, or diverge*) can be made at the right time.
 
 ```
 fingerprint.md ──► [ghost-drift emit context-bundle] ──► SKILL.md / tokens.css / prompt.md
@@ -218,32 +218,32 @@ fingerprint.md ──► [ghost-drift emit context-bundle] ──► SKILL.md / 
                                                          adopt / diverge)
 ```
 
-The `verify` recipe drives the loop across a prompt suite and classifies each dimension as _tight_, _leaky_, or _uncaptured_ — the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+The `verify` recipe drives the loop across a prompt suite and classifies each dimension as _tight_, _leaky_, or _uncaptured_: the mechanism that tells the fingerprint where it needs to say more. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Remediation
 
-Three responses, each with recorded reasoning and full lineage — so a year from now you know whether a divergence was meant or missed:
+Three responses, each with recorded reasoning and full lineage, so a year from now you know whether a divergence was meant or missed:
 
-- **`fingerprint.md`** — The canonical fingerprint artifact.
-- **`.ghost-sync.json`** — Per-dimension stances toward the parent: aligned, accepted, or diverging — each with recorded reasoning. Written by `ack` / `adopt` / `diverge`.
-- **`.ghost/history.jsonl`** — Append-only fingerprint history for temporal analysis. Read by `compare --temporal`.
+- **`fingerprint.md`**: The canonical fingerprint artifact.
+- **`.ghost-sync.json`**: Per-dimension stances toward the parent (aligned, accepted, or diverging), each with recorded reasoning. Written by `ack` / `adopt` / `diverge`.
+- **`.ghost/history.jsonl`**: Append-only fingerprint history for temporal analysis. Read by `compare --temporal`.
 
 ### Fleet observability
 
-Drift at scale — the signal the parent design language heals from. Run `ghost-drift compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters — which consumers are coherent, which are drifting, and where the gaps are.
+Drift at scale: the signal the parent design language heals from. Run `ghost-drift compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters: which consumers are coherent, which are drifting, and where the gaps are.
 
 ## Ghost UI
 
-Ghost UI (`ghost-ui`) is the project's reference design language — atomic, composable interface primitives published as a shadcn-compatible registry. It serves as both a living design language and the concrete baseline Ghost scans consumers against.
+Ghost UI (`ghost-ui`) is the project's reference design language: atomic, composable interface primitives published as a shadcn-compatible registry. It serves as both a living design language and the concrete baseline Ghost scans consumers against.
 
 ### What's included
 
-- **49 primitive components** — Foundational building blocks (accordion, button, card, dialog, form, table, tabs, …) built on Radix UI and styled with Tailwind CSS.
-- **48 AI-native elements** — Components for conversational and agentic interfaces: prompt input, message, code block, chain of thought, file tree, terminal, tool, and more.
-- **Design tokens** — A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support.
-- **Theme system** — Runtime theme switching with presets, a live theme panel, and CSS variable export.
-- **HK Grotesk typeface** — Self-hosted display font (300–900 weights) paired with system sans-serif for body text.
-- **Docs site** — Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase.
+- **49 primitive components**: Foundational building blocks (accordion, button, card, dialog, form, table, tabs, …) built on Radix UI and styled with Tailwind CSS.
+- **48 AI-native elements**: Components for conversational and agentic interfaces: prompt input, message, code block, chain of thought, file tree, terminal, tool, and more.
+- **Design tokens**: A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support.
+- **Theme system**: Runtime theme switching with presets, a live theme panel, and CSS variable export.
+- **HK Grotesk typeface**: Self-hosted display font (300–900 weights) paired with system sans-serif for body text.
+- **Docs site**: Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase.
 
 ### Registry
 
@@ -253,7 +253,7 @@ Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](
 npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
 ```
 
-Ghost itself can profile the registry to generate a fingerprint — the host agent runs the `profile` recipe against `./packages/ghost-ui/` — and check downstream consumers against it with the `review` recipe.
+Ghost itself can profile the registry to generate a fingerprint (the host agent runs the `profile` recipe against `./packages/ghost-ui/`) and check downstream consumers against it with the `review` recipe.
 
 ### Docs site development
 
@@ -285,7 +285,7 @@ node packages/ghost-mcp/dist/bin.js
 
 ```
 packages/
-  ghost-drift/         Published npm package — engine + CLI merged
+  ghost-drift/         Published npm package: engine + CLI merged
     src/
       bin.ts                  compare, lint (CLI entry)
       cli.ts                  cac command registry
@@ -297,7 +297,7 @@ packages/
         SKILL.md              Skill entry point
         references/           profile / review / verify / generate / discover / compare / schema
         assets/                fingerprint.template.md, other static assets
-      core/                   Engine — deterministic primitives
+      core/                   Engine: deterministic primitives
         index.ts              Library barrel (published via the `.` export)
         compare.ts            Embedding-based comparison (pairwise + fleet)
         config.ts             Config loading + target resolution
@@ -356,7 +356,7 @@ pnpm check
 just dev
 ```
 
-A `justfile` is included for common workflows — run `just` to see all available recipes.
+A `justfile` is included for common workflows: run `just` to see all available recipes.
 
 ## Project Resources
 

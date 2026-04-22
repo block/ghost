@@ -205,7 +205,10 @@ zero-config.
 import { defineConfig } from "ghost-drift";
 
 export default defineConfig({
-  parent: { type: "github", value: "shadcn-ui/ui" },
+  // Path to a local fingerprint.md, or a URL / npm package name.
+  // The profile recipe produces parent.fingerprint.md from any source;
+  // commit that file and point `parent` at it.
+  parent: { type: "path", value: "./parent.fingerprint.md" },
 
   targets: [{ type: "path", value: "./packages/my-ui" }],
 
