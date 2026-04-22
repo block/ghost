@@ -2,6 +2,11 @@ import { parse as parseYaml } from "yaml";
 import type { Fingerprint } from "../types.js";
 import type { BodyData } from "./body.js";
 import { parseFingerprint, splitRaw } from "./parser.js";
+import {
+  formatReferenceError,
+  isTokenReference,
+  resolveTokenReference,
+} from "./references.js";
 import { FrontmatterSchema } from "./schema.js";
 
 export type LintSeverity = "error" | "warning" | "info";
@@ -67,6 +72,7 @@ export function lintFingerprint(
   checkStrayEvidenceInBody(bodyText, rawIssues);
   checkEvidenceHexes(fingerprint, rawIssues);
   checkUnusedPalette(fingerprint, rawIssues);
+  checkRoleReferences(fingerprint, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -223,4 +229,32 @@ function collectPaletteHexes(fp: Fingerprint): Set<string> {
   for (const step of fp.palette?.neutrals?.steps ?? [])
     out.add(step.toLowerCase());
   return out;
+}
+
+/**
+ * Role palette fields may reference named palette slots via `{palette.dominant.<role>}`
+ * or `{palette.semantic.<role>}`. Flag references that don't resolve — the linter
+ * catches renames in the palette that left a role pointing at nothing.
+ */
+const ROLE_PALETTE_FIELDS = ["background", "foreground", "border"] as const;
+
+function checkRoleReferences(fp: Fingerprint, issues: LintIssue[]): void {
+  const roles = fp.roles ?? [];
+  roles.forEach((role, ri) => {
+    const palette = role.tokens?.palette;
+    if (!palette) return;
+    for (const field of ROLE_PALETTE_FIELDS) {
+      const value = palette[field];
+      if (!isTokenReference(value)) continue;
+      const result = resolveTokenReference(fp, value);
+      if (result.error) {
+        issues.push({
+          severity: "error",
+          rule: "broken-role-reference",
+          message: formatReferenceError(result.error),
+          path: `roles[${ri}].tokens.palette.${field}`,
+        });
+      }
+    }
+  });
 }

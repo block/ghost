@@ -208,6 +208,25 @@ Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a reci
 
 **Strictness.** The `tokens` sub-blocks are zod `.strict()` — unknown keys reject, so the schema stays disciplined as it grows. Add a field to the schema before emitting it.
 
+### Token references
+
+Role palette fields (`background`, `foreground`, `border`) may point at a named palette slot instead of inlining a raw hex. The syntax is `{<namespace>.<role>}`:
+
+```yaml
+roles:
+  - name: button
+    tokens:
+      palette:
+        background: '{palette.dominant.accent}'   # resolves to #c96442
+        foreground: '{palette.dominant.surface}'  # resolves to #f5f4ed
+        border:     '#e8e6dc'                     # raw is fine too
+    evidence: ["components/ui/button.tsx:18"]
+```
+
+**Supported namespaces:** `palette.dominant` and `palette.semantic` — the two palette blocks that already carry a `role`. Renames cascade (change the role value in one place, every role that references it updates too), and `ghost-drift lint` reports `broken-role-reference` for references that don't resolve.
+
+**What cannot be referenced.** `palette.neutrals.steps` is positional (no name). Typography, spacing, and surfaces are inventories, not named vocabularies — role tokens for those dimensions inline raw values. If a future profile recipe starts emitting a named layer on these blocks, the reference surface will grow; until then, referencing them is an unsupported-namespace error.
+
 ---
 
 ## Embedding fragment
@@ -341,6 +360,7 @@ Programmatic API (`ghost-drift`): `loadFingerprint`, `parseFingerprint`, `serial
 - **Implementation-specific tokens.** No framework names, no CSS-in-JS specifics, no component library assumptions. Decisions are abstract ("warm-only neutrals"), not concrete ("`neutral-50` in `tailwind.config.js`").
 - **Confidence theatre.** If the generator isn't sure, omit `confidence` or set `source: unknown`. Fabricated `1.0` is worse than missing.
 - **Schema migration.** Schema 1, 2, and 3 files are rejected outright. Regenerate by running the `profile` recipe in your host agent.
+- **Token references into typography / spacing / surfaces.** Those blocks are positional inventories (`sizeRamp`, `scale`, `borderRadii`) with no named slots to point at. Role tokens for those dimensions inline raw values; referencing them triggers `broken-role-reference`.
 
 ---
 

@@ -60,6 +60,9 @@ surfaces:
   borderUsage: moderate             # minimal | moderate | heavy
 
 # slot → token bindings (optional but strongly recommended)
+# Role palette fields may use `{palette.dominant.<role>}` or
+# `{palette.semantic.<role>}` references instead of raw hexes.
+# Other dimensions (typography, spacing, surfaces) inline raw values.
 roles:
   - name: h1
     tokens:
@@ -68,7 +71,9 @@ roles:
   - name: button
     tokens:
       surfaces: { borderRadius: 8 }
-      palette: { background: "#0066cc", foreground: "#ffffff" }
+      palette:
+        background: "{palette.dominant.accent}"
+        foreground: "{palette.dominant.surface}"
     evidence: ["src/components/button.tsx:12"]
 
 # extension bag (optional, opaque to comparisons)
