@@ -206,12 +206,12 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/drift/concepts");
+                navigate("/tools/drift/workflow");
                 setSearchOpen(false);
               }}
             >
               <Wrench className="mr-2 size-4" />
-              Core Concepts
+              Workflow
             </CommandItem>
           </CommandGroup>
         </CommandList>

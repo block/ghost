@@ -305,4 +305,4 @@ Ship no bundled typefaces. The system declares a system-ui sans stack, `Geist Mo
 
 # Fragments
 
-- [embedding](embedding.md) — 49-dim vector for compare/fleet/viz
+- [embedding](embedding.md) — 49-dim vector for compare/composite/viz

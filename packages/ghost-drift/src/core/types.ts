@@ -496,33 +496,33 @@ export interface TemporalComparison extends FingerprintComparison {
   trajectory: "converging" | "diverging" | "stable" | "oscillating";
 }
 
-// --- Fleet types ---
+// --- Composite types (N≥3 fingerprint comparison) ---
 
-export interface FleetMember {
+export interface CompositeMember {
   id: string;
   fingerprint: Fingerprint;
   parentRef?: Target;
   distanceToParent?: number;
 }
 
-export interface FleetPair {
+export interface CompositePair {
   a: string;
   b: string;
   distance: number;
   dimensions: Record<string, number>;
 }
 
-export interface FleetCluster {
+export interface CompositeCluster {
   memberIds: string[];
   centroid: number[];
 }
 
-export interface FleetComparison {
-  members: FleetMember[];
-  pairwise: FleetPair[];
+export interface CompositeComparison {
+  members: CompositeMember[];
+  pairwise: CompositePair[];
   centroid: number[];
   spread: number;
-  clusters?: FleetCluster[];
+  clusters?: CompositeCluster[];
 }
 
 // --- Drift report types ---

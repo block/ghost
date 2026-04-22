@@ -1,4 +1,4 @@
-import type { FleetComparison } from "../types.js";
+import type { CompositeComparison } from "../types.js";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -15,22 +15,26 @@ function c(code: string, text: string): string {
   return useColor ? `${code}${text}${RESET}` : text;
 }
 
-export function formatFleetComparison(fleet: FleetComparison): string {
+export function formatCompositeComparison(
+  composite: CompositeComparison,
+): string {
   const lines: string[] = [];
 
-  lines.push(c(BOLD, `Fleet Overview: ${fleet.members.length} projects`));
+  lines.push(
+    c(BOLD, `Composite Fingerprint: ${composite.members.length} members`),
+  );
   lines.push("");
 
   // Spread
-  const spreadPct = (fleet.spread * 100).toFixed(1);
+  const spreadPct = (composite.spread * 100).toFixed(1);
   const spreadColor =
-    fleet.spread < 0.1 ? GREEN : fleet.spread < 0.3 ? YELLOW : RED;
+    composite.spread < 0.1 ? GREEN : composite.spread < 0.3 ? YELLOW : RED;
   lines.push(`Spread: ${c(spreadColor, `${spreadPct}%`)}`);
   lines.push("");
 
   // Members
   lines.push(c(BOLD, "Members"));
-  for (const member of fleet.members) {
+  for (const member of composite.members) {
     const parentStr =
       member.distanceToParent != null
         ? ` (${(member.distanceToParent * 100).toFixed(1)}% from parent)`
@@ -41,7 +45,7 @@ export function formatFleetComparison(fleet: FleetComparison): string {
 
   // Pairwise distances (sorted by distance)
   lines.push(c(BOLD, "Pairwise Distances"));
-  for (const pair of fleet.pairwise) {
+  for (const pair of composite.pairwise) {
     const pct = (pair.distance * 100).toFixed(1);
     const color =
       pair.distance < 0.1 ? GREEN : pair.distance < 0.3 ? YELLOW : RED;
@@ -50,10 +54,10 @@ export function formatFleetComparison(fleet: FleetComparison): string {
   lines.push("");
 
   // Clusters
-  if (fleet.clusters && fleet.clusters.length > 1) {
+  if (composite.clusters && composite.clusters.length > 1) {
     lines.push(c(CYAN, "Clusters"));
-    for (let i = 0; i < fleet.clusters.length; i++) {
-      const cluster = fleet.clusters[i];
+    for (let i = 0; i < composite.clusters.length; i++) {
+      const cluster = composite.clusters[i];
       lines.push(
         `  ${c(BOLD, `Cluster ${i + 1}:`)} ${cluster.memberIds.join(", ")}`,
       );
@@ -64,17 +68,19 @@ export function formatFleetComparison(fleet: FleetComparison): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatFleetComparisonJSON(fleet: FleetComparison): string {
+export function formatCompositeComparisonJSON(
+  composite: CompositeComparison,
+): string {
   return JSON.stringify(
     {
-      memberCount: fleet.members.length,
-      members: fleet.members.map((m) => ({
+      memberCount: composite.members.length,
+      members: composite.members.map((m) => ({
         id: m.id,
         distanceToParent: m.distanceToParent,
       })),
-      pairwise: fleet.pairwise,
-      spread: fleet.spread,
-      clusters: fleet.clusters,
+      pairwise: composite.pairwise,
+      spread: composite.spread,
+      clusters: composite.clusters,
     },
     null,
     2,

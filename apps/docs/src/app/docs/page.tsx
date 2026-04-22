@@ -14,10 +14,10 @@ const sections: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Core Concepts",
-    href: "/tools/drift/concepts",
+    name: "Workflow",
+    href: "/tools/drift/workflow",
     description:
-      "Fingerprints, drift detection, evolution tracking, and fleet observability — the ideas behind Ghost.",
+      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
     icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
   },
   {

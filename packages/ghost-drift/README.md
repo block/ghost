@@ -37,7 +37,7 @@ Once npm publishing is unblocked this will move to the registry — swap the URL
 ```bash
 ghost-drift lint fingerprint.md                       # validate schema + partition
 ghost-drift compare a/fingerprint.md b/fingerprint.md # pairwise distance (N=2)
-ghost-drift compare ./*/fingerprint.md                # fleet comparison (N≥3)
+ghost-drift compare ./*/fingerprint.md                # composite, N≥3
 ghost-drift ack                                       # acknowledge drift against parent
 ghost-drift adopt path/to/new-parent.md               # adopt a new parent baseline
 ghost-drift diverge <dimension>                       # declare intentional divergence
@@ -77,7 +77,7 @@ The agent runs the recipes; the CLI runs the arithmetic. The CLI never calls an 
 
 ## Full story
 
-See the [project README](https://github.com/block/ghost#readme) for the philosophy, the fingerprint format spec, the fleet/parent-child topology, and the reference design language (Ghost UI).
+See the [project README](https://github.com/block/ghost#readme) for the philosophy, the fingerprint format spec, the parent/child/composite topology, and the reference design language (Ghost UI).
 
 ## License
 

@@ -1,6 +1,6 @@
 ---
 name: compare
-description: Interpret ghost-drift compare output — pairwise distance or fleet analysis.
+description: Interpret ghost-drift compare output — pairwise distance or composite (N≥3) analysis.
 handoffs:
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
@@ -29,13 +29,13 @@ Flags:
 - `--semantic` — add qualitative diff (which decisions changed, which colors appeared/disappeared)
 - `--temporal` — add drift velocity, trajectory, and ack bounds (reads `.ghost/history.jsonl`)
 
-### Fleet (N≥3)
+### Composite (N≥3)
 
     ghost-drift compare a.md b.md c.md d.md
 
-Output: pairwise distance matrix, centroid, spread, and cluster assignments.
+Output: pairwise distance matrix, centroid, spread, and cluster assignments. The centroid is the composite (org-scale) fingerprint: what the members average out to.
 
-Use for: comparing multiple downstream consumers of a parent design language (which are closest to parent, which have drifted most, do they cluster?).
+Use for: comparing multiple downstream consumers of a parent design language (which are closest to parent, which have drifted most, do they cluster?). Or viewing the whole org's design language at a glance.
 
 ### Interpreting output
 

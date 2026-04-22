@@ -1,29 +1,29 @@
 import { compareFingerprints } from "../embedding/compare.js";
 import { embeddingDistance } from "../embedding/embedding.js";
 import type {
-  FleetCluster,
-  FleetComparison,
-  FleetMember,
-  FleetPair,
+  CompositeCluster,
+  CompositeComparison,
+  CompositeMember,
+  CompositePair,
 } from "../types.js";
 
-export interface FleetClusterOptions {
+export interface CompositeClusterOptions {
   cluster?: boolean | { maxK?: number };
 }
 
 /**
- * Compare N fingerprints for an ecosystem-level view.
+ * Compare N fingerprints as a composite (org-scale) view.
  * Computes pairwise distances, centroid, spread, and optional clusters.
  */
-export function compareFleet(
-  members: FleetMember[],
-  options?: FleetClusterOptions,
-): FleetComparison {
+export function compareComposite(
+  members: CompositeMember[],
+  options?: CompositeClusterOptions,
+): CompositeComparison {
   const pairwise = computePairwise(members);
   const centroid = computeCentroid(members);
   const spread = computeSpread(members, centroid);
 
-  const result: FleetComparison = {
+  const result: CompositeComparison = {
     members,
     pairwise,
     centroid,
@@ -43,10 +43,10 @@ export function compareFleet(
 }
 
 /**
- * Compute pairwise distances between all fleet members.
+ * Compute pairwise distances between all composite members.
  */
-function computePairwise(members: FleetMember[]): FleetPair[] {
-  const pairs: FleetPair[] = [];
+function computePairwise(members: CompositeMember[]): CompositePair[] {
+  const pairs: CompositePair[] = [];
 
   for (let i = 0; i < members.length; i++) {
     for (let j = i + 1; j < members.length; j++) {
@@ -72,9 +72,9 @@ function computePairwise(members: FleetMember[]): FleetPair[] {
 }
 
 /**
- * Compute the centroid (average embedding) of all fleet members.
+ * Compute the centroid (average embedding) of all composite members.
  */
-function computeCentroid(members: FleetMember[]): number[] {
+function computeCentroid(members: CompositeMember[]): number[] {
   if (members.length === 0) return [];
 
   const dim = members[0].fingerprint.embedding.length;
@@ -96,7 +96,7 @@ function computeCentroid(members: FleetMember[]): number[] {
 /**
  * Compute the spread (average embedding distance from centroid).
  */
-function computeSpread(members: FleetMember[], centroid: number[]): number {
+function computeSpread(members: CompositeMember[], centroid: number[]): number {
   if (members.length === 0) return 0;
 
   let totalDistance = 0;
@@ -224,7 +224,10 @@ function runKMeans(
  * Adaptive clustering using elbow method to select optimal K.
  * Falls back to K=2 if no clear elbow is found.
  */
-function clusterMembers(members: FleetMember[], maxK?: number): FleetCluster[] {
+function clusterMembers(
+  members: CompositeMember[],
+  maxK?: number,
+): CompositeCluster[] {
   if (members.length < 3) {
     return [
       {
@@ -279,7 +282,7 @@ function clusterMembers(members: FleetMember[], maxK?: number): FleetCluster[] {
   const chosen = results.find((r) => r.k === bestK) ?? results[1] ?? results[0];
 
   // Build clusters from assignments
-  const clusterMap = new Map<number, FleetMember[]>();
+  const clusterMap = new Map<number, CompositeMember[]>();
   for (let i = 0; i < members.length; i++) {
     const cluster = chosen.assignments[i];
     if (!clusterMap.has(cluster)) clusterMap.set(cluster, []);

@@ -4,7 +4,7 @@
 
 AI is becoming the primary author of shipped code. Humans sit in fewer diffs; the harness (guardrails, reviewers, verifiers) catches drift before it lands. In that world, ensuring every generation reflects a brand's voice is paramount. Fonts and spacing are the easy half. The hard half is character: the posture a product takes, what it refuses to do. That's where generations drift first.
 
-Ghost closes that loop. It captures a brand as a **fingerprint**: a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **adopt**, or **intentionally diverge**. Power moves to the consumer: each team owns its fork, its trajectory, and its stance. The parent watches the fleet's pulse. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLI; judgment lives in whatever agent you already use.
+Ghost closes that loop. It captures a brand as a **fingerprint**: a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **adopt**, or **intentionally diverge**. Power moves to the consumer: each team owns its fork, its trajectory, and its stance. The org's fingerprint drifts in the open. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLI; judgment lives in whatever agent you already use.
 
 Current scope is visual/UI brand expression. The reference, Ghost UI, ships as a shadcn-compatible component registry. The format and the detection architecture are identity-agnostic; visual is the first instantiation.
 
@@ -23,7 +23,7 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 
 - **Author against a real quality bar**: `ghost-drift emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The fingerprint is the bar; the agent authors to it.
 - **Self-govern at author time**: the `review` and `verify` recipes run an agent's output against the fingerprint *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
-- **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or fleet-time (via `compare` on N≥3 consumers). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
+- **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `compare` on N≥3 consumers — the composite view). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
 - **Human-readable, diff-friendly**: `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
 - **Reference design language (Ghost UI)**: a shadcn-compatible registry of atomic components, design tokens, and a live catalogue. The canonical baseline Ghost is built against and tested against.
@@ -74,7 +74,7 @@ ghost-drift compare a.md b.md --semantic
 # Add velocity / trajectory (reads .ghost/history.jsonl)
 ghost-drift compare before.md after.md --temporal
 
-# Fleet (N≥3): pairwise matrix + centroid
+# Composite (N≥3): pairwise matrix, centroid, clusters — the org fingerprint
 ghost-drift compare *.fingerprint.md
 ```
 
@@ -107,7 +107,7 @@ Six deterministic primitives, grouped by the loop: **author** (`emit`), **detect
 
 | Command          | Description                                                                         |
 | ---------------- | ----------------------------------------------------------------------------------- |
-| `ghost-drift compare`  | Pairwise distance (N=2) or fleet analysis (N≥3) over fingerprint embeddings. `--semantic` and `--temporal` add qualitative enrichment for N=2. |
+| `ghost-drift compare`  | Pairwise distance (N=2) or composite fingerprint (N≥3: pairwise matrix, centroid, clusters) over embeddings. `--semantic` and `--temporal` add qualitative enrichment for N=2. |
 | `ghost-drift lint`     | Validate `fingerprint.md` schema + body/frontmatter coherence. Use before declaring a fingerprint valid. |
 | `ghost-drift ack`      | Record a stance toward the parent (aligned / accepted / diverging) in `.ghost-sync.json`. |
 | `ghost-drift adopt`    | Shift parent baseline to a new fingerprint.                                        |
@@ -124,7 +124,7 @@ Install once with `ghost-drift emit skill`. Each recipe gives the agent a specif
 | `generate` | Author *against* the quality bar   | "generate a component matching our design"      | `packages/ghost-drift/src/skill-bundle/references/generate.md` |
 | `review`   | Self-govern at PR time             | "review this PR for drift"                      | `packages/ghost-drift/src/skill-bundle/references/review.md`   |
 | `verify`   | Self-govern at generation time     | "verify generated UI against the fingerprint"   | `packages/ghost-drift/src/skill-bundle/references/verify.md`   |
-| `compare`  | Detect drift across the fleet      | "why did these two fingerprints drift?"         | `packages/ghost-drift/src/skill-bundle/references/compare.md`  |
+| `compare`  | Detect drift across the org        | "why did these two fingerprints drift?"         | `packages/ghost-drift/src/skill-bundle/references/compare.md`  |
 | `discover` | Find quality bars worth borrowing  | "find design languages like X"                  | `packages/ghost-drift/src/skill-bundle/references/discover.md` |
 
 These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus `ghost-drift` for the deterministic steps.
@@ -228,9 +228,9 @@ Three responses, each with recorded reasoning and full lineage, so a year from n
 - **`.ghost-sync.json`**: Per-dimension stances toward the parent (aligned, accepted, or diverging), each with recorded reasoning. Written by `ack` / `adopt` / `diverge`.
 - **`.ghost/history.jsonl`**: Append-only fingerprint history for temporal analysis. Read by `compare --temporal`.
 
-### Fleet observability
+### Org-scale observability
 
-Drift at scale: the signal the parent design language heals from. Run `ghost-drift compare` with three or more fingerprints to see pairwise distances, a centroid, and similarity clusters: which consumers are coherent, which are drifting, and where the gaps are.
+Drift at scale: the signal the parent design language heals from. Run `ghost-drift compare` with three or more fingerprints and Ghost returns the **composite fingerprint** — pairwise distances, a centroid, and similarity clusters. Which consumers are coherent, which are drifting, and where the gaps are. A fingerprint of fingerprints.
 
 ## Ghost UI
 
@@ -291,7 +291,7 @@ packages/
       cli.ts                  cac command registry
       emit-command.ts         emit (review-command | context-bundle | skill)
       evolution-commands.ts   ack, adopt, diverge
-      target-resolver.ts      Target string parsing for parent/fleet lookups
+      target-resolver.ts      Target string parsing for parent/composite lookups
       skill-bundle.ts         Emitter for the agentskills.io bundle
       skill-bundle/           The shipped ghost-drift skill bundle
         SKILL.md              Skill entry point
@@ -299,13 +299,13 @@ packages/
         assets/                fingerprint.template.md, other static assets
       core/                   Engine: deterministic primitives
         index.ts              Library barrel (published via the `.` export)
-        compare.ts            Embedding-based comparison (pairwise + fleet)
+        compare.ts            Embedding-based comparison (pairwise + composite)
         config.ts             Config loading + target resolution
         embedding/            49-dim vector, optional semantic embedding
         fingerprint/          parse / compose / diff / lint fingerprint.md
-        evolution/            history, ack manifest, fleet analysis, parent resolution
+        evolution/            history, ack manifest, composite analysis, parent resolution
         context/              artifact generators (review-command, context-bundle, tokens.css)
-        reporters/            output formatters for compare / fleet / temporal / fingerprint
+        reporters/            output formatters for compare / composite / temporal / fingerprint
   ghost-mcp/           MCP server for Ghost UI registry
     src/
       tools.ts         5 MCP tools

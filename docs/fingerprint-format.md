@@ -180,7 +180,7 @@ The body may also carry a `# Fragments` section that lists sibling files by mark
 ```markdown
 # Fragments
 
-- [embedding](embedding.md) — 49-dim vector for compare/fleet/viz
+- [embedding](embedding.md) — 49-dim vector for compare/composite/viz
 ```
 
 Readers walk these links to progressively load sibling content. The current v4 writer always emits a link to `embedding.md` when the fingerprint carries an embedding (see [Embedding fragment](#embedding-fragment)). Future fragment types (palette, typography, motion, …) follow the same pattern: an entry in `# Fragments`, an own-validated file next to `fingerprint.md`.

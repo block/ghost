@@ -71,12 +71,11 @@ export default function Home() {
               a parent team owns the source of truth, consumers pull, compliance
               is tracked. Ghost takes the opposite approach. Power moves to the
               consumer: each team owns its fork, its trajectory, and its stance.
-              Decentralization without intent is entropy, so{" "}
-              <strong className="text-foreground">stances</strong> (
+              Decentralization without intent is entropy, so stances (
               <em>aligned</em>, <em>accepted</em>, <em>diverging</em>) turn
-              drift into signal. The parent team watches the fleet's pulse; each
-              consumer owns its divergence with reasoning attached. Nothing gets
-              enforced. Nothing drifts silently either.
+              drift into signal. The org's fingerprint drifts in the open; each
+              consumer owns its divergence with reasoning attached. Nothing is
+              prescriptive. Nothing drifts silently. Everything is transparent.
             </p>
           </div>
         </section>

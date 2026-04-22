@@ -1,7 +1,7 @@
 import { ThemeProvider } from "ghost-ui";
 import { Navigate, Route, Routes } from "react-router";
-import ConceptsPage from "@/app/docs/concepts/page";
 import DriftEngineIndex from "@/app/docs/page";
+import WorkflowPage from "@/app/docs/workflow/page";
 import HomePage from "@/app/page";
 import ToolsIndex from "@/app/tools/page";
 import { Dock } from "@/components/docs/dock";
@@ -23,7 +23,7 @@ export function App() {
           {/* Tools */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route path="tools/drift" element={<DriftEngineIndex />} />
-          <Route path="tools/drift/concepts" element={<ConceptsPage />} />
+          <Route path="tools/drift/workflow" element={<WorkflowPage />} />
 
           {/* MDX-authored doc pages */}
           {mdxDocsRoutes()}
@@ -40,7 +40,11 @@ export function App() {
           />
           <Route
             path="docs/concepts"
-            element={<Navigate to="/tools/drift/concepts" replace />}
+            element={<Navigate to="/tools/drift/workflow" replace />}
+          />
+          <Route
+            path="tools/drift/concepts"
+            element={<Navigate to="/tools/drift/workflow" replace />}
           />
         </Routes>
       </main>
