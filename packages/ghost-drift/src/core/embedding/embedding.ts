@@ -42,7 +42,7 @@ function logNorm(count: number, logBase: number): number {
  * This ensures fingerprints from different sources (LLM, registry, extraction)
  * produce comparable vectors.
  *
- * Dimensions (64 total):
+ * Dimensions (49 total):
  *  [0-11]   Palette: dominant colors OKLCH (up to 4 colors x 3 channels)
  *  [12-17]  Palette: neutral ramp features (count, has neutrals, ramp density, lightness min/max/range)
  *  [18-20]  Palette: qualitative (saturation profile, contrast, semantic count)

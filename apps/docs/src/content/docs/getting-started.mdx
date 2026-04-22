@@ -205,7 +205,10 @@ zero-config.
 import { defineConfig } from "ghost-drift";
 
 export default defineConfig({
-  parent: { type: "github", value: "shadcn-ui/ui" },
+  // Path to a local fingerprint.md, or a URL / npm package name.
+  // The profile recipe produces parent.fingerprint.md from any source;
+  // commit that file and point `parent` at it.
+  parent: { type: "path", value: "./parent.fingerprint.md" },
 
   targets: [{ type: "path", value: "./packages/my-ui" }],
 
@@ -224,8 +227,9 @@ export default defineConfig({
 
 ---
 
-Next: [Core Concepts](/tools/drift/concepts) for the three-layer fingerprint
-model and the generation-loop architecture. Or jump to the
-[CLI Reference](/tools/drift/cli) for every deterministic verb and flag.
+Next: [Workflow](/tools/drift/workflow) for the five-move walkthrough —
+profile, compare, review, evolve, org — with richer examples for each.
+Or jump to the [CLI Reference](/tools/drift/cli) for every deterministic
+verb and flag.
 
 </DocSection>

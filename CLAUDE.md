@@ -47,12 +47,12 @@ Ghost is **BYOA (bring-your-own-agent)**. The CLI is a set of **deterministic pr
 
 Engine layout (lives under `packages/ghost-drift/src/core/`):
 
-- `core/compare.ts` — embedding-based comparison (pairwise + fleet)
+- `core/compare.ts` — embedding-based comparison (pairwise + composite)
 - `core/embedding/` — 49-dim vector computation, optional semantic embedding via OpenAI/Voyage
 - `core/fingerprint/` — parse/compose/diff/lint `fingerprint.md`
-- `core/evolution/` — history, ack manifest, fleet analysis, parent resolution
+- `core/evolution/` — history, ack manifest, composite analysis, parent resolution
 - `core/context/` — artifact generators (review-command, context-bundle, tokens.css)
-- `core/reporters/` — output formatters for compare/fleet/temporal/fingerprint
+- `core/reporters/` — output formatters for compare/composite/temporal/fingerprint
 
 CLI glue sits alongside under `packages/ghost-drift/src/` (`bin.ts`, `cli.ts`, `emit-command.ts`, `evolution-commands.ts`, `target-resolver.ts`, `skill-bundle.ts`). The `./core/index.js` barrel is the single library export; `./cli` is the CLI subpath export.
 
@@ -73,7 +73,7 @@ Six deterministic primitives. Everything else (profile, review, verify, generate
 
 | Command | Description |
 |---------|-------------|
-| `ghost-drift compare [...fingerprints]` | Pairwise (N=2) or fleet (N≥3) comparison over fingerprint embeddings. `--semantic`, `--temporal`. |
+| `ghost-drift compare [...fingerprints]` | Pairwise (N=2) or composite (N≥3: pairwise matrix, centroid, clusters) over fingerprint embeddings. `--semantic`, `--temporal`. |
 | `ghost-drift lint [fingerprint.md]` | Validate schema + body/frontmatter coherence |
 | `ghost-drift ack` | Acknowledge drift; records stance in `.ghost-sync.json` (reads local `fingerprint.md`) |
 | `ghost-drift adopt <fingerprint.md>` | Adopt a new parent baseline |
@@ -102,7 +102,7 @@ Used by `resolveParent` (parent fingerprint resolution) and legacy library consu
 
 ## Fingerprint format
 
-The canonical fingerprint artifact is **`fingerprint.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-layer prose body (Character → Signature → Decisions → Values). See `docs/fingerprint-format.md` for the full spec; a condensed reference ships inside the skill bundle at `packages/ghost-drift/src/skill-bundle/references/schema.md`.
+The canonical fingerprint artifact is **`fingerprint.md`** — a human-readable, LLM-editable Markdown file with YAML frontmatter (machine layer) and a three-section prose body (Character → Signature → Decisions). See `docs/fingerprint-format.md` for the full spec; a condensed reference ships inside the skill bundle at `packages/ghost-drift/src/skill-bundle/references/schema.md`.
 
 ## Releasing & Changesets
 
@@ -131,6 +131,6 @@ The slug should be short and descriptive: `add-temporal-flag.md`, `fix-palette-l
 ## Key Conventions
 
 - Each fingerprint carries a 49-dimensional embedding vector (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-drift/src/core/embedding/embedding.ts`). The canonical on-disk form is `fingerprint.md`.
-- `compare` takes **file paths** to `fingerprint.md`, not target strings. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 runs fleet.
+- `compare` takes **file paths** to `fingerprint.md`, not target strings. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 returns a composite fingerprint.
 - `ack` / `adopt` / `diverge` read the local `fingerprint.md`. The host agent is responsible for regenerating `fingerprint.md` (via the profile recipe) before acknowledging drift.
 - `lint` takes a single fingerprint.md and reports schema/partition violations. Use as the success gate when writing a fingerprint.

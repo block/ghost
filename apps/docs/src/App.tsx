@@ -1,22 +1,11 @@
 import { ThemeProvider } from "ghost-ui";
-import { Navigate, Route, Routes, useParams } from "react-router";
-import ComponentPage from "@/app/components/[name]/page";
-import ComponentsIndex from "@/app/components/page";
-import ConceptsPage from "@/app/docs/concepts/page";
+import { Navigate, Route, Routes } from "react-router";
 import DriftEngineIndex from "@/app/docs/page";
-import ColorsPage from "@/app/foundations/colors/page";
-import FoundationsIndex from "@/app/foundations/page";
-import TypographyPage from "@/app/foundations/typography/page";
+import WorkflowPage from "@/app/docs/workflow/page";
 import HomePage from "@/app/page";
 import ToolsIndex from "@/app/tools/page";
-import DesignLanguageIndex from "@/app/ui/page";
 import { Dock } from "@/components/docs/dock";
 import { mdxDocsRoutes } from "@/routes/docs-routes";
-
-function ComponentRedirect() {
-  const { name } = useParams<{ name: string }>();
-  return <Navigate to={`/ui/components/${name}`} replace />;
-}
 
 export function App() {
   return (
@@ -27,30 +16,19 @@ export function App() {
       disableTransitionOnChange
     >
       <Dock />
-      <main className="min-h-screen">
+      <main className="relative z-10 min-h-screen">
         <Routes>
           <Route index element={<HomePage />} />
 
           {/* Tools */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route path="tools/drift" element={<DriftEngineIndex />} />
-          <Route path="tools/drift/concepts" element={<ConceptsPage />} />
+          <Route path="tools/drift/workflow" element={<WorkflowPage />} />
 
           {/* MDX-authored doc pages */}
           {mdxDocsRoutes()}
 
-          {/* Design Language */}
-          <Route path="ui" element={<DesignLanguageIndex />} />
-          <Route path="ui/foundations" element={<FoundationsIndex />} />
-          <Route path="ui/foundations/colors" element={<ColorsPage />} />
-          <Route
-            path="ui/foundations/typography"
-            element={<TypographyPage />}
-          />
-          <Route path="ui/components" element={<ComponentsIndex />} />
-          <Route path="ui/components/:name" element={<ComponentPage />} />
-
-          {/* Redirects from old /docs/* and /foundations/* URLs */}
+          {/* Redirects from old /docs/* URLs */}
           <Route path="docs" element={<Navigate to="/tools/drift" replace />} />
           <Route
             path="docs/getting-started"
@@ -62,29 +40,12 @@ export function App() {
           />
           <Route
             path="docs/concepts"
-            element={<Navigate to="/tools/drift/concepts" replace />}
+            element={<Navigate to="/tools/drift/workflow" replace />}
           />
           <Route
-            path="docs/self-hosting"
-            element={<Navigate to="/tools/drift/self-hosting" replace />}
+            path="tools/drift/concepts"
+            element={<Navigate to="/tools/drift/workflow" replace />}
           />
-          <Route
-            path="foundations"
-            element={<Navigate to="/ui/foundations" replace />}
-          />
-          <Route
-            path="foundations/colors"
-            element={<Navigate to="/ui/foundations/colors" replace />}
-          />
-          <Route
-            path="foundations/typography"
-            element={<Navigate to="/ui/foundations/typography" replace />}
-          />
-          <Route
-            path="components"
-            element={<Navigate to="/ui/components" replace />}
-          />
-          <Route path="components/:name" element={<ComponentRedirect />} />
         </Routes>
       </main>
     </ThemeProvider>

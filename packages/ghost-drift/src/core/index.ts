@@ -24,13 +24,13 @@ export {
 } from "./embedding/index.js";
 export type {
   CheckBoundsOptions,
-  FleetClusterOptions,
+  CompositeClusterOptions,
 } from "./evolution/index.js";
 export {
   acknowledge,
   appendHistory,
   checkBounds,
-  compareFleet,
+  compareComposite,
   computeDriftVectors,
   computeTemporalComparison,
   DIMENSION_RANGES,
@@ -78,15 +78,15 @@ export {
   validateFrontmatter,
 } from "./fingerprint/index.js";
 export {
+  formatCompositeComparison,
+  formatCompositeComparisonJSON,
+} from "./reporters/composite.js";
+export {
   formatComparison,
   formatComparisonJSON,
   formatFingerprint,
   formatFingerprintJSON,
 } from "./reporters/fingerprint.js";
-export {
-  formatFleetComparison,
-  formatFleetComparisonJSON,
-} from "./reporters/fleet.js";
 export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
@@ -94,6 +94,10 @@ export {
 export type {
   ColorRamp,
   ComponentMeta,
+  CompositeCluster,
+  CompositeComparison,
+  CompositeMember,
+  CompositePair,
   CSSToken,
   CSSVarsMap,
   DesignDecision,
@@ -115,10 +119,6 @@ export type {
   Fingerprint,
   FingerprintComparison,
   FingerprintHistoryEntry,
-  FleetCluster,
-  FleetComparison,
-  FleetMember,
-  FleetPair,
   FontDescriptor,
   GhostConfig,
   NormalizedToken,

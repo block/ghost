@@ -8,8 +8,8 @@ import {
   FINGERPRINT_FILENAME,
   formatComparison,
   formatComparisonJSON,
-  formatFleetComparison,
-  formatFleetComparisonJSON,
+  formatCompositeComparison,
+  formatCompositeComparisonJSON,
   formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
@@ -32,7 +32,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "compare [...fingerprints]",
-      "Compare two or more fingerprints (N≥3 = fleet).",
+      "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
     )
     .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
     .option(
@@ -70,10 +70,10 @@ export function buildCli(): ReturnType<typeof cac> {
 
         const isJson = opts.format === "json";
 
-        if (result.mode === "fleet") {
+        if (result.mode === "composite") {
           const output = isJson
-            ? formatFleetComparisonJSON(result.fleet)
-            : formatFleetComparison(result.fleet);
+            ? formatCompositeComparisonJSON(result.composite)
+            : formatCompositeComparison(result.composite);
           process.stdout.write(`${output}\n`);
           process.exit(0);
         }

@@ -70,7 +70,7 @@ for (const { file, fm: _fm } of parsed) {
       "/",
       "/tools",
       "/tools/drift",
-      "/tools/drift/concepts",
+      "/tools/drift/workflow",
       "/ui",
       "/ui/foundations",
       "/ui/foundations/colors",

@@ -17,7 +17,7 @@ Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Syn
 
 | Verb | Purpose |
 |---|---|
-| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or fleet analysis (N≥3). Pure math over fingerprint embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
+| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Pure math over fingerprint embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
 | `ghost-drift lint [fingerprint.md]` | Validate schema + body/frontmatter coherence. Use this before declaring a fingerprint valid. |
 | `ghost-drift ack` / `ghost-drift adopt <parent.md>` / `ghost-drift diverge <dim>` | Record stance toward parent (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `fingerprint.md`. |
 | `ghost-drift emit review-command` / `ghost-drift emit context-bundle` / `ghost-drift emit skill` | Derive per-project artifacts from `fingerprint.md`. |

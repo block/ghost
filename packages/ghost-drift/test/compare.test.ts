@@ -69,26 +69,26 @@ describe("compare dispatch", () => {
     expect(result.temporal?.trajectory).toBeDefined();
   });
 
-  it("fleet mode when N≥3", () => {
+  it("composite mode when N≥3", () => {
     const result = compare([variant("a"), variant("b"), variant("c")]);
-    expect(result.mode).toBe("fleet");
-    if (result.mode !== "fleet") throw new Error("unreachable");
-    expect(result.fleet.members).toHaveLength(3);
-    expect(result.fleet.pairwise).toHaveLength(3);
+    expect(result.mode).toBe("composite");
+    if (result.mode !== "composite") throw new Error("unreachable");
+    expect(result.composite.members).toHaveLength(3);
+    expect(result.composite.pairwise).toHaveLength(3);
   });
 
-  it("fleet rejects --semantic / --temporal", () => {
+  it("composite rejects --semantic / --temporal", () => {
     const exprs = [variant("a"), variant("b"), variant("c")];
     expect(() => compare(exprs, { semantic: true })).toThrow(/pairwise/);
     expect(() => compare(exprs, { history: [] })).toThrow(/pairwise/);
   });
 
-  it("fleet uses provided ids, falls back to fingerprint.id", () => {
+  it("composite uses provided ids, falls back to fingerprint.id", () => {
     const result = compare([variant("a"), variant("b"), variant("c")], {
       ids: ["alpha", "beta", "gamma"],
     });
-    if (result.mode !== "fleet") throw new Error("unreachable");
-    expect(result.fleet.members.map((m) => m.id)).toEqual([
+    if (result.mode !== "composite") throw new Error("unreachable");
+    expect(result.composite.members.map((m) => m.id)).toEqual([
       "alpha",
       "beta",
       "gamma",

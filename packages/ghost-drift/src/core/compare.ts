@@ -1,14 +1,14 @@
 import { compareFingerprints } from "./embedding/compare.js";
-import { compareFleet } from "./evolution/fleet.js";
+import { compareComposite } from "./evolution/composite.js";
 import { computeTemporalComparison } from "./evolution/temporal.js";
 import type { SemanticDiff } from "./fingerprint/diff.js";
 import { diffFingerprints } from "./fingerprint/diff.js";
 import type {
+  CompositeComparison,
+  CompositeMember,
   Fingerprint,
   FingerprintComparison,
   FingerprintHistoryEntry,
-  FleetComparison,
-  FleetMember,
   SyncManifest,
   TemporalComparison,
 } from "./types.js";
@@ -20,7 +20,7 @@ export interface CompareOptions {
   history?: FingerprintHistoryEntry[];
   /** Companion to `history` — the ack manifest, if any. */
   manifest?: SyncManifest | null;
-  /** Explicit member ids for fleet mode. Defaults to `fingerprint.id`. */
+  /** Explicit member ids for composite mode. Defaults to `fingerprint.id`. */
   ids?: string[];
 }
 
@@ -32,8 +32,8 @@ export type CompareResult =
       temporal?: TemporalComparison;
     }
   | {
-      mode: "fleet";
-      fleet: FleetComparison;
+      mode: "composite";
+      composite: CompositeComparison;
     };
 
 /**
@@ -42,9 +42,9 @@ export type CompareResult =
  *   • N=2              → pairwise (distance + per-dimension delta).
  *   • N=2 + semantic   → adds a qualitative diff (what decisions/colors changed).
  *   • N=2 + history    → adds velocity, trajectory, ack bounds.
- *   • N≥3              → fleet (pairwise matrix, centroid, spread, clusters).
+ *   • N≥3              → composite (pairwise matrix, centroid, spread, clusters).
  *
- * Rejects semantic/temporal in fleet mode — both are pairwise concepts.
+ * Rejects semantic/temporal in composite mode — both are pairwise concepts.
  */
 export function compare(
   fingerprints: Fingerprint[],
@@ -61,11 +61,14 @@ export function compare(
       );
     }
     const ids = options.ids;
-    const members: FleetMember[] = fingerprints.map((fingerprint, i) => ({
+    const members: CompositeMember[] = fingerprints.map((fingerprint, i) => ({
       id: ids?.[i] ?? fingerprint.id,
       fingerprint,
     }));
-    return { mode: "fleet", fleet: compareFleet(members, { cluster: true }) };
+    return {
+      mode: "composite",
+      composite: compareComposite(members, { cluster: true }),
+    };
   }
 
   const [a, b] = fingerprints;

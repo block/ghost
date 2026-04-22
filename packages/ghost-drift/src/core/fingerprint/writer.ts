@@ -86,7 +86,7 @@ function buildBody(
     // Mirrors the agent-skills pattern: the index references its siblings
     // via ordinary markdown links. Readers scan the body to discover fragments.
     parts.push(
-      `# Fragments\n\n- [embedding](${EMBEDDING_FRAGMENT_FILENAME}) — 49-dim vector for compare/fleet/viz`,
+      `# Fragments\n\n- [embedding](${EMBEDDING_FRAGMENT_FILENAME}) — 49-dim vector for compare/composite/viz`,
     );
   }
   return parts.join("\n\n");

@@ -48,7 +48,7 @@ export function CliHelp({
       {(show === "all" || show === "signature") && (
         <div className="border-b border-border/40 bg-background/60 px-4 py-3">
           <div className="font-mono text-sm text-foreground">
-            ghost {cmd.rawName}
+            ghost-drift {cmd.rawName}
           </div>
           {!hideDescription && cmd.description && (
             <div className="mt-1 text-xs text-muted-foreground leading-relaxed">
