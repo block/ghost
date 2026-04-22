@@ -149,4 +149,73 @@ refers to a ghost color
     expect(unused.length).toBeGreaterThan(0);
     expect(unused.every((i) => i.severity === "error")).toBe(true);
   });
+
+  it("accepts a role palette reference that resolves", () => {
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { background: '{palette.dominant.accent}' }
+    evidence: ["src/ui/button.tsx:12"]`,
+      "",
+    );
+    const report = lintFingerprint(md);
+    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
+      false,
+    );
+  });
+
+  it("flags a role reference that points at a missing palette role", () => {
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { background: '{palette.dominant.ghost}' }
+    evidence: ["src/ui/button.tsx:12"]`,
+      "",
+    );
+    const report = lintFingerprint(md);
+    const broken = report.issues.filter(
+      (i) => i.rule === "broken-role-reference",
+    );
+    expect(broken.length).toBe(1);
+    expect(broken[0].severity).toBe("error");
+    expect(broken[0].path).toBe("roles[0].tokens.palette.background");
+  });
+
+  it("flags a role reference into an unsupported namespace", () => {
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { foreground: '{typography.families.primary}' }
+    evidence: ["src/ui/button.tsx:12"]`,
+      "",
+    );
+    const report = lintFingerprint(md);
+    const broken = report.issues.find(
+      (i) => i.rule === "broken-role-reference",
+    );
+    expect(broken).toBeDefined();
+    expect(broken?.message).toMatch(/palette\.dominant.*palette\.semantic/);
+  });
+
+  it("leaves raw hex values in role palette alone", () => {
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { background: '#c96442' }
+    evidence: ["src/ui/button.tsx:12"]`,
+      "",
+    );
+    const report = lintFingerprint(md);
+    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
+      false,
+    );
+  });
 });
