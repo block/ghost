@@ -53,11 +53,11 @@ export default function Home() {
               and it's where generations drift first.
             </p>
             <p className="thesis-item">
-              And it has to be checkable. The question isn't "did the reviewer
-              feel good about it." It's "can the harness flag this PR as
-              off-brand before a human is paged." A voice that can only be
-              evaluated by taste is a voice that can't survive autonomous
-              generation.
+              And it has to be checkable. A voice that can only be evaluated by
+              its original author can't be delegated — not to an agent, not to a
+              new hire, not to a fork. The harness is how a voice becomes
+              transmissible: enough of it captured outside one person that
+              someone who isn't you can apply it faithfully.
             </p>
             <p className="thesis-item">
               The artifact that carries brand has to live where the agent does:
