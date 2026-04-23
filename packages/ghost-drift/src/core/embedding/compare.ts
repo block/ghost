@@ -345,14 +345,20 @@ function cosineSimilarity(a: number[], b: number[]): number {
 
 // --- Font matching ---
 
-const FONT_SUFFIXES =
-  /\s*\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
+const FONT_SUFFIXES = /\b(variable|var|vf|pro|new|next|display|text|mono)\b/gi;
 
-/** Normalize font family name for fuzzy comparison */
+/** Normalize font family name for fuzzy comparison.
+ *
+ * `FONT_SUFFIXES` intentionally omits a leading `\s*` — combining it with
+ * `\b` and alternation gives CodeQL's polynomial-redos check an ambiguous
+ * split. The trailing `.replace(/\s+/g, " ").trim()` folds any whitespace
+ * the suffix strip left behind, so the result is equivalent.
+ */
 function normalizeFontFamily(name: string): string {
   return name
     .replace(/['"]/g, "")
     .replace(FONT_SUFFIXES, "")
+    .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 }
