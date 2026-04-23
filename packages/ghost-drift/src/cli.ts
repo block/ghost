@@ -10,9 +10,11 @@ import {
   formatComparisonJSON,
   formatCompositeComparison,
   formatCompositeComparisonJSON,
+  formatLayout,
   formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
+  layoutFingerprint,
   lintFingerprint,
   loadFingerprint,
   readHistory,
@@ -144,6 +146,34 @@ export function buildCli(): ReturnType<typeof cac> {
         }
 
         process.exit(report.errors > 0 ? 1 : 0);
+      } catch (err) {
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(2);
+      }
+    });
+
+  // --- describe ---
+  cli
+    .command(
+      "describe [fingerprint]",
+      "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+    )
+    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .action(async (path: string | undefined, opts) => {
+      try {
+        const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
+        const raw = await readFile(target, "utf-8");
+        const layout = layoutFingerprint(raw);
+        if (opts.format === "json") {
+          process.stdout.write(
+            `${JSON.stringify({ path: target, ...layout }, null, 2)}\n`,
+          );
+        } else {
+          process.stdout.write(`${formatLayout(layout, target)}\n`);
+        }
+        process.exit(0);
       } catch (err) {
         console.error(
           `Error: ${err instanceof Error ? err.message : String(err)}`,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-22T13:46:27.308Z",
+  "generatedAt": "2026-04-23T10:40:33.455Z",
   "commands": [
     {
       "name": "compare",
@@ -44,6 +44,21 @@
       "name": "lint",
       "rawName": "lint [fingerprint]",
       "description": "Validate fingerprint.md schema and body/frontmatter coherence",
+      "options": [
+        {
+          "rawName": "--format <fmt>",
+          "name": "format",
+          "description": "Output format: cli or json",
+          "default": "cli",
+          "takesValue": true,
+          "negated": false
+        }
+      ]
+    },
+    {
+      "name": "describe",
+      "rawName": "describe [fingerprint]",
+      "description": "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
       "options": [
         {
           "rawName": "--format <fmt>",

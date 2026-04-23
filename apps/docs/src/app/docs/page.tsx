@@ -31,7 +31,7 @@ const sections: {
     name: "CLI Reference",
     href: "/tools/drift/cli",
     description:
-      "Six deterministic primitives — compare, lint, ack, adopt, diverge, emit. Plus the skill recipes the host agent runs.",
+      "Seven deterministic primitives — compare, lint, describe, ack, adopt, diverge, emit. Plus the skill recipes the host agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];

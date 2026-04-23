@@ -17,7 +17,20 @@ Ghost's CLI does not generate code — you do. The fingerprint is the constraint
 
 ### 1. Load the fingerprint
 
-Read `fingerprint.md` from the project. The key constraints are:
+Start with a section map:
+
+    ghost-drift describe fingerprint.md
+
+Generation always needs the **frontmatter** (palette, spacing.scale, typography.families/sizeRamp, surfaces.borderRadii, roles[]) — read that whole range. Then layer on decision sections by relevance to what you're generating:
+
+- Building an interactive surface (button, input, badge) → `### shape-language`, `### interactive-patterns`, `### density`, plus any role binding for that component name in `roles[]`
+- Building a structural surface (card, modal, page) → `### surface-hierarchy`, `### elevation`, `### spatial-system`
+- Building anything text-heavy → `### typography-voice`
+- Anything with state or feedback (alerts, toasts, charts) → `### color-strategy`
+
+If the component spans multiple categories, or you're unsure, **read the entire `# Decisions` block** — typically 2–4k tokens, cheaper than generating something that contradicts a decision.
+
+The key constraints surfaced in the frontmatter are:
 
 - `palette` — which colors are allowed, and what role each plays
 - `spacing.scale` — which spacing values are allowed
