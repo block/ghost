@@ -24,7 +24,6 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 - **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `compare` on N≥3 consumers — the composite view). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
 - **Human-readable, diff-friendly**: `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
-- **Reference design language (Ghost UI)**: a shadcn-compatible registry of atomic components, design tokens, and a live catalogue. The canonical baseline Ghost is built against and tested against.
 
 ## Getting Started
 
