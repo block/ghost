@@ -214,10 +214,7 @@ function formatRow(s: FingerprintLayoutSection): string {
   const range = `${s.start}–${s.end}`;
   const tok = `~${s.tokens.toLocaleString()} tok`;
   if (s.kind === "frontmatter") {
-    const parts =
-      s.partitions && s.partitions.length
-        ? `  [${s.partitions.join(", ")}]`
-        : "";
+    const parts = s.partitions?.length ? `  [${s.partitions.join(", ")}]` : "";
     return `FRONTMATTER    ${pad(range, 10)} ${pad(tok, 14)}${parts}`;
   }
   if (s.kind === "body") {
