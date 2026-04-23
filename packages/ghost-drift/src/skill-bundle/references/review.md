@@ -26,9 +26,15 @@ Ghost has no `ghost review` CLI command. You — the host agent — are the revi
 
 ### 1. Read the fingerprint
 
-    cat fingerprint.md
+    ghost-drift describe fingerprint.md
 
-Absorb: `palette` (allowed colors), `spacing.scale` (allowed spacing values), `typography.families`/`sizeRamp`, `surfaces.borderRadii`, `decisions` (the patterns), `roles` (slot bindings).
+This prints a section map — frontmatter range, body sections (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each `### dimension` block under Decisions, with line ranges and token estimates. Use it to plan what to load.
+
+Then read selectively:
+
+- **Always read the frontmatter.** It carries the structural budget — `palette`, `spacing.scale`, `typography.families`/`sizeRamp`, `surfaces.borderRadii`, `roles[]` — that you'll match diff values against.
+- **Read decision sections by dimension name.** If the diff touches colors, you'll want `### color-strategy` (and any other `color-*` / `palette-*` dimension). If it touches radii, `### shape-language`, `### surface-hierarchy`, `### elevation`. Match on slug.
+- **If you're not confident which decisions are relevant — or the diff spans more than two partitions — read the entire `# Decisions` block.** It's typically 2–4k tokens; cheaper than missing a constraint. The describe output tells you the exact line range.
 
 If no `fingerprint.md` exists, tell the user. Offer to generate one via the [profile recipe](profile.md). Don't guess.
 

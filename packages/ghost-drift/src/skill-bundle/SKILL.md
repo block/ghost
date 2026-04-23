@@ -19,10 +19,11 @@ Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Syn
 |---|---|
 | `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Pure math over fingerprint embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
 | `ghost-drift lint [fingerprint.md]` | Validate schema + body/frontmatter coherence. Use this before declaring a fingerprint valid. |
+| `ghost-drift describe [fingerprint.md]` | Print a section map (line ranges + token estimates) so you can selectively read only the sections you need instead of loading the whole file. Use before review/generate when the fingerprint is large. |
 | `ghost-drift ack` / `ghost-drift adopt <parent.md>` / `ghost-drift diverge <dim>` | Record stance toward parent (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `fingerprint.md`. |
 | `ghost-drift emit review-command` / `ghost-drift emit context-bundle` / `ghost-drift emit skill` | Derive per-project artifacts from `fingerprint.md`. |
 
-That's it. Six verbs. If you find yourself reaching for `ghost review` or `ghost profile` — those are *your* workflows, not CLI commands. Follow the recipes below.
+That's it. Seven verbs. If you find yourself reaching for `ghost review` or `ghost profile` — those are *your* workflows, not CLI commands. Follow the recipes below.
 
 ## Workflows (your job, not the CLI's)
 

@@ -42,6 +42,11 @@ export {
 } from "./fragments.js";
 export type { FingerprintMeta, FrontmatterData } from "./frontmatter.js";
 export type {
+  FingerprintLayout,
+  FingerprintLayoutSection,
+} from "./layout.js";
+export { formatLayout, layoutFingerprint } from "./layout.js";
+export type {
   LintIssue,
   LintOptions,
   LintReport,
