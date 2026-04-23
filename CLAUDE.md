@@ -1,5 +1,7 @@
 # Ghost — Agent Context
 
+> **Read [`INVARIANTS.md`](./INVARIANTS.md) before making non-trivial changes.** These are hard constraints — surface conflicts, don't weigh them as preferences.
+
 ## Build & Run
 
 ```bash
