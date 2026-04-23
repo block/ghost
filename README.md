@@ -6,8 +6,6 @@ AI is becoming the primary author of shipped code. Humans sit in fewer diffs; th
 
 Ghost closes that loop. It captures a brand as a **fingerprint**: a human-readable `fingerprint.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **adopt**, or **intentionally diverge**. Power moves to the consumer: each team owns its fork, its trajectory, and its stance. The org's fingerprint drifts in the open. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLI; judgment lives in whatever agent you already use.
 
-Current scope is visual/UI brand expression. The reference, Ghost UI, ships as a shadcn-compatible component registry. The format and the detection architecture are identity-agnostic; visual is the first instantiation.
-
 ## BYOA: bring your own agent
 
 Ghost splits the work the way agents need it split: **judgement in the agent, arithmetic in the CLI**.
