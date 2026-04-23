@@ -229,42 +229,6 @@ Three responses, each with recorded reasoning and full lineage, so a year from n
 
 Drift at scale: the signal the parent design language heals from. Run `ghost-drift compare` with three or more fingerprints and Ghost returns the **composite fingerprint** — pairwise distances, a centroid, and similarity clusters. Which consumers are coherent, which are drifting, and where the gaps are. A fingerprint of fingerprints.
 
-## Ghost UI
-
-Ghost UI (`ghost-ui`) is the project's reference design language: atomic, composable interface primitives published as a shadcn-compatible registry. It serves as both a living design language and the concrete baseline Ghost scans consumers against.
-
-### What's included
-
-- **49 primitive components**: Foundational building blocks (accordion, button, card, dialog, form, table, tabs, …) built on Radix UI and styled with Tailwind CSS.
-- **48 AI-native elements**: Components for conversational and agentic interfaces: prompt input, message, code block, chain of thought, file tree, terminal, tool, and more.
-- **Design tokens**: A full token system (colors, spacing, typography, radii, shadows) defined as CSS custom properties with light and dark mode support.
-- **Theme system**: Runtime theme switching with presets, a live theme panel, and CSS variable export.
-- **HK Grotesk typeface**: Self-hosted display font (300–900 weights) paired with system sans-serif for body text.
-- **Docs site**: Interactive documentation (React + Vite) with drift tooling docs, design-language foundations, a live component catalogue, and a bento showcase.
-
-### Registry
-
-Ghost UI publishes a `registry.json` conforming to the [shadcn registry schema](https://ui.shadcn.com/docs/registry). Consumers can install individual components directly:
-
-```bash
-npx shadcn@latest add --registry https://your-ghost-ui-host/registry.json button card dialog
-```
-
-Ghost itself can profile the registry to generate a fingerprint (the host agent runs the `profile` recipe against `./packages/ghost-ui/`) and check downstream consumers against it with the `review` recipe.
-
-### Docs site development
-
-```bash
-# dev server with hot reload
-just dev
-
-# production build
-just build-ui
-
-# rebuild the shadcn registry
-just build-registry
-```
-
 ## Ghost MCP
 
 Ghost MCP (`ghost-mcp`) is a Model Context Protocol server that exposes the Ghost UI registry to AI assistants.
