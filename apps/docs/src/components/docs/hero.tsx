@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 export function Hero() {
   const containerRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const taglineRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -21,11 +20,6 @@ export function Hero() {
           duration: 0.9,
           stagger: 0.08,
         });
-      }
-
-      if (taglineRef.current) {
-        gsap.set(taglineRef.current, { y: 20, opacity: 0 });
-        tl.to(taglineRef.current, { y: 0, opacity: 1, duration: 0.7 }, "-=0.5");
       }
     }, containerRef);
 
@@ -67,13 +61,6 @@ export function Hero() {
           >
             <span className="hero-line block">Ghost</span>
           </h1>
-          <p
-            ref={taglineRef}
-            className="mt-4 text-center font-light text-muted-foreground leading-relaxed whitespace-nowrap"
-            style={{ fontSize: "clamp(0.875rem, 1.5vw, 1.125rem)" }}
-          >
-            tooling for decentralized design
-          </p>
         </div>
       </section>
     </>
