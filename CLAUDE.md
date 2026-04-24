@@ -65,8 +65,7 @@ What was removed in the BYOA migration: the Claude Agent SDK profiling loop (`sr
 | Package | Published? | Description |
 |---------|-----------|-------------|
 | `packages/ghost-drift` | ✅ `ghost-drift` on npm | Merged engine + CLI — deterministic primitives (compare, embedding, fingerprint parse/lint, evolution, reporters) plus the cac-based CLI and the `ghost-drift` agentskills.io skill bundle under `src/skill-bundle/` |
-| `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm |
-| `packages/ghost-mcp` | ❌ private | MCP server exposing the Ghost UI component registry to AI assistants (5 tools, 2 resources) — registry lookups only; will be self-hosted |
+| `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm. Also ships the `ghost-mcp` bin (`src/mcp/`, built via `tsconfig.mcp.json` → `dist-mcp/`) — an MCP server re-exposing the registry to AI assistants (5 tools, 2 resources). |
 | `apps/docs` | ❌ private | The deployed docs site (`ghost-docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `ghost-ui`. |
 
 ## CLI Commands
@@ -126,7 +125,7 @@ Guidance on the bump level:
 - **`minor`** — new CLI verb, new flag, new library export, new capability. Anything a user might want to reach for.
 - **`major`** — removed/renamed CLI verb, removed/renamed library export, changed default behavior, breaking fingerprint schema change, changed exit codes. **Always flag this explicitly in the PR description and ask the user to confirm — do not `major`-bump unreviewed.**
 
-Skip the changeset entirely for: CI/workflow-only changes, test-only changes, changes scoped to `packages/ghost-ui`, `packages/ghost-mcp`, or `apps/docs` (all private — not published). The Changesets config ignores those packages.
+Skip the changeset entirely for: CI/workflow-only changes, test-only changes, changes scoped to `packages/ghost-ui` or `apps/docs` (both private — not published). The Changesets config ignores those packages.
 
 The slug should be short and descriptive: `add-temporal-flag.md`, `fix-palette-lint-crash.md`. Avoid dates or PR numbers — Changesets consumes and deletes the file at version time.
 
