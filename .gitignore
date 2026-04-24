@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-lib
+dist-mcp
 *.tsbuildinfo
 .DS_Store
 .claude/settings.local.json
