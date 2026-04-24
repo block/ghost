@@ -164,10 +164,13 @@ function scanHeadings(
 ): Heading[] {
   const out: Heading[] = [];
   for (let i = startLine - 1; i < endLine; i++) {
-    const m = /^(#{1,6})\s+(.*?)\s*$/.exec(lines[i]);
+    // `\s` rather than `\s+` avoids an ambiguous split with the following
+    // `.*` (both match spaces) that CodeQL flags as polynomial. `.trim()`
+    // on the captured group folds extra whitespace either side.
+    const m = /^(#{1,6})\s(.*)$/.exec(lines[i]);
     if (!m) continue;
     if (m[1].length === level) {
-      out.push({ lineNumber: i + 1, level, text: m[2] });
+      out.push({ lineNumber: i + 1, level, text: m[2].trim() });
     } else if (m[1].length < level) {
       // A shallower heading ends the region when scanning nested headings
       // inside a bounded parent.
@@ -190,10 +193,28 @@ function isDelimiter(line: string): boolean {
 }
 
 function slug(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  // Imperative rather than regex-chained because CodeQL flagged the
+  // three-stage /[^a-z0-9]+/g → /^-+/ → /-+$/ pipeline as polynomial on
+  // inputs with many '-' repetitions. Single O(n) pass, same semantics.
+  let out = "";
+  let lastDash = true;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    const lower = c >= 65 && c <= 90 ? c + 32 : c;
+    const isAlnum =
+      (lower >= 97 && lower <= 122) || (lower >= 48 && lower <= 57);
+    if (isAlnum) {
+      out += String.fromCharCode(lower);
+      lastDash = false;
+    } else if (!lastDash) {
+      out += "-";
+      lastDash = true;
+    }
+  }
+  if (out.length > 0 && out.charCodeAt(out.length - 1) === 45) {
+    out = out.slice(0, -1);
+  }
+  return out;
 }
 
 /**
