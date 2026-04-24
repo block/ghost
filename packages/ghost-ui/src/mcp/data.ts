@@ -2,9 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const assetsDir = path.resolve(__dirname, "assets");
+const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
 export interface RegistryFile {
   type: string;
@@ -43,13 +41,13 @@ export interface Registry {
 }
 
 const registryRaw = fs.readFileSync(
-  path.join(assetsDir, "registry.json"),
+  path.join(packageRoot, "registry.json"),
   "utf-8",
 );
 const registry: Registry = JSON.parse(registryRaw);
 
 const skillsContent = fs.readFileSync(
-  path.join(assetsDir, "skills.md"),
+  path.join(packageRoot, ".shadcn", "skills.md"),
   "utf-8",
 );
 
@@ -132,15 +130,17 @@ export function getComponentSource(name: string): string | null {
   const item = itemsByName.get(name);
   if (!item || item.files.length === 0) return null;
 
-  const filePath = item.files[0].path;
-  const ghostUiDir = path.resolve(__dirname, "../../ghost-ui");
-  const fullPath = path.join(ghostUiDir, filePath);
+  const fullPath = path.join(packageRoot, item.files[0].path);
 
   try {
     return fs.readFileSync(fullPath, "utf-8");
   } catch {
     return null;
   }
+}
+
+export function getRegistryRaw(): string {
+  return registryRaw;
 }
 
 export function getSkills(): string {
