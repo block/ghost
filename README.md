@@ -25,6 +25,18 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 - **Remediate with structured intent**: `ack`, `adopt`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent is signal the parent can heal from.
 - **Human-readable, diff-friendly**: `fingerprint.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
 
+## Repo layout
+
+Ghost is a monorepo. One main tool, one reference design system, one docs site — with room for more tools to land alongside `ghost-drift` over time.
+
+| Path | Role |
+| ---- | ---- |
+| [`packages/ghost-drift`](./packages/ghost-drift) | **Main tool.** The deterministic CLI and skill bundle. The only published package (`ghost-drift` on npm). |
+| [`packages/ghost-ui`](./packages/ghost-ui) | **Reference design system.** 97 components distributed via a shadcn registry. Also ships the `ghost-mcp` bin — an MCP server that re-exposes the registry to AI assistants. The system Ghost dogfoods its fingerprint against. Private. |
+| [`apps/docs`](./apps/docs) | **Docs site.** `ghost-docs`, the deployed documentation for the project. Consumes `ghost-ui`. Private. |
+
+`ghost-drift` is the product; the rest is how the fingerprint stays concrete.
+
 ## Getting Started
 
 ### Prerequisites

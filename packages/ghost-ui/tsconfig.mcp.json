@@ -2,8 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "outDir": "./dist-mcp",
+    "rootDir": "./src/mcp"
   },
-  "include": ["src"]
+  "include": ["src/mcp/**/*.ts"]
 }
