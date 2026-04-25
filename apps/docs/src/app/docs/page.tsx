@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Expression, Rocket } from "lucide-react";
+import { BookOpen, Orbit, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -18,7 +18,7 @@ const sections: {
     href: "/tools/drift/workflow",
     description:
       "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
-    icon: <Expression className="size-8" strokeWidth={1.5} />,
+    icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Getting Started",
