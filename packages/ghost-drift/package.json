@@ -1,7 +1,7 @@
 {
   "name": "ghost-drift",
   "version": "0.2.0",
-  "description": "Deterministic design drift detection — CLI + engine for fingerprinting, comparing, and tracking design languages across projects and at org scale",
+  "description": "Deterministic design drift detection — CLI + engine for writing, comparing, and tracking design-language expressions across projects and at org scale",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -15,7 +15,7 @@
   "keywords": [
     "design-system",
     "drift-detection",
-    "fingerprint",
+    "expression",
     "design-tokens",
     "shadcn",
     "design-language",
@@ -45,7 +45,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc --build && rm -rf dist/skill-bundle && cp -r src/skill-bundle dist/skill-bundle",
+    "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {

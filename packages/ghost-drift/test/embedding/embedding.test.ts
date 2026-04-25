@@ -3,11 +3,11 @@ import {
   computeEmbedding,
   embeddingDistance,
 } from "../../src/core/embedding/embedding.js";
-import type { Fingerprint } from "../../src/core/types.js";
+import type { Expression } from "../../src/core/types.js";
 
 function makeExpression(
-  overrides: Partial<Omit<Fingerprint, "embedding">> = {},
-): Omit<Fingerprint, "embedding"> {
+  overrides: Partial<Omit<Expression, "embedding">> = {},
+): Omit<Expression, "embedding"> {
   return {
     id: "test",
     source: "registry",
@@ -69,7 +69,7 @@ describe("computeEmbedding", () => {
     }
   });
 
-  it("identical fingerprints produce identical embeddings", () => {
+  it("identical expressions produce identical embeddings", () => {
     const fp = makeExpression();
     const e1 = computeEmbedding(fp);
     const e2 = computeEmbedding(fp);

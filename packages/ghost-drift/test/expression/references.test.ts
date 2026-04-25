@@ -4,10 +4,10 @@ import {
   isTokenReference,
   parseTokenReference,
   resolveTokenReference,
-} from "../../src/core/fingerprint/references.js";
-import type { Fingerprint } from "../../src/core/types.js";
+} from "../../src/core/expression/references.js";
+import type { Expression } from "../../src/core/types.js";
 
-function buildFingerprint(): Fingerprint {
+function buildExpression(): Expression {
   return {
     id: "x",
     source: "llm",
@@ -82,7 +82,7 @@ describe("parseTokenReference", () => {
 });
 
 describe("resolveTokenReference", () => {
-  const fp = buildFingerprint();
+  const fp = buildExpression();
 
   it("resolves a dominant role to its hex", () => {
     const result = resolveTokenReference(fp, "{palette.dominant.accent}");

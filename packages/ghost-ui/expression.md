@@ -10,7 +10,7 @@ observation:
     - pill-shaped
     - magazine-like
     - themeable
-  closestSystems:
+  resembles:
     - Vercel Geist
     - Linear
     - Apple Human Interface Guidelines

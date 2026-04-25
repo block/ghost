@@ -3,23 +3,23 @@ import type { CAC } from "cac";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,
-  FINGERPRINT_FILENAME,
+  EXPRESSION_FILENAME,
   loadConfig,
-  loadFingerprint,
-  resolveParent,
+  loadExpression,
+  resolveTrackedExpression,
 } from "./core/index.js";
 
 async function loadLocalExpression() {
-  const path = resolve(process.cwd(), FINGERPRINT_FILENAME);
-  const { fingerprint } = await loadFingerprint(path);
-  return fingerprint;
+  const path = resolve(process.cwd(), EXPRESSION_FILENAME);
+  const { expression } = await loadExpression(path);
+  return expression;
 }
 
 export function registerAckCommand(cli: CAC): void {
   cli
     .command(
       "ack",
-      "Acknowledge current drift — record intentional stance toward parent",
+      "Acknowledge current drift — record intentional stance toward the tracked expression",
     )
     .option("-c, --config <path>", "Path to ghost config file")
     .option("-d, --dimension <name>", "Acknowledge a specific dimension only")
@@ -32,20 +32,20 @@ export function registerAckCommand(cli: CAC): void {
       try {
         const config = await loadConfig(opts.config);
 
-        if (!config.parent) {
+        if (!config.tracks) {
           console.error(
-            "Error: No parent declared. Set `parent` in ghost.config.ts or use --parent.",
+            "Error: No tracked expression declared. Set `tracks` in ghost.config.ts.",
           );
           process.exit(2);
         }
 
-        const parentFp = await resolveParent(config.parent);
-        const childFp = await loadLocalExpression();
+        const trackedExpression = await resolveTrackedExpression(config.tracks);
+        const localExpression = await loadLocalExpression();
 
         const { manifest, comparison } = await acknowledge({
-          child: childFp,
-          parent: parentFp,
-          parentRef: config.parent,
+          local: localExpression,
+          tracked: trackedExpression,
+          tracks: config.tracks,
           dimension: opts.dimension,
           stance: opts.stance as DimensionStance,
           reason: opts.reason,
@@ -55,7 +55,7 @@ export function registerAckCommand(cli: CAC): void {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
           console.log(
-            `Acknowledged drift from "${manifest.parentFingerprintId}"`,
+            `Acknowledged drift from "${manifest.trackedExpressionId}"`,
           );
           console.log(`Overall distance: ${comparison.distance.toFixed(3)}`);
           console.log();
@@ -85,25 +85,25 @@ export function registerAckCommand(cli: CAC): void {
     });
 }
 
-export function registerAdoptCommand(cli: CAC): void {
+export function registerTrackCommand(cli: CAC): void {
   cli
     .command(
-      "adopt <source>",
-      "Shift parent reference — adopt a new fingerprint as baseline",
+      "track <expression>",
+      "Track another expression as this repo's reference",
     )
-    .option("-d, --dimension <name>", "Adopt only for a specific dimension")
+    .option("-d, --dimension <name>", "Track only for a specific dimension")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const { fingerprint: newParent } = await loadFingerprint(source);
-        const childFp = await loadLocalExpression();
+        const { expression: trackedExpression } = await loadExpression(source);
+        const localExpression = await loadLocalExpression();
 
-        const newParentRef: Target = { type: "path", value: source };
+        const tracks: Target = { type: "path", value: source };
 
         const { manifest, comparison } = await acknowledge({
-          child: childFp,
-          parent: newParent,
-          parentRef: newParentRef,
+          local: localExpression,
+          tracked: trackedExpression,
+          tracks,
           dimension: opts.dimension,
           stance: "accepted",
         });
@@ -111,7 +111,7 @@ export function registerAdoptCommand(cli: CAC): void {
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
-          console.log(`Adopted "${newParent.id}" as parent baseline`);
+          console.log(`Now tracking "${trackedExpression.id}"`);
           console.log(`New distance: ${comparison.distance.toFixed(3)}`);
           console.log();
           for (const [key, delta] of Object.entries(comparison.dimensions)) {
@@ -147,20 +147,20 @@ export function registerDivergeCommand(cli: CAC): void {
       try {
         const config = await loadConfig(opts.config);
 
-        if (!config.parent) {
+        if (!config.tracks) {
           console.error(
-            "Error: No parent declared. Set `parent` in ghost.config.ts or use --parent.",
+            "Error: No tracked expression declared. Set `tracks` in ghost.config.ts.",
           );
           process.exit(2);
         }
 
-        const parentFp = await resolveParent(config.parent);
-        const childFp = await loadLocalExpression();
+        const trackedExpression = await resolveTrackedExpression(config.tracks);
+        const localExpression = await loadLocalExpression();
 
         const { manifest } = await acknowledge({
-          child: childFp,
-          parent: parentFp,
-          parentRef: config.parent,
+          local: localExpression,
+          tracked: trackedExpression,
+          tracks: config.tracks,
           dimension,
           stance: "diverging",
           reason: opts.reason,

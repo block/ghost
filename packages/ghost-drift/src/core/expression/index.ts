@@ -1,21 +1,21 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { computeEmbedding } from "../embedding/embedding.js";
-import type { DesignDecision, Fingerprint } from "../types.js";
-import { mergeFingerprint } from "./compose.js";
+import type { DesignDecision, Expression } from "../types.js";
+import { mergeExpression } from "./compose.js";
 import {
   loadDecisionFragments,
   loadEmbeddingFragment,
   resolveEmbeddingReference,
 } from "./fragments.js";
 import { mergeFrontmatter } from "./frontmatter.js";
-import { type ParsedFingerprint, parseFingerprint } from "./parser.js";
+import { type ParsedExpression, parseExpression } from "./parser.js";
 import { validateFrontmatter } from "./schema.js";
 
 function assertMarkdownPath(path: string): void {
   if (!path.endsWith(".md")) {
     throw new Error(
-      `Fingerprint files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost-drift emit skill\`).`,
+      `Expression files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost-drift emit skill\`).`,
     );
   }
 }
@@ -23,14 +23,14 @@ function assertMarkdownPath(path: string): void {
 export type { BodyData } from "./body.js";
 export { parseBody } from "./body.js";
 export type { DesignDecision } from "./compose.js";
-export { mergeFingerprint } from "./compose.js";
+export { mergeExpression } from "./compose.js";
 export type {
   ColorChange,
   DecisionChange,
   SemanticDiff,
   TokenChange,
 } from "./diff.js";
-export { diffFingerprints, formatSemanticDiff } from "./diff.js";
+export { diffExpressions, formatSemanticDiff } from "./diff.js";
 export {
   EMBEDDING_FRAGMENT_FILENAME,
   embeddingSiblingPath,
@@ -40,21 +40,21 @@ export {
   resolveEmbeddingReference,
   serializeEmbeddingFragment,
 } from "./fragments.js";
-export type { FingerprintMeta, FrontmatterData } from "./frontmatter.js";
+export type { ExpressionMeta, FrontmatterData } from "./frontmatter.js";
 export type {
-  FingerprintLayout,
-  FingerprintLayoutSection,
+  ExpressionLayout,
+  ExpressionLayoutSection,
 } from "./layout.js";
-export { formatLayout, layoutFingerprint } from "./layout.js";
+export { formatLayout, layoutExpression } from "./layout.js";
 export type {
   LintIssue,
   LintOptions,
   LintReport,
   LintSeverity,
 } from "./lint.js";
-export { lintFingerprint } from "./lint.js";
-export type { ParsedFingerprint, ParseOptions } from "./parser.js";
-export { parseFingerprint, splitRaw } from "./parser.js";
+export { lintExpression } from "./lint.js";
+export type { ParsedExpression, ParseOptions } from "./parser.js";
+export { parseExpression, splitRaw } from "./parser.js";
 export type { FrontmatterShape } from "./schema.js";
 export {
   FrontmatterSchema,
@@ -62,10 +62,10 @@ export {
   validateFrontmatter,
 } from "./schema.js";
 export type { SerializeOptions } from "./writer.js";
-export { serializeFingerprint } from "./writer.js";
+export { serializeExpression } from "./writer.js";
 
-/** Canonical filename for the emitted fingerprint. */
-export const FINGERPRINT_FILENAME = "fingerprint.md";
+/** Canonical filename for the emitted expression. */
+export const EXPRESSION_FILENAME = "expression.md";
 
 export interface LoadOptions {
   /** Skip `extends:` resolution. Default: false (extends chains are resolved). */
@@ -81,20 +81,20 @@ export interface LoadOptions {
 }
 
 /**
- * Load a ParsedFingerprint from disk.
+ * Load a ParsedExpression from disk.
  *
- * If the file declares `extends:`, the parent is loaded recursively and
- * merged per the rules in compose.ts: child wins, decisions merged by
+ * If the file declares `extends:`, the base expression is loaded recursively and
+ * merged per the rules in compose.ts: overlay wins, decisions merged by
  * dimension, palette roles merged by role.
  *
- * If a `decisions/` directory sits next to the fingerprint.md, each .md
- * inside is assembled into the fingerprint's decisions[], merged by
+ * If a `decisions/` directory sits next to the expression.md, each .md
+ * inside is assembled into the expression's decisions[], merged by
  * dimension — allowing large systems to split their rules across files.
  */
-export async function loadFingerprint(
+export async function loadExpression(
   path: string,
   options: LoadOptions = {},
-): Promise<ParsedFingerprint> {
+): Promise<ParsedExpression> {
   assertMarkdownPath(path);
 
   const parsed = options.noExtends
@@ -102,22 +102,22 @@ export async function loadFingerprint(
     : await loadWithExtends(path, new Set());
 
   const absolute = isAbsolute(path) ? path : resolve(path);
-  const fingerprintDir = dirname(absolute);
+  const expressionDir = dirname(absolute);
 
   if (!options.noFragments) {
-    const fragments = await loadDecisionFragments(fingerprintDir);
+    const fragments = await loadDecisionFragments(expressionDir);
     if (fragments.length) {
-      parsed.fingerprint.decisions = mergeDecisionsByDimension(
-        parsed.fingerprint.decisions ?? [],
+      parsed.expression.decisions = mergeDecisionsByDimension(
+        parsed.expression.decisions ?? [],
         fragments,
       );
     }
   }
 
   if (!options.noEmbeddingBackfill) {
-    parsed.fingerprint.embedding = await resolveEmbedding(
-      parsed.fingerprint,
-      fingerprintDir,
+    parsed.expression.embedding = await resolveEmbedding(
+      parsed.expression,
+      expressionDir,
       parsed.bodyRaw,
     );
   }
@@ -126,10 +126,10 @@ export async function loadFingerprint(
 }
 
 /**
- * Resolve the embedding for an fingerprint.md in order:
+ * Resolve the embedding for an expression.md in order:
  *   1. Inline `embedding:` in frontmatter (trust as cache).
  *   2. Explicit body link to `embedding.md` (fragment file).
- *   3. Conventional sibling `embedding.md` next to fingerprint.md.
+ *   3. Conventional sibling `embedding.md` next to expression.md.
  *   4. Recompute from the structured blocks.
  *
  * This matches the agent-skills progressive-disclosure model — the thin
@@ -137,34 +137,31 @@ export async function loadFingerprint(
  * be rebuilt any time from source-of-truth data.
  */
 async function resolveEmbedding(
-  fingerprint: Fingerprint,
-  fingerprintDir: string,
+  expression: Expression,
+  expressionDir: string,
   bodyRaw: string | undefined,
 ): Promise<number[]> {
-  if (fingerprint.embedding && fingerprint.embedding.length > 0) {
-    return fingerprint.embedding;
+  if (expression.embedding && expression.embedding.length > 0) {
+    return expression.embedding;
   }
   const referenced = bodyRaw
-    ? resolveEmbeddingReference(bodyRaw, fingerprintDir)
+    ? resolveEmbeddingReference(bodyRaw, expressionDir)
     : null;
   if (referenced) {
-    const fromFragment = await loadEmbeddingFragment(
-      fingerprintDir,
-      referenced,
-    );
+    const fromFragment = await loadEmbeddingFragment(expressionDir, referenced);
     if (fromFragment) return fromFragment;
   }
   // Only attempt to recompute when the structured blocks are all present.
-  // Partial fingerprints (e.g. an extends-child loaded with noExtends:true)
+  // Partial expressions (e.g. an extends overlay loaded with noExtends:true)
   // don't have enough signal yet — leave the embedding empty and let the
   // caller resolve it after composing.
   if (
-    fingerprint.palette &&
-    fingerprint.spacing &&
-    fingerprint.typography &&
-    fingerprint.surfaces
+    expression.palette &&
+    expression.spacing &&
+    expression.typography &&
+    expression.surfaces
   ) {
-    return computeEmbedding(fingerprint);
+    return computeEmbedding(expression);
   }
   return [];
 }
@@ -186,16 +183,16 @@ function mergeDecisionsByDimension(
   return out;
 }
 
-async function loadRaw(path: string): Promise<ParsedFingerprint> {
+async function loadRaw(path: string): Promise<ParsedExpression> {
   assertMarkdownPath(path);
   const raw = await readFile(path, "utf-8");
-  return parseFingerprint(raw);
+  return parseExpression(raw);
 }
 
 async function loadWithExtends(
   path: string,
   visited: Set<string>,
-): Promise<ParsedFingerprint> {
+): Promise<ParsedExpression> {
   assertMarkdownPath(path);
   const absolute = isAbsolute(path) ? path : resolve(path);
   if (visited.has(absolute)) {
@@ -206,27 +203,27 @@ async function loadWithExtends(
   visited.add(absolute);
 
   const raw = await readFile(absolute, "utf-8");
-  const child = parseFingerprint(raw);
-  if (!child.meta.extends) {
-    return child;
+  const overlay = parseExpression(raw);
+  if (!overlay.meta.extends) {
+    return overlay;
   }
 
-  const parentPath = resolve(dirname(absolute), child.meta.extends);
-  const parent = await loadWithExtends(parentPath, visited);
+  const basePath = resolve(dirname(absolute), overlay.meta.extends);
+  const base = await loadWithExtends(basePath, visited);
 
-  const merged = mergeFingerprint(parent.fingerprint, child.fingerprint);
+  const merged = mergeExpression(base.expression, overlay.expression);
   // The merged result must satisfy the strict YAML schema. The in-memory
-  // fingerprint may carry body-owned prose (summary, decision rationale,
+  // expression may carry body-owned prose (summary, decision rationale,
   // values) that the schema forbids — strip it via mergeFrontmatter before
   // validating.
   validateFrontmatter(mergeFrontmatter(merged));
 
-  // Meta merge: child wins on everything except extends (dropped after resolve)
-  const { extends: _dropped, ...childMeta } = child.meta;
+  // Meta merge: overlay wins on everything except extends (dropped after resolve)
+  const { extends: _dropped, ...overlayMeta } = overlay.meta;
   return {
-    fingerprint: merged,
-    meta: { ...parent.meta, ...childMeta },
-    body: child.body,
-    bodyRaw: child.bodyRaw,
+    expression: merged,
+    meta: { ...base.meta, ...overlayMeta },
+    body: overlay.body,
+    bodyRaw: overlay.bodyRaw,
   };
 }

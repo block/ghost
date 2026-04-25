@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lintFingerprint } from "../../src/core/fingerprint/index.js";
+import { lintExpression } from "../../src/core/expression/index.js";
 
 const HEADER = `---
 name: Claude
@@ -35,12 +35,12 @@ function build(frontmatterExtras: string, body: string): string {
   return `${HEADER}${frontmatterExtras}\n${PALETTE_BLOCK}\n---\n\n${body}`;
 }
 
-describe("lintFingerprint", () => {
+describe("lintExpression", () => {
   it("reports no errors on a clean file", () => {
     const md = build(
       `\nobservation:
   personality: []
-  closestSystems: []
+  resembles: []
 decisions:
   - dimension: warm-neutrals`,
       `# Character
@@ -60,7 +60,7 @@ No cool grays
 - \`#141413\`
 `,
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(report.errors).toBe(0);
   });
 
@@ -70,7 +70,7 @@ No cool grays
   - dimension: warm-neutrals`,
       `# Only a stray heading`,
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(
       report.issues.some(
         (i) => i.rule === "orphan-dimension" && /warm-neutrals/.test(i.message),
@@ -87,7 +87,7 @@ No cool grays
 Rationale without frontmatter decisions[] entry — body is authoritative.
 `,
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     // Schema 5: body ### headings are authoritative and can stand alone;
     // only unmatched frontmatter slugs are flagged.
     expect(report.issues.some((i) => i.rule === "orphan-dimension")).toBe(
@@ -100,13 +100,13 @@ Rationale without frontmatter decisions[] entry — body is authoritative.
       `\nobservation:
   summary: "prose in YAML — should fail"
   personality: []
-  closestSystems: []
+  resembles: []
 values:
   do: ["stray YAML"]
   dont: []`,
       ``,
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
     expect(report.errors).toBeGreaterThan(0);
   });
@@ -124,13 +124,13 @@ refers to a ghost color
 - \`#000000\`
 `,
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "broken-evidence")).toBe(true);
   });
 
   it("flags palette colors not cited in any decision as info", () => {
     const md = build("", "");
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     const unused = report.issues.filter((i) => i.rule === "unused-palette");
     expect(unused.length).toBeGreaterThan(0);
     expect(unused.every((i) => i.severity === "info")).toBe(true);
@@ -138,13 +138,13 @@ refers to a ghost color
 
   it("honors --off to silence a rule", () => {
     const md = build("", "");
-    const report = lintFingerprint(md, { off: ["unused-palette"] });
+    const report = lintExpression(md, { off: ["unused-palette"] });
     expect(report.issues.some((i) => i.rule === "unused-palette")).toBe(false);
   });
 
   it("honors --strict to promote a rule to error", () => {
     const md = build("", "");
-    const report = lintFingerprint(md, { strict: ["unused-palette"] });
+    const report = lintExpression(md, { strict: ["unused-palette"] });
     const unused = report.issues.filter((i) => i.rule === "unused-palette");
     expect(unused.length).toBeGreaterThan(0);
     expect(unused.every((i) => i.severity === "error")).toBe(true);
@@ -160,7 +160,7 @@ roles:
     evidence: ["src/ui/button.tsx:12"]`,
       "",
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
       false,
     );
@@ -176,7 +176,7 @@ roles:
     evidence: ["src/ui/button.tsx:12"]`,
       "",
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     const broken = report.issues.filter(
       (i) => i.rule === "broken-role-reference",
     );
@@ -195,7 +195,7 @@ roles:
     evidence: ["src/ui/button.tsx:12"]`,
       "",
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     const broken = report.issues.find(
       (i) => i.rule === "broken-role-reference",
     );
@@ -213,7 +213,7 @@ roles:
     evidence: ["src/ui/button.tsx:12"]`,
       "",
     );
-    const report = lintFingerprint(md);
+    const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
       false,
     );

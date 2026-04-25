@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { checkBounds } from "../../src/core/evolution/sync.js";
 import type {
   DimensionAck,
-  Fingerprint,
-  FingerprintComparison,
+  Expression,
+  ExpressionComparison,
   SyncManifest,
 } from "../../src/core/types.js";
 
@@ -21,10 +21,10 @@ function makeManifest(
   }
 
   return {
-    parent: { type: "default" },
+    tracks: { type: "path", value: "./tracked.expression.md" },
     ackedAt: new Date().toISOString(),
-    parentFingerprintId: "parent",
-    childFingerprintId: "child",
+    trackedExpressionId: "tracked",
+    localExpressionId: "local",
     dimensions: fullDimensions,
     overallDistance: 0.2,
   };
@@ -32,8 +32,8 @@ function makeManifest(
 
 function makeComparison(
   dimensions: Record<string, number>,
-): FingerprintComparison {
-  const fp: Fingerprint = {
+): ExpressionComparison {
+  const fp: Expression = {
     id: "test",
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -55,13 +55,6 @@ function makeComparison(
       borderRadii: [],
       shadowComplexity: "none",
       borderUsage: "minimal",
-    },
-    architecture: {
-      tokenization: 0,
-      methodology: [],
-      componentCount: 0,
-      componentCategories: {},
-      namingPattern: "unknown",
     },
     embedding: [],
   };
@@ -122,7 +115,7 @@ describe("checkBounds", () => {
     expect(result.reconverging).toContain("palette");
   });
 
-  it("does not flag reconverging if still far from parent", () => {
+  it("does not flag reconverging if still far from tracked expression", () => {
     const manifest = makeManifest({
       palette: { distance: 0.4, stance: "diverging" },
     });

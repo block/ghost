@@ -52,7 +52,7 @@
             "type": "string"
           }
         },
-        "closestSystems": {
+        "resembles": {
           "type": "array",
           "items": {
             "type": "string"
@@ -370,6 +370,6 @@
     "surfaces"
   ],
   "additionalProperties": false,
-  "title": "Ghost Fingerprint Frontmatter",
-  "description": "Schema for YAML frontmatter in Ghost fingerprint.md files."
+  "title": "Ghost Expression Frontmatter",
+  "description": "Schema for YAML frontmatter in Ghost expression.md files."
 }

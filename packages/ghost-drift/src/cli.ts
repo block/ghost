@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { cac } from "cac";
 import {
   compare,
-  FINGERPRINT_FILENAME,
+  EXPRESSION_FILENAME,
   formatComparison,
   formatComparisonJSON,
   formatCompositeComparison,
@@ -14,17 +14,17 @@ import {
   formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
-  layoutFingerprint,
-  lintFingerprint,
-  loadFingerprint,
+  layoutExpression,
+  lintExpression,
+  loadExpression,
   readHistory,
   readSyncManifest,
 } from "./core/index.js";
 import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
-  registerAdoptCommand,
   registerDivergeCommand,
+  registerTrackCommand,
 } from "./evolution-commands.js";
 
 export function buildCli(): ReturnType<typeof cac> {
@@ -33,8 +33,8 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- compare ---
   cli
     .command(
-      "compare [...fingerprints]",
-      "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
+      "compare [...expressions]",
+      "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
     )
     .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
     .option(
@@ -46,12 +46,12 @@ export function buildCli(): ReturnType<typeof cac> {
       "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (fingerprints: string[], opts) => {
+    .action(async (expressions: string[], opts) => {
       try {
         const parsed = await Promise.all(
-          fingerprints.map((path) => loadFingerprint(path)),
+          expressions.map((path) => loadExpression(path)),
         );
-        const exprs = parsed.map((p) => p.fingerprint);
+        const exprs = parsed.map((p) => p.expression);
 
         let history: Awaited<ReturnType<typeof readHistory>> | undefined;
         let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null =
@@ -115,15 +115,15 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- lint ---
   cli
     .command(
-      "lint [fingerprint]",
-      "Validate fingerprint.md schema and body/frontmatter coherence",
+      "lint [expression]",
+      "Validate expression.md schema and body/frontmatter coherence",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
+        const target = resolve(process.cwd(), path ?? EXPRESSION_FILENAME);
         const raw = await readFile(target, "utf-8");
-        const report = lintFingerprint(raw);
+        const report = lintExpression(raw);
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -157,15 +157,15 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- describe ---
   cli
     .command(
-      "describe [fingerprint]",
-      "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+      "describe [expression]",
+      "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
+        const target = resolve(process.cwd(), path ?? EXPRESSION_FILENAME);
         const raw = await readFile(target, "utf-8");
-        const layout = layoutFingerprint(raw);
+        const layout = layoutExpression(raw);
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify({ path: target, ...layout }, null, 2)}\n`,
@@ -183,7 +183,7 @@ export function buildCli(): ReturnType<typeof cac> {
     });
 
   registerAckCommand(cli);
-  registerAdoptCommand(cli);
+  registerTrackCommand(cli);
   registerDivergeCommand(cli);
   registerEmitCommand(cli);
 

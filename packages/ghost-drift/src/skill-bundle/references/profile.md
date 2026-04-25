@@ -1,18 +1,18 @@
 ---
 name: profile
-description: Write fingerprint.md from a project's design sources.
+description: Write expression.md from a project's design sources.
 handoffs:
-  - label: Compare against a parent or peer fingerprint
+  - label: Compare against another expression
     skill: compare
-    prompt: Compare the fingerprint.md I just wrote against a parent or peer
+    prompt: Compare the expression.md I just wrote against another expression
   - label: Emit a project-scoped drift review command
     command: ghost-drift emit review-command
-    prompt: Emit a per-project review command derived from this fingerprint.md
+    prompt: Emit a per-project review command derived from this expression.md
 ---
 
-# Recipe: Profile a project into fingerprint.md
+# Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `fingerprint.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost-drift lint` for validation.
+**Goal:** produce a valid `expression.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost-drift lint` for validation.
 
 ## Steps
 
@@ -36,7 +36,7 @@ If a value is a reference, follow it:
 
 `--btn-bg: var(--color-primary)` → `--color-primary: var(--brand-500)` → `--brand-500: #0066cc`
 
-Record the resolved concrete value. Stopping at the first indirection produces useless fingerprints.
+Record the resolved concrete value. Stopping at the first indirection produces useless expressions.
 
 ### 3. Read component files (for the roles layer)
 
@@ -52,8 +52,8 @@ These become `roles[]`. Only record what you directly observed. Projects with no
 Write subjectively. 2-4 sentences capturing what this design language is and how it feels. Then:
 
 - `personality`: 3-6 adjectives (`utilitarian`, `editorial`, `dense`, `playful`, …)
-- `distinctiveTraits`: what makes this system *visually recognizable* — include notable absences (e.g. "no decorative elements at all")
-- `closestSystems`: 1-3 well-known systems this resembles (Linear, Geist, Material 3, …)
+- `distinctiveTraits`: what makes this expression *visually recognizable* — include notable absences (e.g. "no decorative elements at all")
+- `resembles`: 1-3 well-known references this resembles (Linear, Geist, Material 3, …)
 
 ### 5. Derive Layer 2 — Design Decisions (abstract)
 
@@ -76,16 +76,16 @@ Populate the structured fields: `palette.dominant`, `palette.neutrals`, `palette
 
 ### 7. Write the file
 
-Copy [../assets/fingerprint.template.md](../assets/fingerprint.template.md) as a starting point. Fill in:
+Copy [../assets/expression.template.md](../assets/expression.template.md) as a starting point. Fill in:
 
-- **Frontmatter:** all structured fields (identity, `observation.personality`/`.closestSystems`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`).
+- **Frontmatter:** all structured fields (identity, `observation.personality`/`.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`).
 - **Body:** `# Character` (observation summary), `# Signature` (distinctiveTraits bullets), `# Decisions` (one `### <dim>` block per decision, containing the prose rationale).
 
 Partition matters. See [schema.md](schema.md) for which field lives where.
 
 ### 8. Validate
 
-    ghost-drift lint fingerprint.md
+    ghost-drift lint expression.md
 
 Fix any errors it reports. Common ones:
 
@@ -94,8 +94,8 @@ Fix any errors it reports. Common ones:
 - Palette entry not cited in any evidence → cite it or drop it
 ### 9. Sanity check
 
-    ghost-drift compare fingerprint.md fingerprint.md    # self-distance should be 0
+    ghost-drift compare expression.md expression.md    # self-distance should be 0
 
 ## When you cannot profile
 
-If the project has no styling (backend-only, no UI), say so. Do not fabricate a fingerprint. A placeholder fingerprint poisons every downstream comparison.
+If the project has no styling (backend-only, no UI), say so. Do not fabricate an expression. A placeholder expression poisons every downstream comparison.

@@ -1,7 +1,7 @@
 import type { DesignDecision } from "../types.js";
 
 /**
- * Structured read of an fingerprint.md body. The body is authoritative for
+ * Structured read of an expression.md body. The body is authoritative for
  * prose — # Character, # Signature, and per-dimension rationale under
  * # Decisions. Machine-facts (dimension slugs, evidence, tokens) live in
  * the frontmatter and are joined in by `applyBody` during parse.

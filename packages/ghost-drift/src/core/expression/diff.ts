@@ -1,4 +1,4 @@
-import type { DesignDecision, Fingerprint } from "../types.js";
+import type { DesignDecision, Expression } from "../types.js";
 
 export interface DecisionChange {
   dimension: string;
@@ -41,13 +41,13 @@ export interface SemanticDiff {
 }
 
 /**
- * Produce a semantic diff between two fingerprints — decisions added/
+ * Produce a semantic diff between two expressions — decisions added/
  * removed/modified (matched by dimension slug), palette role swaps, and
  * token-scale changes. This is *not* a vector distance calculation (see
- * compareFingerprints for that) — it's the qualitative "what changed in
+ * compareExpressions for that) — it's the qualitative "what changed in
  * meaning" that shows up in PR reviews.
  */
-export function diffFingerprints(a: Fingerprint, b: Fingerprint): SemanticDiff {
+export function diffExpressions(a: Expression, b: Expression): SemanticDiff {
   const decisions = diffDecisions(a.decisions ?? [], b.decisions ?? []);
   const palette = diffPalette(a, b);
   const tokens = diffTokens(a, b);
@@ -108,7 +108,7 @@ function diffDecisions(
   return { added, removed, modified };
 }
 
-function diffPalette(a: Fingerprint, b: Fingerprint): SemanticDiff["palette"] {
+function diffPalette(a: Expression, b: Expression): SemanticDiff["palette"] {
   const fromDominant = byRole(a.palette?.dominant ?? []);
   const toDominant = byRole(b.palette?.dominant ?? []);
   const fromSemantic = byRole(a.palette?.semantic ?? []);
@@ -156,7 +156,7 @@ function changedColors(
   return out;
 }
 
-function diffTokens(a: Fingerprint, b: Fingerprint): TokenChange[] {
+function diffTokens(a: Expression, b: Expression): TokenChange[] {
   const out: TokenChange[] = [];
   const pairs: Array<[string, unknown, unknown]> = [
     ["spacing.scale", a.spacing?.scale, b.spacing?.scale],

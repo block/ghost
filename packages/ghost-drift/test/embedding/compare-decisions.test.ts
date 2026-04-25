@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { compareFingerprints } from "../../src/core/embedding/compare.js";
-import type { DesignDecision, Fingerprint } from "../../src/core/types.js";
+import { compareExpressions } from "../../src/core/embedding/compare.js";
+import type { DesignDecision, Expression } from "../../src/core/types.js";
 
 /**
- * Minimal fingerprint skeleton — identical palette/spacing/typography/surfaces
+ * Minimal expression skeleton — identical palette/spacing/typography/surfaces
  * across fixtures so only the decisions layer affects the compare output.
  */
 function baseExpression(
   id: string,
   decisions: DesignDecision[] = [],
-): Fingerprint {
+): Expression {
   return {
     id,
     source: "llm",
@@ -46,9 +46,9 @@ function conceptVector(concept: number, dims = 8, jitter = 0): number[] {
   return v.map((x) => x / norm);
 }
 
-describe("compareFingerprints — decisions", () => {
+describe("compareExpressions — decisions", () => {
   it("paraphrased decisions match when embeddings are close", () => {
-    // Two fingerprints describe the same design decision with different words,
+    // Two expressions describe the same design decision with different words,
     // but the embeddings (simulated here) cluster near the same concept index.
     const a = baseExpression("a", [
       {
@@ -80,7 +80,7 @@ describe("compareFingerprints — decisions", () => {
       },
     ]);
 
-    const result = compareFingerprints(a, b);
+    const result = compareExpressions(a, b);
     const decisionsDim = result.dimensions.decisions;
 
     expect(decisionsDim).toBeDefined();
@@ -119,7 +119,7 @@ describe("compareFingerprints — decisions", () => {
       },
     ]);
 
-    const result = compareFingerprints(a, b);
+    const result = compareExpressions(a, b);
     expect(result.dimensions.decisions.distance).toBeGreaterThan(0.5);
     expect(result.dimensions.decisions.description).toMatch(
       /fundamentally|divergence/i,
@@ -128,7 +128,7 @@ describe("compareFingerprints — decisions", () => {
 
   it("missing embeddings: decisions recorded but not scored", () => {
     // Decisions exist on both sides but neither has embeddings (pre-embedding
-    // fingerprint or no embedding provider was configured). The dimension
+    // expression or no embedding provider was configured). The dimension
     // should be reported qualitatively and contribute 0 to the weighted score.
     const a = baseExpression("a", [
       { dimension: "color-strategy", decision: "X", evidence: [] },
@@ -137,7 +137,7 @@ describe("compareFingerprints — decisions", () => {
       { dimension: "color-strategy", decision: "Y", evidence: [] },
     ]);
 
-    const result = compareFingerprints(a, b);
+    const result = compareExpressions(a, b);
     expect(result.dimensions.decisions.distance).toBe(0);
     expect(result.dimensions.decisions.description).toMatch(/not scored/i);
 
@@ -150,7 +150,7 @@ describe("compareFingerprints — decisions", () => {
     const a = baseExpression("a", []);
     const b = baseExpression("b", []);
 
-    const result = compareFingerprints(a, b);
+    const result = compareExpressions(a, b);
     expect(result.dimensions.decisions).toBeUndefined();
   });
 });

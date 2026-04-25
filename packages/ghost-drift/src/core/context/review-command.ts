@@ -1,31 +1,31 @@
-import type { Fingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 export interface EmitReviewInput {
-  fingerprint: Fingerprint;
+  expression: Expression;
 }
 
 /**
- * Emit a project-fitted drift-review slash command from an fingerprint.
+ * Emit a project-fitted drift-review slash command from an expression.
  *
  * Produces a single Markdown file styled after Rams' `/rams` slash command
  * — role prompt, per-dimension rule tables, output template, guidelines —
- * populated with this system's actual palette, radii, spacing, and
+ * populated with this expression's actual palette, radii, spacing, and
  * typography values. Default output path: `.claude/commands/design-review.md`.
  *
  * Scope is drift-only: off-palette hex, off-ramp spacing, non-canonical
  * radii and weights. Universal accessibility rules are out of scope —
  * those belong in Rams or a sibling a11y skill.
  *
- * Pure: deterministic over the same fingerprint. The fingerprint is
- * expected to be the unioned result of `loadFingerprint` — body prose
+ * Pure: deterministic over the same expression. The expression is
+ * expected to be the unioned result of `loadExpression` — body prose
  * (Character summary, per-decision rationale) is already folded into
  * `observation.summary` and `decisions[].decision`.
  */
 export function emitReviewCommand(input: EmitReviewInput): string {
-  const { fingerprint: fp } = input;
+  const { expression: fp } = input;
   const id = fp.id;
   const personality = (fp.observation?.personality ?? []).join(", ");
-  const cousins = (fp.observation?.closestSystems ?? []).join(", ");
+  const cousins = (fp.observation?.resembles ?? []).join(", ");
   const character = fp.observation?.summary?.trim() ?? "";
 
   const parts = [
@@ -46,7 +46,7 @@ export function emitReviewCommand(input: EmitReviewInput): string {
 
 function frontmatter(id: string): string {
   return `---
-description: Drift review for ${id} — fitted to this system's design fingerprint
+description: Drift review for ${id} — fitted to this expression's design language
 ---`;
 }
 
@@ -88,7 +88,7 @@ const TRUE_SEMANTIC_ROLES = new Set([
   "error",
 ]);
 
-function paletteSection(fp: Fingerprint): string {
+function paletteSection(fp: Expression): string {
   const allowed = allowedPalette(fp);
   const allowedList = allowed.map((h) => `\`${h}\``).join(", ");
   const dominant = fp.palette.dominant
@@ -141,7 +141,7 @@ function paletteSection(fp: Fingerprint): string {
   return lines.join("\n");
 }
 
-function allowedPalette(fp: Fingerprint): string[] {
+function allowedPalette(fp: Expression): string[] {
   const all = [
     ...fp.palette.dominant.map((c) => c.value),
     ...fp.palette.neutrals.steps,
@@ -152,7 +152,7 @@ function allowedPalette(fp: Fingerprint): string[] {
 
 // --- Radius -------------------------------------------------------------
 
-function radiusSection(fp: Fingerprint): string {
+function radiusSection(fp: Expression): string {
   const radii = fp.surfaces.borderRadii;
   if (!radii?.length) return "";
   const labeled = radii.map((r) => (r >= 999 ? "999px (pill)" : `${r}px`));
@@ -182,7 +182,7 @@ function radiusSection(fp: Fingerprint): string {
 
 // --- Spacing ------------------------------------------------------------
 
-function spacingSection(fp: Fingerprint): string {
+function spacingSection(fp: Expression): string {
   const scale = fp.spacing.scale;
   if (!scale?.length) return "";
   const allowedList = scale.map((s) => `\`${s}px\``).join(", ");
@@ -207,7 +207,7 @@ function spacingSection(fp: Fingerprint): string {
 
 // --- Typography ---------------------------------------------------------
 
-function typographySection(fp: Fingerprint): string {
+function typographySection(fp: Expression): string {
   const t = fp.typography;
   if (!t) return "";
   const families = t.families
@@ -254,7 +254,7 @@ const COVERED_DIMENSIONS = new Set([
   "typography",
 ]);
 
-function otherDimensions(fp: Fingerprint): string {
+function otherDimensions(fp: Expression): string {
   const blocks: string[] = [];
   for (const d of fp.decisions ?? []) {
     if (COVERED_DIMENSIONS.has(d.dimension)) continue;
@@ -304,17 +304,17 @@ function guidelines(): string {
 5. If asked, offer to fix directly`;
 }
 
-function footer(fp: Fingerprint): string {
+function footer(fp: Expression): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`fingerprint.md\` (${count} decisions). Re-run \`ghost-drift emit review-command\` after fingerprint updates.`;
+Generated from \`expression.md\` (${count} decisions). Re-run \`ghost-drift emit review-command\` after expression updates.`;
 }
 
 // --- helpers ------------------------------------------------------------
 
 function findRationale(
-  fp: Fingerprint,
+  fp: Expression,
   candidates: string[],
 ): string | undefined {
   for (const dim of candidates) {

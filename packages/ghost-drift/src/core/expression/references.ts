@@ -1,4 +1,4 @@
-import type { Fingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 /**
  * Role token reference syntax: `{palette.dominant.<role>}` or
@@ -57,13 +57,13 @@ export interface ResolveResult {
 const SUPPORTED_NAMESPACES = ["palette.dominant", "palette.semantic"];
 
 /**
- * Resolve a `{...}` reference against a fingerprint. Returns the primitive
+ * Resolve a `{...}` reference against an expression. Returns the primitive
  * value (hex string) when resolvable, plus a structured error describing why
  * resolution failed otherwise. Callers that just want the value can ignore
  * `error`; the linter uses it to report `broken-role-reference` precisely.
  */
 export function resolveTokenReference(
-  fp: Fingerprint,
+  fp: Expression,
   value: string,
 ): ResolveResult {
   const parsed = parseTokenReference(value);
@@ -99,7 +99,7 @@ export function resolveTokenReference(
 }
 
 function lookupNamespace(
-  fp: Fingerprint,
+  fp: Expression,
   namespace: string,
 ): { role: string; value: string }[] | null {
   switch (namespace) {

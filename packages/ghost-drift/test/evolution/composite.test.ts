@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { compareComposite } from "../../src/core/evolution/composite.js";
-import type { CompositeMember, Fingerprint } from "../../src/core/types.js";
+import type { CompositeMember, Expression } from "../../src/core/types.js";
 
 function makeCompositeMember(
   id: string,
@@ -11,7 +11,7 @@ function makeCompositeMember(
     embedding[Number(idx)] = val;
   }
 
-  const fp: Fingerprint = {
+  const fp: Expression = {
     id,
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -44,7 +44,7 @@ function makeCompositeMember(
     embedding,
   };
 
-  return { id, fingerprint: fp };
+  return { id, expression: fp };
 }
 
 describe("compareComposite", () => {

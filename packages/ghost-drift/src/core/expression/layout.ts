@@ -1,14 +1,14 @@
 import { parse as parseYaml } from "yaml";
 
 /**
- * A single addressable region of a fingerprint.md file. `start`/`end` are
+ * A single addressable region of an expression.md file. `start`/`end` are
  * 1-indexed line numbers (inclusive), chosen so they plug directly into
  * the Read tool's `offset`/`limit` pair (`limit = end - start + 1`).
  *
  * `tokens` is a char/4 approximation — cheap, stable, and sufficient for
  * an agent to budget context before loading a section.
  */
-export interface FingerprintLayoutSection {
+export interface ExpressionLayoutSection {
   kind: "frontmatter" | "body" | "decision";
   /** For body sections, the H1 heading text. For decisions, the H3 text. */
   heading?: string;
@@ -21,25 +21,25 @@ export interface FingerprintLayoutSection {
   tokens: number;
 }
 
-export interface FingerprintLayout {
+export interface ExpressionLayout {
   lines: number;
   tokens: number;
-  sections: FingerprintLayoutSection[];
+  sections: ExpressionLayoutSection[];
 }
 
 /**
- * Produce a section map of a raw fingerprint.md string. The map is the
+ * Produce a section map of a raw expression.md string. The map is the
  * structural index an agent can use to selectively read only the parts
  * it needs — frontmatter alone, a single `### dimension` decision block,
  * etc. — without loading the whole file.
  *
  * The scan is line-oriented and deliberately tolerant: a malformed or
- * partial fingerprint still produces a usable layout. Validation belongs
+ * partial expression still produces a usable layout. Validation belongs
  * to `lint`, not here.
  */
-export function layoutFingerprint(raw: string): FingerprintLayout {
+export function layoutExpression(raw: string): ExpressionLayout {
   const lines = raw.split(/\r?\n/);
-  const sections: FingerprintLayoutSection[] = [];
+  const sections: ExpressionLayoutSection[] = [];
 
   const frontmatter = scanFrontmatter(lines);
   const bodyStart = frontmatter ? frontmatter.end + 1 : 1;
@@ -173,7 +173,7 @@ function scanHeadings(
       out.push({ lineNumber: i + 1, level, text: m[2].trim() });
     } else if (m[1].length < level) {
       // A shallower heading ends the region when scanning nested headings
-      // inside a bounded parent.
+      // inside a bounded section.
       if (endLine !== lines.length) break;
     }
   }
@@ -222,7 +222,7 @@ function slug(s: string): string {
  * default output an agent streams into its context when it wants to
  * decide which sections to load.
  */
-export function formatLayout(layout: FingerprintLayout, path?: string): string {
+export function formatLayout(layout: ExpressionLayout, path?: string): string {
   const header = `${path ? `${path} — ` : ""}${layout.lines} lines, ~${layout.tokens.toLocaleString()} tokens`;
   const rows: string[] = [header, ""];
   for (const s of layout.sections) {
@@ -231,7 +231,7 @@ export function formatLayout(layout: FingerprintLayout, path?: string): string {
   return rows.join("\n");
 }
 
-function formatRow(s: FingerprintLayoutSection): string {
+function formatRow(s: ExpressionLayoutSection): string {
   const range = `${s.start}–${s.end}`;
   const tok = `~${s.tokens.toLocaleString()} tok`;
   if (s.kind === "frontmatter") {

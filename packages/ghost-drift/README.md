@@ -1,8 +1,8 @@
 # ghost-drift
 
-**Deterministic design drift detection. Six verbs. No LLM calls.**
+**Deterministic design drift detection. Seven verbs. No LLM calls.**
 
-`ghost-drift` captures a design language as a human-readable `fingerprint.md` (49-dim embedding + three-layer prose body) and gives any agent the primitives to detect drift against it. Judgement lives in whatever agent you already use; arithmetic lives here.
+`ghost-drift` captures a design language as a human-readable `expression.md` (49-dim embedding + three-layer prose body) and gives any agent the primitives to detect drift against it. Judgement lives in whatever agent you already use; arithmetic lives here.
 
 ## Requirements
 
@@ -35,11 +35,11 @@ Once npm publishing is unblocked this will move to the registry — swap the URL
 ## Use
 
 ```bash
-ghost-drift lint fingerprint.md                       # validate schema + partition
-ghost-drift compare a/fingerprint.md b/fingerprint.md # pairwise distance (N=2)
-ghost-drift compare ./*/fingerprint.md                # composite, N≥3
-ghost-drift ack                                       # acknowledge drift against parent
-ghost-drift adopt path/to/new-parent.md               # adopt a new parent baseline
+ghost-drift lint expression.md                       # validate schema + partition
+ghost-drift compare a/expression.md b/expression.md # pairwise distance (N=2)
+ghost-drift compare ./*/expression.md                # composite, N≥3
+ghost-drift ack                                       # acknowledge drift against the tracked expression
+ghost-drift track path/to/new-tracked.md              # track another expression
 ghost-drift diverge <dimension>                       # declare intentional divergence
 ghost-drift emit skill                                # install the agent recipe bundle
 ghost-drift emit review-command                       # emit a per-project review slash command
@@ -52,18 +52,18 @@ Zero config for every verb. No API key needed. `OPENAI_API_KEY` / `VOYAGE_API_KE
 
 ```ts
 import {
-  parseFingerprint,
-  lintFingerprint,
-  diffFingerprints,
-  compareFingerprints,
+  parseExpression,
+  lintExpression,
+  diffExpressions,
+  compareExpressions,
 } from "ghost-drift";
 
-const { fingerprint } = parseFingerprint(await readFile("fingerprint.md", "utf8"));
-const report = lintFingerprint(source);
-const distance = compareFingerprints(a, b);
+const { expression } = parseExpression(await readFile("expression.md", "utf8"));
+const report = lintExpression(source);
+const distance = compareExpressions(a, b);
 ```
 
-All exports are browser-safe except the ones that read from disk (history, sync manifest, parent resolution).
+All exports are browser-safe except the ones that read from disk (history, sync manifest, tracked-expression resolution).
 
 ## BYOA — bring your own agent
 
@@ -77,7 +77,7 @@ The agent runs the recipes; the CLI runs the arithmetic. The CLI never calls an 
 
 ## Full story
 
-See the [project README](https://github.com/block/ghost#readme) for the philosophy, the fingerprint format spec, the parent/child/composite topology, and the reference design language (Ghost UI).
+See the [project README](https://github.com/block/ghost#readme) for the philosophy, the expression format spec, composite comparison, and the reference design language (Ghost UI).
 
 ## License
 

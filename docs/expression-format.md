@@ -1,15 +1,15 @@
-# The `fingerprint.md` format
+# The `expression.md` format
 
-A Ghost **fingerprint** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost-drift compare`, `ghost-drift lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
+A Ghost **expression** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost-drift compare`, `ghost-drift lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
 
 The file has two parts, and each owns **different data**:
 
-1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs, evidence, personality/closestSystems tags, embedding. Validated by zod. Read by deterministic tools.
+1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs, evidence, personality/resembles tags, embedding. Validated by zod. Read by deterministic tools.
 2. **Body (Markdown)** — the **prose layer**. Character paragraph, Signature bullets, Decision rationale. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
-Canonical filename: `fingerprint.md` (flat, no dotfile, no slug prefix). Zero-config default for every Ghost command that reads a fingerprint.
+Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-config default for every Ghost command that reads an expression.
 
 Current schema version: **4**.
 
@@ -19,12 +19,12 @@ Schema 4 extracts the 49-dimensional `embedding` into a sibling `embedding.md` f
 
 ## The partition (the one rule)
 
-The frontmatter and the body own disjoint fields. The reader unions them into a single in-memory Fingerprint.
+The frontmatter and the body own disjoint fields. The reader unions them into a single in-memory Expression.
 
-| Fingerprint field | Lives in | Section / key |
+| Expression field | Lives in | Section / key |
 |---|---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
-| `observation.personality`, `observation.closestSystems` | Frontmatter | `observation:` |
+| `observation.personality`, `observation.resembles` | Frontmatter | `observation:` |
 | `observation.summary` | **Body** | `# Character` |
 | `observation.distinctiveTraits` | **Body** | `# Signature` bullets |
 | `decisions[].dimension`, `decisions[].evidence`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
@@ -42,7 +42,7 @@ Schema 1 and 2 tried to mirror narrative fields across both sides and pick a win
 
 ## Frontmatter schema
 
-Validated by a zod schema (`packages/ghost-drift/src/core/fingerprint/schema.ts`) and published as JSON Schema at `schemas/fingerprint.schema.json`. Below is the shape:
+Validated by a zod schema (`packages/ghost-drift/src/core/expression/schema.ts`) and published as JSON Schema at `schemas/expression.schema.json`. Below is the shape:
 
 ```yaml
 ---
@@ -53,12 +53,12 @@ schema: 4                         # format version — required, rejected on mis
 generator: ghost@0.9.0            # tool + version that produced this file
 generated: 2026-04-18T00:00:00Z   # ISO-8601 (alias for `timestamp`)
 confidence: 0.87                  # 0–1, overall inference confidence (optional)
-extends: ./parent.fingerprint.md   # optional — inherit from a parent (see Composition)
+extends: ./base.expression.md     # optional — inherit from a base expression (see Composition)
 metadata:                          # optional — loose extension bag
   tone: magazine
   era: 2020s-editorial
 
-# --- fingerprint: identity ---
+# --- expression: identity ---
 id: claude
 source: llm                       # registry | extraction | llm | unknown
 timestamp: 2026-04-18T00:00:00Z
@@ -66,12 +66,12 @@ sources:                          # optional, lists the targets that were combin
   - github:anthropics/claude-code
   - https://claude.ai
 
-# --- fingerprint: narrative tags ---
+# --- expression: narrative tags ---
 # NOTE: prose (summary, distinctiveTraits, decision rationale) lives
 # in the body under # Character, # Signature, ### blocks.
 observation:
   personality: [restrained, editorial]
-  closestSystems: [notion, linear]
+  resembles: [notion, linear]
 
 decisions:
   - dimension: warm-only-neutrals
@@ -79,7 +79,7 @@ decisions:
   - dimension: serif-headlines
     evidence: ["H1-H6 serif 500"]
 
-# --- fingerprint: structured tokens ---
+# --- expression: structured tokens ---
 palette:
   dominant:
     - { role: accent, value: '#c96442' }
@@ -109,7 +109,7 @@ surfaces:
   shadowComplexity: subtle          # none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
-# --- fingerprint: role bindings (optional) ---
+# --- expression: role bindings (optional) ---
 # Semantic slot → token bindings. Bridges abstract tokens to rendering:
 # a role names a slot (h1, card, button, …) and binds specific tokens
 # from the dimensions above. Each sub-block is optional; omit what you
@@ -127,7 +127,7 @@ roles:
       palette: { background: '#f5f4ed' }
     evidence: ["components/ui/card.tsx"]
 
-# --- fingerprint: vector layer ---
+# --- expression: vector layer ---
 # embedding is OPTIONAL at root in v4. Readers load it from the sibling
 # `embedding.md` fragment (referenced in the body) or recompute from the
 # structural blocks above. Omitting it keeps this file lean.
@@ -137,12 +137,12 @@ roles:
 **Required:** `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
 **Required-but-conditional:** `schema` (if present, must equal 4). Missing `schema:` is warned but accepted.
 **Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
-**Optional narrative tags:** `observation.personality`, `observation.closestSystems`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
+**Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
 **Optional role bindings:** `roles[]`. Each role requires `name` and `evidence[]`; token sub-blocks (`typography`, `spacing`, `surfaces`, `palette`) are independently optional and strict — unknown keys reject.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
 **Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`. These live in the body.
 
-When `extends:` is present, required fingerprint fields may be omitted — the child inherits them from the parent. The merged result is re-validated against the strict schema.
+When `extends:` is present, required expression fields may be omitted — the overlay inherits them from the base expression. The merged result is re-validated against the strict schema.
 
 ---
 
@@ -183,20 +183,20 @@ The body may also carry a `# Fragments` section that lists sibling files by mark
 - [embedding](embedding.md) — 49-dim vector for compare/composite/viz
 ```
 
-Readers walk these links to progressively load sibling content. The current v4 writer always emits a link to `embedding.md` when the fingerprint carries an embedding (see [Embedding fragment](#embedding-fragment)). Future fragment types (palette, typography, motion, …) follow the same pattern: an entry in `# Fragments`, an own-validated file next to `fingerprint.md`.
+Readers walk these links to progressively load sibling content. The current v4 writer always emits a link to `embedding.md` when the expression carries an embedding (see [Embedding fragment](#embedding-fragment)). Future fragment types (palette, typography, motion, …) follow the same pattern: an entry in `# Fragments`, an own-validated file next to `expression.md`.
 
 Link rules:
 
 - Only `.md` targets count as fragments.
 - Absolute URLs (`http://…`) and anchors (`#foo`) are ignored.
-- Paths are resolved relative to the fingerprint.md directory.
+- Paths are resolved relative to the expression.md directory.
 - One level deep — avoid nested chains.
 
 ---
 
 ## Roles — the slot → token bridge
 
-Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the fingerprint stops being an inventory and becomes something a renderer can act on.
+Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the expression stops being an inventory and becomes something a renderer can act on.
 
 **Shape.** Each role has three parts:
 
@@ -231,13 +231,13 @@ roles:
 
 ## Embedding fragment
 
-Schema 4 extracts the 49-dimensional embedding into `embedding.md` next to the fingerprint. The file carries only YAML — no prose:
+Schema 4 extracts the 49-dimensional embedding into `embedding.md` next to the expression. The file carries only YAML — no prose:
 
 ```markdown
 ---
 schema: 4
 kind: embedding
-of: claude               # parent fingerprint id
+of: claude               # expression id
 dimensions: 49
 vector:
   - 0.218
@@ -251,24 +251,24 @@ vector:
 
 1. Inline `embedding:` in the root frontmatter (trusted as cache).
 2. Body link to `embedding.md` (or other `.md` link matching `embedding.md`).
-3. Conventional sibling `embedding.md` next to `fingerprint.md`.
+3. Conventional sibling `embedding.md` next to `expression.md`.
 4. Recompute from the structural blocks via `computeEmbedding`.
 
-Missing or stale files are never fatal — the loader silently falls back to recompute. Skip backfill entirely with `loadFingerprint(path, { noEmbeddingBackfill: true })`.
+Missing or stale files are never fatal — the loader silently falls back to recompute. Skip backfill entirely with `loadExpression(path, { noEmbeddingBackfill: true })`.
 
-The writer emits the sibling automatically when `serializeFingerprint(fp)` is called with `extractEmbedding: true` (default). Set `extractEmbedding: false` to keep the vector inline — useful for in-memory round-trips where no sibling is written.
+The writer emits the sibling automatically when `serializeExpression(fp)` is called with `extractEmbedding: true` (default). Set `extractEmbedding: false` to keep the vector inline — useful for in-memory round-trips where no sibling is written.
 
 ---
 
 ## Composition (`extends:`)
 
-A child fingerprint can inherit from a parent:
+An overlay expression can inherit from a base expression:
 
 ```yaml
 ---
 schema: 4
-extends: ./parent.fingerprint.md
-id: child-system
+extends: ./base.expression.md
+id: product-expression
 decisions:
   - dimension: warm-neutrals
     evidence: ["#3a3630"]
@@ -280,25 +280,25 @@ decisions:
 Now we also forbid warm grays.
 ```
 
-**Merge rules** (see `packages/ghost-drift/src/core/fingerprint/compose.ts`):
+**Merge rules** (see `packages/ghost-drift/src/core/expression/compose.ts`):
 
-- **Scalars / arrays:** child replaces parent when present.
-- **`decisions[]`:** merged by `dimension` — child wins per-dim; parent-only decisions preserved.
-- **`palette.dominant` / `palette.semantic`:** merged by `role` — child wins per-role.
+- **Scalars / arrays:** overlay replaces base when present.
+- **`decisions[]`:** merged by `dimension` — overlay wins per-dim; base-only decisions preserved.
+- **`palette.dominant` / `palette.semantic`:** merged by `role` — overlay wins per-role.
 
 Cycles throw. Chains are resolved depth-first. After resolution, `extends:` is stripped from the returned meta.
 
-Skip resolution: `loadFingerprint(path, { noExtends: true })`.
+Skip resolution: `loadExpression(path, { noExtends: true })`.
 
 ---
 
 ## Decision fragments
 
-Large systems can split decisions across files. If a `decisions/` directory sits next to the fingerprint.md, each `*.md` inside is read as a single decision and merged in by dimension:
+Large systems can split decisions across files. If a `decisions/` directory sits next to the expression.md, each `*.md` inside is read as a single decision and merged in by dimension:
 
 ```
 my-system/
-├── fingerprint.md
+├── expression.md
 └── decisions/
     ├── warm-neutrals.md
     ├── serif-headlines.md
@@ -316,19 +316,19 @@ evidence: ['#5e5d59', '#87867f']  # optional
 Every gray carries a yellow-brown undertone. No cool blue-grays exist anywhere.
 ```
 
-Fragments override inline decisions with the same dimension. Skip with `loadFingerprint(path, { noFragments: true })`.
+Fragments override inline decisions with the same dimension. Skip with `loadExpression(path, { noFragments: true })`.
 
 ---
 
 ## Validation
 
-`parseFingerprint` runs two gates on every read (unless `skipValidation: true`):
+`parseExpression` runs two gates on every read (unless `skipValidation: true`):
 
 1. **Schema version gate.** `schema:` must equal 4. Stale files throw with a regenerate hint.
 2. **Zod strict validation.** Structural errors (including unknown keys like `summary:` in YAML) are collected and surfaced with field paths:
 
    ```
-   Invalid fingerprint frontmatter:
+   Invalid expression frontmatter:
      • observation: Unrecognized keys: "summary", "distinctiveTraits"
      • decisions.0: Unrecognized key: "decision"
      • palette.saturationProfile: Invalid enum value...
@@ -342,15 +342,15 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 
 | Command | Does |
 |---|---|
-| `profile` recipe (host agent) | Write `fingerprint.md` (frontmatter machine-facts + body prose); the agent ends by calling `ghost-drift lint` |
+| `profile` recipe (host agent) | Write `expression.md` (frontmatter machine-facts + body prose); the agent ends by calling `ghost-drift lint` |
 | `ghost-drift lint [path]` | Check schema validity, orphan prose, missing rationale, stray evidence in body, broken palette citations |
 | `ghost-drift compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
 | `ghost-drift compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
-| `ghost-drift emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `fingerprint.md` + `tokens.css`) |
+| `ghost-drift emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `tokens.css`) |
 | `ghost-drift emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
 | `ghost-drift emit skill` | Install the `ghost-drift` skill bundle into your host agent |
 
-Programmatic API (`ghost-drift`): `loadFingerprint`, `parseFingerprint`, `serializeFingerprint`, `lintFingerprint`, `compareFingerprints`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
+Programmatic API (`ghost-drift`): `loadExpression`, `parseExpression`, `serializeExpression`, `lintExpression`, `compareExpressions`, `mergeExpression`, `loadDecisionFragments`, `loadEmbeddingFragment`, `serializeEmbeddingFragment`, `findFragmentLinks`, `resolveEmbeddingReference`, `FrontmatterSchema`, `toJsonSchema`.
 
 ---
 
@@ -366,10 +366,10 @@ Programmatic API (`ghost-drift`): `loadFingerprint`, `parseFingerprint`, `serial
 
 ## JSON Schema
 
-`schemas/fingerprint.schema.json` is regenerated from the zod source:
+`schemas/expression.schema.json` is regenerated from the zod source:
 
 ```bash
-pnpm --filter ghost-drift build && node scripts/emit-fingerprint-schema.mjs
+pnpm --filter ghost-drift build && node scripts/emit-expression-schema.mjs
 ```
 
 Point your editor at it via a comment or `yaml.schemas` config for autocomplete in the frontmatter.

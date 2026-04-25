@@ -9,7 +9,7 @@ observation:
   personality:
     - adjective-1
     - adjective-2
-  closestSystems:
+  resembles:
     - known-system
 
 # abstract design decisions

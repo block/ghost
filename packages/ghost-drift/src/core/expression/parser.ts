@@ -2,15 +2,15 @@ import { parse as parseYaml } from "yaml";
 import type {
   DesignDecision,
   DesignObservation,
-  Fingerprint,
+  Expression,
 } from "../types.js";
 import { type BodyData, parseBody } from "./body.js";
-import { type FingerprintMeta, splitFrontmatter } from "./frontmatter.js";
+import { type ExpressionMeta, splitFrontmatter } from "./frontmatter.js";
 import { validateFrontmatter } from "./schema.js";
 
-export interface ParsedFingerprint {
-  fingerprint: Fingerprint;
-  meta: FingerprintMeta;
+export interface ParsedExpression {
+  expression: Expression;
+  meta: ExpressionMeta;
   /**
    * Structured view of the body as it was read from disk. Kept for lint
    * tooling that wants to check orphan prose or missing rationale against
@@ -28,13 +28,13 @@ export interface ParsedFingerprint {
 export interface ParseOptions {
   /**
    * Skip zod validation of the frontmatter. Only useful for tools that want
-   * to read partial or in-progress fingerprint files (e.g. lint). Default: false.
+   * to read partial or in-progress expression files (e.g. lint). Default: false.
    */
   skipValidation?: boolean;
 }
 
 /**
- * Split a raw fingerprint.md string into its YAML frontmatter and markdown body.
+ * Split a raw expression.md string into its YAML frontmatter and markdown body.
  *
  * A frontmatter block is delimited by two lines that are *exactly* `---`
  * (trailing whitespace tolerated). The opening delimiter must be the first
@@ -47,12 +47,12 @@ export interface ParseOptions {
 export function splitRaw(raw: string): { frontmatter: string; body: string } {
   const lines = raw.split(/\r?\n/);
   let i = 0;
-  // Skip leading blank lines so an fingerprint.md with a BOM / stray newline
+  // Skip leading blank lines so an expression.md with a BOM / stray newline
   // before `---` still parses.
   while (i < lines.length && lines[i].trim() === "") i++;
   if (i >= lines.length || !isDelimiter(lines[i])) {
     throw new Error(
-      "Fingerprint is missing a YAML frontmatter block (--- … ---).",
+      "Expression is missing a YAML frontmatter block (--- … ---).",
     );
   }
   const startOfYaml = i + 1;
@@ -65,7 +65,7 @@ export function splitRaw(raw: string): { frontmatter: string; body: string } {
   }
   if (endOfYaml === -1) {
     throw new Error(
-      "Fingerprint frontmatter is unterminated — missing closing `---`.",
+      "Expression frontmatter is unterminated — missing closing `---`.",
     );
   }
   const frontmatter = lines.slice(startOfYaml, endOfYaml).join("\n");
@@ -78,53 +78,53 @@ function isDelimiter(line: string): boolean {
 }
 
 /**
- * Parse a raw fingerprint.md string into an Fingerprint plus metadata and
+ * Parse a raw expression.md string into an Expression plus metadata and
  * structured body.
  *
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
- *     personality/closestSystems tags, embedding.
+ *     personality/resembles tags, embedding.
  *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
  *     traits, `### dimension` → decision rationale.
  *
- * The returned fingerprint unions both sources. Since the two sides never
+ * The returned expression unions both sources. Since the two sides never
  * carry the same field, there is no precedence rule — each field has one
  * home.
  *
  * Parse-time check (unless `skipValidation`): zod validation — throws a
  * readable error listing bad fields.
  */
-export function parseFingerprint(
+export function parseExpression(
   raw: string,
   options: ParseOptions = {},
-): ParsedFingerprint {
+): ParsedExpression {
   const { frontmatter, body: bodyText } = splitRaw(raw);
   const yamlObj = (parseYaml(frontmatter) ?? {}) as Record<string, unknown>;
 
   if (!options.skipValidation) {
-    // Files that extend a parent may omit fields they inherit. Final
-    // validation happens after extends resolution (see loadFingerprint).
+    // Files that extend a base expression may omit fields they inherit. Final
+    // validation happens after extends resolution (see loadExpression).
     const partial = typeof yamlObj.extends === "string";
     validateFrontmatter(yamlObj, { partial });
   }
 
-  const { meta, fingerprint } = splitFrontmatter(yamlObj);
+  const { meta, expression } = splitFrontmatter(yamlObj);
   const body = parseBody(bodyText);
-  const merged = applyBody(fingerprint, body);
-  return { fingerprint: merged, meta, body, bodyRaw: bodyText };
+  const merged = applyBody(expression, body);
+  return { expression: merged, meta, body, bodyRaw: bodyText };
 }
 
 /**
- * Fold body-owned prose fields into the fingerprint. The body provides
+ * Fold body-owned prose fields into the expression. The body provides
  * Character/Signature prose for `observation` and rationale for `decisions`
  * (keyed by dimension). Frontmatter-only dimensions keep their evidence
  * but get no body prose (decision text left empty).
  */
-export function applyBody(fp: Fingerprint, body: BodyData): Fingerprint {
+export function applyBody(fp: Expression, body: BodyData): Expression {
   const observation = mergeObservation(fp.observation, body);
   const decisions = mergeDecisions(fp.decisions, body.decisions ?? []);
 
-  const out: Fingerprint = { ...fp };
+  const out: Expression = { ...fp };
   if (observation) out.observation = observation;
   else delete out.observation;
   if (decisions?.length) out.decisions = decisions;
@@ -139,16 +139,16 @@ function mergeObservation(
   const summary = body.character?.trim() ?? "";
   const distinctiveTraits = body.signature ?? [];
   const personality = yamlObs?.personality ?? [];
-  const closestSystems = yamlObs?.closestSystems ?? [];
+  const resembles = yamlObs?.resembles ?? [];
   if (
     !summary &&
     distinctiveTraits.length === 0 &&
     personality.length === 0 &&
-    closestSystems.length === 0
+    resembles.length === 0
   ) {
     return undefined;
   }
-  return { summary, personality, distinctiveTraits, closestSystems };
+  return { summary, personality, distinctiveTraits, resembles };
 }
 
 /**

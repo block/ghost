@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install the skill bundle, write your first fingerprint.md, and track drift against a parent — in under five minutes.
+description: Install the skill bundle, write your first expression.md, and track drift against another expression — in under five minutes.
 kicker: Docs
 section: drift
 order: 10
@@ -38,7 +38,7 @@ No API key is required for any CLI verb. If your host agent uses Anthropic
 or OpenAI models, it'll handle auth itself. Ghost auto-loads `.env` and
 `.env.local` from the working directory for a couple of optional variables
 (`OPENAI_API_KEY` / `VOYAGE_API_KEY` for paraphrase-robust semantic
-embeddings, `GITHUB_TOKEN` for parent fetching).
+embeddings, `GITHUB_TOKEN` for fetching tracked expressions).
 
 </DocSection>
 
@@ -60,8 +60,8 @@ The bundle contains a top-level `SKILL.md` entry point plus recipes under
 `references/` (`profile.md`, `review.md`, `verify.md`, `generate.md`,
 `discover.md`, `compare.md`) plus a schema reference (`schema.md`). Each
 recipe declares `handoffs` in its frontmatter so hosts can surface the
-next step inline — e.g. after `profile`, a prompt to `compare` against a
-parent, or to run `ghost-drift emit review-command`. Once installed, ask your
+next step inline — e.g. after `profile`, a prompt to `compare` against another
+expression, or to run `ghost-drift emit review-command`. Once installed, ask your
 agent to "profile this design language" and it'll follow the recipe,
 calling `ghost-drift` for any deterministic step.
 
@@ -73,48 +73,48 @@ Profiling is a skill recipe, not a CLI verb. Open your host agent in the
 project you want to profile and ask it something like:
 
 ```text
-Profile this design language into a fingerprint.md
+Profile this design language into expression.md
 ```
 
 The `profile` recipe walks the agent through finding design sources
 (tailwind config, theme CSS, token files, component primitives), resolving
-variable chains end-to-end, and writing the fingerprint. The final step
+variable chains end-to-end, and writing the expression. The final step
 is always `ghost-drift lint` — which the CLI runs for you, deterministically.
 
-A **fingerprint** is a two-layer Markdown file: YAML frontmatter is the
+An **expression** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
 roles), and the body is prose organized into Character, Signature, and
 Decisions. Humans can read it. LLMs can consume it. Deterministic tools
-diff it. See [`packages/ghost-ui/fingerprint.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/fingerprint.md)
+diff it. See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/expression.md)
 in this repo for a full real-world example.
 
 ```bash
-# Validate the result (zero-config — reads ./fingerprint.md)
+# Validate the result (zero-config — reads ./expression.md)
 ghost-drift lint
 
 # Or validate a specific file
-ghost-drift lint path/to/fingerprint.md --format json
+ghost-drift lint path/to/expression.md --format json
 ```
 
 </DocSection>
 
 <DocSection title="Compare Two Systems">
 
-Once you have two fingerprints, `compare` returns a scalar distance,
+Once you have two expressions, `compare` returns a scalar distance,
 per-dimension deltas, and (optionally) qualitative or temporal enrichment:
 
 ```bash
 # Pairwise (N=2) — distance + per-dimension delta
-ghost-drift compare parent.fingerprint.md consumer.fingerprint.md
+ghost-drift compare market.expression.md dashboard.expression.md
 
 # Qualitative diff of decisions + palette
-ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
+ghost-drift compare a.expression.md b.expression.md --semantic
 
 # Velocity + trajectory (reads .ghost/history.jsonl)
-ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
+ghost-drift compare before.expression.md after.expression.md --temporal
 
 # Fleet (N≥3) — pairwise matrix + centroid
-ghost-drift compare *.fingerprint.md
+ghost-drift compare *.expression.md
 ```
 
 `compare` weights palette, spacing, typography, surfaces, and embedded
@@ -132,14 +132,13 @@ branch in your host agent and ask:
 Review this PR for design drift
 ```
 
-The `review` recipe diffs changed files against the local `fingerprint.md`
+The `review` recipe diffs changed files against the local `expression.md`
 and flags hardcoded colors off the palette, spacing off the scale, and type
-choices that violate decisions. For a project-level check, ask for
-"target-level compliance" and the agent will compare a fresh fingerprint
-against a parent.
+choices that violate decisions. For a project-level check, ask the agent to
+compare a fresh expression against another expression.
 
 If you want a repeatable, per-project slash command for your agent, emit one
-from the fingerprint itself:
+from the expression itself:
 
 ```bash
 # Writes .claude/commands/design-review.md
@@ -148,33 +147,33 @@ ghost-drift emit review-command
 
 </DocSection>
 
-<DocSection title="Track Intent Toward a Parent">
+<DocSection title="Track Intent Toward an Expression">
 
 Drift without intent is noise; drift with intent is signal. Ghost tracks
-your stance toward a parent fingerprint in `.ghost-sync.json`:
+your stance toward a tracked expression in `.ghost-sync.json`:
 
 ```bash
-# Record an overall stance (reads ghost.config.ts for the parent)
+# Record an overall stance (reads ghost.config.ts for the tracked expression)
 ghost-drift ack --stance aligned --reason "Initial baseline"
 
-# Shift the parent baseline
-ghost-drift adopt new-parent.fingerprint.md
+# Shift the tracked expression
+ghost-drift track new-tracked.expression.md
 
 # Mark a dimension as intentionally different
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-`ack` and `diverge` need a parent declared in `ghost.config.ts`. `adopt`
-takes the parent as its argument.
+`ack` and `diverge` need a tracked expression declared in `ghost.config.ts`.
+`track` takes the tracked expression as its argument.
 
 </DocSection>
 
 <DocSection title="The Generation Loop">
 
 Ghost doubles as pipeline infrastructure for AI-generated UI. The
-fingerprint grounds the generator; the `review` recipe gates the output.
+expression grounds the generator; the `review` recipe gates the output.
 
-1. `ghost-drift emit context-bundle` — emit a grounding bundle from a fingerprint
+1. `ghost-drift emit context-bundle` — emit a grounding bundle from an expression
    (SKILL.md + tokens.css + optional prompt.md) that any generator can
    consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
@@ -198,17 +197,16 @@ ghost-drift emit context-bundle --out dist/context
 
 <DocSection title="Optional: ghost.config.ts">
 
-`ack` and `diverge` need a parent declared. Most other verbs are
+`ack` and `diverge` need a tracked expression declared. Most other verbs are
 zero-config.
 
 ```ts
 import { defineConfig } from "ghost-drift";
 
 export default defineConfig({
-  // Path to a local fingerprint.md, or a URL / npm package name.
-  // The profile recipe produces parent.fingerprint.md from any source;
-  // commit that file and point `parent` at it.
-  parent: { type: "path", value: "./parent.fingerprint.md" },
+  // Path to a local expression.md, or a URL / npm package name.
+  // Commit that file and point `tracks` at it.
+  tracks: { type: "path", value: "./tracked.expression.md" },
 
   targets: [{ type: "path", value: "./packages/my-ui" }],
 

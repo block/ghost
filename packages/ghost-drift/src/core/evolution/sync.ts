@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import type {
   DimensionAck,
   DimensionStance,
-  Fingerprint,
-  FingerprintComparison,
+  Expression,
+  ExpressionComparison,
   SyncManifest,
   Target,
 } from "../types.js";
@@ -44,23 +44,24 @@ export async function writeSyncManifest(
 
 /**
  * Acknowledge the current drift state.
- * Compares child to parent, records per-dimension distances with stances.
+ * Compares the local expression to the tracked expression, recording
+ * per-dimension distances with stances.
  *
  * If dimension/stance are provided, only that dimension is updated —
  * the rest are preserved from the existing manifest or set to "accepted".
  */
 export async function acknowledge(opts: {
-  child: Fingerprint;
-  parent: Fingerprint;
-  parentRef: Target;
+  local: Expression;
+  tracked: Expression;
+  tracks: Target;
   dimension?: string;
   stance?: DimensionStance;
   reason?: string;
   tolerance?: number;
   cwd?: string;
-}): Promise<{ manifest: SyncManifest; comparison: FingerprintComparison }> {
+}): Promise<{ manifest: SyncManifest; comparison: ExpressionComparison }> {
   const cwd = opts.cwd ?? process.cwd();
-  const comparison = compareFingerprints(opts.parent, opts.child);
+  const comparison = compareExpressions(opts.tracked, opts.local);
   const now = new Date().toISOString();
 
   // Load existing manifest to preserve previous acks
@@ -90,10 +91,10 @@ export async function acknowledge(opts: {
   }
 
   const manifest: SyncManifest = {
-    parent: opts.parentRef,
+    tracks: opts.tracks,
     ackedAt: now,
-    parentFingerprintId: opts.parent.id,
-    childFingerprintId: opts.child.id,
+    trackedExpressionId: opts.tracked.id,
+    localExpressionId: opts.local.id,
     dimensions,
     overallDistance: comparison.distance,
   };
@@ -121,7 +122,7 @@ export interface CheckBoundsOptions {
  */
 export function checkBounds(
   manifest: SyncManifest,
-  current: FingerprintComparison,
+  current: ExpressionComparison,
   toleranceOrOptions?: number | CheckBoundsOptions,
 ): { exceeded: boolean; dimensions: string[]; reconverging: string[] } {
   const opts: CheckBoundsOptions =

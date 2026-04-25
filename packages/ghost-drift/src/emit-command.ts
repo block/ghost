@@ -3,12 +3,12 @@ import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
   emitReviewCommand,
-  loadFingerprint,
+  loadExpression,
   writeContextBundle,
 } from "./core/index.js";
 import { loadSkillBundle } from "./skill-bundle.js";
 
-const DEFAULT_FINGERPRINT = "fingerprint.md";
+const DEFAULT_EXPRESSION = "expression.md";
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 const DEFAULT_CONTEXT_OUT = "ghost-context";
 const DEFAULT_SKILL_OUT = ".claude/skills/ghost-drift";
@@ -42,11 +42,11 @@ export function registerEmitCommand(cli: CAC): void {
   cli
     .command(
       "emit <kind>",
-      `Emit a derived artifact from fingerprint.md (kinds: ${SUPPORTED_KINDS.join(", ")})`,
+      `Emit a derived artifact from expression.md (kinds: ${SUPPORTED_KINDS.join(", ")})`,
     )
     .option(
-      "-e, --fingerprint <path>",
-      `Source fingerprint file (default: ${DEFAULT_FINGERPRINT})`,
+      "-e, --expression <path>",
+      `Source expression file (default: ${DEFAULT_EXPRESSION})`,
     )
     .option(
       "-o, --out <path>",
@@ -61,11 +61,11 @@ export function registerEmitCommand(cli: CAC): void {
     .option("--readme", "Include README.md (context-bundle)")
     .option(
       "--prompt-only",
-      "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
+      "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
     )
     .option(
       "--name <name>",
-      "Override the skill name (default: fingerprint id) (context-bundle)",
+      "Override the skill name (default: expression id) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {
@@ -95,17 +95,17 @@ export function registerEmitCommand(cli: CAC): void {
           process.exit(0);
         }
 
-        const fingerprintPath = resolve(
+        const expressionPath = resolve(
           process.cwd(),
-          opts.fingerprint ?? DEFAULT_FINGERPRINT,
+          opts.expression ?? DEFAULT_EXPRESSION,
         );
 
         if (parsed.kind === "review-command") {
-          const loaded = await loadFingerprint(fingerprintPath, {
+          const loaded = await loadExpression(expressionPath, {
             noEmbeddingBackfill: true,
           });
           const content = emitReviewCommand({
-            fingerprint: loaded.fingerprint,
+            expression: loaded.expression,
           });
 
           if (opts.stdout) {
@@ -129,14 +129,14 @@ export function registerEmitCommand(cli: CAC): void {
           (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
         );
 
-        const { fingerprint } = await loadFingerprint(fingerprintPath);
-        const result = await writeContextBundle(fingerprint, {
+        const { expression } = await loadExpression(expressionPath);
+        const result = await writeContextBundle(expression, {
           outDir,
           tokens: opts.tokens !== false,
           readme: Boolean(opts.readme),
           promptOnly: Boolean(opts.promptOnly),
           name: opts.name as string | undefined,
-          sourcePath: fingerprintPath,
+          sourcePath: expressionPath,
         });
 
         process.stdout.write(

@@ -1,14 +1,14 @@
-import { compareFingerprints } from "./embedding/compare.js";
+import { compareExpressions } from "./embedding/compare.js";
 import { compareComposite } from "./evolution/composite.js";
 import { computeTemporalComparison } from "./evolution/temporal.js";
-import type { SemanticDiff } from "./fingerprint/diff.js";
-import { diffFingerprints } from "./fingerprint/diff.js";
+import type { SemanticDiff } from "./expression/diff.js";
+import { diffExpressions } from "./expression/diff.js";
 import type {
   CompositeComparison,
   CompositeMember,
-  Fingerprint,
-  FingerprintComparison,
-  FingerprintHistoryEntry,
+  Expression,
+  ExpressionComparison,
+  ExpressionHistoryEntry,
   SyncManifest,
   TemporalComparison,
 } from "./types.js";
@@ -17,17 +17,17 @@ export interface CompareOptions {
   /** Include a qualitative semantic diff. N=2 only. */
   semantic?: boolean;
   /** Enrich with drift velocity, trajectory, ack status. N=2 only. */
-  history?: FingerprintHistoryEntry[];
+  history?: ExpressionHistoryEntry[];
   /** Companion to `history` — the ack manifest, if any. */
   manifest?: SyncManifest | null;
-  /** Explicit member ids for composite mode. Defaults to `fingerprint.id`. */
+  /** Explicit member ids for composite mode. Defaults to `expression.id`. */
   ids?: string[];
 }
 
 export type CompareResult =
   | {
       mode: "pairwise";
-      comparison: FingerprintComparison;
+      comparison: ExpressionComparison;
       semantic?: SemanticDiff;
       temporal?: TemporalComparison;
     }
@@ -37,7 +37,7 @@ export type CompareResult =
     };
 
 /**
- * Unified fingerprint comparison.
+ * Unified expression comparison.
  *
  *   • N=2              → pairwise (distance + per-dimension delta).
  *   • N=2 + semantic   → adds a qualitative diff (what decisions/colors changed).
@@ -47,23 +47,23 @@ export type CompareResult =
  * Rejects semantic/temporal in composite mode — both are pairwise concepts.
  */
 export function compare(
-  fingerprints: Fingerprint[],
+  expressions: Expression[],
   options: CompareOptions = {},
 ): CompareResult {
-  if (fingerprints.length < 2) {
-    throw new Error("compare requires at least 2 fingerprints.");
+  if (expressions.length < 2) {
+    throw new Error("compare requires at least 2 expressions.");
   }
 
-  if (fingerprints.length >= 3) {
+  if (expressions.length >= 3) {
     if (options.semantic || options.history) {
       throw new Error(
-        "semantic and temporal require exactly 2 fingerprints (pairwise mode).",
+        "semantic and temporal require exactly 2 expressions (pairwise mode).",
       );
     }
     const ids = options.ids;
-    const members: CompositeMember[] = fingerprints.map((fingerprint, i) => ({
-      id: ids?.[i] ?? fingerprint.id,
-      fingerprint,
+    const members: CompositeMember[] = expressions.map((expression, i) => ({
+      id: ids?.[i] ?? expression.id,
+      expression,
     }));
     return {
       mode: "composite",
@@ -71,10 +71,10 @@ export function compare(
     };
   }
 
-  const [a, b] = fingerprints;
-  const comparison = compareFingerprints(a, b);
+  const [a, b] = expressions;
+  const comparison = compareExpressions(a, b);
 
-  const semantic = options.semantic ? diffFingerprints(a, b) : undefined;
+  const semantic = options.semantic ? diffExpressions(a, b) : undefined;
   const temporal =
     options.history !== undefined
       ? computeTemporalComparison({

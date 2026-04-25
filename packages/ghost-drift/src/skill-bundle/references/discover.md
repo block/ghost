@@ -1,13 +1,13 @@
 ---
 name: discover
-description: Find public design languages matching a query — for benchmarking, inspiration, or adoption.
+description: Find public design languages matching a query — for benchmarking, inspiration, or reference material.
 handoffs:
-  - label: Profile a discovered system into its own fingerprint.md
+  - label: Profile a discovered system into its own expression.md
     skill: profile
-    prompt: Profile the discovered system into a fingerprint.md under discovered/
-  - label: Compare my fingerprint against a discovered system
+    prompt: Profile the discovered system into expression.md under discovered/
+  - label: Compare my expression against a discovered system
     skill: compare
-    prompt: Compare my fingerprint.md against the discovered system's fingerprint with --semantic
+    prompt: Compare my expression.md against the discovered system's expression with --semantic
 ---
 
 # Recipe: Discover public design languages
@@ -36,16 +36,16 @@ Keep: systems with public token files, published component libraries, documented
 
 ### 3. (Optional) Profile
 
-For each kept candidate, if the user wants fingerprint-level detail:
+For each kept candidate, if the user wants expression-level detail:
 
 - Clone or fetch the public repo.
 - Run the [profile recipe](profile.md) against it.
-- Save the resulting `fingerprint.md` somewhere named for the system (e.g. `discovered/linear.fingerprint.md`).
+- Save the resulting `expression.md` somewhere named for the system (e.g. `discovered/linear.expression.md`).
 
-Then compare against the user's fingerprint:
+Then compare against the user's expression:
 
-    ghost-drift compare my-fingerprint.md discovered/linear.fingerprint.md --semantic
+    ghost-drift compare my-expression.md discovered/linear.expression.md --semantic
 
 ### 4. Report
 
-Summarize findings as a small table: name, URL, one-line character description, optional distance to the user's fingerprint.
+Summarize findings as a small table: name, URL, one-line character description, optional distance to the user's expression.

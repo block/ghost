@@ -31,7 +31,7 @@ export function defineConfig(config: GhostConfig): GhostConfig {
  * Unambiguous patterns (no prefix needed):
  *   /absolute/path       → local path
  *   ./relative/path      → local path
- *   ../parent/path       → local path
+ *   ../tracked/path      → local path
  *   https://...          → URL
  *
  * Ambiguous inputs without a prefix will throw an error
@@ -113,7 +113,7 @@ async function resolveConfigFile(
   return null;
 }
 
-function normalizeParent(
+function normalizeTracked(
   value: Target | string | undefined,
 ): Target | undefined {
   if (!value) return undefined;
@@ -126,7 +126,7 @@ function normalizeParent(
 function mergeDefaults(raw: GhostConfig): GhostConfig {
   return {
     targets: raw.targets,
-    parent: normalizeParent(raw.parent as Target | string | undefined),
+    tracks: normalizeTracked(raw.tracks as Target | string | undefined),
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
     embedding: raw.embedding,

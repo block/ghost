@@ -2,13 +2,13 @@ import { stringify as stringifyYaml } from "yaml";
 import type {
   DesignDecision,
   DesignObservation,
-  Fingerprint,
+  Expression,
 } from "../types.js";
 import { EMBEDDING_FRAGMENT_FILENAME } from "./fragments.js";
-import { type FingerprintMeta, mergeFrontmatter } from "./frontmatter.js";
+import { type ExpressionMeta, mergeFrontmatter } from "./frontmatter.js";
 
 export interface SerializeOptions {
-  meta?: FingerprintMeta;
+  meta?: ExpressionMeta;
   /** Omit the human-readable body (frontmatter-only output). Default: false. */
   frontmatterOnly?: boolean;
   /**
@@ -21,25 +21,25 @@ export interface SerializeOptions {
 }
 
 /**
- * Serialize a Fingerprint to an fingerprint.md string.
+ * Serialize an Expression to an expression.md string.
  *
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
- *     evidence, personality/closestSystems tags, embedding).
+ *     evidence, personality/resembles tags, embedding).
  *   • Body carries prose (# Character, # Signature, # Decisions rationale).
  *
  * Each field has exactly one home — so there is no precedence rule and no
  * way for the two sides to drift.
  */
-export function serializeFingerprint(
-  fingerprint: Fingerprint,
+export function serializeExpression(
+  expression: Expression,
   options: SerializeOptions = {},
 ): string {
-  const meta: FingerprintMeta = { ...options.meta };
+  const meta: ExpressionMeta = { ...options.meta };
   const extractEmbedding = options.extractEmbedding ?? true;
   const forFrontmatter = extractEmbedding
-    ? stripEmbedding(fingerprint)
-    : fingerprint;
+    ? stripEmbedding(expression)
+    : expression;
   const obj = mergeFrontmatter(forFrontmatter, meta);
   const yaml = stringifyYaml(obj, { lineWidth: 0 }).trimEnd();
 
@@ -48,16 +48,16 @@ export function serializeFingerprint(
   }
 
   const body = buildBody(
-    fingerprint.observation,
-    fingerprint.decisions,
-    extractEmbedding && (fingerprint.embedding?.length ?? 0) > 0,
+    expression.observation,
+    expression.decisions,
+    extractEmbedding && (expression.embedding?.length ?? 0) > 0,
   );
   return body ? `---\n${yaml}\n---\n\n${body}\n` : `---\n${yaml}\n---\n`;
 }
 
-function stripEmbedding(fp: Fingerprint): Fingerprint {
+function stripEmbedding(fp: Expression): Expression {
   const { embedding: _dropped, ...rest } = fp;
-  return rest as Fingerprint;
+  return rest as Expression;
 }
 
 function buildBody(

@@ -93,14 +93,14 @@ function StepLead({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─────────────────────── 1. Profile — fingerprint.md excerpt ─────── */
+/* ─────────────────────── 1. Profile — expression.md excerpt ─────── */
 
-function FingerprintExcerpt() {
+function ExpressionExcerpt() {
   return (
     <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border-card bg-muted/30">
         <code className="text-xs font-mono text-muted-foreground">
-          packages/ghost-ui/fingerprint.md
+          packages/ghost-ui/expression.md
         </code>
         <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
           excerpt
@@ -120,7 +120,7 @@ function FingerprintExcerpt() {
           <span className="text-foreground">editorial{"\n"}</span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">pill-shaped{"\n"}</span>
-          <span className="text-muted-foreground">{"  closestSystems:\n"}</span>
+          <span className="text-muted-foreground">{"  resembles:\n"}</span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">Vercel Geist{"\n"}</span>
           <span className="text-muted-foreground">{"    - "}</span>
@@ -222,12 +222,12 @@ function radarPath(
 }
 
 function RadarChart({
-  parentValues,
-  childValues,
+  referenceValues,
+  localValues,
   animated,
 }: {
-  parentValues: number[];
-  childValues: number[];
+  referenceValues: number[];
+  localValues: number[];
   animated: boolean;
 }) {
   const cx = 150;
@@ -265,7 +265,7 @@ function RadarChart({
       })}
 
       <path
-        d={radarPath(parentValues, maxR, cx, cy)}
+        d={radarPath(referenceValues, maxR, cx, cy)}
         className="fill-foreground/5 stroke-foreground"
         strokeWidth={1.5}
         style={{
@@ -274,7 +274,7 @@ function RadarChart({
       />
 
       <path
-        d={radarPath(childValues, maxR, cx, cy)}
+        d={radarPath(localValues, maxR, cx, cy)}
         className="fill-muted-foreground/8 stroke-muted-foreground"
         strokeWidth={1.5}
         strokeDasharray="4 3"
@@ -320,9 +320,9 @@ function CompareSection() {
     return () => trigger.kill();
   }, []);
 
-  const parent = [0.85, 0.7, 0.8, 0.65, 0.75];
-  const childTarget = [0.78, 0.6, 0.75, 0.5, 0.7];
-  const child = animated ? childTarget : parent;
+  const reference = [0.85, 0.7, 0.8, 0.65, 0.75];
+  const localTarget = [0.78, 0.6, 0.75, 0.5, 0.7];
+  const local = animated ? localTarget : reference;
 
   const deltas = [
     { dim: "palette", delta: 0.05, status: "aligned" },
@@ -336,8 +336,8 @@ function CompareSection() {
     <div ref={ref} className="reveal">
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <RadarChart
-          parentValues={parent}
-          childValues={child}
+          referenceValues={reference}
+          localValues={local}
           animated={animated}
         />
         <div>
@@ -378,9 +378,9 @@ function CompareSection() {
           </div>
           <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
             <span className="inline-block w-3 h-0.5 bg-foreground mr-2 translate-y-[-2px]" />
-            Parent&nbsp;&nbsp;
+            Reference&nbsp;&nbsp;
             <span className="inline-block w-3 h-0.5 bg-muted-foreground mr-2 translate-y-[-2px] border-t border-dashed border-muted-foreground" />
-            Your system
+            Local
           </p>
         </div>
       </div>
@@ -419,9 +419,9 @@ const REVIEW_SCOPES: {
   {
     id: "files",
     name: "Files",
-    what: "The host agent diffs changed files against the local fingerprint.md. Zero-config; flags changed lines by default.",
+    what: "The host agent diffs changed files against the local expression.md. Zero-config; flags changed lines by default.",
     catches:
-      "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the fingerprint's decisions, wrong-radius interactive surfaces.",
+      "Hardcoded colors outside the palette, off-scale spacing, type choices that violate the expression's decisions, wrong-radius interactive surfaces.",
     visual: (
       <div className="font-mono text-[11px] leading-relaxed space-y-1">
         <div className="text-muted-foreground">
@@ -465,7 +465,7 @@ const REVIEW_SCOPES: {
   {
     id: "project",
     name: "Project",
-    what: "The agent profiles the whole target, then ghost-drift compare returns per-dimension deltas against a parent. CI-friendly via --format json.",
+    what: "The agent profiles the whole target, then ghost-drift compare returns per-dimension deltas against a reference expression. CI-friendly via --format json.",
     catches:
       "Cumulative drift across an entire system: per-dimension deltas and a scalar distance you can fail builds on.",
     visual: (
@@ -498,7 +498,7 @@ const REVIEW_SCOPES: {
     name: "Suite",
     what: "The verify recipe drives the generate → review loop across a prompt suite. Classifies each dimension as tight, leaky, or uncaptured.",
     catches:
-      "Gaps in the fingerprint itself: dimensions the generator drifts on because Decisions under-specify them.",
+      "Gaps in the expression itself: dimensions the generator drifts on because Decisions under-specify them.",
     visual: (
       <div className="font-mono text-xs space-y-1">
         <div className="text-muted-foreground">18 prompts · 14 passed</div>
@@ -637,7 +637,7 @@ function HistoryRibbon() {
     <div className="reveal mt-10 rounded-[var(--radius-card-sm)] border border-border-card bg-card p-6">
       <div className="flex items-baseline justify-between mb-3">
         <div className="font-display text-sm font-semibold">
-          distance to parent, over time
+          distance to tracked expression, over time
         </div>
         <code className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
           .ghost/history.jsonl
@@ -709,9 +709,9 @@ function HistoryRibbon() {
   );
 }
 
-/* ─────────────────── 5. Org — the org fingerprint ────────────────── */
+/* ─────────────────── 5. Org — the org expression ────────────────── */
 
-function OrgFingerprint() {
+function OrgExpression() {
   const systems = [
     { x: 105, y: 85, label: "Core", size: 8, cluster: "A" },
     { x: 140, y: 105, label: "Marketing", size: 5, cluster: "A" },
@@ -833,22 +833,22 @@ export default function WorkflowPage() {
       <AnimatedPageHeader
         kicker="Workflow"
         title="Working with Ghost"
-        description="Ghost is five moves: profile your system, compare it, review drift, evolve with intent, and zoom out to the org fingerprint. The CLI is deterministic; the judgement work is a set of skill recipes your host agent runs."
+        description="Ghost is five moves: profile your system, compare it, review drift, evolve with intent, and zoom out to the org expression. The CLI is deterministic; the judgement work is a set of skill recipes your host agent runs."
       />
 
       {/* ── Step 1: Profile ─────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
         <StepLabel>Step 01 · Profile</StepLabel>
-        <StepTitle>Write a fingerprint.md</StepTitle>
+        <StepTitle>Write an expression.md</StepTitle>
         <StepLead>
           Open your project in a host agent with the <code>ghost-drift</code>{" "}
           skill installed and ask it to <em>profile this design language</em>.
           The recipe walks the agent through your theme CSS, tailwind config,
           and component primitives, resolves variable chains, and writes a
-          single <code>fingerprint.md</code> at the repo root — YAML frontmatter
+          single <code>expression.md</code> at the repo root — YAML frontmatter
           for machines, Markdown body for humans.
         </StepLead>
-        <FingerprintExcerpt />
+        <ExpressionExcerpt />
         <div className="reveal mt-8 grid sm:grid-cols-3 gap-4">
           {[
             {
@@ -884,7 +884,7 @@ export default function WorkflowPage() {
           ))}
         </div>
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          Ghost never calls an LLM itself. The agent writes the fingerprint; the
+          Ghost never calls an LLM itself. The agent writes the expression; the
           CLI lints, compares, and diffs it deterministically. The final step of
           every profile is <code>ghost-drift lint</code> — which validates the
           schema and flags body/frontmatter incoherence before anything else
@@ -897,10 +897,10 @@ export default function WorkflowPage() {
         <StepLabel>Step 02 · Compare</StepLabel>
         <StepTitle>Measure the distance</StepTitle>
         <StepLead>
-          Two fingerprints in, one answer out: an overall distance, a
+          Two expressions in, one answer out: an overall distance, a
           per-dimension delta, and — with <code>--semantic</code> — a
           paraphrase-robust pairing of decisions. Similar systems produce
-          similar fingerprints; different ones don&apos;t.
+          similar expressions; different ones don&apos;t.
         </StepLead>
         <CompareSection />
         <div className="reveal mt-10 grid sm:grid-cols-5 gap-4">
@@ -934,7 +934,7 @@ export default function WorkflowPage() {
         </div>
         <p className="reveal mt-6 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Palette weighs heaviest — color is the first thing anyone notices.
-          Decisions contribute only when both fingerprints have embedded them;
+          Decisions contribute only when both expressions have embedded them;
           otherwise they&apos;re reported qualitatively and excluded from the
           scalar so unscored prose doesn&apos;t pollute the number.
         </p>
@@ -947,7 +947,7 @@ export default function WorkflowPage() {
         <StepLead>
           <em>Review</em> is a skill recipe your host agent runs, not a CLI
           verb. It answers three scopes of drift question — tight (this PR),
-          medium (a target snapshot), broad (the whole fingerprint&apos;s schema
+          medium (a target snapshot), broad (the whole expression&apos;s schema
           discipline). Same answer shape every time.
         </StepLead>
         <ReviewSection />
@@ -974,8 +974,8 @@ export default function WorkflowPage() {
         <StepTitle>Turn drift into signal</StepTitle>
         <StepLead>
           Not every drift is a bug. Sometimes you changed that radius on
-          purpose. Ghost tracks your intent through stances: a way for the
-          consumer to say &ldquo;yes, I know, and here&apos;s why&rdquo; —
+          purpose. Ghost tracks your intent through stances: a way for the local
+          team to say &ldquo;yes, I know, and here&apos;s why&rdquo; —
           per-dimension, with reasoning attached.
         </StepLead>
         <div className="space-y-4">
@@ -983,7 +983,7 @@ export default function WorkflowPage() {
             symbol="="
             label="Aligned"
             speaker="ghost-drift ack --stance aligned"
-            message="We're tracking the parent. If this drifted, it's a bug. Fix it."
+            message="We're tracking this expression. If this drifted, it's a bug. Fix it."
             align="left"
           />
           <StanceBubble
@@ -997,7 +997,7 @@ export default function WorkflowPage() {
             symbol="~"
             label="Diverging"
             speaker="ghost-drift diverge <dimension>"
-            message="This is ours now. We own it. Stop measuring it against the parent."
+            message="This is ours now. We own it. Stop measuring this dimension against the tracked expression."
             align="left"
           />
         </div>
@@ -1020,25 +1020,25 @@ export default function WorkflowPage() {
       {/* ── Step 5: Org ────────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
         <StepLabel>Step 05 · Org</StepLabel>
-        <StepTitle>Zoom out to the org fingerprint</StepTitle>
+        <StepTitle>Zoom out to the org expression</StepTitle>
         <StepLead>
-          Most orgs don&apos;t have one design language — they have a core plus
-          several forks, a legacy system still in production, an acquired
-          product finding its voice. The composite is a fingerprint of its own:
-          the org&apos;s fingerprint, made of the fingerprints inside it. Feed
-          three or more to <code>compare</code> and Ghost returns the pairwise
-          matrix, natural clusters, a centroid, and an outlier list.
+          Most orgs don&apos;t have one design language — they have several
+          product expressions, a legacy surface still in production, and an
+          acquired product finding its voice. The composite is an expression of
+          its own: the org&apos;s expression, made of the expressions inside it.
+          Feed three or more to <code>compare</code> and Ghost returns the
+          pairwise matrix, natural clusters, a centroid, and an outlier list.
         </StepLead>
         <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card p-6 md:p-8">
-          <OrgFingerprint />
+          <OrgExpression />
           <div className="grid sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border-card">
             <div>
               <div className="font-mono text-sm font-bold text-foreground">
                 Find twins
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Systems that cluster tightly are candidates to share a parent —
-                or to fold together outright.
+                Expressions that cluster tightly are candidates to share a
+                reference — or to fold together outright.
               </p>
             </div>
             <div>
@@ -1046,8 +1046,8 @@ export default function WorkflowPage() {
                 Name the outlier
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                One system drifting alone is either a legacy to retire or an
-                intentional fork worth naming as a new parent.
+                One expression drifting alone is either a legacy to retire or an
+                intentional fork worth naming as its own reference.
               </p>
             </div>
             <div>
@@ -1055,7 +1055,7 @@ export default function WorkflowPage() {
                 Watch the centroid
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                The org fingerprint&apos;s centroid over time tells you whether
+                The org expression&apos;s centroid over time tells you whether
                 the house style is holding or quietly sliding.
               </p>
             </div>
@@ -1064,22 +1064,21 @@ export default function WorkflowPage() {
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Run{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost-drift compare *.fingerprint.md
+            ghost-drift compare *.expression.md
           </code>{" "}
           for the full matrix plus a 3D PCA projection you can render in
-          Three.js. For a parent team, this is the view that replaces &ldquo;did
-          anyone answer my Slack about the button radius?&rdquo; with
-          &ldquo;here&apos;s which consumers drifted on shape-language this
-          quarter.&rdquo;
+          Three.js. This is the view that replaces &ldquo;which repo
+          drifted?&rdquo; with &ldquo;here&apos;s where the fleet clusters and
+          where it spreads this quarter.&rdquo;
         </p>
       </Step>
 
       {/* ── Close the loop: Generation ──────────────────────────────── */}
       <Step className="border-t border-border/40">
         <StepLabel>Closing the loop · Generation</StepLabel>
-        <StepTitle>Feed the fingerprint forward</StepTitle>
+        <StepTitle>Feed the expression forward</StepTitle>
         <StepLead>
-          A fingerprint isn&apos;t only a measurement; it&apos;s a grounding
+          An expression isn&apos;t only a measurement; it&apos;s a grounding
           artifact. Pipe it into whatever generator you already use — your host
           agent, Cursor, v0, an in-house tool — and use the review recipe as the
           gate on its output. Drift you can see is drift you can steer.
@@ -1089,7 +1088,7 @@ export default function WorkflowPage() {
             {
               step: "ghost-drift emit context-bundle",
               name: "Ground",
-              desc: "Write SKILL.md + tokens.css + prompt.md from fingerprint.md. Whatever the generator consumes.",
+              desc: "Write SKILL.md + tokens.css + prompt.md from expression.md. Whatever the generator consumes.",
             },
             {
               step: "generate (recipe)",
@@ -1104,7 +1103,7 @@ export default function WorkflowPage() {
             {
               step: "verify (recipe)",
               name: "Audit",
-              desc: "Loop over a prompt suite. Per-dimension drift tells you where the fingerprint leaks.",
+              desc: "Loop over a prompt suite. Per-dimension drift tells you where the expression leaks.",
             },
           ].map((s) => (
             <div
@@ -1136,7 +1135,7 @@ export default function WorkflowPage() {
           deterministic primitives as it goes. <em>Verify</em> is the
           schema-discipline mechanism: each dimension gets classified as{" "}
           <em>tight</em>, <em>leaky</em>, or <em>uncaptured</em> — a map of
-          where the fingerprint needs sharpening.
+          where the expression needs sharpening.
         </p>
       </Step>
 
@@ -1151,7 +1150,7 @@ export default function WorkflowPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              file: "fingerprint.md",
+              file: "expression.md",
               desc: "What the system looks like, in three layers.",
             },
             {
