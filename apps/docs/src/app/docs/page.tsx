@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Fingerprint, Rocket } from "lucide-react";
+import { BookOpen, Expression, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -17,21 +17,21 @@ const sections: {
     name: "Workflow",
     href: "/tools/drift/workflow",
     description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
-    icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
+      "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
+    icon: <Expression className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Getting Started",
     href: "/tools/drift/getting-started",
     description:
-      "Install the skill bundle, write your first fingerprint.md, and track drift against a parent — in under five minutes.",
+      "Install the skill bundle, write your first expression.md, and track drift against another expression — in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/tools/drift/cli",
     description:
-      "Seven deterministic primitives — compare, lint, describe, ack, adopt, diverge, emit. Plus the skill recipes the host agent runs.",
+      "Seven deterministic primitives — compare, lint, describe, ack, track, diverge, emit. Plus the skill recipes the host agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -48,7 +48,7 @@ export default function DocsIndex() {
       <AnimatedPageHeader
         kicker="Drift"
         title="Drift"
-        description="Ghost profiles design languages into human-readable fingerprints, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
+        description="Ghost profiles design languages into human-readable expressions, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
       />
 
       <div

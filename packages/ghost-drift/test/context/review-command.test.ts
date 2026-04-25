@@ -2,26 +2,26 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { emitReviewCommand } from "../../src/core/context/review-command.js";
-import { loadFingerprint } from "../../src/core/fingerprint/index.js";
-import type { Fingerprint } from "../../src/core/types.js";
+import { loadExpression } from "../../src/core/expression/index.js";
+import type { Expression } from "../../src/core/types.js";
 
 const GHOST_UI_EXPRESSION = fileURLToPath(
-  new URL("../../../ghost-ui/fingerprint.md", import.meta.url),
+  new URL("../../../ghost-ui/expression.md", import.meta.url),
 );
 
 describe("emitReviewCommand", () => {
-  it("produces a stable artifact for the ghost-ui fingerprint", async () => {
-    const parsed = await loadFingerprint(GHOST_UI_EXPRESSION, {
+  it("produces a stable artifact for the ghost-ui expression", async () => {
+    const parsed = await loadExpression(GHOST_UI_EXPRESSION, {
       noEmbeddingBackfill: true,
     });
-    const out = emitReviewCommand({ fingerprint: parsed.fingerprint });
+    const out = emitReviewCommand({ expression: parsed.expression });
 
     expect(out).toMatchSnapshot();
   });
 
   it("opens with the description frontmatter and an H1 role prompt", () => {
     const fp = minimalExpression();
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out.startsWith("---\ndescription: Drift review for ")).toBe(true);
     expect(out).toMatch(/^# minimal drift review$/m);
@@ -35,7 +35,7 @@ describe("emitReviewCommand", () => {
       { role: "surface-muted", value: "#f5f5f5" },
       { role: "text-alt", value: "#666666" },
     ];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).toMatch(/\| danger must use the semantic token \| `#ff0000`/);
     expect(out).not.toMatch(/surface-muted must use the semantic token/);
@@ -45,16 +45,16 @@ describe("emitReviewCommand", () => {
   it("elides the Serious palette table when no true semantic hues exist", () => {
     const fp = minimalExpression();
     fp.palette.semantic = [{ role: "surface-muted", value: "#f5f5f5" }];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).not.toMatch(/^### Serious$/m);
   });
 
-  it("drops universal sections when the fingerprint has no data for them", () => {
+  it("drops universal sections when the expression has no data for them", () => {
     const fp = minimalExpression();
     fp.surfaces.borderRadii = [];
     fp.spacing.scale = [];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).not.toMatch(/Shape language/);
     expect(out).not.toMatch(/Spacing drift/);
@@ -67,9 +67,9 @@ describe("emitReviewCommand", () => {
       summary: "A spartan, monospaced system driven by code-native aesthetics.",
       personality: ["spartan", "monospaced"],
       distinctiveTraits: [],
-      closestSystems: [],
+      resembles: [],
     };
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     expect(out).toMatch(/A spartan, monospaced system/);
     expect(out).toMatch(/reads as \*spartan, monospaced\*/);
@@ -89,7 +89,7 @@ describe("emitReviewCommand", () => {
         evidence: [],
       },
     ];
-    const out = emitReviewCommand({ fingerprint: fp });
+    const out = emitReviewCommand({ expression: fp });
 
     // color-strategy appears as the palette rationale, not in "Other dimensions"
     expect(out).toMatch(/> Use color sparingly\./);
@@ -100,7 +100,7 @@ describe("emitReviewCommand", () => {
     expect(otherBlock).not.toMatch(/### color-strategy/);
   });
 
-  it("discovers the spike output ran against a real fingerprint", async () => {
+  it("discovers the spike output ran against a real expression", async () => {
     // Smoke: the file exists and parses, otherwise the first test would also
     // fail with a less obvious error.
     const raw = await readFile(GHOST_UI_EXPRESSION, "utf-8");
@@ -108,7 +108,7 @@ describe("emitReviewCommand", () => {
   });
 });
 
-function minimalExpression(): Fingerprint {
+function minimalExpression(): Expression {
   return {
     id: "minimal",
     source: "llm",

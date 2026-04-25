@@ -1,4 +1,4 @@
-import type { Fingerprint, FingerprintComparison } from "../types.js";
+import type { Expression, ExpressionComparison } from "../types.js";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -14,10 +14,10 @@ function c(code: string, text: string): string {
   return useColor ? `${code}${text}${RESET}` : text;
 }
 
-export function formatFingerprint(fp: Fingerprint): string {
+export function formatExpression(fp: Expression): string {
   const lines: string[] = [];
 
-  lines.push(c(BOLD, `Fingerprint: ${fp.id}`));
+  lines.push(c(BOLD, `Expression: ${fp.id}`));
   lines.push(c(DIM, `Source: ${fp.source} | ${fp.timestamp}`));
   if (fp.sources?.length) {
     lines.push(c(DIM, `Synthesized from: ${fp.sources.join(", ")}`));
@@ -36,8 +36,8 @@ export function formatFingerprint(fp: Fingerprint): string {
         lines.push(`  ${c(DIM, "-")} ${trait}`);
       }
     }
-    if (fp.observation.closestSystems.length > 0) {
-      lines.push(`  Resembles:    ${fp.observation.closestSystems.join(", ")}`);
+    if (fp.observation.resembles.length > 0) {
+      lines.push(`  Resembles:    ${fp.observation.resembles.join(", ")}`);
     }
     lines.push("");
   }
@@ -102,7 +102,7 @@ export function formatFingerprint(fp: Fingerprint): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatComparison(comp: FingerprintComparison): string {
+export function formatComparison(comp: ExpressionComparison): string {
   const lines: string[] = [];
 
   lines.push(c(BOLD, `Comparison: ${comp.source.id} vs ${comp.target.id}`));
@@ -136,12 +136,12 @@ export function formatComparison(comp: FingerprintComparison): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function formatFingerprintJSON(fp: Fingerprint): string {
+export function formatExpressionJSON(fp: Expression): string {
   return JSON.stringify(fp, null, 2);
 }
 
-export function formatComparisonJSON(comp: FingerprintComparison): string {
-  // Omit full fingerprints from JSON comparison to keep it concise
+export function formatComparisonJSON(comp: ExpressionComparison): string {
+  // Omit full expressions from JSON comparison to keep it concise
   return JSON.stringify(
     {
       source: comp.source.id,

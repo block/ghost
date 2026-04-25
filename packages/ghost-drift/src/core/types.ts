@@ -1,4 +1,4 @@
-// --- Target system ---
+// --- Target ---
 
 export type TargetType =
   | "path"
@@ -160,14 +160,14 @@ export type RuleSeverity = "error" | "warn" | "off";
 
 export interface GhostConfig {
   targets?: Target[];
-  parent?: Target;
+  tracks?: Target;
   rules: Record<string, RuleSeverity>;
   ignore: string[];
   embedding?: EmbeddingConfig;
   extractors?: string[];
 }
 
-// --- Fingerprint types ---
+// --- Expression types ---
 
 export interface SemanticColor {
   role: string;
@@ -180,17 +180,17 @@ export interface ColorRamp {
   count: number;
 }
 
-// --- Observation & decision types (three-layer fingerprint) ---
+// --- Observation & decision types (three-layer expression) ---
 
 export interface DesignObservation {
   /** Holistic summary of the design language */
   summary: string;
   /** Personality traits (e.g. "utilitarian", "restrained", "playful") */
   personality: string[];
-  /** What makes this system visually distinctive */
+  /** What makes this expression visually distinctive */
   distinctiveTraits: string[];
   /** Closest well-known design languages for reference */
-  closestSystems: string[];
+  resembles: string[];
 }
 
 export interface DesignDecision {
@@ -220,7 +220,7 @@ export interface DesignDecision {
 export interface DesignRole {
   /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
   name: string;
-  /** Tokens the slot binds, grouped by fingerprint dimension. */
+  /** Tokens the slot binds, grouped by expression dimension. */
   tokens: {
     typography?: {
       family?: string;
@@ -248,7 +248,7 @@ export interface DesignRole {
   evidence: string[];
 }
 
-export interface Fingerprint {
+export interface Expression {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
@@ -342,7 +342,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface EnrichedFingerprint extends Fingerprint {
+export interface EnrichedExpression extends Expression {
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -353,7 +353,7 @@ export type DivergenceClass =
   | "evolution-lag"
   | "incompatible";
 
-export interface EnrichedComparison extends FingerprintComparison {
+export interface EnrichedComparison extends ExpressionComparison {
   classification: DivergenceClass;
   explanations: Record<string, string>;
 }
@@ -421,10 +421,10 @@ export interface EmbeddingConfig {
 
 // --- History types ---
 
-export interface FingerprintHistoryEntry {
-  fingerprint: Fingerprint;
-  parentRef?: Target;
-  comparisonToParent?: {
+export interface ExpressionHistoryEntry {
+  expression: Expression;
+  trackedRef?: Target;
+  comparisonToTracked?: {
     distance: number;
     dimensions: Record<string, number>;
   };
@@ -448,10 +448,10 @@ export interface DimensionAck {
 }
 
 export interface SyncManifest {
-  parent: Target;
+  tracks: Target;
   ackedAt: string;
-  parentFingerprintId: string;
-  childFingerprintId: string;
+  trackedExpressionId: string;
+  localExpressionId: string;
   dimensions: Record<string, DimensionAck>;
   overallDistance: number;
 }
@@ -464,9 +464,9 @@ export interface DimensionDelta {
   description: string;
 }
 
-export interface FingerprintComparison {
-  source: Fingerprint;
-  target: Fingerprint;
+export interface ExpressionComparison {
+  source: Expression;
+  target: Expression;
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
@@ -488,7 +488,7 @@ export interface DriftVelocity {
   windowDays: number;
 }
 
-export interface TemporalComparison extends FingerprintComparison {
+export interface TemporalComparison extends ExpressionComparison {
   velocity: DriftVelocity[];
   daysSinceAck: number | null;
   exceedsAckedBounds: boolean;
@@ -496,13 +496,13 @@ export interface TemporalComparison extends FingerprintComparison {
   trajectory: "converging" | "diverging" | "stable" | "oscillating";
 }
 
-// --- Composite types (N≥3 fingerprint comparison) ---
+// --- Composite types (N≥3 expression comparison) ---
 
 export interface CompositeMember {
   id: string;
-  fingerprint: Fingerprint;
-  parentRef?: Target;
-  distanceToParent?: number;
+  expression: Expression;
+  trackedRef?: Target;
+  distanceToTracked?: number;
 }
 
 export interface CompositePair {
@@ -532,8 +532,8 @@ export interface ValueDrift {
   rule: string;
   severity: RuleSeverity;
   message: string;
-  registryValue?: string;
-  consumerValue?: string;
+  expressionValue?: string;
+  implementationValue?: string;
   selector?: string;
   file?: string;
   line?: number;
@@ -548,6 +548,6 @@ export interface StructureDrift {
   diff?: string;
   linesAdded: number;
   linesRemoved: number;
-  registryFile?: string;
-  consumerFile?: string;
+  expressionFile?: string;
+  implementationFile?: string;
 }

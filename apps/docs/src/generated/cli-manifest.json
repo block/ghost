@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-23T10:40:33.455Z",
+  "generatedAt": "2026-04-25T02:58:04.127Z",
   "commands": [
     {
       "name": "compare",
-      "rawName": "compare [...fingerprints]",
-      "description": "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
+      "rawName": "compare [...expressions]",
+      "description": "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
       "options": [
         {
           "rawName": "--semantic",
@@ -42,8 +42,8 @@
     },
     {
       "name": "lint",
-      "rawName": "lint [fingerprint]",
-      "description": "Validate fingerprint.md schema and body/frontmatter coherence",
+      "rawName": "lint [expression]",
+      "description": "Validate expression.md schema and body/frontmatter coherence",
       "options": [
         {
           "rawName": "--format <fmt>",
@@ -57,8 +57,8 @@
     },
     {
       "name": "describe",
-      "rawName": "describe [fingerprint]",
-      "description": "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+      "rawName": "describe [expression]",
+      "description": "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
       "options": [
         {
           "rawName": "--format <fmt>",
@@ -73,7 +73,7 @@
     {
       "name": "ack",
       "rawName": "ack",
-      "description": "Acknowledge current drift — record intentional stance toward parent",
+      "description": "Acknowledge current drift — record intentional stance toward the tracked expression",
       "options": [
         {
           "rawName": "-c, --config <path>",
@@ -118,14 +118,14 @@
       ]
     },
     {
-      "name": "adopt",
-      "rawName": "adopt <source>",
-      "description": "Shift parent reference — adopt a new fingerprint as baseline",
+      "name": "track",
+      "rawName": "track <expression>",
+      "description": "Track another expression as this repo's reference",
       "options": [
         {
           "rawName": "-d, --dimension <name>",
           "name": "dimension",
-          "description": "Adopt only for a specific dimension",
+          "description": "Track only for a specific dimension",
           "default": null,
           "takesValue": true,
           "negated": false
@@ -174,12 +174,12 @@
     {
       "name": "emit",
       "rawName": "emit <kind>",
-      "description": "Emit a derived artifact from fingerprint.md (kinds: review-command, context-bundle, skill)",
+      "description": "Emit a derived artifact from expression.md (kinds: review-command, context-bundle, skill)",
       "options": [
         {
-          "rawName": "-e, --fingerprint <path>",
-          "name": "fingerprint",
-          "description": "Source fingerprint file (default: fingerprint.md)",
+          "rawName": "-e, --expression <path>",
+          "name": "expression",
+          "description": "Source expression file (default: expression.md)",
           "default": null,
           "takesValue": true,
           "negated": false
@@ -219,7 +219,7 @@
         {
           "rawName": "--prompt-only",
           "name": "promptOnly",
-          "description": "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
+          "description": "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
           "default": null,
           "takesValue": false,
           "negated": false
@@ -227,7 +227,7 @@
         {
           "rawName": "--name <name>",
           "name": "name",
-          "description": "Override the skill name (default: fingerprint id) (context-bundle)",
+          "description": "Override the skill name (default: expression id) (context-bundle)",
           "default": null,
           "takesValue": true,
           "negated": false

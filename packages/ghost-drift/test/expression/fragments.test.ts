@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   EMBEDDING_FRAGMENT_FILENAME,
   findFragmentLinks,
-  loadFingerprint,
+  loadExpression,
   serializeEmbeddingFragment,
-  serializeFingerprint,
-} from "../../src/core/fingerprint/index.js";
-import type { Fingerprint } from "../../src/core/types.js";
+  serializeExpression,
+} from "../../src/core/expression/index.js";
+import type { Expression } from "../../src/core/types.js";
 
 const BASE_EXPRESSION = `---
 id: base
@@ -57,9 +57,9 @@ describe("decision fragments", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("assembles decisions/*.md into the fingerprint", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    await writeFile(fingerprintPath, BASE_EXPRESSION, "utf-8");
+  it("assembles decisions/*.md into the expression", async () => {
+    const expressionPath = join(dir, "expression.md");
+    await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
     await mkdir(join(dir, "decisions"), { recursive: true });
     await writeFile(
       join(dir, "decisions", "warm-neutrals.md"),
@@ -79,12 +79,12 @@ No cool grays anywhere.
       "utf-8",
     );
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath);
-    const dims = fingerprint.decisions?.map((d) => d.dimension) ?? [];
+    const { expression } = await loadExpression(expressionPath);
+    const dims = expression.decisions?.map((d) => d.dimension) ?? [];
     expect(dims).toContain("inline-rule");
     expect(dims).toContain("warm-neutrals");
     expect(dims).toContain("from-filename");
-    const warm = fingerprint.decisions?.find(
+    const warm = expression.decisions?.find(
       (d) => d.dimension === "warm-neutrals",
     );
     expect(warm?.evidence).toEqual(["#111", "#222"]);
@@ -92,8 +92,8 @@ No cool grays anywhere.
   });
 
   it("fragment overrides inline decision with same dimension", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    await writeFile(fingerprintPath, BASE_EXPRESSION, "utf-8");
+    const expressionPath = join(dir, "expression.md");
+    await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
     await mkdir(join(dir, "decisions"), { recursive: true });
     await writeFile(
       join(dir, "decisions", "inline-rule.md"),
@@ -106,16 +106,16 @@ Overridden by fragment.
       "utf-8",
     );
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath);
-    const rule = fingerprint.decisions?.find(
+    const { expression } = await loadExpression(expressionPath);
+    const rule = expression.decisions?.find(
       (d) => d.dimension === "inline-rule",
     );
     expect(rule?.decision).toBe("Overridden by fragment.");
   });
 
   it("noFragments: true skips the decisions/ directory", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    await writeFile(fingerprintPath, BASE_EXPRESSION, "utf-8");
+    const expressionPath = join(dir, "expression.md");
+    await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
     await mkdir(join(dir, "decisions"), { recursive: true });
     await writeFile(
       join(dir, "decisions", "extra.md"),
@@ -123,22 +123,22 @@ Overridden by fragment.
       "utf-8",
     );
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath, {
+    const { expression } = await loadExpression(expressionPath, {
       noFragments: true,
     });
-    const dims = fingerprint.decisions?.map((d) => d.dimension) ?? [];
+    const dims = expression.decisions?.map((d) => d.dimension) ?? [];
     expect(dims).not.toContain("extra");
   });
 
   it("ignores absent decisions/ directory silently", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    await writeFile(fingerprintPath, BASE_EXPRESSION, "utf-8");
-    const { fingerprint } = await loadFingerprint(fingerprintPath);
-    expect(fingerprint.decisions).toHaveLength(1);
+    const expressionPath = join(dir, "expression.md");
+    await writeFile(expressionPath, BASE_EXPRESSION, "utf-8");
+    const { expression } = await loadExpression(expressionPath);
+    expect(expression.decisions).toHaveLength(1);
   });
 });
 
-const V4_FINGERPRINT: Fingerprint = {
+const V4_EXPRESSION: Expression = {
   id: "v4-sample",
   source: "llm",
   timestamp: "2026-04-19T00:00:00.000Z",
@@ -180,44 +180,44 @@ describe("embedding fragment", () => {
   });
 
   it("loader reads the vector from a sibling embedding.md when frontmatter omits it", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    const md = serializeFingerprint(V4_FINGERPRINT);
-    await writeFile(fingerprintPath, md, "utf-8");
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_EXPRESSION);
+    await writeFile(expressionPath, md, "utf-8");
 
     const vector = [0.9, 0.8, 0.7, 0.6, 0.5];
     const fragPath = join(dir, EMBEDDING_FRAGMENT_FILENAME);
     await writeFile(
       fragPath,
-      serializeEmbeddingFragment(vector, V4_FINGERPRINT.id),
+      serializeEmbeddingFragment(vector, V4_EXPRESSION.id),
       "utf-8",
     );
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath);
+    const { expression } = await loadExpression(expressionPath);
     // The sibling vector wins over the recomputed one
-    expect(fingerprint.embedding).toEqual(vector);
+    expect(expression.embedding).toEqual(vector);
   });
 
   it("loader recomputes the embedding when no sibling file exists", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    const md = serializeFingerprint(V4_FINGERPRINT);
-    await writeFile(fingerprintPath, md, "utf-8");
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_EXPRESSION);
+    await writeFile(expressionPath, md, "utf-8");
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath);
+    const { expression } = await loadExpression(expressionPath);
     // No sibling; loader falls back to computeEmbedding — which produces a
     // 49-dim vector. Length tells us the recompute path fired.
-    expect(fingerprint.embedding).toHaveLength(49);
+    expect(expression.embedding).toHaveLength(49);
   });
 
   it("noEmbeddingBackfill skips both fragment read and recompute", async () => {
-    const fingerprintPath = join(dir, "fingerprint.md");
-    const md = serializeFingerprint(V4_FINGERPRINT);
-    await writeFile(fingerprintPath, md, "utf-8");
+    const expressionPath = join(dir, "expression.md");
+    const md = serializeExpression(V4_EXPRESSION);
+    await writeFile(expressionPath, md, "utf-8");
 
-    const { fingerprint } = await loadFingerprint(fingerprintPath, {
+    const { expression } = await loadExpression(expressionPath, {
       noEmbeddingBackfill: true,
     });
     // Frontmatter had no embedding and backfill is off — stays empty.
-    expect(fingerprint.embedding ?? []).toHaveLength(0);
+    expect(expression.embedding ?? []).toHaveLength(0);
   });
 });
 

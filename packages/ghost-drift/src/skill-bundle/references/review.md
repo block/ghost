@@ -1,32 +1,32 @@
 ---
 name: review
-description: Flag PR or working-tree changes that drift from the local fingerprint.md.
+description: Flag PR or working-tree changes that drift from the local expression.md.
 handoffs:
-  - label: Regenerate drifting components to match the fingerprint
+  - label: Regenerate drifting components to match the expression
     skill: verify
-    prompt: Regenerate the drifting code against fingerprint.md and re-review
+    prompt: Regenerate the drifting code against expression.md and re-review
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
-    prompt: Acknowledge that the current fingerprint.md no longer matches and record the drift
+    prompt: Acknowledge that the current expression.md no longer matches and record the drift
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension so it stops flagging
-  - label: Adopt a new parent baseline
-    command: ghost-drift adopt
-    prompt: Adopt the provided fingerprint.md as a new parent baseline
+  - label: Track a new expression
+    command: ghost-drift track
+    prompt: Track the provided expression.md as the new reference
 ---
 
 # Recipe: Review code changes for design drift
 
-**Goal:** flag frontend changes that drift from the local `fingerprint.md` and produce a review (chat summary or PR comments).
+**Goal:** flag frontend changes that drift from the local `expression.md` and produce a review (chat summary or PR comments).
 
-Ghost has no `ghost review` CLI command. You — the host agent — are the reviewer. The `fingerprint.md` is your rubric.
+Ghost has no `ghost review` CLI command. You — the host agent — are the reviewer. The `expression.md` is your rubric.
 
 ## Steps
 
-### 1. Read the fingerprint
+### 1. Read the expression
 
-    ghost-drift describe fingerprint.md
+    ghost-drift describe expression.md
 
 This prints a section map — frontmatter range, body sections (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each `### dimension` block under Decisions, with line ranges and token estimates. Use it to plan what to load.
 
@@ -36,7 +36,7 @@ Then read selectively:
 - **Read decision sections by dimension name.** If the diff touches colors, you'll want `### color-strategy` (and any other `color-*` / `palette-*` dimension). If it touches radii, `### shape-language`, `### surface-hierarchy`, `### elevation`. Match on slug.
 - **If you're not confident which decisions are relevant — or the diff spans more than two partitions — read the entire `# Decisions` block.** It's typically 2–4k tokens; cheaper than missing a constraint. The describe output tells you the exact line range.
 
-If no `fingerprint.md` exists, tell the user. Offer to generate one via the [profile recipe](profile.md). Don't guess.
+If no `expression.md` exists, tell the user. Offer to generate one via the [profile recipe](profile.md). Don't guess.
 
 ### 2. Collect the changes
 
@@ -47,12 +47,12 @@ Scope to frontend-relevant files (`.tsx`, `.jsx`, `.css`, `.scss`, `.vue`, `.sve
 
 ### 3. Scan for drift
 
-For each changed file, read the diff and look for values that don't belong to the fingerprint:
+For each changed file, read the diff and look for values that don't belong to the expression:
 
 - **Palette drift:** hex codes (`#ff6600`), `rgb(...)`, `oklch(...)`, Tailwind color classes (`bg-slate-500`) that aren't in `palette.dominant`/`.neutrals`/`.semantic`.
 - **Spacing drift:** `px`, `rem`, `em` values not in `spacing.scale` (converted: 1rem = 16px). Tailwind spacing classes (`p-3`, `mt-7`) that land off-grid.
 - **Typography drift:** font-family declarations not in `typography.families`, font-size values not in `sizeRamp`, font-weight values far from the `weightDistribution`.
-- **Surface drift:** `border-radius` not in `surfaces.borderRadii`, `box-shadow` present when `surfaces.shadowComplexity: none`, or absent when the fingerprint says shadows are load-bearing.
+- **Surface drift:** `border-radius` not in `surfaces.borderRadii`, `box-shadow` present when `surfaces.shadowComplexity: none`, or absent when the expression says shadows are load-bearing.
 - **Decision drift:** behavior that contradicts a decision (e.g. decision says "no animation" and the change adds a `transition`; decision says "component-height tokens, not padding arithmetic" and the change uses `padding-y: 14px`).
 
 ### 4. Filter noise
@@ -71,7 +71,7 @@ Group findings by dimension. Lead with the most load-bearing drift. For each fin
 
 - `file:line` — where
 - What was found (`#ff6600`)
-- What the fingerprint allows (`palette.semantic.warning: #dc2626`)
+- What the expression allows (`palette.semantic.warning: #dc2626`)
 - Why it matters (one sentence — reference the decision if applicable)
 - Suggested fix (the token or var to use instead)
 
@@ -82,8 +82,8 @@ Formats:
 
 ### 6. Record stance if the user accepts the drift
 
-- `ghost-drift ack` — "yes, the current fingerprint no longer matches reality; accept drift across the board and record it."
+- `ghost-drift ack` — "yes, the current expression no longer matches reality; accept drift across the board and record it."
 - `ghost-drift diverge <dimension> --reason "..."` — "this dimension is intentionally different; stop flagging it."
-- `ghost-drift adopt <parent.md>` — "adopt a new parent baseline."
+- `ghost-drift track <expression.md>` — "track another expression as the reference."
 
-These commands only work if the local `fingerprint.md` is up to date — offer to regenerate it first if the project has meaningfully shifted since it was written.
+These commands only work if the local `expression.md` is up to date — offer to regenerate it first if the project has meaningfully shifted since it was written.

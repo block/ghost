@@ -1,9 +1,9 @@
 # Generation Loop
 
 Ghost sits as pipeline infrastructure for AI-driven UI generation. The
-`fingerprint.md` is the grounding input; the *review* recipe is the
+`expression.md` is the grounding input; the *review* recipe is the
 post-generation gate; the *verify* recipe drives the loop over a prompt
-suite to expose where the fingerprint leaks.
+suite to expose where the expression leaks.
 
 Only the grounding step is a deterministic CLI verb (`ghost-drift emit
 context-bundle`). *Generate*, *review*, and *verify* are skill recipes
@@ -12,7 +12,7 @@ the host agent follows — installed with `ghost-drift emit skill`.
 ## Pipeline shape
 
 ```
-fingerprint.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
+expression.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
                                               │
                                               ▼
                                        any generator
@@ -22,7 +22,7 @@ fingerprint.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.m
                                               ▼ HTML / JSX
                                        [review recipe]  ──►  drift disposition
                                                              (block / annotate
-                                                              / ack / adopt)
+                                                              / ack / track)
 ```
 
 ## Pieces
@@ -30,21 +30,21 @@ fingerprint.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.m
 ### `ghost-drift emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
-`SKILL.md` + `fingerprint.md` + `tokens.css` into `./ghost-context/`.
+`SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
 
 Flags:
 - `--out <dir>` — output directory (default: `./ghost-context`)
-- `--prompt-only` — single `prompt.md` only; skips `SKILL.md` / `fingerprint.md` / `tokens.css`
+- `--prompt-only` — single `prompt.md` only; skips `SKILL.md` / `expression.md` / `tokens.css`
 - `--no-tokens` — skip `tokens.css`
 - `--readme` — include `README.md`
-- `--name <name>` — override the skill name (default: fingerprint id)
+- `--name <name>` — override the skill name (default: expression id)
 
 Point a Claude Code or MCP client at the output directory and the agent
 reads `SKILL.md`.
 
 ### The `generate` recipe
 
-Driven by the host agent. Loads the fingerprint, builds a system prompt
+Driven by the host agent. Loads the expression, builds a system prompt
 from Character/Signature/Decisions + tokens, asks the underlying model,
 extracts the artifact (HTML/JSX/etc.), and hands it to the `review` recipe
 for self-check. Retries with drift feedback until it passes or the agent
@@ -57,7 +57,7 @@ Source: `packages/ghost-drift/src/skill-bundle/references/generate.md`.
 
 ### The `review` recipe
 
-The agent diffs generated output against the fingerprint. Flags hardcoded
+The agent diffs generated output against the expression. Flags hardcoded
 colors outside the palette, spacing off the scale, and type choices that
 violate decisions. For pre-baked, per-project review commands use
 `ghost-drift emit review-command` (which writes a slash command at
@@ -70,11 +70,11 @@ Source: `packages/ghost-drift/src/skill-bundle/references/review.md`.
 Runs the generate→review loop over a versioned prompt suite. Aggregates
 drift per dimension and classifies:
 
-- **tight** (mean < 1): fingerprint reproduces faithfully
+- **tight** (mean < 1): expression reproduces faithfully
 - **leaky** (1–3): generator drifts here often — tighten Decisions
-- **uncaptured** (≥ 3): fingerprint likely under-specifies this dimension
+- **uncaptured** (≥ 3): expression likely under-specifies this dimension
 
-The killer demo: run `verify` on a mature fingerprint, intentionally drop
+The killer demo: run `verify` on a mature expression, intentionally drop
 a section (e.g. motion), re-run, watch drift rise in dimensions that lost
 grounding.
 
@@ -82,13 +82,13 @@ Source: `packages/ghost-drift/src/skill-bundle/references/verify.md`.
 
 ## The standard prompt suite
 
-A versioned set of UI-construction tasks, each tagged with the fingerprint
+A versioned set of UI-construction tasks, each tagged with the expression
 dimensions it stresses. Tagging prompts with dimensions lets the agent
 distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
 *incidental* drift (the same prompt leaking color, which it wasn't
 supposed to stress).
 
-## How the three-layer fingerprint format earns its keep
+## How the three-layer expression format earns its keep
 
 Each layer has a concrete job somewhere in the loop:
 
@@ -112,6 +112,6 @@ skill bundle into the generator's context; the generator produces; the
 `review` recipe gates the output. Drift disposition belongs to the
 pipeline owner (block, annotate, require `ghost-drift ack`).
 
-**Fingerprint maintenance**: run `verify` periodically. When a dimension
-shows up consistently leaky, the fingerprint needs more Decisions for
+**Expression maintenance**: run `verify` periodically. When a dimension
+shows up consistently leaky, the expression needs more Decisions for
 that dimension.

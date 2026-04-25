@@ -1,7 +1,7 @@
 import { parse as parseYaml } from "yaml";
-import type { Fingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 import type { BodyData } from "./body.js";
-import { parseFingerprint, splitRaw } from "./parser.js";
+import { parseExpression, splitRaw } from "./parser.js";
 import {
   formatReferenceError,
   isTokenReference,
@@ -34,8 +34,8 @@ export interface LintOptions {
 }
 
 /**
- * Lint an fingerprint.md string for schema correctness and partition
- * violations. Unlike parseFingerprint, this never throws — every problem
+ * Lint an expression.md string for schema correctness and partition
+ * violations. Unlike parseExpression, this never throws — every problem
  * surfaces as a structured issue.
  *
  * Under schema 3 the body/frontmatter partition is enforced by zod-strict.
@@ -43,7 +43,7 @@ export interface LintOptions {
  * entry), missing rationale (frontmatter entry with no body block),
  * legacy `**Evidence:**` bullets in the body, and broken palette citations.
  */
-export function lintFingerprint(
+export function lintExpression(
   raw: string,
   options: LintOptions = {},
 ): LintReport {
@@ -51,9 +51,9 @@ export function lintFingerprint(
   const strict = new Set(options.strict ?? []);
   const off = new Set(options.off ?? []);
 
-  let parsed: ReturnType<typeof parseFingerprint> | null = null;
+  let parsed: ReturnType<typeof parseExpression> | null = null;
   try {
-    parsed = parseFingerprint(raw, { skipValidation: true });
+    parsed = parseExpression(raw, { skipValidation: true });
   } catch (err) {
     rawIssues.push({
       severity: "error",
@@ -63,16 +63,16 @@ export function lintFingerprint(
     return finalize(rawIssues, strict, off);
   }
 
-  const { fingerprint, body } = parsed;
+  const { expression, body } = parsed;
   const rawYaml = toRawFrontmatter(raw);
   const { body: bodyText } = splitRawSafe(raw);
 
   checkSchemaValidity(rawYaml, rawIssues);
-  checkDecisionPartition(fingerprint, body, rawIssues);
+  checkDecisionPartition(expression, body, rawIssues);
   checkStrayEvidenceInBody(bodyText, rawIssues);
-  checkEvidenceHexes(fingerprint, rawIssues);
-  checkUnusedPalette(fingerprint, rawIssues);
-  checkRoleReferences(fingerprint, rawIssues);
+  checkEvidenceHexes(expression, rawIssues);
+  checkUnusedPalette(expression, rawIssues);
+  checkRoleReferences(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -136,7 +136,7 @@ function checkSchemaValidity(
  * when a body block has no rationale at all.
  */
 function checkDecisionPartition(
-  fp: Fingerprint,
+  fp: Expression,
   body: BodyData,
   issues: LintIssue[],
 ): void {
@@ -174,7 +174,7 @@ function checkStrayEvidenceInBody(
 
 const HEX_RE = /#[0-9a-f]{3,8}\b/gi;
 
-function checkEvidenceHexes(fp: Fingerprint, issues: LintIssue[]): void {
+function checkEvidenceHexes(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
   if (paletteHexes.size === 0) return;
 
@@ -197,7 +197,7 @@ function checkEvidenceHexes(fp: Fingerprint, issues: LintIssue[]): void {
   });
 }
 
-function checkUnusedPalette(fp: Fingerprint, issues: LintIssue[]): void {
+function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
   if (paletteHexes.size === 0) return;
 
@@ -222,7 +222,7 @@ function checkUnusedPalette(fp: Fingerprint, issues: LintIssue[]): void {
   }
 }
 
-function collectPaletteHexes(fp: Fingerprint): Set<string> {
+function collectPaletteHexes(fp: Expression): Set<string> {
   const out = new Set<string>();
   for (const c of fp.palette?.dominant ?? []) out.add(c.value.toLowerCase());
   for (const c of fp.palette?.semantic ?? []) out.add(c.value.toLowerCase());
@@ -238,7 +238,7 @@ function collectPaletteHexes(fp: Fingerprint): Set<string> {
  */
 const ROLE_PALETTE_FIELDS = ["background", "foreground", "border"] as const;
 
-function checkRoleReferences(fp: Fingerprint, issues: LintIssue[]): void {
+function checkRoleReferences(fp: Expression, issues: LintIssue[]): void {
   const roles = fp.roles ?? [];
   roles.forEach((role, ri) => {
     const palette = role.tokens?.palette;

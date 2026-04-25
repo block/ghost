@@ -18,13 +18,13 @@ No CLI verb calls an LLM. No CLI verb takes an API key as a required input. Outp
 
 ---
 
-## 2. fingerprint.md is the single canonical artifact.
+## 2. expression.md is the single canonical artifact.
 
-One on-disk format per fingerprint. No parallel JSON/YAML/TOML/DTCG representations. No compiled variants. Readers parse `fingerprint.md` directly.
+One on-disk format per expression. No parallel JSON/YAML/TOML/DTCG representations. No compiled variants. Readers parse `expression.md` directly.
 
-**Why:** Fingerprints are meant to be read by humans, edited by LLMs, and diffed in PRs. Multiple formats fracture all three. The artifact lives where design decisions already live — in the repo, versioned with code.
+**Why:** Expressions are meant to be read by humans, edited by LLMs, and diffed in PRs. Multiple formats fracture all three. The artifact lives where design decisions already live — in the repo, versioned with code.
 
-**Override:** Never for storage. Ephemeral runtime artifacts (composite centroids, cached embeddings) may exist in memory but must not be checked in or loaded as fingerprints.
+**Override:** Never for storage. Ephemeral runtime artifacts (composite centroids, cached embeddings) may exist in memory but must not be checked in or loaded as expressions.
 
 ---
 
@@ -32,7 +32,7 @@ One on-disk format per fingerprint. No parallel JSON/YAML/TOML/DTCG representati
 
 Frontmatter holds the machine layer: identity, tokens, dimension slugs, evidence paths. Body holds the prose layer: Character, Signature, decision rationale. Prose does not leak into frontmatter; structured data does not leak into prose.
 
-**Why:** The partition is what makes fingerprints simultaneously human-readable and machine-comparable. Blurring it forces one audience to do the other's work. The linter enforces it at the boundary; this invariant enforces it in spirit.
+**Why:** The partition is what makes expressions simultaneously human-readable and machine-comparable. Blurring it forces one audience to do the other's work. The linter enforces it at the boundary; this invariant enforces it in spirit.
 
 **Override:** Never. New fields are placed by layer, not by convenience.
 
@@ -48,11 +48,11 @@ Profile, review, verify, generate, and discover are recipes the host agent execu
 
 ---
 
-## 5. Fingerprints evolve by deliberate act, not by schedule.
+## 5. Expressions evolve by deliberate act, not by schedule.
 
-A fingerprint changes when a human or agent deliberately edits it — in a design PR, an `adopt`, or a `diverge`. There is no background re-profile. There is no drift-triggered auto-update.
+An expression changes when a human or agent deliberately edits it — in a design PR, an `track`, or a `diverge`. There is no background re-profile. There is no drift-triggered auto-update.
 
-**Why:** A fingerprint that silently re-profiles is no longer a contract. The whole point of `adopt` / `ack` / `diverge` is that drift becomes *a visible act with a stance*. Automatic updates hide the act and collapse governance into noise.
+**Why:** An expression that silently re-profiles is no longer a contract. The whole point of `track` / `ack` / `diverge` is that drift becomes *a visible act with a stance*. Automatic updates hide the act and collapse governance into noise.
 
 **Override:** Never. Tooling may suggest re-profiling (e.g., after a major refactor), but the act itself is always explicit and human-authored.
 
@@ -62,6 +62,6 @@ A fingerprint changes when a human or agent deliberately edits it — in a desig
 
 Each verb does one thing. No verb subsumes another. No `--mode` flag swaps a verb to a different conceptual operation.
 
-**Why:** A small orthogonal surface is a product; a large overlapping surface is an accumulation. The current surface (`compare`, `lint`, `ack`, `adopt`, `diverge`, `emit`, `describe`) is a principled minimum — any addition must justify itself against merging with an existing verb.
+**Why:** A small orthogonal surface is a product; a large overlapping surface is an accumulation. The current surface (`compare`, `lint`, `ack`, `track`, `diverge`, `emit`, `describe`) is a principled minimum — any addition must justify itself against merging with an existing verb.
 
 **Override:** New verbs are fine when they capture a genuinely new operation. New flags are fine when they refine behavior within the same operation. Rule of thumb: if explaining the flag requires "if X, the verb actually does Y," it's a new verb.

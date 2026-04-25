@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { Fingerprint } from "lucide-react";
+import { Expression } from "lucide-react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
 import { SectionWrapper } from "@/components/docs/wrappers";
@@ -12,7 +12,7 @@ const tools = [
     href: "/tools/drift",
     description:
       "Express design languages, track their evolution, and surface divergence before it compounds.",
-    icon: <Fingerprint className="size-8" strokeWidth={1.5} />,
+    icon: <Expression className="size-8" strokeWidth={1.5} />,
   },
 ];
 

@@ -1,7 +1,7 @@
-import type { Fingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 import { contrastScore, saturationScore } from "./colors.js";
 
-type FingerprintInput = Omit<Fingerprint, "embedding">;
+type ExpressionInput = Omit<Expression, "embedding">;
 
 // Fixed embedding size for comparability
 const EMBEDDING_SIZE = 49;
@@ -38,8 +38,8 @@ function logNorm(count: number, logBase: number): number {
 }
 
 /**
- * Compute a deterministic numeric embedding from a structured fingerprint.
- * This ensures fingerprints from different sources (LLM, registry, extraction)
+ * Compute a deterministic numeric embedding from a structured expression.
+ * This ensures expressions from different sources (LLM, registry, extraction)
  * produce comparable vectors.
  *
  * Dimensions (49 total):
@@ -50,14 +50,14 @@ function logNorm(count: number, logBase: number): number {
  *  [31-40]  Typography: families count, size ramp features, weight distribution, line height, weight spread, ramp range
  *  [41-48]  Surfaces: radii features, shadow complexity, border usage, radii spread, radii median, max radius
  */
-export function computeEmbedding(fingerprint: FingerprintInput): number[] {
+export function computeEmbedding(expression: ExpressionInput): number[] {
   const vec: number[] = new Array(EMBEDDING_SIZE).fill(0);
   let i = 0;
 
   // --- Palette: dominant colors (12 dims) ---
   const dominantSlots = 4;
   for (let s = 0; s < dominantSlots; s++) {
-    const color = fingerprint.palette.dominant[s];
+    const color = expression.palette.dominant[s];
     if (color?.oklch) {
       vec[i++] = color.oklch[0]; // L (0-1)
       vec[i++] = color.oklch[1]; // C (0-0.4 typical)
@@ -68,13 +68,13 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   }
 
   // --- Palette: neutral ramp (6 dims) ---
-  const neutralCount = fingerprint.palette.neutrals.count;
+  const neutralCount = expression.palette.neutrals.count;
   vec[i++] = Math.min(neutralCount / NORM.neutralCountMax, 1);
   vec[i++] = neutralCount > 0 ? 1 : 0;
   vec[i++] = Math.min(neutralCount / NORM.neutralDensityMax, 1);
 
   // Estimate lightness range from neutral steps using semantic colors as proxy
-  const neutralLightnesses = fingerprint.palette.semantic
+  const neutralLightnesses = expression.palette.semantic
     .filter(
       (c) =>
         c.oklch &&
@@ -95,18 +95,18 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
 
   // --- Palette: qualitative (3 dims) — continuous scoring ---
   const allSemanticAndDominant = [
-    ...fingerprint.palette.semantic,
-    ...fingerprint.palette.dominant,
+    ...expression.palette.semantic,
+    ...expression.palette.dominant,
   ];
   vec[i++] = saturationScore(allSemanticAndDominant);
   vec[i++] = contrastScore(allSemanticAndDominant);
   vec[i++] = Math.min(
-    fingerprint.palette.semantic.length / NORM.semanticCountMax,
+    expression.palette.semantic.length / NORM.semanticCountMax,
     1,
   );
 
   // --- Spacing (10 dims) ---
-  const spacing = fingerprint.spacing;
+  const spacing = expression.spacing;
   vec[i++] = logNorm(spacing.scale.length, NORM.spacingCountLogBase);
   vec[i++] =
     spacing.scale.length > 0
@@ -175,7 +175,7 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   }
 
   // --- Typography (10 dims) ---
-  const typo = fingerprint.typography;
+  const typo = expression.typography;
   vec[i++] = Math.min(typo.families.length / NORM.familyCountMax, 1);
   vec[i++] = Math.min(typo.sizeRamp.length / NORM.sizeRampCountMax, 1);
   // Size range
@@ -238,7 +238,7 @@ export function computeEmbedding(fingerprint: FingerprintInput): number[] {
   }
 
   // --- Surfaces (8 dims) ---
-  const surfaces = fingerprint.surfaces;
+  const surfaces = expression.surfaces;
   vec[i++] = Math.min(surfaces.borderRadii.length / NORM.radiiCountMax, 1);
   vec[i++] =
     surfaces.borderRadii.length > 0

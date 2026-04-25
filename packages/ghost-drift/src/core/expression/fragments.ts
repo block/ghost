@@ -12,7 +12,7 @@ import type { DesignDecision } from "../types.js";
 import { splitRaw } from "./parser.js";
 
 /**
- * If a `decisions/` directory exists next to the fingerprint.md, each
+ * If a `decisions/` directory exists next to the expression.md, each
  * .md file inside is read as a single DesignDecision:
  *
  *   ---
@@ -22,13 +22,13 @@ import { splitRaw } from "./parser.js";
  *   No cool blue-grays anywhere. Every gray carries a warm undertone.
  *
  * The file's markdown body becomes the decision's prose. The assembled
- * decisions are then merged into the main fingerprint's `decisions` via
+ * decisions are then merged into the main expression's `decisions` via
  * the same by-dimension rules as extends composition.
  */
 export async function loadDecisionFragments(
-  fingerprintDir: string,
+  expressionDir: string,
 ): Promise<DesignDecision[]> {
-  const fragDir = join(fingerprintDir, "decisions");
+  const fragDir = join(expressionDir, "decisions");
   let stats: Awaited<ReturnType<typeof stat>>;
   try {
     stats = await stat(fragDir);
@@ -79,23 +79,23 @@ function parseFragment(
 }
 
 /**
- * Canonical filename for the embedding fragment sibling of fingerprint.md.
- * Holds the 49-dim vector as YAML so the root fingerprint.md stays lean.
+ * Canonical filename for the embedding fragment sibling of expression.md.
+ * Holds the 49-dim vector as YAML so the root expression.md stays lean.
  */
 export const EMBEDDING_FRAGMENT_FILENAME = "embedding.md";
 
 /**
  * Serialize an embedding vector to a fragment file. The file carries only
- * a `vector:` array — no prose body. `of:` ties it back to the parent
- * fingerprint id so the link isn't ambiguous.
+ * a `vector:` array — no prose body. `of:` ties it back to the expression
+ * expression id so the link isn't ambiguous.
  */
 export function serializeEmbeddingFragment(
   embedding: number[],
-  fingerprintId: string,
+  expressionId: string,
 ): string {
   const lines: string[] = ["---"];
   lines.push("kind: embedding");
-  lines.push(`of: ${fingerprintId}`);
+  lines.push(`of: ${expressionId}`);
   lines.push(`dimensions: ${embedding.length}`);
   lines.push("vector:");
   for (const v of embedding) {
@@ -111,14 +111,14 @@ export function serializeEmbeddingFragment(
  * isn't all numbers.
  */
 export async function loadEmbeddingFragment(
-  fingerprintDir: string,
+  expressionDir: string,
   referencedPath?: string,
 ): Promise<number[] | null> {
   const candidate = referencedPath
     ? isAbsolute(referencedPath)
       ? referencedPath
-      : resolve(fingerprintDir, referencedPath)
-    : join(fingerprintDir, EMBEDDING_FRAGMENT_FILENAME);
+      : resolve(expressionDir, referencedPath)
+    : join(expressionDir, EMBEDDING_FRAGMENT_FILENAME);
 
   let raw: string;
   try {
@@ -142,7 +142,7 @@ export async function loadEmbeddingFragment(
 }
 
 /**
- * Scan an fingerprint body for markdown fragment links `[label](path)`.
+ * Scan an expression body for markdown fragment links `[label](path)`.
  * Returns relative paths (no resolution). Used to progressively discover
  * which fragment files the author has chosen to attach — mirrors the
  * agent-skills pattern of references-as-body-links.
@@ -171,7 +171,7 @@ export function findFragmentLinks(body: string): string[] {
  */
 export function resolveEmbeddingReference(
   body: string,
-  fingerprintDir: string,
+  expressionDir: string,
 ): string | null {
   const links = findFragmentLinks(body);
   const match = links.find(
@@ -180,13 +180,13 @@ export function resolveEmbeddingReference(
       p === EMBEDDING_FRAGMENT_FILENAME,
   );
   if (match) {
-    return isAbsolute(match) ? match : resolve(fingerprintDir, match);
+    return isAbsolute(match) ? match : resolve(expressionDir, match);
   }
   // No body link — conventional sibling.
-  return join(fingerprintDir, EMBEDDING_FRAGMENT_FILENAME);
+  return join(expressionDir, EMBEDDING_FRAGMENT_FILENAME);
 }
 
 /** Directory-relative utility for writers that emit a fragment next to a target file. */
-export function embeddingSiblingPath(fingerprintPath: string): string {
-  return join(dirname(fingerprintPath), EMBEDDING_FRAGMENT_FILENAME);
+export function embeddingSiblingPath(expressionPath: string): string {
+  return join(dirname(expressionPath), EMBEDDING_FRAGMENT_FILENAME);
 }

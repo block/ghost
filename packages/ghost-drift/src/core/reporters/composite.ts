@@ -21,7 +21,7 @@ export function formatCompositeComparison(
   const lines: string[] = [];
 
   lines.push(
-    c(BOLD, `Composite Fingerprint: ${composite.members.length} members`),
+    c(BOLD, `Composite Expression: ${composite.members.length} members`),
   );
   lines.push("");
 
@@ -35,11 +35,11 @@ export function formatCompositeComparison(
   // Members
   lines.push(c(BOLD, "Members"));
   for (const member of composite.members) {
-    const parentStr =
-      member.distanceToParent != null
-        ? ` (${(member.distanceToParent * 100).toFixed(1)}% from parent)`
+    const trackedStr =
+      member.distanceToTracked != null
+        ? ` (${(member.distanceToTracked * 100).toFixed(1)}% from tracked)`
         : "";
-    lines.push(`  ${member.id}${c(DIM, parentStr)}`);
+    lines.push(`  ${member.id}${c(DIM, trackedStr)}`);
   }
   lines.push("");
 
@@ -76,7 +76,7 @@ export function formatCompositeComparisonJSON(
       memberCount: composite.members.length,
       members: composite.members.map((m) => ({
         id: m.id,
-        distanceToParent: m.distanceToParent,
+        distanceToTracked: m.distanceToTracked,
       })),
       pairwise: composite.pairwise,
       spread: composite.spread,

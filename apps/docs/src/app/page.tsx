@@ -68,14 +68,14 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               Which raises the governance question. The reflex is to centralize:
-              a parent team owns the source of truth, consumers pull, compliance
-              is tracked. Ghost takes the opposite approach. Power moves to the
-              consumer: each team owns its fork, its trajectory, and its stance.
-              Decentralization without intent is entropy, so stances (
-              <em>aligned</em>, <em>accepted</em>, <em>diverging</em>) turn
-              drift into signal. The org's fingerprint drifts in the open; each
-              consumer owns its divergence with reasoning attached. Nothing is
-              prescriptive. Nothing drifts silently. Everything is transparent.
+              one source of truth, many downstream projects, compliance tracked
+              from above. Ghost takes the opposite approach. Each repo owns its
+              expression, its trajectory, and its stance. Decentralization
+              without intent is entropy, so stances (<em>aligned</em>,{" "}
+              <em>accepted</em>, <em>diverging</em>) turn drift into signal. The
+              fleet of expressions drifts in the open; every divergence carries
+              reasoning. Nothing is prescriptive. Nothing drifts silently.
+              Everything is transparent.
             </p>
           </div>
         </section>

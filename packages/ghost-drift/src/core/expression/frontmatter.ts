@@ -1,15 +1,15 @@
-import type { Fingerprint } from "../types.js";
+import type { Expression } from "../types.js";
 
 /**
- * Fingerprint-level metadata — lives in the frontmatter alongside the
- * machine-layer of Fingerprint but is not part of the structured content.
+ * Expression-level metadata — lives in the frontmatter alongside the
+ * machine-layer of Expression but is not part of the structured content.
  */
-export interface FingerprintMeta {
+export interface ExpressionMeta {
   name?: string;
   slug?: string;
   generator?: string;
   confidence?: number;
-  /** Path to a parent fingerprint.md to inherit from. Resolved by loadFingerprint. */
+  /** Path to a base expression.md to inherit from. Resolved by loadExpression. */
   extends?: string;
   /**
    * Loose passthrough bag for LLM-authored extensions that don't fit the
@@ -20,17 +20,17 @@ export interface FingerprintMeta {
 }
 
 export interface FrontmatterData {
-  meta: FingerprintMeta;
-  fingerprint: Fingerprint;
+  meta: ExpressionMeta;
+  expression: Expression;
 }
 
 /**
- * Fingerprint fields that are populated from YAML frontmatter. Prose
+ * Expression fields that are populated from YAML frontmatter. Prose
  * fields (observation.summary, observation.distinctiveTraits, decisions[].decision,
  * values) are populated from the markdown body by `applyBody` — they are
  * deliberately NOT listed here.
  */
-const FINGERPRINT_KEYS = new Set<keyof Fingerprint>([
+const EXPRESSION_KEYS = new Set<keyof Expression>([
   "id",
   "source",
   "timestamp",
@@ -46,17 +46,17 @@ const FINGERPRINT_KEYS = new Set<keyof Fingerprint>([
 ]);
 
 /**
- * Split a frontmatter object into the Fingerprint proper
- * and fingerprint-level metadata (name, slug, etc.).
+ * Split a frontmatter object into the Expression proper
+ * and expression-level metadata (name, slug, etc.).
  */
 export function splitFrontmatter(
   raw: Record<string, unknown>,
 ): FrontmatterData {
-  const meta: FingerprintMeta = {};
+  const meta: ExpressionMeta = {};
   const fp: Record<string, unknown> = {};
 
   for (const [k, v] of Object.entries(raw)) {
-    if (FINGERPRINT_KEYS.has(k as keyof Fingerprint)) {
+    if (EXPRESSION_KEYS.has(k as keyof Expression)) {
       fp[k] = v;
     } else if (
       k === "name" ||
@@ -82,18 +82,18 @@ export function splitFrontmatter(
 
   return {
     meta,
-    fingerprint: fp as unknown as Fingerprint,
+    expression: fp as unknown as Expression,
   };
 }
 
 /**
- * Build a plain object for YAML serialization from an fingerprint + meta.
- * Meta comes first for readability; then fingerprint fields, with prose
+ * Build a plain object for YAML serialization from an expression + meta.
+ * Meta comes first for readability; then expression fields, with prose
  * fields stripped — those belong in the markdown body.
  */
 export function mergeFrontmatter(
-  fingerprint: Fingerprint,
-  meta: FingerprintMeta = {},
+  expression: Expression,
+  meta: ExpressionMeta = {},
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (meta.name) out.name = meta.name;
@@ -104,7 +104,7 @@ export function mergeFrontmatter(
     out.metadata = meta.metadata;
   }
 
-  const ordered: (keyof Fingerprint)[] = [
+  const ordered: (keyof Expression)[] = [
     "id",
     "source",
     "timestamp",
@@ -119,13 +119,13 @@ export function mergeFrontmatter(
     "embedding",
   ];
   for (const key of ordered) {
-    const v = fingerprint[key];
+    const v = expression[key];
     if (v === undefined) continue;
     if (key === "observation") {
-      const stripped = stripObservationProse(v as Fingerprint["observation"]);
+      const stripped = stripObservationProse(v as Expression["observation"]);
       if (stripped) out.observation = stripped;
     } else if (key === "decisions") {
-      const stripped = stripDecisionProse(v as Fingerprint["decisions"]);
+      const stripped = stripDecisionProse(v as Expression["decisions"]);
       if (stripped?.length) out.decisions = stripped;
     } else {
       out[key] = v;
@@ -135,12 +135,12 @@ export function mergeFrontmatter(
 }
 
 function stripObservationProse(
-  obs: Fingerprint["observation"],
+  obs: Expression["observation"],
 ): Record<string, unknown> | undefined {
   if (!obs) return undefined;
   const out: Record<string, unknown> = {};
   if (obs.personality?.length) out.personality = obs.personality;
-  if (obs.closestSystems?.length) out.closestSystems = obs.closestSystems;
+  if (obs.resembles?.length) out.resembles = obs.resembles;
   return Object.keys(out).length ? out : undefined;
 }
 
@@ -149,7 +149,7 @@ function stripObservationProse(
  * only. Prose rationale and evidence bullets both live in the body.
  */
 function stripDecisionProse(
-  decisions: Fingerprint["decisions"],
+  decisions: Expression["decisions"],
 ): Array<Record<string, unknown>> | undefined {
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {
