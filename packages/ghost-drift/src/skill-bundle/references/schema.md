@@ -1,8 +1,8 @@
-# fingerprint.md schema reference
+# expression.md schema reference
 
-Canonical filename: `fingerprint.md`.
+Canonical filename: `expression.md`.
 
-Companion file: `embedding.md` (sibling fragment containing the 49-dim vector). The CLI writes it automatically when you write a `fingerprint.md` via `ghost-drift`; you can also compute and append it yourself.
+Companion file: `embedding.md` (sibling fragment containing the 49-dim vector). The CLI writes it automatically when you write an `expression.md` via `ghost-drift`; you can also compute and append it yourself.
 
 ## Frontmatter (machine layer)
 
@@ -20,7 +20,7 @@ sources:                        # optional — targets that were combined
 # narrative tags (prose lives in the body)
 observation:
   personality: [restrained, editorial]   # 3-6 adjectives
-  closestSystems: [linear, notion]       # 1-3 known systems this resembles
+  resembles: [linear, notion]       # 1-3 known references this resembles
 
 # abstract design decisions
 decisions:
@@ -91,7 +91,7 @@ metadata:
 
 # Signature
 
-- What makes this system visually distinctive (becomes `observation.distinctiveTraits`).
+- What makes this expression visually distinctive (becomes `observation.distinctiveTraits`).
 - One bullet per trait. Include notable *absences* if they are load-bearing.
 
 # Decisions
@@ -116,7 +116,7 @@ Every field lives in exactly one layer:
 | Field | Layer |
 |---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter |
-| `observation.personality`, `observation.closestSystems` | Frontmatter |
+| `observation.personality`, `observation.resembles` | Frontmatter |
 | `observation.summary` | **Body** (`# Character`) |
 | `observation.distinctiveTraits` | **Body** (`# Signature` bullets) |
 | `decisions[].dimension`, `decisions[].evidence` | Frontmatter |
@@ -128,6 +128,6 @@ Putting prose into frontmatter is a schema error. The writer and reader both enf
 
 ## Validation
 
-    ghost-drift lint fingerprint.md
+    ghost-drift lint expression.md
 
 This catches schema violations, missing required fields, prose-in-frontmatter, orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa), and uncited palette entries.

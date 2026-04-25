@@ -2,30 +2,30 @@ import { writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import {
   EMBEDDING_FRAGMENT_FILENAME,
-  FINGERPRINT_FILENAME,
+  EXPRESSION_FILENAME,
   serializeEmbeddingFragment,
-  serializeFingerprint,
-} from "../fingerprint/index.js";
-import type { Fingerprint } from "../types.js";
+  serializeExpression,
+} from "../expression/index.js";
+import type { Expression } from "../types.js";
 
 /**
- * Write a fingerprint as a publishable artifact (fingerprint.md) to the
- * project root. Other projects can reference this file as their parent.
+ * Write an expression as a publishable artifact (expression.md) to the
+ * project root. Other projects can track this file as a reference.
  */
-export async function emitFingerprint(
-  fingerprint: Fingerprint,
+export async function emitExpression(
+  expression: Expression,
   cwd: string = process.cwd(),
 ): Promise<string> {
-  const target = resolve(cwd, FINGERPRINT_FILENAME);
-  await writeFile(target, serializeFingerprint(fingerprint), "utf-8");
+  const target = resolve(cwd, EXPRESSION_FILENAME);
+  await writeFile(target, serializeExpression(expression), "utf-8");
 
   // The 49-dim embedding lives in a sibling `embedding.md` referenced from
-  // the fingerprint body. Readers fall back to recompute if it's missing.
-  if (fingerprint.embedding && fingerprint.embedding.length > 0) {
+  // the expression body. Readers fall back to recompute if it's missing.
+  if (expression.embedding && expression.embedding.length > 0) {
     const embeddingPath = resolve(dirname(target), EMBEDDING_FRAGMENT_FILENAME);
     await writeFile(
       embeddingPath,
-      serializeEmbeddingFragment(fingerprint.embedding, fingerprint.id),
+      serializeEmbeddingFragment(expression.embedding, expression.id),
       "utf-8",
     );
   }

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { layoutFingerprint } from "../../src/core/fingerprint/layout.js";
+import { layoutExpression } from "../../src/core/expression/layout.js";
 
 const here = resolve(fileURLToPath(import.meta.url), "..");
 
@@ -57,9 +57,9 @@ More prose.
 - [embedding](embedding.md)
 `;
 
-describe("layoutFingerprint", () => {
-  it("maps frontmatter, body sections, and decision H3s on a typical fingerprint", () => {
-    const layout = layoutFingerprint(SAMPLE);
+describe("layoutExpression", () => {
+  it("maps frontmatter, body sections, and decision H3s on a typical expression", () => {
+    const layout = layoutExpression(SAMPLE);
 
     const fm = layout.sections.find((s) => s.kind === "frontmatter");
     expect(fm).toBeDefined();
@@ -95,7 +95,7 @@ describe("layoutFingerprint", () => {
       "color-strategy",
       "shape-language",
     ]);
-    // Each decision must sit fully inside the parent Decisions section.
+    // Each decision must sit fully inside the enclosing Decisions section.
     for (const d of decisionBlocks) {
       expect(d.start).toBeGreaterThanOrEqual(decisions?.start ?? 0);
       expect(d.end).toBeLessThanOrEqual(decisions?.end ?? 0);
@@ -105,7 +105,7 @@ describe("layoutFingerprint", () => {
   });
 
   it("produces 1-indexed inclusive ranges suitable for the Read tool's offset/limit", () => {
-    const layout = layoutFingerprint(SAMPLE);
+    const layout = layoutExpression(SAMPLE);
     const lines = SAMPLE.split("\n");
     for (const s of layout.sections) {
       // start line is the heading itself for body/decision, or `---` for frontmatter
@@ -121,7 +121,7 @@ describe("layoutFingerprint", () => {
   });
 
   it("returns no frontmatter section when the file lacks one", () => {
-    const layout = layoutFingerprint("# Character\n\nProse only.\n");
+    const layout = layoutExpression("# Character\n\nProse only.\n");
     expect(
       layout.sections.find((s) => s.kind === "frontmatter"),
     ).toBeUndefined();
@@ -133,7 +133,7 @@ describe("layoutFingerprint", () => {
   });
 
   it("returns no frontmatter section when the YAML block is unterminated", () => {
-    const layout = layoutFingerprint(
+    const layout = layoutExpression(
       `---\nid: x\npalette: foo\n# stray heading\n`,
     );
     // No closing `---` → describe must not invent one. The H1 still surfaces.
@@ -153,7 +153,7 @@ spacing: { scale: [1] }
 
 x
 `;
-    const layout = layoutFingerprint(broken);
+    const layout = layoutExpression(broken);
     const fm = layout.sections.find((s) => s.kind === "frontmatter");
     expect(fm?.partitions).toContain("palette");
     expect(fm?.partitions).toContain("spacing");
@@ -161,7 +161,7 @@ x
 
   it("emits zero decision sections when # Decisions has no H3s", () => {
     const md = `${FRONTMATTER}\n\n# Character\n\nx\n\n# Decisions\n\nNo subheadings yet.\n`;
-    const layout = layoutFingerprint(md);
+    const layout = layoutExpression(md);
     expect(layout.sections.filter((s) => s.kind === "decision")).toHaveLength(
       0,
     );
@@ -172,10 +172,10 @@ x
     ).toBeDefined();
   });
 
-  it("matches structural expectations against the real ghost-ui fingerprint", async () => {
-    const path = resolve(here, "../../../ghost-ui/fingerprint.md");
+  it("matches structural expectations against the real ghost-ui expression", async () => {
+    const path = resolve(here, "../../../ghost-ui/expression.md");
     const raw = await readFile(path, "utf-8");
-    const layout = layoutFingerprint(raw);
+    const layout = layoutExpression(raw);
 
     const fm = layout.sections.find((s) => s.kind === "frontmatter");
     expect(fm?.start).toBe(1);

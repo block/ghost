@@ -46,7 +46,7 @@ const SurfacesSchema = z.object({
 const DesignObservationSchema = z
   .object({
     personality: z.array(z.string()).optional(),
-    closestSystems: z.array(z.string()).optional(),
+    resembles: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -65,7 +65,7 @@ const DesignDecisionSchema = z
 
 /**
  * Semantic slot → token binding. Each role names a slot ("h1", "card",
- * "button") and binds tokens from the fingerprint dimensions. Every
+ * "button") and binds tokens from the expression dimensions. Every
  * sub-block is optional — a role can be partial when the source only
  * supplies some tokens.
  */
@@ -114,8 +114,8 @@ const DesignRoleSchema = z
   .strict();
 
 /**
- * Schema for the YAML frontmatter in an fingerprint.md file. Covers the
- * machine-layer of Fingerprint plus fingerprint-level metadata.
+ * Schema for the YAML frontmatter in an expression.md file. Covers the
+ * machine-layer of Expression plus expression-level metadata.
  *
  * Note: narrative prose fields (observation.summary, distinctiveTraits,
  * decisions[].decision) are NOT allowed here — they belong in the body.
@@ -136,22 +136,22 @@ export const FrontmatterSchema = z
     generator: z.string().optional(),
     generated: z.string().optional(),
     confidence: z.number().optional(),
-    /** Relative path to a parent fingerprint.md to inherit from. */
+    /** Relative path to a base expression.md to inherit from. */
     extends: z.string().optional(),
     /** Loose passthrough bag for LLM-authored extensions. Opaque to readers. */
     metadata: z.record(z.string(), z.unknown()).optional(),
 
-    // fingerprint — required
+    // expression — required
     id: z.string(),
     source: z.enum(["registry", "extraction", "llm", "unknown"]),
     timestamp: z.string(),
     sources: z.array(z.string()).optional(),
 
-    // fingerprint — narrative tags (optional; prose lives in body)
+    // expression — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
 
-    // fingerprint — structured (required)
+    // expression — structured (required)
     palette: PaletteSchema,
     spacing: SpacingSchema,
     typography: TypographySchema,
@@ -175,7 +175,7 @@ export const FrontmatterSchema = z
 
 /**
  * Relaxed schema for files that declare `extends:`. Children may omit any
- * fingerprint field they're inheriting from the parent. The merged result
+ * expression field they're inheriting from the base expression. The merged result
  * is re-validated against the strict FrontmatterSchema.
  */
 export const PartialFrontmatterSchema = z
@@ -210,8 +210,8 @@ export type FrontmatterShape = z.infer<typeof FrontmatterSchema>;
 /**
  * Export the frontmatter schema as a JSON Schema document.
  *
- * Used to (a) publish schemas/fingerprint.schema.json for IDE autocomplete
- * in .md files, and (b) back `ghost fingerprint schema` output.
+ * Used to (a) publish schemas/expression.schema.json for IDE autocomplete
+ * in .md files, and (b) back `ghost expression schema` output.
  */
 export function toJsonSchema(): Record<string, unknown> {
   return z.toJSONSchema(FrontmatterSchema) as Record<string, unknown>;
@@ -240,6 +240,6 @@ export function validateFrontmatter(
       ? `\n  … and ${result.error.issues.length - 5} more`
       : "";
   throw new Error(
-    `Invalid fingerprint frontmatter:\n${issues.join("\n")}${more}`,
+    `Invalid expression frontmatter:\n${issues.join("\n")}${more}`,
   );
 }

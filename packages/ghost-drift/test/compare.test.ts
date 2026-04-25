@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { compare } from "../src/core/compare.js";
-import type { Fingerprint } from "../src/core/types.js";
+import type { Expression } from "../src/core/types.js";
 
-const BASE: Fingerprint = {
+const BASE: Expression = {
   id: "base",
   source: "llm",
   timestamp: "2026-04-17T00:00:00.000Z",
@@ -28,15 +28,12 @@ const BASE: Fingerprint = {
   embedding: [0.1, 0.2],
 };
 
-function variant(
-  id: string,
-  overrides: Partial<Fingerprint> = {},
-): Fingerprint {
+function variant(id: string, overrides: Partial<Expression> = {}): Expression {
   return { ...structuredClone(BASE), id, ...overrides };
 }
 
 describe("compare dispatch", () => {
-  it("throws when given fewer than 2 fingerprints", () => {
+  it("throws when given fewer than 2 expressions", () => {
     expect(() => compare([variant("a")])).toThrow(/at least 2/);
     expect(() => compare([])).toThrow(/at least 2/);
   });
@@ -83,7 +80,7 @@ describe("compare dispatch", () => {
     expect(() => compare(exprs, { history: [] })).toThrow(/pairwise/);
   });
 
-  it("composite uses provided ids, falls back to fingerprint.id", () => {
+  it("composite uses provided ids, falls back to expression.id", () => {
     const result = compare([variant("a"), variant("b"), variant("c")], {
       ids: ["alpha", "beta", "gamma"],
     });

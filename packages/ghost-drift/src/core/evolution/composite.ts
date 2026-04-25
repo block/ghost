@@ -1,4 +1,4 @@
-import { compareFingerprints } from "../embedding/compare.js";
+import { compareExpressions } from "../embedding/compare.js";
 import { embeddingDistance } from "../embedding/embedding.js";
 import type {
   CompositeCluster,
@@ -12,7 +12,7 @@ export interface CompositeClusterOptions {
 }
 
 /**
- * Compare N fingerprints as a composite (org-scale) view.
+ * Compare N expressions as a composite (org-scale) view.
  * Computes pairwise distances, centroid, spread, and optional clusters.
  */
 export function compareComposite(
@@ -52,7 +52,7 @@ function computePairwise(members: CompositeMember[]): CompositePair[] {
     for (let j = i + 1; j < members.length; j++) {
       const a = members[i];
       const b = members[j];
-      const comparison = compareFingerprints(a.fingerprint, b.fingerprint);
+      const comparison = compareExpressions(a.expression, b.expression);
 
       const dimensions: Record<string, number> = {};
       for (const [key, delta] of Object.entries(comparison.dimensions)) {
@@ -77,12 +77,12 @@ function computePairwise(members: CompositeMember[]): CompositePair[] {
 function computeCentroid(members: CompositeMember[]): number[] {
   if (members.length === 0) return [];
 
-  const dim = members[0].fingerprint.embedding.length;
+  const dim = members[0].expression.embedding.length;
   const centroid = new Array(dim).fill(0);
 
   for (const member of members) {
     for (let i = 0; i < dim; i++) {
-      centroid[i] += member.fingerprint.embedding[i] ?? 0;
+      centroid[i] += member.expression.embedding[i] ?? 0;
     }
   }
 
@@ -101,7 +101,7 @@ function computeSpread(members: CompositeMember[], centroid: number[]): number {
 
   let totalDistance = 0;
   for (const member of members) {
-    totalDistance += embeddingDistance(member.fingerprint.embedding, centroid);
+    totalDistance += embeddingDistance(member.expression.embedding, centroid);
   }
 
   return totalDistance / members.length;
@@ -237,7 +237,7 @@ function clusterMembers(
     ];
   }
 
-  const embeddings = members.map((m) => m.fingerprint.embedding);
+  const embeddings = members.map((m) => m.expression.embedding);
   const kMax = Math.min(maxK ?? 6, members.length - 1);
 
   // Run k-means for K=1 through kMax, collect WCSS

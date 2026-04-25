@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`emitReviewCommand > produces a stable artifact for the ghost-ui fingerprint 1`] = `
+exports[`emitReviewCommand > produces a stable artifact for the ghost-ui expression 1`] = `
 "---
-description: Drift review for ghost-ui — fitted to this system's design fingerprint
+description: Drift review for ghost-ui — fitted to this expression's design language
 ---
 
 # ghost-ui drift review
@@ -146,6 +146,6 @@ Drift score: XX/100
 
 ---
 
-Generated from \`fingerprint.md\` (11 decisions). Re-run \`ghost-drift emit review-command\` after fingerprint updates.
+Generated from \`expression.md\` (11 decisions). Re-run \`ghost-drift emit review-command\` after expression updates.
 "
 `;

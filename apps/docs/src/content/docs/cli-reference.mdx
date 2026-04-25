@@ -10,11 +10,11 @@ slug: cli
 <DocSection title="Overview">
 
 Ghost's CLI is a set of deterministic primitives. It never calls an LLM.
-The canonical artifact is `fingerprint.md` — a Markdown file with two
+The canonical artifact is `expression.md` — a Markdown file with two
 layers: a machine layer (YAML frontmatter: 49-dim vector + palette,
 spacing, typography, surfaces, roles) and a prose body with three
 sections (Character, Signature, Decisions). Most commands accept a path
-to a `fingerprint.md`; they default to `./fingerprint.md` in the current
+to an `expression.md`; they default to `./expression.md` in the current
 directory.
 
 Workflows like _profile_, _review_, _verify_, _generate_, and _discover_
@@ -29,7 +29,7 @@ this reference — so these docs can't drift from the binary.
 
 <DocSection title="Comparison">
 
-Pairwise distance (N=2) or fleet analysis (N≥3) over fingerprint
+Pairwise distance (N=2) or fleet analysis (N≥3) over expression
 embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
 and `--temporal` add qualitative enrichment for N=2.
 
@@ -37,47 +37,47 @@ and `--temporal` add qualitative enrichment for N=2.
 
 ```bash
 # Pairwise (N=2)
-ghost-drift compare parent.fingerprint.md consumer.fingerprint.md
+ghost-drift compare market.expression.md dashboard.expression.md
 
 # Qualitative diff of decisions + palette
-ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
+ghost-drift compare a.expression.md b.expression.md --semantic
 
 # Velocity + trajectory
-ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
+ghost-drift compare before.expression.md after.expression.md --temporal
 
 # Fleet (N≥3) — pairwise matrix + centroid
-ghost-drift compare *.fingerprint.md
+ghost-drift compare *.expression.md
 ```
 
 </DocSection>
 
 <DocSection title="Validation">
 
-Validate `fingerprint.md` schema + body/frontmatter coherence. Use this
-before declaring a fingerprint valid — the profile recipe ends by calling
+Validate `expression.md` schema + body/frontmatter coherence. Use this
+before declaring an expression valid — the profile recipe ends by calling
 it.
 
 <CliHelp command="lint" hideDescription />
 
 ```bash
-# Default — reads ./fingerprint.md
+# Default — reads ./expression.md
 ghost-drift lint
 
 # Specific file, JSON output
-ghost-drift lint path/to/fingerprint.md --format json
+ghost-drift lint path/to/expression.md --format json
 ```
 
 </DocSection>
 
 <DocSection title="Inspection — describe">
 
-Print a section map of `fingerprint.md` — frontmatter range, body sections
+Print a section map of `expression.md` — frontmatter range, body sections
 (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
 `### dimension` block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
 
-A typical `fingerprint.md` runs 3–5k tokens. The `# Decisions` block alone
+A typical `expression.md` runs 3–5k tokens. The `# Decisions` block alone
 is usually 60–80% of that, and an agent reviewing a single component change
 rarely needs every dimension. `describe` is the deterministic answer to
 "what's in this file and where" — the recall safety rule (when in doubt,
@@ -87,20 +87,20 @@ recipes.
 <CliHelp command="describe" hideDescription />
 
 ```bash
-# Default — reads ./fingerprint.md
+# Default — reads ./expression.md
 ghost-drift describe
 
 # Specific file
-ghost-drift describe path/to/fingerprint.md
+ghost-drift describe path/to/expression.md
 
 # Machine-readable for agents
 ghost-drift describe --format json
 ```
 
-Sample output (against `packages/ghost-ui/fingerprint.md`):
+Sample output (against `packages/ghost-ui/expression.md`):
 
 ```text
-fingerprint.md — 309 lines, ~3,955 tokens
+expression.md — 309 lines, ~3,955 tokens
 
 FRONTMATTER    1–164      ~973 tok        [palette, spacing, typography, surfaces, roles, observation, decisions]
 # Character      166–169    ~159 tok
@@ -119,15 +119,15 @@ approximation, sufficient for context budgeting.
 
 </DocSection>
 
-<DocSection title="Intent — ack / adopt / diverge">
+<DocSection title="Intent — ack / track / diverge">
 
 These three verbs write per-dimension stances to `.ghost-sync.json`. `ack`
-and `diverge` need a parent declared in `ghost.config.ts`; `adopt` takes
-the new parent as its argument.
+and `diverge` need a tracked expression declared in `ghost.config.ts`;
+`track` takes the new tracked expression as its argument.
 
 Acknowledge current drift — record your intentional stance (aligned,
-accepted, or diverging). Reads the parent from `ghost.config.ts` and the
-local `fingerprint.md`.
+accepted, or diverging). Reads the tracked expression from `ghost.config.ts`
+and the local `expression.md`.
 
 <CliHelp command="ack" hideDescription />
 
@@ -139,15 +139,14 @@ ghost-drift ack --stance aligned --reason "Initial baseline"
 ghost-drift ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
 ```
 
-Shift the parent baseline to a new fingerprint. Use this when the parent
-design language has been updated and you want to re-anchor your drift
-measurements.
+Shift the tracked expression to a new expression. Use this when you want to
+re-anchor your drift measurements against a different reference expression.
 
-<CliHelp command="adopt" hideDescription />
+<CliHelp command="track" hideDescription />
 
 ```bash
-# Adopt a new parent fingerprint
-ghost-drift adopt new-parent.fingerprint.md
+# Track a new reference expression
+ghost-drift track new-tracked.expression.md
 ```
 
 Mark a specific dimension as intentionally diverging. Shorthand for
@@ -161,9 +160,9 @@ ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
 
 </DocSection>
 
-<DocSection title="Emit — derive artifacts from fingerprint.md">
+<DocSection title="Emit — derive artifacts from expression.md">
 
-Derive an artifact from `fingerprint.md`. Kinds: `review-command` (a
+Derive an artifact from `expression.md`. Kinds: `review-command` (a
 per-project slash command at `.claude/commands/design-review.md`),
 `context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
 generator), or `skill` (the `ghost-drift` agentskills.io bundle — install
@@ -198,12 +197,12 @@ then ask your agent in plain English:
 
 | Recipe     | Trigger                                                |
 | ---------- | ------------------------------------------------------ |
-| `profile`  | "profile this design language" / "write a fingerprint.md" |
+| `profile`  | "profile this design language" / "write expression.md" |
 | `review`   | "review this PR for drift"                              |
-| `verify`   | "verify generated UI against the fingerprint"           |
+| `verify`   | "verify generated UI against the expression"           |
 | `generate` | "generate a component matching our design"              |
 | `discover` | "find design languages like Linear"                       |
-| `compare`  | "why did these two fingerprints drift?"                 |
+| `compare`  | "why did these two expressions drift?"                 |
 
 Source for each recipe lives under
 `packages/ghost-drift/src/skill-bundle/references/`. The agent executes the

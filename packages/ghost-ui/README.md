@@ -2,14 +2,14 @@
 
 **Reference design system for the Ghost project. 97 components, shadcn registry, not published to npm.**
 
-`ghost-ui` is the design language Ghost dogfoods its fingerprint against. It's distributed as a shadcn registry (`registry.json`) for drop-in consumption, not as an npm package. If you're looking for the drift-detection tool, that's [`ghost-drift`](../ghost-drift). This package exists so the fingerprint has a real, evolving system to describe.
+`ghost-ui` is the design language Ghost dogfoods its expression against. It's distributed as a shadcn registry (`registry.json`) for drop-in consumption, not as an npm package. If you're looking for the drift-detection tool, that's [`ghost-drift`](../ghost-drift). This package exists so the expression has a real, evolving system to describe.
 
 ## What's here
 
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
-- **Tokens** — `src/styles/` CSS custom properties consumed by the registry and the fingerprint.
+- **Tokens** — `src/styles/` CSS custom properties consumed by the registry and the expression.
 - **Registry** — `registry.json`, shadcn-compatible catalogue. Rebuilt by `just build-registry`.
-- **Fingerprint** — `fingerprint.md`, the canonical design description this system evolves by.
+- **Expression** — `expression.md`, the canonical design description this system evolves by.
 
 ## Use
 

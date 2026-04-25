@@ -8,7 +8,7 @@ const EXCEPTIONS = {
   "packages/ghost-drift/src/core/types.ts": {
     limit: 780,
     justification:
-      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
+      "Canonical type barrel — all shared types in one file for discoverability, including three-layer expression types and role bindings",
   },
   "packages/ghost-drift/src/bin.ts": {
     limit: 580,
@@ -18,7 +18,7 @@ const EXCEPTIONS = {
   "packages/ghost-drift/src/core/embedding/compare.ts": {
     limit: 600,
     justification:
-      "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",
+      "Expression comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 
