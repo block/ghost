@@ -1,5 +1,11 @@
 # ghost-drift
 
+## 1.0.0
+
+### Major Changes
+
+- [#59](https://github.com/block/ghost/pull/59) [`df1dca6`](https://github.com/block/ghost/commit/df1dca660651df630246b8dce7a646bd4ab4a722) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the public fingerprint artifact and APIs to expression, default CLI reads to expression.md, and replace adopt/parent tracking with track/tracks.
+
 ## 0.2.0
 
 ### Minor Changes
