@@ -12,90 +12,108 @@ handoffs:
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost-drift lint` for validation.
+**Goal:** produce a valid `expression.md` that captures the project's visual language. Explore the project and synthesize the result, then hand it to `ghost-drift lint` for validation.
+
+## How to read this recipe
+
+Steps describe **intent**, not **files**. When a step says "find where the design language is codified," it means find that thing in whatever shape this project keeps it in. The recipe does not enumerate platform or framework conventions and shouldn't need to. Map intent to source using what you know about the stack. Read what's actually there; don't assume a convention.
+
+## Who reads this file
+
+Three downstream agents will consume your output. Every line you write should serve at least one of them. If a line serves none, drop it.
+
+- A **generator** produces UI from this expression. It leans on `roles[]`, the structured tokens (`palette`, `spacing`, `typography`, `surfaces`), the `# Signature` bullets, and the `# Character` paragraph for prompt-budget orientation.
+- A **reviewer** flags drift in PRs against this expression. It leans on `decisions[]` and the structured tokens.
+- A **comparator** computes drift distance across a fleet. It uses only the structured tokens — the embedding is derived from those four blocks.
+
+The expression has to be portable across implementations. A brand may have a web app, an iOS app, and an Android app — each with its own expression.md, all comparable against a canonical parent. State everything at a level that survives porting.
 
 ## Steps
 
-### 1. Locate design sources
+### 0. Decide whether you can profile
 
-Start from the project root. Look for:
+If the project has no UI (backend-only, library, CLI, …), say so and stop. Do not fabricate an expression — a placeholder poisons every downstream comparison, generation, and review.
 
-- `tailwind.config.{js,ts}` and `@theme { ... }` blocks in CSS
-- `styles/globals.css`, `app/globals.css`, `index.css`, `theme.css`
-- `tokens/`, `design-tokens/`, `theme/` directories
-- SCSS variable files (`_variables.scss`, `_tokens.scss`)
-- TypeScript theme objects (`const theme = { ... }`)
-- shadcn-style CSS variables (`:root { --background: ... }`)
-- JSON token files (Style Dictionary, W3C)
+### 1. Visceral pass — feel before tokens
 
-Use Glob/Grep to find candidates. Read the real files — don't assume the project follows a convention.
+Look at the project as a user would: rendered output, screenshots, the deployed product, the marketing site, the README hero, the most prominent component. Form a holistic read **before opening any styling source file**.
 
-### 2. Resolve variable chains end-to-end
+Capture:
 
-If a value is a reference, follow it:
+- A 2–4 sentence `# Character` paragraph: what is this design language, how does it feel.
+- A short list of `# Signature` bullets in **X instead of Y** form: what makes this expression visually recognizable as itself, and what it deliberately is not. Include load-bearing absences. The X-instead-of-Y shape is critical — a generator can act on it ("emit X, not Y"), and a reviewer can flag a violation ("PR added Y") without translation.
+- 3–6 personality adjectives.
+- 1–3 well-known references this resembles.
 
-`--btn-bg: var(--color-primary)` → `--color-primary: var(--brand-500)` → `--brand-500: #0066cc`
+The visceral pass is the layer least corrupted by platform conventions and the most portable. Anchor here before tokens pull you toward whatever framework's defaults the project happened to inherit.
 
-Record the resolved concrete value. Stopping at the first indirection produces useless expressions.
+### 2. Locate where the design language is codified
 
-### 3. Read component files (for the roles layer)
+Find the places the project _names_ its design language — where colors, typography, spacing, radii, and shadows are defined as shared vocabulary, not used inline. Use broad Glob/Grep on intent words (`color`, `theme`, `token`, `palette`, `typography`, `spacing`, `radius`, `shadow`). The exact filenames vary by stack; intent is constant. Read what's there.
 
-Open 3-6 component files: typography primitives (`H1`, `P`), `Button`, `Card`, `Input`, list/table primitives. Record which tokens bind to which semantic slot:
+### 3. Resolve references end-to-end
 
-- "h1 = serif 52px / weight 500"
-- "Button uses `--primary` background with 8px radius"
+If a value points to another value, follow it: `--btn-bg → --color-primary → --brand-500 → #0066cc`. Record the resolved concrete value. Stopping at the first indirection produces useless expressions.
 
-These become `roles[]`. Only record what you directly observed. Projects with no component files may produce empty `roles` — that's fine.
+### 4. Read enough rendering to populate roles[]
 
-### 4. Form Layer 1 — Observation (holistic)
+Read enough component or view files to see how the design language _renders_. Find typography primitives, the most common interactive control, the most common container, the most common input. Record which tokens bind to which semantic slot — this is `roles[]`.
 
-Write subjectively. 2-4 sentences capturing what this design language is and how it feels. Then:
+Use slot names that read cleanly to someone who has never seen this stack. Names that only make sense on one platform (`h1`, `LargeTitle`, `DisplayLarge`) defeat portability. Choose names that describe the slot's role across platforms (`title-xl`, `body`, `button-primary`, `card`).
 
-- `personality`: 3-6 adjectives (`utilitarian`, `editorial`, `dense`, `playful`, …)
-- `distinctiveTraits`: what makes this expression *visually recognizable* — include notable absences (e.g. "no decorative elements at all")
-- `resembles`: 1-3 well-known references this resembles (Linear, Geist, Material 3, …)
+After recording what you observed, audit for coverage. A generator consuming this expression will reach for slots like `title-xl`, `body`, `label`, `caption`, `button-primary`, `input`, `card`, `surface`, `divider`, `focus-ring`. For each, ask: can a generator ground here? If the project genuinely has no convention for one of these, **don't fabricate a roles entry** — record the absence as a decision in Step 5 (e.g. `### no-card-pattern` with prose like "Content sits directly on the page surface; generators should not introduce cards."). A silent missing slot forces the generator to invent; a stated absence steers it.
 
-### 5. Derive Layer 2 — Design Decisions (abstract)
+A project with no rendering surface produces no roles — that's truthful. A project _with_ a rendering surface but no observed bindings is a sign you didn't read enough; go back.
 
-Name the pattern, not the token:
+### 5. Name decisions, then operationalize them
 
-- ✗ Weak: "Spacing follows a 4px base grid with Tailwind defaults." (restates a fact visible in the tokens)
-- ✓ Strong: "Prefer explicit component-height tokens over padding arithmetic, so button/input sizing is decoupled from surrounding layout." (names the pattern and its consequence)
+For each pattern you see, write the decision at the level of **visual phenomenon** or **compositional pattern**, not implementation mechanism. If your wording would only parse for someone reading this codebase's source, raise the abstraction.
 
-Surface whatever dimensions fit. There is no fixed list. Common ones: `color-strategy`, `spatial-system`, `typography-voice`, `surface-hierarchy`, `density`, `motion`, `elevation`, `interactive-patterns`. **Absences are decisions** — "No animation — interactions are immediate and non-kinetic" is a valid decision.
+- ✗ Mechanism: "Use `box-shadow: 0 0 0 1px ...` for elevation."
+- ✓ Phenomenon: "Frame elevation through narrow rings of color, not blurred drop-shadows."
+- ✓ Composition: "Cards sit on muted surfaces, never directly on white. Forms use 24 between groups, 8 within."
 
-For each decision: `dimension` (slug), `decision` (prose, goes in body), `evidence` (list of concrete citations — prefer token definitions like `"--radius-pill: 999px"`; behavioral observations as `file:line` if needed).
+Composition is a first-class kind of decision — spatial relationships, what-sits-on-what, hierarchy rules — alongside element-surface properties. Look for both.
 
-### 6. Extract Layer 3 — Concrete tokens
+A decision is strongest when it states **the pattern** _and_ **how to spot a violation** — that single shape serves both generators (which way to lean when picking) and reviewers (what to flag in a diff):
 
-Populate the structured fields: `palette.dominant`, `palette.neutrals`, `palette.semantic`, `palette.saturationProfile`, `palette.contrast`, `spacing.scale`, `spacing.regularity`, `spacing.baseUnit`, `typography.families`, `typography.sizeRamp`, `typography.weightDistribution`, `typography.lineHeightPattern`, `surfaces.borderRadii`, `surfaces.shadowComplexity`, `surfaces.borderUsage`.
+> ### warm-only-neutrals
+>
+> Every gray carries a yellow-brown undertone. Reviewers: flag grays in the cool quadrant (hue 180–270°) as drift.
 
-- Convert rem/em to px (1rem = 16px).
-- Output colors as hex (`#1a1a1a`). The CLI computes oklch automatically.
-- Every `palette` entry must be cited in at least one decision's `evidence`, or dropped. Uncited neutrals are noise.
+Pick whatever dimensions actually fit. There is no fixed list. Absences are decisions ("no animation — interactions are immediate", "no cards — content sits directly on the page surface") if you observed the absence. Don't invent decisions to justify colors. Don't restate categories ("Spacing follows a 4px grid") without naming the consequence.
 
-### 7. Write the file
+### 6. Record the structured tokens
 
-Copy [../assets/expression.template.md](../assets/expression.template.md) as a starting point. Fill in:
+Populate `palette`, `spacing`, `typography`, `surfaces` from what you resolved in Step 3. Use unit-normalized numeric magnitudes — the schema treats them as platform-neutral; implementations translate (web px / iOS pt / Android dp align at 1× display density). Output colors as hex; the CLI computes oklch automatically.
 
-- **Frontmatter:** all structured fields (identity, `observation.personality`/`.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`).
-- **Body:** `# Character` (observation summary), `# Signature` (distinctiveTraits bullets), `# Decisions` (one `### <dim>` block per decision, containing the prose rationale).
+### 7. Write the file (body first, then frontmatter)
 
-Partition matters. See [schema.md](schema.md) for which field lives where.
+Copy [../assets/expression.template.md](../assets/expression.template.md) as a starting point. Write in this order:
 
-### 8. Validate
+1. **Body first.** `# Character` (the paragraph from Step 1), `# Signature` (the X-instead-of-Y bullets from Step 1), `# Decisions` (one `### <dim>` block per decision from Step 5, each containing pattern + operationalization).
+2. **Frontmatter second.** Derive the structured fields from the body and the steps above: `observation.personality`, `observation.resembles`, `decisions[].dimension` (slug-match your `### <dim>` headings), `decisions[].evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`.
+
+Body-first avoids orphan-prose lint errors and keeps the prose primary. See [schema.md](schema.md) for which field lives where — the partition is strict.
+
+### 8. Calibrate against known anchors
+
+Before validating, sanity-check your personality tags by comparing against 1–2 well-known systems:
+
+    ghost-drift compare expression.md path/to/known/expression.md --semantic
+
+If you tagged "editorial / restrained" but the comparator says you're closer to Material than to Notion, the tags are wrong. See [discover.md](discover.md) for finding anchors.
+
+### 9. Validate
 
     ghost-drift lint expression.md
 
-Fix any errors it reports. Common ones:
+Fix any errors. Common ones:
 
-- Prose in frontmatter → move to body
-- `### dim` in body with no matching `decisions[]` entry (or vice versa) → remove the orphan
-- Palette entry not cited in any evidence → cite it or drop it
-### 9. Sanity check
+- Prose in frontmatter → move to body.
+- `### dim` block in body with no matching `decisions[]` entry, or vice versa → align or remove.
+- Evidence cites a hex with no matching palette entry → fix or drop.
+
+### 10. Sanity check
 
     ghost-drift compare expression.md expression.md    # self-distance should be 0
-
-## When you cannot profile
-
-If the project has no styling (backend-only, no UI), say so. Do not fabricate an expression. A placeholder expression poisons every downstream comparison.

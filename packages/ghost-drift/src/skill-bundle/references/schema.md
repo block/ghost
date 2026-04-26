@@ -59,15 +59,17 @@ surfaces:
   shadowComplexity: subtle          # none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
-# slot → token bindings (optional but strongly recommended)
+# slot → token bindings (optional but strongly recommended).
+# Use cross-platform archetype names (title-xl, body, button-primary, card),
+# not platform-specific names (h1, LargeTitle, DisplayLarge).
 # Role palette fields may use `{palette.dominant.<role>}` or
 # `{palette.semantic.<role>}` references instead of raw hexes.
 # Other dimensions (typography, spacing, surfaces) inline raw values.
 roles:
-  - name: h1
+  - name: title-xl
     tokens:
       typography: { family: "Geist", size: 52, weight: 500 }
-    evidence: ["src/components/h1.tsx:4"]
+    evidence: ["src/components/heading.tsx:4"]
   - name: button
     tokens:
       surfaces: { borderRadius: 8 }
@@ -130,4 +132,4 @@ Putting prose into frontmatter is a schema error. The writer and reader both enf
 
     ghost-drift lint expression.md
 
-This catches schema violations, missing required fields, prose-in-frontmatter, orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa), and uncited palette entries.
+This catches schema violations, missing required fields, prose-in-frontmatter, and orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa). It also notes (info-level, non-blocking) any palette entries not referenced by a decision.
