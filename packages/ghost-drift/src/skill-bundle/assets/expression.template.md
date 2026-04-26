@@ -1,36 +1,38 @@
 ---
 # identity
 id: PROJECT_ID
-source: llm
+source: extraction              # registry | extraction | llm | unknown
 timestamp: TIMESTAMP_ISO
 
 # narrative tags (prose lives in the body)
 observation:
   personality:
-    - adjective-1
-    - adjective-2
+    - "<adjective>"
+    - "<adjective>"
+    - "<adjective>"
+    - "<adjective>"
   resembles:
-    - known-system
+    - "<known-system>"
 
-# abstract design decisions
+# abstract design decisions — one entry per ### block in the body, slugs must match
 decisions:
-  - dimension: color-strategy
+  - dimension: "<dimension-slug>"
     evidence:
-      - "--color-primary: #000000"
-  - dimension: spatial-system
+      - "<citation>"
+  - dimension: "<dimension-slug>"
     evidence:
-      - "--space-4: 16px"
+      - "<citation>"
 
-# concrete tokens
+# concrete tokens — values are platform-neutral magnitudes (web px ≈ iOS pt ≈ Android dp at 1×)
 palette:
   dominant:
-    - { role: primary, value: "#000000" }
+    - { role: "<role>", value: "#000000" }
   neutrals:
     steps: ["#ffffff", "#0a0a0a"]
     count: 2
   semantic: []
-  saturationProfile: muted
-  contrast: high
+  saturationProfile: muted        # muted | vibrant | mixed
+  contrast: high                  # high | moderate | low
 
 spacing:
   scale: [4, 8, 16, 24, 32]
@@ -38,37 +40,40 @@ spacing:
   baseUnit: 4
 
 typography:
-  families: ["Inter"]
+  families: ["<family>"]
   sizeRamp: [14, 16, 20, 24, 32]
   weightDistribution: { "400": 1, "700": 1 }
-  lineHeightPattern: normal
+  lineHeightPattern: normal       # tight | normal | loose
 
 surfaces:
   borderRadii: [4, 8]
-  shadowComplexity: none
-  borderUsage: minimal
+  shadowComplexity: none          # none | subtle | layered
+  borderUsage: minimal            # minimal | moderate | heavy
 
+# slot → token bindings. Required when the project has rendering surfaces.
+# Use cross-platform archetype names (title-xl, body, button-primary, card),
+# not platform-specific names (h1, LargeTitle, DisplayLarge).
 roles: []
 ---
 
 # Character
 
-2-4 sentences on the personality of this design language. This prose becomes `observation.summary` when parsed.
+2–4 sentences on the personality of this design language, written from a visceral read of the rendered product — not from token files. Becomes `observation.summary` when parsed.
 
 # Signature
 
-- Distinctive trait 1.
-- Distinctive trait 2.
+- "<distinctive-trait>" instead of "<counter-trait>".
+- "<distinctive-trait>" instead of "<counter-trait>".
 
 # Decisions
 
-### color-strategy
+### <dimension-slug>
 
-Prose rationale for the color-strategy decision. Implementation-agnostic: name the pattern, not the token.
+State the pattern in visual / observable terms (not implementation mechanism). When possible, end with how a reviewer would spot a violation.
 
-### spatial-system
+### <dimension-slug>
 
-Prose rationale for the spatial-system decision.
+Same shape — pattern, then operationalization.
 
 # Fragments
 
