@@ -2,9 +2,9 @@
 name: review
 description: Flag PR or working-tree changes that drift from the local expression.md.
 handoffs:
-  - label: Regenerate drifting components to match the expression
-    skill: verify
-    prompt: Regenerate the drifting code against expression.md and re-review
+  - label: Suggest minimal fixes that close the drift gap
+    skill: remediate
+    prompt: Given the drift findings, suggest the minimal code changes that bring the diff back inside the expression
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
     prompt: Acknowledge that the current expression.md no longer matches and record the drift
@@ -26,7 +26,7 @@ Ghost has no `ghost review` CLI command. You — the host agent — are the revi
 
 ### 1. Read the expression
 
-    ghost-drift describe expression.md
+    ghost-expression describe expression.md
 
 This prints a section map — frontmatter range, body sections (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each `### dimension` block under Decisions, with line ranges and token estimates. Use it to plan what to load.
 

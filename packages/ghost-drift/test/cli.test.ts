@@ -101,7 +101,7 @@ async function runCli(argv: string[], cwd: string) {
   return { stdout, stderr, code: exitCode ?? 0 };
 }
 
-describe("ghost-drift CLI expression defaults", () => {
+describe("ghost-drift CLI", () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -114,26 +114,6 @@ describe("ghost-drift CLI expression defaults", () => {
 
   afterEach(async () => {
     await rm(dir, { recursive: true, force: true });
-  });
-
-  it("lint defaults to ./expression.md", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
-
-    const result = await runCli(["lint"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("0 error(s)");
-    expect(result.stderr).toBe("");
-  });
-
-  it("describe defaults to ./expression.md", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
-
-    const result = await runCli(["describe"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("expression.md");
-    expect(result.stdout).toContain("# Character");
   });
 
   it("compares explicitly supplied expression files", async () => {
@@ -176,5 +156,26 @@ describe("ghost-drift CLI expression defaults", () => {
     for (const field of legacyRelationFields) {
       expect(manifest).not.toHaveProperty(field);
     }
+  });
+
+  it("lint surfaces a migration message pointing at ghost-expression", async () => {
+    const result = await runCli(["lint"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("ghost-expression lint");
+  });
+
+  it("describe surfaces a migration message pointing at ghost-expression", async () => {
+    const result = await runCli(["describe"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("ghost-expression describe");
+  });
+
+  it("emit review-command surfaces a migration message", async () => {
+    const result = await runCli(["emit", "review-command"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("ghost-expression emit review-command");
   });
 });

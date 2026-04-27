@@ -14,8 +14,6 @@ import {
 } from "./core/index.js";
 import { registerEmitCommand } from "./emit-command.js";
 
-export { registerEmitCommand } from "./emit-command.js";
-
 /**
  * Build the cac CLI for `ghost-expression`.
  *
