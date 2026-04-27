@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["ghost-ui", "ghost-docs", "@ghost/core"]
+  "ignore": ["ghost-ui", "ghost-docs", "@ghost/core", "ghost-map"]
 }
