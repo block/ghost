@@ -76,12 +76,7 @@ Realistic delta: today's 101-line recipe shrinks to ~85 lines. The big win is **
 
 ## Open questions
 
-- **Skill bundle strategy is the load-bearing decision.** Today there's one monolithic skill (`ghost-drift emit skill` → `.claude/skills/ghost-drift/`). The five-tool split forces a choice between three options:
-  1. **One unified bundle** that ships every tool's recipes together. Simpler, but undercuts the "decentralized" framing — installing just drift would still drag along profile/map/etc.
-  2. **One bundle per tool**, each emitted independently. Matches the decomposition cleanly but requires rearchitecting `skill-bundle.ts`'s loader (currently flat-directory, single bundle). Each package needs its own `skill-bundle/` dir with full agentskills structure.
-  3. **Per-tool bundles + a meta-emit** (`ghost emit skill --all`) that assembles all five for one-shot install. Best of both, more orchestration code.
-  
-  Lean (3), but the loader rework is non-trivial and worth scoping before commitment.
+- **Skill bundle strategy: settled.** One bundle per tool. Each package ships `src/skill-bundle/` independently and emits via its own verb (`ghost map emit skill`, `ghost expression emit skill`, `ghost drift emit skill`, `ghost fleet emit skill`). No meta-emit. Cross-tool references in recipes happen through verb names in prose ("then run `ghost drift ack`"). The `discover.md` and `generate.md` recipes are dropped from scope (not needed at this stage).
 - **First-time profile vs re-profile.** Today's recipe doesn't distinguish. After a refactor that moves the design system, re-profile reads stale map.md. Solution: re-profile re-runs map first. Worth making the dependency explicit in the recipe.
 - **Multi-product repos.** Cash iOS has banking + p2p + bitcoin + investing as distinct brand surfaces. Today the recipe produces one expression.md. Should multi-product repos produce one expression with sub-expressions, or N expressions with a fleet view binding them? Per the fleet audit, this is exactly the **modular profiling pathway** — N module expressions + 1 rollup synthesis. Expression's profile recipe needs a `mode: target | module | rollup` parameter so the same recipe can produce all three pass types under different framings.
 
@@ -100,7 +95,7 @@ After studying the existing implementation, here's what was confirmed and what n
 **What shifted:**
 - **The "3x shrink" claim was overstated.** Today's recipe is already terse. Map.md trims ~15% of guidance (the location-discovery steps), not 3x. The real win is **runtime** — file-discovery loops on a 1,580-module repo collapse from minutes to seconds when map.md is present. The plan now reflects that.
 - **Map.md should be optional, not required.** Forcing it breaks expression on any repo that hasn't been mapped yet. Recipe falls back to inline location-discovery when map.md is missing; ideally also prompts to run map first. Backcompat preserved.
-- **Skill bundle strategy is unresolved and non-trivial.** Today's loader assumes one bundle. Splitting per-tool requires loader rework. Surfaced as the load-bearing open question (above).
+- **Skill bundle strategy: now settled — one bundle per tool, no meta-emit.** See open questions section. Loader rework is the implementation cost; happens during the package split.
 - **Modular profiling needs a recipe-level parameter.** Fleet's three-mode pathway (target/module/rollup) means profile is invoked under three different framings. Expression's profile recipe should take a `mode:` parameter rather than three separate recipes.
 
 ## Out of scope
