@@ -1,5 +1,5 @@
+import type { Expression } from "@ghost/core";
 import { parse as parseYaml } from "yaml";
-import type { Expression } from "../types.js";
 import type { BodyData } from "./body.js";
 import { parseExpression, splitRaw } from "./parser.js";
 import {

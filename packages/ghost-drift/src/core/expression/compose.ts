@@ -1,4 +1,4 @@
-import type { DesignDecision, Expression } from "../types.js";
+import type { DesignDecision, Expression } from "@ghost/core";
 
 /**
  * Merge an overlay expression on top of a base expression. Precedence rules:

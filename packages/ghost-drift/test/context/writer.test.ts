@@ -1,13 +1,13 @@
 import { readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Expression } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   buildSkillMd,
   writeContextBundle,
 } from "../../src/core/context/index.js";
 import { buildTokensCss } from "../../src/core/context/tokens-css.js";
-import type { Expression } from "../../src/core/types.js";
 
 const EXPRESSION: Expression = {
   id: "sample-ds",

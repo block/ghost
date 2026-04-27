@@ -1,9 +1,9 @@
-import { parse as parseYaml } from "yaml";
 import type {
   DesignDecision,
   DesignObservation,
   Expression,
-} from "../types.js";
+} from "@ghost/core";
+import { parse as parseYaml } from "yaml";
 import { type BodyData, parseBody } from "./body.js";
 import { type ExpressionMeta, splitFrontmatter } from "./frontmatter.js";
 import { validateFrontmatter } from "./schema.js";

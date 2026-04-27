@@ -1,6 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Expression } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   EMBEDDING_FRAGMENT_FILENAME,
@@ -9,7 +10,6 @@ import {
   serializeEmbeddingFragment,
   serializeExpression,
 } from "../../src/core/expression/index.js";
-import type { Expression } from "../../src/core/types.js";
 
 const BASE_EXPRESSION = `---
 id: base
