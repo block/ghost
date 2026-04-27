@@ -37,9 +37,20 @@ export interface InventoryOutput {
   root: string;
   /** Coarse hints derived from manifest presence (e.g. "android" if Gradle, "ios" if podspec). */
   platform_hints: string[];
+  /**
+   * Coarse hints derived from manifest presence for the build system
+   * (e.g. `gradle` if `settings.gradle*`, `style-dictionary` if a sibling
+   * `style-dictionary.config.*` is found). Informational — the recipe
+   * authors the authoritative `build_system` value in `map.md`.
+   */
+  build_system_hints: string[];
   /** Files-per-language histogram, sorted desc by `files`. Top 20. */
   language_histogram: LanguageHistogramEntry[];
-  /** Canonical package manifests at the root. */
+  /**
+   * Canonical package manifests. Root entries are basenames
+   * (`package.json`); workspace-expanded entries are POSIX relative paths
+   * (`packages/foo/package.json`). Sorted lexicographically, deduped.
+   */
   package_manifests: string[];
   /** Candidate config files matched anywhere under root (relative paths, sorted). */
   candidate_config_files: string[];

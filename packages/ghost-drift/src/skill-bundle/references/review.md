@@ -52,7 +52,7 @@ For each changed file, read the diff and look for values that don't belong to th
 - **Palette drift:** hex codes (`#ff6600`), `rgb(...)`, `oklch(...)`, Tailwind color classes (`bg-slate-500`) that aren't in `palette.dominant`/`.neutrals`/`.semantic`.
 - **Spacing drift:** `px`, `rem`, `em` values not in `spacing.scale` (converted: 1rem = 16px). Tailwind spacing classes (`p-3`, `mt-7`) that land off-grid.
 - **Typography drift:** font-family declarations not in `typography.families`, font-size values not in `sizeRamp`, font-weight values far from the `weightDistribution`.
-- **Surface drift:** `border-radius` not in `surfaces.borderRadii`, `box-shadow` present when `surfaces.shadowComplexity: none`, or absent when the expression says shadows are load-bearing.
+- **Surface drift:** `border-radius` not in `surfaces.borderRadii`, `box-shadow` present when `surfaces.shadowComplexity: deliberate-none`, or absent when the expression says shadows are load-bearing.
 - **Decision drift:** behavior that contradicts a decision (e.g. decision says "no animation" and the change adds a `transition`; decision says "component-height tokens, not padding arithmetic" and the change uses `padding-y: 14px`).
 
 ### 4. Filter noise

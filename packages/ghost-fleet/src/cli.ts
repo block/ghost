@@ -181,8 +181,8 @@ function formatMembersTable(
   ];
   const rows = summaries.map((s) => [
     s.id,
-    s.platform ?? "-",
-    s.build_system ?? "-",
+    formatCellValue(s.platform),
+    formatCellValue(s.build_system),
     s.registry ?? "-",
     s.expression_mtime ? s.expression_mtime.slice(0, 10) : "-",
     s.ok ? "ok" : `${s.mapStatus}/${s.expressionStatus}`,
@@ -195,6 +195,20 @@ function formatMembersTable(
   const out: string[] = [fmt(headers), fmt(widths.map((w) => "-".repeat(w)))];
   for (const row of rows) out.push(fmt(row));
   return `${out.join("\n")}\n`;
+}
+
+/**
+ * Format a single-or-array `MemberSummary` cell for the human table.
+ * Arrays render as comma-separated values so multi-platform repos show
+ * all members in one row.
+ */
+function formatCellValue(value: string | string[] | null | undefined): string {
+  if (value === null || value === undefined) return "-";
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "-";
+    return value.join(",");
+  }
+  return value;
 }
 
 function displayPath(cwd: string, target: string): string {

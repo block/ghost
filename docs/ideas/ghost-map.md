@@ -46,17 +46,20 @@ Frontmatter is the machine layer (consumed by other Ghost tools). Body is three 
 | `id` | slug | filesystem key; matches fleet target IDs |
 | `repo` | `org/repo` or path | source of truth for the map |
 | `mapped_at` | ISO date | absolute, not relative |
-| `platform` | enum | `web` / `ios` / `android` / `desktop` / `flutter` / `mixed` / `other` |
+| `platform` | enum or `enum[]` | `web` / `ios` / `android` / `desktop` / `flutter` / `mixed` / `other`. Array form preferred when a repo genuinely spans multiple platforms (`platform: [ios, android, web]`). `mixed` is kept for backcompat. |
 | `languages` | `[{name, files, share}]` | ordered desc by share |
-| `build_system` | enum | `gradle` / `bazel` / `xcode` / `pnpm` / `npm` / `yarn` / `cargo` / `go` / `mixed` / `other` |
-| `package_manifests` | `string[]` | canonical manifests at root |
+| `build_system` | enum or `enum[]` | `gradle` / `bazel` / `xcode` / `pnpm` / `npm` / `yarn` / `cargo` / `go` / `maven` / `sbt` / `cmake` / `style-dictionary` / `mixed` / `other`. Array form when several coexist (`build_system: [yarn, gradle, style-dictionary]`). |
+| `package_manifests` | `string[]` | canonical manifests at the root and any expanded workspace dirs (`packages/*`, `apps/*`, `libs/*`, `common/*`). Root entries are basenames; workspace entries are POSIX-relative. |
 | `composition.frameworks` | `[{name, version?}]` | detected frameworks |
 | `composition.rendering` | string | primary rendering layer |
 | `composition.styling` | `string[]` | ordered; first is primary, rest coexist meaningfully |
 | `composition.navigation` | string? | optional |
 | `registry` | `{path, components}?` | shadcn-style registry; null when absent |
 | `design_system.paths` | `string[]` | directories holding tokens/theme/primitives |
-| `design_system.entry_files` | `string[]` | files that resolve a token end-to-end |
+| `design_system.entry_files` | `string[]?` | files that resolve a token end-to-end (the source-of-truth). Optional in 4b — at least one of `entry_files` / `derived_files` should be set in practice. |
+| `design_system.derived_files` | `string[]?` | built artifacts other tools may consume (e.g. `dist/colors.ts` generated from `tokens/colors.json`). Distinct from `entry_files` so drift can point at the right reference. |
+| `design_system.token_source` | enum? | `inline` (declared in-tree) / `external` (pulled from an upstream package) / `mixed`. Optional. |
+| `design_system.upstream` | string? | upstream token reference when `token_source` is `external` or `mixed`. Free-form: npm package, SPM ref, sibling path, … |
 | `design_system.status` | enum | `active` / `mixed` / `unclear` |
 | `ui_surface.include` | glob[] | where customer UI lives |
 | `ui_surface.exclude` | glob[] | infra/tests/legacy to skip |
@@ -137,7 +140,7 @@ The recipe consumes this, opens what it needs to open, and synthesizes map.md.
 
 - **`registry` reach.** Drafted as `{path, components}` with shadcn in mind. Fine for now; revisit if a second registry format ever shows up.
 - **`ui_surface.signals` was removed.** Convention plugins and name suffixes now land in Topology prose. Revisit only if a downstream tool needs structured access to that texture (none currently does).
-- **Multi-platform repos.** `platform: mixed` covers it but is coarse. Worth allowing `platform: [ios, android]` if Tidal-style mixed repos prove it useful.
+- ~~**Multi-platform repos.** `platform: mixed` covers it but is coarse. Worth allowing `platform: [ios, android]` if Tidal-style mixed repos prove it useful.~~ Resolved in Phase 4b — `platform` and `build_system` now both accept arrays.
 - **Re-map cadence.** map.md is more stable than expression.md (topology shifts slowly), but it does drift. No formal answer yet — likely "agent re-runs map when it notices a stale signal" rather than a schedule.
 
 ## Out of scope

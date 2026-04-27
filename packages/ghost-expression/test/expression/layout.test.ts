@@ -24,7 +24,7 @@ typography:
   lineHeightPattern: tight
 surfaces:
   borderRadii: [4]
-  shadowComplexity: none
+  shadowComplexity: deliberate-none
   borderUsage: minimal
 ---`;
 

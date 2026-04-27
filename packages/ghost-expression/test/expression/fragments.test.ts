@@ -29,7 +29,7 @@ typography:
   lineHeightPattern: normal
 surfaces:
   borderRadii: [8]
-  shadowComplexity: none
+  shadowComplexity: deliberate-none
   borderUsage: minimal
 embedding: [0]
 decisions:

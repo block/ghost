@@ -65,8 +65,15 @@ export function computeGroupings(
     const map = member.map;
     if (!map) continue;
 
-    push(groupings.by_platform, map.platform, member.id);
-    push(groupings.by_build_system, map.build_system, member.id);
+    // platform / build_system may be a string OR an array — the fleet
+    // groupings cross-tabulate per value, so an array contributes the
+    // member to each bucket it names.
+    for (const value of toArray(map.platform)) {
+      push(groupings.by_platform, value, member.id);
+    }
+    for (const value of toArray(map.build_system)) {
+      push(groupings.by_build_system, value, member.id);
+    }
     push(groupings.by_registry, map.registry ? "shadcn" : "none", member.id);
 
     const rendering = map.composition.rendering;
@@ -96,6 +103,12 @@ function push(
   if (!key) return;
   if (!bucket[key]) bucket[key] = [];
   bucket[key].push(id);
+}
+
+/** Normalize a string-or-array map field to an array of strings. */
+function toArray<T extends string>(value: T | T[] | undefined): T[] {
+  if (value === undefined) return [];
+  return Array.isArray(value) ? value : [value];
 }
 
 /**

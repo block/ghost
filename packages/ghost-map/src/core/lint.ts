@@ -73,6 +73,9 @@ export function lintMap(raw: string): LintReport {
     }
     // Even if frontmatter is invalid, still check the body — diagnostics
     // are more useful in one pass.
+  } else {
+    // Soft cross-field checks that go beyond the schema's per-field rules.
+    issues.push(...checkDesignSystemCoherence(result.data));
   }
 
   // Body section checks
@@ -80,6 +83,55 @@ export function lintMap(raw: string): LintReport {
   issues.push(...sectionIssues);
 
   return finalize(issues);
+}
+
+/**
+ * Cross-field checks for `design_system`:
+ *   - At least one of `entry_files` or `derived_files` should be present
+ *     (warning, not error — early in profiling there may be neither yet).
+ *   - `upstream` is meaningful only when `token_source` is `external` or
+ *     `mixed`; flag a stray `upstream` paired with `inline` (or unset).
+ *   - When `token_source` is `external`, `upstream` should be set.
+ */
+function checkDesignSystemCoherence(
+  fm: ReturnType<typeof MapFrontmatterSchema.parse>,
+): LintIssue[] {
+  const out: LintIssue[] = [];
+  const ds = fm.design_system;
+  const hasEntry = (ds.entry_files?.length ?? 0) > 0;
+  const hasDerived = (ds.derived_files?.length ?? 0) > 0;
+  if (!hasEntry && !hasDerived) {
+    out.push({
+      severity: "warning",
+      rule: "design-system-files-missing",
+      message:
+        "design_system should declare at least one of `entry_files` (token source-of-truth) or `derived_files` (built artifacts).",
+      path: "design_system",
+    });
+  }
+  if (ds.token_source === "external" && !ds.upstream) {
+    out.push({
+      severity: "warning",
+      rule: "design-system-upstream-missing",
+      message:
+        "design_system.token_source is `external` but `upstream` is unset — record where the tokens come from (npm package, SPM ref, path, …).",
+      path: "design_system.upstream",
+    });
+  }
+  if (
+    ds.upstream &&
+    ds.token_source !== "external" &&
+    ds.token_source !== "mixed"
+  ) {
+    out.push({
+      severity: "info",
+      rule: "design-system-upstream-stranded",
+      message:
+        "design_system.upstream is set but token_source is not `external` or `mixed` — consider setting token_source explicitly.",
+      path: "design_system.token_source",
+    });
+  }
+  return out;
 }
 
 interface FrontmatterSplit {

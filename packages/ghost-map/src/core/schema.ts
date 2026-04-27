@@ -1,6 +1,59 @@
 import { z } from "zod";
 
 /**
+ * Platform values accepted by `ghost.map/v1`. Real repos may straddle
+ * multiple platforms — `platform:` accepts either a single value or an
+ * array (see `PlatformValueSchema`). The legacy `mixed` enum value stays
+ * for backcompat but the array form is preferred for clarity.
+ */
+const PlatformEnum = z.enum([
+  "web",
+  "ios",
+  "android",
+  "desktop",
+  "flutter",
+  "mixed",
+  "other",
+]);
+
+const PlatformValueSchema = z.union([
+  PlatformEnum,
+  z.array(PlatformEnum).min(1),
+]);
+
+/**
+ * Build-system values accepted by `ghost.map/v1`. As with `platform`, the
+ * field accepts either a single value or an array — real repos run mixes
+ * like Yarn + SPM + Gradle + Style Dictionary at once.
+ *
+ * The enum was extended in Phase 4b to cover token-pipeline tooling
+ * (`style-dictionary`) and JVM/native build systems that show up in real
+ * monorepos but didn't fit any earlier value (`bazel`, `maven`, `sbt`,
+ * `cmake`). `cargo` was already present before 4b.
+ */
+const BuildSystemEnum = z.enum([
+  "gradle",
+  "bazel",
+  "xcode",
+  "pnpm",
+  "npm",
+  "yarn",
+  "cargo",
+  "go",
+  "maven",
+  "sbt",
+  "cmake",
+  "style-dictionary",
+  "mixed",
+  "other",
+]);
+
+const BuildSystemValueSchema = z.union([
+  BuildSystemEnum,
+  z.array(BuildSystemEnum).min(1),
+]);
+
+/**
  * Zod schema for `ghost.map/v1` frontmatter.
  *
  * The body section (Identity / Topology / Conventions) is checked separately
@@ -21,15 +74,7 @@ export const MapFrontmatterSchema = z.object({
       message: "mapped_at must be ISO date (YYYY-MM-DD) or full datetime",
     }),
   ),
-  platform: z.enum([
-    "web",
-    "ios",
-    "android",
-    "desktop",
-    "flutter",
-    "mixed",
-    "other",
-  ]),
+  platform: PlatformValueSchema,
   languages: z
     .array(
       z.object({
@@ -39,18 +84,7 @@ export const MapFrontmatterSchema = z.object({
       }),
     )
     .min(1),
-  build_system: z.enum([
-    "gradle",
-    "bazel",
-    "xcode",
-    "pnpm",
-    "npm",
-    "yarn",
-    "cargo",
-    "go",
-    "mixed",
-    "other",
-  ]),
+  build_system: BuildSystemValueSchema,
   package_manifests: z.array(z.string().min(1)).min(1),
   composition: z.object({
     frameworks: z.array(
@@ -72,7 +106,31 @@ export const MapFrontmatterSchema = z.object({
     .optional(),
   design_system: z.object({
     paths: z.array(z.string().min(1)),
-    entry_files: z.array(z.string().min(1)),
+    /**
+     * Files that resolve a token end-to-end — the source-of-truth layer.
+     * Optional in 4b: a design system may have only derived artifacts
+     * checked in (rare but real for upstream-token consumers).
+     */
+    entry_files: z.array(z.string().min(1)).optional(),
+    /**
+     * Build artifacts other tools may consume (e.g. `dist/colors.ts`
+     * generated from `tokens/colors.json`). Optional. Distinct from
+     * `entry_files` so drift can point at the right reference layer.
+     */
+    derived_files: z.array(z.string().min(1)).optional(),
+    /**
+     * How the design system sources its tokens.
+     *   - `inline`: the system declares its own tokens in-tree
+     *   - `external`: tokens are pulled from another package (`upstream`)
+     *   - `mixed`: both inline and external token sources coexist
+     */
+    token_source: z.enum(["inline", "external", "mixed"]).optional(),
+    /**
+     * Reference to the upstream token source when `token_source` is
+     * `external` or `mixed`. Free-form: npm package name, SPM module ref,
+     * relative path to a sibling package, etc.
+     */
+    upstream: z.string().min(1).optional(),
     status: z.enum(["active", "mixed", "unclear"]),
   }),
   ui_surface: z.object({

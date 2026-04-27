@@ -56,7 +56,7 @@ typography:
 
 surfaces:
   borderRadii: [4, 8, 12]           # px
-  shadowComplexity: subtle          # none | subtle | layered
+  shadowComplexity: subtle          # deliberate-none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
 # slot → token bindings (optional but strongly recommended)

@@ -295,7 +295,7 @@ export interface Expression {
 
   surfaces: {
     borderRadii: number[];
-    shadowComplexity: "none" | "subtle" | "layered";
+    shadowComplexity: "deliberate-none" | "subtle" | "layered";
     borderUsage: "minimal" | "moderate" | "heavy";
     borderTokenCount?: number;
   };

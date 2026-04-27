@@ -23,7 +23,7 @@ typography:
   lineHeightPattern: normal
 surfaces:
   borderRadii: [4, 8]
-  shadowComplexity: none
+  shadowComplexity: deliberate-none
   borderUsage: minimal
 ---
 
