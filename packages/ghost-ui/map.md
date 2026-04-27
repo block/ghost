@@ -57,18 +57,10 @@ ui_surface:
 feature_areas:
   - name: ui-primitives
     paths: ["src/components/ui"]
-    sub_areas:
-      - { name: input, paths: ["src/components/ui/button.tsx", "src/components/ui/input.tsx", "src/components/ui/checkbox.tsx", "src/components/ui/radio-group.tsx", "src/components/ui/select.tsx", "src/components/ui/slider.tsx", "src/components/ui/switch.tsx", "src/components/ui/textarea.tsx", "src/components/ui/toggle.tsx", "src/components/ui/toggle-group.tsx", "src/components/ui/button-group.tsx", "src/components/ui/input-otp.tsx", "src/components/ui/form.tsx", "src/components/ui/label.tsx"] }
-      - { name: layout, paths: ["src/components/ui/accordion.tsx", "src/components/ui/aspect-ratio.tsx", "src/components/ui/collapsible.tsx", "src/components/ui/resizable.tsx", "src/components/ui/scroll-area.tsx", "src/components/ui/separator.tsx", "src/components/ui/sidebar.tsx"] }
-      - { name: feedback, paths: ["src/components/ui/alert.tsx", "src/components/ui/alert-dialog.tsx", "src/components/ui/dialog.tsx", "src/components/ui/drawer.tsx", "src/components/ui/popover.tsx", "src/components/ui/sonner.tsx", "src/components/ui/spinner.tsx", "src/components/ui/tooltip.tsx", "src/components/ui/hover-card.tsx", "src/components/ui/sheet.tsx"] }
-      - { name: display, paths: ["src/components/ui/avatar.tsx", "src/components/ui/badge.tsx", "src/components/ui/card.tsx", "src/components/ui/skeleton.tsx", "src/components/ui/table.tsx", "src/components/ui/chart.tsx", "src/components/ui/calendar.tsx"] }
-      - { name: navigation, paths: ["src/components/ui/breadcrumb.tsx", "src/components/ui/command.tsx", "src/components/ui/context-menu.tsx", "src/components/ui/dropdown-menu.tsx", "src/components/ui/menubar.tsx", "src/components/ui/navigation-menu.tsx", "src/components/ui/pagination.tsx", "src/components/ui/tabs.tsx"] }
+    sub_areas: [input, layout, feedback, display, navigation]
   - name: ai-elements
     paths: ["src/components/ai-elements"]
-    sub_areas:
-      - { name: chat, paths: ["src/components/ai-elements/conversation.tsx", "src/components/ai-elements/message.tsx", "src/components/ai-elements/prompt-input.tsx", "src/components/ai-elements/response.tsx"] }
-      - { name: agent-state, paths: ["src/components/ai-elements/agent.tsx", "src/components/ai-elements/reasoning.tsx", "src/components/ai-elements/task.tsx", "src/components/ai-elements/tool.tsx"] }
-      - { name: artifacts, paths: ["src/components/ai-elements/artifact.tsx", "src/components/ai-elements/code-block.tsx", "src/components/ai-elements/inline-citation.tsx", "src/components/ai-elements/sources.tsx", "src/components/ai-elements/web-preview.tsx"] }
+    sub_areas: [chat, agent-state, artifacts]
   - name: theme
     paths: ["src/components/theme", "src/lib/theme-presets.ts", "src/lib/theme-defaults.ts", "src/lib/theme-utils.ts"]
   - name: tokens
@@ -88,13 +80,13 @@ orientation_files:
   - components.json
 ---
 
-# Identity
+## Identity
 
 `ghost-ui` is the reference design system for the Ghost project — a private, registry-distributed component library that exists so the Ghost loop has a real, evolving system to describe. It ships **106 registry items**: 97 `registry:ui` components (49 shadcn-style UI primitives + 48 AI-native elements), 1 base item, 2 style items, 1 lib item, and 5 theme presets. The package is `private` and is **not published to npm**; consumers `npx shadcn add` against `registry.json` or import the built library locally for workspace linking. The `ghost-mcp` bin (built from `src/mcp/`) ships alongside.
 
 The system is single-design-language (no parallel/legacy theme — the five non-default presets share the base shape) and is the canonical witness for the Ghost five-tool decomposition: `expression.md` lives next to this file, `meta.expression` on registry items declares per-component dimension provenance, and the CI loop in `.github/workflows/ghost-ci.yml` (drafted, gated off) runs map → expression → drift on every PR.
 
-# Topology
+## Topology
 
 **Design system + token resolution** lives in three places, in resolution order: `src/styles/main.css` (the canonical token sheet — primitive `--color-*`, `--radius-*`, `--shadow-*`, `--spacing-*`, `--font-*` declarations plus a `:root` semantic layer and a `.dark` override), `src/lib/theme-presets.ts` (the five non-default preset overrides applied at runtime by writing CSS custom properties), and `src/components/theme/ThemeProvider.tsx` (the React provider that injects preset styles and toggles the `.dark` class). `src/styles/font-faces.css` is intentionally empty — the system ships no bundled fonts and falls back to `system-ui`.
 
@@ -104,7 +96,7 @@ The system is single-design-language (no parallel/legacy theme — the five non-
 
 **Orientation files**, in reading order: `README.md` (one paragraph + use), `expression.md` (the 11 design decisions), `registry.json` (the canonical list of components — note the `meta.expression` and `meta.expression_dimensions` extensions), `src/styles/main.css` (every token in one file), `src/lib/theme-presets.ts` (proves what is themeable), `components.json` (shadcn config, declares `style: ghost` and the path aliases).
 
-# Conventions
+## Conventions
 
 - **Component naming.** Files are kebab-case; exports are PascalCase. Compound components are flat exports from a single file (`Card`, `CardHeader`, `CardContent`, …) following shadcn convention.
 - **Registry items.** Every UI component has exactly one entry in `registry.json` with `type: registry:ui`, a single `files[].target: components/ui/<name>.tsx`, a `categories: [<one of input/layout/feedback/display/navigation>]`, and the `registryDependencies` it expects (`utils` is universal). AI elements follow the same shape under `components/ai-elements/`.
