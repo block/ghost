@@ -16,6 +16,7 @@
     { "path": "packages/ghost-core" },
     { "path": "packages/ghost-drift" },
     { "path": "packages/ghost-expression" },
+    { "path": "packages/ghost-fleet" },
     { "path": "packages/ghost-map" },
     { "path": "packages/ghost-ui/tsconfig.mcp.json" }
   ]
