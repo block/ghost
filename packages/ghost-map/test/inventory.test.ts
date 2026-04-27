@@ -74,8 +74,12 @@ describe("inventory — Bazel + Swift detection", () => {
 
   it("infers ios from Swift dominance + Bazel build signal", () => {
     const out = inventory(BAZEL);
-    expect(out.platform_hints).toContain("bazel");
+    // `bazel` is a build-system signal — it lives in build_system_hints,
+    // NOT platform_hints. platform_hints is constrained to the Platform
+    // enum (web/ios/android/desktop/flutter/mixed/other).
+    expect(out.platform_hints).not.toContain("bazel");
     expect(out.platform_hints).toContain("ios");
+    expect(out.build_system_hints).toContain("bazel");
   });
 
   it("skips bazel-* output trees in the language histogram", () => {
@@ -189,7 +193,9 @@ describe("inventory — extended SKIP_DIRS", () => {
     expect(top).toContain("src/");
     expect(top).not.toContain("venv/");
     expect(out.package_manifests).toContain("pyproject.toml");
-    expect(out.platform_hints).toContain("python");
+    // python is a runtime/language signal — NOT a platform. The
+    // platform-enum-only constraint means it stays out of platform_hints.
+    expect(out.platform_hints).not.toContain("python");
   });
 });
 
@@ -225,6 +231,50 @@ describe("inventory — workspace expansion", () => {
     expect(out.package_manifests).toEqual(sorted);
     const seen = new Set(out.package_manifests);
     expect(seen.size).toBe(out.package_manifests.length);
+  });
+});
+
+describe("inventory — platform_hints stays inside the platform enum", () => {
+  // Closed set of values the schema's `platform` enum accepts.
+  const PLATFORM_ENUM = new Set([
+    "web",
+    "ios",
+    "android",
+    "desktop",
+    "flutter",
+    "mixed",
+    "other",
+  ]);
+
+  it("never emits build-system or runtime signals (bazel, ruby, …)", () => {
+    // Bazel + Ruby Fastlane + Swift app — emulates real iOS monorepos
+    // that hit the Phase 5a bug, where `platform_hints` returned
+    // ["bazel", "ios", "ruby"] instead of just ["ios"].
+    const out = inventory(resolve(FIXTURES, "bazel-ruby-ios-repo"));
+    expect(out.platform_hints).not.toContain("bazel");
+    expect(out.platform_hints).not.toContain("ruby");
+    expect(out.platform_hints).toContain("ios");
+    // bazel must surface as a build-system hint, not a platform hint.
+    expect(out.build_system_hints).toContain("bazel");
+  });
+
+  it("constrains every platform_hints value to the Platform enum across all fixtures", () => {
+    for (const fixture of [
+      "web-repo",
+      "bazel-repo",
+      "ios-spm-repo",
+      "android-gradle-repo",
+      "flutter-repo",
+      "token-pipeline-repo",
+      "python-venv-repo",
+      "workspace-repo",
+      "bazel-ruby-ios-repo",
+    ]) {
+      const out = inventory(resolve(FIXTURES, fixture));
+      for (const hint of out.platform_hints) {
+        expect(PLATFORM_ENUM.has(hint)).toBe(true);
+      }
+    }
   });
 });
 

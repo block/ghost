@@ -76,6 +76,8 @@ Surface whatever dimensions fit. Common ones: `color-strategy`, `spatial-system`
 
 For each: `dimension` (slug), `decision` (prose, body), `evidence` (concrete citations — token definitions like `"--radius-pill: 999px"` preferred; `file:line` for behavioral observations).
 
+**Evidence belongs in the body markdown under `**Evidence:**` bullets per dimension. Do NOT put `evidence:` arrays in frontmatter — the schema is `.strict()` and will reject.** Each `### <dimension>` body block should end with a `**Evidence:**` line followed by bullet citations; the parser pulls those back onto `decisions[].evidence` in memory.
+
 ### 6. Extract Layer 3 — Concrete tokens
 
 Populate the structured fields: `palette.dominant`, `palette.neutrals`, `palette.semantic`, `palette.saturationProfile`, `palette.contrast`, `spacing.scale`, `spacing.regularity`, `spacing.baseUnit`, `typography.families`, `typography.sizeRamp`, `typography.weightDistribution`, `typography.lineHeightPattern`, `surfaces.borderRadii`, `surfaces.shadowComplexity`, `surfaces.borderUsage`.

@@ -219,6 +219,30 @@ roles:
     );
   });
 
+  it("propagates slug-binding citations through `{palette.dominant.X}` references", () => {
+    // The role binds `background` to `{palette.dominant.accent}` — the
+    // accent's hex (#c96442) must be treated as cited even though it
+    // never appears as a literal in any body Evidence bullet.
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette:
+        background: '{palette.dominant.accent}'
+    evidence:
+      - "components/button.tsx using #4d4c48 for hover and #b53333 for danger and #141413 muted"`,
+      "",
+    );
+    const report = lintExpression(md);
+    const unused = report.issues.filter((i) => i.rule === "unused-palette");
+    // #c96442 is cited only via the slug binding — must NOT be flagged.
+    expect(unused.some((i) => i.message.includes("#c96442"))).toBe(false);
+    // The other three are name-dropped in role evidence, so the file
+    // should be fully clean.
+    expect(unused.length).toBe(0);
+  });
+
   it("counts a hex used in a role's evidence string as cited (no unused-palette info)", () => {
     // The PALETTE_BLOCK ships #c96442, #141413, #4d4c48, #b53333.
     // A role binding that cites every hex (some in palette field, some

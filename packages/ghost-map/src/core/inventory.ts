@@ -667,14 +667,39 @@ function toPosixRel(root: string, abs: string): string {
 }
 
 /**
+ * The closed set of values `platform_hints` may emit. Keeps the field
+ * tied to `MapFrontmatterSchema`'s `platform` enum so a recipe can pass
+ * the hint through verbatim. Build-system / language / runtime signals
+ * (bazel, ruby, python, jvm, …) belong in `build_system_hints` (when
+ * they're build systems) or are deliberately not surfaced here.
+ */
+const PLATFORM_ENUM_VALUES: ReadonlySet<string> = new Set([
+  "web",
+  "ios",
+  "android",
+  "desktop",
+  "flutter",
+  "mixed",
+  "other",
+]);
+
+/**
  * Derive coarse platform hints from manifest presence + the language
  * histogram + walk signals.
  *
- * Manifests give cheap, exact signal (Bazel WORKSPACE → JVM build,
- * pubspec.yaml → Flutter). Histograms cover repos where the manifest
+ * Manifests give cheap, exact signal (`Package.swift` → ios,
+ * `pubspec.yaml` → flutter). Histograms cover repos where the manifest
  * doesn't exist or doesn't disambiguate (a Bazel monorepo of Swift
  * targets is "ios"; a Bazel monorepo of Kotlin targets is "android"
- * — the manifest alone can't tell us which).
+ * — the manifest alone can't tell us which, so we lean on a Bazel
+ * build-system signal plus the language share).
+ *
+ * The output is constrained to values in `PLATFORM_ENUM_VALUES` so it
+ * mirrors `map.md`'s `platform:` enum. Build-system-derived signals
+ * (`bazel`, `cargo`, …) and language/runtime signals (`ruby`, `python`,
+ * `rust`, `go`, `jvm`, `php`, `elixir`) are NOT emitted here — bazel
+ * lives in `build_system_hints` instead, and the rest don't disambiguate
+ * a UI platform on their own.
  *
  * Cases this deliberately does not try to disambiguate:
  *   - Kotlin Multiplatform (Swift + Kotlin balanced) — both `ios` and
@@ -683,10 +708,10 @@ function toPosixRel(root: string, abs: string): string {
  *     today; future: detect `ios/`, `android/` shell directories.
  *   - .NET MAUI (C# + XAML) — no special handling.
  *   - Tauri / Electron (web stack with Rust/native shell) — surfaces
- *     as `web` plus `rust`; the recipe judges from there.
+ *     as `web`; the rust signal is in language_histogram, not here.
  *
- * The output is intentionally a deduped sorted list of *hints*, not a
- * single platform — `map.md`'s `platform:` enum is the recipe's call.
+ * The output is a deduped sorted list of *hints*, not a single
+ * platform — `map.md`'s `platform:` enum is the recipe's call.
  */
 function derivePlatformHints(
   manifests: string[],
@@ -704,16 +729,6 @@ function derivePlatformHints(
   });
   for (const m of basenames) {
     if (m === "package.json") hints.add("web");
-    if (m === "Cargo.toml") hints.add("rust");
-    if (m === "go.mod") hints.add("go");
-    if (m === "pyproject.toml" || m === "Pipfile" || m === "setup.py") {
-      hints.add("python");
-    }
-    if (m === "Gemfile" || m === "Gemfile.lock" || m.endsWith(".gemspec")) {
-      hints.add("ruby");
-    }
-    if (m === "mix.exs") hints.add("elixir");
-    if (m === "composer.json") hints.add("php");
     if (
       m === "Package.swift" ||
       m === "Package.resolved" ||
@@ -721,7 +736,6 @@ function derivePlatformHints(
     ) {
       hints.add("ios");
     }
-    if (m === "pom.xml") hints.add("jvm");
     if (m === "pubspec.yaml") hints.add("flutter");
     if (
       m === "settings.gradle" ||
@@ -731,18 +745,20 @@ function derivePlatformHints(
     ) {
       hints.add("android");
     }
-    // Bazel manifests don't disambiguate platform on their own — they
-    // just say "this is a Bazel build." Pair with the language histogram.
-    if (
+  }
+
+  // Bazel doesn't disambiguate platform on its own — it lives in
+  // `build_system_hints`. Track its presence locally so the histogram
+  // pass below can use it as a tiebreaker for swift-on-bazel /
+  // kotlin-on-bazel monorepos.
+  const hasBazelBuild = basenames.some(
+    (m) =>
       m === "WORKSPACE" ||
       m === "WORKSPACE.bazel" ||
       m === "MODULE.bazel" ||
       m === "BUILD.bazel" ||
-      m === ".bazelversion"
-    ) {
-      hints.add("bazel");
-    }
-  }
+      m === ".bazelversion",
+  );
 
   // Language-histogram-driven hints — only kick in when manifests aren't
   // already conclusive. Threshold: language must hold >40% of tracked
@@ -761,10 +777,7 @@ function derivePlatformHints(
 
     // Swift dominant + iOS-build evidence (SPM, Xcode, Bazel) → ios.
     const hasSpm = basenameSet.has("Package.swift");
-    if (
-      swiftShare > 0.4 &&
-      (hasSpm || walk.hasXcodeProject || hints.has("bazel"))
-    ) {
+    if (swiftShare > 0.4 && (hasSpm || walk.hasXcodeProject || hasBazelBuild)) {
       hints.add("ios");
     }
 
@@ -777,7 +790,7 @@ function derivePlatformHints(
     if (
       kotlinShare > 0.4 &&
       walk.hasAndroidManifest &&
-      (hasGradle || hints.has("bazel"))
+      (hasGradle || hasBazelBuild)
     ) {
       hints.add("android");
     }
@@ -794,6 +807,13 @@ function derivePlatformHints(
   const platformish = new Set<string>(["web", "ios", "android", "flutter"]);
   const platformHits = [...hints].filter((h) => platformish.has(h));
   if (platformHits.length >= 2) hints.add("mixed");
+
+  // Defensive: drop anything outside the platform enum. Earlier passes
+  // only add enum values, but this guards against future regressions —
+  // build-system / language signals must NOT leak into platform_hints.
+  for (const hint of [...hints]) {
+    if (!PLATFORM_ENUM_VALUES.has(hint)) hints.delete(hint);
+  }
 
   return [...hints].sort();
 }

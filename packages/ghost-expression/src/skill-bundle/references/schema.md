@@ -22,14 +22,13 @@ observation:
   personality: [restrained, editorial]   # 3-6 adjectives
   resembles: [linear, notion]       # 1-3 known references this resembles
 
-# abstract design decisions
+# abstract design decisions — frontmatter carries the dimension slug only.
+# Rationale prose AND `**Evidence:**` bullets live in the body under the
+# matching `### <dimension>` block. The schema is `.strict()` and rejects
+# `evidence:` (or any other field) here.
 decisions:
   - dimension: color-strategy            # freeform slug
-    evidence:
-      - "--color-primary: #0066cc"
-      - "src/theme.ts:12"
   - dimension: spatial-system
-    evidence: ["--space-4: 16px"]
 
 # concrete tokens
 palette:
@@ -100,9 +99,16 @@ metadata:
 
 Prose rationale for the color-strategy decision. This is `decisions[i].decision` — the implementation-agnostic statement of the pattern. One `### <dimension>` block per entry in `decisions`, matched by dimension slug.
 
+**Evidence:**
+- `--color-primary: #0066cc`
+- `src/theme.ts:12`
+
 ### spatial-system
 
-...
+Prose rationale for the spatial-system decision.
+
+**Evidence:**
+- `--space-4: 16px`
 
 # Fragments
 
@@ -119,8 +125,9 @@ Every field lives in exactly one layer:
 | `observation.personality`, `observation.resembles` | Frontmatter |
 | `observation.summary` | **Body** (`# Character`) |
 | `observation.distinctiveTraits` | **Body** (`# Signature` bullets) |
-| `decisions[].dimension`, `decisions[].evidence` | Frontmatter |
+| `decisions[].dimension` | Frontmatter |
 | `decisions[].decision` (prose) | **Body** (`### <dimension>` block) |
+| `decisions[].evidence` | **Body** (`**Evidence:**` bullets under `### <dimension>`) |
 | `palette`, `spacing`, `typography`, `surfaces`, `roles` | Frontmatter |
 | `embedding` | Sibling `embedding.md` |
 
@@ -128,6 +135,6 @@ Putting prose into frontmatter is a schema error. The writer and reader both enf
 
 ## Validation
 
-    ghost-drift lint expression.md
+    ghost-expression lint expression.md
 
 This catches schema violations, missing required fields, prose-in-frontmatter, orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa), and uncited palette entries.

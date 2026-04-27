@@ -199,14 +199,18 @@ function checkEvidenceHexes(fp: Expression, issues: LintIssue[]): void {
 
 /**
  * Flag palette colors that don't appear anywhere a reader could justify
- * them. Phase 4b widens the search beyond decision evidence to include
- * role bindings: a hex used in a `roles[].evidence` string or referenced
- * via `roles[].tokens.palette.{background,foreground,border}` is treated
- * as cited.
+ * them. The search covers three citation paths:
+ *   1. Hex literal in a decision body's Evidence bullet text.
+ *   2. Hex literal directly in a `roles[].tokens.palette.<slot>` field
+ *      or in a `roles[].evidence` string.
+ *   3. Slug-binding propagation: `roles[].tokens.palette.<slot>` carrying
+ *      a `{palette.dominant.X}` / `{palette.semantic.X}` reference resolves
+ *      through the palette to a hex, which counts as cited.
  *
  * Rationale: forcing every neutral step to be name-dropped in decision
  * prose was over-citing prose for no reader benefit. Role bindings are
- * the load-bearing place a hex earns its keep.
+ * the load-bearing place a hex earns its keep — and the propagation
+ * makes named slots equivalent to inline hexes for citation purposes.
  */
 function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
@@ -221,28 +225,28 @@ function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
     .join("\n")
     .toLowerCase();
   const roleText = collectRoleHexCitations(fp);
+  const slugCitedHexes = collectSlugBoundHexes(fp);
   const haystack = `${evidenceText}\n${decisionText}\n${roleText}`;
 
   for (const hex of paletteHexes) {
-    if (!haystack.includes(hex)) {
-      issues.push({
-        severity: "info",
-        rule: "unused-palette",
-        message: `Palette color ${hex} is not cited in any decision or role binding.`,
-      });
-    }
+    if (haystack.includes(hex)) continue;
+    if (slugCitedHexes.has(hex)) continue;
+    issues.push({
+      severity: "info",
+      rule: "unused-palette",
+      message: `Palette color ${hex} is not cited in any decision or role binding.`,
+    });
   }
 }
 
 /**
  * Collect every hex citation reachable from `roles[]`:
- *   - direct hex literals in `roles[].tokens.palette.{background,foreground,border}`
+ *   - direct hex literals in `roles[].tokens.palette.<slot>` for any slot key
  *   - any hex that appears inline in a `roles[].evidence` bullet
  *
  * Returns one big lowercase string so the caller can run substring
- * checks against it. References (`{palette.dominant.accent}`) are
- * skipped — they resolve through the palette, which is itself the
- * source we're checking.
+ * checks against it. Local references (`{palette.dominant.accent}`) are
+ * resolved separately by `collectSlugBoundHexes`.
  */
 function collectRoleHexCitations(fp: Expression): string {
   const out: string[] = [];
@@ -250,8 +254,7 @@ function collectRoleHexCitations(fp: Expression): string {
   for (const role of fp.roles ?? []) {
     const palette = role.tokens?.palette;
     if (palette) {
-      for (const field of ROLE_PALETTE_FIELDS) {
-        const value = palette[field];
+      for (const value of Object.values(palette)) {
         if (typeof value === "string" && HEX_LITERAL.test(value)) {
           out.push(value.toLowerCase());
         }
@@ -262,6 +265,31 @@ function collectRoleHexCitations(fp: Expression): string {
     }
   }
   return out.join("\n");
+}
+
+/**
+ * Walk `roles[].tokens.palette` for `{palette.dominant.X}` /
+ * `{palette.semantic.X}` references and return the set of palette hexes
+ * those references resolve to. Used by `unused-palette` so a hex cited
+ * only via a slug binding still counts as used.
+ *
+ * Unresolvable references are silently skipped — the dedicated
+ * `broken-role-reference` rule reports those.
+ */
+function collectSlugBoundHexes(fp: Expression): Set<string> {
+  const out = new Set<string>();
+  for (const role of fp.roles ?? []) {
+    const palette = role.tokens?.palette;
+    if (!palette) continue;
+    for (const value of Object.values(palette)) {
+      if (!isTokenReference(value)) continue;
+      const result = resolveTokenReference(fp, value);
+      if (result.value) {
+        out.add(result.value.toLowerCase());
+      }
+    }
+  }
+  return out;
 }
 
 function collectPaletteHexes(fp: Expression): Set<string> {
