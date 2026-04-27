@@ -52,7 +52,7 @@ Frontmatter is the machine layer (consumed by other Ghost tools). Body is three 
 | `package_manifests` | `string[]` | canonical manifests at the root and any expanded workspace dirs (`packages/*`, `apps/*`, `libs/*`, `common/*`). Root entries are basenames; workspace entries are POSIX-relative. |
 | `composition.frameworks` | `[{name, version?}]` | detected frameworks |
 | `composition.rendering` | string | primary rendering layer |
-| `composition.styling` | `string[]` | ordered; first is primary, rest coexist meaningfully |
+| `composition.styling` | `string[]` | ordered; first is primary, rest coexist meaningfully. For token-pipeline repos where the source-of-truth is JSON/YAML and no rendering style is "primary," list the *output* styles ordered by source-style first (e.g. `[design-tokens-json, css-custom-properties, swift-uikit, kotlin-compose]`). |
 | `composition.navigation` | string? | optional |
 | `registry` | `{path, components}?` | shadcn-style registry; null when absent |
 | `design_system.paths` | `string[]` | directories holding tokens/theme/primitives |
