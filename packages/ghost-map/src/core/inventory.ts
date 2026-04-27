@@ -13,28 +13,57 @@ import type {
  *
  * These are matched against immediate children of the root only — nested
  * manifests live in `language_histogram` / `top_level_tree` instead.
+ *
+ * The list aims to be OSS-generalizable across the major language
+ * ecosystems an agent might encounter. Organization-specific manifests
+ * (kochiku.yml, .sqiosbuild.json, …) are deliberately omitted.
  */
 const PACKAGE_MANIFEST_NAMES = [
+  // Node / web
   "package.json",
+  // Rust
   "Cargo.toml",
+  // Python
   "pyproject.toml",
-  "go.mod",
-  "Package.swift",
   "Pipfile",
+  "setup.py",
+  // Go
+  "go.mod",
+  // Swift / iOS
+  "Package.swift",
+  "Package.resolved",
+  // Flutter / Dart
   "pubspec.yaml",
+  // JVM — Maven
   "pom.xml",
-  // Gradle manifests
+  // JVM — Gradle
   "settings.gradle",
   "settings.gradle.kts",
   "build.gradle",
   "build.gradle.kts",
+  // JVM — Bazel
+  "WORKSPACE",
+  "WORKSPACE.bazel",
+  "MODULE.bazel",
+  "BUILD.bazel",
+  ".bazelversion",
+  // Ruby
+  "Gemfile",
+  "Gemfile.lock",
+  // Elixir
+  "mix.exs",
+  // PHP
+  "composer.json",
 ] as const;
 
 /**
  * Regex matchers for less-stable manifest names. Files matching at the root
  * are added to `package_manifests`.
  */
-const PACKAGE_MANIFEST_PATTERNS: RegExp[] = [/\.podspec$/];
+const PACKAGE_MANIFEST_PATTERNS: RegExp[] = [
+  /\.podspec$/, // CocoaPods (iOS)
+  /\.gemspec$/, // RubyGems
+];
 
 /**
  * Config files we look for anywhere under the root (depth-limited).
@@ -109,32 +138,95 @@ const EXTENSION_TO_LANGUAGE: Record<string, string> = {
   zsh: "shell",
 };
 
-/** Directories we don't walk into when computing histograms / configs. */
+/**
+ * Directories we don't walk into when computing histograms / configs.
+ *
+ * Universal build/cache patterns only — anything organization-specific
+ * stays out. Bazel symlink directories (`bazel-bin`, `bazel-out`,
+ * `bazel-testlogs`, `bazel-<repo-name>`) are skipped via the prefix
+ * check in `walkTree`.
+ */
 const SKIP_DIRS = new Set<string>([
+  // VCS
   ".git",
+  // JS/TS package managers + framework caches
   "node_modules",
-  ".gradle",
-  ".idea",
-  ".vscode",
-  "build",
-  "dist",
-  "target",
-  "out",
-  ".next",
-  ".turbo",
   ".pnpm",
   ".yarn",
+  ".next",
+  ".nuxt",
+  ".svelte-kit",
+  ".turbo",
+  // JVM
+  ".gradle",
+  // IDE / tooling
+  ".idea",
+  ".vscode",
+  ".fleet",
+  // Universal output / build directories
+  "build",
+  "dist",
+  "out",
+  "target", // Rust, Maven, Scala
   "coverage",
+  // Apple
   "Pods",
   "DerivedData",
   ".cxx",
+  // Python
   "__pycache__",
   ".pytest_cache",
   ".mypy_cache",
   ".tox",
+  "venv",
+  ".venv",
+  // Go modules / Composer / generic vendor
   "vendor",
+  // C# / .NET
   "bin",
   "obj",
+]);
+
+/**
+ * Directory-name prefixes that indicate a build/output tree.
+ *
+ * Distinct from `SKIP_DIRS` because they're not exact names. Notably:
+ *   - Bazel emits `bazel-bin`, `bazel-out`, `bazel-testlogs`,
+ *     `bazel-<repo-name>` symlinks at the workspace root.
+ *   - Frameworks like Astro emit `dist-*` siblings.
+ */
+const SKIP_DIR_PREFIXES: readonly string[] = ["bazel-", "dist-"];
+
+/**
+ * Directory basenames that signal a token / theme pipeline lives there.
+ * Matched anywhere in the walked tree (not just at root). Generalizable
+ * across web, native, and design-token-pipeline repos.
+ */
+const TOKEN_DIR_BASENAMES = new Set<string>([
+  "tokens",
+  "design-tokens",
+  "design_tokens",
+  "theme",
+  "themes",
+]);
+
+/**
+ * Path segments that indicate a file lives under a design-system tree.
+ * Used to score `candidate_config_files` so DS-ancestor matches surface
+ * before incidental hits in feature folders.
+ *
+ * Lowercase comparison — segments are normalized before matching.
+ */
+const DS_ANCESTOR_SEGMENTS: ReadonlySet<string> = new Set([
+  "design-system",
+  "design_system",
+  "designsystem",
+  "tokens",
+  "design-tokens",
+  "design_tokens",
+  "theme",
+  "themes",
+  "styles",
 ]);
 
 /** Cap how many files we keep in the histogram output. */
@@ -150,14 +242,31 @@ export function inventory(path: string): InventoryOutput {
   const root = resolve(path);
 
   const packageManifests = collectRootManifests(root);
-  const platformHints = derivePlatformHints(packageManifests);
 
   const walkResult = walkTree(root);
   const languageHistogram = topLanguages(walkResult.languageCounts);
-  const candidateConfigFiles = sortRelative(walkResult.configFiles, root);
+  const candidateConfigFiles = orderConfigCandidates(
+    walkResult.configFiles,
+    root,
+  );
   const registryFiles = sortRelative(walkResult.registryFiles, root);
   const topLevelTree = readTopLevel(root);
   const git = readGit(root);
+
+  // Token directories surface as additional config candidates so the
+  // recipe can find directory-shaped token graphs without a separate scan.
+  for (const tokenDir of orderConfigCandidates(walkResult.tokenDirs, root)) {
+    const withSlash = tokenDir.endsWith("/") ? tokenDir : `${tokenDir}/`;
+    if (!candidateConfigFiles.includes(withSlash)) {
+      candidateConfigFiles.push(withSlash);
+    }
+  }
+
+  const platformHints = derivePlatformHints(
+    packageManifests,
+    languageHistogram,
+    walkResult,
+  );
 
   return {
     root,
@@ -176,12 +285,21 @@ interface WalkResult {
   languageCounts: Map<string, number>;
   configFiles: string[];
   registryFiles: string[];
+  /** Directories whose basename matched a token-pipeline pattern. */
+  tokenDirs: string[];
+  /** True if any `AndroidManifest.xml` was found under the root. */
+  hasAndroidManifest: boolean;
+  /** True if any `*.xcodeproj/project.pbxproj` was found under the root. */
+  hasXcodeProject: boolean;
 }
 
 function walkTree(root: string): WalkResult {
   const languageCounts = new Map<string, number>();
   const configFiles: string[] = [];
   const registryFiles: string[] = [];
+  const tokenDirs: string[] = [];
+  let hasAndroidManifest = false;
+  let hasXcodeProject = false;
 
   const stack: string[] = [root];
   while (stack.length > 0) {
@@ -199,8 +317,23 @@ function walkTree(root: string): WalkResult {
       const full = join(dir, entry.name);
       if (entry.isSymbolicLink()) continue;
       if (entry.isDirectory()) {
-        if (SKIP_DIRS.has(entry.name)) continue;
+        if (shouldSkipDir(entry.name)) continue;
         if (entry.name.startsWith(".") && entry.name !== ".") continue;
+        // Token-pipeline directories — record then continue walking so any
+        // tokens.json / colors.json inside still flows through the file
+        // matchers below.
+        if (TOKEN_DIR_BASENAMES.has(entry.name.toLowerCase())) {
+          tokenDirs.push(full);
+        }
+        // *.xcodeproj/project.pbxproj — recognize as an iOS project.
+        if (entry.name.endsWith(".xcodeproj")) {
+          try {
+            statSync(join(full, "project.pbxproj"));
+            hasXcodeProject = true;
+          } catch {
+            // not a real Xcode project — keep walking
+          }
+        }
         stack.push(full);
         continue;
       }
@@ -222,10 +355,28 @@ function walkTree(root: string): WalkResult {
       if (entry.name === "registry.json") {
         registryFiles.push(full);
       }
+      if (entry.name === "AndroidManifest.xml") {
+        hasAndroidManifest = true;
+      }
     }
   }
 
-  return { languageCounts, configFiles, registryFiles };
+  return {
+    languageCounts,
+    configFiles,
+    registryFiles,
+    tokenDirs,
+    hasAndroidManifest,
+    hasXcodeProject,
+  };
+}
+
+function shouldSkipDir(name: string): boolean {
+  if (SKIP_DIRS.has(name)) return true;
+  for (const prefix of SKIP_DIR_PREFIXES) {
+    if (name.startsWith(prefix)) return true;
+  }
+  return false;
 }
 
 function matchesConfig(name: string): boolean {
@@ -276,14 +427,55 @@ function collectRootManifests(root: string): string[] {
   return found.sort();
 }
 
-function derivePlatformHints(manifests: string[]): string[] {
+/**
+ * Derive coarse platform hints from manifest presence + the language
+ * histogram + walk signals.
+ *
+ * Manifests give cheap, exact signal (Bazel WORKSPACE → JVM build,
+ * pubspec.yaml → Flutter). Histograms cover repos where the manifest
+ * doesn't exist or doesn't disambiguate (a Bazel monorepo of Swift
+ * targets is "ios"; a Bazel monorepo of Kotlin targets is "android"
+ * — the manifest alone can't tell us which).
+ *
+ * Cases this deliberately does not try to disambiguate:
+ *   - Kotlin Multiplatform (Swift + Kotlin balanced) — both `ios` and
+ *     `android` will fire; the recipe is expected to pick `mixed`.
+ *   - React Native (TS dominant + native shells) — surfaces as `web`
+ *     today; future: detect `ios/`, `android/` shell directories.
+ *   - .NET MAUI (C# + XAML) — no special handling.
+ *   - Tauri / Electron (web stack with Rust/native shell) — surfaces
+ *     as `web` plus `rust`; the recipe judges from there.
+ *
+ * The output is intentionally a deduped sorted list of *hints*, not a
+ * single platform — `map.md`'s `platform:` enum is the recipe's call.
+ */
+function derivePlatformHints(
+  manifests: string[],
+  languageHistogram: LanguageHistogramEntry[],
+  walk: WalkResult,
+): string[] {
   const hints = new Set<string>();
+
+  // Manifest-driven hints (cheap, exact).
   for (const m of manifests) {
     if (m === "package.json") hints.add("web");
     if (m === "Cargo.toml") hints.add("rust");
     if (m === "go.mod") hints.add("go");
-    if (m === "pyproject.toml" || m === "Pipfile") hints.add("python");
-    if (m === "Package.swift" || m.endsWith(".podspec")) hints.add("ios");
+    if (m === "pyproject.toml" || m === "Pipfile" || m === "setup.py") {
+      hints.add("python");
+    }
+    if (m === "Gemfile" || m === "Gemfile.lock" || m.endsWith(".gemspec")) {
+      hints.add("ruby");
+    }
+    if (m === "mix.exs") hints.add("elixir");
+    if (m === "composer.json") hints.add("php");
+    if (
+      m === "Package.swift" ||
+      m === "Package.resolved" ||
+      m.endsWith(".podspec")
+    ) {
+      hints.add("ios");
+    }
     if (m === "pom.xml") hints.add("jvm");
     if (m === "pubspec.yaml") hints.add("flutter");
     if (
@@ -294,7 +486,69 @@ function derivePlatformHints(manifests: string[]): string[] {
     ) {
       hints.add("android");
     }
+    // Bazel manifests don't disambiguate platform on their own — they
+    // just say "this is a Bazel build." Pair with the language histogram.
+    if (
+      m === "WORKSPACE" ||
+      m === "WORKSPACE.bazel" ||
+      m === "MODULE.bazel" ||
+      m === "BUILD.bazel" ||
+      m === ".bazelversion"
+    ) {
+      hints.add("bazel");
+    }
   }
+
+  // Language-histogram-driven hints — only kick in when manifests aren't
+  // already conclusive. Threshold: language must hold >40% of tracked
+  // files for its platform to register.
+  const totalFiles = languageHistogram.reduce((acc, l) => acc + l.files, 0);
+  if (totalFiles > 0) {
+    const share = (langName: string): number => {
+      const entry = languageHistogram.find((l) => l.name === langName);
+      return entry ? entry.files / totalFiles : 0;
+    };
+
+    const swiftShare = share("swift");
+    const kotlinShare = share("kotlin") + share("java"); // Android stack
+    const dartShare = share("dart");
+
+    // Swift dominant + iOS-build evidence (SPM, Xcode, Bazel) → ios.
+    const hasSpm = manifests.includes("Package.swift");
+    if (
+      swiftShare > 0.4 &&
+      (hasSpm || walk.hasXcodeProject || hints.has("bazel"))
+    ) {
+      hints.add("ios");
+    }
+
+    // Kotlin/Java dominant + Gradle + AndroidManifest → android.
+    const hasGradle =
+      manifests.includes("build.gradle") ||
+      manifests.includes("build.gradle.kts") ||
+      manifests.includes("settings.gradle") ||
+      manifests.includes("settings.gradle.kts");
+    if (
+      kotlinShare > 0.4 &&
+      walk.hasAndroidManifest &&
+      (hasGradle || hints.has("bazel"))
+    ) {
+      hints.add("android");
+    }
+
+    // Dart dominant + pubspec → flutter (covers cases where manifest set
+    // alone wasn't conclusive — e.g. a workspace with multiple manifests).
+    if (dartShare > 0.4 && manifests.includes("pubspec.yaml")) {
+      hints.add("flutter");
+    }
+  }
+
+  // Multiple distinct platform signals → also tag `mixed` so the recipe
+  // can pick `platform: mixed` without relitigating the histogram.
+  const platformish = new Set<string>(["web", "ios", "android", "flutter"]);
+  const platformHits = [...hints].filter((h) => platformish.has(h));
+  if (platformHits.length >= 2) hints.add("mixed");
+
   return [...hints].sort();
 }
 
@@ -308,6 +562,12 @@ function readTopLevel(root: string): TopLevelEntry[] {
   const out: TopLevelEntry[] = [];
   for (const entry of entries) {
     if (entry.isDirectory()) {
+      // Skip universal build/cache directories so the tree summary stays
+      // signal-rich. Hidden dirs (starting with `.`) are also excluded
+      // unless they're the canonical Bazel marker (`.bazelversion` is a
+      // file, not a dir, so this is just consistency with the walker).
+      if (shouldSkipDir(entry.name)) continue;
+      if (entry.name.startsWith(".") && entry.name !== ".") continue;
       const childPath = join(root, entry.name);
       let childCount = 0;
       try {
@@ -380,4 +640,49 @@ function sortRelative(absPaths: string[], root: string): string[] {
     .map((p) => relative(root, p).split(sep).join("/"))
     .sort()
     .filter((v, i, arr) => arr.indexOf(v) === i);
+}
+
+/**
+ * Order candidate config files so design-system-anchored matches surface
+ * before incidental hits in feature folders. Within the same tier, paths
+ * sort lexicographically so output stays deterministic.
+ *
+ * A path's tier is the depth of its first DS-ancestor segment counted
+ * from the root (lower is better). Files with no DS ancestor land in the
+ * "no-ancestor" tier last.
+ */
+function orderConfigCandidates(absPaths: string[], root: string): string[] {
+  const rels = absPaths
+    .map((p) => relative(root, p).split(sep).join("/"))
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+
+  return rels.sort((a, b) => {
+    const da = dsAncestorDepth(a);
+    const db = dsAncestorDepth(b);
+    if (da !== db) {
+      // Both have an ancestor → shallower wins. One has none → that side
+      // sorts last (depth = +Infinity).
+      return da - db;
+    }
+    return a.localeCompare(b);
+  });
+}
+
+/**
+ * Return the 1-based depth of the first design-system ancestor segment in
+ * a relative path, or +Infinity if no segment matches.
+ *
+ *   `tokens/colors.json`         → 1
+ *   `src/styles/tokens.css`      → 2 (matches `styles`)
+ *   `Code/DesignSystem/Theme.kt` → 2 (matches `designsystem`)
+ *   `app/Color+Brand.swift`      → +Infinity
+ */
+function dsAncestorDepth(relPath: string): number {
+  const segments = relPath.split("/");
+  // Walk parent segments only — the basename is the file itself.
+  for (let i = 0; i < segments.length - 1; i++) {
+    const norm = segments[i].toLowerCase();
+    if (DS_ANCESTOR_SEGMENTS.has(norm)) return i + 1;
+  }
+  return Number.POSITIVE_INFINITY;
 }
