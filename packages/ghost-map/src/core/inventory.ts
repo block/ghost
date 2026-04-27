@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { type Dirent, readdirSync, statSync } from "node:fs";
+import { type Dirent, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import type {
   GitInfo,
@@ -89,7 +89,21 @@ const CONFIG_FILE_PATTERNS: RegExp[] = [
   /^vite\.config\.[cm]?[jt]sx?$/,
   /^next\.config\.[cm]?[jt]sx?$/,
   /^Color\+.+\.swift$/,
+  // Style Dictionary token-pipeline config — JS/TS/JSON variants seen in
+  // real repos. Matched anywhere because monorepos may stash it under
+  // `tokens/`, `packages/tokens/`, etc.
+  /^style-dictionary\.config\.[cm]?[jt]sx?$/,
+  /^style-dictionary\.config\.json$/,
 ];
+
+/** Basenames that indicate a Style Dictionary token pipeline lives nearby. */
+const STYLE_DICTIONARY_FILES = new Set<string>([
+  "style-dictionary.config.js",
+  "style-dictionary.config.cjs",
+  "style-dictionary.config.mjs",
+  "style-dictionary.config.ts",
+  "style-dictionary.config.json",
+]);
 
 /** Language-name lookup keyed by lowercase extension (no leading dot). */
 const EXTENSION_TO_LANGUAGE: Record<string, string> = {
@@ -241,7 +255,7 @@ const HISTOGRAM_TOP_N = 20;
 export function inventory(path: string): InventoryOutput {
   const root = resolve(path);
 
-  const packageManifests = collectRootManifests(root);
+  const packageManifests = collectAllManifests(root);
 
   const walkResult = walkTree(root);
   const languageHistogram = topLanguages(walkResult.languageCounts);
@@ -267,10 +281,12 @@ export function inventory(path: string): InventoryOutput {
     languageHistogram,
     walkResult,
   );
+  const buildSystemHints = deriveBuildSystemHints(packageManifests, walkResult);
 
   return {
     root,
     platform_hints: platformHints,
+    build_system_hints: buildSystemHints,
     language_histogram: languageHistogram,
     package_manifests: packageManifests,
     candidate_config_files: candidateConfigFiles,
@@ -291,6 +307,8 @@ interface WalkResult {
   hasAndroidManifest: boolean;
   /** True if any `*.xcodeproj/project.pbxproj` was found under the root. */
   hasXcodeProject: boolean;
+  /** True if any `style-dictionary.config.*` was found under the root. */
+  hasStyleDictionary: boolean;
 }
 
 function walkTree(root: string): WalkResult {
@@ -300,6 +318,7 @@ function walkTree(root: string): WalkResult {
   const tokenDirs: string[] = [];
   let hasAndroidManifest = false;
   let hasXcodeProject = false;
+  let hasStyleDictionary = false;
 
   const stack: string[] = [root];
   while (stack.length > 0) {
@@ -358,6 +377,9 @@ function walkTree(root: string): WalkResult {
       if (entry.name === "AndroidManifest.xml") {
         hasAndroidManifest = true;
       }
+      if (STYLE_DICTIONARY_FILES.has(entry.name)) {
+        hasStyleDictionary = true;
+      }
     }
   }
 
@@ -368,6 +390,7 @@ function walkTree(root: string): WalkResult {
     tokenDirs,
     hasAndroidManifest,
     hasXcodeProject,
+    hasStyleDictionary,
   };
 }
 
@@ -403,28 +426,244 @@ function topLanguages(counts: Map<string, number>): LanguageHistogramEntry[] {
     .slice(0, HISTOGRAM_TOP_N);
 }
 
-function collectRootManifests(root: string): string[] {
+/**
+ * Conventional one-level workspace directories scanned in addition to the
+ * root. Real monorepos place per-app / per-package manifests here; the
+ * inventory surfaces them so the recipe can see the full workspace shape
+ * without re-walking the tree.
+ */
+const CONVENTIONAL_WORKSPACE_DIRS = [
+  "apps",
+  "packages",
+  "libs",
+  "common",
+] as const;
+
+/**
+ * Collect package manifests from the root plus any workspace directories
+ * we can identify (via `package.json:workspaces` and the conventional
+ * `apps/`, `packages/`, `libs/`, `common/` layout).
+ *
+ * - Root manifests are returned by basename (`package.json`).
+ * - Nested manifests are returned as POSIX-style relative paths
+ *   (`packages/foo/package.json`) so they're distinguishable.
+ * - Results are deduped by absolute path, sorted lexicographically.
+ * - The walk does NOT recurse beyond one level under each scanned
+ *   workspace dir — we're surfacing the obvious shape, not crawling.
+ */
+function collectAllManifests(root: string): string[] {
+  const seenAbs = new Set<string>();
+  const out: string[] = [];
+
+  // Root manifests first — basename-only for backcompat with existing
+  // callers and tests.
+  for (const name of collectManifestBasenames(root)) {
+    const abs = join(root, name);
+    if (seenAbs.has(abs)) continue;
+    seenAbs.add(abs);
+    out.push(name);
+  }
+
+  // Workspace directories — both `package.json:workspaces` and the
+  // conventional `apps/`, `packages/`, `libs/`, `common/` layout.
+  const workspaceDirs = expandWorkspaceDirs(root);
+  for (const dir of workspaceDirs) {
+    const absDir = resolve(root, dir);
+    // Stay inside `root` — defensive against pathological globs.
+    if (!isInsideRoot(absDir, root)) continue;
+    if (shouldSkipDir(basenameOf(absDir))) continue;
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      if (!isManifestName(entry.name)) continue;
+      const abs = join(absDir, entry.name);
+      if (seenAbs.has(abs)) continue;
+      seenAbs.add(abs);
+      out.push(toPosixRel(root, abs));
+    }
+  }
+
+  return out.sort();
+}
+
+function collectManifestBasenames(dir: string): string[] {
   let entries: Dirent[];
   try {
-    entries = readdirSync(root, { withFileTypes: true });
+    entries = readdirSync(dir, { withFileTypes: true });
   } catch {
     return [];
   }
   const found: string[] = [];
   for (const entry of entries) {
     if (!entry.isFile()) continue;
-    if ((PACKAGE_MANIFEST_NAMES as readonly string[]).includes(entry.name)) {
-      found.push(entry.name);
-      continue;
-    }
-    for (const pattern of PACKAGE_MANIFEST_PATTERNS) {
-      if (pattern.test(entry.name)) {
-        found.push(entry.name);
-        break;
-      }
-    }
+    if (isManifestName(entry.name)) found.push(entry.name);
   }
   return found.sort();
+}
+
+function isManifestName(name: string): boolean {
+  if ((PACKAGE_MANIFEST_NAMES as readonly string[]).includes(name)) return true;
+  for (const pattern of PACKAGE_MANIFEST_PATTERNS) {
+    if (pattern.test(name)) return true;
+  }
+  return false;
+}
+
+/**
+ * Resolve workspace directories to scan (one level only). Returns POSIX
+ * relative paths to the inventory root; never the root itself.
+ *
+ * Two sources, both honored, results deduped:
+ *   - `package.json:workspaces` (array form OR `{ packages: [] }` form)
+ *   - Conventional `apps/`, `packages/`, `libs/`, `common/` — each
+ *     immediate child of those dirs is a candidate workspace.
+ *
+ * Globs in `workspaces` are expanded with a tiny matcher that supports
+ * the patterns real repos actually use (`packages/*`, `apps/*`, plain
+ * dir paths). Anything more elaborate (`**`, brace expansion) is
+ * intentionally not supported — a recipe-level workspace crawl is out
+ * of scope for inventory.
+ */
+function expandWorkspaceDirs(root: string): string[] {
+  const dirs = new Set<string>();
+
+  // 1. package.json workspaces, if any.
+  for (const dir of readPackageJsonWorkspaces(root)) {
+    dirs.add(dir);
+  }
+
+  // 2. Conventional dirs — apps/*, packages/*, libs/*, common/*.
+  for (const parent of CONVENTIONAL_WORKSPACE_DIRS) {
+    const parentAbs = join(root, parent);
+    let entries: Dirent[];
+    try {
+      entries = readdirSync(parentAbs, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (shouldSkipDir(entry.name)) continue;
+      if (entry.name.startsWith(".")) continue;
+      dirs.add(`${parent}/${entry.name}`);
+    }
+  }
+
+  return [...dirs].sort();
+}
+
+function readPackageJsonWorkspaces(root: string): string[] {
+  const pkgPath = join(root, "package.json");
+  let raw: string;
+  try {
+    raw = readFileSync(pkgPath, "utf-8");
+  } catch {
+    return [];
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+  if (!parsed || typeof parsed !== "object") return [];
+  const workspaces = (parsed as { workspaces?: unknown }).workspaces;
+  const patterns = normalizeWorkspacePatterns(workspaces);
+  if (patterns.length === 0) return [];
+
+  const out = new Set<string>();
+  for (const pattern of patterns) {
+    for (const dir of expandWorkspacePattern(root, pattern)) {
+      out.add(dir);
+    }
+  }
+  return [...out];
+}
+
+function normalizeWorkspacePatterns(value: unknown): string[] {
+  // Accept array form (`["packages/*"]`) and object form
+  // (`{ packages: ["packages/*"] }`).
+  if (Array.isArray(value)) {
+    return value.filter((v): v is string => typeof v === "string");
+  }
+  if (value && typeof value === "object") {
+    const obj = value as { packages?: unknown };
+    if (Array.isArray(obj.packages)) {
+      return obj.packages.filter((v): v is string => typeof v === "string");
+    }
+  }
+  return [];
+}
+
+/**
+ * Tiny single-segment glob matcher for workspace patterns. Supports:
+ *   - `packages/*`  → every immediate child of `packages/`
+ *   - `apps/*`      → ditto
+ *   - `tools/foo`   → exact path (no wildcard)
+ *
+ * Multi-segment globs (`**`, `*\/*\/...`) are deliberately unsupported —
+ * the recipe escalates to a real workspace crawler when needed.
+ */
+function expandWorkspacePattern(root: string, pattern: string): string[] {
+  const cleaned = pattern.replace(/\\/g, "/").replace(/\/+$/, "");
+  if (cleaned.length === 0) return [];
+  if (!cleaned.includes("*")) {
+    // Plain path — accept only if it resolves to an existing directory.
+    const abs = join(root, cleaned);
+    try {
+      if (statSync(abs).isDirectory()) return [cleaned];
+    } catch {
+      // missing dir — skip silently
+    }
+    return [];
+  }
+
+  // Single trailing wildcard: `<parent>/*` is the only supported shape.
+  const lastSlash = cleaned.lastIndexOf("/");
+  if (lastSlash === -1) return [];
+  const parent = cleaned.slice(0, lastSlash);
+  const tail = cleaned.slice(lastSlash + 1);
+  if (tail !== "*") return [];
+
+  const parentAbs = join(root, parent);
+  let entries: Dirent[];
+  try {
+    entries = readdirSync(parentAbs, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out: string[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (shouldSkipDir(entry.name)) continue;
+    if (entry.name.startsWith(".")) continue;
+    out.push(`${parent}/${entry.name}`);
+  }
+  return out;
+}
+
+function basenameOf(absPath: string): string {
+  const idx = absPath.lastIndexOf(sep);
+  return idx === -1 ? absPath : absPath.slice(idx + 1);
+}
+
+function isInsideRoot(absPath: string, root: string): boolean {
+  const rel = relative(root, absPath);
+  return (
+    rel.length > 0 &&
+    !rel.startsWith("..") &&
+    !rel.startsWith(`..${sep}`) &&
+    rel !== ".."
+  );
+}
+
+function toPosixRel(root: string, abs: string): string {
+  return relative(root, abs).split(sep).join("/");
 }
 
 /**
@@ -456,8 +695,14 @@ function derivePlatformHints(
 ): string[] {
   const hints = new Set<string>();
 
-  // Manifest-driven hints (cheap, exact).
-  for (const m of manifests) {
+  // Manifest-driven hints (cheap, exact). Compare basenames so workspace-
+  // expanded entries (`packages/foo/package.json`) still match the same
+  // signal as a root `package.json`.
+  const basenames = manifests.map((m) => {
+    const idx = m.lastIndexOf("/");
+    return idx === -1 ? m : m.slice(idx + 1);
+  });
+  for (const m of basenames) {
     if (m === "package.json") hints.add("web");
     if (m === "Cargo.toml") hints.add("rust");
     if (m === "go.mod") hints.add("go");
@@ -502,6 +747,7 @@ function derivePlatformHints(
   // Language-histogram-driven hints — only kick in when manifests aren't
   // already conclusive. Threshold: language must hold >40% of tracked
   // files for its platform to register.
+  const basenameSet = new Set(basenames);
   const totalFiles = languageHistogram.reduce((acc, l) => acc + l.files, 0);
   if (totalFiles > 0) {
     const share = (langName: string): number => {
@@ -514,7 +760,7 @@ function derivePlatformHints(
     const dartShare = share("dart");
 
     // Swift dominant + iOS-build evidence (SPM, Xcode, Bazel) → ios.
-    const hasSpm = manifests.includes("Package.swift");
+    const hasSpm = basenameSet.has("Package.swift");
     if (
       swiftShare > 0.4 &&
       (hasSpm || walk.hasXcodeProject || hints.has("bazel"))
@@ -524,10 +770,10 @@ function derivePlatformHints(
 
     // Kotlin/Java dominant + Gradle + AndroidManifest → android.
     const hasGradle =
-      manifests.includes("build.gradle") ||
-      manifests.includes("build.gradle.kts") ||
-      manifests.includes("settings.gradle") ||
-      manifests.includes("settings.gradle.kts");
+      basenameSet.has("build.gradle") ||
+      basenameSet.has("build.gradle.kts") ||
+      basenameSet.has("settings.gradle") ||
+      basenameSet.has("settings.gradle.kts");
     if (
       kotlinShare > 0.4 &&
       walk.hasAndroidManifest &&
@@ -538,7 +784,7 @@ function derivePlatformHints(
 
     // Dart dominant + pubspec → flutter (covers cases where manifest set
     // alone wasn't conclusive — e.g. a workspace with multiple manifests).
-    if (dartShare > 0.4 && manifests.includes("pubspec.yaml")) {
+    if (dartShare > 0.4 && basenameSet.has("pubspec.yaml")) {
       hints.add("flutter");
     }
   }
@@ -548,6 +794,78 @@ function derivePlatformHints(
   const platformish = new Set<string>(["web", "ios", "android", "flutter"]);
   const platformHits = [...hints].filter((h) => platformish.has(h));
   if (platformHits.length >= 2) hints.add("mixed");
+
+  return [...hints].sort();
+}
+
+/**
+ * Derive coarse build-system hints from manifest presence + walk signals.
+ *
+ * Informational only — the recipe authors the authoritative
+ * `build_system` value in `map.md`. The hints exist so the recipe doesn't
+ * need to re-scan manifests to know what build systems coexist.
+ *
+ * Hint values are drawn from the `build_system` enum so the recipe can
+ * pass them through verbatim when appropriate.
+ */
+function deriveBuildSystemHints(
+  manifests: string[],
+  walk: WalkResult,
+): string[] {
+  const hints = new Set<string>();
+  const basenames = manifests.map((m) => {
+    const idx = m.lastIndexOf("/");
+    return idx === -1 ? m : m.slice(idx + 1);
+  });
+
+  for (const m of basenames) {
+    if (m === "package.json") {
+      // package.json alone can't disambiguate npm/pnpm/yarn — the recipe
+      // resolves that via lockfile presence. Skip a hint here.
+    }
+    if (
+      m === "settings.gradle" ||
+      m === "settings.gradle.kts" ||
+      m === "build.gradle" ||
+      m === "build.gradle.kts"
+    ) {
+      hints.add("gradle");
+    }
+    if (
+      m === "WORKSPACE" ||
+      m === "WORKSPACE.bazel" ||
+      m === "MODULE.bazel" ||
+      m === "BUILD.bazel" ||
+      m === ".bazelversion"
+    ) {
+      hints.add("bazel");
+    }
+    if (
+      m === "Package.swift" ||
+      m === "Package.resolved" ||
+      m.endsWith(".podspec")
+    ) {
+      // SPM is the canonical Swift manifest — `xcode` is the IDE/build
+      // system, surfaced separately when an .xcodeproj is present.
+      hints.add("xcode");
+    }
+    if (m === "Cargo.toml") hints.add("cargo");
+    if (m === "go.mod") hints.add("go");
+    if (m === "pom.xml") hints.add("maven");
+  }
+
+  if (walk.hasXcodeProject) hints.add("xcode");
+  if (walk.hasStyleDictionary) hints.add("style-dictionary");
+
+  // Lockfile presence to disambiguate npm/pnpm/yarn at the root.
+  // (We only check these at the root — workspace child lockfiles are
+  // unusual and the root is authoritative when present.)
+  // Detected via the manifest list (lockfiles aren't in `manifests` so
+  // these explicit checks happen against the file system separately —
+  // but pnpm-workspace.yaml *is* often shipped alongside `package.json`,
+  // and yarn projects ship `yarn.lock`. We scan top-level filenames
+  // through `manifests` only, so to keep this side-effect-free we don't
+  // add lockfile inference here. The recipe is expected to disambiguate.)
 
   return [...hints].sort();
 }

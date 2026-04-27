@@ -197,6 +197,17 @@ function checkEvidenceHexes(fp: Expression, issues: LintIssue[]): void {
   });
 }
 
+/**
+ * Flag palette colors that don't appear anywhere a reader could justify
+ * them. Phase 4b widens the search beyond decision evidence to include
+ * role bindings: a hex used in a `roles[].evidence` string or referenced
+ * via `roles[].tokens.palette.{background,foreground,border}` is treated
+ * as cited.
+ *
+ * Rationale: forcing every neutral step to be name-dropped in decision
+ * prose was over-citing prose for no reader benefit. Role bindings are
+ * the load-bearing place a hex earns its keep.
+ */
 function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
   if (paletteHexes.size === 0) return;
@@ -209,17 +220,48 @@ function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
     .map((d) => d.decision)
     .join("\n")
     .toLowerCase();
-  const haystack = `${evidenceText}\n${decisionText}`;
+  const roleText = collectRoleHexCitations(fp);
+  const haystack = `${evidenceText}\n${decisionText}\n${roleText}`;
 
   for (const hex of paletteHexes) {
     if (!haystack.includes(hex)) {
       issues.push({
         severity: "info",
         rule: "unused-palette",
-        message: `Palette color ${hex} is not cited in any decision.`,
+        message: `Palette color ${hex} is not cited in any decision or role binding.`,
       });
     }
   }
+}
+
+/**
+ * Collect every hex citation reachable from `roles[]`:
+ *   - direct hex literals in `roles[].tokens.palette.{background,foreground,border}`
+ *   - any hex that appears inline in a `roles[].evidence` bullet
+ *
+ * Returns one big lowercase string so the caller can run substring
+ * checks against it. References (`{palette.dominant.accent}`) are
+ * skipped — they resolve through the palette, which is itself the
+ * source we're checking.
+ */
+function collectRoleHexCitations(fp: Expression): string {
+  const out: string[] = [];
+  const HEX_LITERAL = /^#[0-9a-f]{3,8}$/i;
+  for (const role of fp.roles ?? []) {
+    const palette = role.tokens?.palette;
+    if (palette) {
+      for (const field of ROLE_PALETTE_FIELDS) {
+        const value = palette[field];
+        if (typeof value === "string" && HEX_LITERAL.test(value)) {
+          out.push(value.toLowerCase());
+        }
+      }
+    }
+    for (const ev of role.evidence ?? []) {
+      out.push(ev.toLowerCase());
+    }
+  }
+  return out.join("\n");
 }
 
 function collectPaletteHexes(fp: Expression): Set<string> {

@@ -155,7 +155,7 @@ describe("buildTokensCss", () => {
       },
       surfaces: {
         borderRadii: [],
-        shadowComplexity: "none",
+        shadowComplexity: "deliberate-none",
         borderUsage: "minimal",
       },
     };

@@ -34,7 +34,16 @@ const TypographySchema = z.object({
 
 const SurfacesSchema = z.object({
   borderRadii: z.array(z.number()),
-  shadowComplexity: z.enum(["none", "subtle", "layered"]),
+  /**
+   * Shadow vocabulary expressed as an explicit choice, not an absence.
+   * `deliberate-none` means "this design language deliberately ships no
+   * shadows" (Material 3 with elevated surface tints, brutalist UIs);
+   * `subtle` is a single-tier shadow scale; `layered` is multi-tier.
+   *
+   * Phase 4b renamed the prior `none` value to `deliberate-none` so the
+   * choice reads as a positive design stance rather than as "we forgot."
+   */
+  shadowComplexity: z.enum(["deliberate-none", "subtle", "layered"]),
   borderUsage: z.enum(["minimal", "moderate", "heavy"]),
   borderTokenCount: z.number().optional(),
 });

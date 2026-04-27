@@ -112,7 +112,7 @@ spacing:
 
 surfaces:
   borderRadii: [8, 12, 16, 32]
-  shadowComplexity: subtle          # none | subtle | layered
+  shadowComplexity: subtle          # deliberate-none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
 # --- expression: role bindings (optional) ---

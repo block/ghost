@@ -218,4 +218,100 @@ roles:
       false,
     );
   });
+
+  it("counts a hex used in a role's evidence string as cited (no unused-palette info)", () => {
+    // The PALETTE_BLOCK ships #c96442, #141413, #4d4c48, #b53333.
+    // A role binding that cites every hex (some in palette field, some
+    // inline in evidence) should silence unused-palette entirely.
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { background: '#c96442', foreground: '#141413' }
+    evidence:
+      - "components/button.tsx using #4d4c48 for hover and #b53333 for danger"`,
+      "",
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "unused-palette")).toBe(false);
+  });
+
+  it("still flags palette colors absent from both decisions and roles", () => {
+    // Add a role that cites only one of the four palette hexes; the
+    // other three should still fire unused-palette as info.
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette: { background: '#c96442' }
+    evidence: ["src/ui/button.tsx:12"]`,
+      "",
+    );
+    const report = lintExpression(md);
+    const unused = report.issues.filter((i) => i.rule === "unused-palette");
+    expect(unused.length).toBeGreaterThan(0);
+    // #c96442 is now cited via the role binding — must NOT appear in
+    // the unused list.
+    expect(unused.some((i) => i.message.includes("#c96442"))).toBe(false);
+  });
+
+  it("accepts shadowComplexity: deliberate-none on the surfaces block", () => {
+    const md = `${HEADER}
+palette:
+  dominant:
+    - { role: accent, value: '#c96442' }
+  neutrals:
+    steps: ['#141413']
+    count: 1
+  semantic:
+    - { role: error, value: '#b53333' }
+  saturationProfile: muted
+  contrast: moderate
+spacing: { scale: [4, 8], baseUnit: 8, regularity: 0.85 }
+typography:
+  families: ['Anthropic Serif']
+  sizeRamp: [14, 16]
+  weightDistribution: { 400: 1 }
+  lineHeightPattern: loose
+surfaces:
+  borderRadii: [8]
+  shadowComplexity: deliberate-none
+  borderUsage: minimal
+embedding: [0]
+---
+`;
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
+  });
+
+  it("rejects the legacy shadowComplexity: none value", () => {
+    const md = `${HEADER}
+palette:
+  dominant:
+    - { role: accent, value: '#c96442' }
+  neutrals:
+    steps: ['#141413']
+    count: 1
+  semantic:
+    - { role: error, value: '#b53333' }
+  saturationProfile: muted
+  contrast: moderate
+spacing: { scale: [4, 8], baseUnit: 8, regularity: 0.85 }
+typography:
+  families: ['Anthropic Serif']
+  sizeRamp: [14, 16]
+  weightDistribution: { 400: 1 }
+  lineHeightPattern: loose
+surfaces:
+  borderRadii: [8]
+  shadowComplexity: none
+  borderUsage: minimal
+embedding: [0]
+---
+`;
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+  });
 });
