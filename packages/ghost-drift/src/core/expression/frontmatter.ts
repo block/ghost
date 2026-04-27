@@ -1,4 +1,4 @@
-import type { Expression } from "../types.js";
+import type { Expression } from "@ghost/core";
 
 /**
  * Expression-level metadata — lives in the frontmatter alongside the

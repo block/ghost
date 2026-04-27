@@ -1,6 +1,6 @@
+import type { CompositeMember, Expression } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import { compareComposite } from "../../src/core/evolution/composite.js";
-import type { CompositeMember, Expression } from "../../src/core/types.js";
 
 function makeCompositeMember(
   id: string,

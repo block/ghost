@@ -1,0 +1,80 @@
+// --- Embedding primitives ---
+export type { CompareOptions, RoleCandidate } from "./embedding/index.js";
+export {
+  classifyContrast,
+  classifySaturation,
+  colorToSemanticColor,
+  compareExpressions,
+  computeDriftVectors,
+  computeEmbedding,
+  computeSemanticEmbedding,
+  contrastScore,
+  DIMENSION_RANGES,
+  describeExpression,
+  embeddingDistance,
+  embedTexts,
+  inferSemanticRole,
+  parseColorToOklch,
+  saturationScore,
+} from "./embedding/index.js";
+
+// --- Skill bundle loader ---
+export type { SkillBundleFile } from "./skill-bundle-loader.js";
+export { loadSkillBundle } from "./skill-bundle-loader.js";
+
+// --- Target resolution ---
+export { resolveTarget } from "./target-resolver.js";
+
+// --- Shared types ---
+export type {
+  ColorRamp,
+  ComponentMeta,
+  CompositeCluster,
+  CompositeComparison,
+  CompositeMember,
+  CompositePair,
+  CSSToken,
+  CSSVarsMap,
+  DesignDecision,
+  DesignObservation,
+  DesignRole,
+  DetectedFormat,
+  DimensionAck,
+  DimensionDelta,
+  DimensionStance,
+  DivergenceClass,
+  DriftVector,
+  DriftVelocity,
+  EmbeddingConfig,
+  EnrichedComparison,
+  EnrichedExpression,
+  Expression,
+  ExpressionComparison,
+  ExpressionHistoryEntry,
+  ExtractedFile,
+  ExtractedMaterial,
+  Extractor,
+  ExtractorOptions,
+  FontDescriptor,
+  GhostConfig,
+  NormalizedToken,
+  Registry,
+  RegistryFile,
+  RegistryItem,
+  RegistryItemType,
+  ResolvedRegistry,
+  RuleSeverity,
+  SampledFile,
+  SampledMaterial,
+  SemanticColor,
+  SourceInfo,
+  StructureDrift,
+  SyncManifest,
+  Target,
+  TargetOptions,
+  TargetType,
+  TemporalComparison,
+  TokenCategory,
+  TokenFormat,
+  ValueDrift,
+} from "./types.js";

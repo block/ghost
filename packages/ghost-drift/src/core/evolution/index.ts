@@ -1,3 +1,4 @@
+export { computeDriftVectors, DIMENSION_RANGES } from "@ghost/core";
 export type { CompositeClusterOptions } from "./composite.js";
 export { compareComposite } from "./composite.js";
 export { emitExpression } from "./emit.js";
@@ -14,4 +15,3 @@ export {
   normalizeTrackedSource,
   resolveTrackedExpression,
 } from "./tracking.js";
-export { computeDriftVectors, DIMENSION_RANGES } from "./vector.js";

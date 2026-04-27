@@ -1,9 +1,9 @@
-import { stringify as stringifyYaml } from "yaml";
 import type {
   DesignDecision,
   DesignObservation,
   Expression,
-} from "../types.js";
+} from "@ghost/core";
+import { stringify as stringifyYaml } from "yaml";
 import { EMBEDDING_FRAGMENT_FILENAME } from "./fragments.js";
 import { type ExpressionMeta, mergeFrontmatter } from "./frontmatter.js";
 

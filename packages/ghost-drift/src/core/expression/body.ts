@@ -1,4 +1,4 @@
-import type { DesignDecision } from "../types.js";
+import type { DesignDecision } from "@ghost/core";
 
 /**
  * Structured read of an expression.md body. The body is authoritative for

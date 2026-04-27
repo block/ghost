@@ -1,13 +1,13 @@
 import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Expression } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import {
   loadExpression,
   parseExpression,
   serializeExpression,
 } from "../../src/core/expression/index.js";
-import type { Expression } from "../../src/core/types.js";
 
 const SAMPLE_EXPRESSION: Expression = {
   id: "claude",
