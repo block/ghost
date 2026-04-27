@@ -49,6 +49,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
+    "@ghost/core": "workspace:*",
     "cac": "^6.7.14",
     "diff": "^7.0.0",
     "jiti": "^2.4.0",

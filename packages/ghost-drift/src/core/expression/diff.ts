@@ -1,4 +1,4 @@
-import type { DesignDecision, Expression } from "../types.js";
+import type { DesignDecision, Expression } from "@ghost/core";
 
 export interface DecisionChange {
   dimension: string;

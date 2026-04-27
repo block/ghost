@@ -1,9 +1,6 @@
+import type { Expression } from "@ghost/core";
+import { computeEmbedding, embeddingDistance } from "@ghost/core";
 import { describe, expect, it } from "vitest";
-import {
-  computeEmbedding,
-  embeddingDistance,
-} from "../../src/core/embedding/embedding.js";
-import type { Expression } from "../../src/core/types.js";
 
 function makeExpression(
   overrides: Partial<Omit<Expression, "embedding">> = {},

@@ -1,4 +1,4 @@
-import type { Expression } from "../types.js";
+import type { Expression } from "@ghost/core";
 
 export interface TokensCssOptions {
   /** Source path (e.g. "./expression.md") — surfaced in the provenance header. */

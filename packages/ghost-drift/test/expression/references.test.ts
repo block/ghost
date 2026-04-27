@@ -1,3 +1,4 @@
+import type { Expression } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import {
   formatReferenceError,
@@ -5,7 +6,6 @@ import {
   parseTokenReference,
   resolveTokenReference,
 } from "../../src/core/expression/references.js";
-import type { Expression } from "../../src/core/types.js";
 
 function buildExpression(): Expression {
   return {

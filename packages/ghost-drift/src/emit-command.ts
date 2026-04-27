@@ -1,12 +1,23 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { loadSkillBundle } from "@ghost/core";
 import type { CAC } from "cac";
 import {
   emitReviewCommand,
   loadExpression,
   writeContextBundle,
 } from "./core/index.js";
-import { loadSkillBundle } from "./skill-bundle.js";
+
+/**
+ * The skill bundle's source files live in `src/skill-bundle/` as real
+ * markdown and are copied verbatim into `dist/skill-bundle/` by the
+ * package build step. This loader points the shared `@ghost/core`
+ * walker at that built directory at runtime.
+ */
+const SKILL_BUNDLE_ROOT = fileURLToPath(
+  new URL("./skill-bundle", import.meta.url),
+);
 
 const DEFAULT_EXPRESSION = "expression.md";
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
@@ -80,7 +91,7 @@ export function registerEmitCommand(cli: CAC): void {
             process.cwd(),
             (opts.out as string | undefined) ?? DEFAULT_SKILL_OUT,
           );
-          const bundle = loadSkillBundle();
+          const bundle = loadSkillBundle(SKILL_BUNDLE_ROOT);
           const written: string[] = [];
           for (const file of bundle) {
             const outPath = resolve(outDir, file.path);

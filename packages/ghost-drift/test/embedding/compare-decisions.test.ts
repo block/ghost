@@ -1,6 +1,6 @@
+import type { DesignDecision, Expression } from "@ghost/core";
+import { compareExpressions } from "@ghost/core";
 import { describe, expect, it } from "vitest";
-import { compareExpressions } from "../../src/core/embedding/compare.js";
-import type { DesignDecision, Expression } from "../../src/core/types.js";
 
 /**
  * Minimal expression skeleton — identical palette/spacing/typography/surfaces

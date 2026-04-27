@@ -7,8 +7,8 @@ import {
   join,
   resolve,
 } from "node:path";
+import type { DesignDecision } from "@ghost/core";
 import { parse as parseYaml } from "yaml";
-import type { DesignDecision } from "../types.js";
 import { splitRaw } from "./parser.js";
 
 /**
