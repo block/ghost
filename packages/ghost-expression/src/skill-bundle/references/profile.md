@@ -37,7 +37,7 @@ Branch the rest of the recipe on signals from map.md. Apply rules in order; firs
 3. `registry.path` set, or `composition.styling` includes `tailwindcss*` / `css-modules` / similar with component files in `ui_surface.include` → **ui-library mode** (default).
 4. `platform` is an array spanning native + web with no single dominant build → **multi-platform**: profile as ui-library but expect coarser `feature_areas` and prefer modules named `*UI` / `*View` / `*Screen`; skip `*Fakes` / `*Mocks` / `*Tests`.
 
-If signals overlap (e.g. both a `registry` and a `tokens/` pipeline coexist), prefer **token-pipeline** when `entry_files` are YAML/JSON graphs and **ui-library** when `entry_files` resolve to CSS/code. Note the chosen mode in your scratchpad — Step 4 onward depends on it.
+If signals overlap, **token-pipeline** wins over both **ui-library** (decide by `entry_files`: YAML/JSON graphs → token-pipeline; CSS/code → ui-library) and **multi-platform** (pipelines often span multiple platforms by definition; the pipeline branch already handles per-platform output sinks via `feature_areas`). Note the chosen mode in your scratchpad — Step 4 onward depends on it.
 
 ### 2. Resolve variable chains end-to-end
 
