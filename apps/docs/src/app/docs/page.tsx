@@ -28,8 +28,8 @@ const sections: {
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Drift Workflow",
-    href: "/tools/drift/workflow",
+    name: "The Workflow",
+    href: "/tools",
     description:
       "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,

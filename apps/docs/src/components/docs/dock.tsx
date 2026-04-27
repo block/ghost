@@ -245,12 +245,12 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/drift/workflow");
+                navigate("/tools");
                 setSearchOpen(false);
               }}
             >
               <Wrench className="mr-2 size-4" />
-              Drift Workflow
+              Workflow
             </CommandItem>
           </CommandGroup>
         </CommandList>
