@@ -7,7 +7,7 @@ import {
   loadExpression,
   parseExpression,
   serializeExpression,
-} from "../../src/core/expression/index.js";
+} from "../../src/core/index.js";
 
 const SAMPLE_EXPRESSION: Expression = {
   id: "claude",

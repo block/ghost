@@ -5,7 +5,7 @@ import {
   EXPRESSION_FILENAME,
   loadExpression,
   parseExpression,
-} from "../expression/index.js";
+} from "ghost-expression";
 
 /**
  * Resolve a Target to an Expression.

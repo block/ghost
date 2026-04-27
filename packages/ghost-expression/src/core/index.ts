@@ -15,7 +15,7 @@ import { validateFrontmatter } from "./schema.js";
 function assertMarkdownPath(path: string): void {
   if (!path.endsWith(".md")) {
     throw new Error(
-      `Expression files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost-drift emit skill\`).`,
+      `Expression files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost-expression emit skill\`).`,
     );
   }
 }
@@ -24,6 +24,19 @@ export type { BodyData } from "./body.js";
 export { parseBody } from "./body.js";
 export type { DesignDecision } from "./compose.js";
 export { mergeExpression } from "./compose.js";
+// --- Context (review-command + context-bundle) ---
+export type {
+  ContextFormat,
+  EmitReviewInput,
+  WriteContextOptions,
+  WriteContextResult,
+} from "./context/index.js";
+export {
+  buildSkillMd,
+  buildTokensCss,
+  emitReviewCommand,
+  writeContextBundle,
+} from "./context/index.js";
 export type {
   ColorChange,
   DecisionChange,

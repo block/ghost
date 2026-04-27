@@ -314,25 +314,27 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      diff:
-        specifier: ^7.0.0
-        version: 7.0.0
+      ghost-expression:
+        specifier: workspace:*
+        version: link:../ghost-expression
       jiti:
         specifier: ^2.4.0
         version: 2.6.1
-      postcss:
-        specifier: ^8.5.10
-        version: 8.5.10
+
+  packages/ghost-expression:
+    dependencies:
+      '@ghost/core':
+        specifier: workspace:*
+        version: link:../ghost-core
+      cac:
+        specifier: ^6.7.14
+        version: 6.7.14
       yaml:
         specifier: ^2.8.3
         version: 2.8.3
       zod:
         specifier: ^4.3.6
         version: 4.3.6
-    devDependencies:
-      '@types/diff':
-        specifier: ^6.0.0
-        version: 6.0.0
 
   packages/ghost-map:
     dependencies:
@@ -2535,9 +2537,6 @@ packages:
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
-  '@types/diff@6.0.0':
-    resolution: {integrity: sha512-dhVCYGv3ZSbzmQaBSagrv1WJ6rXCdkyTcDyoNu1MD8JohI7pR7k8wdZEm+mvdxRKXyHVwckFzWU1vJc+Z29MlA==}
-
   '@types/estree-jsx@1.0.5':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
 
@@ -3216,10 +3215,6 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
-
-  diff@7.0.0:
-    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
-    engines: {node: '>=0.3.1'}
 
   diff@8.0.4:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
@@ -7581,8 +7576,6 @@ snapshots:
 
   '@types/deep-eql@4.0.2': {}
 
-  '@types/diff@6.0.0': {}
-
   '@types/estree-jsx@1.0.5':
     dependencies:
       '@types/estree': 1.0.8
@@ -8250,8 +8243,6 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
-
-  diff@7.0.0: {}
 
   diff@8.0.4: {}
 

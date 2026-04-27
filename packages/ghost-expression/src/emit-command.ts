@@ -22,7 +22,7 @@ const SKILL_BUNDLE_ROOT = fileURLToPath(
 const DEFAULT_EXPRESSION = "expression.md";
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 const DEFAULT_CONTEXT_OUT = "ghost-context";
-const DEFAULT_SKILL_OUT = ".claude/skills/ghost-drift";
+const DEFAULT_SKILL_OUT = ".claude/skills/ghost-expression";
 
 export const SUPPORTED_KINDS = [
   "review-command",

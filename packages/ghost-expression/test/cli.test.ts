@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -82,7 +82,7 @@ async function runCli(argv: string[], cwd: string) {
 
   try {
     process.chdir(cwd);
-    cli.parse(["node", "ghost-drift", ...argv]);
+    cli.parse(["node", "ghost-expression", ...argv]);
     await Promise.race([
       done,
       new Promise<void>((_, reject) =>
@@ -101,13 +101,13 @@ async function runCli(argv: string[], cwd: string) {
   return { stdout, stderr, code: exitCode ?? 0 };
 }
 
-describe("ghost-drift CLI", () => {
+describe("ghost-expression CLI defaults", () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = join(
       tmpdir(),
-      `ghost-cli-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `ghost-expression-cli-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await mkdir(dir, { recursive: true });
   });
@@ -116,66 +116,52 @@ describe("ghost-drift CLI", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("compares explicitly supplied expression files", async () => {
+  it("lint defaults to ./expression.md", async () => {
+    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
+
+    const result = await runCli(["lint"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("0 error(s)");
+    expect(result.stderr).toBe("");
+  });
+
+  it("describe defaults to ./expression.md", async () => {
+    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
+
+    const result = await runCli(["describe"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("expression.md");
+    expect(result.stdout).toContain("# Character");
+  });
+
+  it("diff returns 0 (unchanged) when comparing identical expressions", async () => {
     await writeFile(join(dir, "a.expression.md"), expressionWithId("a"));
-    await writeFile(join(dir, "b.expression.md"), expressionWithId("b"));
+    await writeFile(join(dir, "b.expression.md"), expressionWithId("a"));
 
     const result = await runCli(
-      ["compare", "a.expression.md", "b.expression.md"],
+      ["diff", "a.expression.md", "b.expression.md"],
       dir,
     );
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Distance");
+    expect(result.stderr).toBe("");
   });
 
-  it("track writes the neutral sync manifest shape", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
-    await writeFile(
-      join(dir, "tracked.expression.md"),
-      expressionWithId("tracked"),
+  it("diff returns 1 (changed) when expressions differ", async () => {
+    const drifted = expressionWithId("b").replace(
+      "borderRadii: [4, 8]",
+      "borderRadii: [4, 8, 16]",
+    );
+    await writeFile(join(dir, "a.expression.md"), expressionWithId("a"));
+    await writeFile(join(dir, "b.expression.md"), drifted);
+
+    const result = await runCli(
+      ["diff", "a.expression.md", "b.expression.md"],
+      dir,
     );
 
-    const result = await runCli(["track", "tracked.expression.md"], dir);
-    const manifest = JSON.parse(
-      await readFile(join(dir, ".ghost-sync.json"), "utf-8"),
-    ) as Record<string, unknown>;
-
-    expect(result.code).toBe(0);
-    expect(manifest.tracks).toEqual({
-      type: "path",
-      value: "tracked.expression.md",
-    });
-    expect(manifest.trackedExpressionId).toBe("tracked");
-    expect(manifest.localExpressionId).toBe("local");
-    const legacyRelationFields = [
-      "parent",
-      ["parent", "ExpressionId"].join(""),
-      ["child", "ExpressionId"].join(""),
-    ];
-    for (const field of legacyRelationFields) {
-      expect(manifest).not.toHaveProperty(field);
-    }
-  });
-
-  it("lint surfaces a migration message pointing at ghost-expression", async () => {
-    const result = await runCli(["lint"], dir);
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("ghost-expression lint");
-  });
-
-  it("describe surfaces a migration message pointing at ghost-expression", async () => {
-    const result = await runCli(["describe"], dir);
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("ghost-expression describe");
-  });
-
-  it("emit review-command surfaces a migration message", async () => {
-    const result = await runCli(["emit", "review-command"], dir);
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("ghost-expression emit review-command");
+    expect(result.code).toBe(1);
   });
 });

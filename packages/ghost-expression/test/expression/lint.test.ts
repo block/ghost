@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lintExpression } from "../../src/core/expression/index.js";
+import { lintExpression } from "../../src/core/index.js";
 
 const HEADER = `---
 name: Claude
