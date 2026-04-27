@@ -33,8 +33,8 @@ export default function Home() {
               driven by a human operator through an agentic workflow; sometimes
               it runs fully autonomously. The economics have shifted with it. We
               no longer assume humans will sit in every diff; we assume the
-              harness (the guardrails, the reviewers, the verifiers) catches
-              drift and course-corrects before it lands.
+              harness — the guardrails, the reviewers, the verifiers — catches
+              divergence before it lands.
             </p>
             <p className="thesis-item">
               In that world, ensuring every generation reflects a brand's voice
@@ -64,7 +64,8 @@ export default function Home() {
               in the repo, versioned with the code, edited in the same PRs as
               the features it shapes. And it has to evolve. Brand isn't locked
               in at the start; it shifts as the product ships, as taste
-              sharpens, as new surfaces appear.
+              sharpens, as new surfaces appear, as the org grows new products
+              around it.
             </p>
             <p className="thesis-item">
               Which raises the governance question. The reflex is to centralize:
@@ -72,10 +73,12 @@ export default function Home() {
               from above. Ghost takes the opposite approach. Each repo owns its
               expression, its trajectory, and its stance. Decentralization
               without intent is entropy, so stances (<em>aligned</em>,{" "}
-              <em>accepted</em>, <em>diverging</em>) turn drift into signal. The
-              fleet of expressions drifts in the open; every divergence carries
-              reasoning. Nothing is prescriptive. Nothing drifts silently.
-              Everything is transparent.
+              <em>accepted</em>, <em>diverging</em>) turn divergence into
+              signal. The fleet of expressions drifts in the open; every
+              divergence carries reasoning. And read from above, the fleet
+              becomes a world model — the shape of the org's design language,
+              drawn from the languages inside it. Nothing is prescriptive.
+              Nothing drifts silently. Everything is transparent.
             </p>
           </div>
         </section>

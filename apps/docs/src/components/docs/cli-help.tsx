@@ -1,7 +1,14 @@
 import manifest from "@/generated/cli-manifest.json";
 
+type ToolName =
+  | "ghost-drift"
+  | "ghost-expression"
+  | "ghost-map"
+  | "ghost-fleet";
+
 interface CliHelpProps {
   command: string;
+  tool?: ToolName;
   show?: "all" | "signature" | "options";
   hideDescription?: boolean;
 }
@@ -16,29 +23,41 @@ interface CliOption {
 }
 
 interface CliCommand {
+  tool: ToolName;
   name: string;
   rawName: string;
   description: string;
   options: CliOption[];
 }
 
-const commands = (manifest as { commands: CliCommand[] }).commands;
+interface ToolEntry {
+  tool: ToolName;
+  commands: CliCommand[];
+}
 
-function findCommand(name: string): CliCommand | undefined {
-  return commands.find((c) => c.name === name || c.rawName.startsWith(name));
+const tools = (manifest as { tools: ToolEntry[] }).tools;
+
+function findCommand(tool: ToolName, name: string): CliCommand | undefined {
+  const entry = tools.find((t) => t.tool === tool);
+  if (!entry) return undefined;
+  return entry.commands.find(
+    (c) => c.name === name || c.rawName.startsWith(name),
+  );
 }
 
 export function CliHelp({
   command,
+  tool = "ghost-drift",
   show = "all",
   hideDescription = false,
 }: CliHelpProps) {
-  const cmd = findCommand(command);
+  const cmd = findCommand(tool, command);
   if (!cmd) {
+    const knownTools = tools.map((t) => t.tool).join(", ");
     return (
       <div className="my-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-        Unknown CLI command: <code>{command}</code>. Commands in manifest:{" "}
-        {commands.map((c) => c.name).join(", ")}
+        Unknown CLI command: <code>{`${tool} ${command}`}</code>. Tools in
+        manifest: {knownTools}
       </div>
     );
   }
@@ -48,7 +67,7 @@ export function CliHelp({
       {(show === "all" || show === "signature") && (
         <div className="border-b border-border/40 bg-background/60 px-4 py-3">
           <div className="font-mono text-sm text-foreground">
-            ghost-drift {cmd.rawName}
+            {tool} {cmd.rawName}
           </div>
           {!hideDescription && cmd.description && (
             <div className="mt-1 text-xs text-muted-foreground leading-relaxed">

@@ -1,76 +1,91 @@
 ---
 title: Getting Started
-description: Install the skill bundle, write your first expression.md, and track drift against another expression — in under five minutes.
+description: Install the skill bundles, write your first map.md and expression.md, and track drift across the org — in under five minutes.
 kicker: Docs
-section: drift
+section: guide
 order: 10
 slug: getting-started
 ---
 
 <DocSection title="The Shape of Ghost">
 
-Ghost is split across two surfaces. The **CLI** is a set of deterministic
-primitives — seven verbs that never call an LLM. The **skill bundle** is a set
-of [agentskills.io](https://agentskills.io)-compatible recipes your host
-agent (Claude Code, Cursor, Goose, Codex, …) follows for anything
-interpretive: profile, review, verify, generate, discover.
+Ghost is split into **five small tools**, each with one responsibility, plus a
+shared library underneath. Every CLI is a set of deterministic primitives —
+none of them ever call an LLM. Each tool ships its own
+[agentskills.io](https://agentskills.io)-compatible recipe bundle for the
+interpretive work your host agent (Claude Code, Cursor, Goose, Codex, …)
+runs: profile, review, verify, remediate.
 
-You install Ghost in two steps: add the CLI, then emit the skill bundle into
-your agent.
+| Tool | Owns | Verbs |
+| --- | --- | --- |
+| `ghost-map` | `map.md` (topology) | `inventory`, `lint` |
+| `ghost-expression` | `expression.md` (design language) | `lint`, `describe`, `diff`, `emit` |
+| `ghost-drift` | drift detection + governance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| `ghost-fleet` | `fleet.md` (elevation across members) | `members`, `view`, `emit skill` |
+| `ghost-ui` | reference design system (97 shadcn components) | — |
+
+You install Ghost in two steps: add whichever CLI(s) you need, then emit the
+matching skill bundle into your agent.
 
 </DocSection>
 
 <DocSection title="Installation">
 
-Add the core library and CLI to your project:
+`ghost-drift` and `ghost-expression` are the published tools today. Add
+either or both:
 
 ```bash
-pnpm add -D ghost-drift
+pnpm add -D ghost-drift ghost-expression
 ```
 
-Or install globally to use `ghost-drift` from anywhere:
+Or install globally:
 
 ```bash
-pnpm add -g ghost-drift
+pnpm add -g ghost-drift ghost-expression
 ```
+
+`ghost-map` and `ghost-fleet` are workspace-only for now — clone the repo
+and `pnpm build` to use them.
 
 No API key is required for any CLI verb. If your host agent uses Anthropic
-or OpenAI models, it'll handle auth itself. Ghost auto-loads `.env` and
+or OpenAI models, it'll handle auth itself. Each CLI auto-loads `.env` and
 `.env.local` from the working directory for a couple of optional variables
 (`OPENAI_API_KEY` / `VOYAGE_API_KEY` for paraphrase-robust semantic
 embeddings, `GITHUB_TOKEN` for fetching tracked expressions).
 
 </DocSection>
 
-<DocSection title="Install the Skill Bundle">
+<DocSection title="Install the Skill Bundles">
 
-`ghost-drift emit skill` writes the `ghost-drift` skill bundle into your host
-agent's skill directory. Defaults to `.claude/skills/ghost-drift/`; use
-`--out` to target another location.
+Each tool ships its own bundle. Install whichever capability you want
+your agent to gain:
 
 ```bash
-# Install into Claude Code (default)
-ghost-drift emit skill
-
-# Or into a custom path for another agent
-ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
+ghost-drift emit skill            # → .claude/skills/ghost-drift
+ghost-expression emit skill       # → .claude/skills/ghost-expression
+# ghost-fleet emit skill          # → .claude/skills/ghost-fleet (workspace tool today)
 ```
 
-The bundle contains a top-level `SKILL.md` entry point plus recipes under
-`references/` (`profile.md`, `review.md`, `verify.md`, `generate.md`,
-`discover.md`, `compare.md`) plus a schema reference (`schema.md`). Each
-recipe declares `handoffs` in its frontmatter so hosts can surface the
-next step inline — e.g. after `profile`, a prompt to `compare` against another
-expression, or to run `ghost-drift emit review-command`. Once installed, ask your
-agent to "profile this design language" and it'll follow the recipe,
-calling `ghost-drift` for any deterministic step.
+Each bundle ships its own `SKILL.md` plus recipes under `references/`:
+
+- **`ghost-expression`** — `profile.md` (write `expression.md` from a project) + `schema.md` (condensed format reference).
+- **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
+- **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
+
+Each recipe declares `handoffs` in its frontmatter so hosts can surface the
+next step inline — e.g. after `profile`, a prompt to `compare` against
+another expression, or to run `ghost-expression emit review-command`. Once
+installed, ask your agent in plain English ("profile this design language",
+"review this PR for drift") and it'll follow the recipe, calling the right
+CLI for any deterministic step.
 
 </DocSection>
 
 <DocSection title="Profile Your First System">
 
-Profiling is a skill recipe, not a CLI verb. Open your host agent in the
-project you want to profile and ask it something like:
+Profiling is a skill recipe shipped in `ghost-expression`'s bundle, not a
+CLI verb. Open your host agent in the project you want to profile and ask
+it something like:
 
 ```text
 Profile this design language into expression.md
@@ -78,8 +93,9 @@ Profile this design language into expression.md
 
 The `profile` recipe walks the agent through finding design sources
 (tailwind config, theme CSS, token files, component primitives), resolving
-variable chains end-to-end, and writing the expression. The final step
-is always `ghost-drift lint` — which the CLI runs for you, deterministically.
+variable chains end-to-end, and writing the expression. The final step is
+always `ghost-expression lint` — which the CLI runs for you,
+deterministically.
 
 An **expression** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
@@ -90,18 +106,19 @@ in this repo for a full real-world example.
 
 ```bash
 # Validate the result (zero-config — reads ./expression.md)
-ghost-drift lint
+ghost-expression lint
 
 # Or validate a specific file
-ghost-drift lint path/to/expression.md --format json
+ghost-expression lint path/to/expression.md --format json
 ```
 
 </DocSection>
 
 <DocSection title="Compare Two Systems">
 
-Once you have two expressions, `compare` returns a scalar distance,
-per-dimension deltas, and (optionally) qualitative or temporal enrichment:
+Once you have two expressions, `ghost-drift compare` returns a scalar
+distance, per-dimension deltas, and (optionally) qualitative or temporal
+enrichment:
 
 ```bash
 # Pairwise (N=2) — distance + per-dimension delta
@@ -113,7 +130,7 @@ ghost-drift compare a.expression.md b.expression.md --semantic
 # Velocity + trajectory (reads .ghost/history.jsonl)
 ghost-drift compare before.expression.md after.expression.md --temporal
 
-# Fleet (N≥3) — pairwise matrix + centroid
+# Composite (N≥3) — pairwise matrix + centroid + clusters
 ghost-drift compare *.expression.md
 ```
 
@@ -121,12 +138,15 @@ ghost-drift compare *.expression.md
 decisions. Decisions are matched semantically above a cosine-similarity
 threshold so wording doesn't have to line up.
 
+For a structural prose-level diff (what decisions and palette roles
+changed, ignoring vector distance), use `ghost-expression diff` instead.
+
 </DocSection>
 
 <DocSection title="Review Drift in a PR">
 
-Reviewing PRs is a skill recipe. Once the skill is installed, open a PR
-branch in your host agent and ask:
+Reviewing PRs is a skill recipe shipped in `ghost-drift`'s bundle. Once
+installed, open a PR branch in your host agent and ask:
 
 ```text
 Review this PR for design drift
@@ -134,16 +154,18 @@ Review this PR for design drift
 
 The `review` recipe diffs changed files against the local `expression.md`
 and flags hardcoded colors off the palette, spacing off the scale, and type
-choices that violate decisions. For a project-level check, ask the agent to
-compare a fresh expression against another expression.
+choices that violate decisions.
 
-If you want a repeatable, per-project slash command for your agent, emit one
-from the expression itself:
+If you want a repeatable, per-project slash command for your agent, emit
+one from the expression itself:
 
 ```bash
 # Writes .claude/commands/design-review.md
-ghost-drift emit review-command
+ghost-expression emit review-command
 ```
+
+(`emit review-command` lives in `ghost-expression` because it derives from
+`expression.md`. `ghost-drift` ships only `emit skill`.)
 
 </DocSection>
 
@@ -173,9 +195,9 @@ ghost-drift diverge typography --reason "Editorial product uses a different type
 Ghost doubles as pipeline infrastructure for AI-generated UI. The
 expression grounds the generator; the `review` recipe gates the output.
 
-1. `ghost-drift emit context-bundle` — emit a grounding bundle from an expression
-   (SKILL.md + tokens.css + optional prompt.md) that any generator can
-   consume.
+1. `ghost-expression emit context-bundle` — emit a grounding bundle from an
+   expression (SKILL.md + tokens.css + optional prompt.md) that any
+   generator can consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
    with the bundle in context.
 3. Use the `review` recipe to gate the output. Use the `verify` recipe to
@@ -184,21 +206,21 @@ expression grounds the generator; the `review` recipe gates the output.
 
 ```bash
 # Emit a grounding bundle — default output: ./ghost-context/
-ghost-drift emit context-bundle
+ghost-expression emit context-bundle
 
 # Single prompt.md for plain-text LLM context
-ghost-drift emit context-bundle --prompt-only
+ghost-expression emit context-bundle --prompt-only
 
 # Custom output directory
-ghost-drift emit context-bundle --out dist/context
+ghost-expression emit context-bundle --out dist/context
 ```
 
 </DocSection>
 
 <DocSection title="Optional: ghost.config.ts">
 
-`ack` and `diverge` need a tracked expression declared. Most other verbs are
-zero-config.
+`ack` and `diverge` need a tracked expression declared. Most other verbs
+are zero-config.
 
 ```ts
 import { defineConfig } from "ghost-drift";
@@ -225,9 +247,9 @@ export default defineConfig({
 
 ---
 
-Next: [Workflow](/tools/drift/workflow) for the five-move walkthrough —
-profile, compare, review, evolve, org — with richer examples for each.
-Or jump to the [CLI Reference](/tools/drift/cli) for every deterministic
-verb and flag.
+Next: [Drift Workflow](/tools/drift/workflow) for the five-move
+walkthrough — profile, compare, review, evolve, org — with richer examples
+for each. Or jump to the [CLI Reference](/docs/cli) for every deterministic
+verb across all four tools.
 
 </DocSection>

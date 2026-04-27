@@ -11,7 +11,7 @@ const Schema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   kicker: z.string().optional(),
-  section: z.enum(["drift", "ui"]).optional(),
+  section: z.enum(["guide", "drift", "ui"]).optional(),
   order: z.number(),
   slug: z.string().min(1),
   route: z.string().optional(),
@@ -32,7 +32,13 @@ function walk(dir) {
 
 function routeFor(fm) {
   if (fm.route) return fm.route;
-  const prefix = (fm.section ?? "drift") === "drift" ? "/tools/drift" : "/ui";
+  const section = fm.section ?? "guide";
+  const prefix =
+    section === "guide"
+      ? "/docs"
+      : section === "drift"
+        ? "/tools/drift"
+        : "/ui";
   return `${prefix}/${fm.slug}`;
 }
 
@@ -69,8 +75,13 @@ for (const { file, fm: _fm } of parsed) {
     const KNOWN = [
       "/",
       "/tools",
+      "/tools/map",
+      "/tools/expression",
       "/tools/drift",
       "/tools/drift/workflow",
+      "/tools/fleet",
+      "/tools/ui",
+      "/docs",
       "/ui",
       "/ui/foundations",
       "/ui/foundations/colors",

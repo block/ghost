@@ -1,18 +1,52 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { Orbit } from "lucide-react";
+import { Compass, FileText, Network, Orbit, Palette } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
 import { SectionWrapper } from "@/components/docs/wrappers";
 
-const tools = [
+const tools: {
+  name: string;
+  href: string;
+  description: string;
+  icon: ReactNode;
+}[] = [
   {
-    name: "Drift",
+    name: "ghost-map",
+    href: "/tools/map",
+    description:
+      "Topology. Generates map.md — the navigation card every other Ghost tool reads to learn where the design implementation lives.",
+    icon: <Compass className="size-8" strokeWidth={1.5} />,
+  },
+  {
+    name: "ghost-expression",
+    href: "/tools/expression",
+    description:
+      "Authoring. Owns expression.md — the canonical design-language artifact. Lint, describe, diff, and emit grounding bundles for any generator.",
+    icon: <FileText className="size-8" strokeWidth={1.5} />,
+  },
+  {
+    name: "ghost-drift",
     href: "/tools/drift",
     description:
-      "Express design languages, track their evolution, and surface divergence before it compounds.",
+      "Detection. Compares expressions, tracks stance (ack / track / diverge), and ships the review / verify / remediate recipes.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
+  },
+  {
+    name: "ghost-fleet",
+    href: "/tools/fleet",
+    description:
+      "Elevation. Reads many (map.md, expression.md) members and emits fleet.md — pairwise distances, group-by tables, tracks-graph.",
+    icon: <Network className="size-8" strokeWidth={1.5} />,
+  },
+  {
+    name: "ghost-ui",
+    href: "/tools/ui",
+    description:
+      "Reference UI library. 97 shadcn-distributed components + an MCP server. The system Ghost dogfoods its expression against.",
+    icon: <Palette className="size-8" strokeWidth={1.5} />,
   },
 ];
 
@@ -28,7 +62,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Platform"
         title="Tools"
-        description="The engines that power your design infrastructure. Each tool solves a distinct problem in the design language lifecycle."
+        description="Tools for decentralized design."
       />
 
       <div

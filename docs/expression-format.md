@@ -1,6 +1,6 @@
 # The `expression.md` format
 
-A Ghost **expression** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost-drift compare`, `ghost-expression lint`, and the skill recipes the host agent runs (profile, review, verify, generate).
+A Ghost **expression** is a single Markdown file that captures what a design language is trying to say — readable and editable by humans, natively consumable by LLMs, with a structured machine layer for `ghost-drift compare`, `ghost-expression lint`, and the skill recipes the host agent runs (profile, review, verify, remediate).
 
 The file has two parts, and each owns **different data**:
 

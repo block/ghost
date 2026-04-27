@@ -841,12 +841,13 @@ export default function WorkflowPage() {
         <StepLabel>Step 01 · Profile</StepLabel>
         <StepTitle>Write an expression.md</StepTitle>
         <StepLead>
-          Open your project in a host agent with the <code>ghost-drift</code>{" "}
-          skill installed and ask it to <em>profile this design language</em>.
-          The recipe walks the agent through your theme CSS, tailwind config,
-          and component primitives, resolves variable chains, and writes a
-          single <code>expression.md</code> at the repo root — YAML frontmatter
-          for machines, Markdown body for humans.
+          Open your project in a host agent with the{" "}
+          <code>ghost-expression</code> skill installed and ask it to{" "}
+          <em>profile this design language</em>. The recipe walks the agent
+          through your theme CSS, tailwind config, and component primitives,
+          resolves variable chains, and writes a single{" "}
+          <code>expression.md</code> at the repo root — YAML frontmatter for
+          machines, Markdown body for humans.
         </StepLead>
         <ExpressionExcerpt />
         <div className="reveal mt-8 grid sm:grid-cols-3 gap-4">
@@ -886,8 +887,8 @@ export default function WorkflowPage() {
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
           Ghost never calls an LLM itself. The agent writes the expression; the
           CLI lints, compares, and diffs it deterministically. The final step of
-          every profile is <code>ghost-drift lint</code> — which validates the
-          schema and flags body/frontmatter incoherence before anything else
+          every profile is <code>ghost-expression lint</code> — which validates
+          the schema and flags body/frontmatter incoherence before anything else
           touches it.
         </p>
       </Step>
@@ -958,11 +959,11 @@ export default function WorkflowPage() {
           </code>{" "}
           for distance,{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost-drift lint
+            ghost-expression lint
           </code>{" "}
           for validation. For a per-project, pre-baked review command, run{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-            ghost-drift emit review-command
+            ghost-expression emit review-command
           </code>{" "}
           and the agent will pick it up the next time you open a PR.
         </p>
@@ -1086,7 +1087,7 @@ export default function WorkflowPage() {
         <div className="reveal grid sm:grid-cols-4 gap-4">
           {[
             {
-              step: "ghost-drift emit context-bundle",
+              step: "ghost-expression emit context-bundle",
               name: "Ground",
               desc: "Write SKILL.md + tokens.css + prompt.md from expression.md. Whatever the generator consumes.",
             },
