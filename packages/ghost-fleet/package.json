@@ -1,0 +1,53 @@
+{
+  "name": "ghost-fleet",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Read-only elevation view across many (map.md, expression.md) members — pairwise distances, group-by axes, tracks-graph, fleet.md output",
+  "license": "Apache-2.0",
+  "author": "Block, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/block/ghost.git"
+  },
+  "homepage": "https://github.com/block/ghost#readme",
+  "bugs": {
+    "url": "https://github.com/block/ghost/issues"
+  },
+  "keywords": [
+    "design-system",
+    "fleet",
+    "design-language",
+    "monorepo",
+    "cli"
+  ],
+  "type": "module",
+  "main": "./dist/core/index.js",
+  "types": "./dist/core/index.d.ts",
+  "bin": {
+    "ghost-fleet": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle"
+  },
+  "dependencies": {
+    "@ghost/core": "workspace:*",
+    "cac": "^6.7.14",
+    "ghost-expression": "workspace:*",
+    "ghost-map": "workspace:*",
+    "yaml": "^2.8.3",
+    "zod": "^4.3.6"
+  }
+}

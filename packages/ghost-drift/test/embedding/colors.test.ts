@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
+import type { SemanticColor } from "@ghost/core";
 import {
   classifyContrast,
   classifySaturation,
   contrastScore,
   parseColorToOklch,
   saturationScore,
-} from "../../src/core/embedding/colors.js";
-import type { SemanticColor } from "../../src/core/types.js";
+} from "@ghost/core";
+import { describe, expect, it } from "vitest";
 
 describe("parseColorToOklch", () => {
   // --- Hex ---

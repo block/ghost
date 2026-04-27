@@ -1,13 +1,12 @@
-import { compareExpressions } from "../embedding/compare.js";
 import type {
   DriftVelocity,
   ExpressionComparison,
   ExpressionHistoryEntry,
   SyncManifest,
   TemporalComparison,
-} from "../types.js";
+} from "@ghost/core";
+import { compareExpressions, computeDriftVectors } from "@ghost/core";
 import { checkBounds } from "./sync.js";
-import { computeDriftVectors } from "./vector.js";
 
 /**
  * Enrich an expression comparison with temporal data:

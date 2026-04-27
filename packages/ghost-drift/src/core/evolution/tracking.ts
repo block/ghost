@@ -1,11 +1,11 @@
 import { resolve } from "node:path";
-import { resolveTarget } from "../config.js";
+import type { Expression, Target } from "@ghost/core";
+import { resolveTarget } from "@ghost/core";
 import {
   EXPRESSION_FILENAME,
   loadExpression,
   parseExpression,
-} from "../expression/index.js";
-import type { Expression, Target } from "../types.js";
+} from "ghost-expression";
 
 /**
  * Resolve a Target to an Expression.

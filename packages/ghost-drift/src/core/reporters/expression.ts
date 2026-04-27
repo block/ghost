@@ -1,4 +1,4 @@
-import type { Expression, ExpressionComparison } from "../types.js";
+import type { Expression, ExpressionComparison } from "@ghost/core";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";

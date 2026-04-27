@@ -1,61 +1,58 @@
 ---
 name: ghost-drift
-description: Detect and manage visual-language drift in design languages. Use when the user wants to write or update an expression.md, review frontend code changes for design drift, compare design expressions, verify generated UI against an expression, or discover public design languages. Triggers on phrases like "profile this design language", "check for drift", "review this PR for design issues", "write expression.md", "compare expressions", or whenever an `expression.md` file is present and styling/design work is happening.
+description: Detect and govern visual-language drift in design systems. Use when the user wants to compare two expressions, review frontend code changes for drift against an expression.md, verify generated UI against an expression, suggest minimal fixes that close a drift gap, or record stance toward a tracked expression (acknowledge, track, diverge). Triggers on phrases like "check for drift", "compare these expressions", "review this PR for design issues", "verify this generated UI", or "we accept this divergence".
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
-  cli: ghost
+  cli: ghost-drift
 ---
 
-# Ghost — Design Drift Detection
+# Ghost Drift — Design Drift Detection
 
-Ghost captures a project's visual language as an **`expression.md`** file (YAML frontmatter + three-layer Markdown: Character → Signature → Decisions → Values).
+Ghost captures a project's visual language as an `expression.md`. **Drift** is what happens between expressions: pairwise comparison, composite analysis across many, the temporal trajectory of one over time, and the governance signals (`ack`, `track`, `diverge`) that record stance toward change.
 
-Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Synthesis, interpretation, and generation happen in **you, the host agent**; Ghost hands you the arithmetic (vector distance, schema validation, manifest writes) you call on when you need a stable answer.
+Authoring an `expression.md` lives in the sibling `ghost-expression` skill. Drift compares them under change.
+
+Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Synthesis, interpretation, and generation happen in **you, the host agent**; the CLI hands you the arithmetic (vector distance, temporal aggregates, manifest writes) you call on when you need a stable answer.
 
 ## CLI primitives
 
 | Verb | Purpose |
 |---|---|
 | `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Pure math over expression embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
-| `ghost-drift lint [expression.md]` | Validate schema + body/frontmatter coherence. Use this before declaring an expression valid. |
-| `ghost-drift describe [expression.md]` | Print a section map (line ranges + token estimates) so you can selectively read only the sections you need instead of loading the whole file. Use before review/generate when the expression is large. |
 | `ghost-drift ack` / `ghost-drift track <expression.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked expression (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `expression.md`. |
-| `ghost-drift emit review-command` / `ghost-drift emit context-bundle` / `ghost-drift emit skill` | Derive per-project artifacts from `expression.md`. |
+| `ghost-drift emit skill` | Install this agent skill bundle into your host agent. |
 
-That's it. Seven verbs. If you find yourself reaching for `ghost review` or `ghost profile` — those are *your* workflows, not CLI commands. Follow the recipes below.
+Five verbs. Authoring (lint/describe/diff/emit-review-command/emit-context-bundle) lives in `ghost-expression`. If you find yourself reaching for `ghost-drift review` or `ghost-drift verify` — those are *your* workflows, not CLI commands. Follow the recipes below.
 
 ## Workflows (your job, not the CLI's)
 
 When the user asks you to:
 
-- "Profile my design language" / "write expression.md" → [references/profile.md](references/profile.md)
+- "Compare these two expressions" → run `ghost-drift compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
 - "Review this PR/these changes for drift" → [references/review.md](references/review.md)
 - "Verify this generated UI matches the expression" → [references/verify.md](references/verify.md)
-- "Generate a component matching our design language" → [references/generate.md](references/generate.md)
-- "Compare these two expressions" → run `ghost-drift compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
-- "Find design languages like X" / "discover" → [references/discover.md](references/discover.md)
+- "Suggest fixes for this drift" / "remediate this" → [references/remediate.md](references/remediate.md)
 
-## The expression.md format
+For authoring or describing an expression itself (write expression.md, lint, describe, diff, emit review-command/context-bundle), install the `ghost-expression` skill.
+
+## The expression.md format (recap)
 
 An `expression.md` has:
 
-- **YAML frontmatter (machine layer):** `id`, `schema`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`.
+- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`.
 - **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (bullets from `distinctiveTraits`), `# Decisions` with `### <dimension>` rationale blocks.
 
-Each field lives in exactly one layer — no duplication. Putting prose in frontmatter is a lint error. Full spec: [references/schema.md](references/schema.md). Starting template: [assets/expression.template.md](assets/expression.template.md).
+Validate via `ghost-expression lint` before drawing conclusions from a drift comparison.
 
 ## Always
 
-- Use `expression.md` as the canonical filename (no slug prefix, no dotfile).
-- Resolve variable chains end-to-end. Follow `var(--primary) → --primary: var(--brand-500) → --brand-500: #0066cc` to the concrete value.
-- Emit colors as hex in frontmatter. The CLI recomputes oklch when it needs it.
-- Every `palette` entry should be cited in at least one decision's `evidence`, or dropped — uncited tokens are noise.
-- Validate with `ghost-drift lint` before declaring success.
+- Reads of `expression.md` are read-only — drift never rewrites the canonical artifact. To update an expression, run the profile recipe (in `ghost-expression`).
+- A non-zero distance is information, not a verdict. The threshold belongs to the consumer (CI gate, PR review, human judgement).
+- When the user accepts a drift, record it: `ghost-drift ack` / `track` / `diverge`. An undeclared drift is governance noise.
 
 ## Never
 
-- Never invent tokens. If you did not observe a value in the source, omit the field. A missing field is better than a fabricated one.
-- Never use the W3C Design Tokens or Style Dictionary format. Ghost's `expression.md` is the artifact.
-- Never stop at the first variable indirection. Follow the chain.
-- Never write prose into frontmatter or structural data into the body — the partition is load-bearing.
+- Never wrap a workflow recipe in a CLI verb. `review`, `verify`, `remediate` are recipes you execute, not commands to invoke.
+- Never auto-update an expression because drift exists. Expressions evolve by deliberate act (Invariant 5) — your role is to surface the drift and wait for instruction.
+- Never call an LLM from a verb. If you need judgement (e.g., "is this drift intentional"), apply the relevant recipe; the CLI itself does math, not interpretation.
