@@ -252,6 +252,9 @@ export function computeEmbedding(expression: ExpressionInput): number[] {
           1,
         )
       : 0;
+  // shadowComplexity: deliberate-none → 0, subtle → 0.5, layered → 1.
+  // (Phase 4b renamed `none` to `deliberate-none`; the embedding axis is
+  // unchanged.)
   vec[i++] =
     surfaces.shadowComplexity === "layered"
       ? 1

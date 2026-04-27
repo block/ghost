@@ -40,6 +40,7 @@ design_system:
     - src/lib/theme-presets.ts
     - src/lib/theme-defaults.ts
     - src/components/theme/ThemeProvider.tsx
+  token_source: inline
   status: active
 ui_surface:
   include:

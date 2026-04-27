@@ -57,8 +57,17 @@ export interface FleetMember {
  */
 export interface MemberSummary {
   id: string;
-  platform: string | null;
-  build_system: string | null;
+  /**
+   * Single value or array — mirrors the on-disk `map.platform` shape
+   * (Phase 4b made arrays a first-class form for multi-platform repos).
+   * `null` when the member has no map.
+   */
+  platform: string | string[] | null;
+  /**
+   * Single value or array — mirrors the on-disk `map.build_system` shape
+   * (Phase 4b extension for repos that run multiple build systems).
+   */
+  build_system: string | string[] | null;
   registry: string | null;
   expression_mtime: string | null;
   /** Both files present and parsed. */
@@ -110,8 +119,8 @@ export interface FleetView {
   generated_at: string;
   members: Array<{
     id: string;
-    platform: string;
-    build_system?: string;
+    platform: string | string[];
+    build_system?: string | string[];
     registry: string | null;
     expression_at?: string;
   }>;

@@ -192,3 +192,62 @@ describe("inventory — extended SKIP_DIRS", () => {
     expect(out.platform_hints).toContain("python");
   });
 });
+
+describe("inventory — workspace expansion", () => {
+  const WS = resolve(FIXTURES, "workspace-repo");
+
+  it("surfaces manifests from package.json:workspaces globs", () => {
+    const out = inventory(WS);
+    // packages/* is declared in workspaces — both children land in the
+    // result with relative paths.
+    expect(out.package_manifests).toContain("packages/foo/package.json");
+    expect(out.package_manifests).toContain("packages/bar/package.json");
+  });
+
+  it("surfaces manifests from conventional apps/, libs/, common/ dirs", () => {
+    const out = inventory(WS);
+    expect(out.package_manifests).toContain("apps/web/package.json");
+    expect(out.package_manifests).toContain("libs/util/package.json");
+    expect(out.package_manifests).toContain("common/lint/package.json");
+  });
+
+  it("keeps the root manifest as a basename, not a relative path", () => {
+    const out = inventory(WS);
+    // Root entry is `package.json` (no leading slash, no `./`) — stable
+    // with the pre-4b shape callers depend on.
+    expect(out.package_manifests).toContain("package.json");
+    expect(out.package_manifests).not.toContain("./package.json");
+  });
+
+  it("dedupes by absolute path and sorts the result", () => {
+    const out = inventory(WS);
+    const sorted = [...out.package_manifests].sort();
+    expect(out.package_manifests).toEqual(sorted);
+    const seen = new Set(out.package_manifests);
+    expect(seen.size).toBe(out.package_manifests.length);
+  });
+});
+
+describe("inventory — build_system_hints", () => {
+  it("returns an empty hint array for the web fixture (no lockfile-aware hint)", () => {
+    const out = inventory(FIXTURE);
+    // package.json alone doesn't pick npm vs pnpm vs yarn — the recipe
+    // resolves that via lockfile presence. We deliberately don't hint.
+    expect(Array.isArray(out.build_system_hints)).toBe(true);
+  });
+
+  it("hints `gradle` for an Android Gradle fixture", () => {
+    const out = inventory(resolve(FIXTURES, "android-gradle-repo"));
+    expect(out.build_system_hints).toContain("gradle");
+  });
+
+  it("hints `bazel` for a Bazel fixture", () => {
+    const out = inventory(resolve(FIXTURES, "bazel-repo"));
+    expect(out.build_system_hints).toContain("bazel");
+  });
+
+  it("hints `xcode` for an SPM fixture", () => {
+    const out = inventory(resolve(FIXTURES, "ios-spm-repo"));
+    expect(out.build_system_hints).toContain("xcode");
+  });
+});

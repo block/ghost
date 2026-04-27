@@ -53,7 +53,7 @@ function makeComparison(
     },
     surfaces: {
       borderRadii: [],
-      shadowComplexity: "none",
+      shadowComplexity: "deliberate-none",
       borderUsage: "minimal",
     },
     embedding: [],
