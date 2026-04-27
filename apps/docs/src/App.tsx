@@ -1,7 +1,6 @@
 import { ThemeProvider } from "ghost-ui";
 import { Navigate, Route, Routes, useParams } from "react-router";
 import DocsIndex from "@/app/docs/page";
-import WorkflowPage from "@/app/docs/workflow/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";
 import GhostExpressionLanding from "@/app/tools/expression/page";
@@ -41,7 +40,6 @@ export function App() {
           <Route path="tools/map" element={<GhostMapLanding />} />
           <Route path="tools/expression" element={<GhostExpressionLanding />} />
           <Route path="tools/drift" element={<GhostDriftLanding />} />
-          <Route path="tools/drift/workflow" element={<WorkflowPage />} />
           <Route path="tools/fleet" element={<GhostFleetLanding />} />
           <Route path="tools/ui" element={<GhostUiLanding />} />
 
@@ -73,7 +71,11 @@ export function App() {
           />
           <Route
             path="tools/drift/concepts"
-            element={<Navigate to="/tools/drift/workflow" replace />}
+            element={<Navigate to="/tools" replace />}
+          />
+          <Route
+            path="tools/drift/workflow"
+            element={<Navigate to="/tools" replace />}
           />
 
           {/* Redirects from legacy root /foundations and /components URLs */}
