@@ -21,7 +21,7 @@ handoffs:
 If a `map.md` is present at the repo root, **use it**. Read its frontmatter:
 
 - `design_system.entry_files` — the canonical token sources (CSS files, theme objects, token definitions). Resolve every variable chain in these files end-to-end.
-- `design_system.location` — the directory the design language lives in.
+- `design_system.paths` — the directories the design language lives in (one repo may have several).
 - `feature_areas[].sub_areas[]` — product surfaces worth sampling for the `roles[]` layer.
 
 Map.md eliminates location-discovery on monorepos — the navigation card is already done. Skip step 2.
