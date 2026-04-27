@@ -9,7 +9,7 @@ import {
   loadExpression,
   serializeEmbeddingFragment,
   serializeExpression,
-} from "../../src/core/expression/index.js";
+} from "../../src/core/index.js";
 
 const BASE_EXPRESSION = `---
 id: base

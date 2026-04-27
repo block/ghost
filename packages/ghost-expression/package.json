@@ -1,7 +1,7 @@
 {
-  "name": "ghost-drift",
-  "version": "0.2.0",
-  "description": "Deterministic design drift detection — CLI + engine for writing, comparing, and tracking design-language expressions across projects and at org scale",
+  "name": "ghost-expression",
+  "version": "0.0.0",
+  "description": "Author and validate expression.md — Ghost's canonical design-language artifact (parse, lint, describe, diff, emit review-command/context-bundle/skill)",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -14,18 +14,16 @@
   },
   "keywords": [
     "design-system",
-    "drift-detection",
     "expression",
-    "design-tokens",
-    "shadcn",
     "design-language",
+    "design-tokens",
     "cli"
   ],
   "type": "module",
   "main": "./dist/core/index.js",
   "types": "./dist/core/index.d.ts",
   "bin": {
-    "ghost-drift": "./dist/bin.js"
+    "ghost-expression": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -51,7 +49,7 @@
   "dependencies": {
     "@ghost/core": "workspace:*",
     "cac": "^6.7.14",
-    "ghost-expression": "workspace:*",
-    "jiti": "^2.4.0"
+    "yaml": "^2.8.3",
+    "zod": "^4.3.6"
   }
 }

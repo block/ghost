@@ -6,5 +6,5 @@
     "rootDir": "./src"
   },
   "include": ["src"],
-  "references": [{ "path": "../ghost-core" }, { "path": "../ghost-expression" }]
+  "references": [{ "path": "../ghost-core" }]
 }

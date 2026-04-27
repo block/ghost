@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-25T02:58:04.127Z",
+  "generatedAt": "2026-04-27T12:01:02.410Z",
   "commands": [
     {
       "name": "compare",
@@ -187,7 +187,7 @@
         {
           "rawName": "-o, --out <path>",
           "name": "out",
-          "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-drift/)",
+          "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-expression/)",
           "default": null,
           "takesValue": true,
           "negated": false

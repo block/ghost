@@ -5,7 +5,7 @@ import {
   isTokenReference,
   parseTokenReference,
   resolveTokenReference,
-} from "../../src/core/expression/references.js";
+} from "../../src/core/references.js";
 
 function buildExpression(): Expression {
   return {

@@ -1,6 +1,6 @@
 import type { Expression } from "@ghost/core";
 import { describe, expect, it } from "vitest";
-import { diffExpressions } from "../../src/core/expression/index.js";
+import { diffExpressions } from "../../src/core/index.js";
 
 const BASE: Expression = {
   id: "base",

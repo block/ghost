@@ -6,7 +6,7 @@ import {
   EXPRESSION_FILENAME,
   serializeEmbeddingFragment,
   serializeExpression,
-} from "../expression/index.js";
+} from "ghost-expression";
 
 /**
  * Write an expression as a publishable artifact (expression.md) to the

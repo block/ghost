@@ -3,22 +3,30 @@ name: profile
 description: Write expression.md from a project's design sources.
 handoffs:
   - label: Compare against another expression
-    skill: compare
+    command: ghost-drift compare
     prompt: Compare the expression.md I just wrote against another expression
   - label: Emit a project-scoped drift review command
-    command: ghost-drift emit review-command
+    command: ghost-expression emit review-command
     prompt: Emit a per-project review command derived from this expression.md
 ---
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost-drift lint` for validation.
+**Goal:** produce a valid `expression.md` that captures the project's visual language. Ghost's CLI does not call an LLM for this — you, the host agent, explore the repo and synthesize the result, then hand it to `ghost-expression lint` for validation.
 
 ## Steps
 
 ### 1. Locate design sources
 
-Start from the project root. Look for:
+If a `map.md` is present at the repo root, **use it**. Read its frontmatter:
+
+- `design_system.entry_files` — the canonical token sources (CSS files, theme objects, token definitions). Resolve every variable chain in these files end-to-end.
+- `design_system.location` — the directory the design language lives in.
+- `feature_areas[].sub_areas[]` — product surfaces worth sampling for the `roles[]` layer.
+
+Map.md eliminates location-discovery on monorepos — the navigation card is already done. Skip step 2.
+
+If `map.md` is **missing**, prompt the user to run `ghost-map inventory` and write a map first; that gives every Ghost tool a stable navigation card. As a fallback, do inline discovery:
 
 - `tailwind.config.{js,ts}` and `@theme { ... }` blocks in CSS
 - `styles/globals.css`, `app/globals.css`, `index.css`, `theme.css`
@@ -40,7 +48,9 @@ Record the resolved concrete value. Stopping at the first indirection produces u
 
 ### 3. Read component files (for the roles layer)
 
-Open 3-6 component files: typography primitives (`H1`, `P`), `Button`, `Card`, `Input`, list/table primitives. Record which tokens bind to which semantic slot:
+Open 3-6 component files: typography primitives (`H1`, `P`), `Button`, `Card`, `Input`, list/table primitives. If `map.md` exposed `feature_areas[].sub_areas[]`, sample across distinct surfaces (e.g. one auth screen, one dashboard, one settings panel) rather than re-reading siblings.
+
+Record which tokens bind to which semantic slot:
 
 - "h1 = serif 52px / weight 500"
 - "Button uses `--primary` background with 8px radius"
@@ -85,13 +95,14 @@ Partition matters. See [schema.md](schema.md) for which field lives where.
 
 ### 8. Validate
 
-    ghost-drift lint expression.md
+    ghost-expression lint expression.md
 
 Fix any errors it reports. Common ones:
 
 - Prose in frontmatter → move to body
 - `### dim` in body with no matching `decisions[]` entry (or vice versa) → remove the orphan
 - Palette entry not cited in any evidence → cite it or drop it
+
 ### 9. Sanity check
 
     ghost-drift compare expression.md expression.md    # self-distance should be 0
