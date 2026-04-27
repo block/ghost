@@ -281,6 +281,76 @@ roles:
     expect(unused.some((i) => i.message.includes("#c96442"))).toBe(false);
   });
 
+  it("accepts extended palette slot keys (surface, accent, muted, link, …)", () => {
+    // Phase 5b widens roles[].tokens.palette from a fixed three-key
+    // shape (background/foreground/border) to an open record. Slots like
+    // `surface`, `accent`, `muted`, `link`, `ring`, `popover` are now
+    // valid and don't trigger schema-invalid.
+    const md = build(
+      `
+roles:
+  - name: card
+    tokens:
+      palette:
+        background: '#c96442'
+        surface: '#141413'
+        border: '#4d4c48'
+        accent: '{palette.dominant.accent}'
+        muted: '#b53333'
+        ring: '#141413'
+    evidence: ["src/ui/card.tsx:1"]`,
+      "",
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
+    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
+      false,
+    );
+  });
+
+  it("accepts opaque external token refs without flagging broken-role-reference", () => {
+    // Style-Dictionary-style consumer repos use deeply-nested refs that
+    // resolve in the upstream package. The linter should treat them as
+    // opaque rather than rejecting them.
+    const md = build(
+      `
+roles:
+  - name: button
+    tokens:
+      palette:
+        background: '{base.color.brand.x.light}'
+        foreground: '{semantic.text.on-brand}'
+        surface: '{component.button.surface.default}'
+    evidence: ["src/ui/button.tsx:1"]`,
+      "",
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
+      false,
+    );
+  });
+
+  it("still resolves and validates local palette refs even with extended slots", () => {
+    // External-ref tolerance must not regress local-ref validation —
+    // `{palette.dominant.ghost}` (no such role) still fires.
+    const md = build(
+      `
+roles:
+  - name: card
+    tokens:
+      palette:
+        surface: '{palette.dominant.ghost}'
+    evidence: ["src/ui/card.tsx:1"]`,
+      "",
+    );
+    const report = lintExpression(md);
+    const broken = report.issues.find(
+      (i) => i.rule === "broken-role-reference",
+    );
+    expect(broken).toBeDefined();
+    expect(broken?.path).toBe("roles[0].tokens.palette.surface");
+  });
+
   it("accepts shadowComplexity: deliberate-none on the surfaces block", () => {
     const md = `${HEADER}
 palette:

@@ -94,6 +94,12 @@ const CONFIG_FILE_PATTERNS: RegExp[] = [
   // `tokens/`, `packages/tokens/`, etc.
   /^style-dictionary\.config\.[cm]?[jt]sx?$/,
   /^style-dictionary\.config\.json$/,
+  // Other JS bundler configs — surfaced so the recipe can confirm a
+  // build system without re-globbing.
+  /^webpack\.config\.[cm]?[jt]sx?$/,
+  /^rollup\.config\.[cm]?[jt]sx?$/,
+  /^parcel\.config\.[cm]?[jt]sx?$/,
+  /^esbuild\.config\.[cm]?[jt]sx?$/,
 ];
 
 /** Basenames that indicate a Style Dictionary token pipeline lives nearby. */
@@ -104,6 +110,47 @@ const STYLE_DICTIONARY_FILES = new Set<string>([
   "style-dictionary.config.ts",
   "style-dictionary.config.json",
 ]);
+
+/**
+ * Build-tool config-file matchers. Each entry maps the tool's hint
+ * value (drawn from the `build_system` enum) to the basename matcher
+ * that signals its presence.
+ *
+ * The detection is intentionally cheap — config file basename only.
+ * `package.json:devDependencies` could give finer signal but is the
+ * recipe's job, not the inventory's.
+ */
+interface BuildToolMatcher {
+  hint: string;
+  matches: (basename: string) => boolean;
+}
+
+const BUILD_TOOL_MATCHERS: BuildToolMatcher[] = [
+  // JS bundlers
+  {
+    hint: "vite",
+    matches: (n) => /^vite\.config\.[cm]?[jt]sx?$/.test(n),
+  },
+  {
+    hint: "webpack",
+    matches: (n) => /^webpack\.config\.[cm]?[jt]sx?$/.test(n),
+  },
+  {
+    hint: "rollup",
+    matches: (n) => /^rollup\.config\.[cm]?[jt]sx?$/.test(n),
+  },
+  {
+    hint: "parcel",
+    matches: (n) => /^parcel\.config\.[cm]?[jt]sx?$/.test(n),
+  },
+  {
+    hint: "esbuild",
+    matches: (n) => /^esbuild\.config\.[cm]?[jt]sx?$/.test(n),
+  },
+  // Meta-build coordinators
+  { hint: "nx", matches: (n) => n === "nx.json" },
+  { hint: "turbo", matches: (n) => n === "turbo.json" },
+];
 
 /** Language-name lookup keyed by lowercase extension (no leading dot). */
 const EXTENSION_TO_LANGUAGE: Record<string, string> = {
@@ -309,6 +356,12 @@ interface WalkResult {
   hasXcodeProject: boolean;
   /** True if any `style-dictionary.config.*` was found under the root. */
   hasStyleDictionary: boolean;
+  /**
+   * Set of build-tool hints inferred from config-file presence (vite,
+   * webpack, rollup, parcel, esbuild, nx, turbo). Drawn from the
+   * `build_system` enum so the recipe can pass these through verbatim.
+   */
+  buildToolHints: Set<string>;
 }
 
 function walkTree(root: string): WalkResult {
@@ -316,6 +369,7 @@ function walkTree(root: string): WalkResult {
   const configFiles: string[] = [];
   const registryFiles: string[] = [];
   const tokenDirs: string[] = [];
+  const buildToolHints = new Set<string>();
   let hasAndroidManifest = false;
   let hasXcodeProject = false;
   let hasStyleDictionary = false;
@@ -380,6 +434,12 @@ function walkTree(root: string): WalkResult {
       if (STYLE_DICTIONARY_FILES.has(entry.name)) {
         hasStyleDictionary = true;
       }
+      // Build-tool config-file matchers (vite, webpack, …, nx, turbo).
+      for (const matcher of BUILD_TOOL_MATCHERS) {
+        if (matcher.matches(entry.name)) {
+          buildToolHints.add(matcher.hint);
+        }
+      }
     }
   }
 
@@ -388,6 +448,7 @@ function walkTree(root: string): WalkResult {
     configFiles,
     registryFiles,
     tokenDirs,
+    buildToolHints,
     hasAndroidManifest,
     hasXcodeProject,
     hasStyleDictionary,
@@ -877,15 +938,10 @@ function deriveBuildSystemHints(
   if (walk.hasXcodeProject) hints.add("xcode");
   if (walk.hasStyleDictionary) hints.add("style-dictionary");
 
-  // Lockfile presence to disambiguate npm/pnpm/yarn at the root.
-  // (We only check these at the root — workspace child lockfiles are
-  // unusual and the root is authoritative when present.)
-  // Detected via the manifest list (lockfiles aren't in `manifests` so
-  // these explicit checks happen against the file system separately —
-  // but pnpm-workspace.yaml *is* often shipped alongside `package.json`,
-  // and yarn projects ship `yarn.lock`. We scan top-level filenames
-  // through `manifests` only, so to keep this side-effect-free we don't
-  // add lockfile inference here. The recipe is expected to disambiguate.)
+  // JS bundlers and meta-build coordinators (vite, webpack, rollup,
+  // parcel, esbuild, nx, turbo). Detected during the walk via
+  // BUILD_TOOL_MATCHERS — pass through verbatim.
+  for (const hint of walk.buildToolHints) hints.add(hint);
 
   return [...hints].sort();
 }

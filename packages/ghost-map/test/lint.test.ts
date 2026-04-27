@@ -134,6 +134,13 @@ describe("lintMap — design_system token_source + derived_files", () => {
     expect(report.errors).toBe(0);
   });
 
+  it("accepts an array `upstream` (multiple upstream packages)", () => {
+    const report = lintMap(
+      loadFixture("multi-upstream-repo/multi-upstream.map.md"),
+    );
+    expect(report.errors).toBe(0);
+  });
+
   it("warns when token_source: external is set but upstream is missing", () => {
     const raw = loadFixture("external-tokens-repo/external.map.md").replace(
       '  upstream: "@example/design-tokens"\n',

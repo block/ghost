@@ -59,8 +59,19 @@ surfaces:
   borderUsage: moderate             # minimal | moderate | heavy
 
 # slot → token bindings (optional but strongly recommended)
-# Role palette fields may use `{palette.dominant.<role>}` or
-# `{palette.semantic.<role>}` references instead of raw hexes.
+#
+# `roles[].tokens.palette` is an open record — slot keys are free-form.
+# Reach for the conventional vocabulary first: `background`, `foreground`,
+# `surface`, `border`, `accent`, `muted`, `link`. Add others (`ring`,
+# `popover`, `separator`, …) when they're load-bearing in your codebase.
+#
+# Slot values are either:
+#   - raw hex literals — `"#1a1a1a"`
+#   - local refs — `"{palette.dominant.<role>}"` / `"{palette.semantic.<role>}"`
+#   - opaque external refs — `"{base.color.brand.x}"` for token-pipeline
+#     consumers; the linter accepts these as deliberate passthroughs and
+#     does not try to resolve them
+#
 # Other dimensions (typography, spacing, surfaces) inline raw values.
 roles:
   - name: h1
@@ -73,6 +84,7 @@ roles:
       palette:
         background: "{palette.dominant.accent}"
         foreground: "{palette.dominant.surface}"
+        border: "{palette.semantic.border-default}"
     evidence: ["src/components/button.tsx:12"]
 
 # extension bag (optional, opaque to comparisons)

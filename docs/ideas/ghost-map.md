@@ -48,7 +48,7 @@ Frontmatter is the machine layer (consumed by other Ghost tools). Body is three 
 | `mapped_at` | ISO date | absolute, not relative |
 | `platform` | enum or `enum[]` | `web` / `ios` / `android` / `desktop` / `flutter` / `mixed` / `other`. Array form preferred when a repo genuinely spans multiple platforms (`platform: [ios, android, web]`). `mixed` is kept for backcompat. |
 | `languages` | `[{name, files, share}]` | ordered desc by share |
-| `build_system` | enum or `enum[]` | `gradle` / `bazel` / `xcode` / `pnpm` / `npm` / `yarn` / `cargo` / `go` / `maven` / `sbt` / `cmake` / `style-dictionary` / `mixed` / `other`. Array form when several coexist (`build_system: [yarn, gradle, style-dictionary]`). |
+| `build_system` | enum or `enum[]` | `gradle` / `bazel` / `xcode` / `pnpm` / `npm` / `yarn` / `cargo` / `go` / `maven` / `sbt` / `cmake` / `style-dictionary` / `vite` / `webpack` / `parcel` / `rollup` / `turbopack` / `esbuild` / `nx` / `turbo` / `mixed` / `other`. Array form when several coexist (`build_system: [pnpm, vite, nx, style-dictionary]`). |
 | `package_manifests` | `string[]` | canonical manifests at the root and any expanded workspace dirs (`packages/*`, `apps/*`, `libs/*`, `common/*`). Root entries are basenames; workspace entries are POSIX-relative. |
 | `composition.frameworks` | `[{name, version?}]` | detected frameworks |
 | `composition.rendering` | string | primary rendering layer |
@@ -59,7 +59,7 @@ Frontmatter is the machine layer (consumed by other Ghost tools). Body is three 
 | `design_system.entry_files` | `string[]?` | files that resolve a token end-to-end (the source-of-truth). Optional in 4b — at least one of `entry_files` / `derived_files` should be set in practice. |
 | `design_system.derived_files` | `string[]?` | built artifacts other tools may consume (e.g. `dist/colors.ts` generated from `tokens/colors.json`). Distinct from `entry_files` so drift can point at the right reference. |
 | `design_system.token_source` | enum? | `inline` (declared in-tree) / `external` (pulled from an upstream package) / `mixed`. Optional. |
-| `design_system.upstream` | string? | upstream token reference when `token_source` is `external` or `mixed`. Free-form: npm package, SPM ref, sibling path, … |
+| `design_system.upstream` | string or `string[]`? | upstream token reference(s) when `token_source` is `external` or `mixed`. Free-form: npm package, SPM ref, sibling path, …. Array form when a consumer pulls from multiple packages (`upstream: ["@org/tokens", "@org/components", "@org/icons"]`). |
 | `design_system.status` | enum | `active` / `mixed` / `unclear` |
 | `ui_surface.include` | glob[] | where customer UI lives |
 | `ui_surface.exclude` | glob[] | infra/tests/legacy to skip |

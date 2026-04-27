@@ -30,6 +30,12 @@ const PlatformValueSchema = z.union([
  * (`style-dictionary`) and JVM/native build systems that show up in real
  * monorepos but didn't fit any earlier value (`bazel`, `maven`, `sbt`,
  * `cmake`). `cargo` was already present before 4b.
+ *
+ * Phase 5b adds JS bundlers and meta-build coordinators: real consumer
+ * repos use `vite` as the build with `pnpm`/`yarn` for dependencies, and
+ * monorepos increasingly run `nx` or `turbo` on top. Without these the
+ * recipe was forced to drop signal into prose; an array like
+ * `[pnpm, vite, nx, style-dictionary]` is now expressible.
  */
 const BuildSystemEnum = z.enum([
   "gradle",
@@ -44,6 +50,16 @@ const BuildSystemEnum = z.enum([
   "sbt",
   "cmake",
   "style-dictionary",
+  // JS bundlers
+  "vite",
+  "webpack",
+  "parcel",
+  "rollup",
+  "turbopack",
+  "esbuild",
+  // Meta-build coordinators
+  "nx",
+  "turbo",
   "mixed",
   "other",
 ]);
@@ -126,11 +142,19 @@ export const MapFrontmatterSchema = z.object({
      */
     token_source: z.enum(["inline", "external", "mixed"]).optional(),
     /**
-     * Reference to the upstream token source when `token_source` is
-     * `external` or `mixed`. Free-form: npm package name, SPM module ref,
-     * relative path to a sibling package, etc.
+     * Reference(s) to the upstream token source(s) when `token_source` is
+     * `external` or `mixed`. Free-form strings: npm package names, SPM
+     * module refs, relative paths to sibling packages, etc.
+     *
+     * Accepts either a single string or an array of strings. Real
+     * consumers often pull from multiple upstream packages (a token
+     * package + a component package + an icon package + a glue package);
+     * the array form keeps the structured signal instead of forcing the
+     * recipe to pack them into prose.
      */
-    upstream: z.string().min(1).optional(),
+    upstream: z
+      .union([z.string().min(1), z.array(z.string().min(1)).min(1)])
+      .optional(),
     status: z.enum(["active", "mixed", "unclear"]),
   }),
   ui_surface: z.object({

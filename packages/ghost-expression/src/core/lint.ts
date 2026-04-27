@@ -302,20 +302,27 @@ function collectPaletteHexes(fp: Expression): Set<string> {
 }
 
 /**
- * Role palette fields may reference named palette slots via `{palette.dominant.<role>}`
- * or `{palette.semantic.<role>}`. Flag references that don't resolve — the linter
- * catches renames in the palette that left a role pointing at nothing.
+ * Role palette slots may reference named palette entries via
+ * `{palette.dominant.<role>}` or `{palette.semantic.<role>}`, or
+ * opaque external token refs (`{base.color.brand.x}`) for repos
+ * that pull tokens from a Style-Dictionary-style pipeline.
+ *
+ * The slot vocabulary is open (Phase 5b) — any key the consumer
+ * defines is walked. Local refs that don't resolve fire
+ * `broken-role-reference`; external refs are accepted as opaque (see
+ * `isExternalTokenReference`).
  */
-const ROLE_PALETTE_FIELDS = ["background", "foreground", "border"] as const;
-
 function checkRoleReferences(fp: Expression, issues: LintIssue[]): void {
   const roles = fp.roles ?? [];
   roles.forEach((role, ri) => {
     const palette = role.tokens?.palette;
     if (!palette) return;
-    for (const field of ROLE_PALETTE_FIELDS) {
-      const value = palette[field];
+    for (const [field, value] of Object.entries(palette)) {
       if (!isTokenReference(value)) continue;
+      // External token refs (Style-Dictionary-style namespaces) are
+      // accepted as opaque — we can't resolve them without consulting
+      // the upstream package, and the agent authored them deliberately.
+      if (isExternalTokenReference(value)) continue;
       const result = resolveTokenReference(fp, value);
       if (result.error) {
         issues.push({
@@ -327,4 +334,42 @@ function checkRoleReferences(fp: Expression, issues: LintIssue[]): void {
       }
     }
   });
+}
+
+/**
+ * Heuristic for "this is a deliberately-opaque external token ref."
+ * Returns true when the reference clearly targets a foreign namespace —
+ * either it starts with a recognized Style-Dictionary-style head, or
+ * it has 4+ dotted segments (deeper than local `palette.<bucket>.<role>`).
+ *
+ * Local refs (`{palette.dominant.accent}`, `{palette.semantic.error}`)
+ * are NOT external — the caller resolves them against the palette and
+ * fires `broken-role-reference` if they miss. References starting with
+ * `palette.` but pointing at an unsupported sub-namespace are also
+ * routed through the resolver so its `unsupported-namespace` error
+ * surfaces properly.
+ */
+function isExternalTokenReference(value: string): boolean {
+  const match = /^\{([^}]+)\}$/.exec(value);
+  if (!match) return false;
+  const path = match[1];
+  const segments = path.split(".");
+  // Anything in the local `palette.*` namespace is resolved locally,
+  // even if the sub-namespace is wrong (the resolver's
+  // `unsupported-namespace` error is the right diagnostic).
+  if (segments[0] === "palette") return false;
+  // External Style-Dictionary-style namespace heads — passthrough.
+  const externalHeads = new Set([
+    "base",
+    "core",
+    "semantic",
+    "component",
+    "tokens",
+    "ref",
+    "sys",
+  ]);
+  if (externalHeads.has(segments[0] ?? "")) return true;
+  // Deeply-nested refs (4+ segments) — heuristic that this is a
+  // pipeline-generated token, not a flat slug we should resolve.
+  return segments.length >= 4;
 }

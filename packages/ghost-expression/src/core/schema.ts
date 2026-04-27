@@ -108,14 +108,21 @@ const DesignRoleSchema = z
           })
           .strict()
           .optional(),
-        palette: z
-          .object({
-            background: z.string().optional(),
-            foreground: z.string().optional(),
-            border: z.string().optional(),
-          })
-          .strict()
-          .optional(),
+        /**
+         * Palette slot bindings. Open-ended record — keys are slot names
+         * the consumer chooses, values are either raw hex literals
+         * (`"#1a1a1a"`) or `{palette.dominant.X}` / `{palette.semantic.X}`
+         * references that resolve through the local palette, or opaque
+         * external token refs (`{base.color.brand.x}`) for repos that
+         * pull tokens from a Style-Dictionary-style pipeline.
+         *
+         * Conventional keys (the recipe should reach for these first):
+         * `background`, `foreground`, `surface`, `border`, `accent`,
+         * `muted`, `link`. Phase 5b widened this from a fixed three-key
+         * shape to an open record so richer real-world vocabularies
+         * (separator, ring, popover, …) don't hard-error.
+         */
+        palette: z.record(z.string(), z.string()).optional(),
       })
       .strict(),
     evidence: z.array(z.string()),

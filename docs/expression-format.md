@@ -221,11 +221,19 @@ Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a reci
 
 **Authoring contract.** Only emit roles with direct source evidence. A plausible-but-unobserved role is worse than a missing one. A codebase with no component files may produce no roles at all — that is truthful.
 
-**Strictness.** The `tokens` sub-blocks are zod `.strict()` — unknown keys reject, so the schema stays disciplined as it grows. Add a field to the schema before emitting it.
+**Strictness.** The `typography`, `spacing`, and `surfaces` sub-blocks are zod `.strict()` — unknown keys reject, so the schema stays disciplined as it grows. The `palette` sub-block is an open record (Phase 5b widening): slot keys are free-form so consumers can name slots from the conventional vocabulary or extend it.
+
+### Palette slot vocabulary
+
+`roles[].tokens.palette` is a `Record<string, string>`. The recipe should reach for the conventional keys first; add others when they're load-bearing in the codebase.
+
+**Conventional keys** (use these by default): `background`, `foreground`, `surface`, `border`, `accent`, `muted`, `link`.
+
+**Extensions** seen in the wild: `ring`, `popover`, `separator`, `input`, `chart-1`, … — fine to use when the codebase justifies them.
 
 ### Token references
 
-Role palette fields (`background`, `foreground`, `border`) may point at a named palette slot instead of inlining a raw hex. The syntax is `{<namespace>.<role>}`:
+Role palette slot values may be raw hex literals OR token references. The reference syntax is `{<namespace>.<role>}`:
 
 ```yaml
 roles:
@@ -234,13 +242,16 @@ roles:
       palette:
         background: '{palette.dominant.accent}'   # resolves to #c96442
         foreground: '{palette.dominant.surface}'  # resolves to #f5f4ed
-        border:     '#e8e6dc'                     # raw is fine too
+        border:     '#e8e6dc'                     # raw hex is fine too
+        ring:       '{base.color.brand.x.light}'  # opaque external ref
     evidence: ["components/ui/button.tsx:18"]
 ```
 
-**Supported namespaces:** `palette.dominant` and `palette.semantic` — the two palette blocks that already carry a `role`. Renames cascade (change the role value in one place, every role that references it updates too), and `ghost-drift lint` reports `broken-role-reference` for references that don't resolve.
+**Local namespaces:** `palette.dominant` and `palette.semantic` — the two palette blocks that already carry a `role`. Renames cascade (change the role value in one place, every role that references it updates too), and `ghost-expression lint` reports `broken-role-reference` for references that don't resolve.
 
-**What cannot be referenced.** `palette.neutrals.steps` is positional (no name). Typography, spacing, and surfaces are inventories, not named vocabularies — role tokens for those dimensions inline raw values. If a future profile recipe starts emitting a named layer on these blocks, the reference surface will grow; until then, referencing them is an unsupported-namespace error.
+**External / pipeline refs.** Token-pipeline consumers (Style Dictionary, Theo, …) often bind a role to a deeply-nested upstream token like `{base.color.brand.x.light}`. The linter accepts these as opaque passthroughs when the head segment is a recognized external namespace (`base`, `core`, `semantic`, `component`, `tokens`, `ref`, `sys`) or the path has 4+ segments. We don't try to resolve them — that requires walking the upstream package, which is out of scope for the deterministic CLI.
+
+**What cannot be referenced locally.** `palette.neutrals.steps` is positional (no name). Typography, spacing, and surfaces are inventories, not named vocabularies — role tokens for those dimensions inline raw values. Local refs targeting the `palette.*` namespace beyond `dominant`/`semantic` fire `broken-role-reference`; external refs (heads outside `palette.*`) pass through.
 
 ---
 

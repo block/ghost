@@ -269,6 +269,7 @@ describe("inventory — platform_hints stays inside the platform enum", () => {
       "python-venv-repo",
       "workspace-repo",
       "bazel-ruby-ios-repo",
+      "vite-nx-repo",
     ]) {
       const out = inventory(resolve(FIXTURES, fixture));
       for (const hint of out.platform_hints) {
@@ -299,5 +300,14 @@ describe("inventory — build_system_hints", () => {
   it("hints `xcode` for an SPM fixture", () => {
     const out = inventory(resolve(FIXTURES, "ios-spm-repo"));
     expect(out.build_system_hints).toContain("xcode");
+  });
+
+  it("hints `vite` and `nx` for a Vite-on-Nx monorepo", () => {
+    // Phase 5b widened the build_system enum to cover JS bundlers (vite,
+    // webpack, rollup, parcel, esbuild) and meta-build coordinators (nx,
+    // turbo). The fixture ships `vite.config.ts` + `nx.json` at the root.
+    const out = inventory(resolve(FIXTURES, "vite-nx-repo"));
+    expect(out.build_system_hints).toContain("vite");
+    expect(out.build_system_hints).toContain("nx");
   });
 });
