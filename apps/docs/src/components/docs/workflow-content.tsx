@@ -4,8 +4,6 @@ import { cn } from "ghost-ui";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, useState } from "react";
-import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
-import { SectionWrapper } from "@/components/docs/wrappers";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -93,7 +91,89 @@ function StepLead({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─────────────────────── 1. Profile — expression.md excerpt ─────── */
+/* ─────────────────────── 1. Map — map.md excerpt ────────────────── */
+
+function MapExcerpt() {
+  return (
+    <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border-card bg-muted/30">
+        <code className="text-xs font-mono text-muted-foreground">map.md</code>
+        <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
+          excerpt
+        </span>
+      </div>
+      <pre className="px-5 py-5 text-xs md:text-[13px] font-mono leading-relaxed overflow-x-auto">
+        <code>
+          <span className="text-muted-foreground">{"---\n"}</span>
+          <span className="text-foreground">schema</span>
+          <span className="text-muted-foreground">: ghost.map/v1{"\n"}</span>
+          <span className="text-foreground">id</span>
+          <span className="text-muted-foreground">: ghost{"\n"}</span>
+          <span className="text-foreground">repo</span>
+          <span className="text-muted-foreground">: block/ghost{"\n"}</span>
+          <span className="text-foreground">composition</span>
+          <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">{"  frameworks:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            {'{ name: react, version: "19" }'}
+            {"\n"}
+          </span>
+          <span className="text-muted-foreground">{"  styling:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">tailwind{"\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">css-vars{"\n"}</span>
+          <span className="text-foreground">registry</span>
+          <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">{"  path: "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/registry.json{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"  components: "}</span>
+          <span className="text-foreground">97{"\n"}</span>
+          <span className="text-foreground">design_system</span>
+          <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">{"  paths:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/src/components{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/src/styles{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"  entry_files:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/src/styles/tokens.css{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/expression.md{"\n"}
+          </span>
+          <span className="text-foreground">ui_surface</span>
+          <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">{"  include:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            packages/ghost-ui/src/components/**{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"  exclude:\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">&quot;**/dist/**&quot;{"\n"}</span>
+          <span className="text-muted-foreground">{"    - "}</span>
+          <span className="text-foreground">
+            &quot;**/node_modules/**&quot;{"\n"}
+          </span>
+          <span className="text-muted-foreground">{"---\n"}</span>
+        </code>
+      </pre>
+    </div>
+  );
+}
+
+/* ─────────────────────── 2. Profile — expression.md excerpt ─────── */
 
 function ExpressionExcerpt() {
   return (
@@ -611,8 +691,18 @@ function StanceBubble({
   );
 }
 
+type Stance = "aligned" | "drifting" | "accepted" | "diverging";
+type ActiveStance = "aligned" | "accepted" | "diverging";
+
+const STANCE_FILL: Record<Stance, string> = {
+  aligned: "fill-foreground/40",
+  drifting: "fill-foreground/70",
+  accepted: "fill-foreground",
+  diverging: "fill-foreground",
+};
+
 function HistoryRibbon() {
-  const points = [
+  const points: { t: string; v: number; stance: Stance }[] = [
     { t: "Jan", v: 0.08, stance: "aligned" },
     { t: "Feb", v: 0.12, stance: "aligned" },
     { t: "Mar", v: 0.18, stance: "drifting" },
@@ -621,6 +711,9 @@ function HistoryRibbon() {
     { t: "Jun", v: 0.31, stance: "diverging" },
     { t: "Jul", v: 0.36, stance: "diverging" },
   ];
+  const [playhead, setPlayhead] = useState<number | null>(null);
+  const [hypothesis, setHypothesis] = useState<ActiveStance>("aligned");
+
   const max = 0.5;
   const w = 420;
   const h = 80;
@@ -633,6 +726,34 @@ function HistoryRibbon() {
     })
     .join(" ");
 
+  const effectiveStance = (i: number): Stance =>
+    playhead !== null && i >= playhead ? hypothesis : points[i].stance;
+
+  const setPlayheadFromPointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    const svg = e.currentTarget;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const local = pt.matrixTransform(ctm.inverse());
+    const ratio = Math.max(0, Math.min(1, local.x / w));
+    const idx = Math.round(ratio * (points.length - 1));
+    setPlayhead(idx);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setPlayheadFromPointer(e);
+  };
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!(e.buttons & 1)) return;
+    setPlayheadFromPointer(e);
+  };
+
+  const playheadX = playhead !== null ? playhead * stepX : null;
+  const monthsAffected = playhead !== null ? points.length - playhead : 0;
+
   return (
     <div className="reveal mt-10 rounded-[var(--radius-card-sm)] border border-border-card bg-card p-6">
       <div className="flex items-baseline justify-between mb-3">
@@ -643,9 +764,44 @@ function HistoryRibbon() {
           .ghost/history.jsonl
         </code>
       </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-4 text-[10px] font-mono uppercase tracking-wider">
+        <span className="text-muted-foreground">if stance from playhead =</span>
+        {(["aligned", "accepted", "diverging"] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setHypothesis(s)}
+            className={cn(
+              "px-2 py-0.5 rounded-full border transition-colors cursor-pointer",
+              hypothesis === s
+                ? "bg-foreground text-background border-foreground"
+                : "border-border-card text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {s === "aligned"
+              ? "= aligned"
+              : s === "accepted"
+                ? "* accepted"
+                : "~ diverging"}
+          </button>
+        ))}
+        {playhead !== null && (
+          <button
+            type="button"
+            onClick={() => setPlayhead(null)}
+            className="ml-auto text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            reset
+          </button>
+        )}
+      </div>
+
       <svg
         viewBox={`-8 -12 ${w + 16} ${h + 36}`}
-        className="w-full max-w-[480px]"
+        className="w-full max-w-[480px] cursor-ew-resize touch-none select-none"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
       >
         <line
           x1={0}
@@ -670,9 +826,30 @@ function HistoryRibbon() {
           className="stroke-foreground"
           strokeWidth={1.5}
         />
+        {playheadX !== null && (
+          <g>
+            <line
+              x1={playheadX}
+              y1={-10}
+              x2={playheadX}
+              y2={h + 6}
+              className="stroke-foreground"
+              strokeWidth={1}
+              strokeDasharray="4 2"
+            />
+            <rect
+              x={playheadX - 4}
+              y={-12}
+              width={8}
+              height={5}
+              className="fill-foreground"
+            />
+          </g>
+        )}
         {points.map((p, i) => {
           const x = i * stepX;
           const y = h - (p.v / max) * h;
+          const stance = effectiveStance(i);
           return (
             <g key={p.t}>
               <circle
@@ -680,17 +857,20 @@ function HistoryRibbon() {
                 cy={y}
                 r={3}
                 className={cn(
-                  p.stance === "aligned" && "fill-foreground/40",
-                  p.stance === "drifting" && "fill-foreground/70",
-                  p.stance === "accepted" && "fill-foreground",
-                  p.stance === "diverging" && "fill-foreground",
+                  STANCE_FILL[stance],
+                  "transition-colors duration-300",
                 )}
               />
               <text
                 x={x}
                 y={h + 14}
                 textAnchor="middle"
-                className="fill-muted-foreground text-[9px] font-mono"
+                className={cn(
+                  "text-[9px] font-mono transition-colors duration-200",
+                  playhead !== null && i === playhead
+                    ? "fill-foreground"
+                    : "fill-muted-foreground",
+                )}
               >
                 {p.t}
               </text>
@@ -699,11 +879,32 @@ function HistoryRibbon() {
         })}
       </svg>
       <p className="mt-4 text-xs text-muted-foreground leading-relaxed max-w-[52ch]">
-        Crossing the threshold in March could have been noise. The{" "}
-        <em>accepted</em> stance in April said &ldquo;yes, on purpose.&rdquo;
-        The <em>diverging</em> stance in June said &ldquo;we own this
-        now.&rdquo; The curve hasn&apos;t changed shape — but the meaning of
-        every point after it has.
+        {playhead === null ? (
+          <>
+            Crossing the threshold in March could have been noise. The{" "}
+            <em>accepted</em> stance in April said &ldquo;yes, on
+            purpose.&rdquo; The <em>diverging</em> stance in June said &ldquo;we
+            own this now.&rdquo; The curve hasn&apos;t changed shape — but the
+            meaning of every point after it has.{" "}
+            <span className="text-foreground/70">
+              Drag the chart to scrub a decision moment.
+            </span>
+          </>
+        ) : (
+          <>
+            From{" "}
+            <strong className="text-foreground">{points[playhead].t}</strong>{" "}
+            forward — {monthsAffected}{" "}
+            {monthsAffected === 1 ? "month" : "months"} re-classified as{" "}
+            <em>{hypothesis}</em>.{" "}
+            {hypothesis === "aligned" &&
+              "A bug to fix on every point past the playhead."}
+            {hypothesis === "accepted" &&
+              "Reviewed and OK — known, intentional drift."}
+            {hypothesis === "diverging" &&
+              "This dimension is ours now; the parent no longer measures it."}
+          </>
+        )}
       </p>
     </div>
   );
@@ -825,29 +1026,78 @@ function OrgExpression() {
   );
 }
 
-/* ═══════════════════════════ Main page ════════════════════════════════ */
+/* ═══════════════════════════ Public component ═════════════════════════ */
 
-export default function WorkflowPage() {
+export function WorkflowContent() {
   return (
-    <SectionWrapper>
-      <AnimatedPageHeader
-        kicker="Workflow"
-        title="Working with Ghost"
-        description="Ghost is five moves: profile your system, compare it, review drift, evolve with intent, and zoom out to the org expression. The CLI is deterministic; the judgement work is a set of skill recipes your host agent runs."
-      />
-
-      {/* ── Step 1: Profile ─────────────────────────────────────────── */}
+    <>
+      {/* ── Step 1: Map ─────────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
-        <StepLabel>Step 01 · Profile</StepLabel>
+        <StepLabel>Step 01 · Map</StepLabel>
+        <StepTitle>Map the project</StepTitle>
+        <StepLead>
+          Before profiling can happen, the host agent needs to know{" "}
+          <em>where the design system actually lives</em> in your repo.{" "}
+          <code>ghost-map</code> walks the project — manifests, language
+          histogram, component registry, styling system — and writes a{" "}
+          <code>map.md</code> at the repo root: a navigation card every other
+          Ghost tool reads.
+        </StepLead>
+        <MapExcerpt />
+        <div className="reveal mt-8 grid sm:grid-cols-3 gap-4">
+          {[
+            {
+              layer: "Topology",
+              name: "Where",
+              desc: "design_system.paths and entry_files — the folders and files that own the look.",
+            },
+            {
+              layer: "Composition",
+              name: "How",
+              desc: "Frameworks, styling system, build manifest. The shape of the codebase, not the look.",
+            },
+            {
+              layer: "Surface",
+              name: "What counts",
+              desc: "ui_surface globs — what's user-facing UI vs. tooling, tests, dist artifacts.",
+            },
+          ].map((l) => (
+            <div
+              key={l.name}
+              className="rounded-[var(--radius-card-sm)] border border-border-card bg-card p-5"
+            >
+              <div className="font-mono text-xs uppercase text-muted-foreground mb-1">
+                {l.layer}
+              </div>
+              <div className="font-display text-base font-semibold mb-2">
+                {l.name}
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {l.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
+          The map is short on purpose — pointers, not contents. It tells{" "}
+          <code>ghost-expression</code> which folders to read when profiling,
+          and tells <code>ghost-fleet</code> which surfaces to count when
+          aggregating. The success gate is <code>ghost-map lint</code>, which
+          validates against <code>ghost.map/v1</code>.
+        </p>
+      </Step>
+
+      {/* ── Step 2: Profile ─────────────────────────────────────────── */}
+      <Step className="border-t border-border/40">
+        <StepLabel>Step 02 · Profile</StepLabel>
         <StepTitle>Write an expression.md</StepTitle>
         <StepLead>
-          Open your project in a host agent with the{" "}
-          <code>ghost-expression</code> skill installed and ask it to{" "}
-          <em>profile this design language</em>. The recipe walks the agent
-          through your theme CSS, tailwind config, and component primitives,
-          resolves variable chains, and writes a single{" "}
-          <code>expression.md</code> at the repo root — YAML frontmatter for
-          machines, Markdown body for humans.
+          With <code>map.md</code> in place, open the project in a host agent
+          with the <code>ghost-expression</code> skill installed and ask it to{" "}
+          <em>profile this design language</em>. The recipe follows the map to
+          your theme CSS, tailwind config, and component primitives, resolves
+          variable chains, and writes a single <code>expression.md</code> at the
+          repo root — YAML frontmatter for machines, Markdown body for humans.
         </StepLead>
         <ExpressionExcerpt />
         <div className="reveal mt-8 grid sm:grid-cols-3 gap-4">
@@ -893,9 +1143,9 @@ export default function WorkflowPage() {
         </p>
       </Step>
 
-      {/* ── Step 2: Compare ────────────────────────────────────────── */}
+      {/* ── Step 3: Compare ────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
-        <StepLabel>Step 02 · Compare</StepLabel>
+        <StepLabel>Step 03 · Compare</StepLabel>
         <StepTitle>Measure the distance</StepTitle>
         <StepLead>
           Two expressions in, one answer out: an overall distance, a
@@ -941,9 +1191,9 @@ export default function WorkflowPage() {
         </p>
       </Step>
 
-      {/* ── Step 3: Review ──────────────────────────────────────────── */}
+      {/* ── Step 4: Review ──────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
-        <StepLabel>Step 03 · Review</StepLabel>
+        <StepLabel>Step 04 · Review</StepLabel>
         <StepTitle>Catch drift in a PR</StepTitle>
         <StepLead>
           <em>Review</em> is a skill recipe your host agent runs, not a CLI
@@ -969,9 +1219,9 @@ export default function WorkflowPage() {
         </p>
       </Step>
 
-      {/* ── Step 4: Evolve ─────────────────────────────────────────── */}
+      {/* ── Step 5: Evolve ─────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
-        <StepLabel>Step 04 · Evolve</StepLabel>
+        <StepLabel>Step 05 · Evolve</StepLabel>
         <StepTitle>Turn drift into signal</StepTitle>
         <StepLead>
           Not every drift is a bug. Sometimes you changed that radius on
@@ -1018,9 +1268,9 @@ export default function WorkflowPage() {
         </p>
       </Step>
 
-      {/* ── Step 5: Org ────────────────────────────────────────────── */}
+      {/* ── Step 6: Org ────────────────────────────────────────────── */}
       <Step className="border-t border-border/40">
-        <StepLabel>Step 05 · Org</StepLabel>
+        <StepLabel>Step 06 · Org</StepLabel>
         <StepTitle>Zoom out to the org expression</StepTitle>
         <StepLead>
           Most orgs don&apos;t have one design language — they have several
@@ -1145,11 +1395,15 @@ export default function WorkflowPage() {
         <StepLabel>Artifacts</StepLabel>
         <StepTitle>What Ghost leaves behind</StepTitle>
         <StepLead>
-          Five moves, four files. Everything Ghost knows is checked into your
+          Six moves, five files. Everything Ghost knows is checked into your
           repo; nothing lives in a service you have to log into.
         </StepLead>
-        <div className="reveal grid sm:grid-cols-4 gap-4">
+        <div className="reveal grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {[
+            {
+              file: "map.md",
+              desc: "Where the design system lives — folders, registry, surface.",
+            },
             {
               file: "expression.md",
               desc: "What the system looks like, in three layers.",
@@ -1184,6 +1438,6 @@ export default function WorkflowPage() {
       </Step>
 
       <div className="h-24" />
-    </SectionWrapper>
+    </>
   );
 }

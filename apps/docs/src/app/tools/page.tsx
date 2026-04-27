@@ -5,91 +5,92 @@ import { Compass, FileText, Network, Orbit, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
+import { WorkflowContent } from "@/components/docs/workflow-content";
 import { SectionWrapper } from "@/components/docs/wrappers";
 
 const tools: {
   name: string;
   href: string;
-  description: string;
+  blurb: string;
   icon: ReactNode;
 }[] = [
   {
     name: "ghost-map",
     href: "/tools/map",
-    description:
-      "Topology. Generates map.md — the navigation card every other Ghost tool reads to learn where the design implementation lives.",
-    icon: <Compass className="size-8" strokeWidth={1.5} />,
+    blurb: "Topology — map.md",
+    icon: <Compass className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-expression",
     href: "/tools/expression",
-    description:
-      "Authoring. Owns expression.md — the canonical design-language artifact. Lint, describe, diff, and emit grounding bundles for any generator.",
-    icon: <FileText className="size-8" strokeWidth={1.5} />,
+    blurb: "Authoring — expression.md",
+    icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-drift",
     href: "/tools/drift",
-    description:
-      "Detection. Compares expressions, tracks stance (ack / track / diverge), and ships the review / verify / remediate recipes.",
-    icon: <Orbit className="size-8" strokeWidth={1.5} />,
+    blurb: "Detection — compare, ack, track",
+    icon: <Orbit className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-fleet",
     href: "/tools/fleet",
-    description:
-      "Elevation. Reads many (map.md, expression.md) members and emits fleet.md — pairwise distances, group-by tables, tracks-graph.",
-    icon: <Network className="size-8" strokeWidth={1.5} />,
+    blurb: "Elevation — fleet.md",
+    icon: <Network className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-ui",
     href: "/tools/ui",
-    description:
-      "Reference UI library. 97 shadcn-distributed components + an MCP server. The system Ghost dogfoods its expression against.",
-    icon: <Palette className="size-8" strokeWidth={1.5} />,
+    blurb: "Reference UI library",
+    icon: <Palette className="size-5" strokeWidth={1.5} />,
   },
 ];
 
-export default function ToolsIndex() {
-  const ref = useStaggerReveal<HTMLDivElement>(".tool-card", {
-    stagger: 0.06,
-    y: 30,
-    duration: 0.7,
+function ToolStrip() {
+  const ref = useStaggerReveal<HTMLDivElement>(".tool-chip", {
+    stagger: 0.05,
+    y: 16,
+    duration: 0.5,
   });
 
   return (
+    <div
+      ref={ref}
+      className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-4 overflow-visible"
+    >
+      {tools.map((tool) => (
+        <Link
+          key={tool.href}
+          to={tool.href}
+          className="tool-chip group flex flex-col gap-1.5 rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/30 bg-card p-4 transition-colors duration-300"
+        >
+          <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors duration-200">
+            {tool.icon}
+            <span className="font-display text-sm font-bold tracking-tight text-foreground">
+              {tool.name}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {tool.blurb}
+          </p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export default function ToolsIndex() {
+  return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="Platform"
-        title="Tools"
-        description="Tools for decentralized design."
+        kicker="Tools"
+        title="Working with Ghost"
+        description="Map your project, profile its design language, compare it, review drift, evolve with intent, zoom out to the org."
       />
 
-      <div
-        ref={ref}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-16 overflow-visible"
-      >
-        {tools.map((tool) => (
-          <Link
-            key={tool.href}
-            to={tool.href}
-            className="tool-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
-          >
-            <div className="mb-6 text-muted-foreground group-hover:text-foreground transition-colors duration-200">
-              {tool.icon}
-            </div>
-            <span className="relative inline-block font-display text-lg font-bold tracking-tight">
-              <span className="relative z-10 transition-colors duration-300 group-hover:text-background">
-                {tool.name}
-              </span>
-              <span className="absolute inset-0 bg-foreground origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
-            </span>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              {tool.description}
-            </p>
-          </Link>
-        ))}
-      </div>
+      <ToolStrip />
+
+      <WorkflowContent />
     </SectionWrapper>
   );
 }
