@@ -1,100 +1,3 @@
-export type { CompareOptions, CompareResult } from "./compare.js";
-export { compare } from "./compare.js";
-export { defineConfig, loadConfig, resolveTarget } from "./config.js";
-export type {
-  ContextFormat,
-  EmitReviewInput,
-  WriteContextOptions,
-  WriteContextResult,
-} from "./context/index.js";
-export {
-  buildSkillMd,
-  buildTokensCss,
-  emitReviewCommand,
-  writeContextBundle,
-} from "./context/index.js";
-export type { RoleCandidate } from "./embedding/index.js";
-export {
-  compareExpressions,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  describeExpression,
-  embeddingDistance,
-  inferSemanticRole,
-} from "./embedding/index.js";
-export type {
-  CheckBoundsOptions,
-  CompositeClusterOptions,
-} from "./evolution/index.js";
-export {
-  acknowledge,
-  appendHistory,
-  checkBounds,
-  compareComposite,
-  computeDriftVectors,
-  computeTemporalComparison,
-  DIMENSION_RANGES,
-  emitExpression,
-  normalizeTrackedSource,
-  readHistory,
-  readRecentHistory,
-  readSyncManifest,
-  resolveTrackedExpression,
-  writeSyncManifest,
-} from "./evolution/index.js";
-export type {
-  BodyData,
-  ColorChange,
-  DecisionChange,
-  ExpressionLayout,
-  ExpressionLayoutSection,
-  ExpressionMeta,
-  FrontmatterData,
-  FrontmatterShape,
-  LintIssue,
-  LintOptions,
-  LintReport,
-  LintSeverity,
-  ParsedExpression,
-  SemanticDiff,
-  TokenChange,
-} from "./expression/index.js";
-export {
-  diffExpressions,
-  EMBEDDING_FRAGMENT_FILENAME,
-  EXPRESSION_FILENAME,
-  embeddingSiblingPath,
-  FrontmatterSchema,
-  findFragmentLinks,
-  formatLayout,
-  formatSemanticDiff,
-  layoutExpression,
-  lintExpression,
-  loadEmbeddingFragment,
-  loadExpression,
-  parseBody,
-  parseExpression,
-  resolveEmbeddingReference,
-  serializeEmbeddingFragment,
-  serializeExpression,
-  splitRaw,
-  toJsonSchema,
-  validateFrontmatter,
-} from "./expression/index.js";
-export {
-  formatCompositeComparison,
-  formatCompositeComparisonJSON,
-} from "./reporters/composite.js";
-export {
-  formatComparison,
-  formatComparisonJSON,
-  formatExpression,
-  formatExpressionJSON,
-} from "./reporters/expression.js";
-export {
-  formatTemporalComparison,
-  formatTemporalComparisonJSON,
-} from "./reporters/temporal.js";
 export type {
   ColorRamp,
   ComponentMeta,
@@ -131,6 +34,7 @@ export type {
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
+  RoleCandidate,
   RuleSeverity,
   SampledFile,
   SampledMaterial,
@@ -145,4 +49,99 @@ export type {
   TokenCategory,
   TokenFormat,
   ValueDrift,
-} from "./types.js";
+} from "@ghost/core";
+export {
+  compareExpressions,
+  computeEmbedding,
+  computeSemanticEmbedding,
+  describeExpression,
+  embeddingDistance,
+  inferSemanticRole,
+} from "@ghost/core";
+// --- Deprecation shim: expression authoring + context emit moved to `ghost-expression`.
+// Re-exported here for one major-version cycle so library consumers can update
+// their imports gradually. New code should `import from "ghost-expression"`.
+export type {
+  BodyData,
+  ColorChange,
+  ContextFormat,
+  DecisionChange,
+  EmitReviewInput,
+  ExpressionLayout,
+  ExpressionLayoutSection,
+  ExpressionMeta,
+  FrontmatterData,
+  FrontmatterShape,
+  LintIssue,
+  LintOptions,
+  LintReport,
+  LintSeverity,
+  ParsedExpression,
+  SemanticDiff,
+  TokenChange,
+  WriteContextOptions,
+  WriteContextResult,
+} from "ghost-expression";
+export {
+  buildSkillMd,
+  buildTokensCss,
+  diffExpressions,
+  EMBEDDING_FRAGMENT_FILENAME,
+  EXPRESSION_FILENAME,
+  embeddingSiblingPath,
+  emitReviewCommand,
+  FrontmatterSchema,
+  findFragmentLinks,
+  formatLayout,
+  formatSemanticDiff,
+  layoutExpression,
+  lintExpression,
+  loadEmbeddingFragment,
+  loadExpression,
+  parseBody,
+  parseExpression,
+  resolveEmbeddingReference,
+  serializeEmbeddingFragment,
+  serializeExpression,
+  splitRaw,
+  toJsonSchema,
+  validateFrontmatter,
+  writeContextBundle,
+} from "ghost-expression";
+export type { CompareOptions, CompareResult } from "./compare.js";
+export { compare } from "./compare.js";
+export { defineConfig, loadConfig, resolveTarget } from "./config.js";
+export type {
+  CheckBoundsOptions,
+  CompositeClusterOptions,
+} from "./evolution/index.js";
+export {
+  acknowledge,
+  appendHistory,
+  checkBounds,
+  compareComposite,
+  computeDriftVectors,
+  computeTemporalComparison,
+  DIMENSION_RANGES,
+  emitExpression,
+  normalizeTrackedSource,
+  readHistory,
+  readRecentHistory,
+  readSyncManifest,
+  resolveTrackedExpression,
+  writeSyncManifest,
+} from "./evolution/index.js";
+export {
+  formatCompositeComparison,
+  formatCompositeComparisonJSON,
+} from "./reporters/composite.js";
+export {
+  formatComparison,
+  formatComparisonJSON,
+  formatExpression,
+  formatExpressionJSON,
+} from "./reporters/expression.js";
+export {
+  formatTemporalComparison,
+  formatTemporalComparisonJSON,
+} from "./reporters/temporal.js";

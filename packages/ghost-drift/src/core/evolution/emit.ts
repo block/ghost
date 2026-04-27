@@ -1,12 +1,12 @@
 import { writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import type { Expression } from "@ghost/core";
 import {
   EMBEDDING_FRAGMENT_FILENAME,
   EXPRESSION_FILENAME,
   serializeEmbeddingFragment,
   serializeExpression,
-} from "../expression/index.js";
-import type { Expression } from "../types.js";
+} from "ghost-expression";
 
 /**
  * Write an expression as a publishable artifact (expression.md) to the

@@ -2,11 +2,11 @@
 name: verify
 description: Confirm generated UI stays within expression.md bounds; iterate if not.
 handoffs:
-  - label: Regenerate with feedback from the review
-    skill: generate
-    prompt: Regenerate the UI using the review findings as constraints
+  - label: Remediate the findings with minimal targeted fixes
+    skill: remediate
+    prompt: Given the verify findings, suggest the minimal token/code changes that close the drift
   - label: Update the expression to capture an uncaptured decision
-    skill: profile
+    command: ghost-expression lint
     prompt: Add the missing decision to expression.md and re-lint
 ---
 
@@ -20,7 +20,7 @@ Ghost has no `ghost verify` CLI command. You drive the loop; the expression is t
 
 ### 1. Generate
 
-Produce the UI code. See [generate.md](generate.md) for guidance, or work from whatever the user asked for. Respect `palette`, `spacing.scale`, `typography`, `surfaces`, `decisions`, `roles`.
+Produce the UI code. Use whatever generator/recipe your harness provides; respect `palette`, `spacing.scale`, `typography`, `surfaces`, `decisions`, `roles` from the expression. The expression is the constraint set — feed it into the generator's system prompt, or load `tokens.css` (via `ghost-expression emit context-bundle`) as grounding.
 
 ### 2. Self-review
 
@@ -33,7 +33,7 @@ Apply the [review recipe](review.md) to the generated file. Scan for hardcoded v
   - For each finding, identify the token the generator should have used.
   - Regenerate with explicit guidance: "Use `palette.primary` (`#0066cc`) instead of `#3b82f6`; snap padding to `spacing.scale` step 4 (16px) instead of `14px`."
   - Re-run the review. Up to 3 iterations.
-  - If still drifting after 3 tries: report to the user. The expression may be missing a token the generator needs, or the generation prompt may be too loose.
+  - If still drifting after 3 tries: report to the user. The expression may be missing a token the generator needs, or the generation prompt may be too loose. Consider [remediate.md](remediate.md) for fix suggestions.
 
 ### 4. (Optional) Suite verification
 

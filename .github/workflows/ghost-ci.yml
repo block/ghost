@@ -1,0 +1,87 @@
+name: Ghost CI (ghost-ui canonical loop)
+
+# DRAFT — captured for review per docs/ideas/ghost-ui.md ("CI loop — the demo").
+# Gated off (`if: false`) so this never runs on PRs until reviewed and the
+# verbs it relies on (`ghost map lint`, `ghost expression lint`,
+# `ghost drift compare --by-component`, `ghost drift emit review-command`)
+# all exist. Today's CLI is `ghost-drift lint`; the verbs in this draft
+# correspond to the post-decomposition `ghost <tool>` dispatcher.
+#
+# Intended shape:
+#   - `ghost map lint`        — block PR. Topology must be valid.
+#   - `ghost expression lint` — block PR. Expression must be valid.
+#   - `ghost drift compare`   — advisory. Reports drift on PR comment, never fails.
+#   - `ghost drift emit review-command` — advisory artifact for reviewers.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/ghost-ui/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ghost:
+    name: Ghost (map + expression + drift)
+    if: false  # DRAFT — do not enable until verbs exist and the loop is reviewed.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/ghost-ui
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # need main:expression.md for the drift comparison
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: Build CLIs
+        working-directory: .
+        run: pnpm build
+
+      # ----- Block: map.md must lint clean -----
+      - name: ghost map lint
+        run: pnpm exec ghost map lint map.md
+
+      # ----- Block: expression.md must lint clean -----
+      - name: ghost expression lint
+        run: pnpm exec ghost expression lint expression.md
+
+      # ----- Advisory: report drift against main, never fail -----
+      - name: ghost drift compare (advisory)
+        id: drift
+        continue-on-error: true
+        run: |
+          git show "origin/${{ github.base_ref }}:packages/ghost-ui/expression.md" > /tmp/expression.main.md
+          pnpm exec ghost drift compare expression.md /tmp/expression.main.md --by-component | tee drift-report.txt
+
+      - name: ghost drift emit review-command (advisory)
+        if: always()
+        continue-on-error: true
+        run: pnpm exec ghost drift emit review-command
+
+      - name: Post drift report on PR
+        if: always() && steps.drift.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('packages/ghost-ui/drift-report.txt', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Ghost drift report\n\n```\n' + body + '\n```'
+            });

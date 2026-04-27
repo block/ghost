@@ -1,11 +1,10 @@
-import { compareExpressions } from "../embedding/compare.js";
-import { embeddingDistance } from "../embedding/embedding.js";
 import type {
   CompositeCluster,
   CompositeComparison,
   CompositeMember,
   CompositePair,
-} from "../types.js";
+} from "@ghost/core";
+import { compareExpressions, embeddingDistance } from "@ghost/core";
 
 export interface CompositeClusterOptions {
   cluster?: boolean | { maxK?: number };

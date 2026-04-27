@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-25T02:58:04.127Z",
+  "generatedAt": "2026-04-27T12:04:59.221Z",
   "commands": [
     {
       "name": "compare",
@@ -30,36 +30,6 @@
           "takesValue": true,
           "negated": false
         },
-        {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    },
-    {
-      "name": "lint",
-      "rawName": "lint [expression]",
-      "description": "Validate expression.md schema and body/frontmatter coherence",
-      "options": [
-        {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    },
-    {
-      "name": "describe",
-      "rawName": "describe [expression]",
-      "description": "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
-      "options": [
         {
           "rawName": "--format <fmt>",
           "name": "format",
@@ -174,65 +144,29 @@
     {
       "name": "emit",
       "rawName": "emit <kind>",
-      "description": "Emit a derived artifact from expression.md (kinds: review-command, context-bundle, skill)",
+      "description": "Emit the ghost-drift agentskills.io bundle (kind: skill). For review-command and context-bundle, use `ghost-expression emit`.",
       "options": [
-        {
-          "rawName": "-e, --expression <path>",
-          "name": "expression",
-          "description": "Source expression file (default: expression.md)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
         {
           "rawName": "-o, --out <path>",
           "name": "out",
-          "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-drift/)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--stdout",
-          "name": "stdout",
-          "description": "Write to stdout instead of a file (review-command only)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--no-tokens",
-          "name": "tokens",
-          "description": "Skip tokens.css output (context-bundle)",
-          "default": true,
-          "takesValue": false,
-          "negated": true
-        },
-        {
-          "rawName": "--readme",
-          "name": "readme",
-          "description": "Include README.md (context-bundle)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--prompt-only",
-          "name": "promptOnly",
-          "description": "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--name <name>",
-          "name": "name",
-          "description": "Override the skill name (default: expression id) (context-bundle)",
+          "description": "Output directory (default: .claude/skills/ghost-drift)",
           "default": null,
           "takesValue": true,
           "negated": false
         }
       ]
+    },
+    {
+      "name": "lint",
+      "rawName": "lint [...args]",
+      "description": "Moved to `ghost-expression lint`. Install ghost-expression and re-run.",
+      "options": []
+    },
+    {
+      "name": "describe",
+      "rawName": "describe [...args]",
+      "description": "Moved to `ghost-expression describe`. Install ghost-expression and re-run.",
+      "options": []
     }
   ],
   "globalOptions": [

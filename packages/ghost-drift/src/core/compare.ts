@@ -1,8 +1,3 @@
-import { compareExpressions } from "./embedding/compare.js";
-import { compareComposite } from "./evolution/composite.js";
-import { computeTemporalComparison } from "./evolution/temporal.js";
-import type { SemanticDiff } from "./expression/diff.js";
-import { diffExpressions } from "./expression/diff.js";
 import type {
   CompositeComparison,
   CompositeMember,
@@ -11,7 +6,12 @@ import type {
   ExpressionHistoryEntry,
   SyncManifest,
   TemporalComparison,
-} from "./types.js";
+} from "@ghost/core";
+import { compareExpressions } from "@ghost/core";
+import type { SemanticDiff } from "ghost-expression";
+import { diffExpressions } from "ghost-expression";
+import { compareComposite } from "./evolution/composite.js";
+import { computeTemporalComparison } from "./evolution/temporal.js";
 
 export interface CompareOptions {
   /** Include a qualitative semantic diff. N=2 only. */

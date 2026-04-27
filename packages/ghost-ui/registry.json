@@ -2,6 +2,10 @@
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "ghost-ui",
   "homepage": "https://github.com/block/ghost",
+  "meta": {
+    "expression": "./expression.md",
+    "map": "./map.md"
+  },
   "items": [
     {
       "name": "ghost-ui-base",
@@ -774,7 +778,10 @@
           "path": "src/components/ui/alert.tsx"
         }
       ],
-      "categories": ["feedback"]
+      "categories": ["feedback"],
+      "meta": {
+        "expression_dimensions": ["palette", "spacing", "typography"]
+      }
     },
     {
       "name": "aspect-ratio",
@@ -815,7 +822,10 @@
           "path": "src/components/ui/badge.tsx"
         }
       ],
-      "categories": ["display"]
+      "categories": ["display"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "typography", "palette"]
+      }
     },
     {
       "name": "breadcrumb",
@@ -857,7 +867,15 @@
           "path": "src/components/ui/button.tsx"
         }
       ],
-      "categories": ["input"]
+      "categories": ["input"],
+      "meta": {
+        "expression_dimensions": [
+          "palette",
+          "surfaces",
+          "typography",
+          "spacing"
+        ]
+      }
     },
     {
       "name": "calendar",
@@ -884,7 +902,10 @@
           "path": "src/components/ui/card.tsx"
         }
       ],
-      "categories": ["display"]
+      "categories": ["display"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "spacing", "typography"]
+      }
     },
     {
       "name": "carousel",
@@ -981,7 +1002,10 @@
           "path": "src/components/ui/dialog.tsx"
         }
       ],
-      "categories": ["feedback"]
+      "categories": ["feedback"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "spacing", "palette"]
+      }
     },
     {
       "name": "drawer",
@@ -1078,7 +1102,10 @@
           "path": "src/components/ui/input.tsx"
         }
       ],
-      "categories": ["input"]
+      "categories": ["input"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "palette", "spacing"]
+      }
     },
     {
       "name": "label",
@@ -1152,7 +1179,10 @@
           "path": "src/components/ui/popover.tsx"
         }
       ],
-      "categories": ["feedback"]
+      "categories": ["feedback"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "palette", "spacing"]
+      }
     },
     {
       "name": "progress",
@@ -1289,7 +1319,10 @@
           "path": "src/components/ui/skeleton.tsx"
         }
       ],
-      "categories": ["display"]
+      "categories": ["display"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "palette"]
+      }
     },
     {
       "name": "slider",
@@ -1429,7 +1462,10 @@
           "path": "src/components/ui/tooltip.tsx"
         }
       ],
-      "categories": ["feedback"]
+      "categories": ["feedback"],
+      "meta": {
+        "expression_dimensions": ["palette", "surfaces", "typography"]
+      }
     },
     {
       "name": "agent",
