@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
-import { computeEmbedding } from "../embedding/embedding.js";
-import type { DesignDecision, Expression } from "../types.js";
+import type { DesignDecision, Expression } from "@ghost/core";
+import { computeEmbedding } from "@ghost/core";
 import { mergeExpression } from "./compose.js";
 import {
   loadDecisionFragments,

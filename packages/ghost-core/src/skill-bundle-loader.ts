@@ -1,25 +1,23 @@
 /**
- * Ghost's agentskills.io-compatible skill bundle.
+ * Generic loader for an agentskills.io-compatible skill bundle.
  *
- * The bundle's source files live in `src/skill-bundle/` as real markdown
- * and are copied verbatim into `dist/skill-bundle/` by the build step.
- * This loader walks the dist directory at runtime and returns a flat list
- * of files so `ghost-drift emit skill` can write them into a target project.
+ * Each tool in the Ghost monorepo (`ghost-drift`, `ghost-expression`, …) ships
+ * its own skill bundle as real markdown under `src/skill-bundle/` and copies
+ * it verbatim to `dist/skill-bundle/` at build time. This loader walks any
+ * given root directory and returns a flat, deterministically ordered list of
+ * files so each tool's `emit skill` verb can write them into a target project.
  *
  * Spec: https://agentskills.io/specification
  */
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { fileURLToPath } from "node:url";
 
 export interface SkillBundleFile {
   /** Path relative to the skill root (e.g. "SKILL.md", "references/schema.md"). */
   path: string;
   content: string;
 }
-
-const BUNDLE_ROOT = fileURLToPath(new URL("./skill-bundle", import.meta.url));
 
 function walk(dir: string, root: string, out: SkillBundleFile[]): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -36,9 +34,18 @@ function walk(dir: string, root: string, out: SkillBundleFile[]): void {
   }
 }
 
-export function loadSkillBundle(): SkillBundleFile[] {
+/**
+ * Load a skill bundle from disk.
+ *
+ * `bundleRoot` should point to a directory containing at least a `SKILL.md`
+ * file at the top level (typically `dist/skill-bundle/` after the host
+ * package's build step has copied the markdown sources from `src/`).
+ *
+ * The returned list is sorted with `SKILL.md` first, then alphabetically.
+ */
+export function loadSkillBundle(bundleRoot: string): SkillBundleFile[] {
   const out: SkillBundleFile[] = [];
-  walk(BUNDLE_ROOT, BUNDLE_ROOT, out);
+  walk(bundleRoot, bundleRoot, out);
   out.sort((a, b) => {
     if (a.path === "SKILL.md") return -1;
     if (b.path === "SKILL.md") return 1;

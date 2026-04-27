@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { compareExpressions } from "../embedding/compare.js";
 import type {
   DimensionAck,
   DimensionStance,
@@ -9,7 +8,8 @@ import type {
   ExpressionComparison,
   SyncManifest,
   Target,
-} from "../types.js";
+} from "@ghost/core";
+import { compareExpressions } from "@ghost/core";
 
 const SYNC_FILENAME = ".ghost-sync.json";
 

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { ExpressionHistoryEntry } from "../types.js";
+import type { ExpressionHistoryEntry } from "@ghost/core";
 
 const GHOST_DIR = ".ghost";
 const HISTORY_FILE = "history.jsonl";

@@ -1,4 +1,4 @@
-import type { Expression } from "../types.js";
+import type { Expression } from "@ghost/core";
 
 /**
  * Role token reference syntax: `{palette.dominant.<role>}` or

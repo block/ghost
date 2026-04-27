@@ -1,4 +1,4 @@
-import type { Expression } from "../types.js";
+import type { Expression } from "@ghost/core";
 
 export interface EmitReviewInput {
   expression: Expression;

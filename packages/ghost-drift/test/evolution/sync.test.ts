@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
-import { checkBounds } from "../../src/core/evolution/sync.js";
 import type {
   DimensionAck,
   Expression,
   ExpressionComparison,
   SyncManifest,
-} from "../../src/core/types.js";
+} from "@ghost/core";
+import { describe, expect, it } from "vitest";
+import { checkBounds } from "../../src/core/evolution/sync.js";
 
 function makeManifest(
   dimensions: Record<string, Partial<DimensionAck>>,

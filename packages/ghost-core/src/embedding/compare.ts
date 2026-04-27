@@ -1,9 +1,9 @@
-import { computeDriftVectors } from "../evolution/vector.js";
 import type {
   DimensionDelta,
   Expression,
   ExpressionComparison,
 } from "../types.js";
+import { computeDriftVectors } from "./vector.js";
 
 export interface CompareOptions {
   includeVectors?: boolean;

@@ -1,4 +1,4 @@
-import type { TemporalComparison } from "../types.js";
+import type { TemporalComparison } from "@ghost/core";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";

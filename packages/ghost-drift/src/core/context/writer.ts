@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { DesignDecision, Expression } from "@ghost/core";
 import { serializeExpression } from "../expression/writer.js";
-import type { DesignDecision, Expression } from "../types.js";
 import { buildTokensCss } from "./tokens-css.js";
 
 /**

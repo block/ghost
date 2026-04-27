@@ -1,12 +1,12 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Expression } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   loadExpression,
   mergeExpression,
 } from "../../src/core/expression/index.js";
-import type { Expression } from "../../src/core/types.js";
 
 const BASE: Expression = {
   id: "base",

@@ -5,7 +5,7 @@ const DEFAULT_LIMIT = 500;
 
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
-  "packages/ghost-drift/src/core/types.ts": {
+  "packages/ghost-core/src/types.ts": {
     limit: 780,
     justification:
       "Canonical type barrel — all shared types in one file for discoverability, including three-layer expression types and role bindings",
@@ -15,14 +15,17 @@ const EXCEPTIONS = {
     justification:
       "CLI command registry — each command is small but there are 12 of them, plus multi-target profile parsing",
   },
-  "packages/ghost-drift/src/core/embedding/compare.ts": {
+  "packages/ghost-core/src/embedding/compare.ts": {
     limit: 600,
     justification:
       "Expression comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 
-const DIRS_TO_CHECK = [{ dir: "packages/ghost-drift/src", glob: /\.[jt]sx?$/ }];
+const DIRS_TO_CHECK = [
+  { dir: "packages/ghost-core/src", glob: /\.[jt]sx?$/ },
+  { dir: "packages/ghost-drift/src", glob: /\.[jt]sx?$/ },
+];
 
 function countLines(filePath) {
   const content = readFileSync(filePath, "utf8");
