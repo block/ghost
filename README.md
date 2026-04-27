@@ -4,38 +4,56 @@
 
 AI is becoming the primary author of shipped code. Humans sit in fewer diffs; the harness (guardrails, reviewers, verifiers) catches drift before it lands. In that world, ensuring every generation reflects a brand's voice is paramount. Fonts and spacing are the easy half. The hard half is character: the posture a product takes, what it refuses to do. That's where generations drift first.
 
-Ghost closes that loop. It captures a brand as an **expression**: a human-readable `expression.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **track**, or **intentionally diverge**. Each repo owns its expression, its trajectory, and its stance. The fleet of expressions drifts in the open. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLI; judgment lives in whatever agent you already use.
+Ghost closes that loop. It captures a brand as an **expression**: a human-readable `expression.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **track**, or **intentionally diverge**. Each repo owns its expression, its trajectory, and its stance. The fleet of expressions drifts in the open. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLIs; judgment lives in whatever agent you already use.
 
 ## BYOA: bring your own agent
 
 Ghost splits the work the way agents need it split: **judgement in the agent, arithmetic in the CLI**.
 
-- **The CLI**: a set of **deterministic primitives**. Seven verbs. It never calls an LLM. It does vector distance, schema validation, and manifest writes. Same answer every time.
-- **A skill bundle**: [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, generate, discover). The host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the CLI for the arithmetic.
+- **The CLIs**: a set of **deterministic primitives** distributed across five small tools. None of them ever call an LLM. They do vector distance, schema validation, manifest writes. Same answer every time.
+- **The skill bundles**: [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, remediate, fleet narrative). Each tool ships its own; the host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the relevant CLI for the arithmetic.
 
-No API key is required to use any CLI verb. Judgment work lives in whichever agent you already use; `ghost-drift emit skill` installs the recipes there.
+No API key is required to use any CLI verb. Judgment work lives in whichever agent you already use; each tool's `emit skill` verb installs the recipes there.
+
+## The five tools
+
+Ghost is split into one responsibility per tool, around two canonical Markdown artifacts.
+
+| Tool | Owns | Verbs |
+| --- | --- | --- |
+| **`ghost-map`** | `map.md` — the topology card answering "where is the design system, which folders matter?" | `inventory`, `lint` |
+| **`ghost-expression`** | `expression.md` — the canonical design language artifact | `lint`, `describe`, `diff`, `emit` |
+| **`ghost-drift`** | `.ghost/history.jsonl` + `.ghost-sync.json` — drift detection and stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| **`ghost-fleet`** | `fleet.md` — read-only elevation across many `(map.md, expression.md)` members | `members`, `view`, `emit skill` |
+| **`ghost-ui`** | A reference design system Ghost dogfoods — 97 shadcn components + an MCP server | (no verbs) |
+
+`@ghost/core` underneath is a workspace-only library with the embedding math, target resolver, and skill-bundle loader the four CLIs share.
 
 ## Why Ghost?
 
 Ghost gives agents four capabilities the design-at-scale problem actually needs:
 
-- **Author against a real quality bar**: `ghost-drift emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The expression is the bar; the agent authors to it.
-- **Self-govern at author time**: the `review` and `verify` recipes run an agent's output against the expression *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
-- **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `compare` on N≥3 expressions — the composite view). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
+- **Author against a real quality bar**: `ghost-expression emit context-bundle` and the `generate` recipe turn a design language into grounding an agent can actually follow. The expression is the bar; the agent authors to it.
+- **Self-govern at author time**: the `review` and `verify` recipes (in the `ghost-drift` skill bundle) run an agent's output against the expression *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
+- **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `ghost-drift compare` on N≥3 expressions, or `ghost-fleet view` for the full elevation). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `track`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent becomes useful evidence.
-- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). Humans read it, agents consume it, deterministic tools diff it. No DSL to learn.
+- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, deterministic tools diff them. No DSL to learn.
 
 ## Repo layout
 
-Ghost is a monorepo. One main tool, one reference design system, one docs site — with room for more tools to land alongside `ghost-drift` over time.
+Ghost is a pnpm monorepo. Five tools, one reference design system, one docs site.
 
-| Path | Role |
-| ---- | ---- |
-| [`packages/ghost-drift`](./packages/ghost-drift) | **Main tool.** The deterministic CLI and skill bundle. The only published package (`ghost-drift` on npm). |
-| [`packages/ghost-ui`](./packages/ghost-ui) | **Reference design system.** 97 components distributed via a shadcn registry. Also ships the `ghost-mcp` bin — an MCP server that re-exposes the registry to AI assistants. The system Ghost dogfoods its expression against. Private. |
-| [`apps/docs`](./apps/docs) | **Docs site.** `ghost-docs`, the deployed documentation for the project. Consumes `ghost-ui`. Private. |
+| Path | Role | Published? |
+| ---- | ---- | --- |
+| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, types, target resolver, skill loader. | ❌ private (`@ghost/core`) |
+| [`packages/ghost-map`](./packages/ghost-map) | `map.md` topology generator + linter. | ❌ private (today) |
+| [`packages/ghost-expression`](./packages/ghost-expression) | `expression.md` authoring + emit pipeline. | ✅ intended-public on npm |
+| [`packages/ghost-drift`](./packages/ghost-drift) | Drift detection + governance verbs. | ✅ `ghost-drift` on npm |
+| [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet elevation across many members. | ❌ private |
+| [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
+| [`apps/docs`](./apps/docs) | Deployed docs site (`ghost-docs`). | ❌ private |
 
-`ghost-drift` is the product; the rest is how the expression stays concrete.
+Dependency flow: `@ghost/core` ← everyone. `ghost-expression` ← `ghost-drift`, `ghost-fleet`. `ghost-map` ← `ghost-fleet`. No cycles.
 
 ## Getting Started
 
@@ -51,24 +69,32 @@ pnpm install
 pnpm build
 ```
 
-### Install the skill into your host agent
+### Install the skill bundles into your host agent
+
+Each tool ships its own bundle. Install whichever you need.
 
 ```bash
-# Writes the ghost-drift skill bundle to ./.claude/skills/ghost-drift
-ghost-drift emit skill
+ghost-drift emit skill            # → ./.claude/skills/ghost-drift
+ghost-expression emit skill       # → ./.claude/skills/ghost-expression
+ghost-fleet emit skill            # → ./.claude/skills/ghost-fleet
 ```
 
-Once the skill is installed, ask your agent to "profile this design language" or "review this PR for design drift" and it will follow the recipe, calling `ghost-drift` for any deterministic step.
+Once a skill is installed, ask your agent in plain English ("profile this design language", "review this PR for drift", "compute the fleet view") and it'll follow the recipe, calling the relevant CLI for any deterministic step.
 
 ### Quick start
 
-**1. Profile your system**: ask your host agent (Claude Code, Cursor, etc.) to write an `expression.md`. It'll follow the `profile` recipe and validate with `ghost-drift lint` at the end.
-
-**2. Validate the result:**
+**1. Map the repo** (optional but speeds up everything that follows). Ask your host agent to write `map.md`, then validate:
 
 ```bash
-ghost-drift lint                                   # defaults to ./expression.md
-ghost-drift lint path/to/expression.md --format json
+ghost-map inventory             # raw signals as JSON (the agent reads this to author map.md)
+ghost-map lint                  # validate ./map.md against ghost.map/v1
+```
+
+**2. Profile your design system** — ask your host agent to write `expression.md`. It'll follow the `profile` recipe and validate at the end. You validate manually with:
+
+```bash
+ghost-expression lint                                   # defaults to ./expression.md
+ghost-expression lint path/to/expression.md --format json
 ```
 
 **3. Compare expressions:**
@@ -95,12 +121,19 @@ ghost-drift track new-tracked.expression.md
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-**5. Emit derived artifacts:**
+**5. Emit derived artifacts** (these all live in `ghost-expression` now — they read your `expression.md`):
 
 ```bash
-ghost-drift emit review-command     # .claude/commands/design-review.md (per-project slash command)
-ghost-drift emit context-bundle     # ghost-context/ (SKILL.md + tokens.css + prompt.md)
-ghost-drift emit skill              # .claude/skills/ghost-drift (the agentskills.io skill bundle)
+ghost-expression emit review-command     # .claude/commands/design-review.md (per-project slash command)
+ghost-expression emit context-bundle     # ghost-context/ (SKILL.md + tokens.css + prompt.md)
+ghost-expression emit skill              # .claude/skills/ghost-expression (the agentskills.io bundle)
+```
+
+**6. Take the fleet elevation** (when you have ≥2 members each with their own `map.md` and `expression.md`):
+
+```bash
+ghost-fleet members ./fleet     # list registered members + freshness
+ghost-fleet view ./fleet         # emit fleet.md + fleet.json with pairwise matrix, centroid, clusters
 ```
 
 **Run the docs site locally:**
@@ -112,56 +145,70 @@ just dev
 
 ## CLI Commands
 
-Seven deterministic primitives, grouped by the loop: **author** (`emit`), **detect** (`compare`, `lint`, `describe`), **remediate** (`ack`, `track`, `diverge`). Everything interpretive is a skill recipe the host agent runs.
+Every verb is a deterministic primitive — pure inputs → pure outputs, no LLM in the loop. Verbs are scoped to the tool that owns the artifact.
 
-| Command          | Description                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| `ghost-drift compare`  | Pairwise distance (N=2) or composite expression (N≥3: pairwise matrix, centroid, clusters) over embeddings. `--semantic` and `--temporal` add qualitative enrichment for N=2. |
-| `ghost-drift lint`     | Validate `expression.md` schema + body/frontmatter coherence. Use before declaring an expression valid. |
-| `ghost-drift describe` | Print a section map for `expression.md` so agents can selectively load it. |
-| `ghost-drift ack`      | Record a stance toward the tracked expression (aligned / accepted / diverging) in `.ghost-sync.json`. |
-| `ghost-drift track`    | Shift tracked expression to a new expression.                                        |
-| `ghost-drift diverge`  | Declare intentional divergence on a dimension with reasoning.                      |
-| `ghost-drift emit`     | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
+| Tool | Command | Description |
+| --- | --- | --- |
+| `ghost-map` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. |
+| `ghost-map` | `lint` | Validate `map.md` against `ghost.map/v1`. |
+| `ghost-expression` | `lint` | Validate `expression.md` schema + body/frontmatter coherence. |
+| `ghost-expression` | `describe` | Print section ranges + token estimates so agents can selectively load. |
+| `ghost-expression` | `diff` | Structural prose-level diff between two expressions (NOT vector distance — for that, use `ghost-drift compare`). |
+| `ghost-expression` | `emit` | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
+| `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over expression embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
+| `ghost-drift` | `ack` | Record stance toward the tracked expression in `.ghost-sync.json`. |
+| `ghost-drift` | `track` | Shift the tracked expression. |
+| `ghost-drift` | `diverge` | Declare intentional divergence on a dimension. |
+| `ghost-drift` | `emit skill` | Install the `ghost-drift` agentskills.io bundle. |
+| `ghost-fleet` | `members` | List registered fleet members + freshness. |
+| `ghost-fleet` | `view` | Compute pairwise distances + group-by tables; emit `fleet.md` + `fleet.json`. |
+| `ghost-fleet` | `emit skill` | Install the `ghost-fleet` agentskills.io bundle. |
 
 ### Skill recipes: run by the host agent
 
-Install once with `ghost-drift emit skill`. Each recipe gives the agent a specific capability from the pitch (*author, self-govern, detect, remediate*):
+The interpretive verbs from the pitch (*author, self-govern, detect, remediate*) are recipes the agent runs. Install the relevant bundle once; ask in plain English. Each tool ships its own.
 
-| Recipe     | Capability                         | Triggered by                                   |
-| ---------- | ---------------------------------- | ---------------------------------------------- |
-| `profile`  | Author the quality bar             | "profile this", "write expression.md"        |
-| `generate` | Author *against* the quality bar   | "generate a component matching our design"      |
-| `review`   | Self-govern at PR time             | "review this PR for drift"                      |
-| `verify`   | Self-govern at generation time     | "verify generated UI against the expression"   |
-| `compare`  | Detect drift across the org        | "why did these two expressions drift?"         |
-| `discover` | Find quality bars worth borrowing  | "find design languages like X"                  |
+| Recipe | Bundle | Capability | Triggered by |
+| --- | --- | --- | --- |
+| `map`       | `ghost-map` | Author the topology card | "map this repo", "write map.md" |
+| `profile`   | `ghost-expression` | Author the quality bar | "profile this design language", "write expression.md" |
+| `review`    | `ghost-drift` | Self-govern at PR time | "review this PR for drift" |
+| `verify`    | `ghost-drift` | Self-govern at generation time | "verify generated UI against the expression" |
+| `compare`   | `ghost-drift` | Detect drift across the org | "why did these two expressions drift?" |
+| `remediate` | `ghost-drift` | Suggest minimal fixes for drift | "fix this drift" |
+| `target`    | `ghost-fleet` | Synthesize fleet narrative | "describe this fleet" |
 
-These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus `ghost-drift` for the deterministic steps.
+These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus the relevant Ghost CLI for any deterministic step. (`discover` and `generate` are intentionally not migrated — see [`docs/ideas/phase-0-decisions.md`](./docs/ideas/phase-0-decisions.md).)
 
 ## Configuration
 
-`ghost.config.ts` is optional — only `ack` and `diverge` consult it (to locate the tracked expression). Everything else is zero-config.
+`ghost.config.ts` is optional — only `ghost-drift ack` and `ghost-drift diverge` consult it (to locate the tracked expression). Everything else is zero-config.
 
 ### Environment variables
 
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` when a host writes an expression.md and wants the enriched 49-dim vector.
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` (a `@ghost/core` library function) when a host writes an `expression.md` and wants the enriched 49-dim vector.
 - `GITHUB_TOKEN`: optional, used by `resolveTrackedExpression` when fetching a tracked expression from GitHub (avoids rate limits).
 
-The CLI auto-loads `.env` and `.env.local` from the working directory.
+Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ## How It Works
 
 ### The expression
 
-What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`**: a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
+What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
 
 - **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
 - **`# Signature`**: 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
-- **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `compare --semantic` can match semantically.
+- **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
 
-Generate one with the `profile` recipe. See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown.
+Generate one with the `profile` recipe (in the `ghost-expression` skill bundle). See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown.
+
+### The map
+
+What every Ghost tool reads to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-map`): YAML frontmatter against the `ghost.map/v1` schema (languages, build system, package manifests, registry, design-system paths, UI surface globs, feature areas) plus a short prose body (Identity, Topology, Conventions). The repo's own `map.md` lives at the root.
+
+Generate one with the `map` recipe (in the `ghost-map` skill bundle). The agent reads `ghost-map inventory` (deterministic raw signals) and synthesizes the prose layer.
 
 ### Author + self-govern loop
 
@@ -172,17 +219,21 @@ The literal loop the pitch describes: the agent authors UI, Ghost detects drift 
 Three responses, each with recorded reasoning and full lineage, so a year from now you know whether a divergence was meant or missed:
 
 - **`expression.md`**: The canonical expression artifact.
-- **`.ghost-sync.json`**: Per-dimension stances toward the tracked expression (aligned, accepted, or diverging), each with recorded reasoning. Written by `ack` / `track` / `diverge`.
-- **`.ghost/history.jsonl`**: Append-only expression history for temporal analysis. Read by `compare --temporal`.
+- **`.ghost-sync.json`**: Per-dimension stances toward the tracked expression (aligned, accepted, or diverging), each with recorded reasoning. Written by `ghost-drift ack` / `track` / `diverge`.
+- **`.ghost/history.jsonl`**: Append-only expression history for temporal analysis. Read by `ghost-drift compare --temporal`.
 
 ### Org-scale observability
 
-Drift at scale: the fleet view. Run `ghost-drift compare` with three or more expressions and Ghost returns the **composite expression** — pairwise distances, a centroid, and similarity clusters. Which expressions cluster tightly, which are far apart, and where the gaps are. An expression of expressions.
+Drift at scale: the fleet view. Two routes, depending on what you have:
+
+- **Many expressions, no map**: run `ghost-drift compare` with three or more `expression.md` files. Returns the **composite expression** — pairwise distances, a centroid, similarity clusters. An expression of expressions.
+- **A registered fleet** (members each with `map.md` + `expression.md`): run `ghost-fleet view`. Adds group-by axes (platform, build system, design-system status) on top of the composite. The map metadata is the orthogonal axis pure expression-comparison can't see.
 
 ## Project Resources
 
 | Resource                             | Description                 |
 | ------------------------------------ | --------------------------- |
+| [INVARIANTS.md](./INVARIANTS.md)     | Hard constraints — read before non-trivial changes |
 | [CODEOWNERS](./CODEOWNERS)           | Project lead(s)             |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | How to contribute           |
 | [GOVERNANCE.md](./GOVERNANCE.md)     | Project governance          |

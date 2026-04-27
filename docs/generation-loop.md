@@ -5,14 +5,19 @@ Ghost sits as pipeline infrastructure for AI-driven UI generation. The
 post-generation gate; the *verify* recipe drives the loop over a prompt
 suite to expose where the expression leaks.
 
-Only the grounding step is a deterministic CLI verb (`ghost-drift emit
-context-bundle`). *Generate*, *review*, and *verify* are skill recipes
+Only the grounding step is a deterministic CLI verb (`ghost-expression
+emit context-bundle`). *Review*, *verify*, and *remediate* are skill recipes
 the host agent follows — installed with `ghost-drift emit skill`.
+
+(Note: `generate.md` was dropped from scope in the five-tool decomposition.
+Use any generator — the host agent itself, Cursor, v0, or an in-house tool —
+with the emitted context bundle in its prompt; Ghost's job is grounding the
+input and gating the output, not running the generator.)
 
 ## Pipeline shape
 
 ```
-expression.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
+expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
                                               │
                                               ▼
                                        any generator
@@ -20,14 +25,14 @@ expression.md  ──►  [ghost-drift emit context-bundle]  ──►  SKILL.md
                                    in-house tool)
                                               │
                                               ▼ HTML / JSX
-                                       [review recipe]  ──►  drift disposition
-                                                             (block / annotate
-                                                              / ack / track)
+                                  [review recipe — ghost-drift]  ──►  drift disposition
+                                                                       (block / annotate
+                                                                        / ack / track)
 ```
 
 ## Pieces
 
-### `ghost-drift emit context-bundle [flags]` — the one CLI verb
+### `ghost-expression emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
 `SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
@@ -42,25 +47,25 @@ Flags:
 Point a Claude Code or MCP client at the output directory and the agent
 reads `SKILL.md`.
 
-### The `generate` recipe
+### Driving the generator
 
-Driven by the host agent. Loads the expression, builds a system prompt
-from Character/Signature/Decisions + tokens, asks the underlying model,
-extracts the artifact (HTML/JSX/etc.), and hands it to the `review` recipe
-for self-check. Retries with drift feedback until it passes or the agent
-gives up.
+Driven by the host agent. Loads the expression (the agent typically pulls
+just the sections it needs via `ghost-expression describe`), builds a system
+prompt from Character/Signature/Decisions + tokens, asks the underlying
+model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
+recipe for self-check. Retries with drift feedback until it passes or the
+agent gives up.
 
-Not a replacement for Cursor / v0 / in-house tools. It exists so the loop
-is provable end-to-end, and so the `verify` recipe has something to drive.
-
-Source: `packages/ghost-drift/src/skill-bundle/references/generate.md`.
+This isn't a recipe Ghost ships — `generate.md` was dropped. The agent's
+own driver code (or whatever generator it shells out to) owns this step.
+Ghost's job is the bundle that goes in and the review that gates the output.
 
 ### The `review` recipe
 
 The agent diffs generated output against the expression. Flags hardcoded
 colors outside the palette, spacing off the scale, and type choices that
 violate decisions. For pre-baked, per-project review commands use
-`ghost-drift emit review-command` (which writes a slash command at
+`ghost-expression emit review-command` (which writes a slash command at
 `.claude/commands/design-review.md`).
 
 Source: `packages/ghost-drift/src/skill-bundle/references/review.md`.
@@ -79,6 +84,16 @@ a section (e.g. motion), re-run, watch drift rise in dimensions that lost
 grounding.
 
 Source: `packages/ghost-drift/src/skill-bundle/references/verify.md`.
+
+### The `remediate` recipe
+
+Once `review` flags drift, `remediate` walks the agent through the smallest
+correction that lands the output back inside the expression. The output is
+either a fix proposal (the agent applies it) or — when the drift turns out
+to be intentional — a recommendation to record stance with `ghost-drift ack`
+or `ghost-drift diverge` instead of correcting the code.
+
+Source: `packages/ghost-drift/src/skill-bundle/references/remediate.md`.
 
 ## The standard prompt suite
 
@@ -104,13 +119,13 @@ over-specified. The `verify` recipe is the schema-discipline mechanism.
 ## Integration patterns
 
 **CI**: a per-project `design-review` slash command emitted from
-`ghost-drift emit review-command`, invoked by the host agent as a required
-check on PRs that touch UI files.
+`ghost-expression emit review-command`, invoked by the host agent as a
+required check on PRs that touch UI files.
 
-**In a generation pipeline**: `ghost-drift emit context-bundle` writes the
-skill bundle into the generator's context; the generator produces; the
-`review` recipe gates the output. Drift disposition belongs to the
-pipeline owner (block, annotate, require `ghost-drift ack`).
+**In a generation pipeline**: `ghost-expression emit context-bundle` writes
+the skill bundle into the generator's context; the generator produces; the
+`review` recipe gates the output. Drift disposition belongs to the pipeline
+owner (block, annotate, require `ghost-drift ack`).
 
 **Expression maintenance**: run `verify` periodically. When a dimension
 shows up consistently leaky, the expression needs more Decisions for

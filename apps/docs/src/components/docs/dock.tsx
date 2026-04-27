@@ -176,7 +176,25 @@ export function Dock() {
             </CommandItem>
           </CommandGroup>
 
-          <CommandGroup heading="Drift">
+          <CommandGroup heading="Tools">
+            <CommandItem
+              onSelect={() => {
+                navigate("/tools/map");
+                setSearchOpen(false);
+              }}
+            >
+              <Wrench className="mr-2 size-4" />
+              ghost-map
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/tools/expression");
+                setSearchOpen(false);
+              }}
+            >
+              <Wrench className="mr-2 size-4" />
+              ghost-expression
+            </CommandItem>
             <CommandItem
               onSelect={() => {
                 navigate("/tools/drift");
@@ -184,11 +202,32 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              Drift
+              ghost-drift
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/drift/getting-started");
+                navigate("/tools/fleet");
+                setSearchOpen(false);
+              }}
+            >
+              <Wrench className="mr-2 size-4" />
+              ghost-fleet
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/tools/ui");
+                setSearchOpen(false);
+              }}
+            >
+              <Wrench className="mr-2 size-4" />
+              ghost-ui
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandGroup heading="Docs">
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/getting-started");
                 setSearchOpen(false);
               }}
             >
@@ -197,7 +236,7 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/drift/cli");
+                navigate("/docs/cli");
                 setSearchOpen(false);
               }}
             >
@@ -211,7 +250,7 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              Workflow
+              Drift Workflow
             </CommandItem>
           </CommandGroup>
         </CommandList>

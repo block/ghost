@@ -1,75 +1,90 @@
 ---
 title: CLI Reference
-description: Seven deterministic primitives. Everything interpretive lives in the skill bundle.
+description: Sixteen deterministic primitives across four tools. Everything interpretive lives in the skill bundles.
 kicker: Docs
-section: drift
+section: guide
 order: 20
 slug: cli
 ---
 
 <DocSection title="Overview">
 
-Ghost's CLI is a set of deterministic primitives. It never calls an LLM.
-The canonical artifact is `expression.md` — a Markdown file with two
-layers: a machine layer (YAML frontmatter: 49-dim vector + palette,
-spacing, typography, surfaces, roles) and a prose body with three
-sections (Character, Signature, Decisions). Most commands accept a path
-to an `expression.md`; they default to `./expression.md` in the current
-directory.
+Ghost's CLIs are deterministic primitives. None of them call an LLM. The
+canonical artifacts are **`expression.md`** (owned by `ghost-expression`)
+and **`map.md`** (owned by `ghost-map`) — Markdown files with YAML
+frontmatter (machine layer) plus a prose body. Most commands accept a path
+to the relevant artifact; they default to `./expression.md` or `./map.md`
+in the current directory.
 
-Workflows like _profile_, _review_, _verify_, _generate_, and _discover_
-are skill recipes your host agent runs — not CLI verbs. Install them once
-with `ghost-drift emit skill`.
+Verbs are scoped to the tool that owns the artifact:
 
-The tables below are generated from the CLI source at build time. If a
-flag changes in `bin.ts`, the next `pnpm dump:cli-help` run regenerates
-this reference — so these docs can't drift from the binary.
+- **`ghost-map`** — topology: `inventory`, `lint`
+- **`ghost-expression`** — design language: `lint`, `describe`, `diff`, `emit`
+- **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
+- **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
+
+Workflows like _profile_, _review_, _verify_, and _remediate_ are skill
+recipes your host agent runs — not CLI verbs. Install them with each
+tool's `emit skill` verb.
+
+The tables below are generated from each CLI's source at build time. If a
+flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
+this reference — so these docs can't drift from the binaries.
 
 </DocSection>
 
-<DocSection title="Comparison">
+<DocSection title="ghost-map — topology">
 
-Pairwise distance (N=2) or fleet analysis (N≥3) over expression
-embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
-and `--temporal` add qualitative enrichment for N=2.
+`map.md` is the navigation card every Ghost tool reads to learn the
+topology of a frontend repo. `ghost-map` ships two verbs: `inventory`
+(deterministic raw signals as JSON, the input the agent reads to author
+`map.md`) and `lint` (validate against `ghost.map/v1`).
 
-<CliHelp command="compare" hideDescription />
+<CliHelp tool="ghost-map" command="inventory" hideDescription />
 
 ```bash
-# Pairwise (N=2)
-ghost-drift compare market.expression.md dashboard.expression.md
+# Inventory the current directory
+ghost-map inventory
 
-# Qualitative diff of decisions + palette
-ghost-drift compare a.expression.md b.expression.md --semantic
+# Inventory a different repo
+ghost-map inventory ../other-repo
+```
 
-# Velocity + trajectory
-ghost-drift compare before.expression.md after.expression.md --temporal
+<CliHelp tool="ghost-map" command="lint" hideDescription />
 
-# Fleet (N≥3) — pairwise matrix + centroid
-ghost-drift compare *.expression.md
+```bash
+# Default — reads ./map.md
+ghost-map lint
+
+# Specific file, JSON output
+ghost-map lint packages/ghost-ui/map.md --format json
 ```
 
 </DocSection>
 
-<DocSection title="Validation">
+<DocSection title="ghost-expression — authoring & validation">
+
+`expression.md` is the canonical design-language artifact. `ghost-expression`
+owns authoring (lint + describe + diff + emit) — drift detection lives
+separately in `ghost-drift`.
+
+### Validation — `lint`
 
 Validate `expression.md` schema + body/frontmatter coherence. Use this
-before declaring an expression valid — the profile recipe ends by calling
-it.
+before declaring an expression valid — the `profile` recipe ends by
+calling it.
 
-<CliHelp command="lint" hideDescription />
+<CliHelp tool="ghost-expression" command="lint" hideDescription />
 
 ```bash
 # Default — reads ./expression.md
-ghost-drift lint
+ghost-expression lint
 
 # Specific file, JSON output
-ghost-drift lint path/to/expression.md --format json
+ghost-expression lint path/to/expression.md --format json
 ```
 
-</DocSection>
-
-<DocSection title="Inspection — describe">
+### Inspection — `describe`
 
 Print a section map of `expression.md` — frontmatter range, body sections
 (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
@@ -81,20 +96,20 @@ A typical `expression.md` runs 3–5k tokens. The `# Decisions` block alone
 is usually 60–80% of that, and an agent reviewing a single component change
 rarely needs every dimension. `describe` is the deterministic answer to
 "what's in this file and where" — the recall safety rule (when in doubt,
-load the whole `# Decisions` block) lives in the review/generate skill
+load the whole `# Decisions` block) lives in the review/remediate skill
 recipes.
 
-<CliHelp command="describe" hideDescription />
+<CliHelp tool="ghost-expression" command="describe" hideDescription />
 
 ```bash
 # Default — reads ./expression.md
-ghost-drift describe
+ghost-expression describe
 
 # Specific file
-ghost-drift describe path/to/expression.md
+ghost-expression describe path/to/expression.md
 
 # Machine-readable for agents
-ghost-drift describe --format json
+ghost-expression describe --format json
 ```
 
 Sample output (against `packages/ghost-ui/expression.md`):
@@ -117,9 +132,73 @@ Line ranges are 1-indexed and inclusive — they plug directly into a Read
 tool's `offset` / `limit = end - start + 1`. Token counts are a `chars / 4`
 approximation, sufficient for context budgeting.
 
+### Structural diff — `diff`
+
+Diff two expressions at the prose / structural level — what decisions,
+palette roles, and tokens changed. **Not** vector distance; for that, use
+`ghost-drift compare`.
+
+<CliHelp tool="ghost-expression" command="diff" hideDescription />
+
+```bash
+ghost-expression diff a/expression.md b/expression.md
+ghost-expression diff a.md b.md --format json
+```
+
+### Emit — derive artifacts from `expression.md`
+
+Derive an artifact from `expression.md`. Kinds: `review-command` (a
+per-project slash command at `.claude/commands/design-review.md`),
+`context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
+generator), or `skill` (the `ghost-expression` agentskills.io bundle —
+install this into your host agent for the `profile` recipe).
+
+<CliHelp tool="ghost-expression" command="emit" hideDescription />
+
+```bash
+# Install the ghost-expression skill bundle
+ghost-expression emit skill
+
+# Emit a per-project design-review slash command
+ghost-expression emit review-command
+
+# Emit a grounding bundle any generator can consume
+ghost-expression emit context-bundle
+
+# Single prompt.md for plain-text LLM context
+ghost-expression emit context-bundle --prompt-only
+
+# Custom output directory
+ghost-expression emit context-bundle --out dist/context
+```
+
 </DocSection>
 
-<DocSection title="Intent — ack / track / diverge">
+<DocSection title="ghost-drift — drift detection & governance">
+
+### Comparison — `compare`
+
+Pairwise distance (N=2) or composite analysis (N≥3) over expression
+embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
+and `--temporal` add qualitative enrichment for N=2.
+
+<CliHelp tool="ghost-drift" command="compare" hideDescription />
+
+```bash
+# Pairwise (N=2)
+ghost-drift compare market.expression.md dashboard.expression.md
+
+# Qualitative diff of decisions + palette
+ghost-drift compare a.expression.md b.expression.md --semantic
+
+# Velocity + trajectory
+ghost-drift compare before.expression.md after.expression.md --temporal
+
+# Composite (N≥3) — pairwise matrix + centroid + clusters
+ghost-drift compare *.expression.md
+```
+
+### Intent — `ack` / `track` / `diverge`
 
 These three verbs write per-dimension stances to `.ghost-sync.json`. `ack`
 and `diverge` need a tracked expression declared in `ghost.config.ts`;
@@ -129,7 +208,7 @@ Acknowledge current drift — record your intentional stance (aligned,
 accepted, or diverging). Reads the tracked expression from `ghost.config.ts`
 and the local `expression.md`.
 
-<CliHelp command="ack" hideDescription />
+<CliHelp tool="ghost-drift" command="ack" hideDescription />
 
 ```bash
 # Acknowledge all dimensions as aligned
@@ -142,7 +221,7 @@ ghost-drift ack -d typography --stance diverging --reason "Brand refresh require
 Shift the tracked expression to a new expression. Use this when you want to
 re-anchor your drift measurements against a different reference expression.
 
-<CliHelp command="track" hideDescription />
+<CliHelp tool="ghost-drift" command="track" hideDescription />
 
 ```bash
 # Track a new reference expression
@@ -152,72 +231,101 @@ ghost-drift track new-tracked.expression.md
 Mark a specific dimension as intentionally diverging. Shorthand for
 `ack --stance diverging` that also records a reason.
 
-<CliHelp command="diverge" hideDescription />
+<CliHelp tool="ghost-drift" command="diverge" hideDescription />
 
 ```bash
 ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
 ```
 
-</DocSection>
+### Emit — `emit skill`
 
-<DocSection title="Emit — derive artifacts from expression.md">
+`ghost-drift emit` ships a single kind: `skill`, the agentskills.io bundle
+that teaches your host agent the review / verify / compare / remediate
+recipes. (Authoring artifacts — `review-command`, `context-bundle` — moved
+to `ghost-expression`.)
 
-Derive an artifact from `expression.md`. Kinds: `review-command` (a
-per-project slash command at `.claude/commands/design-review.md`),
-`context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
-generator), or `skill` (the `ghost-drift` agentskills.io bundle — install
-this into your host agent).
-
-<CliHelp command="emit" hideDescription />
+<CliHelp tool="ghost-drift" command="emit" hideDescription />
 
 ```bash
-# Install the ghost-drift skill into your host agent
+# Install the ghost-drift skill bundle (default: .claude/skills/ghost-drift)
 ghost-drift emit skill
 
-# Emit a per-project design-review slash command
-ghost-drift emit review-command
+# Custom location
+ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
+```
 
-# Emit a grounding bundle any generator can consume
-ghost-drift emit context-bundle
+</DocSection>
 
-# Single prompt.md for plain-text LLM context
-ghost-drift emit context-bundle --prompt-only
+<DocSection title="ghost-fleet — elevation across members">
 
-# Custom output directory
-ghost-drift emit context-bundle --out dist/context
+A fleet is a directory containing many `(map.md, expression.md)` members.
+`ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +
+`fleet.json`), and ships the agentskills.io bundle for the narrative
+recipe.
+
+<CliHelp tool="ghost-fleet" command="members" hideDescription />
+
+```bash
+# List members in the current fleet directory
+ghost-fleet members
+
+# JSON output for scripting
+ghost-fleet members --json
+```
+
+<CliHelp tool="ghost-fleet" command="view" hideDescription />
+
+```bash
+# Compute pairwise distances + group-by tables; write fleet.md + fleet.json
+ghost-fleet view ./fleet
+
+# Override the fleet id and reports directory
+ghost-fleet view ./fleet --id cash-mobile --out reports/cash
+```
+
+<CliHelp tool="ghost-fleet" command="emit" hideDescription />
+
+```bash
+ghost-fleet emit skill
 ```
 
 </DocSection>
 
 <DocSection title="Skill recipes (host agent)">
 
-These aren't CLI verbs — they're instruction files inside the skill bundle
-that your host agent follows. Install the bundle with `ghost-drift emit skill`,
-then ask your agent in plain English:
+These aren't CLI verbs — they're instruction files inside the per-tool
+skill bundles that your host agent follows. Install the relevant bundle
+once, then ask your agent in plain English:
 
-| Recipe     | Trigger                                                |
-| ---------- | ------------------------------------------------------ |
-| `profile`  | "profile this design language" / "write expression.md" |
-| `review`   | "review this PR for drift"                              |
-| `verify`   | "verify generated UI against the expression"           |
-| `generate` | "generate a component matching our design"              |
-| `discover` | "find design languages like Linear"                       |
-| `compare`  | "why did these two expressions drift?"                 |
+| Recipe     | Bundle             | Trigger                                                |
+| ---------- | ------------------ | ------------------------------------------------------ |
+| `map`      | `ghost-map`        | "map this repo" / "write map.md"                       |
+| `profile`  | `ghost-expression` | "profile this design language" / "write expression.md" |
+| `review`   | `ghost-drift`      | "review this PR for drift"                              |
+| `verify`   | `ghost-drift`      | "verify generated UI against the expression"           |
+| `compare`  | `ghost-drift`      | "why did these two expressions drift?"                 |
+| `remediate`| `ghost-drift`      | "fix this drift"                                        |
+| `target`   | `ghost-fleet`      | "describe this fleet"                                   |
 
 Source for each recipe lives under
-`packages/ghost-drift/src/skill-bundle/references/`. The agent executes the
-steps with its normal tools and calls `ghost-drift` for any deterministic work.
+`packages/<tool>/src/skill-bundle/references/`. The agent executes the
+steps with its normal tools and calls the relevant CLI for any
+deterministic work.
 
 Each recipe also declares `handoffs` in its frontmatter — structured
 next-step suggestions that point at another skill (e.g. `profile` →
 `compare`) or a CLI invocation (e.g. `profile` →
-`ghost-drift emit review-command`). Hosts that read the field can surface the
-next action inline; hosts that ignore unknown frontmatter see no change.
+`ghost-expression emit review-command`). Hosts that read the field can
+surface the next action inline; hosts that ignore unknown frontmatter
+see no change.
+
+`discover` and `generate` from earlier Ghost iterations are intentionally
+not migrated to any tool (see [`docs/ideas/phase-0-decisions.md`](https://github.com/block/ghost/blob/main/docs/ideas/phase-0-decisions.md)).
 
 ---
 
-See the [Workflow](/tools/drift/workflow) walkthrough for the five-move
-picture these primitives fit into, or [Getting Started](/tools/drift/getting-started)
-for an installation-first guide.
+See the [Drift Workflow](/tools/drift/workflow) walkthrough for the
+five-move picture these primitives fit into, or
+[Getting Started](/docs/getting-started) for an installation-first guide.
 
 </DocSection>

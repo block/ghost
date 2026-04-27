@@ -1,43 +1,43 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Orbit, Rocket } from "lucide-react";
+import { BookOpen, Network, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
 import { SectionWrapper } from "@/components/docs/wrappers";
 
-const sections: {
+const cards: {
   name: string;
   href: string;
   description: string;
   icon: ReactNode;
 }[] = [
   {
-    name: "Getting Started",
+    name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the CLIs, write your first map.md and expression.md, and track drift across the org — in under five minutes.",
+      "Install the ghost-fleet skill bundle and run members + view across a directory of registered members.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "CLI Reference",
-    href: "/docs/cli",
+    name: "CLI reference",
+    href: "/docs/cli#ghost-fleet--elevation-across-members",
     description:
-      "Sixteen deterministic primitives across four tools — ghost-map, ghost-expression, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
+      "members (list + freshness), view (pairwise distances + group-by tables, emits fleet.md + fleet.json), emit skill.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Drift Workflow",
-    href: "/tools/drift/workflow",
+    name: "Skill bundle",
+    href: "https://github.com/block/ghost/tree/main/packages/ghost-fleet/src/skill-bundle",
     description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
-    icon: <Orbit className="size-8" strokeWidth={1.5} />,
+      "The target recipe — synthesize the fleet.md prose narrative from the deterministic view output.",
+    icon: <Network className="size-8" strokeWidth={1.5} />,
   },
 ];
 
-export default function DocsIndex() {
-  const ref = useStaggerReveal<HTMLDivElement>(".doc-card", {
+export default function GhostFleetLanding() {
+  const ref = useStaggerReveal<HTMLDivElement>(".tool-card", {
     stagger: 0.06,
     y: 30,
     duration: 0.7,
@@ -46,20 +46,20 @@ export default function DocsIndex() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="Docs"
-        title="Documentation"
-        description="Cross-tool guides for the Ghost toolchain. Per-tool overviews live under /tools — these pages cover the install, CLI surface, and end-to-end workflow shared across all five tools."
+        kicker="ghost-fleet"
+        title="Elevation"
+        description="A read-only elevation view across many (map.md, expression.md) members. Pairwise distances, group-by tables (platform, build system, design-system status), tracks-graph — the orthogonal axis pure expression-comparison can't see. Emits fleet.md + fleet.json into a reports directory."
       />
 
       <div
         ref={ref}
-        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-3"
+        className="grid gap-4 md:grid-cols-3 pb-16 overflow-visible"
       >
-        {sections.map((item) => (
+        {cards.map((item) => (
           <Link
             key={item.href}
             to={item.href}
-            className="doc-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
+            className="tool-card group rounded-[var(--radius-card-sm)] border border-border-card hover:border-foreground/25 bg-card p-10 transition-colors duration-300"
           >
             <div className="mb-6 text-muted-foreground group-hover:text-foreground transition-colors duration-200">
               {item.icon}
