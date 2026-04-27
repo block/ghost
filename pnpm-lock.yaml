@@ -336,6 +336,27 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
 
+  packages/ghost-fleet:
+    dependencies:
+      '@ghost/core':
+        specifier: workspace:*
+        version: link:../ghost-core
+      cac:
+        specifier: ^6.7.14
+        version: 6.7.14
+      ghost-expression:
+        specifier: workspace:*
+        version: link:../ghost-expression
+      ghost-map:
+        specifier: workspace:*
+        version: link:../ghost-map
+      yaml:
+        specifier: ^2.8.3
+        version: 2.8.3
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+
   packages/ghost-map:
     dependencies:
       cac:
