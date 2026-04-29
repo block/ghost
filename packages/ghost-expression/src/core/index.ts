@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
-import type { DesignDecision, Expression } from "@ghost/core";
-import { computeEmbedding } from "@ghost/core";
+import type { DesignDecision, Expression, SemanticColor } from "@ghost/core";
+import { computeEmbedding, parseColorToOklch } from "@ghost/core";
 import { mergeExpression } from "./compose.js";
 import {
   loadDecisionFragments,
@@ -141,6 +141,13 @@ export async function loadExpression(
     }
   }
 
+  // Backfill `oklch` on palette colors that arrived hex-only. Deterministic
+  // (same hex → same oklch), so re-parsing the same expression always
+  // yields the same in-memory shape. Without this, `comparePalette`
+  // misreads hex-only colors as fully unmatched (distance 1) and even
+  // self-distance comes out non-zero.
+  backfillPaletteOklch(parsed.expression);
+
   if (!options.noEmbeddingBackfill) {
     parsed.expression.embedding = await resolveEmbedding(
       parsed.expression,
@@ -150,6 +157,22 @@ export async function loadExpression(
   }
 
   return parsed;
+}
+
+function backfillPaletteOklch(expression: Expression): void {
+  if (!expression.palette) return;
+  if (expression.palette.dominant) {
+    expression.palette.dominant = expression.palette.dominant.map(ensureOklch);
+  }
+  if (expression.palette.semantic) {
+    expression.palette.semantic = expression.palette.semantic.map(ensureOklch);
+  }
+}
+
+function ensureOklch(color: SemanticColor): SemanticColor {
+  if (color.oklch && color.oklch.length === 3) return color;
+  const oklch = parseColorToOklch(color.value);
+  return oklch ? { ...color, oklch } : color;
 }
 
 /**

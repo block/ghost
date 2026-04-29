@@ -265,6 +265,22 @@ export function colorToSemanticColor(
   return { role, value, oklch: oklch ?? undefined };
 }
 
+/**
+ * Resolve a color's oklch tuple, computing on-the-fly from `value` if the
+ * field is missing. Defensive backstop for palette comparisons — without
+ * this, hex-only colors land in the "unmatched" branch and contribute
+ * distance 1 even when both sides have the same hex.
+ *
+ * `loadExpression` (in ghost-expression) already backfills oklch on read;
+ * this fallback covers third-party producers that emit hex-only.
+ */
+export function resolveColorOklch(
+  c: SemanticColor,
+): [number, number, number] | null {
+  if (c.oklch && c.oklch.length === 3) return c.oklch;
+  return parseColorToOklch(c.value);
+}
+
 export function classifySaturation(
   colors: SemanticColor[],
 ): "muted" | "vibrant" | "mixed" {
