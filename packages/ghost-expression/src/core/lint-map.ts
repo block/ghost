@@ -1,23 +1,19 @@
+import { MapFrontmatterSchema, REQUIRED_BODY_SECTIONS } from "@ghost/core";
 import { parse as parseYaml } from "yaml";
 import type { z } from "zod";
-import {
-  MapFrontmatterSchema,
-  REQUIRED_BODY_SECTIONS,
-  type RequiredBodySection,
-} from "./schema.js";
 
-export type LintSeverity = "error" | "warning" | "info";
+export type MapLintSeverity = "error" | "warning" | "info";
 
-export interface LintIssue {
-  severity: LintSeverity;
+export interface MapLintIssue {
+  severity: MapLintSeverity;
   rule: string;
   message: string;
   /** Dotted path within frontmatter (e.g. "languages[0].share"), or section name. */
   path?: string;
 }
 
-export interface LintReport {
-  issues: LintIssue[];
+export interface MapLintReport {
+  issues: MapLintIssue[];
   errors: number;
   warnings: number;
   info: number;
@@ -30,8 +26,8 @@ export interface LintReport {
  * violations, missing body sections, out-of-order body sections, and empty
  * body sections.
  */
-export function lintMap(raw: string): LintReport {
-  const issues: LintIssue[] = [];
+export function lintMap(raw: string): MapLintReport {
+  const issues: MapLintIssue[] = [];
 
   const split = splitFrontmatter(raw);
   if (!split) {
@@ -95,8 +91,8 @@ export function lintMap(raw: string): LintReport {
  */
 function checkDesignSystemCoherence(
   fm: ReturnType<typeof MapFrontmatterSchema.parse>,
-): LintIssue[] {
-  const out: LintIssue[] = [];
+): MapLintIssue[] {
+  const out: MapLintIssue[] = [];
   const ds = fm.design_system;
   const hasEntry = (ds.entry_files?.length ?? 0) > 0;
   const hasDerived = (ds.derived_files?.length ?? 0) > 0;
@@ -160,7 +156,7 @@ function splitFrontmatter(raw: string): FrontmatterSplit | null {
   return { frontmatter, body };
 }
 
-function zodIssues(error: z.ZodError): LintIssue[] {
+function zodIssues(error: z.ZodError): MapLintIssue[] {
   return error.issues.map((issue) => {
     const path = issue.path.filter(
       (segment): segment is string | number => typeof segment !== "symbol",
@@ -170,7 +166,7 @@ function zodIssues(error: z.ZodError): LintIssue[] {
       rule: `frontmatter:${issue.code}`,
       message: issue.message,
       path: path.length > 0 ? formatPath(path) : undefined,
-    } satisfies LintIssue;
+    } satisfies MapLintIssue;
   });
 }
 
@@ -194,8 +190,8 @@ interface FoundSection {
   bodyText: string; // content between this heading and the next
 }
 
-function checkBodySections(body: string): LintIssue[] {
-  const issues: LintIssue[] = [];
+function checkBodySections(body: string): MapLintIssue[] {
+  const issues: MapLintIssue[] = [];
   const sections = scanH2Sections(body);
 
   // Build a lookup of which required sections appear, in what order.
@@ -305,7 +301,7 @@ function scanH2Sections(body: string): FoundSection[] {
   return out;
 }
 
-function finalize(issues: LintIssue[]): LintReport {
+function finalize(issues: MapLintIssue[]): MapLintReport {
   let errors = 0;
   let warnings = 0;
   let info = 0;
@@ -316,8 +312,3 @@ function finalize(issues: LintIssue[]): LintReport {
   }
   return { issues, errors, warnings, info };
 }
-
-export const MAP_FILENAME = "map.md";
-
-// Type re-exports for callers
-export type { RequiredBodySection };

@@ -14,7 +14,6 @@ const ROOT = process.cwd();
 const TOOLS = [
   { name: "ghost-drift", dist: "packages/ghost-drift/dist/cli.js" },
   { name: "ghost-expression", dist: "packages/ghost-expression/dist/cli.js" },
-  { name: "ghost-map", dist: "packages/ghost-map/dist/cli.js" },
   { name: "ghost-fleet", dist: "packages/ghost-fleet/dist/cli.js" },
 ];
 

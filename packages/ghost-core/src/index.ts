@@ -1,4 +1,47 @@
 // --- Embedding primitives ---
+
+// --- Bucket (ghost.bucket/v1) ---
+export {
+  type BreakpointSpec,
+  BUCKET_FILENAME,
+  type Bucket,
+  type BucketLintIssue,
+  type BucketLintReport,
+  type BucketLintSeverity,
+  BucketSchema,
+  type BucketSource,
+  BucketSourceSchema,
+  type ColorSpec,
+  ColorSpecSchema,
+  type ComponentRow,
+  ComponentRowSchema,
+  componentRowId,
+  type LayoutPrimitiveSpec,
+  type LibraryRow,
+  LibraryRowSchema,
+  libraryRowId,
+  lintBucket,
+  type MotionSpec,
+  mergeBuckets,
+  type RadiusSpec,
+  RECOMMENDED_VALUE_KINDS,
+  type RecommendedValueKind,
+  type RowBase,
+  recomputeBucketIds,
+  type ScalarUnit,
+  type ShadowSpec,
+  type SpacingSpec,
+  type TokenRow,
+  TokenRowSchema,
+  type TypographySpec,
+  tokenRowId,
+  type UnknownSpec,
+  type ValueRow,
+  ValueRowSchema,
+  type ValueSpec,
+  ValueSpecSchema,
+  valueRowId,
+} from "./bucket/index.js";
 export type { CompareOptions, RoleCandidate } from "./embedding/index.js";
 export {
   classifyContrast,
@@ -17,11 +60,21 @@ export {
   parseColorToOklch,
   saturationScore,
 } from "./embedding/index.js";
-
+// --- Map (ghost.map/v1) ---
+export {
+  type GitInfo,
+  type InventoryOutput,
+  type LanguageHistogramEntry,
+  MAP_FILENAME,
+  type MapFrontmatter,
+  MapFrontmatterSchema,
+  REQUIRED_BODY_SECTIONS,
+  type RequiredBodySection,
+  type TopLevelEntry,
+} from "./map/index.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-
 // --- Target resolution ---
 export { resolveTarget } from "./target-resolver.js";
 
