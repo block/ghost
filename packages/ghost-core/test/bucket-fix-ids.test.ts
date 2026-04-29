@@ -44,7 +44,6 @@ function bucket(): Bucket {
       },
     ],
     components: [],
-    libraries: [],
   };
 }
 

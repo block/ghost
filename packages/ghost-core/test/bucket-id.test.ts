@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  componentRowId,
-  libraryRowId,
-  tokenRowId,
-  valueRowId,
-} from "../src/bucket/id.js";
+import { componentRowId, tokenRowId, valueRowId } from "../src/bucket/id.js";
 import type { BucketSource } from "../src/bucket/types.js";
 
 const SOURCE_A: BucketSource = {
@@ -94,23 +89,20 @@ describe("section-tagged IDs are non-colliding", () => {
     expect(tokenId).not.toBe(valueId);
   });
 
-  it("component vs library with same name does not collide", () => {
+  it("token vs component with same name does not collide", () => {
+    const tokenId = tokenRowId(SOURCE_A, "Button");
     const componentId = componentRowId(SOURCE_A, "Button");
-    const libraryId = libraryRowId(SOURCE_A, "Button");
-    expect(componentId).not.toBe(libraryId);
+    expect(tokenId).not.toBe(componentId);
   });
 });
 
-describe("token / component / library IDs", () => {
+describe("token / component IDs", () => {
   it("are deterministic", () => {
     expect(tokenRowId(SOURCE_A, "--color-brand-primary")).toBe(
       tokenRowId(SOURCE_A, "--color-brand-primary"),
     );
     expect(componentRowId(SOURCE_A, "Button")).toBe(
       componentRowId(SOURCE_A, "Button"),
-    );
-    expect(libraryRowId(SOURCE_A, "lucide-react")).toBe(
-      libraryRowId(SOURCE_A, "lucide-react"),
     );
   });
 

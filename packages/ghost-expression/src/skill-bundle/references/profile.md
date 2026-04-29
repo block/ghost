@@ -21,18 +21,19 @@ handoffs:
 Two artifacts must exist before you start:
 
 - `map.md` — `ghost.map/v1`. Read its frontmatter for repo kind signals (`composition.frameworks`, `composition.styling`, `design_system.token_source`, `platform`, `registry`). Read its body for context on identity / topology / conventions.
-- `bucket.json` — `ghost.bucket/v1`. Lint-clean. Carries every concrete value, token, component, and library the surveyor observed, with occurrence counts and (for tokens) alias chains.
+- `bucket.json` — `ghost.bucket/v1`. Lint-clean. Carries every concrete value, token, and component the surveyor observed, with occurrence counts and (for tokens) alias chains.
 
 If either is missing, **stop**. Run topology and survey first. Inventing an expression from incomplete inputs poisons every downstream comparison.
 
 ## How to read the bucket
 
-A `bucket.json` has four sections:
+A `bucket.json` has three sections:
 
 - **`values[]`** — concrete literals shipped in source. Group by `kind`: `color` rows feed `palette`; `spacing` rows feed `spacing.scale` / `spacing.baseUnit`; `typography` rows feed `typography.*`; `radius` rows feed `surfaces.borderRadii`; `shadow` rows feed `surfaces.shadowComplexity` (count + complexity, not literal shadows); `breakpoint` / `motion` / `layout-primitive` rows feed Decisions where they're load-bearing. Each row has `occurrences` (total count) and `files_count` (spread). Higher numbers = stronger signal.
 - **`tokens[]`** — named declarations with `alias_chain` (path through indirection) and `resolved_value`. Long chains and semantic naming (`--color-brand-primary` → `--color-orange-500`) are evidence of a deliberate token layer. Empty chains everywhere = inline literals = no token discipline.
-- **`components[]`** — known components (registry entries or heuristically discovered). Feeds the `roles[]` layer when components carry slot-to-color mappings.
-- **`libraries[]`** — external dependencies that contribute design surface (icons, fonts, motion, charts). Feeds Decisions when load-bearing — e.g. an icon library's presence shapes the visual register.
+- **`components[]`** — known components (registry entries or heuristically discovered). Feeds the `roles[]` layer when components carry slot-to-color mappings, and contributes count signal to surface-vocabulary decisions.
+
+External libraries (icon sets, primitive collections, motion libs) deliberately don't have a bucket section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing for the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
 
 Read `bucket.json` once, fully. Then keep it open while you write.
 
@@ -74,7 +75,7 @@ For each decision: `dimension` (slug), `decision` (prose, body), `evidence` (con
 
 Mode-specific framing:
 
-- **Consumer** — overrides are decisions ("App ships its own `@font-face` instead of inheriting upstream sans" — evidence: bucket `libraries[kind=fonts]` row that's not in the upstream).
+- **Consumer** — overrides are decisions ("App ships its own `@font-face` instead of inheriting upstream sans" — evidence: a `--font-*` token row whose value differs from the upstream's, plus prose citing the manifest dependency).
 - **Token-pipeline** — layering choices are decisions ("Component layer never references base tokens directly — always via semantic" — evidence: bucket `tokens[].alias_chain` lengths).
 - **Ui-library** — registry posture is a decision ("Components ship as a flat library with no theme variants" — evidence: bucket `components[]` shape).
 - **Multi-platform** — divergence between dialects is a decision when present ("Web and iOS palettes are intentionally different — web is restrained, iOS reuses system colors" — evidence: per-source counts in merged buckets, or noted in the survey scratchpad).
@@ -91,7 +92,7 @@ Populate the structured frontmatter fields **from bucket rows**:
 - `spacing.scale` — sorted distinct scalar values from `kind: spacing` rows. Convert rem/em to px (1rem = 16px) before recording.
 - `spacing.baseUnit` — the GCD of scale entries, or the smallest scalar that divides most others.
 - `spacing.regularity` — 1.0 if the scale is a clean modular sequence (4, 8, 16, 24, …), lower as it diverges.
-- `typography.families` — distinct `family` values from `kind: typography` rows + bucket `libraries[kind=fonts]`.
+- `typography.families` — distinct `family` values from `kind: typography` rows.
 - `typography.sizeRamp` — distinct font sizes (in px) from `kind: typography` rows.
 - `typography.weightDistribution` — map of weight → relative frequency from `kind: typography` rows.
 - `typography.lineHeightPattern` — `tight` / `normal` / `loose` / `mixed`, judged from `line_height` values.

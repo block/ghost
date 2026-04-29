@@ -19,7 +19,6 @@ const ID_LENGTH = 16;
 const VALUE_TAG = "value";
 const TOKEN_TAG = "token";
 const COMPONENT_TAG = "component";
-const LIBRARY_TAG = "library";
 
 function digest(...parts: (string | undefined)[]): string {
   const hash = createHash("sha256");
@@ -52,9 +51,4 @@ export function tokenRowId(source: BucketSource, name: string): string {
 export function componentRowId(source: BucketSource, name: string): string {
   const [target, commit] = sourceKey(source);
   return digest(target, commit, COMPONENT_TAG, name);
-}
-
-export function libraryRowId(source: BucketSource, name: string): string {
-  const [target, commit] = sourceKey(source);
-  return digest(target, commit, LIBRARY_TAG, name);
 }

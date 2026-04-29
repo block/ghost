@@ -160,16 +160,6 @@ export interface ComponentRow extends RowBase {
   sizes?: string[];
 }
 
-// --- Library rows -------------------------------------------------------
-
-export interface LibraryRow extends RowBase {
-  /** Package name. */
-  name: string;
-  /** Library kind — `icons`, `charts`, `animation`, `motion`, etc. Open. */
-  kind: string;
-  version?: string;
-}
-
 // --- Bucket --------------------------------------------------------------
 
 export interface Bucket {
@@ -182,5 +172,4 @@ export interface Bucket {
   values: ValueRow[];
   tokens: TokenRow[];
   components: ComponentRow[];
-  libraries: LibraryRow[];
 }

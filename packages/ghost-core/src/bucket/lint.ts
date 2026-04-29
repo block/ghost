@@ -1,5 +1,5 @@
 import type { ZodIssue } from "zod";
-import { componentRowId, libraryRowId, tokenRowId, valueRowId } from "./id.js";
+import { componentRowId, tokenRowId, valueRowId } from "./id.js";
 import { BucketSchema, RECOMMENDED_VALUE_KINDS } from "./schema.js";
 import type { Bucket } from "./types.js";
 
@@ -91,28 +91,12 @@ export function lintBucket(input: unknown): BucketLintReport {
       });
     }
   });
-  bucket.libraries.forEach((row, idx) => {
-    const expected = libraryRowId(row.source, row.name);
-    if (row.id !== expected) {
-      issues.push({
-        severity: "warning",
-        rule: "id-mismatch",
-        message: `id '${row.id}' does not match generator output '${expected}'`,
-        path: `libraries[${idx}].id`,
-      });
-    }
-  });
 
   // Duplicate-id checks within a single section. (Cross-section duplicates
   // are fine since IDs include a section tag.) Within-bucket duplicates
   // mean the scanner emitted two rows with the same content, which the
   // recorder should have merged.
-  for (const section of [
-    "values",
-    "tokens",
-    "components",
-    "libraries",
-  ] as const) {
+  for (const section of ["values", "tokens", "components"] as const) {
     const seen = new Map<string, number>();
     bucket[section].forEach((row, idx) => {
       const prev = seen.get(row.id);
