@@ -18,8 +18,7 @@ a reproducible answer.
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| `ghost-map` | `map.md` (topology) | `inventory`, `lint` |
-| `ghost-expression` | `expression.md` (design language) | `lint`, `describe`, `diff`, `emit` |
+| `ghost-expression` | the three-stage scan: `map.md` → `bucket.json` → `expression.md` | `inventory`, `lint`, `describe`, `diff`, `bucket <op>`, `emit` |
 | `ghost-drift` | drift detection + governance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | `fleet.md` (elevation across members) | `members`, `view`, `emit skill` |
 | `ghost-ui` | reference design system (97 shadcn components) | — |
@@ -44,8 +43,8 @@ Or install globally:
 pnpm add -g ghost-drift ghost-expression
 ```
 
-`ghost-map` and `ghost-fleet` are workspace-only for now — clone the repo
-and `pnpm build` to use them.
+`ghost-fleet` is workspace-only for now — clone the repo and `pnpm build`
+to use it.
 
 No API key is required for any CLI verb. If your host agent uses Anthropic
 or OpenAI models, it'll handle auth itself. Each CLI auto-loads `.env` and
@@ -68,7 +67,7 @@ ghost-expression emit skill       # → .claude/skills/ghost-expression
 
 Each bundle ships its own `SKILL.md` plus recipes under `references/`:
 
-- **`ghost-expression`** — `profile.md` (write `expression.md` from a project) + `schema.md` (condensed format reference).
+- **`ghost-expression`** — `map.md` (write `map.md` from a repo, the topology stage), `survey.md` (write `bucket.json`, the objective stage), `profile.md` (interpret a bucket into `expression.md`, the subjective stage), `schema.md` (condensed format reference).
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 

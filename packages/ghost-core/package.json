@@ -2,7 +2,7 @@
   "name": "@ghost/core",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal shared primitives for the Ghost toolchain — types, embedding math, target resolution, skill-bundle loader. Consumed by ghost-drift and the upcoming ghost-expression / ghost-fleet / ghost-map packages. Not published.",
+  "description": "Internal shared primitives for the Ghost toolchain — types, embedding math, target resolution, skill-bundle loader, ghost.bucket/v1 schema, ghost.map/v1 schema. Consumed by every ghost-* tool. Not published.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,5 +18,8 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc --build --force"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   }
 }

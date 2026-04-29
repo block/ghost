@@ -54,6 +54,7 @@ export {
   serializeEmbeddingFragment,
 } from "./fragments.js";
 export type { ExpressionMeta, FrontmatterData } from "./frontmatter.js";
+export { inventory } from "./inventory.js";
 export type {
   ExpressionLayout,
   ExpressionLayoutSection,
@@ -66,8 +67,21 @@ export type {
   LintSeverity,
 } from "./lint.js";
 export { lintExpression } from "./lint.js";
+export type {
+  MapLintIssue,
+  MapLintReport,
+  MapLintSeverity,
+} from "./lint-map.js";
+export { lintMap } from "./lint-map.js";
 export type { ParsedExpression, ParseOptions } from "./parser.js";
 export { parseExpression, splitRaw } from "./parser.js";
+export type {
+  ScanStage,
+  ScanStageReport,
+  ScanStageState,
+  ScanStatus,
+} from "./scan-status.js";
+export { scanStatus } from "./scan-status.js";
 export type { FrontmatterShape } from "./schema.js";
 export {
   FrontmatterSchema,

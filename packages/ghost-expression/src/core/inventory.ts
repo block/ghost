@@ -6,7 +6,7 @@ import type {
   InventoryOutput,
   LanguageHistogramEntry,
   TopLevelEntry,
-} from "./types.js";
+} from "@ghost/core";
 
 /**
  * Canonical package manifests we scan for at the inventoried root.
