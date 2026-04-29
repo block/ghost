@@ -5,12 +5,7 @@
  */
 
 export { recomputeBucketIds } from "./fix-ids.js";
-export {
-  componentRowId,
-  libraryRowId,
-  tokenRowId,
-  valueRowId,
-} from "./id.js";
+export { componentRowId, tokenRowId, valueRowId } from "./id.js";
 export {
   BUCKET_FILENAME,
   type BucketLintIssue,
@@ -24,7 +19,6 @@ export {
   BucketSourceSchema,
   ColorSpecSchema,
   ComponentRowSchema,
-  LibraryRowSchema,
   RECOMMENDED_VALUE_KINDS,
   TokenRowSchema,
   ValueRowSchema,
@@ -37,7 +31,6 @@ export type {
   ColorSpec,
   ComponentRow,
   LayoutPrimitiveSpec,
-  LibraryRow,
   MotionSpec,
   RadiusSpec,
   RecommendedValueKind,

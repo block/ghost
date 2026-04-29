@@ -1,11 +1,5 @@
-import { componentRowId, libraryRowId, tokenRowId, valueRowId } from "./id.js";
-import type {
-  Bucket,
-  ComponentRow,
-  LibraryRow,
-  TokenRow,
-  ValueRow,
-} from "./types.js";
+import { componentRowId, tokenRowId, valueRowId } from "./id.js";
+import type { Bucket, ComponentRow, TokenRow, ValueRow } from "./types.js";
 
 /**
  * Recompute every row's `id` from its content fields, producing a new
@@ -38,12 +32,6 @@ export function recomputeBucketIds(bucket: Bucket): Bucket {
       (row): ComponentRow => ({
         ...row,
         id: componentRowId(row.source, row.name),
-      }),
-    ),
-    libraries: bucket.libraries.map(
-      (row): LibraryRow => ({
-        ...row,
-        id: libraryRowId(row.source, row.name),
       }),
     ),
   };

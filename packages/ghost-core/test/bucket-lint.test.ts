@@ -39,7 +39,6 @@ function makeBucket(values: ReturnType<typeof makeValueRow>[] = []): Bucket {
     values,
     tokens: [],
     components: [],
-    libraries: [],
   };
 }
 

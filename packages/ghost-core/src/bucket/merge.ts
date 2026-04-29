@@ -2,7 +2,6 @@ import type {
   Bucket,
   BucketSource,
   ComponentRow,
-  LibraryRow,
   RowBase,
   TokenRow,
   ValueRow,
@@ -32,7 +31,6 @@ export function mergeBuckets(...buckets: Bucket[]): Bucket {
     values: dedupRows(buckets.flatMap((b) => b.values)),
     tokens: dedupRows(buckets.flatMap((b) => b.tokens)),
     components: dedupRows(buckets.flatMap((b) => b.components)),
-    libraries: dedupRows(buckets.flatMap((b) => b.libraries)),
   };
 }
 
@@ -61,11 +59,4 @@ function dedupSources(sources: BucketSource[]): BucketSource[] {
 
 // Type re-exports kept narrow so consumers don't have to import from `types.js`
 // just to use `mergeBuckets` results.
-export type {
-  Bucket,
-  BucketSource,
-  ComponentRow,
-  LibraryRow,
-  TokenRow,
-  ValueRow,
-};
+export type { Bucket, BucketSource, ComponentRow, TokenRow, ValueRow };

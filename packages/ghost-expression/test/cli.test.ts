@@ -206,7 +206,6 @@ function makeBucket(source: BucketSource, hex = "#f97316"): Bucket {
       },
     ],
     components: [],
-    libraries: [],
   };
 }
 
@@ -372,7 +371,6 @@ describe("ghost-expression bucket fix-ids", () => {
       ],
       tokens: [],
       components: [],
-      libraries: [],
     };
     await writeFile(join(dir, "draft.json"), JSON.stringify(draft));
 

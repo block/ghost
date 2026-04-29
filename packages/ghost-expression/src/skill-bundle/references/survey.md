@@ -30,8 +30,7 @@ A `bucket.json` is `ghost.bucket/v1`:
   "sources": [{ "target": "...", "commit": "...", "scanned_at": "..." }],
   "values":     [...],
   "tokens":     [...],
-  "components": [...],
-  "libraries":  [...]
+  "components": [...]
 }
 ```
 
@@ -40,7 +39,8 @@ Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by
 - **`values[]`** — every concrete literal that ships in the design language. `kind` is open; recommended values: `color`, `spacing`, `typography`, `radius`, `shadow`, `breakpoint`, `motion`, `layout-primitive`. Other kinds (`z-index`, `opacity`, `cursor`, `gradient`, `iconography`, `aspect-ratio`) get a `value-kind-unknown` warning but are accepted — emit them when they matter.
 - **`tokens[]`** — every named token declared in source (CSS variables, theme keys, design-token entries). Each row has `name`, `alias_chain` (path through any indirection — `["--button-bg", "--color-brand-primary"]` for a two-step chain; `[]` for a leaf defined inline), `resolved_value` (end-of-chain literal), optional `by_theme` for light/dark variants.
 - **`components[]`** — every named component you can confidently identify (registry entries, exported PascalCase components with variants/sizes). Loose schema: `name`, `discovered_via` (`registry.json` / `heuristic` / etc.), optional `variants[]` and `sizes[]`.
-- **`libraries[]`** — every external dependency that contributes design surface (icon libraries, charting, animation, typography). `kind` is open: `icons`, `charts`, `animation`, `motion`, `fonts`, etc.
+
+External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a bucket section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
 
 Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
 
@@ -62,7 +62,7 @@ Decide your extraction strategy from these signals — see Step 2.
 
 Recall is the failure mode and the only one. A bucket missing 90% of a section's rows is a failed scan, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
 
-For every section (`values[]`, `tokens[]`, `components[]`, `libraries[]`):
+For every section (`values[]`, `tokens[]`, `components[]`):
 
 1. **Identify the canonical signal in this repo.** Where does the source of truth for this kind of thing actually live? It will be different in every repo — a manifest, a registry, a barrel export, a CSS declaration block, a naming convention. Use the strongest signal the repo offers.
 2. **Enumerate, don't sample.** If you can count entries from the canonical signal independently, your row count must match. 6 components when the canonical signal lists 100 is a lie.
@@ -86,7 +86,7 @@ If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per diale
 
 ### 3. Run extraction passes — apply the exhaustiveness rule per section
 
-The exhaustiveness rule (above) governs every section. The dialect-specific tactics here are how you implement it for `values[]` and `tokens[]`. For `components[]` and `libraries[]`, the rule is the same: find the canonical signal in *this* repo and enumerate it.
+The exhaustiveness rule (above) governs every section. The dialect-specific tactics here are how you implement it for `values[]` and `tokens[]`. For `components[]`, the rule is the same: find the canonical signal in *this* repo and enumerate it.
 
 For values + tokens, sloppy grep undercounts silently. Discipline:
 
@@ -96,10 +96,9 @@ For values + tokens, sloppy grep undercounts silently. Discipline:
 - **Spread check.** If a value appears in `files_count: 1`, it's likely incidental, not part of the design language. Note the count but don't promote with `role_hypothesis`.
 - **Resolve aliases exhaustively.** Every named token declared in the canonical token source becomes a `tokens[]` row. Don't sample tokens — count the declarations and match the row count. When a token's value is `var(--other)`, follow the chain to the literal; record the **token row** with the chain, and the **value row** for the resolved literal.
 
-For components + libraries:
+For components:
 
 - **Components are countable.** Count them by whatever signal the repo offers (manifest entries, barrel exports, naming pattern under a known directory). If you can count to 50 and your bucket has 6 rows, you've sampled — go back and enumerate.
-- **Libraries are countable too.** Read the manifest's dependencies. Each external library that contributes design surface (icons, fonts, motion, charts, primitives) is a row. Don't roll up by family — `@radix-ui/react-dialog` and `@radix-ui/react-popover` are two different surfaces and two different rows. (One row with a count is fine if the manifest groups them; two rows is also fine. A "..." in the name is not.)
 
 ### 4. Sample feature areas for usage counts
 
@@ -125,7 +124,7 @@ Build the bucket file. For every row, leave `id` as an empty string `""`. You do
 }
 ```
 
-Same shape per token / component / library row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the bucket with the same single source.
+Same shape per token and component row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the bucket with the same single source.
 
 ### 6. Populate IDs
 
@@ -148,8 +147,6 @@ Before declaring the bucket done, walk each section and confirm exhaustiveness:
 - **`components[]`** — what's the canonical signal in this repo? Count it independently. If your row count is below that count, you've under-recorded. Either add the missing rows or, if the section truly isn't enumerable here, leave the array empty.
 - **`tokens[]`** — count the named-token declarations in the canonical token source(s) named in `map.md`. Your row count should match.
 - **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your bucket = missed.
-- **`libraries[]`** — read the manifest's dependencies. Every external library that contributes design surface (icons, fonts, motion, charts, primitives, command-palette, toast, animation) is a row.
-
 The bucket is **saturated** when another exhaustiveness pass adds fewer than ~2 new rows across all sections AND your component/token row counts match (or come very close to) an independent count of the canonical signal. If exhaustiveness disagrees with what you have, exhaustiveness wins — re-pass.
 
 Hard stop conditions:
@@ -167,7 +164,7 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 - Resolve token alias chains end-to-end. The `alias_chain` array captures the path.
 - Validate with `ghost-expression lint bucket.json` before declaring success.
 - After authoring rows with empty IDs, run `bucket fix-ids` exactly once.
-- **Cross-check your component, token, and library counts against an independent count of the canonical signal in this repo.** Disagreement = re-pass.
+- **Cross-check your component and token counts against an independent count of the canonical signal in this repo.** Disagreement = re-pass.
 
 ## Never
 
@@ -177,5 +174,5 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 - **Never assign roles confidently.** `role_hypothesis` is a *hint*, optional, and tentative. The interpreter has the final word. If you're not sure, leave it empty.
 - **Never undercount silently.** If your coverage is weak (mobile dialects, custom DSLs, no canonical signal in this repo), surface it in a `# Coverage` scratchpad note and tell the interpreter.
 - **Never compute IDs by hand.** Use `bucket fix-ids`.
-- **Never use placeholder/glob names.** A library row with `name: "@radix-ui/react-*"` is sampling-disguised-as-a-row. Enumerate or roll up explicitly with a count.
+- **Never use placeholder/glob names.** A component row with `name: "*Button"` or `name: "<various>"` is sampling-disguised-as-a-row. Enumerate concretely.
 - **Never edit a bucket after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. The bucket is the frozen ground truth between scan and interpretation.

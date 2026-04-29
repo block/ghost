@@ -123,26 +123,18 @@ const ComponentRowSchema = RowBaseSchema.extend({
   sizes: z.array(z.string()).optional(),
 });
 
-const LibraryRowSchema = RowBaseSchema.extend({
-  name: z.string().min(1),
-  kind: z.string().min(1),
-  version: z.string().optional(),
-});
-
 export const BucketSchema = z.object({
   schema: z.literal("ghost.bucket/v1"),
   sources: z.array(BucketSourceSchema).min(1),
   values: z.array(ValueRowSchema),
   tokens: z.array(TokenRowSchema),
   components: z.array(ComponentRowSchema),
-  libraries: z.array(LibraryRowSchema),
 });
 
 export {
   BucketSourceSchema,
   ColorSpecSchema,
   ComponentRowSchema,
-  LibraryRowSchema,
   TokenRowSchema,
   ValueRowSchema,
   ValueSpecSchema,

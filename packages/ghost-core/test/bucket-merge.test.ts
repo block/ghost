@@ -64,7 +64,6 @@ function makeBucket(
     values,
     tokens,
     components: [],
-    libraries: [],
   };
 }
 
@@ -110,7 +109,7 @@ describe("mergeBuckets", () => {
     expect(merged.sources).toHaveLength(1);
   });
 
-  it("preserves tokens, components, libraries independently", () => {
+  it("preserves tokens and components independently", () => {
     const a = makeBucket(
       SOURCE_A,
       [],
