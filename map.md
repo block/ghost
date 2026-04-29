@@ -93,12 +93,13 @@ orientation_files:
 
 ## Identity
 
-Ghost is a TypeScript pnpm monorepo that ships deterministic primitives for
-detecting and managing visual-language drift in design systems. The
+Ghost is a TypeScript pnpm monorepo that helps agents detect and manage
+visual-language drift in the design systems they generate against. The
 canonical artifact is `expression.md` — a human-readable, LLM-editable
 Markdown file with a YAML machine layer plus a three-section prose body.
-The CLI is BYOA: it never calls an LLM. Judgement work (profile, review,
-verify, generate, discover) lives in skill recipes the host agent executes.
+Ghost is BYOA: judgement work (profile, review, verify, generate, discover)
+lives in skill recipes the host agent executes; the CLIs are the calculator
+the agent reaches for when it needs a reproducible answer.
 
 The repository is in the middle of a five-tool decomposition. Today
 `ghost-drift` is the only published package; alongside it sit `ghost-ui`

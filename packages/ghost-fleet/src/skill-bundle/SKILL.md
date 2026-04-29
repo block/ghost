@@ -11,9 +11,9 @@ metadata:
 
 Fleet is the **elevation view** across many `(map.md, expression.md)` pairs. Per-repo views answer "is this repo drifting?" Fleet answers "what does our design world look like?"
 
-This skill turns the deterministic outputs of `ghost-fleet view` into a **world-model narrative** in the body of `fleet.md`. The CLI gives you the math (pairwise distances, group-by tables, tracks-graph). You give it the prose.
+This skill helps you turn the output of `ghost-fleet view` into a **world-model narrative** in the body of `fleet.md`. The CLI is the calculator: pairwise distances, group-by tables, tracks-graph. You give it the prose.
 
-## CLI primitives
+## CLI verbs
 
 | Verb | Purpose |
 |---|---|

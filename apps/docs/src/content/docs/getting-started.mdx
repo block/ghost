@@ -10,11 +10,11 @@ slug: getting-started
 <DocSection title="The Shape of Ghost">
 
 Ghost is split into **five small tools**, each with one responsibility, plus a
-shared library underneath. Every CLI is a set of deterministic primitives —
-none of them ever call an LLM. Each tool ships its own
-[agentskills.io](https://agentskills.io)-compatible recipe bundle for the
-interpretive work your host agent (Claude Code, Cursor, Goose, Codex, …)
-runs: profile, review, verify, remediate.
+shared library underneath. Your host agent (Claude Code, Cursor, Goose, Codex, …)
+does the interpretive work — profile, review, verify, remediate — using
+[agentskills.io](https://agentskills.io)-compatible recipe bundles that each
+tool ships. The CLIs are the calculator the agent reaches for when it needs
+a reproducible answer.
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ next step inline — e.g. after `profile`, a prompt to `compare` against
 another expression, or to run `ghost-expression emit review-command`. Once
 installed, ask your agent in plain English ("profile this design language",
 "review this PR for drift") and it'll follow the recipe, calling the right
-CLI for any deterministic step.
+CLI whenever it needs a reproducible answer.
 
 </DocSection>
 
@@ -94,14 +94,14 @@ Profile this design language into expression.md
 The `profile` recipe walks the agent through finding design sources
 (tailwind config, theme CSS, token files, component primitives), resolving
 variable chains end-to-end, and writing the expression. The final step is
-always `ghost-expression lint` — which the CLI runs for you,
-deterministically.
+always `ghost-expression lint` — which validates the result with the same
+answer every time.
 
 An **expression** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
 roles), and the body is prose organized into Character, Signature, and
-Decisions. Humans can read it. LLMs can consume it. Deterministic tools
-diff it. See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/expression.md)
+Decisions. Humans can read it. LLMs can consume it. Ghost's CLIs diff it.
+See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/expression.md)
 in this repo for a full real-world example.
 
 ```bash
@@ -249,7 +249,7 @@ export default defineConfig({
 
 Next: [Drift Workflow](/tools/drift/workflow) for the five-move
 walkthrough — profile, compare, review, evolve, org — with richer examples
-for each. Or jump to the [CLI Reference](/docs/cli) for every deterministic
-verb across all four tools.
+for each. Or jump to the [CLI Reference](/docs/cli) for every verb across
+all four tools.
 
 </DocSection>

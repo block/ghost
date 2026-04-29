@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Sixteen deterministic primitives across four tools. Everything interpretive lives in the skill bundles.
+description: Sixteen verbs across four tools. Everything interpretive lives in the skill bundles your host agent runs.
 kicker: Docs
 section: guide
 order: 20
@@ -9,12 +9,12 @@ slug: cli
 
 <DocSection title="Overview">
 
-Ghost's CLIs are deterministic primitives. None of them call an LLM. The
-canonical artifacts are **`expression.md`** (owned by `ghost-expression`)
-and **`map.md`** (owned by `ghost-map`) — Markdown files with YAML
-frontmatter (machine layer) plus a prose body. Most commands accept a path
-to the relevant artifact; they default to `./expression.md` or `./map.md`
-in the current directory.
+The CLIs are the calculator your host agent reaches for when it needs a
+reproducible answer. The canonical artifacts are **`expression.md`** (owned
+by `ghost-expression`) and **`map.md`** (owned by `ghost-map`) — Markdown
+files with YAML frontmatter (machine layer) plus a prose body. Most commands
+accept a path to the relevant artifact; they default to `./expression.md` or
+`./map.md` in the current directory. No API key required.
 
 Verbs are scoped to the tool that owns the artifact:
 
@@ -37,7 +37,7 @@ this reference — so these docs can't drift from the binaries.
 
 `map.md` is the navigation card every Ghost tool reads to learn the
 topology of a frontend repo. `ghost-map` ships two verbs: `inventory`
-(deterministic raw signals as JSON, the input the agent reads to author
+(raw repo signals as JSON, the input the agent reads to author
 `map.md`) and `lint` (validate against `ghost.map/v1`).
 
 <CliHelp tool="ghost-map" command="inventory" hideDescription />
@@ -94,10 +94,10 @@ whole file.
 
 A typical `expression.md` runs 3–5k tokens. The `# Decisions` block alone
 is usually 60–80% of that, and an agent reviewing a single component change
-rarely needs every dimension. `describe` is the deterministic answer to
-"what's in this file and where" — the recall safety rule (when in doubt,
-load the whole `# Decisions` block) lives in the review/remediate skill
-recipes.
+rarely needs every dimension. `describe` answers "what's in this file and
+where" with the same answer every time — the recall safety rule (when in
+doubt, load the whole `# Decisions` block) lives in the review/remediate
+skill recipes.
 
 <CliHelp tool="ghost-expression" command="describe" hideDescription />
 
@@ -309,8 +309,8 @@ once, then ask your agent in plain English:
 
 Source for each recipe lives under
 `packages/<tool>/src/skill-bundle/references/`. The agent executes the
-steps with its normal tools and calls the relevant CLI for any
-deterministic work.
+steps with its normal tools and calls the relevant CLI when it needs a
+reproducible answer.
 
 Each recipe also declares `handoffs` in its frontmatter — structured
 next-step suggestions that point at another skill (e.g. `profile` →

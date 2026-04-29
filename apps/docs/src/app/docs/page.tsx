@@ -24,7 +24,7 @@ const sections: {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Sixteen deterministic primitives across four tools — ghost-map, ghost-expression, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
+      "Sixteen verbs across four tools — ghost-map, ghost-expression, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {

@@ -31,7 +31,7 @@ const cards: {
     name: "Skill bundle",
     href: "https://github.com/block/ghost/tree/main/packages/ghost-fleet/src/skill-bundle",
     description:
-      "The target recipe — synthesize the fleet.md prose narrative from the deterministic view output.",
+      "The target recipe — synthesize the fleet.md prose narrative from the view output.",
     icon: <Network className="size-8" strokeWidth={1.5} />,
   },
 ];
