@@ -9,13 +9,11 @@ metadata:
 
 # Ghost Expression — Authoring the Canonical Artifact
 
-Ghost captures a project's visual language as an **`expression.md`** file (YAML frontmatter + three-layer Markdown: Character → Signature → Decisions).
+This skill helps you author the project's design language — its `expression.md` (YAML frontmatter + three-layer Markdown: Character → Signature → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
 
-This skill owns the **authoring** half of the toolchain — write, validate, describe, diff, and emit. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
+You do the synthesis (the profile recipe). The `ghost-expression` CLI is the calculator you reach for when you need a reproducible answer: parsing, schema validation, layout, structural diff. Call it freely; the output is ground truth.
 
-Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Synthesis (the profile recipe) happens in **you, the host agent**; the CLI hands you parsing, schema validation, layout, and structural diff.
-
-## CLI primitives
+## CLI verbs
 
 | Verb | Purpose |
 |---|---|

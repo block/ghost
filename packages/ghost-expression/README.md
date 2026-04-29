@@ -4,7 +4,7 @@
 
 `ghost-expression` owns the on-disk format every other Ghost tool reads. It parses, lints, lays out (section ranges + token estimates for selective loading), structurally diffs, and emits derived artifacts (per-project review slash commands, generation context bundles, agentskills.io skill bundles).
 
-The actual *writing* of an `expression.md` is a host-agent recipe — `profile.md` ships in this package's skill bundle and walks an agent through resolving design sources end-to-end. The CLI here is the deterministic gate at the end of that loop.
+The actual *writing* of an `expression.md` is a host-agent recipe — `profile.md` ships in this package's skill bundle and walks an agent through resolving design sources end-to-end. The CLI here is the success gate at the end of that loop: same answer every time, no LLM in the loop.
 
 For drift detection, comparison, and stance recording (`compare`, `ack`, `track`, `diverge`), see **[`ghost-drift`](../ghost-drift)**.
 
@@ -72,7 +72,7 @@ The bundle ships:
 - `profile.md` — recipe for writing `expression.md` from a project (mode-branched: `target` / `module` / `rollup`).
 - `schema.md` — condensed reference to the frontmatter schema and three-layer body.
 
-Once installed, ask your agent to "profile this design language" and it'll follow the recipe, ending at `ghost-expression lint` for the deterministic success gate.
+Once installed, ask your agent to "profile this design language" and it'll follow the recipe, ending at `ghost-expression lint` as the success gate.
 
 ## Canonical artifact
 

@@ -1,4 +1,14 @@
-# Ghost — Agent Context
+# Ghost
+
+Agents can ship UI now. The problem: what they ship drifts — wrong palette, wrong density, wrong hierarchy — because they have no canonical answer to "what does this project's design language *actually* look like."
+
+Ghost is the layer that gives them one. The design language lives in your repo as `expression.md`. Agents read it before generating, compare against it after, and either correct the drift or codify the divergence as a deliberate change. Five tools split the loop:
+
+- **ghost-map** — where the design system lives
+- **ghost-expression** — what the design language is (the canonical artifact)
+- **ghost-drift** — when generated UI strays
+- **ghost-fleet** — how the language propagates across many projects
+- **ghost-ui** — a reference design system to test the loop against
 
 > **Read [`INVARIANTS.md`](./INVARIANTS.md) before making non-trivial changes.** These are hard constraints — surface conflicts, don't weigh them as preferences.
 
@@ -23,10 +33,10 @@ pnpm --filter ghost-expression exec ghost-expression <command>
 
 ## Environment Variables
 
-Every CLI verb across every Ghost tool is deterministic — no API key required.
+No API key is required to run Ghost. The variables below are optional.
 
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY` — optional, consumed only by `computeSemanticEmbedding` (library function in `@ghost/core`; used when a host writes an `expression.md` and wants an enriched 49-dim vector for paraphrase-robust comparison).
-- `GITHUB_TOKEN` — optional, used by `resolveTrackedExpression` when fetching a tracked expression from GitHub (avoids rate limits).
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY` — consumed only by `computeSemanticEmbedding` (library function in `@ghost/core`; used when a host writes an `expression.md` and wants an enriched 49-dim vector for paraphrase-robust comparison).
+- `GITHUB_TOKEN` — used by `resolveTrackedExpression` when fetching a tracked expression from GitHub (avoids rate limits).
 
 Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
@@ -49,7 +59,7 @@ Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `tes
 
 ## Architecture
 
-Ghost is **BYOA (bring-your-own-agent)**. Every CLI is a set of **deterministic primitives** — none of them call an LLM. Judgement work (profile, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the host agent (Claude Code, Codex, Cursor, Goose, …) executes.
+Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (profile, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs); see [`INVARIANTS.md`](./INVARIANTS.md) §1 and §4 for the underlying constraints.
 
 The repo decomposes into **five tools plus a reference design system**, each with a single responsibility:
 
@@ -90,7 +100,7 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 
 | Tool | Command | Description |
 |------|---------|-------------|
-| `ghost-map` | `inventory [path]` | Emit deterministic raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. |
+| `ghost-map` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. |
 | `ghost-map` | `lint [map]` | Validate `map.md` against `ghost.map/v1`. |
 | `ghost-expression` | `lint [expression]` | Validate `expression.md` schema + body/frontmatter coherence. |
 | `ghost-expression` | `describe [expression]` | Print section ranges + token estimates (so agents can selectively load). |
@@ -105,7 +115,7 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 | `ghost-fleet` | `view [dir]` | Compute pairwise distances + group-by tables; emit `fleet.md` + `fleet.json`. |
 | `ghost-fleet` | `emit skill` | Install the `ghost-fleet` agentskills.io bundle. |
 
-**Workflows the CLI does not do** — these are recipes the host agent follows. Each tool ships its own under `packages/<tool>/src/skill-bundle/references/`:
+**Workflows (agent recipes).** Each tool ships its own skill-bundle references under `packages/<tool>/src/skill-bundle/references/`. These are the agent's job, not CLI verbs:
 
 - **Profile** (write `expression.md` from a project) — `ghost-expression/.../profile.md`
 - **Map** (write `map.md` from a repo) — `ghost-map/.../map.md`

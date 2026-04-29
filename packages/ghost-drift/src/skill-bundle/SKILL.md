@@ -9,21 +9,21 @@ metadata:
 
 # Ghost Drift — Design Drift Detection
 
-Ghost captures a project's visual language as an `expression.md`. **Drift** is what happens between expressions: pairwise comparison, composite analysis across many, the temporal trajectory of one over time, and the governance signals (`ack`, `track`, `diverge`) that record stance toward change.
+When you generate UI in this project, it drifts. Palette goes off, spacing creeps, hierarchy slips. This skill helps you catch and resolve that drift against the project's `expression.md` — the canonical answer to "what does the design language look like here."
+
+You do the reading, deciding, and writing. The `ghost-drift` CLI is the calculator you reach for when you need a reproducible answer: vector distance between expressions, temporal aggregates, governance manifest writes. Call it freely; the output is ground truth.
 
 Authoring an `expression.md` lives in the sibling `ghost-expression` skill. Drift compares them under change.
 
-Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Synthesis, interpretation, and generation happen in **you, the host agent**; the CLI hands you the arithmetic (vector distance, temporal aggregates, manifest writes) you call on when you need a stable answer.
-
-## CLI primitives
+## CLI verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Pure math over expression embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
+| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Vector math over expression embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
 | `ghost-drift ack` / `ghost-drift track <expression.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked expression (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `expression.md`. |
 | `ghost-drift emit skill` | Install this agent skill bundle into your host agent. |
 
-Five verbs. Authoring (lint/describe/diff/emit-review-command/emit-context-bundle) lives in `ghost-expression`. If you find yourself reaching for `ghost-drift review` or `ghost-drift verify` — those are *your* workflows, not CLI commands. Follow the recipes below.
+Five verbs. Authoring (lint/describe/diff/emit-review-command/emit-context-bundle) lives in `ghost-expression`. If you find yourself reaching for `ghost-drift review` or `ghost-drift verify` — those are *your* workflows. Follow the recipes below.
 
 ## Workflows (your job, not the CLI's)
 
@@ -53,6 +53,6 @@ Validate via `ghost-expression lint` before drawing conclusions from a drift com
 
 ## Never
 
-- Never wrap a workflow recipe in a CLI verb. `review`, `verify`, `remediate` are recipes you execute, not commands to invoke.
+- Don't go looking for CLI verbs for `review`, `verify`, or `remediate`. Those are recipes you execute, not commands to invoke.
 - Never auto-update an expression because drift exists. Expressions evolve by deliberate act (Invariant 5) — your role is to surface the drift and wait for instruction.
-- Never call an LLM from a verb. If you need judgement (e.g., "is this drift intentional"), apply the relevant recipe; the CLI itself does math, not interpretation.
+- Don't expect the CLI to make the judgement call. Vector distance is math; whether the drift is intentional, acceptable, or a regression is for you to decide via the relevant recipe.

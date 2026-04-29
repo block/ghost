@@ -1135,9 +1135,9 @@ export function WorkflowContent() {
           ))}
         </div>
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          Ghost never calls an LLM itself. The agent writes the expression; the
-          CLI lints, compares, and diffs it deterministically. The final step of
-          every profile is <code>ghost-expression lint</code> — which validates
+          The agent writes the expression. The CLI is the calculator it reaches
+          for: lint, compare, diff — same answer every time. The final step of
+          every profile is <code>ghost-expression lint</code>, which validates
           the schema and flags body/frontmatter incoherence before anything else
           touches it.
         </p>
@@ -1203,7 +1203,7 @@ export function WorkflowContent() {
         </StepLead>
         <ReviewSection />
         <p className="reveal mt-8 text-sm text-muted-foreground max-w-[52ch] leading-relaxed">
-          The agent reaches for deterministic primitives as it needs them:{" "}
+          The agent reaches for the CLI as it needs reproducible answers:{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
             ghost-drift compare
           </code>{" "}
@@ -1383,7 +1383,7 @@ export function WorkflowContent() {
           </code>{" "}
           is a CLI verb. <em>Generate</em>, <em>review</em>, and <em>verify</em>{" "}
           are skill recipes: instructions your host agent follows, calling the
-          deterministic primitives as it goes. <em>Verify</em> is the
+          CLI when it needs a reproducible answer. <em>Verify</em> is the
           schema-discipline mechanism: each dimension gets classified as{" "}
           <em>tight</em>, <em>leaky</em>, or <em>uncaptured</em> — a map of
           where the expression needs sharpening.

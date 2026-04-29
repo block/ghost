@@ -4,16 +4,13 @@
 
 AI is becoming the primary author of shipped code. Humans sit in fewer diffs; the harness (guardrails, reviewers, verifiers) catches drift before it lands. In that world, ensuring every generation reflects a brand's voice is paramount. Fonts and spacing are the easy half. The hard half is character: the posture a product takes, what it refuses to do. That's where generations drift first.
 
-Ghost closes that loop. It captures a brand as an **expression**: a human-readable `expression.md` encoding character, signature traits, and concrete decisions. It gives any agent the primitives to author against it, detect drift the moment it happens, and record the right stance: **acknowledge**, **track**, or **intentionally diverge**. Each repo owns its expression, its trajectory, and its stance. The fleet of expressions drifts in the open. Nothing gets enforced; nothing drifts silently. Deterministic arithmetic lives in Ghost's CLIs; judgment lives in whatever agent you already use.
+Ghost closes that loop. It captures a brand as an **expression**: a human-readable `expression.md` encoding character, signature traits, and concrete decisions. It gives any agent what it needs to author against the expression, detect drift the moment it happens, and record the right stance: **acknowledge**, **track**, or **intentionally diverge**. Each repo owns its expression, its trajectory, and its stance. The fleet of expressions drifts in the open. Nothing gets enforced; nothing drifts silently. The agent does the reading, deciding, and writing; Ghost's CLIs are the calculator it reaches for.
 
 ## BYOA: bring your own agent
 
-Ghost splits the work the way agents need it split: **judgement in the agent, arithmetic in the CLI**.
+Every Ghost workflow runs in the host agent you already use — Claude Code, Codex, Cursor, Goose, whatever ships next. Each tool ships an [agentskills.io](https://agentskills.io)-compatible bundle of recipes for the interpretive work (profile, review, verify, remediate, fleet narrative); the agent loads the bundle, reads `expression.md` and `map.md`, makes the calls, and writes the artifacts. When it needs a reproducible number — vector distance between two expressions, schema validation, a structural diff — it calls the relevant Ghost CLI verb for the answer.
 
-- **The CLIs**: a set of **deterministic primitives** distributed across five small tools. None of them ever call an LLM. They do vector distance, schema validation, manifest writes. Same answer every time.
-- **The skill bundles**: [agentskills.io](https://agentskills.io)-compatible recipes for the interpretive work (profile, review, verify, remediate, fleet narrative). Each tool ships its own; the host agent (Claude Code, Codex, Cursor, Goose, …) runs the recipes and calls the relevant CLI for the arithmetic.
-
-No API key is required to use any CLI verb. Judgment work lives in whichever agent you already use; each tool's `emit skill` verb installs the recipes there.
+No API key is required to run any CLI verb. Each tool's `emit skill` verb installs its bundle into your agent.
 
 ## The five tools
 
@@ -37,7 +34,7 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 - **Self-govern at author time**: the `review` and `verify` recipes (in the `ghost-drift` skill bundle) run an agent's output against the expression *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
 - **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `ghost-drift compare` on N≥3 expressions, or `ghost-fleet view` for the full elevation). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `track`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent becomes useful evidence.
-- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, deterministic tools diff them. No DSL to learn.
+- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, Ghost's CLIs diff them. No DSL to learn.
 
 ## Repo layout
 
@@ -79,7 +76,7 @@ ghost-expression emit skill       # → ./.claude/skills/ghost-expression
 ghost-fleet emit skill            # → ./.claude/skills/ghost-fleet
 ```
 
-Once a skill is installed, ask your agent in plain English ("profile this design language", "review this PR for drift", "compute the fleet view") and it'll follow the recipe, calling the relevant CLI for any deterministic step.
+Once a skill is installed, ask your agent in plain English ("profile this design language", "review this PR for drift", "compute the fleet view") and it'll follow the recipe, calling the relevant CLI whenever it needs a reproducible answer.
 
 ### Quick start
 
@@ -145,7 +142,7 @@ just dev
 
 ## CLI Commands
 
-Every verb is a deterministic primitive — pure inputs → pure outputs, no LLM in the loop. Verbs are scoped to the tool that owns the artifact.
+Verbs are scoped to the tool that owns the artifact. Pure inputs → pure outputs, no API key required.
 
 | Tool | Command | Description |
 | --- | --- | --- |
@@ -178,7 +175,7 @@ The interpretive verbs from the pitch (*author, self-govern, detect, remediate*)
 | `remediate` | `ghost-drift` | Suggest minimal fixes for drift | "fix this drift" |
 | `target`    | `ghost-fleet` | Synthesize fleet narrative | "describe this fleet" |
 
-These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus the relevant Ghost CLI for any deterministic step. (`discover` and `generate` are intentionally not migrated — see [`docs/ideas/phase-0-decisions.md`](./docs/ideas/phase-0-decisions.md).)
+These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus the relevant Ghost CLI when it needs a reproducible answer. (`discover` and `generate` are intentionally not migrated — see [`docs/ideas/phase-0-decisions.md`](./docs/ideas/phase-0-decisions.md).)
 
 ## Configuration
 
@@ -197,7 +194,7 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. What deterministic tools read.
+- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. The machine layer.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
 - **`# Signature`**: 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
 - **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
@@ -208,7 +205,7 @@ Generate one with the `profile` recipe (in the `ghost-expression` skill bundle).
 
 What every Ghost tool reads to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-map`): YAML frontmatter against the `ghost.map/v1` schema (languages, build system, package manifests, registry, design-system paths, UI surface globs, feature areas) plus a short prose body (Identity, Topology, Conventions). The repo's own `map.md` lives at the root.
 
-Generate one with the `map` recipe (in the `ghost-map` skill bundle). The agent reads `ghost-map inventory` (deterministic raw signals) and synthesizes the prose layer.
+Generate one with the `map` recipe (in the `ghost-map` skill bundle). The agent reads `ghost-map inventory` (raw repo signals as JSON) and synthesizes the prose layer.
 
 ### Author + self-govern loop
 
