@@ -99,6 +99,7 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 | Tool | Command | Description |
 |------|---------|-------------|
 | `ghost-expression` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. Feeds the topology recipe. |
+| `ghost-expression` | `scan-status [dir]` | Report which scan stages have produced artifacts (`map.md` / `bucket.json` / `expression.md`) and which stage to run next. |
 | `ghost-expression` | `lint [file]` | Validate `expression.md`, `map.md`, or `bucket.json` — auto-detects the kind from path/content. |
 | `ghost-expression` | `describe [expression]` | Print section ranges + token estimates (so agents can selectively load). |
 | `ghost-expression` | `diff <a> <b>` | Structural prose-level diff between expressions (decisions + palette roles). **Not** vector distance. |
@@ -115,9 +116,10 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 
 **Workflows (agent recipes).** Each tool ships its own skill-bundle references under `packages/<tool>/src/skill-bundle/references/`. These are the agent's job, not CLI verbs:
 
+- **Scan** (orchestrate topology → survey → profile end-to-end) — `ghost-expression/.../scan.md`
 - **Map** (write `map.md` from a repo, the topology stage) — `ghost-expression/.../map.md`
 - **Survey** (write `bucket.json` from a target, the objective stage) — `ghost-expression/.../survey.md`
-- **Profile** (write `expression.md` from a bucket, the subjective stage) — `ghost-expression/.../profile.md`
+- **Profile** (interpret a `bucket.json` into `expression.md`, the subjective stage) — `ghost-expression/.../profile.md`
 - **Review** (flag drift in PR changes) — `ghost-drift/.../review.md`
 - **Verify** (generate → review loop) — `ghost-drift/.../verify.md`
 - **Compare interpretation** — `ghost-drift/.../compare.md`
@@ -142,7 +144,7 @@ Used by `resolveTrackedExpression` (in `ghost-drift`) and legacy library consume
 Three artifacts produced in sequence by a scan, all owned by `ghost-expression`:
 
 - **`map.md`** — the topology card (stage 1). Human-readable answer to "where is the design system, which folders matter?" Schema is `ghost.map/v1` (lives in `@ghost/core`), validated by `ghost-expression lint map.md`. Authored from `ghost-expression inventory` + the `map.md` skill recipe. The repo's own `map.md` lives at the root.
-- **`bucket.json`** — the objective scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens, components, and libraries observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.bucket/v1` (lives in `@ghost/core`), validated by `ghost-expression lint bucket.json`. Authored via the `survey.md` skill recipe.
+- **`bucket.json`** — the objective scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens and components observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.bucket/v1` (lives in `@ghost/core`); three sections — `values`, `tokens`, `components`. External libraries (icons, primitives, charting) deliberately *do not* have a bucket section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*; load-bearing library choices surface as prose evidence in the interpreter stage. Validated by `ghost-expression lint bucket.json`. Authored via the `survey.md` skill recipe.
 - **`expression.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: 49-dim embedding + palette/spacing/typography/surfaces/roles) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `bucket.json` per the `profile.md` skill recipe. See `docs/expression-format.md` for the full spec; the condensed reference ships at `packages/ghost-expression/src/skill-bundle/references/schema.md`.
 
 ## Releasing & Changesets

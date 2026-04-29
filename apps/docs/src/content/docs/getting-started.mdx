@@ -9,16 +9,24 @@ slug: getting-started
 
 <DocSection title="The Shape of Ghost">
 
-Ghost is split into **five small tools**, each with one responsibility, plus a
-shared library underneath. Your host agent (Claude Code, Cursor, Goose, Codex, …)
-does the interpretive work — profile, review, verify, remediate — using
-[agentskills.io](https://agentskills.io)-compatible recipe bundles that each
-tool ships. The CLIs are the calculator the agent reaches for when it needs
-a reproducible answer.
+Ghost is split into **four small tools**, each with one responsibility, plus a
+shared library (`@ghost/core`) underneath. Your host agent (Claude Code, Cursor,
+Goose, Codex, …) does the interpretive work — profile, review, verify, remediate —
+using [agentskills.io](https://agentskills.io)-compatible recipe bundles that
+each tool ships. The CLIs are the calculator the agent reaches for when it
+needs a reproducible answer.
+
+A scan runs in three stages, all owned by `ghost-expression`:
+
+```
+topology       →     objective       →     subjective
+map.md               bucket.json           expression.md
+ghost.map/v1         ghost.bucket/v1       (the canonical artifact)
+```
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| `ghost-expression` | the three-stage scan: `map.md` → `bucket.json` → `expression.md` | `inventory`, `lint`, `describe`, `diff`, `bucket <op>`, `emit` |
+| `ghost-expression` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `describe`, `diff`, `bucket <op>`, `emit` |
 | `ghost-drift` | drift detection + governance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | `fleet.md` (elevation across members) | `members`, `view`, `emit skill` |
 | `ghost-ui` | reference design system (97 shadcn components) | — |
@@ -67,7 +75,7 @@ ghost-expression emit skill       # → .claude/skills/ghost-expression
 
 Each bundle ships its own `SKILL.md` plus recipes under `references/`:
 
-- **`ghost-expression`** — `map.md` (write `map.md` from a repo, the topology stage), `survey.md` (write `bucket.json`, the objective stage), `profile.md` (interpret a bucket into `expression.md`, the subjective stage), `schema.md` (condensed format reference).
+- **`ghost-expression`** — `scan.md` (meta-recipe orchestrating topology → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the topology stage), `survey.md` (write `bucket.json`, the objective stage), `profile.md` (interpret a bucket into `expression.md`, the subjective stage), `schema.md` (condensed format reference).
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 
@@ -80,21 +88,34 @@ CLI whenever it needs a reproducible answer.
 
 </DocSection>
 
-<DocSection title="Profile Your First System">
+<DocSection title="Scan Your First System">
 
-Profiling is a skill recipe shipped in `ghost-expression`'s bundle, not a
-CLI verb. Open your host agent in the project you want to profile and ask
-it something like:
+Scanning is the host-agent loop, not a single CLI verb. Open your host
+agent in the project you want to profile and ask it something like:
 
 ```text
-Profile this design language into expression.md
+Scan this design language end-to-end
 ```
 
-The `profile` recipe walks the agent through finding design sources
-(tailwind config, theme CSS, token files, component primitives), resolving
-variable chains end-to-end, and writing the expression. The final step is
-always `ghost-expression lint` — which validates the result with the same
-answer every time.
+The `scan` recipe checkpoints between stages with `scan-status` and
+dispatches into the per-stage recipes:
+
+1. **Topology (`map.md`)** — the `map` recipe reads
+   `ghost-expression inventory` (raw repo signals) and writes a `map.md`
+   describing where the design system lives. Validated by
+   `ghost-expression lint map.md`.
+2. **Objective (`bucket.json`)** — the `survey` recipe walks the source
+   exhaustively (writing dialect-specific greps; the recipe forbids
+   sampling) and writes a `bucket.json` cataloguing every concrete value,
+   token, and component. Validated by `ghost-expression lint bucket.json`.
+3. **Subjective (`expression.md`)** — the `profile` recipe interprets the
+   bucket as ground truth: assigns roles to values, names design decisions
+   in prose, and writes the `expression.md`. Cannot fabricate values not
+   in the bucket. Validated by `ghost-expression lint expression.md`.
+
+If you only want one stage, ask for it directly: "map this repo", "survey
+the design values", "profile this expression from the bucket". The recipes
+chain via `handoffs`, so the agent surfaces the next stage when ready.
 
 An **expression** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
@@ -104,11 +125,13 @@ See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main
 in this repo for a full real-world example.
 
 ```bash
-# Validate the result (zero-config — reads ./expression.md)
-ghost-expression lint
+# Check what stage to run next
+ghost-expression scan-status
 
-# Or validate a specific file
-ghost-expression lint path/to/expression.md --format json
+# Validate any artifact (auto-detects the kind)
+ghost-expression lint                       # ./expression.md
+ghost-expression lint map.md                # ghost.map/v1
+ghost-expression lint bucket.json           # ghost.bucket/v1
 ```
 
 </DocSection>
@@ -249,6 +272,6 @@ export default defineConfig({
 Next: [Drift Workflow](/tools/drift/workflow) for the five-move
 walkthrough — profile, compare, review, evolve, org — with richer examples
 for each. Or jump to the [CLI Reference](/docs/cli) for every verb across
-all four tools.
+all three tools.
 
 </DocSection>

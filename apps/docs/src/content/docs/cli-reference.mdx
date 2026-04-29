@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Sixteen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
+description: Seventeen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
 kicker: Docs
 section: guide
 order: 20
@@ -17,13 +17,13 @@ all owned by `ghost-expression`. Most commands accept a path; they default to
 
 Verbs are scoped to the tool that owns the artifact:
 
-- **`ghost-expression`** — the scan pipeline: `inventory`, `lint`, `describe`, `diff`, `bucket <op>`, `emit`
+- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `describe`, `diff`, `bucket <op>`, `emit`
 - **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
 
-Workflows like _map_, _survey_, _profile_, _review_, _verify_, and _remediate_
-are skill recipes your host agent runs — not CLI verbs. Install them with
-each tool's `emit skill` verb.
+Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
+_remediate_ are skill recipes your host agent runs — not CLI verbs. Install
+them with each tool's `emit skill` verb.
 
 The tables below are generated from each CLI's source at build time. If a
 flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
@@ -53,6 +53,57 @@ ghost-expression inventory
 
 # Inventory a different repo
 ghost-expression inventory ../other-repo
+```
+
+### Pipeline progress — `scan-status`
+
+Report which scan stages have produced artifacts in a directory: topology
+(`map.md`), objective (`bucket.json`), subjective (`expression.md`). Tells
+orchestrators which stage to run next. Pure file-presence check today;
+hash-keyed freshness is a planned enhancement.
+
+<CliHelp tool="ghost-expression" command="scan-status" hideDescription />
+
+```bash
+# Status of the current directory
+ghost-expression scan-status
+
+# Status of a different scan dir
+ghost-expression scan-status fleet/members/cash-ios
+
+# Machine-readable for orchestrators
+ghost-expression scan-status . --format json
+```
+
+Output reports each stage as `present` or `missing` and surfaces the
+recommended next stage (or "scan complete" when every artifact is present).
+
+### Bucket ops — `bucket <op>`
+
+Operate on `ghost.bucket/v1` files. Two ops today:
+
+- **`merge`** — concat with id-based dedup, deterministic and idempotent.
+  The composition primitive: modular rollups (one repo, N feature modules)
+  and fleet cohort views (N members merged into one cohort bucket) both
+  reduce to bucket merge.
+- **`fix-ids`** — recompute every row's `id` from its content. The survey
+  recipe instructs the agent to author rows with `"id": ""` and finalize
+  with this verb in one pass — agents don't compute SHA-256 hashes by hand.
+
+<CliHelp tool="ghost-expression" command="bucket" hideDescription />
+
+```bash
+# Merge two buckets
+ghost-expression bucket merge a.json b.json -o merged.json
+
+# Merge a directory of bucket files
+ghost-expression bucket merge fleet/members/*/bucket.json -o cohort.json
+
+# Populate IDs after authoring rows with empty id fields
+ghost-expression bucket fix-ids draft.json -o draft.json
+
+# Stream output to stdout if -o is omitted
+ghost-expression bucket merge a.json b.json | jq '.values | length'
 ```
 
 ### Validation — `lint`
@@ -293,6 +344,7 @@ once, then ask your agent in plain English:
 
 | Recipe     | Bundle             | Trigger                                                |
 | ---------- | ------------------ | ------------------------------------------------------ |
+| `scan`     | `ghost-expression` | "scan this project" / "go end-to-end" — meta-recipe orchestrating topology → survey → profile |
 | `map`      | `ghost-expression` | "map this repo" / "write map.md" (topology stage)      |
 | `survey`   | `ghost-expression` | "survey design values" / "extract tokens" (objective)  |
 | `profile`  | `ghost-expression` | "profile this design language" / "write expression.md" |
