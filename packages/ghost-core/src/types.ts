@@ -180,6 +180,100 @@ export interface ColorRamp {
   count: number;
 }
 
+// --- Rule types (v0 reviewer drift rules; perceptual-prior-aware) ---
+
+/**
+ * Perceptual severity for a drift violation. Calibrated to how loudly a
+ * change registers visually, not to engineering hygiene. See
+ * `perceptual-prior.ts` for the tier table that drives defaults.
+ *
+ * Distinct from `RuleSeverity` (`"error" | "warn" | "off"`) which is the
+ * config-level severity for `GhostConfig.rules`. The two never mix —
+ * `DriftSeverity` is for emitted reviewer rules; `RuleSeverity` gates lint
+ * configuration.
+ */
+export type DriftSeverity = "critical" | "serious" | "nit";
+
+/**
+ * How a rule's pattern is matched against violators. Color is exact;
+ * spacing tolerates small absolute drift; type-size tolerates relative
+ * drift; radius/shadow care about structural shape (pill vs. non-pill),
+ * not exact px.
+ */
+export type RuleMatchShape = "exact" | "band" | "percent" | "structural";
+
+/**
+ * The dimension-of-value a rule guards. Used to look up default match
+ * shape and tolerance. Distinct from canonical dimension because one
+ * canonical dimension (e.g. `typography-voice`) can host multiple rule
+ * kinds (family, weight, size).
+ */
+export type RuleKind =
+  | "color"
+  | "radius"
+  | "spacing"
+  | "type-size"
+  | "type-family"
+  | "type-weight"
+  | "shadow"
+  | "motion";
+
+export interface Rule {
+  /** Stable id, slug-style. Used as anchor in emitted reviewer + diff. */
+  id: string;
+  /**
+   * Canonical dimension this rule belongs to. Drives perceptual-tier
+   * lookup. Optional — non-canonical rules are emitted but don't roll up
+   * at fleet aggregation.
+   */
+  canonical?: string;
+  /** What kind of value the rule guards. Drives default match shape. */
+  kind?: RuleKind;
+  /** One-line summary the reviewer surfaces alongside violations. */
+  summary?: string;
+  /** Regex (or fixed string) the reviewer greps for. */
+  pattern: string;
+  /**
+   * Where the rule is enforced. Drives which file types / contexts the
+   * reviewer scans. Open vocabulary; common values: `className`,
+   * `css_var`, `inline_style`, `import`. Empty array = enforce everywhere.
+   */
+  enforce_at?: string[];
+  /**
+   * Optional explicit severity override. When absent, the emitter computes
+   * severity from `canonical` (perceptual tier) plus `presence_floor`
+   * (escalation against the bucket).
+   */
+  severity?: DriftSeverity;
+  /** Optional explicit match-shape override. */
+  match?: RuleMatchShape;
+  /** Tolerance for `band` (px) or `percent` (0–1). Override of default. */
+  tolerance?: number;
+  /**
+   * Bucket-count threshold below which severity escalates one tier. The
+   * default is `0` — only when the underlying dimension is wholly absent
+   * does adding to it cross a presence boundary. Set to `2` (or higher)
+   * for cases like motion where a couple of structural transitions don't
+   * count as "this system uses motion."
+   */
+  presence_floor?: number;
+  /**
+   * Surveyor-computed support score: fraction of observed cases that
+   * already conform to this rule. Used by the human curator to triage —
+   * <0.85 typically indicates the rule isn't yet load-bearing in the
+   * codebase. Consumed at lint time as a soft warning.
+   */
+  support?: number;
+  /**
+   * Provenance: bucket row IDs that motivated this rule. Lets a re-scan
+   * verify the rule still has a basis in the bucket; lets a reviewer cite
+   * the exact tokens behind the rule.
+   */
+  based_on?: string[];
+  /** Free-form rationale shown above the rule's table in the emitted reviewer. */
+  rationale?: string;
+}
+
 // --- Observation & decision types (three-layer expression) ---
 
 export interface DesignObservation {
@@ -233,6 +327,13 @@ export interface Expression {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
+  /**
+   * v0 reviewer rules — human-curated, grep-friendly, severity computed
+   * by the perceptual prior at emit time. Coexists with `decisions[]`
+   * during the v0 transition; in v1 the parser stops populating
+   * `decisions[]` and `rules[]` is the only authoring surface.
+   */
+  rules?: Rule[];
 
   // --- Layer 3: Concrete values ---
 

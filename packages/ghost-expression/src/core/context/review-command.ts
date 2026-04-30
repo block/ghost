@@ -1,4 +1,10 @@
-import type { Expression } from "@ghost/core";
+import type { DriftSeverity, Expression, Rule } from "@ghost/core";
+import {
+  computeRuleSeverity,
+  resolveMatchShape,
+  resolveTolerance,
+  tierForCanonical,
+} from "@ghost/core";
 
 export interface EmitReviewInput {
   expression: Expression;
@@ -16,6 +22,17 @@ export interface EmitReviewInput {
  * radii and weights. Universal accessibility rules are out of scope —
  * those belong in Rams or a sibling a11y skill.
  *
+ * Two emission paths:
+ *   - **Rules-driven** (preferred, v0+): when `expression.rules[]` is
+ *     non-empty, group rules by computed perceptual severity and render
+ *     a Critical / Serious / Nit layout. Severity is computed from the
+ *     perceptual prior in `@ghost/core` plus per-rule overrides and
+ *     presence-floor escalation against bucket-proxy counts.
+ *   - **Structured-fallback** (legacy): when no rules[] are present,
+ *     emit the original palette/radius/spacing/typography sections
+ *     derived from frontmatter alone. Preserved verbatim so existing
+ *     expressions keep working through the v0 transition.
+ *
  * Pure: deterministic over the same expression. The expression is
  * expected to be the unioned result of `loadExpression` — body prose
  * (Character summary, per-decision rationale) is already folded into
@@ -23,6 +40,206 @@ export interface EmitReviewInput {
  */
 export function emitReviewCommand(input: EmitReviewInput): string {
   const { expression: fp } = input;
+
+  if (fp.rules && fp.rules.length > 0) {
+    return emitRulesDriven(fp);
+  }
+
+  return emitStructuredFallback(fp);
+}
+
+// --- Rules-driven path (v0+) -------------------------------------------
+
+/**
+ * Render a rules[]-driven slash command. Groups rules by computed
+ * severity, renders one block per rule with rationale + pattern + match
+ * shape, then closes with a calibration footer that explains *why*
+ * severities landed where they did. The calibration footer is what makes
+ * Ghost's reviewer legibly different from a generic linter — the prior
+ * is visible, not opaque.
+ */
+function emitRulesDriven(fp: Expression): string {
+  const id = fp.id;
+  const personality = (fp.observation?.personality ?? []).join(", ");
+  const cousins = (fp.observation?.resembles ?? []).join(", ");
+  const character = fp.observation?.summary?.trim() ?? "";
+
+  const resolved = (fp.rules ?? []).map((rule) => ({
+    rule,
+    severity: computeRuleSeverity(rule, bucketCountProxy(rule, fp)),
+    match: resolveMatchShape(rule),
+    tolerance: resolveTolerance(rule),
+  }));
+
+  const grouped: Record<DriftSeverity, typeof resolved> = {
+    critical: [],
+    serious: [],
+    nit: [],
+  };
+  for (const r of resolved) grouped[r.severity].push(r);
+
+  const sections: string[] = [];
+  if (grouped.critical.length) {
+    sections.push(renderSeverityBlock("Critical", grouped.critical));
+  }
+  if (grouped.serious.length) {
+    sections.push(renderSeverityBlock("Serious", grouped.serious));
+  }
+  if (grouped.nit.length) {
+    sections.push(renderSeverityBlock("Nit", grouped.nit));
+  }
+
+  const parts = [
+    frontmatter(id),
+    header(id, personality, cousins, character),
+    modeSection(),
+    ...sections,
+    outputTemplate(id),
+    guidelines(),
+    calibrationFooter(fp, resolved),
+  ];
+  return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
+}
+
+interface ResolvedRule {
+  rule: Rule;
+  severity: DriftSeverity;
+  match: string;
+  tolerance: number | undefined;
+}
+
+function renderSeverityBlock(label: string, items: ResolvedRule[]): string {
+  const lines: string[] = [`## ${label} (${items.length})`];
+  for (const item of items) {
+    lines.push("", renderRule(item));
+  }
+  return lines.join("\n");
+}
+
+function renderRule(item: ResolvedRule): string {
+  const { rule, match, tolerance } = item;
+  const heading = rule.canonical
+    ? `### \`${rule.id}\` — ${rule.canonical}`
+    : `### \`${rule.id}\``;
+  const lines: string[] = [heading];
+  if (rule.summary) lines.push("", rule.summary);
+  if (rule.rationale) lines.push("", `> ${rule.rationale}`);
+  lines.push("", `**Pattern:** \`${rule.pattern}\``);
+
+  const matchLine =
+    tolerance !== undefined
+      ? `**Match:** \`${match}\` (tolerance: \`${tolerance}\`)`
+      : `**Match:** \`${match}\``;
+  lines.push(matchLine);
+
+  if (rule.enforce_at?.length) {
+    const where = rule.enforce_at.map((e) => `\`${e}\``).join(", ");
+    lines.push(`**Enforce at:** ${where}`);
+  }
+  if (rule.based_on?.length) {
+    const cite =
+      rule.based_on.length <= 4
+        ? rule.based_on.map((id) => `\`${id}\``).join(", ")
+        : `${rule.based_on
+            .slice(0, 4)
+            .map((id) => `\`${id}\``)
+            .join(", ")}, … (${rule.based_on.length - 4} more)`;
+    lines.push(`**Based on:** ${cite}`);
+  }
+  if (typeof rule.support === "number") {
+    lines.push(`**Support:** ${(rule.support * 100).toFixed(0)}%`);
+  }
+  return lines.join("\n");
+}
+
+function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
+  const tierCounts = { loud: 0, structural: 0, rhythmic: 0 };
+  const escalated: string[] = [];
+
+  for (const r of resolved) {
+    const baseTier = tierForCanonical(r.rule.canonical);
+    tierCounts[baseTier]++;
+    const finalTierFromSeverity =
+      r.severity === "critical"
+        ? "loud"
+        : r.severity === "serious"
+          ? "structural"
+          : "rhythmic";
+    if (
+      finalTierFromSeverity !== baseTier &&
+      r.rule.severity === undefined // not a manual override
+    ) {
+      escalated.push(`\`${r.rule.id}\``);
+    }
+  }
+
+  const lines: string[] = [
+    "## How this reviewer was calibrated",
+    "",
+    `Severity grouping reflects perceptual weight, not arithmetic. \`${fp.id}\` has ${tierCounts.loud} loud-tier, ${tierCounts.structural} structural-tier, and ${tierCounts.rhythmic} rhythmic-tier rules under the canonical perceptual prior.`,
+  ];
+  if (escalated.length) {
+    lines.push(
+      "",
+      `**Presence-floor escalation triggered for:** ${escalated.join(", ")}. These dimensions are silent (or near-silent) in the bucket — adding to them crosses a presence boundary, which is the loudest possible change.`,
+    );
+  }
+  lines.push(
+    "",
+    "Color and font-family rules are loud (critical) by default. Shape, elevation, surface, and interactive-pattern rules are structural (serious). Spacing, density, motion-detail, and theming rules are rhythmic (nit).",
+    "",
+    `Generated from \`expression.md\` (${(fp.rules ?? []).length} rules). Re-run \`ghost-expression emit review-command\` after expression updates.`,
+  );
+  return lines.join("\n");
+}
+
+/**
+ * Coarse proxy for bucket-count per canonical dimension, derived from the
+ * structured frontmatter fields. v0 expressions don't carry the bucket
+ * directly; this proxy lets presence-floor escalation work against the
+ * derived counts. v1 will replace this with the actual bucket count once
+ * `loadExpression` returns the bucket alongside the expression.
+ */
+function bucketCountProxy(rule: Rule, fp: Expression): number {
+  switch (rule.canonical) {
+    case "color-strategy":
+      return (
+        fp.palette.dominant.length +
+        fp.palette.neutrals.count +
+        fp.palette.semantic.length
+      );
+    case "surface-hierarchy":
+      return fp.palette.semantic.length + fp.palette.dominant.length;
+    case "shape-language":
+      return fp.surfaces.borderRadii.length;
+    case "elevation":
+      return fp.surfaces.shadowComplexity === "deliberate-none"
+        ? 0
+        : fp.surfaces.shadowComplexity === "subtle"
+          ? 2
+          : 5;
+    case "spatial-system":
+    case "density":
+      return fp.spacing.scale.length;
+    case "typography-voice":
+      return fp.typography.sizeRamp.length;
+    case "font-sourcing":
+      return fp.typography.families.length;
+    case "motion":
+      // Motion isn't in structured fields; default to a count above
+      // typical floors so escalation only happens via explicit author
+      // hint (rule.presence_floor: 2+).
+      return 100;
+    default:
+      // Unknown canonical → leave room above floor 0 so escalation
+      // doesn't fire incorrectly, but author can override via floor.
+      return 100;
+  }
+}
+
+// --- Structured-fallback path (legacy) ---------------------------------
+
+function emitStructuredFallback(fp: Expression): string {
   const id = fp.id;
   const personality = (fp.observation?.personality ?? []).join(", ");
   const cousins = (fp.observation?.resembles ?? []).join(", ");

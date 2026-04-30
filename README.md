@@ -50,6 +50,26 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 
 Dependency flow: `@ghost/core` ← everyone. `ghost-expression` ← `ghost-drift`, `ghost-fleet`. No cycles.
 
+## Quick install
+
+If you just want the design-language scan + emit recipes installed into your host agent — no Node, no pnpm, no build:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
+```
+
+The installer detects your agent (`claude` / `cursor` / `codex` / `opencode`), drops the `ghost` skill bundle into the right skills directory (e.g. `~/.claude/skills/ghost/`), and tells you what to do next. Pass `--agent claude` (or `--dest <path>`) to override detection. Re-run with `--force` to upgrade.
+
+After install, in any repo:
+
+```
+> Scan this project with ghost
+```
+
+The agent walks `map.md` → `bucket.json` → `expression.md`, then emits a `/design-review` slash command tuned to your design language. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
+
+If you want the deterministic CLI helpers (faster lint, embedding math, structural diff, fleet view), install from source instead — see *Getting Started* below.
+
 ## Getting Started
 
 ### Prerequisites

@@ -18,100 +18,86 @@ Your job: check code for **drift** from the values below — hardcoded hexes, of
 If \`$ARGUMENTS\` is provided, analyze that specific file.
 If \`$ARGUMENTS\` is empty, ask the user which file(s) to review, or offer to scan recently changed components.
 
-## 1. Palette drift
+## Critical (2)
 
-> Treat hue as opt-in communication, not ambient decoration — the default theme is pure achromatic, so every bit of chromatic color that appears carries semantic meaning (danger, success, info, warning, chart). Brand personality is expressed through luminance contrast and shape, which makes the system maximally themeable without color conflicts.
+### \`no-off-palette-hex\` — color-strategy
 
-**Allowed colors** (21 total — prefer semantic tokens over raw hex):
+Hex literals must come from the documented palette
 
-- Dominant: \`#1a1a1a\` (primary), \`#ffffff\` (background), \`#000000\` (inverse)
-- Neutrals (ramp): \`#ffffff\`, \`#f5f5f5\`, \`#f0f0f0\`, \`#e8e8e8\`, \`#e5e5e5\`, \`#cccccc\`, \`#999999\`, \`#666666\`, \`#333333\`, \`#232323\`, \`#1a1a1a\`, \`#000000\`
-- Semantic hues: \`#f94b4b\` (danger), \`#91cb80\` (success), \`#5c98f9\` (info), \`#fbcd44\` (warning)
+> Default theme is achromatic — chromatic colors are reserved for semantic states (danger, success, info, warning) and chart data. Any new hex literal is drift unless it lands in the palette.
 
-### Critical
+**Pattern:** \`#[0-9a-fA-F]{3,8}\`
+**Match:** \`exact\`
+**Enforce at:** \`className\`, \`css_var\`, \`inline_style\`
+**Based on:** \`bkt:color:1a1a1a\`, \`bkt:color:ffffff\`, \`bkt:color:f5f5f5\`
+**Support:** 94%
 
-| Check | Allowed | What to look for |
-|-------|---------|------------------|
-| Off-palette hex in JSX/CSS | \`#1a1a1a\`, \`#ffffff\`, \`#000000\`, \`#f5f5f5\`, \`#f0f0f0\`, \`#e8e8e8\`, \`#e5e5e5\`, \`#cccccc\`, \`#999999\`, \`#666666\`, \`#333333\`, … (see list above) | Any \`#[0-9a-fA-F]{3,8}\` literal not in the allowed list |
-| Tailwind arbitrary color | use semantic tokens | \`bg-[#...]\`, \`text-[#...]\`, \`border-[#...]\` with arbitrary hex |
-| Named Tailwind color for semantic role | use semantic token | \`text-red-500\`, \`bg-green-600\`, etc. when a matching semantic token exists |
+### \`no-foreign-fonts\` — font-sourcing
 
-### Serious
+Do not bundle additional typefaces
 
-| Check | Allowed | What to look for |
-|-------|---------|------------------|
-| danger must use the semantic token | \`#f94b4b\` | Raw \`#f94b4b\` or near-equivalent hardcoded; prefer the \`danger\` token |
-| success must use the semantic token | \`#91cb80\` | Raw \`#91cb80\` or near-equivalent hardcoded; prefer the \`success\` token |
-| info must use the semantic token | \`#5c98f9\` | Raw \`#5c98f9\` or near-equivalent hardcoded; prefer the \`info\` token |
-| warning must use the semantic token | \`#fbcd44\` | Raw \`#fbcd44\` or near-equivalent hardcoded; prefer the \`warning\` token |
+> Library ships no bundled fonts — system-ui sans, Geist Mono, and a generic serif fallback. Adding @font-face or importing a webfont crosses the font-sourcing decision.
 
-## 2. Shape language (radius)
+**Pattern:** \`@import\\s+url\\([^)]*fonts\`
+**Match:** \`exact\`
+**Enforce at:** \`css_var\`, \`inline_style\`
+**Support:** 100%
 
-> Apply a pill-first radius philosophy that visually separates interactive from structural surfaces — buttons, inputs, and badges fully round to 999px, while cards, modals, and dropdowns use moderate radii (10–24px). Users intuit what is tappable versus what is container.
+## Serious (3)
 
-**Allowed radii**: \`10px\`, \`14px\`, \`16px\`, \`20px\`, \`24px\`, \`999px (pill)\`
+### \`pill-interactives\` — shape-language
 
-### Critical
+Buttons, inputs, and badges must be fully rounded
 
-| Check | Allowed | What to look for |
-|-------|---------|------------------|
-| Custom radius value | \`10px\`, \`14px\`, \`16px\`, \`20px\`, \`24px\`, \`999px (pill)\` | \`rounded-[Npx]\`, \`border-radius: Npx\`, or \`--radius: Npx\` outside the set |
-| Interactive element not pill | \`rounded-full\` / \`rounded-pill\` | \`<Button>\` / \`<Input>\` / \`<Badge>\` with \`rounded-md\`, \`rounded-lg\`, or custom radius |
+> Pill-first radius philosophy separates interactive from structural surfaces — interactive elements fully round (999px), while cards and modals use moderate radii (10–24px).
 
-## 3. Spacing drift
+**Pattern:** \`<(Button|Input|Badge)\\b[^>]*\\brounded-(?!full|pill)\`
+**Match:** \`structural\`
+**Enforce at:** \`className\`
+**Based on:** \`bkt:component:button\`, \`bkt:component:input\`, \`bkt:component:badge\`
+**Support:** 97%
 
-> Prefer explicit component-height tokens over padding arithmetic — interactive elements declare fixed heights (h-8, h-9, h-10) and containers use generous internal padding (24px card rhythm). Button/input sizing is decoupled from surrounding layout, yielding a compact-controls / spacious-layout composition.
+### \`structural-radius-set\` — shape-language
 
-**Scale**: \`2px\`, \`4px\`, \`6px\`, \`8px\`, \`12px\`, \`16px\`, \`20px\`, \`24px\`, \`32px\`, \`36px\`, \`40px\`, \`52px\`, \`75px\`, \`100px\` — base unit \`4px\`
+Container radii must come from the canonical set
 
-### Critical
+> Cards, modals, and dropdowns use moderate radii (10–24px). Arbitrary radius values break the shape vocabulary.
 
-| Check | Allowed | What to look for |
-|-------|---------|------------------|
-| Off-scale padding/margin/gap | scale above | \`p-[Npx]\`, \`m-[Npx]\`, \`gap-[Npx]\` with N not in the scale |
-| Arbitrary width/height on primitives | tokens on the scale | \`w-[Npx]\` / \`h-[Npx]\` / \`size-[Npx]\` with N not in the scale |
+**Pattern:** \`rounded-\\[\\d+px\\]|border-radius:\\s*\\d+px\`
+**Match:** \`structural\`
+**Support:** 91%
 
-## 4. Typography drift
+### \`type-on-ramp\` — typography-voice
 
-> Use a magazine-scale type hierarchy where display headings are dramatically tight (sub-1.0 line-heights, heavy negative tracking) and body text is relaxed for long-form readability. The rhythm alternates between bold editorial impact and comfortable reading, with uppercase label type providing a byline voice between them.
+Font sizes must come from the magazine ramp
 
-**Families**: \`system-ui\`, \`Geist Mono\`, \`serif\`
-**Size ramp**: \`10px\`, \`11px\`, \`12px\`, \`14px\`, \`16px\`, \`18px\`, \`20px\`, \`28px\`, \`40px\`, \`64px\`, \`96px\`
-**Weights**: \`300\`, \`400\`, \`600\`, \`700\`, \`900\`
+> Type ramp runs from 10px (label kicker) to 96px (display). Sizes outside the ramp break the editorial rhythm.
 
-### Critical
+**Pattern:** \`text-\\[\\d+px\\]|font-size:\\s*\\d+px\`
+**Match:** \`percent\` (tolerance: \`0.1\`)
+**Support:** 93%
 
-| Check | Allowed | What to look for |
-|-------|---------|------------------|
-| Off-ramp font-size | ramp above | \`text-[Npx]\` or \`font-size: Npx\` outside the ramp |
-| Foreign font family | families above | \`font-family: ...\` or \`font-[...]\` introducing a new family |
-| Non-canonical weight | \`300\`, \`400\`, \`600\`, \`700\`, \`900\` | \`font-weight: N\` or \`font-[weight]\` outside the distribution |
+## Nit (2)
 
-## 5. Other dimensions
+### \`no-decorative-motion\` — motion
 
-### surface-hierarchy
+No decorative or hover-only animations
 
-Name surfaces by intent rather than by shade number — backgrounds, borders, and text each have their own semantic vocabulary (default, alt, muted, medium, inverse, accent, strong) decoupling usage intent from visual weight. A theme preset can remap all values without breaking component logic.
+> Animations exist for structural reveals (accordion, scale-in, fade) and entrance transitions, never for decorative micro-interactions. The editorial tone stays serious.
 
-### elevation
+**Pattern:** \`transition:\\s*all\\b|animate-(?!none)\\w+\`
+**Match:** \`exact\`
+**Support:** 86%
 
-Name shadows by structural role rather than by intensity level, and double shadow opacity in dark mode rather than removing them. Depth cues stay legible on dark surfaces, and designers get a vocabulary tied to component context instead of a numeric scale.
+### \`spacing-on-scale\` — spatial-system
 
-### motion
+Padding, margin, and gap must come from the 4px-base scale
 
-Keep transitions functional and brief — three duration tiers (fast/normal/slow) with a single spring easing. Animations exist for structural reveals (accordion, scale-in, fade, word-reveal) and entrance transitions, not for decorative micro-interactions — the editorial tone stays serious.
+> Scale is 2/4/6/8/12/16/20/24/32/36/40/52/75/100. Off-scale spacing breaks the layout rhythm; small drift (±2px) is tolerated.
 
-### theming-architecture
-
-Cascade three layers — semantic variables → shadcn aliases → Tailwind \`@theme inline\` — so the entire visual language can be swapped at runtime through CSS custom property injection without modifying component code. Six bundled presets (default plus five overrides) validate that shape, color, and contrast can all be remapped.
-
-### interactive-patterns
-
-Standardize focus states as a subtle 1px ring at half opacity using the ring-ring token, applied uniformly across Button/Input/Badge and reinforced by a global \`*:focus-visible\` fallback. Browser default outlines are replaced with a consistent, theme-aware indicator that works in both light and dark modes.
-
-### font-sourcing
-
-Ship no bundled typefaces. The system declares a system-ui sans stack, \`Geist Mono\` with a monospace fallback, and a generic \`serif\` — typography responsibility moves to the consumer. The visual language adapts to the host platform's default face, which keeps the library dependency-free and lets hosts impose their own brand font without overriding.
+**Pattern:** \`\\b(p|m|gap)-\\[\\d+px\\]\`
+**Match:** \`band\` (tolerance: \`2\`)
+**Support:** 88%
 
 ## Output format
 
@@ -144,8 +130,12 @@ Drift score: XX/100
 4. Do not flag accessibility or universal-design issues here — this is drift-only
 5. If asked, offer to fix directly
 
----
+## How this reviewer was calibrated
 
-Generated from \`expression.md\` (11 decisions). Re-run \`ghost-drift emit review-command\` after expression updates.
+Severity grouping reflects perceptual weight, not arithmetic. \`ghost-ui\` has 2 loud-tier, 3 structural-tier, and 2 rhythmic-tier rules under the canonical perceptual prior.
+
+Color and font-family rules are loud (critical) by default. Shape, elevation, surface, and interactive-pattern rules are structural (serious). Spacing, density, motion-detail, and theming rules are rhythmic (nit).
+
+Generated from \`expression.md\` (7 rules). Re-run \`ghost-expression emit review-command\` after expression updates.
 "
 `;

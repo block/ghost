@@ -60,52 +60,88 @@ Then in frontmatter:
 - `distinctiveTraits`: what makes this expression *visually recognizable* — include notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme")
 - `resembles`: 1–3 well-known references (Linear, Geist, Material 3, …) — only if genuinely close
 
-### 3. Layer 2 — Design Decisions (abstract prose with evidence)
+### 3. Layer 2 — Rules (curated, grep-friendly, perceptual-prior-aware)
 
-Name the pattern, not the token:
+This is the load-bearing step. **Your job is to propose 5–15 candidate rules, score each by bucket-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `rules[]`. You do not author final rules unilaterally — design taste is human-curated, agent-proposed.
 
-- ✗ Weak: "Spacing follows a 4px base grid with Tailwind defaults." (restates a fact already in the bucket)
-- ✓ Strong: "Prefer explicit component-height tokens over padding arithmetic, so button/input sizing is decoupled from surrounding layout." (names the pattern and its consequence)
+(Legacy: this stage previously authored `decisions[]` — abstract per-dimension prose. That format is preserved during the v0 transition for backward compatibility, but the canonical authoring surface is now `rules[]`. The emitter prefers `rules[]` when present.)
 
-**Pick from the canonical vocabulary first.** Twelve dimensions cover the orthogonal axes a designer makes deliberate calls on, and using canonical slugs is what makes cross-system fleet aggregation possible (otherwise `color-strategy` and `color-system` and `palette-strategy` are three names for one axis and the rollup can't group them):
+#### 3a. Propose candidate rules
 
-| Slug | Captures |
-|---|---|
-| `color-strategy` | hue as decoration vs. communication; default-mono vs. branded |
-| `surface-hierarchy` | named-by-intent vs. named-by-shade; surface vocabulary |
-| `shape-language` | radius philosophy (pill, uniform, geometric, organic) |
-| `typography-voice` | type-as-instrument; editorial vs. utility; scale rhythm |
-| `spatial-system` | spacing scale, base unit, padding philosophy |
-| `density` | compact controls vs. spacious containers (paired with spatial, distinct) |
-| `motion` | animation as functional vs. decorative; presence vs. absence |
-| `elevation` | shadow vocabulary; named-by-role vs. numeric; dark-mode treatment |
-| `theming-architecture` | runtime themability; cascade structure; override patterns |
-| `interactive-patterns` | focus, hover, active feedback conventions |
-| `token-architecture` | alias-chain depth; semantic vs. raw; layering discipline |
-| `font-sourcing` | bundled vs. consumer-supplied; preferred families |
-
-**Absences are decisions** — "No animation — interactions are immediate and non-kinetic" is valid under `motion` (evidence: empty `motion` rows in the bucket).
-
-**Escape hatch for genuinely novel decisions.** When a project really has a decision that doesn't fit any canonical slug — e.g. an iOS app's `system-color-deference` ("we defer to UIKit's system colors when available"), or a charting library's `chart-archetype` ("we ship four chart families as first-class") — keep the project-flavored slug and add `dimension_kind: <canonical>` pointing at the closest canonical bucket. Fleet aggregation rolls up by `dimension_kind` when set:
+Walk the bucket and pose: *what pattern is this project consistently following that deserves codification?* Each candidate rule has the shape:
 
 ```yaml
-decisions:
-  - dimension: system-color-deference   # specific, project-flavored
-    dimension_kind: color-strategy       # canonical bucket for fleet rollup
+- id: <kebab-slug>          # stable, slug-style
+  canonical: <dimension>     # optional but strongly preferred (see vocabulary below)
+  kind: <RuleKind>           # optional; drives default match shape
+  summary: <one line>        # what the rule says in plain English
+  rationale: <prose>         # why the rule exists; cites the bucket
+  pattern: <regex or string> # what the reviewer greps for
+  enforce_at: [...]          # className / css_var / inline_style / import
+  support: 0.0–1.0           # computed: bucket conformers / total observed
+  based_on: [bucket-id, ...] # provenance; lets re-scan verify
+  presence_floor: <int>      # optional; default 0
 ```
 
-`ghost-expression lint` warns on non-canonical slugs without a canonical kind (rule: `non-canonical-dimension`); the warning suggests the closest canonical match. The check is soft — long-tail decisions are allowed, just won't roll up.
+**Pick `canonical` from the controlled vocabulary first.** Twelve dimensions cover the orthogonal axes a designer makes deliberate calls on:
 
-For each decision: `dimension` (slug), `decision` (prose, body), `evidence` (concrete citations from the bucket — preferred form: token definitions like `"--radius-pill: 999px"` or value rows like `"#f97316 (47 occurrences across 12 files)"`).
+| Slug | Captures | Default tier |
+|---|---|---|
+| `color-strategy` | hue as decoration vs. communication; default-mono vs. branded | loud |
+| `font-sourcing` | bundled vs. consumer-supplied; preferred families | loud |
+| `surface-hierarchy` | named-by-intent vs. named-by-shade; surface vocabulary | structural |
+| `shape-language` | radius philosophy (pill, uniform, geometric, organic) | structural |
+| `typography-voice` | type-as-instrument; editorial vs. utility; scale rhythm | structural |
+| `elevation` | shadow vocabulary; named-by-role vs. numeric; dark-mode treatment | structural |
+| `interactive-patterns` | focus, hover, active feedback conventions | structural |
+| `spatial-system` | spacing scale, base unit, padding philosophy | rhythmic |
+| `density` | compact controls vs. spacious containers (paired with spatial, distinct) | rhythmic |
+| `motion` | animation as functional vs. decorative; presence vs. absence | rhythmic |
+| `theming-architecture` | runtime themability; cascade structure; override patterns | rhythmic |
+| `token-architecture` | alias-chain depth; semantic vs. raw; layering discipline | rhythmic |
 
-**Evidence belongs in the body markdown under `**Evidence:**` bullets per dimension. Do NOT put `evidence:` arrays in frontmatter — the schema is `.strict()` and will reject.** Each `### <dimension>` body block should end with a `**Evidence:**` line followed by bullet citations from the bucket; the parser pulls those back onto `decisions[].evidence` in memory.
+The **default tier** is the perceptual weight: loud rules render as Critical, structural as Serious, rhythmic as Nit in the emitted reviewer. Severity is computed by the emitter from `canonical` + `presence_floor`; you don't usually set `severity` directly.
 
-Mode-specific framing:
+#### 3b. Score support from the bucket
 
-- **Consumer** — overrides are decisions ("App ships its own `@font-face` instead of inheriting upstream sans" — evidence: a `--font-*` token row whose value differs from the upstream's, plus prose citing the manifest dependency).
-- **Token-pipeline** — layering choices are decisions ("Component layer never references base tokens directly — always via semantic" — evidence: bucket `tokens[].alias_chain` lengths).
-- **Ui-library** — registry posture is a decision ("Components ship as a flat library with no theme variants" — evidence: bucket `components[]` shape).
-- **Multi-platform** — divergence between dialects is a decision when present ("Web and iOS palettes are intentionally different — web is restrained, iOS reuses system colors" — evidence: per-source counts in merged buckets, or noted in the survey scratchpad).
+For each candidate rule, compute support — *the fraction of observed cases that already conform*. Concretely:
+
+- **`no-off-palette-hex`** (color-strategy) — `support = (bucket color rows with value in palette set) / (total bucket color rows)`. If 31 of 33 colors are in the palette, support is 0.94.
+- **`pill-interactives`** (shape-language) — `support = (interactive components using rounded-full) / (interactive components observed)`. Walk `bucket.components` for Button/Input/Badge; check radii.
+- **`spacing-on-scale`** (spatial-system) — `support = (spacing rows with value ∈ scale) / (total spacing rows)`. The scale lives in `expression.spacing.scale`.
+
+Rule of thumb: **drop candidates with support < 0.85.** Below that threshold, the project hasn't actually committed to the pattern — codifying it generates noise. A `support: 0.6` rule looks aspirational, not enforced.
+
+#### 3c. Identify presence-floor candidates
+
+The perceptual prior escalates rules one tier when the bucket count for the dimension is ≤ `presence_floor`. Use this to capture *negative space* — what the project deliberately *isn't*:
+
+- Bucket has 0 motion rows → `no-decorative-motion` rule with `presence_floor: 4` (any addition crosses zero, escalates to critical).
+- Bucket has 0 gradient values → `no-gradients` with `presence_floor: 0`.
+- Bucket has 0 bundled fonts → `no-foreign-fonts` with `presence_floor: 0`.
+
+Don't set a presence floor when the dimension is well-populated — the escalation will never trigger and the field becomes noise.
+
+#### 3d. Cite provenance
+
+For each rule, list the bucket row IDs that motivated it in `based_on`. This is the rule's *provenance trail* — re-scanning later can verify the rule still has a basis. A rule with empty `based_on` is fine (some rules express absences) but the curator should be able to trace any positive rule back to evidence.
+
+#### 3e. Present the ranked list to the curator
+
+Sort candidates by support, descending. Present each as: id + canonical + summary + support % + 1-line rationale. Mark presence-floor escalations explicitly. Recommend cuts: anything below 0.85, anything redundant with another rule, anything where the pattern is too fuzzy to enforce.
+
+The curator picks 5–10. **Do not paste your full candidate list into `rules[]`.** Wait for the human to promote.
+
+#### Mode-specific framing
+
+- **Consumer** — overrides are rules. App-side `@font-face` that differs from upstream → a `font-sourcing` rule with `presence_floor: 0` against the upstream's font set.
+- **Token-pipeline** — layering posture is a rule. "Component layer never references base tokens directly" → a `token-architecture` rule whose pattern catches `--component-* references --base-*`.
+- **Ui-library** — registry shape is a rule. "Components have no theme variants" → an `interactive-patterns` rule against `data-theme=` attributes.
+- **Multi-platform** — divergence is rules. "iOS reuses system colors but web doesn't" → two color-strategy rules, one per dialect, each with its own `enforce_at`.
+
+#### Absences are rules — codify them with `presence_floor`
+
+Don't try to express "this project has no animation" as prose. Express it as: a motion rule whose `presence_floor` causes any addition to escalate to critical. The emitted reviewer will catch the addition without the prose.
 
 ### 4. Layer 3 — Concrete tokens (read from bucket; do not invent)
 
@@ -142,9 +178,23 @@ Partition matters. See [schema.md](schema.md) for which field lives where.
 
 ### 6. Validate
 
+**Preferred (CLI present):**
+
     ghost-expression lint expression.md
 
-Fix any errors. Common ones:
+Fix any errors.
+
+**Prose fallback (no CLI):**
+
+Walk the file against the schema in [schema.md](schema.md). Required checks:
+
+- Frontmatter parses as valid YAML.
+- Required fields: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
+- Body sections appear in order: `# Character`, `# Signature`, `# Decisions` (when decisions are present). No prose in frontmatter.
+- For any `### dim` block in the body, a matching `decisions[].dimension` entry exists in frontmatter (and vice versa).
+- For any `rules[]` entry: `id` is unique, `pattern` is non-empty, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `support` ∈ `[0, 1]`.
+
+Common errors regardless of path:
 
 - Prose in frontmatter → move to body.
 - `### dim` with no matching `decisions[]` entry → remove the orphan.
@@ -162,9 +212,15 @@ Any expression value that doesn't trace back is a hallucination. Remove it.
 
 ### 8. Self-distance sanity
 
+**Preferred (CLI present):**
+
     ghost-drift compare expression.md expression.md
 
 Self-distance must be 0. Anything else means the file isn't deterministically loadable.
+
+**Prose fallback (no CLI / no ghost-drift):**
+
+Re-load the file mentally: parse the frontmatter, normalize whitespace in the body, then verify the file would round-trip through a YAML parser without info loss. If you can't be sure, run the CLI (it's the calculator that exists for exactly this question). The self-distance check is genuinely a "machine math" answer — prose verification is best-effort, not authoritative.
 
 ## When the bucket is incomplete
 

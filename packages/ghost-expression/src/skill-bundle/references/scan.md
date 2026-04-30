@@ -40,6 +40,8 @@ Throughout this recipe, "scan dir" = where artifacts land; "target" = where sour
 
 ### 2. Check status
 
+**Preferred (CLI present):**
+
     ghost-expression scan-status [scan-dir]
 
 Reports per-stage state (`present` / `missing`) and the recommended next stage. If every stage is `present`, you're done. Otherwise, dispatch to the recipe for the recommended stage.
@@ -47,6 +49,16 @@ Reports per-stage state (`present` / `missing`) and the recommended next stage. 
 Use `--format json` if you want to consume the result programmatically:
 
     ghost-expression scan-status . --format json
+
+**Prose fallback (no CLI):**
+
+Check three paths and report what's missing in this order:
+
+1. `<scan-dir>/map.md` — if missing, recommended_next = `topology`. Stop checking.
+2. `<scan-dir>/bucket.json` — if missing, recommended_next = `objective`. Stop checking.
+3. `<scan-dir>/expression.md` — if missing, recommended_next = `subjective`. If present, recommended_next = `null` (scan complete).
+
+Use `Read` (or `Bash: ls <scan-dir>`) to verify each file exists. The first missing artifact is the next stage to run.
 
 ### 3. Stage 1 — Topology (`map.md`)
 
