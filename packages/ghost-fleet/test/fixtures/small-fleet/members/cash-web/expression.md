@@ -43,12 +43,6 @@ Cash's web language is friendly and confident. The signature green carries
 the brand across surfaces; spacing follows a 4px grid; type stays neutral
 to let the green do the work.
 
-# Signature
-
-- Vibrant green carries identity; rest of the surface stays achromatic
-- 4px grid; no fractional spacing
-- Inter throughout; weight contrast (400/700) instead of family contrast
-
 # Decisions
 
 ### color-strategy

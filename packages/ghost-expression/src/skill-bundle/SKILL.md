@@ -9,7 +9,7 @@ metadata:
 
 # Ghost Expression — Authoring the Canonical Artifact
 
-This skill helps you author the project's design language — its `expression.md` (YAML frontmatter + three-layer Markdown: Character → Signature → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
+This skill helps you author the project's design language — its `expression.md` (YAML frontmatter + Markdown body: Character → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
 
 You do the synthesis (the profile recipe). The `ghost-expression` CLI is the calculator you reach for when you need a reproducible answer: parsing, schema validation, layout, structural diff. Call it freely; the output is ground truth.
 
@@ -55,8 +55,8 @@ For drift detection (compare under change, ack/track/diverge, review PR diffs ag
 
 An `expression.md` has:
 
-- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`.
-- **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (bullets from `distinctiveTraits`), `# Decisions` with `### <dimension>` rationale blocks.
+- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `rules[]`, `palette`, `spacing`, `typography`, `surfaces`.
+- **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
 
 Each field lives in exactly one layer — no duplication. Putting prose in frontmatter is a lint error. Full spec: [references/schema.md](references/schema.md). Starting template: [assets/expression.template.md](assets/expression.template.md).
 

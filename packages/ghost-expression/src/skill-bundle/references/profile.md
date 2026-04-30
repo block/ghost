@@ -52,13 +52,14 @@ Note the chosen mode in your scratchpad — it shapes Steps 3, 4, and 5.
 
 ### 2. Layer 1 — Observation (holistic prose)
 
-Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the bucket *and* sample 3–5 high-occurrence files to actually see the surfaces — counts alone don't tell you the visual register.
+Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the bucket *and* sample 3–5 high-occurrence files to actually see the surfaces — counts alone don't tell you the visual register. The prose lives under `# Character` in the body.
 
 Then in frontmatter:
 
 - `personality`: 3–6 adjectives (`utilitarian`, `editorial`, `dense`, `playful`, `restrained`, …)
-- `distinctiveTraits`: what makes this expression *visually recognizable* — include notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme")
 - `resembles`: 1–3 well-known references (Linear, Geist, Material 3, …) — only if genuinely close
+
+Notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme") are *not* prose to write here — they're rules with `presence_floor: 0` (or a small integer) authored in Step 3, which causes any addition to escalate severity. Codifying absences as enforceable rules beats restating them in prose.
 
 ### 3. Layer 2 — Rules (curated, grep-friendly, perceptual-prior-aware)
 
@@ -167,7 +168,7 @@ Populate the structured frontmatter fields **from bucket rows**:
 Copy [../assets/expression.template.md](../assets/expression.template.md). Fill in:
 
 - **Frontmatter:** all structured fields (identity, `observation.personality`/`.resembles`, `decisions[].dimension`, `palette`, `spacing`, `typography`, `surfaces`).
-- **Body:** `# Character` (observation summary), `# Signature` (distinctiveTraits bullets), `# Decisions` (one `### <dim>` block per decision, each ending with `**Evidence:**` bullets citing bucket rows).
+- **Body:** `# Character` (observation summary), `# Decisions` (one `### <dim>` block per decision, each ending with `**Evidence:**` bullets citing bucket rows).
 
 Partition matters. See [schema.md](schema.md) for which field lives where.
 
@@ -185,7 +186,7 @@ Walk the file against the schema in [schema.md](schema.md). Required checks:
 
 - Frontmatter parses as valid YAML.
 - Required fields: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
-- Body sections appear in order: `# Character`, `# Signature`, `# Decisions` (when decisions are present). No prose in frontmatter.
+- Body sections appear in order: `# Character`, `# Decisions` (when decisions are present). No prose in frontmatter.
 - For any `### dim` block in the body, a matching `decisions[].dimension` entry exists in frontmatter (and vice versa).
 - For any `rules[]` entry: `id` is unique, `pattern` is non-empty, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `support` ∈ `[0, 1]`.
 

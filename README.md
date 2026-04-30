@@ -33,7 +33,7 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 - **Self-govern at author time**: the `review` and `verify` recipes (in the `ghost-drift` skill bundle) run an agent's output against the expression *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
 - **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `ghost-drift compare` on N≥3 expressions, or `ghost-fleet view` for the full elevation). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `track`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent becomes useful evidence.
-- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a three-layer prose body (Character, Signature, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, Ghost's CLIs diff them. No DSL to learn.
+- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a prose body (Character, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, Ghost's CLIs diff them. No DSL to learn.
 
 ## Repo layout
 
@@ -211,11 +211,10 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ### The expression
 
-What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a three-layer prose body. Human-readable, LLM-consumable, diff-friendly:
+What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. The machine layer.
+- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. The machine layer. Also `rules[]` — grep-able review rules with `presence_floor` for codifying absences.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
-- **`# Signature`**: 3–7 distinctive traits that make _this_ system unlike its peers. The drift-sensitive moves.
 - **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
 
 Generate one with the `profile` recipe (in the `ghost-expression` skill bundle). See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown.

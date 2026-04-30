@@ -71,11 +71,6 @@ metadata:
 
 2-4 sentences capturing the holistic personality of this design language. This is `observation.summary`.
 
-# Signature
-
-- What makes this expression visually distinctive (becomes `observation.distinctiveTraits`).
-- One bullet per trait. Include notable *absences* if they are load-bearing.
-
 # Decisions
 
 ### color-strategy
@@ -107,7 +102,6 @@ Every field lives in exactly one layer:
 | `id`, `source`, `timestamp`, `sources` | Frontmatter |
 | `observation.personality`, `observation.resembles` | Frontmatter |
 | `observation.summary` | **Body** (`# Character`) |
-| `observation.distinctiveTraits` | **Body** (`# Signature` bullets) |
 | `decisions[].dimension` | Frontmatter |
 | `decisions[].decision` (prose) | **Body** (`### <dimension>` block) |
 | `decisions[].evidence` | **Body** (`**Evidence:**` bullets under `### <dimension>`) |

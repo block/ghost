@@ -44,12 +44,6 @@ A monochromatic editorial language — color is reserved for state, the
 default surface stays achromatic. Type runs tight; pill-shaped controls
 contrast moderately rounded containers.
 
-# Signature
-
-- Achromatic by default; chromatic accents reserved for semantic state
-- Pill controls (radius 999) against moderately rounded containers (10–14)
-- Tight display line-heights with system-ui throughout
-
 # Decisions
 
 ### color-strategy

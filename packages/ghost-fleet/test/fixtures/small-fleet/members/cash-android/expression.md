@@ -43,12 +43,6 @@ Cash on Android leans into Material 3 elevation and shape tokens, with a
 chromatic primary that carries the brand. Type follows Roboto across the
 app.
 
-# Signature
-
-- Material 3 elevation hierarchy with chromatic primary on top
-- Layered shadow tokens for depth on cards and sheets
-- Roboto weight contrast (400/500/700) for headings and body
-
 # Decisions
 
 ### color-strategy

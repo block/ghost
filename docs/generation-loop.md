@@ -51,7 +51,7 @@ reads `SKILL.md`.
 
 Driven by the host agent. Loads the expression (the agent typically pulls
 just the sections it needs via `ghost-expression describe`), builds a system
-prompt from Character/Signature/Decisions + tokens, asks the underlying
+prompt from Character/Decisions + tokens + rules, asks the underlying
 model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
 recipe for self-check. Retries with drift feedback until it passes or the
 agent gives up.
@@ -103,15 +103,15 @@ distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
 *incidental* drift (the same prompt leaking color, which it wasn't
 supposed to stress).
 
-## How the three-layer expression format earns its keep
+## How the expression format earns its keep
 
 Each layer has a concrete job somewhere in the loop:
 
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Signature** | Drift-sensitive moves the reviewer weights heavily |
-| **Decisions** | Lookup table the generator consults for specific choices |
+| **Rules** | Drift-sensitive moves the reviewer enforces; presence-floor rules codify load-bearing absences |
+| **Decisions** | Abstract pattern lookup the generator consults for specific choices |
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
 over-specified. The `verify` recipe is the schema-discipline mechanism.

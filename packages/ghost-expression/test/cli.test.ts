@@ -33,10 +33,6 @@ surfaces:
 
 Quiet and direct.
 
-# Signature
-
-- Small, plain surfaces
-
 # Decisions
 
 ### shape-language

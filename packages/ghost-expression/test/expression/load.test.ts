@@ -83,12 +83,6 @@ embedding: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
 A literary salon reimagined as a product page — warm, unhurried, and quietly intellectual.
 
-# Signature
-
-- Warm ring-shadows instead of drop-shadows
-- Editorial serif/sans split
-- Light/dark section alternation
-
 # Decisions
 
 ### warm-only-neutrals
@@ -126,13 +120,16 @@ describe("parseExpression", () => {
     expect(expression.observation?.summary).toContain("literary salon");
   });
 
-  it("merges body Signature into observation.distinctiveTraits", () => {
-    const { expression } = parseExpression(SAMPLE_MD);
-    expect(expression.observation?.distinctiveTraits).toEqual([
-      "Warm ring-shadows instead of drop-shadows",
-      "Editorial serif/sans split",
-      "Light/dark section alternation",
-    ]);
+  it("ignores legacy `# Signature` body sections without erroring", () => {
+    const legacy = SAMPLE_MD.replace(
+      "# Decisions",
+      "# Signature\n\n- Legacy bullet — should not appear in the model.\n\n# Decisions",
+    );
+    expect(() => parseExpression(legacy)).not.toThrow();
+    const { expression } = parseExpression(legacy);
+    // The legacy block parses as inert — observation has no field for it.
+    expect(expression.observation).toBeDefined();
+    expect(expression.observation?.summary).toContain("literary salon");
   });
 
   it("keeps observation tags (personality, resembles) from frontmatter", () => {
@@ -250,7 +247,6 @@ describe("serializeExpression round-trip", () => {
       observation: {
         summary: "Warm, editorial, unhurried.",
         personality: ["warm", "editorial"],
-        distinctiveTraits: ["ring-shadows", "warm-only neutrals"],
         resembles: ["notion"],
       },
       decisions: [
@@ -280,9 +276,6 @@ describe("serializeExpression round-trip", () => {
     expect(expression.embedding).toEqual(fpWithProse.embedding);
     expect(expression.observation?.summary).toBe(
       fpWithProse.observation?.summary,
-    );
-    expect(expression.observation?.distinctiveTraits).toEqual(
-      fpWithProse.observation?.distinctiveTraits,
     );
     expect(expression.observation?.personality).toEqual(
       fpWithProse.observation?.personality,
@@ -333,7 +326,6 @@ describe("serializeExpression round-trip", () => {
       observation: {
         summary: "Warm and editorial.",
         personality: ["warm"],
-        distinctiveTraits: ["ring-shadows"],
         resembles: [],
       },
       decisions: [
@@ -348,7 +340,6 @@ describe("serializeExpression round-trip", () => {
     // Frontmatter has machine-facts only
     const yamlSection = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
     expect(yamlSection).not.toContain("summary:");
-    expect(yamlSection).not.toContain("distinctiveTraits:");
     expect(yamlSection).not.toContain("No cool grays");
     expect(yamlSection).toContain("personality:");
     // Schema 5: evidence lives in the body, not the frontmatter

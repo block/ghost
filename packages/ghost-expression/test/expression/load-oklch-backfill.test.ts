@@ -34,10 +34,6 @@ surfaces:
 
 Test.
 
-# Signature
-
-- Test.
-
 # Decisions
 `;
 

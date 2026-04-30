@@ -212,16 +212,6 @@ surfaces:
 
 A monochromatic, magazine-inspired design language that treats color as communication rather than decoration. The default palette is entirely achromatic — near-black on white — with hue reserved for semantic states and chart data. Pill-shaped interactive elements contrast with moderately rounded containers, and display typography pushes ultra-tight line-heights (0.85–0.88) with heavy negative tracking for an editorial spread aesthetic. It ships no bundled typefaces and is fully themeable at runtime through CSS custom property injection, with five non-default preset themes that prove the base architecture's range.
 
-# Signature
-
-- Achromatic by default — primary/accent is the extremity of the gray scale (#1a1a1a in light mode, white in dark mode), so the system is color-agnostic until a theme preset is applied
-- Pill-first radius philosophy — buttons, inputs, and badges fully round to 999px while structural containers use moderate radii (10–24px), visually separating actionable surfaces from structural ones
-- Magazine-scale display typography with display line-heights as low as 0.85 and letter-spacing at -0.05em, paired with uppercase label type at 0.12em tracking
-- Shadow hierarchy named by role (mini, card, elevated, popover, modal) rather than by numeric size, with dark mode doubling intensity rather than removing depth
-- Runtime-themeable cascade — a semantic layer feeds a shadcn alias layer, which feeds Tailwind `@theme inline` — so 6 bundled preset themes can transform the visual language without touching component code
-- Ships no bundled fonts — the system hands font-face responsibility to the consumer and falls back to system-ui so the visual language inherits the host environment
-- Notable absence of gradient tokens, illustration tokens, and brand-specific iconography guidance
-
 # Decisions
 
 ### color-strategy

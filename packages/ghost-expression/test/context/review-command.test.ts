@@ -66,7 +66,6 @@ describe("emitReviewCommand", () => {
     fp.observation = {
       summary: "A spartan, monospaced system driven by code-native aesthetics.",
       personality: ["spartan", "monospaced"],
-      distinctiveTraits: [],
       resembles: [],
     };
     const out = emitReviewCommand({ expression: fp });
