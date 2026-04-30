@@ -53,15 +53,6 @@ surfaces:
 
 `ghost-ui` is a quietly editorial design language: pure-monochromatic neutrals do almost all of the work, semantic colors light up only for state, and every interactive surface lands on a generous pill or rounded card. Headings move on a magazine scale via fluid `clamp()` sizing; bodies sit on system-ui at a measured 1.65 line-height. The whole system is restrained — no brand color, no decorative anything — and gets its character from shape rhythm and shadow cadence rather than chroma.
 
-# Signature
-
-- A 12-step pure-monochromatic gray scale (no chromatic tint at any step) is the entire color system; semantic colors are accents, not primaries.
-- Pill-first interactive radii: buttons and inputs are 999px; cards stay rounded but not pilled (20px); modals and dropdowns sit between (10–16px).
-- Magazine-scale fluid typography — display heading uses `clamp(64px, 8vw, 96px)`, body reading uses `clamp(1rem, 1.3vw, 1.25rem)` — so the type column responds to viewport rather than living on a fixed ramp.
-- Three-deep token alias chains (raw step → semantic alias → shadcn alias) so consumers can opt in at any layer of abstraction; the same `--foreground` resolves through `--text-default` to `--color-gray-900`.
-- A four-tier shadow system (mini → btn/card → elevated → popover/modal) whose intensity roughly doubles in dark mode rather than inverting — so depth reads consistently across themes.
-- Notable absence: no brand color, no gradient, no decorative ornamentation. The design language is anti-flourish.
-
 # Decisions
 
 ### color-strategy

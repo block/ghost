@@ -209,20 +209,6 @@ surfaces:
 
 Arcade is the visual language Cash App ships across every surface — phones, web, server-rendered email, and CDN — authored once as a YAML graph and fanned out through Style Dictionary. Read end-to-end, the language reads as utilitarian and monetary: a grayscale stage with a single saturated Cash Green for brand, a wide semantic vocabulary of warnings/states/services, and an unusually rich set of *appearance modes* (light, dark, P3 wide-gamut, light-mono, dark-mono) that the system treats as a first-class product axis rather than a theme switch. Heaviness is achieved by inversion (black on white, white on black) instead of by elevation; depth is layered greys, never shadow. The brand is loud where money is happening — keypad, brand surface, toggle-on — and quiet everywhere else.
 
-# Signature
-
-- Cash Green (`#00D64F` / `#00BD46`) is reserved as accent and surface, never as the default fill of a primary button — `prominent.background = semantic.background.inverse`, so heroes are pure black/white.
-- A "mono" appearance is a parallel reality: every brand reference has a `lightMono` / `darkMono` override that strips green to grey, generated as separate output (`colors-mono.ts`, `ArcadeColorMapping+LightMono.swift`) — accessibility/preference is a build target, not a runtime fork.
-- Single typeface (`CashSans`, plus `CashSansMono` for micro-labels), carried by Square's CDN; every typography token also declares its `dynamic-type-style-uikit` and `dynamic-type-style-swiftui` mapping — type is bonded to platform a11y rails.
-- Money is its own typographic class: `keypad-total` is 96/96, `numeral-large` 56/56, `numeral-small` 32/32 — large monetary numerals collapse line-height to size for tight optical fit.
-- Border radii are categorical, not derived: `xsmall=6, small=8, medium=16, large=24, xlarge=40, pill=9999, circle=50%` — the pill chip is a first-class slug, not a math result.
-- No shadow vocabulary. Surface depth is a 5-step grey ladder (`background.app → subtle → standard → prominent → extra-prominent`) and a single `dimmer` rgba; elevation is *not* in the graph.
-- Product surfaces have named identity colors at the semantic layer: `service.bitcoin`, `service.investing`, `service.taxes`, `service.borrow` — money lines own their own hue, separate from brand.
-- Avatar identity is a fixed nine-chip kaleidoscope (turquoise, sky, ocean, royal, pink, purple, scarlet, amber, sunshine) hardcoded against the base brand palette — identity color is not theme-dependent.
-- Components are authored once at `component/mobile/*.yaml` and platform layers `extend:` for additions only — web grafts on hover/focus, android grafts on ripple, iOS grafts on dynamic-type styles.
-- Deprecation lives in the graph: deprecated tokens carry `deprecated: { value: true, replacement: <slug> }` inline rather than in a changelog.
-- The Cabinet playground that ships the system does not eat its own dogfood — `apps/cabinet/app/components/ui/button.tsx` uses default shadcn `bg-neutral-900` / `bg-red-500` Tailwind classes and only the surrounding shell pulls Arcade CSS variables.
-
 # Decisions
 
 ### Color strategy

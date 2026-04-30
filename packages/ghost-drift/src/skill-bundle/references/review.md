@@ -28,7 +28,7 @@ Ghost has no `ghost review` CLI command. You — the host agent — are the revi
 
     ghost-expression describe expression.md
 
-This prints a section map — frontmatter range, body sections (`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each `### dimension` block under Decisions, with line ranges and token estimates. Use it to plan what to load.
+This prints a section map — frontmatter range, body sections (`# Character`, `# Decisions`, `# Fragments`), and each `### dimension` block under Decisions, with line ranges and token estimates. Use it to plan what to load.
 
 Then read selectively:
 

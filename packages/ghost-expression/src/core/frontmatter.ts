@@ -26,9 +26,9 @@ export interface FrontmatterData {
 
 /**
  * Expression fields that are populated from YAML frontmatter. Prose
- * fields (observation.summary, observation.distinctiveTraits, decisions[].decision,
- * values) are populated from the markdown body by `applyBody` — they are
- * deliberately NOT listed here.
+ * fields (observation.summary, decisions[].decision) are populated from
+ * the markdown body by `applyBody` — they are deliberately NOT listed
+ * here.
  */
 const EXPRESSION_KEYS = new Set<keyof Expression>([
   "id",

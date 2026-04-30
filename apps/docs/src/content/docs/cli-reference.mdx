@@ -132,7 +132,7 @@ ghost-expression lint path/to/expression.md --format json
 ### Inspection — `describe`
 
 Print a section map of `expression.md` — frontmatter range, body sections
-(`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
+(`# Character`, `# Decisions`, `# Fragments`), and each
 `### dimension` block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
@@ -164,11 +164,10 @@ expression.md — 309 lines, ~3,955 tokens
 
 FRONTMATTER    1–164      ~973 tok        [palette, spacing, typography, surfaces, roles, observation, decisions]
 # Character      166–169    ~159 tok
-# Signature      170–179    ~298 tok
-# Decisions      180–305    ~2,503 tok
-  ### color-strategy           182–192    ~250 tok
-  ### shape-language           205–216    ~181 tok
-  ### typography-voice         217–229    ~258 tok
+# Decisions      170–305    ~2,800 tok
+  ### color-strategy           172–182    ~250 tok
+  ### shape-language           195–206    ~181 tok
+  ### typography-voice         207–219    ~258 tok
   …
 # Fragments      306–309    ~21 tok
 ```

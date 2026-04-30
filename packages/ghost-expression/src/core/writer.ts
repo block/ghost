@@ -26,7 +26,7 @@ export interface SerializeOptions {
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
  *     evidence, personality/resembles tags, embedding).
- *   • Body carries prose (# Character, # Signature, # Decisions rationale).
+ *   • Body carries prose (# Character, # Decisions rationale).
  *
  * Each field has exactly one home — so there is no precedence rule and no
  * way for the two sides to drift.
@@ -68,12 +68,6 @@ function buildBody(
   const parts: string[] = [];
   if (observation?.summary?.trim()) {
     parts.push(`# Character\n\n${observation.summary.trim()}`);
-  }
-  if (observation?.distinctiveTraits?.length) {
-    const bullets = observation.distinctiveTraits
-      .map((t) => `- ${t}`)
-      .join("\n");
-    parts.push(`# Signature\n\n${bullets}`);
   }
   if (decisions?.length) {
     const blocks = decisions

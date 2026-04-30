@@ -275,8 +275,6 @@ export interface DesignObservation {
   summary: string;
   /** Personality traits (e.g. "utilitarian", "restrained", "playful") */
   personality: string[];
-  /** What makes this expression visually distinctive */
-  distinctiveTraits: string[];
   /** Closest well-known design languages for reference */
   resembles: string[];
 }

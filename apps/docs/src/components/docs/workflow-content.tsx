@@ -240,12 +240,6 @@ function ExpressionExcerpt() {
               "\n\nA monochromatic, magazine-inspired design language that treats color\nas communication rather than decoration. The default palette is entirely\nachromatic. Pill-shaped interactive elements contrast with moderately\nrounded containers…\n\n"
             }
           </span>
-          <span className="text-foreground font-semibold"># Signature</span>
-          <span className="text-muted-foreground">
-            {
-              "\n\n- Achromatic by default — primary is the extremity of the gray scale\n- Pill-first radius philosophy — buttons / inputs / badges fully round\n  to 999px; containers use moderate radii (10–24px)\n- Magazine-scale display typography — line-heights as low as 0.85\n- Shadow hierarchy named by role, not by numeric size\n\n"
-            }
-          </span>
           <span className="text-foreground font-semibold"># Decisions</span>
           <span className="text-foreground font-semibold">
             {"\n\n### color-strategy"}

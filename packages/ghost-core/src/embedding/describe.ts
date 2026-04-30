@@ -13,9 +13,6 @@ export function describeExpression(fp: Expression): string {
   // Observation (Layer 1) — prepend when available for richer semantic embedding
   if (fp.observation) {
     sections.push(fp.observation.summary);
-    if (fp.observation.distinctiveTraits.length > 0) {
-      sections.push(`${fp.observation.distinctiveTraits.join(". ")}.`);
-    }
   }
 
   // Design decisions (Layer 2)

@@ -4,8 +4,8 @@ A Ghost **expression** is a single Markdown file that captures what a design lan
 
 The file has two parts, and each owns **different data**:
 
-1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, optional cached embedding. Validated by zod. Read by deterministic tools.
-2. **Body (Markdown)** — the **prose layer**. Character paragraph, Signature bullets, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
+1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, `rules[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
+2. **Body (Markdown)** — the **prose layer**. Character paragraph, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
@@ -30,7 +30,6 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
 | `observation.personality`, `observation.resembles` | Frontmatter | `observation:` |
 | `observation.summary` | **Body** | `# Character` |
-| `observation.distinctiveTraits` | **Body** | `# Signature` bullets |
 | `decisions[].dimension`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
 | `decisions[].evidence` | **Body** | `**Evidence:**` bullet list under `### dimension` |
@@ -70,9 +69,9 @@ sources:                          # optional, lists the targets that were combin
   - https://claude.ai
 
 # --- expression: narrative tags ---
-# NOTE: prose (summary, distinctiveTraits, decision rationale) and the
+# NOTE: prose (summary, decision rationale) and the
 # `**Evidence:**` bullets per decision live in the body under
-# # Character, # Signature, ### blocks.
+# # Character and ### dimension blocks.
 observation:
   personality: [restrained, editorial]
   resembles: [notion, linear]
@@ -125,7 +124,7 @@ surfaces:
 **Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
-**Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
+**Forbidden in frontmatter:** `observation.summary`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
 
 When `extends:` is present, required expression fields may be omitted — the overlay inherits them from the base expression. The merged result is re-validated against the strict schema.
 
@@ -139,11 +138,6 @@ The body owns prose and evidence. Four section kinds, all optional, in this orde
 # Character
 
 A literary salon reimagined as a product page — warm, unhurried.
-
-# Signature
-
-- Warm ring-shadows instead of drop-shadows
-- Editorial serif/sans split
 
 # Decisions
 
@@ -287,7 +281,7 @@ Fragments override inline decisions with the same dimension. Skip with `loadExpr
 
    ```
    Invalid expression frontmatter:
-     • observation: Unrecognized keys: "summary", "distinctiveTraits"
+     • observation: Unrecognized keys: "summary"
      • decisions.0: Unrecognized keys: "decision", "evidence"
      • palette.saturationProfile: Invalid enum value...
    ```

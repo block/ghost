@@ -49,8 +49,8 @@ const SurfacesSchema = z.object({
 });
 
 /**
- * Frontmatter observation: short machine-tags only. The Character paragraph
- * (summary) and Signature bullets (distinctiveTraits) live in the body.
+ * Frontmatter observation: short machine-tags only. The Character
+ * paragraph (summary) lives in the body.
  */
 const DesignObservationSchema = z
   .object({
@@ -120,7 +120,7 @@ const RuleSchema = z
  * Schema for the YAML frontmatter in an expression.md file. Covers the
  * machine-layer of Expression plus expression-level metadata.
  *
- * Note: narrative prose fields (observation.summary, distinctiveTraits,
+ * Note: narrative prose fields (observation.summary,
  * decisions[].decision) are NOT allowed here — they belong in the body.
  * `.strict()` on nested schemas enforces this.
  *

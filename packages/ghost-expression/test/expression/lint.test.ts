@@ -47,10 +47,6 @@ decisions:
 
 Warm, editorial
 
-# Signature
-
-- warm-only neutrals
-
 # Decisions
 
 ### warm-neutrals

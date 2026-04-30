@@ -119,20 +119,6 @@ surfaces:
 
 Market is Square's cross-platform design language — a CMPT-structured (Component / Modifier / Part / Type) token graph piped through Style Dictionary into Stencil web components, SwiftUI/UIKit modules, and Jetpack Compose modules. The personality is utilitarian and structural rather than expressive: the default theme renders monochromatically with near-black emphasis on white, a wide neutral ramp does most of the work, and a full chromatic palette sits in reserve for status semantics and theme overlays. Visual decisions are encoded as states-modes-variants tables — every interactive element ships normal/hover/pressed/focus/disabled × light/dark × variant tokens — which produces a system that feels exhaustive and machine-checkable rather than hand-crafted. Identity expression happens at the theme layer (Buyer-Facing, Tidal, Noho, S3, legacy Market Blue), not in the base.
 
-# Signature
-
-- Monochromatic by default: `core.emphasis-fill` ships as `#101010` light / `#FFFFFF` dark even though the source aliases it to `core.blue-fill` — chromatic identity is opt-in via theme overlays, not a base-system trait.
-- A full chromatic palette is defined and reserved: green / forest / teal / blue / sky / purple / pink / burgundy / red / orange / gold / yellow / taupe / brown each ship as a 6-step set (fill, text, 10, 20, 30, 40) but the base system only consumes them through semantic aliases (`success`, `warning`, `critical`, `emphasis`).
-- A 17-step grayscale ramp from `#FFFFFF` to `#000000` (with a separate `core.constant.gray-*` track) carries most of the visual weight — surfaces, dividers, fills, and text are all neutrals first.
-- Every interactive token is enumerated as a full state × mode × variant matrix — `state:normal | hover | pressed | focus | disabled` × `mode:light | dark` × `variant:normal | destructive` — rather than computed via opacity or color-mix.
-- Three weight tracks (`text`, `display`, `mono`) all use the Cash Sans superfamily; `display` is reserved for headings ≥19px, `text` for body and small heading, `mono` for code.
-- Spacing tokens are named numerically in a `25 / 50 / 100 / 150 / 200 / 250 / 300 / 400 / 500 / 600 / 800 / 1000 / 1500 / 2000` system that maps to `2 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 48 / 64 / 80 / 120 / 160` px — the names are intentionally decoupled from absolute pixels so themes can rescale.
-- Border radii are dual-named as a pixel scale (`33 → 2px`, `66 → 4px`, `100 → 6px`, `200 → 12px`, `266 → 16px`, `400 → 24px`, `533 → 32px`) plus role aliases (`forms`, `modals`, `circle: 1000`); buttons default to `radius.100` (6px), pills to `radius.circle` (∞).
-- Shadows are absent from the system — no `shadow` or `elevation` tokens at the core layer; surface separation is achieved with surface-stack tokens (`surface-5/10/20/30`) and dividers, not z-layered shadow.
-- Animation is encoded as three named curves (`enter`, `exit`, `move`) each with three speeds (`fast: 100ms`, `moderate: 160-240ms`, `slow: 300-400ms`); easing differs per direction (asymmetric in/out cubic-bezier).
-- Themes are diff-overlays, not parallel systems: Buyer-Facing, Monochrome, Tidal, Noho, S3, Starter — each ships as a sparse JSON override package that replaces specific tokens (e.g. button radii, type ramps, emphasis colors) on top of the base graph.
-- Component tokens never reference base color primitives directly — they always go through the semantic layer (`{core.emphasis-fill...}`, `{core.critical-text...}`), so swapping `emphasis` to a different hue retones the entire system.
-
 # Decisions
 
 ### Color strategy

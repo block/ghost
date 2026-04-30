@@ -16,7 +16,6 @@ const EXPRESSION: Expression = {
   observation: {
     summary: "Restrained, utilitarian — warm neutrals on black.",
     personality: ["restrained", "utilitarian"],
-    distinctiveTraits: ["true-black backgrounds", "tight type scale"],
     resembles: ["Vercel", "Linear"],
   },
   decisions: [
@@ -108,8 +107,8 @@ describe("writeContextBundle", () => {
     expect(res.files).toHaveLength(1);
     const prompt = await readFile(res.files[0], "utf-8");
     expect(prompt).toContain("# Character");
-    expect(prompt).toContain("# Signature");
     expect(prompt).toContain("# Decisions");
+    expect(prompt).not.toContain("# Signature");
   });
 
   it("honors --name override in SKILL frontmatter", async () => {
