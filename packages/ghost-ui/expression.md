@@ -38,10 +38,6 @@ rules:
     pattern: '#[0-9a-fA-F]{3,8}'
     enforce_at: [className, css_var, inline_style]
     support: 0.94
-    based_on:
-      - "bkt:color:1a1a1a"
-      - "bkt:color:ffffff"
-      - "bkt:color:f5f5f5"
   - id: pill-interactives
     canonical: shape-language
     kind: radius
@@ -53,10 +49,6 @@ rules:
     pattern: '<(Button|Input|Badge)\b[^>]*\brounded-(?!full|pill)'
     enforce_at: [className]
     support: 0.97
-    based_on:
-      - "bkt:component:button"
-      - "bkt:component:input"
-      - "bkt:component:badge"
   - id: structural-radius-set
     canonical: shape-language
     kind: radius

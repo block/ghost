@@ -112,7 +112,6 @@ const RuleSchema = z
     tolerance: z.number().optional(),
     presence_floor: z.number().int().nonnegative().optional(),
     support: z.number().min(0).max(1).optional(),
-    based_on: z.array(z.string()).optional(),
     rationale: z.string().optional(),
   })
   .strict();

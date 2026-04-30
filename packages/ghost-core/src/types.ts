@@ -264,12 +264,6 @@ export interface Rule {
    * codebase. Consumed at lint time as a soft warning.
    */
   support?: number;
-  /**
-   * Provenance: bucket row IDs that motivated this rule. Lets a re-scan
-   * verify the rule still has a basis in the bucket; lets a reviewer cite
-   * the exact tokens behind the rule.
-   */
-  based_on?: string[];
   /** Free-form rationale shown above the rule's table in the emitted reviewer. */
   rationale?: string;
 }

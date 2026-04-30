@@ -136,16 +136,6 @@ function renderRule(item: ResolvedRule): string {
     const where = rule.enforce_at.map((e) => `\`${e}\``).join(", ");
     lines.push(`**Enforce at:** ${where}`);
   }
-  if (rule.based_on?.length) {
-    const cite =
-      rule.based_on.length <= 4
-        ? rule.based_on.map((id) => `\`${id}\``).join(", ")
-        : `${rule.based_on
-            .slice(0, 4)
-            .map((id) => `\`${id}\``)
-            .join(", ")}, … (${rule.based_on.length - 4} more)`;
-    lines.push(`**Based on:** ${cite}`);
-  }
   if (typeof rule.support === "number") {
     lines.push(`**Support:** ${(rule.support * 100).toFixed(0)}%`);
   }
