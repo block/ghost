@@ -20,7 +20,22 @@ This recipe is *your* job. Ghost's CLI provides `ghost-expression inventory` (de
 
 ### 1. Gather raw signals
 
+**Preferred (CLI present):**
+
 Run `ghost-expression inventory [path]` from (or pointed at) the target root. It returns deterministic JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote, plus best-effort platform and build-system hints. Read it as the foundation — reproducible from inputs.
+
+**Prose fallback (no CLI):**
+
+Build the inventory yourself with `Glob` / `Read` / `Bash`:
+
+- **Package manifests:** `Glob: **/{package.json,pnpm-workspace.yaml,Cargo.toml,go.mod,Package.swift,build.gradle*,pyproject.toml,requirements.txt}` — exclude `node_modules`. Read each; record `name` and top-level dep names.
+- **Language histogram:** `Bash: find . -type f -name '*.tsx' -o -name '*.ts' -o -name '*.swift' -o -name '*.kt' …` (extension list per the kinds you care about) and count. Convert to `{name, files, share}` rows where `share = files / total`.
+- **Candidate config files:** `Glob` for `tailwind.config.*`, `tsconfig*.json`, `vite.config.*`, `next.config.*`, `tokens/**`, `theme/**`, etc.
+- **Registry presence:** check `Read: <path>/registry.json` — if it parses and has `name` + `items[]`, record its path.
+- **Top-level tree:** `Bash: ls -la <path>` for one level deep.
+- **Git remote:** `Bash: git -C <path> remote get-url origin` (best-effort, fine if absent).
+
+Format as a JSON object so the rest of the recipe can quote from it. Skip fields you can't determine; partial inventory is fine.
 
 ### 2. Resolve the schema fields
 
@@ -60,9 +75,24 @@ If no manifest is provided, derive `feature_areas` from the inventory's `top_lev
 
 ### 5. Validate
 
+**Preferred (CLI present):**
+
     ghost-expression lint map.md
 
-Fix any errors. Lint passing is the success gate — do not declare done until it exits 0. Common errors:
+Fix any errors. Lint passing is the success gate — do not declare done until it exits 0.
+
+**Prose fallback (no CLI):**
+
+Walk the file yourself against the schema in [schema.md](schema.md). Required checks:
+
+- Frontmatter parses as valid YAML.
+- `schema: ghost.map/v1` literal present.
+- Required fields populated: `id` (slug), `repo`, `mapped_at`, `platform`, `languages`, `build_system`, `package_manifests`, `composition.frameworks`, `composition.rendering`, `composition.styling`, `design_system.paths`, `design_system.status`, `ui_surface.include`, `feature_areas[]`, `orientation_files[]`.
+- `id` matches `^[a-z0-9][a-z0-9._-]*$`.
+- Body sections appear in order: `## Identity`, `## Topology`, `## Conventions`. No other `##` headings between them.
+- If `design_system.token_source` is `external` or `mixed`, `design_system.upstream` is set.
+
+Common errors regardless of path:
 
 - Body section out of order (`## Identity` must precede `## Topology` etc.)
 - Missing `entry_files` AND `derived_files` under `design_system` (warning — fine if neither exists, but check)

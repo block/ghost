@@ -78,6 +78,46 @@ const DesignDecisionSchema = z
   .strict();
 
 /**
+ * v0 reviewer rule: a grep-able pattern fitted to this expression's
+ * design language. Severity, match shape, and tolerance are typically
+ * computed at emit time from the perceptual prior in `@ghost/core`;
+ * explicit fields here are overrides.
+ *
+ * Rules coexist with `decisions[]` during the v0 transition. Both are
+ * optional. Lint validation of the perceptual prior (e.g. warning on
+ * unrealistic tolerances) is not yet wired — the schema permits the
+ * shape so authors can begin populating rules without lint rejection.
+ */
+const RuleSchema = z
+  .object({
+    id: z.string(),
+    canonical: z.string().optional(),
+    kind: z
+      .enum([
+        "color",
+        "radius",
+        "spacing",
+        "type-size",
+        "type-family",
+        "type-weight",
+        "shadow",
+        "motion",
+      ])
+      .optional(),
+    summary: z.string().optional(),
+    pattern: z.string(),
+    enforce_at: z.array(z.string()).optional(),
+    severity: z.enum(["critical", "serious", "nit"]).optional(),
+    match: z.enum(["exact", "band", "percent", "structural"]).optional(),
+    tolerance: z.number().optional(),
+    presence_floor: z.number().int().nonnegative().optional(),
+    support: z.number().min(0).max(1).optional(),
+    based_on: z.array(z.string()).optional(),
+    rationale: z.string().optional(),
+  })
+  .strict();
+
+/**
  * Schema for the YAML frontmatter in an expression.md file. Covers the
  * machine-layer of Expression plus expression-level metadata.
  *
@@ -114,6 +154,8 @@ export const FrontmatterSchema = z
     // expression — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
+    /** v0 reviewer rules — optional during the transition. */
+    rules: z.array(RuleSchema).optional(),
 
     // expression — structured (required)
     palette: PaletteSchema,
@@ -152,6 +194,7 @@ export const PartialFrontmatterSchema = z
 
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
+    rules: z.array(RuleSchema).optional(),
 
     palette: PaletteSchema.optional(),
     spacing: SpacingSchema.optional(),

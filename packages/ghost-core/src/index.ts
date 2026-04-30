@@ -77,6 +77,20 @@ export {
   type RequiredBodySection,
   type TopLevelEntry,
 } from "./map/index.js";
+// --- Perceptual prior (drift severity calibration) ---
+export {
+  computeRuleSeverity,
+  DEFAULT_MATCH,
+  DEFAULT_TOLERANCE,
+  escalateForPresence,
+  escalateTier,
+  PERCEPTUAL_TIER,
+  type PerceptualTier,
+  resolveMatchShape,
+  resolveTolerance,
+  TIER_SEVERITY,
+  tierForCanonical,
+} from "./perceptual-prior.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
@@ -100,6 +114,7 @@ export type {
   DimensionDelta,
   DimensionStance,
   DivergenceClass,
+  DriftSeverity,
   DriftVector,
   DriftVelocity,
   EmbeddingConfig,
@@ -120,6 +135,9 @@ export type {
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
+  Rule,
+  RuleKind,
+  RuleMatchShape,
   RuleSeverity,
   SampledFile,
   SampledMaterial,

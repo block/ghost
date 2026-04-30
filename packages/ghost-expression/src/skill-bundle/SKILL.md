@@ -13,6 +13,14 @@ This skill helps you author the project's design language — its `expression.md
 
 You do the synthesis (the profile recipe). The `ghost-expression` CLI is the calculator you reach for when you need a reproducible answer: parsing, schema validation, layout, structural diff. Call it freely; the output is ground truth.
 
+**Two install paths, same recipes.** When the user installed via `curl … | sh` (the no-CLI v0 path) the `ghost-expression` binary is *not* on PATH. The recipes degrade gracefully: every CLI-using step has a prose fallback you can execute via `Read` / `Glob` / `Bash` / `Grep`. Detect availability once, at the start of a workflow:
+
+```sh
+command -v ghost-expression >/dev/null && echo "cli" || echo "prose"
+```
+
+When the CLI is present, prefer it — the output is deterministic and idempotent. When it isn't, follow the fallback recipes. Don't ask the user to install the CLI mid-workflow; the prose path is real, not a degraded mode.
+
 ## CLI verbs
 
 | Verb | Purpose |

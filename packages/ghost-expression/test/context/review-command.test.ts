@@ -108,6 +108,185 @@ describe("emitReviewCommand", () => {
   });
 });
 
+describe("emitReviewCommand — rules[]-driven path", () => {
+  it("groups rules by computed severity (Critical / Serious / Nit)", () => {
+    const fp = withRules([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+      {
+        id: "pill-interactives",
+        canonical: "shape-language",
+        pattern: "<Button.*rounded-(?!full)",
+      },
+      {
+        id: "spacing-on-scale",
+        canonical: "spatial-system",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+    expect(out).toMatch(/^## Serious \(1\)$/m);
+    expect(out).toMatch(/^## Nit \(1\)$/m);
+
+    // Critical block holds the color rule
+    const critical = sliceSection(out, "Critical");
+    expect(critical).toMatch(/no-off-palette-hex/);
+    expect(critical).not.toMatch(/pill-interactives/);
+
+    // Serious block holds the shape rule
+    const serious = sliceSection(out, "Serious");
+    expect(serious).toMatch(/pill-interactives/);
+
+    // Nit block holds the spacing rule
+    const nit = sliceSection(out, "Nit");
+    expect(nit).toMatch(/spacing-on-scale/);
+  });
+
+  it("escalates severity when presence_floor crosses zero", () => {
+    // motion canonical is rhythmic-tier (default nit). With presence_floor
+    // 0 and the motion proxy returning 100 (no escalation by default), the
+    // rule lands in Nit. But if we hand-author presence_floor: 100, the
+    // proxy count is ≤ floor → escalates one tier → Serious.
+    const fp = withRules([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        presence_floor: 100,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Serious \(1\)$/m);
+    expect(out).not.toMatch(/^## Nit/m);
+  });
+
+  it("respects explicit severity overrides", () => {
+    const fp = withRules([
+      {
+        id: "force-critical-spacing",
+        canonical: "spatial-system",
+        severity: "critical",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+  });
+
+  it("renders pattern, match shape, and tolerance per rule", () => {
+    const fp = withRules([
+      {
+        id: "spacing-on-scale",
+        canonical: "spatial-system",
+        kind: "spacing",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toContain("**Pattern:** `p-\\[\\d+px\\]`");
+    expect(out).toContain("**Match:** `band` (tolerance: `2`)");
+  });
+
+  it("renders rationale as blockquote when provided", () => {
+    const fp = withRules([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        rationale: "Project ships an 8-color palette; off-palette is drift.",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/> Project ships an 8-color palette/);
+  });
+
+  it("renders support percentage and based_on citation", () => {
+    const fp = withRules([
+      {
+        id: "pill-interactives",
+        canonical: "shape-language",
+        pattern: "<Button.*rounded-(?!full)",
+        support: 0.97,
+        based_on: ["bkt:component:button", "bkt:component:input"],
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/\*\*Support:\*\* 97%/);
+    expect(out).toMatch(/\*\*Based on:\*\* `bkt:component:button`/);
+  });
+
+  it("includes a calibration footer that names the prior", () => {
+    const fp = withRules([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## How this reviewer was calibrated$/m);
+    expect(out).toMatch(/perceptual weight, not arithmetic/);
+    expect(out).toMatch(/1 loud-tier/);
+  });
+
+  it("notes which rules escalated via presence-floor in the calibration footer", () => {
+    const fp = withRules([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        presence_floor: 100, // motion proxy = 100 → triggers escalation
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toContain(
+      "Presence-floor escalation triggered for:** `no-decorative-motion`",
+    );
+  });
+
+  it("falls back to structured-fallback path when rules[] is absent", () => {
+    const fp = minimalExpression();
+    fp.rules = undefined; // explicit
+    const out = emitReviewCommand({ expression: fp });
+    // Old path emits "## 1. Palette drift" — rules-driven never does
+    expect(out).toMatch(/## 1\. Palette drift/);
+    expect(out).not.toMatch(/^## Critical/m);
+  });
+
+  it("uses the rules-driven path when rules[] is non-empty even with decisions[] present", () => {
+    const fp = withRules([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+    ]);
+    fp.decisions = [
+      { dimension: "elevation", decision: "Old prose.", evidence: [] },
+    ];
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+    expect(out).not.toMatch(/## 1\. Palette drift/);
+    expect(out).not.toMatch(/Old prose\./);
+  });
+});
+
+function withRules(rules: Expression["rules"]): Expression {
+  const fp = minimalExpression();
+  fp.rules = rules;
+  return fp;
+}
+
+function sliceSection(out: string, label: string): string {
+  const match = out.match(new RegExp(`## ${label}[^]*?(?=\\n## |$)`));
+  return match?.[0] ?? "";
+}
+
 function minimalExpression(): Expression {
   return {
     id: "minimal",
