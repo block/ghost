@@ -30,7 +30,7 @@ One on-disk format per expression. No parallel JSON/YAML/TOML/DTCG representatio
 
 ## 3. The frontmatter / body partition is strict.
 
-Frontmatter holds the machine layer: identity, tokens, dimension slugs, evidence paths. Body holds the prose layer: Character, Signature, decision rationale. Prose does not leak into frontmatter; structured data does not leak into prose.
+Frontmatter holds the machine layer: identity, tokens, dimension slugs, evidence paths. Body holds the prose layer: Character, decision rationale. Prose does not leak into frontmatter; structured data does not leak into prose.
 
 **Why:** The partition is what makes expressions simultaneously human-readable and machine-comparable. Blurring it forces one audience to do the other's work. The linter enforces it at the boundary; this invariant enforces it in spirit.
 
