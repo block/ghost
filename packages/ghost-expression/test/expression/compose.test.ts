@@ -106,40 +106,6 @@ describe("mergeExpression", () => {
     expect(merged.values?.do).toEqual(["new-do"]);
     expect(merged.values?.dont).toEqual([]);
   });
-
-  it("roles merge by name: overlay wins per-slot, base-only roles kept", () => {
-    const baseWithRoles: Expression = {
-      ...BASE,
-      roles: [
-        {
-          name: "h1",
-          tokens: { typography: { family: "Serif", size: 32 } },
-          evidence: ["base.tsx"],
-        },
-        {
-          name: "body",
-          tokens: { typography: { family: "Sans", size: 16 } },
-          evidence: ["base.tsx"],
-        },
-      ],
-    };
-    const overlay: Partial<Expression> = {
-      roles: [
-        {
-          name: "h1",
-          tokens: { typography: { family: "Serif", size: 64 } },
-          evidence: ["overlay.tsx"],
-        },
-      ],
-    };
-    const merged = mergeExpression(baseWithRoles, overlay);
-    expect(merged.roles).toHaveLength(2);
-    const h1 = merged.roles?.find((r) => r.name === "h1");
-    expect(h1?.tokens.typography?.size).toBe(64);
-    expect(h1?.evidence).toEqual(["overlay.tsx"]);
-    const body = merged.roles?.find((r) => r.name === "body");
-    expect(body?.tokens.typography?.size).toBe(16);
-  });
 });
 
 describe("loadExpression extends resolution", () => {

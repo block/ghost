@@ -70,7 +70,7 @@ After validation, re-run `scan-status` and proceed.
 
 Run when `scan-status` reports both prior stages `present` and `subjective: missing`.
 
-Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals) and `bucket.json` (for ground truth) and writes `expression.md` purely as interpretation: assigns roles, names decisions, writes the prose body, fills frontmatter from bucket rows. Cannot invent values not in the bucket. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
+Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals) and `bucket.json` (for ground truth) and writes `expression.md` purely as interpretation: names decisions, writes the prose body, fills frontmatter from bucket rows. Cannot invent values not in the bucket. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
 
 ### 6. Confirm complete
 

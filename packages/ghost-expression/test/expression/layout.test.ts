@@ -180,13 +180,7 @@ x
     const fm = layout.sections.find((s) => s.kind === "frontmatter");
     expect(fm?.start).toBe(1);
     expect(fm?.partitions).toEqual(
-      expect.arrayContaining([
-        "palette",
-        "spacing",
-        "typography",
-        "surfaces",
-        "roles",
-      ]),
+      expect.arrayContaining(["palette", "spacing", "typography", "surfaces"]),
     );
 
     const headings = layout.sections

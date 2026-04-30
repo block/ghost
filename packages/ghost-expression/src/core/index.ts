@@ -112,7 +112,7 @@ export interface LoadOptions {
  *
  * If the file declares `extends:`, the base expression is loaded recursively and
  * merged per the rules in compose.ts: overlay wins, decisions merged by
- * dimension, palette roles merged by role.
+ * dimension, palette colors merged by role.
  *
  * If a `decisions/` directory sits next to the expression.md, each .md
  * inside is assembled into the expression's decisions[], merged by

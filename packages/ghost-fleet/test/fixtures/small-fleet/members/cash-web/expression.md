@@ -35,7 +35,6 @@ surfaces:
   borderRadii: [8, 12]
   shadowComplexity: subtle
   borderUsage: minimal
-roles: []
 ---
 
 # Character

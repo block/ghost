@@ -41,7 +41,6 @@ const EXPRESSION_KEYS = new Set<keyof Expression>([
   "spacing",
   "typography",
   "surfaces",
-  "roles",
   "embedding",
 ]);
 
@@ -115,7 +114,6 @@ export function mergeFrontmatter(
     "spacing",
     "typography",
     "surfaces",
-    "roles",
     "embedding",
   ];
   for (const key of ordered) {

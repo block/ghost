@@ -87,7 +87,6 @@ export type {
   CSSVarsMap,
   DesignDecision,
   DesignObservation,
-  DesignRole,
   DetectedFormat,
   DimensionAck,
   DimensionDelta,

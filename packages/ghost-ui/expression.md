@@ -133,34 +133,6 @@ surfaces:
   borderRadii: [10, 14, 16, 20, 24, 999]
   shadowComplexity: layered
   borderUsage: moderate
-roles:
-  - name: button
-    tokens:
-      surfaces: { borderRadius: 999 }
-      palette: { background: "#1a1a1a", foreground: "#ffffff" }
-    evidence:
-      - "src/components/ui/button.tsx:7"
-      - "src/components/ui/button.tsx:11"
-  - name: input
-    tokens:
-      surfaces: { borderRadius: 999 }
-    evidence:
-      - "src/components/ui/input.tsx:11"
-  - name: badge
-    tokens:
-      surfaces: { borderRadius: 999 }
-    evidence:
-      - "src/components/ui/badge.tsx:8"
-  - name: card
-    tokens:
-      surfaces: { borderRadius: 20 }
-    evidence:
-      - "src/components/ui/card.tsx:10"
-  - name: alert-title
-    tokens:
-      typography: { family: "system-ui", weight: 600 }
-    evidence:
-      - "src/components/ui/alert.tsx:42"
 ---
 
 # Character

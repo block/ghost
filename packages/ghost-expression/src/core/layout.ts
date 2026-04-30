@@ -127,7 +127,6 @@ function detectPartitions(yamlText: string): string[] {
     "spacing",
     "typography",
     "surfaces",
-    "roles",
     "observation",
     "decisions",
     "embedding",

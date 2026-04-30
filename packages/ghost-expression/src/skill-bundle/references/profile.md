@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the project's design language as an interpretation. **You are the interpreter, not the surveyor.** Read the `bucket.json` as ground truth for what values the project actually ships; assign roles, write decisions, and form the prose body. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
+**Goal:** produce a valid `expression.md` that captures the project's design language as an interpretation. **You are the interpreter, not the surveyor.** Read the `bucket.json` as ground truth for what values the project actually ships; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
 
 `expression.md` is the terminal artifact in a three-stage scan: topology (`map.md`) → objective (`bucket.json`) → subjective (`expression.md`). Yours is the third stage.
 
@@ -31,7 +31,7 @@ A `bucket.json` has three sections:
 
 - **`values[]`** — concrete literals shipped in source. Group by `kind`: `color` rows feed `palette`; `spacing` rows feed `spacing.scale` / `spacing.baseUnit`; `typography` rows feed `typography.*`; `radius` rows feed `surfaces.borderRadii`; `shadow` rows feed `surfaces.shadowComplexity` (count + complexity, not literal shadows); `breakpoint` / `motion` / `layout-primitive` rows feed Decisions where they're load-bearing. Each row has `occurrences` (total count) and `files_count` (spread). Higher numbers = stronger signal.
 - **`tokens[]`** — named declarations with `alias_chain` (path through indirection) and `resolved_value`. Long chains and semantic naming (`--color-brand-primary` → `--color-orange-500`) are evidence of a deliberate token layer. Empty chains everywhere = inline literals = no token discipline.
-- **`components[]`** — known components (registry entries or heuristically discovered). Feeds the `roles[]` layer when components carry slot-to-color mappings, and contributes count signal to surface-vocabulary decisions.
+- **`components[]`** — known components (registry entries or heuristically discovered). Contributes count signal to surface-vocabulary decisions and grounds prose about what the system ships.
 
 External libraries (icon sets, primitive collections, motion libs) deliberately don't have a bucket section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing for the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
 
@@ -104,25 +104,16 @@ Populate the structured frontmatter fields **from bucket rows**:
 
 **Hard rule:** every `palette` entry must be cited in at least one decision's `evidence`, or dropped. Uncited tokens are noise.
 
-### 5. Roles — slot-to-color mappings
-
-Populate `roles[]` from `bucket.tokens[]` and `bucket.components[]`:
-
-- For each role you can identify (e.g. `button-primary-bg`, `surface-elevated`, `text-muted`), record its resolved value from the bucket. Use `tokens[].alias_chain` to trace which named token a slot resolves through.
-- Skip roles you can't directly observe in the bucket. Empty `roles[]` is fine.
-
-In **token-pipeline** mode, this is the richest layer — semantic tokens map cleanly to roles. In **consumer** mode, it's typically empty or upstream-slug-only. In **ui-library** mode, registry-based components give you slot mappings.
-
-### 6. Write the file
+### 5. Write the file
 
 Copy [../assets/expression.template.md](../assets/expression.template.md). Fill in:
 
-- **Frontmatter:** all structured fields (identity, `observation.personality`/`.resembles`, `decisions[].dimension`, `palette`, `spacing`, `typography`, `surfaces`, `roles`).
+- **Frontmatter:** all structured fields (identity, `observation.personality`/`.resembles`, `decisions[].dimension`, `palette`, `spacing`, `typography`, `surfaces`).
 - **Body:** `# Character` (observation summary), `# Signature` (distinctiveTraits bullets), `# Decisions` (one `### <dim>` block per decision, each ending with `**Evidence:**` bullets citing bucket rows).
 
 Partition matters. See [schema.md](schema.md) for which field lives where.
 
-### 7. Validate
+### 6. Validate
 
     ghost-expression lint expression.md
 
@@ -133,7 +124,7 @@ Fix any errors. Common ones:
 - Palette entry not cited in any evidence → cite it (from a bucket row) or drop it.
 - Typography size not in the bucket → drop it; the surveyor missed it or it's not real.
 
-### 8. Provenance check
+### 7. Provenance check
 
 For every value in your expression's frontmatter, confirm it appears in `bucket.json`. Quick sanity:
 
@@ -142,7 +133,7 @@ For every value in your expression's frontmatter, confirm it appears in `bucket.
 
 Any expression value that doesn't trace back is a hallucination. Remove it.
 
-### 9. Self-distance sanity
+### 8. Self-distance sanity
 
     ghost-drift compare expression.md expression.md
 

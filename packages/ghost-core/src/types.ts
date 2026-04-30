@@ -208,46 +208,6 @@ export interface DesignDecision {
   embedding?: number[];
 }
 
-/**
- * A semantic slot → token binding. Describes which concrete tokens a
- * design language uses for a specific role (h1, body, card, button, …).
- *
- * This is the bridge between abstract tokens (`typography.sizeRamp: [14, 16, …]`)
- * and renderable output: a role tells a renderer *which* ramp step belongs to
- * *which* slot. All subfields are optional — the agent populates only what it
- * can infer from the source.
- */
-export interface DesignRole {
-  /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
-  name: string;
-  /** Tokens the slot binds, grouped by expression dimension. */
-  tokens: {
-    typography?: {
-      family?: string;
-      size?: number;
-      weight?: number;
-      lineHeight?: number;
-    };
-    spacing?: {
-      padding?: number;
-      gap?: number;
-      margin?: number;
-    };
-    surfaces?: {
-      borderRadius?: number;
-      shadow?: "none" | "subtle" | "layered";
-      borderWidth?: number;
-    };
-    palette?: {
-      background?: string;
-      foreground?: string;
-      border?: string;
-    };
-  };
-  /** Evidence from the source — file paths or file:line references. */
-  evidence: string[];
-}
-
 export interface Expression {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
@@ -261,14 +221,6 @@ export interface Expression {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
-
-  /**
-   * Semantic slot → token bindings. The bridge from abstract tokens to
-   * renderable output: each role names a slot ("h1", "card", "button") and
-   * binds tokens from the dimensions below. Optional — agents populate only
-   * roles they can infer from the source.
-   */
-  roles?: DesignRole[];
 
   // --- Layer 3: Concrete values ---
 
