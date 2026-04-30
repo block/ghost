@@ -179,6 +179,89 @@ embedding: [0]
     expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
   });
 
+  it("warns on a non-canonical decision dimension with no dimension_kind", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "non-canonical-dimension",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("decisions[0].dimension");
+  });
+
+  it("does not warn when dimension is canonical", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: color-strategy`,
+      `# Decisions
+
+### color-strategy
+Hue as opt-in.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    expect(
+      report.issues.some((i) => i.rule === "non-canonical-dimension"),
+    ).toBe(false);
+  });
+
+  it("does not warn when non-canonical dimension has canonical dimension_kind", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals
+    dimension_kind: color-strategy`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    expect(
+      report.issues.some((i) => i.rule === "non-canonical-dimension"),
+    ).toBe(false);
+  });
+
+  it("warns when dimension_kind itself is not canonical", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals
+    dimension_kind: also-bogus`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "non-canonical-dimension",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.path).toBe("decisions[0].dimension_kind");
+  });
+
   it("rejects the legacy shadowComplexity: none value", () => {
     const md = `${HEADER}
 palette:

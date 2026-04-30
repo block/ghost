@@ -1,4 +1,8 @@
-import type { Expression } from "@ghost/core";
+import {
+  closestCanonical,
+  type Expression,
+  isCanonicalDimension,
+} from "@ghost/core";
 import { parse as parseYaml } from "yaml";
 import type { BodyData } from "./body.js";
 import { parseExpression, splitRaw } from "./parser.js";
@@ -67,6 +71,7 @@ export function lintExpression(
   checkStrayEvidenceInBody(bodyText, rawIssues);
   checkEvidenceHexes(expression, rawIssues);
   checkUnusedPalette(expression, rawIssues);
+  checkNonCanonicalDimensions(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -220,6 +225,44 @@ function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
       message: `Palette color ${hex} is not cited in any decision.`,
     });
   }
+}
+
+/**
+ * Soft check: a `decisions[].dimension` slug should either be in the
+ * canonical vocabulary or pair with a canonical `dimension_kind`. Anything
+ * else lives in the long tail and won't roll up at fleet scale. This
+ * never errors — it suggests, so authoring stays free-form by default.
+ */
+function checkNonCanonicalDimensions(
+  fp: Expression,
+  issues: LintIssue[],
+): void {
+  const decisions = fp.decisions ?? [];
+  decisions.forEach((d, idx) => {
+    if (isCanonicalDimension(d.dimension)) return;
+    if (d.dimension_kind && isCanonicalDimension(d.dimension_kind)) return;
+    const suggestion = closestCanonical(d.dimension);
+    if (d.dimension_kind && !isCanonicalDimension(d.dimension_kind)) {
+      const fix = closestCanonical(d.dimension_kind) ?? suggestion;
+      issues.push({
+        severity: "warning",
+        rule: "non-canonical-dimension",
+        message: `Decision \`${d.dimension}\` has \`dimension_kind: ${d.dimension_kind}\`, which is also not in the canonical vocabulary${
+          fix ? ` (closest: \`${fix}\`)` : ""
+        }. Set \`dimension_kind\` to a canonical slug so fleet aggregation can group this decision.`,
+        path: `decisions[${idx}].dimension_kind`,
+      });
+      return;
+    }
+    issues.push({
+      severity: "warning",
+      rule: "non-canonical-dimension",
+      message: `Decision \`${d.dimension}\` is not a canonical dimension${
+        suggestion ? ` (closest: \`${suggestion}\`)` : ""
+      }. Either rename, or add \`dimension_kind: <canonical>\` so fleet aggregation can group this decision.`,
+      path: `decisions[${idx}].dimension`,
+    });
+  });
 }
 
 function collectPaletteHexes(fp: Expression): Set<string> {

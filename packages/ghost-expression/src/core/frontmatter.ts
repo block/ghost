@@ -152,6 +152,7 @@ function stripDecisionProse(
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {
     const out: Record<string, unknown> = { dimension: d.dimension };
+    if (d.dimension_kind) out.dimension_kind = d.dimension_kind;
     if (d.embedding) out.embedding = d.embedding;
     return out;
   });

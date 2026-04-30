@@ -60,14 +60,19 @@ const DesignObservationSchema = z
   .strict();
 
 /**
- * Frontmatter decision: dimension slug + optional embedding only.
- * Both the prose rationale AND the evidence bullets live in the body
- * under `### dimension` → `**Evidence:**`. Evidence in frontmatter is
- * rejected by the strict schema.
+ * Frontmatter decision: dimension slug + optional kind + optional
+ * embedding only. Both the prose rationale AND the evidence bullets live
+ * in the body under `### dimension` → `**Evidence:**`. Evidence in
+ * frontmatter is rejected by the strict schema.
+ *
+ * `dimension_kind` is the optional canonical-vocabulary mapping used by
+ * fleet aggregation. See `CANONICAL_DECISION_DIMENSIONS` in `@ghost/core`
+ * and the soft `non-canonical-dimension` lint rule for guidance.
  */
 const DesignDecisionSchema = z
   .object({
     dimension: z.string(),
+    dimension_kind: z.string().optional(),
     embedding: z.array(z.number()).optional(),
   })
   .strict();

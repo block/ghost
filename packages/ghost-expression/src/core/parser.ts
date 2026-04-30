@@ -177,6 +177,7 @@ function mergeDecisions(
       dimension: y.dimension,
       decision: b?.decision ?? "",
       evidence: b?.evidence ?? [],
+      ...(y.dimension_kind ? { dimension_kind: y.dimension_kind } : {}),
       ...(y.embedding ? { embedding: y.embedding } : {}),
     });
   }

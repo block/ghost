@@ -39,6 +39,14 @@ export {
   ValueSpecSchema,
   valueRowId,
 } from "./bucket/index.js";
+// --- Decision vocabulary (controlled list for fleet aggregation) ---
+export {
+  CANONICAL_DECISION_DIMENSIONS,
+  type CanonicalDecisionDimension,
+  closestCanonical,
+  isCanonicalDimension,
+  resolveDecisionKind,
+} from "./decision-vocabulary.js";
 export type { CompareOptions, RoleCandidate } from "./embedding/index.js";
 export {
   classifyContrast,

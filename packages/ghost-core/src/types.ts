@@ -196,6 +196,18 @@ export interface DesignObservation {
 export interface DesignDecision {
   /** Freeform dimension name — LLM chooses what's relevant (e.g. "color-strategy", "motion", "density") */
   dimension: string;
+  /**
+   * Optional canonical bucket this decision rolls up under. When present,
+   * fleet-aggregation primitives group by this value. When absent, they
+   * fall back to `dimension` if it happens to be canonical, otherwise the
+   * decision is treated as long-tail.
+   *
+   * Authoring rule (see `closestCanonical` in `@ghost/core`): when
+   * `dimension` itself is one of `CANONICAL_DECISION_DIMENSIONS`, omit
+   * `dimension_kind`. Set it only when you've chosen a project-flavored
+   * slug that's better described by an existing canonical bucket.
+   */
+  dimension_kind?: string;
   /** The decision stated abstractly, implementation-agnostic */
   decision: string;
   /** Evidence from the source code supporting this decision */

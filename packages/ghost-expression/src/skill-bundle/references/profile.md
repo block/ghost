@@ -67,7 +67,34 @@ Name the pattern, not the token:
 - ✗ Weak: "Spacing follows a 4px base grid with Tailwind defaults." (restates a fact already in the bucket)
 - ✓ Strong: "Prefer explicit component-height tokens over padding arithmetic, so button/input sizing is decoupled from surrounding layout." (names the pattern and its consequence)
 
-Surface whatever dimensions fit. Common ones: `color-strategy`, `spatial-system`, `typography-voice`, `surface-hierarchy`, `density`, `motion`, `elevation`, `interactive-patterns`, `token-architecture`. **Absences are decisions** — "No animation — interactions are immediate and non-kinetic" is valid (evidence: empty `motion` rows in the bucket).
+**Pick from the canonical vocabulary first.** Twelve dimensions cover the orthogonal axes a designer makes deliberate calls on, and using canonical slugs is what makes cross-system fleet aggregation possible (otherwise `color-strategy` and `color-system` and `palette-strategy` are three names for one axis and the rollup can't group them):
+
+| Slug | Captures |
+|---|---|
+| `color-strategy` | hue as decoration vs. communication; default-mono vs. branded |
+| `surface-hierarchy` | named-by-intent vs. named-by-shade; surface vocabulary |
+| `shape-language` | radius philosophy (pill, uniform, geometric, organic) |
+| `typography-voice` | type-as-instrument; editorial vs. utility; scale rhythm |
+| `spatial-system` | spacing scale, base unit, padding philosophy |
+| `density` | compact controls vs. spacious containers (paired with spatial, distinct) |
+| `motion` | animation as functional vs. decorative; presence vs. absence |
+| `elevation` | shadow vocabulary; named-by-role vs. numeric; dark-mode treatment |
+| `theming-architecture` | runtime themability; cascade structure; override patterns |
+| `interactive-patterns` | focus, hover, active feedback conventions |
+| `token-architecture` | alias-chain depth; semantic vs. raw; layering discipline |
+| `font-sourcing` | bundled vs. consumer-supplied; preferred families |
+
+**Absences are decisions** — "No animation — interactions are immediate and non-kinetic" is valid under `motion` (evidence: empty `motion` rows in the bucket).
+
+**Escape hatch for genuinely novel decisions.** When a project really has a decision that doesn't fit any canonical slug — e.g. an iOS app's `system-color-deference` ("we defer to UIKit's system colors when available"), or a charting library's `chart-archetype` ("we ship four chart families as first-class") — keep the project-flavored slug and add `dimension_kind: <canonical>` pointing at the closest canonical bucket. Fleet aggregation rolls up by `dimension_kind` when set:
+
+```yaml
+decisions:
+  - dimension: system-color-deference   # specific, project-flavored
+    dimension_kind: color-strategy       # canonical bucket for fleet rollup
+```
+
+`ghost-expression lint` warns on non-canonical slugs without a canonical kind (rule: `non-canonical-dimension`); the warning suggests the closest canonical match. The check is soft — long-tail decisions are allowed, just won't roll up.
 
 For each decision: `dimension` (slug), `decision` (prose, body), `evidence` (concrete citations from the bucket — preferred form: token definitions like `"--radius-pill: 999px"` or value rows like `"#f97316 (47 occurrences across 12 files)"`).
 
