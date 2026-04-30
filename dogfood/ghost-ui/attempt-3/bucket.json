@@ -1,0 +1,6264 @@
+{
+  "schema": "ghost.bucket/v1",
+  "sources": [
+    {
+      "target": "block/ghost@packages/ghost-ui",
+      "scanned_at": "2026-04-30T00:00:00Z"
+    }
+  ],
+  "values": [
+    {
+      "id": "0fcff5820f655c42",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#ffffff",
+      "raw": "#ffffff",
+      "spec": {
+        "space": "srgb",
+        "hex": "#ffffff"
+      },
+      "occurrences": 258,
+      "files_count": 3,
+      "tokens": [
+        "--color-white",
+        "--background-default",
+        "--text-inverse",
+        "--background",
+        "--card",
+        "--popover",
+        "--primary-foreground",
+        "--destructive-foreground",
+        "--sidebar",
+        "--sidebar-primary-foreground"
+      ]
+    },
+    {
+      "id": "00d6b082fdc54114",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#000000",
+      "raw": "#000000",
+      "spec": {
+        "space": "srgb",
+        "hex": "#000000"
+      },
+      "occurrences": 35,
+      "files_count": 3,
+      "tokens": ["--color-black", "--background-inverse", "--border-inverse"]
+    },
+    {
+      "id": "5093d1c07f2d2a9b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#f5f5f5",
+      "raw": "#f5f5f5",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f5f5f5"
+      },
+      "occurrences": 23,
+      "files_count": 3,
+      "tokens": ["--color-gray-50", "--background-alt", "--surface-dark-text"]
+    },
+    {
+      "id": "abecc75ed4e09963",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#f0f0f0",
+      "raw": "#f0f0f0",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f0f0f0"
+      },
+      "occurrences": 49,
+      "files_count": 3,
+      "tokens": [
+        "--color-gray-100",
+        "--background-muted",
+        "--secondary",
+        "--muted",
+        "--accent",
+        "--sidebar-accent"
+      ]
+    },
+    {
+      "id": "6fea8a95207fdd71",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#e8e8e8",
+      "raw": "#e8e8e8",
+      "spec": {
+        "space": "srgb",
+        "hex": "#e8e8e8"
+      },
+      "occurrences": 192,
+      "files_count": 4,
+      "tokens": [
+        "--color-gray-200",
+        "--border-default",
+        "--border-card",
+        "--border",
+        "--sidebar-border",
+        "--sidebar-ring"
+      ]
+    },
+    {
+      "id": "162e9af73016220b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#e5e5e5",
+      "raw": "#e5e5e5",
+      "spec": {
+        "space": "srgb",
+        "hex": "#e5e5e5"
+      },
+      "occurrences": 37,
+      "files_count": 3,
+      "tokens": ["--color-gray-300", "--border-input", "--input"]
+    },
+    {
+      "id": "fe07a9fc90e0ffc5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#cccccc",
+      "raw": "#cccccc",
+      "spec": {
+        "space": "srgb",
+        "hex": "#cccccc"
+      },
+      "occurrences": 33,
+      "files_count": 3,
+      "tokens": [
+        "--color-gray-400",
+        "--background-medium",
+        "--border-input-hover"
+      ]
+    },
+    {
+      "id": "c794534415c5a972",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#999999",
+      "raw": "#999999",
+      "spec": {
+        "space": "srgb",
+        "hex": "#999999"
+      },
+      "occurrences": 24,
+      "files_count": 3,
+      "tokens": ["--color-gray-500", "--text-muted", "--muted-foreground"]
+    },
+    {
+      "id": "64dabe309e6fd319",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#666666",
+      "raw": "#666666",
+      "spec": {
+        "space": "srgb",
+        "hex": "#666666"
+      },
+      "occurrences": 18,
+      "files_count": 3,
+      "tokens": ["--color-gray-600", "--text-alt"]
+    },
+    {
+      "id": "017717625a1c2fce",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#333333",
+      "raw": "#333333",
+      "spec": {
+        "space": "srgb",
+        "hex": "#333333"
+      },
+      "occurrences": 5,
+      "files_count": 1,
+      "tokens": ["--color-gray-700"]
+    },
+    {
+      "id": "7a78721b43ad60a1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#232323",
+      "raw": "#232323",
+      "spec": {
+        "space": "srgb",
+        "hex": "#232323"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--color-gray-800"]
+    },
+    {
+      "id": "71221cedd585eadd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#1a1a1a",
+      "raw": "#1a1a1a",
+      "spec": {
+        "space": "srgb",
+        "hex": "#1a1a1a"
+      },
+      "occurrences": 139,
+      "files_count": 3,
+      "tokens": [
+        "--color-gray-900",
+        "--background-accent",
+        "--border-accent",
+        "--text-accent",
+        "--border-strong",
+        "--text-default",
+        "--ring",
+        "--foreground",
+        "--card-foreground",
+        "--popover-foreground",
+        "--primary",
+        "--secondary-foreground",
+        "--accent-foreground",
+        "--sidebar-foreground",
+        "--sidebar-primary",
+        "--sidebar-accent-foreground"
+      ]
+    },
+    {
+      "id": "7e487b0b102c2808",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#ff6b6b",
+      "raw": "#ff6b6b",
+      "spec": {
+        "space": "srgb",
+        "hex": "#ff6b6b"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--color-red-100"]
+    },
+    {
+      "id": "ed196914fbe9351e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#f94b4b",
+      "raw": "#f94b4b",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f94b4b"
+      },
+      "occurrences": 34,
+      "files_count": 3,
+      "tokens": [
+        "--color-red-200",
+        "--background-danger",
+        "--border-danger",
+        "--text-danger",
+        "--destructive"
+      ]
+    },
+    {
+      "id": "bfb73b1120656766",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#7cacff",
+      "raw": "#7cacff",
+      "spec": {
+        "space": "srgb",
+        "hex": "#7cacff"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--color-blue-100"]
+    },
+    {
+      "id": "fb41087e3ceb1b5b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#5c98f9",
+      "raw": "#5c98f9",
+      "spec": {
+        "space": "srgb",
+        "hex": "#5c98f9"
+      },
+      "occurrences": 26,
+      "files_count": 3,
+      "tokens": [
+        "--color-blue-200",
+        "--background-info",
+        "--border-info",
+        "--text-info"
+      ]
+    },
+    {
+      "id": "ca274721024a5f3b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#a3d795",
+      "raw": "#a3d795",
+      "spec": {
+        "space": "srgb",
+        "hex": "#a3d795"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--color-green-100"]
+    },
+    {
+      "id": "958ae1d1b8b1a5ea",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#91cb80",
+      "raw": "#91cb80",
+      "spec": {
+        "space": "srgb",
+        "hex": "#91cb80"
+      },
+      "occurrences": 41,
+      "files_count": 3,
+      "tokens": [
+        "--color-green-200",
+        "--background-success",
+        "--border-success",
+        "--text-success",
+        "--chart-5"
+      ]
+    },
+    {
+      "id": "86904da7151a4ec9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#ffd966",
+      "raw": "#ffd966",
+      "spec": {
+        "space": "srgb",
+        "hex": "#ffd966"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--color-yellow-100"]
+    },
+    {
+      "id": "f65e97783ac05b39",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#fbcd44",
+      "raw": "#fbcd44",
+      "spec": {
+        "space": "srgb",
+        "hex": "#fbcd44"
+      },
+      "occurrences": 28,
+      "files_count": 3,
+      "tokens": [
+        "--color-yellow-200",
+        "--background-warning",
+        "--border-warning",
+        "--text-warning"
+      ]
+    },
+    {
+      "id": "605ad5667e2a33ca",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "20px",
+      "raw": "20px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 20
+      },
+      "occurrences": 90,
+      "files_count": 5,
+      "tokens": ["--radius", "--radius-card", "--radius-lg"]
+    },
+    {
+      "id": "862312c6784819fe",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "rgba(26, 26, 26, 0.1)",
+      "raw": "rgba(26, 26, 26, 0.1)",
+      "spec": {
+        "space": "srgb",
+        "source": "rgba(26, 26, 26, 0.1)"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--dark-10"]
+    },
+    {
+      "id": "4720aa0d54bf53d1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "rgba(26, 26, 26, 0.4)",
+      "raw": "rgba(26, 26, 26, 0.4)",
+      "spec": {
+        "space": "srgb",
+        "source": "rgba(26, 26, 26, 0.4)"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--dark-40"]
+    },
+    {
+      "id": "90946bf080ff097a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "rgba(26, 26, 26, 0.04)",
+      "raw": "rgba(26, 26, 26, 0.04)",
+      "spec": {
+        "space": "srgb",
+        "source": "rgba(26, 26, 26, 0.04)"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--dark-04"]
+    },
+    {
+      "id": "5a77127255507ed5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "raw": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "spec": {
+        "source": "0 2px 8px rgba(76, 76, 76, 0.15)"
+      },
+      "occurrences": 40,
+      "files_count": 2,
+      "tokens": [
+        "--shadow-mini",
+        "--shadow-btn",
+        "--shadow-card",
+        "--shadow-kbd"
+      ]
+    },
+    {
+      "id": "f6fbbd8051a9f1a9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 1px 4px rgba(76, 76, 76, 0.1) inset",
+      "raw": "0 1px 4px rgba(76, 76, 76, 0.1) inset",
+      "spec": {
+        "source": "0 1px 4px rgba(76, 76, 76, 0.1) inset"
+      },
+      "occurrences": 8,
+      "files_count": 2,
+      "tokens": ["--shadow-mini-inset"]
+    },
+    {
+      "id": "5fd8eff921da1161",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 3px 12px rgba(76, 76, 76, 0.22)",
+      "raw": "0 3px 12px rgba(76, 76, 76, 0.22)",
+      "spec": {
+        "source": "0 3px 12px rgba(76, 76, 76, 0.22)"
+      },
+      "occurrences": 8,
+      "files_count": 2,
+      "tokens": ["--shadow-elevated"]
+    },
+    {
+      "id": "2bd31cf4903f0815",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 8px 30px rgba(0, 0, 0, 0.12)",
+      "raw": "0 8px 30px rgba(0, 0, 0, 0.12)",
+      "spec": {
+        "source": "0 8px 30px rgba(0, 0, 0, 0.12)"
+      },
+      "occurrences": 8,
+      "files_count": 2,
+      "tokens": ["--shadow-popover"]
+    },
+    {
+      "id": "b489ae46be835c74",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 20px 60px rgba(0, 0, 0, 0.2)",
+      "raw": "0 20px 60px rgba(0, 0, 0, 0.2)",
+      "spec": {
+        "source": "0 20px 60px rgba(0, 0, 0, 0.2)"
+      },
+      "occurrences": 8,
+      "files_count": 2,
+      "tokens": ["--shadow-modal"]
+    },
+    {
+      "id": "a13075d2b23bccd6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "shadow",
+      "value": "0 0 0 3px rgba(26, 26, 26, 0.15)",
+      "raw": "0 0 0 3px rgba(26, 26, 26, 0.15)",
+      "spec": {
+        "source": "0 0 0 3px rgba(26, 26, 26, 0.15)"
+      },
+      "occurrences": 8,
+      "files_count": 2,
+      "tokens": ["--shadow-date-field-focus"]
+    },
+    {
+      "id": "2815282b3ac36e98",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#0a0a0a",
+      "raw": "#0a0a0a",
+      "spec": {
+        "space": "srgb",
+        "hex": "#0a0a0a"
+      },
+      "occurrences": 8,
+      "files_count": 1,
+      "tokens": ["--surface-dark"]
+    },
+    {
+      "id": "b90ee8ad500074e3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "rgba(255, 255, 255, 0.5)",
+      "raw": "rgba(255, 255, 255, 0.5)",
+      "spec": {
+        "space": "srgb",
+        "source": "rgba(255, 255, 255, 0.5)"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--surface-dark-muted"]
+    },
+    {
+      "id": "091c1ba26eb15b57",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "rgba(255, 255, 255, 0.08)",
+      "raw": "rgba(255, 255, 255, 0.08)",
+      "spec": {
+        "space": "srgb",
+        "source": "rgba(255, 255, 255, 0.08)"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--surface-dark-border"]
+    },
+    {
+      "id": "de7e2058ef251b6f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#f6b44a",
+      "raw": "#f6b44a",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f6b44a"
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "tokens": ["--chart-1"]
+    },
+    {
+      "id": "42730758366411f3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#7585ff",
+      "raw": "#7585ff",
+      "spec": {
+        "space": "srgb",
+        "hex": "#7585ff"
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "tokens": ["--chart-2"]
+    },
+    {
+      "id": "2d84b5026953dddb",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#d76a6a",
+      "raw": "#d76a6a",
+      "spec": {
+        "space": "srgb",
+        "hex": "#d76a6a"
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "tokens": ["--chart-3"]
+    },
+    {
+      "id": "6c07f19a39de606e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#d185e0",
+      "raw": "#d185e0",
+      "spec": {
+        "space": "srgb",
+        "hex": "#d185e0"
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "tokens": ["--chart-4"]
+    },
+    {
+      "id": "2872c09484151fe5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(64px, 8vw, 96px)",
+      "raw": "clamp(64px, 8vw, 96px)",
+      "spec": {
+        "source": "clamp(64px, 8vw, 96px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-display-font-size"]
+    },
+    {
+      "id": "4f544e51bd7b73c1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "0.88",
+      "raw": "0.88",
+      "spec": {
+        "source": "0.88"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-display-line-height"]
+    },
+    {
+      "id": "04cb30a033e8abf2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "-0.05em",
+      "raw": "-0.05em",
+      "spec": {
+        "source": "-0.05em"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--heading-display-letter-spacing", "--display-letter-spacing"]
+    },
+    {
+      "id": "7871632ce2b700c2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "900",
+      "raw": "900",
+      "spec": {
+        "source": "900"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-display-font-weight"]
+    },
+    {
+      "id": "0ad30ae1d828d382",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(44px, 5vw, 64px)",
+      "raw": "clamp(44px, 5vw, 64px)",
+      "spec": {
+        "source": "clamp(44px, 5vw, 64px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-section-font-size"]
+    },
+    {
+      "id": "9e98723429673768",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "0.95",
+      "raw": "0.95",
+      "spec": {
+        "source": "0.95"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-section-line-height"]
+    },
+    {
+      "id": "39b64b1ee297a038",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "-0.035em",
+      "raw": "-0.035em",
+      "spec": {
+        "source": "-0.035em"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-section-letter-spacing"]
+    },
+    {
+      "id": "b8162ca39c7dbadd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "700",
+      "raw": "700",
+      "spec": {
+        "source": "700"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--heading-section-font-weight", "--heading-sub-font-weight"]
+    },
+    {
+      "id": "14eb53445a1cbe32",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(28px, 3vw, 40px)",
+      "raw": "clamp(28px, 3vw, 40px)",
+      "spec": {
+        "source": "clamp(28px, 3vw, 40px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-sub-font-size"]
+    },
+    {
+      "id": "ec1e60feb31311a6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "1",
+      "raw": "1",
+      "spec": {
+        "source": "1"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-sub-line-height"]
+    },
+    {
+      "id": "13f2085cd0371ee1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "-0.02em",
+      "raw": "-0.02em",
+      "spec": {
+        "source": "-0.02em"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--heading-sub-letter-spacing", "--pullquote-letter-spacing"]
+    },
+    {
+      "id": "f2bf781e832f39ce",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(20px, 2vw, 28px)",
+      "raw": "clamp(20px, 2vw, 28px)",
+      "spec": {
+        "source": "clamp(20px, 2vw, 28px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-card-font-size"]
+    },
+    {
+      "id": "50c5524e462acbbd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "1.1",
+      "raw": "1.1",
+      "spec": {
+        "source": "1.1"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--heading-card-line-height"]
+    },
+    {
+      "id": "dd6d496cc89673fb",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "-0.01em",
+      "raw": "-0.01em",
+      "spec": {
+        "source": "-0.01em"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": [
+        "--heading-card-letter-spacing",
+        "--body-reading-letter-spacing"
+      ]
+    },
+    {
+      "id": "baeaaf1a0f4fbe10",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "600",
+      "raw": "600",
+      "spec": {
+        "source": "600"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--heading-card-font-weight", "--label-font-weight"]
+    },
+    {
+      "id": "f81b7f73007ef5a1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(3rem, 12vw, 12rem)",
+      "raw": "clamp(3rem, 12vw, 12rem)",
+      "spec": {
+        "source": "clamp(3rem, 12vw, 12rem)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--display-size"]
+    },
+    {
+      "id": "0ce608cbfa07c541",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "0.85",
+      "raw": "0.85",
+      "spec": {
+        "source": "0.85"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--display-line-height"]
+    },
+    {
+      "id": "9919b9891ed07e67",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(1rem, 1.3vw, 1.25rem)",
+      "raw": "clamp(1rem, 1.3vw, 1.25rem)",
+      "spec": {
+        "source": "clamp(1rem, 1.3vw, 1.25rem)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--body-reading-size"]
+    },
+    {
+      "id": "fee9e1a69469447f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "1.65",
+      "raw": "1.65",
+      "spec": {
+        "source": "1.65"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--body-reading-line-height"]
+    },
+    {
+      "id": "9f05ed57f9169385",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "11px",
+      "raw": "11px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 11
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--label-font-size"]
+    },
+    {
+      "id": "366c6568c91aa44e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "0.12em",
+      "raw": "0.12em",
+      "spec": {
+        "unit": "em",
+        "magnitude": 0.12
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--label-letter-spacing"]
+    },
+    {
+      "id": "0d1282ced0fa6173",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "1.2",
+      "raw": "1.2",
+      "spec": {
+        "source": "1.2"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--label-line-height"]
+    },
+    {
+      "id": "8772b9c6985a79de",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "clamp(1.5rem, 3vw, 2.5rem)",
+      "raw": "clamp(1.5rem, 3vw, 2.5rem)",
+      "spec": {
+        "source": "clamp(1.5rem, 3vw, 2.5rem)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--pullquote-size"]
+    },
+    {
+      "id": "b7b5fa1f17fd3c18",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "1.3",
+      "raw": "1.3",
+      "spec": {
+        "source": "1.3"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--pullquote-line-height"]
+    },
+    {
+      "id": "2a03dbef906b7f74",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "300",
+      "raw": "300",
+      "spec": {
+        "source": "300"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--pullquote-weight"]
+    },
+    {
+      "id": "1e3fd894dcded2cf",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "1440px",
+      "raw": "1440px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 1440
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--page-container-max-width"]
+    },
+    {
+      "id": "0487a7139b1bd633",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "20px",
+      "raw": "20px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 20
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--page-container-side-gutter"]
+    },
+    {
+      "id": "82c03c1682405226",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "100px",
+      "raw": "100px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 100
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--section-padding-vertical"]
+    },
+    {
+      "id": "0828202b6a1437de",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "75px",
+      "raw": "75px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 75
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--section-heading-margin-bottom"]
+    },
+    {
+      "id": "028b5152ec750a6a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "raw": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "spec": {
+        "source": "cubic-bezier(0.33, 1, 0.68, 1)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--ease-spring"]
+    },
+    {
+      "id": "cb893630785cb61a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "0.15s",
+      "raw": "0.15s",
+      "spec": {
+        "source": "0.15s"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--duration-fast"]
+    },
+    {
+      "id": "9b208140a5a62f93",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "0.2s",
+      "raw": "0.2s",
+      "spec": {
+        "source": "0.2s"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--duration-normal"]
+    },
+    {
+      "id": "7ba237b64ad65196",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "0.4s",
+      "raw": "0.4s",
+      "spec": {
+        "source": "0.4s"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--duration-slow"]
+    },
+    {
+      "id": "344a203aa1cc4ca0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "\"Geist Mono\", monospace",
+      "raw": "\"Geist Mono\", monospace",
+      "spec": {
+        "source": "\"Geist Mono\", monospace"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--font-mono"]
+    },
+    {
+      "id": "79c5699514806b95",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "serif",
+      "raw": "serif",
+      "spec": {
+        "source": "serif"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--font-serif"]
+    },
+    {
+      "id": "0c724189d21e11a5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "999px",
+      "raw": "999px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 999
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "tokens": ["--radius-pill", "--radius-button", "--radius-input"]
+    },
+    {
+      "id": "295bc0f8bcdba357",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "24px",
+      "raw": "24px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 24
+      },
+      "occurrences": 7,
+      "files_count": 3,
+      "tokens": ["--radius-card-lg"]
+    },
+    {
+      "id": "3d3c360734e7523f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "14px",
+      "raw": "14px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 14
+      },
+      "occurrences": 7,
+      "files_count": 3,
+      "tokens": ["--radius-card-sm"]
+    },
+    {
+      "id": "990ed654db0d1988",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "10px",
+      "raw": "10px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 10
+      },
+      "occurrences": 7,
+      "files_count": 3,
+      "tokens": ["--radius-dropdown"]
+    },
+    {
+      "id": "b63160e4fa89ca92",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "16px",
+      "raw": "16px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 16
+      },
+      "occurrences": 7,
+      "files_count": 3,
+      "tokens": ["--radius-modal"]
+    },
+    {
+      "id": "8c19b1bc74a86de2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "calc(var(--radius) - 4px)",
+      "raw": "calc(var(--radius) - 4px)",
+      "spec": {
+        "source": "calc(var(--radius) - 4px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--radius-sm"]
+    },
+    {
+      "id": "328d1c0a5503ada8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "calc(var(--radius) - 2px)",
+      "raw": "calc(var(--radius) - 2px)",
+      "spec": {
+        "source": "calc(var(--radius) - 2px)"
+      },
+      "occurrences": 3,
+      "files_count": 2,
+      "tokens": ["--radius-md"]
+    },
+    {
+      "id": "263f41711cb2c39c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "radius",
+      "value": "calc(var(--radius) + 4px)",
+      "raw": "calc(var(--radius) + 4px)",
+      "spec": {
+        "source": "calc(var(--radius) + 4px)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--radius-xl"]
+    },
+    {
+      "id": "0c6cb3adc0235f59",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "3.25rem",
+      "raw": "3.25rem",
+      "spec": {
+        "unit": "rem",
+        "magnitude": 3.25
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "tokens": ["--spacing-input"]
+    },
+    {
+      "id": "29c698075ecfbe57",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "2.75rem",
+      "raw": "2.75rem",
+      "spec": {
+        "unit": "rem",
+        "magnitude": 2.75
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "tokens": ["--spacing-input-sm", "--spacing-button"]
+    },
+    {
+      "id": "cd57fd9d54de7599",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "spacing",
+      "value": "2rem",
+      "raw": "2rem",
+      "spec": {
+        "unit": "rem",
+        "magnitude": 2
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--spacing-button-sm"]
+    },
+    {
+      "id": "089b0b33447003ae",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "typography",
+      "value": "10px",
+      "raw": "10px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 10
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--text-xxs"]
+    },
+    {
+      "id": "bf482209afce7396",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "breakpoint",
+      "value": "1440px",
+      "raw": "1440px",
+      "spec": {
+        "unit": "px",
+        "magnitude": 1440
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--breakpoint-desktop"]
+    },
+    {
+      "id": "7dc225d917393f7f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "accordion-down 0.2s ease-out",
+      "raw": "accordion-down 0.2s ease-out",
+      "spec": {
+        "source": "accordion-down 0.2s ease-out"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-accordion-down"]
+    },
+    {
+      "id": "ad807c4e3806a40d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "accordion-up 0.2s ease-out",
+      "raw": "accordion-up 0.2s ease-out",
+      "spec": {
+        "source": "accordion-up 0.2s ease-out"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-accordion-up"]
+    },
+    {
+      "id": "607a47607337f768",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "caret-blink 1s ease-out infinite",
+      "raw": "caret-blink 1s ease-out infinite",
+      "spec": {
+        "source": "caret-blink 1s ease-out infinite"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-caret-blink"]
+    },
+    {
+      "id": "903a012bc9ce3639",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "scale-in 0.2s ease",
+      "raw": "scale-in 0.2s ease",
+      "spec": {
+        "source": "scale-in 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-scale-in"]
+    },
+    {
+      "id": "181803ce0bc34ce2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "scale-out 0.15s ease",
+      "raw": "scale-out 0.15s ease",
+      "spec": {
+        "source": "scale-out 0.15s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-scale-out"]
+    },
+    {
+      "id": "18946ed1c65bc69c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "fade-in 0.2s ease",
+      "raw": "fade-in 0.2s ease",
+      "spec": {
+        "source": "fade-in 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-fade-in"]
+    },
+    {
+      "id": "794ed030c319a750",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "fade-out 0.15s ease",
+      "raw": "fade-out 0.15s ease",
+      "spec": {
+        "source": "fade-out 0.15s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-fade-out"]
+    },
+    {
+      "id": "ad64a3be71771581",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "enter-from-left 0.2s ease",
+      "raw": "enter-from-left 0.2s ease",
+      "spec": {
+        "source": "enter-from-left 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-enter-from-left"]
+    },
+    {
+      "id": "e422a9281bc2701e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "enter-from-right 0.2s ease",
+      "raw": "enter-from-right 0.2s ease",
+      "spec": {
+        "source": "enter-from-right 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-enter-from-right"]
+    },
+    {
+      "id": "a01d3426d61127b2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "exit-to-left 0.2s ease",
+      "raw": "exit-to-left 0.2s ease",
+      "spec": {
+        "source": "exit-to-left 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-exit-to-left"]
+    },
+    {
+      "id": "750b324cc380abbd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "exit-to-right 0.2s ease",
+      "raw": "exit-to-right 0.2s ease",
+      "spec": {
+        "source": "exit-to-right 0.2s ease"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-exit-to-right"]
+    },
+    {
+      "id": "f6a632d0f7e5808d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "motion",
+      "value": "word-reveal 0.4s ease-out",
+      "raw": "word-reveal 0.4s ease-out",
+      "spec": {
+        "source": "word-reveal 0.4s ease-out"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": ["--animate-word-reveal"]
+    },
+    {
+      "id": "e7b048b9f6b07602",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#ccc",
+      "raw": "#ccc",
+      "spec": {
+        "space": "srgb",
+        "hex": "#ccc"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": []
+    },
+    {
+      "id": "9d8e79104aa8152b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#999",
+      "raw": "#999",
+      "spec": {
+        "space": "srgb",
+        "hex": "#999"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": []
+    },
+    {
+      "id": "a9af66733d1500c5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#444",
+      "raw": "#444",
+      "spec": {
+        "space": "srgb",
+        "hex": "#444"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": []
+    },
+    {
+      "id": "cd4a22c24da29f20",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "kind": "color",
+      "value": "#666",
+      "raw": "#666",
+      "spec": {
+        "space": "srgb",
+        "hex": "#666"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "tokens": []
+    }
+  ],
+  "tokens": [
+    {
+      "id": "7e895d3a79db76db",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-white",
+      "alias_chain": [],
+      "resolved_value": "#ffffff",
+      "occurrences": 10,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "f87b19f4ddb00648",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-black",
+      "alias_chain": [],
+      "resolved_value": "#000000",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "4eff9b0df3a82204",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-50",
+      "alias_chain": [],
+      "resolved_value": "#f5f5f5",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "518809d10168445d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-100",
+      "alias_chain": [],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "9c2d151394bbfde8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-200",
+      "alias_chain": [],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "0d0b219117b5e350",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-300",
+      "alias_chain": [],
+      "resolved_value": "#e5e5e5",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "9c03c6a168439e5f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-400",
+      "alias_chain": [],
+      "resolved_value": "#cccccc",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "b00e061018a0fb1b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-500",
+      "alias_chain": [],
+      "resolved_value": "#999999",
+      "occurrences": 4,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "01b2f5425b3a6004",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-600",
+      "alias_chain": [],
+      "resolved_value": "#666666",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "3df510cfb6d9422e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-700",
+      "alias_chain": [],
+      "resolved_value": "#333333",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "c2b8c37c8a161fb6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-800",
+      "alias_chain": [],
+      "resolved_value": "#232323",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "0965a7d01fd138b6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-gray-900",
+      "alias_chain": [],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "8153a71ba8dfc919",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-red-100",
+      "alias_chain": [],
+      "resolved_value": "#ff6b6b",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "fcef9e4b0bf28e96",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-red-200",
+      "alias_chain": [],
+      "resolved_value": "#f94b4b",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "249ad09b1ed91742",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-blue-100",
+      "alias_chain": [],
+      "resolved_value": "#7cacff",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "85d97908e5f5f47d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-blue-200",
+      "alias_chain": [],
+      "resolved_value": "#5c98f9",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "23f15c41676d5035",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-green-100",
+      "alias_chain": [],
+      "resolved_value": "#a3d795",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "74762855755a3a92",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-green-200",
+      "alias_chain": [],
+      "resolved_value": "#91cb80",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "7babbb572216f875",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-yellow-100",
+      "alias_chain": [],
+      "resolved_value": "#ffd966",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "e172a7fa1ac5463d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--color-yellow-200",
+      "alias_chain": [],
+      "resolved_value": "#fbcd44",
+      "occurrences": 5,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "5514ec1f72eb4b5c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius",
+      "alias_chain": [],
+      "resolved_value": "20px",
+      "occurrences": 68,
+      "files_count": 5,
+      "kind": "radius"
+    },
+    {
+      "id": "e44719ef3a43fb14",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-accent",
+      "alias_chain": ["--background-accent", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 19,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-900)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "81d5fbbdc23c68ed",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-accent",
+      "alias_chain": ["--border-accent", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-900)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "ba3abb285a2821a4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-accent",
+      "alias_chain": ["--text-accent", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-900)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "568f61a82040986c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-default",
+      "alias_chain": ["--background-default", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 23,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-white)",
+        "dark": "var(--color-black)"
+      }
+    },
+    {
+      "id": "0e5ce24dc36aa43e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-alt",
+      "alias_chain": ["--background-alt", "--color-gray-50"],
+      "resolved_value": "#f5f5f5",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-50)",
+        "dark": "var(--color-gray-800)"
+      }
+    },
+    {
+      "id": "8692ef5fcb6000c8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-medium",
+      "alias_chain": ["--background-medium", "--color-gray-400"],
+      "resolved_value": "#cccccc",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-400)",
+        "dark": "var(--color-gray-700)"
+      }
+    },
+    {
+      "id": "9f6354712b005a78",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-muted",
+      "alias_chain": ["--background-muted", "--color-gray-100"],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 23,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-100)",
+        "dark": "var(--color-gray-800)"
+      }
+    },
+    {
+      "id": "b18c197b3a9a76d1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-inverse",
+      "alias_chain": ["--background-inverse", "--color-black"],
+      "resolved_value": "#000000",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-black)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "5a2277c57bdd207b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-danger",
+      "alias_chain": ["--background-danger", "--color-red-200"],
+      "resolved_value": "#f94b4b",
+      "occurrences": 9,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-red-200)",
+        "dark": "var(--color-red-100)"
+      }
+    },
+    {
+      "id": "867c779f7f389c4b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-success",
+      "alias_chain": ["--background-success", "--color-green-200"],
+      "resolved_value": "#91cb80",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-green-200)",
+        "dark": "var(--color-green-100)"
+      }
+    },
+    {
+      "id": "ed17cbd1bfd955c6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-info",
+      "alias_chain": ["--background-info", "--color-blue-200"],
+      "resolved_value": "#5c98f9",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-blue-200)",
+        "dark": "var(--color-blue-100)"
+      }
+    },
+    {
+      "id": "8957cb212e290110",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background-warning",
+      "alias_chain": ["--background-warning", "--color-yellow-200"],
+      "resolved_value": "#fbcd44",
+      "occurrences": 9,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-yellow-200)",
+        "dark": "var(--color-yellow-100)"
+      }
+    },
+    {
+      "id": "0d9130c7468ab119",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-default",
+      "alias_chain": ["--border-default", "--color-gray-200"],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 21,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-200)",
+        "dark": "var(--color-gray-700)"
+      }
+    },
+    {
+      "id": "c26f06cd5f1ce294",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-input",
+      "alias_chain": ["--border-input", "--color-gray-300"],
+      "resolved_value": "#e5e5e5",
+      "occurrences": 32,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-300)",
+        "dark": "var(--color-gray-700)"
+      }
+    },
+    {
+      "id": "5ce3cc441c0ab9ac",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-input-hover",
+      "alias_chain": ["--border-input-hover", "--color-gray-400"],
+      "resolved_value": "#cccccc",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-400)",
+        "dark": "var(--color-gray-600)"
+      }
+    },
+    {
+      "id": "92fe3115cf60fe08",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-strong",
+      "alias_chain": ["--border-strong", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 17,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-900)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "bca76bba1bb85d44",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-card",
+      "alias_chain": ["--border-card", "--color-gray-200"],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-200)",
+        "dark": "var(--color-gray-700)"
+      }
+    },
+    {
+      "id": "f61d6e1462b00e0f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-inverse",
+      "alias_chain": ["--border-inverse", "--color-black"],
+      "resolved_value": "#000000",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-black)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "58916e560e1c624a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-danger",
+      "alias_chain": ["--border-danger", "--color-red-200"],
+      "resolved_value": "#f94b4b",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-red-200)",
+        "dark": "var(--color-red-200)"
+      }
+    },
+    {
+      "id": "f6438c2445af2043",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-success",
+      "alias_chain": ["--border-success", "--color-green-200"],
+      "resolved_value": "#91cb80",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-green-200)",
+        "dark": "var(--color-green-200)"
+      }
+    },
+    {
+      "id": "3a8f87f34a1b12a5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-warning",
+      "alias_chain": ["--border-warning", "--color-yellow-200"],
+      "resolved_value": "#fbcd44",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-yellow-200)",
+        "dark": "var(--color-yellow-200)"
+      }
+    },
+    {
+      "id": "e4dec4bc61e9643e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border-info",
+      "alias_chain": ["--border-info", "--color-blue-200"],
+      "resolved_value": "#5c98f9",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-blue-200)",
+        "dark": "var(--color-blue-200)"
+      }
+    },
+    {
+      "id": "1dc644dabcb8f167",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-default",
+      "alias_chain": ["--text-default", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 29,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-900)",
+        "dark": "var(--color-white)"
+      }
+    },
+    {
+      "id": "e2f69da46ef990dd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-muted",
+      "alias_chain": ["--text-muted", "--color-gray-500"],
+      "resolved_value": "#999999",
+      "occurrences": 17,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-500)",
+        "dark": "var(--color-gray-500)"
+      }
+    },
+    {
+      "id": "25ce2dbcbc79fb9f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-alt",
+      "alias_chain": ["--text-alt", "--color-gray-600"],
+      "resolved_value": "#666666",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-gray-600)",
+        "dark": "var(--color-gray-500)"
+      }
+    },
+    {
+      "id": "82c5d56d0e2de29c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-inverse",
+      "alias_chain": ["--text-inverse", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 19,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-white)",
+        "dark": "var(--color-black)"
+      }
+    },
+    {
+      "id": "63f8828a77f6aaee",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-danger",
+      "alias_chain": ["--text-danger", "--color-red-200"],
+      "resolved_value": "#f94b4b",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-red-200)",
+        "dark": "var(--color-red-100)"
+      }
+    },
+    {
+      "id": "97bd480ef7a3c260",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-success",
+      "alias_chain": ["--text-success", "--color-green-200"],
+      "resolved_value": "#91cb80",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-green-200)",
+        "dark": "var(--color-green-100)"
+      }
+    },
+    {
+      "id": "35c1cdad7424dbaf",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-warning",
+      "alias_chain": ["--text-warning", "--color-yellow-200"],
+      "resolved_value": "#fbcd44",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-yellow-200)",
+        "dark": "var(--color-yellow-100)"
+      }
+    },
+    {
+      "id": "988986b73c03643a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-info",
+      "alias_chain": ["--text-info", "--color-blue-200"],
+      "resolved_value": "#5c98f9",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--color-blue-200)",
+        "dark": "var(--color-blue-100)"
+      }
+    },
+    {
+      "id": "8e011932e52e7b77",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--ring",
+      "alias_chain": ["--ring", "--border-strong", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--border-strong)",
+        "dark": "var(--border-strong)"
+      }
+    },
+    {
+      "id": "3d749496fea3e7dd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--dark-10",
+      "alias_chain": [],
+      "resolved_value": "rgba(26, 26, 26, 0.1)",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "rgba(26, 26, 26, 0.1)",
+        "dark": "rgba(242, 242, 242, 0.1)"
+      }
+    },
+    {
+      "id": "95cda6d279f831b5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--dark-40",
+      "alias_chain": [],
+      "resolved_value": "rgba(26, 26, 26, 0.4)",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "rgba(26, 26, 26, 0.4)",
+        "dark": "rgba(242, 242, 242, 0.4)"
+      }
+    },
+    {
+      "id": "14a6df5eb5678fa4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--dark-04",
+      "alias_chain": [],
+      "resolved_value": "rgba(26, 26, 26, 0.04)",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "rgba(26, 26, 26, 0.04)",
+        "dark": "rgba(242, 242, 242, 0.04)"
+      }
+    },
+    {
+      "id": "27751ab5c1577e72",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-mini",
+      "alias_chain": [],
+      "resolved_value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "occurrences": 16,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 2px 8px rgba(76, 76, 76, 0.15)",
+        "dark": "0 2px 8px rgba(0, 0, 0, 0.4)"
+      }
+    },
+    {
+      "id": "a61aeb27c51bd551",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-mini-inset",
+      "alias_chain": [],
+      "resolved_value": "0 1px 4px rgba(76, 76, 76, 0.1) inset",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 1px 4px rgba(76, 76, 76, 0.1) inset",
+        "dark": "0 1px 4px rgba(0, 0, 0, 0.5) inset"
+      }
+    },
+    {
+      "id": "0ff240af122098c0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-btn",
+      "alias_chain": [],
+      "resolved_value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 2px 8px rgba(76, 76, 76, 0.15)",
+        "dark": "0 2px 8px rgba(0, 0, 0, 0.3)"
+      }
+    },
+    {
+      "id": "fcb078d8885703de",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-card",
+      "alias_chain": [],
+      "resolved_value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 2px 8px rgba(76, 76, 76, 0.15)",
+        "dark": "0 2px 8px rgba(0, 0, 0, 0.4)"
+      }
+    },
+    {
+      "id": "9aeed2b2a2247e5f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-elevated",
+      "alias_chain": [],
+      "resolved_value": "0 3px 12px rgba(76, 76, 76, 0.22)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 3px 12px rgba(76, 76, 76, 0.22)",
+        "dark": "0 3px 12px rgba(0, 0, 0, 0.5)"
+      }
+    },
+    {
+      "id": "6aaca668581523cd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-popover",
+      "alias_chain": [],
+      "resolved_value": "0 8px 30px rgba(0, 0, 0, 0.12)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 8px 30px rgba(0, 0, 0, 0.12)",
+        "dark": "0 8px 30px rgba(0, 0, 0, 0.4)"
+      }
+    },
+    {
+      "id": "27a7452e4f730118",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-modal",
+      "alias_chain": [],
+      "resolved_value": "0 20px 60px rgba(0, 0, 0, 0.2)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 20px 60px rgba(0, 0, 0, 0.2)",
+        "dark": "0 20px 60px rgba(0, 0, 0, 0.6)"
+      }
+    },
+    {
+      "id": "0ef923c5ecd0f068",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-kbd",
+      "alias_chain": [],
+      "resolved_value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 2px 8px rgba(76, 76, 76, 0.15)",
+        "dark": "0 2px 8px rgba(0, 0, 0, 0.4)"
+      }
+    },
+    {
+      "id": "a9fe100ae96fbf51",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--shadow-date-field-focus",
+      "alias_chain": [],
+      "resolved_value": "0 0 0 3px rgba(26, 26, 26, 0.15)",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "shadow",
+      "by_theme": {
+        "default": "0 0 0 3px rgba(26, 26, 26, 0.15)",
+        "dark": "0 0 0 3px rgba(244, 244, 245, 0.1)"
+      }
+    },
+    {
+      "id": "f1e5a359760c3057",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--surface-dark",
+      "alias_chain": [],
+      "resolved_value": "#0a0a0a",
+      "occurrences": 8,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "9bf1e5bc3a853480",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--surface-dark-text",
+      "alias_chain": [],
+      "resolved_value": "#f5f5f5",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "b245f009071bb541",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--surface-dark-muted",
+      "alias_chain": [],
+      "resolved_value": "rgba(255, 255, 255, 0.5)",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "8c74fa50c6a5e180",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--surface-dark-border",
+      "alias_chain": [],
+      "resolved_value": "rgba(255, 255, 255, 0.08)",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "color"
+    },
+    {
+      "id": "8509f09be87e6801",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--chart-1",
+      "alias_chain": [],
+      "resolved_value": "#f6b44a",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "#f6b44a",
+        "dark": "#f6b44a"
+      }
+    },
+    {
+      "id": "09294eb1aad97894",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--chart-2",
+      "alias_chain": [],
+      "resolved_value": "#7585ff",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "#7585ff",
+        "dark": "#7585ff"
+      }
+    },
+    {
+      "id": "15c51593a6d10390",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--chart-3",
+      "alias_chain": [],
+      "resolved_value": "#d76a6a",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "#d76a6a",
+        "dark": "#d76a6a"
+      }
+    },
+    {
+      "id": "2a4f825f6c3a7599",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--chart-4",
+      "alias_chain": [],
+      "resolved_value": "#d185e0",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "#d185e0",
+        "dark": "#d185e0"
+      }
+    },
+    {
+      "id": "347c590b13654532",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--chart-5",
+      "alias_chain": [],
+      "resolved_value": "#91cb80",
+      "occurrences": 15,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "#91cb80",
+        "dark": "#91cb80"
+      }
+    },
+    {
+      "id": "e868397a5881f023",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--background",
+      "alias_chain": ["--background", "--background-default", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 145,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-default)",
+        "dark": "var(--background-default)"
+      }
+    },
+    {
+      "id": "0943e0db7ffd02a0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--foreground",
+      "alias_chain": ["--foreground", "--text-default", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "6df11923b106eaf9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--card",
+      "alias_chain": ["--card", "--background-default", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-default)",
+        "dark": "var(--background-default)"
+      }
+    },
+    {
+      "id": "84a686ef160a8412",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--card-foreground",
+      "alias_chain": [
+        "--card-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "f2f47a6014aba340",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--popover",
+      "alias_chain": ["--popover", "--background-default", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 8,
+      "files_count": 2,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-default)",
+        "dark": "var(--background-default)"
+      }
+    },
+    {
+      "id": "e0c2436c7f32f596",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--popover-foreground",
+      "alias_chain": [
+        "--popover-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 4,
+      "files_count": 2,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "262dbd3397c57364",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--primary",
+      "alias_chain": ["--primary", "--background-accent", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 7,
+      "files_count": 2,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-accent)",
+        "dark": "var(--background-accent)"
+      }
+    },
+    {
+      "id": "2d7a0dcc81ffefa6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--primary-foreground",
+      "alias_chain": [
+        "--primary-foreground",
+        "--text-inverse",
+        "--color-white"
+      ],
+      "resolved_value": "#ffffff",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-inverse)",
+        "dark": "var(--text-inverse)"
+      }
+    },
+    {
+      "id": "a2725cfe64b52760",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--secondary",
+      "alias_chain": ["--secondary", "--background-muted", "--color-gray-100"],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-muted)",
+        "dark": "var(--background-muted)"
+      }
+    },
+    {
+      "id": "135647ddfa4fc7bd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--secondary-foreground",
+      "alias_chain": [
+        "--secondary-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "d26c002a0f7238c5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--muted",
+      "alias_chain": ["--muted", "--background-muted", "--color-gray-100"],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-muted)",
+        "dark": "var(--background-muted)"
+      }
+    },
+    {
+      "id": "ec41017317c34cb0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--muted-foreground",
+      "alias_chain": ["--muted-foreground", "--text-muted", "--color-gray-500"],
+      "resolved_value": "#999999",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-muted)",
+        "dark": "var(--text-muted)"
+      }
+    },
+    {
+      "id": "fb09607b6e626eb9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--accent",
+      "alias_chain": ["--accent", "--background-muted", "--color-gray-100"],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-muted)",
+        "dark": "var(--background-muted)"
+      }
+    },
+    {
+      "id": "e494760b6896a883",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--accent-foreground",
+      "alias_chain": [
+        "--accent-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "ccdc69a40a6270e1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--destructive",
+      "alias_chain": [
+        "--destructive",
+        "--background-danger",
+        "--color-red-200"
+      ],
+      "resolved_value": "#f94b4b",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-danger)",
+        "dark": "var(--background-danger)"
+      }
+    },
+    {
+      "id": "a19933a366434217",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--destructive-foreground",
+      "alias_chain": [],
+      "resolved_value": "#ffffff",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "#ffffff",
+        "dark": "#ffffff"
+      }
+    },
+    {
+      "id": "de0e2eae5215a750",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--border",
+      "alias_chain": ["--border", "--border-default", "--color-gray-200"],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 147,
+      "files_count": 4,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--border-default)",
+        "dark": "var(--border-default)"
+      }
+    },
+    {
+      "id": "4e4cfa4e9808e992",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--input",
+      "alias_chain": ["--input", "--border-input", "--color-gray-300"],
+      "resolved_value": "#e5e5e5",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--border-input)",
+        "dark": "var(--border-input)"
+      }
+    },
+    {
+      "id": "eab72c5017b79ac0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar",
+      "alias_chain": ["--sidebar", "--background-default", "--color-white"],
+      "resolved_value": "#ffffff",
+      "occurrences": 38,
+      "files_count": 3,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-default)",
+        "dark": "var(--background-default)"
+      }
+    },
+    {
+      "id": "ce2bc361cf48747f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-foreground",
+      "alias_chain": [
+        "--sidebar-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "6514fb300530df95",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-primary",
+      "alias_chain": [
+        "--sidebar-primary",
+        "--background-accent",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-accent)",
+        "dark": "var(--background-accent)"
+      }
+    },
+    {
+      "id": "d37534cb8849d88d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-primary-foreground",
+      "alias_chain": [
+        "--sidebar-primary-foreground",
+        "--text-inverse",
+        "--color-white"
+      ],
+      "resolved_value": "#ffffff",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-inverse)",
+        "dark": "var(--text-inverse)"
+      }
+    },
+    {
+      "id": "30608656c05146c8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-accent",
+      "alias_chain": [
+        "--sidebar-accent",
+        "--background-muted",
+        "--color-gray-100"
+      ],
+      "resolved_value": "#f0f0f0",
+      "occurrences": 6,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--background-muted)",
+        "dark": "var(--background-muted)"
+      }
+    },
+    {
+      "id": "3092fa181b5e0eb2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-accent-foreground",
+      "alias_chain": [
+        "--sidebar-accent-foreground",
+        "--text-default",
+        "--color-gray-900"
+      ],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--text-default)",
+        "dark": "var(--text-default)"
+      }
+    },
+    {
+      "id": "840b2f0c215bc81b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-border",
+      "alias_chain": [
+        "--sidebar-border",
+        "--border-default",
+        "--color-gray-200"
+      ],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--border-default)",
+        "dark": "var(--border-default)"
+      }
+    },
+    {
+      "id": "a03b28e84ac1f146",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--sidebar-ring",
+      "alias_chain": ["--sidebar-ring", "--border-default", "--color-gray-200"],
+      "resolved_value": "#e8e8e8",
+      "occurrences": 3,
+      "files_count": 1,
+      "kind": "color",
+      "by_theme": {
+        "default": "var(--border-default)",
+        "dark": "var(--border-default)"
+      }
+    },
+    {
+      "id": "271ee50ed9043664",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-display-font-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(64px, 8vw, 96px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "10e6de14405aa41d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-display-line-height",
+      "alias_chain": [],
+      "resolved_value": "0.88",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "1aab4f9260c3dd91",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-display-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.05em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "6e508fed35f00d33",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-display-font-weight",
+      "alias_chain": [],
+      "resolved_value": "900",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "b37a9e951b55a9d5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-section-font-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(44px, 5vw, 64px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "7534b8d65612a871",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-section-line-height",
+      "alias_chain": [],
+      "resolved_value": "0.95",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "9a392054a1828a32",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-section-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.035em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "5f13516c885b2205",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-section-font-weight",
+      "alias_chain": [],
+      "resolved_value": "700",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "0d14fd1a1d4b86f2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-sub-font-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(28px, 3vw, 40px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "f83199aee88931d0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-sub-line-height",
+      "alias_chain": [],
+      "resolved_value": "1",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "ddf57ef80350b24b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-sub-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.02em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "3e52df1e0dac277e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-sub-font-weight",
+      "alias_chain": [],
+      "resolved_value": "700",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "f0528dd81ee4b662",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-card-font-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(20px, 2vw, 28px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "7eb909b333880c70",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-card-line-height",
+      "alias_chain": [],
+      "resolved_value": "1.1",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "a6f38fdf2d74b588",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-card-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.01em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "19ef050425f73c7b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--heading-card-font-weight",
+      "alias_chain": [],
+      "resolved_value": "600",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "0006e5fd6d7a1dc1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--display-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(3rem, 12vw, 12rem)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "9002f72f78844137",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--display-line-height",
+      "alias_chain": [],
+      "resolved_value": "0.85",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "222ecabe48c1386e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--display-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.05em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "a8fed8415424f018",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--body-reading-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(1rem, 1.3vw, 1.25rem)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "bb6f8c54707d5cb8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--body-reading-line-height",
+      "alias_chain": [],
+      "resolved_value": "1.65",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "8f3e38f68ad57b81",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--body-reading-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.01em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "622fc62fb46e4708",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--label-font-size",
+      "alias_chain": [],
+      "resolved_value": "11px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "b11349fa47dbd6a9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--label-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "0.12em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "0ea2acc752c40176",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--label-font-weight",
+      "alias_chain": [],
+      "resolved_value": "600",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "f1f9bac2000a0b4c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--label-line-height",
+      "alias_chain": [],
+      "resolved_value": "1.2",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "0044d2c9af0af06f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--pullquote-size",
+      "alias_chain": [],
+      "resolved_value": "clamp(1.5rem, 3vw, 2.5rem)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "ea69eaefb5221b74",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--pullquote-line-height",
+      "alias_chain": [],
+      "resolved_value": "1.3",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "95668f493457e877",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--pullquote-weight",
+      "alias_chain": [],
+      "resolved_value": "300",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "380f7f8cfadaad28",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--pullquote-letter-spacing",
+      "alias_chain": [],
+      "resolved_value": "-0.02em",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "71e789f465ca4634",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--page-container-max-width",
+      "alias_chain": [],
+      "resolved_value": "1440px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "7bf3c949e8306e01",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--page-container-side-gutter",
+      "alias_chain": [],
+      "resolved_value": "20px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "fa56480bfe36c057",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--section-padding-vertical",
+      "alias_chain": [],
+      "resolved_value": "100px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "b2cf5798e3c5a9be",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--section-heading-margin-bottom",
+      "alias_chain": [],
+      "resolved_value": "75px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "31d3152400399fa9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--ease-spring",
+      "alias_chain": [],
+      "resolved_value": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "1c37249d9abbc0d2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--duration-fast",
+      "alias_chain": [],
+      "resolved_value": "0.15s",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "434e4ccdcc16a6bb",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--duration-normal",
+      "alias_chain": [],
+      "resolved_value": "0.2s",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "3ee3cd4b8da7b2a2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--duration-slow",
+      "alias_chain": [],
+      "resolved_value": "0.4s",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "1c4bffd800fc3425",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--font-mono",
+      "alias_chain": [],
+      "resolved_value": "\"Geist Mono\", monospace",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "582c62bea0607e66",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--font-serif",
+      "alias_chain": [],
+      "resolved_value": "serif",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "8f98648c9e39ffdf",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-pill",
+      "alias_chain": [],
+      "resolved_value": "999px",
+      "occurrences": 5,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "69184bd9e5f0a177",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-button",
+      "alias_chain": [],
+      "resolved_value": "999px",
+      "occurrences": 5,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "061e035cf410c918",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-input",
+      "alias_chain": [],
+      "resolved_value": "999px",
+      "occurrences": 5,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "6a62a4159c4649cf",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-card",
+      "alias_chain": [],
+      "resolved_value": "20px",
+      "occurrences": 21,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "8c33a1ba09148e73",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-card-lg",
+      "alias_chain": [],
+      "resolved_value": "24px",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "22fc819007da1f07",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-card-sm",
+      "alias_chain": [],
+      "resolved_value": "14px",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "2447efbb0a435af2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-dropdown",
+      "alias_chain": [],
+      "resolved_value": "10px",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "80ea24aebefd2c46",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-modal",
+      "alias_chain": [],
+      "resolved_value": "16px",
+      "occurrences": 7,
+      "files_count": 3,
+      "kind": "radius"
+    },
+    {
+      "id": "55be2165378aef51",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-sm",
+      "alias_chain": [],
+      "resolved_value": "calc(var(--radius) - 4px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "radius"
+    },
+    {
+      "id": "71e2926b8c659f67",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-md",
+      "alias_chain": [],
+      "resolved_value": "calc(var(--radius) - 2px)",
+      "occurrences": 3,
+      "files_count": 2,
+      "kind": "radius"
+    },
+    {
+      "id": "6cac549c5ad2a43b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-lg",
+      "alias_chain": ["--radius-lg", "--radius"],
+      "resolved_value": "20px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "radius"
+    },
+    {
+      "id": "4d8f979b0a0f4ff6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--radius-xl",
+      "alias_chain": [],
+      "resolved_value": "calc(var(--radius) + 4px)",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "radius"
+    },
+    {
+      "id": "28546ee0e84f87e4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--spacing-input",
+      "alias_chain": [],
+      "resolved_value": "3.25rem",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "9b602c2d2aff3b97",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--spacing-input-sm",
+      "alias_chain": [],
+      "resolved_value": "2.75rem",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "2e8b83a4b3b13078",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--spacing-button",
+      "alias_chain": [],
+      "resolved_value": "2.75rem",
+      "occurrences": 2,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "70e99c8acc9469e0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--spacing-button-sm",
+      "alias_chain": [],
+      "resolved_value": "2rem",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "spacing"
+    },
+    {
+      "id": "bdf7db54124f9b1a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--text-xxs",
+      "alias_chain": [],
+      "resolved_value": "10px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "typography"
+    },
+    {
+      "id": "efbea902cb90d0a6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--breakpoint-desktop",
+      "alias_chain": [],
+      "resolved_value": "1440px",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "breakpoint"
+    },
+    {
+      "id": "9e11a7395c17e48f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-accordion-down",
+      "alias_chain": [],
+      "resolved_value": "accordion-down 0.2s ease-out",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "2fc00cb7d120bbfc",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-accordion-up",
+      "alias_chain": [],
+      "resolved_value": "accordion-up 0.2s ease-out",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "699adb69e611e572",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-caret-blink",
+      "alias_chain": [],
+      "resolved_value": "caret-blink 1s ease-out infinite",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "c4181972d46827e7",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-scale-in",
+      "alias_chain": [],
+      "resolved_value": "scale-in 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "d4e91c367597cf48",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-scale-out",
+      "alias_chain": [],
+      "resolved_value": "scale-out 0.15s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "c21da7a8f807ac30",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-fade-in",
+      "alias_chain": [],
+      "resolved_value": "fade-in 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "69593937c6afaa33",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-fade-out",
+      "alias_chain": [],
+      "resolved_value": "fade-out 0.15s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "e61a90ed648efd6d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-enter-from-left",
+      "alias_chain": [],
+      "resolved_value": "enter-from-left 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "1150df8475dba7f1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-enter-from-right",
+      "alias_chain": [],
+      "resolved_value": "enter-from-right 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "2f6f833f7e0aaf2a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-exit-to-left",
+      "alias_chain": [],
+      "resolved_value": "exit-to-left 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "f5c44b463d6ae61b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-exit-to-right",
+      "alias_chain": [],
+      "resolved_value": "exit-to-right 0.2s ease",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    },
+    {
+      "id": "356a40015aeb5b67",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "--animate-word-reveal",
+      "alias_chain": [],
+      "resolved_value": "word-reveal 0.4s ease-out",
+      "occurrences": 1,
+      "files_count": 1,
+      "kind": "motion"
+    }
+  ],
+  "components": [
+    {
+      "id": "b4c292807a6ec207",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Accordion",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/accordion.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "50071e60edc4c431",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "AlertDialog",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/alert-dialog.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "b386e7a9abfc6bae",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Alert",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/alert.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": ["default", "destructive"],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "9ea53a034e456948",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "AspectRatio",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/aspect-ratio.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "441a76d63f7609c4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Avatar",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/avatar.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "79bbc6a52d1375bb",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Badge",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/badge.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [
+        "default",
+        "hover",
+        "secondary",
+        "hover",
+        "destructive",
+        "hover",
+        "focus-visible",
+        "dark",
+        "focus-visible",
+        "dark",
+        "outline",
+        "hover",
+        "hover"
+      ],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "afea0442b09ba700",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Breadcrumb",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/breadcrumb.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "8afb543e91ebc981",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ButtonGroup",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/button-group.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "9c896a97e18e1de8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Button",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/button.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [
+        "default",
+        "hover",
+        "destructive",
+        "hover",
+        "focus-visible",
+        "dark",
+        "focus-visible",
+        "dark",
+        "outline",
+        "hover",
+        "secondary",
+        "hover",
+        "ghost",
+        "hover",
+        "dark",
+        "hover",
+        "link",
+        "hover"
+      ],
+      "sizes": ["default", "sm", "lg", "icon", "icon-xs", "icon-sm"],
+      "occurrences": 1
+    },
+    {
+      "id": "9c4543801ce44f8c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Calendar",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/calendar.tsx",
+      "group": "ui",
+      "categories": ["display", "input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "a042f6d09c362be5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Card",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/card.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "678c11fcb1b5d9f0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Carousel",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/carousel.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "124f3d2585f342f3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Chart",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/chart.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "69e38568ed0a8701",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Checkbox",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/checkbox.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "eac501133c1d3aff",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Collapsible",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/collapsible.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "4325bd0688aa9dd5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Command",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/command.tsx",
+      "group": "ui",
+      "categories": ["input", "navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "5221f1b89b405750",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ContextMenu",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/context-menu.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "3f8af9726f18bc09",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Dialog",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/dialog.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "f32341755cd218c3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Drawer",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/drawer.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "6d31b37a6f326482",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "DropdownMenu",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/dropdown-menu.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "843f511dcb4348bd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Form",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/form.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "b7b3d401537f2ab3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "HoverCard",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/hover-card.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1555a5e2a2751f00",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "InputGroup",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/input-group.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "22451f8756741817",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "InputOtp",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/input-otp.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "3b3deee34c77de01",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Input",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/input.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "089ff69d37363449",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Label",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/label.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "8e8a150d565e0c6d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Menubar",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/menubar.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "e1117f5d3d912345",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "NavigationMenu",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/navigation-menu.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "515018b9f765854e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Pagination",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/pagination.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "5ab98d143b6d8c46",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Popover",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/popover.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "eb10245957fb6b2b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Progress",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/progress.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "b4b871c8874f2cf0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "RadioGroup",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/radio-group.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "9b8956d4e8802892",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Resizable",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/resizable.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "8ed7995b41c8b8e1",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ScrollArea",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/scroll-area.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "06469692752d09ef",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Select",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/select.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "af24d92c513e3479",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Separator",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/separator.tsx",
+      "group": "ui",
+      "categories": ["layout"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "9496bb74a923f87f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Sheet",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/sheet.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "3654d80fd71b9012",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Sidebar",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/sidebar.tsx",
+      "group": "ui",
+      "categories": ["navigation", "layout"],
+      "exports": [],
+      "variants": ["default", "hover", "hover", "outline", "hover", "hover"],
+      "sizes": ["default", "sm", "lg"],
+      "occurrences": 1
+    },
+    {
+      "id": "ea97cab589823803",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Skeleton",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/skeleton.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "d5751bd70fa03983",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Slider",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/slider.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "906f10ad5120baf8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Sonner",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/sonner.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "c632b462f00c849c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Spinner",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/spinner.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "5c5a4b734ccd65c3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Switch",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/switch.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "591ff46710fa3cde",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Table",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/table.tsx",
+      "group": "ui",
+      "categories": ["display"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "02ecae35bdc4153a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Tabs",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/tabs.tsx",
+      "group": "ui",
+      "categories": ["navigation"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "5cf9e3b7a3cfdaea",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Textarea",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/textarea.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1e19b89427c572b8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ToggleGroup",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/toggle-group.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "a8e81e6165e6168c",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Toggle",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/toggle.tsx",
+      "group": "ui",
+      "categories": ["input"],
+      "exports": [],
+      "variants": ["default", "outline", "hover", "hover"],
+      "sizes": ["default", "sm", "lg"],
+      "occurrences": 1
+    },
+    {
+      "id": "194eb835a8b2bcff",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Tooltip",
+      "discovered_via": "registry.json",
+      "file": "src/components/ui/tooltip.tsx",
+      "group": "ui",
+      "categories": ["feedback"],
+      "exports": [],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "cb0d33d2c64a66b5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Agent",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/agent.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "Agent",
+        "AgentHeader",
+        "AgentContent",
+        "AgentInstructions",
+        "AgentTools",
+        "AgentTool",
+        "AgentOutput"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "ce1903c42d2b5871",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Artifact",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/artifact.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "Artifact",
+        "ArtifactHeader",
+        "ArtifactClose",
+        "ArtifactTitle",
+        "ArtifactDescription",
+        "ArtifactActions",
+        "ArtifactAction",
+        "ArtifactContent"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "dd9730cebb4f1fc9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Attachments",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/attachments.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input", "chat"],
+      "exports": [
+        "Attachments",
+        "Attachment",
+        "AttachmentPreview",
+        "AttachmentInfo",
+        "AttachmentRemove",
+        "AttachmentHoverCard",
+        "AttachmentHoverCardTrigger",
+        "AttachmentHoverCardContent",
+        "AttachmentEmpty"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "729b080ebf22eca8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "AudioPlayer",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/audio-player.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "media"],
+      "exports": [
+        "AudioPlayer",
+        "AudioPlayerElement",
+        "AudioPlayerControlBar",
+        "AudioPlayerPlayButton",
+        "AudioPlayerSeekBackwardButton",
+        "AudioPlayerSeekForwardButton",
+        "AudioPlayerTimeDisplay",
+        "AudioPlayerTimeRange",
+        "AudioPlayerDurationDisplay",
+        "AudioPlayerMuteButton",
+        "AudioPlayerVolumeRange"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "8fce52c387bc0830",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Canvas",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/canvas.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Canvas"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "69327c540f5e22ea",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ChainOfThought",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/chain-of-thought.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "ChainOfThought",
+        "ChainOfThoughtHeader",
+        "ChainOfThoughtStep",
+        "ChainOfThoughtSearchResults",
+        "ChainOfThoughtSearchResult",
+        "ChainOfThoughtContent",
+        "ChainOfThoughtImage"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "7f993f29724e6037",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Checkpoint",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/checkpoint.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": ["Checkpoint", "CheckpointIcon", "CheckpointTrigger"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "fe870b653fae7508",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "CodeBlock",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/code-block.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "CodeBlockContainer",
+        "CodeBlockHeader",
+        "CodeBlockTitle",
+        "CodeBlockFilename",
+        "CodeBlockActions",
+        "CodeBlockContent",
+        "CodeBlock",
+        "CodeBlockCopyButton",
+        "CodeBlockLanguageSelector",
+        "CodeBlockLanguageSelectorTrigger",
+        "CodeBlockLanguageSelectorValue",
+        "CodeBlockLanguageSelectorContent",
+        "CodeBlockLanguageSelectorItem"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "4c7cc53e924d10ec",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Commit",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/commit.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "Commit",
+        "CommitHeader",
+        "CommitHash",
+        "CommitMessage",
+        "CommitMetadata",
+        "CommitSeparator",
+        "CommitInfo",
+        "CommitAuthor",
+        "CommitAuthorAvatar",
+        "CommitTimestamp",
+        "CommitActions",
+        "CommitCopyButton",
+        "CommitContent",
+        "CommitFiles",
+        "CommitFile",
+        "CommitFileInfo",
+        "CommitFileStatus",
+        "CommitFileIcon",
+        "CommitFilePath",
+        "CommitFileChanges",
+        "CommitFileAdditions",
+        "CommitFileDeletions"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "84d647e14840dd8e",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Confirmation",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/confirmation.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "feedback"],
+      "exports": [
+        "Confirmation",
+        "ConfirmationTitle",
+        "ConfirmationRequest",
+        "ConfirmationAccepted",
+        "ConfirmationRejected",
+        "ConfirmationActions",
+        "ConfirmationAction"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "a3400bcb7ececeba",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Connection",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/connection.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Connection"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "02f10d16ea6672fd",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Context",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/context.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "Context",
+        "ContextTrigger",
+        "ContextContent",
+        "ContextContentHeader",
+        "ContextContentBody",
+        "ContextContentFooter",
+        "ContextInputUsage",
+        "ContextOutputUsage",
+        "ContextReasoningUsage",
+        "ContextCacheUsage"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "ebf518f1aa3de918",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Controls",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/controls.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Controls"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "5407f8b5be2c8719",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Conversation",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/conversation.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat"],
+      "exports": [
+        "Conversation",
+        "ConversationContent",
+        "ConversationEmptyState",
+        "ConversationScrollButton",
+        "ConversationDownload"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "13c86ac4e1931302",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Edge",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/edge.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Edge"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "0be7c75f477103ee",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "EnvironmentVariables",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/environment-variables.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "EnvironmentVariables",
+        "EnvironmentVariablesHeader",
+        "EnvironmentVariablesTitle",
+        "EnvironmentVariablesToggle",
+        "EnvironmentVariablesContent",
+        "EnvironmentVariableGroup",
+        "EnvironmentVariableName",
+        "EnvironmentVariableValue",
+        "EnvironmentVariable",
+        "EnvironmentVariableCopyButton",
+        "EnvironmentVariableRequired"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "f705ce13f6940e6f",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "FileTree",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/file-tree.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "FileTree",
+        "FileTreeIcon",
+        "FileTreeName",
+        "FileTreeFolder",
+        "FileTreeFile",
+        "FileTreeActions"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "a60585981206d075",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Image",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/image.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "media"],
+      "exports": ["Image"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1dc1c93a5f757cf0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "InlineCitation",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/inline-citation.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "InlineCitation",
+        "InlineCitationText",
+        "InlineCitationCard",
+        "InlineCitationCardTrigger",
+        "InlineCitationCardBody",
+        "InlineCitationCarousel",
+        "InlineCitationCarouselContent",
+        "InlineCitationCarouselItem",
+        "InlineCitationCarouselHeader",
+        "InlineCitationCarouselIndex",
+        "InlineCitationCarouselPrev",
+        "InlineCitationCarouselNext",
+        "InlineCitationSource",
+        "InlineCitationQuote"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "00bd9a384fc71a48",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "JsxPreview",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/jsx-preview.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": ["JSXPreview", "JSXPreviewContent", "JSXPreviewError"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "7488be7a27a04976",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Message",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/message.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat"],
+      "exports": [
+        "Message",
+        "MessageContent",
+        "MessageActions",
+        "MessageAction",
+        "MessageBranch",
+        "MessageBranchContent",
+        "MessageBranchSelector",
+        "MessageBranchPrevious",
+        "MessageBranchNext",
+        "MessageBranchPage",
+        "MessageResponse",
+        "MessageToolbar"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1be8680f445ab0a9",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "MicSelector",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/mic-selector.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input", "media"],
+      "exports": [
+        "MicSelector",
+        "MicSelectorTrigger",
+        "MicSelectorContent",
+        "MicSelectorInput",
+        "MicSelectorList",
+        "MicSelectorEmpty",
+        "MicSelectorItem",
+        "MicSelectorLabel",
+        "MicSelectorValue"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "ba6a3fe9e2e55b53",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "ModelSelector",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/model-selector.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input"],
+      "exports": [
+        "ModelSelector",
+        "ModelSelectorTrigger",
+        "ModelSelectorContent",
+        "ModelSelectorDialog",
+        "ModelSelectorInput",
+        "ModelSelectorList",
+        "ModelSelectorEmpty",
+        "ModelSelectorGroup",
+        "ModelSelectorItem",
+        "ModelSelectorShortcut",
+        "ModelSelectorSeparator",
+        "ModelSelectorLogo",
+        "ModelSelectorLogoGroup",
+        "ModelSelectorName"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "16effeca67132627",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Node",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/node.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": [
+        "Node",
+        "NodeHeader",
+        "NodeTitle",
+        "NodeDescription",
+        "NodeAction",
+        "NodeContent",
+        "NodeFooter"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "83756f5ac9da98f5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "OpenInChat",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/open-in-chat.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat"],
+      "exports": [
+        "OpenIn",
+        "OpenInContent",
+        "OpenInItem",
+        "OpenInLabel",
+        "OpenInSeparator",
+        "OpenInTrigger",
+        "OpenInChatGPT",
+        "OpenInClaude",
+        "OpenInT3",
+        "OpenInScira",
+        "OpenInv0",
+        "OpenInCursor"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "97b7fcf1b9da3781",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "PackageInfo",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/package-info.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "PackageInfoHeader",
+        "PackageInfoName",
+        "PackageInfoChangeType",
+        "PackageInfoVersion",
+        "PackageInfo",
+        "PackageInfoDescription",
+        "PackageInfoContent",
+        "PackageInfoDependencies",
+        "PackageInfoDependency"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1490539633b1d42b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Panel",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/panel.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Panel"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "217dde7d1aac3d11",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Persona",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/persona.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "media"],
+      "exports": ["Persona"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "2b7ed8090b3e3a27",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Plan",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/plan.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "Plan",
+        "PlanHeader",
+        "PlanTitle",
+        "PlanDescription",
+        "PlanAction",
+        "PlanContent",
+        "PlanFooter",
+        "PlanTrigger"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "e0fefc4cec7ce8f4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "PromptInput",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/prompt-input.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input", "chat"],
+      "exports": [
+        "PromptInputProvider",
+        "LocalReferencedSourcesContext",
+        "PromptInputActionAddAttachments",
+        "PromptInputActionAddScreenshot",
+        "PromptInput",
+        "PromptInputBody",
+        "PromptInputTextarea",
+        "PromptInputHeader",
+        "PromptInputFooter",
+        "PromptInputTools",
+        "PromptInputButton",
+        "PromptInputActionMenu",
+        "PromptInputActionMenuTrigger",
+        "PromptInputActionMenuContent",
+        "PromptInputActionMenuItem",
+        "PromptInputSubmit",
+        "PromptInputSelect",
+        "PromptInputSelectTrigger",
+        "PromptInputSelectContent",
+        "PromptInputSelectItem",
+        "PromptInputSelectValue",
+        "PromptInputHoverCard",
+        "PromptInputHoverCardTrigger",
+        "PromptInputHoverCardContent",
+        "PromptInputTabsList",
+        "PromptInputTab",
+        "PromptInputTabLabel",
+        "PromptInputTabBody",
+        "PromptInputTabItem",
+        "PromptInputCommand",
+        "PromptInputCommandInput",
+        "PromptInputCommandList",
+        "PromptInputCommandEmpty",
+        "PromptInputCommandGroup",
+        "PromptInputCommandItem",
+        "PromptInputCommandSeparator"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "279cd6998477113b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Queue",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/queue.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "QueueItem",
+        "QueueItemIndicator",
+        "QueueItemContent",
+        "QueueItemDescription",
+        "QueueItemActions",
+        "QueueItemAction",
+        "QueueItemAttachment",
+        "QueueItemImage",
+        "QueueItemFile",
+        "QueueList",
+        "QueueSection",
+        "QueueSectionTrigger",
+        "QueueSectionLabel",
+        "QueueSectionContent",
+        "Queue"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "c873ce9eed9612c2",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Reasoning",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/reasoning.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat"],
+      "exports": ["Reasoning", "ReasoningTrigger", "ReasoningContent"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1d1f55d75943d44a",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Sandbox",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/sandbox.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "Sandbox",
+        "SandboxHeader",
+        "SandboxContent",
+        "SandboxTabs",
+        "SandboxTabsBar",
+        "SandboxTabsList",
+        "SandboxTabsTrigger",
+        "SandboxTabContent"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "87fc68c45db10fe4",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "SchemaDisplay",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/schema-display.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "SchemaDisplayHeader",
+        "SchemaDisplayMethod",
+        "SchemaDisplayPath",
+        "SchemaDisplayDescription",
+        "SchemaDisplayContent",
+        "SchemaDisplayParameter",
+        "SchemaDisplayParameters",
+        "SchemaDisplayProperty",
+        "SchemaDisplayRequest",
+        "SchemaDisplayResponse",
+        "SchemaDisplay",
+        "SchemaDisplayBody",
+        "SchemaDisplayExample"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "c0fcaa66693dc034",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Shimmer",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/shimmer.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "feedback"],
+      "exports": ["Shimmer"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "282adb5c94937230",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Snippet",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/snippet.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "Snippet",
+        "SnippetAddon",
+        "SnippetText",
+        "SnippetInput",
+        "SnippetCopyButton"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "ce05a44e8ed1e137",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Sources",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/sources.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": ["Sources", "SourcesTrigger", "SourcesContent", "Source"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "14a746d52465d8c6",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "SpeechInput",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/speech-input.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input", "media"],
+      "exports": ["SpeechInput"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "a58e7f7692b94661",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "StackTrace",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/stack-trace.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "StackTrace",
+        "StackTraceHeader",
+        "StackTraceError",
+        "StackTraceErrorType",
+        "StackTraceErrorMessage",
+        "StackTraceActions",
+        "StackTraceCopyButton",
+        "StackTraceExpandButton",
+        "StackTraceContent",
+        "StackTraceFrames"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "d310d31e3dada0a5",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Suggestion",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/suggestion.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat"],
+      "exports": ["Suggestions", "Suggestion"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "d5a78dc3682f5ff0",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Task",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/task.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "TaskItemFile",
+        "TaskItem",
+        "Task",
+        "TaskTrigger",
+        "TaskContent"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "4104ed0e02ddbd47",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Terminal",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/terminal.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "TerminalHeader",
+        "TerminalTitle",
+        "TerminalStatus",
+        "TerminalActions",
+        "TerminalCopyButton",
+        "TerminalClearButton",
+        "TerminalContent",
+        "Terminal"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "cff7977c20f8dde3",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "TestResults",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/test-results.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "code"],
+      "exports": [
+        "TestResultsHeader",
+        "TestResultsDuration",
+        "TestResultsSummary",
+        "TestResults",
+        "TestResultsProgress",
+        "TestResultsContent",
+        "TestSuite",
+        "TestSuiteName",
+        "TestSuiteStats",
+        "TestSuiteContent",
+        "TestName",
+        "TestDuration",
+        "TestStatus",
+        "Test",
+        "TestError",
+        "TestErrorMessage",
+        "TestErrorStack"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "1a73102ccfefb03b",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Tool",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/tool.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "display"],
+      "exports": [
+        "Tool",
+        "ToolHeader",
+        "ToolContent",
+        "ToolInput",
+        "ToolOutput"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "27dea4919bdadcf8",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Toolbar",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/toolbar.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "layout"],
+      "exports": ["Toolbar"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "8347297224fca95d",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "Transcription",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/transcription.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "chat", "media"],
+      "exports": ["Transcription", "TranscriptionSegment"],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "149798644b2091fa",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "VoiceSelector",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/voice-selector.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "input", "media"],
+      "exports": [
+        "VoiceSelector",
+        "VoiceSelectorTrigger",
+        "VoiceSelectorContent",
+        "VoiceSelectorDialog",
+        "VoiceSelectorInput",
+        "VoiceSelectorList",
+        "VoiceSelectorEmpty",
+        "VoiceSelectorGroup",
+        "VoiceSelectorItem",
+        "VoiceSelectorShortcut",
+        "VoiceSelectorSeparator",
+        "VoiceSelectorGender",
+        "VoiceSelectorAccent",
+        "VoiceSelectorAge",
+        "VoiceSelectorName",
+        "VoiceSelectorDescription",
+        "VoiceSelectorAttributes",
+        "VoiceSelectorBullet",
+        "VoiceSelectorPreview"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    },
+    {
+      "id": "e35383f8c0145e15",
+      "source": {
+        "target": "block/ghost@packages/ghost-ui",
+        "scanned_at": "2026-04-30T00:00:00Z"
+      },
+      "name": "WebPreview",
+      "discovered_via": "registry.json",
+      "file": "src/components/ai-elements/web-preview.tsx",
+      "group": "ai-elements",
+      "categories": ["ai", "media"],
+      "exports": [
+        "WebPreview",
+        "WebPreviewNavigation",
+        "WebPreviewNavigationButton",
+        "WebPreviewUrl",
+        "WebPreviewBody",
+        "WebPreviewConsole"
+      ],
+      "variants": [],
+      "sizes": [],
+      "occurrences": 1
+    }
+  ]
+}
