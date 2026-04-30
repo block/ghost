@@ -75,7 +75,7 @@ This applies regardless of dialect. The recipe doesn't tell you what the canonic
 
 **You write your own greps and regexes. There is no pre-built parser.** Adapt to what's actually in the repo:
 
-- **Tailwind (Tailwind v3 / v4 with `@theme`)** — `rg -oN '\b(bg|text|border|fill|stroke|ring|outline|from|to|via|p[lrtbxy]?|m[lrtbxy]?|w|h|gap|space-[xy]|rounded(-[lrtb][lr]?)?|shadow|z|opacity)-[a-z0-9-]+(\[[^\]]+\])?' -g '*.{tsx,jsx,ts,js,html,vue,svelte}'` for class atoms. Then read `tailwind.config.{ts,js}` and any `@theme {}` block in CSS to map class atoms to literal values.
+- **Tailwind (Tailwind v3 / v4 with `@theme`)** — class atoms are load-bearing for the bucket. The declared `--spacing-*` / `--text-*` / `--color-*` tokens in `@theme` are only half the picture; the other half is which atoms components actually use, because Tailwind synthesizes most of the rendered scale from the `--spacing` modular base (`p-2` → `padding: calc(var(--spacing) * 2)` → 8px when `--spacing: 0.25rem`). A bucket built from declarations alone undercounts spacing/typography/color systematically — see the `## Tailwind class-atom pass` section below.
 - **CSS / SCSS / CSS modules** — `rg -oN '#[0-9a-fA-F]{3,8}\b' -g '*.{css,scss,sass}'` for hex; `rg -oN '\b(rgba?|hsla?|oklch|color)\([^)]+\)' -g '*.{css,scss}'` for color functions; `rg -oN '\b[0-9]+(\.[0-9]+)?(px|rem|em|%|vh|vw|fr|ch|svh|dvh)\b' -g '*.{css,scss}'` for scalars; `rg -oN -- '--[a-z0-9-]+\s*:' -g '*.{css,scss}'` for custom properties.
 - **CSS-in-JS (styled-components, emotion, vanilla-extract)** — same regex set but expand `-g '*.{ts,tsx,js,jsx}'`. Watch for template literals split across lines.
 - **iOS / Swift** — `rg -oN 'Color\([^)]+\)|UIColor\([^)]+\)|\.(red|blue|green|orange|brand[A-Za-z]*)\b' -g '*.swift'` for color sites; `rg -oN '\b[0-9]+(\.[0-9]+)?\b' -g '*.swift' | sort | uniq -c | sort -rn | head -50` for likely scalars (lots of noise; keep top-N by frequency).
@@ -83,6 +83,24 @@ This applies regardless of dialect. The recipe doesn't tell you what the canonic
 - **Token JSON / YAML** — read directly with `cat`/Read tool. Token files are usually small and structured — parse them as data, don't grep.
 
 If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per dialect and merge into one bucket.
+
+## Tailwind class-atom pass
+
+For Tailwind targets, the rendered design language lives at the intersection of *declared tokens* (`@theme {}` / `tailwind.config.*`) and *consumed atoms* (`p-2`, `bg-orange-500`, `text-sm` in components). Skipping the atom pass produces a bucket where the spacing/typography/color sections look sparse and irregular even though the live UI is on a clean modular grid. **Run this pass for every Tailwind target.**
+
+The atom-to-literal resolver depends on the Tailwind version:
+
+- **Tailwind v4** — atoms resolve through `@theme {}` directives. The spacing scale is *calculated* from `--spacing` (default `0.25rem`): `p-N`, `m-N`, `gap-N`, `w-N`, `h-N`, `space-x-N`, `space-y-N`, `inset-N` all resolve to `N * --spacing`. Type scale lives in `--text-*` keys; colors in `--color-*` keys; radii in `--radius-*` keys. Custom `--spacing-N` declarations override the calculation for that N.
+- **Tailwind v3** — read `theme.spacing` / `theme.colors` / `theme.fontSize` / `theme.borderRadius` from `tailwind.config.{ts,js}`. The defaults (when keys are unset) follow the published v3 scale; pull them from `node_modules/tailwindcss/stubs/config.full.js` or the docs.
+
+Procedure:
+
+1. Grep class atoms across the UI surface: `rg -oN '\b(bg|text|border|fill|stroke|ring|outline|from|to|via|p[lrtbxy]?|m[lrtbxy]?|w|h|gap|space-[xy]|inset(-[xy])?|top|right|bottom|left|rounded(-[lrtb][lr]?)?|shadow|z|opacity)-[a-z0-9.]+(\[[^\]]+\])?' -g '*.{tsx,jsx,ts,js,html,vue,svelte}' | sort | uniq -c | sort -rn`.
+2. Resolve each atom to its literal via the table above. Skip arbitrary-value atoms (`p-[13px]`) — those don't belong to the modular scale; record them separately under `usage: { arbitrary: N }` so the interpreter can flag drift.
+3. Each distinct literal becomes a `values[]` row with `usage.className` set to the atom-occurrence count. Sum across atoms that resolve to the same literal (`p-2` and `gap-2` both → 8px).
+4. Each Tailwind-default token consumed by class atoms also becomes a `tokens[]` row, with `name` set to the canonical key (`--spacing-2`, `--color-orange-500`) and `alias_chain` empty (it's a leaf default).
+
+If a literal is produced *both* by a declared `--spacing-N` token *and* by class-atom usage, merge into one `values[]` row with `usage: { className: N, css_var: M }`. The interpreter reads both signals; the row carries the full picture.
 
 ### 3. Run extraction passes — apply the exhaustiveness rule per section
 
