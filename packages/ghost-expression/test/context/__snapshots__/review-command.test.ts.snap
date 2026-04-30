@@ -29,7 +29,6 @@ Hex literals must come from the documented palette
 **Pattern:** \`#[0-9a-fA-F]{3,8}\`
 **Match:** \`exact\`
 **Enforce at:** \`className\`, \`css_var\`, \`inline_style\`
-**Based on:** \`bkt:color:1a1a1a\`, \`bkt:color:ffffff\`, \`bkt:color:f5f5f5\`
 **Support:** 94%
 
 ### \`no-foreign-fonts\` — font-sourcing
@@ -54,7 +53,6 @@ Buttons, inputs, and badges must be fully rounded
 **Pattern:** \`<(Button|Input|Badge)\\b[^>]*\\brounded-(?!full|pill)\`
 **Match:** \`structural\`
 **Enforce at:** \`className\`
-**Based on:** \`bkt:component:button\`, \`bkt:component:input\`, \`bkt:component:badge\`
 **Support:** 97%
 
 ### \`structural-radius-set\` — shape-language

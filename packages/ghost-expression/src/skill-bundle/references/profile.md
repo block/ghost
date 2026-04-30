@@ -79,7 +79,6 @@ Walk the bucket and pose: *what pattern is this project consistently following t
   pattern: <regex or string> # what the reviewer greps for
   enforce_at: [...]          # className / css_var / inline_style / import
   support: 0.0–1.0           # computed: bucket conformers / total observed
-  based_on: [bucket-id, ...] # provenance; lets re-scan verify
   presence_floor: <int>      # optional; default 0
 ```
 
@@ -122,11 +121,7 @@ The perceptual prior escalates rules one tier when the bucket count for the dime
 
 Don't set a presence floor when the dimension is well-populated — the escalation will never trigger and the field becomes noise.
 
-#### 3d. Cite provenance
-
-For each rule, list the bucket row IDs that motivated it in `based_on`. This is the rule's *provenance trail* — re-scanning later can verify the rule still has a basis. A rule with empty `based_on` is fine (some rules express absences) but the curator should be able to trace any positive rule back to evidence.
-
-#### 3e. Present the ranked list to the curator
+#### 3d. Present the ranked list to the curator
 
 Sort candidates by support, descending. Present each as: id + canonical + summary + support % + 1-line rationale. Mark presence-floor escalations explicitly. Recommend cuts: anything below 0.85, anything redundant with another rule, anything where the pattern is too fuzzy to enforce.
 

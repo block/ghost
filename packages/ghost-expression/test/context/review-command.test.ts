@@ -205,19 +205,17 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     expect(out).toMatch(/> Project ships an 8-color palette/);
   });
 
-  it("renders support percentage and based_on citation", () => {
+  it("renders support percentage", () => {
     const fp = withRules([
       {
         id: "pill-interactives",
         canonical: "shape-language",
         pattern: "<Button.*rounded-(?!full)",
         support: 0.97,
-        based_on: ["bkt:component:button", "bkt:component:input"],
       },
     ]);
     const out = emitReviewCommand({ expression: fp });
     expect(out).toMatch(/\*\*Support:\*\* 97%/);
-    expect(out).toMatch(/\*\*Based on:\*\* `bkt:component:button`/);
   });
 
   it("includes a calibration footer that names the prior", () => {
