@@ -1,12 +1,11 @@
-import type { Expression } from "@ghost/core";
+import {
+  closestCanonical,
+  type Expression,
+  isCanonicalDimension,
+} from "@ghost/core";
 import { parse as parseYaml } from "yaml";
 import type { BodyData } from "./body.js";
 import { parseExpression, splitRaw } from "./parser.js";
-import {
-  formatReferenceError,
-  isTokenReference,
-  resolveTokenReference,
-} from "./references.js";
 import { FrontmatterSchema } from "./schema.js";
 
 export type LintSeverity = "error" | "warning" | "info";
@@ -72,7 +71,7 @@ export function lintExpression(
   checkStrayEvidenceInBody(bodyText, rawIssues);
   checkEvidenceHexes(expression, rawIssues);
   checkUnusedPalette(expression, rawIssues);
-  checkRoleReferences(expression, rawIssues);
+  checkNonCanonicalDimensions(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -199,18 +198,10 @@ function checkEvidenceHexes(fp: Expression, issues: LintIssue[]): void {
 
 /**
  * Flag palette colors that don't appear anywhere a reader could justify
- * them. The search covers three citation paths:
- *   1. Hex literal in a decision body's Evidence bullet text.
- *   2. Hex literal directly in a `roles[].tokens.palette.<slot>` field
- *      or in a `roles[].evidence` string.
- *   3. Slug-binding propagation: `roles[].tokens.palette.<slot>` carrying
- *      a `{palette.dominant.X}` / `{palette.semantic.X}` reference resolves
- *      through the palette to a hex, which counts as cited.
- *
- * Rationale: forcing every neutral step to be name-dropped in decision
- * prose was over-citing prose for no reader benefit. Role bindings are
- * the load-bearing place a hex earns its keep — and the propagation
- * makes named slots equivalent to inline hexes for citation purposes.
+ * them — i.e. not cited as a hex literal in any decision's body Evidence
+ * bullets or rationale prose. Severity is `info` (a soft hint, not an
+ * error) because some palette entries are honestly load-bearing without
+ * decision-level commentary (every neutral step in a wide ramp).
  */
 function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
   const paletteHexes = collectPaletteHexes(fp);
@@ -224,72 +215,54 @@ function checkUnusedPalette(fp: Expression, issues: LintIssue[]): void {
     .map((d) => d.decision)
     .join("\n")
     .toLowerCase();
-  const roleText = collectRoleHexCitations(fp);
-  const slugCitedHexes = collectSlugBoundHexes(fp);
-  const haystack = `${evidenceText}\n${decisionText}\n${roleText}`;
+  const haystack = `${evidenceText}\n${decisionText}`;
 
   for (const hex of paletteHexes) {
     if (haystack.includes(hex)) continue;
-    if (slugCitedHexes.has(hex)) continue;
     issues.push({
       severity: "info",
       rule: "unused-palette",
-      message: `Palette color ${hex} is not cited in any decision or role binding.`,
+      message: `Palette color ${hex} is not cited in any decision.`,
     });
   }
 }
 
 /**
- * Collect every hex citation reachable from `roles[]`:
- *   - direct hex literals in `roles[].tokens.palette.<slot>` for any slot key
- *   - any hex that appears inline in a `roles[].evidence` bullet
- *
- * Returns one big lowercase string so the caller can run substring
- * checks against it. Local references (`{palette.dominant.accent}`) are
- * resolved separately by `collectSlugBoundHexes`.
+ * Soft check: a `decisions[].dimension` slug should either be in the
+ * canonical vocabulary or pair with a canonical `dimension_kind`. Anything
+ * else lives in the long tail and won't roll up at fleet scale. This
+ * never errors — it suggests, so authoring stays free-form by default.
  */
-function collectRoleHexCitations(fp: Expression): string {
-  const out: string[] = [];
-  const HEX_LITERAL = /^#[0-9a-f]{3,8}$/i;
-  for (const role of fp.roles ?? []) {
-    const palette = role.tokens?.palette;
-    if (palette) {
-      for (const value of Object.values(palette)) {
-        if (typeof value === "string" && HEX_LITERAL.test(value)) {
-          out.push(value.toLowerCase());
-        }
-      }
+function checkNonCanonicalDimensions(
+  fp: Expression,
+  issues: LintIssue[],
+): void {
+  const decisions = fp.decisions ?? [];
+  decisions.forEach((d, idx) => {
+    if (isCanonicalDimension(d.dimension)) return;
+    if (d.dimension_kind && isCanonicalDimension(d.dimension_kind)) return;
+    const suggestion = closestCanonical(d.dimension);
+    if (d.dimension_kind && !isCanonicalDimension(d.dimension_kind)) {
+      const fix = closestCanonical(d.dimension_kind) ?? suggestion;
+      issues.push({
+        severity: "warning",
+        rule: "non-canonical-dimension",
+        message: `Decision \`${d.dimension}\` has \`dimension_kind: ${d.dimension_kind}\`, which is also not in the canonical vocabulary${
+          fix ? ` (closest: \`${fix}\`)` : ""
+        }. Set \`dimension_kind\` to a canonical slug so fleet aggregation can group this decision.`,
+        path: `decisions[${idx}].dimension_kind`,
+      });
+      return;
     }
-    for (const ev of role.evidence ?? []) {
-      out.push(ev.toLowerCase());
-    }
-  }
-  return out.join("\n");
-}
-
-/**
- * Walk `roles[].tokens.palette` for `{palette.dominant.X}` /
- * `{palette.semantic.X}` references and return the set of palette hexes
- * those references resolve to. Used by `unused-palette` so a hex cited
- * only via a slug binding still counts as used.
- *
- * Unresolvable references are silently skipped — the dedicated
- * `broken-role-reference` rule reports those.
- */
-function collectSlugBoundHexes(fp: Expression): Set<string> {
-  const out = new Set<string>();
-  for (const role of fp.roles ?? []) {
-    const palette = role.tokens?.palette;
-    if (!palette) continue;
-    for (const value of Object.values(palette)) {
-      if (!isTokenReference(value)) continue;
-      const result = resolveTokenReference(fp, value);
-      if (result.value) {
-        out.add(result.value.toLowerCase());
-      }
-    }
-  }
-  return out;
+    issues.push({
+      severity: "warning",
+      rule: "non-canonical-dimension",
+      message: `Decision \`${d.dimension}\` is not a canonical dimension${
+        suggestion ? ` (closest: \`${suggestion}\`)` : ""
+      }. Either rename, or add \`dimension_kind: <canonical>\` so fleet aggregation can group this decision.`,
+      path: `decisions[${idx}].dimension`,
+    });
+  });
 }
 
 function collectPaletteHexes(fp: Expression): Set<string> {
@@ -299,77 +272,4 @@ function collectPaletteHexes(fp: Expression): Set<string> {
   for (const step of fp.palette?.neutrals?.steps ?? [])
     out.add(step.toLowerCase());
   return out;
-}
-
-/**
- * Role palette slots may reference named palette entries via
- * `{palette.dominant.<role>}` or `{palette.semantic.<role>}`, or
- * opaque external token refs (`{base.color.brand.x}`) for repos
- * that pull tokens from a Style-Dictionary-style pipeline.
- *
- * The slot vocabulary is open (Phase 5b) — any key the consumer
- * defines is walked. Local refs that don't resolve fire
- * `broken-role-reference`; external refs are accepted as opaque (see
- * `isExternalTokenReference`).
- */
-function checkRoleReferences(fp: Expression, issues: LintIssue[]): void {
-  const roles = fp.roles ?? [];
-  roles.forEach((role, ri) => {
-    const palette = role.tokens?.palette;
-    if (!palette) return;
-    for (const [field, value] of Object.entries(palette)) {
-      if (!isTokenReference(value)) continue;
-      // External token refs (Style-Dictionary-style namespaces) are
-      // accepted as opaque — we can't resolve them without consulting
-      // the upstream package, and the agent authored them deliberately.
-      if (isExternalTokenReference(value)) continue;
-      const result = resolveTokenReference(fp, value);
-      if (result.error) {
-        issues.push({
-          severity: "error",
-          rule: "broken-role-reference",
-          message: formatReferenceError(result.error),
-          path: `roles[${ri}].tokens.palette.${field}`,
-        });
-      }
-    }
-  });
-}
-
-/**
- * Heuristic for "this is a deliberately-opaque external token ref."
- * Returns true when the reference clearly targets a foreign namespace —
- * either it starts with a recognized Style-Dictionary-style head, or
- * it has 4+ dotted segments (deeper than local `palette.<bucket>.<role>`).
- *
- * Local refs (`{palette.dominant.accent}`, `{palette.semantic.error}`)
- * are NOT external — the caller resolves them against the palette and
- * fires `broken-role-reference` if they miss. References starting with
- * `palette.` but pointing at an unsupported sub-namespace are also
- * routed through the resolver so its `unsupported-namespace` error
- * surfaces properly.
- */
-function isExternalTokenReference(value: string): boolean {
-  const match = /^\{([^}]+)\}$/.exec(value);
-  if (!match) return false;
-  const path = match[1];
-  const segments = path.split(".");
-  // Anything in the local `palette.*` namespace is resolved locally,
-  // even if the sub-namespace is wrong (the resolver's
-  // `unsupported-namespace` error is the right diagnostic).
-  if (segments[0] === "palette") return false;
-  // External Style-Dictionary-style namespace heads — passthrough.
-  const externalHeads = new Set([
-    "base",
-    "core",
-    "semantic",
-    "component",
-    "tokens",
-    "ref",
-    "sys",
-  ]);
-  if (externalHeads.has(segments[0] ?? "")) return true;
-  // Deeply-nested refs (4+ segments) — heuristic that this is a
-  // pipeline-generated token, not a flat slug we should resolve.
-  return segments.length >= 4;
 }

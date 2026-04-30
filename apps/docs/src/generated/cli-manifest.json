@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-27T15:50:16.473Z",
+  "generatedAt": "2026-04-29T17:56:29.010Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -200,8 +200,8 @@
         {
           "tool": "ghost-expression",
           "name": "lint",
-          "rawName": "lint [expression]",
-          "description": "Validate expression.md schema and body/frontmatter coherence",
+          "rawName": "lint [file]",
+          "description": "Validate expression.md, map.md, or bucket.json — auto-detects the kind from path/content",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -212,6 +212,29 @@
               "negated": false
             }
           ]
+        },
+        {
+          "tool": "ghost-expression",
+          "name": "scan-status",
+          "rawName": "scan-status [dir]",
+          "description": "Report which scan stages have produced artifacts in a directory: topology (map.md), objective (bucket.json), subjective (expression.md). Tells orchestrators which stage to run next.",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-expression",
+          "name": "inventory",
+          "rawName": "inventory [path]",
+          "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
+          "options": []
         },
         {
           "tool": "ghost-expression",
@@ -240,6 +263,22 @@
               "name": "format",
               "description": "Output format: cli or json",
               "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-expression",
+          "name": "bucket",
+          "rawName": "bucket <op> [...buckets]",
+          "description": "Operate on ghost.bucket/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+          "options": [
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Write the result to this path (default: stdout)",
+              "default": null,
               "takesValue": true,
               "negated": false
             }
@@ -304,48 +343,6 @@
               "name": "name",
               "description": "Override the skill name (default: expression id) (context-bundle)",
               "default": null,
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        }
-      ],
-      "globalOptions": [
-        {
-          "rawName": "-h, --help",
-          "name": "help",
-          "description": "Display this message",
-          "default": null
-        },
-        {
-          "rawName": "-v, --version",
-          "name": "version",
-          "description": "Display version number",
-          "default": null
-        }
-      ]
-    },
-    {
-      "tool": "ghost-map",
-      "commands": [
-        {
-          "tool": "ghost-map",
-          "name": "inventory",
-          "rawName": "inventory [path]",
-          "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote.",
-          "options": []
-        },
-        {
-          "tool": "ghost-map",
-          "name": "lint",
-          "rawName": "lint [map]",
-          "description": "Validate map.md against ghost.map/v1",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
               "takesValue": true,
               "negated": false
             }

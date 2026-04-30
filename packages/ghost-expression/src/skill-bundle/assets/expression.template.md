@@ -47,18 +47,11 @@ surfaces:
   borderRadii: [4, 8]
   shadowComplexity: deliberate-none
   borderUsage: minimal
-
-roles: []
 ---
 
 # Character
 
 2-4 sentences on the personality of this design language. This prose becomes `observation.summary` when parsed.
-
-# Signature
-
-- Distinctive trait 1.
-- Distinctive trait 2.
 
 # Decisions
 

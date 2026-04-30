@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Sixteen verbs across four tools. Everything interpretive lives in the skill bundles your host agent runs.
+description: Seventeen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
 kicker: Docs
 section: guide
 order: 20
@@ -10,22 +10,20 @@ slug: cli
 <DocSection title="Overview">
 
 The CLIs are the calculator your host agent reaches for when it needs a
-reproducible answer. The canonical artifacts are **`expression.md`** (owned
-by `ghost-expression`) and **`map.md`** (owned by `ghost-map`) — Markdown
-files with YAML frontmatter (machine layer) plus a prose body. Most commands
-accept a path to the relevant artifact; they default to `./expression.md` or
-`./map.md` in the current directory. No API key required.
+reproducible answer. A scan produces three artifacts in sequence — **`map.md`**
+(topology) → **`bucket.json`** (objective) → **`expression.md`** (subjective) —
+all owned by `ghost-expression`. Most commands accept a path; they default to
+`./expression.md` for kind-aware verbs.  No API key required.
 
 Verbs are scoped to the tool that owns the artifact:
 
-- **`ghost-map`** — topology: `inventory`, `lint`
-- **`ghost-expression`** — design language: `lint`, `describe`, `diff`, `emit`
+- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `describe`, `diff`, `bucket <op>`, `emit`
 - **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
 
-Workflows like _profile_, _review_, _verify_, and _remediate_ are skill
-recipes your host agent runs — not CLI verbs. Install them with each
-tool's `emit skill` verb.
+Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
+_remediate_ are skill recipes your host agent runs — not CLI verbs. Install
+them with each tool's `emit skill` verb.
 
 The tables below are generated from each CLI's source at build time. If a
 flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
@@ -33,46 +31,87 @@ this reference — so these docs can't drift from the binaries.
 
 </DocSection>
 
-<DocSection title="ghost-map — topology">
+<DocSection title="ghost-expression — authoring & validation">
 
-`map.md` is the navigation card every Ghost tool reads to learn the
-topology of a frontend repo. `ghost-map` ships two verbs: `inventory`
-(raw repo signals as JSON, the input the agent reads to author
-`map.md`) and `lint` (validate against `ghost.map/v1`).
+`ghost-expression` owns the three-stage scan pipeline: `map.md` (topology) →
+`bucket.json` (objective) → `expression.md` (subjective). Verbs cover
+inventory + lint + describe + diff + bucket ops + emit. Drift detection
+lives separately in `ghost-drift`.
 
-<CliHelp tool="ghost-map" command="inventory" hideDescription />
+### Topology — `inventory`
+
+Emit deterministic raw signals about a frontend repo as JSON: package
+manifests, language histogram, candidate config files, registry presence,
+top-level tree, git remote. Feeds the topology recipe (the agent's input
+when authoring `map.md`).
+
+<CliHelp tool="ghost-expression" command="inventory" hideDescription />
 
 ```bash
 # Inventory the current directory
-ghost-map inventory
+ghost-expression inventory
 
 # Inventory a different repo
-ghost-map inventory ../other-repo
+ghost-expression inventory ../other-repo
 ```
 
-<CliHelp tool="ghost-map" command="lint" hideDescription />
+### Pipeline progress — `scan-status`
+
+Report which scan stages have produced artifacts in a directory: topology
+(`map.md`), objective (`bucket.json`), subjective (`expression.md`). Tells
+orchestrators which stage to run next. Pure file-presence check today;
+hash-keyed freshness is a planned enhancement.
+
+<CliHelp tool="ghost-expression" command="scan-status" hideDescription />
 
 ```bash
-# Default — reads ./map.md
-ghost-map lint
+# Status of the current directory
+ghost-expression scan-status
 
-# Specific file, JSON output
-ghost-map lint packages/ghost-ui/map.md --format json
+# Status of a different scan dir
+ghost-expression scan-status fleet/members/cash-ios
+
+# Machine-readable for orchestrators
+ghost-expression scan-status . --format json
 ```
 
-</DocSection>
+Output reports each stage as `present` or `missing` and surfaces the
+recommended next stage (or "scan complete" when every artifact is present).
 
-<DocSection title="ghost-expression — authoring & validation">
+### Bucket ops — `bucket <op>`
 
-`expression.md` is the canonical design-language artifact. `ghost-expression`
-owns authoring (lint + describe + diff + emit) — drift detection lives
-separately in `ghost-drift`.
+Operate on `ghost.bucket/v1` files. Two ops today:
+
+- **`merge`** — concat with id-based dedup, deterministic and idempotent.
+  The composition primitive: modular rollups (one repo, N feature modules)
+  and fleet cohort views (N members merged into one cohort bucket) both
+  reduce to bucket merge.
+- **`fix-ids`** — recompute every row's `id` from its content. The survey
+  recipe instructs the agent to author rows with `"id": ""` and finalize
+  with this verb in one pass — agents don't compute SHA-256 hashes by hand.
+
+<CliHelp tool="ghost-expression" command="bucket" hideDescription />
+
+```bash
+# Merge two buckets
+ghost-expression bucket merge a.json b.json -o merged.json
+
+# Merge a directory of bucket files
+ghost-expression bucket merge fleet/members/*/bucket.json -o cohort.json
+
+# Populate IDs after authoring rows with empty id fields
+ghost-expression bucket fix-ids draft.json -o draft.json
+
+# Stream output to stdout if -o is omitted
+ghost-expression bucket merge a.json b.json | jq '.values | length'
+```
 
 ### Validation — `lint`
 
-Validate `expression.md` schema + body/frontmatter coherence. Use this
-before declaring an expression valid — the `profile` recipe ends by
-calling it.
+Validate `expression.md`, `map.md`, or `bucket.json` against its schema —
+auto-detects which by `.json` extension, `schema: ghost.map/v1` frontmatter,
+or filename. Use this before declaring an artifact valid; every authoring
+recipe ends by calling it.
 
 <CliHelp tool="ghost-expression" command="lint" hideDescription />
 
@@ -80,14 +119,20 @@ calling it.
 # Default — reads ./expression.md
 ghost-expression lint
 
-# Specific file, JSON output
+# Validate a map.md (auto-detected by frontmatter)
+ghost-expression lint map.md
+
+# Validate a bucket.json
+ghost-expression lint bucket.json
+
+# JSON output
 ghost-expression lint path/to/expression.md --format json
 ```
 
 ### Inspection — `describe`
 
 Print a section map of `expression.md` — frontmatter range, body sections
-(`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
+(`# Character`, `# Decisions`, `# Fragments`), and each
 `### dimension` block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
@@ -119,11 +164,10 @@ expression.md — 309 lines, ~3,955 tokens
 
 FRONTMATTER    1–164      ~973 tok        [palette, spacing, typography, surfaces, roles, observation, decisions]
 # Character      166–169    ~159 tok
-# Signature      170–179    ~298 tok
-# Decisions      180–305    ~2,503 tok
-  ### color-strategy           182–192    ~250 tok
-  ### shape-language           205–216    ~181 tok
-  ### typography-voice         217–229    ~258 tok
+# Decisions      170–305    ~2,800 tok
+  ### color-strategy           172–182    ~250 tok
+  ### shape-language           195–206    ~181 tok
+  ### typography-voice         207–219    ~258 tok
   …
 # Fragments      306–309    ~21 tok
 ```
@@ -299,7 +343,9 @@ once, then ask your agent in plain English:
 
 | Recipe     | Bundle             | Trigger                                                |
 | ---------- | ------------------ | ------------------------------------------------------ |
-| `map`      | `ghost-map`        | "map this repo" / "write map.md"                       |
+| `scan`     | `ghost-expression` | "scan this project" / "go end-to-end" — meta-recipe orchestrating topology → survey → profile |
+| `map`      | `ghost-expression` | "map this repo" / "write map.md" (topology stage)      |
+| `survey`   | `ghost-expression` | "survey design values" / "extract tokens" (objective)  |
 | `profile`  | `ghost-expression` | "profile this design language" / "write expression.md" |
 | `review`   | `ghost-drift`      | "review this PR for drift"                              |
 | `verify`   | `ghost-drift`      | "verify generated UI against the expression"           |

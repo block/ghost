@@ -31,11 +31,6 @@ export function formatExpression(fp: Expression): string {
     if (fp.observation.personality.length > 0) {
       lines.push(`  Personality:  ${fp.observation.personality.join(", ")}`);
     }
-    if (fp.observation.distinctiveTraits.length > 0) {
-      for (const trait of fp.observation.distinctiveTraits) {
-        lines.push(`  ${c(DIM, "-")} ${trait}`);
-      }
-    }
     if (fp.observation.resembles.length > 0) {
       lines.push(`  Resembles:    ${fp.observation.resembles.join(", ")}`);
     }

@@ -84,8 +84,8 @@ function isDelimiter(line: string): boolean {
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
  *     personality/resembles tags, embedding.
- *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
- *     traits, `### dimension` → decision rationale.
+ *   • Body owns prose: `# Character` → summary, `### dimension` →
+ *     decision rationale.
  *
  * The returned expression unions both sources. Since the two sides never
  * carry the same field, there is no precedence rule — each field has one
@@ -116,7 +116,7 @@ export function parseExpression(
 
 /**
  * Fold body-owned prose fields into the expression. The body provides
- * Character/Signature prose for `observation` and rationale for `decisions`
+ * Character prose for `observation` and rationale for `decisions`
  * (keyed by dimension). Frontmatter-only dimensions keep their evidence
  * but get no body prose (decision text left empty).
  */
@@ -137,18 +137,12 @@ function mergeObservation(
   body: BodyData,
 ): DesignObservation | undefined {
   const summary = body.character?.trim() ?? "";
-  const distinctiveTraits = body.signature ?? [];
   const personality = yamlObs?.personality ?? [];
   const resembles = yamlObs?.resembles ?? [];
-  if (
-    !summary &&
-    distinctiveTraits.length === 0 &&
-    personality.length === 0 &&
-    resembles.length === 0
-  ) {
+  if (!summary && personality.length === 0 && resembles.length === 0) {
     return undefined;
   }
-  return { summary, personality, distinctiveTraits, resembles };
+  return { summary, personality, resembles };
 }
 
 /**
@@ -177,6 +171,7 @@ function mergeDecisions(
       dimension: y.dimension,
       decision: b?.decision ?? "",
       evidence: b?.evidence ?? [],
+      ...(y.dimension_kind ? { dimension_kind: y.dimension_kind } : {}),
       ...(y.embedding ? { embedding: y.embedding } : {}),
     });
   }

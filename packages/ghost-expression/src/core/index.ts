@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
-import type { DesignDecision, Expression } from "@ghost/core";
-import { computeEmbedding } from "@ghost/core";
+import type { DesignDecision, Expression, SemanticColor } from "@ghost/core";
+import { computeEmbedding, parseColorToOklch } from "@ghost/core";
 import { mergeExpression } from "./compose.js";
 import {
   loadDecisionFragments,
@@ -54,6 +54,7 @@ export {
   serializeEmbeddingFragment,
 } from "./fragments.js";
 export type { ExpressionMeta, FrontmatterData } from "./frontmatter.js";
+export { inventory } from "./inventory.js";
 export type {
   ExpressionLayout,
   ExpressionLayoutSection,
@@ -66,8 +67,21 @@ export type {
   LintSeverity,
 } from "./lint.js";
 export { lintExpression } from "./lint.js";
+export type {
+  MapLintIssue,
+  MapLintReport,
+  MapLintSeverity,
+} from "./lint-map.js";
+export { lintMap } from "./lint-map.js";
 export type { ParsedExpression, ParseOptions } from "./parser.js";
 export { parseExpression, splitRaw } from "./parser.js";
+export type {
+  ScanStage,
+  ScanStageReport,
+  ScanStageState,
+  ScanStatus,
+} from "./scan-status.js";
+export { scanStatus } from "./scan-status.js";
 export type { FrontmatterShape } from "./schema.js";
 export {
   FrontmatterSchema,
@@ -98,7 +112,7 @@ export interface LoadOptions {
  *
  * If the file declares `extends:`, the base expression is loaded recursively and
  * merged per the rules in compose.ts: overlay wins, decisions merged by
- * dimension, palette roles merged by role.
+ * dimension, palette colors merged by role.
  *
  * If a `decisions/` directory sits next to the expression.md, each .md
  * inside is assembled into the expression's decisions[], merged by
@@ -127,6 +141,13 @@ export async function loadExpression(
     }
   }
 
+  // Backfill `oklch` on palette colors that arrived hex-only. Deterministic
+  // (same hex → same oklch), so re-parsing the same expression always
+  // yields the same in-memory shape. Without this, `comparePalette`
+  // misreads hex-only colors as fully unmatched (distance 1) and even
+  // self-distance comes out non-zero.
+  backfillPaletteOklch(parsed.expression);
+
   if (!options.noEmbeddingBackfill) {
     parsed.expression.embedding = await resolveEmbedding(
       parsed.expression,
@@ -136,6 +157,22 @@ export async function loadExpression(
   }
 
   return parsed;
+}
+
+function backfillPaletteOklch(expression: Expression): void {
+  if (!expression.palette) return;
+  if (expression.palette.dominant) {
+    expression.palette.dominant = expression.palette.dominant.map(ensureOklch);
+  }
+  if (expression.palette.semantic) {
+    expression.palette.semantic = expression.palette.semantic.map(ensureOklch);
+  }
+}
+
+function ensureOklch(color: SemanticColor): SemanticColor {
+  if (color.oklch && color.oklch.length === 3) return color;
+  const oklch = parseColorToOklch(color.value);
+  return oklch ? { ...color, oklch } : color;
 }
 
 /**

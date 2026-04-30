@@ -26,9 +26,9 @@ export interface FrontmatterData {
 
 /**
  * Expression fields that are populated from YAML frontmatter. Prose
- * fields (observation.summary, observation.distinctiveTraits, decisions[].decision,
- * values) are populated from the markdown body by `applyBody` — they are
- * deliberately NOT listed here.
+ * fields (observation.summary, decisions[].decision) are populated from
+ * the markdown body by `applyBody` — they are deliberately NOT listed
+ * here.
  */
 const EXPRESSION_KEYS = new Set<keyof Expression>([
   "id",
@@ -37,11 +37,11 @@ const EXPRESSION_KEYS = new Set<keyof Expression>([
   "sources",
   "observation",
   "decisions",
+  "rules",
   "palette",
   "spacing",
   "typography",
   "surfaces",
-  "roles",
   "embedding",
 ]);
 
@@ -111,11 +111,11 @@ export function mergeFrontmatter(
     "sources",
     "observation",
     "decisions",
+    "rules",
     "palette",
     "spacing",
     "typography",
     "surfaces",
-    "roles",
     "embedding",
   ];
   for (const key of ordered) {
@@ -154,6 +154,7 @@ function stripDecisionProse(
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {
     const out: Record<string, unknown> = { dimension: d.dimension };
+    if (d.dimension_kind) out.dimension_kind = d.dimension_kind;
     if (d.embedding) out.embedding = d.embedding;
     return out;
   });

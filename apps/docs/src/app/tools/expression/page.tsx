@@ -48,7 +48,7 @@ export default function GhostExpressionLanding() {
       <AnimatedPageHeader
         kicker="ghost-expression"
         title="Authoring"
-        description="The package that owns expression.md — Ghost's canonical design-language artifact. YAML frontmatter for machines, three-layer prose body (Character / Signature / Decisions) for humans and LLMs. Validated, described, diffed, and emitted into per-project review commands and grounding bundles for any generator."
+        description="The package that owns expression.md — Ghost's canonical design-language artifact. YAML frontmatter for machines, prose body (Character / Decisions) for humans and LLMs. Validated, described, diffed, and emitted into per-project review commands and grounding bundles for any generator."
       />
 
       <div

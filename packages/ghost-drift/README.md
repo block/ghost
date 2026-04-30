@@ -47,19 +47,21 @@ ghost-drift emit skill                                 # install the agent recip
 
 Zero config for every verb. No API key needed. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and only consumed if you ask for a semantic-enriched embedding via the library.
 
-### Authoring `expression.md`?
+### Authoring a scan?
 
-Authoring lives in **[`ghost-expression`](../ghost-expression)**. Install it for `lint`, `describe`, `diff`, and `emit review-command` / `emit context-bundle`:
+Scans live in **[`ghost-expression`](../ghost-expression)**, which owns the three-stage pipeline (`map.md` topology → `bucket.json` objective → `expression.md` subjective). Install it for `inventory`, `lint`, `describe`, `diff`, `bucket merge` / `fix-ids`, `scan-status`, and `emit review-command` / `emit context-bundle`:
 
 ```bash
-ghost-expression lint                       # validate ./expression.md
-ghost-expression describe                   # section ranges + token estimates
-ghost-expression diff a.md b.md             # structural prose-level diff
+ghost-expression inventory                  # raw repo signals → JSON (feeds map.md)
+ghost-expression scan-status                # per-stage state + next stage
+ghost-expression lint                       # auto-detects expression.md / map.md / bucket.json
+ghost-expression bucket merge a.json b.json # union with id-based dedup
+ghost-expression diff a.md b.md             # structural prose-level diff between expressions
 ghost-expression emit review-command        # per-project slash command
 ghost-expression emit context-bundle        # generation context bundle
 ```
 
-These verbs used to live under `ghost-drift`. They were moved in v0.2.0 — running them on `ghost-drift` now prints a deprecation message pointing here.
+The authoring verbs that used to live under `ghost-drift` were moved in v0.2.0; running them on `ghost-drift` now prints a deprecation message pointing here.
 
 ## As a library
 
@@ -88,11 +90,11 @@ ghost-drift emit skill
 
 The agent runs the recipes; the CLI runs the arithmetic. The CLI never calls an LLM.
 
-(Authoring recipes — `profile` for `expression.md` — ship in `ghost-expression`'s skill bundle. Topology and fleet recipes ship in `ghost-map` and `ghost-fleet` respectively.)
+(Authoring recipes — `scan` / `map` / `survey` / `profile` — all ship in `ghost-expression`'s skill bundle, since one tool now owns the whole three-stage scan pipeline. Fleet narrative recipes ship in `ghost-fleet`.)
 
 ## Full story
 
-See the [project README](https://github.com/block/ghost#readme) for the philosophy, the five-tool decomposition, the expression format spec, composite comparison, and the reference design language (Ghost UI).
+See the [project README](https://github.com/block/ghost#readme) for the philosophy, the four-tool decomposition, the three-stage scan pipeline, the expression format spec, composite comparison, and the reference design language (Ghost UI).
 
 ## License
 

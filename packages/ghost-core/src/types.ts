@@ -180,6 +180,94 @@ export interface ColorRamp {
   count: number;
 }
 
+// --- Rule types (v0 reviewer drift rules; perceptual-prior-aware) ---
+
+/**
+ * Perceptual severity for a drift violation. Calibrated to how loudly a
+ * change registers visually, not to engineering hygiene. See
+ * `perceptual-prior.ts` for the tier table that drives defaults.
+ *
+ * Distinct from `RuleSeverity` (`"error" | "warn" | "off"`) which is the
+ * config-level severity for `GhostConfig.rules`. The two never mix —
+ * `DriftSeverity` is for emitted reviewer rules; `RuleSeverity` gates lint
+ * configuration.
+ */
+export type DriftSeverity = "critical" | "serious" | "nit";
+
+/**
+ * How a rule's pattern is matched against violators. Color is exact;
+ * spacing tolerates small absolute drift; type-size tolerates relative
+ * drift; radius/shadow care about structural shape (pill vs. non-pill),
+ * not exact px.
+ */
+export type RuleMatchShape = "exact" | "band" | "percent" | "structural";
+
+/**
+ * The dimension-of-value a rule guards. Used to look up default match
+ * shape and tolerance. Distinct from canonical dimension because one
+ * canonical dimension (e.g. `typography-voice`) can host multiple rule
+ * kinds (family, weight, size).
+ */
+export type RuleKind =
+  | "color"
+  | "radius"
+  | "spacing"
+  | "type-size"
+  | "type-family"
+  | "type-weight"
+  | "shadow"
+  | "motion";
+
+export interface Rule {
+  /** Stable id, slug-style. Used as anchor in emitted reviewer + diff. */
+  id: string;
+  /**
+   * Canonical dimension this rule belongs to. Drives perceptual-tier
+   * lookup. Optional — non-canonical rules are emitted but don't roll up
+   * at fleet aggregation.
+   */
+  canonical?: string;
+  /** What kind of value the rule guards. Drives default match shape. */
+  kind?: RuleKind;
+  /** One-line summary the reviewer surfaces alongside violations. */
+  summary?: string;
+  /** Regex (or fixed string) the reviewer greps for. */
+  pattern: string;
+  /**
+   * Where the rule is enforced. Drives which file types / contexts the
+   * reviewer scans. Open vocabulary; common values: `className`,
+   * `css_var`, `inline_style`, `import`. Empty array = enforce everywhere.
+   */
+  enforce_at?: string[];
+  /**
+   * Optional explicit severity override. When absent, the emitter computes
+   * severity from `canonical` (perceptual tier) plus `presence_floor`
+   * (escalation against the bucket).
+   */
+  severity?: DriftSeverity;
+  /** Optional explicit match-shape override. */
+  match?: RuleMatchShape;
+  /** Tolerance for `band` (px) or `percent` (0–1). Override of default. */
+  tolerance?: number;
+  /**
+   * Bucket-count threshold below which severity escalates one tier. The
+   * default is `0` — only when the underlying dimension is wholly absent
+   * does adding to it cross a presence boundary. Set to `2` (or higher)
+   * for cases like motion where a couple of structural transitions don't
+   * count as "this system uses motion."
+   */
+  presence_floor?: number;
+  /**
+   * Surveyor-computed support score: fraction of observed cases that
+   * already conform to this rule. Used by the human curator to triage —
+   * <0.85 typically indicates the rule isn't yet load-bearing in the
+   * codebase. Consumed at lint time as a soft warning.
+   */
+  support?: number;
+  /** Free-form rationale shown above the rule's table in the emitted reviewer. */
+  rationale?: string;
+}
+
 // --- Observation & decision types (three-layer expression) ---
 
 export interface DesignObservation {
@@ -187,8 +275,6 @@ export interface DesignObservation {
   summary: string;
   /** Personality traits (e.g. "utilitarian", "restrained", "playful") */
   personality: string[];
-  /** What makes this expression visually distinctive */
-  distinctiveTraits: string[];
   /** Closest well-known design languages for reference */
   resembles: string[];
 }
@@ -196,6 +282,18 @@ export interface DesignObservation {
 export interface DesignDecision {
   /** Freeform dimension name — LLM chooses what's relevant (e.g. "color-strategy", "motion", "density") */
   dimension: string;
+  /**
+   * Optional canonical bucket this decision rolls up under. When present,
+   * fleet-aggregation primitives group by this value. When absent, they
+   * fall back to `dimension` if it happens to be canonical, otherwise the
+   * decision is treated as long-tail.
+   *
+   * Authoring rule (see `closestCanonical` in `@ghost/core`): when
+   * `dimension` itself is one of `CANONICAL_DECISION_DIMENSIONS`, omit
+   * `dimension_kind`. Set it only when you've chosen a project-flavored
+   * slug that's better described by an existing canonical bucket.
+   */
+  dimension_kind?: string;
   /** The decision stated abstractly, implementation-agnostic */
   decision: string;
   /** Evidence from the source code supporting this decision */
@@ -206,46 +304,6 @@ export interface DesignDecision {
    * and used by compareDecisions for paraphrase-robust matching.
    */
   embedding?: number[];
-}
-
-/**
- * A semantic slot → token binding. Describes which concrete tokens a
- * design language uses for a specific role (h1, body, card, button, …).
- *
- * This is the bridge between abstract tokens (`typography.sizeRamp: [14, 16, …]`)
- * and renderable output: a role tells a renderer *which* ramp step belongs to
- * *which* slot. All subfields are optional — the agent populates only what it
- * can infer from the source.
- */
-export interface DesignRole {
-  /** Semantic slot name — "h1", "body", "card", "button", "input", "list-row", etc. */
-  name: string;
-  /** Tokens the slot binds, grouped by expression dimension. */
-  tokens: {
-    typography?: {
-      family?: string;
-      size?: number;
-      weight?: number;
-      lineHeight?: number;
-    };
-    spacing?: {
-      padding?: number;
-      gap?: number;
-      margin?: number;
-    };
-    surfaces?: {
-      borderRadius?: number;
-      shadow?: "none" | "subtle" | "layered";
-      borderWidth?: number;
-    };
-    palette?: {
-      background?: string;
-      foreground?: string;
-      border?: string;
-    };
-  };
-  /** Evidence from the source — file paths or file:line references. */
-  evidence: string[];
 }
 
 export interface Expression {
@@ -261,14 +319,13 @@ export interface Expression {
   observation?: DesignObservation;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
-
   /**
-   * Semantic slot → token bindings. The bridge from abstract tokens to
-   * renderable output: each role names a slot ("h1", "card", "button") and
-   * binds tokens from the dimensions below. Optional — agents populate only
-   * roles they can infer from the source.
+   * v0 reviewer rules — human-curated, grep-friendly, severity computed
+   * by the perceptual prior at emit time. Coexists with `decisions[]`
+   * during the v0 transition; in v1 the parser stops populating
+   * `decisions[]` and `rules[]` is the only authoring surface.
    */
-  roles?: DesignRole[];
+  rules?: Rule[];
 
   // --- Layer 3: Concrete values ---
 

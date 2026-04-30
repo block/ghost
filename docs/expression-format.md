@@ -4,8 +4,8 @@ A Ghost **expression** is a single Markdown file that captures what a design lan
 
 The file has two parts, and each owns **different data**:
 
-1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, optional cached embedding. Validated by zod. Read by deterministic tools.
-2. **Body (Markdown)** — the **prose layer**. Character paragraph, Signature bullets, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
+1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, `rules[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
+2. **Body (Markdown)** — the **prose layer**. Character paragraph, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
@@ -30,12 +30,10 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
 | `observation.personality`, `observation.resembles` | Frontmatter | `observation:` |
 | `observation.summary` | **Body** | `# Character` |
-| `observation.distinctiveTraits` | **Body** | `# Signature` bullets |
 | `decisions[].dimension`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
 | `decisions[].evidence` | **Body** | `**Evidence:**` bullet list under `### dimension` |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter | top-level |
-| `roles[]` (slot → token bindings) | Frontmatter | `roles:` |
 | `embedding` (49-dim vector) | **Sibling file** | `embedding.md` (referenced from `# Fragments`) |
 | `metadata` (loose extension bag) | Frontmatter | top-level, open-ended |
 
@@ -71,9 +69,9 @@ sources:                          # optional, lists the targets that were combin
   - https://claude.ai
 
 # --- expression: narrative tags ---
-# NOTE: prose (summary, distinctiveTraits, decision rationale) and the
+# NOTE: prose (summary, decision rationale) and the
 # `**Evidence:**` bullets per decision live in the body under
-# # Character, # Signature, ### blocks.
+# # Character and ### dimension blocks.
 observation:
   personality: [restrained, editorial]
   resembles: [notion, linear]
@@ -115,24 +113,6 @@ surfaces:
   shadowComplexity: subtle          # deliberate-none | subtle | layered
   borderUsage: moderate             # minimal | moderate | heavy
 
-# --- expression: role bindings (optional) ---
-# Semantic slot → token bindings. Bridges abstract tokens to rendering:
-# a role names a slot (h1, card, button, …) and binds specific tokens
-# from the dimensions above. Each sub-block is optional; omit what you
-# cannot infer from source. Agents populate these from component files.
-roles:
-  - name: h1
-    tokens:
-      typography: { family: Anthropic Serif, size: 52, weight: 500 }
-      spacing: { margin: 32 }
-    evidence: ["components/Heading.tsx:12"]
-  - name: card
-    tokens:
-      surfaces: { borderRadius: 16, shadow: subtle }
-      spacing: { padding: 24 }
-      palette: { background: '#f5f4ed' }
-    evidence: ["components/ui/card.tsx"]
-
 # --- expression: vector layer ---
 # embedding is OPTIONAL at root. Readers load it from the sibling
 # `embedding.md` fragment (referenced in the body) or recompute from the
@@ -143,9 +123,8 @@ roles:
 **Required:** `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
 **Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
-**Optional role bindings:** `roles[]`. Each role requires `name` and `evidence[]` (citations for where the binding was observed); token sub-blocks (`typography`, `spacing`, `surfaces`, `palette`) are independently optional and strict — unknown keys reject. Note: `evidence` belongs *inside* role entries, not on `decisions[]`.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
-**Forbidden in frontmatter:** `observation.summary`, `observation.distinctiveTraits`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
+**Forbidden in frontmatter:** `observation.summary`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
 
 When `extends:` is present, required expression fields may be omitted — the overlay inherits them from the base expression. The merged result is re-validated against the strict schema.
 
@@ -159,11 +138,6 @@ The body owns prose and evidence. Four section kinds, all optional, in this orde
 # Character
 
 A literary salon reimagined as a product page — warm, unhurried.
-
-# Signature
-
-- Warm ring-shadows instead of drop-shadows
-- Editorial serif/sans split
 
 # Decisions
 
@@ -206,52 +180,6 @@ Link rules:
 - Absolute URLs (`http://…`) and anchors (`#foo`) are ignored.
 - Paths are resolved relative to the expression.md directory.
 - One level deep — avoid nested chains.
-
----
-
-## Roles — the slot → token bridge
-
-Tokens alone are ingredients: "sizes 14, 16, 20, 32, 64 exist." A role is a recipe: "`h1` uses size 64, weight 500." `roles[]` is the layer that names which tokens belong to which semantic slot, so the expression stops being an inventory and becomes something a renderer can act on.
-
-**Shape.** Each role has three parts:
-
-- `name` — the slot. Prefer HTML-like or archetype names: `h1`, `h2`, `body`, `caption`, `card`, `button`, `input`, `list-row`.
-- `tokens` — the bindings, grouped by dimension. Each sub-block (`typography`, `spacing`, `surfaces`, `palette`) is independently optional and every field inside is optional. A role can be partial when the source only supplies some tokens.
-- `evidence` — where the binding was observed. File paths or `path:line` references.
-
-**Authoring contract.** Only emit roles with direct source evidence. A plausible-but-unobserved role is worse than a missing one. A codebase with no component files may produce no roles at all — that is truthful.
-
-**Strictness.** The `typography`, `spacing`, and `surfaces` sub-blocks are zod `.strict()` — unknown keys reject, so the schema stays disciplined as it grows. The `palette` sub-block is an open record (Phase 5b widening): slot keys are free-form so consumers can name slots from the conventional vocabulary or extend it.
-
-### Palette slot vocabulary
-
-`roles[].tokens.palette` is a `Record<string, string>`. The recipe should reach for the conventional keys first; add others when they're load-bearing in the codebase.
-
-**Conventional keys** (use these by default): `background`, `foreground`, `surface`, `border`, `accent`, `muted`, `link`.
-
-**Extensions** seen in the wild: `ring`, `popover`, `separator`, `input`, `chart-1`, … — fine to use when the codebase justifies them.
-
-### Token references
-
-Role palette slot values may be raw hex literals OR token references. The reference syntax is `{<namespace>.<role>}`:
-
-```yaml
-roles:
-  - name: button
-    tokens:
-      palette:
-        background: '{palette.dominant.accent}'   # resolves to #c96442
-        foreground: '{palette.dominant.surface}'  # resolves to #f5f4ed
-        border:     '#e8e6dc'                     # raw hex is fine too
-        ring:       '{base.color.brand.x.light}'  # opaque external ref
-    evidence: ["components/ui/button.tsx:18"]
-```
-
-**Local namespaces:** `palette.dominant` and `palette.semantic` — the two palette blocks that already carry a `role`. Renames cascade (change the role value in one place, every role that references it updates too), and `ghost-expression lint` reports `broken-role-reference` for references that don't resolve.
-
-**External / pipeline refs.** Token-pipeline consumers (Style Dictionary, Theo, …) often bind a role to a deeply-nested upstream token like `{base.color.brand.x.light}`. The linter accepts these as opaque passthroughs when the head segment is a recognized external namespace (`base`, `core`, `semantic`, `component`, `tokens`, `ref`, `sys`) or the path has 4+ segments. We don't try to resolve them — that requires walking the upstream package, which is out of scope for the deterministic CLI.
-
-**What cannot be referenced locally.** `palette.neutrals.steps` is positional (no name). Typography, spacing, and surfaces are inventories, not named vocabularies — role tokens for those dimensions inline raw values. Local refs targeting the `palette.*` namespace beyond `dominant`/`semantic` fire `broken-role-reference`; external refs (heads outside `palette.*`) pass through.
 
 ---
 
@@ -353,7 +281,7 @@ Fragments override inline decisions with the same dimension. Skip with `loadExpr
 
    ```
    Invalid expression frontmatter:
-     • observation: Unrecognized keys: "summary", "distinctiveTraits"
+     • observation: Unrecognized keys: "summary"
      • decisions.0: Unrecognized keys: "decision", "evidence"
      • palette.saturationProfile: Invalid enum value...
    ```

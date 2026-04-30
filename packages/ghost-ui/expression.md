@@ -26,6 +26,79 @@ decisions:
   - dimension: interactive-patterns
   - dimension: density
   - dimension: font-sourcing
+rules:
+  - id: no-off-palette-hex
+    canonical: color-strategy
+    kind: color
+    summary: Hex literals must come from the documented palette
+    rationale: >-
+      Default theme is achromatic — chromatic colors are reserved for
+      semantic states (danger, success, info, warning) and chart data.
+      Any new hex literal is drift unless it lands in the palette.
+    pattern: '#[0-9a-fA-F]{3,8}'
+    enforce_at: [className, css_var, inline_style]
+    support: 0.94
+  - id: pill-interactives
+    canonical: shape-language
+    kind: radius
+    summary: Buttons, inputs, and badges must be fully rounded
+    rationale: >-
+      Pill-first radius philosophy separates interactive from structural
+      surfaces — interactive elements fully round (999px), while cards and
+      modals use moderate radii (10–24px).
+    pattern: '<(Button|Input|Badge)\b[^>]*\brounded-(?!full|pill)'
+    enforce_at: [className]
+    support: 0.97
+  - id: structural-radius-set
+    canonical: shape-language
+    kind: radius
+    summary: Container radii must come from the canonical set
+    rationale: >-
+      Cards, modals, and dropdowns use moderate radii (10–24px).
+      Arbitrary radius values break the shape vocabulary.
+    pattern: 'rounded-\[\d+px\]|border-radius:\s*\d+px'
+    support: 0.91
+  - id: no-foreign-fonts
+    canonical: font-sourcing
+    kind: type-family
+    summary: Do not bundle additional typefaces
+    rationale: >-
+      Library ships no bundled fonts — system-ui sans, Geist Mono, and a
+      generic serif fallback. Adding @font-face or importing a webfont
+      crosses the font-sourcing decision.
+    pattern: '@import\s+url\([^)]*fonts'
+    enforce_at: [css_var, inline_style]
+    presence_floor: 0
+    support: 1.0
+  - id: type-on-ramp
+    canonical: typography-voice
+    kind: type-size
+    summary: Font sizes must come from the magazine ramp
+    rationale: >-
+      Type ramp runs from 10px (label kicker) to 96px (display). Sizes
+      outside the ramp break the editorial rhythm.
+    pattern: 'text-\[\d+px\]|font-size:\s*\d+px'
+    support: 0.93
+  - id: no-decorative-motion
+    canonical: motion
+    kind: motion
+    summary: No decorative or hover-only animations
+    rationale: >-
+      Animations exist for structural reveals (accordion, scale-in, fade)
+      and entrance transitions, never for decorative micro-interactions.
+      The editorial tone stays serious.
+    pattern: 'transition:\s*all\b|animate-(?!none)\w+'
+    presence_floor: 4
+    support: 0.86
+  - id: spacing-on-scale
+    canonical: spatial-system
+    kind: spacing
+    summary: Padding, margin, and gap must come from the 4px-base scale
+    rationale: >-
+      Scale is 2/4/6/8/12/16/20/24/32/36/40/52/75/100. Off-scale spacing
+      breaks the layout rhythm; small drift (±2px) is tolerated.
+    pattern: '\b(p|m|gap)-\[\d+px\]'
+    support: 0.88
 palette:
   dominant:
     - role: primary
@@ -133,49 +206,11 @@ surfaces:
   borderRadii: [10, 14, 16, 20, 24, 999]
   shadowComplexity: layered
   borderUsage: moderate
-roles:
-  - name: button
-    tokens:
-      surfaces: { borderRadius: 999 }
-      palette: { background: "#1a1a1a", foreground: "#ffffff" }
-    evidence:
-      - "src/components/ui/button.tsx:7"
-      - "src/components/ui/button.tsx:11"
-  - name: input
-    tokens:
-      surfaces: { borderRadius: 999 }
-    evidence:
-      - "src/components/ui/input.tsx:11"
-  - name: badge
-    tokens:
-      surfaces: { borderRadius: 999 }
-    evidence:
-      - "src/components/ui/badge.tsx:8"
-  - name: card
-    tokens:
-      surfaces: { borderRadius: 20 }
-    evidence:
-      - "src/components/ui/card.tsx:10"
-  - name: alert-title
-    tokens:
-      typography: { family: "system-ui", weight: 600 }
-    evidence:
-      - "src/components/ui/alert.tsx:42"
 ---
 
 # Character
 
 A monochromatic, magazine-inspired design language that treats color as communication rather than decoration. The default palette is entirely achromatic — near-black on white — with hue reserved for semantic states and chart data. Pill-shaped interactive elements contrast with moderately rounded containers, and display typography pushes ultra-tight line-heights (0.85–0.88) with heavy negative tracking for an editorial spread aesthetic. It ships no bundled typefaces and is fully themeable at runtime through CSS custom property injection, with five non-default preset themes that prove the base architecture's range.
-
-# Signature
-
-- Achromatic by default — primary/accent is the extremity of the gray scale (#1a1a1a in light mode, white in dark mode), so the system is color-agnostic until a theme preset is applied
-- Pill-first radius philosophy — buttons, inputs, and badges fully round to 999px while structural containers use moderate radii (10–24px), visually separating actionable surfaces from structural ones
-- Magazine-scale display typography with display line-heights as low as 0.85 and letter-spacing at -0.05em, paired with uppercase label type at 0.12em tracking
-- Shadow hierarchy named by role (mini, card, elevated, popover, modal) rather than by numeric size, with dark mode doubling intensity rather than removing depth
-- Runtime-themeable cascade — a semantic layer feeds a shadcn alias layer, which feeds Tailwind `@theme inline` — so 6 bundled preset themes can transform the visual language without touching component code
-- Ships no bundled fonts — the system hands font-face responsibility to the consumer and falls back to system-ui so the visual language inherits the host environment
-- Notable absence of gradient tokens, illustration tokens, and brand-specific iconography guidance
 
 # Decisions
 

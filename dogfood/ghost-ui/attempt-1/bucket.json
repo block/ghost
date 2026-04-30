@@ -1,0 +1,764 @@
+{
+  "schema": "ghost.bucket/v1",
+  "sources": [
+    {
+      "target": "github:block/ghost#packages/ghost-ui",
+      "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+      "scanned_at": "2026-04-29T13:55:00Z",
+      "scanner_version": "0.1.0"
+    }
+  ],
+  "values": [
+    {
+      "id": "07998cc8e99e422d",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#ffffff",
+      "raw": "#ffffff",
+      "spec": {
+        "space": "srgb",
+        "hex": "#ffffff",
+        "rgb": {
+          "r": 255,
+          "g": 255,
+          "b": 255
+        }
+      },
+      "occurrences": 24,
+      "files_count": 4,
+      "role_hypothesis": "neutral-extreme-light"
+    },
+    {
+      "id": "f699bc316c60d1df",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#000000",
+      "raw": "#000000",
+      "spec": {
+        "space": "srgb",
+        "hex": "#000000",
+        "rgb": {
+          "r": 0,
+          "g": 0,
+          "b": 0
+        }
+      },
+      "occurrences": 15,
+      "files_count": 3,
+      "role_hypothesis": "neutral-extreme-dark"
+    },
+    {
+      "id": "b2de7ad8c2837a78",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#1a1a1a",
+      "raw": "#1a1a1a",
+      "spec": {
+        "space": "srgb",
+        "hex": "#1a1a1a"
+      },
+      "occurrences": 9,
+      "files_count": 3,
+      "role_hypothesis": "neutral-darkest-step"
+    },
+    {
+      "id": "4b8ba7755a7b0ad6",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#f5f5f5",
+      "raw": "#f5f5f5",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f5f5f5"
+      },
+      "occurrences": 3,
+      "files_count": 2,
+      "role_hypothesis": "neutral-lightest-step"
+    },
+    {
+      "id": "b6756caa068847ff",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#91cb80",
+      "raw": "#91cb80",
+      "spec": {
+        "space": "srgb",
+        "hex": "#91cb80"
+      },
+      "occurrences": 9,
+      "files_count": 2,
+      "role_hypothesis": "semantic-success"
+    },
+    {
+      "id": "c43f851c1cb8e9bd",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#f94b4b",
+      "raw": "#f94b4b",
+      "spec": {
+        "space": "srgb",
+        "hex": "#f94b4b"
+      },
+      "occurrences": 5,
+      "files_count": 2,
+      "role_hypothesis": "semantic-danger"
+    },
+    {
+      "id": "22a9e7619e96133b",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#5c98f9",
+      "raw": "#5c98f9",
+      "spec": {
+        "space": "srgb",
+        "hex": "#5c98f9"
+      },
+      "occurrences": 5,
+      "files_count": 2,
+      "role_hypothesis": "semantic-info"
+    },
+    {
+      "id": "51eea2d9c0c627e3",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "color",
+      "value": "#fbcd44",
+      "raw": "#fbcd44",
+      "spec": {
+        "space": "srgb",
+        "hex": "#fbcd44"
+      },
+      "occurrences": 5,
+      "files_count": 2,
+      "role_hypothesis": "semantic-warning"
+    },
+    {
+      "id": "0e913b5f5566586a",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "spacing",
+      "value": "8",
+      "raw": "8px",
+      "spec": {
+        "scalar": 8,
+        "unit": "px"
+      },
+      "occurrences": 21,
+      "files_count": 2,
+      "role_hypothesis": "spacing-base-unit"
+    },
+    {
+      "id": "fcd6f6793118b2d6",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "spacing",
+      "value": "2",
+      "raw": "2px",
+      "spec": {
+        "scalar": 2,
+        "unit": "px"
+      },
+      "occurrences": 25,
+      "files_count": 3
+    },
+    {
+      "id": "43e686cb95055b82",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "spacing",
+      "value": "20",
+      "raw": "20px",
+      "spec": {
+        "scalar": 20,
+        "unit": "px"
+      },
+      "occurrences": 14,
+      "files_count": 3,
+      "role_hypothesis": "spacing-card-radius-unit"
+    },
+    {
+      "id": "42331c1ca6bbb635",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "spacing",
+      "value": "100",
+      "raw": "100px",
+      "spec": {
+        "scalar": 100,
+        "unit": "px"
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "role_hypothesis": "section-padding-vertical"
+    },
+    {
+      "id": "d77862c3e75ef823",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "radius",
+      "value": "999",
+      "raw": "999px",
+      "spec": {
+        "scalar": 999,
+        "unit": "px"
+      },
+      "occurrences": 9,
+      "files_count": 2,
+      "role_hypothesis": "radius-pill"
+    },
+    {
+      "id": "bcf70cb399fa2f2e",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "radius",
+      "value": "20",
+      "raw": "20px",
+      "spec": {
+        "scalar": 20,
+        "unit": "px"
+      },
+      "occurrences": 4,
+      "files_count": 1,
+      "role_hypothesis": "radius-card-default"
+    },
+    {
+      "id": "13fe983e4d8cad2e",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "shadow",
+      "value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "raw": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "spec": {
+        "offset_x": {
+          "scalar": 0,
+          "unit": "px"
+        },
+        "offset_y": {
+          "scalar": 2,
+          "unit": "px"
+        },
+        "blur": {
+          "scalar": 8,
+          "unit": "px"
+        },
+        "color": "rgba(76, 76, 76, 0.15)"
+      },
+      "occurrences": 4,
+      "files_count": 1,
+      "role_hypothesis": "shadow-mini-light"
+    },
+    {
+      "id": "9a298083f034b5d0",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "breakpoint",
+      "value": "1440",
+      "raw": "1440px",
+      "spec": {
+        "scalar": 1440,
+        "unit": "px",
+        "label": "desktop"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "role_hypothesis": "breakpoint-desktop"
+    },
+    {
+      "id": "3ac3a9616596e548",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "motion",
+      "value": "0.2s",
+      "raw": "0.2s",
+      "spec": {
+        "duration_ms": 200
+      },
+      "occurrences": 9,
+      "files_count": 1,
+      "role_hypothesis": "duration-normal"
+    },
+    {
+      "id": "79cec1551cea2c94",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "motion",
+      "value": "0.15s",
+      "raw": "0.15s",
+      "spec": {
+        "duration_ms": 150
+      },
+      "occurrences": 3,
+      "files_count": 1,
+      "role_hypothesis": "duration-fast"
+    },
+    {
+      "id": "9b765541bf0e2a42",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "motion",
+      "value": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "raw": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "spec": {
+        "easing": "cubic-bezier(0.33, 1, 0.68, 1)"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "role_hypothesis": "easing-spring"
+    },
+    {
+      "id": "6cd2a74b3334e115",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "typography",
+      "value": "Geist Mono",
+      "raw": "\"Geist Mono\"",
+      "spec": {
+        "family": "Geist Mono"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "role_hypothesis": "font-mono"
+    },
+    {
+      "id": "7e0c4961e87935f8",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "typography",
+      "value": "system-ui",
+      "raw": "system-ui",
+      "spec": {
+        "family": "system-ui"
+      },
+      "occurrences": 2,
+      "files_count": 1,
+      "role_hypothesis": "font-sans"
+    },
+    {
+      "id": "8f1fb0ee33db31a0",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "kind": "layout-primitive",
+      "value": "1440px",
+      "raw": "1440px",
+      "spec": {
+        "kind": "max-width",
+        "scalar": 1440,
+        "unit": "px"
+      },
+      "occurrences": 1,
+      "files_count": 1,
+      "role_hypothesis": "page-container-max-width"
+    }
+  ],
+  "tokens": [
+    {
+      "id": "a98934fc1e31ad67",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--color-gray-900",
+      "alias_chain": [],
+      "resolved_value": "#1a1a1a",
+      "occurrences": 9
+    },
+    {
+      "id": "12ea54555a0564cf",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--text-default",
+      "alias_chain": ["--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "by_theme": {
+        "light": "#1a1a1a",
+        "dark": "#ffffff"
+      },
+      "occurrences": 12
+    },
+    {
+      "id": "9e25b641c24e539a",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--foreground",
+      "alias_chain": ["--text-default", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "by_theme": {
+        "light": "#1a1a1a",
+        "dark": "#ffffff"
+      },
+      "occurrences": 8
+    },
+    {
+      "id": "441b3c286c0261ca",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--color-foreground",
+      "alias_chain": ["--foreground", "--text-default", "--color-gray-900"],
+      "resolved_value": "#1a1a1a",
+      "by_theme": {
+        "light": "#1a1a1a",
+        "dark": "#ffffff"
+      },
+      "occurrences": 4
+    },
+    {
+      "id": "035086c7634b82d4",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--background-default",
+      "alias_chain": ["--color-white"],
+      "resolved_value": "#ffffff",
+      "by_theme": {
+        "light": "#ffffff",
+        "dark": "#000000"
+      },
+      "occurrences": 11
+    },
+    {
+      "id": "ec631d558a6a99d1",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--radius",
+      "alias_chain": [],
+      "resolved_value": "20px",
+      "occurrences": 5
+    },
+    {
+      "id": "b23396b5f5917ece",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--radius-pill",
+      "alias_chain": [],
+      "resolved_value": "999px",
+      "occurrences": 4
+    },
+    {
+      "id": "6495da33b44d2a78",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--radius-button",
+      "alias_chain": [],
+      "resolved_value": "999px",
+      "occurrences": 3
+    },
+    {
+      "id": "d440ce2b5a94d053",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--shadow-card",
+      "alias_chain": [],
+      "resolved_value": "0 2px 8px rgba(76, 76, 76, 0.15)",
+      "by_theme": {
+        "light": "0 2px 8px rgba(76, 76, 76, 0.15)",
+        "dark": "0 2px 8px rgba(0, 0, 0, 0.4)"
+      },
+      "occurrences": 3
+    },
+    {
+      "id": "0c2a5e27fb5ab060",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--ease-spring",
+      "alias_chain": [],
+      "resolved_value": "cubic-bezier(0.33, 1, 0.68, 1)",
+      "occurrences": 1
+    },
+    {
+      "id": "ea66cc1267da58ae",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "--breakpoint-desktop",
+      "alias_chain": [],
+      "resolved_value": "1440px",
+      "occurrences": 1
+    }
+  ],
+  "components": [
+    {
+      "id": "08d82e05c20c6443",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "Button",
+      "discovered_via": "registry.json",
+      "variants": [
+        "default",
+        "destructive",
+        "outline",
+        "secondary",
+        "ghost",
+        "link"
+      ],
+      "sizes": ["default", "sm", "lg", "icon"]
+    },
+    {
+      "id": "c0247ab4b8650edd",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "Input",
+      "discovered_via": "registry.json"
+    },
+    {
+      "id": "a5c90d03f29f5c06",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "Card",
+      "discovered_via": "registry.json"
+    },
+    {
+      "id": "3d87605ed68215ef",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "Dialog",
+      "discovered_via": "registry.json"
+    },
+    {
+      "id": "60b034a3edf75635",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "DropdownMenu",
+      "discovered_via": "registry.json"
+    },
+    {
+      "id": "69c55fea7b09ab3e",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "Badge",
+      "discovered_via": "registry.json"
+    }
+  ],
+  "libraries": [
+    {
+      "id": "6348a4fef3c0b8d4",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "lucide-react",
+      "kind": "icons",
+      "version": "^1.7.0"
+    },
+    {
+      "id": "4f8ef2d2b5cd65ee",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "@radix-ui/react-*",
+      "kind": "primitives",
+      "version": "^1.x"
+    },
+    {
+      "id": "b497cbc85c1baf41",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "cmdk",
+      "kind": "command-palette",
+      "version": "^1.1.1"
+    },
+    {
+      "id": "d7dd2e7250f6c2a1",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "sonner",
+      "kind": "toast",
+      "version": "^2.0.7"
+    },
+    {
+      "id": "07dcc1e35fef16db",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "class-variance-authority",
+      "kind": "variant-helper",
+      "version": "^0.7.1"
+    },
+    {
+      "id": "396e1af18e2813b3",
+      "source": {
+        "target": "github:block/ghost#packages/ghost-ui",
+        "commit": "5f821cb6f3ef79ca2515091ba1174e6de5cf8227",
+        "scanned_at": "2026-04-29T13:55:00Z",
+        "scanner_version": "0.1.0"
+      },
+      "name": "tw-animate-css",
+      "kind": "animation",
+      "version": "(imported via main.css)"
+    }
+  ]
+}

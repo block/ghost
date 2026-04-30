@@ -68,6 +68,10 @@ function parseFragment(
 
   const dimension =
     typeof yamlObj.dimension === "string" ? yamlObj.dimension : filenameSlug;
+  const dimensionKind =
+    typeof yamlObj.dimension_kind === "string"
+      ? yamlObj.dimension_kind
+      : undefined;
   const evidence = Array.isArray(yamlObj.evidence)
     ? yamlObj.evidence.filter((e): e is string => typeof e === "string")
     : [];
@@ -75,7 +79,12 @@ function parseFragment(
   const decisionText = prose.trim();
   if (!dimension || !decisionText) return null;
 
-  return { dimension, decision: decisionText, evidence };
+  return {
+    dimension,
+    decision: decisionText,
+    evidence,
+    ...(dimensionKind ? { dimension_kind: dimensionKind } : {}),
+  };
 }
 
 /**
