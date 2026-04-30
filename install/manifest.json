@@ -1,0 +1,18 @@
+{
+  "$schema": "ghost.install-manifest/v1",
+  "name": "ghost-expression",
+  "description": "Ghost design-language scan + emit recipes — author expression.md, validate it, emit a per-project /design-review slash command.",
+  "version": "0.1.0",
+  "source": {
+    "package": "packages/ghost-expression/src/skill-bundle"
+  },
+  "files": [
+    "SKILL.md",
+    "references/scan.md",
+    "references/map.md",
+    "references/survey.md",
+    "references/profile.md",
+    "references/schema.md",
+    "assets/expression.template.md"
+  ]
+}
