@@ -16,6 +16,12 @@ handoffs:
 
 `expression.md` is the terminal artifact in a three-stage scan: topology (`map.md`) → objective (`bucket.json`) → subjective (`expression.md`). Yours is the third stage.
 
+Terminal-impact filter:
+
+> A fact belongs in `expression.md` only if it can change a drift verdict or change generated UI.
+
+`bucket.json` is evidence. `expression.md` is curated truth. Do not summarize every bucket row, every component, or every upstream token. Promote the few repeated constraints, defaults, absences, and token choices that downstream review or generation will actually use.
+
 ## Pre-requisites
 
 Two artifacts must exist before you start:
@@ -33,6 +39,8 @@ A `bucket.json` has three sections:
 - **`tokens[]`** — named declarations with `alias_chain` (path through indirection) and `resolved_value`. Long chains and semantic naming (`--color-brand-primary` → `--color-orange-500`) are evidence of a deliberate token layer. Empty chains everywhere = inline literals = no token discipline.
 - **`components[]`** — known components (registry entries or heuristically discovered). Contributes count signal to surface-vocabulary decisions and grounds prose about what the system ships.
 
+Rows may carry `source.role` and `resolution` provenance. Interpret these as a source graph: `primary` sources supply usage/salience, while `resolver` sources supply concrete values for symbols the primary actually uses. A resolver-defined value that has no primary usage is not salient for this expression.
+
 External libraries (icon sets, primitive collections, motion libs) deliberately don't have a bucket section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing for the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
 
 Read `bucket.json` once, fully. Then keep it open while you write.
@@ -43,7 +51,7 @@ Read `bucket.json` once, fully. Then keep it open while you write.
 
 Branch the rest of the recipe on signals from `map.md`. Apply rules in order; first match wins:
 
-1. `design_system.token_source: external` → **consumer mode**. The repo imports tokens from another package; the bucket's `tokens[]` is mostly empty or full of upstream slugs. Don't try to interpret upstream values you didn't observe.
+1. `design_system.token_source: external` or `sources[]` includes a `resolver` role → **consumer mode**. The repo imports tokens from another package. Interpret upstream values only when primary usage observed them; do not profile the upstream inventory as if it were the app.
 2. `composition.frameworks` includes `style-dictionary`, or there's a `tokens/` directory and no `registry`, and the bucket has long alias chains (3+ steps) → **token-pipeline mode**. Components are graph nodes; layering is a first-class decision.
 3. `registry.path` set, or `composition.styling` includes `tailwindcss*` / `css-modules` / similar → **ui-library mode** (default).
 4. `platform` is an array spanning native + web with no single dominant build → **multi-platform**: profile as ui-library but expect coarser groupings; the bucket likely has fewer rows per dialect.
@@ -59,11 +67,13 @@ Then in frontmatter:
 - `personality`: 3–6 adjectives (`utilitarian`, `editorial`, `dense`, `playful`, `restrained`, …)
 - `resembles`: 1–3 well-known references (Linear, Geist, Material 3, …) — only if genuinely close
 
-Notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme") are *not* prose to write here — they're rules with `presence_floor: 0` (or a small integer) authored in Step 3, which causes any addition to escalate severity. Codifying absences as enforceable rules beats restating them in prose.
+Notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme") are *not* prose to write here — they're candidate rules with `presence_floor: 0` (or a small integer) in Step 3, which causes any addition to land one perceptual tier louder when the rule is promoted. Codifying absences as enforceable rules beats restating them in prose.
 
 ### 3. Layer 2 — Rules (curated, grep-friendly, perceptual-prior-aware)
 
-This is the load-bearing step. **Your job is to propose 5–15 candidate rules, score each by bucket-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `rules[]`. You do not author final rules unilaterally — design taste is human-curated, agent-proposed.
+This is the load-bearing step. **Your job is to propose 5–15 candidate rules, score each by bucket-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `rules[]`. Promoted rules are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from bucket evidence, and an `enforce_at` context where the reviewer should look. You do not author final rules unilaterally — design taste is human-curated, agent-proposed.
+
+Promotion boundary: `rules[]` is the promoted layer, not the scratchpad. If no curator has selected rules in this turn, leave `rules[]` empty and put the ranked candidate list in your final response or scan notes. The expression is still valid without rules; an unpromoted rule is more dangerous than a missing rule because it turns an agent guess into enforcement.
 
 (Legacy: this stage previously authored `decisions[]` — abstract per-dimension prose. That format is preserved during the v0 transition for backward compatibility, but the canonical authoring surface is now `rules[]`. The emitter prefers `rules[]` when present.)
 
@@ -80,6 +90,7 @@ Walk the bucket and pose: *what pattern is this project consistently following t
   pattern: <regex or string> # what the reviewer greps for
   enforce_at: [...]          # className / css_var / inline_style / import
   support: 0.0–1.0           # computed: bucket conformers / total observed
+  observed_count: <int>      # count of the guarded pattern / bucket slice
   presence_floor: <int>      # optional; default 0
 ```
 
@@ -100,44 +111,44 @@ Walk the bucket and pose: *what pattern is this project consistently following t
 | `theming-architecture` | runtime themability; cascade structure; override patterns | rhythmic |
 | `token-architecture` | alias-chain depth; semantic vs. raw; layering discipline | rhythmic |
 
-The **default tier** is the perceptual weight: loud rules render as Critical, structural as Serious, rhythmic as Nit in the emitted reviewer. Severity is computed by the emitter from `canonical` + `presence_floor`; you don't usually set `severity` directly.
+The **default tier** is the perceptual weight: loud rules render as Critical, structural as Serious, rhythmic as Nit in the emitted reviewer. Severity is computed by the emitter from `canonical`, `observed_count`, and `presence_floor`; you don't usually set `severity` directly.
 
 #### 3b. Score support from the bucket
 
-For each candidate rule, compute support — *the fraction of observed cases that already conform*. Concretely:
+For each candidate rule, compute support — *the fraction of observed cases that already conform* — and record `observed_count`, the denominator or bucket slice the rule was calibrated against. Concretely:
 
 - **`no-off-palette-hex`** (color-strategy) — `support = (bucket color rows with value in palette set) / (total bucket color rows)`. If 31 of 33 colors are in the palette, support is 0.94.
 - **`pill-interactives`** (shape-language) — `support = (interactive components using rounded-full) / (interactive components observed)`. Walk `bucket.components` for Button/Input/Badge; check radii.
 - **`spacing-on-scale`** (spatial-system) — `support = (spacing rows with value ∈ scale) / (total spacing rows)`. The scale lives in `expression.spacing.scale`.
 
-Rule of thumb: **drop candidates with support < 0.85.** Below that threshold, the project hasn't actually committed to the pattern — codifying it generates noise. A `support: 0.6` rule looks aspirational, not enforced.
+Rule of thumb: **drop candidates with support < 0.85.** Below that threshold, the project hasn't actually committed to the pattern — codifying it generates noise. A `support: 0.6` rule looks aspirational, not enforced. If you still think a low-support candidate matters, put it in scan notes for discussion; do not promote it to `rules[]`.
 
 #### 3c. Identify presence-floor candidates
 
-The perceptual prior escalates rules one tier when the bucket count for the dimension is ≤ `presence_floor`. Use this to capture *negative space* — what the project deliberately *isn't*:
+The perceptual prior escalates promoted rules one tier when `observed_count` (or, if absent, the emitter's coarse bucket proxy) is ≤ `presence_floor`. Use this to capture *negative space* — what the project deliberately *isn't*:
 
-- Bucket has 0 motion rows → `no-decorative-motion` rule with `presence_floor: 4` (any addition crosses zero, escalates to critical).
-- Bucket has 0 gradient values → `no-gradients` with `presence_floor: 0`.
-- Bucket has 0 bundled fonts → `no-foreign-fonts` with `presence_floor: 0`.
+- Bucket has 0 decorative-motion rows → `no-decorative-motion` rule with `observed_count: 0` and `presence_floor: 4`.
+- Bucket has 0 gradient values → `no-gradients` with `observed_count: 0` and `presence_floor: 0`.
+- Bucket has 0 bundled fonts → `no-foreign-fonts` with `observed_count: 0` and `presence_floor: 0`.
 
-Don't set a presence floor when the dimension is well-populated — the escalation will never trigger and the field becomes noise.
+Don't set a presence floor when the guarded pattern is well-populated — the escalation will never trigger and the field becomes noise. If the overall dimension is populated but a sub-pattern is absent (e.g. structural motion exists, decorative motion does not), set `observed_count` to the sub-pattern count and say that in the rationale.
 
 #### 3d. Present the ranked list to the curator
 
 Sort candidates by support, descending. Present each as: id + canonical + summary + support % + 1-line rationale. Mark presence-floor escalations explicitly. Recommend cuts: anything below 0.85, anything redundant with another rule, anything where the pattern is too fuzzy to enforce.
 
-The curator picks 5–10. **Do not paste your full candidate list into `rules[]`.** Wait for the human to promote.
+The curator picks 5–10. **Do not paste your full candidate list into `rules[]`.** Wait for the human to promote, then copy only the selected rules into frontmatter with their `observed_count` and `support`.
 
 #### Mode-specific framing
 
-- **Consumer** — overrides are rules. App-side `@font-face` that differs from upstream → a `font-sourcing` rule with `presence_floor: 0` against the upstream's font set.
+- **Consumer** — overrides are rules. App-side `@font-face` that differs from upstream → a `font-sourcing` rule with `observed_count` set to the count of non-upstream font declarations and `presence_floor: 0`.
 - **Token-pipeline** — layering posture is a rule. "Component layer never references base tokens directly" → a `token-architecture` rule whose pattern catches `--component-* references --base-*`.
 - **Ui-library** — registry shape is a rule. "Components have no theme variants" → an `interactive-patterns` rule against `data-theme=` attributes.
 - **Multi-platform** — divergence is rules. "iOS reuses system colors but web doesn't" → two color-strategy rules, one per dialect, each with its own `enforce_at`.
 
 #### Absences are rules — codify them with `presence_floor`
 
-Don't try to express "this project has no animation" as prose. Express it as: a motion rule whose `presence_floor` causes any addition to escalate to critical. The emitted reviewer will catch the addition without the prose.
+Don't try to express "this project has no animation" as prose. Express it as a motion rule whose `observed_count` + `presence_floor` causes additions to land one perceptual tier louder. The emitted reviewer will catch the addition without the prose.
 
 ### 4. Layer 3 — Concrete tokens (read from bucket; do not invent)
 
@@ -188,7 +199,8 @@ Walk the file against the schema in [schema.md](schema.md). Required checks:
 - Required fields: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
 - Body sections appear in order: `# Character`, `# Decisions` (when decisions are present). No prose in frontmatter.
 - For any `### dim` block in the body, a matching `decisions[].dimension` entry exists in frontmatter (and vice versa).
-- For any `rules[]` entry: `id` is unique, `pattern` is non-empty, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `support` ∈ `[0, 1]`.
+- For any `rules[]` entry: `id` is unique, `pattern` is non-empty, `support` is present and preferably ≥ `0.85`, `enforce_at` is present where possible, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `observed_count` is a non-negative integer.
+- If `presence_floor` is set, `observed_count` should also be set; otherwise absence escalation falls back to coarse frontmatter proxies.
 
 Common errors regardless of path:
 
@@ -220,7 +232,7 @@ Re-load the file mentally: parse the frontmatter, normalize whitespace in the bo
 
 ## When the bucket is incomplete
 
-If the surveyor's `bucket.json` has known gaps (a `# Coverage` note in the survey scratchpad, or thin coverage for a dialect), surface them in the expression's `# Character` body or as a Decision (e.g. `### scan-coverage` with evidence "iOS dialect under-sampled — only 23 color sites recorded; web dialect is the dominant signal in this expression"). Do not paper over gaps with invented values.
+If the surveyor's `bucket.json` has known gaps (a `# Coverage` note in the survey scratchpad, unresolved external symbols, or thin coverage for a dialect), surface them in the expression's `# Character` body or as a Decision (e.g. `### scan-coverage` with evidence "iOS dialect under-sampled — only 23 color sites recorded; 14 color symbols unresolved through arcade-ios-package; web dialect is the dominant signal in this expression"). Do not paper over gaps with invented values.
 
 ## When you cannot profile
 

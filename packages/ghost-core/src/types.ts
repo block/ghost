@@ -241,8 +241,8 @@ export interface Rule {
   enforce_at?: string[];
   /**
    * Optional explicit severity override. When absent, the emitter computes
-   * severity from `canonical` (perceptual tier) plus `presence_floor`
-   * (escalation against the bucket).
+   * severity from `canonical` (perceptual tier), `observed_count`, and
+   * `presence_floor` (escalation against the bucket).
    */
   severity?: DriftSeverity;
   /** Optional explicit match-shape override. */
@@ -251,12 +251,19 @@ export interface Rule {
   tolerance?: number;
   /**
    * Bucket-count threshold below which severity escalates one tier. The
-   * default is `0` — only when the underlying dimension is wholly absent
+   * default is `0` — only when the guarded phenomenon is wholly absent
    * does adding to it cross a presence boundary. Set to `2` (or higher)
    * for cases like motion where a couple of structural transitions don't
    * count as "this system uses motion."
    */
   presence_floor?: number;
+  /**
+   * Observed count for the phenomenon this rule guards, taken from the
+   * survey bucket or a documented grep. When present, the review emitter
+   * uses this count for `presence_floor` escalation instead of falling
+   * back to coarse frontmatter-derived proxies.
+   */
+  observed_count?: number;
   /**
    * Surveyor-computed support score: fraction of observed cases that
    * already conform to this rule. Used by the human curator to triage —

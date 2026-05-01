@@ -44,6 +44,25 @@ External libraries (icon sets, primitive collections, motion libs, charting, etc
 
 Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
 
+When a value is observed in the primary source but resolved through a resolver source, keep both pieces of provenance. The row's `source` is where usage was observed; `resolution` is where the concrete meaning came from:
+
+```json
+{
+  "source": { "id": "cash-ios", "role": "primary", "target": "github:squareup/cash-ios", "scanned_at": "..." },
+  "raw": "CashTheme.Color.background",
+  "value": "#ffffff",
+  "resolution": {
+    "status": "resolved",
+    "source_id": "arcade-ios-package",
+    "target": "github:squareup/arcade-ios-package",
+    "symbol": "ArcadeColor.background",
+    "chain": ["CashTheme.Color.background", "ArcadeColor.background"]
+  }
+}
+```
+
+If the resolver is unavailable or the symbol cannot be followed, still record the primary usage as a `tokens[]` row with `resolution.status: "unresolved-external"` and a `symbol` or `message`. Do not invent the concrete value.
+
 ## Steps
 
 ### 1. Read map.md and orient
@@ -53,6 +72,7 @@ Open `map.md`. Note:
 - `composition.styling` — Tailwind, CSS modules, styled-components, scss, swift-tokens, etc. Drives your extraction strategy.
 - `composition.frameworks` — react, next, swiftui, compose, …
 - `design_system.entry_files` — start here. These declare the canonical token set.
+- `sources[]` — scan source graph when the target needs upstream packages to resolve symbols. `primary` supplies usage; `resolver` supplies values.
 - `design_system.paths` — directories where the design system lives.
 - `feature_areas[].paths` — surfaces worth sampling for usage counts.
 
@@ -84,6 +104,22 @@ This applies regardless of dialect. The recipe doesn't tell you what the canonic
 
 If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per dialect and merge into one bucket.
 
+## Resolver pass for source graphs
+
+For split repos, a local app scan is not complete until symbolic usage has been resolved through the declared resolver sources where possible. This is still an app scan: the primary source decides salience, resolver sources only supply meaning.
+
+Run this pass when `map.md` has `sources[]` with a `resolver` role, or when `design_system.token_source` is `external` / `mixed`.
+
+Procedure:
+
+1. **Scan primary usage first.** Record every local token/symbol/class usage in the primary target with occurrences and files_count. These counts are the only salience signal.
+2. **Open resolver sources.** Read the upstream package/source/build artifact named by `sources[].role: resolver` or `design_system.upstream`. Find the exported token tables, generated Swift/Kotlin/TS accessors, CSS variables, registry metadata, or other symbol definitions.
+3. **Join symbols to definitions.** Follow `CashTheme.color.background → ArcadeColor.background → #ffffff` (or equivalent) as far as source permits. Preserve the chain in `resolution.chain`.
+4. **Emit resolved rows only for observed usage.** If a resolver defines 400 colors and the primary app uses 12, the app bucket gets the 12 observed values. Unused resolver inventory belongs in the resolver's own expression, not the app's.
+5. **Mark gaps honestly.** For unresolved external symbols, emit token rows with `resolution.status: "unresolved-external"` plus `symbol` / `message`; add a scratchpad coverage note with unresolved counts by kind.
+
+Coverage gate: before declaring done, report resolved vs unresolved counts for each resolver-backed kind (color, spacing, typography, radius, shadow). Weak resolver coverage lowers confidence downstream; it is not a reason to fabricate literals.
+
 ## Tailwind class-atom pass
 
 For Tailwind targets, the rendered design language lives at the intersection of *declared tokens* (`@theme {}` / `tailwind.config.*`) and *consumed atoms* (`p-2`, `bg-orange-500`, `text-sm` in components). Skipping the atom pass produces a bucket where the spacing/typography/color sections look sparse and irregular even though the live UI is on a clean modular grid. **Run this pass for every Tailwind target.**
@@ -113,6 +149,7 @@ For values + tokens, sloppy grep undercounts silently. Discipline:
 - **Frequency clustering.** After the first sweep, list candidate values by frequency: `rg -oN '#[0-9a-fA-F]{6}' -g '*.css' | sort | uniq -c | sort -rn`. The top values are almost always real palette entries. Long-tail values are often comments, hashes, or test fixtures — verify before recording.
 - **Spread check.** If a value appears in `files_count: 1`, it's likely incidental, not part of the design language. Note the count but don't promote with `role_hypothesis`.
 - **Resolve aliases exhaustively.** Every named token declared in the canonical token source becomes a `tokens[]` row. Don't sample tokens — count the declarations and match the row count. When a token's value is `var(--other)`, follow the chain to the literal; record the **token row** with the chain, and the **value row** for the resolved literal.
+- **Resolve external aliases when the source graph provides resolvers.** Primary usage rows keep `source.role: primary`; upstream definitions appear under `resolution`, not as salience by themselves.
 
 For components:
 
@@ -165,6 +202,7 @@ Before declaring the bucket done, walk each section and confirm exhaustiveness:
 - **`components[]`** — what's the canonical signal in this repo? Count it independently. If your row count is below that count, you've under-recorded. Either add the missing rows or, if the section truly isn't enumerable here, leave the array empty.
 - **`tokens[]`** — count the named-token declarations in the canonical token source(s) named in `map.md`. Your row count should match.
 - **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your bucket = missed.
+  For resolver-backed scans, also check unresolved symbols by kind; top unresolved symbols should either be resolved or explicitly surfaced as coverage gaps.
 The bucket is **saturated** when another exhaustiveness pass adds fewer than ~2 new rows across all sections AND your component/token row counts match (or come very close to) an independent count of the canonical signal. If exhaustiveness disagrees with what you have, exhaustiveness wins — re-pass.
 
 Hard stop conditions:

@@ -111,6 +111,52 @@ describe("writeContextBundle", () => {
     expect(prompt).not.toContain("# Signature");
   });
 
+  it("prompt.md renders a generation lens with severity-sorted rules", async () => {
+    const res = await writeContextBundle(
+      {
+        ...EXPRESSION,
+        rules: [
+          {
+            id: "spacing-on-scale",
+            canonical: "spatial-system",
+            kind: "spacing",
+            summary: "Spacing must stay on the 8px rhythm",
+            pattern: "p-\\[\\d+px\\]",
+            enforce_at: ["className"],
+            observed_count: 18,
+            support: 0.94,
+          },
+          {
+            id: "no-off-palette-hex",
+            canonical: "color-strategy",
+            kind: "color",
+            summary: "Hex literals must come from the palette",
+            pattern: "#[0-9a-fA-F]{3,8}",
+            enforce_at: ["className", "css_var"],
+            observed_count: 33,
+            support: 0.97,
+          },
+        ],
+      },
+      {
+        outDir: dir,
+        promptOnly: true,
+      },
+    );
+    const prompt = await readFile(res.files[0], "utf-8");
+
+    expect(prompt).toContain("# Non-Negotiable Rules");
+    expect(prompt.indexOf("no-off-palette-hex")).toBeLessThan(
+      prompt.indexOf("spacing-on-scale"),
+    );
+    expect(prompt).toContain("**CRITICAL** `no-off-palette-hex`");
+    expect(prompt).toContain("# Defaults And Avoids");
+    expect(prompt).toContain("Pure black backgrounds");
+    expect(prompt).toContain("**Dominant colors**");
+    expect(prompt).toContain("**Neutral ramp:** #000, #111, #222, #f5f5f0");
+    expect(prompt).not.toContain("Cite the Decision");
+  });
+
   it("honors --name override in SKILL frontmatter", async () => {
     const md = buildSkillMd(EXPRESSION, "my-custom-name", false);
     expect(md).toMatch(/^---\nname: my-custom-name\n/);

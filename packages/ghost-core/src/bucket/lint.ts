@@ -43,6 +43,8 @@ export function lintBucket(input: unknown): BucketLintReport {
 
   const bucket = result.data as Bucket;
 
+  checkSourceGraph(bucket, issues);
+
   // Open-enum kind warnings.
   bucket.values.forEach((row, idx) => {
     if (!RECOMMENDED_VALUE_KINDS.includes(row.kind)) {
@@ -53,6 +55,13 @@ export function lintBucket(input: unknown): BucketLintReport {
         path: `values[${idx}].kind`,
       });
     }
+  });
+
+  bucket.values.forEach((row, idx) => {
+    checkResolution(row.resolution, `values[${idx}].resolution`, issues);
+  });
+  bucket.tokens.forEach((row, idx) => {
+    checkResolution(row.resolution, `tokens[${idx}].resolution`, issues);
   });
 
   // Deterministic-ID checks: each row's recorded id must match what the
@@ -114,6 +123,58 @@ export function lintBucket(input: unknown): BucketLintReport {
   }
 
   return finalize(issues);
+}
+
+function checkSourceGraph(bucket: Bucket, issues: BucketLintIssue[]): void {
+  const hasRoles = bucket.sources.some((source) => source.role);
+  if (!hasRoles) return;
+
+  const primaryCount = bucket.sources.filter(
+    (source) => source.role === "primary",
+  ).length;
+  if (primaryCount !== 1) {
+    issues.push({
+      severity: "warning",
+      rule: "source-graph-primary-count",
+      message:
+        "bucket.sources should include exactly one primary source when source roles are used.",
+      path: "sources",
+    });
+  }
+}
+
+function checkResolution(
+  resolution: Bucket["values"][number]["resolution"] | undefined,
+  path: string,
+  issues: BucketLintIssue[],
+): void {
+  if (!resolution) return;
+  if (
+    resolution.status === "resolved" &&
+    !resolution.source_id &&
+    !resolution.target
+  ) {
+    issues.push({
+      severity: "warning",
+      rule: "resolution-source-missing",
+      message:
+        "resolved rows should name a resolver via `source_id` or `target`.",
+      path,
+    });
+  }
+  if (
+    resolution.status !== "resolved" &&
+    !resolution.symbol &&
+    !resolution.message
+  ) {
+    issues.push({
+      severity: "info",
+      rule: "resolution-unresolved-context-missing",
+      message:
+        "unresolved rows should include `symbol` or `message` so the profile can surface coverage gaps.",
+      path,
+    });
+  }
 }
 
 function zodIssues(issues: ZodIssue[]): BucketLintIssue[] {

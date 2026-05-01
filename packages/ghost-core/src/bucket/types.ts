@@ -14,6 +14,13 @@
 
 /** Where a scan came from. Denormalized onto every row in the bucket. */
 export interface BucketSource {
+  /** Stable source id within the scan source graph (`cash-ios`, `arcade-ios`, …). */
+  id?: string;
+  /**
+   * Role this source played in the scan. `primary` supplies usage/salience;
+   * `resolver` supplies concrete meaning for imported symbols.
+   */
+  role?: "primary" | "resolver";
   /** Target string the scan was pointed at — `github:owner/repo`, `./path`, etc. */
   target: string;
   /** Git commit sha at scan time, when knowable. */
@@ -22,6 +29,8 @@ export interface BucketSource {
   scanned_at: string;
   /** Version of the scanner that produced this row. */
   scanner_version?: string;
+  /** Design dimensions this source can resolve (`color`, `spacing`, …). */
+  resolves?: string[];
 }
 
 /** Fields every row carries regardless of section. */
@@ -112,6 +121,21 @@ export type ValueSpec =
   | LayoutPrimitiveSpec
   | UnknownSpec;
 
+export interface Resolution {
+  /** Whether this row resolved to a concrete value, or why it did not. */
+  status: "resolved" | "unresolved-external" | "unresolved-local";
+  /** Source id from bucket.sources[] / map.sources[] that performed resolution. */
+  source_id?: string;
+  /** Resolver target, useful when the source id is unavailable. */
+  target?: string;
+  /** Symbol in the resolver source (`ArcadeColor.background`, `--color-bg`, …). */
+  symbol?: string;
+  /** Full symbolic chain followed during resolution. */
+  chain?: string[];
+  /** Human-readable note for unavailable resolver packages or partial coverage. */
+  message?: string;
+}
+
 export interface ValueRow extends RowBase {
   /** One of `RecommendedValueKind` or an extension kind. Open string. */
   kind: string;
@@ -129,6 +153,8 @@ export interface ValueRow extends RowBase {
   usage?: Record<string, number>;
   /** Agent-assigned role guess (`brand-primary`, `surface-elevated`). */
   role_hypothesis?: string;
+  /** Provenance for symbolic values resolved through another source. */
+  resolution?: Resolution;
 }
 
 // --- Token rows ---------------------------------------------------------
@@ -148,6 +174,8 @@ export interface TokenRow extends RowBase {
   by_theme?: Record<string, string>;
   /** Total observed usage count of this token within the scan. */
   occurrences: number;
+  /** Provenance for symbolic tokens resolved through another source. */
+  resolution?: Resolution;
 }
 
 // --- Component rows -----------------------------------------------------

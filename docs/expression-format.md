@@ -33,6 +33,7 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | `decisions[].dimension`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
 | `decisions[].evidence` | **Body** | `**Evidence:**` bullet list under `### dimension` |
+| `rules[]` | Frontmatter | `rules:` entry |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter | top-level |
 | `embedding` (49-dim vector) | **Sibling file** | `embedding.md` (referenced from `# Fragments`) |
 | `metadata` (loose extension bag) | Frontmatter | top-level, open-ended |
@@ -83,6 +84,18 @@ decisions:
   - dimension: warm-only-neutrals
   - dimension: serif-headlines
 
+# Optional promoted drift-review rules. Candidate rules stay outside the
+# file until a human curator promotes them.
+rules:
+  - id: no-off-palette-hex
+    canonical: color-strategy
+    kind: color
+    summary: Hex literals must come from the documented palette
+    pattern: '#[0-9a-fA-F]{3,8}'
+    enforce_at: [className, css_var, inline_style]
+    observed_count: 33
+    support: 0.94
+
 # --- expression: structured tokens ---
 palette:
   dominant:
@@ -123,6 +136,8 @@ surfaces:
 **Required:** `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
 **Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
+
+**Optional promoted rules:** `rules[]`. These are grep-friendly review rules selected by a curator; candidate rules do not belong in the canonical file.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
 **Forbidden in frontmatter:** `observation.summary`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
 

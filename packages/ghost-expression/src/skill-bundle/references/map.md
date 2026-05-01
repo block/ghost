@@ -44,6 +44,8 @@ The `ghost.map/v1` frontmatter requires:
 - **`schema: ghost.map/v1`** (literal)
 - **`id`** — slug (lowercase alphanumeric plus `.` `_` `-`, leading alphanumeric). For fleet scans, this is the fleet target id.
 - **`repo`** — GitHub `org/repo`, or any source identifier that uniquely names this target.
+- **`subject`** — optional `{id, target}` that names the single thing this expression will describe. Use it when the scan needs multiple sources; `subject` stays the primary claim.
+- **`sources`** — optional scan source graph. Each source is `{id?, role, target, resolves?, paths?}` where `role` is `primary` or `resolver`. `primary` supplies usage/salience; `resolver` supplies concrete meaning for imported symbols. Declare exactly one primary when `sources[]` is present.
 - **`mapped_at`** — current ISO date (`YYYY-MM-DD`) or full datetime.
 - **`platform`** — one of `web`, `ios`, `android`, `desktop`, `flutter`, `mixed`, `other`, or an array spanning multiple. The inventory's `platform_hints` is your starting point — accept it when consistent, override when you have evidence.
 - **`languages`** — array of `{name, files, share}` from the inventory histogram. `share` is fraction in [0,1].
@@ -54,7 +56,7 @@ The `ghost.map/v1` frontmatter requires:
 - **`composition.styling`** — array (e.g. `["tailwindcss"]`, `["scss-modules"]`, `["styled-components"]`).
 - **`composition.navigation`** — optional short slug (`next-router`, `react-router`, `swiftui-navigation`, …).
 - **`registry`** — optional `{path, components}` if a shadcn-style registry exists.
-- **`design_system`** — `{paths[], entry_files?, derived_files?, path_patterns?, token_source?, upstream?, status}`. `token_source` is `inline` / `external` / `mixed`. `status` is `active` / `mixed` / `unclear`. Set `upstream` when `token_source` is `external` or `mixed`.
+- **`design_system`** — `{paths[], entry_files?, derived_files?, path_patterns?, token_source?, upstream?, status}`. `token_source` is `inline` / `external` / `mixed`. `status` is `active` / `mixed` / `unclear`. Set `upstream` when `token_source` is `external` or `mixed`, and prefer representing each upstream as a `sources[]` resolver when the scan author can inspect it.
 - **`ui_surface`** — `{include[], exclude[]}` — globs for sampling scope.
 - **`feature_areas`** — array of `{name, paths[], sub_areas?[]}` describing the surfaces worth sampling. 3–8 areas is typical; fewer is fine for small repos.
 - **`orientation_files`** — array of files an agent should read first to understand the target.
@@ -64,6 +66,32 @@ The `ghost.map/v1` frontmatter requires:
 If a `manifest.yaml` is present in CWD (some fleet orchestrators inject hand-curated sampling manifests for big repos), treat it as authoritative for `feature_areas`, `module_signals`, and `design_system.path_patterns`. Don't contradict it without evidence.
 
 If no manifest is provided, derive `feature_areas` from the inventory's `top_level_tree` and your own brief exploration: which directories represent product surfaces (e.g. `apps/dashboard`, `packages/ui`, `src/features/*`)?
+
+### 3a. Source graph for split repos
+
+Use a source graph when the target's design language is only observable through dependencies (apps consuming token packages, native apps importing design-system modules, wrappers over upstream registries). The expression still has one subject; the scan may have many sources.
+
+Rule:
+
+> Primary sources determine salience. Resolver sources determine meaning.
+
+Example:
+
+```yaml
+subject:
+  id: cash-ios
+  target: github:squareup/cash-ios
+sources:
+  - id: cash-ios
+    role: primary
+    target: github:squareup/cash-ios
+  - id: arcade-ios-package
+    role: resolver
+    target: github:squareup/arcade-ios-package
+    resolves: [color, spacing, typography]
+```
+
+Use `design_system.upstream` as the compatibility breadcrumb, but `sources[]` is the richer contract the survey recipe consumes. A resolver source should not make unused upstream tokens important; it only resolves symbols observed in the primary source.
 
 ### 4. Body sections
 
@@ -91,6 +119,7 @@ Walk the file yourself against the schema in [schema.md](schema.md). Required ch
 - `id` matches `^[a-z0-9][a-z0-9._-]*$`.
 - Body sections appear in order: `## Identity`, `## Topology`, `## Conventions`. No other `##` headings between them.
 - If `design_system.token_source` is `external` or `mixed`, `design_system.upstream` is set.
+- If `sources[]` is present, it has exactly one `role: primary`; resolver sources declare `resolves` where possible.
 
 Common errors regardless of path:
 

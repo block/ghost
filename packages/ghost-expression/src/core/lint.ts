@@ -72,6 +72,7 @@ export function lintExpression(
   checkEvidenceHexes(expression, rawIssues);
   checkUnusedPalette(expression, rawIssues);
   checkNonCanonicalDimensions(expression, rawIssues);
+  checkRuleCuration(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -262,6 +263,78 @@ function checkNonCanonicalDimensions(
       }. Either rename, or add \`dimension_kind: <canonical>\` so fleet aggregation can group this decision.`,
       path: `decisions[${idx}].dimension`,
     });
+  });
+}
+
+const RULE_SUPPORT_FLOOR = 0.85;
+
+/**
+ * Rules are the terminal drift contract, but the first pass stays advisory:
+ * warn when promoted rules look under-supported or under-calibrated without
+ * making older expressions fail lint.
+ */
+function checkRuleCuration(fp: Expression, issues: LintIssue[]): void {
+  const rules = fp.rules ?? [];
+  if (rules.length === 0) {
+    issues.push({
+      severity: "info",
+      rule: "rules-missing",
+      message:
+        "No promoted rules[] are present; review-command will use a coarse token fallback and generation context will be less enforceable.",
+      path: "rules",
+    });
+    return;
+  }
+
+  rules.forEach((rule, idx) => {
+    const path = `rules[${idx}]`;
+    if (typeof rule.support !== "number") {
+      issues.push({
+        severity: "info",
+        rule: "rule-support-missing",
+        message:
+          "Promoted rules should record `support` so curators can tell whether the pattern is load-bearing.",
+        path: `${path}.support`,
+      });
+    } else if (rule.support < RULE_SUPPORT_FLOOR) {
+      issues.push({
+        severity: "warning",
+        rule: "rule-support-low",
+        message: `Promoted rule \`${rule.id}\` has support ${rule.support.toFixed(2)}; rules below ${RULE_SUPPORT_FLOOR} are usually too noisy to enforce.`,
+        path: `${path}.support`,
+      });
+    }
+
+    if ((rule.enforce_at?.length ?? 0) === 0) {
+      issues.push({
+        severity: "info",
+        rule: "rule-enforce-at-missing",
+        message:
+          "Promoted rules should usually declare `enforce_at` so reviewers know which contexts to scan.",
+        path: `${path}.enforce_at`,
+      });
+    }
+
+    if (
+      typeof rule.presence_floor === "number" &&
+      typeof rule.observed_count !== "number"
+    ) {
+      issues.push({
+        severity: "warning",
+        rule: "rule-presence-floor-needs-observed-count",
+        message:
+          "`presence_floor` needs `observed_count` to avoid calibrating absence from coarse frontmatter proxies.",
+        path: `${path}.observed_count`,
+      });
+    } else if (typeof rule.observed_count !== "number") {
+      issues.push({
+        severity: "info",
+        rule: "rule-observed-count-missing",
+        message:
+          "Promoted rules should record `observed_count` when calibrated from bucket evidence.",
+        path: `${path}.observed_count`,
+      });
+    }
   });
 }
 

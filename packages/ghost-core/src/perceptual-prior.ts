@@ -21,9 +21,9 @@
  *      `band`, type-size is `percent`, radius/shadow are `structural`.
  *      Defaults are sensible; per-rule overrides remain available.
  *   2. **Presence/absence escalation**: when bucket count for a
- *      dimension is ≤ `presence_floor`, escalate the rule one tier.
- *      Sparsity is the design decision — adding to a silent dimension
- *      is the loudest possible change regardless of base tier.
+ *      guarded phenomenon is ≤ `presence_floor`, escalate the rule one
+ *      tier. Sparsity is the design decision — adding to a silent pattern
+ *      is louder than tweaking a populated one.
  *
  * Tier membership is a position: projects can override per-rule severity
  * but cannot remap a dimension's tier. The tiers are the product.
@@ -147,7 +147,7 @@ export function tierForCanonical(
  * the dimension is silent (or near-silent) in the project, so any rule
  * guarding it is one tier louder than its base.
  *
- * `presenceFloor` defaults to 0 — only completely-absent dimensions
+ * `presenceFloor` defaults to 0 — only completely-absent guarded patterns
  * trigger escalation by default. Rules that want softer escalation
  * (motion in a system with 1–2 structural transitions, say) can set a
  * higher floor.
@@ -163,7 +163,7 @@ export function escalateForPresence(
 
 /**
  * Compute the final severity for a rule, given its canonical dimension
- * and the bucket count for that dimension in the current expression.
+ * and the bucket count for the guarded pattern in the current expression.
  *
  * Resolution order:
  *   1. Explicit `rule.severity` wins outright.

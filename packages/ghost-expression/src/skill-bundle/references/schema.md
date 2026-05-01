@@ -30,6 +30,18 @@ decisions:
   - dimension: color-strategy            # freeform slug
   - dimension: spatial-system
 
+# promoted review rules — optional. Candidate rules stay outside the file
+# until a human curator promotes them.
+rules:
+  - id: no-off-palette-hex
+    canonical: color-strategy
+    kind: color
+    summary: Hex literals must come from the documented palette
+    pattern: '#[0-9a-fA-F]{3,8}'
+    enforce_at: [className, css_var, inline_style]
+    observed_count: 31                  # count the guarded pattern
+    support: 0.94                       # conformers / observed cases
+
 # concrete tokens
 palette:
   dominant:

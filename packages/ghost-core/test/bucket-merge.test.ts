@@ -109,6 +109,22 @@ describe("mergeBuckets", () => {
     expect(merged.sources).toHaveLength(1);
   });
 
+  it("preserves distinct source-graph roles for the same target", () => {
+    const primary: BucketSource = {
+      ...SOURCE_A,
+      id: "cash-ios",
+      role: "primary",
+    };
+    const resolver: BucketSource = {
+      ...SOURCE_A,
+      id: "arcade-ios-package",
+      role: "resolver",
+      resolves: ["color"],
+    };
+    const merged = mergeBuckets(makeBucket(primary), makeBucket(resolver));
+    expect(merged.sources).toEqual([primary, resolver]);
+  });
+
   it("preserves tokens and components independently", () => {
     const a = makeBucket(
       SOURCE_A,
