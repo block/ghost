@@ -111,6 +111,7 @@ const RuleSchema = z
     match: z.enum(["exact", "band", "percent", "structural"]).optional(),
     tolerance: z.number().optional(),
     presence_floor: z.number().int().nonnegative().optional(),
+    observed_count: z.number().int().nonnegative().optional(),
     support: z.number().min(0).max(1).optional(),
     rationale: z.string().optional(),
   })

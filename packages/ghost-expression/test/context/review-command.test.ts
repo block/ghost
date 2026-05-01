@@ -147,16 +147,15 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 
   it("escalates severity when presence_floor crosses zero", () => {
-    // motion canonical is rhythmic-tier (default nit). With presence_floor
-    // 0 and the motion proxy returning 100 (no escalation by default), the
-    // rule lands in Nit. But if we hand-author presence_floor: 100, the
-    // proxy count is ≤ floor → escalates one tier → Serious.
+    // motion canonical is rhythmic-tier (default nit). A zero observed count
+    // crossing the floor escalates one tier → Serious.
     const fp = withRules([
       {
         id: "no-decorative-motion",
         canonical: "motion",
         pattern: "transition:\\s*all",
-        presence_floor: 100,
+        observed_count: 0,
+        presence_floor: 4,
       },
     ]);
     const out = emitReviewCommand({ expression: fp });
@@ -217,6 +216,20 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     expect(out).toMatch(/\*\*Support:\*\* 97%/);
   });
 
+  it("renders observed count when provided", () => {
+    const fp = withRules([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        observed_count: 0,
+        presence_floor: 4,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/\*\*Observed count:\*\* 0/);
+  });
+
   it("includes a calibration footer that names the prior", () => {
     const fp = withRules([
       {
@@ -237,12 +250,13 @@ describe("emitReviewCommand — rules[]-driven path", () => {
         id: "no-decorative-motion",
         canonical: "motion",
         pattern: "transition:\\s*all",
-        presence_floor: 100, // motion proxy = 100 → triggers escalation
+        observed_count: 0,
+        presence_floor: 4,
       },
     ]);
     const out = emitReviewCommand({ expression: fp });
     expect(out).toContain(
-      "Presence-floor escalation triggered for:** `no-decorative-motion`",
+      "Presence-floor escalation triggered for:** `no-decorative-motion` (0 ≤ 4)",
     );
   });
 
@@ -252,6 +266,9 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     const out = emitReviewCommand({ expression: fp });
     // Old path emits "## 1. Palette drift" — rules-driven never does
     expect(out).toMatch(/## 1\. Palette drift/);
+    expect(out).toMatch(/## Calibration note/);
+    expect(out).toMatch(/no promoted `rules\[\]`/);
+    expect(out).toMatch(/coarse token fallback/);
     expect(out).not.toMatch(/^## Critical/m);
   });
 

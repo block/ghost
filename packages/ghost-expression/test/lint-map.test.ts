@@ -129,6 +129,12 @@ describe("lintMap — design_system token_source + derived_files", () => {
     expect(report.errors).toBe(0);
   });
 
+  it("nudges external token maps to declare an explicit source graph", () => {
+    const report = lintMap(loadFixture("external-tokens-repo/external.map.md"));
+    const rules = report.issues.map((i) => i.rule);
+    expect(rules).toContain("source-graph-missing");
+  });
+
   it("accepts derived_files alongside entry_files", () => {
     const report = lintMap(loadFixture("derived-tokens-repo/derived.map.md"));
     expect(report.errors).toBe(0);
@@ -159,5 +165,58 @@ describe("lintMap — design_system token_source + derived_files", () => {
     const report = lintMap(raw);
     const rules = report.issues.map((i) => i.rule);
     expect(rules).toContain("design-system-files-missing");
+  });
+
+  it("accepts an explicit scan source graph", () => {
+    const raw = loadFixture("external-tokens-repo/external.map.md").replace(
+      "mapped_at: 2026-04-27\n",
+      `mapped_at: 2026-04-27
+subject:
+  id: external-tokens-fixture
+  target: github:example/external-tokens
+sources:
+  - id: external-tokens-fixture
+    role: primary
+    target: github:example/external-tokens
+  - id: design-tokens
+    role: resolver
+    target: npm:@example/design-tokens
+    resolves: [color, spacing, typography]
+`,
+    );
+    const report = lintMap(raw);
+    expect(report.errors).toBe(0);
+    expect(report.issues).toEqual([]);
+  });
+
+  it("warns when a source graph has no primary source", () => {
+    const raw = loadFixture("external-tokens-repo/external.map.md").replace(
+      "mapped_at: 2026-04-27\n",
+      `mapped_at: 2026-04-27
+sources:
+  - id: design-tokens
+    role: resolver
+    target: npm:@example/design-tokens
+    resolves: [color]
+`,
+    );
+    const report = lintMap(raw);
+    const rules = report.issues.map((i) => i.rule);
+    expect(rules).toContain("source-graph-primary-count");
+  });
+
+  it("warns when external tokens have a source graph without a resolver", () => {
+    const raw = loadFixture("external-tokens-repo/external.map.md").replace(
+      "mapped_at: 2026-04-27\n",
+      `mapped_at: 2026-04-27
+sources:
+  - id: external-tokens-fixture
+    role: primary
+    target: github:example/external-tokens
+`,
+    );
+    const report = lintMap(raw);
+    const rules = report.issues.map((i) => i.rule);
+    expect(rules).toContain("source-graph-resolver-missing");
   });
 });

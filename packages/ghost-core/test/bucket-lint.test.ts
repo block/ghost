@@ -1,13 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { valueRowId } from "../src/bucket/id.js";
+import { tokenRowId, valueRowId } from "../src/bucket/id.js";
 import { lintBucket } from "../src/bucket/lint.js";
-import type { Bucket, BucketSource } from "../src/bucket/types.js";
+import type {
+  Bucket,
+  BucketSource,
+  TokenRow,
+  ValueRow,
+} from "../src/bucket/types.js";
 
 const SOURCE: BucketSource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
   scanner_version: "0.1.0",
+};
+
+const RESOLVER_SOURCE: BucketSource = {
+  id: "design-tokens",
+  role: "resolver",
+  target: "github:block/design-tokens",
+  commit: "def456",
+  scanned_at: "2026-04-29T12:00:00Z",
+  scanner_version: "0.1.0",
+  resolves: ["color"],
 };
 
 function makeValueRow(
@@ -18,26 +33,51 @@ function makeValueRow(
     occurrences: number;
     files_count: number;
     role_hypothesis: string;
+    source: BucketSource;
+    resolution: ValueRow["resolution"];
   }> = {},
 ) {
+  const source = overrides.source ?? SOURCE;
   return {
-    id: valueRowId(SOURCE, kind, value, raw),
-    source: SOURCE,
+    id: valueRowId(source, kind, value, raw),
+    source,
     kind,
     value,
     raw,
     occurrences: overrides.occurrences ?? 1,
     files_count: overrides.files_count ?? 1,
     role_hypothesis: overrides.role_hypothesis,
+    resolution: overrides.resolution,
   };
 }
 
-function makeBucket(values: ReturnType<typeof makeValueRow>[] = []): Bucket {
+function makeTokenRow(
+  source: BucketSource,
+  name: string,
+  resolvedValue: string,
+  resolution?: TokenRow["resolution"],
+): TokenRow {
+  return {
+    id: tokenRowId(source, name),
+    source,
+    name,
+    alias_chain: [],
+    resolved_value: resolvedValue,
+    occurrences: 1,
+    resolution,
+  };
+}
+
+function makeBucket(
+  values: ReturnType<typeof makeValueRow>[] = [],
+  tokens: TokenRow[] = [],
+  sources: BucketSource[] = [SOURCE],
+): Bucket {
   return {
     schema: "ghost.bucket/v1",
-    sources: [SOURCE],
+    sources,
     values,
-    tokens: [],
+    tokens,
     components: [],
   };
 }
@@ -119,5 +159,64 @@ describe("lintBucket", () => {
     };
     const report = lintBucket(bucket);
     expect(report.errors).toBeGreaterThan(0);
+  });
+
+  it("accepts source roles and resolution provenance", () => {
+    const primary: BucketSource = {
+      ...SOURCE,
+      id: "cash-ios",
+      role: "primary",
+      target: "github:squareup/cash-ios",
+    };
+    const row = makeValueRow("color", "#ffffff", "CashTheme.color.bg", {
+      source: primary,
+      resolution: {
+        status: "resolved",
+        source_id: "arcade-ios-package",
+        target: "github:squareup/arcade-ios-package",
+        symbol: "ArcadeColor.background",
+        chain: ["CashTheme.color.bg", "ArcadeColor.background"],
+      },
+    });
+    const report = lintBucket(
+      makeBucket([row], [], [primary, RESOLVER_SOURCE]),
+    );
+    expect(report.errors).toBe(0);
+    expect(report.issues).toEqual([]);
+  });
+
+  it("warns when source roles omit a primary source", () => {
+    const report = lintBucket(makeBucket([], [], [RESOLVER_SOURCE]));
+    expect(report.errors).toBe(0);
+    expect(
+      report.issues.some((i) => i.rule === "source-graph-primary-count"),
+    ).toBe(true);
+  });
+
+  it("accepts unresolved external token provenance", () => {
+    const primary: BucketSource = {
+      ...SOURCE,
+      id: "cash-ios",
+      role: "primary",
+    };
+    const token = makeTokenRow(
+      primary,
+      "CashTheme.color.bg",
+      "CashTheme.color.bg",
+      {
+        status: "unresolved-external",
+        source_id: "arcade-ios-package",
+        symbol: "ArcadeColor.background",
+      },
+    );
+    const report = lintBucket(
+      makeBucket([], [token], [primary, RESOLVER_SOURCE]),
+    );
+    expect(report.errors).toBe(0);
+    expect(
+      report.issues.some(
+        (i) => i.rule === "resolution-unresolved-context-missing",
+      ),
+    ).toBe(false);
   });
 });

@@ -23,6 +23,8 @@ export {
   type RadiusSpec,
   RECOMMENDED_VALUE_KINDS,
   type RecommendedValueKind,
+  type Resolution,
+  ResolutionSchema,
   type RowBase,
   recomputeBucketIds,
   type ScalarUnit,

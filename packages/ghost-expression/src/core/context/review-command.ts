@@ -1,10 +1,6 @@
-import type { DriftSeverity, Expression, Rule } from "@ghost/core";
-import {
-  computeRuleSeverity,
-  resolveMatchShape,
-  resolveTolerance,
-  tierForCanonical,
-} from "@ghost/core";
+import type { DriftSeverity, Expression } from "@ghost/core";
+import { tierForCanonical } from "@ghost/core";
+import { type ResolvedRule, resolveExpressionRules } from "./rules.js";
 
 export interface EmitReviewInput {
   expression: Expression;
@@ -27,7 +23,7 @@ export interface EmitReviewInput {
  *     non-empty, group rules by computed perceptual severity and render
  *     a Critical / Serious / Nit layout. Severity is computed from the
  *     perceptual prior in `@ghost/core` plus per-rule overrides and
- *     presence-floor escalation against bucket-proxy counts.
+ *     presence-floor escalation against observed counts or bucket proxies.
  *   - **Structured-fallback** (legacy): when no rules[] are present,
  *     emit the original palette/radius/spacing/typography sections
  *     derived from frontmatter alone. Preserved verbatim so existing
@@ -64,12 +60,7 @@ function emitRulesDriven(fp: Expression): string {
   const cousins = (fp.observation?.resembles ?? []).join(", ");
   const character = fp.observation?.summary?.trim() ?? "";
 
-  const resolved = (fp.rules ?? []).map((rule) => ({
-    rule,
-    severity: computeRuleSeverity(rule, bucketCountProxy(rule, fp)),
-    match: resolveMatchShape(rule),
-    tolerance: resolveTolerance(rule),
-  }));
+  const resolved = resolveExpressionRules(fp);
 
   const grouped: Record<DriftSeverity, typeof resolved> = {
     critical: [],
@@ -101,13 +92,6 @@ function emitRulesDriven(fp: Expression): string {
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
 }
 
-interface ResolvedRule {
-  rule: Rule;
-  severity: DriftSeverity;
-  match: string;
-  tolerance: number | undefined;
-}
-
 function renderSeverityBlock(label: string, items: ResolvedRule[]): string {
   const lines: string[] = [`## ${label} (${items.length})`];
   for (const item of items) {
@@ -136,6 +120,9 @@ function renderRule(item: ResolvedRule): string {
     const where = rule.enforce_at.map((e) => `\`${e}\``).join(", ");
     lines.push(`**Enforce at:** ${where}`);
   }
+  if (typeof rule.observed_count === "number") {
+    lines.push(`**Observed count:** ${rule.observed_count}`);
+  }
   if (typeof rule.support === "number") {
     lines.push(`**Support:** ${(rule.support * 100).toFixed(0)}%`);
   }
@@ -159,7 +146,8 @@ function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
       finalTierFromSeverity !== baseTier &&
       r.rule.severity === undefined // not a manual override
     ) {
-      escalated.push(`\`${r.rule.id}\``);
+      const floor = r.rule.presence_floor ?? 0;
+      escalated.push(`\`${r.rule.id}\` (${r.bucketCount} ≤ ${floor})`);
     }
   }
 
@@ -171,7 +159,7 @@ function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
   if (escalated.length) {
     lines.push(
       "",
-      `**Presence-floor escalation triggered for:** ${escalated.join(", ")}. These dimensions are silent (or near-silent) in the bucket — adding to them crosses a presence boundary, which is the loudest possible change.`,
+      `**Presence-floor escalation triggered for:** ${escalated.join(", ")}. These guarded patterns are absent or near-silent in the bucket, so adding to them lands one perceptual tier louder than the base dimension.`,
     );
   }
   lines.push(
@@ -181,50 +169,6 @@ function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
     `Generated from \`expression.md\` (${(fp.rules ?? []).length} rules). Re-run \`ghost-expression emit review-command\` after expression updates.`,
   );
   return lines.join("\n");
-}
-
-/**
- * Coarse proxy for bucket-count per canonical dimension, derived from the
- * structured frontmatter fields. v0 expressions don't carry the bucket
- * directly; this proxy lets presence-floor escalation work against the
- * derived counts. v1 will replace this with the actual bucket count once
- * `loadExpression` returns the bucket alongside the expression.
- */
-function bucketCountProxy(rule: Rule, fp: Expression): number {
-  switch (rule.canonical) {
-    case "color-strategy":
-      return (
-        fp.palette.dominant.length +
-        fp.palette.neutrals.count +
-        fp.palette.semantic.length
-      );
-    case "surface-hierarchy":
-      return fp.palette.semantic.length + fp.palette.dominant.length;
-    case "shape-language":
-      return fp.surfaces.borderRadii.length;
-    case "elevation":
-      return fp.surfaces.shadowComplexity === "deliberate-none"
-        ? 0
-        : fp.surfaces.shadowComplexity === "subtle"
-          ? 2
-          : 5;
-    case "spatial-system":
-    case "density":
-      return fp.spacing.scale.length;
-    case "typography-voice":
-      return fp.typography.sizeRamp.length;
-    case "font-sourcing":
-      return fp.typography.families.length;
-    case "motion":
-      // Motion isn't in structured fields; default to a count above
-      // typical floors so escalation only happens via explicit author
-      // hint (rule.presence_floor: 2+).
-      return 100;
-    default:
-      // Unknown canonical → leave room above floor 0 so escalation
-      // doesn't fire incorrectly, but author can override via floor.
-      return 100;
-  }
 }
 
 // --- Structured-fallback path (legacy) ---------------------------------
@@ -239,6 +183,7 @@ function emitStructuredFallback(fp: Expression): string {
     frontmatter(id),
     header(id, personality, cousins, character),
     modeSection(),
+    structuredFallbackNotice(),
     paletteSection(fp),
     radiusSection(fp),
     spacingSection(fp),
@@ -249,6 +194,12 @@ function emitStructuredFallback(fp: Expression): string {
     footer(fp),
   ];
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
+}
+
+function structuredFallbackNotice(): string {
+  return `## Calibration note
+
+This expression has no promoted \`rules[]\`, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than a rules-driven reviewer, and promote curated rules in \`expression.md\` when a pattern should become enforceable.`;
 }
 
 function frontmatter(id: string): string {
@@ -515,7 +466,7 @@ function footer(fp: Expression): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`expression.md\` (${count} decisions). Re-run \`ghost-drift emit review-command\` after expression updates.`;
+Generated from \`expression.md\` (${count} decisions). Re-run \`ghost-expression emit review-command\` after expression updates.`;
 }
 
 // --- helpers ------------------------------------------------------------
