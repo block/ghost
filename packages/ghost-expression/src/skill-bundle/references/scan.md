@@ -30,6 +30,8 @@ You don't run a single CLI verb here. You orchestrate stages, validate after eac
 
 Each stage's output is the next stage's input. Stage 3 is terminal — it's what other ghost tools (drift, fleet) consume.
 
+Terminal-impact rule: keep Stage 2 broad and observed, then make Stage 3 selective. A bucket row is evidence; an expression fact is a claim that should change a drift verdict or change generated UI. If it would not affect either consumer, leave it in the bucket or scan notes rather than carrying it into `expression.md`.
+
 ## Steps
 
 ### 1. Locate the scan directory
@@ -64,7 +66,7 @@ Use `Read` (or `Bash: ls <scan-dir>`) to verify each file exists. The first miss
 
 Run when `scan-status` reports `topology: missing`.
 
-Recipe: [map.md](map.md). The agent reads `ghost-expression inventory <target>` for raw signals + the recipe's guidance, then writes `map.md` to the scan directory and validates with `ghost-expression lint map.md`.
+Recipe: [map.md](map.md). The agent reads `ghost-expression inventory <target>` for raw signals + the recipe's guidance, then writes `map.md` to the scan directory and validates with `ghost-expression lint map.md`. For split repos, this is where the source graph is declared: one primary subject plus resolver sources needed to resolve imported design symbols.
 
 After validation, re-run `scan-status` and proceed.
 
@@ -72,9 +74,9 @@ After validation, re-run `scan-status` and proceed.
 
 Run when `scan-status` reports `topology: present` and `objective: missing`.
 
-Recipe: [survey.md](survey.md). The agent reads `map.md` to recognize the dialect, runs LLM-driven extraction (its own greps/regexes), records rows with empty `id` fields, finalizes IDs with `ghost-expression bucket fix-ids bucket.json -o bucket.json`, then validates with `ghost-expression lint bucket.json`.
+Recipe: [survey.md](survey.md). The agent reads `map.md` to recognize the dialect and source graph, runs LLM-driven extraction (its own greps/regexes), records rows with empty `id` fields, finalizes IDs with `ghost-expression bucket fix-ids bucket.json -o bucket.json`, then validates with `ghost-expression lint bucket.json`.
 
-The survey is the longest stage and the one with the most discipline (exhaustiveness, saturation, cross-checking counts). Don't shortcut it — the interpreter downstream cannot fabricate values that aren't in the bucket, so missed values become missed expression fields permanently.
+The survey is the longest stage and the one with the most discipline (exhaustiveness, saturation, cross-checking counts). Don't shortcut it — the interpreter downstream cannot fabricate values that aren't in the bucket, so missed values become missed expression fields permanently. Broad bucket evidence is okay; over-broad terminal expression is not.
 
 After validation, re-run `scan-status` and proceed.
 
@@ -82,7 +84,7 @@ After validation, re-run `scan-status` and proceed.
 
 Run when `scan-status` reports both prior stages `present` and `subjective: missing`.
 
-Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals) and `bucket.json` (for ground truth) and writes `expression.md` purely as interpretation: names decisions, writes the prose body, fills frontmatter from bucket rows. Cannot invent values not in the bucket. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
+Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals) and `bucket.json` (for ground truth) and writes `expression.md` purely as interpretation: names decisions, writes the prose body, fills frontmatter from bucket rows, and promotes only curated rules. Cannot invent values not in the bucket. Cannot dump every bucket fact into the terminal artifact. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
 
 ### 6. Confirm complete
 

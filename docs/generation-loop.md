@@ -36,6 +36,10 @@ expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKI
 
 Emit a grounding bundle any generator can consume. Default output writes
 `SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
+The generated `prompt.md` is a generation lens over the expression: Character
+sets feel, promoted Rules are non-negotiable gates, Decisions provide style
+direction, and Tokens provide the value set. It intentionally does not ask the
+generator to explain or cite decisions unless the user asks for explanation.
 
 Flags:
 - `--out <dir>` — output directory (default: `./ghost-context`)
@@ -51,7 +55,7 @@ reads `SKILL.md`.
 
 Driven by the host agent. Loads the expression (the agent typically pulls
 just the sections it needs via `ghost-expression describe`), builds a system
-prompt from Character/Decisions + tokens + rules, asks the underlying
+prompt from Character + promoted rules + Decisions + tokens, asks the underlying
 model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
 recipe for self-check. Retries with drift feedback until it passes or the
 agent gives up.
@@ -110,8 +114,12 @@ Each layer has a concrete job somewhere in the loop:
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Rules** | Drift-sensitive moves the reviewer enforces; presence-floor rules codify load-bearing absences |
+| **Rules** | Drift-sensitive moves the reviewer enforces and the generator must avoid; presence-floor rules codify load-bearing absences |
 | **Decisions** | Abstract pattern lookup the generator consults for specific choices |
+
+Terminal-impact rule: a fact belongs in the terminal expression only when it
+can change generated UI or a drift verdict. `bucket.json` can stay broad as
+evidence; `expression.md` should stay curated.
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
 over-specified. The `verify` recipe is the schema-discipline mechanism.

@@ -258,6 +258,69 @@ No cool grays.
     expect(issue?.path).toBe("decisions[0].dimension_kind");
   });
 
+  it("infos when no promoted rules are present", () => {
+    const md = build("", "");
+    const report = lintExpression(md);
+    const issue = report.issues.find((i) => i.rule === "rules-missing");
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("info");
+    expect(report.errors).toBe(0);
+  });
+
+  it("warns when a promoted rule has low support", () => {
+    const md = build(
+      `\nrules:
+  - id: shaky-spacing
+    canonical: spatial-system
+    pattern: 'p-\\[\\d+px\\]'
+    enforce_at: [className]
+    observed_count: 20
+    support: 0.72`,
+      "",
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find((i) => i.rule === "rule-support-low");
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("rules[0].support");
+  });
+
+  it("infos when promoted rules omit support, enforce_at, or observed_count", () => {
+    const md = build(
+      `\nrules:
+  - id: uncalibrated-color
+    canonical: color-strategy
+    pattern: '#[0-9a-fA-F]{3,8}'`,
+      "",
+    );
+    const report = lintExpression(md);
+    const rules = report.issues.map((i) => i.rule);
+    expect(rules).toContain("rule-support-missing");
+    expect(rules).toContain("rule-enforce-at-missing");
+    expect(rules).toContain("rule-observed-count-missing");
+    expect(report.errors).toBe(0);
+  });
+
+  it("warns when presence_floor is set without observed_count", () => {
+    const md = build(
+      `\nrules:
+  - id: no-decorative-motion
+    canonical: motion
+    pattern: 'transition:\\s*all'
+    enforce_at: [className]
+    presence_floor: 4
+    support: 0.92`,
+      "",
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "rule-presence-floor-needs-observed-count",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("rules[0].observed_count");
+  });
+
   it("rejects the legacy shadowComplexity: none value", () => {
     const md = `${HEADER}
 palette:

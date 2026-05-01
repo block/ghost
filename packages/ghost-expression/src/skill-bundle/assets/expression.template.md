@@ -15,11 +15,7 @@ observation:
 # abstract design decisions
 decisions:
   - dimension: color-strategy
-    evidence:
-      - "--color-primary: #000000"
   - dimension: spatial-system
-    evidence:
-      - "--space-4: 16px"
 
 # concrete tokens
 palette:
@@ -59,9 +55,15 @@ surfaces:
 
 Prose rationale for the color-strategy decision. Implementation-agnostic: name the pattern, not the token.
 
+**Evidence:**
+- `--color-primary: #000000`
+
 ### spatial-system
 
 Prose rationale for the spatial-system decision.
+
+**Evidence:**
+- `--space-4: 16px`
 
 # Fragments
 

@@ -88,12 +88,15 @@ export function lintMap(raw: string): MapLintReport {
  *   - `upstream` is meaningful only when `token_source` is `external` or
  *     `mixed`; flag a stray `upstream` paired with `inline` (or unset).
  *   - When `token_source` is `external`, `upstream` should be set.
+ *   - When external/mixed tokens are source-graph-aware, require exactly
+ *     one primary and at least one resolver.
  */
 function checkDesignSystemCoherence(
   fm: ReturnType<typeof MapFrontmatterSchema.parse>,
 ): MapLintIssue[] {
   const out: MapLintIssue[] = [];
   const ds = fm.design_system;
+  const sourceGraph = fm.sources ?? [];
   const hasEntry = (ds.entry_files?.length ?? 0) > 0;
   const hasDerived = (ds.derived_files?.length ?? 0) > 0;
   if (!hasEntry && !hasDerived) {
@@ -115,6 +118,31 @@ function checkDesignSystemCoherence(
     });
   }
   if (
+    (ds.token_source === "external" || ds.token_source === "mixed") &&
+    sourceGraph.length === 0
+  ) {
+    out.push({
+      severity: "info",
+      rule: "source-graph-missing",
+      message:
+        "design_system uses external or mixed tokens; declare sources[] when the resolver source is inspectable so the survey can preserve usage and resolution separately.",
+      path: "sources",
+    });
+  }
+  if (
+    (ds.token_source === "external" || ds.token_source === "mixed") &&
+    sourceGraph.length > 0 &&
+    !sourceGraph.some((source) => source.role === "resolver")
+  ) {
+    out.push({
+      severity: "warning",
+      rule: "source-graph-resolver-missing",
+      message:
+        "design_system uses external or mixed tokens, but sources[] has no resolver source — add a resolver so the survey can resolve symbols to concrete values.",
+      path: "sources",
+    });
+  }
+  if (
     ds.upstream &&
     ds.token_source !== "external" &&
     ds.token_source !== "mixed"
@@ -126,6 +154,33 @@ function checkDesignSystemCoherence(
         "design_system.upstream is set but token_source is not `external` or `mixed` — consider setting token_source explicitly.",
       path: "design_system.token_source",
     });
+  }
+  if (sourceGraph.length > 0) {
+    const primaryCount = sourceGraph.filter(
+      (source) => source.role === "primary",
+    ).length;
+    if (primaryCount !== 1) {
+      out.push({
+        severity: "warning",
+        rule: "source-graph-primary-count",
+        message:
+          "sources[] should declare exactly one primary source — the subject whose usage determines salience.",
+        path: "sources",
+      });
+    }
+    const resolverWithoutResolves = sourceGraph.find(
+      (source) =>
+        source.role === "resolver" && (source.resolves?.length ?? 0) === 0,
+    );
+    if (resolverWithoutResolves) {
+      out.push({
+        severity: "info",
+        rule: "source-graph-resolver-resolves-missing",
+        message:
+          "resolver sources should usually declare `resolves` (color, spacing, typography, …) so the survey knows what dimensions to join.",
+        path: "sources",
+      });
+    }
   }
   return out;
 }

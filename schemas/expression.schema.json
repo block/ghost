@@ -83,6 +83,76 @@
         "additionalProperties": false
       }
     },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "canonical": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "color",
+              "radius",
+              "spacing",
+              "type-size",
+              "type-family",
+              "type-weight",
+              "shadow",
+              "motion"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "enforce_at": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "serious", "nit"]
+          },
+          "match": {
+            "type": "string",
+            "enum": ["exact", "band", "percent", "structural"]
+          },
+          "tolerance": {
+            "type": "number"
+          },
+          "presence_floor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "observed_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "support": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "pattern"],
+        "additionalProperties": false
+      }
+    },
     "palette": {
       "type": "object",
       "properties": {

@@ -10,10 +10,22 @@ import { z } from "zod";
  */
 
 const BucketSourceSchema = z.object({
+  id: z.string().min(1).optional(),
+  role: z.enum(["primary", "resolver"]).optional(),
   target: z.string().min(1),
   commit: z.string().optional(),
   scanned_at: z.string().min(1),
   scanner_version: z.string().optional(),
+  resolves: z.array(z.string().min(1)).optional(),
+});
+
+const ResolutionSchema = z.object({
+  status: z.enum(["resolved", "unresolved-external", "unresolved-local"]),
+  source_id: z.string().min(1).optional(),
+  target: z.string().min(1).optional(),
+  symbol: z.string().min(1).optional(),
+  chain: z.array(z.string().min(1)).optional(),
+  message: z.string().min(1).optional(),
 });
 
 const ScalarUnitSchema = z.object({
@@ -106,6 +118,7 @@ const ValueRowSchema = RowBaseSchema.extend({
   files_count: z.number().int().nonnegative(),
   usage: z.record(z.string(), z.number().int().nonnegative()).optional(),
   role_hypothesis: z.string().optional(),
+  resolution: ResolutionSchema.optional(),
 });
 
 const TokenRowSchema = RowBaseSchema.extend({
@@ -114,6 +127,7 @@ const TokenRowSchema = RowBaseSchema.extend({
   resolved_value: z.string().min(1),
   by_theme: z.record(z.string(), z.string()).optional(),
   occurrences: z.number().int().nonnegative(),
+  resolution: ResolutionSchema.optional(),
 });
 
 const ComponentRowSchema = RowBaseSchema.extend({
@@ -135,6 +149,7 @@ export {
   BucketSourceSchema,
   ColorSpecSchema,
   ComponentRowSchema,
+  ResolutionSchema,
   TokenRowSchema,
   ValueRowSchema,
   ValueSpecSchema,

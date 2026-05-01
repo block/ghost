@@ -69,6 +69,21 @@ const BuildSystemValueSchema = z.union([
   z.array(BuildSystemEnum).min(1),
 ]);
 
+const SourceRoleSchema = z.enum(["primary", "resolver"]);
+
+const MapSubjectSchema = z.object({
+  id: z.string().min(1),
+  target: z.string().min(1),
+});
+
+const MapSourceSchema = z.object({
+  id: z.string().min(1).optional(),
+  role: SourceRoleSchema,
+  target: z.string().min(1),
+  resolves: z.array(z.string().min(1)).optional(),
+  paths: z.array(z.string().min(1)).optional(),
+});
+
 /**
  * Zod schema for `ghost.map/v1` frontmatter.
  *
@@ -85,6 +100,17 @@ export const MapFrontmatterSchema = z.object({
         "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
     }),
   repo: z.string().min(1),
+  /**
+   * Optional explicit subject for multi-source scans. `id` remains the
+   * canonical map id; `subject` states what this expression is about.
+   */
+  subject: MapSubjectSchema.optional(),
+  /**
+   * Optional scan source graph. The primary source supplies usage/salience;
+   * resolver sources supply concrete meaning for symbols imported from
+   * upstream packages.
+   */
+  sources: z.array(MapSourceSchema).optional(),
   mapped_at: z.iso.datetime({ offset: true }).or(
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
       message: "mapped_at must be ISO date (YYYY-MM-DD) or full datetime",

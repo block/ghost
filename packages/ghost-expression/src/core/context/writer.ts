@@ -2,6 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { DesignDecision, Expression } from "@ghost/core";
 import { serializeExpression } from "../writer.js";
+import {
+  bySeverityThenId,
+  type ResolvedRule,
+  resolveExpressionRules,
+} from "./rules.js";
 import { buildTokensCss } from "./tokens-css.js";
 
 /**
@@ -142,7 +147,7 @@ Read \`expression.md\` first — it is the source of truth. It has these layered
 
 1. **Character** — what this expression is (one-paragraph summary in the body)
 2. **Decisions** — abstract design choices with evidence from the source (body \`### dimension\` blocks)
-3. **Rules** — grep-friendly review patterns with severity (frontmatter \`rules[]\`); \`presence_floor\` rules codify load-bearing absences
+3. **Rules** — promoted, grep-friendly review patterns with severity (frontmatter \`rules[]\`); \`observed_count\` + \`presence_floor\` rules codify load-bearing absences
 
 When generating UI in this language:
 
@@ -168,20 +173,27 @@ ${body}`;
 function buildPromptMd(expression: Expression, name: string): string {
   const parts: string[] = [];
   parts.push(
-    `You are generating UI in the **${name}** design language. Honor the rules below.`,
+    `You are generating UI in the **${name}** design language. Produce the requested UI artifact; do not explain design decisions unless the user asks.`,
   );
 
   const summary = expression.observation?.summary?.trim();
   if (summary) parts.push(`# Character\n\n${summary}`);
 
+  const rules = resolveExpressionRules(expression).sort(bySeverityThenId);
+  if (rules.length) {
+    parts.push(`# Non-Negotiable Rules\n\n${formatRules(rules)}`);
+  }
+
   const decisions = expression.decisions ?? [];
   if (decisions.length)
     parts.push(`# Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
 
+  parts.push(`# Defaults And Avoids\n\n${formatDefaultsAndAvoids(expression)}`);
+
   parts.push(`# Tokens\n\n${formatTokens(expression)}`);
 
   parts.push(
-    "# How to use this prompt\n\nWhen asked to build a component or screen, produce HTML that uses the tokens above. Cite the Decision that drove each non-trivial choice.",
+    "# How to use this prompt\n\nWhen asked to build a component or screen, use the rules as gates, decisions as style direction, and tokens as the value set. Prefer existing local components and token names when available. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.",
   );
 
   return `${parts.join("\n\n")}\n`;
@@ -233,10 +245,64 @@ function formatDecision(d: DesignDecision): string {
   return `## ${d.dimension}\n${d.decision.trim()}`;
 }
 
+function formatRules(rules: ResolvedRule[]): string {
+  return rules.map(formatRule).join("\n");
+}
+
+function formatRule(item: ResolvedRule): string {
+  const { rule, severity, match, tolerance } = item;
+  const parts = [
+    `- **${severity.toUpperCase()}** \`${rule.id}\`${rule.canonical ? ` (${rule.canonical})` : ""}: ${rule.summary ?? rule.pattern}`,
+  ];
+  if (rule.rationale) parts.push(`  Rationale: ${rule.rationale}`);
+  parts.push(`  Avoid: matches to \`${rule.pattern}\`.`);
+  parts.push(
+    tolerance !== undefined
+      ? `  Match: \`${match}\` with tolerance \`${tolerance}\`.`
+      : `  Match: \`${match}\`.`,
+  );
+  if (rule.enforce_at?.length) {
+    parts.push(
+      `  Applies at: ${rule.enforce_at.map((e) => `\`${e}\``).join(", ")}.`,
+    );
+  }
+  return parts.join("\n");
+}
+
+function formatDefaultsAndAvoids(expression: Expression): string {
+  const lines = [
+    "- Default to the palette, spacing scale, type ramp, font families, radii, shadows, and border posture listed below.",
+    "- Avoid raw values that are not present in the expression; prefer semantic tokens or existing local abstractions.",
+  ];
+  if (expression.surfaces.shadowComplexity === "deliberate-none") {
+    lines.push(
+      "- Avoid box shadows unless a decision explicitly permits elevation.",
+    );
+  } else {
+    lines.push(
+      `- Default to \`${expression.surfaces.shadowComplexity}\` elevation; avoid inventing new shadow tiers.`,
+    );
+  }
+  if (expression.surfaces.borderUsage) {
+    lines.push(
+      `- Default to \`${expression.surfaces.borderUsage}\` border usage; avoid adding borders as decoration.`,
+    );
+  }
+  return lines.join("\n");
+}
+
 function formatTokens(expression: Expression): string {
   const lines: string[] = [];
+  const dominant = expression.palette?.dominant ?? [];
+  if (dominant.length) {
+    lines.push("**Dominant colors**");
+    for (const c of dominant) lines.push(`- \`${c.role}\`: ${c.value}`);
+  }
+  const neutrals = expression.palette?.neutrals?.steps ?? [];
+  if (neutrals.length) lines.push(`\n**Neutral ramp:** ${neutrals.join(", ")}`);
   const semantic = expression.palette?.semantic ?? [];
   if (semantic.length) {
+    if (lines.length) lines.push("");
     lines.push("**Semantic colors**");
     for (const c of semantic) lines.push(`- \`${c.role}\`: ${c.value}`);
   }
@@ -250,5 +316,7 @@ function formatTokens(expression: Expression): string {
     lines.push(`\n**Font families:** ${families.join(", ")}`);
   const radii = expression.surfaces?.borderRadii ?? [];
   if (radii.length) lines.push(`\n**Border radii:** ${radii.join(", ")}px`);
+  lines.push(`\n**Shadow posture:** ${expression.surfaces.shadowComplexity}`);
+  lines.push(`**Border usage:** ${expression.surfaces.borderUsage}`);
   return lines.join("\n");
 }

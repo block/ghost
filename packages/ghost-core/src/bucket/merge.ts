@@ -16,7 +16,7 @@ import type {
  * IDs, so all observations survive.
  *
  * `sources` becomes the union of input sources, also deduped on
- * `(target, commit)`.
+ * `(id, role, target, commit)` so source-graph roles survive merges.
  *
  * Idempotent: `mergeBuckets(b)` == `b`. Commutative on the rowset (order
  * within sections may differ from input order but content is identical).
@@ -49,7 +49,12 @@ function dedupSources(sources: BucketSource[]): BucketSource[] {
   const seen = new Set<string>();
   const out: BucketSource[] = [];
   for (const source of sources) {
-    const key = `${source.target}\x00${source.commit ?? ""}`;
+    const key = [
+      source.id ?? "",
+      source.role ?? "",
+      source.target,
+      source.commit ?? "",
+    ].join("\x00");
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(source);

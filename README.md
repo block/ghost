@@ -23,6 +23,8 @@ Ghost is split into one responsibility per tool. A scan produces three artifacts
 | **`ghost-fleet`** | `fleet.md` — read-only elevation across many `(map.md, expression.md)` members | `members`, `view`, `emit skill` |
 | **`ghost-ui`** | A reference design system Ghost dogfoods — 97 shadcn components + an MCP server | (no verbs) |
 
+Scans are single-subject but may be multi-source. A `map.md` can declare a source graph where one `primary` source supplies usage and salience while one or more `resolver` sources supply concrete values for imported symbols. This lets an app expression describe the app in use without pretending the upstream design-system inventory is the app's language.
+
 `@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v1` + `ghost.bucket/v1` schemas the three CLIs share.
 
 ## Why Ghost?
@@ -213,7 +215,7 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, roles, provenance. The machine layer. Also `rules[]` — grep-able review rules with `presence_floor` for codifying absences.
+- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. The machine layer. Also `rules[]` — promoted, grep-friendly review rules with `observed_count` + `presence_floor` for codifying absences.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
 - **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
 
