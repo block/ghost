@@ -62,12 +62,28 @@ Note the chosen mode in your scratchpad — it shapes Steps 3, 4, and 5.
 
 Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the bucket *and* sample 3–5 high-occurrence files to actually see the surfaces — counts alone don't tell you the visual register. The prose lives under `# Character` in the body.
 
+Use positive language, not only prohibitions. If the system is restrained, monochrome, quiet, or utilitarian, say how it still creates variety: editorial scale contrast, shaped composition, semantic/data color when color is doing work, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Avoid summaries that collapse into "gray, plain, no decoration"; downstream generators hear that as "make stacks of gray cards." The better formulation is: restrained but not plain.
+
 Then in frontmatter:
 
 - `personality`: 3–6 adjectives (`utilitarian`, `editorial`, `dense`, `playful`, `restrained`, …)
 - `resembles`: 1–3 well-known references (Linear, Geist, Material 3, …) — only if genuinely close
 
 Notable absences ("no decorative elements at all", "no shadows anywhere despite a dark theme") are *not* prose to write here — they're candidate rules with `presence_floor: 0` (or a small integer) in Step 3, which causes any addition to land one perceptual tier louder when the rule is promoted. Codifying absences as enforceable rules beats restating them in prose.
+
+#### Positive range pass
+
+Before writing decisions, list 3–7 ways the system permits variety inside its constraints. Good levers include:
+
+- **Editorial scale contrast** — large/small type, dense chrome next to roomy reading surfaces.
+- **Shaped composition** — article, tracker, comparison, canvas, or compact card layouts chosen by task.
+- **Semantic/data color** — hue appears when it clarifies state, status, risk, ownership, or chart series.
+- **Role-based elevation** — shadows or borders map to component roles, not arbitrary intensity.
+- **Functional motion** — motion marks reveal, loading, state transition, or spatial continuity.
+- **Local font sourcing and type ramp** — hosts bring the face, but the expression defines the rhythm.
+- **Themeable tokens** — variation flows through semantic variables, not hardcoded monochrome.
+
+Promote these levers into `# Character`, relevant decisions, or candidate rules when the bucket supports them. This is the antidote to negative-space prompts that only say what to avoid.
 
 ### 3. Layer 2 — Rules (curated, grep-friendly, perceptual-prior-aware)
 
@@ -94,7 +110,7 @@ Walk the bucket and pose: *what pattern is this project consistently following t
   presence_floor: <int>      # optional; default 0
 ```
 
-**Pick `canonical` from the controlled vocabulary first.** Twelve dimensions cover the orthogonal axes a designer makes deliberate calls on:
+**Pick `canonical` from the controlled vocabulary first.** Thirteen dimensions cover the orthogonal axes a designer makes deliberate calls on:
 
 | Slug | Captures | Default tier |
 |---|---|---|
@@ -110,6 +126,7 @@ Walk the bucket and pose: *what pattern is this project consistently following t
 | `motion` | animation as functional vs. decorative; presence vs. absence | rhythmic |
 | `theming-architecture` | runtime themability; cascade structure; override patterns | rhythmic |
 | `token-architecture` | alias-chain depth; semantic vs. raw; layering discipline | rhythmic |
+| `composition-patterns` | task-shaped composition; article/tracker/comparison/card response shapes; avoiding card-by-default collapse | structural |
 
 The **default tier** is the perceptual weight: loud rules render as Critical, structural as Serious, rhythmic as Nit in the emitted reviewer. Severity is computed by the emitter from `canonical`, `observed_count`, and `presence_floor`; you don't usually set `severity` directly.
 
@@ -120,6 +137,7 @@ For each candidate rule, compute support — *the fraction of observed cases tha
 - **`no-off-palette-hex`** (color-strategy) — `support = (bucket color rows with value in palette set) / (total bucket color rows)`. If 31 of 33 colors are in the palette, support is 0.94.
 - **`pill-interactives`** (shape-language) — `support = (interactive components using rounded-full) / (interactive components observed)`. Walk `bucket.components` for Button/Input/Badge; check radii.
 - **`spacing-on-scale`** (spatial-system) — `support = (spacing rows with value ∈ scale) / (total spacing rows)`. The scale lives in `expression.spacing.scale`.
+- **`no-card-collapse`** (composition-patterns) — usually not grep-friendly enough for `rules[]`; keep it as a decision unless the repo has enforceable metadata or repeated examples proving cards are only one response shape.
 
 Rule of thumb: **drop candidates with support < 0.85.** Below that threshold, the project hasn't actually committed to the pattern — codifying it generates noise. A `support: 0.6` rule looks aspirational, not enforced. If you still think a low-support candidate matters, put it in scan notes for discussion; do not promote it to `rules[]`.
 
@@ -143,7 +161,7 @@ The curator picks 5–10. **Do not paste your full candidate list into `rules[]`
 
 - **Consumer** — overrides are rules. App-side `@font-face` that differs from upstream → a `font-sourcing` rule with `observed_count` set to the count of non-upstream font declarations and `presence_floor: 0`.
 - **Token-pipeline** — layering posture is a rule. "Component layer never references base tokens directly" → a `token-architecture` rule whose pattern catches `--component-* references --base-*`.
-- **Ui-library** — registry shape is a rule. "Components have no theme variants" → an `interactive-patterns` rule against `data-theme=` attributes.
+- **Ui-library** — registry shape is a rule. "Components have no theme variants" → an `interactive-patterns` rule against `data-theme=` attributes. If the registry or docs tag exemplars, preserve the atom/shape distinction: atoms are primitives such as badge, button, cell, or input; shapes are larger response forms such as article, card, comparison, or tracker.
 - **Multi-platform** — divergence is rules. "iOS reuses system colors but web doesn't" → two color-strategy rules, one per dialect, each with its own `enforce_at`.
 
 #### Absences are rules — codify them with `presence_floor`
@@ -182,6 +200,15 @@ Copy [../assets/expression.template.md](../assets/expression.template.md). Fill 
 - **Body:** `# Character` (observation summary), `# Decisions` (one `### <dim>` block per decision, each ending with `**Evidence:**` bullets citing bucket rows).
 
 Partition matters. See [schema.md](schema.md) for which field lives where.
+
+If the target will be used for AI-generated outputs, include a `composition-patterns` decision when supported by examples, registry metadata, docs, or repeated component usage. Name the response shapes the language supports:
+
+- **article** — plans, timelines, worksheets, narrative/canvas outputs, and long-form synthesized answers.
+- **tracker** — metrics, progress, runway, review queues, audit status, and recurring operational views.
+- **comparison** — tradeoffs, allocation, option sets, before/after states, and side-by-side decisions.
+- **card** — compact focused recommendations or repeated peer items; card is one shape, not the default form of all intelligence.
+
+Composition anti-collapse rule: do not turn every answer into a stack of cards. Let the user's task determine whether the output is a plan, tracker, comparison table, control surface, article, or compact recommendation. For freeform generation, infer a narrow intent/shape slice before selecting examples and style directions.
 
 ### 6. Validate
 

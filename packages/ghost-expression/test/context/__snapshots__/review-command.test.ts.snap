@@ -130,7 +130,7 @@ Drift score: XX/100
 
 ## How this reviewer was calibrated
 
-Severity grouping reflects perceptual weight, not arithmetic. \`ghost-ui\` has 2 loud-tier, 3 structural-tier, and 2 rhythmic-tier rules under the canonical perceptual prior.
+Severity grouping reflects perceptual weight, not arithmetic. After overrides and presence-floor escalation, \`ghost-ui\` has 2 critical, 3 serious, and 2 nit rules. Base prior before escalation: 2 loud-tier, 3 structural-tier, and 2 rhythmic-tier.
 
 Color and font-family rules are loud (critical) by default. Shape, elevation, surface, and interactive-pattern rules are structural (serious). Spacing, density, motion-detail, and theming rules are rhythmic (nit).
 

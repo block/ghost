@@ -47,7 +47,7 @@ surfaces:
 
 # Character
 
-2-4 sentences on the personality of this design language. This prose becomes `observation.summary` when parsed.
+2-4 sentences on the personality of this design language. This prose becomes `observation.summary` when parsed. Name what the system permits, not only what it avoids: scale contrast, shaped composition, semantic color, role-based elevation, functional motion, font sourcing, or themeable tokens.
 
 # Decisions
 

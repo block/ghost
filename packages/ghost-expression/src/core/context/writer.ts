@@ -133,7 +133,7 @@ export function buildSkillMd(
 ): string {
   const description = buildSkillDescription(expression, name);
   const fileList = [
-    "- `expression.md` — canonical design language (YAML tokens + Character/Signature/Decisions/Values)",
+    "- `expression.md` — canonical design language (YAML tokens + Character/Decisions/Rules)",
     ...(includesCss
       ? [
           "- `tokens.css` — CSS custom properties derived from expression tokens",
@@ -154,6 +154,7 @@ When generating UI in this language:
 - Treat **Rules** as non-negotiable gates — every emitted reviewer enforces them.
 - Use **Decisions** as the lookup for specific choices (spacing scale, type ramp, radii).
 - Let **Character** shape overall feel, density, and voice.
+- Before composing, infer the output shape the task calls for: article, tracker, comparison, card, or control surface. Card is one shape, not the default form of every answer.
 - Prefer tokens from the YAML frontmatter (palette, spacing, typography, surfaces) over arbitrary values.
 
 ## Files
@@ -182,18 +183,27 @@ function buildPromptMd(expression: Expression, name: string): string {
   const rules = resolveExpressionRules(expression).sort(bySeverityThenId);
   if (rules.length) {
     parts.push(`# Non-Negotiable Rules\n\n${formatRules(rules)}`);
+  } else {
+    parts.push(
+      "# Rule Status\n\nNo promoted `rules[]` are present. Treat this as a lower-enforcement generation context: decisions and tokens are guidance, but no grep-friendly gates have been curated yet.",
+    );
   }
 
   const decisions = expression.decisions ?? [];
   if (decisions.length)
     parts.push(`# Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
 
+  parts.push(`# Shape Selection\n\n${formatShapeSelection(expression)}`);
+
   parts.push(`# Defaults And Avoids\n\n${formatDefaultsAndAvoids(expression)}`);
 
   parts.push(`# Tokens\n\n${formatTokens(expression)}`);
 
+  const usageLead = rules.length
+    ? "use the rules as gates, decisions as style direction, and tokens as the value set"
+    : "use decisions as style direction and tokens as the value set; no promoted rules have been curated yet";
   parts.push(
-    "# How to use this prompt\n\nWhen asked to build a component or screen, use the rules as gates, decisions as style direction, and tokens as the value set. Prefer existing local components and token names when available. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.",
+    `# How to use this prompt\n\nWhen asked to build a component or screen, ${usageLead}. Prefer existing local components and token names when available. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.`,
   );
 
   return `${parts.join("\n\n")}\n`;
@@ -243,6 +253,41 @@ function defaultSkillName(expression?: Expression): string {
 
 function formatDecision(d: DesignDecision): string {
   return `## ${d.dimension}\n${d.decision.trim()}`;
+}
+
+function formatShapeSelection(expression: Expression): string {
+  const lines: string[] = [];
+  const composition = findCompositionDecision(expression);
+  if (composition?.decision.trim()) {
+    lines.push(`Expression guidance: ${composition.decision.trim()}`, "");
+  }
+
+  lines.push(
+    "- Before layout, infer a narrow intent/shape slice from the user's task and select references that match that slice.",
+    "- Use `article` for plans, timelines, worksheets, narrative/canvas outputs, and long-form synthesized answers.",
+    "- Use `tracker` for metrics, progress, runway, review queues, audit status, and recurring operational views.",
+    "- Use `comparison` for tradeoffs, allocation, option sets, before/after states, and side-by-side decisions.",
+    "- Use `card` for compact focused recommendations or repeated peer items. Do not turn every answer into a stack of cards.",
+    "- Use local controls for explicit editing, filtering, configuration, or approval tasks.",
+    "- A restrained expression is not permission to make everything plain. Create variety through allowed scale contrast, shaped composition, semantic/data color, role-based elevation, functional motion, and themeable tokens.",
+  );
+
+  return lines.join("\n");
+}
+
+function findCompositionDecision(
+  expression: Expression,
+): DesignDecision | undefined {
+  return (expression.decisions ?? []).find((decision) => {
+    const dimension = decision.dimension.toLowerCase();
+    const kind = decision.dimension_kind?.toLowerCase();
+    return (
+      dimension === "composition-patterns" ||
+      kind === "composition-patterns" ||
+      dimension === "response-shapes" ||
+      dimension === "output-shapes"
+    );
+  });
 }
 
 function formatRules(rules: ResolvedRule[]): string {

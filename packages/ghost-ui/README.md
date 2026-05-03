@@ -13,6 +13,13 @@ This package ships its own `expression.md` and `map.md` at the package root as c
 
 Both extensions live under `meta` so they stay invisible to shadcn's schema. Other registries can adopt the convention without coordinating with Ghost — drop in `meta.expression`, point at any `expression.md`, and Ghost tools light up. Absence is fine; presence is progressive enhancement.
 
+Shape-aware examples can add two more optional `meta` fields:
+
+- **`meta.exemplar_kind`** — `atom` for primitive controls such as badge, button, cell, or input; `shape` for composed outputs.
+- **`meta.response_shapes`** — the composed shape(s) an example demonstrates: `article`, `tracker`, `comparison`, or `card`.
+
+That distinction helps generators pick relevant references instead of treating every example as a card. `card` is one response shape; it is not the default form of all intelligence.
+
 ## What's here
 
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.

@@ -47,6 +47,8 @@ export type PerceptualTier = "loud" | "structural" | "rhythmic";
  *     Per-rule kind escalation handles that split.
  *   - `interactive-patterns` is structural — focus rings register on
  *     interaction, not at first glance.
+ *   - `composition-patterns` is structural — article, tracker,
+ *     comparison, and card shapes change hierarchy and scanning behavior.
  *   - `theming-architecture` and `token-architecture` are rhythmic —
  *     they're plumbing, perceptible only via downstream symptoms.
  */
@@ -65,6 +67,7 @@ export const PERCEPTUAL_TIER: Readonly<
   motion: "rhythmic",
   "theming-architecture": "rhythmic",
   "token-architecture": "rhythmic",
+  "composition-patterns": "structural",
 };
 
 /**

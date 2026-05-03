@@ -131,11 +131,17 @@ function renderRule(item: ResolvedRule): string {
 
 function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
   const tierCounts = { loud: 0, structural: 0, rhythmic: 0 };
+  const finalCounts: Record<DriftSeverity, number> = {
+    critical: 0,
+    serious: 0,
+    nit: 0,
+  };
   const escalated: string[] = [];
 
   for (const r of resolved) {
     const baseTier = tierForCanonical(r.rule.canonical);
     tierCounts[baseTier]++;
+    finalCounts[r.severity]++;
     const finalTierFromSeverity =
       r.severity === "critical"
         ? "loud"
@@ -154,7 +160,7 @@ function calibrationFooter(fp: Expression, resolved: ResolvedRule[]): string {
   const lines: string[] = [
     "## How this reviewer was calibrated",
     "",
-    `Severity grouping reflects perceptual weight, not arithmetic. \`${fp.id}\` has ${tierCounts.loud} loud-tier, ${tierCounts.structural} structural-tier, and ${tierCounts.rhythmic} rhythmic-tier rules under the canonical perceptual prior.`,
+    `Severity grouping reflects perceptual weight, not arithmetic. After overrides and presence-floor escalation, \`${fp.id}\` has ${finalCounts.critical} critical, ${finalCounts.serious} serious, and ${finalCounts.nit} nit rules. Base prior before escalation: ${tierCounts.loud} loud-tier, ${tierCounts.structural} structural-tier, and ${tierCounts.rhythmic} rhythmic-tier.`,
   ];
   if (escalated.length) {
     lines.push(
