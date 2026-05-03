@@ -1,24 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { componentRowId, tokenRowId, valueRowId } from "../src/bucket/id.js";
-import type { BucketSource } from "../src/bucket/types.js";
+import { componentRowId, tokenRowId, valueRowId } from "../src/survey/id.js";
+import type { SurveySource } from "../src/survey/types.js";
 
-const SOURCE_A: BucketSource = {
+const SOURCE_A: SurveySource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
-const SOURCE_A_OTHER_TIME: BucketSource = {
+const SOURCE_A_OTHER_TIME: SurveySource = {
   ...SOURCE_A,
   scanned_at: "2099-12-31T00:00:00Z", // different time, same target+commit
 };
 
-const SOURCE_B_DIFFERENT_COMMIT: BucketSource = {
+const SOURCE_B_DIFFERENT_COMMIT: SurveySource = {
   ...SOURCE_A,
   commit: "def456",
 };
 
-const SOURCE_C_DIFFERENT_TARGET: BucketSource = {
+const SOURCE_C_DIFFERENT_TARGET: SurveySource = {
   target: "github:block/other",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",

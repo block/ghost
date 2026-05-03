@@ -4,9 +4,9 @@ import type { DesignDecision, Expression } from "@ghost/core";
 import { serializeExpression } from "../writer.js";
 import {
   bySeverityThenId,
-  type ResolvedRule,
-  resolveExpressionRules,
-} from "./rules.js";
+  type ResolvedCheck,
+  resolveExpressionChecks,
+} from "./checks.js";
 import { buildTokensCss } from "./tokens-css.js";
 
 /**
@@ -71,6 +71,10 @@ export async function writeContextBundle(
   await writeFile(exprPath, serializeExpression(expression));
   files.push(exprPath);
 
+  const promptPath = join(options.outDir, "prompt.md");
+  await writeFile(promptPath, buildPromptMd(expression, resolved.name));
+  files.push(promptPath);
+
   if (resolved.tokens) {
     const cssPath = join(options.outDir, "tokens.css");
     await writeFile(
@@ -133,7 +137,8 @@ export function buildSkillMd(
 ): string {
   const description = buildSkillDescription(expression, name);
   const fileList = [
-    "- `expression.md` — canonical design language (YAML tokens + Character/Decisions/Rules)",
+    "- `expression.md` — canonical design language (YAML digest + Character/Signature/References/Decisions/Checks)",
+    "- `prompt.md` — generation prompt distilled from expression.md",
     ...(includesCss
       ? [
           "- `tokens.css` — CSS custom properties derived from expression tokens",
@@ -146,14 +151,18 @@ export function buildSkillMd(
 Read \`expression.md\` first — it is the source of truth. It has these layered sections:
 
 1. **Character** — what this expression is (one-paragraph summary in the body)
-2. **Decisions** — abstract design choices with evidence from the source (body \`### dimension\` blocks)
-3. **Rules** — promoted, grep-friendly review patterns with severity (frontmatter \`rules[]\`); \`observed_count\` + \`presence_floor\` rules codify load-bearing absences
+2. **Signature** — dominant moves and the recognizable output posture
+3. **References** — direct local sources for specs, components, and examples (frontmatter \`references\`)
+4. **Decisions** — abstract design choices with evidence from the source (body \`### dimension\` blocks)
+5. **Checks** — human-promoted review gates (frontmatter \`checks[]\`)
 
 When generating UI in this language:
 
-- Treat **Rules** as non-negotiable gates — every emitted reviewer enforces them.
+- Treat **Checks** as curated gates when they exist.
 - Use **Decisions** as the lookup for specific choices (spacing scale, type ramp, radii).
+- Open **References** before inventing new components or values.
 - Let **Character** shape overall feel, density, and voice.
+- Let **Signature** shape the final picture: layout posture, dominant moves, and recognizable habits.
 - Before composing, infer the output shape the task calls for: article, tracker, comparison, card, or control surface. Card is one shape, not the default form of every answer.
 - Prefer tokens from the YAML frontmatter (palette, spacing, typography, surfaces) over arbitrary values.
 
@@ -180,28 +189,34 @@ function buildPromptMd(expression: Expression, name: string): string {
   const summary = expression.observation?.summary?.trim();
   if (summary) parts.push(`# Character\n\n${summary}`);
 
-  const rules = resolveExpressionRules(expression).sort(bySeverityThenId);
-  if (rules.length) {
-    parts.push(`# Non-Negotiable Rules\n\n${formatRules(rules)}`);
-  } else {
-    parts.push(
-      "# Rule Status\n\nNo promoted `rules[]` are present. Treat this as a lower-enforcement generation context: decisions and tokens are guidance, but no grep-friendly gates have been curated yet.",
-    );
-  }
+  const signature = expression.signature?.trim();
+  parts.push(
+    `# Signature\n\n${signature || "No signature prose has been authored yet. Use Character, References, Decisions, and Tokens conservatively."}`,
+  );
+
+  parts.push(`# References\n\n${formatReferences(expression)}`);
 
   const decisions = expression.decisions ?? [];
   if (decisions.length)
     parts.push(`# Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
+  else parts.push("# Decisions\n\nNo decision prose has been authored yet.");
+
+  const checks = resolveExpressionChecks(expression).sort(bySeverityThenId);
+  if (checks.length) {
+    parts.push(`# Checks\n\n${formatChecks(checks)}`);
+  } else {
+    parts.push(
+      "# Checks\n\nNo promoted `checks[]` are present. Treat this as a generation context with guidance but no curated review gates.",
+    );
+  }
 
   parts.push(`# Shape Selection\n\n${formatShapeSelection(expression)}`);
 
-  parts.push(`# Defaults And Avoids\n\n${formatDefaultsAndAvoids(expression)}`);
-
   parts.push(`# Tokens\n\n${formatTokens(expression)}`);
 
-  const usageLead = rules.length
-    ? "use the rules as gates, decisions as style direction, and tokens as the value set"
-    : "use decisions as style direction and tokens as the value set; no promoted rules have been curated yet";
+  const usageLead = checks.length
+    ? "use checks as gates, references as source files, decisions as style direction, and tokens as the value digest"
+    : "use references as source files, decisions as style direction, and tokens as the value digest; no promoted checks have been curated yet";
   parts.push(
     `# How to use this prompt\n\nWhen asked to build a component or screen, ${usageLead}. Prefer existing local components and token names when available. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.`,
   );
@@ -216,12 +231,13 @@ function buildReadmeMd(expression: Expression, name: string): string {
     : "";
   return `# ${name} — design context bundle
 
-Generated by \`ghost-drift emit context-bundle\`. Grounding material for AI UI generation in the **${name}** design language.${personalityLine}
+Generated by \`ghost-expression emit context-bundle\`. Grounding material for AI UI generation in the **${name}** design language.${personalityLine}
 
 ## Files
 
 - \`SKILL.md\` — Agent Skill manifest (user-invocable)
-- \`expression.md\` — canonical design language (YAML frontmatter + Character/Decisions)
+- \`expression.md\` — canonical design language (YAML frontmatter + Character/Signature/Decisions)
+- \`prompt.md\` — portable prompt distilled from the expression
 - \`tokens.css\` — CSS custom properties derived from expression tokens
 - \`README.md\` — this file
 
@@ -290,50 +306,48 @@ function findCompositionDecision(
   });
 }
 
-function formatRules(rules: ResolvedRule[]): string {
-  return rules.map(formatRule).join("\n");
+function formatChecks(checks: ResolvedCheck[]): string {
+  return checks.map(formatCheck).join("\n");
 }
 
-function formatRule(item: ResolvedRule): string {
-  const { rule, severity, match, tolerance } = item;
+function formatCheck(item: ResolvedCheck): string {
+  const { check, severity, match, tolerance } = item;
   const parts = [
-    `- **${severity.toUpperCase()}** \`${rule.id}\`${rule.canonical ? ` (${rule.canonical})` : ""}: ${rule.summary ?? rule.pattern}`,
+    `- **${severity.toUpperCase()}** \`${check.id}\`${check.canonical ? ` (${check.canonical})` : ""}: ${check.summary ?? check.pattern}`,
   ];
-  if (rule.rationale) parts.push(`  Rationale: ${rule.rationale}`);
-  parts.push(`  Avoid: matches to \`${rule.pattern}\`.`);
+  if (check.rationale) parts.push(`  Rationale: ${check.rationale}`);
+  parts.push(`  Avoid: matches to \`${check.pattern}\`.`);
   parts.push(
     tolerance !== undefined
       ? `  Match: \`${match}\` with tolerance \`${tolerance}\`.`
       : `  Match: \`${match}\`.`,
   );
-  if (rule.enforce_at?.length) {
+  if (check.enforce_at?.length) {
     parts.push(
-      `  Applies at: ${rule.enforce_at.map((e) => `\`${e}\``).join(", ")}.`,
+      `  Applies at: ${check.enforce_at.map((e) => `\`${e}\``).join(", ")}.`,
     );
   }
   return parts.join("\n");
 }
 
-function formatDefaultsAndAvoids(expression: Expression): string {
-  const lines = [
-    "- Default to the palette, spacing scale, type ramp, font families, radii, shadows, and border posture listed below.",
-    "- Avoid raw values that are not present in the expression; prefer semantic tokens or existing local abstractions.",
+function formatReferences(expression: Expression): string {
+  const refs = expression.references ?? {};
+  const groups: Array<[string, string[] | undefined]> = [
+    ["Specs", refs.specs],
+    ["Components", refs.components],
+    ["Examples", refs.examples],
   ];
-  if (expression.surfaces.shadowComplexity === "deliberate-none") {
-    lines.push(
-      "- Avoid box shadows unless a decision explicitly permits elevation.",
-    );
-  } else {
-    lines.push(
-      `- Default to \`${expression.surfaces.shadowComplexity}\` elevation; avoid inventing new shadow tiers.`,
-    );
+  const lines: string[] = [];
+  for (const [label, values] of groups) {
+    lines.push(`**${label}**`);
+    if (values?.length) {
+      for (const value of values) lines.push(`- \`${value}\``);
+    } else {
+      lines.push("- None promoted yet");
+    }
+    lines.push("");
   }
-  if (expression.surfaces.borderUsage) {
-    lines.push(
-      `- Default to \`${expression.surfaces.borderUsage}\` border usage; avoid adding borders as decoration.`,
-    );
-  }
-  return lines.join("\n");
+  return lines.join("\n").trimEnd();
 }
 
 function formatTokens(expression: Expression): string {

@@ -180,7 +180,7 @@ export interface ColorRamp {
   count: number;
 }
 
-// --- Rule types (v0 reviewer drift rules; perceptual-prior-aware) ---
+// --- Check types (reviewer drift checks; perceptual-prior-aware) ---
 
 /**
  * Perceptual severity for a drift violation. Calibrated to how loudly a
@@ -189,26 +189,26 @@ export interface ColorRamp {
  *
  * Distinct from `RuleSeverity` (`"error" | "warn" | "off"`) which is the
  * config-level severity for `GhostConfig.rules`. The two never mix —
- * `DriftSeverity` is for emitted reviewer rules; `RuleSeverity` gates lint
+ * `DriftSeverity` is for emitted reviewer checks; `RuleSeverity` gates lint
  * configuration.
  */
 export type DriftSeverity = "critical" | "serious" | "nit";
 
 /**
- * How a rule's pattern is matched against violators. Color is exact;
+ * How a check's pattern is matched against violators. Color is exact;
  * spacing tolerates small absolute drift; type-size tolerates relative
  * drift; radius/shadow care about structural shape (pill vs. non-pill),
  * not exact px.
  */
-export type RuleMatchShape = "exact" | "band" | "percent" | "structural";
+export type CheckMatchShape = "exact" | "band" | "percent" | "structural";
 
 /**
- * The dimension-of-value a rule guards. Used to look up default match
+ * The dimension-of-value a check guards. Used to look up default match
  * shape and tolerance. Distinct from canonical dimension because one
- * canonical dimension (e.g. `typography-voice`) can host multiple rule
+ * canonical dimension (e.g. `typography-voice`) can host multiple check
  * kinds (family, weight, size).
  */
-export type RuleKind =
+export type CheckKind =
   | "color"
   | "radius"
   | "spacing"
@@ -218,23 +218,23 @@ export type RuleKind =
   | "shadow"
   | "motion";
 
-export interface Rule {
+export interface Check {
   /** Stable id, slug-style. Used as anchor in emitted reviewer + diff. */
   id: string;
   /**
-   * Canonical dimension this rule belongs to. Drives perceptual-tier
-   * lookup. Optional — non-canonical rules are emitted but don't roll up
+   * Canonical dimension this check belongs to. Drives perceptual-tier
+   * lookup. Optional — non-canonical checks are emitted but don't roll up
    * at fleet aggregation.
    */
   canonical?: string;
-  /** What kind of value the rule guards. Drives default match shape. */
-  kind?: RuleKind;
+  /** What kind of value the check guards. Drives default match shape. */
+  kind?: CheckKind;
   /** One-line summary the reviewer surfaces alongside violations. */
   summary?: string;
   /** Regex (or fixed string) the reviewer greps for. */
   pattern: string;
   /**
-   * Where the rule is enforced. Drives which file types / contexts the
+   * Where the check is enforced. Drives which file types / contexts the
    * reviewer scans. Open vocabulary; common values: `className`,
    * `css_var`, `inline_style`, `import`. Empty array = enforce everywhere.
    */
@@ -242,15 +242,15 @@ export interface Rule {
   /**
    * Optional explicit severity override. When absent, the emitter computes
    * severity from `canonical` (perceptual tier), `observed_count`, and
-   * `presence_floor` (escalation against the bucket).
+   * `presence_floor` (escalation against the survey).
    */
   severity?: DriftSeverity;
   /** Optional explicit match-shape override. */
-  match?: RuleMatchShape;
+  match?: CheckMatchShape;
   /** Tolerance for `band` (px) or `percent` (0–1). Override of default. */
   tolerance?: number;
   /**
-   * Bucket-count threshold below which severity escalates one tier. The
+   * Survey-count threshold below which severity escalates one tier. The
    * default is `0` — only when the guarded phenomenon is wholly absent
    * does adding to it cross a presence boundary. Set to `2` (or higher)
    * for cases like motion where a couple of structural transitions don't
@@ -258,21 +258,30 @@ export interface Rule {
    */
   presence_floor?: number;
   /**
-   * Observed count for the phenomenon this rule guards, taken from the
-   * survey bucket or a documented grep. When present, the review emitter
+   * Observed count for the phenomenon this check guards, taken from the
+   * survey or a documented grep. When present, the review emitter
    * uses this count for `presence_floor` escalation instead of falling
    * back to coarse frontmatter-derived proxies.
    */
   observed_count?: number;
   /**
    * Surveyor-computed support score: fraction of observed cases that
-   * already conform to this rule. Used by the human curator to triage —
-   * <0.85 typically indicates the rule isn't yet load-bearing in the
+   * already conform to this check. Used by the human curator to triage —
+   * <0.85 typically indicates the check isn't yet load-bearing in the
    * codebase. Consumed at lint time as a soft warning.
    */
   support?: number;
-  /** Free-form rationale shown above the rule's table in the emitted reviewer. */
+  /** Free-form rationale shown above the check's table in the emitted reviewer. */
   rationale?: string;
+}
+
+export interface ExpressionReferences {
+  /** Source-of-truth spec/token/theme files worth opening during generation or drift review. */
+  specs?: string[];
+  /** Component directories, registries, or local libraries worth using before inventing UI. */
+  components?: string[];
+  /** Canonical examples, docs, or registry exemplars that show expression in practice. */
+  examples?: string[];
 }
 
 // --- Observation & decision types (three-layer expression) ---
@@ -290,7 +299,7 @@ export interface DesignDecision {
   /** Freeform dimension name — LLM chooses what's relevant (e.g. "color-strategy", "motion", "density") */
   dimension: string;
   /**
-   * Optional canonical bucket this decision rolls up under. When present,
+   * Optional canonical dimension this decision rolls up under. When present,
    * fleet-aggregation primitives group by this value. When absent, they
    * fall back to `dimension` if it happens to be canonical, otherwise the
    * decision is treated as long-tail.
@@ -298,7 +307,7 @@ export interface DesignDecision {
    * Authoring rule (see `closestCanonical` in `@ghost/core`): when
    * `dimension` itself is one of `CANONICAL_DECISION_DIMENSIONS`, omit
    * `dimension_kind`. Set it only when you've chosen a project-flavored
-   * slug that's better described by an existing canonical bucket.
+   * slug that's better described by an existing canonical dimension.
    */
   dimension_kind?: string;
   /** The decision stated abstractly, implementation-agnostic */
@@ -324,15 +333,18 @@ export interface Expression {
 
   /** Layer 1: Holistic read of the design language */
   observation?: DesignObservation;
+  /** Body-owned signature moves that make this design language recognizable. */
+  signature?: string;
+  /** Direct pointers to living sources agents should read; map.md stays scan-only. */
+  references?: ExpressionReferences;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
   /**
-   * v0 reviewer rules — human-curated, grep-friendly, severity computed
+   * Human-promoted review checks — grep-friendly, severity computed
    * by the perceptual prior at emit time. Coexists with `decisions[]`
-   * during the v0 transition; in v1 the parser stops populating
-   * `decisions[]` and `rules[]` is the only authoring surface.
+   * while expression prose remains the primary generation surface.
    */
-  rules?: Rule[];
+  checks?: Check[];
 
   // --- Layer 3: Concrete values ---
 

@@ -8,7 +8,7 @@ status: exploring
 
 The cash-android profile pass is a forcing function. ~1,580 Gradle modules. No agent can discover topology from scratch in that repo — the existing fleet works around it with hand-authored YAML manifests at `ghost-fleet/manifests/cash-android.yaml` (27 feature areas, convention plugin IDs, include/exclude globs). Those manifests are accurate and load-bearing, but they're hardcoded — every new repo means a human pre-curates the navigation map before the profile recipe runs.
 
-`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Downstream tools (`expression`, `drift`, `fleet`) read map.md as their topology cache, so none of them re-derive "where does the design system live" or "which folders are customer UI." The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
+`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Scan and fleet workflows read map.md as their topology cache, so they do not re-derive "where does the design system live" or "which folders are customer UI." Generation and drift use `expression.md` as their action root. The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
 
 This is one of five decentralized tools (`map`, `expression`, `drift`, `fleet`, `ui`). Map is upstream of the other four.
 

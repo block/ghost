@@ -1,5 +1,5 @@
 {
-  "schema": "ghost.bucket/v1",
+  "schema": "ghost.survey/v1",
   "sources": [
     {
       "target": "github:block/ghost",

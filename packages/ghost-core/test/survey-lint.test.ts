@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { tokenRowId, valueRowId } from "../src/bucket/id.js";
-import { lintBucket } from "../src/bucket/lint.js";
+import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import { lintSurvey } from "../src/survey/lint.js";
 import type {
-  Bucket,
-  BucketSource,
+  Survey,
+  SurveySource,
   TokenRow,
   ValueRow,
-} from "../src/bucket/types.js";
+} from "../src/survey/types.js";
 
-const SOURCE: BucketSource = {
+const SOURCE: SurveySource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
   scanner_version: "0.1.0",
 };
 
-const RESOLVER_SOURCE: BucketSource = {
+const RESOLVER_SOURCE: SurveySource = {
   id: "design-tokens",
   role: "resolver",
   target: "github:block/design-tokens",
@@ -33,7 +33,7 @@ function makeValueRow(
     occurrences: number;
     files_count: number;
     role_hypothesis: string;
-    source: BucketSource;
+    source: SurveySource;
     resolution: ValueRow["resolution"];
   }> = {},
 ) {
@@ -52,7 +52,7 @@ function makeValueRow(
 }
 
 function makeTokenRow(
-  source: BucketSource,
+  source: SurveySource,
   name: string,
   resolvedValue: string,
   resolution?: TokenRow["resolution"],
@@ -68,13 +68,13 @@ function makeTokenRow(
   };
 }
 
-function makeBucket(
+function makeSurvey(
   values: ReturnType<typeof makeValueRow>[] = [],
   tokens: TokenRow[] = [],
-  sources: BucketSource[] = [SOURCE],
-): Bucket {
+  sources: SurveySource[] = [SOURCE],
+): Survey {
   return {
-    schema: "ghost.bucket/v1",
+    schema: "ghost.survey/v1",
     sources,
     values,
     tokens,
@@ -82,15 +82,15 @@ function makeBucket(
   };
 }
 
-describe("lintBucket", () => {
-  it("accepts an empty well-formed bucket", () => {
-    const report = lintBucket(makeBucket());
+describe("lintSurvey", () => {
+  it("accepts an empty well-formed survey", () => {
+    const report = lintSurvey(makeSurvey());
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
   });
 
-  it("accepts a bucket with recommended-kind value rows", () => {
-    const bucket = makeBucket([
+  it("accepts a survey with recommended-kind value rows", () => {
+    const survey = makeSurvey([
       makeValueRow("color", "#f97316", "bg-orange-500", {
         occurrences: 47,
         files_count: 12,
@@ -100,32 +100,42 @@ describe("lintBucket", () => {
         files_count: 89,
       }),
     ]);
-    const report = lintBucket(bucket);
+    const report = lintSurvey(survey);
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
   });
 
   it("rejects missing schema field", () => {
-    const bucket: unknown = {
-      ...makeBucket(),
-      schema: "ghost.bucket/v0",
+    const survey: unknown = {
+      ...makeSurvey(),
+      schema: "ghost.survey/v0",
     };
-    const report = lintBucket(bucket);
+    const report = lintSurvey(survey);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.some((i) => i.rule.startsWith("schema/"))).toBe(true);
+  });
+
+  it("rejects the old ghost.bucket/v1 schema", () => {
+    const survey: unknown = {
+      ...makeSurvey(),
+      schema: "ghost.bucket/v1",
+    };
+    const report = lintSurvey(survey);
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule.startsWith("schema/"))).toBe(true);
   });
 
   it("rejects negative occurrences", () => {
     const row = makeValueRow("color", "#f97316", "#f97316");
-    const report = lintBucket(makeBucket([{ ...row, occurrences: -1 }]));
+    const report = lintSurvey(makeSurvey([{ ...row, occurrences: -1 }]));
     expect(report.errors).toBeGreaterThan(0);
   });
 
   it("warns on unknown value kinds without rejecting", () => {
-    const bucket = makeBucket([
+    const survey = makeSurvey([
       makeValueRow("z-index", "10", "z-10"), // not in recommended set
     ]);
-    const report = lintBucket(bucket);
+    const report = lintSurvey(survey);
     expect(report.errors).toBe(0);
     expect(report.warnings).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule === "value-kind-unknown")).toBe(
@@ -134,35 +144,35 @@ describe("lintBucket", () => {
   });
 
   it("warns when a row's id does not match the deterministic generator", () => {
-    const bucket = makeBucket([
+    const survey = makeSurvey([
       {
         ...makeValueRow("color", "#f97316", "#f97316"),
         id: "deadbeefdeadbeef", // hand-rolled, not from generator
       },
     ]);
-    const report = lintBucket(bucket);
+    const report = lintSurvey(survey);
     expect(report.warnings).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule === "id-mismatch")).toBe(true);
   });
 
   it("flags duplicate IDs within a section as errors", () => {
     const row = makeValueRow("color", "#f97316", "#f97316");
-    const report = lintBucket(makeBucket([row, { ...row }])); // same ID, two rows
+    const report = lintSurvey(makeSurvey([row, { ...row }])); // same ID, two rows
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule === "duplicate-id")).toBe(true);
   });
 
   it("rejects sources array with no entries", () => {
-    const bucket: unknown = {
-      ...makeBucket(),
+    const survey: unknown = {
+      ...makeSurvey(),
       sources: [],
     };
-    const report = lintBucket(bucket);
+    const report = lintSurvey(survey);
     expect(report.errors).toBeGreaterThan(0);
   });
 
   it("accepts source roles and resolution provenance", () => {
-    const primary: BucketSource = {
+    const primary: SurveySource = {
       ...SOURCE,
       id: "cash-ios",
       role: "primary",
@@ -178,15 +188,15 @@ describe("lintBucket", () => {
         chain: ["CashTheme.color.bg", "ArcadeColor.background"],
       },
     });
-    const report = lintBucket(
-      makeBucket([row], [], [primary, RESOLVER_SOURCE]),
+    const report = lintSurvey(
+      makeSurvey([row], [], [primary, RESOLVER_SOURCE]),
     );
     expect(report.errors).toBe(0);
     expect(report.issues).toEqual([]);
   });
 
   it("warns when source roles omit a primary source", () => {
-    const report = lintBucket(makeBucket([], [], [RESOLVER_SOURCE]));
+    const report = lintSurvey(makeSurvey([], [], [RESOLVER_SOURCE]));
     expect(report.errors).toBe(0);
     expect(
       report.issues.some((i) => i.rule === "source-graph-primary-count"),
@@ -194,7 +204,7 @@ describe("lintBucket", () => {
   });
 
   it("accepts unresolved external token provenance", () => {
-    const primary: BucketSource = {
+    const primary: SurveySource = {
       ...SOURCE,
       id: "cash-ios",
       role: "primary",
@@ -209,8 +219,8 @@ describe("lintBucket", () => {
         symbol: "ArcadeColor.background",
       },
     );
-    const report = lintBucket(
-      makeBucket([], [token], [primary, RESOLVER_SOURCE]),
+    const report = lintSurvey(
+      makeSurvey([], [token], [primary, RESOLVER_SOURCE]),
     );
     expect(report.errors).toBe(0);
     expect(

@@ -43,6 +43,30 @@
         "type": "string"
       }
     },
+    "references": {
+      "type": "object",
+      "properties": {
+        "specs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "observation": {
       "type": "object",
       "properties": {
@@ -83,7 +107,7 @@
         "additionalProperties": false
       }
     },
-    "rules": {
+    "checks": {
       "type": "array",
       "items": {
         "type": "object",

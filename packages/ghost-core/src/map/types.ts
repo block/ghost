@@ -5,7 +5,7 @@
  * synthesizes the final `map.md` from these signals plus its own reads.
  */
 
-/** Single language-extension bucket. */
+/** Single language-extension survey. */
 export interface LanguageHistogramEntry {
   /** Canonical language name (lowercase). */
   name: string;

@@ -16,6 +16,10 @@ timestamp: 2026-04-20T00:00:00Z # ISO-8601
 sources:                        # optional — targets that were combined
   - github:owner/repo
   - ./local/path
+references:
+  specs: [src/styles/tokens.css, src/theme/index.ts]
+  components: [src/components/ui]
+  examples: [docs/examples/dashboard.md]
 
 # narrative tags (prose lives in the body)
 observation:
@@ -31,9 +35,9 @@ decisions:
   - dimension: spatial-system
   - dimension: composition-patterns      # optional: response/output shapes
 
-# promoted review rules — optional. Candidate rules stay outside the file
+# promoted review checks — optional. Candidate checks stay outside the file
 # until a human curator promotes them.
-rules:
+checks:
   - id: no-off-palette-hex
     canonical: color-strategy
     kind: color
@@ -84,6 +88,10 @@ metadata:
 
 2-4 sentences capturing the holistic personality of this design language. This is `observation.summary`.
 
+# Signature
+
+2-4 sentences capturing the dominant moves, repeated layout posture, and recognizable final picture. This is `expression.signature`; it is not a token dump.
+
 # Decisions
 
 ### color-strategy
@@ -120,11 +128,14 @@ Every field lives in exactly one layer:
 | Field | Layer |
 |---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter |
+| `references.specs/components/examples` | Frontmatter |
 | `observation.personality`, `observation.resembles` | Frontmatter |
 | `observation.summary` | **Body** (`# Character`) |
+| `signature` | **Body** (`# Signature`) |
 | `decisions[].dimension` | Frontmatter |
 | `decisions[].decision` (prose) | **Body** (`### <dimension>` block) |
 | `decisions[].evidence` | **Body** (`**Evidence:**` bullets under `### <dimension>`) |
+| `checks[]` | Frontmatter |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter |
 | `embedding` | Sibling `embedding.md` |
 

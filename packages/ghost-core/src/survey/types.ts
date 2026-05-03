@@ -1,19 +1,19 @@
 /**
- * Types for `ghost.bucket/v1` — the objective scan artifact.
+ * Types for `ghost.survey/v1` — the observed evidence scan artifact.
  *
- * A bucket is the middle artifact in a scan: produced after topology
- * (`map.md`) and before subjective interpretation (`expression.md`). It
+ * A survey is the middle artifact in a scan: produced after the map
+ * (`map.md`) and before expression synthesis (`expression.md`). It
  * catalogues every concrete design value the agent observed in a target,
  * with structured specs and per-row deterministic IDs.
  *
  * Merge semantics are concat-with-id-dedup. Two scans of the same target at
  * the same commit produce identical IDs, so re-merging is idempotent. Two
  * scans of different commits (or different targets) produce different IDs,
- * so cross-bucket merges preserve every observation as its own row.
+ * so cross-survey merges preserve every observation as its own row.
  */
 
-/** Where a scan came from. Denormalized onto every row in the bucket. */
-export interface BucketSource {
+/** Where a scan came from. Denormalized onto every row in the survey. */
+export interface SurveySource {
   /** Stable source id within the scan source graph (`cash-ios`, `arcade-ios`, …). */
   id?: string;
   /**
@@ -38,13 +38,13 @@ export interface RowBase {
   /** Deterministic hash of `(source.target, source.commit, kind-tag, content fields)`. */
   id: string;
   /** Source attribution. Denormalized so rows survive merges with their origin. */
-  source: BucketSource;
+  source: SurveySource;
 }
 
 // --- Value rows ----------------------------------------------------------
 
 /**
- * Recommended value kinds. The bucket schema treats `kind` as an open
+ * Recommended value kinds. The survey schema treats `kind` as an open
  * string — scanners may emit additional kinds (e.g. `z-index`, `opacity`,
  * `cursor`, `gradient`, `iconography`) and validators warn rather than
  * reject. The recommended set covers the common cross-fleet vocabulary.
@@ -124,7 +124,7 @@ export type ValueSpec =
 export interface Resolution {
   /** Whether this row resolved to a concrete value, or why it did not. */
   status: "resolved" | "unresolved-external" | "unresolved-local";
-  /** Source id from bucket.sources[] / map.sources[] that performed resolution. */
+  /** Source id from survey.sources[] / map.sources[] that performed resolution. */
   source_id?: string;
   /** Resolver target, useful when the source id is unavailable. */
   target?: string;
@@ -188,15 +188,15 @@ export interface ComponentRow extends RowBase {
   sizes?: string[];
 }
 
-// --- Bucket --------------------------------------------------------------
+// --- Survey --------------------------------------------------------------
 
-export interface Bucket {
-  schema: "ghost.bucket/v1";
+export interface Survey {
+  schema: "ghost.survey/v1";
   /**
-   * Source(s) the bucket came from. Always an array — pre-merge buckets
-   * have length 1, merged buckets have N entries (one per source scan).
+   * Source(s) the survey came from. Always an array — pre-merge surveys
+   * have length 1, merged surveys have N entries (one per source scan).
    */
-  sources: BucketSource[];
+  sources: SurveySource[];
   values: ValueRow[];
   tokens: TokenRow[];
   components: ComponentRow[];

@@ -1,27 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { tokenRowId, valueRowId } from "../src/bucket/id.js";
-import { mergeBuckets } from "../src/bucket/merge.js";
+import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import { mergeSurveys } from "../src/survey/merge.js";
 import type {
-  Bucket,
-  BucketSource,
+  Survey,
+  SurveySource,
   TokenRow,
   ValueRow,
-} from "../src/bucket/types.js";
+} from "../src/survey/types.js";
 
-const SOURCE_A: BucketSource = {
+const SOURCE_A: SurveySource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
-const SOURCE_B: BucketSource = {
+const SOURCE_B: SurveySource = {
   target: "github:block/other",
   commit: "def456",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
 function valueRow(
-  source: BucketSource,
+  source: SurveySource,
   kind: string,
   value: string,
   raw: string,
@@ -39,7 +39,7 @@ function valueRow(
 }
 
 function tokenRow(
-  source: BucketSource,
+  source: SurveySource,
   name: string,
   resolved: string,
 ): TokenRow {
@@ -53,13 +53,13 @@ function tokenRow(
   };
 }
 
-function makeBucket(
-  source: BucketSource,
+function makeSurvey(
+  source: SurveySource,
   values: ValueRow[] = [],
   tokens: TokenRow[] = [],
-): Bucket {
+): Survey {
   return {
-    schema: "ghost.bucket/v1",
+    schema: "ghost.survey/v1",
     sources: [source],
     values,
     tokens,
@@ -67,76 +67,76 @@ function makeBucket(
   };
 }
 
-describe("mergeBuckets", () => {
-  it("merging a single bucket returns equivalent rowset", () => {
-    const a = makeBucket(SOURCE_A, [
+describe("mergeSurveys", () => {
+  it("merging a single survey returns equivalent rowset", () => {
+    const a = makeSurvey(SOURCE_A, [
       valueRow(SOURCE_A, "color", "#f97316", "#f97316"),
     ]);
-    const merged = mergeBuckets(a);
+    const merged = mergeSurveys(a);
     expect(merged.values).toEqual(a.values);
     expect(merged.sources).toEqual([SOURCE_A]);
   });
 
-  it("is idempotent — merging the same bucket twice yields the same rowset", () => {
-    const a = makeBucket(SOURCE_A, [
+  it("is idempotent — merging the same survey twice yields the same rowset", () => {
+    const a = makeSurvey(SOURCE_A, [
       valueRow(SOURCE_A, "color", "#f97316", "#f97316"),
       valueRow(SOURCE_A, "spacing", "8", "8px"),
     ]);
-    const once = mergeBuckets(a);
-    const twice = mergeBuckets(a, a);
+    const once = mergeSurveys(a);
+    const twice = mergeSurveys(a, a);
     expect(twice.values).toEqual(once.values);
     expect(twice.sources).toEqual(once.sources);
   });
 
   it("preserves rows with distinct IDs across different sources", () => {
-    const a = makeBucket(SOURCE_A, [
+    const a = makeSurvey(SOURCE_A, [
       valueRow(SOURCE_A, "color", "#f97316", "#f97316"),
     ]);
-    const b = makeBucket(SOURCE_B, [
+    const b = makeSurvey(SOURCE_B, [
       valueRow(SOURCE_B, "color", "#f97316", "#f97316"),
     ]);
-    const merged = mergeBuckets(a, b);
+    const merged = mergeSurveys(a, b);
     expect(merged.values).toHaveLength(2);
     expect(merged.sources).toEqual([SOURCE_A, SOURCE_B]);
   });
 
   it("dedupes rows with identical IDs (same source + same content)", () => {
     const row = valueRow(SOURCE_A, "color", "#f97316", "#f97316");
-    const a = makeBucket(SOURCE_A, [row]);
-    const b = makeBucket(SOURCE_A, [row]); // same source, same content -> same ID
-    const merged = mergeBuckets(a, b);
+    const a = makeSurvey(SOURCE_A, [row]);
+    const b = makeSurvey(SOURCE_A, [row]); // same source, same content -> same ID
+    const merged = mergeSurveys(a, b);
     expect(merged.values).toHaveLength(1);
     expect(merged.sources).toHaveLength(1);
   });
 
   it("preserves distinct source-graph roles for the same target", () => {
-    const primary: BucketSource = {
+    const primary: SurveySource = {
       ...SOURCE_A,
       id: "cash-ios",
       role: "primary",
     };
-    const resolver: BucketSource = {
+    const resolver: SurveySource = {
       ...SOURCE_A,
       id: "arcade-ios-package",
       role: "resolver",
       resolves: ["color"],
     };
-    const merged = mergeBuckets(makeBucket(primary), makeBucket(resolver));
+    const merged = mergeSurveys(makeSurvey(primary), makeSurvey(resolver));
     expect(merged.sources).toEqual([primary, resolver]);
   });
 
   it("preserves tokens and components independently", () => {
-    const a = makeBucket(
+    const a = makeSurvey(
       SOURCE_A,
       [],
       [tokenRow(SOURCE_A, "--brand-primary", "#f97316")],
     );
-    const b = makeBucket(
+    const b = makeSurvey(
       SOURCE_B,
       [],
       [tokenRow(SOURCE_B, "--brand-primary", "#0000ff")],
     );
-    const merged = mergeBuckets(a, b);
+    const merged = mergeSurveys(a, b);
     expect(merged.tokens).toHaveLength(2);
     // Same token name, different sources, distinct IDs — both survive.
     expect(merged.tokens.map((t) => t.resolved_value).sort()).toEqual([
@@ -145,13 +145,13 @@ describe("mergeBuckets", () => {
     ]);
   });
 
-  it("throws when given zero buckets", () => {
-    expect(() => mergeBuckets()).toThrow(/at least one/);
+  it("throws when given zero surveys", () => {
+    expect(() => mergeSurveys()).toThrow(/at least one/);
   });
 
-  it("schema field on the merged bucket is ghost.bucket/v1", () => {
-    const a = makeBucket(SOURCE_A);
-    const merged = mergeBuckets(a);
-    expect(merged.schema).toBe("ghost.bucket/v1");
+  it("schema field on the merged survey is ghost.survey/v1", () => {
+    const a = makeSurvey(SOURCE_A);
+    const merged = mergeSurveys(a);
+    expect(merged.schema).toBe("ghost.survey/v1");
   });
 });

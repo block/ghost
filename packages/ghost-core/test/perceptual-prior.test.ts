@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CANONICAL_DECISION_DIMENSIONS } from "../src/decision-vocabulary.js";
 import {
-  computeRuleSeverity,
+  computeCheckSeverity,
   DEFAULT_MATCH,
   DEFAULT_TOLERANCE,
   escalateForPresence,
@@ -74,12 +74,12 @@ describe("tierForCanonical", () => {
 });
 
 describe("escalateForPresence", () => {
-  it("escalates when bucket count is below floor", () => {
+  it("escalates when survey count is below floor", () => {
     expect(escalateForPresence("rhythmic", 0, 0)).toBe("structural");
     expect(escalateForPresence("rhythmic", 1, 2)).toBe("structural");
   });
 
-  it("does not escalate when bucket count is above floor", () => {
+  it("does not escalate when survey count is above floor", () => {
     expect(escalateForPresence("rhythmic", 5, 2)).toBe("rhythmic");
     expect(escalateForPresence("structural", 10, 0)).toBe("structural");
   });
@@ -99,10 +99,10 @@ describe("escalateForPresence", () => {
   });
 });
 
-describe("computeRuleSeverity", () => {
+describe("computeCheckSeverity", () => {
   it("honors explicit severity override", () => {
     expect(
-      computeRuleSeverity(
+      computeCheckSeverity(
         { canonical: "spatial-system", severity: "critical" },
         100,
       ),
@@ -110,41 +110,41 @@ describe("computeRuleSeverity", () => {
   });
 
   it("derives from canonical tier when no override", () => {
-    expect(computeRuleSeverity({ canonical: "color-strategy" }, 50)).toBe(
+    expect(computeCheckSeverity({ canonical: "color-strategy" }, 50)).toBe(
       "critical",
     );
-    expect(computeRuleSeverity({ canonical: "shape-language" }, 50)).toBe(
+    expect(computeCheckSeverity({ canonical: "shape-language" }, 50)).toBe(
       "serious",
     );
-    expect(computeRuleSeverity({ canonical: "spatial-system" }, 50)).toBe(
+    expect(computeCheckSeverity({ canonical: "spatial-system" }, 50)).toBe(
       "nit",
     );
   });
 
-  it("escalates a rhythmic rule when bucket count crosses floor", () => {
+  it("escalates a rhythmic check when survey count crosses floor", () => {
     // motion at 2 occurrences with floor of 2 → escalates rhythmic → structural → serious
     expect(
-      computeRuleSeverity({ canonical: "motion", presence_floor: 2 }, 2),
+      computeCheckSeverity({ canonical: "motion", presence_floor: 2 }, 2),
     ).toBe("serious");
   });
 
-  it("does not escalate when bucket count exceeds floor", () => {
+  it("does not escalate when survey count exceeds floor", () => {
     expect(
-      computeRuleSeverity({ canonical: "motion", presence_floor: 2 }, 12),
+      computeCheckSeverity({ canonical: "motion", presence_floor: 2 }, 12),
     ).toBe("nit");
   });
 
   it("escalates structural to loud (critical) at zero presence", () => {
     expect(
-      computeRuleSeverity({ canonical: "elevation", presence_floor: 0 }, 0),
+      computeCheckSeverity({ canonical: "elevation", presence_floor: 0 }, 0),
     ).toBe("critical");
   });
 
   it("treats unknown canonical as structural with conservative escalation", () => {
-    expect(computeRuleSeverity({ canonical: "novel-dimension" }, 5)).toBe(
+    expect(computeCheckSeverity({ canonical: "novel-dimension" }, 5)).toBe(
       "serious",
     );
-    expect(computeRuleSeverity({ canonical: "novel-dimension" }, 0)).toBe(
+    expect(computeCheckSeverity({ canonical: "novel-dimension" }, 0)).toBe(
       "critical",
     );
   });

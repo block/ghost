@@ -3,11 +3,11 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  type Bucket,
-  type BucketLintReport,
-  lintBucket,
-  mergeBuckets,
-  recomputeBucketIds,
+  lintSurvey,
+  mergeSurveys,
+  recomputeSurveyIds,
+  type Survey,
+  type SurveyLintReport,
 } from "@ghost/core";
 import { cac } from "cac";
 import {
@@ -27,12 +27,12 @@ import { registerEmitCommand } from "./emit-command.js";
 /**
  * Build the cac CLI for `ghost-expression`.
  *
- * Verbs author and validate `expression.md` and `bucket.json`:
+ * Verbs author and validate `expression.md` and `survey.json`:
  * `lint` (schema check, auto-detects file kind), `describe` (section ranges
  * + token estimates for expressions), `diff` (structural prose-level diff
  * between two expressions), `emit` (derive review-command, context-bundle,
- * or skill artifacts), and `bucket merge` (deterministic union of N
- * `ghost.bucket/v1` files into one).
+ * or skill artifacts), and `survey merge` (deterministic union of N
+ * `ghost.survey/v1` files into one).
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -45,7 +45,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "lint [file]",
-      "Validate expression.md, map.md, or bucket.json — auto-detects the kind from path/content",
+      "Validate expression.md, map.md, or survey.json — auto-detects the kind from path/content",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -55,8 +55,8 @@ export function buildCli(): ReturnType<typeof cac> {
         const kind = detectFileKind(target, raw);
 
         const report =
-          kind === "bucket"
-            ? lintBucketFile(raw)
+          kind === "survey"
+            ? lintSurveyFile(raw)
             : kind === "map"
               ? lintMap(raw)
               : lintExpression(raw);
@@ -94,7 +94,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "scan-status [dir]",
-      "Report which scan stages have produced artifacts in a directory: topology (map.md), objective (bucket.json), subjective (expression.md). Tells orchestrators which stage to run next.",
+      "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), expression (expression.md). Tells orchestrators which stage to run next.",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
@@ -108,13 +108,13 @@ export function buildCli(): ReturnType<typeof cac> {
             state === "present" ? "present" : "missing";
           process.stdout.write(`scan dir: ${status.dir}\n\n`);
           process.stdout.write(
-            `  topology   (map.md):       ${fmt(status.topology.state)}\n`,
+            `  map        (map.md):        ${fmt(status.map.state)}\n`,
           );
           process.stdout.write(
-            `  objective  (bucket.json):  ${fmt(status.objective.state)}\n`,
+            `  survey     (survey.json):   ${fmt(status.survey.state)}\n`,
           );
           process.stdout.write(
-            `  subjective (expression.md): ${fmt(status.subjective.state)}\n\n`,
+            `  expression (expression.md): ${fmt(status.expression.state)}\n\n`,
           );
           if (status.recommended_next) {
             process.stdout.write(
@@ -214,38 +214,38 @@ export function buildCli(): ReturnType<typeof cac> {
       }
     });
 
-  // --- bucket <op> ---
+  // --- survey <op> ---
   cli
     .command(
-      "bucket <op> [...buckets]",
-      "Operate on ghost.bucket/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+      "survey <op> [...surveys]",
+      "Operate on ghost.survey/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
     )
     .option(
       "-o, --out <path>",
       "Write the result to this path (default: stdout)",
     )
-    .action(async (op: string, buckets: string[], opts) => {
+    .action(async (op: string, surveys: string[], opts) => {
       try {
         if (op !== "merge" && op !== "fix-ids") {
           console.error(
-            `Error: unknown bucket op '${op}'. Supported: merge, fix-ids`,
+            `Error: unknown survey op '${op}'. Supported: merge, fix-ids`,
           );
           process.exit(2);
           return;
         }
-        if (!Array.isArray(buckets) || buckets.length === 0) {
-          console.error(`Error: bucket ${op} requires at least one input file`);
+        if (!Array.isArray(surveys) || surveys.length === 0) {
+          console.error(`Error: survey ${op} requires at least one input file`);
           process.exit(2);
           return;
         }
-        if (op === "fix-ids" && buckets.length !== 1) {
-          console.error("Error: bucket fix-ids takes exactly one input file");
+        if (op === "fix-ids" && surveys.length !== 1) {
+          console.error("Error: survey fix-ids takes exactly one input file");
           process.exit(2);
           return;
         }
 
-        const parsed: Bucket[] = [];
-        for (const path of buckets) {
+        const parsed: Survey[] = [];
+        for (const path of surveys) {
           const target = resolve(process.cwd(), path);
           const raw = await readFile(target, "utf-8");
           let json: unknown;
@@ -259,10 +259,10 @@ export function buildCli(): ReturnType<typeof cac> {
             return;
           }
           if (op === "merge") {
-            const report = lintBucket(json);
+            const report = lintSurvey(json);
             if (report.errors > 0) {
               console.error(
-                `Error: ${target} failed bucket lint with ${report.errors} error(s); fix before merging`,
+                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before merging`,
               );
               for (const issue of report.issues) {
                 if (issue.severity !== "error") continue;
@@ -275,13 +275,13 @@ export function buildCli(): ReturnType<typeof cac> {
               return;
             }
           }
-          parsed.push(json as Bucket);
+          parsed.push(json as Survey);
         }
 
         const result =
           op === "merge"
-            ? mergeBuckets(...parsed)
-            : recomputeBucketIds(parsed[0]);
+            ? mergeSurveys(...parsed)
+            : recomputeSurveyIds(parsed[0]);
         const out = `${JSON.stringify(result, null, 2)}\n`;
 
         if (opts.out) {
@@ -310,16 +310,16 @@ export function buildCli(): ReturnType<typeof cac> {
 
 /**
  * Decide whether a file is an `expression.md`, a `map.md`, or a
- * `bucket.json`. JSON paths/contents route to the bucket linter; markdown
+ * `survey.json`. JSON paths/contents route to the survey linter; markdown
  * with `schema: ghost.map/v1` in its YAML frontmatter routes to the map
  * linter; everything else stays on the expression path.
  */
 function detectFileKind(
   path: string,
   raw: string,
-): "bucket" | "map" | "expression" {
-  if (path.toLowerCase().endsWith(".json")) return "bucket";
-  if (raw.trimStart().startsWith("{")) return "bucket";
+): "survey" | "map" | "expression" {
+  if (path.toLowerCase().endsWith(".json")) return "survey";
+  if (raw.trimStart().startsWith("{")) return "survey";
   // Cheap markdown frontmatter sniff for `schema: ghost.map/v1`. We don't
   // parse YAML here; the linter does the heavy lift.
   const fmEnd = raw.indexOf("\n---", 3);
@@ -331,7 +331,7 @@ function detectFileKind(
   return "expression";
 }
 
-function lintBucketFile(raw: string): BucketLintReport {
+function lintSurveyFile(raw: string): SurveyLintReport {
   let json: unknown;
   try {
     json = JSON.parse(raw);
@@ -340,8 +340,8 @@ function lintBucketFile(raw: string): BucketLintReport {
       issues: [
         {
           severity: "error",
-          rule: "bucket-not-json",
-          message: `bucket file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+          rule: "survey-not-json",
+          message: `survey file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
         },
       ],
       errors: 1,
@@ -349,7 +349,7 @@ function lintBucketFile(raw: string): BucketLintReport {
       info: 0,
     };
   }
-  return lintBucket(json);
+  return lintSurvey(json);
 }
 
 function readPackageVersion(): string {

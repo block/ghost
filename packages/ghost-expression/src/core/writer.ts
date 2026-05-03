@@ -25,8 +25,8 @@ export interface SerializeOptions {
  *
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
- *     evidence, personality/resembles tags, embedding).
- *   • Body carries prose (# Character, # Decisions rationale).
+ *     evidence, personality/resembles tags, references, checks, embedding).
+ *   • Body carries prose (# Character, # Signature, # Decisions rationale).
  *
  * Each field has exactly one home — so there is no precedence rule and no
  * way for the two sides to drift.
@@ -49,6 +49,7 @@ export function serializeExpression(
 
   const body = buildBody(
     expression.observation,
+    expression.signature,
     expression.decisions,
     extractEmbedding && (expression.embedding?.length ?? 0) > 0,
   );
@@ -62,12 +63,16 @@ function stripEmbedding(fp: Expression): Expression {
 
 function buildBody(
   observation: DesignObservation | undefined,
+  signature: string | undefined,
   decisions: DesignDecision[] | undefined,
   embeddingExtracted: boolean,
 ): string {
   const parts: string[] = [];
   if (observation?.summary?.trim()) {
     parts.push(`# Character\n\n${observation.summary.trim()}`);
+  }
+  if (signature?.trim()) {
+    parts.push(`# Signature\n\n${signature.trim()}`);
   }
   if (decisions?.length) {
     const blocks = decisions

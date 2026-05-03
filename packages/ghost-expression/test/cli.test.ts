@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Bucket, BucketSource } from "@ghost/core";
+import type { Survey, SurveySource } from "@ghost/core";
 import { tokenRowId, valueRowId } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCli } from "../src/cli.js";
@@ -164,21 +164,21 @@ describe("ghost-expression CLI defaults", () => {
   });
 });
 
-const SOURCE_A: BucketSource = {
+const SOURCE_A: SurveySource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
-const SOURCE_B: BucketSource = {
+const SOURCE_B: SurveySource = {
   target: "github:block/other",
   commit: "def456",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
-function makeBucket(source: BucketSource, hex = "#f97316"): Bucket {
+function makeSurvey(source: SurveySource, hex = "#f97316"): Survey {
   return {
-    schema: "ghost.bucket/v1",
+    schema: "ghost.survey/v1",
     sources: [source],
     values: [
       {
@@ -220,43 +220,43 @@ describe("ghost-expression lint dispatches by file kind", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("lints a well-formed bucket.json with exit 0", async () => {
+  it("lints a well-formed survey.json with exit 0", async () => {
     await writeFile(
-      join(dir, "bucket.json"),
-      JSON.stringify(makeBucket(SOURCE_A), null, 2),
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
     );
 
-    const result = await runCli(["lint", "bucket.json"], dir);
+    const result = await runCli(["lint", "survey.json"], dir);
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("0 error(s)");
   });
 
-  it("lints a malformed bucket.json with exit 1", async () => {
+  it("lints a malformed survey.json with exit 1", async () => {
     await writeFile(
-      join(dir, "bucket.json"),
-      JSON.stringify({ schema: "ghost.bucket/v0" }, null, 2),
+      join(dir, "survey.json"),
+      JSON.stringify({ schema: "ghost.survey/v0" }, null, 2),
     );
 
-    const result = await runCli(["lint", "bucket.json"], dir);
+    const result = await runCli(["lint", "survey.json"], dir);
 
     expect(result.code).toBe(1);
   });
 
-  it("auto-detects bucket-by-content when path lacks .json extension", async () => {
+  it("auto-detects survey-by-content when path lacks .json extension", async () => {
     await writeFile(
-      join(dir, "bucket.txt"),
-      JSON.stringify(makeBucket(SOURCE_A), null, 2),
+      join(dir, "survey.txt"),
+      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
     );
 
-    const result = await runCli(["lint", "bucket.txt"], dir);
+    const result = await runCli(["lint", "survey.txt"], dir);
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("0 error(s)");
   });
 });
 
-describe("ghost-expression bucket merge", () => {
+describe("ghost-expression survey merge", () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -271,12 +271,12 @@ describe("ghost-expression bucket merge", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("merges two buckets with distinct sources into one", async () => {
-    await writeFile(join(dir, "a.json"), JSON.stringify(makeBucket(SOURCE_A)));
-    await writeFile(join(dir, "b.json"), JSON.stringify(makeBucket(SOURCE_B)));
+  it("merges two surveys with distinct sources into one", async () => {
+    await writeFile(join(dir, "a.json"), JSON.stringify(makeSurvey(SOURCE_A)));
+    await writeFile(join(dir, "b.json"), JSON.stringify(makeSurvey(SOURCE_B)));
 
     const result = await runCli(
-      ["bucket", "merge", "a.json", "b.json", "-o", "merged.json"],
+      ["survey", "merge", "a.json", "b.json", "-o", "merged.json"],
       dir,
     );
 
@@ -284,18 +284,18 @@ describe("ghost-expression bucket merge", () => {
     const merged = JSON.parse(
       await readFile(join(dir, "merged.json"), "utf-8"),
     );
-    expect(merged.schema).toBe("ghost.bucket/v1");
+    expect(merged.schema).toBe("ghost.survey/v1");
     expect(merged.sources).toHaveLength(2);
     expect(merged.values).toHaveLength(2);
     expect(merged.tokens).toHaveLength(2);
   });
 
   it("dedupes rows with identical IDs (same source, same content)", async () => {
-    await writeFile(join(dir, "a.json"), JSON.stringify(makeBucket(SOURCE_A)));
-    await writeFile(join(dir, "a2.json"), JSON.stringify(makeBucket(SOURCE_A)));
+    await writeFile(join(dir, "a.json"), JSON.stringify(makeSurvey(SOURCE_A)));
+    await writeFile(join(dir, "a2.json"), JSON.stringify(makeSurvey(SOURCE_A)));
 
     const result = await runCli(
-      ["bucket", "merge", "a.json", "a2.json", "-o", "merged.json"],
+      ["survey", "merge", "a.json", "a2.json", "-o", "merged.json"],
       dir,
     );
 
@@ -309,33 +309,33 @@ describe("ghost-expression bucket merge", () => {
   });
 
   it("writes to stdout when -o is omitted", async () => {
-    await writeFile(join(dir, "a.json"), JSON.stringify(makeBucket(SOURCE_A)));
+    await writeFile(join(dir, "a.json"), JSON.stringify(makeSurvey(SOURCE_A)));
 
-    const result = await runCli(["bucket", "merge", "a.json"], dir);
+    const result = await runCli(["survey", "merge", "a.json"], dir);
 
     expect(result.code).toBe(0);
     const merged = JSON.parse(result.stdout);
-    expect(merged.schema).toBe("ghost.bucket/v1");
+    expect(merged.schema).toBe("ghost.survey/v1");
     expect(merged.values).toHaveLength(1);
   });
 
-  it("fails when an input bucket has lint errors", async () => {
+  it("fails when an input survey has lint errors", async () => {
     await writeFile(
       join(dir, "bad.json"),
-      JSON.stringify({ schema: "ghost.bucket/v0" }),
+      JSON.stringify({ schema: "ghost.survey/v0" }),
     );
 
     const result = await runCli(
-      ["bucket", "merge", "bad.json", "-o", "merged.json"],
+      ["survey", "merge", "bad.json", "-o", "merged.json"],
       dir,
     );
 
     expect(result.code).toBe(1);
-    expect(result.stderr).toContain("failed bucket lint");
+    expect(result.stderr).toContain("failed survey lint");
   });
 });
 
-describe("ghost-expression bucket fix-ids", () => {
+describe("ghost-expression survey fix-ids", () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -350,9 +350,9 @@ describe("ghost-expression bucket fix-ids", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("populates empty IDs and writes a lint-clean bucket", async () => {
-    const draft: Bucket = {
-      schema: "ghost.bucket/v1",
+  it("populates empty IDs and writes a lint-clean survey", async () => {
+    const draft: Survey = {
+      schema: "ghost.survey/v1",
       sources: [SOURCE_A],
       values: [
         {
@@ -371,7 +371,7 @@ describe("ghost-expression bucket fix-ids", () => {
     await writeFile(join(dir, "draft.json"), JSON.stringify(draft));
 
     const fix = await runCli(
-      ["bucket", "fix-ids", "draft.json", "-o", "fixed.json"],
+      ["survey", "fix-ids", "draft.json", "-o", "fixed.json"],
       dir,
     );
     expect(fix.code).toBe(0);
@@ -382,10 +382,10 @@ describe("ghost-expression bucket fix-ids", () => {
   });
 
   it("rejects more than one input file", async () => {
-    await writeFile(join(dir, "a.json"), JSON.stringify(makeBucket(SOURCE_A)));
-    await writeFile(join(dir, "b.json"), JSON.stringify(makeBucket(SOURCE_B)));
+    await writeFile(join(dir, "a.json"), JSON.stringify(makeSurvey(SOURCE_A)));
+    await writeFile(join(dir, "b.json"), JSON.stringify(makeSurvey(SOURCE_B)));
 
-    const result = await runCli(["bucket", "fix-ids", "a.json", "b.json"], dir);
+    const result = await runCli(["survey", "fix-ids", "a.json", "b.json"], dir);
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("exactly one input file");

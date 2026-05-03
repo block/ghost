@@ -1,34 +1,32 @@
 /**
- * Public surface for `ghost.bucket/v1` — types, schemas, ID generation,
+ * Public surface for `ghost.survey/v1` — types, schemas, ID generation,
  * lint, and merge. Consumed by `ghost-expression` and any future ghost
- * tool that operates on bucket data.
+ * tool that operates on survey data.
  */
 
-export { recomputeBucketIds } from "./fix-ids.js";
+export { recomputeSurveyIds } from "./fix-ids.js";
 export { componentRowId, tokenRowId, valueRowId } from "./id.js";
 export {
-  BUCKET_FILENAME,
-  type BucketLintIssue,
-  type BucketLintReport,
-  type BucketLintSeverity,
-  lintBucket,
+  lintSurvey,
+  SURVEY_FILENAME,
+  type SurveyLintIssue,
+  type SurveyLintReport,
+  type SurveyLintSeverity,
 } from "./lint.js";
-export { mergeBuckets } from "./merge.js";
+export { mergeSurveys } from "./merge.js";
 export {
-  BucketSchema,
-  BucketSourceSchema,
   ColorSpecSchema,
   ComponentRowSchema,
   RECOMMENDED_VALUE_KINDS,
   ResolutionSchema,
+  SurveySchema,
+  SurveySourceSchema,
   TokenRowSchema,
   ValueRowSchema,
   ValueSpecSchema,
 } from "./schema.js";
 export type {
   BreakpointSpec,
-  Bucket,
-  BucketSource,
   ColorSpec,
   ComponentRow,
   LayoutPrimitiveSpec,
@@ -40,6 +38,8 @@ export type {
   ScalarUnit,
   ShadowSpec,
   SpacingSpec,
+  Survey,
+  SurveySource,
   TokenRow,
   TypographySpec,
   UnknownSpec,

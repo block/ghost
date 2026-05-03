@@ -1,32 +1,34 @@
 ---
 name: survey
-description: Scan a target and produce a bucket.json — the objective catalogue of design values, with no interpretation.
+description: Scan a target and produce a survey.json — the observed catalogue of design values, with no interpretation.
 handoffs:
-  - label: Interpret the bucket into expression.md
+  - label: Interpret the survey into expression.md
     command: (next stage — interpreter recipe)
-    prompt: Interpret the bucket I just wrote into expression.md
-  - label: Validate the bucket
-    command: ghost-expression lint bucket.json
-    prompt: Lint the bucket I just wrote
+    prompt: Interpret the survey I just wrote into expression.md
+  - label: Validate the survey
+    command: ghost-expression lint survey.json
+    prompt: Lint the survey I just wrote
 ---
 
-# Recipe: Survey a target into bucket.json
+# Recipe: Survey a target into survey.json
 
-**Goal:** produce a valid `bucket.json` (`ghost.bucket/v1`) that catalogues every concrete design value the target ships, with structured specs and per-value occurrence counts. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
+**Goal:** produce a valid `survey.json` (`ghost.survey/v1`) that catalogues every concrete design value the target ships, with structured specs and per-value occurrence counts. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
-`bucket.json` is the middle artifact in a three-stage scan: topology (`map.md`) → objective (`bucket.json`) → subjective (`expression.md`). The interpreter (next stage) reads your bucket as ground truth and writes the prose. If you skip values or fabricate them here, the expression downstream is wrong.
+`survey.json` is the middle artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). The interpreter (next stage) reads your survey as ground truth and writes the compact expression. If you skip values or fabricate them here, the expression downstream is wrong.
+
+The survey is exhaustive evidence, not prompt context. It should be large enough to support interpretation; the profile stage decides what becomes generation-facing expression.
 
 ## Pre-requisite
 
-A `map.md` for the target must exist (Phase 0 — see `references/map.md`). It tells you where the design system lives — `design_system.entry_files`, `design_system.paths`, `feature_areas[].paths`, `composition.styling`, `composition.frameworks`. Without it you waste cycles re-discovering what the topology already specifies. **If `map.md` is missing, stop and run topology first.**
+A `map.md` for the target must exist (Phase 0 — see `references/map.md`). It tells you where the design system lives — `design_system.entry_files`, `design_system.paths`, `feature_areas[].paths`, `composition.styling`, `composition.frameworks`. Without it you waste cycles re-discovering what the topology already specifies. **If `map.md` is missing, stop and run the map stage first.**
 
-## Bucket schema
+## Survey schema
 
-A `bucket.json` is `ghost.bucket/v1`:
+A `survey.json` is `ghost.survey/v1`:
 
 ```json
 {
-  "schema": "ghost.bucket/v1",
+  "schema": "ghost.survey/v1",
   "sources": [{ "target": "...", "commit": "...", "scanned_at": "..." }],
   "values":     [...],
   "tokens":     [...],
@@ -40,7 +42,7 @@ Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by
 - **`tokens[]`** — every named token declared in source (CSS variables, theme keys, design-token entries). Each row has `name`, `alias_chain` (path through any indirection — `["--button-bg", "--color-brand-primary"]` for a two-step chain; `[]` for a leaf defined inline), `resolved_value` (end-of-chain literal), optional `by_theme` for light/dark variants.
 - **`components[]`** — every named component you can confidently identify (registry entries, exported PascalCase components with variants/sizes). Loose schema: `name`, `discovered_via` (`registry.json` / `heuristic` / etc.), optional `variants[]` and `sizes[]`.
 
-External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a bucket section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
+External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a survey section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
 
 Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
 
@@ -80,7 +82,7 @@ Decide your extraction strategy from these signals — see Step 2.
 
 ## The exhaustiveness rule
 
-Recall is the failure mode and the only one. A bucket missing 90% of a section's rows is a failed scan, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
+Recall is the failure mode and the only one. A survey missing 90% of a section's rows is a failed scan, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
 
 For every section (`values[]`, `tokens[]`, `components[]`):
 
@@ -95,14 +97,14 @@ This applies regardless of dialect. The recipe doesn't tell you what the canonic
 
 **You write your own greps and regexes. There is no pre-built parser.** Adapt to what's actually in the repo:
 
-- **Tailwind (Tailwind v3 / v4 with `@theme`)** — class atoms are load-bearing for the bucket. The declared `--spacing-*` / `--text-*` / `--color-*` tokens in `@theme` are only half the picture; the other half is which atoms components actually use, because Tailwind synthesizes most of the rendered scale from the `--spacing` modular base (`p-2` → `padding: calc(var(--spacing) * 2)` → 8px when `--spacing: 0.25rem`). A bucket built from declarations alone undercounts spacing/typography/color systematically — see the `## Tailwind class-atom pass` section below.
+- **Tailwind (Tailwind v3 / v4 with `@theme`)** — class atoms are load-bearing for the survey. The declared `--spacing-*` / `--text-*` / `--color-*` tokens in `@theme` are only half the picture; the other half is which atoms components actually use, because Tailwind synthesizes most of the rendered scale from the `--spacing` modular base (`p-2` → `padding: calc(var(--spacing) * 2)` → 8px when `--spacing: 0.25rem`). A survey built from declarations alone undercounts spacing/typography/color systematically — see the `## Tailwind class-atom pass` section below.
 - **CSS / SCSS / CSS modules** — `rg -oN '#[0-9a-fA-F]{3,8}\b' -g '*.{css,scss,sass}'` for hex; `rg -oN '\b(rgba?|hsla?|oklch|color)\([^)]+\)' -g '*.{css,scss}'` for color functions; `rg -oN '\b[0-9]+(\.[0-9]+)?(px|rem|em|%|vh|vw|fr|ch|svh|dvh)\b' -g '*.{css,scss}'` for scalars; `rg -oN -- '--[a-z0-9-]+\s*:' -g '*.{css,scss}'` for custom properties.
 - **CSS-in-JS (styled-components, emotion, vanilla-extract)** — same regex set but expand `-g '*.{ts,tsx,js,jsx}'`. Watch for template literals split across lines.
 - **iOS / Swift** — `rg -oN 'Color\([^)]+\)|UIColor\([^)]+\)|\.(red|blue|green|orange|brand[A-Za-z]*)\b' -g '*.swift'` for color sites; `rg -oN '\b[0-9]+(\.[0-9]+)?\b' -g '*.swift' | sort | uniq -c | sort -rn | head -50` for likely scalars (lots of noise; keep top-N by frequency).
 - **Android / Compose** — `rg -oN 'Color\(0x[0-9a-fA-F]+\)|colorResource\(R\.color\.[a-z_]+\)' -g '*.kt'`; same scalar approach.
 - **Token JSON / YAML** — read directly with `cat`/Read tool. Token files are usually small and structured — parse them as data, don't grep.
 
-If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per dialect and merge into one bucket.
+If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per dialect and merge into one survey.
 
 ## Resolver pass for source graphs
 
@@ -115,14 +117,14 @@ Procedure:
 1. **Scan primary usage first.** Record every local token/symbol/class usage in the primary target with occurrences and files_count. These counts are the only salience signal.
 2. **Open resolver sources.** Read the upstream package/source/build artifact named by `sources[].role: resolver` or `design_system.upstream`. Find the exported token tables, generated Swift/Kotlin/TS accessors, CSS variables, registry metadata, or other symbol definitions.
 3. **Join symbols to definitions.** Follow `CashTheme.color.background → ArcadeColor.background → #ffffff` (or equivalent) as far as source permits. Preserve the chain in `resolution.chain`.
-4. **Emit resolved rows only for observed usage.** If a resolver defines 400 colors and the primary app uses 12, the app bucket gets the 12 observed values. Unused resolver inventory belongs in the resolver's own expression, not the app's.
+4. **Emit resolved rows only for observed usage.** If a resolver defines 400 colors and the primary app uses 12, the app survey gets the 12 observed values. Unused resolver inventory belongs in the resolver's own expression, not the app's.
 5. **Mark gaps honestly.** For unresolved external symbols, emit token rows with `resolution.status: "unresolved-external"` plus `symbol` / `message`; add a scratchpad coverage note with unresolved counts by kind.
 
 Coverage gate: before declaring done, report resolved vs unresolved counts for each resolver-backed kind (color, spacing, typography, radius, shadow). Weak resolver coverage lowers confidence downstream; it is not a reason to fabricate literals.
 
 ## Tailwind class-atom pass
 
-For Tailwind targets, the rendered design language lives at the intersection of *declared tokens* (`@theme {}` / `tailwind.config.*`) and *consumed atoms* (`p-2`, `bg-orange-500`, `text-sm` in components). Skipping the atom pass produces a bucket where the spacing/typography/color sections look sparse and irregular even though the live UI is on a clean modular grid. **Run this pass for every Tailwind target.**
+For Tailwind targets, the rendered design language lives at the intersection of *declared tokens* (`@theme {}` / `tailwind.config.*`) and *consumed atoms* (`p-2`, `bg-orange-500`, `text-sm` in components). Skipping the atom pass produces a survey where the spacing/typography/color sections look sparse and irregular even though the live UI is on a clean modular grid. **Run this pass for every Tailwind target.**
 
 The atom-to-literal resolver depends on the Tailwind version:
 
@@ -153,7 +155,7 @@ For values + tokens, sloppy grep undercounts silently. Discipline:
 
 For components:
 
-- **Components are countable.** Count them by whatever signal the repo offers (manifest entries, barrel exports, naming pattern under a known directory). If you can count to 50 and your bucket has 6 rows, you've sampled — go back and enumerate.
+- **Components are countable.** Count them by whatever signal the repo offers (manifest entries, barrel exports, naming pattern under a known directory). If you can count to 50 and your survey has 6 rows, you've sampled — go back and enumerate.
 
 ### 4. Sample feature areas for usage counts
 
@@ -163,7 +165,7 @@ Update the `usage` breakdown when context matters. Examples: `{className: 30, cs
 
 ### 5. Write rows with empty IDs
 
-Build the bucket file. For every row, leave `id` as an empty string `""`. You don't compute SHA-256 hashes by hand. Example value row:
+Build the survey file. For every row, leave `id` as an empty string `""`. You don't compute SHA-256 hashes by hand. Example value row:
 
 ```json
 {
@@ -179,31 +181,31 @@ Build the bucket file. For every row, leave `id` as an empty string `""`. You do
 }
 ```
 
-Same shape per token and component row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the bucket with the same single source.
+Same shape per token and component row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the survey with the same single source.
 
 ### 6. Populate IDs
 
 Run:
 
-    ghost-expression bucket fix-ids bucket.json -o bucket.json
+    ghost-expression survey fix-ids survey.json -o survey.json
 
 This recomputes every row's `id` from its content fields. Idempotent — running it again does nothing.
 
 ### 7. Validate
 
-    ghost-expression lint bucket.json
+    ghost-expression lint survey.json
 
 Fix everything `lint` flags as an error. Warnings (unknown `kind`, `id-mismatch` if you skipped Step 6, etc.) are signals — investigate them, but they don't block.
 
 ### 8. Coverage check (gate before declaring done)
 
-Before declaring the bucket done, walk each section and confirm exhaustiveness:
+Before declaring the survey done, walk each section and confirm exhaustiveness:
 
 - **`components[]`** — what's the canonical signal in this repo? Count it independently. If your row count is below that count, you've under-recorded. Either add the missing rows or, if the section truly isn't enumerable here, leave the array empty.
 - **`tokens[]`** — count the named-token declarations in the canonical token source(s) named in `map.md`. Your row count should match.
-- **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your bucket = missed.
+- **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your survey = missed.
   For resolver-backed scans, also check unresolved symbols by kind; top unresolved symbols should either be resolved or explicitly surfaced as coverage gaps.
-The bucket is **saturated** when another exhaustiveness pass adds fewer than ~2 new rows across all sections AND your component/token row counts match (or come very close to) an independent count of the canonical signal. If exhaustiveness disagrees with what you have, exhaustiveness wins — re-pass.
+The survey is **saturated** when another exhaustiveness pass adds fewer than ~2 new rows across all sections AND your component/token row counts match (or come very close to) an independent count of the canonical signal. If exhaustiveness disagrees with what you have, exhaustiveness wins — re-pass.
 
 Hard stop conditions:
 
@@ -211,24 +213,24 @@ Hard stop conditions:
 - ~20 minutes wall, OR
 - ~200k tokens consumed.
 
-If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note in your scratchpad listing exactly which sections fall short and by how much. Surface it to the interpreter — it tells them which decisions are well-grounded and which aren't. **Do not pad the bucket with sampled rows to look exhaustive.**
+If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note in your scratchpad listing exactly which sections fall short and by how much. Surface it to the interpreter — it tells them which decisions are well-grounded and which aren't. **Do not pad the survey with sampled rows to look exhaustive.**
 
 ## Always
 
-- Use `bucket.json` as the canonical filename.
+- Use `survey.json` as the canonical filename.
 - Every value/token row carries `source`, `occurrences`, and (for values) `files_count`.
 - Resolve token alias chains end-to-end. The `alias_chain` array captures the path.
-- Validate with `ghost-expression lint bucket.json` before declaring success.
-- After authoring rows with empty IDs, run `bucket fix-ids` exactly once.
+- Validate with `ghost-expression lint survey.json` before declaring success.
+- After authoring rows with empty IDs, run `survey fix-ids` exactly once.
 - **Cross-check your component and token counts against an independent count of the canonical signal in this repo.** Disagreement = re-pass.
 
 ## Never
 
 - **Never write prose.** No `description`, no rationale fields. Prose is the interpreter's job.
-- **Never invent values.** If you didn't observe it in source, it doesn't go in the bucket.
-- **Never sample.** Either enumerate exhaustively or leave the section empty. A bucket with 6 components when the canonical signal has 100 is worse than no `components[]` at all.
+- **Never invent values.** If you didn't observe it in source, it doesn't go in the survey.
+- **Never sample.** Either enumerate exhaustively or leave the section empty. A survey with 6 components when the canonical signal has 100 is worse than no `components[]` at all.
 - **Never assign roles confidently.** `role_hypothesis` is a *hint*, optional, and tentative. The interpreter has the final word. If you're not sure, leave it empty.
 - **Never undercount silently.** If your coverage is weak (mobile dialects, custom DSLs, no canonical signal in this repo), surface it in a `# Coverage` scratchpad note and tell the interpreter.
-- **Never compute IDs by hand.** Use `bucket fix-ids`.
+- **Never compute IDs by hand.** Use `survey fix-ids`.
 - **Never use placeholder/glob names.** A component row with `name: "*Button"` or `name: "<various>"` is sampling-disguised-as-a-row. Enumerate concretely.
-- **Never edit a bucket after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. The bucket is the frozen ground truth between scan and interpretation.
+- **Never edit a survey after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. The survey is the frozen ground truth between scan and interpretation.

@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { recomputeBucketIds } from "../src/bucket/fix-ids.js";
-import { tokenRowId, valueRowId } from "../src/bucket/id.js";
-import type { Bucket, BucketSource } from "../src/bucket/types.js";
+import { recomputeSurveyIds } from "../src/survey/fix-ids.js";
+import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import type { Survey, SurveySource } from "../src/survey/types.js";
 
-const SOURCE: BucketSource = {
+const SOURCE: SurveySource = {
   target: "github:block/ghost",
   commit: "abc123",
   scanned_at: "2026-04-29T12:00:00Z",
 };
 
-function bucket(): Bucket {
+function survey(): Survey {
   return {
-    schema: "ghost.bucket/v1",
+    schema: "ghost.survey/v1",
     sources: [SOURCE],
     values: [
       {
@@ -47,9 +47,9 @@ function bucket(): Bucket {
   };
 }
 
-describe("recomputeBucketIds", () => {
+describe("recomputeSurveyIds", () => {
   it("populates empty IDs with deterministic hashes", () => {
-    const fixed = recomputeBucketIds(bucket());
+    const fixed = recomputeSurveyIds(survey());
     expect(fixed.values[0].id).toBe(
       valueRowId(SOURCE, "color", "#f97316", "#f97316"),
     );
@@ -57,21 +57,21 @@ describe("recomputeBucketIds", () => {
   });
 
   it("overwrites incorrect IDs with the correct deterministic hash", () => {
-    const fixed = recomputeBucketIds(bucket());
+    const fixed = recomputeSurveyIds(survey());
     expect(fixed.values[1].id).toBe(valueRowId(SOURCE, "spacing", "8", "8px"));
     expect(fixed.values[1].id).not.toBe("wrong-id");
   });
 
-  it("does not mutate the input bucket", () => {
-    const input = bucket();
-    recomputeBucketIds(input);
+  it("does not mutate the input survey", () => {
+    const input = survey();
+    recomputeSurveyIds(input);
     expect(input.values[0].id).toBe("");
     expect(input.values[1].id).toBe("wrong-id");
   });
 
   it("is idempotent — running twice yields the same result", () => {
-    const once = recomputeBucketIds(bucket());
-    const twice = recomputeBucketIds(once);
+    const once = recomputeSurveyIds(survey());
+    const twice = recomputeSurveyIds(once);
     expect(twice.values).toEqual(once.values);
     expect(twice.tokens).toEqual(once.tokens);
   });

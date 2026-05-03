@@ -50,6 +50,10 @@ timestamp: 2026-04-17T00:00:00.000Z
 observation:
   personality: [restrained, editorial]
   resembles: [notion, linear]
+references:
+  specs: [src/styles/tokens.css]
+  components: [src/components/ui]
+  examples: [docs/examples/editorial.md]
 decisions:
   - dimension: warm-only-neutrals
   - dimension: serif-authority-sans-utility
@@ -82,6 +86,10 @@ embedding: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 # Character
 
 A literary salon reimagined as a product page — warm, unhurried, and quietly intellectual.
+
+# Signature
+
+Long-form editorial layouts, warm neutral surfaces, and quiet controls that give prose more gravity than chrome.
 
 # Decisions
 
@@ -120,16 +128,18 @@ describe("parseExpression", () => {
     expect(expression.observation?.summary).toContain("literary salon");
   });
 
-  it("ignores legacy `# Signature` body sections without erroring", () => {
-    const legacy = SAMPLE_MD.replace(
-      "# Decisions",
-      "# Signature\n\n- Legacy bullet — should not appear in the model.\n\n# Decisions",
-    );
-    expect(() => parseExpression(legacy)).not.toThrow();
-    const { expression } = parseExpression(legacy);
-    // The legacy block parses as inert — observation has no field for it.
-    expect(expression.observation).toBeDefined();
-    expect(expression.observation?.summary).toContain("literary salon");
+  it("merges body Signature into expression.signature", () => {
+    const { expression } = parseExpression(SAMPLE_MD);
+    expect(expression.signature).toContain("Long-form editorial layouts");
+  });
+
+  it("keeps direct expression references from frontmatter", () => {
+    const { expression } = parseExpression(SAMPLE_MD);
+    expect(expression.references).toEqual({
+      specs: ["src/styles/tokens.css"],
+      components: ["src/components/ui"],
+      examples: ["docs/examples/editorial.md"],
+    });
   });
 
   it("keeps observation tags (personality, resembles) from frontmatter", () => {
@@ -249,6 +259,22 @@ describe("serializeExpression round-trip", () => {
         personality: ["warm", "editorial"],
         resembles: ["notion"],
       },
+      signature:
+        "A readable editorial surface with warm neutrals and quietly structured controls.",
+      references: {
+        specs: ["src/styles/tokens.css"],
+        components: ["src/components/ui"],
+        examples: ["docs/examples/editorial.md"],
+      },
+      checks: [
+        {
+          id: "no-cool-neutrals",
+          canonical: "color-strategy",
+          kind: "color",
+          pattern: "#(?:0f172a|111827)",
+          support: 0.95,
+        },
+      ],
       decisions: [
         {
           dimension: "warm-only-neutrals",
@@ -283,6 +309,9 @@ describe("serializeExpression round-trip", () => {
     expect(expression.observation?.resembles).toEqual(
       fpWithProse.observation?.resembles,
     );
+    expect(expression.signature).toBe(fpWithProse.signature);
+    expect(expression.references).toEqual(fpWithProse.references);
+    expect(expression.checks).toEqual(fpWithProse.checks);
     expect(expression.decisions).toHaveLength(1);
     expect(expression.decisions?.[0].decision).toBe(
       fpWithProse.decisions?.[0].decision,

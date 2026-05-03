@@ -2,9 +2,9 @@
 name: map
 description: Author the map.md for a target — Ghost's topology card. The first stage of a scan.
 handoffs:
-  - label: Survey values into bucket.json
+  - label: Survey values into survey.json
     command: (next stage — survey recipe)
-    prompt: Survey the target's design values into bucket.json
+    prompt: Survey the target's design values into survey.json
   - label: Validate the map
     command: ghost-expression lint map.md
     prompt: Lint the map.md I just wrote
@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author a target's map.md
 
-**Goal:** produce a valid `map.md` (`ghost.map/v1`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, what feature areas matter for sampling. `map.md` is the first stage of a scan: every later stage (`survey.md` → `bucket.json`, `profile.md` → `expression.md`) reads it to skip rediscovery.
+**Goal:** produce a valid `map.md` (`ghost.map/v1`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, what feature areas matter for sampling. `map.md` is the first stage of a scan: every later stage (`survey.md` → `survey.json`, `profile.md` → `expression.md`) reads it to skip rediscovery.
 
 This recipe is *your* job. Ghost's CLI provides `ghost-expression inventory` (deterministic raw signals) and `ghost-expression lint <map.md>` (validation), but you do the synthesis.
 

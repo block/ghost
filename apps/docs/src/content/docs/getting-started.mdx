@@ -19,14 +19,14 @@ needs a reproducible answer.
 A scan runs in three stages, all owned by `ghost-expression`:
 
 ```
-topology       →     objective       →     subjective
-map.md               bucket.json           expression.md
-ghost.map/v1         ghost.bucket/v1       (the canonical artifact)
+map            →     survey          →     expression
+map.md               survey.json           expression.md
+ghost.map/v1         ghost.survey/v1       (the canonical artifact)
 ```
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| `ghost-expression` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `describe`, `diff`, `bucket <op>`, `emit` |
+| `ghost-expression` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `describe`, `diff`, `survey <op>`, `emit` |
 | `ghost-drift` | drift detection + governance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | `fleet.md` (elevation across members) | `members`, `view`, `emit skill` |
 | `ghost-ui` | reference design system (97 shadcn components) | — |
@@ -75,7 +75,7 @@ ghost-expression emit skill       # → .claude/skills/ghost-expression
 
 Each bundle ships its own `SKILL.md` plus recipes under `references/`:
 
-- **`ghost-expression`** — `scan.md` (meta-recipe orchestrating topology → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the topology stage), `survey.md` (write `bucket.json`, the objective stage), `profile.md` (interpret a bucket into `expression.md`, the subjective stage), `schema.md` (condensed format reference).
+- **`ghost-expression`** — `scan.md` (meta-recipe orchestrating map → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the map stage), `survey.md` (write `survey.json`, the survey stage), `profile.md` (interpret a survey into `expression.md`, the expression stage), `schema.md` (condensed format reference).
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 
@@ -100,27 +100,29 @@ Scan this design language end-to-end
 The `scan` recipe checkpoints between stages with `scan-status` and
 dispatches into the per-stage recipes:
 
-1. **Topology (`map.md`)** — the `map` recipe reads
+1. **Map (`map.md`)** — the `map` recipe reads
    `ghost-expression inventory` (raw repo signals) and writes a `map.md`
    describing where the design system lives. Validated by
    `ghost-expression lint map.md`.
-2. **Objective (`bucket.json`)** — the `survey` recipe walks the source
+2. **Survey (`survey.json`)** — the `survey` recipe walks the source
    exhaustively (writing dialect-specific greps; the recipe forbids
-   sampling) and writes a `bucket.json` cataloguing every concrete value,
-   token, and component. Validated by `ghost-expression lint bucket.json`.
-3. **Subjective (`expression.md`)** — the `profile` recipe interprets the
-   bucket as ground truth: assigns roles to values, names design decisions
-   in prose, and writes the `expression.md`. Cannot fabricate values not
-   in the bucket. Validated by `ghost-expression lint expression.md`.
+   sampling) and writes a `survey.json` cataloguing every concrete value,
+   token, and component. Validated by `ghost-expression lint survey.json`.
+3. **Expression (`expression.md`)** — the `profile` recipe interprets the
+   survey as ground truth: assigns roles to values, emits direct references,
+   names design decisions, writes Character and Signature, and produces the
+   `expression.md`. Cannot fabricate values not in the survey. Validated by
+   `ghost-expression lint expression.md`.
 
 If you only want one stage, ask for it directly: "map this repo", "survey
-the design values", "profile this expression from the bucket". The recipes
+the design values", "profile this expression from the survey". The recipes
 chain via `handoffs`, so the agent surfaces the next stage when ready.
 
 An **expression** is a two-layer Markdown file: YAML frontmatter is the
 machine layer (49-dim vector + palette, spacing, typography, surfaces,
-roles, rules), and the body is prose organized into Character and
-Decisions. Humans can read it. LLMs can consume it. Ghost's CLIs diff it.
+direct references, checks), and the body is prose organized into Character,
+Signature, and Decisions. Humans can read it. LLMs can consume it. Ghost's
+CLIs diff it.
 See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/expression.md)
 in this repo for a full real-world example.
 
@@ -131,7 +133,7 @@ ghost-expression scan-status
 # Validate any artifact (auto-detects the kind)
 ghost-expression lint                       # ./expression.md
 ghost-expression lint map.md                # ghost.map/v1
-ghost-expression lint bucket.json           # ghost.bucket/v1
+ghost-expression lint survey.json           # ghost.survey/v1
 ```
 
 </DocSection>
@@ -218,7 +220,7 @@ Ghost doubles as pipeline infrastructure for AI-generated UI. The
 expression grounds the generator; the `review` recipe gates the output.
 
 1. `ghost-expression emit context-bundle` — emit a grounding bundle from an
-   expression (SKILL.md + tokens.css + optional prompt.md) that any
+   expression (SKILL.md + expression.md + prompt.md + tokens.css) that any
    generator can consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
    with the bundle in context.

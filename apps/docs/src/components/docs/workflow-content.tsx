@@ -1333,7 +1333,7 @@ export function WorkflowContent() {
             {
               step: "ghost-expression emit context-bundle",
               name: "Ground",
-              desc: "Write SKILL.md + tokens.css + prompt.md from expression.md. Whatever the generator consumes.",
+              desc: "Write SKILL.md + expression.md + prompt.md + tokens.css from expression.md. Whatever the generator consumes.",
             },
             {
               step: "generate (recipe)",

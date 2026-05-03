@@ -34,6 +34,10 @@ const SAMPLE = `${FRONTMATTER}
 
 Brief.
 
+# Signature
+
+Recognizable posture.
+
 # Decisions
 
 ### color-strategy
@@ -74,11 +78,15 @@ describe("layoutExpression", () => {
     const decisions = layout.sections.find(
       (s) => s.kind === "body" && s.heading === "Decisions",
     );
+    const signature = layout.sections.find(
+      (s) => s.kind === "body" && s.heading === "Signature",
+    );
     const fragments = layout.sections.find(
       (s) => s.kind === "body" && s.heading === "Fragments",
     );
     expect(character?.start).toBeGreaterThan(fm?.end ?? 0);
-    expect(decisions?.start).toBeGreaterThan(character?.end ?? 0);
+    expect(signature?.start).toBeGreaterThan(character?.end ?? 0);
+    expect(decisions?.start).toBeGreaterThan(signature?.end ?? 0);
     expect(fragments?.start).toBeGreaterThan(decisions?.end ?? 0);
 
     const decisionBlocks = layout.sections.filter((s) => s.kind === "decision");
@@ -178,7 +186,12 @@ x
       .filter((s) => s.kind === "body")
       .map((s) => s.heading);
     expect(headings).toEqual(
-      expect.arrayContaining(["Character", "Decisions", "Fragments"]),
+      expect.arrayContaining([
+        "Character",
+        "Signature",
+        "Decisions",
+        "Fragments",
+      ]),
     );
 
     const dims = layout.sections

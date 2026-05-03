@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
-import type { BucketSource } from "./types.js";
+import type { SurveySource } from "./types.js";
 
 /**
- * Deterministic ID generation for bucket rows.
+ * Deterministic ID generation for survey rows.
  *
  * Two scans of the same `(target, commit)` over the same source content
  * must produce identical IDs so that re-merging is idempotent and git
- * diffs over `bucket.json` show only meaningful changes. Scans of
+ * diffs over `survey.json` show only meaningful changes. Scans of
  * different commits or different targets produce distinct IDs so that
  * fleet-wide merges preserve every observation.
  *
@@ -29,12 +29,12 @@ function digest(...parts: (string | undefined)[]): string {
   return hash.digest("hex").slice(0, ID_LENGTH);
 }
 
-function sourceKey(source: BucketSource): [string, string] {
+function sourceKey(source: SurveySource): [string, string] {
   return [source.target, source.commit ?? ""];
 }
 
 export function valueRowId(
-  source: BucketSource,
+  source: SurveySource,
   kind: string,
   value: string,
   raw: string,
@@ -43,12 +43,12 @@ export function valueRowId(
   return digest(target, commit, VALUE_TAG, kind, value, raw);
 }
 
-export function tokenRowId(source: BucketSource, name: string): string {
+export function tokenRowId(source: SurveySource, name: string): string {
   const [target, commit] = sourceKey(source);
   return digest(target, commit, TOKEN_TAG, name);
 }
 
-export function componentRowId(source: BucketSource, name: string): string {
+export function componentRowId(source: SurveySource, name: string): string {
   const [target, commit] = sourceKey(source);
   return digest(target, commit, COMPONENT_TAG, name);
 }

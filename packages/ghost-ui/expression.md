@@ -14,6 +14,18 @@ observation:
     - Vercel Geist
     - Linear
     - Apple Human Interface Guidelines
+references:
+  specs:
+    - src/styles/main.css
+    - src/styles/font-faces.css
+    - src/lib/theme-presets.ts
+    - registry.json
+  components:
+    - src/components/ui
+    - src/components/ai-elements
+  examples:
+    - README.md
+    - .shadcn/skills.md
 decisions:
   - dimension: color-strategy
   - dimension: surface-hierarchy
@@ -26,7 +38,7 @@ decisions:
   - dimension: interactive-patterns
   - dimension: density
   - dimension: font-sourcing
-rules:
+checks:
   - id: no-off-palette-hex
     canonical: color-strategy
     kind: color
@@ -211,6 +223,10 @@ surfaces:
 # Character
 
 A monochromatic, magazine-inspired design language that treats color as communication rather than decoration. The default palette is entirely achromatic — near-black on white — with hue reserved for semantic states and chart data. Pill-shaped interactive elements contrast with moderately rounded containers, and display typography pushes ultra-tight line-heights (0.85–0.88) with heavy negative tracking for an editorial spread aesthetic. It ships no bundled typefaces and is fully themeable at runtime through CSS custom property injection, with five non-default preset themes that prove the base architecture's range.
+
+# Signature
+
+Ghost UI's recognizable move is editorial contrast inside a component system: oversized magazine type and generous section whitespace surround compact pill controls, while surfaces stay mostly achromatic and semantic color appears only when it has a job. Outputs should feel like a designed catalogue or publishing surface, not a generic dashboard skin: strong type hierarchy first, precise component chrome second, with themeability preserved through existing CSS variable layers.
 
 # Decisions
 

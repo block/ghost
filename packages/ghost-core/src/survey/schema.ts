@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Zod schemas for `ghost.bucket/v1`.
+ * Zod schemas for `ghost.survey/v1`.
  *
  * The `kind` field on value rows is intentionally open (a plain string).
  * The validator does not reject unknown kinds — instead the lint step
@@ -9,7 +9,7 @@ import { z } from "zod";
  * blocking new scanners that emit experimental kinds.
  */
 
-const BucketSourceSchema = z.object({
+const SurveySourceSchema = z.object({
   id: z.string().min(1).optional(),
   role: z.enum(["primary", "resolver"]).optional(),
   target: z.string().min(1),
@@ -106,7 +106,7 @@ const ValueSpecSchema = z.union([
 
 const RowBaseSchema = z.object({
   id: z.string().min(1),
-  source: BucketSourceSchema,
+  source: SurveySourceSchema,
 });
 
 const ValueRowSchema = RowBaseSchema.extend({
@@ -137,19 +137,19 @@ const ComponentRowSchema = RowBaseSchema.extend({
   sizes: z.array(z.string()).optional(),
 });
 
-export const BucketSchema = z.object({
-  schema: z.literal("ghost.bucket/v1"),
-  sources: z.array(BucketSourceSchema).min(1),
+export const SurveySchema = z.object({
+  schema: z.literal("ghost.survey/v1"),
+  sources: z.array(SurveySourceSchema).min(1),
   values: z.array(ValueRowSchema),
   tokens: z.array(TokenRowSchema),
   components: z.array(ComponentRowSchema),
 });
 
 export {
-  BucketSourceSchema,
   ColorSpecSchema,
   ComponentRowSchema,
   ResolutionSchema,
+  SurveySourceSchema,
   TokenRowSchema,
   ValueRowSchema,
   ValueSpecSchema,

@@ -1,14 +1,14 @@
 import type {
-  Bucket,
-  BucketSource,
   ComponentRow,
   RowBase,
+  Survey,
+  SurveySource,
   TokenRow,
   ValueRow,
 } from "./types.js";
 
 /**
- * Merge N buckets into one. Concat semantics with id-based dedup.
+ * Merge N surveys into one. Concat semantics with id-based dedup.
  *
  * Two scans of the same `(target, commit)` produce rows with identical
  * IDs by construction — those rows are deduplicated to one (first wins).
@@ -18,19 +18,19 @@ import type {
  * `sources` becomes the union of input sources, also deduped on
  * `(id, role, target, commit)` so source-graph roles survive merges.
  *
- * Idempotent: `mergeBuckets(b)` == `b`. Commutative on the rowset (order
+ * Idempotent: `mergeSurveys(b)` == `b`. Commutative on the rowset (order
  * within sections may differ from input order but content is identical).
  */
-export function mergeBuckets(...buckets: Bucket[]): Bucket {
-  if (buckets.length === 0) {
-    throw new Error("mergeBuckets requires at least one input bucket");
+export function mergeSurveys(...surveys: Survey[]): Survey {
+  if (surveys.length === 0) {
+    throw new Error("mergeSurveys requires at least one input survey");
   }
   return {
-    schema: "ghost.bucket/v1",
-    sources: dedupSources(buckets.flatMap((b) => b.sources)),
-    values: dedupRows(buckets.flatMap((b) => b.values)),
-    tokens: dedupRows(buckets.flatMap((b) => b.tokens)),
-    components: dedupRows(buckets.flatMap((b) => b.components)),
+    schema: "ghost.survey/v1",
+    sources: dedupSources(surveys.flatMap((b) => b.sources)),
+    values: dedupRows(surveys.flatMap((b) => b.values)),
+    tokens: dedupRows(surveys.flatMap((b) => b.tokens)),
+    components: dedupRows(surveys.flatMap((b) => b.components)),
   };
 }
 
@@ -45,9 +45,9 @@ function dedupRows<T extends RowBase>(rows: T[]): T[] {
   return out;
 }
 
-function dedupSources(sources: BucketSource[]): BucketSource[] {
+function dedupSources(sources: SurveySource[]): SurveySource[] {
   const seen = new Set<string>();
-  const out: BucketSource[] = [];
+  const out: SurveySource[] = [];
   for (const source of sources) {
     const key = [
       source.id ?? "",
@@ -63,5 +63,5 @@ function dedupSources(sources: BucketSource[]): BucketSource[] {
 }
 
 // Type re-exports kept narrow so consumers don't have to import from `types.js`
-// just to use `mergeBuckets` results.
-export type { Bucket, BucketSource, ComponentRow, TokenRow, ValueRow };
+// just to use `mergeSurveys` results.
+export type { ComponentRow, Survey, SurveySource, TokenRow, ValueRow };

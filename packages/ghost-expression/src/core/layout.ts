@@ -56,8 +56,7 @@ export function layoutExpression(raw: string): ExpressionLayout {
     });
   }
 
-  // H1 body sections: # Character, # Decisions, # Fragments, …
-  // Legacy `# Signature` blocks parse here too as inert body sections.
+  // H1 body sections: # Character, # Signature, # Decisions, # Fragments, …
   const h1s = scanHeadings(lines, 1, bodyStart);
   for (let i = 0; i < h1s.length; i++) {
     const h = h1s[i];
@@ -128,8 +127,10 @@ function detectPartitions(yamlText: string): string[] {
     "spacing",
     "typography",
     "surfaces",
+    "references",
     "observation",
     "decisions",
+    "checks",
     "embedding",
   ];
   let keys: string[] = [];

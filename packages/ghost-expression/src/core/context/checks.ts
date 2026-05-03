@@ -1,13 +1,13 @@
-import type { DriftSeverity, Expression, Rule } from "@ghost/core";
+import type { Check, DriftSeverity, Expression } from "@ghost/core";
 import {
-  computeRuleSeverity,
+  computeCheckSeverity,
   resolveMatchShape,
   resolveTolerance,
 } from "@ghost/core";
 
-export interface ResolvedRule {
-  rule: Rule;
-  bucketCount: number;
+export interface ResolvedCheck {
+  check: Check;
+  surveyCount: number;
   severity: DriftSeverity;
   match: string;
   tolerance: number | undefined;
@@ -19,38 +19,37 @@ const SEVERITY_ORDER: Record<DriftSeverity, number> = {
   nit: 2,
 };
 
-export function resolveExpressionRules(fp: Expression): ResolvedRule[] {
-  return (fp.rules ?? []).map((rule) => {
-    const bucketCount = bucketCountForRule(rule, fp);
+export function resolveExpressionChecks(fp: Expression): ResolvedCheck[] {
+  return (fp.checks ?? []).map((check) => {
+    const surveyCount = surveyCountForCheck(check, fp);
     return {
-      rule,
-      bucketCount,
-      severity: computeRuleSeverity(rule, bucketCount),
-      match: resolveMatchShape(rule),
-      tolerance: resolveTolerance(rule),
+      check,
+      surveyCount,
+      severity: computeCheckSeverity(check, surveyCount),
+      match: resolveMatchShape(check),
+      tolerance: resolveTolerance(check),
     };
   });
 }
 
-export function bySeverityThenId(a: ResolvedRule, b: ResolvedRule): number {
+export function bySeverityThenId(a: ResolvedCheck, b: ResolvedCheck): number {
   return (
     SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] ||
-    a.rule.id.localeCompare(b.rule.id)
+    a.check.id.localeCompare(b.check.id)
   );
 }
 
 /**
- * Use rule-authored observed counts when present. Otherwise fall back to a
- * coarse proxy for bucket-count per canonical dimension, derived from the
- * structured frontmatter fields. v0 expressions don't carry the bucket
+ * Use check-authored observed counts when present. Otherwise fall back to a
+ * coarse proxy for survey-count per canonical dimension, derived from the
+ * structured frontmatter fields. v0 expressions don't carry the survey
  * directly; the proxy keeps presence-floor escalation deterministic until
- * the rule author supplies `observed_count` or `loadExpression` can return
- * the bucket alongside the expression.
+ * the check author supplies `observed_count`.
  */
-export function bucketCountForRule(rule: Rule, fp: Expression): number {
-  if (typeof rule.observed_count === "number") return rule.observed_count;
+export function surveyCountForCheck(check: Check, fp: Expression): number {
+  if (typeof check.observed_count === "number") return check.observed_count;
 
-  switch (rule.canonical) {
+  switch (check.canonical) {
     case "color-strategy":
       return (
         fp.palette.dominant.length +
@@ -77,7 +76,7 @@ export function bucketCountForRule(rule: Rule, fp: Expression): number {
     case "motion":
       // Motion isn't in structured fields; default to a count above
       // typical floors so escalation only happens via explicit author
-      // hint (rule.presence_floor: 2+).
+      // hint (check.presence_floor: 2+).
       return 100;
     default:
       // Unknown canonical -> leave room above floor 0 so escalation

@@ -8,24 +8,24 @@ Ghost closes that loop. It captures a brand as an **expression**: a human-readab
 
 ## BYOA: bring your own agent
 
-Every Ghost workflow runs in the host agent you already use — Claude Code, Codex, Cursor, Goose, whatever ships next. Each tool ships an [agentskills.io](https://agentskills.io)-compatible bundle of recipes for the interpretive work (profile, review, verify, remediate, fleet narrative); the agent loads the bundle, reads `expression.md` and `map.md`, makes the calls, and writes the artifacts. When it needs a reproducible number — vector distance between two expressions, schema validation, a structural diff — it calls the relevant Ghost CLI verb for the answer.
+Every Ghost workflow runs in the host agent you already use — Claude Code, Codex, Cursor, Goose, whatever ships next. Each tool ships an [agentskills.io](https://agentskills.io)-compatible bundle of recipes for the interpretive work (profile, review, verify, remediate, fleet narrative); the agent loads the bundle, reads the artifacts for that workflow, makes the calls, and writes the outputs. Scan workflows use `map.md` and `survey.json`; generation and drift use `expression.md` as the root. When the agent needs a reproducible number — vector distance between two expressions, schema validation, a structural diff — it calls the relevant Ghost CLI verb for the answer.
 
 No API key is required to run any CLI verb. Each tool's `emit skill` verb installs its bundle into your agent.
 
 ## The four tools
 
-Ghost is split into one responsibility per tool. A scan produces three artifacts in sequence — `map.md` (topology) → `bucket.json` (objective values) → `expression.md` (subjective interpretation) — all owned by `ghost-expression`.
+Ghost is split into one responsibility per tool. A scan produces three artifacts in sequence — `map.md` (map the system) → `survey.json` (survey what exists) → `expression.md` (express what it means) — all owned by `ghost-expression`.
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| **`ghost-expression`** | the three-stage scan pipeline (`map.md`, `bucket.json`, `expression.md`) | `inventory`, `lint`, `describe`, `diff`, `bucket <op>`, `emit` |
+| **`ghost-expression`** | the three-stage scan pipeline (`map.md`, `survey.json`, `expression.md`) | `inventory`, `lint`, `describe`, `diff`, `survey <op>`, `emit` |
 | **`ghost-drift`** | `.ghost/history.jsonl` + `.ghost-sync.json` — drift detection and stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | **`ghost-fleet`** | `fleet.md` — read-only elevation across many `(map.md, expression.md)` members | `members`, `view`, `emit skill` |
 | **`ghost-ui`** | A reference design system Ghost dogfoods — 97 shadcn components + an MCP server | (no verbs) |
 
 Scans are single-subject but may be multi-source. A `map.md` can declare a source graph where one `primary` source supplies usage and salience while one or more `resolver` sources supply concrete values for imported symbols. This lets an app expression describe the app in use without pretending the upstream design-system inventory is the app's language.
 
-`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v1` + `ghost.bucket/v1` schemas the three CLIs share.
+`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v1` + `ghost.survey/v1` schemas the three CLIs share.
 
 ## Why Ghost?
 
@@ -35,7 +35,7 @@ Ghost gives agents four capabilities the design-at-scale problem actually needs:
 - **Self-govern at author time**: the `review` and `verify` recipes (in the `ghost-drift` skill bundle) run an agent's output against the expression *before* a human sees it. Drift gets caught where it's cheap to fix, not after it ships.
 - **Detect drift at the right time**: PR-time (via `review`), generation-time (via `verify`), or org-time (via `ghost-drift compare` on N≥3 expressions, or `ghost-fleet view` for the full elevation). Timing is load-bearing: the same drift surfaced a month later is noise; surfaced inline, it's action.
 - **Remediate with structured intent**: `ack`, `track`, `diverge` are the three moves. Every stance is published with reasoning and full lineage. Drift without intent is noise; drift with intent becomes useful evidence.
-- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a prose body (Character, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, Ghost's CLIs diff them. No DSL to learn.
+- **Human-readable, diff-friendly**: `expression.md` is Markdown with YAML frontmatter (machine layer) plus a prose body (Character, Signature, Decisions). `map.md` is the same shape for topology. Humans read them, agents consume them, Ghost's CLIs diff them. No DSL to learn.
 
 ## Repo layout
 
@@ -43,8 +43,8 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v1` + `ghost.bucket/v1` schemas. | ❌ private (`@ghost/core`) |
-| [`packages/ghost-expression`](./packages/ghost-expression) | The three-stage scan pipeline: `map.md` topology → `bucket.json` objective → `expression.md` subjective. Authoring, lint, describe, diff, bucket ops, emit. | ✅ intended-public on npm |
+| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v1` + `ghost.survey/v1` schemas. | ❌ private (`@ghost/core`) |
+| [`packages/ghost-expression`](./packages/ghost-expression) | The three-stage scan pipeline: `map.md` → `survey.json` → `expression.md`. Authoring, lint, describe, diff, survey ops, emit. | ✅ intended-public on npm |
 | [`packages/ghost-drift`](./packages/ghost-drift) | Drift detection + governance verbs. | ✅ `ghost-drift` on npm |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet elevation across many members. | ❌ private |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
@@ -68,7 +68,7 @@ After install, in any repo:
 > Scan this project with ghost
 ```
 
-The agent walks `map.md` → `bucket.json` → `expression.md`, then emits a `/design-review` slash command tuned to your design language. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
+The agent walks `map.md` → `survey.json` → `expression.md`, then emits a `/design-review` slash command tuned to your design language. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
 
 If you want the deterministic CLI helpers (faster lint, embedding math, structural diff, fleet view), install from source instead — see *Getting Started* below.
 
@@ -107,14 +107,21 @@ ghost-expression inventory      # raw signals as JSON (the agent reads this to a
 ghost-expression lint map.md    # validate ./map.md against ghost.map/v1
 ```
 
-**2. Profile your design system** — ask your host agent to write `expression.md`. It'll follow the `profile` recipe and validate at the end. You validate manually with:
+**2. Survey the design values** (the observed evidence stage). Ask your host agent to write `survey.json`, then validate:
+
+```bash
+ghost-expression survey fix-ids survey.json -o survey.json
+ghost-expression lint survey.json
+```
+
+**3. Profile your design system** — ask your host agent to write `expression.md`. It'll follow the `profile` recipe and validate at the end. You validate manually with:
 
 ```bash
 ghost-expression lint                                   # defaults to ./expression.md
 ghost-expression lint path/to/expression.md --format json
 ```
 
-**3. Compare expressions:**
+**4. Compare expressions:**
 
 ```bash
 # Pairwise: per-dimension distance
@@ -130,7 +137,7 @@ ghost-drift compare before.md after.md --temporal
 ghost-drift compare *.expression.md
 ```
 
-**4. Track intent toward another expression:**
+**5. Track intent toward another expression:**
 
 ```bash
 ghost-drift ack --stance aligned --reason "Initial baseline"
@@ -138,15 +145,15 @@ ghost-drift track new-tracked.expression.md
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-**5. Emit derived artifacts** (these all live in `ghost-expression` now — they read your `expression.md`):
+**6. Emit derived artifacts** (these all live in `ghost-expression` now — they read your `expression.md`):
 
 ```bash
 ghost-expression emit review-command     # .claude/commands/design-review.md (per-project slash command)
-ghost-expression emit context-bundle     # ghost-context/ (SKILL.md + tokens.css + prompt.md)
+ghost-expression emit context-bundle     # ghost-context/ (SKILL.md + expression.md + prompt.md + tokens.css)
 ghost-expression emit skill              # .claude/skills/ghost-expression (the agentskills.io bundle)
 ```
 
-**6. Take the fleet elevation** (when you have ≥2 members each with their own `map.md` and `expression.md`):
+**7. Take the fleet elevation** (when you have ≥2 members each with their own `map.md` and `expression.md`):
 
 ```bash
 ghost-fleet members ./fleet     # list registered members + freshness
@@ -167,10 +174,10 @@ Verbs are scoped to the tool that owns the artifact. Pure inputs → pure output
 | Tool | Command | Description |
 | --- | --- | --- |
 | `ghost-expression` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-expression` | `lint` | Validate `expression.md`, `map.md`, or `bucket.json` — auto-detects by extension/content. |
+| `ghost-expression` | `lint` | Validate `expression.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
 | `ghost-expression` | `describe` | Print section ranges + token estimates so agents can selectively load. |
 | `ghost-expression` | `diff` | Structural prose-level diff between two expressions (NOT vector distance — for that, use `ghost-drift compare`). |
-| `ghost-expression` | `bucket <op>` | Operate on `ghost.bucket/v1` files. Ops: `merge` (concat with id-based dedup, idempotent), `fix-ids` (recompute ids from content). |
+| `ghost-expression` | `survey <op>` | Operate on `ghost.survey/v1` files. Ops: `merge` (concat with id-based dedup, idempotent), `fix-ids` (recompute ids from content). |
 | `ghost-expression` | `emit` | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
 | `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over expression embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
 | `ghost-drift` | `ack` | Record stance toward the tracked expression in `.ghost-sync.json`. |
@@ -188,7 +195,7 @@ The interpretive verbs from the pitch (*author, self-govern, detect, remediate*)
 | Recipe | Bundle | Capability | Triggered by |
 | --- | --- | --- | --- |
 | `map`       | `ghost-expression` | Author the topology card (stage 1) | "map this repo", "write map.md" |
-| `survey`    | `ghost-expression` | Author the bucket of values (stage 2) | "survey design values", "extract design tokens" |
+| `survey`    | `ghost-expression` | Author the survey of values (stage 2) | "survey design values", "extract design tokens" |
 | `profile`   | `ghost-expression` | Author the design language (stage 3) | "profile this design language", "write expression.md" |
 | `review`    | `ghost-drift` | Self-govern at PR time | "review this PR for drift" |
 | `verify`    | `ghost-drift` | Self-govern at generation time | "verify generated UI against the expression" |
@@ -215,15 +222,16 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter**: 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. The machine layer. Also `rules[]` — promoted, grep-friendly review rules with `observed_count` + `presence_floor` for codifying absences.
+- **Frontmatter**: direct `references`, 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. The machine layer. Also `checks[]` — human-promoted, grep-friendly review gates with `observed_count` + `presence_floor` for codifying absences.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
+- **`# Signature`**: the final-picture guidance — dominant moves, layout posture, and recognizable output habits.
 - **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
 
 Generate one with the `profile` recipe (in the `ghost-expression` skill bundle). See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown.
 
 ### The map
 
-What every Ghost tool reads to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-expression`, stage 1 of a scan): YAML frontmatter against the `ghost.map/v1` schema (languages, build system, package manifests, registry, design-system paths, UI surface globs, feature areas) plus a short prose body (Identity, Topology, Conventions). The repo's own `map.md` lives at the root.
+What Ghost uses during scan and fleet workflows to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-expression`, stage 1 of a scan): YAML frontmatter against the `ghost.map/v1` schema (languages, build system, package manifests, registry, design-system paths, UI surface globs, feature areas) plus a short prose body (Identity, Topology, Conventions). Generation and drift context starts from `expression.md`, not `map.md`. The repo's own `map.md` lives at the root.
 
 Generate one with the `map` recipe (in the `ghost-expression` skill bundle). The agent reads `ghost-expression inventory` (raw repo signals as JSON) and synthesizes the prose layer.
 
