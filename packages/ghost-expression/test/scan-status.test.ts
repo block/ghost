@@ -21,36 +21,36 @@ describe("scanStatus", () => {
 
   it("reports all-missing for an empty directory", async () => {
     const status = await scanStatus(dir);
-    expect(status.topology.state).toBe("missing");
-    expect(status.objective.state).toBe("missing");
-    expect(status.subjective.state).toBe("missing");
-    expect(status.recommended_next).toBe("topology");
+    expect(status.map.state).toBe("missing");
+    expect(status.survey.state).toBe("missing");
+    expect(status.expression.state).toBe("missing");
+    expect(status.recommended_next).toBe("map");
   });
 
-  it("recommends objective when only map.md exists", async () => {
+  it("recommends survey when only map.md exists", async () => {
     await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v1\n---\n");
     const status = await scanStatus(dir);
-    expect(status.topology.state).toBe("present");
-    expect(status.objective.state).toBe("missing");
-    expect(status.recommended_next).toBe("objective");
+    expect(status.map.state).toBe("present");
+    expect(status.survey.state).toBe("missing");
+    expect(status.recommended_next).toBe("survey");
   });
 
-  it("recommends subjective when map + bucket exist but expression is missing", async () => {
+  it("recommends expression when map + survey exist but expression is missing", async () => {
     await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v1\n---\n");
     await writeFile(
-      join(dir, "bucket.json"),
-      JSON.stringify({ schema: "ghost.bucket/v1" }),
+      join(dir, "survey.json"),
+      JSON.stringify({ schema: "ghost.survey/v1" }),
     );
     const status = await scanStatus(dir);
-    expect(status.topology.state).toBe("present");
-    expect(status.objective.state).toBe("present");
-    expect(status.subjective.state).toBe("missing");
-    expect(status.recommended_next).toBe("subjective");
+    expect(status.map.state).toBe("present");
+    expect(status.survey.state).toBe("present");
+    expect(status.expression.state).toBe("missing");
+    expect(status.recommended_next).toBe("expression");
   });
 
   it("returns recommended_next: null when every stage is present", async () => {
     await writeFile(join(dir, "map.md"), "x");
-    await writeFile(join(dir, "bucket.json"), "{}");
+    await writeFile(join(dir, "survey.json"), "{}");
     await writeFile(join(dir, "expression.md"), "y");
     const status = await scanStatus(dir);
     expect(status.recommended_next).toBeNull();
@@ -59,13 +59,13 @@ describe("scanStatus", () => {
   it("treats empty (zero-byte) artifacts as missing", async () => {
     await writeFile(join(dir, "map.md"), "");
     const status = await scanStatus(dir);
-    expect(status.topology.state).toBe("missing");
-    expect(status.recommended_next).toBe("topology");
+    expect(status.map.state).toBe("missing");
+    expect(status.recommended_next).toBe("map");
   });
 
   it("paths returned in the report are absolute", async () => {
     const status = await scanStatus(dir);
-    expect(status.topology.path.startsWith("/")).toBe(true);
+    expect(status.map.path.startsWith("/")).toBe(true);
     expect(status.dir).toBe(dir);
   });
 });

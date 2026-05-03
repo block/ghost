@@ -2,13 +2,15 @@ import type { DesignDecision } from "@ghost/core";
 
 /**
  * Structured read of an expression.md body. The body is authoritative for
- * prose — # Character and per-dimension rationale under # Decisions.
+ * prose — # Character, # Signature, and per-dimension rationale under # Decisions.
  * Machine-facts (dimension slugs, evidence, tokens) live in the
  * frontmatter and are joined in by `applyBody` during parse.
  */
 export interface BodyData {
   /** From `# Character` — authoritative source for DesignObservation.summary */
   character?: string;
+  /** From `# Signature` — recognizable output posture and dominant moves */
+  signature?: string;
   /** From `# Decisions` `### slug` blocks — dimension + prose rationale (no evidence) */
   decisions?: DesignDecision[];
 }
@@ -102,13 +104,13 @@ export function parseBody(md: string): BodyData {
     const h = sec.heading.toLowerCase();
     if (h.startsWith("character")) {
       out.character = sec.body;
+    } else if (h.startsWith("signature")) {
+      out.signature = sec.body;
     } else if (h.startsWith("decisions")) {
       const blocks = sectionsAt(sec.body, 3);
       if (blocks.length) out.decisions = blocks.map(parseDecision);
     }
-    // Other H1 sections (legacy `# Signature`, `# Fragments`, etc.) are
-    // ignored. Legacy `# Signature` blocks in older expression.md files
-    // parse as inert prose without contributing to the model.
+    // Other H1 sections (`# Fragments`, etc.) are ignored.
   }
   return out;
 }

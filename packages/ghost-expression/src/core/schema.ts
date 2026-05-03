@@ -77,18 +77,25 @@ const DesignDecisionSchema = z
   })
   .strict();
 
+const ExpressionReferencesSchema = z
+  .object({
+    specs: z.array(z.string()).optional(),
+    components: z.array(z.string()).optional(),
+    examples: z.array(z.string()).optional(),
+  })
+  .strict();
+
 /**
- * v0 reviewer rule: a grep-able pattern fitted to this expression's
- * design language. Severity, match shape, and tolerance are typically
- * computed at emit time from the perceptual prior in `@ghost/core`;
- * explicit fields here are overrides.
+ * Human-promoted reviewer check: a grep-able pattern fitted to this
+ * expression's design language. Severity, match shape, and tolerance are
+ * typically computed at emit time from the perceptual prior in
+ * `@ghost/core`; explicit fields here are overrides.
  *
- * Rules coexist with `decisions[]` during the v0 transition. Both are
- * optional. Lint validation of the perceptual prior (e.g. warning on
- * unrealistic tolerances) is not yet wired — the schema permits the
- * shape so authors can begin populating rules without lint rejection.
+ * Checks coexist with `decisions[]`; they are the curated review gates.
+ * Survey inference may propose candidates, but expression.md stores only
+ * checks the human intentionally promotes.
  */
-const RuleSchema = z
+const CheckSchema = z
   .object({
     id: z.string(),
     canonical: z.string().optional(),
@@ -150,12 +157,13 @@ export const FrontmatterSchema = z
     source: z.enum(["registry", "extraction", "llm", "unknown"]),
     timestamp: z.string(),
     sources: z.array(z.string()).optional(),
+    references: ExpressionReferencesSchema.optional(),
 
     // expression — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
-    /** v0 reviewer rules — optional during the transition. */
-    rules: z.array(RuleSchema).optional(),
+    /** Human-promoted review checks. */
+    checks: z.array(CheckSchema).optional(),
 
     // expression — structured (required)
     palette: PaletteSchema,
@@ -191,10 +199,11 @@ export const PartialFrontmatterSchema = z
     source: z.enum(["registry", "extraction", "llm", "unknown"]).optional(),
     timestamp: z.string().optional(),
     sources: z.array(z.string()).optional(),
+    references: ExpressionReferencesSchema.optional(),
 
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
-    rules: z.array(RuleSchema).optional(),
+    checks: z.array(CheckSchema).optional(),
 
     palette: PaletteSchema.optional(),
     spacing: SpacingSchema.optional(),

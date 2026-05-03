@@ -87,7 +87,7 @@ orientation_files:
 
 `ghost-ui` is the reference design system for the Ghost project — a private, registry-distributed component library that exists so the Ghost loop has a real, evolving system to describe. It ships **106 registry items**: 97 `registry:ui` components (49 shadcn-style UI primitives + 48 AI-native elements), 1 `registry:base`, 2 `registry:style`, 1 `registry:lib`, and 5 `registry:theme` presets. The package is `private` and is **not published to npm**; consumers `npx shadcn add` against `registry.json` or import the built library locally for workspace linking. The `ghost-mcp` bin (built from `src/mcp/`) ships alongside as an MCP server that re-exposes the registry to AI assistants.
 
-The system is single-design-language — the five non-default presets (`warm-sand`, `ocean`, `midnight-luxe`, `neon-brutalist`, `soft-pastel`) share the base shape and only override CSS custom properties — and is the canonical witness for the Ghost three-stage scan: `expression.md`, `bucket.json`, and `map.md` all live next to this file at the package root.
+The system is single-design-language — the five non-default presets (`warm-sand`, `ocean`, `midnight-luxe`, `neon-brutalist`, `soft-pastel`) share the base shape and only override CSS custom properties — and is the canonical witness for the Ghost three-stage scan: `expression.md`, `survey.json`, and `map.md` all live next to this file at the package root.
 
 ## Topology
 

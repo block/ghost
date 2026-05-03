@@ -26,7 +26,7 @@ That distinction helps generators pick relevant references instead of treating e
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and the expression.
 - **Registry** — `registry.json`, shadcn-compatible catalogue with `meta.expression` + `meta.expression_dimensions` extensions. Rebuilt by `just build-registry`.
 - **Expression** — `expression.md`, the canonical design description this system evolves by.
-- **Map** — `map.md`, the navigation card (identity / topology / conventions) that downstream Ghost tools read as the topology cache.
+- **Map** — `map.md`, the navigation card (identity / topology / conventions) that scan and fleet workflows read as the topology cache.
 
 ## Use
 

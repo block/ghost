@@ -116,7 +116,7 @@ export interface LoadOptions {
  *
  * If a `decisions/` directory sits next to the expression.md, each .md
  * inside is assembled into the expression's decisions[], merged by
- * dimension — allowing large systems to split their rules across files.
+ * dimension — allowing large systems to split their decision prose across files.
  */
 export async function loadExpression(
   path: string,

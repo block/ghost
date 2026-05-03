@@ -72,7 +72,7 @@ export function lintExpression(
   checkEvidenceHexes(expression, rawIssues);
   checkUnusedPalette(expression, rawIssues);
   checkNonCanonicalDimensions(expression, rawIssues);
-  checkRuleCuration(expression, rawIssues);
+  checkCheckCuration(expression, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -266,72 +266,72 @@ function checkNonCanonicalDimensions(
   });
 }
 
-const RULE_SUPPORT_FLOOR = 0.85;
+const CHECK_SUPPORT_FLOOR = 0.85;
 
 /**
- * Rules are the terminal drift contract, but the first pass stays advisory:
- * warn when promoted rules look under-supported or under-calibrated without
- * making older expressions fail lint.
+ * Checks are the terminal drift contract, but lint stays advisory: warn when
+ * promoted checks look under-supported or under-calibrated without making
+ * in-progress expressions fail lint.
  */
-function checkRuleCuration(fp: Expression, issues: LintIssue[]): void {
-  const rules = fp.rules ?? [];
-  if (rules.length === 0) {
+function checkCheckCuration(fp: Expression, issues: LintIssue[]): void {
+  const checks = fp.checks ?? [];
+  if (checks.length === 0) {
     issues.push({
       severity: "info",
-      rule: "rules-missing",
+      rule: "checks-missing",
       message:
-        "No promoted rules[] are present; review-command will use a coarse token fallback and generation context will be less enforceable.",
-      path: "rules",
+        "No promoted checks[] are present; review-command will use a coarse token fallback and generation context will be less enforceable.",
+      path: "checks",
     });
     return;
   }
 
-  rules.forEach((rule, idx) => {
-    const path = `rules[${idx}]`;
-    if (typeof rule.support !== "number") {
+  checks.forEach((check, idx) => {
+    const path = `checks[${idx}]`;
+    if (typeof check.support !== "number") {
       issues.push({
         severity: "info",
-        rule: "rule-support-missing",
+        rule: "check-support-missing",
         message:
-          "Promoted rules should record `support` so curators can tell whether the pattern is load-bearing.",
+          "Promoted checks should record `support` so curators can tell whether the pattern is load-bearing.",
         path: `${path}.support`,
       });
-    } else if (rule.support < RULE_SUPPORT_FLOOR) {
+    } else if (check.support < CHECK_SUPPORT_FLOOR) {
       issues.push({
         severity: "warning",
-        rule: "rule-support-low",
-        message: `Promoted rule \`${rule.id}\` has support ${rule.support.toFixed(2)}; rules below ${RULE_SUPPORT_FLOOR} are usually too noisy to enforce.`,
+        rule: "check-support-low",
+        message: `Promoted check \`${check.id}\` has support ${check.support.toFixed(2)}; checks below ${CHECK_SUPPORT_FLOOR} are usually too noisy to enforce.`,
         path: `${path}.support`,
       });
     }
 
-    if ((rule.enforce_at?.length ?? 0) === 0) {
+    if ((check.enforce_at?.length ?? 0) === 0) {
       issues.push({
         severity: "info",
-        rule: "rule-enforce-at-missing",
+        rule: "check-enforce-at-missing",
         message:
-          "Promoted rules should usually declare `enforce_at` so reviewers know which contexts to scan.",
+          "Promoted checks should usually declare `enforce_at` so reviewers know which contexts to scan.",
         path: `${path}.enforce_at`,
       });
     }
 
     if (
-      typeof rule.presence_floor === "number" &&
-      typeof rule.observed_count !== "number"
+      typeof check.presence_floor === "number" &&
+      typeof check.observed_count !== "number"
     ) {
       issues.push({
         severity: "warning",
-        rule: "rule-presence-floor-needs-observed-count",
+        rule: "check-presence-floor-needs-observed-count",
         message:
           "`presence_floor` needs `observed_count` to avoid calibrating absence from coarse frontmatter proxies.",
         path: `${path}.observed_count`,
       });
-    } else if (typeof rule.observed_count !== "number") {
+    } else if (typeof check.observed_count !== "number") {
       issues.push({
         severity: "info",
-        rule: "rule-observed-count-missing",
+        rule: "check-observed-count-missing",
         message:
-          "Promoted rules should record `observed_count` when calibrated from bucket evidence.",
+          "Promoted checks should record `observed_count` when calibrated from survey evidence.",
         path: `${path}.observed_count`,
       });
     }

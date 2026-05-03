@@ -17,7 +17,7 @@ input and gating the output, not running the generator.)
 ## Pipeline shape
 
 ```
-expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
+expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKILL.md / expression.md / prompt.md / tokens.css
                                               │
                                               ▼
                                        any generator
@@ -35,10 +35,12 @@ expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKI
 ### `ghost-expression emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
-`SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
-The generated `prompt.md` is a generation lens over the expression: Character
-sets feel, promoted Rules are non-negotiable gates, Decisions provide style
-direction, and Tokens provide the value set. It intentionally does not ask the
+`SKILL.md` + `expression.md` + `prompt.md` + `tokens.css` into
+`./ghost-context/`. The generated `prompt.md` is a generation lens over the
+expression: Character sets feel, Signature carries final-picture posture,
+References point to living specs/components/examples, Decisions provide style
+direction, Checks provide curated gates, and Tokens provide the portable value
+digest. It intentionally does not ask the
 generator to explain or cite decisions unless the user asks for explanation.
 
 Flags:
@@ -55,8 +57,8 @@ reads `SKILL.md`.
 
 Driven by the host agent. Loads the expression (the agent typically pulls
 just the sections it needs via `ghost-expression describe`), builds a system
-prompt from Character + promoted rules + Decisions + tokens, asks the underlying
-model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
+prompt from Character + Signature + References + Decisions + Checks + Tokens,
+asks the underlying model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
 recipe for self-check. Retries with drift feedback until it passes or the
 agent gives up.
 
@@ -114,11 +116,13 @@ Each layer has a concrete job somewhere in the loop:
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Rules** | Drift-sensitive moves the reviewer enforces and the generator must avoid; presence-floor rules codify load-bearing absences |
+| **Signature** | Final-picture guidance — dominant moves and output posture |
+| **References** | Direct paths to living specs, components, and examples |
+| **Checks** | Human-promoted drift gates; presence-floor checks codify load-bearing absences |
 | **Decisions** | Abstract pattern lookup the generator consults for specific choices |
 
 Terminal-impact rule: a fact belongs in the terminal expression only when it
-can change generated UI or a drift verdict. `bucket.json` can stay broad as
+can change generated UI or a drift verdict. `survey.json` can stay broad as
 evidence; `expression.md` should stay curated.
 
 If a layer doesn't pull weight somewhere, that's a signal the format is

@@ -1,46 +1,5 @@
 // --- Embedding primitives ---
 
-// --- Bucket (ghost.bucket/v1) ---
-export {
-  type BreakpointSpec,
-  BUCKET_FILENAME,
-  type Bucket,
-  type BucketLintIssue,
-  type BucketLintReport,
-  type BucketLintSeverity,
-  BucketSchema,
-  type BucketSource,
-  BucketSourceSchema,
-  type ColorSpec,
-  ColorSpecSchema,
-  type ComponentRow,
-  ComponentRowSchema,
-  componentRowId,
-  type LayoutPrimitiveSpec,
-  lintBucket,
-  type MotionSpec,
-  mergeBuckets,
-  type RadiusSpec,
-  RECOMMENDED_VALUE_KINDS,
-  type RecommendedValueKind,
-  type Resolution,
-  ResolutionSchema,
-  type RowBase,
-  recomputeBucketIds,
-  type ScalarUnit,
-  type ShadowSpec,
-  type SpacingSpec,
-  type TokenRow,
-  TokenRowSchema,
-  type TypographySpec,
-  tokenRowId,
-  type UnknownSpec,
-  type ValueRow,
-  ValueRowSchema,
-  type ValueSpec,
-  ValueSpecSchema,
-  valueRowId,
-} from "./bucket/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
 export {
   CANONICAL_DECISION_DIMENSIONS,
@@ -81,7 +40,7 @@ export {
 } from "./map/index.js";
 // --- Perceptual prior (drift severity calibration) ---
 export {
-  computeRuleSeverity,
+  computeCheckSeverity,
   DEFAULT_MATCH,
   DEFAULT_TOLERANCE,
   escalateForPresence,
@@ -96,11 +55,55 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
+// --- Survey (ghost.survey/v1) ---
+export {
+  type BreakpointSpec,
+  type ColorSpec,
+  ColorSpecSchema,
+  type ComponentRow,
+  ComponentRowSchema,
+  componentRowId,
+  type LayoutPrimitiveSpec,
+  lintSurvey,
+  type MotionSpec,
+  mergeSurveys,
+  type RadiusSpec,
+  RECOMMENDED_VALUE_KINDS,
+  type RecommendedValueKind,
+  type Resolution,
+  ResolutionSchema,
+  type RowBase,
+  recomputeSurveyIds,
+  type ScalarUnit,
+  type ShadowSpec,
+  type SpacingSpec,
+  SURVEY_FILENAME,
+  type Survey,
+  type SurveyLintIssue,
+  type SurveyLintReport,
+  type SurveyLintSeverity,
+  SurveySchema,
+  type SurveySource,
+  SurveySourceSchema,
+  type TokenRow,
+  TokenRowSchema,
+  type TypographySpec,
+  tokenRowId,
+  type UnknownSpec,
+  type ValueRow,
+  ValueRowSchema,
+  type ValueSpec,
+  ValueSpecSchema,
+  valueRowId,
+} from "./survey/index.js";
 // --- Target resolution ---
 export { resolveTarget } from "./target-resolver.js";
 
 // --- Shared types ---
 export type {
+  Check,
+  CheckKind,
+  CheckMatchShape,
   ColorRamp,
   ComponentMeta,
   CompositeCluster,
@@ -125,6 +128,7 @@ export type {
   Expression,
   ExpressionComparison,
   ExpressionHistoryEntry,
+  ExpressionReferences,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
@@ -137,9 +141,6 @@ export type {
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
-  Rule,
-  RuleKind,
-  RuleMatchShape,
   RuleSeverity,
   SampledFile,
   SampledMaterial,

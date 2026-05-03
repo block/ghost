@@ -15,6 +15,18 @@ observation:
   resembles:
     - shadcn-new-york
     - vercel-ai-elements
+references:
+  specs:
+    - libs/managerbot-ui/src/styles/theme.css
+    - libs/managerbot-ui/src/styles/globals.css
+    - libs/managerbot-ui/components.json
+  components:
+    - libs/managerbot-ui/src/components
+    - libs/managerbot-ui/src/components/ai-elements
+    - managerbot-web/src/components
+  examples:
+    - managerbot-web/src/routes
+    - managerbot-storybook
 decisions:
   - dimension: color-strategy
   - dimension: surface-hierarchy
@@ -25,7 +37,7 @@ decisions:
   - dimension: token-architecture
   - dimension: motion
   - dimension: font-sourcing
-rules:
+checks:
   - id: monochrome-semantic-default
     canonical: color-strategy
     kind: color
@@ -158,7 +170,7 @@ surfaces:
   shadowComplexity: layered
   borderUsage: minimal
 metadata:
-  bucket_id: managerbot-2026-04-30
+  survey_id: managerbot-2026-04-30
   ui_library: "@squareup/managerbot-ui"
   component_count: 103
   token_count: 459
@@ -181,6 +193,10 @@ sub-tree — 34 components for conversation, prompt input, reasoning,
 artifact, canvas, branch, plan, and tool — wired into the same token
 cascade as the primitive shell.
 
+# Signature
+
+Managerbot should read as a polished operational console for AI-assisted seller work: dense routes and chat surfaces, restrained monochrome structure, Square-brand typography, and color only when it communicates state, trend, or chart meaning. The recognizable output posture is shadcn-new-york discipline plus AI-native affordances, not marketing gloss.
+
 # Decisions
 
 ### color-strategy
@@ -200,7 +216,7 @@ the operating UI.
 - `--destructive: var(--red-600)` resolves to `oklch(50.42% 0.1991 28.41)`; `--success: var(--green-600) → oklch(47.54% 0.0986 161.50)`; `--warning: var(--yellow-200) → oklch(82.83% 0.1680 85.60)`
 - `--trend-up: var(--lime-600) → oklch(64.8% 0.2 131.684)`; `--trend-down: var(--orange-500) → oklch(70.5% 0.213 47.604)`
 - `cashapp-*` and `square-*` ramps declared (20 stops each) but never referenced from a semantic token
-- 396 color tokens / 338 distinct color values in the bucket
+- 396 color tokens / 338 distinct color values in the survey
 
 ### surface-hierarchy
 
@@ -229,7 +245,7 @@ radius they pick, not different families.
 
 **Evidence:**
 - `--radius-xs: 4px; --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px; --radius-2xl: 20px; --radius-3xl: 24px; --radius-4xl: 32px` (theme.css:988-995)
-- 8 radius tokens, 8 distinct radius values in the bucket — no aliases, no per-component radius
+- 8 radius tokens, 8 distinct radius values in the survey — no aliases, no per-component radius
 - `--border-width-hairline: 0.5px` and `@utility border-hairline` for sub-pixel dividers
 
 ### typography-voice
@@ -314,7 +330,7 @@ attributes and `motion`/`framer-motion` for entry/exit; no
 - `@keyframes highlights-progress-fill / -drain / -tab-fade-in` (globals.css:44-72)
 - `tw-animate-css` imported in globals.css:3 — provides `animate-in/out` utilities for Radix data-state
 - `motion` (catalog dep) and `framer-motion` (catalog dep) used in `managerbot-web` for entry transitions
-- 1 motion-kind token in the bucket — comparable repos with decorative motion register 5–15
+- 1 motion-kind token in the survey — comparable repos with decorative motion register 5–15
 
 ### font-sourcing
 
@@ -330,4 +346,4 @@ serif. There is no `--font-mono` or `--font-serif` token in the system.
 - `@font-face` x3 for Cash Sans (Regular/Medium/Medium-as-600), `font-display: swap` (globals.css:5-33)
 - Source: `https://cash-f.squarecdn.com/static/fonts/cashsans/woff2/CashSans-{Regular,Medium}.woff2`
 - `--font-sans: 'Cash Sans', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"` (theme.css:547)
-- No `--font-mono` or `--font-serif` declared in the bucket — code blocks rely on UA defaults via Tailwind's `font-mono` class
+- No `--font-mono` or `--font-serif` declared in the survey — code blocks rely on UA defaults via Tailwind's `font-mono` class

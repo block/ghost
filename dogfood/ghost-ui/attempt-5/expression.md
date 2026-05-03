@@ -118,10 +118,10 @@ surfaces:
 
 ### color-strategy
 
-Default UI color is mostly grayscale; hue is reserved for semantic state, charts, and optional runtime presets. The broad bucket has 141 color rows because bundled presets ship alternate palettes, but the default component contract still resolves most high-occurrence UI color through semantic tokens instead of ad hoc literals.
+Default UI color is mostly grayscale; hue is reserved for semantic state, charts, and optional runtime presets. The broad survey has 141 color rows because bundled presets ship alternate palettes, but the default component contract still resolves most high-occurrence UI color through semantic tokens instead of ad hoc literals.
 
 **Evidence:**
-- Bucket top color rows: `#ffffff` (385 occurrences), `#1a1a1a` (305), `#e8e8e8` (241), `#f0f0f0` (223), `#999999` (193).
+- Survey top color rows: `#ffffff` (385 occurrences), `#1a1a1a` (305), `#e8e8e8` (241), `#f0f0f0` (223), `#999999` (193).
 - Default neutral ladder appears as `#ffffff`, `#f5f5f5`, `#f0f0f0`, `#e8e8e8`, `#e5e5e5`, `#cccccc`, `#999999`, `#666666`, `#333333`, `#232323`, `#1a1a1a`, `#0a0a0a`, `#000000`.
 - Semantic/default hues are tokenized: danger `#f94b4b` / `#ff6b6b`, success `#91cb80` / `#a3d795`, info `#5c98f9` / `#7cacff`, warning `#fbcd44` / `#ffd966`.
 - Chart hues are a separate data palette: `#f6b44a`, `#7585ff`, `#d76a6a`, `#d185e0`, `#91cb80`.
@@ -212,6 +212,6 @@ Motion is practical, not absent. The scan found structural enter/exit atoms, dur
 The intended token architecture is semantic, but the faithful Tailwind atom pass exposed a real conflict: `main.css` resets `--color-*`, while several AI elements still use default Tailwind color families. Those atoms are unresolved locally and should be treated as lower-confidence scan evidence and likely drift from the semantic token contract.
 
 **Evidence:**
-- Bucket has 269 token rows: 240 declared CSS variable tokens plus 29 unresolved local Tailwind color token usages.
+- Survey has 269 token rows: 240 declared CSS variable tokens plus 29 unresolved local Tailwind color token usages.
 - Unresolved local tokens account for 103 occurrences, including `--color-red-400`, `--color-red-700`, `--color-green-400`, `--color-blue-600`, `--color-yellow-400`, `--color-orange-700`, and `--color-zinc-800`.
 - Resolved color class usage still dominates: 698 resolved color class occurrences versus 103 unresolved local color-token occurrences.

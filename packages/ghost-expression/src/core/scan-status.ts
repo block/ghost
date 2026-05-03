@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
-import { BUCKET_FILENAME, MAP_FILENAME } from "@ghost/core";
+import { MAP_FILENAME, SURVEY_FILENAME } from "@ghost/core";
 import { EXPRESSION_FILENAME } from "./index.js";
 
 /**
@@ -19,17 +19,17 @@ export interface ScanStageReport {
   path: string;
 }
 
-export type ScanStage = "topology" | "objective" | "subjective";
+export type ScanStage = "map" | "survey" | "expression";
 
 export interface ScanStatus {
   /** Absolute path to the scan directory. */
   dir: string;
-  topology: ScanStageReport;
-  objective: ScanStageReport;
-  subjective: ScanStageReport;
+  map: ScanStageReport;
+  survey: ScanStageReport;
+  expression: ScanStageReport;
   /**
    * The next stage an orchestrator should run, or `null` if every stage
-   * is `present`. Stages run in order: topology → objective → subjective.
+   * is `present`. Stages run in order: map → survey → expression.
    * The recommendation surfaces the first stage in `missing` state.
    */
   recommended_next: ScanStage | null;
@@ -40,9 +40,9 @@ export interface ScanStatus {
  *
  * Existence-only check today. The artifacts checked are:
  *
- *   - topology   → `map.md`
- *   - objective  → `bucket.json`
- *   - subjective → `expression.md`
+ *   - map        → `map.md`
+ *   - survey     → `survey.json`
+ *   - expression → `expression.md`
  *
  * Hash-keyed freshness (`.scan-meta.json` with input/output hashes per
  * stage) is the planned enhancement. For v1, orchestrators that want
@@ -52,35 +52,34 @@ export interface ScanStatus {
 export async function scanStatus(dirPath: string): Promise<ScanStatus> {
   const dir = resolve(dirPath);
   const mapPath = resolve(dir, MAP_FILENAME);
-  const bucketPath = resolve(dir, BUCKET_FILENAME);
+  const surveyPath = resolve(dir, SURVEY_FILENAME);
   const expressionPath = resolve(dir, EXPRESSION_FILENAME);
 
-  const [topologyPresent, objectivePresent, subjectivePresent] =
-    await Promise.all([
-      pathExists(mapPath),
-      pathExists(bucketPath),
-      pathExists(expressionPath),
-    ]);
+  const [mapPresent, surveyPresent, expressionPresent] = await Promise.all([
+    pathExists(mapPath),
+    pathExists(surveyPath),
+    pathExists(expressionPath),
+  ]);
 
-  const topology: ScanStageReport = {
-    state: topologyPresent ? "present" : "missing",
+  const map: ScanStageReport = {
+    state: mapPresent ? "present" : "missing",
     path: mapPath,
   };
-  const objective: ScanStageReport = {
-    state: objectivePresent ? "present" : "missing",
-    path: bucketPath,
+  const survey: ScanStageReport = {
+    state: surveyPresent ? "present" : "missing",
+    path: surveyPath,
   };
-  const subjective: ScanStageReport = {
-    state: subjectivePresent ? "present" : "missing",
+  const expression: ScanStageReport = {
+    state: expressionPresent ? "present" : "missing",
     path: expressionPath,
   };
 
   let recommended_next: ScanStage | null = null;
-  if (topology.state === "missing") recommended_next = "topology";
-  else if (objective.state === "missing") recommended_next = "objective";
-  else if (subjective.state === "missing") recommended_next = "subjective";
+  if (map.state === "missing") recommended_next = "map";
+  else if (survey.state === "missing") recommended_next = "survey";
+  else if (expression.state === "missing") recommended_next = "expression";
 
-  return { dir, topology, objective, subjective, recommended_next };
+  return { dir, map, survey, expression, recommended_next };
 }
 
 async function pathExists(path: string): Promise<boolean> {

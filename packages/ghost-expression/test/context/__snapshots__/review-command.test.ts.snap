@@ -130,10 +130,10 @@ Drift score: XX/100
 
 ## How this reviewer was calibrated
 
-Severity grouping reflects perceptual weight, not arithmetic. After overrides and presence-floor escalation, \`ghost-ui\` has 2 critical, 3 serious, and 2 nit rules. Base prior before escalation: 2 loud-tier, 3 structural-tier, and 2 rhythmic-tier.
+Severity grouping reflects perceptual weight, not arithmetic. After overrides and presence-floor escalation, \`ghost-ui\` has 2 critical, 3 serious, and 2 nit checks. Base prior before escalation: 2 loud-tier, 3 structural-tier, and 2 rhythmic-tier.
 
-Color and font-family rules are loud (critical) by default. Shape, elevation, surface, and interactive-pattern rules are structural (serious). Spacing, density, motion-detail, and theming rules are rhythmic (nit).
+Color and font-family checks are loud (critical) by default. Shape, elevation, surface, and interactive-pattern checks are structural (serious). Spacing, density, motion-detail, and theming checks are rhythmic (nit).
 
-Generated from \`expression.md\` (7 rules). Re-run \`ghost-expression emit review-command\` after expression updates.
+Generated from \`expression.md\` (7 checks). Re-run \`ghost-expression emit review-command\` after expression updates.
 "
 `;

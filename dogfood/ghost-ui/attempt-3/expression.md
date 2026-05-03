@@ -28,7 +28,7 @@ decisions:
   - dimension: interactive-patterns
   - dimension: density
   - dimension: font-sourcing
-rules:
+checks:
   - id: no-off-palette-hex
     canonical: color-strategy
     kind: color

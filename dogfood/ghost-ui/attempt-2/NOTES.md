@@ -11,7 +11,7 @@ Second dogfood after the survey-recipe tightening (commit `916e728`) and the okl
 | `components[]` | 6 | 97 | 97 `registry:ui` items in `registry.json` — **100% recall** ✓ |
 | `libraries[]` | 6 | 42 | 42 design-surface deps in `package.json` (27 radix primitives + 15 others) — **100% recall** ✓ |
 
-The bucket file is 242 KB (vs 21 KB in attempt 1). Exhaustiveness is expensive in disk; honest is what matters.
+The survey file is 242 KB (vs 21 KB in attempt 1). Exhaustiveness is expensive in disk; honest is what matters.
 
 ## Decision-level coverage
 
@@ -34,7 +34,7 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 ## What the recipe tightening produced
 
-1. **The agent wrote a script.** Following "use shell tools, identify the canonical signal" the agent generated `build-bucket.mjs` (pinned alongside the artifacts) that:
+1. **The agent wrote a script.** Following "use shell tools, identify the canonical signal" the agent generated `build-survey.mjs` (pinned alongside the artifacts) that:
    - Walks `main.css` line-by-line, scope-aware (`@theme`, `:root`, `.dark`), captures every `--name: value` declaration with by_theme cascade.
    - Reads `registry.json` and emits one component row per `registry:ui` item.
    - Categorizes every `package.json` dependency by design surface (icons, primitives, motion, charts, forms, dates, command, toast, drawer, etc.).
@@ -42,7 +42,7 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 2. **No leading repo-specific guidance was needed.** The recipe just said "find the canonical signal." For ghost-ui that's `registry.json`, `package.json`, and `main.css`. For a different repo it would be different files. Recipe stays agnostic.
 
-3. **Pattern-naming worked.** `surface-hierarchy`, `theming-architecture`, `font-sourcing`, `density`, `interactive-patterns`, `elevation` all read as patterns rather than restated tokens. That's the prose discipline the existing pre-bucket expression had.
+3. **Pattern-naming worked.** `surface-hierarchy`, `theming-architecture`, `font-sourcing`, `density`, `interactive-patterns`, `elevation` all read as patterns rather than restated tokens. That's the prose discipline the existing pre-survey expression had.
 
 ## Bug fixes verified
 
@@ -51,7 +51,7 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 ## What's still imperfect
 
-- **Spacing scale messiness**: attempt 2 records 22 distinct px values in the spacing scale. Real ghost-ui has a coherent rem-based component-height system (2rem, 2.75rem, 3rem, 3.25rem) layered on top of an ad-hoc px scatter (1, 2, 3, 4, 6, 8, 10, 12...). The bucket captured both honestly; the expression flattened them into a single `spacing.scale` array. A future iteration might split rem-component-height from px-utility values explicitly in the spec.
+- **Spacing scale messiness**: attempt 2 records 22 distinct px values in the spacing scale. Real ghost-ui has a coherent rem-based component-height system (2rem, 2.75rem, 3rem, 3.25rem) layered on top of an ad-hoc px scatter (1, 2, 3, 4, 6, 8, 10, 12...). The survey captured both honestly; the expression flattened them into a single `spacing.scale` array. A future iteration might split rem-component-height from px-utility values explicitly in the spec.
 - **No dark-mode-specific rows for tokens that diverge between themes**: each token has a `by_theme` field when light/dark differ, but value-level dark-mode rows aren't separate rows. That's by design but worth noting.
 - **The agent's heuristic categorizers** (e.g. "999px → radius, 1440px → breakpoint, others → spacing") are still heuristics. Misclassifications are possible; cross-checking against `map.md` topology would catch them.
 
@@ -63,4 +63,4 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 1. **The script-driven extraction pattern is right.** The recipe should explicitly mention this — "for repos where canonical signals are programmatically enumerable (registry, manifest, named CSS declarations), generate a small extraction script and run it. Don't hand-author hundreds of rows."
 2. **Spacing kind heuristics should fall through to `map.md` signals when ambiguous.** A 999px scalar is a radius in this repo because `--radius-pill: 999px`; a 1440px scalar is a breakpoint because `--breakpoint-desktop: 1440px`. The agent caught both; the recipe could codify the heuristic.
-3. **The script is pinned alongside artifacts.** Anyone re-running the same target gets the same bucket. Reproducibility is a side-benefit of script-driven extraction.
+3. **The script is pinned alongside artifacts.** Anyone re-running the same target gets the same survey. Reproducibility is a side-benefit of script-driven extraction.

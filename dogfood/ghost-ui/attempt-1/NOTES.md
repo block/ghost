@@ -1,17 +1,17 @@
 # Attempt 1 — ghost-ui scan, 2026-04-29
 
-First end-to-end dogfood of the new three-stage scan pipeline (`map.md` → `bucket.json` → `expression.md`) against `packages/ghost-ui`. Authored by an agent (Claude Opus 4.7) following the bundled `map.md`, `survey.md`, `profile.md` skill recipes. All three artifacts lint clean.
+First end-to-end dogfood of the new three-stage scan pipeline (`map.md` → `survey.json` → `expression.md`) against `packages/ghost-ui`. Authored by an agent (Claude Opus 4.7) following the bundled `map.md`, `survey.md`, `profile.md` skill recipes. All three artifacts lint clean.
 
 ## What worked
 
 - Pipeline ran end-to-end: every stage produced a lint-clean artifact.
-- `bucket fix-ids` worked as designed — agent authored rows with `"id": ""`, finalized in one pass.
+- `survey fix-ids` worked as designed — agent authored rows with `"id": ""`, finalized in one pass.
 - Schema flexed across every value kind (`color`, `spacing`, `radius`, `shadow`, `breakpoint`, `motion`, `typography`, `layout-primitive`).
 - Token alias chains captured the 3-deep indirection cleanly (`--color-foreground` → `--foreground` → `--text-default` → `--color-gray-900`).
 
 ## What failed
 
-### 1. Bucket recall ~10–20%
+### 1. Survey recall ~10–20%
 
 Massive undercount across every section:
 
@@ -40,7 +40,7 @@ Missed four load-bearing decisions named in the prior expression.md (authored un
 
 ### 4. Decision naming bias
 
-The new bucket-grounded recipe produced more literal/technical names (`color-strategy`, `shape-language`, `shadow-hierarchy`) where the existing expression named patterns at a more useful abstraction (`surface-hierarchy`, `elevation`, `theming-architecture`, `interactive-patterns`). The recipe should reinforce "name the pattern, not the value."
+The new survey-grounded recipe produced more literal/technical names (`color-strategy`, `shape-language`, `shadow-hierarchy`) where the existing expression named patterns at a more useful abstraction (`surface-hierarchy`, `elevation`, `theming-architecture`, `interactive-patterns`). The recipe should reinforce "name the pattern, not the value."
 
 ### 5. Bug in self-distance check (separate from the recipe)
 

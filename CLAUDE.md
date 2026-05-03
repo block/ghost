@@ -2,9 +2,9 @@
 
 Agents can ship UI now. The problem: what they ship drifts — wrong palette, wrong density, wrong hierarchy — because they have no canonical answer to "what does this project's design language *actually* look like."
 
-Ghost is the layer that gives them one. The design language lives in your repo as `expression.md`. Agents read it before generating, compare against it after, and either correct the drift or codify the divergence as a deliberate change. A scan runs in three stages — topology (`map.md`) → objective (`bucket.json`) → subjective (`expression.md`) — all owned by `ghost-expression`. Four tools plus a reference design system split the loop:
+Ghost is the layer that gives them one. The design language lives in your repo as `expression.md`. Agents read it before generating, compare against it after, and either correct the drift or codify the divergence as a deliberate change. A scan runs in three stages — map (`map.md`) → survey (`survey.json`) → express (`expression.md`) — all owned by `ghost-expression`. Four tools plus a reference design system split the loop:
 
-- **ghost-expression** — authors all three scan artifacts (`map.md`, `bucket.json`, `expression.md`); the canonical home of the design language
+- **ghost-expression** — authors all three scan artifacts (`map.md`, `survey.json`, `expression.md`); the canonical home of the design language
 - **ghost-drift** — when generated UI strays
 - **ghost-fleet** — how the language propagates across many projects
 - **ghost-ui** — a reference design system to test the loop against
@@ -63,9 +63,9 @@ The repo decomposes into **four tools plus a reference design system**, each wit
 
 ```
 @ghost/core       library only — embedding math, target resolver, skill loader,
-                                  ghost.map/v1 schema, ghost.bucket/v1 schema
-ghost-expression  scan pipeline (map.md → bucket.json → expression.md)
-                                   — inventory, lint, describe, diff, bucket, emit
+                                  ghost.map/v1 schema, ghost.survey/v1 schema
+ghost-expression  scan pipeline (map.md → survey.json → expression.md)
+                                   — inventory, lint, describe, diff, survey, emit
 ghost-drift       drift     (.ghost/*)      — compare, ack, track, diverge, emit skill
 ghost-fleet       elevation (fleet.md)      — members, view, emit skill
 ghost-ui          reference design system   — 97 shadcn components + MCP server
@@ -85,9 +85,9 @@ Each tool lives under `packages/<tool>/` with the same shape:
 
 | Package | Published? | Description |
 |---------|-----------|-------------|
-| `packages/ghost-core` | ❌ private (`@ghost/core`) | Workspace-only library. Embedding math, shared types, target resolution, skill-bundle loader, `ghost.map/v1` schema, `ghost.bucket/v1` schema + lint/merge/fix-ids primitives. No CLI. Consumed by every other tool. |
+| `packages/ghost-core` | ❌ private (`@ghost/core`) | Workspace-only library. Embedding math, shared types, target resolution, skill-bundle loader, `ghost.map/v1` schema, `ghost.survey/v1` schema + lint/merge/fix-ids primitives. No CLI. Consumed by every other tool. |
 | `packages/ghost-drift` | ✅ `ghost-drift` on npm (v0.2+) | Drift detection. CLI verbs: `compare`, `ack`, `track`, `diverge`, `emit skill`. Skill recipes: `compare.md`, `review.md`, `verify.md`, `remediate.md`. Old `lint`/`describe`/`emit review-command`/`emit context-bundle` stay registered as stub commands that point users to `ghost-expression`. |
-| `packages/ghost-expression` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the three-stage scan pipeline (`map.md` topology → `bucket.json` objective → `expression.md` subjective). CLI verbs: `lint` (auto-detects file kind), `inventory`, `describe`, `diff`, `bucket <op>` (merge / fix-ids), `emit` (kinds: `review-command`, `context-bundle`, `skill`). Skill recipes: `map.md`, `survey.md`, `profile.md`, `schema.md`. |
+| `packages/ghost-expression` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the three-stage scan pipeline (`map.md` → `survey.json` → `expression.md`). CLI verbs: `lint` (auto-detects file kind), `inventory`, `describe`, `diff`, `survey <op>` (merge / fix-ids), `emit` (kinds: `review-command`, `context-bundle`, `skill`). Skill recipes: `map.md`, `survey.md`, `profile.md`, `schema.md`. |
 | `packages/ghost-fleet` | ❌ private | Read-only elevation across many `(map.md, expression.md)` members. CLI verbs: `members`, `view`, `emit skill`. Skill recipes: `target.md`. |
 | `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm. Also ships the `ghost-mcp` bin (`src/mcp/`, built via `tsconfig.mcp.json` → `dist-mcp/`) — an MCP server re-exposing the registry to AI assistants (5 tools, 2 resources). |
 | `apps/docs` | ❌ private | The deployed docs site (`ghost-docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `ghost-ui`. |
@@ -99,11 +99,11 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 | Tool | Command | Description |
 |------|---------|-------------|
 | `ghost-expression` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-expression` | `scan-status [dir]` | Report which scan stages have produced artifacts (`map.md` / `bucket.json` / `expression.md`) and which stage to run next. |
-| `ghost-expression` | `lint [file]` | Validate `expression.md`, `map.md`, or `bucket.json` — auto-detects the kind from path/content. |
+| `ghost-expression` | `scan-status [dir]` | Report which scan stages have produced artifacts (`map.md` / `survey.json` / `expression.md`) and which stage to run next. |
+| `ghost-expression` | `lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` — auto-detects the kind from path/content. |
 | `ghost-expression` | `describe [expression]` | Print section ranges + token estimates (so agents can selectively load). |
 | `ghost-expression` | `diff <a> <b>` | Structural prose-level diff between expressions (decisions + palette roles). **Not** vector distance. |
-| `ghost-expression` | `bucket <op> [...buckets]` | Operate on `ghost.bucket/v1` files. Ops: `merge` (concat with id-based dedup), `fix-ids` (recompute IDs from content). |
+| `ghost-expression` | `survey <op> [...surveys]` | Operate on `ghost.survey/v1` files. Ops: `merge` (concat with id-based dedup), `fix-ids` (recompute IDs from content). |
 | `ghost-expression` | `emit <kind>` | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
 | `ghost-drift` | `compare [...expressions]` | Pairwise (N=2) or composite (N≥3) over expression embeddings. `--semantic`, `--temporal`. |
 | `ghost-drift` | `ack` | Record a stance toward the tracked expression in `.ghost-sync.json`. |
@@ -116,10 +116,10 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 
 **Workflows (agent recipes).** Each tool ships its own skill-bundle references under `packages/<tool>/src/skill-bundle/references/`. These are the agent's job, not CLI verbs:
 
-- **Scan** (orchestrate topology → survey → profile end-to-end) — `ghost-expression/.../scan.md`
+- **Scan** (orchestrate map → survey → profile end-to-end) — `ghost-expression/.../scan.md`
 - **Map** (write `map.md` from a repo, the topology stage) — `ghost-expression/.../map.md`
-- **Survey** (write `bucket.json` from a target, the objective stage) — `ghost-expression/.../survey.md`
-- **Profile** (interpret a `bucket.json` into `expression.md`, the subjective stage) — `ghost-expression/.../profile.md`
+- **Survey** (write `survey.json` from a target, the observed evidence stage) — `ghost-expression/.../survey.md`
+- **Profile** (interpret a `survey.json` into `expression.md`, the expression stage) — `ghost-expression/.../profile.md`
 - **Review** (flag drift in PR changes) — `ghost-drift/.../review.md`
 - **Verify** (generate → review loop) — `ghost-drift/.../verify.md`
 - **Compare interpretation** — `ghost-drift/.../compare.md`
@@ -144,8 +144,8 @@ Used by `resolveTrackedExpression` (in `ghost-drift`) and legacy library consume
 Three artifacts produced in sequence by a scan, all owned by `ghost-expression`:
 
 - **`map.md`** — the topology card (stage 1). Human-readable answer to "where is the design system, which folders matter?" Schema is `ghost.map/v1` (lives in `@ghost/core`), validated by `ghost-expression lint map.md`. Authored from `ghost-expression inventory` + the `map.md` skill recipe. The repo's own `map.md` lives at the root.
-- **`bucket.json`** — the objective scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens and components observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.bucket/v1` (lives in `@ghost/core`); three sections — `values`, `tokens`, `components`. External libraries (icons, primitives, charting) deliberately *do not* have a bucket section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*; load-bearing library choices surface as prose evidence in the interpreter stage. Validated by `ghost-expression lint bucket.json`. Authored via the `survey.md` skill recipe.
-- **`expression.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: 49-dim embedding + palette/spacing/typography/surfaces/roles) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `bucket.json` per the `profile.md` skill recipe. See `docs/expression-format.md` for the full spec; the condensed reference ships at `packages/ghost-expression/src/skill-bundle/references/schema.md`.
+- **`survey.json`** — the observed evidence scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens and components observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.survey/v1` (lives in `@ghost/core`); three sections — `values`, `tokens`, `components`. External libraries (icons, primitives, charting) deliberately *do not* have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*; load-bearing library choices surface as prose evidence in the interpreter stage. Validated by `ghost-expression lint survey.json`. Authored via the `survey.md` skill recipe.
+- **`expression.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: references + 49-dim embedding + palette/spacing/typography/surfaces/checks) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `survey.json` per the `profile.md` skill recipe. See `docs/expression-format.md` for the full spec; the condensed reference ships at `packages/ghost-expression/src/skill-bundle/references/schema.md`.
 
 ## Releasing & Changesets
 

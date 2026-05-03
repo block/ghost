@@ -4,14 +4,16 @@ A Ghost **expression** is a single Markdown file that captures what a design lan
 
 The file has two parts, and each owns **different data**:
 
-1. **Frontmatter (YAML)** — the **machine layer**. Identity, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, `rules[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
-2. **Body (Markdown)** — the **prose layer**. Character paragraph, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
+1. **Frontmatter (YAML)** — the **machine layer**. Identity, direct references, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, human-promoted `checks[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
+2. **Body (Markdown)** — the **prose layer**. Character, Signature, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
 
 Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-config default for every Ghost command that reads an expression.
 
-Current schema generation: **5**.
+Current schema generation: **6**.
+
+Schema 6 restores `# Signature` as first-class final-picture guidance, adds direct `references:` (`specs`, `components`, `examples`), and uses `checks[]` for human-promoted drift gates. `map.md` and `survey.json` are scan inputs; they are not prompt context.
 
 Schema 5 moved decision evidence from frontmatter into the body — each `### dimension` block now carries its rationale prose followed by an optional `**Evidence:**` bullet list. Schema 4's frontmatter `decisions[].evidence` is no longer accepted (`.strict()` rejects it).
 
@@ -28,12 +30,14 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | Expression field | Lives in | Section / key |
 |---|---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
+| `references.specs`, `references.components`, `references.examples` | Frontmatter | `references:` |
 | `observation.personality`, `observation.resembles` | Frontmatter | `observation:` |
 | `observation.summary` | **Body** | `# Character` |
+| `signature` | **Body** | `# Signature` |
 | `decisions[].dimension`, `decisions[].embedding` | Frontmatter | `decisions:` entry |
 | `decisions[].decision` (prose rationale) | **Body** | `### dimension` block |
 | `decisions[].evidence` | **Body** | `**Evidence:**` bullet list under `### dimension` |
-| `rules[]` | Frontmatter | `rules:` entry |
+| `checks[]` | Frontmatter | `checks:` entry |
 | `palette`, `spacing`, `typography`, `surfaces` | Frontmatter | top-level |
 | `embedding` (49-dim vector) | **Sibling file** | `embedding.md` (referenced from `# Fragments`) |
 | `metadata` (loose extension bag) | Frontmatter | top-level, open-ended |
@@ -68,6 +72,14 @@ timestamp: 2026-04-18T00:00:00Z
 sources:                          # optional, lists the targets that were combined
   - github:anthropics/claude-code
   - https://claude.ai
+references:
+  specs:
+    - src/styles/tokens.css
+    - src/theme/index.ts
+  components:
+    - src/components/ui
+  examples:
+    - docs/examples/dashboard.md
 
 # --- expression: narrative tags ---
 # NOTE: prose (summary, decision rationale) and the
@@ -84,9 +96,9 @@ decisions:
   - dimension: warm-only-neutrals
   - dimension: serif-headlines
 
-# Optional promoted drift-review rules. Candidate rules stay outside the
+# Optional promoted drift-review checks. Candidate checks stay outside the
 # file until a human curator promotes them.
-rules:
+checks:
   - id: no-off-palette-hex
     canonical: color-strategy
     kind: color
@@ -134,10 +146,10 @@ surfaces:
 ```
 
 **Required:** `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
-**Optional:** `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
+**Optional:** `references` (direct paths to living spec/component/example sources), `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
 
-**Optional promoted rules:** `rules[]`. These are grep-friendly review rules selected by a curator; candidate rules do not belong in the canonical file.
+**Optional promoted checks:** `checks[]`. These are grep-friendly review gates selected by a curator; candidate checks do not belong in the canonical file.
 **Optional meta:** `name`, `slug`, `generator`, `confidence`, `generated`, `sources`, `extends`.
 **Forbidden in frontmatter:** `observation.summary`, `decisions[].decision`, `decisions[].evidence`, and any unknown root key (e.g. `schema:`). These either live in the body (prose / evidence) or are not part of the schema.
 
@@ -153,6 +165,10 @@ The body owns prose and evidence. Four section kinds, all optional, in this orde
 # Character
 
 A literary salon reimagined as a product page — warm, unhurried.
+
+# Signature
+
+Long editorial layouts, warm neutral surfaces, and quiet controls that let prose and hierarchy carry the experience.
 
 # Decisions
 
@@ -313,7 +329,7 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 | `ghost-expression lint [path]` | Check schema validity, orphan prose, missing rationale, broken palette citations |
 | `ghost-drift compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
 | `ghost-drift compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
-| `ghost-expression emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `tokens.css`) |
+| `ghost-expression emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `prompt.md` + `tokens.css`) |
 | `ghost-expression emit review-command` | Emit a per-project drift-review slash command (`.claude/commands/design-review.md`) |
 | `ghost-drift emit skill` | Install the `ghost-drift` skill bundle into your host agent |
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T17:56:29.010Z",
+  "generatedAt": "2026-05-03T18:52:50.824Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -201,7 +201,7 @@
           "tool": "ghost-expression",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate expression.md, map.md, or bucket.json — auto-detects the kind from path/content",
+          "description": "Validate expression.md, map.md, or survey.json — auto-detects the kind from path/content",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -217,7 +217,7 @@
           "tool": "ghost-expression",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
-          "description": "Report which scan stages have produced artifacts in a directory: topology (map.md), objective (bucket.json), subjective (expression.md). Tells orchestrators which stage to run next.",
+          "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), expression (expression.md). Tells orchestrators which stage to run next.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -270,9 +270,9 @@
         },
         {
           "tool": "ghost-expression",
-          "name": "bucket",
-          "rawName": "bucket <op> [...buckets]",
-          "description": "Operate on ghost.bucket/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+          "name": "survey",
+          "rawName": "survey <op> [...surveys]",
+          "description": "Operate on ghost.survey/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
           "options": [
             {
               "rawName": "-o, --out <path>",

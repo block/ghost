@@ -11,13 +11,13 @@ slug: cli
 
 The CLIs are the calculator your host agent reaches for when it needs a
 reproducible answer. A scan produces three artifacts in sequence — **`map.md`**
-(topology) → **`bucket.json`** (objective) → **`expression.md`** (subjective) —
+(map the system) → **`survey.json`** (survey what exists) → **`expression.md`** (express what it means) —
 all owned by `ghost-expression`. Most commands accept a path; they default to
 `./expression.md` for kind-aware verbs.  No API key required.
 
 Verbs are scoped to the tool that owns the artifact:
 
-- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `describe`, `diff`, `bucket <op>`, `emit`
+- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `describe`, `diff`, `survey <op>`, `emit`
 - **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
 
@@ -33,9 +33,9 @@ this reference — so these docs can't drift from the binaries.
 
 <DocSection title="ghost-expression — authoring & validation">
 
-`ghost-expression` owns the three-stage scan pipeline: `map.md` (topology) →
-`bucket.json` (objective) → `expression.md` (subjective). Verbs cover
-inventory + lint + describe + diff + bucket ops + emit. Drift detection
+`ghost-expression` owns the three-stage scan pipeline: `map.md` →
+`survey.json` → `expression.md`. Verbs cover
+inventory + lint + describe + diff + survey ops + emit. Drift detection
 lives separately in `ghost-drift`.
 
 ### Topology — `inventory`
@@ -57,8 +57,8 @@ ghost-expression inventory ../other-repo
 
 ### Pipeline progress — `scan-status`
 
-Report which scan stages have produced artifacts in a directory: topology
-(`map.md`), objective (`bucket.json`), subjective (`expression.md`). Tells
+Report which scan stages have produced artifacts in a directory: map
+(`map.md`), survey (`survey.json`), expression (`expression.md`). Tells
 orchestrators which stage to run next. Pure file-presence check today;
 hash-keyed freshness is a planned enhancement.
 
@@ -78,37 +78,37 @@ ghost-expression scan-status . --format json
 Output reports each stage as `present` or `missing` and surfaces the
 recommended next stage (or "scan complete" when every artifact is present).
 
-### Bucket ops — `bucket <op>`
+### Survey ops — `survey <op>`
 
-Operate on `ghost.bucket/v1` files. Two ops today:
+Operate on `ghost.survey/v1` files. Two ops today:
 
 - **`merge`** — concat with id-based dedup, deterministic and idempotent.
   The composition primitive: modular rollups (one repo, N feature modules)
-  and fleet cohort views (N members merged into one cohort bucket) both
-  reduce to bucket merge.
+  and fleet cohort views (N members merged into one cohort survey) both
+  reduce to survey merge.
 - **`fix-ids`** — recompute every row's `id` from its content. The survey
   recipe instructs the agent to author rows with `"id": ""` and finalize
   with this verb in one pass — agents don't compute SHA-256 hashes by hand.
 
-<CliHelp tool="ghost-expression" command="bucket" hideDescription />
+<CliHelp tool="ghost-expression" command="survey" hideDescription />
 
 ```bash
-# Merge two buckets
-ghost-expression bucket merge a.json b.json -o merged.json
+# Merge two surveys
+ghost-expression survey merge a.json b.json -o merged.json
 
-# Merge a directory of bucket files
-ghost-expression bucket merge fleet/members/*/bucket.json -o cohort.json
+# Merge a directory of survey files
+ghost-expression survey merge fleet/members/*/survey.json -o cohort.json
 
 # Populate IDs after authoring rows with empty id fields
-ghost-expression bucket fix-ids draft.json -o draft.json
+ghost-expression survey fix-ids draft.json -o draft.json
 
 # Stream output to stdout if -o is omitted
-ghost-expression bucket merge a.json b.json | jq '.values | length'
+ghost-expression survey merge a.json b.json | jq '.values | length'
 ```
 
 ### Validation — `lint`
 
-Validate `expression.md`, `map.md`, or `bucket.json` against its schema —
+Validate `expression.md`, `map.md`, or `survey.json` against its schema —
 auto-detects which by `.json` extension, `schema: ghost.map/v1` frontmatter,
 or filename. Use this before declaring an artifact valid; every authoring
 recipe ends by calling it.
@@ -122,8 +122,8 @@ ghost-expression lint
 # Validate a map.md (auto-detected by frontmatter)
 ghost-expression lint map.md
 
-# Validate a bucket.json
-ghost-expression lint bucket.json
+# Validate a survey.json
+ghost-expression lint survey.json
 
 # JSON output
 ghost-expression lint path/to/expression.md --format json
@@ -132,7 +132,7 @@ ghost-expression lint path/to/expression.md --format json
 ### Inspection — `describe`
 
 Print a section map of `expression.md` — frontmatter range, body sections
-(`# Character`, `# Decisions`, `# Fragments`), and each
+(`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
 `### dimension` block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
@@ -162,10 +162,11 @@ Sample output (against `packages/ghost-ui/expression.md`):
 ```text
 expression.md — 309 lines, ~3,955 tokens
 
-FRONTMATTER    1–164      ~973 tok        [palette, spacing, typography, surfaces, roles, observation, decisions]
+FRONTMATTER    1–164      ~973 tok        [references, palette, spacing, typography, surfaces, checks, observation, decisions]
 # Character      166–169    ~159 tok
-# Decisions      170–305    ~2,800 tok
-  ### color-strategy           172–182    ~250 tok
+# Signature      170–174    ~120 tok
+# Decisions      175–305    ~2,800 tok
+  ### color-strategy           177–187    ~250 tok
   ### shape-language           195–206    ~181 tok
   ### typography-voice         207–219    ~258 tok
   …
@@ -193,7 +194,7 @@ ghost-expression diff a.md b.md --format json
 
 Derive an artifact from `expression.md`. Kinds: `review-command` (a
 per-project slash command at `.claude/commands/design-review.md`),
-`context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
+`context-bundle` (SKILL.md + expression.md + prompt.md + tokens.css for any
 generator), or `skill` (the `ghost-expression` agentskills.io bundle —
 install this into your host agent for the `profile` recipe).
 
@@ -343,9 +344,9 @@ once, then ask your agent in plain English:
 
 | Recipe     | Bundle             | Trigger                                                |
 | ---------- | ------------------ | ------------------------------------------------------ |
-| `scan`     | `ghost-expression` | "scan this project" / "go end-to-end" — meta-recipe orchestrating topology → survey → profile |
+| `scan`     | `ghost-expression` | "scan this project" / "go end-to-end" — meta-recipe orchestrating map → survey → profile |
 | `map`      | `ghost-expression` | "map this repo" / "write map.md" (topology stage)      |
-| `survey`   | `ghost-expression` | "survey design values" / "extract tokens" (objective)  |
+| `survey`   | `ghost-expression` | "survey design values" / "extract tokens"              |
 | `profile`  | `ghost-expression` | "profile this design language" / "write expression.md" |
 | `review`   | `ghost-drift`      | "review this PR for drift"                              |
 | `verify`   | `ghost-drift`      | "verify generated UI against the expression"           |

@@ -28,7 +28,7 @@ describe("emitReviewCommand", () => {
     expect(out).toMatch(/\$ARGUMENTS/);
   });
 
-  it("includes only true semantic hues in the serious rules table", () => {
+  it("includes only true semantic hues in the serious checks table", () => {
     const fp = minimalExpression();
     fp.palette.semantic = [
       { role: "danger", value: "#ff0000" },
@@ -107,9 +107,9 @@ describe("emitReviewCommand", () => {
   });
 });
 
-describe("emitReviewCommand — rules[]-driven path", () => {
-  it("groups rules by computed severity (Critical / Serious / Nit)", () => {
-    const fp = withRules([
+describe("emitReviewCommand — checks[]-driven path", () => {
+  it("groups checks by computed severity (Critical / Serious / Nit)", () => {
+    const fp = withChecks([
       {
         id: "no-off-palette-hex",
         canonical: "color-strategy",
@@ -132,16 +132,16 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     expect(out).toMatch(/^## Serious \(1\)$/m);
     expect(out).toMatch(/^## Nit \(1\)$/m);
 
-    // Critical block holds the color rule
+    // Critical block holds the color check
     const critical = sliceSection(out, "Critical");
     expect(critical).toMatch(/no-off-palette-hex/);
     expect(critical).not.toMatch(/pill-interactives/);
 
-    // Serious block holds the shape rule
+    // Serious block holds the shape check
     const serious = sliceSection(out, "Serious");
     expect(serious).toMatch(/pill-interactives/);
 
-    // Nit block holds the spacing rule
+    // Nit block holds the spacing check
     const nit = sliceSection(out, "Nit");
     expect(nit).toMatch(/spacing-on-scale/);
   });
@@ -149,7 +149,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   it("escalates severity when presence_floor crosses zero", () => {
     // motion canonical is rhythmic-tier (default nit). A zero observed count
     // crossing the floor escalates one tier → Serious.
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "no-decorative-motion",
         canonical: "motion",
@@ -161,11 +161,11 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     const out = emitReviewCommand({ expression: fp });
     expect(out).toMatch(/^## Serious \(1\)$/m);
     expect(out).not.toMatch(/^## Nit/m);
-    expect(out).toMatch(/has 0 critical, 1 serious, and 0 nit rules/);
+    expect(out).toMatch(/has 0 critical, 1 serious, and 0 nit checks/);
   });
 
   it("respects explicit severity overrides", () => {
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "force-critical-spacing",
         canonical: "spatial-system",
@@ -177,8 +177,8 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     expect(out).toMatch(/^## Critical \(1\)$/m);
   });
 
-  it("renders pattern, match shape, and tolerance per rule", () => {
-    const fp = withRules([
+  it("renders pattern, match shape, and tolerance per check", () => {
+    const fp = withChecks([
       {
         id: "spacing-on-scale",
         canonical: "spatial-system",
@@ -192,7 +192,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 
   it("renders rationale as blockquote when provided", () => {
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "no-off-palette-hex",
         canonical: "color-strategy",
@@ -205,7 +205,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 
   it("renders support percentage", () => {
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "pill-interactives",
         canonical: "shape-language",
@@ -218,7 +218,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 
   it("renders observed count when provided", () => {
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "no-decorative-motion",
         canonical: "motion",
@@ -232,7 +232,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 
   it("includes a calibration footer that names the prior", () => {
-    const fp = withRules([
+    const fp = withChecks([
       {
         id: "no-off-palette-hex",
         canonical: "color-strategy",
@@ -245,8 +245,8 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     expect(out).toMatch(/1 loud-tier/);
   });
 
-  it("notes which rules escalated via presence-floor in the calibration footer", () => {
-    const fp = withRules([
+  it("notes which checks escalated via presence-floor in the calibration footer", () => {
+    const fp = withChecks([
       {
         id: "no-decorative-motion",
         canonical: "motion",
@@ -261,20 +261,20 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     );
   });
 
-  it("falls back to structured-fallback path when rules[] is absent", () => {
+  it("falls back to structured-fallback path when checks[] is absent", () => {
     const fp = minimalExpression();
-    fp.rules = undefined; // explicit
+    fp.checks = undefined; // explicit
     const out = emitReviewCommand({ expression: fp });
-    // Old path emits "## 1. Palette drift" — rules-driven never does
+    // Fallback path emits "## 1. Palette drift" — checks-driven never does
     expect(out).toMatch(/## 1\. Palette drift/);
     expect(out).toMatch(/## Calibration note/);
-    expect(out).toMatch(/no promoted `rules\[\]`/);
+    expect(out).toMatch(/no promoted `checks\[\]`/);
     expect(out).toMatch(/coarse token fallback/);
     expect(out).not.toMatch(/^## Critical/m);
   });
 
-  it("uses the rules-driven path when rules[] is non-empty even with decisions[] present", () => {
-    const fp = withRules([
+  it("uses the checks-driven path when checks[] is non-empty even with decisions[] present", () => {
+    const fp = withChecks([
       {
         id: "no-off-palette-hex",
         canonical: "color-strategy",
@@ -291,9 +291,9 @@ describe("emitReviewCommand — rules[]-driven path", () => {
   });
 });
 
-function withRules(rules: Expression["rules"]): Expression {
+function withChecks(checks: Expression["checks"]): Expression {
   const fp = minimalExpression();
-  fp.rules = rules;
+  fp.checks = checks;
   return fp;
 }
 

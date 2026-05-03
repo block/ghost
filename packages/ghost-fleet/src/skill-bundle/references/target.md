@@ -57,7 +57,7 @@ Read `tracks` and answer:
 
 ## Always
 
-- Cite. Every claim in the body should be traceable to a number in the frontmatter or to an axis bucket.
+- Cite. Every claim in the body should be traceable to a number in the frontmatter or to an axis survey.
 - Use the same member ids the frontmatter uses. Don't rename.
 - Keep the partition. Numbers in frontmatter; interpretation in body.
 

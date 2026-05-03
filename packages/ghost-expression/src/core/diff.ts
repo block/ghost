@@ -159,6 +159,9 @@ function changedColors(
 function diffTokens(a: Expression, b: Expression): TokenChange[] {
   const out: TokenChange[] = [];
   const pairs: Array<[string, unknown, unknown]> = [
+    ["signature", a.signature, b.signature],
+    ["references", a.references, b.references],
+    ["checks", a.checks, b.checks],
     ["spacing.scale", a.spacing?.scale, b.spacing?.scale],
     ["spacing.baseUnit", a.spacing?.baseUnit, b.spacing?.baseUnit],
     ["typography.sizeRamp", a.typography?.sizeRamp, b.typography?.sizeRamp],
