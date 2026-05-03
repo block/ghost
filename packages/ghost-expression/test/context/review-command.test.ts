@@ -161,6 +161,7 @@ describe("emitReviewCommand — rules[]-driven path", () => {
     const out = emitReviewCommand({ expression: fp });
     expect(out).toMatch(/^## Serious \(1\)$/m);
     expect(out).not.toMatch(/^## Nit/m);
+    expect(out).toMatch(/has 0 critical, 1 serious, and 0 nit rules/);
   });
 
   it("respects explicit severity overrides", () => {

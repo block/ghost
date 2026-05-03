@@ -7,10 +7,11 @@ import {
 } from "../src/decision-vocabulary.js";
 
 describe("CANONICAL_DECISION_DIMENSIONS", () => {
-  it("contains the documented 12 dimensions", () => {
-    expect(CANONICAL_DECISION_DIMENSIONS).toHaveLength(12);
+  it("contains the documented 13 dimensions", () => {
+    expect(CANONICAL_DECISION_DIMENSIONS).toHaveLength(13);
     expect(CANONICAL_DECISION_DIMENSIONS).toContain("color-strategy");
     expect(CANONICAL_DECISION_DIMENSIONS).toContain("font-sourcing");
+    expect(CANONICAL_DECISION_DIMENSIONS).toContain("composition-patterns");
   });
 
   it("has no duplicates", () => {
@@ -51,12 +52,14 @@ describe("closestCanonical", () => {
     expect(closestCanonical("corner-treatment")).toBe("shape-language");
     expect(closestCanonical("shadow-system")).toBe("elevation");
     expect(closestCanonical("theme-system")).toBe("theming-architecture");
+    expect(closestCanonical("response-shapes")).toBe("composition-patterns");
   });
 
   it("falls back to token affinity for novel slugs", () => {
     expect(closestCanonical("color-cadence")).toBe("color-strategy");
     expect(closestCanonical("custom-shadow-language")).toBe("elevation");
     expect(closestCanonical("fancy-motion-rules")).toBe("motion");
+    expect(closestCanonical("article-patterns")).toBe("composition-patterns");
   });
 
   it("returns null when no canonical wins clearly", () => {

@@ -20,6 +20,7 @@ A four-layer demonstration:
 2. **CI runs map → expression → drift on every PR.** Eats own dog food. If a PR moves the design system without updating expression, drift fails. If map.md goes stale (a new component category appears), map catches it.
 3. **Augments registry.json with optional `meta.expression`.** Points at the package's expression.md. Drift consumers can opt into per-component attribution.
 4. **Per-component dimension tags.** Each component in registry.json carries an optional `meta.expression_dimensions: [palette, radius]` declaring which design dimensions the component primarily expresses. Drift uses this for higher-confidence attribution.
+5. **Shape-aware exemplar tags.** Examples can distinguish atoms from composed response shapes with optional `meta.exemplar_kind: "atom" | "shape"` and `meta.response_shapes: ["article" | "tracker" | "comparison" | "card"]`. This gives generators a narrow reference set before they compose a freeform answer.
 
 All four layers are optional from the tool side. Tools degrade gracefully when they're absent. ghost-ui is the place they're maximally present.
 
@@ -48,6 +49,8 @@ Today's registry.json is shadcn-shaped. The extension is purely additive metadat
 The shadcn schema doesn't care about `meta`. Other registries (boss-ui, future shadcn variants) can adopt the convention without coordination — same way `keywords` works in `package.json`.
 
 If `meta.expression` is missing, drift falls back to repo-wide compare. If `meta.expression_dimensions` is missing, drift attributes to the component but not to specific dimensions. Pure progressive enhancement.
+
+For exemplar metadata, `atom` means a primitive control such as badge, button, cell, or input. `shape` means a composed output: article for plans/timelines/worksheets, tracker for metrics/progress/reviews, comparison for tradeoffs/options, and card for compact focused recommendations. Card is one shape, not the default layout for every generated answer.
 
 ## CI loop — the demo
 
@@ -116,5 +119,6 @@ This is the natural extension — the MCP becomes a one-stop registry server: "g
 2. Generate the canonical `map.md` for ghost-ui (manual until `ghost map` ships, then regenerate).
 3. Add `meta.expression` to the existing registry.json. One field, no breaking changes.
 4. Pick 5–10 components, add `meta.expression_dimensions` to each. Validate the dimension vocabulary feels right.
-5. Draft the GitHub Actions workflow. Run it on a draft PR end-to-end before announcing.
-6. Document the convention in the package README so other registries can adopt — this is the part that turns ghost-ui from "our reference" into "the reference."
+5. Tag the example catalogue as atoms vs shapes where examples are composed outputs, then validate whether agents select narrower references.
+6. Draft the GitHub Actions workflow. Run it on a draft PR end-to-end before announcing.
+7. Document the convention in the package README so other registries can adopt — this is the part that turns ghost-ui from "our reference" into "the reference."

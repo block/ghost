@@ -29,6 +29,7 @@ observation:
 decisions:
   - dimension: color-strategy            # freeform slug
   - dimension: spatial-system
+  - dimension: composition-patterns      # optional: response/output shapes
 
 # promoted review rules — optional. Candidate rules stay outside the file
 # until a human curator promotes them.
@@ -100,6 +101,13 @@ Prose rationale for the spatial-system decision.
 **Evidence:**
 - `--space-4: 16px`
 
+### composition-patterns
+
+Prose rationale for how generated outputs should choose article, tracker, comparison, card, or control-surface shapes. Use this when the project has examples or docs that prove composition is part of the design language.
+
+**Evidence:**
+- `registry examples distinguish atom demos from shape demos`
+
 # Fragments
 
 - [embedding](embedding.md)
@@ -127,3 +135,5 @@ Putting prose into frontmatter is a schema error. The writer and reader both enf
     ghost-expression lint expression.md
 
 This catches schema violations, missing required fields, prose-in-frontmatter, orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa), and uncited palette entries (info-level — palette colors not cited in any decision evidence/prose).
+
+Canonical decision dimensions include `composition-patterns` for task-shaped output structure: article for plans/timelines/worksheets, tracker for metrics/progress/reviews, comparison for tradeoffs/options, and card for compact focused recommendations or repeated peer items. Card is one shape, not the default form of every generated answer.

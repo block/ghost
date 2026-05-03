@@ -111,6 +111,18 @@ describe("writeContextBundle", () => {
     expect(prompt).not.toContain("# Signature");
   });
 
+  it("prompt.md names the lower-enforcement state when rules are absent", async () => {
+    const res = await writeContextBundle(EXPRESSION, {
+      outDir: dir,
+      promptOnly: true,
+    });
+    const prompt = await readFile(res.files[0], "utf-8");
+    expect(prompt).toContain("# Rule Status");
+    expect(prompt).toContain("No promoted `rules[]` are present");
+    expect(prompt).toContain("no promoted rules have been curated yet");
+    expect(prompt).not.toContain("use the rules as gates");
+  });
+
   it("prompt.md renders a generation lens with severity-sorted rules", async () => {
     const res = await writeContextBundle(
       {

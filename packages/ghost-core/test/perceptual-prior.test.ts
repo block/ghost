@@ -28,13 +28,14 @@ describe("PERCEPTUAL_TIER", () => {
 
   it("places shape-language and elevation in structural", () => {
     expect(PERCEPTUAL_TIER["shape-language"]).toBe("structural");
-    expect(PERCEPTUAL_TIER["elevation"]).toBe("structural");
+    expect(PERCEPTUAL_TIER.elevation).toBe("structural");
+    expect(PERCEPTUAL_TIER["composition-patterns"]).toBe("structural");
   });
 
   it("places spatial-system, density, motion in rhythmic", () => {
     expect(PERCEPTUAL_TIER["spatial-system"]).toBe("rhythmic");
-    expect(PERCEPTUAL_TIER["density"]).toBe("rhythmic");
-    expect(PERCEPTUAL_TIER["motion"]).toBe("rhythmic");
+    expect(PERCEPTUAL_TIER.density).toBe("rhythmic");
+    expect(PERCEPTUAL_TIER.motion).toBe("rhythmic");
   });
 });
 

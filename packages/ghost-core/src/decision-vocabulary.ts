@@ -15,9 +15,10 @@
  * group by `dimension_kind` (or by `dimension` when it's already
  * canonical) so the decision-overlap distance axis becomes meaningful.
  *
- * The list below was derived from the actual decisions produced by
- * profiling ghost-ui — these are not invented categories, they are the
- * orthogonal-ish axes that one real expression already surfaces.
+ * The list below started from the actual decisions produced by profiling
+ * ghost-ui, then absorbed dogfood learnings where generated UI needed a
+ * first-class place for task-shaped composition rather than treating every
+ * answer as a generic card stack.
  */
 export const CANONICAL_DECISION_DIMENSIONS = [
   "color-strategy",
@@ -32,6 +33,7 @@ export const CANONICAL_DECISION_DIMENSIONS = [
   "interactive-patterns",
   "token-architecture",
   "font-sourcing",
+  "composition-patterns",
 ] as const;
 
 export type CanonicalDecisionDimension =
@@ -106,6 +108,15 @@ const SYNONYMS: Readonly<Record<string, CanonicalDecisionDimension>> = {
   "font-strategy": "font-sourcing",
   "font-loading": "font-sourcing",
   "font-bundling": "font-sourcing",
+  // composition-patterns
+  "composition-shape": "composition-patterns",
+  "composition-shapes": "composition-patterns",
+  "response-shape": "composition-patterns",
+  "response-shapes": "composition-patterns",
+  "output-shape": "composition-patterns",
+  "output-shapes": "composition-patterns",
+  "layout-patterns": "composition-patterns",
+  "exemplar-shapes": "composition-patterns",
 };
 
 /**
@@ -162,6 +173,12 @@ const TOKEN_HINTS: ReadonlyArray<
   ["cascade", "token-architecture"],
   ["font", "font-sourcing"],
   ["typeface", "font-sourcing"],
+  ["composition", "composition-patterns"],
+  ["response", "composition-patterns"],
+  ["output", "composition-patterns"],
+  ["article", "composition-patterns"],
+  ["tracker", "composition-patterns"],
+  ["comparison", "composition-patterns"],
 ];
 
 /**

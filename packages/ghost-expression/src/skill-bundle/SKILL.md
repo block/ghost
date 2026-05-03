@@ -58,6 +58,8 @@ An `expression.md` has:
 - **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `rules[]`, `palette`, `spacing`, `typography`, `surfaces`.
 - **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
 
+When profiling for generation, capture positive range as well as constraints. A restrained system should still say how it creates variety: editorial scale, shaped composition, semantic/data color, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Use `composition-patterns` when examples show article, tracker, comparison, card, or control-surface shapes.
+
 Each field lives in exactly one layer — no duplication. Putting prose in frontmatter is a lint error. Full spec: [references/schema.md](references/schema.md). Starting template: [assets/expression.template.md](assets/expression.template.md).
 
 ## Always
