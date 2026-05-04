@@ -3,11 +3,14 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  formatSurveySummaryMarkdown,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
   type Survey,
   type SurveyLintReport,
+  type SurveySummaryBudget,
+  summarizeSurvey,
 } from "@ghost/core";
 import { cac } from "cac";
 import {
@@ -31,8 +34,8 @@ import { registerEmitCommand } from "./emit-command.js";
  * `lint` (schema check, auto-detects file kind), `describe` (section ranges
  * + token estimates for expressions), `diff` (structural prose-level diff
  * between two expressions), `emit` (derive review-command, context-bundle,
- * or skill artifacts), and `survey merge` (deterministic union of N
- * `ghost.survey/v2` files into one).
+ * or skill artifacts), and `survey` operations for deterministic
+ * `ghost.survey/v2` merge, ID repair, and bounded summary output.
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -218,17 +221,29 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest; Markdown by default, JSON with --format json).",
     )
     .option(
       "-o, --out <path>",
       "Write the result to this path (default: stdout)",
     )
+    .option(
+      "--format <fmt>",
+      "survey summarize output format: markdown or json",
+      { default: "markdown" },
+    )
+    .option(
+      "--budget <name>",
+      "survey summarize budget: compact, standard, full",
+      {
+        default: "standard",
+      },
+    )
     .action(async (op: string, surveys: string[], opts) => {
       try {
-        if (op !== "merge" && op !== "fix-ids") {
+        if (op !== "merge" && op !== "fix-ids" && op !== "summarize") {
           console.error(
-            `Error: unknown survey op '${op}'. Supported: merge, fix-ids`,
+            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize`,
           );
           process.exit(2);
           return;
@@ -242,6 +257,27 @@ export function buildCli(): ReturnType<typeof cac> {
           console.error("Error: survey fix-ids takes exactly one input file");
           process.exit(2);
           return;
+        }
+        if (op === "summarize" && surveys.length !== 1) {
+          console.error("Error: survey summarize takes exactly one input file");
+          process.exit(2);
+          return;
+        }
+        if (op === "summarize") {
+          if (opts.format !== "markdown" && opts.format !== "json") {
+            console.error(
+              "Error: survey summarize --format must be 'markdown' or 'json'",
+            );
+            process.exit(2);
+            return;
+          }
+          if (!isSurveySummaryBudget(opts.budget)) {
+            console.error(
+              "Error: survey summarize --budget must be 'compact', 'standard', or 'full'",
+            );
+            process.exit(2);
+            return;
+          }
         }
 
         const parsed: Survey[] = [];
@@ -258,11 +294,11 @@ export function buildCli(): ReturnType<typeof cac> {
             process.exit(2);
             return;
           }
-          if (op === "merge") {
+          if (op === "merge" || op === "summarize") {
             const report = lintSurvey(json);
             if (report.errors > 0) {
               console.error(
-                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before merging`,
+                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before ${op === "merge" ? "merging" : "summarizing"}`,
               );
               for (const issue of report.issues) {
                 if (issue.severity !== "error") continue;
@@ -278,11 +314,22 @@ export function buildCli(): ReturnType<typeof cac> {
           parsed.push(json as Survey);
         }
 
-        const result =
-          op === "merge"
-            ? mergeSurveys(...parsed)
-            : recomputeSurveyIds(parsed[0]);
-        const out = `${JSON.stringify(result, null, 2)}\n`;
+        let out: string;
+        if (op === "summarize") {
+          const summary = summarizeSurvey(parsed[0], {
+            budget: opts.budget as SurveySummaryBudget,
+          });
+          out =
+            opts.format === "json"
+              ? `${JSON.stringify(summary, null, 2)}\n`
+              : formatSurveySummaryMarkdown(summary);
+        } else {
+          const result =
+            op === "merge"
+              ? mergeSurveys(...parsed)
+              : recomputeSurveyIds(parsed[0]);
+          out = `${JSON.stringify(result, null, 2)}\n`;
+        }
 
         if (opts.out) {
           const outPath = resolve(process.cwd(), opts.out);
@@ -350,6 +397,10 @@ function lintSurveyFile(raw: string): SurveyLintReport {
     };
   }
   return lintSurvey(json);
+}
+
+function isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
+  return value === "compact" || value === "standard" || value === "full";
 }
 
 function readPackageVersion(): string {
