@@ -135,7 +135,7 @@ describe("writeContextBundle", () => {
     const prompt = await readFile(res.files[0], "utf-8");
     expect(prompt).toContain("# Character");
     expect(prompt).toContain("# Signature");
-    expect(prompt).toContain("# References");
+    expect(prompt).toContain("# Local References");
     expect(prompt).toContain("# Decisions");
     expect(prompt).toContain("# Checks");
   });
