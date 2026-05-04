@@ -4,7 +4,7 @@ A Ghost **expression** is a single Markdown file that captures what a design lan
 
 The file has two parts, and each owns **different data**:
 
-1. **Frontmatter (YAML)** — the **machine layer**. Identity, direct references, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, human-promoted `checks[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
+1. **Frontmatter (YAML)** — the **machine layer**. Identity, local references/provenance, tokens, dimension slugs (without rationale or evidence), personality/resembles tags, human-promoted `checks[]`, optional cached embedding. Validated by zod. Read by deterministic tools.
 2. **Body (Markdown)** — the **prose layer**. Character, Signature, Decision rationale, **Evidence bullets**. Read by humans and LLMs.
 
 Each field lives in exactly one place. There is no precedence rule because there is nothing to conflict over.
@@ -13,7 +13,7 @@ Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-con
 
 Current schema generation: **6**.
 
-Schema 6 restores `# Signature` as first-class final-picture guidance, adds direct `references:` (`specs`, `components`, `examples`), and uses `checks[]` for human-promoted drift gates. `map.md` and `survey.json` are scan inputs; they are not prompt context.
+Schema 6 restores `# Signature` as first-class final-picture guidance, adds local-provenance `references:` (`specs`, `components`, `examples`), and uses `checks[]` for human-promoted drift gates. `map.md` and `survey.json` are scan inputs; they are not prompt context.
 
 Schema 5 moved decision evidence from frontmatter into the body — each `### dimension` block now carries its rationale prose followed by an optional `**Evidence:**` bullet list. Schema 4's frontmatter `decisions[].evidence` is no longer accepted (`.strict()` rejects it).
 
@@ -30,7 +30,7 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 | Expression field | Lives in | Section / key |
 |---|---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter | top-level |
-| `references.specs`, `references.components`, `references.examples` | Frontmatter | `references:` |
+| `references.specs`, `references.components`, `references.examples` | Frontmatter | `references:` local provenance / optional source material |
 | `observation.personality`, `observation.resembles` | Frontmatter | `observation:` |
 | `observation.summary` | **Body** | `# Character` |
 | `signature` | **Body** | `# Signature` |
@@ -44,7 +44,9 @@ The frontmatter and the body own disjoint fields. The reader unions them into a 
 
 The zod schema is `.strict()` on structural blocks and on `decisions[]` — putting prose fields (summary, decision rationale, evidence) in YAML is a validation error. The writer enforces the other direction: serialization puts prose and evidence only in the body. The `metadata:` bag is the one escape hatch: a loose `Record<string, unknown>` for LLM-authored extensions (e.g. `tone: magazine`) that don't fit the strict blocks. It's opaque to comparisons — never feeds the embedding.
 
-Earlier generations mirrored narrative fields across both sides and picked a winner — the source of every "did my edit count?" confusion. Generation 3 removed the duplication. Generation 4 extracted the embedding into a sibling fragment. Generation 5 — the current one — moves decision evidence into the body so the YAML stays purely structural and rationale + citations stay together where a reader can inspect both.
+The body should travel. `expression.md` may be used as the drift/generation root by a different project that cannot resolve the original paths, so Character, Signature, and Decisions need to describe portable design-language patterns. Local paths in `references:` are useful provenance when accessible, not the primary contract.
+
+Earlier generations mirrored narrative fields across both sides and picked a winner — the source of every "did my edit count?" confusion. Generation 3 removed the duplication. Generation 4 extracted the embedding into a sibling fragment. Generation 5 moved decision evidence into the body so the YAML stays purely structural and rationale + citations stay together where a reader can inspect both.
 
 ---
 
@@ -73,6 +75,8 @@ sources:                          # optional, lists the targets that were combin
   - github:anthropics/claude-code
   - https://claude.ai
 references:
+  # Local provenance / optional source material. Use when accessible;
+  # downstream projects should still be able to follow the body without them.
   specs:
     - src/styles/tokens.css
     - src/theme/index.ts
@@ -89,9 +93,9 @@ observation:
   personality: [restrained, editorial]
   resembles: [notion, linear]
 
-# Decisions in the YAML are skeletons — dimension slug + optional embedding.
+# Decisions in the YAML are an index — dimension slug + optional embedding.
 # Rationale and evidence live in the body under matching `### dimension`
-# blocks. `evidence:` here is a strict-schema violation.
+# blocks. `decision:` / `evidence:` here is a strict-schema violation.
 decisions:
   - dimension: warm-only-neutrals
   - dimension: serif-headlines
@@ -146,7 +150,7 @@ surfaces:
 ```
 
 **Required:** `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
-**Optional:** `references` (direct paths to living spec/component/example sources), `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
+**Optional:** `references` (local paths to spec/component/example source material; use as provenance when accessible), `embedding` (omit to let readers load from `embedding.md` or recompute), `metadata` (loose key-value extension bag).
 **Optional narrative tags:** `observation.personality`, `observation.resembles`, `decisions[]`. Omit rather than lie — a missing tag is truer than a fabricated one.
 
 **Optional promoted checks:** `checks[]`. These are grep-friendly review gates selected by a curator; candidate checks do not belong in the canonical file.
@@ -186,12 +190,15 @@ Every gray carries a yellow-brown undertone. No cool blue-grays.
 All headlines use Serif 500. UI uses Sans 400–500.
 
 **Evidence:**
-- `H1-H6 serif 500 (src/styles/headings.css:14)`
+- Typography survey evidence: all display-heading observations use Serif 500
+- `--font-serif: "Anthropic Serif"`
 ```
 
-The parser matches `### dimension` blocks to frontmatter `decisions[].dimension` by slug. A body block without a frontmatter entry is appended to the decisions list (and flagged `orphan-prose` by `ghost-expression lint`). A frontmatter entry without a body block carries empty rationale (flagged `missing-rationale`).
+The parser matches `### dimension` blocks to frontmatter `decisions[].dimension` by slug. A body block without a frontmatter entry is appended to the decisions list (and flagged `orphan-dimension` by `ghost-expression lint`). A frontmatter entry without a body block carries empty rationale (flagged `missing-rationale`).
 
-**Evidence lives in the body.** Each `### dimension` block may end with a `**Evidence:**` bullet list — concrete citations (token names, hex values, `file:line` references) that ground the rationale. The parser pulls those bullets back onto `decisions[].evidence` in memory, but on disk they belong to the body. Putting `evidence:` on a `decisions[]` entry in YAML is a strict-schema violation.
+Character should describe the language directly instead of introducing the repo or project name as the subject. The `id` already names the source; body prose is the portable part.
+
+**Evidence lives in the body.** Each `### dimension` block may end with a `**Evidence:**` bullet list — concrete citations (token names, hex values, survey counts, generic surface roles, and optional `file:line` provenance) that ground the rationale. A local path can support a claim, but the claim should still make sense to a downstream project that cannot open the original file. The parser pulls those bullets back onto `decisions[].evidence` in memory, but on disk they belong to the body. Putting `evidence:` on a `decisions[]` entry in YAML is a strict-schema violation.
 
 ### `# Fragments` section
 
@@ -326,7 +333,7 @@ For tooling that wants to inspect partial or in-progress files, `skipValidation`
 | Command | Does |
 |---|---|
 | `profile` recipe (host agent) | Write `expression.md` (frontmatter machine-facts + body prose + body evidence); the agent ends by calling `ghost-expression lint` |
-| `ghost-expression lint [path]` | Check schema validity, orphan prose, missing rationale, broken palette citations |
+| `ghost-expression lint [path]` | Check schema validity, orphan dimensions, missing rationale, broken palette citations |
 | `ghost-drift compare <a> <b> --semantic` | Semantic diff: decisions added/removed/modified, value deltas, palette role swaps, token changes |
 | `ghost-drift compare <a> <b>` | Vector distance (quantitative — use `--semantic` for qualitative) |
 | `ghost-expression emit context-bundle` | Emit a grounding skill bundle (`SKILL.md` + `expression.md` + `prompt.md` + `tokens.css`) |

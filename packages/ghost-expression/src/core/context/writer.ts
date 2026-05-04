@@ -152,7 +152,7 @@ Read \`expression.md\` first — it is the source of truth. It has these layered
 
 1. **Character** — what this expression is (one-paragraph summary in the body)
 2. **Signature** — dominant moves and the recognizable output posture
-3. **References** — direct local sources for specs, components, and examples (frontmatter \`references\`)
+3. **References** — local provenance and optional source material (frontmatter \`references\`)
 4. **Decisions** — abstract design choices with evidence from the source (body \`### dimension\` blocks)
 5. **Checks** — human-promoted review gates (frontmatter \`checks[]\`)
 
@@ -160,7 +160,7 @@ When generating UI in this language:
 
 - Treat **Checks** as curated gates when they exist.
 - Use **Decisions** as the lookup for specific choices (spacing scale, type ramp, radii).
-- Open **References** before inventing new components or values.
+- When working inside the source repo, open **References** before inventing new components or values. When applying this language elsewhere, treat references as provenance; do not assume those paths exist.
 - Let **Character** shape overall feel, density, and voice.
 - Let **Signature** shape the final picture: layout posture, dominant moves, and recognizable habits.
 - Before composing, infer the output shape the task calls for: article, tracker, comparison, card, or control surface. Card is one shape, not the default form of every answer.
@@ -191,10 +191,10 @@ function buildPromptMd(expression: Expression, name: string): string {
 
   const signature = expression.signature?.trim();
   parts.push(
-    `# Signature\n\n${signature || "No signature prose has been authored yet. Use Character, References, Decisions, and Tokens conservatively."}`,
+    `# Signature\n\n${signature || "No signature prose has been authored yet. Use Character, Local References when accessible, Decisions, and Tokens conservatively."}`,
   );
 
-  parts.push(`# References\n\n${formatReferences(expression)}`);
+  parts.push(`# Local References\n\n${formatReferences(expression)}`);
 
   const decisions = expression.decisions ?? [];
   if (decisions.length)
@@ -215,10 +215,10 @@ function buildPromptMd(expression: Expression, name: string): string {
   parts.push(`# Tokens\n\n${formatTokens(expression)}`);
 
   const usageLead = checks.length
-    ? "use checks as gates, references as source files, decisions as style direction, and tokens as the value digest"
-    : "use references as source files, decisions as style direction, and tokens as the value digest; no promoted checks have been curated yet";
+    ? "use checks as gates, local references when accessible, decisions as style direction, and tokens as the value digest"
+    : "use local references when accessible, decisions as style direction, and tokens as the value digest; no promoted checks have been curated yet";
   parts.push(
-    `# How to use this prompt\n\nWhen asked to build a component or screen, ${usageLead}. Prefer existing local components and token names when available. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.`,
+    `# How to use this prompt\n\nWhen asked to build a component or screen, ${usageLead}. Prefer existing local components and token names when they are available in the current project. If this expression is being used outside its source repo, ignore inaccessible paths and follow Character, Signature, Decisions, Checks, and Tokens. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.`,
   );
 
   return `${parts.join("\n\n")}\n`;
@@ -279,7 +279,7 @@ function formatShapeSelection(expression: Expression): string {
   }
 
   lines.push(
-    "- Before layout, infer a narrow intent/shape slice from the user's task and select references that match that slice.",
+    "- Before layout, infer a narrow intent/shape slice from the user's task and select examples or patterns that match that slice.",
     "- Use `article` for plans, timelines, worksheets, narrative/canvas outputs, and long-form synthesized answers.",
     "- Use `tracker` for metrics, progress, runway, review queues, audit status, and recurring operational views.",
     "- Use `comparison` for tradeoffs, allocation, option sets, before/after states, and side-by-side decisions.",
@@ -337,7 +337,10 @@ function formatReferences(expression: Expression): string {
     ["Components", refs.components],
     ["Examples", refs.examples],
   ];
-  const lines: string[] = [];
+  const lines: string[] = [
+    "These paths are local provenance and optional source material. Use them when they exist in the current workspace; otherwise treat the expression body and token digest as the portable contract.",
+    "",
+  ];
   for (const [label, values] of groups) {
     lines.push(`**${label}**`);
     if (values?.length) {

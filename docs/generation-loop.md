@@ -38,9 +38,9 @@ Emit a grounding bundle any generator can consume. Default output writes
 `SKILL.md` + `expression.md` + `prompt.md` + `tokens.css` into
 `./ghost-context/`. The generated `prompt.md` is a generation lens over the
 expression: Character sets feel, Signature carries final-picture posture,
-References point to living specs/components/examples, Decisions provide style
-direction, Checks provide curated gates, and Tokens provide the portable value
-digest. It intentionally does not ask the
+Local References point to optional source material when accessible, Decisions
+provide style direction, Checks provide curated gates, and Tokens provide the
+portable value digest. It intentionally does not ask the
 generator to explain or cite decisions unless the user asks for explanation.
 
 Flags:
@@ -57,8 +57,9 @@ reads `SKILL.md`.
 
 Driven by the host agent. Loads the expression (the agent typically pulls
 just the sections it needs via `ghost-expression describe`), builds a system
-prompt from Character + Signature + References + Decisions + Checks + Tokens,
-asks the underlying model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
+prompt from Character + Signature + Local References when accessible +
+Decisions + Checks + Tokens, asks the underlying model,
+extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
 recipe for self-check. Retries with drift feedback until it passes or the
 agent gives up.
 
@@ -117,7 +118,7 @@ Each layer has a concrete job somewhere in the loop:
 |---|---|
 | **Character** | Prompt context — shapes feel |
 | **Signature** | Final-picture guidance — dominant moves and output posture |
-| **References** | Direct paths to living specs, components, and examples |
+| **References** | Local provenance / optional source material; use when accessible |
 | **Checks** | Human-promoted drift gates; presence-floor checks codify load-bearing absences |
 | **Decisions** | Abstract pattern lookup the generator consults for specific choices |
 
