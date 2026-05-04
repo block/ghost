@@ -84,7 +84,7 @@ After validation, re-run `scan-status` and proceed.
 
 Run when `scan-status` reports both prior stages `present` and `expression: missing`.
 
-Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals) and `survey.json` (for ground truth) and writes `expression.md` purely as interpretation: emits local references, names decisions, writes portable Character and Signature prose, fills frontmatter from survey rows, and promotes only human-curated checks. Cannot invent values not in the survey. Cannot dump every survey fact into the terminal artifact. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
+Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals), runs `ghost-expression survey summarize survey.json` for bounded survey context, and keeps raw `survey.json` available only for targeted row lookup. It writes `expression.md` purely as interpretation: emits local references, names decisions, writes portable Character and Signature prose, fills frontmatter from survey rows, and promotes only human-curated checks. Cannot invent values not in the survey. Cannot dump every survey fact into the terminal artifact. Validates with `ghost-expression lint expression.md` and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
 
 Stage 3 has a different audience from stages 1 and 2. `map.md` and `survey.json` are allowed to be repo-specific because they are scan artifacts. `expression.md` is the drift/generation root and may be used by another project that cannot resolve the original paths, so its body must describe portable design-language patterns. Local paths belong in `references:` or as optional evidence provenance, not as the main content of Character, Signature, or Decisions.
 
@@ -108,14 +108,14 @@ Modular targets (one repo with N feature modules profiled separately) and fleet 
 
     ghost-expression survey merge <surveys...> -o merged.json
 
-Then run the interpreter recipe (Stage 3) against `merged.json` instead of a single-source survey. The interpreter recipe handles merged surveys the same way as single-source ones — every row still has provenance via `source`, and the prose interpretation is grounded in counts that span sources. This composition lives in the orchestrator (`design-world-model`'s pipeline scripts), not in any ghost CLI verb.
+Then run the interpreter recipe (Stage 3) against `merged.json` instead of a single-source survey. The interpreter recipe handles merged surveys the same way as single-source ones — summarize the merged survey first, every row still has provenance via `source`, and the prose interpretation is grounded in counts that span sources. This composition lives in the orchestrator (`design-world-model`'s pipeline scripts), not in any ghost CLI verb.
 
 ## Always
 
 - Run `scan-status` between stages. Don't assume; check.
 - Validate after each stage. Lint passing is the success gate.
 - Resolve token alias chains end-to-end in stage 2 (the survey records the chain).
-- Cite survey rows as evidence in stage 3 decisions, using portable pattern language first and local paths only as optional provenance.
+- Cite survey summary row IDs as evidence in stage 3 decisions, using targeted raw `survey.json` lookups when exact provenance is needed; keep portable pattern language first and local paths only as optional provenance.
 
 ## Never
 

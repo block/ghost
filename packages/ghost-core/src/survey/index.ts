@@ -35,6 +35,27 @@ export {
   ValueRowSchema,
   ValueSpecSchema,
 } from "./schema.js";
+export {
+  type ComponentEvidenceSummary,
+  type CountSummary,
+  formatSurveySummaryMarkdown,
+  type ResolutionSummary,
+  type SurveyComponentsSummary,
+  type SurveySourceSummary,
+  type SurveySummary,
+  type SurveySummaryBudget,
+  type SurveySummaryCounts,
+  type SurveySummaryOptions,
+  type SurveyTokensSummary,
+  type SurveyUiSurfacesSummary,
+  type SurveyValuesSummary,
+  summarizeSurvey,
+  type TokenEvidenceSummary,
+  type UiSurfaceEvidenceSummary,
+  type UiSurfaceGroupSummary,
+  type ValueEvidenceSummary,
+  type ValueKindSummary,
+} from "./summary.js";
 export type {
   BreakpointSpec,
   ColorSpec,

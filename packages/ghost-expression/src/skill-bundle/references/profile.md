@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the target's design language as an interpretation. **You are the interpreter, not the surveyor.** Read the `survey.json` as ground truth for what values the target actually ships; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
+**Goal:** produce a valid `expression.md` that captures the target's design language as an interpretation. **You are the interpreter, not the surveyor.** Treat `survey.json` as ground truth for what values the target actually ships, but read it through a bounded survey summary first; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
 
 `expression.md` is the terminal artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). Yours is the third stage.
 
@@ -22,14 +22,15 @@ Terminal-impact filter:
 
 `survey.json` is evidence. `expression.md` is curated truth. Do not summarize every survey row, every component, or every upstream token. Promote the few repeated constraints, defaults, absences, references, signatures, and token choices that downstream review or generation will actually use.
 
-`survey.json` is not generation prompt context. Read it once for profiling, then write a compact expression that carries only the digest needed for generation and drift. Assume `expression.md` may be used as a reference by another project that does not have the original files. Local paths belong in `references:` and evidence provenance; the prose body must stand on its own.
+`survey.json` is not generation prompt context. It is exhaustive evidence storage. Use `ghost-expression survey summarize survey.json` as the working context for profiling, then look up raw rows only when you need exact provenance. Write a compact expression that carries only the digest needed for generation and drift. Assume `expression.md` may be used as a reference by another project that does not have the original files. Local paths belong in `references:` and evidence provenance; the prose body must stand on its own.
 
 ## Pre-requisites
 
-Two artifacts must exist before you start:
+Two artifacts must exist before you start, and one bounded working view should be derived from them:
 
 - `map.md` — `ghost.map/v2`. Read its frontmatter for repo kind signals (`composition.frameworks`, `composition.styling`, `design_system.token_source`, `platform`, `registry`, `surface_sources`). Read its body for context on identity / topology / conventions.
 - `survey.json` — `ghost.survey/v2`. Lint-clean. Carries every concrete value, token, component, and implemented UI surface the surveyor observed, with occurrence counts, alias chains, and surface signals.
+- Survey summary — run `ghost-expression survey summarize survey.json` and read the Markdown digest as your primary survey context. Use `--budget compact` for a tight first pass, `--budget standard` by default, or `--format json` when another tool needs structured data.
 
 If either is missing, **stop**. Run the map and survey stages first. Inventing an expression from incomplete inputs poisons every downstream comparison.
 
@@ -46,7 +47,15 @@ Rows may carry `source.role` and `resolution` provenance. Interpret these as a s
 
 External libraries (icon sets, primitive collections, motion libs) deliberately don't have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing for the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
 
-Read `survey.json` once, fully. Then keep it open while you write.
+Do not paste or load a large `survey.json` wholesale into your working context. Start with:
+
+    ghost-expression survey summarize survey.json
+
+For large scans, this is the only survey content you should read end-to-end. Keep the raw `survey.json` available for targeted lookup by row ID when a palette entry, token, check, or evidence bullet needs exact provenance:
+
+    jq '.values[] | select(.id=="<row-id>")' survey.json
+
+If the survey is tiny, directly reading it is acceptable, but the summary-first path is the default because it keeps interpretation bounded and repeatable.
 
 ## Steps
 
@@ -95,7 +104,7 @@ Keep this clustering in your scratchpad. Promote only repeated, generation-impac
 
 ### 4. Layer 1 — Character and Signature
 
-Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the survey's values *and* its `ui_surfaces[]`; counts alone don't tell you the visual register, and surface evidence is where composition shows up. The prose lives under `# Character` in the body.
+Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the survey summary's values *and* UI surface groups; counts alone don't tell you the visual register, and surface evidence is where composition shows up. The prose lives under `# Character` in the body.
 
 Do not make the project/repo name the grammatical subject of Character. The `id` already names the source. Write as a style specimen: "A monochrome editorial gallery language..." not "Design Playground is...". Mention the brand/product name only when it is itself a visible design fact (for example a public wordmark, font name, or brand reference).
 
@@ -289,12 +298,12 @@ Common errors regardless of path:
 
 ### 9. Provenance check
 
-For every value in your expression's frontmatter, confirm it appears in `survey.json`. Quick sanity:
+For every value in your expression's frontmatter, confirm it appears in the survey summary or in a targeted raw row from `survey.json`. Quick sanity:
 
     jq -r '.values[] | select(.kind=="color") | .value' survey.json | sort -u
     # compare against your palette entries
 
-Any expression value that doesn't trace back is a hallucination. Remove it.
+Any expression value that doesn't trace back to a summary row ID or raw survey row is a hallucination. Remove it.
 
 ### 9. Self-distance sanity
 
