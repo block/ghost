@@ -28,18 +28,19 @@ Terminal-impact filter:
 
 Two artifacts must exist before you start:
 
-- `map.md` — `ghost.map/v1`. Read its frontmatter for repo kind signals (`composition.frameworks`, `composition.styling`, `design_system.token_source`, `platform`, `registry`). Read its body for context on identity / topology / conventions.
-- `survey.json` — `ghost.survey/v1`. Lint-clean. Carries every concrete value, token, and component the surveyor observed, with occurrence counts and (for tokens) alias chains.
+- `map.md` — `ghost.map/v2`. Read its frontmatter for repo kind signals (`composition.frameworks`, `composition.styling`, `design_system.token_source`, `platform`, `registry`, `surface_sources`). Read its body for context on identity / topology / conventions.
+- `survey.json` — `ghost.survey/v2`. Lint-clean. Carries every concrete value, token, component, and implemented UI surface the surveyor observed, with occurrence counts, alias chains, and surface signals.
 
 If either is missing, **stop**. Run the map and survey stages first. Inventing an expression from incomplete inputs poisons every downstream comparison.
 
 ## How to read the survey
 
-A `survey.json` has three sections:
+A `survey.json` has four sections:
 
 - **`values[]`** — concrete literals shipped in source. Group by `kind`: `color` rows feed `palette`; `spacing` rows feed `spacing.scale` / `spacing.baseUnit`; `typography` rows feed `typography.*`; `radius` rows feed `surfaces.borderRadii`; `shadow` rows feed `surfaces.shadowComplexity` (count + complexity, not literal shadows); `breakpoint` / `motion` / `layout-primitive` rows feed Decisions where they're load-bearing. Each row has `occurrences` (total count) and `files_count` (spread). Higher numbers = stronger signal.
 - **`tokens[]`** — named declarations with `alias_chain` (path through indirection) and `resolved_value`. Long chains and semantic naming (`--color-brand-primary` → `--color-orange-500`) are evidence of a deliberate token layer. Empty chains everywhere = inline literals = no token discipline.
 - **`components[]`** — known components (registry entries or heuristically discovered). Contributes count signal to surface-vocabulary decisions and grounds prose about what the system ships.
+- **`ui_surfaces[]`** — implemented UI specimens. Cluster by `classification.layout_shape`, `classification.density`, `classification.intent`, `classification.surface_type`, and repeated `signals.layout_patterns`; treat tags as soft and `signals` as the factual layer.
 
 Rows may carry `source.role` and `resolution` provenance. Interpret these as a source graph: `primary` sources supply usage/salience, while `resolver` sources supply concrete values for symbols the primary actually uses. A resolver-defined value that has no primary usage is not salient for this expression.
 
@@ -75,9 +76,26 @@ Use `map.md` as the source for these paths, but do not mention `map.md` in the e
 
 Keep the lists short and high-signal. Treat references as **local provenance and optional source material**, not as portable instructions. If a path would not help generation or drift review when it is accessible, leave it out.
 
-### 3. Layer 1 — Character and Signature
+### 3. Cluster implemented surfaces
 
-Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the survey *and* sample 3–5 high-occurrence files to actually see the surfaces — counts alone don't tell you the visual register. The prose lives under `# Character` in the body.
+Before writing prose, cluster `ui_surfaces[]` into the repeated composition families this implementation actually ships. Look for:
+
+- Repeated `layout_shape` values (`control-surface`, `article`, `tracker`, `comparison`, `card`, `flow`, `navigation`) with confidence ≥ 0.7.
+- Repeated `signals.layout_patterns` such as `sectioned-form`, `left-nav`, `persistent-actions`, `data-table`, `media-grid`, `empty-state`, or `wizard-flow`.
+- Density splits: compact controls inside spacious pages, compressed operational screens, breathing editorial pages.
+- Which components dominate each family, and which value rows (`value_refs`) are visibly load-bearing.
+- Coverage gaps from `surface_sources.coverage_gaps` or empty/weak `ui_surfaces[]`; do not overstate composition if surface evidence is sparse.
+
+Keep this clustering in your scratchpad. Promote only repeated, generation-impacting facts into the expression:
+
+- `# Signature` for the recognizable final picture across families.
+- `### composition-patterns` when the target supports distinct output shapes or avoids a generic card-by-default posture.
+- `checks[]` only when a surface pattern is mechanically checkable and human-promoted.
+- `references.examples` for local routes, stories, docs examples, or screenshots that a generator can inspect.
+
+### 4. Layer 1 — Character and Signature
+
+Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the survey's values *and* its `ui_surfaces[]`; counts alone don't tell you the visual register, and surface evidence is where composition shows up. The prose lives under `# Character` in the body.
 
 Do not make the project/repo name the grammatical subject of Character. The `id` already names the source. Write as a style specimen: "A monochrome editorial gallery language..." not "Design Playground is...". Mention the brand/product name only when it is itself a visible design fact (for example a public wordmark, font name, or brand reference).
 
@@ -104,9 +122,9 @@ Before writing decisions, list 3–7 ways the system permits variety inside its 
 - **Local font sourcing and type ramp** — hosts bring the face, but the expression defines the rhythm.
 - **Themeable tokens** — variation flows through semantic variables, not hardcoded monochrome.
 
-Promote these levers into `# Character`, relevant decisions, or candidate checks when the survey supports them. This is the antidote to negative-space prompts that only say what to avoid.
+Promote these levers into `# Character`, `# Signature`, relevant decisions, or candidate checks when the survey supports them. This is the antidote to negative-space prompts that only say what to avoid.
 
-### 4. Layer 2 — Checks (curated, grep-friendly, perceptual-prior-aware)
+### 5. Layer 2 — Checks (curated, grep-friendly, perceptual-prior-aware)
 
 This is the load-bearing step. **Your job is to propose 5–15 candidate checks, score each by survey-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `checks[]`. Promoted checks are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from survey evidence, and an `enforce_at` context where the reviewer should look. You do not author final checks unilaterally — design taste is human-curated, agent-proposed.
 
@@ -189,7 +207,7 @@ The curator picks 5–10. **Do not paste your full candidate list into `checks[]
 
 Don't try to express "this project has no animation" as prose. Express it as a motion check whose `observed_count` + `presence_floor` causes additions to land one perceptual tier louder. The emitted reviewer will catch the addition without the prose.
 
-### 5. Layer 3 — Concrete tokens (read from survey; do not invent)
+### 6. Layer 3 — Concrete tokens (read from survey; do not invent)
 
 Populate the structured frontmatter fields **from survey rows**:
 
@@ -213,7 +231,7 @@ Populate the structured frontmatter fields **from survey rows**:
 
 **Hard rule:** every `palette` entry must be cited in at least one decision's `evidence`, or dropped. Uncited tokens are noise.
 
-### 6. Write the file
+### 7. Write the file
 
 Copy [../assets/expression.template.md](../assets/expression.template.md). Fill in:
 
@@ -231,7 +249,7 @@ Evidence is provenance, not generation instruction. Make evidence bullets portab
 
 Partition matters. See [schema.md](schema.md) for which field lives where.
 
-If the target will be used for AI-generated outputs, include a `composition-patterns` decision when supported by examples, registry metadata, docs, or repeated component usage. Name the response shapes the language supports:
+If the target will be used for AI-generated outputs, include a `composition-patterns` decision when supported by `ui_surfaces[]`, examples, registry metadata, docs, or repeated component usage. Name the response shapes the language supports:
 
 - **article** — plans, timelines, worksheets, narrative/canvas outputs, and long-form synthesized answers.
 - **tracker** — metrics, progress, runway, review queues, audit status, and recurring operational views.
@@ -240,7 +258,7 @@ If the target will be used for AI-generated outputs, include a `composition-patt
 
 Composition anti-collapse check: do not turn every answer into a stack of cards. Let the user's task determine whether the output is a plan, tracker, comparison table, control surface, article, or compact recommendation. For freeform generation, infer a narrow intent/shape slice before selecting examples and style directions.
 
-### 7. Validate
+### 8. Validate
 
 **Preferred (CLI present):**
 
@@ -269,7 +287,7 @@ Common errors regardless of path:
 - Palette entry not cited in any evidence → cite it (from a survey row) or drop it.
 - Typography size not in the survey → drop it; the surveyor missed it or it's not real.
 
-### 8. Provenance check
+### 9. Provenance check
 
 For every value in your expression's frontmatter, confirm it appears in `survey.json`. Quick sanity:
 

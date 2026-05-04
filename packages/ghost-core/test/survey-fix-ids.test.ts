@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { recomputeSurveyIds } from "../src/survey/fix-ids.js";
-import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import { tokenRowId, uiSurfaceRowId, valueRowId } from "../src/survey/id.js";
 import type { Survey, SurveySource } from "../src/survey/types.js";
 
 const SOURCE: SurveySource = {
@@ -11,7 +11,7 @@ const SOURCE: SurveySource = {
 
 function survey(): Survey {
   return {
-    schema: "ghost.survey/v1",
+    schema: "ghost.survey/v2",
     sources: [SOURCE],
     values: [
       {
@@ -44,6 +44,21 @@ function survey(): Survey {
       },
     ],
     components: [],
+    ui_surfaces: [
+      {
+        id: "",
+        source: SOURCE,
+        name: "Settings",
+        kind: "route",
+        locator: "/settings",
+        renderability: "source-only",
+        files: ["src/routes/settings.tsx"],
+        signals: {
+          dominant_components: ["Button", "Input"],
+          layout_patterns: ["sectioned-form"],
+        },
+      },
+    ],
   };
 }
 
@@ -54,6 +69,9 @@ describe("recomputeSurveyIds", () => {
       valueRowId(SOURCE, "color", "#f97316", "#f97316"),
     );
     expect(fixed.tokens[0].id).toBe(tokenRowId(SOURCE, "--brand-primary"));
+    expect(fixed.ui_surfaces[0].id).toBe(
+      uiSurfaceRowId(SOURCE, "Settings", "route", "/settings"),
+    );
   });
 
   it("overwrites incorrect IDs with the correct deterministic hash", () => {
@@ -74,5 +92,6 @@ describe("recomputeSurveyIds", () => {
     const twice = recomputeSurveyIds(once);
     expect(twice.values).toEqual(once.values);
     expect(twice.tokens).toEqual(once.tokens);
+    expect(twice.ui_surfaces).toEqual(once.ui_surfaces);
   });
 });

@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: ghost-ui
 repo: example/ghost-ui
 mapped_at: 2026-04-25
@@ -25,7 +25,8 @@ design_system:
   entry_files:
     - src/styles/main.css
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - src/components/**
   exclude:

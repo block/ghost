@@ -21,7 +21,7 @@ A scan runs in three stages, all owned by `ghost-expression`:
 ```
 map            →     survey          →     expression
 map.md               survey.json           expression.md
-ghost.map/v1         ghost.survey/v1       (the canonical artifact)
+ghost.map/v2         ghost.survey/v2       (the canonical artifact)
 ```
 
 | Tool | Owns | Verbs |
@@ -107,7 +107,8 @@ dispatches into the per-stage recipes:
 2. **Survey (`survey.json`)** — the `survey` recipe walks the source
    exhaustively (writing dialect-specific greps; the recipe forbids
    sampling) and writes a `survey.json` cataloguing every concrete value,
-   token, and component. Validated by `ghost-expression lint survey.json`.
+   token, component, and implemented UI surface. Validated by
+   `ghost-expression lint survey.json`.
 3. **Expression (`expression.md`)** — the `profile` recipe interprets the
    survey as ground truth: assigns roles to values, emits direct references,
    names design decisions, writes Character and Signature, and produces the
@@ -132,8 +133,8 @@ ghost-expression scan-status
 
 # Validate any artifact (auto-detects the kind)
 ghost-expression lint                       # ./expression.md
-ghost-expression lint map.md                # ghost.map/v1
-ghost-expression lint survey.json           # ghost.survey/v1
+ghost-expression lint map.md                # ghost.map/v2
+ghost-expression lint survey.json           # ghost.survey/v2
 ```
 
 </DocSection>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Platform values accepted by `ghost.map/v1`. Real repos may straddle
+ * Platform values accepted by `ghost.map/v2`. Real repos may straddle
  * multiple platforms — `platform:` accepts either a single value or an
  * array (see `PlatformValueSchema`). The legacy `mixed` enum value stays
  * for backcompat but the array form is preferred for clarity.
@@ -22,7 +22,7 @@ const PlatformValueSchema = z.union([
 ]);
 
 /**
- * Build-system values accepted by `ghost.map/v1`. As with `platform`, the
+ * Build-system values accepted by `ghost.map/v2`. As with `platform`, the
  * field accepts either a single value or an array — real repos run mixes
  * like Yarn + SPM + Gradle + Style Dictionary at once.
  *
@@ -71,6 +71,16 @@ const BuildSystemValueSchema = z.union([
 
 const SourceRoleSchema = z.enum(["primary", "resolver"]);
 
+const RenderStrategySchema = z.enum([
+  "browser",
+  "storybook",
+  "docs",
+  "native-screenshot",
+  "static-source",
+  "mixed",
+  "unknown",
+]);
+
 const MapSubjectSchema = z.object({
   id: z.string().min(1),
   target: z.string().min(1),
@@ -85,13 +95,13 @@ const MapSourceSchema = z.object({
 });
 
 /**
- * Zod schema for `ghost.map/v1` frontmatter.
+ * Zod schema for `ghost.map/v2` frontmatter.
  *
  * The body section (Identity / Topology / Conventions) is checked separately
  * by the linter — this schema only covers the YAML machine layer.
  */
 export const MapFrontmatterSchema = z.object({
-  schema: z.literal("ghost.map/v1"),
+  schema: z.literal("ghost.map/v2"),
   id: z
     .string()
     .min(1)
@@ -183,9 +193,11 @@ export const MapFrontmatterSchema = z.object({
       .optional(),
     status: z.enum(["active", "mixed", "unclear"]),
   }),
-  ui_surface: z.object({
+  surface_sources: z.object({
     include: z.array(z.string().min(1)),
     exclude: z.array(z.string().min(1)),
+    render_strategy: RenderStrategySchema,
+    coverage_gaps: z.array(z.string().min(1)).optional(),
   }),
   feature_areas: z
     .array(

@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Survey a target into survey.json
 
-**Goal:** produce a valid `survey.json` (`ghost.survey/v1`) that catalogues every concrete design value the target ships, with structured specs and per-value occurrence counts. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
+**Goal:** produce a valid `survey.json` (`ghost.survey/v2`) that catalogues every concrete design value and implemented UI surface the target ships, with structured specs, occurrence counts, and surface evidence. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
 `survey.json` is the middle artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). The interpreter (next stage) reads your survey as ground truth and writes the compact expression. If you skip values or fabricate them here, the expression downstream is wrong.
 
@@ -20,31 +20,35 @@ The survey is exhaustive evidence, not prompt context. It should be large enough
 
 ## Pre-requisite
 
-A `map.md` for the target must exist (Phase 0 — see `references/map.md`). It tells you where the design system lives — `design_system.entry_files`, `design_system.paths`, `feature_areas[].paths`, `composition.styling`, `composition.frameworks`. Without it you waste cycles re-discovering what the topology already specifies. **If `map.md` is missing, stop and run the map stage first.**
+A `map.md` for the target must exist (Phase 0 — see `references/map.md`). It tells you where the design system lives and where implemented UI can be observed — `design_system.entry_files`, `design_system.paths`, `surface_sources`, `feature_areas[].paths`, `composition.styling`, `composition.frameworks`. Without it you waste cycles re-discovering what the topology already specifies. **If `map.md` is missing, stop and run the map stage first.**
 
 ## Survey schema
 
-A `survey.json` is `ghost.survey/v1`:
+A `survey.json` is `ghost.survey/v2`:
 
 ```json
 {
-  "schema": "ghost.survey/v1",
+  "schema": "ghost.survey/v2",
   "sources": [{ "target": "...", "commit": "...", "scanned_at": "..." }],
   "values":     [...],
   "tokens":     [...],
-  "components": [...]
+  "components": [...],
+  "ui_surfaces": [...]
 }
 ```
 
-Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by hand — see Step 6) and a `source` object (denormalize the same source entry you put in `sources[]`). Sections:
+Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by hand — see Step 7) and a `source` object (denormalize the same source entry you put in `sources[]`). Sections:
 
 - **`values[]`** — every concrete literal that ships in the design language. `kind` is open; recommended values: `color`, `spacing`, `typography`, `radius`, `shadow`, `breakpoint`, `motion`, `layout-primitive`. Other kinds (`z-index`, `opacity`, `cursor`, `gradient`, `iconography`, `aspect-ratio`) get a `value-kind-unknown` warning but are accepted — emit them when they matter.
 - **`tokens[]`** — every named token declared in source (CSS variables, theme keys, design-token entries). Each row has `name`, `alias_chain` (path through any indirection — `["--button-bg", "--color-brand-primary"]` for a two-step chain; `[]` for a leaf defined inline), `resolved_value` (end-of-chain literal), optional `by_theme` for light/dark variants.
 - **`components[]`** — every named component you can confidently identify (registry entries, exported PascalCase components with variants/sizes). Loose schema: `name`, `discovered_via` (`registry.json` / `heuristic` / etc.), optional `variants[]` and `sizes[]`.
+- **`ui_surfaces[]`** — implemented UI specimens the design language can be inferred from. Each row has `name`, `kind` (`route`, `story`, `screen`, `fixture`, `doc-example`, `screenshot`, `source`), `locator`, `renderability` (`rendered`, `screenshot`, `source-only`, `unknown`), `files[]`, optional soft `classification`, and factual `signals`.
 
 External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a survey section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
 
 Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
+
+`ui_surfaces[].classification` is a retrieval lens, not design truth. `intent` and `surface_type` are open strings; `density`, `layout_shape`, and `confidence` should be omitted unless evidence is clear. `ui_surfaces[].signals` contains observed facts only: `dominant_components`, `layout_patterns`, `breakpoint_behavior`, `value_refs`, and short factual `notes`.
 
 When a value is observed in the primary source but resolved through a resolver source, keep both pieces of provenance. The row's `source` is where usage was observed; `resolution` is where the concrete meaning came from:
 
@@ -76,7 +80,9 @@ Open `map.md`. Note:
 - `design_system.entry_files` — start here. These declare the canonical token set.
 - `sources[]` — scan source graph when the target needs upstream packages to resolve symbols. `primary` supplies usage; `resolver` supplies values.
 - `design_system.paths` — directories where the design system lives.
-- `feature_areas[].paths` — surfaces worth sampling for usage counts.
+- `surface_sources.render_strategy` — how implemented UI can be observed.
+- `surface_sources.include` / `.exclude` — globs that bound surface discovery.
+- `feature_areas[].paths` — sampling clusters for implemented surfaces and usage counts.
 
 Decide your extraction strategy from these signals — see Step 2.
 
@@ -84,7 +90,7 @@ Decide your extraction strategy from these signals — see Step 2.
 
 Recall is the failure mode and the only one. A survey missing 90% of a section's rows is a failed scan, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
 
-For every section (`values[]`, `tokens[]`, `components[]`):
+For every section (`values[]`, `tokens[]`, `components[]`, `ui_surfaces[]`):
 
 1. **Identify the canonical signal in this repo.** Where does the source of truth for this kind of thing actually live? It will be different in every repo — a manifest, a registry, a barrel export, a CSS declaration block, a naming convention. Use the strongest signal the repo offers.
 2. **Enumerate, don't sample.** If you can count entries from the canonical signal independently, your row count must match. 6 components when the canonical signal lists 100 is a lie.
@@ -157,13 +163,53 @@ For components:
 
 - **Components are countable.** Count them by whatever signal the repo offers (manifest entries, barrel exports, naming pattern under a known directory). If you can count to 50 and your survey has 6 rows, you've sampled — go back and enumerate.
 
-### 4. Sample feature areas for usage counts
+### 4. Record implemented UI surfaces
+
+Use `surface_sources` and `feature_areas[]` from `map.md` to enumerate representative implemented surfaces. This section is required in `ghost.survey/v2`. If no implemented surface can be observed, write `ui_surfaces: []`, ensure `map.md` uses `surface_sources.render_strategy: unknown`, and carry the coverage gap in your scratchpad for the interpreter.
+
+Surface rows are evidence, not exemplars and not prose. Record facts that a later profiler can cluster:
+
+```json
+{
+  "id": "",
+  "source": { "target": "github:block/ghost", "commit": "abc123", "scanned_at": "2026-04-29T12:00:00Z" },
+  "name": "Account settings",
+  "kind": "route",
+  "locator": "/settings/account",
+  "renderability": "source-only",
+  "files": ["src/routes/settings/account.tsx"],
+  "classification": {
+    "intent": "configure",
+    "surface_type": "settings",
+    "density": "standard",
+    "layout_shape": "control-surface",
+    "confidence": 0.75
+  },
+  "signals": {
+    "dominant_components": ["Tabs", "Input", "Button"],
+    "layout_patterns": ["sectioned-form", "persistent-actions"],
+    "breakpoint_behavior": ["mobile stacks sections vertically"],
+    "value_refs": ["<value-row-id-after-fix-ids-if-known>"],
+    "notes": ["Compact controls sit inside generous section spacing."]
+  }
+}
+```
+
+Discovery guidance:
+
+- For `browser`, `storybook`, or `docs`, enumerate routes/stories/examples first, then sample the source files that back them.
+- For `native-screenshot`, record the screenshot or fixture locator and the source files when known.
+- For `static-source`, use route files, screens, stories, examples, or feature entrypoints as the observable specimens.
+- Prefer 1–3 high-signal surfaces per feature area. This is not exhaustive in the same way components are; it is coverage of implemented composition families.
+- Keep `signals.notes` factual. "Sectioned settings form with persistent action row" is survey evidence. "Feels professional and calm" belongs in profile interpretation.
+
+### 5. Sample feature areas for usage counts
 
 For each `feature_areas[]` entry in `map.md`, walk a few files to measure how the values you found in `entry_files` actually get used. This produces the `occurrences` and `files_count` numbers. Don't sample exhaustively — 3–5 files per feature area is usually enough; the goal is a representative count, not a perfect one.
 
 Update the `usage` breakdown when context matters. Examples: `{className: 30, css_var: 17}` for a hex used in both Tailwind classes and CSS variables; `{token-resolution: 1, inline: 46}` for a hex defined once and copy-pasted everywhere (a smell worth flagging via `role_hypothesis: "ad-hoc"` or similar).
 
-### 5. Write rows with empty IDs
+### 6. Write rows with empty IDs
 
 Build the survey file. For every row, leave `id` as an empty string `""`. You don't compute SHA-256 hashes by hand. Example value row:
 
@@ -181,9 +227,9 @@ Build the survey file. For every row, leave `id` as an empty string `""`. You do
 }
 ```
 
-Same shape per token and component row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the survey with the same single source.
+Same shape per token, component, and UI-surface row, just different content fields. **Every row gets the same `source` object** (denormalized so the row survives merges with its origin attribution). Fill `sources[]` at the top of the survey with the same single source.
 
-### 6. Populate IDs
+### 7. Populate IDs
 
 Run:
 
@@ -191,17 +237,18 @@ Run:
 
 This recomputes every row's `id` from its content fields. Idempotent — running it again does nothing.
 
-### 7. Validate
+### 8. Validate
 
     ghost-expression lint survey.json
 
-Fix everything `lint` flags as an error. Warnings (unknown `kind`, `id-mismatch` if you skipped Step 6, etc.) are signals — investigate them, but they don't block.
+Fix everything `lint` flags as an error. Warnings (unknown `kind`, `id-mismatch` if you skipped Step 7, etc.) are signals — investigate them, but they don't block.
 
-### 8. Coverage check (gate before declaring done)
+### 9. Coverage check (gate before declaring done)
 
 Before declaring the survey done, walk each section and confirm exhaustiveness:
 
 - **`components[]`** — what's the canonical signal in this repo? Count it independently. If your row count is below that count, you've under-recorded. Either add the missing rows or, if the section truly isn't enumerable here, leave the array empty.
+- **`ui_surfaces[]`** — compare rows against `surface_sources` and `feature_areas[]`. Every major implemented surface family should have at least one row, or the coverage gap should be explicit.
 - **`tokens[]`** — count the named-token declarations in the canonical token source(s) named in `map.md`. Your row count should match.
 - **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your survey = missed.
   For resolver-backed scans, also check unresolved symbols by kind; top unresolved symbols should either be resolved or explicitly surfaced as coverage gaps.
@@ -219,6 +266,7 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 
 - Use `survey.json` as the canonical filename.
 - Every value/token row carries `source`, `occurrences`, and (for values) `files_count`.
+- Every UI-surface row carries `source`, `name`, `kind`, `locator`, `renderability`, `files`, and factual `signals`.
 - Resolve token alias chains end-to-end. The `alias_chain` array captures the path.
 - Validate with `ghost-expression lint survey.json` before declaring success.
 - After authoring rows with empty IDs, run `survey fix-ids` exactly once.
@@ -226,7 +274,7 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 
 ## Never
 
-- **Never write prose.** No `description`, no rationale fields. Prose is the interpreter's job.
+- **Never write prose.** No `description`, no rationale fields. Factual UI-surface notes are okay; interpretation prose is the interpreter's job.
 - **Never invent values.** If you didn't observe it in source, it doesn't go in the survey.
 - **Never sample.** Either enumerate exhaustively or leave the section empty. A survey with 6 components when the canonical signal has 100 is worse than no `components[]` at all.
 - **Never assign roles confidently.** `role_hypothesis` is a *hint*, optional, and tentative. The interpreter has the final word. If you're not sure, leave it empty.

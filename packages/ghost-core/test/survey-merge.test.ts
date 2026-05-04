@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import { tokenRowId, uiSurfaceRowId, valueRowId } from "../src/survey/id.js";
 import { mergeSurveys } from "../src/survey/merge.js";
 import type {
   Survey,
   SurveySource,
   TokenRow,
+  UiSurfaceRow,
   ValueRow,
 } from "../src/survey/types.js";
 
@@ -53,17 +54,47 @@ function tokenRow(
   };
 }
 
+function uiSurfaceRow(
+  source: SurveySource,
+  name: string,
+  kind: UiSurfaceRow["kind"],
+  locator: string,
+): UiSurfaceRow {
+  return {
+    id: uiSurfaceRowId(source, name, kind, locator),
+    source,
+    name,
+    kind,
+    locator,
+    renderability: "source-only",
+    files: [`src/${name.toLowerCase()}.tsx`],
+    classification: {
+      intent: "configure",
+      surface_type: "settings",
+      density: "standard",
+      layout_shape: "control-surface",
+      confidence: 0.8,
+    },
+    signals: {
+      dominant_components: ["Button"],
+      layout_patterns: ["sectioned-form"],
+    },
+  };
+}
+
 function makeSurvey(
   source: SurveySource,
   values: ValueRow[] = [],
   tokens: TokenRow[] = [],
+  uiSurfaces: UiSurfaceRow[] = [],
 ): Survey {
   return {
-    schema: "ghost.survey/v1",
+    schema: "ghost.survey/v2",
     sources: [source],
     values,
     tokens,
     components: [],
+    ui_surfaces: uiSurfaces,
   };
 }
 
@@ -145,13 +176,27 @@ describe("mergeSurveys", () => {
     ]);
   });
 
+  it("preserves and dedupes UI surface rows", () => {
+    const settings = uiSurfaceRow(SOURCE_A, "Settings", "route", "/settings");
+    const a = makeSurvey(SOURCE_A, [], [], [settings]);
+    const b = makeSurvey(SOURCE_A, [], [], [settings]);
+    const c = makeSurvey(
+      SOURCE_B,
+      [],
+      [],
+      [uiSurfaceRow(SOURCE_B, "Settings", "route", "/settings")],
+    );
+    const merged = mergeSurveys(a, b, c);
+    expect(merged.ui_surfaces).toHaveLength(2);
+  });
+
   it("throws when given zero surveys", () => {
     expect(() => mergeSurveys()).toThrow(/at least one/);
   });
 
-  it("schema field on the merged survey is ghost.survey/v1", () => {
+  it("schema field on the merged survey is ghost.survey/v2", () => {
     const a = makeSurvey(SOURCE_A);
     const merged = mergeSurveys(a);
-    expect(merged.schema).toBe("ghost.survey/v1");
+    expect(merged.schema).toBe("ghost.survey/v2");
   });
 });

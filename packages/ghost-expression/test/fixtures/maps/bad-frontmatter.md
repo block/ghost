@@ -15,7 +15,8 @@ design_system:
   paths: []
   entry_files: []
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include: []
   exclude: []
 feature_areas: []
@@ -24,7 +25,7 @@ orientation_files: []
 
 ## Identity
 
-Frontmatter is malformed against ghost.map/v1.
+Frontmatter is malformed against ghost.map/v2.
 
 ## Topology
 

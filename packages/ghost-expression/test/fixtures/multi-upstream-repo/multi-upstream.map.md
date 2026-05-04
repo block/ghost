@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: multi-upstream-fixture
 repo: example/multi-upstream
 mapped_at: 2026-04-27
@@ -27,7 +27,8 @@ design_system:
     - "@example/design-icons"
     - "@example/design-glue"
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - "src/components/**"
   exclude:

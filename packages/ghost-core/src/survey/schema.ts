@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Zod schemas for `ghost.survey/v1`.
+ * Zod schemas for `ghost.survey/v2`.
  *
  * The `kind` field on value rows is intentionally open (a plain string).
  * The validator does not reject unknown kinds — instead the lint step
@@ -137,12 +137,73 @@ const ComponentRowSchema = RowBaseSchema.extend({
   sizes: z.array(z.string()).optional(),
 });
 
+const UiSurfaceKindSchema = z.enum([
+  "route",
+  "story",
+  "screen",
+  "fixture",
+  "doc-example",
+  "screenshot",
+  "source",
+]);
+
+const UiSurfaceRenderabilitySchema = z.enum([
+  "rendered",
+  "screenshot",
+  "source-only",
+  "unknown",
+]);
+
+const UiSurfaceClassificationSchema = z
+  .object({
+    intent: z.string().min(1).optional(),
+    surface_type: z.string().min(1).optional(),
+    density: z
+      .enum(["compressed", "standard", "breathing", "unknown"])
+      .optional(),
+    layout_shape: z
+      .enum([
+        "article",
+        "tracker",
+        "comparison",
+        "card",
+        "control-surface",
+        "flow",
+        "navigation",
+        "unknown",
+      ])
+      .optional(),
+    confidence: z.number().min(0).max(1).optional(),
+  })
+  .strict();
+
+const UiSurfaceSignalsSchema = z
+  .object({
+    dominant_components: z.array(z.string().min(1)).optional(),
+    layout_patterns: z.array(z.string().min(1)).optional(),
+    breakpoint_behavior: z.array(z.string().min(1)).optional(),
+    value_refs: z.array(z.string().min(1)).optional(),
+    notes: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+const UiSurfaceRowSchema = RowBaseSchema.extend({
+  name: z.string().min(1),
+  kind: UiSurfaceKindSchema,
+  locator: z.string().min(1),
+  renderability: UiSurfaceRenderabilitySchema,
+  files: z.array(z.string().min(1)),
+  classification: UiSurfaceClassificationSchema.optional(),
+  signals: UiSurfaceSignalsSchema,
+});
+
 export const SurveySchema = z.object({
-  schema: z.literal("ghost.survey/v1"),
+  schema: z.literal("ghost.survey/v2"),
   sources: z.array(SurveySourceSchema).min(1),
   values: z.array(ValueRowSchema),
   tokens: z.array(TokenRowSchema),
   components: z.array(ComponentRowSchema),
+  ui_surfaces: z.array(UiSurfaceRowSchema),
 });
 
 export {
@@ -151,6 +212,11 @@ export {
   ResolutionSchema,
   SurveySourceSchema,
   TokenRowSchema,
+  UiSurfaceClassificationSchema,
+  UiSurfaceKindSchema,
+  UiSurfaceRenderabilitySchema,
+  UiSurfaceRowSchema,
+  UiSurfaceSignalsSchema,
   ValueRowSchema,
   ValueSpecSchema,
 };

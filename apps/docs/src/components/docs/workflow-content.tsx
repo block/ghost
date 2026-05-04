@@ -106,7 +106,7 @@ function MapExcerpt() {
         <code>
           <span className="text-muted-foreground">{"---\n"}</span>
           <span className="text-foreground">schema</span>
-          <span className="text-muted-foreground">: ghost.map/v1{"\n"}</span>
+          <span className="text-muted-foreground">: ghost.map/v2{"\n"}</span>
           <span className="text-foreground">id</span>
           <span className="text-muted-foreground">: ghost{"\n"}</span>
           <span className="text-foreground">repo</span>
@@ -152,8 +152,11 @@ function MapExcerpt() {
           <span className="text-foreground">
             packages/ghost-ui/expression.md{"\n"}
           </span>
-          <span className="text-foreground">ui_surface</span>
+          <span className="text-foreground">surface_sources</span>
           <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">
+            {"  render_strategy: static-source\n"}
+          </span>
           <span className="text-muted-foreground">{"  include:\n"}</span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">
@@ -1053,7 +1056,7 @@ export function WorkflowContent() {
             {
               layer: "Surface",
               name: "What counts",
-              desc: "ui_surface globs — what's user-facing UI vs. tooling, tests, dist artifacts.",
+              desc: "surface_sources globs — what's observable UI vs. tooling, tests, dist artifacts.",
             },
           ].map((l) => (
             <div
@@ -1077,7 +1080,7 @@ export function WorkflowContent() {
           <code>ghost-expression</code> which folders to read when profiling,
           and tells <code>ghost-fleet</code> which surfaces to count when
           aggregating. The success gate is <code>ghost-map lint</code>, which
-          validates against <code>ghost.map/v1</code>.
+          validates against <code>ghost.map/v2</code>.
         </p>
       </Step>
 

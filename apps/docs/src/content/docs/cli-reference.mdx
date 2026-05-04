@@ -80,7 +80,7 @@ recommended next stage (or "scan complete" when every artifact is present).
 
 ### Survey ops — `survey <op>`
 
-Operate on `ghost.survey/v1` files. Two ops today:
+Operate on `ghost.survey/v2` files. Two ops today:
 
 - **`merge`** — concat with id-based dedup, deterministic and idempotent.
   The composition primitive: modular rollups (one repo, N feature modules)
@@ -109,7 +109,7 @@ ghost-expression survey merge a.json b.json | jq '.values | length'
 ### Validation — `lint`
 
 Validate `expression.md`, `map.md`, or `survey.json` against its schema —
-auto-detects which by `.json` extension, `schema: ghost.map/v1` frontmatter,
+auto-detects which by `.json` extension, `schema: ghost.map/v2` frontmatter,
 or filename. Use this before declaring an artifact valid; every authoring
 recipe ends by calling it.
 

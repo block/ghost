@@ -53,6 +53,28 @@ describe("lintMap", () => {
     );
   });
 
+  it("rejects legacy ghost.map/v1 maps", () => {
+    const raw = load("good.md").replace(
+      "schema: ghost.map/v2",
+      "schema: ghost.map/v1",
+    );
+    const report = lintMap(raw);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.some((i) => i.path === "schema")).toBe(true);
+  });
+
+  it("requires surface_sources.render_strategy", () => {
+    const raw = load("good.md").replace(
+      "  render_strategy: static-source\n",
+      "",
+    );
+    const report = lintMap(raw);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some((i) => i.path === "surface_sources.render_strategy"),
+    ).toBe(true);
+  });
+
   it("flags out-of-order body sections", () => {
     const report = lintMap(load("out-of-order.md"));
     const rules = report.issues.map((i) => i.rule);

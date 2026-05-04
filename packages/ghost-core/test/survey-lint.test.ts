@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { tokenRowId, valueRowId } from "../src/survey/id.js";
+import { tokenRowId, uiSurfaceRowId, valueRowId } from "../src/survey/id.js";
 import { lintSurvey } from "../src/survey/lint.js";
 import type {
   Survey,
   SurveySource,
   TokenRow,
+  UiSurfaceRow,
   ValueRow,
 } from "../src/survey/types.js";
 
@@ -68,17 +69,48 @@ function makeTokenRow(
   };
 }
 
+function makeUiSurfaceRow(overrides: Partial<UiSurfaceRow> = {}): UiSurfaceRow {
+  const source = overrides.source ?? SOURCE;
+  const name = overrides.name ?? "Settings account";
+  const kind = overrides.kind ?? "route";
+  const locator = overrides.locator ?? "/settings/account";
+  return {
+    id: overrides.id ?? uiSurfaceRowId(source, name, kind, locator),
+    source,
+    name,
+    kind,
+    locator,
+    renderability: overrides.renderability ?? "source-only",
+    files: overrides.files ?? ["src/routes/settings/account.tsx"],
+    classification: overrides.classification ?? {
+      intent: "configure",
+      surface_type: "settings",
+      density: "standard",
+      layout_shape: "control-surface",
+      confidence: 0.82,
+    },
+    signals: overrides.signals ?? {
+      dominant_components: ["Input", "Button"],
+      layout_patterns: ["sectioned-form", "persistent-actions"],
+      breakpoint_behavior: ["single-column mobile"],
+      notes: ["Compact controls sit inside sectioned settings groups."],
+    },
+  };
+}
+
 function makeSurvey(
   values: ReturnType<typeof makeValueRow>[] = [],
   tokens: TokenRow[] = [],
   sources: SurveySource[] = [SOURCE],
+  uiSurfaces: UiSurfaceRow[] = [makeUiSurfaceRow()],
 ): Survey {
   return {
-    schema: "ghost.survey/v1",
+    schema: "ghost.survey/v2",
     sources,
     values,
     tokens,
     components: [],
+    ui_surfaces: uiSurfaces,
   };
 }
 
@@ -108,7 +140,7 @@ describe("lintSurvey", () => {
   it("rejects missing schema field", () => {
     const survey: unknown = {
       ...makeSurvey(),
-      schema: "ghost.survey/v0",
+      schema: "ghost.survey/v1",
     };
     const report = lintSurvey(survey);
     expect(report.errors).toBeGreaterThan(0);
@@ -160,6 +192,67 @@ describe("lintSurvey", () => {
     const report = lintSurvey(makeSurvey([row, { ...row }])); // same ID, two rows
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule === "duplicate-id")).toBe(true);
+  });
+
+  it("flags duplicate UI surface IDs within the ui_surfaces section", () => {
+    const row = makeUiSurfaceRow();
+    const report = lintSurvey(makeSurvey([], [], [SOURCE], [row, { ...row }]));
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some(
+        (i) => i.rule === "duplicate-id" && i.path === "ui_surfaces[1].id",
+      ),
+    ).toBe(true);
+  });
+
+  it("requires the ui_surfaces section", () => {
+    const survey = makeSurvey() as unknown as Record<string, unknown>;
+    delete survey.ui_surfaces;
+    const report = lintSurvey(survey);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.some((i) => i.path === "ui_surfaces")).toBe(true);
+  });
+
+  it("warns when ui_surfaces is empty", () => {
+    const report = lintSurvey(makeSurvey([], [], [SOURCE], []));
+    expect(report.errors).toBe(0);
+    expect(report.issues.some((i) => i.rule === "ui-surfaces-empty")).toBe(
+      true,
+    );
+  });
+
+  it("rejects invalid UI surface enum values and confidence bounds", () => {
+    const survey: unknown = {
+      ...makeSurvey(),
+      ui_surfaces: [
+        {
+          ...makeUiSurfaceRow(),
+          kind: "page",
+          classification: {
+            density: "roomy",
+            layout_shape: "control-surface",
+            confidence: 1.5,
+          },
+        },
+      ],
+    };
+    const report = lintSurvey(survey);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some((i) => i.path?.startsWith("ui_surfaces[0]")),
+    ).toBe(true);
+  });
+
+  it("requires a UI surface locator", () => {
+    const survey: unknown = {
+      ...makeSurvey(),
+      ui_surfaces: [{ ...makeUiSurfaceRow(), locator: "" }],
+    };
+    const report = lintSurvey(survey);
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.some((i) => i.path === "ui_surfaces[0].locator")).toBe(
+      true,
+    );
   });
 
   it("rejects sources array with no entries", () => {

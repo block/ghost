@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: derived-tokens-fixture
 repo: example/derived-tokens
 mapped_at: 2026-04-27
@@ -27,7 +27,8 @@ design_system:
     - dist/tokens/spacing.css
   token_source: inline
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - "src/**"
   exclude:

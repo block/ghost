@@ -1,5 +1,16 @@
-import { componentRowId, tokenRowId, valueRowId } from "./id.js";
-import type { ComponentRow, Survey, TokenRow, ValueRow } from "./types.js";
+import {
+  componentRowId,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "./id.js";
+import type {
+  ComponentRow,
+  Survey,
+  TokenRow,
+  UiSurfaceRow,
+  ValueRow,
+} from "./types.js";
 
 /**
  * Recompute every row's `id` from its content fields, producing a new
@@ -32,6 +43,12 @@ export function recomputeSurveyIds(survey: Survey): Survey {
       (row): ComponentRow => ({
         ...row,
         id: componentRowId(row.source, row.name),
+      }),
+    ),
+    ui_surfaces: survey.ui_surfaces.map(
+      (row): UiSurfaceRow => ({
+        ...row,
+        id: uiSurfaceRowId(row.source, row.name, row.kind, row.locator),
       }),
     ),
   };
