@@ -2,7 +2,12 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Survey, SurveySource } from "@ghost/core";
-import { tokenRowId, uiSurfaceRowId, valueRowId } from "@ghost/core";
+import {
+  componentRowId,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCli } from "../src/cli.js";
 
@@ -227,6 +232,46 @@ function makeSurvey(source: SurveySource, hex = "#f97316"): Survey {
   };
 }
 
+function makeLargeSurvey(source: SurveySource): Survey {
+  return {
+    ...makeSurvey(source),
+    components: Array.from({ length: 25 }, (_, index) => ({
+      id: componentRowId(source, `Component${index}`),
+      source,
+      name: `Component${index}`,
+      discovered_via: index % 2 === 0 ? "registry.json" : "barrel-export",
+      variants: index % 3 === 0 ? ["default", "secondary"] : undefined,
+      sizes: index % 4 === 0 ? ["sm", "md"] : undefined,
+    })),
+    ui_surfaces: Array.from({ length: 10 }, (_, index) => {
+      const name = `Surface ${index}`;
+      const kind = "route";
+      const locator = `/surface-${index}`;
+      return {
+        id: uiSurfaceRowId(source, name, kind, locator),
+        source,
+        name,
+        kind,
+        locator,
+        renderability: "source-only",
+        files: [`src/routes/surface-${index}.tsx`],
+        classification: {
+          intent: index % 2 === 0 ? "configure" : "review",
+          surface_type: index % 2 === 0 ? "settings" : "audit",
+          density: index % 2 === 0 ? "compressed" : "standard",
+          layout_shape: index % 2 === 0 ? "control-surface" : "tracker",
+          confidence: 0.8,
+        },
+        signals: {
+          dominant_components: ["Button", "Input"],
+          layout_patterns:
+            index % 2 === 0 ? ["sectioned-form"] : ["data-table"],
+        },
+      };
+    }),
+  };
+}
+
 describe("ghost-expression lint dispatches by file kind", () => {
   let dir: string;
 
@@ -424,5 +469,140 @@ describe("ghost-expression survey fix-ids", () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("exactly one input file");
+  });
+});
+
+describe("ghost-expression survey summarize", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(
+      tmpdir(),
+      `ghost-expression-summary-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("writes Markdown to stdout by default", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(["survey", "summarize", "survey.json"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Survey Summary");
+    expect(result.stdout).toContain("Budget: `standard`");
+    expect(result.stdout).toContain(
+      valueRowId(SOURCE_A, "color", "#f97316", "#f97316"),
+    );
+    expect(result.stderr).toBe("");
+  });
+
+  it("writes JSON when requested", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "summarize", "survey.json", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const summary = JSON.parse(result.stdout);
+    expect(summary.schema).toBe("ghost.survey.summary/v1");
+    expect(summary.counts.values).toBe(1);
+    expect(summary.values.kinds[0].top[0].id).toBe(
+      valueRowId(SOURCE_A, "color", "#f97316", "#f97316"),
+    );
+  });
+
+  it("writes to --out", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "summarize", "survey.json", "--out", "summary.md"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("");
+    const summary = await readFile(join(dir, "summary.md"), "utf-8");
+    expect(summary).toContain("# Survey Summary");
+  });
+
+  it("applies budget caps deterministically", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeLargeSurvey(SOURCE_A)),
+    );
+
+    const compact = await runCli(
+      [
+        "survey",
+        "summarize",
+        "survey.json",
+        "--format",
+        "json",
+        "--budget",
+        "compact",
+      ],
+      dir,
+    );
+    const full = await runCli(
+      [
+        "survey",
+        "summarize",
+        "survey.json",
+        "--format",
+        "json",
+        "--budget",
+        "full",
+      ],
+      dir,
+    );
+
+    expect(compact.code).toBe(0);
+    expect(full.code).toBe(0);
+    expect(JSON.parse(compact.stdout).components.top).toHaveLength(20);
+    expect(JSON.parse(full.stdout).components.top).toHaveLength(25);
+  });
+
+  it("fails when the input survey has lint errors", async () => {
+    await writeFile(
+      join(dir, "bad.json"),
+      JSON.stringify({ schema: "ghost.survey/v0" }),
+    );
+
+    const result = await runCli(["survey", "summarize", "bad.json"], dir);
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("failed survey lint");
+    expect(result.stderr).toContain("before summarizing");
+  });
+
+  it("rejects invalid summarize options", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "summarize", "survey.json", "--budget", "tiny"],
+      dir,
+    );
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--budget");
   });
 });

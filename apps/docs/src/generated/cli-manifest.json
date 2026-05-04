@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T15:33:05.965Z",
+  "generatedAt": "2026-05-04T17:00:20.041Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -272,13 +272,29 @@
           "tool": "ghost-expression",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest; Markdown by default, JSON with --format json).",
           "options": [
             {
               "rawName": "-o, --out <path>",
               "name": "out",
               "description": "Write the result to this path (default: stdout)",
               "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "survey summarize output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--budget <name>",
+              "name": "budget",
+              "description": "survey summarize budget: compact, standard, full",
+              "default": "standard",
               "takesValue": true,
               "negated": false
             }
