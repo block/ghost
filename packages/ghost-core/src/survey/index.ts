@@ -1,11 +1,16 @@
 /**
- * Public surface for `ghost.survey/v1` — types, schemas, ID generation,
+ * Public surface for `ghost.survey/v2` — types, schemas, ID generation,
  * lint, and merge. Consumed by `ghost-expression` and any future ghost
  * tool that operates on survey data.
  */
 
 export { recomputeSurveyIds } from "./fix-ids.js";
-export { componentRowId, tokenRowId, valueRowId } from "./id.js";
+export {
+  componentRowId,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "./id.js";
 export {
   lintSurvey,
   SURVEY_FILENAME,
@@ -22,6 +27,11 @@ export {
   SurveySchema,
   SurveySourceSchema,
   TokenRowSchema,
+  UiSurfaceClassificationSchema,
+  UiSurfaceKindSchema,
+  UiSurfaceRenderabilitySchema,
+  UiSurfaceRowSchema,
+  UiSurfaceSignalsSchema,
   ValueRowSchema,
   ValueSpecSchema,
 } from "./schema.js";
@@ -42,6 +52,13 @@ export type {
   SurveySource,
   TokenRow,
   TypographySpec,
+  UiSurfaceClassification,
+  UiSurfaceDensity,
+  UiSurfaceKind,
+  UiSurfaceLayoutShape,
+  UiSurfaceRenderability,
+  UiSurfaceRow,
+  UiSurfaceSignals,
   UnknownSpec,
   ValueRow,
   ValueSpec,

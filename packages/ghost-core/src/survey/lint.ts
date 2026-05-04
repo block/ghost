@@ -1,5 +1,10 @@
 import type { ZodIssue } from "zod";
-import { componentRowId, tokenRowId, valueRowId } from "./id.js";
+import {
+  componentRowId,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "./id.js";
 import { RECOMMENDED_VALUE_KINDS, SurveySchema } from "./schema.js";
 import type { Survey } from "./types.js";
 
@@ -23,12 +28,13 @@ export interface SurveyLintReport {
 export const SURVEY_FILENAME = "survey.json";
 
 /**
- * Lint a parsed survey object against `ghost.survey/v1`.
+ * Lint a parsed survey object against `ghost.survey/v2`.
  *
  * Errors: schema violations (missing fields, wrong types, bad enum values).
  * Warnings: unknown value kinds (open-enum policy), ID mismatches (a row's
  * recorded `id` doesn't match what the deterministic generator would
- * produce for its content), duplicate IDs within the same survey.
+ * produce for its content), and scan coverage gaps.
+ * Errors: duplicate IDs within the same survey.
  */
 export function lintSurvey(input: unknown): SurveyLintReport {
   const issues: SurveyLintIssue[] = [];
@@ -44,6 +50,7 @@ export function lintSurvey(input: unknown): SurveyLintReport {
   const survey = result.data as Survey;
 
   checkSourceGraph(survey, issues);
+  checkUiSurfaceCoverage(survey, issues);
 
   // Open-enum kind warnings.
   survey.values.forEach((row, idx) => {
@@ -100,12 +107,33 @@ export function lintSurvey(input: unknown): SurveyLintReport {
       });
     }
   });
+  survey.ui_surfaces.forEach((row, idx) => {
+    const expected = uiSurfaceRowId(
+      row.source,
+      row.name,
+      row.kind,
+      row.locator,
+    );
+    if (row.id !== expected) {
+      issues.push({
+        severity: "warning",
+        rule: "id-mismatch",
+        message: `id '${row.id}' does not match generator output '${expected}'`,
+        path: `ui_surfaces[${idx}].id`,
+      });
+    }
+  });
 
   // Duplicate-id checks within a single section. (Cross-section duplicates
   // are fine since IDs include a section tag.) Within-survey duplicates
   // mean the scanner emitted two rows with the same content, which the
   // recorder should have merged.
-  for (const section of ["values", "tokens", "components"] as const) {
+  for (const section of [
+    "values",
+    "tokens",
+    "components",
+    "ui_surfaces",
+  ] as const) {
     const seen = new Map<string, number>();
     survey[section].forEach((row, idx) => {
       const prev = seen.get(row.id);
@@ -123,6 +151,20 @@ export function lintSurvey(input: unknown): SurveyLintReport {
   }
 
   return finalize(issues);
+}
+
+function checkUiSurfaceCoverage(
+  survey: Survey,
+  issues: SurveyLintIssue[],
+): void {
+  if (survey.ui_surfaces.length > 0) return;
+  issues.push({
+    severity: "warning",
+    rule: "ui-surfaces-empty",
+    message:
+      "survey.ui_surfaces is empty; this is only acceptable when map.md declares surface_sources.render_strategy: unknown and the scan notes the coverage gap.",
+    path: "ui_surfaces",
+  });
 }
 
 function checkSourceGraph(survey: Survey, issues: SurveyLintIssue[]): void {
@@ -182,8 +224,17 @@ function zodIssues(issues: ZodIssue[]): SurveyLintIssue[] {
     severity: "error" as const,
     rule: `schema/${issue.code}`,
     message: issue.message,
-    path: issue.path.join("."),
+    path: formatZodPath(issue.path),
   }));
+}
+
+function formatZodPath(path: ZodIssue["path"]): string | undefined {
+  if (path.length === 0) return undefined;
+  return path.reduce<string>((formatted, segment) => {
+    if (typeof segment === "number") return `${formatted}[${segment}]`;
+    const key = String(segment);
+    return formatted ? `${formatted}.${key}` : key;
+  }, "");
 }
 
 function finalize(issues: SurveyLintIssue[]): SurveyLintReport {

@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author a target's map.md
 
-**Goal:** produce a valid `map.md` (`ghost.map/v1`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, what feature areas matter for sampling. `map.md` is the first stage of a scan: every later stage (`survey.md` → `survey.json`, `profile.md` → `expression.md`) reads it to skip rediscovery.
+**Goal:** produce a valid `map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the first stage of a scan: every later stage (`survey.md` → `survey.json`, `profile.md` → `expression.md`) reads it to skip rediscovery.
 
 This recipe is *your* job. Ghost's CLI provides `ghost-expression inventory` (deterministic raw signals) and `ghost-expression lint <map.md>` (validation), but you do the synthesis.
 
@@ -39,9 +39,9 @@ Format as a JSON object so the rest of the recipe can quote from it. Skip fields
 
 ### 2. Resolve the schema fields
 
-The `ghost.map/v1` frontmatter requires:
+The `ghost.map/v2` frontmatter requires:
 
-- **`schema: ghost.map/v1`** (literal)
+- **`schema: ghost.map/v2`** (literal)
 - **`id`** — slug (lowercase alphanumeric plus `.` `_` `-`, leading alphanumeric). For fleet scans, this is the fleet target id.
 - **`repo`** — GitHub `org/repo`, or any source identifier that uniquely names this target.
 - **`subject`** — optional `{id, target}` that names the single thing this expression will describe. Use it when the scan needs multiple sources; `subject` stays the primary claim.
@@ -57,15 +57,29 @@ The `ghost.map/v1` frontmatter requires:
 - **`composition.navigation`** — optional short slug (`next-router`, `react-router`, `swiftui-navigation`, …).
 - **`registry`** — optional `{path, components}` if a shadcn-style registry exists.
 - **`design_system`** — `{paths[], entry_files?, derived_files?, path_patterns?, token_source?, upstream?, status}`. `token_source` is `inline` / `external` / `mixed`. `status` is `active` / `mixed` / `unclear`. Set `upstream` when `token_source` is `external` or `mixed`, and prefer representing each upstream as a `sources[]` resolver when the scan author can inspect it.
-- **`ui_surface`** — `{include[], exclude[]}` — globs for sampling scope.
-- **`feature_areas`** — array of `{name, paths[], sub_areas?[]}` describing the surfaces worth sampling. 3–8 areas is typical; fewer is fine for small repos.
+- **`surface_sources`** — `{render_strategy, include[], exclude[], coverage_gaps?}` — globs for implemented UI plus how the surveyor can observe it. `render_strategy` is one of `browser`, `storybook`, `docs`, `native-screenshot`, `static-source`, `mixed`, or `unknown`.
+- **`feature_areas`** — array of `{name, paths[], sub_areas?[]}` describing sampling clusters for implemented surfaces. These are product or documentation surfaces, not just folders. 3–8 areas is typical; fewer is fine for small repos.
 - **`orientation_files`** — array of files an agent should read first to understand the target.
 
 ### 3. Use a manifest if one is provided
 
 If a `manifest.yaml` is present in CWD (some fleet orchestrators inject hand-curated sampling manifests for big repos), treat it as authoritative for `feature_areas`, `module_signals`, and `design_system.path_patterns`. Don't contradict it without evidence.
 
-If no manifest is provided, derive `feature_areas` from the inventory's `top_level_tree` and your own brief exploration: which directories represent product surfaces (e.g. `apps/dashboard`, `packages/ui`, `src/features/*`)?
+If no manifest is provided, derive `feature_areas` and `surface_sources` from the inventory's `top_level_tree` and your own brief exploration: which directories represent observable product surfaces (e.g. `apps/dashboard`, `apps/docs`, `src/routes`, `src/features/*`, `stories/**`, native screenshot fixtures)?
+
+#### Render strategy
+
+Choose the strongest observation path the target supports:
+
+- `browser` — app routes can be launched and inspected in a browser.
+- `storybook` — Storybook or equivalent component stories are the primary observable surface.
+- `docs` — docs/catalogue examples are the primary observable surface.
+- `native-screenshot` — native UI is represented by screenshot fixtures or simulator captures.
+- `static-source` — no renderer is available; surveyor must infer from source files.
+- `mixed` — more than one strategy is materially needed.
+- `unknown` — no trustworthy implemented UI surface is discoverable. Use only with `coverage_gaps` explaining what is missing.
+
+`coverage_gaps` should list important blind spots ("native screens require simulator access", "marketing routes are generated from CMS", "no screenshots checked in"). Empty or absent means the scan author believes the declared sources are enough for the survey stage.
 
 ### 3a. Source graph for split repos
 
@@ -114,8 +128,8 @@ Fix any errors. Lint passing is the success gate — do not declare done until i
 Walk the file yourself against the schema in [schema.md](schema.md). Required checks:
 
 - Frontmatter parses as valid YAML.
-- `schema: ghost.map/v1` literal present.
-- Required fields populated: `id` (slug), `repo`, `mapped_at`, `platform`, `languages`, `build_system`, `package_manifests`, `composition.frameworks`, `composition.rendering`, `composition.styling`, `design_system.paths`, `design_system.status`, `ui_surface.include`, `feature_areas[]`, `orientation_files[]`.
+- `schema: ghost.map/v2` literal present.
+- Required fields populated: `id` (slug), `repo`, `mapped_at`, `platform`, `languages`, `build_system`, `package_manifests`, `composition.frameworks`, `composition.rendering`, `composition.styling`, `design_system.paths`, `design_system.status`, `surface_sources.render_strategy`, `surface_sources.include`, `feature_areas[]`, `orientation_files[]`.
 - `id` matches `^[a-z0-9][a-z0-9._-]*$`.
 - Body sections appear in order: `## Identity`, `## Topology`, `## Conventions`. No other `##` headings between them.
 - If `design_system.token_source` is `external` or `mixed`, `design_system.upstream` is set.

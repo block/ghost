@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: external-tokens-fixture
 repo: example/external-tokens
 mapped_at: 2026-04-27
@@ -23,7 +23,8 @@ design_system:
   token_source: external
   upstream: "@example/design-tokens"
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - "src/components/**"
   exclude:

@@ -1,5 +1,5 @@
 {
-  "schema": "ghost.survey/v1",
+  "schema": "ghost.survey/v2",
   "sources": [
     {
       "target": "github:block/ghost",
@@ -9036,6 +9036,41 @@
       },
       "name": "web-preview",
       "discovered_via": "registry.json"
+    }
+  ],
+  "ui_surfaces": [
+    {
+      "id": "63e543742cb2e428",
+      "source": {
+        "target": "github:block/ghost",
+        "commit": "16f0ab5",
+        "scanned_at": "2026-04-30T15:20:51Z"
+      },
+      "name": "Component registry surface",
+      "kind": "source",
+      "locator": "registry.json#registry:ui",
+      "renderability": "source-only",
+      "files": [
+        "registry.json",
+        "src/components/ui",
+        "src/components/ai-elements"
+      ],
+      "classification": {
+        "intent": "component reference",
+        "surface_type": "component-catalog",
+        "density": "standard",
+        "layout_shape": "control-surface",
+        "confidence": 0.74
+      },
+      "signals": {
+        "dominant_components": ["registry:ui", "ui primitives", "ai-elements"],
+        "layout_patterns": [
+          "component families exposed through registry metadata"
+        ],
+        "notes": [
+          "Source-only evidence from the registry and component folders."
+        ]
+      }
     }
   ]
 }

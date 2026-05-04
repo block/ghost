@@ -6,9 +6,11 @@
 
 | Stage | Artifact | Schema | Authored via | Validated by |
 |---|---|---|---|---|
-| **Map** | `map.md` | `ghost.map/v1` | `map.md` skill recipe + `ghost-expression inventory` | `ghost-expression lint map.md` |
-| **Survey** | `survey.json` | `ghost.survey/v1` | `survey.md` skill recipe + `ghost-expression survey fix-ids` | `ghost-expression lint survey.json` |
+| **Map** | `map.md` | `ghost.map/v2` | `map.md` skill recipe + `ghost-expression inventory` | `ghost-expression lint map.md` |
+| **Survey** | `survey.json` | `ghost.survey/v2` | `survey.md` skill recipe + `ghost-expression survey fix-ids` | `ghost-expression lint survey.json` |
 | **Express** | `expression.md` | (unversioned) | `profile.md` skill recipe (reads survey as ground truth) | `ghost-expression lint expression.md` |
+
+This is a breaking v0 scan migration: `ghost.map/v1` and `ghost.survey/v1` are no longer accepted. Regenerate old scan artifacts through map → survey so `surface_sources` and `ui_surfaces[]` capture implemented UI evidence.
 
 The CLI parses, lints (auto-detects file kind), inventories raw repo signals, runs deterministic data ops on surveys (`merge`, `fix-ids`), structurally diffs expressions, reports per-stage scan progress, and emits derived artifacts (per-project review slash commands, generation context bundles, agentskills.io skill bundles).
 
@@ -37,8 +39,8 @@ ghost-expression inventory ../other-repo            # signals for another path
 
 # Validation — auto-detects expression.md / map.md / survey.json
 ghost-expression lint                                # ./expression.md
-ghost-expression lint map.md                         # validates as ghost.map/v1
-ghost-expression lint survey.json                    # validates as ghost.survey/v1
+ghost-expression lint map.md                         # validates as ghost.map/v2
+ghost-expression lint survey.json                    # validates as ghost.survey/v2
 ghost-expression lint path/to/file --format json     # machine-readable output
 
 # Pipeline orchestration — what stage to run next
@@ -104,7 +106,7 @@ The bundle ships four recipes:
 
 - **`scan.md`** — meta-recipe orchestrating map → survey → profile end-to-end via `scan-status` checkpoints. Use when the user wants a full scan rather than a specific stage.
 - **`map.md`** — write `map.md` from a target's `inventory` output. Stage 1.
-- **`survey.md`** — write `survey.json` from a target's source code. Stage 2. The load-bearing exhaustiveness rule lives here: enumerate the canonical signal in *this* repo (registry, manifest, named declarations) and cross-check counts; sampling is forbidden.
+- **`survey.md`** — write `survey.json` from a target's source code. Stage 2. The load-bearing exhaustiveness rule lives here: enumerate the canonical signal in *this* repo (registry, manifest, named declarations), record implemented UI surfaces in `ui_surfaces[]`, and cross-check counts; sampling is forbidden.
 - **`profile.md`** — interpret a `survey.json` into `expression.md`. Stage 3. Cannot fabricate values not in the survey; cites survey rows as evidence.
 
 Plus a condensed schema reference (`schema.md`) for the `expression.md` frontmatter / body partition.
@@ -115,7 +117,7 @@ Once installed, ask your agent to "scan this design language end-to-end" (or jus
 
 See [`docs/expression-format.md`](https://github.com/block/ghost/blob/main/docs/expression-format.md) for the full `expression.md` spec, including the 49-dim machine-vector breakdown (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]).
 
-The `ghost.survey/v1` schema and `ghost.map/v1` schema both live in `@ghost/core`; the condensed authoring references ship in this package's skill bundle.
+The `ghost.survey/v2` schema and `ghost.map/v2` schema both live in `@ghost/core`; the condensed authoring references ship in this package's skill bundle.
 
 ## License
 

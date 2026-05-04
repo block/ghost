@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { componentRowId, tokenRowId, valueRowId } from "../src/survey/id.js";
+import {
+  componentRowId,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "../src/survey/id.js";
 import type { SurveySource } from "../src/survey/types.js";
 
 const SOURCE_A: SurveySource = {
@@ -94,6 +99,17 @@ describe("section-tagged IDs are non-colliding", () => {
     const componentId = componentRowId(SOURCE_A, "Button");
     expect(tokenId).not.toBe(componentId);
   });
+
+  it("component vs UI surface with same name does not collide", () => {
+    const componentId = componentRowId(SOURCE_A, "Settings");
+    const surfaceId = uiSurfaceRowId(
+      SOURCE_A,
+      "Settings",
+      "route",
+      "/settings",
+    );
+    expect(componentId).not.toBe(surfaceId);
+  });
 });
 
 describe("token / component IDs", () => {
@@ -104,11 +120,26 @@ describe("token / component IDs", () => {
     expect(componentRowId(SOURCE_A, "Button")).toBe(
       componentRowId(SOURCE_A, "Button"),
     );
+    expect(uiSurfaceRowId(SOURCE_A, "Settings", "route", "/settings")).toBe(
+      uiSurfaceRowId(SOURCE_A, "Settings", "route", "/settings"),
+    );
   });
 
   it("differ across names within a section", () => {
     expect(tokenRowId(SOURCE_A, "--brand")).not.toBe(
       tokenRowId(SOURCE_A, "--accent"),
+    );
+    expect(uiSurfaceRowId(SOURCE_A, "Settings", "route", "/settings")).not.toBe(
+      uiSurfaceRowId(SOURCE_A, "Home", "route", "/settings"),
+    );
+  });
+
+  it("UI surface IDs differ across kind and locator", () => {
+    expect(uiSurfaceRowId(SOURCE_A, "Settings", "route", "/settings")).not.toBe(
+      uiSurfaceRowId(SOURCE_A, "Settings", "story", "/settings"),
+    );
+    expect(uiSurfaceRowId(SOURCE_A, "Settings", "route", "/settings")).not.toBe(
+      uiSurfaceRowId(SOURCE_A, "Settings", "route", "/account"),
     );
   });
 });

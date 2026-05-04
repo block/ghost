@@ -4,6 +4,7 @@ import type {
   Survey,
   SurveySource,
   TokenRow,
+  UiSurfaceRow,
   ValueRow,
 } from "./types.js";
 
@@ -26,11 +27,12 @@ export function mergeSurveys(...surveys: Survey[]): Survey {
     throw new Error("mergeSurveys requires at least one input survey");
   }
   return {
-    schema: "ghost.survey/v1",
+    schema: "ghost.survey/v2",
     sources: dedupSources(surveys.flatMap((b) => b.sources)),
     values: dedupRows(surveys.flatMap((b) => b.values)),
     tokens: dedupRows(surveys.flatMap((b) => b.tokens)),
     components: dedupRows(surveys.flatMap((b) => b.components)),
+    ui_surfaces: dedupRows(surveys.flatMap((b) => b.ui_surfaces)),
   };
 }
 
@@ -64,4 +66,11 @@ function dedupSources(sources: SurveySource[]): SurveySource[] {
 
 // Type re-exports kept narrow so consumers don't have to import from `types.js`
 // just to use `mergeSurveys` results.
-export type { ComponentRow, Survey, SurveySource, TokenRow, ValueRow };
+export type {
+  ComponentRow,
+  Survey,
+  SurveySource,
+  TokenRow,
+  UiSurfaceRow,
+  ValueRow,
+};

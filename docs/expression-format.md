@@ -13,7 +13,7 @@ Canonical filename: `expression.md` (flat, no dotfile, no slug prefix). Zero-con
 
 Current schema generation: **6**.
 
-Schema 6 restores `# Signature` as first-class final-picture guidance, adds local-provenance `references:` (`specs`, `components`, `examples`), and uses `checks[]` for human-promoted drift gates. `map.md` and `survey.json` are scan inputs; they are not prompt context.
+Schema 6 restores `# Signature` as first-class final-picture guidance, adds local-provenance `references:` (`specs`, `components`, `examples`), and uses `checks[]` for human-promoted drift gates. `map.md` and `survey.json` are scan inputs; they are not prompt context. In `ghost.survey/v2`, implemented `ui_surfaces[]` evidence informs Signature, `composition-patterns`, checks, and example references; it is not copied wholesale into the terminal expression.
 
 Schema 5 moved decision evidence from frontmatter into the body — each `### dimension` block now carries its rationale prose followed by an optional `**Evidence:**` bullet list. Schema 4's frontmatter `decisions[].evidence` is no longer accepted (`.strict()` rejects it).
 

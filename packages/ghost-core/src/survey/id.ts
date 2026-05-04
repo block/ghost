@@ -19,6 +19,7 @@ const ID_LENGTH = 16;
 const VALUE_TAG = "value";
 const TOKEN_TAG = "token";
 const COMPONENT_TAG = "component";
+const UI_SURFACE_TAG = "ui_surface";
 
 function digest(...parts: (string | undefined)[]): string {
   const hash = createHash("sha256");
@@ -51,4 +52,14 @@ export function tokenRowId(source: SurveySource, name: string): string {
 export function componentRowId(source: SurveySource, name: string): string {
   const [target, commit] = sourceKey(source);
   return digest(target, commit, COMPONENT_TAG, name);
+}
+
+export function uiSurfaceRowId(
+  source: SurveySource,
+  name: string,
+  kind: string,
+  locator: string,
+): string {
+  const [target, commit] = sourceKey(source);
+  return digest(target, commit, UI_SURFACE_TAG, name, kind, locator);
 }

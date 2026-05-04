@@ -1,5 +1,12 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { lintSurvey } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import { lintExpression } from "../../src/core/index.js";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const FIXTURES = resolve(HERE, "../fixtures");
 
 const HEADER = `---
 name: Claude
@@ -58,6 +65,28 @@ No cool grays
     );
     const report = lintExpression(md);
     expect(report.errors).toBe(0);
+  });
+
+  it("keeps a surface-derived composition-patterns fixture lint-clean", () => {
+    const fixtureDir = resolve(FIXTURES, "surface-profile");
+    const survey = JSON.parse(
+      readFileSync(resolve(fixtureDir, "survey.json"), "utf-8"),
+    );
+    const expression = readFileSync(
+      resolve(fixtureDir, "expression.md"),
+      "utf-8",
+    );
+
+    const surveyReport = lintSurvey(survey);
+    expect(surveyReport.errors).toBe(0);
+    expect(survey.ui_surfaces[0].signals.layout_patterns).toContain(
+      "metric strip above timeline",
+    );
+
+    const expressionReport = lintExpression(expression);
+    expect(expressionReport.errors).toBe(0);
+    expect(expression).toContain("### composition-patterns");
+    expect(expression).toContain("survey.ui_surfaces[0]");
   });
 
   it("flags a dimension declared in frontmatter with no matching body block", () => {

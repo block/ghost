@@ -26,7 +26,7 @@ export {
   parseColorToOklch,
   saturationScore,
 } from "./embedding/index.js";
-// --- Map (ghost.map/v1) ---
+// --- Map (ghost.map/v2) ---
 export {
   type GitInfo,
   type InventoryOutput,
@@ -55,7 +55,7 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Survey (ghost.survey/v1) ---
+// --- Survey (ghost.survey/v2) ---
 export {
   type BreakpointSpec,
   type ColorSpec,
@@ -89,7 +89,20 @@ export {
   TokenRowSchema,
   type TypographySpec,
   tokenRowId,
+  type UiSurfaceClassification,
+  UiSurfaceClassificationSchema,
+  type UiSurfaceDensity,
+  type UiSurfaceKind,
+  UiSurfaceKindSchema,
+  type UiSurfaceLayoutShape,
+  type UiSurfaceRenderability,
+  UiSurfaceRenderabilitySchema,
+  type UiSurfaceRow,
+  UiSurfaceRowSchema,
+  type UiSurfaceSignals,
+  UiSurfaceSignalsSchema,
   type UnknownSpec,
+  uiSurfaceRowId,
   type ValueRow,
   ValueRowSchema,
   type ValueSpec,

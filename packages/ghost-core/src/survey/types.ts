@@ -1,10 +1,11 @@
 /**
- * Types for `ghost.survey/v1` — the observed evidence scan artifact.
+ * Types for `ghost.survey/v2` — the observed evidence scan artifact.
  *
  * A survey is the middle artifact in a scan: produced after the map
  * (`map.md`) and before expression synthesis (`expression.md`). It
- * catalogues every concrete design value the agent observed in a target,
- * with structured specs and per-row deterministic IDs.
+ * catalogues every concrete design value and implemented UI surface the
+ * agent observed in a target, with structured specs and per-row
+ * deterministic IDs.
  *
  * Merge semantics are concat-with-id-dedup. Two scans of the same target at
  * the same commit produce identical IDs, so re-merging is idempotent. Two
@@ -188,10 +189,78 @@ export interface ComponentRow extends RowBase {
   sizes?: string[];
 }
 
+// --- UI surface rows ------------------------------------------------------
+
+export type UiSurfaceKind =
+  | "route"
+  | "story"
+  | "screen"
+  | "fixture"
+  | "doc-example"
+  | "screenshot"
+  | "source";
+
+export type UiSurfaceRenderability =
+  | "rendered"
+  | "screenshot"
+  | "source-only"
+  | "unknown";
+
+export type UiSurfaceDensity =
+  | "compressed"
+  | "standard"
+  | "breathing"
+  | "unknown";
+
+export type UiSurfaceLayoutShape =
+  | "article"
+  | "tracker"
+  | "comparison"
+  | "card"
+  | "control-surface"
+  | "flow"
+  | "navigation"
+  | "unknown";
+
+export interface UiSurfaceClassification {
+  /** Open tag: what the surface is trying to do (`configure`, `onboard`, …). */
+  intent?: string;
+  /** Open tag: product-specific surface type (`settings`, `checkout`, …). */
+  surface_type?: string;
+  density?: UiSurfaceDensity;
+  layout_shape?: UiSurfaceLayoutShape;
+  /** Confidence in the optional classifier tags, not in the observed facts. */
+  confidence?: number;
+}
+
+export interface UiSurfaceSignals {
+  /** Component names that materially shape this surface. */
+  dominant_components?: string[];
+  /** Observed composition facts (`sectioned-form`, `left-nav`, …). */
+  layout_patterns?: string[];
+  /** Observed breakpoint behavior, when available. */
+  breakpoint_behavior?: string[];
+  /** IDs of value rows that are visibly load-bearing for this surface. */
+  value_refs?: string[];
+  /** Short factual notes; rationale belongs in expression.md, not here. */
+  notes?: string[];
+}
+
+export interface UiSurfaceRow extends RowBase {
+  name: string;
+  kind: UiSurfaceKind;
+  /** Route path, story id, screenshot path, fixture id, or source locator. */
+  locator: string;
+  renderability: UiSurfaceRenderability;
+  files: string[];
+  classification?: UiSurfaceClassification;
+  signals: UiSurfaceSignals;
+}
+
 // --- Survey --------------------------------------------------------------
 
 export interface Survey {
-  schema: "ghost.survey/v1";
+  schema: "ghost.survey/v2";
   /**
    * Source(s) the survey came from. Always an array — pre-merge surveys
    * have length 1, merged surveys have N entries (one per source scan).
@@ -200,4 +269,5 @@ export interface Survey {
   values: ValueRow[];
   tokens: TokenRow[];
   components: ComponentRow[];
+  ui_surfaces: UiSurfaceRow[];
 }

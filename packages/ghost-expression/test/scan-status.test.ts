@@ -28,7 +28,7 @@ describe("scanStatus", () => {
   });
 
   it("recommends survey when only map.md exists", async () => {
-    await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v1\n---\n");
+    await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v2\n---\n");
     const status = await scanStatus(dir);
     expect(status.map.state).toBe("present");
     expect(status.survey.state).toBe("missing");
@@ -36,10 +36,10 @@ describe("scanStatus", () => {
   });
 
   it("recommends expression when map + survey exist but expression is missing", async () => {
-    await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v1\n---\n");
+    await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v2\n---\n");
     await writeFile(
       join(dir, "survey.json"),
-      JSON.stringify({ schema: "ghost.survey/v1" }),
+      JSON.stringify({ schema: "ghost.survey/v2" }),
     );
     const status = await scanStatus(dir);
     expect(status.map.state).toBe("present");

@@ -20,7 +20,7 @@ export interface MapLintReport {
 }
 
 /**
- * Lint a `map.md` source string against `ghost.map/v1`.
+ * Lint a `map.md` source string against `ghost.map/v2`.
  *
  * Errors include malformed YAML, missing required frontmatter fields, schema
  * violations, missing body sections, out-of-order body sections, and empty
