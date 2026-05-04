@@ -46,11 +46,25 @@ export default function Home() {
               Today, brand lives in artifacts written primarily for humans, to
               aid collaboration and understanding. It's not the same for agents.
               They default to generating from whatever the model learned, and
-              brand quality quietly slips. Tokens are the easy half: fonts,
-              colors, spacing can be pinned down, and the agent will respect
-              them. The hard half is <em>character</em>: the posture a product
-              takes, what it refuses to do. That doesn't fit in a token file,
-              and it's where generations drift first.
+              brand quality quietly slips.
+            </p>
+            <p className="thesis-item">
+              Most design-system work for AI starts by codifying the system
+              itself: enumerate the colors, expose the components, describe the
+              pieces. That matters, but it mostly teaches the inventory. The
+              same palette, type scale, and component set can be composed into a
+              multitude of products. The missing signal is the net result: how a
+              specific product or surface actually used those ingredients.
+            </p>
+            <p className="thesis-item">
+              That is what Ghost captures as an <em>expression</em>: the
+              target's intended implementation of its design language. It names
+              the patterns that recur, the hierarchy it prefers, the voice it
+              speaks in, the stance it takes, and the things it refuses. Specs
+              are still evidence; they are just not the whole language. The
+              portable format is the composition itself, made readable enough
+              for an agent to generate against and concrete enough for drift to
+              be checked.
             </p>
             <p className="thesis-item">
               And it has to be checkable. A voice that can only be evaluated by

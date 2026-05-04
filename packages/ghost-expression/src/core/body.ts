@@ -3,15 +3,15 @@ import type { DesignDecision } from "@ghost/core";
 /**
  * Structured read of an expression.md body. The body is authoritative for
  * prose — # Character, # Signature, and per-dimension rationale under # Decisions.
- * Machine-facts (dimension slugs, evidence, tokens) live in the
- * frontmatter and are joined in by `applyBody` during parse.
+ * Frontmatter carries the machine index and token digest; body evidence is
+ * parsed from each `### dimension` block and joined in by `applyBody`.
  */
 export interface BodyData {
   /** From `# Character` — authoritative source for DesignObservation.summary */
   character?: string;
   /** From `# Signature` — recognizable output posture and dominant moves */
   signature?: string;
-  /** From `# Decisions` `### slug` blocks — dimension + prose rationale (no evidence) */
+  /** From `# Decisions` `### slug` blocks — dimension + prose rationale + evidence */
   decisions?: DesignDecision[];
 }
 
