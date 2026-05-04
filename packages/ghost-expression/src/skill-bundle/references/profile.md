@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the project's design language as an interpretation. **You are the interpreter, not the surveyor.** Read the `survey.json` as ground truth for what values the project actually ships; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
+**Goal:** produce a valid `expression.md` that captures the target's design language as an interpretation. **You are the interpreter, not the surveyor.** Read the `survey.json` as ground truth for what values the target actually ships; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
 
 `expression.md` is the terminal artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). Yours is the third stage.
 
@@ -22,7 +22,7 @@ Terminal-impact filter:
 
 `survey.json` is evidence. `expression.md` is curated truth. Do not summarize every survey row, every component, or every upstream token. Promote the few repeated constraints, defaults, absences, references, signatures, and token choices that downstream review or generation will actually use.
 
-`survey.json` is not generation prompt context. Read it once for profiling, then write a compact expression that points agents to living source files through `references:` and carries only the digest needed for generation and drift.
+`survey.json` is not generation prompt context. Read it once for profiling, then write a compact expression that carries only the digest needed for generation and drift. Assume `expression.md` may be used as a reference by another project that does not have the original files. Local paths belong in `references:` and evidence provenance; the prose body must stand on its own.
 
 ## Pre-requisites
 
@@ -60,9 +60,9 @@ Branch the rest of the recipe on signals from `map.md`. Apply these conditions i
 
 Note the chosen mode in your scratchpad — it shapes the references, checks, token digest, and prose you write.
 
-### 2. Direct references (map-derived, expression-facing)
+### 2. Local references (map-derived, expression-facing)
 
-Populate frontmatter `references:` from useful direct paths only:
+Populate frontmatter `references:` from useful local paths only:
 
 ```yaml
 references:
@@ -71,15 +71,17 @@ references:
   examples: []
 ```
 
-Use `map.md` as the source for these paths, but do not mention `map.md` in the expression. Good `specs` are token files, theme files, Tailwind configs, style dictionaries, registry manifests, or canonical design docs. Good `components` are component directories or package entrypoints a generator should inspect before inventing UI. Good `examples` are docs, registry examples, Storybook/demo roots, or app routes that show the language in practice.
+Use `map.md` as the source for these paths, but do not mention `map.md` in the expression. Good `specs` are token files, theme files, Tailwind configs, style dictionaries, registry manifests, or canonical design docs. Good `components` are component directories or package entrypoints a generator can inspect when it is working inside the source repo. Good `examples` are docs, registry examples, Storybook/demo roots, or app routes that show the language in practice.
 
-Keep the lists short and high-signal. If a path would not help generation or drift review, leave it out.
+Keep the lists short and high-signal. Treat references as **local provenance and optional source material**, not as portable instructions. If a path would not help generation or drift review when it is accessible, leave it out.
 
 ### 3. Layer 1 — Character and Signature
 
 Subjective. 2–4 sentences capturing what this design language is and how it feels. Read the survey *and* sample 3–5 high-occurrence files to actually see the surfaces — counts alone don't tell you the visual register. The prose lives under `# Character` in the body.
 
-Then write `# Signature`: 2–4 sentences about the final picture. Capture dominant moves, recognizable layout posture, repeated composition habits, and the stance the project takes when turning the same specs into output. Signature is not a raw token summary; it is the “how this tends to look when it comes together” section generators should feel in their hands.
+Do not make the project/repo name the grammatical subject of Character. The `id` already names the source. Write as a style specimen: "A monochrome editorial gallery language..." not "Design Playground is...". Mention the brand/product name only when it is itself a visible design fact (for example a public wordmark, font name, or brand reference).
+
+Then write `# Signature`: 2–4 sentences about the final picture. Capture dominant moves, recognizable layout posture, repeated composition habits, and the stance the language takes when turning the same specs into output. Signature is not a raw token summary; it is the “how this tends to look when it comes together” section generators should feel in their hands.
 
 Use positive language, not only prohibitions. If the system is restrained, monochrome, quiet, or utilitarian, say how it still creates variety: editorial scale contrast, shaped composition, semantic/data color when color is doing work, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Avoid summaries that collapse into "gray, plain, no decoration"; downstream generators hear that as "make stacks of gray cards." The better formulation is: restrained but not plain.
 
@@ -218,6 +220,15 @@ Copy [../assets/expression.template.md](../assets/expression.template.md). Fill 
 - **Frontmatter:** all structured fields (identity, `references`, `observation.personality`/`.resembles`, `decisions[].dimension`, optional `checks[]`, `palette`, `spacing`, `typography`, `surfaces`).
 - **Body:** `# Character` (observation summary), `# Signature` (final-picture posture), `# Decisions` (one `### <dim>` block per decision, each ending with `**Evidence:**` bullets citing survey rows).
 
+Frontmatter `decisions[]` is an index, not an empty decision object. Each `dimension` listed there must have its actual rationale in a matching body block (`### color-strategy`, etc.). Do not try to put `decision:` or `evidence:` into frontmatter.
+
+Evidence is provenance, not generation instruction. Make evidence bullets portable first:
+
+- Prefer survey-grounded patterns, counts, token names, values, and generic surface roles: "18 radius observations use 999px for pills/circular controls" or "`--radius-pill: 999px`; structural radii cluster at 10/12/16px".
+- Avoid making local filenames or component names the subject of a claim. Say "media cards use asset-as-surface with black pill metadata" rather than "`GridCard.svelte` uses...".
+- If a local path is useful, put it at the end as provenance in parentheses, after the portable claim.
+- Public component APIs in a reusable library are okay to name (`Button`, `Card`) because downstream consumers may share the API; private app component filenames are usually not.
+
 Partition matters. See [schema.md](schema.md) for which field lives where.
 
 If the target will be used for AI-generated outputs, include a `composition-patterns` decision when supported by examples, registry metadata, docs, or repeated component usage. Name the response shapes the language supports:
@@ -245,6 +256,7 @@ Walk the file against the schema in [schema.md](schema.md). Required checks:
 - Required fields: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
 - Body sections appear in order: `# Character`, `# Signature`, `# Decisions` (when decisions are present). No prose in frontmatter.
 - For any `### dim` block in the body, a matching `decisions[].dimension` entry exists in frontmatter (and vice versa).
+- Character and Signature describe the language directly; they do not introduce the repo/project as the subject.
 - For any `checks[]` entry: `id` is unique, `pattern` is non-empty, `support` is present and preferably ≥ `0.85`, `enforce_at` is present where possible, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `observed_count` is a non-negative integer.
 - If `presence_floor` is set, `observed_count` should also be set; otherwise absence escalation falls back to coarse frontmatter proxies.
 
@@ -252,6 +264,8 @@ Common errors regardless of path:
 
 - Prose in frontmatter → move to body.
 - `### dim` with no matching `decisions[]` entry → remove the orphan.
+- Character starts with the project name → rewrite it as a language description.
+- Evidence bullet is just a local file/component citation → rewrite it as a portable pattern with optional local provenance.
 - Palette entry not cited in any evidence → cite it (from a survey row) or drop it.
 - Typography size not in the survey → drop it; the surveyor missed it or it's not real.
 

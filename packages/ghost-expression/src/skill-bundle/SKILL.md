@@ -9,7 +9,7 @@ metadata:
 
 # Ghost Expression — Authoring the Canonical Artifact
 
-This skill helps you author the project's design language — its `expression.md` (YAML frontmatter + Markdown body: Character → Signature → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
+This skill helps you author a project's design language — its `expression.md` (YAML frontmatter + Markdown body: Character → Signature → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
 
 You do the synthesis (the profile recipe). The `ghost-expression` CLI is the calculator you reach for when you need a reproducible answer: parsing, schema validation, layout, structural diff. Call it freely; the output is ground truth.
 
@@ -57,6 +57,8 @@ An `expression.md` has:
 
 - **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
 - **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (`expression.signature`), `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
+
+`decisions[].dimension` is an index, not an empty decision object: the body carries the actual rationale and evidence. `references` are local provenance / optional source material; the expression body should remain portable enough to drift against or generate from in another project.
 
 When profiling for generation, capture positive range as well as constraints. A restrained system should still say how it creates variety: editorial scale, shaped composition, semantic/data color, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Use `composition-patterns` when examples show article, tracker, comparison, card, or control-surface shapes.
 

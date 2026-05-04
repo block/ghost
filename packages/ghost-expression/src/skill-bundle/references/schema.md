@@ -26,10 +26,10 @@ observation:
   personality: [restrained, editorial]   # 3-6 adjectives
   resembles: [linear, notion]       # 1-3 known references this resembles
 
-# abstract design decisions — frontmatter carries the dimension slug only.
-# Rationale prose AND `**Evidence:**` bullets live in the body under the
-# matching `### <dimension>` block. The schema is `.strict()` and rejects
-# `evidence:` (or any other field) here.
+# decision index — frontmatter carries the dimension slug only.
+# These entries are not empty decisions: rationale prose AND `**Evidence:**`
+# bullets live in the body under the matching `### <dimension>` block.
+# The schema is `.strict()` and rejects `decision:` / `evidence:` here.
 decisions:
   - dimension: color-strategy            # freeform slug
   - dimension: spatial-system
@@ -86,7 +86,7 @@ metadata:
 ```markdown
 # Character
 
-2-4 sentences capturing the holistic personality of this design language. This is `observation.summary`.
+2-4 sentences capturing the holistic personality of this design language. This is `observation.summary`. Describe the language directly; do not introduce the repo/project name as the subject unless the name is itself a visible brand/design fact.
 
 # Signature
 
@@ -99,8 +99,8 @@ metadata:
 Prose rationale for the color-strategy decision. This is `decisions[i].decision` — the implementation-agnostic statement of the pattern. One `### <dimension>` block per entry in `decisions`, matched by dimension slug.
 
 **Evidence:**
-- `--color-primary: #0066cc`
-- `src/theme.ts:12`
+- `--color-primary: #0066cc` resolves the primary action color
+- Survey color evidence: 31 of 33 color observations fall on the documented palette
 
 ### spatial-system
 
@@ -108,6 +108,7 @@ Prose rationale for the spatial-system decision.
 
 **Evidence:**
 - `--space-4: 16px`
+- Survey spacing evidence: padding, gap, and margin observations cluster on 4px increments
 
 ### composition-patterns
 
@@ -128,7 +129,7 @@ Every field lives in exactly one layer:
 | Field | Layer |
 |---|---|
 | `id`, `source`, `timestamp`, `sources` | Frontmatter |
-| `references.specs/components/examples` | Frontmatter |
+| `references.specs/components/examples` | Frontmatter (local provenance / optional source material) |
 | `observation.personality`, `observation.resembles` | Frontmatter |
 | `observation.summary` | **Body** (`# Character`) |
 | `signature` | **Body** (`# Signature`) |
@@ -140,6 +141,8 @@ Every field lives in exactly one layer:
 | `embedding` | Sibling `embedding.md` |
 
 Putting prose into frontmatter is a schema error. The writer and reader both enforce this. When in doubt: structured data → frontmatter; narrative → body.
+
+Evidence bullets are provenance, not portable instructions. Prefer survey-grounded patterns, token names, values, counts, and generic surface roles. A local path can appear as supporting provenance, but the claim should still make sense to a downstream project that cannot open the original file.
 
 ## Validation
 
