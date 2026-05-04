@@ -1,27 +1,49 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: managerbot
-repo: squareup/square-web/apps/managerbot
-mapped_at: 2026-04-30
+repo: squareup/square-web
+subject:
+  id: managerbot
+  target: squareup/square-web/apps/managerbot
+sources:
+  - id: managerbot
+    role: primary
+    target: squareup/square-web/apps/managerbot
+    paths:
+      - apps/managerbot/managerbot-web
+      - apps/managerbot/managerbot-storybook
+      - apps/managerbot/docs
+  - id: managerbot-ui
+    role: resolver
+    target: squareup/square-web/libs/managerbot/managerbot-ui
+    resolves: [color, spacing, typography, radius, shadow, motion, components]
+    paths:
+      - libs/managerbot/managerbot-ui
+mapped_at: 2026-05-04
 platform: web
 languages:
-  - { name: typescript, files: 3614, share: 0.92 }
-  - { name: json, files: 190, share: 0.05 }
-  - { name: yaml, files: 59, share: 0.015 }
-  - { name: markdown, files: 51, share: 0.013 }
-  - { name: javascript, files: 10, share: 0.003 }
-  - { name: css, files: 4, share: 0.001 }
+  - { name: typescript, files: 3703, share: 0.908 }
+  - { name: json, files: 209, share: 0.051 }
+  - { name: markdown, files: 88, share: 0.022 }
+  - { name: yaml, files: 62, share: 0.015 }
+  - { name: javascript, files: 8, share: 0.002 }
+  - { name: css, files: 6, share: 0.001 }
   - { name: shell, files: 4, share: 0.001 }
 build_system: [nx, vite, pnpm]
 package_manifests:
-  - libs/ai-sdk-kgoose-provider/package.json
-  - libs/managerbot-ai-server-tools/package.json
-  - libs/managerbot-arazzo-engine/package.json
-  - libs/managerbot-bff/package.json
-  - libs/managerbot-kgoose/package.json
-  - libs/managerbot-schemas/package.json
-  - libs/managerbot-types-protos/package.json
-  - libs/managerbot-ui/package.json
+  - apps/managerbot/managerbot-web/package.json
+  - apps/managerbot/managerbot-storybook/package.json
+  - apps/managerbot/managerbot-mcp/package.json
+  - apps/managerbot/managerbot-eval/package.json
+  - apps/managerbot/managerbot-e2e/package.json
+  - apps/managerbot/libs/ai-sdk-kgoose-provider/package.json
+  - libs/managerbot/managerbot-ai-server-tools/package.json
+  - libs/managerbot/managerbot-arazzo-engine/package.json
+  - libs/managerbot/managerbot-bff/package.json
+  - libs/managerbot/managerbot-kgoose/package.json
+  - libs/managerbot/managerbot-schemas/package.json
+  - libs/managerbot/managerbot-types-protos/package.json
+  - libs/managerbot/managerbot-ui/package.json
 composition:
   frameworks:
     - { name: react, version: "19" }
@@ -39,40 +61,44 @@ composition:
   navigation: react-router
 design_system:
   paths:
-    - libs/managerbot-ui/src/components
-    - libs/managerbot-ui/src/components/ai-elements
-    - libs/managerbot-ui/src/styles
-    - libs/managerbot-ui/src/hooks
-    - libs/managerbot-ui/src/utils
+    - libs/managerbot/managerbot-ui/src/components
+    - libs/managerbot/managerbot-ui/src/components/ai-elements
+    - libs/managerbot/managerbot-ui/src/styles
+    - libs/managerbot/managerbot-ui/src/hooks
+    - libs/managerbot/managerbot-ui/src/utils
   entry_files:
-    - libs/managerbot-ui/components.json
-    - libs/managerbot-ui/src/styles/globals.css
-    - libs/managerbot-ui/src/styles/theme.css
-    - libs/managerbot-ui/package.json
-  token_source: inline
+    - libs/managerbot/managerbot-ui/components.json
+    - libs/managerbot/managerbot-ui/src/styles/globals.css
+    - libs/managerbot/managerbot-ui/src/styles/theme.css
+    - libs/managerbot/managerbot-ui/package.json
+  token_source: mixed
+  upstream:
+    - libs/managerbot/managerbot-ui
+    - "@squareup/market-react"
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
-    - libs/managerbot-ui/src/components/**
-    - libs/managerbot-ui/src/styles/**
-    - libs/managerbot-ui/src/hooks/**
-    - managerbot-web/src/components/**
-    - managerbot-web/src/routes/**
-    - managerbot-storybook/**
+    - libs/managerbot/managerbot-ui/src/components/**
+    - libs/managerbot/managerbot-ui/src/styles/**
+    - libs/managerbot/managerbot-ui/src/hooks/**
+    - apps/managerbot/managerbot-web/src/components/**
+    - apps/managerbot/managerbot-web/src/routes/**
+    - apps/managerbot/managerbot-storybook/**
   exclude:
     - "**/node_modules/**"
     - "**/dist/**"
     - "**/*.spec.ts"
     - "**/*.spec.tsx"
     - "**/*.stories.tsx"
-    - libs/managerbot-ui/src/components/visx-charts/**
-    - libs/managerbot-ui/src/components/rjsf/**
-    - managerbot-e2e/**
-    - managerbot-eval/**
+    - libs/managerbot/managerbot-ui/src/components/visx-charts/**
+    - libs/managerbot/managerbot-ui/src/components/rjsf/**
+    - apps/managerbot/managerbot-e2e/**
+    - apps/managerbot/managerbot-eval/**
 feature_areas:
   - name: ui-primitives
     paths:
-      - libs/managerbot-ui/src/components
+      - libs/managerbot/managerbot-ui/src/components
     sub_areas:
       - shadcn-shell
       - form-controls
@@ -80,7 +106,7 @@ feature_areas:
       - layout
   - name: ai-elements
     paths:
-      - libs/managerbot-ui/src/components/ai-elements
+      - libs/managerbot/managerbot-ui/src/components/ai-elements
     sub_areas:
       - conversation
       - prompt-input
@@ -90,11 +116,11 @@ feature_areas:
       - tool
   - name: charts
     paths:
-      - libs/managerbot-ui/src/components/visx-charts
+      - libs/managerbot/managerbot-ui/src/components/visx-charts
   - name: web-app
     paths:
-      - managerbot-web/src/routes
-      - managerbot-web/src/components
+      - apps/managerbot/managerbot-web/src/routes
+      - apps/managerbot/managerbot-web/src/components
     sub_areas:
       - chat-conversation
       - tasks
@@ -103,16 +129,18 @@ feature_areas:
       - settings
   - name: storybook
     paths:
-      - managerbot-storybook
+      - apps/managerbot/managerbot-storybook
   - name: design-tokens
     paths:
-      - libs/managerbot-ui/src/styles
+      - libs/managerbot/managerbot-ui/src/styles
 orientation_files:
-  - README.md
-  - CLAUDE.md
-  - libs/managerbot-ui/components.json
-  - libs/managerbot-ui/src/styles/theme.css
-  - libs/managerbot-ui/package.json
+  - apps/managerbot/README.md
+  - apps/managerbot/AGENTS.md
+  - apps/managerbot/managerbot-web/AGENTS.md
+  - libs/managerbot/managerbot-ui/AGENTS.md
+  - libs/managerbot/managerbot-ui/components.json
+  - libs/managerbot/managerbot-ui/src/styles/theme.css
+  - libs/managerbot/managerbot-ui/package.json
 ---
 
 ## Identity
@@ -126,8 +154,8 @@ LLM-mediated tools against Square's APIs.
 
 ## Topology
 
-The design system lives in `libs/managerbot-ui` — a workspace package
-(`@squareup/managerbot-ui`) consumed by `managerbot-web`. It is a
+The design system lives in `libs/managerbot/managerbot-ui` — a workspace package
+(`@squareup/managerbot-ui`) consumed by `apps/managerbot/managerbot-web`. It is a
 shadcn-flavored library: 130-plus primitive components plus an
 `ai-elements/` sub-tree of LLM chat surfaces (conversation, prompt-input,
 reasoning, artifact, canvas, tool) sourced from the
@@ -135,16 +163,16 @@ reasoning, artifact, canvas, tool) sourced from the
 `src/styles/theme.css`, layered under `globals.css`. Charts use visx,
 forms use react-hook-form + rjsf, motion is `motion`/framer-motion.
 
-Customer-facing UI lives in two places. The library is the catalogue
-(also showcased in `managerbot-storybook`), and `managerbot-web/src` is
-the consuming app — its `routes/` tree (insights, tasks, pulse, session,
-settings, labs, panels) and `components/` tree (chat-conversation, tools,
-tasks-popover, pinned-widgets, pages) wire primitives into product
-surfaces.
+Customer-facing UI lives in two places. The shared library is the
+catalogue (also showcased in `apps/managerbot/managerbot-storybook`), and
+`apps/managerbot/managerbot-web/src` is the consuming app — its `routes/`
+tree (insights, tasks, pulse, session, settings, labs, panels) and
+`components/` tree (chat-conversation, tools, tasks-popover,
+pinned-widgets, pages) wire primitives into product surfaces.
 
 Excludes follow the usual monorepo noise (`node_modules`, `dist`) plus
 test artifacts (`*.spec.tsx`, `*.stories.tsx`, `managerbot-e2e`,
-`managerbot-eval`) and library wrappers that aren't load-bearing for the
+`managerbot-eval`) and library wrappers that are secondary to the core
 expression (`visx-charts`, `rjsf`).
 
 ## Conventions
@@ -157,7 +185,7 @@ its surface via package `exports` rather than a shadcn `registry.json`
 Lucide icons, and a single external registry alias (`@ai-elements`).
 
 Theme tokens follow Tailwind 4's `@theme inline` pattern: raw color
-ramps in `:root`, a monochrome semantic layer
+ramps scoped under `.managerbot-ui-root`, a monochrome semantic layer
 (`--background`/`--foreground`/`--primary`/...) defined twice for light
 and `.dark`, and a `force-light` utility for forced color modes. The
 font stack is "Cash Sans" (loaded from `cash-f.squarecdn.com`) over the
@@ -168,7 +196,9 @@ green/blue/purple core families, and Tailwind's full extended palette
 (slate/gray/zinc/stone/rose/orange/amber/lime/emerald/teal/cyan/sky/
 indigo/violet/fuchsia/pink) is preserved for chart use.
 
-Orientation reading order is `README.md` (architecture overview) →
-`CLAUDE.md` (agent context) → `components.json` (shadcn config) →
-`libs/managerbot-ui/src/styles/theme.css` (the canonical token layer)
-→ `libs/managerbot-ui/package.json` (dependency footprint).
+Orientation reading order is `apps/managerbot/README.md` (architecture
+overview) → `apps/managerbot/AGENTS.md` (agent context) →
+`libs/managerbot/managerbot-ui/components.json` (shadcn config) →
+`libs/managerbot/managerbot-ui/src/styles/theme.css` (the canonical token
+layer) → `libs/managerbot/managerbot-ui/package.json` (dependency
+footprint).

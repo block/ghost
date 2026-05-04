@@ -7,7 +7,7 @@ import { EXPRESSION_FILENAME } from "./index.js";
  * Per-stage state in a scan directory.
  *
  *   `missing` — the artifact doesn't exist yet.
- *   `present` — the artifact exists. Existence is the only signal v1
+ *   `present` — the artifact exists. Existence is the only signal this
  *     surfaces; hash-based freshness (`stale` vs `present`) is a planned
  *     enhancement once `.scan-meta.json` is in play.
  */
@@ -45,7 +45,7 @@ export interface ScanStatus {
  *   - expression → `expression.md`
  *
  * Hash-keyed freshness (`.scan-meta.json` with input/output hashes per
- * stage) is the planned enhancement. For v1, orchestrators that want
+ * stage) is the planned enhancement. For now, orchestrators that want
  * "force rerun" behavior delete the artifact themselves before calling
  * scan-status — same idiom design-world-model already uses.
  */

@@ -25,12 +25,12 @@ When the CLI is present, prefer it — the output is deterministic and idempoten
 
 | Verb | Purpose |
 |---|---|
-| `ghost-expression lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` (auto-detects by `.json` extension, `schema: ghost.map/v1` frontmatter, or filename). Use before declaring an artifact valid. |
+| `ghost-expression lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` (auto-detects by `.json` extension, `schema: ghost.map/v2` frontmatter, or filename). Use before declaring an artifact valid. |
 | `ghost-expression inventory [path]` | Emit deterministic raw repo signals (manifests, language histogram, candidate config files, registry presence, top-level tree, git remote) as JSON. Feeds the topology recipe. |
 | `ghost-expression scan-status [dir]` | Report which scan stages have produced artifacts (`map.md`, `survey.json`, `expression.md`) and which stage to run next. Use to decide what to do at the start of a scan or between stages. |
 | `ghost-expression describe [expression.md]` | Print a section map (line ranges + token estimates) so you can selectively read only the sections you need instead of loading the whole file. Use before review/generate when the expression is large. |
 | `ghost-expression diff <a.md> <b.md>` | Structural prose-level diff between two expressions — what decisions, palette roles, and tokens changed. **Not the same as `ghost-drift compare`** (which returns embedding distance). Use diff when you want to read what changed; use compare when you want a number. |
-| `ghost-expression survey <op> [...surveys]` | Operate on `ghost.survey/v1` files. `merge` — concat with id-based dedup, deterministic and idempotent (useful for modular rollups and fleet cohort views). `fix-ids` — recompute every row's `id` from content (use after authoring rows with empty `id` fields). |
+| `ghost-expression survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. `merge` — concat with id-based dedup, deterministic and idempotent (useful for modular rollups and fleet cohort views). `fix-ids` — recompute every row's `id` from content (use after authoring rows with empty `id` fields). |
 | `ghost-expression emit <kind>` | Derive per-project artifacts from `expression.md`. Kinds: `review-command` (Rams-style slash command), `context-bundle` (multi-file generation prompt), `skill` (this agentskills.io bundle). |
 
 If you find yourself reaching for `ghost-expression scan` / `ghost-expression survey` / `ghost-expression profile` — those are *your* workflows, not CLI commands. Follow the recipes below.

@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: cash-android
 repo: example/cash-android
 mapped_at: 2026-04-26
@@ -23,7 +23,8 @@ design_system:
   entry_files:
     - app/src/main/kotlin/com/example/cash/theme/Theme.kt
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - app/src/main/kotlin/com/example/cash/ui/**
   exclude:

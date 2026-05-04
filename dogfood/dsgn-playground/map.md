@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: dsgn-playground
 repo: squareup/dsgn-playground
 mapped_at: 2026-05-04
@@ -51,7 +51,8 @@ design_system:
     - tailwind.config.js
   token_source: inline
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - src/app.css
     - src/scss/**

@@ -446,11 +446,42 @@ for (const c of components) {
 // ---------- 9. Emit.
 const values = Array.from(valueAcc.values());
 const survey = {
-  schema: "ghost.survey/v1",
+  schema: "ghost.survey/v2",
   sources: [SOURCE],
   values,
   tokens,
   components,
+  ui_surfaces: [
+    {
+      id: "",
+      source: SOURCE,
+      name: "Ghost UI component catalogue",
+      kind: "source",
+      locator: "registry.json#registry:ui",
+      renderability: "source-only",
+      files: [
+        "registry.json",
+        "src/components/ui",
+        "src/components/ai-elements",
+      ],
+      classification: {
+        intent: "component reference",
+        surface_type: "component-catalog",
+        density: "standard",
+        layout_shape: "control-surface",
+        confidence: 0.72,
+      },
+      signals: {
+        dominant_components: ["registry:ui", "ui primitives", "ai-elements"],
+        layout_patterns: [
+          "registry item catalogue with primitive and AI element families",
+        ],
+        notes: [
+          "Dogfood scan records implemented surface evidence from source and registry metadata.",
+        ],
+      },
+    },
+  ],
 };
 
 const outPath =

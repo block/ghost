@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: ghost-ui
 repo: block/ghost
 mapped_at: 2026-04-29
@@ -49,7 +49,8 @@ design_system:
     - src/lib/theme-provider.tsx
   token_source: inline
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - "src/components/ui/**"
     - "src/components/ai-elements/**"

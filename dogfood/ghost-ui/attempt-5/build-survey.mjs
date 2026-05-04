@@ -917,7 +917,7 @@ for (const path of walk(join(TARGET_ROOT, "src/components/theme")).filter(
 }
 
 const survey = {
-  schema: "ghost.survey/v1",
+  schema: "ghost.survey/v2",
   sources: [SOURCE],
   values: [...values.values()]
     .map((row) => {
@@ -942,6 +942,37 @@ const survey = {
     ),
   tokens: tokens.sort((a, b) => a.name.localeCompare(b.name)),
   components: components.sort((a, b) => a.name.localeCompare(b.name)),
+  ui_surfaces: [
+    {
+      id: "",
+      source: SOURCE,
+      name: "Ghost UI component catalogue",
+      kind: "source",
+      locator: "registry.json#registry:ui",
+      renderability: "source-only",
+      files: [
+        "registry.json",
+        "src/components/ui",
+        "src/components/ai-elements",
+      ],
+      classification: {
+        intent: "component reference",
+        surface_type: "component-catalog",
+        density: "standard",
+        layout_shape: "control-surface",
+        confidence: 0.72,
+      },
+      signals: {
+        dominant_components: ["registry:ui", "ui primitives", "ai-elements"],
+        layout_patterns: [
+          "registry item catalogue with primitive and AI element families",
+        ],
+        notes: [
+          "Dogfood scan records implemented surface evidence from source and registry metadata.",
+        ],
+      },
+    },
+  ],
 };
 
 writeFileSync(OUT, `${JSON.stringify(survey, null, 2)}\n`);

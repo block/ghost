@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-03T18:52:50.824Z",
+  "generatedAt": "2026-05-04T15:33:05.965Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -272,7 +272,7 @@
           "tool": "ghost-expression",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Operate on ghost.survey/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
           "options": [
             {
               "rawName": "-o, --out <path>",

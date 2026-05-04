@@ -1,5 +1,5 @@
 {
-  "schema": "ghost.survey/v1",
+  "schema": "ghost.survey/v2",
   "sources": [
     {
       "id": "ghost-ui",
@@ -7731,6 +7731,44 @@
       "variants": [],
       "sizes": [],
       "occurrences": 1
+    }
+  ],
+  "ui_surfaces": [
+    {
+      "id": "b5ae8943f7a89468",
+      "source": {
+        "id": "ghost-ui",
+        "role": "primary",
+        "target": "block/ghost@packages/ghost-ui",
+        "commit": "83c2b64",
+        "scanned_at": "2026-05-01T17:51:23Z",
+        "scanner_version": "dogfood-attempt-4"
+      },
+      "name": "Ghost UI component catalogue",
+      "kind": "source",
+      "locator": "registry.json#registry:ui",
+      "renderability": "source-only",
+      "files": [
+        "registry.json",
+        "src/components/ui",
+        "src/components/ai-elements"
+      ],
+      "classification": {
+        "intent": "component reference",
+        "surface_type": "component-catalog",
+        "density": "standard",
+        "layout_shape": "control-surface",
+        "confidence": 0.72
+      },
+      "signals": {
+        "dominant_components": ["registry:ui", "ui primitives", "ai-elements"],
+        "layout_patterns": [
+          "registry item catalogue with primitive and AI element families"
+        ],
+        "notes": [
+          "Dogfood scan records implemented surface evidence from source and registry metadata."
+        ]
+      }
     }
   ]
 }

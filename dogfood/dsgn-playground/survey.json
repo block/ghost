@@ -1,5 +1,5 @@
 {
-  "schema": "ghost.survey/v1",
+  "schema": "ghost.survey/v2",
   "sources": [
     {
       "id": "dsgn-playground",
@@ -12818,6 +12818,51 @@
       },
       "name": "Video",
       "discovered_via": "svelte-file"
+    }
+  ],
+  "ui_surfaces": [
+    {
+      "id": "a4cd9dad19352cf3",
+      "source": {
+        "id": "dsgn-playground",
+        "role": "primary",
+        "target": "github:squareup/dsgn-playground",
+        "commit": "8c810580233d7aa2392971ebbe88866d4af444f3",
+        "scanned_at": "2026-05-04T00:00:00Z",
+        "scanner_version": "ghost-expression dogfood fresh-scan"
+      },
+      "name": "Editorial feed",
+      "kind": "route",
+      "locator": "src/routes/+page.svelte",
+      "renderability": "source-only",
+      "files": [
+        "src/routes/+page.svelte",
+        "src/lib/components/EditorialHero.svelte",
+        "src/lib/components/FeedTimeline.svelte",
+        "src/lib/components/FeedGrid.svelte"
+      ],
+      "classification": {
+        "intent": "browse editorial updates",
+        "surface_type": "feed",
+        "density": "breathing",
+        "layout_shape": "article",
+        "confidence": 0.78
+      },
+      "signals": {
+        "dominant_components": [
+          "EditorialHero",
+          "FeedTimeline",
+          "FeedGrid",
+          "GridCard"
+        ],
+        "layout_patterns": [
+          "editorial hero followed by timeline and grid sections"
+        ],
+        "breakpoint_behavior": [
+          "SvelteKit route composes responsive feed modules from source."
+        ],
+        "notes": ["Static-source evidence from route and feature components."]
+      }
     }
   ]
 }

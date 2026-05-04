@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Survey, SurveySource } from "@ghost/core";
-import { tokenRowId, valueRowId } from "@ghost/core";
+import { tokenRowId, uiSurfaceRowId, valueRowId } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCli } from "../src/cli.js";
 
@@ -178,7 +178,7 @@ const SOURCE_B: SurveySource = {
 
 function makeSurvey(source: SurveySource, hex = "#f97316"): Survey {
   return {
-    schema: "ghost.survey/v1",
+    schema: "ghost.survey/v2",
     sources: [source],
     values: [
       {
@@ -202,6 +202,28 @@ function makeSurvey(source: SurveySource, hex = "#f97316"): Survey {
       },
     ],
     components: [],
+    ui_surfaces: [
+      {
+        id: uiSurfaceRowId(source, "Settings", "route", "/settings"),
+        source,
+        name: "Settings",
+        kind: "route",
+        locator: "/settings",
+        renderability: "source-only",
+        files: ["src/routes/settings.tsx"],
+        classification: {
+          intent: "configure",
+          surface_type: "settings",
+          density: "standard",
+          layout_shape: "control-surface",
+          confidence: 0.8,
+        },
+        signals: {
+          dominant_components: ["Button"],
+          layout_patterns: ["sectioned-form"],
+        },
+      },
+    ],
   };
 }
 
@@ -284,10 +306,11 @@ describe("ghost-expression survey merge", () => {
     const merged = JSON.parse(
       await readFile(join(dir, "merged.json"), "utf-8"),
     );
-    expect(merged.schema).toBe("ghost.survey/v1");
+    expect(merged.schema).toBe("ghost.survey/v2");
     expect(merged.sources).toHaveLength(2);
     expect(merged.values).toHaveLength(2);
     expect(merged.tokens).toHaveLength(2);
+    expect(merged.ui_surfaces).toHaveLength(2);
   });
 
   it("dedupes rows with identical IDs (same source, same content)", async () => {
@@ -315,7 +338,7 @@ describe("ghost-expression survey merge", () => {
 
     expect(result.code).toBe(0);
     const merged = JSON.parse(result.stdout);
-    expect(merged.schema).toBe("ghost.survey/v1");
+    expect(merged.schema).toBe("ghost.survey/v2");
     expect(merged.values).toHaveLength(1);
   });
 
@@ -352,7 +375,7 @@ describe("ghost-expression survey fix-ids", () => {
 
   it("populates empty IDs and writes a lint-clean survey", async () => {
     const draft: Survey = {
-      schema: "ghost.survey/v1",
+      schema: "ghost.survey/v2",
       sources: [SOURCE_A],
       values: [
         {
@@ -367,6 +390,18 @@ describe("ghost-expression survey fix-ids", () => {
       ],
       tokens: [],
       components: [],
+      ui_surfaces: [
+        {
+          id: "",
+          source: SOURCE_A,
+          name: "Settings",
+          kind: "route",
+          locator: "/settings",
+          renderability: "source-only",
+          files: ["src/routes/settings.tsx"],
+          signals: { layout_patterns: ["sectioned-form"] },
+        },
+      ],
     };
     await writeFile(join(dir, "draft.json"), JSON.stringify(draft));
 

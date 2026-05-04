@@ -32,7 +32,7 @@ import { registerEmitCommand } from "./emit-command.js";
  * + token estimates for expressions), `diff` (structural prose-level diff
  * between two expressions), `emit` (derive review-command, context-bundle,
  * or skill artifacts), and `survey merge` (deterministic union of N
- * `ghost.survey/v1` files into one).
+ * `ghost.survey/v2` files into one).
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -218,7 +218,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v1 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
+      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup, deterministic and idempotent), fix-ids (recompute every row's id from content; use after authoring rows with empty id fields).",
     )
     .option(
       "-o, --out <path>",
@@ -311,7 +311,7 @@ export function buildCli(): ReturnType<typeof cac> {
 /**
  * Decide whether a file is an `expression.md`, a `map.md`, or a
  * `survey.json`. JSON paths/contents route to the survey linter; markdown
- * with `schema: ghost.map/v1` in its YAML frontmatter routes to the map
+ * with `schema: ghost.map/v2` in its YAML frontmatter routes to the map
  * linter; everything else stays on the expression path.
  */
 function detectFileKind(
@@ -320,12 +320,12 @@ function detectFileKind(
 ): "survey" | "map" | "expression" {
   if (path.toLowerCase().endsWith(".json")) return "survey";
   if (raw.trimStart().startsWith("{")) return "survey";
-  // Cheap markdown frontmatter sniff for `schema: ghost.map/v1`. We don't
+  // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
   // parse YAML here; the linter does the heavy lift.
   const fmEnd = raw.indexOf("\n---", 3);
   if (raw.startsWith("---") && fmEnd > 0) {
     const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v1\b/.test(fm)) return "map";
+    if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
   }
   if (path.toLowerCase().endsWith("map.md")) return "map";
   return "expression";

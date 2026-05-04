@@ -25,7 +25,7 @@ Ghost is split into one responsibility per tool. A scan produces three artifacts
 
 Scans are single-subject but may be multi-source. A `map.md` can declare a source graph where one `primary` source supplies usage and salience while one or more `resolver` sources supply concrete values for imported symbols. This lets an app expression describe the app in use without pretending the upstream design-system inventory is the app's language.
 
-`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v1` + `ghost.survey/v1` schemas the three CLIs share.
+`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v2` + `ghost.survey/v2` schemas the three CLIs share.
 
 ## Why Ghost?
 
@@ -43,7 +43,7 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v1` + `ghost.survey/v1` schemas. | ❌ private (`@ghost/core`) |
+| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v2` + `ghost.survey/v2` schemas. | ❌ private (`@ghost/core`) |
 | [`packages/ghost-expression`](./packages/ghost-expression) | The three-stage scan pipeline: `map.md` → `survey.json` → `expression.md`. Authoring, lint, describe, diff, survey ops, emit. | ✅ intended-public on npm |
 | [`packages/ghost-drift`](./packages/ghost-drift) | Drift detection + governance verbs. | ✅ `ghost-drift` on npm |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet elevation across many members. | ❌ private |
@@ -104,7 +104,7 @@ Once a skill is installed, ask your agent in plain English ("profile this design
 
 ```bash
 ghost-expression inventory      # raw signals as JSON (the agent reads this to author map.md)
-ghost-expression lint map.md    # validate ./map.md against ghost.map/v1
+ghost-expression lint map.md    # validate ./map.md against ghost.map/v2
 ```
 
 **2. Survey the design values** (the observed evidence stage). Ask your host agent to write `survey.json`, then validate:
@@ -177,7 +177,7 @@ Verbs are scoped to the tool that owns the artifact. Pure inputs → pure output
 | `ghost-expression` | `lint` | Validate `expression.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
 | `ghost-expression` | `describe` | Print section ranges + token estimates so agents can selectively load. |
 | `ghost-expression` | `diff` | Structural prose-level diff between two expressions (NOT vector distance — for that, use `ghost-drift compare`). |
-| `ghost-expression` | `survey <op>` | Operate on `ghost.survey/v1` files. Ops: `merge` (concat with id-based dedup, idempotent), `fix-ids` (recompute ids from content). |
+| `ghost-expression` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge` (concat with id-based dedup, idempotent), `fix-ids` (recompute ids from content). |
 | `ghost-expression` | `emit` | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
 | `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over expression embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
 | `ghost-drift` | `ack` | Record stance toward the tracked expression in `.ghost-sync.json`. |
@@ -231,7 +231,7 @@ Generate one with the `profile` recipe (in the `ghost-expression` skill bundle).
 
 ### The map
 
-What Ghost uses during scan and fleet workflows to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-expression`, stage 1 of a scan): YAML frontmatter against the `ghost.map/v1` schema (languages, build system, package manifests, registry, design-system paths, UI surface globs, feature areas) plus a short prose body (Identity, Topology, Conventions). Generation and drift context starts from `expression.md`, not `map.md`. The repo's own `map.md` lives at the root.
+What Ghost uses during scan and fleet workflows to learn the topology of a repo. The canonical artifact is **`map.md`** (owned by `ghost-expression`, stage 1 of a scan): YAML frontmatter against the `ghost.map/v2` schema (languages, build system, package manifests, registry, design-system paths, observable surface sources, feature areas) plus a short prose body (Identity, Topology, Conventions). Generation and drift context starts from `expression.md`, not `map.md`. The repo's own `map.md` lives at the root.
 
 Generate one with the `map` recipe (in the `ghost-expression` skill bundle). The agent reads `ghost-expression inventory` (raw repo signals as JSON) and synthesizes the prose layer.
 

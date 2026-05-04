@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: multi-platform-fixture
 repo: example/multi-platform
 mapped_at: 2026-04-27
@@ -25,7 +25,8 @@ design_system:
   entry_files:
     - tokens/colors.json
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - "src/**"
   exclude:

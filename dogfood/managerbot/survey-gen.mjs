@@ -1,23 +1,36 @@
 #!/usr/bin/env node
+import { execSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const TARGET_ROOT = "/Users/nahiyan/Development/square-web/apps/managerbot";
-const UI_ROOT = `${TARGET_ROOT}/libs/managerbot-ui`;
+const MONOREPO_ROOT = "/Users/nahiyan/Development/square-web";
+const TARGET_ROOT = `${MONOREPO_ROOT}/apps/managerbot`;
+const UI_ROOT = `${MONOREPO_ROOT}/libs/managerbot/managerbot-ui`;
+const WEB_ROOT = `${TARGET_ROOT}/managerbot-web`;
+const STORYBOOK_ROOT = `${TARGET_ROOT}/managerbot-storybook`;
 const THEME_CSS = `${UI_ROOT}/src/styles/theme.css`;
 const GLOBALS_CSS = `${UI_ROOT}/src/styles/globals.css`;
 const COMPONENTS_DIR = `${UI_ROOT}/src/components`;
+const SCANNED_AT = "2026-05-04T00:00:00-04:00";
+const COMMIT = execSync("git rev-parse --short HEAD", {
+  cwd: MONOREPO_ROOT,
+  encoding: "utf8",
+}).trim();
 
 const SOURCE = {
+  id: "managerbot",
+  role: "primary",
   target: "squareup/square-web/apps/managerbot",
-  scanned_at: "2026-04-30T00:00:00Z",
+  commit: COMMIT,
+  scanned_at: SCANNED_AT,
+  scanner_version: "dogfood-managerbot-v2",
 };
 
 const themeRaw = readFileSync(THEME_CSS, "utf8");
 const globalsRaw = readFileSync(GLOBALS_CSS, "utf8");
 
 // Walk the file linearly, tracking current selector/at-rule context.
-// We only need three contexts: :root, .dark, @theme inline.
+// We only need the default token scope, dark overrides, and @theme inline.
 function parseDecls(css) {
   const lines = css.split("\n");
   const stack = [];
@@ -52,10 +65,10 @@ const themeDecls = parseDecls(themeRaw);
 // Filter out the @theme inline `--color-*` re-exports (mechanical Tailwind 4
 // alias layer for class atom generation; not part of the canonical token set).
 function isMechanicalReExport(d) {
-  // @theme inline block holds reexports prefixed with --color-, plus radius / shadow / text / etc.
-  // We keep radius, shadow, text, font, animate, etc. — those are canonical.
-  // We drop --color-<name> if its value is exactly var(--<name>).
-  if (!d.context.startsWith("@theme")) return false;
+  // The @theme inline block and the mirrored .managerbot-ui-root block both
+  // hold reexports prefixed with --color-. We keep radius, shadow, text,
+  // font, animate, etc.; those are canonical. We drop --color-<name> if its
+  // value is exactly var(--<name>).
   if (!d.name.startsWith("--color-")) return false;
   const stripped = d.name.replace(/^--color-/, "");
   return d.value === `var(--${stripped})`;
@@ -64,7 +77,8 @@ function isMechanicalReExport(d) {
 const canonical = themeDecls.filter((d) => !isMechanicalReExport(d));
 
 // Group by name → resolve aliases / by_theme.
-// :root + @theme are the "default" theme; .dark and @utility .force-light add variants.
+// .managerbot-ui-root + @theme are the default theme; .dark and
+// @utility .force-light add variants.
 const byName = new Map();
 for (const d of canonical) {
   const slot = byName.get(d.name) || {
@@ -72,9 +86,13 @@ for (const d of canonical) {
     default: null,
     variants: {},
   };
-  if (d.context === ":root" || d.context.startsWith("@theme")) {
+  if (
+    d.context === ":root" ||
+    d.context === ".managerbot-ui-root" ||
+    d.context.startsWith("@theme")
+  ) {
     if (!slot.default) slot.default = d;
-  } else if (d.context === ".dark") {
+  } else if (d.context === ".dark" || d.context.includes(".dark")) {
     slot.variants.dark = d;
   } else if (d.context.includes("force-light")) {
     slot.variants.forceLight = d;
@@ -85,7 +103,7 @@ for (const d of canonical) {
   byName.set(d.name, slot);
 }
 
-// Resolve var() chains within :root scope to literal where possible.
+// Resolve var() chains within the default token scope to literals where possible.
 function resolveLiteral(value, scope) {
   // scope: Map<name, literal> — recursion-safe via depth limit
   const seen = new Set();
@@ -140,8 +158,13 @@ function classify(name, value) {
   return "unknown";
 }
 
+function relativePath(file) {
+  return file.replace(`${MONOREPO_ROOT}/`, "");
+}
+
 // Compute occurrences of each TOKEN NAME across the UI surface.
-// We do this by reading every .tsx/.ts/.css file under src/.
+// We do this by reading every .tsx/.ts/.css/.mdx file under the shared UI
+// library, app, and Storybook package.
 function walk(dir, out) {
   const entries = readdirSync(dir, { withFileTypes: true });
   for (const e of entries) {
@@ -153,7 +176,11 @@ function walk(dir, out) {
   return out;
 }
 
-const allFiles = walk(`${UI_ROOT}/src`, []);
+const allFiles = [
+  ...walk(`${UI_ROOT}/src`, []),
+  ...walk(`${WEB_ROOT}/src`, []),
+  ...walk(STORYBOOK_ROOT, []),
+];
 const fileTexts = new Map();
 for (const f of allFiles) {
   try {
@@ -225,7 +252,14 @@ for (const [name, slot] of byName) {
 // that share that literal.
 const valueAcc = new Map(); // key: kind|literal → row
 
-function addValue(kind, literal, source_token, occ, files) {
+function addValue(
+  kind,
+  literal,
+  source_token,
+  occ,
+  files,
+  usageKind = "token",
+) {
   const key = `${kind}|${literal}`;
   if (!valueAcc.has(key)) {
     valueAcc.set(key, {
@@ -237,36 +271,39 @@ function addValue(kind, literal, source_token, occ, files) {
       spec: deriveSpec(kind, literal),
       occurrences: 0,
       files_count: 0,
+      usage: {},
       tokens: [],
     });
   }
   const row = valueAcc.get(key);
   row.occurrences += occ;
   row.files_count = Math.max(row.files_count, files);
+  row.usage[usageKind] = (row.usage[usageKind] || 0) + occ;
   row.tokens.push(source_token);
 }
 
 function deriveSpec(kind, lit) {
   if (kind === "color") {
-    if (lit.startsWith("oklch")) return { space: "oklch", source: lit };
-    if (lit.startsWith("oklab")) return { space: "oklab", source: lit };
+    if (lit.startsWith("oklch")) return { space: "oklch" };
+    if (lit.startsWith("oklab")) return { space: "lab" };
     if (lit.startsWith("rgba") || lit.startsWith("rgb"))
-      return { space: "srgb", source: lit };
+      return { space: "srgb" };
     if (lit.startsWith("#")) return { space: "srgb", hex: lit };
-    return { source: lit };
+    return { space: "unknown" };
   }
   if (kind === "radius" || kind === "spacing") {
     const m = lit.match(/^([0-9.]+)(px|rem|em|%|vh|vw)$/);
-    if (m) return { unit: m[2], magnitude: Number(m[1]) };
-    return { source: lit };
+    if (m) return { unit: m[2], scalar: Number(m[1]) };
+    return { raw: lit };
   }
   if (kind === "typography") {
     const m = lit.match(/^([0-9.]+)(px|rem|em)$/);
-    if (m) return { unit: m[2], magnitude: Number(m[1]) };
-    return { source: lit };
+    if (m) return { size: { unit: m[2], scalar: Number(m[1]) } };
+    return { family: lit };
   }
-  if (kind === "shadow") return { source: lit };
-  return { source: lit };
+  if (kind === "shadow") return { raw: lit };
+  if (kind === "motion") return { easing: lit };
+  return { raw: lit };
 }
 
 for (const t of tokens) {
@@ -274,6 +311,104 @@ for (const t of tokens) {
   if (lit.startsWith("var(")) continue; // unresolved alias — skip; the chain captures it
   if (t.kind === "unknown") continue;
   addValue(t.kind, lit, t.name, t.occurrences || 1, t.files_count || 1);
+}
+
+function countRegex(regex) {
+  const byValue = new Map();
+  for (const [file, txt] of fileTexts) {
+    regex.lastIndex = 0;
+    for (const m of txt.matchAll(regex)) {
+      const value = m[1];
+      const slot = byValue.get(value) || { occ: 0, files: new Set() };
+      slot.occ++;
+      slot.files.add(file);
+      byValue.set(value, slot);
+    }
+  }
+  return byValue;
+}
+
+function normalizeBracketValue(value) {
+  return value.replace(/_/g, " ");
+}
+
+for (const [rawValue, hit] of countRegex(/\brounded-\[([^\]]+)\]/g)) {
+  const literal = normalizeBracketValue(rawValue);
+  addValue(
+    "radius",
+    literal,
+    `rounded-[${rawValue}]`,
+    hit.occ,
+    hit.files.size,
+    "arbitrary_class",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(
+  /\btext-\[([0-9.]+(?:px|rem|em))\]/g,
+)) {
+  const literal = normalizeBracketValue(rawValue);
+  addValue(
+    "typography",
+    literal,
+    `text-[${rawValue}]`,
+    hit.occ,
+    hit.files.size,
+    "arbitrary_class",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(/\bshadow-\[([^\]]+)\]/g)) {
+  const literal = normalizeBracketValue(rawValue);
+  addValue(
+    "shadow",
+    literal,
+    `shadow-[${rawValue}]`,
+    hit.occ,
+    hit.files.size,
+    "arbitrary_class",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(
+  /\b(?:bg|text|border|fill|stroke)-\[(#[0-9a-fA-F]{3,8})\]/g,
+)) {
+  const literal = rawValue.toUpperCase();
+  addValue(
+    "color",
+    literal,
+    `[${rawValue}]`,
+    hit.occ,
+    hit.files.size,
+    "arbitrary_class",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(/['"`](#[0-9a-fA-F]{6})['"`]/g)) {
+  const literal = rawValue.toUpperCase();
+  addValue(
+    "color",
+    literal,
+    rawValue,
+    hit.occ,
+    hit.files.size,
+    "inline_literal",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(/\b(transition:\s*all\b)/g)) {
+  addValue(
+    "motion",
+    rawValue,
+    rawValue,
+    hit.occ,
+    hit.files.size,
+    "inline_style",
+  );
+}
+
+for (const [rawValue, hit] of countRegex(/\b(animate-spin)\b/g)) {
+  addValue("motion", rawValue, rawValue, hit.occ, hit.files.size, "className");
 }
 
 // Add breakpoint values from globals.css and theme.css (basic regex on @media).
@@ -291,7 +426,7 @@ for (const px of bpSet) {
     kind: "breakpoint",
     value: px,
     raw: px,
-    spec: { unit: "px", magnitude: Number(px.replace("px", "")) },
+    spec: { unit: "px", scalar: Number(px.replace("px", "")) },
     occurrences: 1,
     files_count: 1,
   });
@@ -300,7 +435,7 @@ for (const px of bpSet) {
 const values = Array.from(valueAcc.values());
 
 // Build components[] from filesystem.
-// Recurse into design_system paths but exclude visx-charts and rjsf per ui_surface.
+// Recurse into design_system paths but exclude visx-charts and rjsf per surface_sources.
 function pascal(name) {
   return name
     .replace(/\.(tsx|ts)$/, "")
@@ -376,7 +511,7 @@ const components = compFiles.map(({ file, slug, group }) => {
     source: SOURCE,
     name: qualifiedName,
     discovered_via: "heuristic",
-    file: file.replace(`${TARGET_ROOT}/`, ""),
+    file: relativePath(file),
     group: group || "primitive",
     exports: [...exports],
     variants: variantValues,
@@ -386,11 +521,134 @@ const components = compFiles.map(({ file, slug, group }) => {
 });
 
 const survey = {
-  schema: "ghost.survey/v1",
+  schema: "ghost.survey/v2",
   sources: [SOURCE],
   values,
   tokens,
   components,
+  ui_surfaces: [
+    {
+      id: "",
+      source: SOURCE,
+      name: "Managerbot conversation surface",
+      kind: "source",
+      locator: "apps/managerbot/managerbot-web/src/routes",
+      renderability: "source-only",
+      files: [
+        "apps/managerbot/managerbot-web/src/routes",
+        "apps/managerbot/managerbot-web/src/components",
+        "libs/managerbot/managerbot-ui/src/components/ai-elements",
+      ],
+      classification: {
+        intent: "operate an AI workflow",
+        surface_type: "agent-workspace",
+        density: "standard",
+        layout_shape: "control-surface",
+        confidence: 0.7,
+      },
+      signals: {
+        dominant_components: [
+          "PromptInput",
+          "Conversation",
+          "Artifact",
+          "Button",
+        ],
+        layout_patterns: [
+          "conversation pane with prompt controls and artifact surfaces",
+        ],
+        notes: [
+          "Source-only scan across web routes and managerbot UI components.",
+        ],
+      },
+    },
+    {
+      id: "",
+      source: SOURCE,
+      name: "Pulse dashboard",
+      kind: "source",
+      locator: "apps/managerbot/managerbot-web/src/routes/pulse.tsx",
+      renderability: "source-only",
+      files: [
+        "apps/managerbot/managerbot-web/src/routes/pulse.tsx",
+        "apps/managerbot/managerbot-web/src/components/pages/Pulse",
+        "apps/managerbot/managerbot-web/src/components/pinned-widgets",
+      ],
+      classification: {
+        intent: "monitor seller metrics and insights",
+        surface_type: "dashboard",
+        density: "standard",
+        layout_shape: "tracker",
+        confidence: 0.75,
+      },
+      signals: {
+        dominant_components: ["View", "InsightsContent", "PinnedWidgets"],
+        layout_patterns: ["wide content rail", "section stack", "metric cards"],
+        notes: [
+          "Pulse uses the View layout primitives with wide content and repeated insight/widget modules.",
+        ],
+      },
+    },
+    {
+      id: "",
+      source: SOURCE,
+      name: "Tasks list",
+      kind: "source",
+      locator: "apps/managerbot/managerbot-web/src/routes/tasks.tsx",
+      renderability: "source-only",
+      files: [
+        "apps/managerbot/managerbot-web/src/routes/tasks.tsx",
+        "apps/managerbot/managerbot-web/src/components/tasks",
+      ],
+      classification: {
+        intent: "review and resume AI sessions",
+        surface_type: "task-list",
+        density: "standard",
+        layout_shape: "tracker",
+        confidence: 0.78,
+      },
+      signals: {
+        dominant_components: ["View", "ItemGroup", "Item", "Empty", "Skeleton"],
+        layout_patterns: [
+          "sectioned list",
+          "recent and needs-attention groups",
+        ],
+        notes: [
+          "Tasks uses narrow View content, stacked sections, and item rows rather than freeform cards.",
+        ],
+      },
+    },
+    {
+      id: "",
+      source: SOURCE,
+      name: "Automation management",
+      kind: "source",
+      locator:
+        "apps/managerbot/managerbot-web/src/routes/panels/automations.tsx",
+      renderability: "source-only",
+      files: [
+        "apps/managerbot/managerbot-web/src/routes/panels/automations.tsx",
+        "apps/managerbot/managerbot-web/src/components/automations",
+      ],
+      classification: {
+        intent: "configure recurring AI work",
+        surface_type: "automation-panel",
+        density: "standard",
+        layout_shape: "control-surface",
+        confidence: 0.75,
+      },
+      signals: {
+        dominant_components: ["View", "Item", "Badge", "Popover", "Select"],
+        layout_patterns: [
+          "panel list",
+          "suggested automation cards",
+          "compact popover controls",
+        ],
+        notes: [
+          "Automation surfaces use Managerbot primitives but contain local rounded and shadow overrides for schedule popovers.",
+        ],
+      },
+    },
+  ],
 };
 
 console.log(JSON.stringify(survey, null, 2));

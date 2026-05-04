@@ -6,8 +6,8 @@ Dogfood scan after adding source graph provenance, check curation guidance, and 
 
 | Artifact | Result |
 |---|---:|
-| `map.md` | `ghost.map/v1` with `subject` and `sources[]` |
-| `survey.json` | 101 values, 169 tokens, 97 components |
+| `map.md` | `ghost.map/v2` with `subject`, `sources[]`, and `surface_sources` |
+| `survey.json` | 101 values, 169 tokens, 97 components, 1 UI surface |
 | `expression.md` | 7 promoted checks with `support`, `enforce_at`, and `observed_count` |
 
 `survey.json` source provenance records `ghost-ui` as the primary source, target `block/ghost@packages/ghost-ui`, commit `83c2b64`, scan time `2026-05-01T17:51:23Z`, and scanner version `dogfood-attempt-4`.

@@ -124,7 +124,8 @@ Each layer has a concrete job somewhere in the loop:
 
 Terminal-impact rule: a fact belongs in the terminal expression only when it
 can change generated UI or a drift verdict. `survey.json` can stay broad as
-evidence; `expression.md` should stay curated.
+evidence — including implemented `ui_surfaces[]` specimens and their observed
+composition signals — while `expression.md` stays curated.
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
 over-specified. The `verify` recipe is the schema-discipline mechanism.
