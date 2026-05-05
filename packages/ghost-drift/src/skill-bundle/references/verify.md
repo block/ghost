@@ -20,7 +20,7 @@ Ghost has no `ghost verify` CLI command. You drive the loop; the expression is t
 
 ### 1. Generate
 
-Produce the UI code. Use whatever generator/recipe your harness provides; respect `palette`, `spacing.scale`, `typography`, `surfaces`, `decisions` from the expression. The expression is the constraint set — feed it into the generator's system prompt, or load `tokens.css` (via `ghost-expression emit context-bundle`) as grounding.
+Produce the UI code. Use whatever generator or recipe this workflow provides; respect `palette`, `spacing.scale`, `typography`, `surfaces`, and `decisions` from the expression. Feed the expression into the generator's system prompt, or load `tokens.css` via `ghost-expression emit context-bundle`.
 
 ### 2. Self-review
 
