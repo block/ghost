@@ -1,16 +1,16 @@
 # The `expression.md` Format
 
-A Ghost expression is the authored design-language contract agents read for generation and drift review. It is a Markdown file with YAML frontmatter plus a prose body: compact enough to travel, grounded enough to verify against `survey.json`.
+A Ghost expression is the design-language contract agents read for generation and drift review. It is one Markdown file: YAML frontmatter for compact values, plus prose for the parts that need judgment.
 
-`survey.json` remains the durable evidence ledger. `survey catalog` and runtime embeddings are derived views, not manually edited source of truth.
+`survey.json` stores the scan evidence. `survey catalog` and runtime embeddings are derived from existing files; regenerate them instead of editing them by hand.
 
 ## Shape
 
-Frontmatter is the machine layer: identity, references, personality tags, decision slugs, promoted checks, and compact value digests.
+Frontmatter stores the compact data: identity, references, personality tags, decision slugs, promoted checks, and value digests.
 
-Body is the prose layer: `# Character`, `# Signature`, and `# Decisions` with `### <dimension>` rationale blocks and `**Evidence:**` bullets.
+The body stores the prose: `# Character`, `# Signature`, and `# Decisions` with `### <dimension>` blocks and `**Evidence:**` bullets.
 
-There are no canonical sibling fragments. Readers do not auto-load `embedding.md`, `# Fragments`, or `decisions/*.md`. Embeddings are computed at runtime from the parsed expression structure when comparison needs them.
+Everything authored lives in `expression.md`. Readers do not auto-load `embedding.md`, `# Fragments`, or `decisions/*.md`. Comparisons compute embeddings at runtime from the parsed expression.
 
 ## Frontmatter
 
@@ -68,7 +68,7 @@ Required: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surf
 
 Forbidden: root `embedding`, `decisions[].embedding`, `observation.summary`, `decisions[].decision`, `decisions[].evidence`, `checks[].enforce_at`, `checks[].rationale`, and unknown root keys such as `schema`.
 
-`checks[].paths` are filesystem scopes for verifier counts. `checks[].contexts` are reviewer/generator hints. Check rationale belongs in the matching Decision body; `summary` is only the short reviewer label.
+`checks[].paths` are filesystem scopes used by `verify-profile` for counts. `checks[].contexts` are hints for reviewers and generators. Put the reason for a check in the matching Decision body; keep `summary` short.
 
 ## Body
 
@@ -92,13 +92,13 @@ Every gray carries a warm undertone; hue appears only when it clarifies state or
 - Survey color evidence: 31 of 33 color observations fall on the documented palette
 ```
 
-The body should travel. Local paths may appear as provenance, but Character, Signature, and Decisions should still make sense to a downstream project that cannot open the original repo.
+Write the body so it still makes sense outside the original repo. Local paths are fine as provenance, but Character, Signature, and Decisions should not depend on opening those files.
 
 ## Derived Views
 
-- `ghost-expression survey summarize survey.json` gives bounded profiling context.
-- `ghost-expression survey catalog survey.json [--kind <kind>]` gives compact value enums/specs for exact frontmatter values.
-- `ghost-drift compare` computes runtime embeddings from `expression.md`; no embedding file is authored.
+- `ghost-expression survey summarize survey.json` gives a short profiling digest.
+- `ghost-expression survey catalog survey.json [--kind <kind>]` lists exact values/specs from the survey.
+- `ghost-drift compare` computes runtime embeddings from `expression.md`; there is no authored embedding file.
 
 ## Validation States
 
