@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Eighteen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
+description: Eighteen verbs across three tools. Judgment work lives in the skill bundles your host agent runs.
 kicker: Docs
 section: guide
 order: 20
@@ -9,17 +9,16 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLIs are the calculator your host agent reaches for when it needs a
-reproducible answer. A scan produces three artifacts in sequence — **`map.md`**
+The CLIs give your host agent reproducible answers. A scan produces three artifacts in sequence — **`map.md`**
 (map the system) → **`survey.json`** (survey what exists) → **`expression.md`** (express what it means) —
 all owned by `ghost-expression`. Most commands accept a path; they default to
-`./expression.md` for kind-aware verbs.  No API key required.
+`./expression.md` for kind-aware verbs. No API key required.
 
 Verbs are scoped to the tool that owns the artifact:
 
 - **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
-- **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
-- **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
+- **`ghost-drift`** — drift detection + stance: `compare`, `ack`, `track`, `diverge`, `emit skill`
+- **`ghost-fleet`** — view across many members: `members`, `view`, `emit skill`
 
 Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
 _remediate_ are skill recipes your host agent runs — not CLI verbs. Install
@@ -82,18 +81,11 @@ recommended next stage (or "scan complete" when every artifact is present).
 
 Operate on `ghost.survey/v2` files:
 
-- **`merge`** — concat with id-based dedup, deterministic and idempotent.
-  The composition primitive: modular rollups (one repo, N feature modules)
-  and fleet cohort views (N members merged into one cohort survey) both
-  reduce to survey merge.
-- **`fix-ids`** — recompute every row's `id` from its content. The survey
-  recipe instructs the agent to author rows with `"id": ""` and finalize
-  with this verb in one pass — agents don't compute SHA-256 hashes by hand.
-- **`summarize`** — emit a bounded Markdown or JSON digest for broad
-  profiling context.
-- **`catalog`** — emit a deterministic compact value enum/spec view derived
-  from survey rows. Markdown is the default; JSON uses
-  `ghost.survey.catalog/v1`. Use `--kind <kind>` to focus one value family.
+- **`merge`** — combine surveys with id-based dedup.
+- **`fix-ids`** — recompute every row's `id` from its content.
+- **`summarize`** — print a short Markdown or JSON digest for profiling.
+- **`catalog`** — print exact value enums/specs derived from survey rows.
+  Markdown is the default; JSON uses `ghost.survey.catalog/v1`.
 
 <CliHelp tool="ghost-expression" command="survey" hideDescription />
 
@@ -144,13 +136,11 @@ ghost-expression lint path/to/expression.md --format json
 
 ### Profile fidelity — `verify-profile`
 
-Validate that an `expression.md` stayed faithful to the `survey.json` that
-produced it. This is stricter than `lint`: palette, spacing, typography,
-radii, and shadow posture must be backed by survey evidence; high-salience
-new survey values are surfaced as drift warnings; and promoted `checks[]`
-entries must carry calibration metadata. With `--root`, promoted check
-patterns are counted under their `paths` scopes and mismatched
-`observed_count` values fail the gate. `contexts` are guidance only.
+Validate that an `expression.md` matches its `survey.json`. This is stricter
+than `lint`: palette, spacing, typography, radii, and shadow posture must be
+survey-backed. High-salience survey values omitted from the expression become
+warnings. With `--root`, promoted check patterns are counted under their
+`paths` scopes; `contexts` are guidance only.
 
 <CliHelp tool="ghost-expression" command="verify-profile" hideDescription />
 
@@ -239,7 +229,7 @@ ghost-expression emit skill
 # Emit a per-project design-review slash command
 ghost-expression emit review-command
 
-# Emit a grounding bundle any generator can consume
+# Emit a context bundle any generator can consume
 ghost-expression emit context-bundle
 
 # Single prompt.md for plain-text LLM context
@@ -251,7 +241,7 @@ ghost-expression emit context-bundle --out dist/context
 
 </DocSection>
 
-<DocSection title="ghost-drift — drift detection & governance">
+<DocSection title="ghost-drift — drift detection & stance">
 
 ### Comparison — `compare`
 
@@ -333,7 +323,7 @@ ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
 
 </DocSection>
 
-<DocSection title="ghost-fleet — elevation across members">
+<DocSection title="ghost-fleet — view across members">
 
 A fleet is a directory containing many `(map.md, expression.md)` members.
 `ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +

@@ -12,17 +12,17 @@ handoffs:
 
 # Recipe: Profile a project into expression.md
 
-**Goal:** produce a valid `expression.md` that captures the target's design language as an interpretation. **You are the interpreter, not the surveyor.** Treat `survey.json` as ground truth for what values the target actually ships, but read it through a bounded survey summary first; write decisions, form the prose body, and fill the structured token blocks. Do not re-extract values from source — that's the surveyor's job and you'd be doing it twice.
+**Goal:** write a valid `expression.md` from an existing `map.md` and `survey.json`. **Do not re-scan source here.** Use the survey as evidence, write the prose decisions, and fill the structured value blocks.
 
-`expression.md` is the terminal artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). Yours is the third stage.
+`expression.md` is stage 3 of a scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`).
 
-Terminal-impact filter:
+Keep it selective:
 
-> A fact belongs in `expression.md` only if it can change a drift verdict or change generated UI.
+> Put a fact in `expression.md` only if it can change generated UI or a drift review.
 
-`survey.json` is evidence. `expression.md` is curated truth. Do not summarize every survey row, every component, or every upstream token. Promote the few repeated constraints, defaults, absences, references, signatures, and token choices that downstream review or generation will actually use.
+`survey.json` is evidence. `expression.md` is the compact contract. Do not summarize every row or component. Keep only the repeated constraints, defaults, absences, references, signatures, and values that generation or review will use.
 
-`survey.json` is not generation prompt context. It is exhaustive evidence storage. Use `ghost-expression survey summarize survey.json` as the working context for profiling, then look up raw rows only when you need exact provenance. Write a compact expression that carries only the digest needed for generation and drift. Assume `expression.md` may be used as a reference by another project that does not have the original files. Local paths belong in `references:` and evidence provenance; the prose body must stand on its own.
+Do not use raw `survey.json` as prompt context except for targeted lookup. Start with `ghost-expression survey summarize survey.json`; use `ghost-expression survey catalog survey.json` for exact values. Local paths belong in `references:` and evidence bullets, but the prose body should stand on its own.
 
 ## Pre-requisites
 
@@ -33,31 +33,31 @@ Two artifacts must exist before you start, and two bounded working views should 
 - Survey summary — run `ghost-expression survey summarize survey.json` and read the Markdown digest as your primary survey context. Use `--budget compact` for a tight first pass, `--budget standard` by default, or `--format json` when another tool needs structured data.
 - Survey catalog — run `ghost-expression survey catalog survey.json` when you need exact compact value enums/specs for frontmatter. Use `--kind color`, `--kind spacing`, `--kind typography`, `--kind radius`, or `--kind shadow` to focus a dimension.
 
-If either is missing, **stop**. Run the map and survey stages first. Inventing an expression from incomplete inputs poisons every downstream comparison.
+If either is missing, **stop**. Run the map and survey stages first.
 
 ## How to read the survey
 
 A `survey.json` has four sections:
 
-- **`values[]`** — concrete literals shipped in source. Group by `kind`: `color` rows feed `palette`; `spacing` rows feed `spacing.scale` / `spacing.baseUnit`; `typography` rows feed `typography.*`; `radius` rows feed `surfaces.borderRadii`; `shadow` rows feed `surfaces.shadowComplexity` (count + complexity, not literal shadows); `breakpoint` / `motion` / `layout-primitive` rows feed Decisions where they're load-bearing. Each row has `occurrences` (total count) and `files_count` (spread). Higher numbers = stronger signal.
+- **`values[]`** — concrete literals shipped in source. Group by `kind`: `color` rows feed `palette`; `spacing` rows feed `spacing.scale` / `spacing.baseUnit`; `typography` rows feed `typography.*`; `radius` rows feed `surfaces.borderRadii`; `shadow` rows feed `surfaces.shadowComplexity` (count + complexity, not literal shadows); `breakpoint` / `motion` / `layout-primitive` rows feed Decisions when they matter. Each row has `occurrences` (total count) and `files_count` (spread). Higher numbers = stronger signal.
 - **`tokens[]`** — named declarations with `alias_chain` (path through indirection) and `resolved_value`. Long chains and semantic naming (`--color-brand-primary` → `--color-orange-500`) are evidence of a deliberate token layer. Empty chains everywhere = inline literals = no token discipline.
 - **`components[]`** — known components (registry entries or heuristically discovered). Contributes count signal to surface-vocabulary decisions and grounds prose about what the system ships.
 - **`ui_surfaces[]`** — implemented UI specimens. Cluster by `classification.layout_shape`, `classification.density`, `classification.intent`, `classification.surface_type`, and repeated `signals.layout_patterns`; treat tags as soft and `signals` as the factual layer.
 
 Rows may carry `source.role` and `resolution` provenance. Interpret these as a source graph: `primary` sources supply usage/salience, while `resolver` sources supply concrete values for symbols the primary actually uses. A resolver-defined value that has no primary usage is not salient for this expression.
 
-External libraries (icon sets, primitive collections, motion libs) deliberately don't have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing for the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
+External libraries (icon sets, primitive collections, motion libs) deliberately don't have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library matters to the design language (icon family choice, font sourcing), cite it as prose evidence under the relevant decision dimension; don't expect it as structured data.
 
 Do not paste or load a large `survey.json` wholesale into your working context. Start with:
 
     ghost-expression survey summarize survey.json
     ghost-expression survey catalog survey.json
 
-For large scans, these are the only survey-derived views you should read end-to-end: `summarize` for broad profiling context, `catalog` for exact value enums/specs. Keep the raw `survey.json` available for targeted lookup by row ID when a palette entry, token, check, or evidence bullet needs exact provenance:
+For large scans, read only these derived views end-to-end: `summarize` for broad context and `catalog` for exact values/specs. Use raw `survey.json` only for targeted row lookup:
 
     jq '.values[] | select(.id=="<row-id>")' survey.json
 
-If the survey is tiny, directly reading it is acceptable, but the summary-first path is the default because it keeps interpretation bounded and repeatable.
+If the survey is tiny, direct reading is fine. Default to summary first.
 
 ## Steps
 
@@ -94,7 +94,7 @@ Before writing prose, cluster `ui_surfaces[]` into the repeated composition fami
 - Repeated `layout_shape` values (`control-surface`, `article`, `tracker`, `comparison`, `card`, `flow`, `navigation`) with confidence ≥ 0.7.
 - Repeated `signals.layout_patterns` such as `sectioned-form`, `left-nav`, `persistent-actions`, `data-table`, `media-grid`, `empty-state`, or `wizard-flow`.
 - Density splits: compact controls inside spacious pages, compressed operational screens, breathing editorial pages.
-- Which components dominate each family, and which value rows (`value_refs`) are visibly load-bearing.
+- Which components dominate each family, and which value rows (`value_refs`) visibly matter.
 - Coverage gaps from `surface_sources.coverage_gaps` or empty/weak `ui_surfaces[]`; do not overstate composition if surface evidence is sparse.
 
 Keep this clustering in your scratchpad. Promote only repeated, generation-impacting facts into the expression:
@@ -137,7 +137,7 @@ Promote these levers into `# Character`, `# Signature`, relevant decisions, or c
 
 ### 5. Layer 2 — Checks (curated, grep-friendly, perceptual-prior-aware)
 
-This is the load-bearing step. **Your job is to propose 5–15 candidate checks, score each by survey-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `checks[]`. Promoted checks are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from survey evidence, and `paths` scopes when the verifier should count filesystem matches. `contexts` are guidance for reviewers/generators, not verifier scopes. You do not author final checks unilaterally — design taste is human-curated, agent-proposed.
+This is the main step for review readiness. **Your job is to propose 5–15 candidate checks, score each by survey-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `checks[]`. Promoted checks are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from survey evidence, and `paths` scopes when the verifier should count filesystem matches. `contexts` are guidance for reviewers/generators, not verifier scopes. You do not author final checks unilaterally — design taste is human-curated, agent-proposed.
 
 Promotion boundary: `checks[]` is the promoted layer, not the scratchpad. If no curator has selected checks in this turn, leave `checks[]` empty and put the ranked candidate list in your final response or scan notes. The expression is still valid without checks; an unpromoted check is more dangerous than a missing check because it turns an agent guess into enforcement.
 
@@ -325,7 +325,7 @@ Self-distance must be 0. Anything else means the file isn't deterministically lo
 
 **Prose fallback (no CLI / no ghost-drift):**
 
-Re-load the file mentally: parse the frontmatter, normalize whitespace in the body, then verify the file would round-trip through a YAML parser without info loss. If you can't be sure, run the CLI (it's the calculator that exists for exactly this question). The self-distance check is genuinely a "machine math" answer — prose verification is best-effort, not authoritative.
+Re-load the file mentally: parse the frontmatter, normalize whitespace in the body, then verify the file would round-trip through a YAML parser without info loss. If you can't be sure, run the CLI. The self-distance check is a machine answer; prose verification is best-effort.
 
 ## When the survey is incomplete
 
@@ -333,4 +333,4 @@ If the surveyor's `survey.json` has known gaps (a `# Coverage` note in the surve
 
 ## When you cannot profile
 
-If `survey.json` is empty (a backend-only repo, no UI) and `map.md` confirms no design system, say so in `# Character` and emit a minimal expression with empty palette/spacing/typography/surfaces. Do not fabricate. A placeholder expression poisons every downstream comparison.
+If `survey.json` is empty (a backend-only repo, no UI) and `map.md` confirms no design system, say so in `# Character` and emit a minimal expression with empty palette/spacing/typography/surfaces. Do not fabricate.

@@ -14,7 +14,7 @@ handoffs:
 
 **Goal:** produce a valid `survey.json` (`ghost.survey/v2`) that catalogues every concrete design value and implemented UI surface the target ships, with structured specs, occurrence counts, and surface evidence. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
-`survey.json` is the middle artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). The interpreter (next stage) reads your survey as ground truth and writes the compact expression. If you skip values or fabricate them here, the expression downstream is wrong.
+`survey.json` is the middle artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`expression.md`). The interpreter reads your survey as evidence and writes the compact expression. If you skip values or fabricate them here, the expression downstream is wrong.
 
 The survey is exhaustive evidence, not prompt context. It should be large enough to support interpretation; the profile stage decides what becomes generation-facing expression.
 
@@ -44,7 +44,7 @@ Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by
 - **`components[]`** — every named component you can confidently identify (registry entries, exported PascalCase components with variants/sizes). Loose schema: `name`, `discovered_via` (`registry.json` / `heuristic` / etc.), optional `variants[]` and `sizes[]`.
 - **`ui_surfaces[]`** — implemented UI specimens the design language can be inferred from. Each row has `name`, `kind` (`route`, `story`, `screen`, `fixture`, `doc-example`, `screenshot`, `source`), `locator`, `renderability` (`rendered`, `screenshot`, `source-only`, `unknown`), `files[]`, optional soft `classification`, and factual `signals`.
 
-External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a survey section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library is load-bearing (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
+External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a survey section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library matters to the design language (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
 
 Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
 
@@ -92,7 +92,7 @@ Recall is the failure mode and the only one. A survey missing 90% of a section's
 
 For every section (`values[]`, `tokens[]`, `components[]`, `ui_surfaces[]`):
 
-1. **Identify the canonical signal in this repo.** Where does the source of truth for this kind of thing actually live? It will be different in every repo — a manifest, a registry, a barrel export, a CSS declaration block, a naming convention. Use the strongest signal the repo offers.
+1. **Identify the strongest signal in this repo.** Where is this kind of value most reliably declared or used? It will be different in every repo — a manifest, a registry, a barrel export, a CSS declaration block, a naming convention. Use the strongest signal the repo offers.
 2. **Enumerate, don't sample.** If you can count entries from the canonical signal independently, your row count must match. 6 components when the canonical signal lists 100 is a lie.
 3. **Cross-check by a second method when one exists** (e.g., file count by glob vs. enumerated entries vs. import graph). If the two counts disagree by more than ~10%, you're missing entries — investigate before recording.
 4. **Honest absence beats partial truth.** If the section has no canonical signal in this repo, leave the array empty rather than recording a sample. Empty is honest; sampled is misleading.
@@ -103,7 +103,7 @@ This applies regardless of dialect. The recipe doesn't tell you what the canonic
 
 **You write your own greps and regexes. There is no pre-built parser.** Adapt to what's actually in the repo:
 
-- **Tailwind (Tailwind v3 / v4 with `@theme`)** — class atoms are load-bearing for the survey. The declared `--spacing-*` / `--text-*` / `--color-*` tokens in `@theme` are only half the picture; the other half is which atoms components actually use, because Tailwind synthesizes most of the rendered scale from the `--spacing` modular base (`p-2` → `padding: calc(var(--spacing) * 2)` → 8px when `--spacing: 0.25rem`). A survey built from declarations alone undercounts spacing/typography/color systematically — see the `## Tailwind class-atom pass` section below.
+- **Tailwind (Tailwind v3 / v4 with `@theme`)** — class atoms are important survey evidence. The declared `--spacing-*` / `--text-*` / `--color-*` tokens in `@theme` are only half the picture; the other half is which atoms components actually use, because Tailwind synthesizes most of the rendered scale from the `--spacing` modular base (`p-2` → `padding: calc(var(--spacing) * 2)` → 8px when `--spacing: 0.25rem`). A survey built from declarations alone undercounts spacing/typography/color systematically — see the `## Tailwind class-atom pass` section below.
 - **CSS / SCSS / CSS modules** — `rg -oN '#[0-9a-fA-F]{3,8}\b' -g '*.{css,scss,sass}'` for hex; `rg -oN '\b(rgba?|hsla?|oklch|color)\([^)]+\)' -g '*.{css,scss}'` for color functions; `rg -oN '\b[0-9]+(\.[0-9]+)?(px|rem|em|%|vh|vw|fr|ch|svh|dvh)\b' -g '*.{css,scss}'` for scalars; `rg -oN -- '--[a-z0-9-]+\s*:' -g '*.{css,scss}'` for custom properties.
 - **CSS-in-JS (styled-components, emotion, vanilla-extract)** — same regex set but expand `-g '*.{ts,tsx,js,jsx}'`. Watch for template literals split across lines.
 - **iOS / Swift** — `rg -oN 'Color\([^)]+\)|UIColor\([^)]+\)|\.(red|blue|green|orange|brand[A-Za-z]*)\b' -g '*.swift'` for color sites; `rg -oN '\b[0-9]+(\.[0-9]+)?\b' -g '*.swift' | sort | uniq -c | sort -rn | head -50` for likely scalars (lots of noise; keep top-N by frequency).
@@ -281,4 +281,4 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 - **Never undercount silently.** If your coverage is weak (mobile dialects, custom DSLs, no canonical signal in this repo), surface it in a `# Coverage` scratchpad note and tell the interpreter.
 - **Never compute IDs by hand.** Use `survey fix-ids`.
 - **Never use placeholder/glob names.** A component row with `name: "*Button"` or `name: "<various>"` is sampling-disguised-as-a-row. Enumerate concretely.
-- **Never edit a survey after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. The survey is the frozen ground truth between scan and interpretation.
+- **Never edit a survey after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. Treat the survey used for a profile as frozen evidence.

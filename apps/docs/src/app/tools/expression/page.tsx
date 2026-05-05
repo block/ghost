@@ -31,7 +31,7 @@ const cards: {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/expression-format.md",
     description:
-      "The full expression.md spec — frontmatter schema, three-layer body, 49-dim machine vector.",
+      "The full expression.md spec — authored frontmatter, portable prose, and derived runtime views.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -48,7 +48,7 @@ export default function GhostExpressionLanding() {
       <AnimatedPageHeader
         kicker="ghost-expression"
         title="Authoring"
-        description="The package that owns expression.md — Ghost's canonical design-language artifact. YAML frontmatter for machines, prose body (Character / Decisions) for humans and LLMs. Validated, described, diffed, and emitted into per-project review commands and grounding bundles for any generator."
+        description="The package that owns expression.md — Ghost's authored design-language contract. YAML frontmatter stores compact value digests, while the prose body (Character / Signature / Decisions) explains the design choices for humans and LLMs. Validated, described, diffed, and emitted into per-project review commands and context bundles for any generator."
       />
 
       <div
