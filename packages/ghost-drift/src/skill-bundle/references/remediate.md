@@ -85,4 +85,4 @@ After the user applies (or rejects) the patches:
 
 ## Why this is a recipe, not a verb
 
-Remediation requires judgement: which token is "closest", what counts as load-bearing, when to escalate vs auto-patch. None of that is deterministic, so it lives here in your court — the CLI gives you the math (`compare`), the recipe gives you the procedure, you write the patch.
+Remediation requires judgment: which token is "closest", what matters enough to fix, when to escalate vs auto-patch. None of that is deterministic, so it stays in the recipe — the CLI gives you the math (`compare`), the recipe gives you the procedure, and you write the patch.

@@ -1,18 +1,17 @@
 # Generation Loop
 
-Ghost sits as pipeline infrastructure for AI-driven UI generation. The
-`expression.md` is the grounding input; the *review* recipe is the
-post-generation gate; the *verify* recipe drives the loop over a prompt
-suite to expose where the expression leaks.
+Ghost gives UI generators a local design-language input and a review loop.
+`expression.md` is the file the generator reads. The *review* recipe checks
+the result for drift. The *verify* recipe repeats that loop across a prompt
+suite to show where the expression needs more detail.
 
-Only the grounding step is a deterministic CLI verb (`ghost-expression
+Only the bundle step is a deterministic CLI verb (`ghost-expression
 emit context-bundle`). *Review*, *verify*, and *remediate* are skill recipes
 the host agent follows — installed with `ghost-drift emit skill`.
 
-(Note: `generate.md` was dropped from scope in the five-tool decomposition.
 Use any generator — the host agent itself, Cursor, v0, or an in-house tool —
-with the emitted context bundle in its prompt; Ghost's job is grounding the
-input and gating the output, not running the generator.)
+with the emitted context bundle in its prompt. Ghost prepares the input and
+checks the output; it does not run the generator.
 
 ## Pipeline shape
 
@@ -34,14 +33,13 @@ expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKI
 
 ### `ghost-expression emit context-bundle [flags]` — the one CLI verb
 
-Emit a grounding bundle any generator can consume. Default output writes
+Emit a context bundle any generator can consume. Default output writes
 `SKILL.md` + `expression.md` + `prompt.md` + `tokens.css` into
-`./ghost-context/`. The generated `prompt.md` is a generation lens over the
-expression: Character sets feel, Signature carries final-picture posture,
-Local References point to optional source material when accessible, Decisions
-provide style direction, Checks provide curated gates, and Tokens provide the
-portable value digest. It intentionally does not ask the
-generator to explain or cite decisions unless the user asks for explanation.
+`./ghost-context/`. The generated `prompt.md` turns the expression into a
+short generation prompt: Character sets feel, Signature describes the final
+picture, Local References point to optional source material, Decisions give
+style direction, Checks name review gates, and Tokens provide portable values.
+It does not ask the generator to explain or cite decisions unless the user asks.
 
 Flags:
 - `--out <dir>` — output directory (default: `./ghost-context`)
@@ -55,8 +53,8 @@ reads `SKILL.md`.
 
 ### Driving the generator
 
-Driven by the host agent. Loads the expression (the agent typically pulls
-just the sections it needs via `ghost-expression describe`), builds a system
+The host agent drives this step. It loads the expression (often just the
+sections it needs via `ghost-expression describe`), builds a system
 prompt from Character + Signature + Local References when accessible +
 Decisions + Checks + Tokens, asks the underlying model,
 extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
@@ -65,7 +63,7 @@ agent gives up.
 
 This isn't a recipe Ghost ships — `generate.md` was dropped. The agent's
 own driver code (or whatever generator it shells out to) owns this step.
-Ghost's job is the bundle that goes in and the review that gates the output.
+Ghost's job is the bundle that goes in and the review that checks the output.
 
 ### The `review` recipe
 
@@ -86,9 +84,9 @@ drift per dimension and classifies:
 - **leaky** (1–3): generator drifts here often — tighten Decisions
 - **uncaptured** (≥ 3): expression likely under-specifies this dimension
 
-The killer demo: run `verify` on a mature expression, intentionally drop
-a section (e.g. motion), re-run, watch drift rise in dimensions that lost
-grounding.
+A useful test: run `verify` on a mature expression, remove one section
+(for example, motion), then run it again. Drift should rise in the dimension
+that lost guidance.
 
 Source: `packages/ghost-drift/src/skill-bundle/references/verify.md`.
 
@@ -110,25 +108,25 @@ distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
 *incidental* drift (the same prompt leaking color, which it wasn't
 supposed to stress).
 
-## How the expression format earns its keep
+## Why Each Section Exists
 
 Each layer has a concrete job somewhere in the loop:
 
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Signature** | Final-picture guidance — dominant moves and output posture |
+| **Signature** | Final-picture guidance — dominant moves and output shape |
 | **References** | Local provenance / optional source material; use when accessible |
-| **Checks** | Human-promoted drift gates; presence-floor checks codify load-bearing absences |
-| **Decisions** | Abstract pattern lookup the generator consults for specific choices |
+| **Checks** | Human-promoted drift gates; presence-floor checks codify important absences |
+| **Decisions** | Pattern guidance the generator consults for specific choices |
 
-Terminal-impact rule: a fact belongs in the terminal expression only when it
-can change generated UI or a drift verdict. `survey.json` can stay broad as
-evidence — including implemented `ui_surfaces[]` specimens and their observed
-composition signals — while `expression.md` stays curated.
+Expression filter: include a fact in `expression.md` only when it can change
+generated UI or a drift verdict. `survey.json` can stay broad as evidence —
+including implemented `ui_surfaces[]` specimens and their observed composition
+signals — while `expression.md` stays compact.
 
-If a layer doesn't pull weight somewhere, that's a signal the format is
-over-specified. The `verify` recipe is the schema-discipline mechanism.
+If a section does not affect generation or review, the format is probably too
+large. The `verify` recipe is how you notice that.
 
 ## Integration patterns
 
@@ -138,7 +136,7 @@ required check on PRs that touch UI files.
 
 **In a generation pipeline**: `ghost-expression emit context-bundle` writes
 the skill bundle into the generator's context; the generator produces; the
-`review` recipe gates the output. Drift disposition belongs to the pipeline
+`review` recipe checks the output. Drift disposition belongs to the pipeline
 owner (block, annotate, require `ghost-drift ack`).
 
 **Expression maintenance**: run `verify` periodically. When a dimension
