@@ -76,7 +76,7 @@ Run when `scan-status` reports `map: present` and `survey: missing`.
 
 Recipe: [survey.md](survey.md). The agent reads `map.md` to recognize the dialect and source graph, runs LLM-driven extraction (its own greps/regexes), records rows with empty `id` fields, finalizes IDs with `ghost-expression survey fix-ids survey.json -o survey.json`, then validates with `ghost-expression lint survey.json`.
 
-The survey is the longest stage and the one with the most discipline (exhaustiveness, saturation, cross-checking counts). Don't shortcut it — the interpreter downstream cannot fabricate values that aren't in the survey, so missed values become missed expression fields permanently. Broad survey evidence is okay; over-broad terminal expression is not.
+The survey is the longest stage and the one with the most discipline (exhaustiveness, saturation, cross-checking counts). Don't shortcut it — the interpreter downstream cannot fabricate values that aren't in the survey, so missed values become missed expression fields permanently. Broad survey evidence is okay; an overstuffed `expression.md` is not.
 
 After validation, re-run `scan-status` and proceed.
 
@@ -84,7 +84,7 @@ After validation, re-run `scan-status` and proceed.
 
 Run when `scan-status` reports both prior stages `present` and `expression: missing`.
 
-Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals), runs `ghost-expression survey summarize survey.json` for bounded survey context, uses `ghost-expression survey catalog survey.json` for exact value enums/specs, and keeps raw `survey.json` available only for targeted row lookup. It writes `expression.md` purely as interpretation: emits local references, names decisions, writes portable Character and Signature prose, fills frontmatter from survey rows, and promotes only human-curated checks. Cannot invent values not in the survey. Cannot dump every survey fact into the terminal artifact. First scans leave `checks[]` empty unless the user explicitly selects checks to promote; candidate checks belong in the agent response or scan notes. Validates with `ghost-expression lint expression.md`, `ghost-expression verify-profile expression.md survey.json --root <target>`, and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
+Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals), runs `ghost-expression survey summarize survey.json` for bounded survey context, uses `ghost-expression survey catalog survey.json` for exact value enums/specs, and keeps raw `survey.json` available only for targeted row lookup. It writes `expression.md` as a compact contract: local references, named decisions, portable Character and Signature prose, survey-backed frontmatter values, and only human-curated checks. It cannot invent values not in the survey. First scans leave `checks[]` empty unless the user explicitly selects checks to promote; candidate checks belong in the agent response or scan notes. Validates with `ghost-expression lint expression.md`, `ghost-expression verify-profile expression.md survey.json --root <target>`, and a self-distance sanity check (`ghost-drift compare expression.md expression.md` returns 0).
 
 Stage 3 has a different audience from stages 1 and 2. `map.md` and `survey.json` are allowed to be repo-specific because they are scan artifacts. `expression.md` is the drift/generation root and may be used by another project that cannot resolve the original paths, so its body must describe portable design-language patterns. Local paths belong in `references:` or as optional evidence provenance, not as the main content of Character, Signature, or Decisions.
 
@@ -98,7 +98,7 @@ Each stage is resumable independently because `scan-status` checks artifact pres
 
 ## When a stage fails
 
-If a stage's lint fails, fix the issue in the recipe pass and re-validate. **Do not move to the next stage on a failed lint** — the next stage's recipe assumes a valid input. A malformed `map.md` poisons the survey; a malformed `survey.json` poisons the interpretation.
+If a stage's lint fails, fix the issue in the recipe pass and re-validate. **Do not move to the next stage on a failed lint** — the next stage's recipe assumes a valid input.
 
 If you cannot make a stage pass (e.g. the target genuinely has no design system), the recipe for that stage tells you what to do — usually: write a minimal valid artifact that surfaces the gap (e.g. `expression.md` with empty palette and a `# Character` note explaining the absence), so downstream tools see honest "no signal" rather than a hallucinated one.
 

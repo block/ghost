@@ -109,7 +109,7 @@ Use `design_system.upstream` as the compatibility breadcrumb, but `sources[]` is
 
 ### 4. Body sections
 
-`map.md` requires a short prose body with three sections — keep them tight, two-to-four sentences each. The body is interpretation; the frontmatter is ground truth. Sections must appear in this order:
+`map.md` requires a short prose body with three sections — keep them tight, two-to-four sentences each. The body explains the map; the frontmatter stores the structured data. Sections must appear in this order:
 
 - `## Identity` — what is this repo, what does it produce, who consumes it?
 - `## Topology` — how is the codebase organized? Where does the design system live relative to product code?
@@ -151,6 +151,6 @@ Common errors regardless of path:
 
 ## Never
 
-- Never put prose into frontmatter or structural data into the body — the partition is load-bearing.
+- Never put prose into frontmatter or structural data into the body.
 - Never duplicate the inventory's content in the body. The body is interpretation, not data.
 - Never declare done before `ghost-expression lint map.md` exits 0.
