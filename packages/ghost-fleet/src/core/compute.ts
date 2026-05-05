@@ -67,7 +67,7 @@ export function computeGroupings(
 
     // platform / build_system may be a string OR an array — the fleet
     // groupings cross-tabulate per value, so an array contributes the
-    // member to each bucket it names.
+    // member to each survey it names.
     for (const value of toArray(map.platform)) {
       push(groupings.by_platform, value, member.id);
     }
@@ -85,7 +85,7 @@ export function computeGroupings(
     }
   }
 
-  // Sort each axis bucket so output is deterministic.
+  // Sort each axis survey so output is deterministic.
   for (const axis of Object.values(groupings) as Record<string, string[]>[]) {
     for (const key of Object.keys(axis)) {
       axis[key]?.sort((a, b) => a.localeCompare(b));
@@ -96,13 +96,13 @@ export function computeGroupings(
 }
 
 function push(
-  bucket: Record<string, string[]>,
+  survey: Record<string, string[]>,
   key: string | undefined,
   id: string,
 ): void {
   if (!key) return;
-  if (!bucket[key]) bucket[key] = [];
-  bucket[key].push(id);
+  if (!survey[key]) survey[key] = [];
+  survey[key].push(id);
 }
 
 /** Normalize a string-or-array map field to an array of strings. */
@@ -115,9 +115,9 @@ function toArray<T extends string>(value: T | T[] | undefined): T[] {
  * Build the tracks-graph from each member's recorded `tracks` target.
  *
  * Edges read directly from `.ghost-sync.json` — fleet does not author
- * relationships (Invariant 5). The right-hand side is whatever the member
- * declared; the skill recipe interprets whether it resolves to another
- * member id or an external reference.
+ * relationships. The right-hand side is whatever the member declared; the
+ * skill recipe interprets whether it resolves to another member id or an
+ * external reference.
  */
 export function computeTracks(members: FleetMember[]): FleetTrack[] {
   const out: FleetTrack[] = [];

@@ -24,7 +24,7 @@ ghost drift emit review-command               # per-project slash command (or st
 ghost drift emit context-bundle               # review context for the host agent
 ```
 
-Six verbs. All deterministic. Compare is the comparison primitive; ack/track/diverge are explicit evolution acts (Invariant 5). Emit derives artifacts.
+Six verbs. All deterministic. Compare is the comparison primitive; ack/track/diverge are explicit evolution acts. Emit derives artifacts.
 
 ## Recipes
 
@@ -107,8 +107,8 @@ After studying the existing implementation, here's what the audit confirmed and 
 
 - Authoring expressions (that's expression).
 - World model across many repos (that's fleet).
-- LLM in CLI (Invariant 1).
-- Auto-update on drift (Invariant 5 — drift surfaces signals; humans/agents act on them).
+- LLM in CLI.
+- Auto-update on drift; drift surfaces signals and humans/agents act on them.
 - Hardcoded thresholds — drift reports distance; the consumer picks a threshold.
 
 ## Next steps

@@ -9,17 +9,24 @@ slug: getting-started
 
 <DocSection title="The Shape of Ghost">
 
-Ghost is split into **five small tools**, each with one responsibility, plus a
-shared library underneath. Your host agent (Claude Code, Cursor, Goose, Codex, …)
-does the interpretive work — profile, review, verify, remediate — using
-[agentskills.io](https://agentskills.io)-compatible recipe bundles that each
-tool ships. The CLIs are the calculator the agent reaches for when it needs
-a reproducible answer.
+Ghost is split into **four small tools**, each with one responsibility, plus a
+shared library (`@ghost/core`) underneath. Your host agent (Claude Code, Cursor,
+Goose, Codex, …) does the interpretive work — profile, review, verify, remediate —
+using [agentskills.io](https://agentskills.io)-compatible recipe bundles that
+each tool ships. The CLIs are the calculator the agent reaches for when it
+needs a reproducible answer.
+
+A scan runs in three stages, all owned by `ghost-expression`:
+
+```
+map            →     survey          →     expression
+map.md               survey.json           expression.md
+ghost.map/v2         ghost.survey/v2       (the canonical artifact)
+```
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| `ghost-map` | `map.md` (topology) | `inventory`, `lint` |
-| `ghost-expression` | `expression.md` (design language) | `lint`, `describe`, `diff`, `emit` |
+| `ghost-expression` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
 | `ghost-drift` | drift detection + governance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | `fleet.md` (elevation across members) | `members`, `view`, `emit skill` |
 | `ghost-ui` | reference design system (97 shadcn components) | — |
@@ -44,8 +51,8 @@ Or install globally:
 pnpm add -g ghost-drift ghost-expression
 ```
 
-`ghost-map` and `ghost-fleet` are workspace-only for now — clone the repo
-and `pnpm build` to use them.
+`ghost-fleet` is workspace-only for now — clone the repo and `pnpm build`
+to use it.
 
 No API key is required for any CLI verb. If your host agent uses Anthropic
 or OpenAI models, it'll handle auth itself. Each CLI auto-loads `.env` and
@@ -68,7 +75,7 @@ ghost-expression emit skill       # → .claude/skills/ghost-expression
 
 Each bundle ships its own `SKILL.md` plus recipes under `references/`:
 
-- **`ghost-expression`** — `profile.md` (write `expression.md` from a project) + `schema.md` (condensed format reference).
+- **`ghost-expression`** — `scan.md` (meta-recipe orchestrating map → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the map stage), `survey.md` (write `survey.json`, the survey stage), `profile.md` (interpret a survey into `expression.md`, the expression stage), `schema.md` (condensed format reference).
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 
@@ -81,35 +88,60 @@ CLI whenever it needs a reproducible answer.
 
 </DocSection>
 
-<DocSection title="Profile Your First System">
+<DocSection title="Scan Your First System">
 
-Profiling is a skill recipe shipped in `ghost-expression`'s bundle, not a
-CLI verb. Open your host agent in the project you want to profile and ask
-it something like:
+Scanning is the host-agent loop, not a single CLI verb. Open your host
+agent in the project you want to profile and ask it something like:
 
 ```text
-Profile this design language into expression.md
+Scan this design language end-to-end
 ```
 
-The `profile` recipe walks the agent through finding design sources
-(tailwind config, theme CSS, token files, component primitives), resolving
-variable chains end-to-end, and writing the expression. The final step is
-always `ghost-expression lint` — which validates the result with the same
-answer every time.
+The `scan` recipe checkpoints between stages with `scan-status` and
+dispatches into the per-stage recipes:
+
+1. **Map (`map.md`)** — the `map` recipe reads
+   `ghost-expression inventory` (raw repo signals) and writes a `map.md`
+   describing where the design system lives. Validated by
+   `ghost-expression lint map.md`.
+2. **Survey (`survey.json`)** — the `survey` recipe walks the source
+   exhaustively (writing dialect-specific greps; the recipe forbids
+   sampling) and writes a `survey.json` cataloguing every concrete value,
+   token, component, and implemented UI surface. Validated by
+   `ghost-expression lint survey.json`.
+3. **Expression (`expression.md`)** — the `profile` recipe interprets the
+   survey as ground truth: reads `survey summarize` for broad context and
+   `survey catalog` for exact value enums/specs, assigns roles to values,
+   emits direct references, names design decisions, writes Character and
+   Signature, and produces the `expression.md`. Cannot fabricate values not
+   in the survey. Validated by
+   `ghost-expression lint expression.md` and
+   `ghost-expression verify-profile expression.md survey.json --root .`.
+
+If you only want one stage, ask for it directly: "map this repo", "survey
+the design values", "profile this expression from the survey". The recipes
+chain via `handoffs`, so the agent surfaces the next stage when ready.
 
 An **expression** is a two-layer Markdown file: YAML frontmatter is the
-machine layer (49-dim vector + palette, spacing, typography, surfaces,
-roles), and the body is prose organized into Character, Signature, and
-Decisions. Humans can read it. LLMs can consume it. Ghost's CLIs diff it.
-See [`packages/ghost-ui/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-ui/expression.md)
-in this repo for a full real-world example.
+machine layer (palette, spacing, typography, surfaces, direct references,
+checks), and the body is prose organized into Character, Signature, and
+Decisions. Runtime comparison derives embeddings from the authored file;
+there is no sibling embedding artifact to edit. Humans can read it. LLMs can
+consume it. Ghost's CLIs diff it.
+See the expression fixture at
+[`packages/ghost-expression/test/fixtures/ghost-ui-expression/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-expression/test/fixtures/ghost-ui-expression/expression.md)
+for a full example.
 
 ```bash
-# Validate the result (zero-config — reads ./expression.md)
-ghost-expression lint
+# Check what stage to run next
+ghost-expression scan-status
 
-# Or validate a specific file
-ghost-expression lint path/to/expression.md --format json
+# Validate any artifact (auto-detects the kind)
+ghost-expression lint                       # ./expression.md
+ghost-expression lint map.md                # ghost.map/v2
+ghost-expression lint survey.json           # ghost.survey/v2
+ghost-expression verify-profile expression.md survey.json --root .
+                                            # expression-to-survey fidelity
 ```
 
 </DocSection>
@@ -134,9 +166,9 @@ ghost-drift compare before.expression.md after.expression.md --temporal
 ghost-drift compare *.expression.md
 ```
 
-`compare` weights palette, spacing, typography, surfaces, and embedded
-decisions. Decisions are matched semantically above a cosine-similarity
-threshold so wording doesn't have to line up.
+`compare` weights palette, spacing, typography, surfaces, and runtime
+decision embeddings. Decisions are matched semantically above a
+cosine-similarity threshold so wording doesn't have to line up.
 
 For a structural prose-level diff (what decisions and palette roles
 changed, ignoring vector distance), use `ghost-expression diff` instead.
@@ -196,7 +228,7 @@ Ghost doubles as pipeline infrastructure for AI-generated UI. The
 expression grounds the generator; the `review` recipe gates the output.
 
 1. `ghost-expression emit context-bundle` — emit a grounding bundle from an
-   expression (SKILL.md + tokens.css + optional prompt.md) that any
+   expression (SKILL.md + expression.md + prompt.md + tokens.css) that any
    generator can consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
    with the bundle in context.
@@ -250,6 +282,6 @@ export default defineConfig({
 Next: [Drift Workflow](/tools/drift/workflow) for the five-move
 walkthrough — profile, compare, review, evolve, org — with richer examples
 for each. Or jump to the [CLI Reference](/docs/cli) for every verb across
-all four tools.
+all three tools.
 
 </DocSection>

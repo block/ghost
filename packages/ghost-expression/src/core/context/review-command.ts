@@ -1,4 +1,6 @@
-import type { Expression } from "@ghost/core";
+import type { DriftSeverity, Expression } from "@ghost/core";
+import { tierForCanonical } from "@ghost/core";
+import { type ResolvedCheck, resolveExpressionChecks } from "./checks.js";
 
 export interface EmitReviewInput {
   expression: Expression;
@@ -8,13 +10,24 @@ export interface EmitReviewInput {
  * Emit a project-fitted drift-review slash command from an expression.
  *
  * Produces a single Markdown file styled after Rams' `/rams` slash command
- * — role prompt, per-dimension rule tables, output template, guidelines —
+ * — role prompt, per-dimension check tables, output template, guidelines —
  * populated with this expression's actual palette, radii, spacing, and
  * typography values. Default output path: `.claude/commands/design-review.md`.
  *
  * Scope is drift-only: off-palette hex, off-ramp spacing, non-canonical
- * radii and weights. Universal accessibility rules are out of scope —
+ * radii and weights. Universal accessibility checks are out of scope —
  * those belong in Rams or a sibling a11y skill.
+ *
+ * Two emission paths:
+ *   - **Checks-driven** (preferred): when `expression.checks[]` is
+ *     non-empty, group checks by computed perceptual severity and render
+ *     a Critical / Serious / Nit layout. Severity is computed from the
+ *     perceptual prior in `@ghost/core` plus per-check overrides and
+ *     presence-floor escalation against observed counts or survey proxies.
+ *   - **Structured-fallback**: when no checks[] are present,
+ *     emit the original palette/radius/spacing/typography sections
+ *     derived from frontmatter alone. Preserved verbatim so existing
+ *     expressions keep working through the v0 transition.
  *
  * Pure: deterministic over the same expression. The expression is
  * expected to be the unioned result of `loadExpression` — body prose
@@ -23,6 +36,153 @@ export interface EmitReviewInput {
  */
 export function emitReviewCommand(input: EmitReviewInput): string {
   const { expression: fp } = input;
+
+  if (fp.checks && fp.checks.length > 0) {
+    return emitChecksDriven(fp);
+  }
+
+  return emitStructuredFallback(fp);
+}
+
+// --- Checks-driven path -------------------------------------------------
+
+/**
+ * Render a checks[]-driven slash command. Groups checks by computed
+ * severity, renders one block per check with pattern + match shape, then
+ * closes with a calibration footer that explains *why*
+ * severities landed where they did. The calibration footer is what makes
+ * Ghost's reviewer legibly different from a generic linter — the prior
+ * is visible, not opaque.
+ */
+function emitChecksDriven(fp: Expression): string {
+  const id = fp.id;
+  const personality = (fp.observation?.personality ?? []).join(", ");
+  const cousins = (fp.observation?.resembles ?? []).join(", ");
+  const character = fp.observation?.summary?.trim() ?? "";
+
+  const resolved = resolveExpressionChecks(fp);
+
+  const grouped: Record<DriftSeverity, typeof resolved> = {
+    critical: [],
+    serious: [],
+    nit: [],
+  };
+  for (const r of resolved) grouped[r.severity].push(r);
+
+  const sections: string[] = [];
+  if (grouped.critical.length) {
+    sections.push(renderSeverityBlock("Critical", grouped.critical));
+  }
+  if (grouped.serious.length) {
+    sections.push(renderSeverityBlock("Serious", grouped.serious));
+  }
+  if (grouped.nit.length) {
+    sections.push(renderSeverityBlock("Nit", grouped.nit));
+  }
+
+  const parts = [
+    frontmatter(id),
+    header(id, personality, cousins, character),
+    modeSection(),
+    ...sections,
+    outputTemplate(id),
+    guidelines(),
+    calibrationFooter(fp, resolved),
+  ];
+  return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
+}
+
+function renderSeverityBlock(label: string, items: ResolvedCheck[]): string {
+  const lines: string[] = [`## ${label} (${items.length})`];
+  for (const item of items) {
+    lines.push("", renderCheck(item));
+  }
+  return lines.join("\n");
+}
+
+function renderCheck(item: ResolvedCheck): string {
+  const { check, match, tolerance } = item;
+  const heading = check.canonical
+    ? `### \`${check.id}\` — ${check.canonical}`
+    : `### \`${check.id}\``;
+  const lines: string[] = [heading];
+  if (check.summary) lines.push("", check.summary);
+  lines.push("", `**Pattern:** \`${check.pattern}\``);
+
+  const matchLine =
+    tolerance !== undefined
+      ? `**Match:** \`${match}\` (tolerance: \`${tolerance}\`)`
+      : `**Match:** \`${match}\``;
+  lines.push(matchLine);
+
+  if (check.paths?.length) {
+    const where = check.paths.map((e) => `\`${e}\``).join(", ");
+    lines.push(`**Paths:** ${where}`);
+  }
+  if (check.contexts?.length) {
+    const where = check.contexts.map((e) => `\`${e}\``).join(", ");
+    lines.push(`**Contexts:** ${where}`);
+  }
+  if (typeof check.observed_count === "number") {
+    lines.push(`**Observed count:** ${check.observed_count}`);
+  }
+  if (typeof check.support === "number") {
+    lines.push(`**Support:** ${(check.support * 100).toFixed(0)}%`);
+  }
+  return lines.join("\n");
+}
+
+function calibrationFooter(fp: Expression, resolved: ResolvedCheck[]): string {
+  const tierCounts = { loud: 0, structural: 0, rhythmic: 0 };
+  const finalCounts: Record<DriftSeverity, number> = {
+    critical: 0,
+    serious: 0,
+    nit: 0,
+  };
+  const escalated: string[] = [];
+
+  for (const r of resolved) {
+    const baseTier = tierForCanonical(r.check.canonical);
+    tierCounts[baseTier]++;
+    finalCounts[r.severity]++;
+    const finalTierFromSeverity =
+      r.severity === "critical"
+        ? "loud"
+        : r.severity === "serious"
+          ? "structural"
+          : "rhythmic";
+    if (
+      finalTierFromSeverity !== baseTier &&
+      r.check.severity === undefined // not a manual override
+    ) {
+      const floor = r.check.presence_floor ?? 0;
+      escalated.push(`\`${r.check.id}\` (${r.surveyCount} ≤ ${floor})`);
+    }
+  }
+
+  const lines: string[] = [
+    "## How this reviewer was calibrated",
+    "",
+    `Severity grouping reflects perceptual weight, not arithmetic. After overrides and presence-floor escalation, \`${fp.id}\` has ${finalCounts.critical} critical, ${finalCounts.serious} serious, and ${finalCounts.nit} nit checks. Base prior before escalation: ${tierCounts.loud} loud-tier, ${tierCounts.structural} structural-tier, and ${tierCounts.rhythmic} rhythmic-tier.`,
+  ];
+  if (escalated.length) {
+    lines.push(
+      "",
+      `**Presence-floor escalation triggered for:** ${escalated.join(", ")}. These guarded patterns are absent or near-silent in the survey, so adding to them lands one perceptual tier louder than the base dimension.`,
+    );
+  }
+  lines.push(
+    "",
+    "Color and font-family checks are loud (critical) by default. Shape, elevation, surface, and interactive-pattern checks are structural (serious). Spacing, density, motion-detail, and theming checks are rhythmic (nit).",
+    "",
+    `Generated from \`expression.md\` (${(fp.checks ?? []).length} checks). Re-run \`ghost-expression emit review-command\` after expression updates.`,
+  );
+  return lines.join("\n");
+}
+
+// --- Structured-fallback path (legacy) ---------------------------------
+
+function emitStructuredFallback(fp: Expression): string {
   const id = fp.id;
   const personality = (fp.observation?.personality ?? []).join(", ");
   const cousins = (fp.observation?.resembles ?? []).join(", ");
@@ -32,6 +192,7 @@ export function emitReviewCommand(input: EmitReviewInput): string {
     frontmatter(id),
     header(id, personality, cousins, character),
     modeSection(),
+    structuredFallbackNotice(),
     paletteSection(fp),
     radiusSection(fp),
     spacingSection(fp),
@@ -42,6 +203,12 @@ export function emitReviewCommand(input: EmitReviewInput): string {
     footer(fp),
   ];
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
+}
+
+function structuredFallbackNotice(): string {
+  return `## Calibration note
+
+This expression has no promoted \`checks[]\`, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than a checks-driven reviewer, and promote curated checks in \`expression.md\` when a pattern should become enforceable.`;
 }
 
 function frontmatter(id: string): string {
@@ -308,7 +475,7 @@ function footer(fp: Expression): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`expression.md\` (${count} decisions). Re-run \`ghost-drift emit review-command\` after expression updates.`;
+Generated from \`expression.md\` (${count} decisions). Re-run \`ghost-expression emit review-command\` after expression updates.`;
 }
 
 // --- helpers ------------------------------------------------------------

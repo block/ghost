@@ -36,8 +36,7 @@ Brief.
 
 # Signature
 
-- bullet a
-- bullet b
+Recognizable posture.
 
 # Decisions
 
@@ -52,9 +51,6 @@ Prose.
 
 More prose.
 
-# Fragments
-
-- [embedding](embedding.md)
 `;
 
 describe("layoutExpression", () => {
@@ -76,19 +72,15 @@ describe("layoutExpression", () => {
     const character = layout.sections.find(
       (s) => s.kind === "body" && s.heading === "Character",
     );
-    const signature = layout.sections.find(
-      (s) => s.kind === "body" && s.heading === "Signature",
-    );
     const decisions = layout.sections.find(
       (s) => s.kind === "body" && s.heading === "Decisions",
     );
-    const fragments = layout.sections.find(
-      (s) => s.kind === "body" && s.heading === "Fragments",
+    const signature = layout.sections.find(
+      (s) => s.kind === "body" && s.heading === "Signature",
     );
     expect(character?.start).toBeGreaterThan(fm?.end ?? 0);
     expect(signature?.start).toBeGreaterThan(character?.end ?? 0);
     expect(decisions?.start).toBeGreaterThan(signature?.end ?? 0);
-    expect(fragments?.start).toBeGreaterThan(decisions?.end ?? 0);
 
     const decisionBlocks = layout.sections.filter((s) => s.kind === "decision");
     expect(decisionBlocks.map((d) => d.dimension)).toEqual([
@@ -172,33 +164,22 @@ x
     ).toBeDefined();
   });
 
-  it("matches structural expectations against the real ghost-ui expression", async () => {
-    const path = resolve(here, "../../../ghost-ui/expression.md");
+  it("matches structural expectations against the ghost-ui fixture expression", async () => {
+    const path = resolve(here, "../fixtures/ghost-ui-expression/expression.md");
     const raw = await readFile(path, "utf-8");
     const layout = layoutExpression(raw);
 
     const fm = layout.sections.find((s) => s.kind === "frontmatter");
     expect(fm?.start).toBe(1);
     expect(fm?.partitions).toEqual(
-      expect.arrayContaining([
-        "palette",
-        "spacing",
-        "typography",
-        "surfaces",
-        "roles",
-      ]),
+      expect.arrayContaining(["palette", "spacing", "typography", "surfaces"]),
     );
 
     const headings = layout.sections
       .filter((s) => s.kind === "body")
       .map((s) => s.heading);
     expect(headings).toEqual(
-      expect.arrayContaining([
-        "Character",
-        "Signature",
-        "Decisions",
-        "Fragments",
-      ]),
+      expect.arrayContaining(["Character", "Signature", "Decisions"]),
     );
 
     const dims = layout.sections

@@ -4,6 +4,7 @@ export {
   colorToSemanticColor,
   contrastScore,
   parseColorToOklch,
+  resolveColorOklch,
   saturationScore,
 } from "./colors.js";
 export type { CompareOptions } from "./compare.js";

@@ -12,14 +12,10 @@ observation:
   resembles:
     - known-system
 
-# abstract design decisions
+# decision index: rationale and evidence live in matching body blocks
 decisions:
   - dimension: color-strategy
-    evidence:
-      - "--color-primary: #000000"
   - dimension: spatial-system
-    evidence:
-      - "--space-4: 16px"
 
 # concrete tokens
 palette:
@@ -47,18 +43,15 @@ surfaces:
   borderRadii: [4, 8]
   shadowComplexity: deliberate-none
   borderUsage: minimal
-
-roles: []
 ---
 
 # Character
 
-2-4 sentences on the personality of this design language. This prose becomes `observation.summary` when parsed.
+2-4 sentences on the personality of this design language. Describe the language directly instead of introducing the project by name. Name what the system permits, not only what it avoids: scale contrast, shaped composition, semantic color, role-based elevation, functional motion, font sourcing, or themeable tokens.
 
 # Signature
 
-- Distinctive trait 1.
-- Distinctive trait 2.
+2-4 sentences on the final-picture posture: dominant moves, layout habits, and what generated output should feel like when the language comes together.
 
 # Decisions
 
@@ -66,10 +59,14 @@ roles: []
 
 Prose rationale for the color-strategy decision. Implementation-agnostic: name the pattern, not the token.
 
+**Evidence:**
+- `--color-primary: #000000`
+- Survey color evidence: dominant observations cluster on the neutral palette
+
 ### spatial-system
 
 Prose rationale for the spatial-system decision.
 
-# Fragments
-
-- [embedding](embedding.md)
+**Evidence:**
+- `--space-4: 16px`
+- Survey spacing evidence: padding/gap/margin observations stay on the documented scale

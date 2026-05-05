@@ -19,7 +19,7 @@ Authoring an `expression.md` lives in the sibling `ghost-expression` skill. Drif
 
 | Verb | Purpose |
 |---|---|
-| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Vector math over expression embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
+| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Vector math over embeddings derived from the authored expressions. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
 | `ghost-drift ack` / `ghost-drift track <expression.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked expression (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `expression.md`. |
 | `ghost-drift emit skill` | Install this agent skill bundle into your host agent. |
 
@@ -40,8 +40,10 @@ For authoring or describing an expression itself (write expression.md, lint, des
 
 An `expression.md` has:
 
-- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`.
-- **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (bullets from `distinctiveTraits`), `# Decisions` with `### <dimension>` rationale blocks.
+- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
+- **Markdown body (prose layer):** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
+
+No sibling fragments are canonical. Do not look for `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; comparison computes embeddings from `expression.md` at runtime.
 
 Validate via `ghost-expression lint` before drawing conclusions from a drift comparison.
 
@@ -54,5 +56,5 @@ Validate via `ghost-expression lint` before drawing conclusions from a drift com
 ## Never
 
 - Don't go looking for CLI verbs for `review`, `verify`, or `remediate`. Those are recipes you execute, not commands to invoke.
-- Never auto-update an expression because drift exists. Expressions evolve by deliberate act (Invariant 5) — your role is to surface the drift and wait for instruction.
+- Never auto-update an expression because drift exists. Expressions evolve by deliberate act — your role is to surface the drift and wait for instruction.
 - Don't expect the CLI to make the judgement call. Vector distance is math; whether the drift is intentional, acceptable, or a regression is for you to decide via the relevant recipe.

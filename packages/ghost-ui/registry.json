@@ -2,10 +2,6 @@
   "$schema": "https://ui.shadcn.com/schema/registry.json",
   "name": "ghost-ui",
   "homepage": "https://github.com/block/ghost",
-  "meta": {
-    "expression": "./expression.md",
-    "map": "./map.md"
-  },
   "items": [
     {
       "name": "ghost-ui-base",

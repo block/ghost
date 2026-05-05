@@ -1,5 +1,12 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { lintSurvey } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import { lintExpression } from "../../src/core/index.js";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const FIXTURES = resolve(HERE, "../fixtures");
 
 const HEADER = `---
 name: Claude
@@ -28,8 +35,7 @@ typography:
 surfaces:
   borderRadii: [8]
   shadowComplexity: subtle
-  borderUsage: moderate
-embedding: [0.1, 0.2]`;
+  borderUsage: moderate`;
 
 function build(frontmatterExtras: string, body: string): string {
   return `${HEADER}${frontmatterExtras}\n${PALETTE_BLOCK}\n---\n\n${body}`;
@@ -47,10 +53,6 @@ decisions:
 
 Warm, editorial
 
-# Signature
-
-- warm-only neutrals
-
 # Decisions
 
 ### warm-neutrals
@@ -62,6 +64,28 @@ No cool grays
     );
     const report = lintExpression(md);
     expect(report.errors).toBe(0);
+  });
+
+  it("keeps a surface-derived composition-patterns fixture lint-clean", () => {
+    const fixtureDir = resolve(FIXTURES, "surface-profile");
+    const survey = JSON.parse(
+      readFileSync(resolve(fixtureDir, "survey.json"), "utf-8"),
+    );
+    const expression = readFileSync(
+      resolve(fixtureDir, "expression.md"),
+      "utf-8",
+    );
+
+    const surveyReport = lintSurvey(survey);
+    expect(surveyReport.errors).toBe(0);
+    expect(survey.ui_surfaces[0].signals.layout_patterns).toContain(
+      "metric strip above timeline",
+    );
+
+    const expressionReport = lintExpression(expression);
+    expect(expressionReport.errors).toBe(0);
+    expect(expression).toContain("### composition-patterns");
+    expect(expression).toContain("survey.ui_surfaces[0]");
   });
 
   it("flags a dimension declared in frontmatter with no matching body block", () => {
@@ -150,207 +174,6 @@ refers to a ghost color
     expect(unused.every((i) => i.severity === "error")).toBe(true);
   });
 
-  it("accepts a role palette reference that resolves", () => {
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { background: '{palette.dominant.accent}' }
-    evidence: ["src/ui/button.tsx:12"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
-      false,
-    );
-  });
-
-  it("flags a role reference that points at a missing palette role", () => {
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { background: '{palette.dominant.ghost}' }
-    evidence: ["src/ui/button.tsx:12"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    const broken = report.issues.filter(
-      (i) => i.rule === "broken-role-reference",
-    );
-    expect(broken.length).toBe(1);
-    expect(broken[0].severity).toBe("error");
-    expect(broken[0].path).toBe("roles[0].tokens.palette.background");
-  });
-
-  it("flags a role reference into an unsupported namespace", () => {
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { foreground: '{typography.families.primary}' }
-    evidence: ["src/ui/button.tsx:12"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    const broken = report.issues.find(
-      (i) => i.rule === "broken-role-reference",
-    );
-    expect(broken).toBeDefined();
-    expect(broken?.message).toMatch(/palette\.dominant.*palette\.semantic/);
-  });
-
-  it("leaves raw hex values in role palette alone", () => {
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { background: '#c96442' }
-    evidence: ["src/ui/button.tsx:12"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
-      false,
-    );
-  });
-
-  it("propagates slug-binding citations through `{palette.dominant.X}` references", () => {
-    // The role binds `background` to `{palette.dominant.accent}` — the
-    // accent's hex (#c96442) must be treated as cited even though it
-    // never appears as a literal in any body Evidence bullet.
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette:
-        background: '{palette.dominant.accent}'
-    evidence:
-      - "components/button.tsx using #4d4c48 for hover and #b53333 for danger and #141413 muted"`,
-      "",
-    );
-    const report = lintExpression(md);
-    const unused = report.issues.filter((i) => i.rule === "unused-palette");
-    // #c96442 is cited only via the slug binding — must NOT be flagged.
-    expect(unused.some((i) => i.message.includes("#c96442"))).toBe(false);
-    // The other three are name-dropped in role evidence, so the file
-    // should be fully clean.
-    expect(unused.length).toBe(0);
-  });
-
-  it("counts a hex used in a role's evidence string as cited (no unused-palette info)", () => {
-    // The PALETTE_BLOCK ships #c96442, #141413, #4d4c48, #b53333.
-    // A role binding that cites every hex (some in palette field, some
-    // inline in evidence) should silence unused-palette entirely.
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { background: '#c96442', foreground: '#141413' }
-    evidence:
-      - "components/button.tsx using #4d4c48 for hover and #b53333 for danger"`,
-      "",
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "unused-palette")).toBe(false);
-  });
-
-  it("still flags palette colors absent from both decisions and roles", () => {
-    // Add a role that cites only one of the four palette hexes; the
-    // other three should still fire unused-palette as info.
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette: { background: '#c96442' }
-    evidence: ["src/ui/button.tsx:12"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    const unused = report.issues.filter((i) => i.rule === "unused-palette");
-    expect(unused.length).toBeGreaterThan(0);
-    // #c96442 is now cited via the role binding — must NOT appear in
-    // the unused list.
-    expect(unused.some((i) => i.message.includes("#c96442"))).toBe(false);
-  });
-
-  it("accepts extended palette slot keys (surface, accent, muted, link, …)", () => {
-    // Phase 5b widens roles[].tokens.palette from a fixed three-key
-    // shape (background/foreground/border) to an open record. Slots like
-    // `surface`, `accent`, `muted`, `link`, `ring`, `popover` are now
-    // valid and don't trigger schema-invalid.
-    const md = build(
-      `
-roles:
-  - name: card
-    tokens:
-      palette:
-        background: '#c96442'
-        surface: '#141413'
-        border: '#4d4c48'
-        accent: '{palette.dominant.accent}'
-        muted: '#b53333'
-        ring: '#141413'
-    evidence: ["src/ui/card.tsx:1"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
-    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
-      false,
-    );
-  });
-
-  it("accepts opaque external token refs without flagging broken-role-reference", () => {
-    // Style-Dictionary-style consumer repos use deeply-nested refs that
-    // resolve in the upstream package. The linter should treat them as
-    // opaque rather than rejecting them.
-    const md = build(
-      `
-roles:
-  - name: button
-    tokens:
-      palette:
-        background: '{base.color.brand.x.light}'
-        foreground: '{semantic.text.on-brand}'
-        surface: '{component.button.surface.default}'
-    evidence: ["src/ui/button.tsx:1"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    expect(report.issues.some((i) => i.rule === "broken-role-reference")).toBe(
-      false,
-    );
-  });
-
-  it("still resolves and validates local palette refs even with extended slots", () => {
-    // External-ref tolerance must not regress local-ref validation —
-    // `{palette.dominant.ghost}` (no such role) still fires.
-    const md = build(
-      `
-roles:
-  - name: card
-    tokens:
-      palette:
-        surface: '{palette.dominant.ghost}'
-    evidence: ["src/ui/card.tsx:1"]`,
-      "",
-    );
-    const report = lintExpression(md);
-    const broken = report.issues.find(
-      (i) => i.rule === "broken-role-reference",
-    );
-    expect(broken).toBeDefined();
-    expect(broken?.path).toBe("roles[0].tokens.palette.surface");
-  });
-
   it("accepts shadowComplexity: deliberate-none on the surfaces block", () => {
     const md = `${HEADER}
 palette:
@@ -373,11 +196,197 @@ surfaces:
   borderRadii: [8]
   shadowComplexity: deliberate-none
   borderUsage: minimal
-embedding: [0]
 ---
 `;
     const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
+  });
+
+  it("rejects root embedding in frontmatter", () => {
+    const md = build("\nembedding: [0.1, 0.2]", "");
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
+  });
+
+  it("rejects decision embeddings in frontmatter", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: color-strategy
+    embedding: [0.1, 0.2]`,
+      `# Decisions
+
+### color-strategy
+Use color sparingly.
+`,
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
+  });
+
+  it("warns on a non-canonical decision dimension with no dimension_kind", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "non-canonical-dimension",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("decisions[0].dimension");
+  });
+
+  it("does not warn when dimension is canonical", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: color-strategy`,
+      `# Decisions
+
+### color-strategy
+Hue as opt-in.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    expect(
+      report.issues.some((i) => i.rule === "non-canonical-dimension"),
+    ).toBe(false);
+  });
+
+  it("does not warn when non-canonical dimension has canonical dimension_kind", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals
+    dimension_kind: color-strategy`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    expect(
+      report.issues.some((i) => i.rule === "non-canonical-dimension"),
+    ).toBe(false);
+  });
+
+  it("warns when dimension_kind itself is not canonical", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: warm-neutrals
+    dimension_kind: also-bogus`,
+      `# Decisions
+
+### warm-neutrals
+No cool grays.
+
+**Evidence:**
+- \`#141413\`
+`,
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "non-canonical-dimension",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.path).toBe("decisions[0].dimension_kind");
+  });
+
+  it("infos when no promoted checks are present", () => {
+    const md = build("", "");
+    const report = lintExpression(md);
+    const issue = report.issues.find((i) => i.rule === "checks-missing");
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("info");
+    expect(report.errors).toBe(0);
+  });
+
+  it("warns when a promoted check has low support", () => {
+    const md = build(
+      `\nchecks:
+  - id: shaky-spacing
+    canonical: spatial-system
+    pattern: 'p-\\[\\d+px\\]'
+    paths: [src]
+    contexts: [className]
+    observed_count: 20
+    support: 0.72`,
+      "",
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find((i) => i.rule === "check-support-low");
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("checks[0].support");
+  });
+
+  it("infos when promoted checks omit support, paths, contexts, or observed_count", () => {
+    const md = build(
+      `\nchecks:
+  - id: uncalibrated-color
+    canonical: color-strategy
+    pattern: '#[0-9a-fA-F]{3,8}'`,
+      "",
+    );
+    const report = lintExpression(md);
+    const rules = report.issues.map((i) => i.rule);
+    expect(rules).toContain("check-support-missing");
+    expect(rules).toContain("check-paths-missing");
+    expect(rules).toContain("check-contexts-missing");
+    expect(rules).toContain("check-observed-count-missing");
+    expect(report.errors).toBe(0);
+  });
+
+  it("rejects legacy check enforce_at and rationale fields", () => {
+    const md = build(
+      `\nchecks:
+  - id: legacy-check
+    canonical: color-strategy
+    pattern: '#[0-9a-fA-F]{3,8}'
+    enforce_at: [className]
+    rationale: Old prose field.`,
+      "",
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
+  });
+
+  it("warns when presence_floor is set without observed_count", () => {
+    const md = build(
+      `\nchecks:
+  - id: no-decorative-motion
+    canonical: motion
+    pattern: 'transition:\\s*all'
+    paths: [src]
+    contexts: [className]
+    presence_floor: 4
+    support: 0.92`,
+      "",
+    );
+    const report = lintExpression(md);
+    const issue = report.issues.find(
+      (i) => i.rule === "check-presence-floor-needs-observed-count",
+    );
+    expect(issue).toBeDefined();
+    expect(issue?.severity).toBe("warning");
+    expect(issue?.path).toBe("checks[0].observed_count");
   });
 
   it("rejects the legacy shadowComplexity: none value", () => {
@@ -402,7 +411,6 @@ surfaces:
   borderRadii: [8]
   shadowComplexity: none
   borderUsage: minimal
-embedding: [0]
 ---
 `;
     const report = lintExpression(md);

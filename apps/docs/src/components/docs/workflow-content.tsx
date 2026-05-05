@@ -106,7 +106,7 @@ function MapExcerpt() {
         <code>
           <span className="text-muted-foreground">{"---\n"}</span>
           <span className="text-foreground">schema</span>
-          <span className="text-muted-foreground">: ghost.map/v1{"\n"}</span>
+          <span className="text-muted-foreground">: ghost.map/v2{"\n"}</span>
           <span className="text-foreground">id</span>
           <span className="text-muted-foreground">: ghost{"\n"}</span>
           <span className="text-foreground">repo</span>
@@ -150,10 +150,13 @@ function MapExcerpt() {
           </span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">
-            packages/ghost-ui/expression.md{"\n"}
+            design-language/expression.md{"\n"}
           </span>
-          <span className="text-foreground">ui_surface</span>
+          <span className="text-foreground">surface_sources</span>
           <span className="text-muted-foreground">:{"\n"}</span>
+          <span className="text-muted-foreground">
+            {"  render_strategy: static-source\n"}
+          </span>
           <span className="text-muted-foreground">{"  include:\n"}</span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">
@@ -180,7 +183,7 @@ function ExpressionExcerpt() {
     <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border-card bg-muted/30">
         <code className="text-xs font-mono text-muted-foreground">
-          packages/ghost-ui/expression.md
+          design-language/expression.md
         </code>
         <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
           excerpt
@@ -238,12 +241,6 @@ function ExpressionExcerpt() {
           <span className="text-muted-foreground">
             {
               "\n\nA monochromatic, magazine-inspired design language that treats color\nas communication rather than decoration. The default palette is entirely\nachromatic. Pill-shaped interactive elements contrast with moderately\nrounded containers…\n\n"
-            }
-          </span>
-          <span className="text-foreground font-semibold"># Signature</span>
-          <span className="text-muted-foreground">
-            {
-              "\n\n- Achromatic by default — primary is the extremity of the gray scale\n- Pill-first radius philosophy — buttons / inputs / badges fully round\n  to 999px; containers use moderate radii (10–24px)\n- Magazine-scale display typography — line-heights as low as 0.85\n- Shadow hierarchy named by role, not by numeric size\n\n"
             }
           </span>
           <span className="text-foreground font-semibold"># Decisions</span>
@@ -1059,7 +1056,7 @@ export function WorkflowContent() {
             {
               layer: "Surface",
               name: "What counts",
-              desc: "ui_surface globs — what's user-facing UI vs. tooling, tests, dist artifacts.",
+              desc: "surface_sources globs — what's observable UI vs. tooling, tests, dist artifacts.",
             },
           ].map((l) => (
             <div
@@ -1083,7 +1080,7 @@ export function WorkflowContent() {
           <code>ghost-expression</code> which folders to read when profiling,
           and tells <code>ghost-fleet</code> which surfaces to count when
           aggregating. The success gate is <code>ghost-map lint</code>, which
-          validates against <code>ghost.map/v1</code>.
+          validates against <code>ghost.map/v2</code>.
         </p>
       </Step>
 
@@ -1339,7 +1336,7 @@ export function WorkflowContent() {
             {
               step: "ghost-expression emit context-bundle",
               name: "Ground",
-              desc: "Write SKILL.md + tokens.css + prompt.md from expression.md. Whatever the generator consumes.",
+              desc: "Write SKILL.md + expression.md + prompt.md + tokens.css from expression.md. Whatever the generator consumes.",
             },
             {
               step: "generate (recipe)",
