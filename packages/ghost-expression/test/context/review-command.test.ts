@@ -6,7 +6,7 @@ import { emitReviewCommand } from "../../src/core/context/review-command.js";
 import { loadExpression } from "../../src/core/index.js";
 
 const GHOST_UI_EXPRESSION = fileURLToPath(
-  new URL("../../../ghost-ui/expression.md", import.meta.url),
+  new URL("../fixtures/ghost-ui-expression/expression.md", import.meta.url),
 );
 
 describe("emitReviewCommand", () => {
@@ -191,17 +191,19 @@ describe("emitReviewCommand — checks[]-driven path", () => {
     expect(out).toContain("**Match:** `band` (tolerance: `2`)");
   });
 
-  it("renders rationale as blockquote when provided", () => {
+  it("renders paths and contexts when provided", () => {
     const fp = withChecks([
       {
         id: "no-off-palette-hex",
         canonical: "color-strategy",
-        rationale: "Project ships an 8-color palette; off-palette is drift.",
         pattern: "#[0-9a-fA-F]{3,8}",
+        paths: ["src"],
+        contexts: ["className", "css_var"],
       },
     ]);
     const out = emitReviewCommand({ expression: fp });
-    expect(out).toMatch(/> Project ships an 8-color palette/);
+    expect(out).toContain("**Paths:** `src`");
+    expect(out).toContain("**Contexts:** `className`, `css_var`");
   });
 
   it("renders support percentage", () => {

@@ -97,10 +97,10 @@ function defaultFleetId(root: string): string {
  * Render the view as a `fleet.md` source string — frontmatter plus the
  * body skeleton the skill recipe fills in.
  *
- * Per Invariant 1, the CLI does not author the narrative. The body's
- * three required sections (`## World shape`, `## Cohorts`, `## Tracks`)
- * appear with empty placeholder paragraphs so the skill writer has clear
- * targets and `lint` could later check section presence.
+ * The CLI does not author the narrative. The body's three required sections
+ * (`## World shape`, `## Cohorts`, `## Tracks`) appear with empty placeholder
+ * paragraphs so the skill writer has clear targets and `lint` could later
+ * check section presence.
  */
 export function renderFleetMarkdown(view: FleetView): string {
   const yaml = stringifyYaml(view);

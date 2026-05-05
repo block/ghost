@@ -131,7 +131,7 @@ function checkSchemaValidity(
 /**
  * Schema 5: each dimension lives in exactly one place — a `### Dimension`
  * body block carrying prose + optional `**Evidence:**` bullets. Frontmatter
- * `decisions[]` only carries the dimension slug + optional embedding. Warn
+ * `decisions[]` only carries the dimension slug. Warn
  * when a dimension appears in frontmatter but not the body (orphan slug) or
  * when a body block has no rationale at all.
  */
@@ -305,13 +305,23 @@ function checkCheckCuration(fp: Expression, issues: LintIssue[]): void {
       });
     }
 
-    if ((check.enforce_at?.length ?? 0) === 0) {
+    if ((check.paths?.length ?? 0) === 0) {
       issues.push({
         severity: "info",
-        rule: "check-enforce-at-missing",
+        rule: "check-paths-missing",
         message:
-          "Promoted checks should usually declare `enforce_at` so reviewers know which contexts to scan.",
-        path: `${path}.enforce_at`,
+          "Promoted checks should usually declare `paths` so deterministic verification can count scoped matches.",
+        path: `${path}.paths`,
+      });
+    }
+
+    if ((check.contexts?.length ?? 0) === 0) {
+      issues.push({
+        severity: "info",
+        rule: "check-contexts-missing",
+        message:
+          "Promoted checks should usually declare `contexts` so reviewers know where the pattern appears.",
+        path: `${path}.contexts`,
       });
     }
 

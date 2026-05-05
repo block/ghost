@@ -102,8 +102,8 @@ After studying the existing implementation, here's what was confirmed and what n
 
 - Embedding-based compare (drift owns it).
 - Evolution verbs ack/track/diverge (drift owns them — they're explicit acts on change, not authoring).
-- Multi-format storage (Invariant 2).
-- LLM in CLI verbs (Invariant 1; profile is a recipe, not a verb).
+- Multi-format storage.
+- LLM in CLI verbs; profile is a recipe, not a verb.
 
 ## Next steps
 

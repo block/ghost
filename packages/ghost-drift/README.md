@@ -2,7 +2,7 @@
 
 **Deterministic design drift detection. Five verbs. No LLM calls.**
 
-`ghost-drift` compares design-language expressions, records intent across drift, and ships the agentskills.io recipes a host agent uses to review, verify, and remediate. It pairs with **[`ghost-expression`](../ghost-expression)** — the package that owns authoring `expression.md` (the canonical 49-dim embedding + three-layer prose artifact this tool consumes).
+`ghost-drift` compares design-language expressions, records intent across drift, and ships the agentskills.io recipes a host agent uses to review, verify, and remediate. It pairs with **[`ghost-expression`](../ghost-expression)** — the package that owns authoring `expression.md` (the compact authored contract this tool consumes).
 
 ## Requirements
 
@@ -45,17 +45,20 @@ ghost-drift diverge <dimension>                        # declare intentional div
 ghost-drift emit skill                                 # install the agent recipe bundle
 ```
 
-Zero config for every verb. No API key needed. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and only consumed if you ask for a semantic-enriched embedding via the library.
+Zero config for every verb. No API key needed. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and only consumed if you ask for semantic-enriched runtime embeddings via the library.
 
 ### Authoring a scan?
 
-Scans live in **[`ghost-expression`](../ghost-expression)**, which owns the three-stage pipeline (`map.md` → `survey.json` → `expression.md`). Install it for `inventory`, `lint`, `describe`, `diff`, `survey merge` / `fix-ids`, `scan-status`, and `emit review-command` / `emit context-bundle`:
+Scans live in **[`ghost-expression`](../ghost-expression)**, which owns the three-stage pipeline (`map.md` → `survey.json` → `expression.md`). Install it for `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey merge` / `fix-ids` / `summarize` / `catalog`, `scan-status`, and `emit review-command` / `emit context-bundle`:
 
 ```bash
 ghost-expression inventory                  # raw repo signals → JSON (feeds map.md)
 ghost-expression scan-status                # per-stage state + next stage
 ghost-expression lint                       # auto-detects expression.md / map.md / survey.json
+ghost-expression verify-profile expression.md survey.json --root .
+                                            # expression-to-survey fidelity gate
 ghost-expression survey merge a.json b.json # union with id-based dedup
+ghost-expression survey catalog survey.json # derived value enum/spec view
 ghost-expression diff a.md b.md             # structural prose-level diff between expressions
 ghost-expression emit review-command        # per-project slash command
 ghost-expression emit context-bundle        # generation context bundle

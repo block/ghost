@@ -115,9 +115,9 @@ function toArray<T extends string>(value: T | T[] | undefined): T[] {
  * Build the tracks-graph from each member's recorded `tracks` target.
  *
  * Edges read directly from `.ghost-sync.json` — fleet does not author
- * relationships (Invariant 5). The right-hand side is whatever the member
- * declared; the skill recipe interprets whether it resolves to another
- * member id or an external reference.
+ * relationships. The right-hand side is whatever the member declared; the
+ * skill recipe interprets whether it resolves to another member id or an
+ * external reference.
  */
 export function computeTracks(members: FleetMember[]): FleetTrack[] {
   const out: FleetTrack[] = [];

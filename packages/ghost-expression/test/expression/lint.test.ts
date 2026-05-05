@@ -35,8 +35,7 @@ typography:
 surfaces:
   borderRadii: [8]
   shadowComplexity: subtle
-  borderUsage: moderate
-embedding: [0.1, 0.2]`;
+  borderUsage: moderate`;
 
 function build(frontmatterExtras: string, body: string): string {
   return `${HEADER}${frontmatterExtras}\n${PALETTE_BLOCK}\n---\n\n${body}`;
@@ -197,11 +196,33 @@ surfaces:
   borderRadii: [8]
   shadowComplexity: deliberate-none
   borderUsage: minimal
-embedding: [0]
 ---
 `;
     const report = lintExpression(md);
     expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(false);
+  });
+
+  it("rejects root embedding in frontmatter", () => {
+    const md = build("\nembedding: [0.1, 0.2]", "");
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
+  });
+
+  it("rejects decision embeddings in frontmatter", () => {
+    const md = build(
+      `\ndecisions:
+  - dimension: color-strategy
+    embedding: [0.1, 0.2]`,
+      `# Decisions
+
+### color-strategy
+Use color sparingly.
+`,
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
   });
 
   it("warns on a non-canonical decision dimension with no dimension_kind", () => {
@@ -302,7 +323,8 @@ No cool grays.
   - id: shaky-spacing
     canonical: spatial-system
     pattern: 'p-\\[\\d+px\\]'
-    enforce_at: [className]
+    paths: [src]
+    contexts: [className]
     observed_count: 20
     support: 0.72`,
       "",
@@ -314,7 +336,7 @@ No cool grays.
     expect(issue?.path).toBe("checks[0].support");
   });
 
-  it("infos when promoted checks omit support, enforce_at, or observed_count", () => {
+  it("infos when promoted checks omit support, paths, contexts, or observed_count", () => {
     const md = build(
       `\nchecks:
   - id: uncalibrated-color
@@ -325,9 +347,25 @@ No cool grays.
     const report = lintExpression(md);
     const rules = report.issues.map((i) => i.rule);
     expect(rules).toContain("check-support-missing");
-    expect(rules).toContain("check-enforce-at-missing");
+    expect(rules).toContain("check-paths-missing");
+    expect(rules).toContain("check-contexts-missing");
     expect(rules).toContain("check-observed-count-missing");
     expect(report.errors).toBe(0);
+  });
+
+  it("rejects legacy check enforce_at and rationale fields", () => {
+    const md = build(
+      `\nchecks:
+  - id: legacy-check
+    canonical: color-strategy
+    pattern: '#[0-9a-fA-F]{3,8}'
+    enforce_at: [className]
+    rationale: Old prose field.`,
+      "",
+    );
+    const report = lintExpression(md);
+    expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
+    expect(report.errors).toBeGreaterThan(0);
   });
 
   it("warns when presence_floor is set without observed_count", () => {
@@ -336,7 +374,8 @@ No cool grays.
   - id: no-decorative-motion
     canonical: motion
     pattern: 'transition:\\s*all'
-    enforce_at: [className]
+    paths: [src]
+    contexts: [className]
     presence_floor: 4
     support: 0.92`,
       "",
@@ -372,7 +411,6 @@ surfaces:
   borderRadii: [8]
   shadowComplexity: none
   borderUsage: minimal
-embedding: [0]
 ---
 `;
     const report = lintExpression(md);

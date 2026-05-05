@@ -48,8 +48,8 @@ export function emitReviewCommand(input: EmitReviewInput): string {
 
 /**
  * Render a checks[]-driven slash command. Groups checks by computed
- * severity, renders one block per check with rationale + pattern + match
- * shape, then closes with a calibration footer that explains *why*
+ * severity, renders one block per check with pattern + match shape, then
+ * closes with a calibration footer that explains *why*
  * severities landed where they did. The calibration footer is what makes
  * Ghost's reviewer legibly different from a generic linter — the prior
  * is visible, not opaque.
@@ -107,7 +107,6 @@ function renderCheck(item: ResolvedCheck): string {
     : `### \`${check.id}\``;
   const lines: string[] = [heading];
   if (check.summary) lines.push("", check.summary);
-  if (check.rationale) lines.push("", `> ${check.rationale}`);
   lines.push("", `**Pattern:** \`${check.pattern}\``);
 
   const matchLine =
@@ -116,9 +115,13 @@ function renderCheck(item: ResolvedCheck): string {
       : `**Match:** \`${match}\``;
   lines.push(matchLine);
 
-  if (check.enforce_at?.length) {
-    const where = check.enforce_at.map((e) => `\`${e}\``).join(", ");
-    lines.push(`**Enforce at:** ${where}`);
+  if (check.paths?.length) {
+    const where = check.paths.map((e) => `\`${e}\``).join(", ");
+    lines.push(`**Paths:** ${where}`);
+  }
+  if (check.contexts?.length) {
+    const where = check.contexts.map((e) => `\`${e}\``).join(", ");
+    lines.push(`**Contexts:** ${where}`);
   }
   if (typeof check.observed_count === "number") {
     lines.push(`**Observed count:** ${check.observed_count}`);

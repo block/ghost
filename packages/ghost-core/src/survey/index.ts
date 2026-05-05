@@ -4,6 +4,15 @@
  * tool that operates on survey data.
  */
 
+export {
+  catalogSurveyValues,
+  formatSurveyCatalogMarkdown,
+  type SurveyCatalogCounts,
+  type SurveyCatalogKind,
+  type SurveyCatalogOptions,
+  type SurveyCatalogValue,
+  type SurveyValueCatalog,
+} from "./catalog.js";
 export { recomputeSurveyIds } from "./fix-ids.js";
 export {
   componentRowId,

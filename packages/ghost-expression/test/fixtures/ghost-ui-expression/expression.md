@@ -43,73 +43,66 @@ checks:
     canonical: color-strategy
     kind: color
     summary: Hex literals must come from the documented palette
-    rationale: >-
-      Default theme is achromatic — chromatic colors are reserved for
-      semantic states (danger, success, info, warning) and chart data.
-      Any new hex literal is drift unless it lands in the palette.
     pattern: '#[0-9a-fA-F]{3,8}'
-    enforce_at: [className, css_var, inline_style]
+    paths: [src]
+    contexts: [className, css_var, inline_style]
+    observed_count: 100
     support: 0.94
   - id: pill-interactives
     canonical: shape-language
     kind: radius
     summary: Buttons, inputs, and badges must be fully rounded
-    rationale: >-
-      Pill-first radius philosophy separates interactive from structural
-      surfaces — interactive elements fully round (999px), while cards and
-      modals use moderate radii (10–24px).
     pattern: '<(Button|Input|Badge)\b[^>]*\brounded-(?!full|pill)'
-    enforce_at: [className]
+    paths: [src]
+    contexts: [className]
+    observed_count: 100
     support: 0.97
   - id: structural-radius-set
     canonical: shape-language
     kind: radius
     summary: Container radii must come from the canonical set
-    rationale: >-
-      Cards, modals, and dropdowns use moderate radii (10–24px).
-      Arbitrary radius values break the shape vocabulary.
     pattern: 'rounded-\[\d+px\]|border-radius:\s*\d+px'
+    paths: [src]
+    contexts: [className, inline_style]
+    observed_count: 100
     support: 0.91
   - id: no-foreign-fonts
     canonical: font-sourcing
     kind: type-family
     summary: Do not bundle additional typefaces
-    rationale: >-
-      Library ships no bundled fonts — system-ui sans, Geist Mono, and a
-      generic serif fallback. Adding @font-face or importing a webfont
-      crosses the font-sourcing decision.
     pattern: '@import\s+url\([^)]*fonts'
-    enforce_at: [css_var, inline_style]
+    paths: [src]
+    contexts: [css_var, inline_style, import]
+    observed_count: 100
     presence_floor: 0
     support: 1.0
   - id: type-on-ramp
     canonical: typography-voice
     kind: type-size
     summary: Font sizes must come from the magazine ramp
-    rationale: >-
-      Type ramp runs from 10px (label kicker) to 96px (display). Sizes
-      outside the ramp break the editorial rhythm.
     pattern: 'text-\[\d+px\]|font-size:\s*\d+px'
+    paths: [src]
+    contexts: [className, inline_style]
+    observed_count: 100
     support: 0.93
   - id: no-decorative-motion
     canonical: motion
     kind: motion
     summary: No decorative or hover-only animations
-    rationale: >-
-      Animations exist for structural reveals (accordion, scale-in, fade)
-      and entrance transitions, never for decorative micro-interactions.
-      The editorial tone stays serious.
     pattern: 'transition:\s*all\b|animate-(?!none)\w+'
+    paths: [src]
+    contexts: [className, inline_style]
+    observed_count: 5
     presence_floor: 4
     support: 0.86
   - id: spacing-on-scale
     canonical: spatial-system
     kind: spacing
     summary: Padding, margin, and gap must come from the 4px-base scale
-    rationale: >-
-      Scale is 2/4/6/8/12/16/20/24/32/36/40/52/75/100. Off-scale spacing
-      breaks the layout rhythm; small drift (±2px) is tolerated.
     pattern: '\b(p|m|gap)-\[\d+px\]'
+    paths: [src]
+    contexts: [className]
+    observed_count: 100
     support: 0.88
 palette:
   dominant:
@@ -353,7 +346,3 @@ Ship no bundled typefaces. The system declares a system-ui sans stack, `Geist Mo
 - `--font-display aliases the sans stack — no separate display face is assumed`
 - `--font-mono: "Geist Mono", monospace — named preference with generic fallback`
 - `--font-serif: serif — generic fallback only`
-
-# Fragments
-
-- [embedding](embedding.md) — 49-dim vector for compare/composite/viz

@@ -26,11 +26,12 @@ Terminal-impact filter:
 
 ## Pre-requisites
 
-Two artifacts must exist before you start, and one bounded working view should be derived from them:
+Two artifacts must exist before you start, and two bounded working views should be derived from them:
 
 - `map.md` — `ghost.map/v2`. Read its frontmatter for repo kind signals (`composition.frameworks`, `composition.styling`, `design_system.token_source`, `platform`, `registry`, `surface_sources`). Read its body for context on identity / topology / conventions.
 - `survey.json` — `ghost.survey/v2`. Lint-clean. Carries every concrete value, token, component, and implemented UI surface the surveyor observed, with occurrence counts, alias chains, and surface signals.
 - Survey summary — run `ghost-expression survey summarize survey.json` and read the Markdown digest as your primary survey context. Use `--budget compact` for a tight first pass, `--budget standard` by default, or `--format json` when another tool needs structured data.
+- Survey catalog — run `ghost-expression survey catalog survey.json` when you need exact compact value enums/specs for frontmatter. Use `--kind color`, `--kind spacing`, `--kind typography`, `--kind radius`, or `--kind shadow` to focus a dimension.
 
 If either is missing, **stop**. Run the map and survey stages first. Inventing an expression from incomplete inputs poisons every downstream comparison.
 
@@ -50,8 +51,9 @@ External libraries (icon sets, primitive collections, motion libs) deliberately 
 Do not paste or load a large `survey.json` wholesale into your working context. Start with:
 
     ghost-expression survey summarize survey.json
+    ghost-expression survey catalog survey.json
 
-For large scans, this is the only survey content you should read end-to-end. Keep the raw `survey.json` available for targeted lookup by row ID when a palette entry, token, check, or evidence bullet needs exact provenance:
+For large scans, these are the only survey-derived views you should read end-to-end: `summarize` for broad profiling context, `catalog` for exact value enums/specs. Keep the raw `survey.json` available for targeted lookup by row ID when a palette entry, token, check, or evidence bullet needs exact provenance:
 
     jq '.values[] | select(.id=="<row-id>")' survey.json
 
@@ -135,9 +137,11 @@ Promote these levers into `# Character`, `# Signature`, relevant decisions, or c
 
 ### 5. Layer 2 — Checks (curated, grep-friendly, perceptual-prior-aware)
 
-This is the load-bearing step. **Your job is to propose 5–15 candidate checks, score each by survey-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `checks[]`. Promoted checks are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from survey evidence, and an `enforce_at` context where the reviewer should look. You do not author final checks unilaterally — design taste is human-curated, agent-proposed.
+This is the load-bearing step. **Your job is to propose 5–15 candidate checks, score each by survey-derived support, and present the ranked list to the human curator.** The curator promotes the sharpest 5–10 to `checks[]`. Promoted checks are the primary drift contract: they need `support >= 0.85`, `observed_count` when calibrated from survey evidence, and `paths` scopes when the verifier should count filesystem matches. `contexts` are guidance for reviewers/generators, not verifier scopes. You do not author final checks unilaterally — design taste is human-curated, agent-proposed.
 
 Promotion boundary: `checks[]` is the promoted layer, not the scratchpad. If no curator has selected checks in this turn, leave `checks[]` empty and put the ranked candidate list in your final response or scan notes. The expression is still valid without checks; an unpromoted check is more dangerous than a missing check because it turns an agent guess into enforcement.
+
+First scans must default to `checks: []` unless the user explicitly selects checks to promote during the scan. Candidate checks belong in the agent response or scan notes, not in `checks[]`; a check becomes frontmatter only after a curator has chosen it as a real PR gate.
 
 (Legacy: this stage previously authored `decisions[]` — abstract per-dimension prose. That format is preserved during the v0 transition for backward compatibility, but the canonical authoring surface is now `checks[]`. The emitter prefers `checks[]` when present.)
 
@@ -150,13 +154,15 @@ Walk the survey and pose: *what pattern is this project consistently following t
   canonical: <dimension>     # optional but strongly preferred (see vocabulary below)
   kind: <CheckKind>           # optional; drives default match shape
   summary: <one line>        # what the check says in plain English
-  rationale: <prose>         # why the check exists; cites the survey
   pattern: <regex or string> # what the reviewer greps for
-  enforce_at: [...]          # className / css_var / inline_style / import
+  paths: [...]               # repo-relative paths to scan when verifying/counting
+  contexts: [...]            # optional guidance: className, css_var, inline_style, import
   support: 0.0–1.0           # computed: survey conformers / total observed
   observed_count: <int>      # count of the guarded pattern / survey slice
   presence_floor: <int>      # optional; default 0
 ```
+
+Do not put the check's rationale in YAML. Use `summary` as the short reviewer label, and put the "why" in the matching Decision body.
 
 **Pick `canonical` from the controlled vocabulary first.** Thirteen dimensions cover the orthogonal axes a designer makes deliberate calls on:
 
@@ -197,20 +203,20 @@ The perceptual prior escalates promoted checks one tier when `observed_count` (o
 - Survey has 0 gradient values → `no-gradients` with `observed_count: 0` and `presence_floor: 0`.
 - Survey has 0 bundled fonts → `no-foreign-fonts` with `observed_count: 0` and `presence_floor: 0`.
 
-Don't set a presence floor when the guarded pattern is well-populated — the escalation will never trigger and the field becomes noise. If the overall dimension is populated but a sub-pattern is absent (e.g. structural motion exists, decorative motion does not), set `observed_count` to the sub-pattern count and say that in the rationale.
+Don't set a presence floor when the guarded pattern is well-populated — the escalation will never trigger and the field becomes noise. If the overall dimension is populated but a sub-pattern is absent (e.g. structural motion exists, decorative motion does not), set `observed_count` to the sub-pattern count and explain that in the candidate note / matching Decision body.
 
 #### 4d. Present the ranked list to the curator
 
-Sort candidates by support, descending. Present each as: id + canonical + summary + support % + 1-line rationale. Mark presence-floor escalations explicitly. Recommend cuts: anything below 0.85, anything redundant with another check, anything where the pattern is too fuzzy to enforce.
+Sort candidates by support, descending. Present each as: id + canonical + summary + support % + one-line reason. Mark presence-floor escalations explicitly. Recommend cuts: anything below 0.85, anything redundant with another check, anything where the pattern is too fuzzy to enforce.
 
-The curator picks 5–10. **Do not paste your full candidate list into `checks[]`.** Wait for the human to promote, then copy only the selected checks into frontmatter with their `observed_count` and `support`.
+The curator picks 5–10. **Do not paste your full candidate list into `checks[]`.** Wait for the human to promote, then copy only the selected checks into frontmatter with their `observed_count`, `support`, repo-relative `paths`, and optional `contexts`. If the curator has not selected checks, leave `checks: []`.
 
 #### Mode-specific framing
 
 - **Consumer** — overrides are checks. App-side `@font-face` that differs from upstream → a `font-sourcing` check with `observed_count` set to the count of non-upstream font declarations and `presence_floor: 0`.
 - **Token-pipeline** — layering posture is a check. "Component layer never references base tokens directly" → a `token-architecture` check whose pattern catches `--component-* references --base-*`.
 - **Ui-library** — registry shape is a check. "Components have no theme variants" → an `interactive-patterns` check against `data-theme=` attributes. If the registry or docs tag exemplars, preserve the atom/shape distinction: atoms are primitives such as badge, button, cell, or input; shapes are larger response forms such as article, card, comparison, or tracker.
-- **Multi-platform** — divergence is checks. "iOS reuses system colors but web doesn't" → two color-strategy checks, one per dialect, each with its own `enforce_at`.
+- **Multi-platform** — divergence is checks. "iOS reuses system colors but web doesn't" → two color-strategy checks, one per dialect, each with its own `paths`.
 
 #### Absences are checks — codify them with `presence_floor`
 
@@ -272,8 +278,10 @@ Composition anti-collapse check: do not turn every answer into a stack of cards.
 **Preferred (CLI present):**
 
     ghost-expression lint expression.md
+    ghost-expression verify-profile expression.md survey.json --root .
+    ghost-drift compare expression.md expression.md
 
-Fix any errors.
+Fix any `lint` or `verify-profile` errors. `lint` validates shape; `verify-profile` validates that palette, spacing, typography, radii, and shadow posture came from `survey.json`, and that promoted checks are calibrated against their declared `paths`. If `--root .` is not the target source root, pass the actual target path.
 
 **Prose fallback (no CLI):**
 
@@ -284,7 +292,7 @@ Walk the file against the schema in [schema.md](schema.md). Required checks:
 - Body sections appear in order: `# Character`, `# Signature`, `# Decisions` (when decisions are present). No prose in frontmatter.
 - For any `### dim` block in the body, a matching `decisions[].dimension` entry exists in frontmatter (and vice versa).
 - Character and Signature describe the language directly; they do not introduce the repo/project as the subject.
-- For any `checks[]` entry: `id` is unique, `pattern` is non-empty, `support` is present and preferably ≥ `0.85`, `enforce_at` is present where possible, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, optional `observed_count` is a non-negative integer.
+- For any promoted `checks[]` entry: `id` is unique, `pattern` is non-empty and valid regex, `support` is present and preferably ≥ `0.85`, `paths` lists repo-relative filesystem scopes when verifier counting is expected, optional `contexts` lists reviewer/generator hints, optional `severity` ∈ `{critical, serious, nit}`, optional `match` ∈ `{exact, band, percent, structural}`, and `observed_count` is a non-negative integer that matches scoped source hits.
 - If `presence_floor` is set, `observed_count` should also be set; otherwise absence escalation falls back to coarse frontmatter proxies.
 
 Common errors regardless of path:
@@ -305,7 +313,9 @@ For every value in your expression's frontmatter, confirm it appears in the surv
 
 Any expression value that doesn't trace back to a summary row ID or raw survey row is a hallucination. Remove it.
 
-### 9. Self-distance sanity
+When the CLI is present, `ghost-expression verify-profile expression.md survey.json --root .` performs these provenance checks deterministically and also checks promoted `checks[]` metadata/counts. Keep this manual pass as a thinking aid, but let the verifier be the gate.
+
+### 10. Self-distance sanity
 
 **Preferred (CLI present):**
 

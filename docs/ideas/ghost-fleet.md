@@ -184,7 +184,7 @@ After studying `~/Development/ghost-fleet`, here's what the prior art confirmed 
 - Authoring expressions (that's expression).
 - Per-repo drift verdicts (that's drift).
 - Mutating members (members are read-only inputs to fleet).
-- Live re-profiling (Invariant 5 — fleet shows the world as members declare it; it doesn't refresh members).
+- Live re-profiling (fleet shows the world as members declare it; it doesn't refresh members).
 - Cross-org snitching — fleet is a tool, not a leaderboard.
 
 ## Next steps

@@ -40,7 +40,7 @@ fleet/
     └── fleet.json
 ```
 
-Each member is read-only. Fleet does **not** re-profile, refresh, or fetch — Invariant 5 (expressions evolve by deliberate act). If a member is stale, regenerate its `expression.md` in that member's repo and re-run `ghost-fleet view`.
+Each member is read-only. Fleet does **not** re-profile, refresh, or fetch; expressions evolve by deliberate act. If a member is stale, regenerate its `expression.md` in that member's repo and re-run `ghost-fleet view`.
 
 ## Workflow — synthesizing fleet.md
 
@@ -53,7 +53,7 @@ When the user asks you to "summarize the fleet" or "produce a world view":
    - `## World shape` — the broad picture. Where does the fleet center? How wide is its spread? What axes (palette, spacing, typography, surfaces) account for the largest distances? Distance is data, not blame.
    - `## Cohorts` — the cluster narrative. Read the pairwise array and the groupings. Identify natural cohorts (often: same platform, same registry, or shared design ancestry). Name them. Note outliers inside each cohort and the dimension they pull on.
    - `## Tracks` — narrative over the tracks-graph. Who declares whom as reference? Are there leaves (members nobody tracks)? Loops? Cross-cohort references that warrant attention?
-5. Re-read your draft. Confirm the frontmatter and the body do not duplicate each other (Invariant 3 — partition is strict). Numbers belong in frontmatter; interpretation belongs in body.
+5. Re-read your draft. Confirm the frontmatter and the body do not duplicate each other. Numbers belong in frontmatter; interpretation belongs in body.
 
 For the heuristics and reasoning patterns, see [references/target.md](references/target.md).
 
@@ -73,7 +73,7 @@ For the heuristics and reasoning patterns, see [references/target.md](references
 
 ## Never
 
-- Never re-profile a member from inside the fleet recipe. Members are read-only inputs (Invariant 5).
+- Never re-profile a member from inside the fleet recipe. Members are read-only inputs.
 - Never invent clusters from thin air — anchor every cohort in either the pairwise distances or a group-by axis.
 - Never write distances back into the body. Numbers go in frontmatter; the body explains them.
 - Never rename a member in the CLI's output. If the id is wrong, fix the member's `map.md` and re-run.

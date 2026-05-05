@@ -60,10 +60,9 @@ const DesignObservationSchema = z
   .strict();
 
 /**
- * Frontmatter decision: dimension slug + optional kind + optional
- * embedding only. Both the prose rationale AND the evidence bullets live
- * in the body under `### dimension` → `**Evidence:**`. Evidence in
- * frontmatter is rejected by the strict schema.
+ * Frontmatter decision: dimension slug + optional kind only. Both the prose
+ * rationale AND the evidence bullets live in the body under `### dimension`
+ * → `**Evidence:**`. Evidence in frontmatter is rejected by the strict schema.
  *
  * `dimension_kind` is the optional canonical-vocabulary mapping used by
  * fleet aggregation. See `CANONICAL_DECISION_DIMENSIONS` in `@ghost/core`
@@ -73,7 +72,6 @@ const DesignDecisionSchema = z
   .object({
     dimension: z.string(),
     dimension_kind: z.string().optional(),
-    embedding: z.array(z.number()).optional(),
   })
   .strict();
 
@@ -113,14 +111,14 @@ const CheckSchema = z
       .optional(),
     summary: z.string().optional(),
     pattern: z.string(),
-    enforce_at: z.array(z.string()).optional(),
+    paths: z.array(z.string()).optional(),
+    contexts: z.array(z.string()).optional(),
     severity: z.enum(["critical", "serious", "nit"]).optional(),
     match: z.enum(["exact", "band", "percent", "structural"]).optional(),
     tolerance: z.number().optional(),
     presence_floor: z.number().int().nonnegative().optional(),
     observed_count: z.number().int().nonnegative().optional(),
     support: z.number().min(0).max(1).optional(),
-    rationale: z.string().optional(),
   })
   .strict();
 
@@ -132,12 +130,9 @@ const CheckSchema = z
  * decisions[].decision) are NOT allowed here — they belong in the body.
  * `.strict()` on nested schemas enforces this.
  *
- * v4 changes:
- *   - `embedding` is optional at root; when absent, readers load it from
- *     a sibling `embedding.md` fragment or recompute from structured blocks.
- *   - `metadata` is a loose key-value bag for LLM-authored extensions
- *     (e.g. `tone: "magazine"`) that don't fit the strict structural
- *     blocks. Opaque to comparisons.
+ * `metadata` is a loose key-value bag for LLM-authored extensions
+ * (e.g. `tone: "magazine"`) that don't fit the strict structural
+ * blocks. Opaque to comparisons.
  */
 export const FrontmatterSchema = z
   .object({
@@ -170,13 +165,6 @@ export const FrontmatterSchema = z
     spacing: SpacingSchema,
     typography: TypographySchema,
     surfaces: SurfacesSchema,
-
-    /**
-     * Optional at root — loader falls back to sibling `embedding.md` or
-     * recomputes from structured blocks. Present embeddings are trusted
-     * as cache.
-     */
-    embedding: z.array(z.number()).optional(),
   })
   .strict();
 
@@ -209,7 +197,6 @@ export const PartialFrontmatterSchema = z
     spacing: SpacingSchema.optional(),
     typography: TypographySchema.optional(),
     surfaces: SurfacesSchema.optional(),
-    embedding: z.array(z.number()).optional(),
   })
   .strict();
 

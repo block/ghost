@@ -20,8 +20,8 @@ import type { FleetMember, MemberSummary } from "./types.js";
  * treating the passed-in directory itself as the members root, so tooling
  * can also point at a flat `members/` directory directly.
  *
- * Per Invariant 5, this never refreshes anything. Missing or malformed
- * files are surfaced via per-member status; nothing is fetched.
+ * This never refreshes anything. Missing or malformed files are surfaced via
+ * per-member status; nothing is fetched.
  */
 export async function loadMembers(dir: string): Promise<FleetMember[]> {
   const root = resolve(dir);
