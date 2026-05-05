@@ -1,17 +1,17 @@
 ---
 name: ghost-expression
-description: Author and validate expression.md — Ghost's canonical design-language artifact. Use when the user wants to write or update an expression.md, validate one, describe its structure, diff two of them, or emit derived artifacts (review-command, context-bundle, agent skill). Triggers on phrases like "profile this design language", "write expression.md", "lint my expression", "what does this expression say", or whenever an `expression.md` file is being authored.
+description: Author and validate expression.md. Use when the user wants to write or update an expression.md, validate one, describe its structure, diff two of them, or emit derived artifacts (review-command, context-bundle, agent skill). Triggers on phrases like "profile this design language", "write expression.md", "lint my expression", "what does this expression say", or whenever an `expression.md` file is being authored.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
   cli: ghost-expression
 ---
 
-# Ghost Expression — Authoring the Canonical Artifact
+# Ghost Expression — Authoring expression.md
 
-This skill helps you author a project's design language — its `expression.md` (YAML frontmatter + Markdown body: Character → Signature → Decisions). You profile a project to write one, then validate, describe, diff, and emit derived artifacts. The **change** half (compare two expressions for drift, acknowledge it, track another expression as your reference) lives in the sibling `ghost-drift` skill.
+This skill helps you write a project's `expression.md`: YAML frontmatter plus a Markdown body with Character, Signature, and Decisions. Use it to profile a project, validate the result, inspect its structure, diff two expressions, or emit derived artifacts. Drift comparison and stance recording live in the sibling `ghost-drift` skill.
 
-You do the synthesis (the profile recipe). The `ghost-expression` CLI is the calculator you reach for when you need a reproducible answer: parsing, schema validation, layout, structural diff. Call it freely; the output is ground truth.
+You do the synthesis. The `ghost-expression` CLI gives deterministic answers for parsing, schema validation, layout, profile verification, and structural diff.
 
 **Two install paths, same recipes.** When the user installed via `curl … | sh` (the no-CLI v0 path) the `ghost-expression` binary is *not* on PATH. The recipes degrade gracefully: every CLI-using step has a prose fallback you can execute via `Read` / `Glob` / `Bash` / `Grep`. Detect availability once, at the start of a workflow:
 
@@ -19,7 +19,7 @@ You do the synthesis (the profile recipe). The `ghost-expression` CLI is the cal
 command -v ghost-expression >/dev/null && echo "cli" || echo "prose"
 ```
 
-When the CLI is present, prefer it — the output is deterministic and idempotent. When it isn't, follow the fallback recipes. Don't ask the user to install the CLI mid-workflow; the prose path is real, not a degraded mode.
+When the CLI is present, prefer it. When it is not, follow the fallback steps in the recipes instead of stopping to ask the user to install anything.
 
 ## CLI verbs
 
@@ -58,12 +58,12 @@ For drift detection (compare under change, ack/track/diverge, review PR diffs ag
 
 An `expression.md` has:
 
-- **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
-- **Markdown body (prose layer):** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
+- **YAML frontmatter:** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
+- **Markdown body:** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
 
-`decisions[].dimension` is an index, not an empty decision object: the body carries the actual rationale and evidence. `references` are local provenance / optional source material; the expression body should remain portable enough to drift against or generate from in another project.
+`decisions[].dimension` is an index. The body carries the actual rationale and evidence. `references` are local provenance and optional source material; the body should still make sense if another project cannot open those paths.
 
-No sibling fragments are canonical. Do not author or load `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; runtime comparison computes embeddings from the parsed expression structure.
+Everything authored lives in `expression.md`. Do not author or load `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; runtime comparison computes embeddings from the parsed expression.
 
 When profiling for generation, capture positive range as well as constraints. A restrained system should still say how it creates variety: editorial scale, shaped composition, semantic/data color, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Use `composition-patterns` when examples show article, tracker, comparison, card, or control-surface shapes.
 
@@ -83,4 +83,4 @@ Each field lives in exactly one layer — no duplication. Putting prose in front
 - Never invent tokens. If you did not observe a value in the source, omit the field. A missing field is better than a fabricated one.
 - Never use the W3C Design Tokens or Style Dictionary format. Ghost's `expression.md` is the artifact.
 - Never stop at the first variable indirection. Follow the chain.
-- Never write prose into frontmatter or structural data into the body — the partition is load-bearing.
+- Never write prose into frontmatter or structural data into the body.

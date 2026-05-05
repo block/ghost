@@ -1,10 +1,10 @@
 # expression.md schema reference
 
-Canonical filename: `expression.md`.
+Expected filename: `expression.md`.
 
 `expression.md` is the authored design-language contract. It may point at local `references`, but sibling files are not auto-loaded as authored truth: no `embedding.md`, no `# Fragments`, and no implicit `decisions/` directory.
 
-## Frontmatter (machine layer)
+## Frontmatter
 
 ```yaml
 ---
@@ -75,7 +75,7 @@ Optional: `sources`, `references`, `observation.personality`, `observation.resem
 
 Forbidden in frontmatter: root `embedding`, `decisions[].embedding`, `observation.summary`, `decisions[].decision`, `decisions[].evidence`, `checks[].enforce_at`, `checks[].rationale`, and unknown root keys such as `schema`.
 
-## Body (prose layer)
+## Body
 
 ```markdown
 # Character
