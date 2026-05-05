@@ -1,13 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
-import type { DesignDecision, Expression, SemanticColor } from "@ghost/core";
+import type { Expression, SemanticColor } from "@ghost/core";
 import { computeEmbedding, parseColorToOklch } from "@ghost/core";
 import { mergeExpression } from "./compose.js";
-import {
-  loadDecisionFragments,
-  loadEmbeddingFragment,
-  resolveEmbeddingReference,
-} from "./fragments.js";
 import { mergeFrontmatter } from "./frontmatter.js";
 import { type ParsedExpression, parseExpression } from "./parser.js";
 import { validateFrontmatter } from "./schema.js";
@@ -44,15 +39,6 @@ export type {
   TokenChange,
 } from "./diff.js";
 export { diffExpressions, formatSemanticDiff } from "./diff.js";
-export {
-  EMBEDDING_FRAGMENT_FILENAME,
-  embeddingSiblingPath,
-  findFragmentLinks,
-  loadDecisionFragments,
-  loadEmbeddingFragment,
-  resolveEmbeddingReference,
-  serializeEmbeddingFragment,
-} from "./fragments.js";
 export type { ExpressionMeta, FrontmatterData } from "./frontmatter.js";
 export { inventory } from "./inventory.js";
 export type {
@@ -88,6 +74,16 @@ export {
   toJsonSchema,
   validateFrontmatter,
 } from "./schema.js";
+export type {
+  VerifyProfileIssue,
+  VerifyProfileOptions,
+  VerifyProfileReport,
+  VerifyProfileSeverity,
+} from "./verify-profile.js";
+export {
+  formatVerifyProfileReport,
+  verifyProfile,
+} from "./verify-profile.js";
 export type { SerializeOptions } from "./writer.js";
 export { serializeExpression } from "./writer.js";
 
@@ -97,8 +93,6 @@ export const EXPRESSION_FILENAME = "expression.md";
 export interface LoadOptions {
   /** Skip `extends:` resolution. Default: false (extends chains are resolved). */
   noExtends?: boolean;
-  /** Skip `decisions/` fragment auto-assembly. Default: false. */
-  noFragments?: boolean;
   /**
    * Skip embedding backfill. When true, a missing `embedding` stays empty;
    * useful for read-only tooling (lint, diff-on-disk) that doesn't need
@@ -113,10 +107,6 @@ export interface LoadOptions {
  * If the file declares `extends:`, the base expression is loaded recursively and
  * merged per the rules in compose.ts: overlay wins, decisions merged by
  * dimension, palette colors merged by role.
- *
- * If a `decisions/` directory sits next to the expression.md, each .md
- * inside is assembled into the expression's decisions[], merged by
- * dimension — allowing large systems to split their decision prose across files.
  */
 export async function loadExpression(
   path: string,
@@ -128,19 +118,6 @@ export async function loadExpression(
     ? await loadRaw(path)
     : await loadWithExtends(path, new Set());
 
-  const absolute = isAbsolute(path) ? path : resolve(path);
-  const expressionDir = dirname(absolute);
-
-  if (!options.noFragments) {
-    const fragments = await loadDecisionFragments(expressionDir);
-    if (fragments.length) {
-      parsed.expression.decisions = mergeDecisionsByDimension(
-        parsed.expression.decisions ?? [],
-        fragments,
-      );
-    }
-  }
-
   // Backfill `oklch` on palette colors that arrived hex-only. Deterministic
   // (same hex → same oklch), so re-parsing the same expression always
   // yields the same in-memory shape. Without this, `comparePalette`
@@ -149,11 +126,7 @@ export async function loadExpression(
   backfillPaletteOklch(parsed.expression);
 
   if (!options.noEmbeddingBackfill) {
-    parsed.expression.embedding = await resolveEmbedding(
-      parsed.expression,
-      expressionDir,
-      parsed.bodyRaw,
-    );
+    parsed.expression.embedding = resolveEmbedding(parsed.expression);
   }
 
   return parsed;
@@ -175,33 +148,11 @@ function ensureOklch(color: SemanticColor): SemanticColor {
   return oklch ? { ...color, oklch } : color;
 }
 
-/**
- * Resolve the embedding for an expression.md in order:
- *   1. Inline `embedding:` in frontmatter (trust as cache).
- *   2. Explicit body link to `embedding.md` (fragment file).
- *   3. Conventional sibling `embedding.md` next to expression.md.
- *   4. Recompute from the structured blocks.
- *
- * This matches the agent-skills progressive-disclosure model — the thin
- * index file references a sibling, but the sibling is optional and can
- * be rebuilt any time from source-of-truth data.
- */
-async function resolveEmbedding(
-  expression: Expression,
-  expressionDir: string,
-  bodyRaw: string | undefined,
-): Promise<number[]> {
+function resolveEmbedding(expression: Expression): number[] {
   if (expression.embedding && expression.embedding.length > 0) {
     return expression.embedding;
   }
-  const referenced = bodyRaw
-    ? resolveEmbeddingReference(bodyRaw, expressionDir)
-    : null;
-  if (referenced) {
-    const fromFragment = await loadEmbeddingFragment(expressionDir, referenced);
-    if (fromFragment) return fromFragment;
-  }
-  // Only attempt to recompute when the structured blocks are all present.
+  // Only recompute when the structured blocks are all present.
   // Partial expressions (e.g. an extends overlay loaded with noExtends:true)
   // don't have enough signal yet — leave the embedding empty and let the
   // caller resolve it after composing.
@@ -214,23 +165,6 @@ async function resolveEmbedding(
     return computeEmbedding(expression);
   }
   return [];
-}
-
-function mergeDecisionsByDimension(
-  base: DesignDecision[],
-  overlay: DesignDecision[],
-): DesignDecision[] {
-  const overlayMap = new Map(overlay.map((d) => [d.dimension, d]));
-  const out: DesignDecision[] = [];
-  const seen = new Set<string>();
-  for (const d of base) {
-    seen.add(d.dimension);
-    out.push(overlayMap.get(d.dimension) ?? d);
-  }
-  for (const d of overlay) {
-    if (!seen.has(d.dimension)) out.push(d);
-  }
-  return out;
 }
 
 async function loadRaw(path: string): Promise<ParsedExpression> {

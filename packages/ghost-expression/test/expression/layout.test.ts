@@ -51,9 +51,6 @@ Prose.
 
 More prose.
 
-# Fragments
-
-- [embedding](embedding.md)
 `;
 
 describe("layoutExpression", () => {
@@ -81,13 +78,9 @@ describe("layoutExpression", () => {
     const signature = layout.sections.find(
       (s) => s.kind === "body" && s.heading === "Signature",
     );
-    const fragments = layout.sections.find(
-      (s) => s.kind === "body" && s.heading === "Fragments",
-    );
     expect(character?.start).toBeGreaterThan(fm?.end ?? 0);
     expect(signature?.start).toBeGreaterThan(character?.end ?? 0);
     expect(decisions?.start).toBeGreaterThan(signature?.end ?? 0);
-    expect(fragments?.start).toBeGreaterThan(decisions?.end ?? 0);
 
     const decisionBlocks = layout.sections.filter((s) => s.kind === "decision");
     expect(decisionBlocks.map((d) => d.dimension)).toEqual([
@@ -171,8 +164,8 @@ x
     ).toBeDefined();
   });
 
-  it("matches structural expectations against the real ghost-ui expression", async () => {
-    const path = resolve(here, "../../../ghost-ui/expression.md");
+  it("matches structural expectations against the ghost-ui fixture expression", async () => {
+    const path = resolve(here, "../fixtures/ghost-ui-expression/expression.md");
     const raw = await readFile(path, "utf-8");
     const layout = layoutExpression(raw);
 
@@ -186,12 +179,7 @@ x
       .filter((s) => s.kind === "body")
       .map((s) => s.heading);
     expect(headings).toEqual(
-      expect.arrayContaining([
-        "Character",
-        "Signature",
-        "Decisions",
-        "Fragments",
-      ]),
+      expect.arrayContaining(["Character", "Signature", "Decisions"]),
     );
 
     const dims = layout.sections

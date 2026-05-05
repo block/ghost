@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T17:00:20.041Z",
+  "generatedAt": "2026-05-05T11:07:11.446Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -215,6 +215,30 @@
         },
         {
           "tool": "ghost-expression",
+          "name": "verify-profile",
+          "rawName": "verify-profile <expression> <survey>",
+          "description": "Verify expression.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+          "options": [
+            {
+              "rawName": "--root <dir>",
+              "name": "root",
+              "description": "Optional target root for counting promoted check pattern matches under checks[].paths",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-expression",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
           "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), expression (expression.md). Tells orchestrators which stage to run next.",
@@ -272,7 +296,7 @@
           "tool": "ghost-expression",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest; Markdown by default, JSON with --format json).",
+          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -285,8 +309,16 @@
             {
               "rawName": "--format <fmt>",
               "name": "format",
-              "description": "survey summarize output format: markdown or json",
+              "description": "survey summarize/catalog output format: markdown or json",
               "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--kind <kind>",
+              "name": "kind",
+              "description": "survey catalog filter: include only this value kind",
+              "default": null,
               "takesValue": true,
               "negated": false
             },

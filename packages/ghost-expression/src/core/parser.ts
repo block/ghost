@@ -18,9 +18,8 @@ export interface ParsedExpression {
    */
   body: BodyData;
   /**
-   * The raw markdown body (everything after the frontmatter). Surfaced so
-   * the loader can scan for fragment links (e.g. `[embedding](embedding.md)`)
-   * without re-reading the file.
+   * The raw markdown body (everything after the frontmatter). Surfaced for
+   * layout/lint tooling that needs the source text.
    */
   bodyRaw: string;
 }
@@ -82,8 +81,8 @@ function isDelimiter(line: string): boolean {
  * structured body.
  *
  * Contract: frontmatter and body own disjoint fields.
- *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
- *     personality/resembles tags, embedding.
+ *   • Frontmatter owns machine-facts: id, tokens, dimension slugs,
+ *     personality/resembles tags, references, checks, and compact values.
  *   • Body owns prose: `# Character` → summary, `# Signature` →
  *     recognizable output posture, `### dimension` → decision rationale.
  *
@@ -149,11 +148,12 @@ function mergeObservation(
 }
 
 /**
- * Merge the frontmatter decision skeletons (dimension + optional embedding)
- * with the body's rationale and evidence (keyed by `### dimension`).
+ * Merge the frontmatter decision skeletons (dimension + optional kind) with
+ * the body's rationale and evidence (keyed by `### dimension`).
  * Frontmatter order wins; body-only decisions append at the end.
  *
- * Schema 5: evidence comes from the body, embedding (if any) from the YAML.
+ * Evidence comes from the body. Runtime decision embeddings are derived, not
+ * read from `expression.md`.
  */
 function mergeDecisions(
   fromYaml: DesignDecision[] | undefined,
@@ -175,7 +175,6 @@ function mergeDecisions(
       decision: b?.decision ?? "",
       evidence: b?.evidence ?? [],
       ...(y.dimension_kind ? { dimension_kind: y.dimension_kind } : {}),
-      ...(y.embedding ? { embedding: y.embedding } : {}),
     });
   }
   for (const b of fromBody) {

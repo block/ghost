@@ -136,7 +136,7 @@ The recipe consumes this, opens what it needs to open, and synthesizes map.md.
 - **expression** consumes map.md → profile recipe skips topology discovery, focuses on interpretation. Significant cost reduction on large repos.
 - **drift** uses `surface_sources.include`/`exclude` and `feature_areas` to scope comparison. With `registry` present, drift can attribute to specific components instead of repo-wide vectors.
 - **fleet** groups repos by `composition` and `platform` axes orthogonal to design language ("how do all SwiftUI apps cluster in expression-space?").
-- **ghost-ui** ships an exemplary map.md as the canonical fixture for testing the other tools.
+- **ghost-ui** remains the exemplary shadcn registry target for testing map detection, but it should not ship package-local scan artifacts.
 
 ## Open questions
 
@@ -156,4 +156,4 @@ The recipe consumes this, opens what it needs to open, and synthesizes map.md.
 1. Sketch `ghost map inventory` output schema in detail (JSON shape, what platforms detect what).
 2. Decide package layout: `packages/ghost-map/` as sibling to `ghost-drift`, with shared core in an internal `@ghost/core` package.
 3. Plan the meta-`ghost` CLI dispatcher that routes to whichever sub-tool is installed.
-4. Draft an exemplary map.md for `packages/ghost-ui` as the first fixture.
+4. Use `packages/ghost-ui` as the first registry-rich target when drafting map fixtures outside the package.

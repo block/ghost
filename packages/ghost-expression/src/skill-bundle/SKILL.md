@@ -25,12 +25,13 @@ When the CLI is present, prefer it — the output is deterministic and idempoten
 
 | Verb | Purpose |
 |---|---|
-| `ghost-expression lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` (auto-detects by `.json` extension, `schema: ghost.map/v2` frontmatter, or filename). Use before declaring an artifact valid. |
+| `ghost-expression lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` shape (auto-detects by `.json` extension, `schema: ghost.map/v2` frontmatter, or filename). Use before declaring an artifact structurally valid. |
+| `ghost-expression verify-profile <expression.md> <survey.json> [--root <dir>]` | Validate expression-to-survey fidelity after profiling: palette, spacing, typography, radii, and shadow posture must be survey-backed, and promoted checks must be calibrated. Use after `lint expression.md` in the profile/scan success gate. |
 | `ghost-expression inventory [path]` | Emit deterministic raw repo signals (manifests, language histogram, candidate config files, registry presence, top-level tree, git remote) as JSON. Feeds the topology recipe. |
 | `ghost-expression scan-status [dir]` | Report which scan stages have produced artifacts (`map.md`, `survey.json`, `expression.md`) and which stage to run next. Use to decide what to do at the start of a scan or between stages. |
 | `ghost-expression describe [expression.md]` | Print a section map (line ranges + token estimates) so you can selectively read only the sections you need instead of loading the whole file. Use before review/generate when the expression is large. |
 | `ghost-expression diff <a.md> <b.md>` | Structural prose-level diff between two expressions — what decisions, palette roles, and tokens changed. **Not the same as `ghost-drift compare`** (which returns embedding distance). Use diff when you want to read what changed; use compare when you want a number. |
-| `ghost-expression survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. `merge` — concat with id-based dedup, deterministic and idempotent (useful for modular rollups and fleet cohort views). `fix-ids` — recompute every row's `id` from content (use after authoring rows with empty `id` fields). |
+| `ghost-expression survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. `merge` — concat with id-based dedup. `fix-ids` — recompute every row's `id` from content. `summarize` — bounded profiling digest. `catalog` — compact value enum/spec view for exact frontmatter values. |
 | `ghost-expression emit <kind>` | Derive per-project artifacts from `expression.md`. Kinds: `review-command` (Rams-style slash command), `context-bundle` (multi-file generation prompt), `skill` (this agentskills.io bundle). |
 
 If you find yourself reaching for `ghost-expression scan` / `ghost-expression survey` / `ghost-expression profile` — those are *your* workflows, not CLI commands. Follow the recipes below.
@@ -47,7 +48,9 @@ When the user asks you to:
 - "Profile my design language" / "write expression.md" / "interpret these values" → [references/profile.md](references/profile.md). Pre-req: `map.md` AND `survey.json` exist (run map + survey first). Output: validated `expression.md`.
 - "Diff these two expressions" → run `ghost-expression diff <a> <b>`. For embedding distance use `ghost-drift compare`.
 - "Lint my expression" / "lint my survey" → run `ghost-expression lint <file>`. Fix anything it reports.
+- "Verify this profile" / "check expression fidelity" → run `ghost-expression verify-profile expression.md survey.json --root <target>`. Fix errors before treating a first-pass profile as scan-complete.
 - "Merge these surveys" / "compose a cohort survey" → run `ghost-expression survey merge <surveys...>`.
+- "Catalog this survey" / "show exact value enums" → run `ghost-expression survey catalog survey.json [--kind <kind>]`.
 
 For drift detection (compare under change, ack/track/diverge, review PR diffs against an expression) install the `ghost-drift` skill.
 
@@ -56,9 +59,11 @@ For drift detection (compare under change, ack/track/diverge, review PR diffs ag
 An `expression.md` has:
 
 - **YAML frontmatter (machine layer):** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
-- **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (`expression.signature`), `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
+- **Markdown body (prose layer):** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
 
 `decisions[].dimension` is an index, not an empty decision object: the body carries the actual rationale and evidence. `references` are local provenance / optional source material; the expression body should remain portable enough to drift against or generate from in another project.
+
+No sibling fragments are canonical. Do not author or load `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; runtime comparison computes embeddings from the parsed expression structure.
 
 When profiling for generation, capture positive range as well as constraints. A restrained system should still say how it creates variety: editorial scale, shaped composition, semantic/data color, role-based elevation, functional motion, local font sourcing, a deliberate type ramp, or themeable tokens. Use `composition-patterns` when examples show article, tracker, comparison, card, or control-surface shapes.
 
@@ -70,7 +75,8 @@ Each field lives in exactly one layer — no duplication. Putting prose in front
 - Resolve variable chains end-to-end. Follow `var(--primary) → --primary: var(--brand-500) → --brand-500: #0066cc` to the concrete value.
 - Emit colors as hex in frontmatter. The CLI recomputes oklch when it needs it.
 - Every `palette` entry should be cited in at least one decision's `evidence`, or dropped — uncited tokens are noise.
-- Validate with `ghost-expression lint` before declaring success.
+- Use `ghost-expression survey summarize survey.json` for broad profiling context and `ghost-expression survey catalog survey.json` for exact value enums/specs.
+- Validate with `ghost-expression lint` before declaring structural success; for a profiled expression, also run `ghost-expression verify-profile expression.md survey.json --root <target>`.
 
 ## Never
 

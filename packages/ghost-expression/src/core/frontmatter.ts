@@ -43,7 +43,6 @@ const EXPRESSION_KEYS = new Set<keyof Expression>([
   "spacing",
   "typography",
   "surfaces",
-  "embedding",
 ]);
 
 /**
@@ -118,7 +117,6 @@ export function mergeFrontmatter(
     "spacing",
     "typography",
     "surfaces",
-    "embedding",
   ];
   for (const key of ordered) {
     const v = expression[key];
@@ -146,10 +144,6 @@ function stripObservationProse(
   return Object.keys(out).length ? out : undefined;
 }
 
-/**
- * Schema 5: frontmatter decisions[] carries dimension + optional embedding
- * only. Prose rationale and evidence bullets both live in the body.
- */
 function stripDecisionProse(
   decisions: Expression["decisions"],
 ): Array<Record<string, unknown>> | undefined {
@@ -157,7 +151,6 @@ function stripDecisionProse(
   return decisions.map((d) => {
     const out: Record<string, unknown> = { dimension: d.dimension };
     if (d.dimension_kind) out.dimension_kind = d.dimension_kind;
-    if (d.embedding) out.embedding = d.embedding;
     return out;
   });
 }

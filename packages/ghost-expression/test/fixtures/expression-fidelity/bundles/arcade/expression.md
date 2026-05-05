@@ -360,7 +360,3 @@ The Cabinet playground that documents the system runs on default shadcn aestheti
 - `\`apps/cabinet/app/components/ui/button.tsx:14\` — \`bg-red-500 ... dark:bg-red-900\` (not \`--background-danger\`)`
 - `apps/cabinet/app/components/ui/button.tsx:8\` — \`rounded-md\` literal, not \`--radius-medium`
 - `\`apps/cabinet/app/styles/arcade.css:34\` — Arcade CSS variables only at \`:root\` level`
-
-# Fragments
-
-- [embedding](embedding.md) — 49-dim vector for compare/composite/viz

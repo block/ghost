@@ -9,8 +9,6 @@ Ghost is the layer that gives them one. The design language lives in your repo a
 - **ghost-fleet** — how the language propagates across many projects
 - **ghost-ui** — a reference design system to test the loop against
 
-> **Read [`INVARIANTS.md`](./INVARIANTS.md) before making non-trivial changes.** These are hard constraints — surface conflicts, don't weigh them as preferences.
-
 ## Build & Run
 
 ```bash
@@ -57,7 +55,7 @@ Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `tes
 
 ## Architecture
 
-Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (profile, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs); see [`INVARIANTS.md`](./INVARIANTS.md) §1 and §4 for the underlying constraints.
+Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (profile, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs).
 
 The repo decomposes into **four tools plus a reference design system**, each with a single responsibility:
 
@@ -87,7 +85,7 @@ Each tool lives under `packages/<tool>/` with the same shape:
 |---------|-----------|-------------|
 | `packages/ghost-core` | ❌ private (`@ghost/core`) | Workspace-only library. Embedding math, shared types, target resolution, skill-bundle loader, `ghost.map/v2` schema, `ghost.survey/v2` schema + lint/merge/fix-ids primitives. No CLI. Consumed by every other tool. |
 | `packages/ghost-drift` | ✅ `ghost-drift` on npm (v0.2+) | Drift detection. CLI verbs: `compare`, `ack`, `track`, `diverge`, `emit skill`. Skill recipes: `compare.md`, `review.md`, `verify.md`, `remediate.md`. Old `lint`/`describe`/`emit review-command`/`emit context-bundle` stay registered as stub commands that point users to `ghost-expression`. |
-| `packages/ghost-expression` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the three-stage scan pipeline (`map.md` → `survey.json` → `expression.md`). CLI verbs: `lint` (auto-detects file kind), `inventory`, `describe`, `diff`, `survey <op>` (merge / fix-ids), `emit` (kinds: `review-command`, `context-bundle`, `skill`). Skill recipes: `map.md`, `survey.md`, `profile.md`, `schema.md`. |
+| `packages/ghost-expression` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the three-stage scan pipeline (`map.md` → `survey.json` → `expression.md`). CLI verbs: `lint` (auto-detects file kind), `verify-profile` (expression-to-survey fidelity), `inventory`, `describe`, `diff`, `survey <op>` (merge / fix-ids), `emit` (kinds: `review-command`, `context-bundle`, `skill`). Skill recipes: `map.md`, `survey.md`, `profile.md`, `schema.md`. |
 | `packages/ghost-fleet` | ❌ private | Read-only elevation across many `(map.md, expression.md)` members. CLI verbs: `members`, `view`, `emit skill`. Skill recipes: `target.md`. |
 | `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm. Also ships the `ghost-mcp` bin (`src/mcp/`, built via `tsconfig.mcp.json` → `dist-mcp/`) — an MCP server re-exposing the registry to AI assistants (5 tools, 2 resources). |
 | `apps/docs` | ❌ private | The deployed docs site (`ghost-docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `ghost-ui`. |
@@ -101,6 +99,7 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 | `ghost-expression` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. Feeds the topology recipe. |
 | `ghost-expression` | `scan-status [dir]` | Report which scan stages have produced artifacts (`map.md` / `survey.json` / `expression.md`) and which stage to run next. |
 | `ghost-expression` | `lint [file]` | Validate `expression.md`, `map.md`, or `survey.json` — auto-detects the kind from path/content. |
+| `ghost-expression` | `verify-profile <expression> <survey>` | Verify expression-to-survey fidelity after profiling; palette values must be survey-backed and promoted checks must be calibrated. |
 | `ghost-expression` | `describe [expression]` | Print section ranges + token estimates (so agents can selectively load). |
 | `ghost-expression` | `diff <a> <b>` | Structural prose-level diff between expressions (decisions + palette roles). **Not** vector distance. |
 | `ghost-expression` | `survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. Ops: `merge` (concat with id-based dedup), `fix-ids` (recompute IDs from content). |
@@ -184,9 +183,10 @@ The slug should be short and descriptive: `add-temporal-flag.md`, `fix-palette-l
 
 ## Key Conventions
 
-- Each `expression.md` carries a 49-dimensional embedding vector (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/embedding/embedding.ts`). The canonical on-disk form is the Markdown file itself — there is no parallel JSON/DTCG representation (see [`INVARIANTS.md`](./INVARIANTS.md) §2).
+- Each `expression.md` carries a 49-dimensional embedding vector (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/embedding/embedding.ts`). The canonical on-disk form is the Markdown file itself — there is no parallel JSON/DTCG representation.
 - `ghost-drift compare` takes **file paths** to `expression.md`, not target strings. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 returns a composite expression.
 - `ghost-drift ack` / `track` / `diverge` read the local `expression.md`. The host agent is responsible for regenerating `expression.md` (via the `profile` recipe) before acknowledging drift.
-- `ghost-expression lint` takes a single `expression.md` and reports schema/partition violations. Use as the success gate when authoring an expression.
+- `ghost-expression lint` takes a single `expression.md` and reports schema/partition violations. Use as the shape gate when authoring an expression.
+- `ghost-expression verify-profile expression.md survey.json --root .` is the required scan-stage fidelity gate after profiling: it checks palette provenance and promoted-check calibration against the survey/root.
 - `ghost-expression lint <map.md>` validates against `ghost.map/v2` (auto-detected by frontmatter or filename). Use as the success gate when authoring a map.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is auto-generated by `pnpm dump:cli-help`. CI guards drift via `pnpm check:cli-manifest`. Re-run `pnpm dump:cli-help` after adding/removing flags or verbs to any tool.

@@ -24,22 +24,22 @@ If \`$ARGUMENTS\` is empty, ask the user which file(s) to review, or offer to sc
 
 Hex literals must come from the documented palette
 
-> Default theme is achromatic — chromatic colors are reserved for semantic states (danger, success, info, warning) and chart data. Any new hex literal is drift unless it lands in the palette.
-
 **Pattern:** \`#[0-9a-fA-F]{3,8}\`
 **Match:** \`exact\`
-**Enforce at:** \`className\`, \`css_var\`, \`inline_style\`
+**Paths:** \`src\`
+**Contexts:** \`className\`, \`css_var\`, \`inline_style\`
+**Observed count:** 100
 **Support:** 94%
 
 ### \`no-foreign-fonts\` — font-sourcing
 
 Do not bundle additional typefaces
 
-> Library ships no bundled fonts — system-ui sans, Geist Mono, and a generic serif fallback. Adding @font-face or importing a webfont crosses the font-sourcing decision.
-
 **Pattern:** \`@import\\s+url\\([^)]*fonts\`
 **Match:** \`exact\`
-**Enforce at:** \`css_var\`, \`inline_style\`
+**Paths:** \`src\`
+**Contexts:** \`css_var\`, \`inline_style\`, \`import\`
+**Observed count:** 100
 **Support:** 100%
 
 ## Serious (3)
@@ -48,31 +48,33 @@ Do not bundle additional typefaces
 
 Buttons, inputs, and badges must be fully rounded
 
-> Pill-first radius philosophy separates interactive from structural surfaces — interactive elements fully round (999px), while cards and modals use moderate radii (10–24px).
-
 **Pattern:** \`<(Button|Input|Badge)\\b[^>]*\\brounded-(?!full|pill)\`
 **Match:** \`structural\`
-**Enforce at:** \`className\`
+**Paths:** \`src\`
+**Contexts:** \`className\`
+**Observed count:** 100
 **Support:** 97%
 
 ### \`structural-radius-set\` — shape-language
 
 Container radii must come from the canonical set
 
-> Cards, modals, and dropdowns use moderate radii (10–24px). Arbitrary radius values break the shape vocabulary.
-
 **Pattern:** \`rounded-\\[\\d+px\\]|border-radius:\\s*\\d+px\`
 **Match:** \`structural\`
+**Paths:** \`src\`
+**Contexts:** \`className\`, \`inline_style\`
+**Observed count:** 100
 **Support:** 91%
 
 ### \`type-on-ramp\` — typography-voice
 
 Font sizes must come from the magazine ramp
 
-> Type ramp runs from 10px (label kicker) to 96px (display). Sizes outside the ramp break the editorial rhythm.
-
 **Pattern:** \`text-\\[\\d+px\\]|font-size:\\s*\\d+px\`
 **Match:** \`percent\` (tolerance: \`0.1\`)
+**Paths:** \`src\`
+**Contexts:** \`className\`, \`inline_style\`
+**Observed count:** 100
 **Support:** 93%
 
 ## Nit (2)
@@ -81,20 +83,22 @@ Font sizes must come from the magazine ramp
 
 No decorative or hover-only animations
 
-> Animations exist for structural reveals (accordion, scale-in, fade) and entrance transitions, never for decorative micro-interactions. The editorial tone stays serious.
-
 **Pattern:** \`transition:\\s*all\\b|animate-(?!none)\\w+\`
 **Match:** \`exact\`
+**Paths:** \`src\`
+**Contexts:** \`className\`, \`inline_style\`
+**Observed count:** 5
 **Support:** 86%
 
 ### \`spacing-on-scale\` — spatial-system
 
 Padding, margin, and gap must come from the 4px-base scale
 
-> Scale is 2/4/6/8/12/16/20/24/32/36/40/52/75/100. Off-scale spacing breaks the layout rhythm; small drift (±2px) is tolerated.
-
 **Pattern:** \`\\b(p|m|gap)-\\[\\d+px\\]\`
 **Match:** \`band\` (tolerance: \`2\`)
+**Paths:** \`src\`
+**Contexts:** \`className\`
+**Observed count:** 100
 **Support:** 88%
 
 ## Output format
