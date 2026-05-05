@@ -2,24 +2,29 @@
 
 **Reference design system for the Ghost project. 97 components, shadcn registry, not published to npm.**
 
-`ghost-ui` is the design language Ghost dogfoods its expression against. It's distributed as a shadcn registry (`registry.json`) for drop-in consumption, not as an npm package. If you're looking for the drift-detection tool, that's [`ghost-drift`](../ghost-drift). This package exists so the expression has a real, evolving system to describe.
+`ghost-ui` is the reference component system Ghost uses to exercise registry and agent-integration workflows. It's distributed as a shadcn registry (`registry.json`) for drop-in consumption, not as an npm package. If you're looking for the drift-detection tool, that's [`ghost-drift`](../ghost-drift).
 
-## Canonical fixtures (the convention)
+## Registry convention
 
-This package ships its own `expression.md` and `map.md` at the package root as canonical fixtures — the reference every other repo profiles against, the one CI runs map → expression → drift on. The shadcn `registry.json` is extended with two opportunistic, namespaced fields:
+This package intentionally does not carry package-local Ghost scan artifacts (`map.md`, `survey.json`, or `expression.md`). It stays a component registry. Agents should read this README, `registry.json`, `.shadcn/skills.md`, and source files when integrating components.
 
-- **`meta.expression`** at the registry root — points at the package's `expression.md`. Drift consumers can resolve a registry to its design language without coupling to Ghost.
-- **`meta.expression_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift uses this for higher-confidence per-component attribution; absent the field, drift falls back to repo-wide vectors.
+The shadcn `registry.json` can carry opportunistic, namespaced item metadata:
 
-Both extensions live under `meta` so they stay invisible to shadcn's schema. Other registries can adopt the convention without coordinating with Ghost — drop in `meta.expression`, point at any `expression.md`, and Ghost tools light up. Absence is fine; presence is progressive enhancement.
+- **`meta.expression_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
+
+Shape-aware examples can add two more optional `meta` fields:
+
+- **`meta.exemplar_kind`** — `atom` for primitive controls such as badge, button, cell, or input; `shape` for composed outputs.
+- **`meta.response_shapes`** — the composed shape(s) an example demonstrates: `article`, `tracker`, `comparison`, or `card`.
+
+That distinction helps generators pick relevant references instead of treating every example as a card. `card` is one response shape; it is not the default form of all intelligence.
 
 ## What's here
 
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
-- **Tokens** — `src/styles/` CSS custom properties consumed by the registry and the expression.
-- **Registry** — `registry.json`, shadcn-compatible catalogue with `meta.expression` + `meta.expression_dimensions` extensions. Rebuilt by `just build-registry`.
-- **Expression** — `expression.md`, the canonical design description this system evolves by.
-- **Map** — `map.md`, the navigation card (identity / topology / conventions) that downstream Ghost tools read as the topology cache.
+- **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
+- **Registry** — `registry.json`, shadcn-compatible catalogue with optional `meta.expression_dimensions` extensions. Rebuilt by `just build-registry`.
+- **Agent context** — `.shadcn/skills.md`, generated from the registry and component sources for AI assistants.
 
 ## Use
 

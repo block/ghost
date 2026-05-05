@@ -18,9 +18,8 @@ export interface ParsedExpression {
    */
   body: BodyData;
   /**
-   * The raw markdown body (everything after the frontmatter). Surfaced so
-   * the loader can scan for fragment links (e.g. `[embedding](embedding.md)`)
-   * without re-reading the file.
+   * The raw markdown body (everything after the frontmatter). Surfaced for
+   * layout/lint tooling that needs the source text.
    */
   bodyRaw: string;
 }
@@ -82,10 +81,10 @@ function isDelimiter(line: string): boolean {
  * structured body.
  *
  * Contract: frontmatter and body own disjoint fields.
- *   • Frontmatter owns machine-facts: id, tokens, dimension slugs, evidence,
- *     personality/resembles tags, embedding.
- *   • Body owns prose: `# Character` → summary, `# Signature` → distinctive
- *     traits, `### dimension` → decision rationale.
+ *   • Frontmatter owns machine-facts: id, tokens, dimension slugs,
+ *     personality/resembles tags, references, checks, and compact values.
+ *   • Body owns prose: `# Character` → summary, `# Signature` →
+ *     recognizable output posture, `### dimension` → decision rationale.
  *
  * The returned expression unions both sources. Since the two sides never
  * carry the same field, there is no precedence rule — each field has one
@@ -116,9 +115,10 @@ export function parseExpression(
 
 /**
  * Fold body-owned prose fields into the expression. The body provides
- * Character/Signature prose for `observation` and rationale for `decisions`
- * (keyed by dimension). Frontmatter-only dimensions keep their evidence
- * but get no body prose (decision text left empty).
+ * Character prose for `observation`, Signature prose for `signature`, and
+ * rationale for `decisions` (keyed by dimension). Frontmatter-only
+ * dimensions keep their evidence but get no body prose (decision text left
+ * empty).
  */
 export function applyBody(fp: Expression, body: BodyData): Expression {
   const observation = mergeObservation(fp.observation, body);
@@ -127,6 +127,8 @@ export function applyBody(fp: Expression, body: BodyData): Expression {
   const out: Expression = { ...fp };
   if (observation) out.observation = observation;
   else delete out.observation;
+  if (body.signature?.trim()) out.signature = body.signature.trim();
+  else delete out.signature;
   if (decisions?.length) out.decisions = decisions;
   else delete out.decisions;
   return out;
@@ -137,26 +139,21 @@ function mergeObservation(
   body: BodyData,
 ): DesignObservation | undefined {
   const summary = body.character?.trim() ?? "";
-  const distinctiveTraits = body.signature ?? [];
   const personality = yamlObs?.personality ?? [];
   const resembles = yamlObs?.resembles ?? [];
-  if (
-    !summary &&
-    distinctiveTraits.length === 0 &&
-    personality.length === 0 &&
-    resembles.length === 0
-  ) {
+  if (!summary && personality.length === 0 && resembles.length === 0) {
     return undefined;
   }
-  return { summary, personality, distinctiveTraits, resembles };
+  return { summary, personality, resembles };
 }
 
 /**
- * Merge the frontmatter decision skeletons (dimension + optional embedding)
- * with the body's rationale and evidence (keyed by `### dimension`).
+ * Merge the frontmatter decision skeletons (dimension + optional kind) with
+ * the body's rationale and evidence (keyed by `### dimension`).
  * Frontmatter order wins; body-only decisions append at the end.
  *
- * Schema 5: evidence comes from the body, embedding (if any) from the YAML.
+ * Evidence comes from the body. Runtime decision embeddings are derived, not
+ * read from `expression.md`.
  */
 function mergeDecisions(
   fromYaml: DesignDecision[] | undefined,
@@ -177,7 +174,7 @@ function mergeDecisions(
       dimension: y.dimension,
       decision: b?.decision ?? "",
       evidence: b?.evidence ?? [],
-      ...(y.embedding ? { embedding: y.embedding } : {}),
+      ...(y.dimension_kind ? { dimension_kind: y.dimension_kind } : {}),
     });
   }
   for (const b of fromBody) {

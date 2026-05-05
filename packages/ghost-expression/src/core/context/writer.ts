@@ -2,6 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { DesignDecision, Expression } from "@ghost/core";
 import { serializeExpression } from "../writer.js";
+import {
+  bySeverityThenId,
+  type ResolvedCheck,
+  resolveExpressionChecks,
+} from "./checks.js";
 import { buildTokensCss } from "./tokens-css.js";
 
 /**
@@ -66,6 +71,10 @@ export async function writeContextBundle(
   await writeFile(exprPath, serializeExpression(expression));
   files.push(exprPath);
 
+  const promptPath = join(options.outDir, "prompt.md");
+  await writeFile(promptPath, buildPromptMd(expression, resolved.name));
+  files.push(promptPath);
+
   if (resolved.tokens) {
     const cssPath = join(options.outDir, "tokens.css");
     await writeFile(
@@ -128,7 +137,8 @@ export function buildSkillMd(
 ): string {
   const description = buildSkillDescription(expression, name);
   const fileList = [
-    "- `expression.md` — canonical design language (YAML tokens + Character/Signature/Decisions/Values)",
+    "- `expression.md` — canonical design language (YAML digest + Character/Signature/References/Decisions/Checks)",
+    "- `prompt.md` — generation prompt distilled from expression.md",
     ...(includesCss
       ? [
           "- `tokens.css` — CSS custom properties derived from expression tokens",
@@ -138,18 +148,22 @@ export function buildSkillMd(
 
   const body = `This skill grounds UI generation in the **${name}** design language.
 
-Read \`expression.md\` first — it is the source of truth. It has four layered sections:
+Read \`expression.md\` first — it is the source of truth. It has these layered sections:
 
-1. **Character** — what this expression is (one-paragraph summary)
-2. **Signature** — what makes it distinctive (bullet list of traits)
-3. **Decisions** — specific design choices with evidence from the source
-4. **Values** — hard Do / Don't rules
+1. **Character** — what this expression is (one-paragraph summary in the body)
+2. **Signature** — dominant moves and the recognizable output posture
+3. **References** — local provenance and optional source material (frontmatter \`references\`)
+4. **Decisions** — abstract design choices with evidence from the source (body \`### dimension\` blocks)
+5. **Checks** — human-promoted review gates (frontmatter \`checks[]\`)
 
 When generating UI in this language:
 
-- Treat **Values** as non-negotiable gates — never violate a Don't.
+- Treat **Checks** as curated gates when they exist.
 - Use **Decisions** as the lookup for specific choices (spacing scale, type ramp, radii).
-- Let **Character** and **Signature** shape overall feel, density, and voice.
+- When working inside the source repo, open **References** before inventing new components or values. When applying this language elsewhere, treat references as provenance; do not assume those paths exist.
+- Let **Character** shape overall feel, density, and voice.
+- Let **Signature** shape the final picture: layout posture, dominant moves, and recognizable habits.
+- Before composing, infer the output shape the task calls for: article, tracker, comparison, card, or control surface. Card is one shape, not the default form of every answer.
 - Prefer tokens from the YAML frontmatter (palette, spacing, typography, surfaces) over arbitrary values.
 
 ## Files
@@ -169,42 +183,61 @@ ${body}`;
 function buildPromptMd(expression: Expression, name: string): string {
   const parts: string[] = [];
   parts.push(
-    `You are generating UI in the **${name}** design language. Honor the rules below.`,
+    `You are generating UI in the **${name}** design language. Produce the requested UI artifact; do not explain design decisions unless the user asks.`,
   );
 
   const summary = expression.observation?.summary?.trim();
   if (summary) parts.push(`# Character\n\n${summary}`);
 
-  const traits = expression.observation?.distinctiveTraits ?? [];
-  if (traits.length)
-    parts.push(`# Signature\n\n${traits.map((t) => `- ${t}`).join("\n")}`);
+  const signature = expression.signature?.trim();
+  parts.push(
+    `# Signature\n\n${signature || "No signature prose has been authored yet. Use Character, Local References when accessible, Decisions, and Tokens conservatively."}`,
+  );
+
+  parts.push(`# Local References\n\n${formatReferences(expression)}`);
 
   const decisions = expression.decisions ?? [];
   if (decisions.length)
     parts.push(`# Decisions\n\n${decisions.map(formatDecision).join("\n\n")}`);
+  else parts.push("# Decisions\n\nNo decision prose has been authored yet.");
+
+  const checks = resolveExpressionChecks(expression).sort(bySeverityThenId);
+  if (checks.length) {
+    parts.push(`# Checks\n\n${formatChecks(checks)}`);
+  } else {
+    parts.push(
+      "# Checks\n\nNo promoted `checks[]` are present. Treat this as a generation context with guidance but no curated review gates.",
+    );
+  }
+
+  parts.push(`# Shape Selection\n\n${formatShapeSelection(expression)}`);
 
   parts.push(`# Tokens\n\n${formatTokens(expression)}`);
 
+  const usageLead = checks.length
+    ? "use checks as gates, local references when accessible, decisions as style direction, and tokens as the value digest"
+    : "use local references when accessible, decisions as style direction, and tokens as the value digest; no promoted checks have been curated yet";
   parts.push(
-    "# How to use this prompt\n\nWhen asked to build a component or screen, produce HTML that uses the tokens above. Cite the Decision that drove each non-trivial choice.",
+    `# How to use this prompt\n\nWhen asked to build a component or screen, ${usageLead}. Prefer existing local components and token names when they are available in the current project. If this expression is being used outside its source repo, ignore inaccessible paths and follow Character, Signature, Decisions, Checks, and Tokens. Do not introduce arbitrary hex, spacing, font, radius, shadow, or motion values unless the expression explicitly allows them.`,
   );
 
   return `${parts.join("\n\n")}\n`;
 }
 
 function buildReadmeMd(expression: Expression, name: string): string {
-  const traits = expression.observation?.distinctiveTraits ?? [];
-  const traitsLine = traits.length
-    ? ` Signature traits: ${traits.slice(0, 3).join(", ")}.`
+  const personality = expression.observation?.personality ?? [];
+  const personalityLine = personality.length
+    ? ` Personality: ${personality.slice(0, 3).join(", ")}.`
     : "";
   return `# ${name} — design context bundle
 
-Generated by \`ghost-drift emit context-bundle\`. Grounding material for AI UI generation in the **${name}** design language.${traitsLine}
+Generated by \`ghost-expression emit context-bundle\`. Grounding material for AI UI generation in the **${name}** design language.${personalityLine}
 
 ## Files
 
 - \`SKILL.md\` — Agent Skill manifest (user-invocable)
 - \`expression.md\` — canonical design language (YAML frontmatter + Character/Signature/Decisions)
+- \`prompt.md\` — portable prompt distilled from the expression
 - \`tokens.css\` — CSS custom properties derived from expression tokens
 - \`README.md\` — this file
 
@@ -219,9 +252,9 @@ Generated by \`ghost-drift emit context-bundle\`. Grounding material for AI UI g
 }
 
 function buildSkillDescription(expression: Expression, name: string): string {
-  const traits = expression.observation?.distinctiveTraits ?? [];
-  const traitPhrase = traits.length
-    ? ` (${traits.slice(0, 3).join(", ")})`
+  const personality = expression.observation?.personality ?? [];
+  const traitPhrase = personality.length
+    ? ` (${personality.slice(0, 3).join(", ")})`
     : "";
   return `Use this skill to generate UI in the ${name} design language${traitPhrase}. Contains the canonical expression and token reference.`;
 }
@@ -238,10 +271,102 @@ function formatDecision(d: DesignDecision): string {
   return `## ${d.dimension}\n${d.decision.trim()}`;
 }
 
+function formatShapeSelection(expression: Expression): string {
+  const lines: string[] = [];
+  const composition = findCompositionDecision(expression);
+  if (composition?.decision.trim()) {
+    lines.push(`Expression guidance: ${composition.decision.trim()}`, "");
+  }
+
+  lines.push(
+    "- Before layout, infer a narrow intent/shape slice from the user's task and select examples or patterns that match that slice.",
+    "- Use `article` for plans, timelines, worksheets, narrative/canvas outputs, and long-form synthesized answers.",
+    "- Use `tracker` for metrics, progress, runway, review queues, audit status, and recurring operational views.",
+    "- Use `comparison` for tradeoffs, allocation, option sets, before/after states, and side-by-side decisions.",
+    "- Use `card` for compact focused recommendations or repeated peer items. Do not turn every answer into a stack of cards.",
+    "- Use local controls for explicit editing, filtering, configuration, or approval tasks.",
+    "- A restrained expression is not permission to make everything plain. Create variety through allowed scale contrast, shaped composition, semantic/data color, role-based elevation, functional motion, and themeable tokens.",
+  );
+
+  return lines.join("\n");
+}
+
+function findCompositionDecision(
+  expression: Expression,
+): DesignDecision | undefined {
+  return (expression.decisions ?? []).find((decision) => {
+    const dimension = decision.dimension.toLowerCase();
+    const kind = decision.dimension_kind?.toLowerCase();
+    return (
+      dimension === "composition-patterns" ||
+      kind === "composition-patterns" ||
+      dimension === "response-shapes" ||
+      dimension === "output-shapes"
+    );
+  });
+}
+
+function formatChecks(checks: ResolvedCheck[]): string {
+  return checks.map(formatCheck).join("\n");
+}
+
+function formatCheck(item: ResolvedCheck): string {
+  const { check, severity, match, tolerance } = item;
+  const parts = [
+    `- **${severity.toUpperCase()}** \`${check.id}\`${check.canonical ? ` (${check.canonical})` : ""}: ${check.summary ?? check.pattern}`,
+  ];
+  parts.push(`  Avoid: matches to \`${check.pattern}\`.`);
+  parts.push(
+    tolerance !== undefined
+      ? `  Match: \`${match}\` with tolerance \`${tolerance}\`.`
+      : `  Match: \`${match}\`.`,
+  );
+  if (check.paths?.length) {
+    parts.push(`  Paths: ${check.paths.map((e) => `\`${e}\``).join(", ")}.`);
+  }
+  if (check.contexts?.length) {
+    parts.push(
+      `  Contexts: ${check.contexts.map((e) => `\`${e}\``).join(", ")}.`,
+    );
+  }
+  return parts.join("\n");
+}
+
+function formatReferences(expression: Expression): string {
+  const refs = expression.references ?? {};
+  const groups: Array<[string, string[] | undefined]> = [
+    ["Specs", refs.specs],
+    ["Components", refs.components],
+    ["Examples", refs.examples],
+  ];
+  const lines: string[] = [
+    "These paths are local provenance and optional source material. Use them when they exist in the current workspace; otherwise treat the expression body and token digest as the portable contract.",
+    "",
+  ];
+  for (const [label, values] of groups) {
+    lines.push(`**${label}**`);
+    if (values?.length) {
+      for (const value of values) lines.push(`- \`${value}\``);
+    } else {
+      lines.push("- None promoted yet");
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trimEnd();
+}
+
 function formatTokens(expression: Expression): string {
   const lines: string[] = [];
+  const dominant = expression.palette?.dominant ?? [];
+  if (dominant.length) {
+    lines.push("**Dominant colors**");
+    for (const c of dominant) lines.push(`- \`${c.role}\`: ${c.value}`);
+  }
+  const neutrals = expression.palette?.neutrals?.steps ?? [];
+  if (neutrals.length) lines.push(`\n**Neutral ramp:** ${neutrals.join(", ")}`);
   const semantic = expression.palette?.semantic ?? [];
   if (semantic.length) {
+    if (lines.length) lines.push("");
     lines.push("**Semantic colors**");
     for (const c of semantic) lines.push(`- \`${c.role}\`: ${c.value}`);
   }
@@ -255,5 +380,7 @@ function formatTokens(expression: Expression): string {
     lines.push(`\n**Font families:** ${families.join(", ")}`);
   const radii = expression.surfaces?.borderRadii ?? [];
   if (radii.length) lines.push(`\n**Border radii:** ${radii.join(", ")}px`);
+  lines.push(`\n**Shadow posture:** ${expression.surfaces.shadowComplexity}`);
+  lines.push(`**Border usage:** ${expression.surfaces.borderUsage}`);
   return lines.join("\n");
 }

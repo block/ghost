@@ -24,7 +24,7 @@ const cards: {
     name: "CLI reference",
     href: "/docs/cli#ghost-map--topology",
     description:
-      "inventory (raw repo signals as JSON) and lint (validate map.md against ghost.map/v1).",
+      "inventory (raw repo signals as JSON) and lint (validate map.md against ghost.map/v2).",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -48,7 +48,7 @@ export default function GhostMapLanding() {
       <AnimatedPageHeader
         kicker="ghost-map"
         title="Topology"
-        description="The navigation card every Ghost tool reads. map.md answers “where is the design system, which folders matter?” — language-agnostic, validated against ghost.map/v1, written by the host agent from the raw inventory."
+        description="The navigation card Ghost uses during scan and fleet workflows. map.md answers “where is the design system, which folders matter, and where are implemented surfaces observable?” — language-agnostic, validated against ghost.map/v2, written by the host agent from the raw inventory."
       />
 
       <div

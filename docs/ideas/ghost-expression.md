@@ -52,8 +52,8 @@ Lives at `packages/ghost-expression/src/skill-bundle/references/profile.md`. Ref
    concrete value.
 3. From map.md.feature_areas + sub_areas, sample 6–10 product UI files
    spanning distinct surfaces. Read each well enough to populate `roles[]`.
-4. Synthesize expression.md — three sections (Character, Signature, Decisions),
-   frontmatter holds tokens + evidence paths.
+4. Synthesize expression.md — Character + Decisions in the body,
+   frontmatter holds tokens + rules + evidence paths.
 5. `ghost expression lint expression.md` — fix until clean.
 ```
 
@@ -102,8 +102,8 @@ After studying the existing implementation, here's what was confirmed and what n
 
 - Embedding-based compare (drift owns it).
 - Evolution verbs ack/track/diverge (drift owns them — they're explicit acts on change, not authoring).
-- Multi-format storage (Invariant 2).
-- LLM in CLI verbs (Invariant 1; profile is a recipe, not a verb).
+- Multi-format storage.
+- LLM in CLI verbs; profile is a recipe, not a verb.
 
 ## Next steps
 

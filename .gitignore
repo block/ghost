@@ -16,3 +16,6 @@ packages/ghost-ui/.ghost/
 
 # Emitted skill bundle — re-generate with `ghost emit skill`
 .claude/skills/
+
+# Scratch dir for dogfood scans and ad-hoc experiments
+.scratch/

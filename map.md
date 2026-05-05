@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: ghost
 repo: block/ghost
 mapped_at: 2026-04-27
@@ -38,7 +38,8 @@ design_system:
     - packages/ghost-ui/registry.json
     - packages/ghost-ui/expression.md
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - packages/ghost-ui/src/components/**
     - apps/docs/src/**

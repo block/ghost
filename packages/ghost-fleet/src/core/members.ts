@@ -1,12 +1,12 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { EXPRESSION_FILENAME, loadExpression } from "ghost-expression";
 import {
   MAP_FILENAME,
   type MapFrontmatter,
   MapFrontmatterSchema,
-} from "ghost-map";
+} from "@ghost/core";
+import { EXPRESSION_FILENAME, loadExpression } from "ghost-expression";
 import { parse as parseYaml } from "yaml";
 import { FLEET_MEMBERS_DIRNAME } from "./schema.js";
 import type { FleetMember, MemberSummary } from "./types.js";
@@ -20,8 +20,8 @@ import type { FleetMember, MemberSummary } from "./types.js";
  * treating the passed-in directory itself as the members root, so tooling
  * can also point at a flat `members/` directory directly.
  *
- * Per Invariant 5, this never refreshes anything. Missing or malformed
- * files are surfaced via per-member status; nothing is fetched.
+ * This never refreshes anything. Missing or malformed files are surfaced via
+ * per-member status; nothing is fetched.
  */
 export async function loadMembers(dir: string): Promise<FleetMember[]> {
   const root = resolve(dir);
@@ -129,7 +129,7 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
 /**
  * Best-effort parse of a map.md frontmatter block.
  *
- * We don't run the full ghost-map linter here — fleet's job is to load,
+ * We don't run the full map linter here — fleet's job is to load,
  * not validate. The schema check still rejects clearly-broken frontmatter
  * so callers get a typed `MapFrontmatter` or nothing.
  */

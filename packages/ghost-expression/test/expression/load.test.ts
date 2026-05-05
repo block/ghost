@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Expression } from "@ghost/core";
@@ -35,8 +35,8 @@ const SAMPLE_EXPRESSION: Expression = {
   embedding: Array.from({ length: 8 }, (_, i) => i / 10),
 };
 
-// Schema 5: frontmatter carries machine-facts only (dimension slug +
-// optional embedding, personality/resembles tags). Prose + evidence
+// Frontmatter carries machine-facts only (dimension slug,
+// personality/resembles tags). Prose + evidence
 // (Character, Signature, `### dimension` rationale + `**Evidence:**`
 // bullets) all live in the body.
 const SAMPLE_MD = `---
@@ -50,6 +50,10 @@ timestamp: 2026-04-17T00:00:00.000Z
 observation:
   personality: [restrained, editorial]
   resembles: [notion, linear]
+references:
+  specs: [src/styles/tokens.css]
+  components: [src/components/ui]
+  examples: [docs/examples/editorial.md]
 decisions:
   - dimension: warm-only-neutrals
   - dimension: serif-authority-sans-utility
@@ -76,7 +80,6 @@ surfaces:
   borderRadii: [8, 12, 16]
   shadowComplexity: subtle
   borderUsage: moderate
-embedding: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 ---
 
 # Character
@@ -85,9 +88,7 @@ A literary salon reimagined as a product page — warm, unhurried, and quietly i
 
 # Signature
 
-- Warm ring-shadows instead of drop-shadows
-- Editorial serif/sans split
-- Light/dark section alternation
+Long-form editorial layouts, warm neutral surfaces, and quiet controls that give prose more gravity than chrome.
 
 # Decisions
 
@@ -116,7 +117,7 @@ describe("parseExpression", () => {
     expect(expression.typography.families).toContain("Anthropic Serif");
     expect(expression.spacing.baseUnit).toBe(8);
     expect(expression.surfaces.borderRadii).toEqual([8, 12, 16]);
-    expect(expression.embedding).toHaveLength(8);
+    expect(expression.embedding).toBeUndefined();
     expect(meta.name).toBe("Claude");
     expect(meta.confidence).toBe(0.87);
   });
@@ -126,13 +127,18 @@ describe("parseExpression", () => {
     expect(expression.observation?.summary).toContain("literary salon");
   });
 
-  it("merges body Signature into observation.distinctiveTraits", () => {
+  it("merges body Signature into expression.signature", () => {
     const { expression } = parseExpression(SAMPLE_MD);
-    expect(expression.observation?.distinctiveTraits).toEqual([
-      "Warm ring-shadows instead of drop-shadows",
-      "Editorial serif/sans split",
-      "Light/dark section alternation",
-    ]);
+    expect(expression.signature).toContain("Long-form editorial layouts");
+  });
+
+  it("keeps direct expression references from frontmatter", () => {
+    const { expression } = parseExpression(SAMPLE_MD);
+    expect(expression.references).toEqual({
+      specs: ["src/styles/tokens.css"],
+      components: ["src/components/ui"],
+      examples: ["docs/examples/editorial.md"],
+    });
   });
 
   it("keeps observation tags (personality, resembles) from frontmatter", () => {
@@ -232,6 +238,7 @@ describe("loadExpression", () => {
     const { expression: fp } = await loadExpression(path);
     expect(fp.id).toBe("claude");
     expect(fp.palette.dominant[0].value).toBe("#c96442");
+    expect(fp.embedding).toHaveLength(49);
   });
 
   it("rejects non-.md paths with a clear error", async () => {
@@ -240,6 +247,26 @@ describe("loadExpression", () => {
     await expect(loadExpression(path)).rejects.toThrow(
       /must be Markdown \(\.md\)/,
     );
+  });
+
+  it("does not auto-assemble sibling decisions directories", async () => {
+    const dir = join(tmpdir(), `ghost-test-${Date.now()}`);
+    const path = join(dir, "expression.md");
+    await mkdir(join(dir, "decisions"), { recursive: true });
+    await writeFile(path, SAMPLE_MD, "utf-8");
+    await writeFile(
+      join(dir, "decisions", "warm-only-neutrals.md"),
+      `---\ndimension: warm-only-neutrals\n---\n\nFragment prose should not load.\n`,
+      "utf-8",
+    );
+
+    const { expression: fp } = await loadExpression(path);
+
+    const decision = fp.decisions?.find(
+      (entry) => entry.dimension === "warm-only-neutrals",
+    );
+    expect(decision?.decision).toContain("Every gray has");
+    expect(decision?.decision).not.toContain("Fragment prose");
   });
 });
 
@@ -250,9 +277,25 @@ describe("serializeExpression round-trip", () => {
       observation: {
         summary: "Warm, editorial, unhurried.",
         personality: ["warm", "editorial"],
-        distinctiveTraits: ["ring-shadows", "warm-only neutrals"],
         resembles: ["notion"],
       },
+      signature:
+        "A readable editorial surface with warm neutrals and quietly structured controls.",
+      references: {
+        specs: ["src/styles/tokens.css"],
+        components: ["src/components/ui"],
+        examples: ["docs/examples/editorial.md"],
+      },
+      checks: [
+        {
+          id: "no-cool-neutrals",
+          canonical: "color-strategy",
+          kind: "color",
+          pattern: "#(?:0f172a|111827)",
+          support: 0.95,
+          contexts: ["className"],
+        },
+      ],
       decisions: [
         {
           dimension: "warm-only-neutrals",
@@ -262,11 +305,8 @@ describe("serializeExpression round-trip", () => {
       ],
     };
 
-    // Keep embedding inline so a pure in-memory round-trip round-trips
-    // without needing a sibling embedding.md on disk.
     const md = serializeExpression(fpWithProse, {
       meta: { name: "Claude", slug: "claude" },
-      extractEmbedding: false,
     });
 
     const { expression, meta } = parseExpression(md);
@@ -277,12 +317,9 @@ describe("serializeExpression round-trip", () => {
     expect(expression.spacing).toEqual(fpWithProse.spacing);
     expect(expression.typography).toEqual(fpWithProse.typography);
     expect(expression.surfaces).toEqual(fpWithProse.surfaces);
-    expect(expression.embedding).toEqual(fpWithProse.embedding);
+    expect(expression.embedding).toBeUndefined();
     expect(expression.observation?.summary).toBe(
       fpWithProse.observation?.summary,
-    );
-    expect(expression.observation?.distinctiveTraits).toEqual(
-      fpWithProse.observation?.distinctiveTraits,
     );
     expect(expression.observation?.personality).toEqual(
       fpWithProse.observation?.personality,
@@ -290,6 +327,9 @@ describe("serializeExpression round-trip", () => {
     expect(expression.observation?.resembles).toEqual(
       fpWithProse.observation?.resembles,
     );
+    expect(expression.signature).toBe(fpWithProse.signature);
+    expect(expression.references).toEqual(fpWithProse.references);
+    expect(expression.checks).toEqual(fpWithProse.checks);
     expect(expression.decisions).toHaveLength(1);
     expect(expression.decisions?.[0].decision).toBe(
       fpWithProse.decisions?.[0].decision,
@@ -299,32 +339,25 @@ describe("serializeExpression round-trip", () => {
     );
   });
 
-  it("emits a frontmatter-only file when observation, decisions, and embedding are absent", () => {
-    const { embedding: _drop, ...noEmbedding } = SAMPLE_EXPRESSION;
-    const md = serializeExpression(noEmbedding as Expression);
+  it("emits a frontmatter-only file when observation and decisions are absent", () => {
+    const md = serializeExpression(SAMPLE_EXPRESSION);
     expect(md).toMatch(/^---\n/);
     expect(md).toMatch(/\n---\n$/);
     expect(md).not.toMatch(/^# Character/m);
     expect(md).not.toMatch(/^# Signature/m);
     expect(md).not.toMatch(/^# Fragments/m);
+    expect(md).not.toMatch(/^embedding:/m);
   });
 
-  it("appends a # Fragments body link when embedding is extracted", () => {
-    const md = serializeExpression(SAMPLE_EXPRESSION);
-    // Frontmatter no longer carries the embedding
-    const yaml = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
-    expect(yaml).not.toMatch(/^embedding:/m);
-    // Body points at the sibling file
-    expect(md).toMatch(/# Fragments[\s\S]*\[embedding\]\(embedding\.md\)/);
-  });
-
-  it("extractEmbedding: false keeps the embedding inline", () => {
-    const md = serializeExpression(SAMPLE_EXPRESSION, {
-      extractEmbedding: false,
+  it("never serializes runtime embeddings or fragment links", () => {
+    const md = serializeExpression({
+      ...SAMPLE_EXPRESSION,
+      observation: { summary: "Prose", personality: [], resembles: [] },
     });
-    const yaml = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
-    expect(yaml).toMatch(/^embedding:/m);
+
+    expect(md).not.toMatch(/^embedding:/m);
     expect(md).not.toMatch(/# Fragments/);
+    expect(md).not.toMatch(/embedding\.md/);
   });
 
   it("emits prose in body only — no duplication in frontmatter", () => {
@@ -333,7 +366,6 @@ describe("serializeExpression round-trip", () => {
       observation: {
         summary: "Warm and editorial.",
         personality: ["warm"],
-        distinctiveTraits: ["ring-shadows"],
         resembles: [],
       },
       decisions: [
@@ -348,7 +380,6 @@ describe("serializeExpression round-trip", () => {
     // Frontmatter has machine-facts only
     const yamlSection = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
     expect(yamlSection).not.toContain("summary:");
-    expect(yamlSection).not.toContain("distinctiveTraits:");
     expect(yamlSection).not.toContain("No cool grays");
     expect(yamlSection).toContain("personality:");
     // Schema 5: evidence lives in the body, not the frontmatter
@@ -358,66 +389,5 @@ describe("serializeExpression round-trip", () => {
     expect(md).toMatch(/^### Warm neutrals\nNo cool grays\./m);
     expect(md).toContain("**Evidence:**");
     expect(md).toContain("`#141413`");
-  });
-
-  it("round-trips roles (slot → token bindings) through serialize → parse", () => {
-    const fpWithRoles: Expression = {
-      ...SAMPLE_EXPRESSION,
-      roles: [
-        {
-          name: "h1",
-          tokens: {
-            typography: { family: "Anthropic Serif", size: 64, weight: 500 },
-            spacing: { margin: 32 },
-          },
-          evidence: ["components/Heading.tsx:12"],
-        },
-        {
-          name: "card",
-          tokens: {
-            surfaces: { borderRadius: 16, shadow: "subtle" },
-            spacing: { padding: 24 },
-            palette: { background: "#f5f4ed" },
-          },
-          evidence: ["components/ui/card.tsx"],
-        },
-      ],
-    };
-    const md = serializeExpression(fpWithRoles, { extractEmbedding: false });
-    const yamlSection = md.slice(md.indexOf("---") + 3, md.lastIndexOf("---"));
-    expect(yamlSection).toMatch(/^roles:/m);
-    expect(yamlSection).toContain("name: h1");
-    expect(yamlSection).toContain("name: card");
-
-    const { expression } = parseExpression(md);
-    expect(expression.roles).toHaveLength(2);
-    expect(expression.roles?.[0].name).toBe("h1");
-    expect(expression.roles?.[0].tokens.typography?.size).toBe(64);
-    expect(expression.roles?.[0].evidence).toEqual([
-      "components/Heading.tsx:12",
-    ]);
-    expect(expression.roles?.[1].tokens.surfaces?.borderRadius).toBe(16);
-    expect(expression.roles?.[1].tokens.surfaces?.shadow).toBe("subtle");
-    expect(expression.roles?.[1].tokens.palette?.background).toBe("#f5f4ed");
-  });
-
-  it("rejects unknown keys in role token sub-blocks (strict schema)", () => {
-    const fpBad = {
-      ...SAMPLE_EXPRESSION,
-      roles: [
-        {
-          name: "h1",
-          tokens: {
-            // @ts-expect-error — intentional bad input
-            typography: { family: "Serif", bogus: 42 },
-          },
-          evidence: [],
-        },
-      ],
-    } as Expression;
-    const md = serializeExpression(fpBad, { extractEmbedding: false });
-    expect(() => parseExpression(md)).toThrow(
-      /Invalid expression frontmatter[\s\S]*roles/,
-    );
   });
 });

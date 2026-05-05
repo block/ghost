@@ -16,8 +16,14 @@ const EXPRESSION: Expression = {
   observation: {
     summary: "Restrained, utilitarian — warm neutrals on black.",
     personality: ["restrained", "utilitarian"],
-    distinctiveTraits: ["true-black backgrounds", "tight type scale"],
     resembles: ["Vercel", "Linear"],
+  },
+  signature:
+    "Dense control surfaces with quiet chrome, sharp hierarchy, and a green accent used as a precise signal.",
+  references: {
+    specs: ["src/styles/tokens.css"],
+    components: ["src/components/ui"],
+    examples: ["docs/examples/dashboard.md"],
   },
   decisions: [
     {
@@ -63,10 +69,15 @@ afterEach(async () => {
 });
 
 describe("writeContextBundle", () => {
-  it("default: emits SKILL.md + expression.md + tokens.css", async () => {
+  it("default: emits SKILL.md + expression.md + prompt.md + tokens.css", async () => {
     const res = await writeContextBundle(EXPRESSION, { outDir: dir });
     const names = res.files.map((f) => f.split("/").pop());
-    expect(names).toEqual(["SKILL.md", "expression.md", "tokens.css"]);
+    expect(names).toEqual([
+      "SKILL.md",
+      "expression.md",
+      "prompt.md",
+      "tokens.css",
+    ]);
 
     const skill = await readFile(res.files[0], "utf-8");
     expect(skill).toContain("user-invocable: true");
@@ -74,13 +85,13 @@ describe("writeContextBundle", () => {
     expect(skill).toContain("tokens.css");
   });
 
-  it("--no-tokens: emits SKILL.md + expression.md only", async () => {
+  it("--no-tokens: emits SKILL.md + expression.md + prompt.md only", async () => {
     const res = await writeContextBundle(EXPRESSION, {
       outDir: dir,
       tokens: false,
     });
     const names = res.files.map((f) => f.split("/").pop());
-    expect(names).toEqual(["SKILL.md", "expression.md"]);
+    expect(names).toEqual(["SKILL.md", "expression.md", "prompt.md"]);
 
     const skill = await readFile(res.files[0], "utf-8");
     expect(skill).not.toContain("tokens.css");
@@ -95,9 +106,24 @@ describe("writeContextBundle", () => {
     expect(names).toEqual([
       "SKILL.md",
       "expression.md",
+      "prompt.md",
       "tokens.css",
       "README.md",
     ]);
+  });
+
+  it("default bundle does not include scan artifacts", async () => {
+    const res = await writeContextBundle(EXPRESSION, { outDir: dir });
+    const names = res.files.map((f) => f.split("/").pop());
+    expect(names).not.toContain("map.md");
+    expect(names).not.toContain("survey.json");
+
+    for (const file of res.files) {
+      const text = await readFile(file, "utf-8");
+      expect(text).not.toContain("map.md");
+      expect(text).not.toContain("survey.json");
+      expect(text).not.toContain("bucket.json");
+    }
   });
 
   it("--prompt-only: emits a single prompt.md", async () => {
@@ -109,7 +135,69 @@ describe("writeContextBundle", () => {
     const prompt = await readFile(res.files[0], "utf-8");
     expect(prompt).toContain("# Character");
     expect(prompt).toContain("# Signature");
+    expect(prompt).toContain("# Local References");
     expect(prompt).toContain("# Decisions");
+    expect(prompt).toContain("# Checks");
+  });
+
+  it("prompt.md names the lower-enforcement state when checks are absent", async () => {
+    const res = await writeContextBundle(EXPRESSION, {
+      outDir: dir,
+      promptOnly: true,
+    });
+    const prompt = await readFile(res.files[0], "utf-8");
+    expect(prompt).toContain("# Checks");
+    expect(prompt).toContain("No promoted `checks[]` are present");
+    expect(prompt).toContain("no promoted checks have been curated yet");
+    expect(prompt).not.toContain("use checks as gates");
+  });
+
+  it("prompt.md renders a generation lens with severity-sorted checks", async () => {
+    const res = await writeContextBundle(
+      {
+        ...EXPRESSION,
+        checks: [
+          {
+            id: "spacing-on-scale",
+            canonical: "spatial-system",
+            kind: "spacing",
+            summary: "Spacing must stay on the 8px rhythm",
+            pattern: "p-\\[\\d+px\\]",
+            paths: ["src"],
+            contexts: ["className"],
+            observed_count: 18,
+            support: 0.94,
+          },
+          {
+            id: "no-off-palette-hex",
+            canonical: "color-strategy",
+            kind: "color",
+            summary: "Hex literals must come from the palette",
+            pattern: "#[0-9a-fA-F]{3,8}",
+            paths: ["src"],
+            contexts: ["className", "css_var"],
+            observed_count: 33,
+            support: 0.97,
+          },
+        ],
+      },
+      {
+        outDir: dir,
+        promptOnly: true,
+      },
+    );
+    const prompt = await readFile(res.files[0], "utf-8");
+
+    expect(prompt).toContain("# Checks");
+    expect(prompt.indexOf("no-off-palette-hex")).toBeLessThan(
+      prompt.indexOf("spacing-on-scale"),
+    );
+    expect(prompt).toContain("**CRITICAL** `no-off-palette-hex`");
+    expect(prompt).toContain("Pure black backgrounds");
+    expect(prompt).toContain("src/styles/tokens.css");
+    expect(prompt).toContain("**Dominant colors**");
+    expect(prompt).toContain("**Neutral ramp:** #000, #111, #222, #f5f5f0");
+    expect(prompt).not.toContain("Cite the Decision");
   });
 
   it("honors --name override in SKILL frontmatter", async () => {

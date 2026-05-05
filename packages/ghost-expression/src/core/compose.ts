@@ -30,14 +30,6 @@ export function mergeExpression(
     );
   }
 
-  if (base.roles || overlay.roles) {
-    merged.roles = mergeByKey(
-      base.roles ?? [],
-      overlay.roles ?? [],
-      (r) => r.name,
-    );
-  }
-
   if (base.palette || overlay.palette) {
     const basePalette = base.palette;
     const overlayPalette = overlay.palette;
