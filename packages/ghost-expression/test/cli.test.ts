@@ -48,6 +48,16 @@ function expressionWithId(id: string): string {
   return BASE_EXPRESSION.replace("id: local", `id: ${id}`);
 }
 
+function profileExpressionWithPalette(hex: string): string {
+  return BASE_EXPRESSION.replace(
+    '- { role: primary, value: "#111111" }',
+    `- { role: primary, value: "${hex}" }`,
+  ).replace(
+    'neutrals: { steps: ["#ffffff", "#111111"], count: 2 }',
+    `neutrals: { steps: ["${hex}"], count: 1 }`,
+  );
+}
+
 async function runCli(argv: string[], cwd: string) {
   const cli = buildCli();
   const previousCwd = process.cwd();
@@ -195,6 +205,56 @@ function makeSurvey(source: SurveySource, hex = "#f97316"): Survey {
         occurrences: 1,
         files_count: 1,
       },
+      ...[4, 8, 16].map((value) => ({
+        id: valueRowId(source, "spacing", `${value}px`, `p-${value}`),
+        source,
+        kind: "spacing",
+        value: `${value}px`,
+        raw: `p-${value}`,
+        spec: { scalar: value, unit: "px" },
+        occurrences: 6,
+        files_count: 2,
+      })),
+      ...[12, 16, 24].map((value) => ({
+        id: valueRowId(source, "typography", `${value}px`, `text-${value}`),
+        source,
+        kind: "typography",
+        value: `${value}px`,
+        raw: `text-${value}`,
+        spec: { size: { scalar: value, unit: "px" } },
+        occurrences: 6,
+        files_count: 2,
+      })),
+      {
+        id: valueRowId(source, "typography", "Inter", "font-inter"),
+        source,
+        kind: "typography",
+        value: "Inter",
+        raw: "font-inter",
+        spec: { family: "Inter" },
+        occurrences: 6,
+        files_count: 2,
+      },
+      {
+        id: valueRowId(source, "typography", "400", "font-normal"),
+        source,
+        kind: "typography",
+        value: "400",
+        raw: "font-normal",
+        spec: { weight: 400 },
+        occurrences: 6,
+        files_count: 2,
+      },
+      ...[4, 8].map((value) => ({
+        id: valueRowId(source, "radius", `${value}px`, `rounded-${value}`),
+        source,
+        kind: "radius",
+        value: `${value}px`,
+        raw: `rounded-${value}`,
+        spec: { scalar: value, unit: "px" },
+        occurrences: 6,
+        files_count: 2,
+      })),
     ],
     tokens: [
       {
@@ -323,6 +383,69 @@ describe("ghost-expression lint dispatches by file kind", () => {
   });
 });
 
+describe("ghost-expression verify-profile", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(
+      tmpdir(),
+      `ghost-expression-verify-profile-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("writes JSON output for a survey-backed expression", async () => {
+    await writeFile(
+      join(dir, "expression.md"),
+      profileExpressionWithPalette("#f97316"),
+    );
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
+    );
+
+    const result = await runCli(
+      ["verify-profile", "expression.md", "survey.json", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.errors).toBe(0);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          severity: "info",
+          rule: "expression/checks-missing",
+        }),
+      ]),
+    );
+  });
+
+  it("exits non-zero when palette values are absent from the survey", async () => {
+    await writeFile(
+      join(dir, "expression.md"),
+      profileExpressionWithPalette("#1c1c1c"),
+    );
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
+    );
+
+    const result = await runCli(
+      ["verify-profile", "expression.md", "survey.json"],
+      dir,
+    );
+
+    expect(result.code).toBe(1);
+    expect(result.stdout).toContain("palette-color-not-in-survey");
+  });
+});
+
 describe("ghost-expression survey merge", () => {
   let dir: string;
 
@@ -353,7 +476,7 @@ describe("ghost-expression survey merge", () => {
     );
     expect(merged.schema).toBe("ghost.survey/v2");
     expect(merged.sources).toHaveLength(2);
-    expect(merged.values).toHaveLength(2);
+    expect(merged.values).toHaveLength(22);
     expect(merged.tokens).toHaveLength(2);
     expect(merged.ui_surfaces).toHaveLength(2);
   });
@@ -372,7 +495,7 @@ describe("ghost-expression survey merge", () => {
       await readFile(join(dir, "merged.json"), "utf-8"),
     );
     expect(merged.sources).toHaveLength(1);
-    expect(merged.values).toHaveLength(1);
+    expect(merged.values).toHaveLength(11);
     expect(merged.tokens).toHaveLength(1);
   });
 
@@ -384,7 +507,7 @@ describe("ghost-expression survey merge", () => {
     expect(result.code).toBe(0);
     const merged = JSON.parse(result.stdout);
     expect(merged.schema).toBe("ghost.survey/v2");
-    expect(merged.values).toHaveLength(1);
+    expect(merged.values).toHaveLength(11);
   });
 
   it("fails when an input survey has lint errors", async () => {
@@ -518,7 +641,7 @@ describe("ghost-expression survey summarize", () => {
     expect(result.code).toBe(0);
     const summary = JSON.parse(result.stdout);
     expect(summary.schema).toBe("ghost.survey.summary/v1");
-    expect(summary.counts.values).toBe(1);
+    expect(summary.counts.values).toBe(11);
     expect(summary.values.kinds[0].top[0].id).toBe(
       valueRowId(SOURCE_A, "color", "#f97316", "#f97316"),
     );
@@ -604,5 +727,116 @@ describe("ghost-expression survey summarize", () => {
 
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("--budget");
+  });
+});
+
+describe("ghost-expression survey catalog", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(
+      tmpdir(),
+      `ghost-expression-catalog-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("writes Markdown to stdout by default", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(["survey", "catalog", "survey.json"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Survey Value Catalog");
+    expect(result.stdout).toContain("## color");
+    expect(result.stdout).toContain("## spacing");
+    expect(result.stdout).toContain("`#f97316`");
+  });
+
+  it("writes JSON when requested and aggregates duplicate values", async () => {
+    const survey = makeSurvey(SOURCE_A);
+    survey.values.push({
+      id: valueRowId(SOURCE_A, "color", "#f97316", "text-brand"),
+      source: SOURCE_A,
+      kind: "color",
+      value: "#f97316",
+      raw: "text-brand",
+      occurrences: 7,
+      files_count: 3,
+      usage: { className: 7 },
+    });
+    await writeFile(join(dir, "survey.json"), JSON.stringify(survey));
+
+    const result = await runCli(
+      ["survey", "catalog", "survey.json", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const catalog = JSON.parse(result.stdout);
+    expect(catalog.schema).toBe("ghost.survey.catalog/v1");
+    const color = catalog.kinds.find(
+      (kind: { kind: string }) => kind.kind === "color",
+    );
+    expect(color.values[0]).toMatchObject({
+      value: "#f97316",
+      rows: 2,
+      occurrences: 8,
+      files_count: 4,
+    });
+    expect(color.values[0].raws).toEqual(["#f97316", "text-brand"]);
+  });
+
+  it("filters by kind", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "catalog", "survey.json", "--kind", "spacing"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Filter: kind `spacing`");
+    expect(result.stdout).toContain("## spacing");
+    expect(result.stdout).not.toContain("## color");
+  });
+
+  it("writes to --out", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "catalog", "survey.json", "--out", "catalog.md"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("");
+    const catalog = await readFile(join(dir, "catalog.md"), "utf-8");
+    expect(catalog).toContain("# Survey Value Catalog");
+  });
+
+  it("fails when the input survey has lint errors", async () => {
+    await writeFile(
+      join(dir, "bad.json"),
+      JSON.stringify({ schema: "ghost.survey/v0" }),
+    );
+
+    const result = await runCli(["survey", "catalog", "bad.json"], dir);
+
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("failed survey lint");
   });
 });

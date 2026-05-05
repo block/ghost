@@ -150,7 +150,7 @@ function MapExcerpt() {
           </span>
           <span className="text-muted-foreground">{"    - "}</span>
           <span className="text-foreground">
-            packages/ghost-ui/expression.md{"\n"}
+            design-language/expression.md{"\n"}
           </span>
           <span className="text-foreground">surface_sources</span>
           <span className="text-muted-foreground">:{"\n"}</span>
@@ -183,7 +183,7 @@ function ExpressionExcerpt() {
     <div className="reveal rounded-[var(--radius-card-sm)] border border-border-card bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border-card bg-muted/30">
         <code className="text-xs font-mono text-muted-foreground">
-          packages/ghost-ui/expression.md
+          design-language/expression.md
         </code>
         <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-widest">
           excerpt

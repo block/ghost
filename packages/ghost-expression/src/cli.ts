@@ -3,6 +3,8 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  catalogSurveyValues,
+  formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
   lintSurvey,
   mergeSurveys,
@@ -18,12 +20,14 @@ import {
   EXPRESSION_FILENAME,
   formatLayout,
   formatSemanticDiff,
+  formatVerifyProfileReport,
   inventory,
   layoutExpression,
   lintExpression,
   lintMap,
   loadExpression,
   scanStatus,
+  verifyProfile,
 } from "./core/index.js";
 import { registerEmitCommand } from "./emit-command.js";
 
@@ -31,11 +35,12 @@ import { registerEmitCommand } from "./emit-command.js";
  * Build the cac CLI for `ghost-expression`.
  *
  * Verbs author and validate `expression.md` and `survey.json`:
- * `lint` (schema check, auto-detects file kind), `describe` (section ranges
- * + token estimates for expressions), `diff` (structural prose-level diff
- * between two expressions), `emit` (derive review-command, context-bundle,
- * or skill artifacts), and `survey` operations for deterministic
- * `ghost.survey/v2` merge, ID repair, and bounded summary output.
+ * `lint` (schema check, auto-detects file kind), `verify-profile`
+ * (expression-to-survey fidelity check), `describe` (section ranges + token
+ * estimates for expressions), `diff` (structural prose-level diff between two
+ * expressions), `emit` (derive review-command, context-bundle, or skill
+ * artifacts), and `survey` operations for deterministic `ghost.survey/v2`
+ * merge, ID repair, bounded summary output, and derived value catalogs.
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -82,6 +87,62 @@ export function buildCli(): ReturnType<typeof cac> {
           process.stdout.write(
             `\n${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info\n`,
           );
+        }
+
+        process.exit(report.errors > 0 ? 1 : 0);
+      } catch (err) {
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(2);
+      }
+    });
+
+  // --- verify-profile ---
+  cli
+    .command(
+      "verify-profile <expression> <survey>",
+      "Verify expression.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+    )
+    .option(
+      "--root <dir>",
+      "Optional target root for counting promoted check pattern matches under checks[].paths",
+    )
+    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .action(async (expressionPath: string, surveyPath: string, opts) => {
+      try {
+        if (opts.format !== "cli" && opts.format !== "json") {
+          console.error("Error: --format must be 'cli' or 'json'");
+          process.exit(2);
+          return;
+        }
+
+        const expressionTarget = resolve(process.cwd(), expressionPath);
+        const surveyTarget = resolve(process.cwd(), surveyPath);
+        const [expressionRaw, surveyRaw] = await Promise.all([
+          readFile(expressionTarget, "utf-8"),
+          readFile(surveyTarget, "utf-8"),
+        ]);
+
+        let survey: unknown;
+        try {
+          survey = JSON.parse(surveyRaw);
+        } catch (err) {
+          console.error(
+            `Error: ${surveyTarget} is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          process.exit(2);
+          return;
+        }
+
+        const report = verifyProfile(expressionRaw, survey, {
+          root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
+        });
+
+        if (opts.format === "json") {
+          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+        } else {
+          process.stdout.write(formatVerifyProfileReport(report));
         }
 
         process.exit(report.errors > 0 ? 1 : 0);
@@ -221,7 +282,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest; Markdown by default, JSON with --format json).",
+      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
     )
     .option(
       "-o, --out <path>",
@@ -229,8 +290,12 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--format <fmt>",
-      "survey summarize output format: markdown or json",
+      "survey summarize/catalog output format: markdown or json",
       { default: "markdown" },
+    )
+    .option(
+      "--kind <kind>",
+      "survey catalog filter: include only this value kind",
     )
     .option(
       "--budget <name>",
@@ -241,9 +306,14 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .action(async (op: string, surveys: string[], opts) => {
       try {
-        if (op !== "merge" && op !== "fix-ids" && op !== "summarize") {
+        if (
+          op !== "merge" &&
+          op !== "fix-ids" &&
+          op !== "summarize" &&
+          op !== "catalog"
+        ) {
           console.error(
-            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize`,
+            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize, catalog`,
           );
           process.exit(2);
           return;
@@ -263,14 +333,21 @@ export function buildCli(): ReturnType<typeof cac> {
           process.exit(2);
           return;
         }
-        if (op === "summarize") {
+        if (op === "catalog" && surveys.length !== 1) {
+          console.error("Error: survey catalog takes exactly one input file");
+          process.exit(2);
+          return;
+        }
+        if (op === "summarize" || op === "catalog") {
           if (opts.format !== "markdown" && opts.format !== "json") {
             console.error(
-              "Error: survey summarize --format must be 'markdown' or 'json'",
+              `Error: survey ${op} --format must be 'markdown' or 'json'`,
             );
             process.exit(2);
             return;
           }
+        }
+        if (op === "summarize") {
           if (!isSurveySummaryBudget(opts.budget)) {
             console.error(
               "Error: survey summarize --budget must be 'compact', 'standard', or 'full'",
@@ -278,6 +355,11 @@ export function buildCli(): ReturnType<typeof cac> {
             process.exit(2);
             return;
           }
+        }
+        if (opts.kind && op !== "catalog") {
+          console.error("Error: --kind is only supported for survey catalog");
+          process.exit(2);
+          return;
         }
 
         const parsed: Survey[] = [];
@@ -294,11 +376,11 @@ export function buildCli(): ReturnType<typeof cac> {
             process.exit(2);
             return;
           }
-          if (op === "merge" || op === "summarize") {
+          if (op === "merge" || op === "summarize" || op === "catalog") {
             const report = lintSurvey(json);
             if (report.errors > 0) {
               console.error(
-                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before ${op === "merge" ? "merging" : "summarizing"}`,
+                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before ${surveyVerbName(op)}`,
               );
               for (const issue of report.issues) {
                 if (issue.severity !== "error") continue;
@@ -323,6 +405,14 @@ export function buildCli(): ReturnType<typeof cac> {
             opts.format === "json"
               ? `${JSON.stringify(summary, null, 2)}\n`
               : formatSurveySummaryMarkdown(summary);
+        } else if (op === "catalog") {
+          const catalog = catalogSurveyValues(parsed[0], {
+            kind: typeof opts.kind === "string" ? opts.kind : undefined,
+          });
+          out =
+            opts.format === "json"
+              ? `${JSON.stringify(catalog, null, 2)}\n`
+              : formatSurveyCatalogMarkdown(catalog);
         } else {
           const result =
             op === "merge"
@@ -401,6 +491,13 @@ function lintSurveyFile(raw: string): SurveyLintReport {
 
 function isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
   return value === "compact" || value === "standard" || value === "full";
+}
+
+function surveyVerbName(op: string): string {
+  if (op === "merge") return "merging";
+  if (op === "summarize") return "summarizing";
+  if (op === "catalog") return "cataloging";
+  return op;
 }
 
 function readPackageVersion(): string {

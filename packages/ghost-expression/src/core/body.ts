@@ -110,7 +110,7 @@ export function parseBody(md: string): BodyData {
       const blocks = sectionsAt(sec.body, 3);
       if (blocks.length) out.decisions = blocks.map(parseDecision);
     }
-    // Other H1 sections (`# Fragments`, etc.) are ignored.
+    // Other H1 sections are ignored.
   }
   return out;
 }

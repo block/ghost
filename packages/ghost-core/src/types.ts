@@ -234,11 +234,16 @@ export interface Check {
   /** Regex (or fixed string) the reviewer greps for. */
   pattern: string;
   /**
-   * Where the check is enforced. Drives which file types / contexts the
-   * reviewer scans. Open vocabulary; common values: `className`,
-   * `css_var`, `inline_style`, `import`. Empty array = enforce everywhere.
+   * Repo-relative filesystem scopes used by `verify-profile` when checking
+   * calibrated `observed_count` values.
    */
-  enforce_at?: string[];
+  paths?: string[];
+  /**
+   * Reviewer/generator guidance for where the pattern usually appears.
+   * Open vocabulary; common values: `className`, `css_var`,
+   * `inline_style`, `import`.
+   */
+  contexts?: string[];
   /**
    * Optional explicit severity override. When absent, the emitter computes
    * severity from `canonical` (perceptual tier), `observed_count`, and
@@ -271,8 +276,6 @@ export interface Check {
    * codebase. Consumed at lint time as a soft warning.
    */
   support?: number;
-  /** Free-form rationale shown above the check's table in the emitted reviewer. */
-  rationale?: string;
 }
 
 export interface ExpressionReferences {
@@ -318,6 +321,8 @@ export interface DesignDecision {
    * Semantic embedding of `${dimension}: ${decision}`.
    * Computed at profile time when an embedding provider is configured,
    * and used by compareDecisions for paraphrase-robust matching.
+   *
+   * Runtime-only. `expression.md` no longer stores decision embeddings.
    */
   embedding?: number[];
 }

@@ -207,7 +207,3 @@ The same token graph generates equivalent artifacts for three platforms — Sten
 - `iOS button surface: \`extension MarketDesignTokens { public final class Button { public var smallSizeMinimumHeight: CGFloat ... } }\` (\`common/design-tokens/dist/swift/components/MarketDesignTokens+Button.swift:14\`)`
 - `Android Compose: \`MarketStyleDictionaryColors\`, \`MarketStyleDictionaryDimensions\`, \`MarketStyleDictionaryAnimations\`, \`MarketStyleDictionaryTypographies\` (\`common/design-tokens/dist/kotlin/\`)`
 - `Web Stencil components consume CSS vars: \`background-color: var(--button-normal-variant-primary-rank-normal-state-background-color)\` (\`web/web-components/src/components/market-button/styles/market-button-primary.css:2\`)`
-
-# Fragments
-
-- [embedding](embedding.md) — 49-dim vector for compare/composite/viz

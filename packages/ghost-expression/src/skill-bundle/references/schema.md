@@ -2,152 +2,119 @@
 
 Canonical filename: `expression.md`.
 
-Companion file: `embedding.md` (sibling fragment containing the 49-dim vector). The CLI writes it automatically when you write an `expression.md` via `ghost-drift`; you can also compute and append it yourself.
+`expression.md` is the authored design-language contract. It may point at local `references`, but sibling files are not auto-loaded as authored truth: no `embedding.md`, no `# Fragments`, and no implicit `decisions/` directory.
 
 ## Frontmatter (machine layer)
 
 ```yaml
 ---
-# identity
-id: my-project                  # required, slug-like
-# (no schema version field — the format is unversioned for now)
+id: my-project
 source: llm                     # registry | extraction | llm | unknown
-timestamp: 2026-04-20T00:00:00Z # ISO-8601
-sources:                        # optional — targets that were combined
-  - github:owner/repo
-  - ./local/path
+timestamp: 2026-04-20T00:00:00Z
+sources: [github:owner/repo]
 references:
-  specs: [src/styles/tokens.css, src/theme/index.ts]
+  specs: [src/styles/tokens.css]
   components: [src/components/ui]
   examples: [docs/examples/dashboard.md]
 
-# narrative tags (prose lives in the body)
 observation:
-  personality: [restrained, editorial]   # 3-6 adjectives
-  resembles: [linear, notion]       # 1-3 known references this resembles
+  personality: [restrained, editorial]
+  resembles: [linear, notion]
 
-# decision index — frontmatter carries the dimension slug only.
-# These entries are not empty decisions: rationale prose AND `**Evidence:**`
-# bullets live in the body under the matching `### <dimension>` block.
-# The schema is `.strict()` and rejects `decision:` / `evidence:` here.
 decisions:
-  - dimension: color-strategy            # freeform slug
+  - dimension: color-strategy
   - dimension: spatial-system
-  - dimension: composition-patterns      # optional: response/output shapes
+  - dimension: composition-patterns
 
-# promoted review checks — optional. Candidate checks stay outside the file
-# until a human curator promotes them.
 checks:
   - id: no-off-palette-hex
     canonical: color-strategy
     kind: color
     summary: Hex literals must come from the documented palette
     pattern: '#[0-9a-fA-F]{3,8}'
-    enforce_at: [className, css_var, inline_style]
-    observed_count: 31                  # count the guarded pattern
-    support: 0.94                       # conformers / observed cases
+    paths: [src]
+    contexts: [className, css_var, inline_style]
+    observed_count: 31
+    support: 0.94
 
-# concrete tokens
 palette:
   dominant:
     - { role: primary, value: "#0066cc" }
   neutrals:
-    steps: ["#ffffff", "#f5f5f5", "#999999", "#0a0a0a"]
-    count: 4
+    steps: ["#ffffff", "#f5f5f5", "#0a0a0a"]
+    count: 3
   semantic:
     - { role: danger, value: "#dc2626" }
-  saturationProfile: muted          # muted | vibrant | mixed
-  contrast: high                    # high | moderate | low
+  saturationProfile: muted
+  contrast: high
 
 spacing:
-  scale: [4, 8, 12, 16, 24, 32]     # px
-  regularity: 0.9                   # 0-1
-  baseUnit: 4                       # px | null
+  scale: [4, 8, 12, 16, 24, 32]
+  regularity: 0.9
+  baseUnit: 4
 
 typography:
   families: ["Inter", "Geist Mono"]
-  sizeRamp: [12, 14, 16, 20, 24, 32]  # px
+  sizeRamp: [12, 14, 16, 20, 24, 32]
   weightDistribution: { "400": 5, "700": 3 }
-  lineHeightPattern: normal          # tight | normal | loose
+  lineHeightPattern: normal
 
 surfaces:
-  borderRadii: [4, 8, 12]           # px
-  shadowComplexity: subtle          # deliberate-none | subtle | layered
-  borderUsage: moderate             # minimal | moderate | heavy
+  borderRadii: [4, 8, 12]
+  shadowComplexity: subtle
+  borderUsage: moderate
 
-# extension bag (optional, opaque to comparisons)
 metadata:
   tone: editorial
 ---
 ```
+
+Required: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
+
+Optional: `sources`, `references`, `observation.personality`, `observation.resembles`, `decisions[]`, `checks[]`, `metadata`, and meta fields such as `name`, `slug`, `generator`, `confidence`, `generated`, `extends`.
+
+Forbidden in frontmatter: root `embedding`, `decisions[].embedding`, `observation.summary`, `decisions[].decision`, `decisions[].evidence`, `checks[].enforce_at`, `checks[].rationale`, and unknown root keys such as `schema`.
 
 ## Body (prose layer)
 
 ```markdown
 # Character
 
-2-4 sentences capturing the holistic personality of this design language. This is `observation.summary`. Describe the language directly; do not introduce the repo/project name as the subject unless the name is itself a visible brand/design fact.
+2-4 sentences capturing the holistic personality of this design language.
 
 # Signature
 
-2-4 sentences capturing the dominant moves, repeated layout posture, and recognizable final picture. This is `expression.signature`; it is not a token dump.
+2-4 sentences capturing the dominant moves, repeated layout posture, and recognizable final picture.
 
 # Decisions
 
 ### color-strategy
 
-Prose rationale for the color-strategy decision. This is `decisions[i].decision` — the implementation-agnostic statement of the pattern. One `### <dimension>` block per entry in `decisions`, matched by dimension slug.
+Prose rationale for the color-strategy decision.
 
 **Evidence:**
 - `--color-primary: #0066cc` resolves the primary action color
 - Survey color evidence: 31 of 33 color observations fall on the documented palette
-
-### spatial-system
-
-Prose rationale for the spatial-system decision.
-
-**Evidence:**
-- `--space-4: 16px`
-- Survey spacing evidence: padding, gap, and margin observations cluster on 4px increments
-
-### composition-patterns
-
-Prose rationale for how generated outputs should choose article, tracker, comparison, card, or control-surface shapes. Use this when the project has examples or docs that prove composition is part of the design language.
-
-**Evidence:**
-- `registry examples distinguish atom demos from shape demos`
-
-# Fragments
-
-- [embedding](embedding.md)
 ```
 
-## The partition (the one rule)
+The parser matches `### dimension` blocks to `decisions[].dimension` by slug. Evidence bullets live in the body. Putting rationale or evidence into YAML is a schema error.
 
-Every field lives in exactly one layer:
+## Checks
 
-| Field | Layer |
-|---|---|
-| `id`, `source`, `timestamp`, `sources` | Frontmatter |
-| `references.specs/components/examples` | Frontmatter (local provenance / optional source material) |
-| `observation.personality`, `observation.resembles` | Frontmatter |
-| `observation.summary` | **Body** (`# Character`) |
-| `signature` | **Body** (`# Signature`) |
-| `decisions[].dimension` | Frontmatter |
-| `decisions[].decision` (prose) | **Body** (`### <dimension>` block) |
-| `decisions[].evidence` | **Body** (`**Evidence:**` bullets under `### <dimension>`) |
-| `checks[]` | Frontmatter |
-| `palette`, `spacing`, `typography`, `surfaces` | Frontmatter |
-| `embedding` | Sibling `embedding.md` |
+`checks[]` are human-promoted PR review gates, not candidate scratch space.
 
-Putting prose into frontmatter is a schema error. The writer and reader both enforce this. When in doubt: structured data → frontmatter; narrative → body.
-
-Evidence bullets are provenance, not portable instructions. Prefer survey-grounded patterns, token names, values, counts, and generic surface roles. A local path can appear as supporting provenance, but the claim should still make sense to a downstream project that cannot open the original file.
+- `paths` are repo-relative filesystem scopes used by `verify-profile` for deterministic count calibration.
+- `contexts` are reviewer/generator hints such as `className`, `css_var`, `inline_style`, or `import`.
+- `summary` is the short reviewer label.
+- The rationale belongs in the matching Decision body.
 
 ## Validation
 
-    ghost-expression lint expression.md
+```bash
+ghost-expression lint expression.md
+ghost-expression verify-profile expression.md survey.json --root .
+```
 
-This catches schema violations, missing required fields, prose-in-frontmatter, orphaned decision blocks (body `### dim` with no matching frontmatter entry, or vice versa), and uncited palette entries (info-level — palette colors not cited in any decision evidence/prose).
+`lint` validates shape and partition. `verify-profile` validates survey fidelity: palette, spacing, typography, radii, and shadow posture must be backed by `survey.json`, and promoted checks must carry calibrated `paths`, `observed_count`, and `support`.
 
-Canonical decision dimensions include `composition-patterns` for task-shaped output structure: article for plans/timelines/worksheets, tracker for metrics/progress/reviews, comparison for tradeoffs/options, and card for compact focused recommendations or repeated peer items. Card is one shape, not the default form of every generated answer.
+Use `ghost-expression survey summarize survey.json` for broad profiling context and `ghost-expression survey catalog survey.json --kind <kind>` for compact value enums/specs. Raw `survey.json` is for targeted row lookup.

@@ -18,7 +18,7 @@ Ghost is split into one responsibility per tool. A scan produces three artifacts
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| **`ghost-expression`** | the three-stage scan pipeline (`map.md`, `survey.json`, `expression.md`) | `inventory`, `lint`, `describe`, `diff`, `survey <op>`, `emit` |
+| **`ghost-expression`** | the three-stage scan pipeline (`map.md`, `survey.json`, `expression.md`) | `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
 | **`ghost-drift`** | `.ghost/history.jsonl` + `.ghost-sync.json` — drift detection and stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | **`ghost-fleet`** | `fleet.md` — read-only elevation across many `(map.md, expression.md)` members | `members`, `view`, `emit skill` |
 | **`ghost-ui`** | A reference design system Ghost dogfoods — 97 shadcn components + an MCP server | (no verbs) |
@@ -44,7 +44,7 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 | Path | Role | Published? |
 | ---- | ---- | --- |
 | [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v2` + `ghost.survey/v2` schemas. | ❌ private (`@ghost/core`) |
-| [`packages/ghost-expression`](./packages/ghost-expression) | The three-stage scan pipeline: `map.md` → `survey.json` → `expression.md`. Authoring, lint, describe, diff, survey ops, emit. | ✅ intended-public on npm |
+| [`packages/ghost-expression`](./packages/ghost-expression) | The three-stage scan pipeline: `map.md` → `survey.json` → `expression.md`. Authoring, lint, profile verification, describe, diff, survey ops, emit. | ✅ intended-public on npm |
 | [`packages/ghost-drift`](./packages/ghost-drift) | Drift detection + governance verbs. | ✅ `ghost-drift` on npm |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet elevation across many members. | ❌ private |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
@@ -118,6 +118,7 @@ ghost-expression lint survey.json
 
 ```bash
 ghost-expression lint                                   # defaults to ./expression.md
+ghost-expression verify-profile expression.md survey.json --root .
 ghost-expression lint path/to/expression.md --format json
 ```
 
@@ -174,10 +175,11 @@ Verbs are scoped to the tool that owns the artifact. Pure inputs → pure output
 | Tool | Command | Description |
 | --- | --- | --- |
 | `ghost-expression` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-expression` | `lint` | Validate `expression.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
+| `ghost-expression` | `lint` | Validate artifact shape for `expression.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
+| `ghost-expression` | `verify-profile` | Validate expression-to-survey fidelity after profiling; palette, spacing, typography, radii, and shadow posture must be survey-backed, and promoted checks must be calibrated. |
 | `ghost-expression` | `describe` | Print section ranges + token estimates so agents can selectively load. |
 | `ghost-expression` | `diff` | Structural prose-level diff between two expressions (NOT vector distance — for that, use `ghost-drift compare`). |
-| `ghost-expression` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge` (concat with id-based dedup, idempotent), `fix-ids` (recompute ids from content). |
+| `ghost-expression` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge`, `fix-ids`, `summarize`, `catalog`. |
 | `ghost-expression` | `emit` | Derive an artifact from `expression.md`: `review-command`, `context-bundle`, or `skill`. |
 | `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over expression embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
 | `ghost-drift` | `ack` | Record stance toward the tracked expression in `.ghost-sync.json`. |
@@ -222,12 +224,12 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 What the agent reads when it authors, reviews, or remediates. The canonical artifact is **`expression.md`** (owned by `ghost-expression`): a Markdown document with YAML frontmatter (machine layer) plus a prose body. Human-readable, LLM-consumable, diff-friendly:
 
-- **Frontmatter**: direct `references`, 49-dimensional embedding, palette, spacing, typography, surfaces, provenance. The machine layer. Also `checks[]` — human-promoted, grep-friendly review gates with `observed_count` + `presence_floor` for codifying absences.
+- **Frontmatter**: direct `references`, palette, spacing, typography, surfaces, provenance, and `checks[]` — human-promoted, grep-friendly review gates with `paths`, `contexts`, `observed_count`, and `presence_floor` for codifying absences. The machine layer.
 - **`# Character`**: the opening atmosphere read, evocative not technical. What an agent quotes to stay on-brand.
 - **`# Signature`**: the final-picture guidance — dominant moves, layout posture, and recognizable output habits.
-- **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Each decision is embedded so `ghost-drift compare --semantic` can match semantically.
+- **`# Decisions`**: abstract, implementation-agnostic choices with evidence. Runtime comparison computes embeddings from the authored file so `ghost-drift compare --semantic` can match semantically without an authored embedding fragment.
 
-Generate one with the `profile` recipe (in the `ghost-expression` skill bundle). See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown.
+Generate one with the `profile` recipe (in the `ghost-expression` skill bundle). See [`docs/expression-format.md`](./docs/expression-format.md) for the full spec.
 
 ### The map
 
@@ -258,7 +260,6 @@ Drift at scale: the fleet view. Two routes, depending on what you have:
 
 | Resource                             | Description                 |
 | ------------------------------------ | --------------------------- |
-| [INVARIANTS.md](./INVARIANTS.md)     | Hard constraints — read before non-trivial changes |
 | [CODEOWNERS](./CODEOWNERS)           | Project lead(s)             |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | How to contribute           |
 | [GOVERNANCE.md](./GOVERNANCE.md)     | Project governance          |

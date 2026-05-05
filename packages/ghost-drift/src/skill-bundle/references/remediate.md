@@ -81,7 +81,7 @@ After the user applies (or rejects) the patches:
 
 - Re-run `ghost-drift compare` — distance should drop. If it doesn't, the patches missed.
 - If the user accepts the drift instead of fixing it, run `ghost-drift ack` (overall) or `ghost-drift diverge <dimension>` (one axis).
-- Never silently re-profile the expression to "absorb" the drift. That hides the act (Invariant 5).
+- Never silently re-profile the expression to "absorb" the drift. That hides the act.
 
 ## Why this is a recipe, not a verb
 

@@ -148,7 +148,6 @@ surfaces:
   borderRadii: [8]
   shadowComplexity: subtle
   borderUsage: moderate
-embedding: [0.1]
 decisions:
   - dimension: warm
 ---

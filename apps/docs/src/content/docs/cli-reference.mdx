@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Seventeen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
+description: Eighteen verbs across three tools. Everything interpretive lives in the skill bundles your host agent runs.
 kicker: Docs
 section: guide
 order: 20
@@ -17,7 +17,7 @@ all owned by `ghost-expression`. Most commands accept a path; they default to
 
 Verbs are scoped to the tool that owns the artifact:
 
-- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `describe`, `diff`, `survey <op>`, `emit`
+- **`ghost-expression`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
 - **`ghost-drift`** — drift detection + governance: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **`ghost-fleet`** — elevation across many members: `members`, `view`, `emit skill`
 
@@ -35,8 +35,8 @@ this reference — so these docs can't drift from the binaries.
 
 `ghost-expression` owns the three-stage scan pipeline: `map.md` →
 `survey.json` → `expression.md`. Verbs cover
-inventory + lint + describe + diff + survey ops + emit. Drift detection
-lives separately in `ghost-drift`.
+inventory + lint + profile verification + describe + diff + survey ops +
+emit. Drift detection lives separately in `ghost-drift`.
 
 ### Topology — `inventory`
 
@@ -80,7 +80,7 @@ recommended next stage (or "scan complete" when every artifact is present).
 
 ### Survey ops — `survey <op>`
 
-Operate on `ghost.survey/v2` files. Two ops today:
+Operate on `ghost.survey/v2` files:
 
 - **`merge`** — concat with id-based dedup, deterministic and idempotent.
   The composition primitive: modular rollups (one repo, N feature modules)
@@ -89,6 +89,11 @@ Operate on `ghost.survey/v2` files. Two ops today:
 - **`fix-ids`** — recompute every row's `id` from its content. The survey
   recipe instructs the agent to author rows with `"id": ""` and finalize
   with this verb in one pass — agents don't compute SHA-256 hashes by hand.
+- **`summarize`** — emit a bounded Markdown or JSON digest for broad
+  profiling context.
+- **`catalog`** — emit a deterministic compact value enum/spec view derived
+  from survey rows. Markdown is the default; JSON uses
+  `ghost.survey.catalog/v1`. Use `--kind <kind>` to focus one value family.
 
 <CliHelp tool="ghost-expression" command="survey" hideDescription />
 
@@ -102,6 +107,13 @@ ghost-expression survey merge fleet/members/*/survey.json -o cohort.json
 # Populate IDs after authoring rows with empty id fields
 ghost-expression survey fix-ids draft.json -o draft.json
 
+# Broad profiling context
+ghost-expression survey summarize survey.json
+
+# Exact value enums/specs
+ghost-expression survey catalog survey.json --kind color
+ghost-expression survey catalog survey.json --format json -o catalog.json
+
 # Stream output to stdout if -o is omitted
 ghost-expression survey merge a.json b.json | jq '.values | length'
 ```
@@ -110,8 +122,9 @@ ghost-expression survey merge a.json b.json | jq '.values | length'
 
 Validate `expression.md`, `map.md`, or `survey.json` against its schema —
 auto-detects which by `.json` extension, `schema: ghost.map/v2` frontmatter,
-or filename. Use this before declaring an artifact valid; every authoring
-recipe ends by calling it.
+or filename. Use this before declaring an artifact structurally valid; every
+authoring recipe calls it. For profiled expressions, follow `lint` with
+`verify-profile` to check fidelity against `survey.json`.
 
 <CliHelp tool="ghost-expression" command="lint" hideDescription />
 
@@ -129,11 +142,31 @@ ghost-expression lint survey.json
 ghost-expression lint path/to/expression.md --format json
 ```
 
+### Profile fidelity — `verify-profile`
+
+Validate that an `expression.md` stayed faithful to the `survey.json` that
+produced it. This is stricter than `lint`: palette, spacing, typography,
+radii, and shadow posture must be backed by survey evidence; high-salience
+new survey values are surfaced as drift warnings; and promoted `checks[]`
+entries must carry calibration metadata. With `--root`, promoted check
+patterns are counted under their `paths` scopes and mismatched
+`observed_count` values fail the gate. `contexts` are guidance only.
+
+<CliHelp tool="ghost-expression" command="verify-profile" hideDescription />
+
+```bash
+# Profile success gate after lint
+ghost-expression verify-profile expression.md survey.json --root .
+
+# Machine-readable for CI
+ghost-expression verify-profile expression.md survey.json --root . --format json
+```
+
 ### Inspection — `describe`
 
 Print a section map of `expression.md` — frontmatter range, body sections
-(`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
-`### dimension` block under Decisions, with line ranges and token estimates.
+(`# Character`, `# Signature`, `# Decisions`), and each `### dimension`
+block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
 
@@ -157,10 +190,10 @@ ghost-expression describe path/to/expression.md
 ghost-expression describe --format json
 ```
 
-Sample output (against `packages/ghost-ui/expression.md`):
+Sample output (against `packages/ghost-expression/test/fixtures/ghost-ui-expression/expression.md`):
 
 ```text
-expression.md — 309 lines, ~3,955 tokens
+expression.md — 305 lines, ~3,934 tokens
 
 FRONTMATTER    1–164      ~973 tok        [references, palette, spacing, typography, surfaces, checks, observation, decisions]
 # Character      166–169    ~159 tok
@@ -170,7 +203,6 @@ FRONTMATTER    1–164      ~973 tok        [references, palette, spacing, typog
   ### shape-language           195–206    ~181 tok
   ### typography-voice         207–219    ~258 tok
   …
-# Fragments      306–309    ~21 tok
 ```
 
 Line ranges are 1-indexed and inclusive — they plug directly into a Read

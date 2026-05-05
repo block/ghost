@@ -315,16 +315,18 @@ function formatCheck(item: ResolvedCheck): string {
   const parts = [
     `- **${severity.toUpperCase()}** \`${check.id}\`${check.canonical ? ` (${check.canonical})` : ""}: ${check.summary ?? check.pattern}`,
   ];
-  if (check.rationale) parts.push(`  Rationale: ${check.rationale}`);
   parts.push(`  Avoid: matches to \`${check.pattern}\`.`);
   parts.push(
     tolerance !== undefined
       ? `  Match: \`${match}\` with tolerance \`${tolerance}\`.`
       : `  Match: \`${match}\`.`,
   );
-  if (check.enforce_at?.length) {
+  if (check.paths?.length) {
+    parts.push(`  Paths: ${check.paths.map((e) => `\`${e}\``).join(", ")}.`);
+  }
+  if (check.contexts?.length) {
     parts.push(
-      `  Applies at: ${check.enforce_at.map((e) => `\`${e}\``).join(", ")}.`,
+      `  Contexts: ${check.contexts.map((e) => `\`${e}\``).join(", ")}.`,
     );
   }
   return parts.join("\n");
