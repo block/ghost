@@ -46,11 +46,34 @@ export default function Home() {
               Today, brand lives in artifacts written primarily for humans, to
               aid collaboration and understanding. It's not the same for agents.
               They default to generating from whatever the model learned, and
-              brand quality quietly slips. Tokens are the easy half: fonts,
-              colors, spacing can be pinned down, and the agent will respect
-              them. The hard half is <em>character</em>: the posture a product
-              takes, what it refuses to do. That doesn't fit in a token file,
-              and it's where generations drift first.
+              brand quality quietly slips.
+            </p>
+            <p className="thesis-item">
+              Most design-system work for AI starts by codifying the system
+              itself: enumerate the colors, expose the components, describe the
+              pieces. That matters, but it mostly teaches the inventory. The
+              same palette, type scale, and component set can be composed into a
+              multitude of products. The question is not only what tokens and
+              components exist. It's what the surface understands about itself
+              that is hard to recover from the parts.
+            </p>
+            <p className="thesis-item">
+              That is what Ghost captures as an <em>expression</em>: the
+              target's intended implementation of its design language. It names
+              the patterns that recur, the hierarchy it prefers, the voice it
+              speaks in, the stance it takes, and the things it refuses. A
+              product's language lives in those higher-order choices: when
+              density becomes confidence, when restraint becomes trust, when
+              repetition becomes rhythm, when a component is bent away from its
+              generic shape because the surface has a sharper job to do.
+            </p>
+            <p className="thesis-item">
+              Specs are still evidence; they are just not the whole language.
+              Specs describe the ingredients. Expression describes the
+              composition the product keeps choosing. That is the portable
+              format: readable enough for an agent to generate against, concrete
+              enough for drift to be checked, and close enough to implementation
+              that it can move with the product instead of floating above it.
             </p>
             <p className="thesis-item">
               And it has to be checkable. A voice that can only be evaluated by
@@ -58,6 +81,13 @@ export default function Home() {
               new hire, not to a fork. The harness is how a voice becomes
               transmissible: enough of it captured outside one person that
               someone who isn't you can apply it faithfully.
+            </p>
+            <p className="thesis-item">
+              Drift is useful because it reveals the boundary of the expression.
+              When an agent fails to compose faithfully, the failure is
+              evidence: maybe the implementation missed the language, maybe the
+              expression did not yet capture the language, or maybe the product
+              has moved and the expression needs to move with it.
             </p>
             <p className="thesis-item">
               The artifact that carries brand has to live where the agent does:

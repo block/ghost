@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v1
+schema: ghost.map/v2
 id: cash-web
 repo: example/cash-web
 mapped_at: 2026-04-26
@@ -25,7 +25,8 @@ design_system:
   entry_files:
     - src/styles/tokens.css
   status: active
-ui_surface:
+surface_sources:
+  render_strategy: static-source
   include:
     - src/components/**
   exclude:

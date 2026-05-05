@@ -3,6 +3,7 @@ import type {
   Expression,
   ExpressionComparison,
 } from "../types.js";
+import { resolveColorOklch } from "./colors.js";
 import { computeDriftVectors } from "./vector.js";
 
 export interface CompareOptions {
@@ -92,8 +93,17 @@ function comparePalette(a: Expression, b: Expression): DimensionDelta {
   for (const role of allDominantRoles) {
     const ca = aByRole.get(role);
     const cb = bByRole.get(role);
-    if (ca?.oklch && cb?.oklch) {
-      distances.push(oklchDistance(ca.oklch, cb.oklch));
+    if (!ca || !cb) continue;
+    const oa = resolveColorOklch(ca);
+    const ob = resolveColorOklch(cb);
+    if (oa && ob) {
+      distances.push(oklchDistance(oa, ob));
+      matchedA.add(role);
+      matchedB.add(role);
+    } else if (ca.value === cb.value) {
+      // Both hex-only on a non-parseable value — but the values match.
+      // Treat as identical rather than falling through to "unmatched".
+      distances.push(0);
       matchedA.add(role);
       matchedB.add(role);
     }
@@ -106,8 +116,16 @@ function comparePalette(a: Expression, b: Expression): DimensionDelta {
   for (let i = 0; i < unmatchedCount; i++) {
     const ca = unmatchedA[i];
     const cb = unmatchedB[i];
-    if (ca?.oklch && cb?.oklch) {
-      distances.push(oklchDistance(ca.oklch, cb.oklch));
+    if (!ca || !cb) {
+      distances.push(1);
+      continue;
+    }
+    const oa = resolveColorOklch(ca);
+    const ob = resolveColorOklch(cb);
+    if (oa && ob) {
+      distances.push(oklchDistance(oa, ob));
+    } else if (ca.value === cb.value) {
+      distances.push(0);
     } else {
       distances.push(1);
     }
@@ -133,8 +151,13 @@ function comparePalette(a: Expression, b: Expression): DimensionDelta {
   for (const role of sharedRoles) {
     const ca = a.palette.semantic.find((c) => c.role === role);
     const cb = b.palette.semantic.find((c) => c.role === role);
-    if (ca?.oklch && cb?.oklch) {
-      distances.push(oklchDistance(ca.oklch, cb.oklch));
+    if (!ca || !cb) continue;
+    const oa = resolveColorOklch(ca);
+    const ob = resolveColorOklch(cb);
+    if (oa && ob) {
+      distances.push(oklchDistance(oa, ob));
+    } else if (ca.value === cb.value) {
+      distances.push(0);
     }
   }
 

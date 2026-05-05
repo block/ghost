@@ -6,8 +6,7 @@
  * over them, and what the deterministic artifacts look like on disk.
  */
 
-import type { Expression } from "@ghost/core";
-import type { MapFrontmatter } from "ghost-map";
+import type { Expression, MapFrontmatter } from "@ghost/core";
 import type { FleetDistance, FleetTrackEdge } from "./schema.js";
 
 /**
@@ -15,7 +14,7 @@ import type { FleetDistance, FleetTrackEdge } from "./schema.js";
  *
  * Three states keep the surface small:
  *   • "ok"      — the file exists and parses; we don't run the full linter
- *                  here (that's `ghost-map lint` / `ghost-expression lint`).
+ *                  here (that's `ghost-expression lint`).
  *   • "missing" — the file is absent from the member directory.
  *   • "error"   — the file is present but fails to load/parse.
  */

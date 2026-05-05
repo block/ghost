@@ -6,7 +6,7 @@ import { emitReviewCommand } from "../../src/core/context/review-command.js";
 import { loadExpression } from "../../src/core/index.js";
 
 const GHOST_UI_EXPRESSION = fileURLToPath(
-  new URL("../../../ghost-ui/expression.md", import.meta.url),
+  new URL("../fixtures/ghost-ui-expression/expression.md", import.meta.url),
 );
 
 describe("emitReviewCommand", () => {
@@ -28,7 +28,7 @@ describe("emitReviewCommand", () => {
     expect(out).toMatch(/\$ARGUMENTS/);
   });
 
-  it("includes only true semantic hues in the serious rules table", () => {
+  it("includes only true semantic hues in the serious checks table", () => {
     const fp = minimalExpression();
     fp.palette.semantic = [
       { role: "danger", value: "#ff0000" },
@@ -66,7 +66,6 @@ describe("emitReviewCommand", () => {
     fp.observation = {
       summary: "A spartan, monospaced system driven by code-native aesthetics.",
       personality: ["spartan", "monospaced"],
-      distinctiveTraits: [],
       resembles: [],
     };
     const out = emitReviewCommand({ expression: fp });
@@ -107,6 +106,203 @@ describe("emitReviewCommand", () => {
     expect(raw).toMatch(/^---/);
   });
 });
+
+describe("emitReviewCommand — checks[]-driven path", () => {
+  it("groups checks by computed severity (Critical / Serious / Nit)", () => {
+    const fp = withChecks([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+      {
+        id: "pill-interactives",
+        canonical: "shape-language",
+        pattern: "<Button.*rounded-(?!full)",
+      },
+      {
+        id: "spacing-on-scale",
+        canonical: "spatial-system",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+    expect(out).toMatch(/^## Serious \(1\)$/m);
+    expect(out).toMatch(/^## Nit \(1\)$/m);
+
+    // Critical block holds the color check
+    const critical = sliceSection(out, "Critical");
+    expect(critical).toMatch(/no-off-palette-hex/);
+    expect(critical).not.toMatch(/pill-interactives/);
+
+    // Serious block holds the shape check
+    const serious = sliceSection(out, "Serious");
+    expect(serious).toMatch(/pill-interactives/);
+
+    // Nit block holds the spacing check
+    const nit = sliceSection(out, "Nit");
+    expect(nit).toMatch(/spacing-on-scale/);
+  });
+
+  it("escalates severity when presence_floor crosses zero", () => {
+    // motion canonical is rhythmic-tier (default nit). A zero observed count
+    // crossing the floor escalates one tier → Serious.
+    const fp = withChecks([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        observed_count: 0,
+        presence_floor: 4,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Serious \(1\)$/m);
+    expect(out).not.toMatch(/^## Nit/m);
+    expect(out).toMatch(/has 0 critical, 1 serious, and 0 nit checks/);
+  });
+
+  it("respects explicit severity overrides", () => {
+    const fp = withChecks([
+      {
+        id: "force-critical-spacing",
+        canonical: "spatial-system",
+        severity: "critical",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+  });
+
+  it("renders pattern, match shape, and tolerance per check", () => {
+    const fp = withChecks([
+      {
+        id: "spacing-on-scale",
+        canonical: "spatial-system",
+        kind: "spacing",
+        pattern: "p-\\[\\d+px\\]",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toContain("**Pattern:** `p-\\[\\d+px\\]`");
+    expect(out).toContain("**Match:** `band` (tolerance: `2`)");
+  });
+
+  it("renders paths and contexts when provided", () => {
+    const fp = withChecks([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+        paths: ["src"],
+        contexts: ["className", "css_var"],
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toContain("**Paths:** `src`");
+    expect(out).toContain("**Contexts:** `className`, `css_var`");
+  });
+
+  it("renders support percentage", () => {
+    const fp = withChecks([
+      {
+        id: "pill-interactives",
+        canonical: "shape-language",
+        pattern: "<Button.*rounded-(?!full)",
+        support: 0.97,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/\*\*Support:\*\* 97%/);
+  });
+
+  it("renders observed count when provided", () => {
+    const fp = withChecks([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        observed_count: 0,
+        presence_floor: 4,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/\*\*Observed count:\*\* 0/);
+  });
+
+  it("includes a calibration footer that names the prior", () => {
+    const fp = withChecks([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## How this reviewer was calibrated$/m);
+    expect(out).toMatch(/perceptual weight, not arithmetic/);
+    expect(out).toMatch(/1 loud-tier/);
+  });
+
+  it("notes which checks escalated via presence-floor in the calibration footer", () => {
+    const fp = withChecks([
+      {
+        id: "no-decorative-motion",
+        canonical: "motion",
+        pattern: "transition:\\s*all",
+        observed_count: 0,
+        presence_floor: 4,
+      },
+    ]);
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toContain(
+      "Presence-floor escalation triggered for:** `no-decorative-motion` (0 ≤ 4)",
+    );
+  });
+
+  it("falls back to structured-fallback path when checks[] is absent", () => {
+    const fp = minimalExpression();
+    fp.checks = undefined; // explicit
+    const out = emitReviewCommand({ expression: fp });
+    // Fallback path emits "## 1. Palette drift" — checks-driven never does
+    expect(out).toMatch(/## 1\. Palette drift/);
+    expect(out).toMatch(/## Calibration note/);
+    expect(out).toMatch(/no promoted `checks\[\]`/);
+    expect(out).toMatch(/coarse token fallback/);
+    expect(out).not.toMatch(/^## Critical/m);
+  });
+
+  it("uses the checks-driven path when checks[] is non-empty even with decisions[] present", () => {
+    const fp = withChecks([
+      {
+        id: "no-off-palette-hex",
+        canonical: "color-strategy",
+        pattern: "#[0-9a-fA-F]{3,8}",
+      },
+    ]);
+    fp.decisions = [
+      { dimension: "elevation", decision: "Old prose.", evidence: [] },
+    ];
+    const out = emitReviewCommand({ expression: fp });
+    expect(out).toMatch(/^## Critical \(1\)$/m);
+    expect(out).not.toMatch(/## 1\. Palette drift/);
+    expect(out).not.toMatch(/Old prose\./);
+  });
+});
+
+function withChecks(checks: Expression["checks"]): Expression {
+  const fp = minimalExpression();
+  fp.checks = checks;
+  return fp;
+}
+
+function sliceSection(out: string, label: string): string {
+  const match = out.match(new RegExp(`## ${label}[^]*?(?=\\n## |$)`));
+  return match?.[0] ?? "";
+}
 
 function minimalExpression(): Expression {
   return {

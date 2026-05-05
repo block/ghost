@@ -49,8 +49,8 @@ const SurfacesSchema = z.object({
 });
 
 /**
- * Frontmatter observation: short machine-tags only. The Character paragraph
- * (summary) and Signature bullets (distinctiveTraits) live in the body.
+ * Frontmatter observation: short machine-tags only. The Character
+ * paragraph (summary) lives in the body.
  */
 const DesignObservationSchema = z
   .object({
@@ -60,72 +60,65 @@ const DesignObservationSchema = z
   .strict();
 
 /**
- * Frontmatter decision: dimension slug + optional embedding only.
- * Both the prose rationale AND the evidence bullets live in the body
- * under `### dimension` → `**Evidence:**`. Evidence in frontmatter is
- * rejected by the strict schema.
+ * Frontmatter decision: dimension slug + optional kind only. Both the prose
+ * rationale AND the evidence bullets live in the body under `### dimension`
+ * → `**Evidence:**`. Evidence in frontmatter is rejected by the strict schema.
+ *
+ * `dimension_kind` is the optional canonical-vocabulary mapping used by
+ * fleet aggregation. See `CANONICAL_DECISION_DIMENSIONS` in `@ghost/core`
+ * and the soft `non-canonical-dimension` lint rule for guidance.
  */
 const DesignDecisionSchema = z
   .object({
     dimension: z.string(),
-    embedding: z.array(z.number()).optional(),
+    dimension_kind: z.string().optional(),
+  })
+  .strict();
+
+const ExpressionReferencesSchema = z
+  .object({
+    specs: z.array(z.string()).optional(),
+    components: z.array(z.string()).optional(),
+    examples: z.array(z.string()).optional(),
   })
   .strict();
 
 /**
- * Semantic slot → token binding. Each role names a slot ("h1", "card",
- * "button") and binds tokens from the expression dimensions. Every
- * sub-block is optional — a role can be partial when the source only
- * supplies some tokens.
+ * Human-promoted reviewer check: a grep-able pattern fitted to this
+ * expression's design language. Severity, match shape, and tolerance are
+ * typically computed at emit time from the perceptual prior in
+ * `@ghost/core`; explicit fields here are overrides.
+ *
+ * Checks coexist with `decisions[]`; they are the curated review gates.
+ * Survey inference may propose candidates, but expression.md stores only
+ * checks the human intentionally promotes.
  */
-const DesignRoleSchema = z
+const CheckSchema = z
   .object({
-    name: z.string(),
-    tokens: z
-      .object({
-        typography: z
-          .object({
-            family: z.string().optional(),
-            size: z.number().optional(),
-            weight: z.number().optional(),
-            lineHeight: z.number().optional(),
-          })
-          .strict()
-          .optional(),
-        spacing: z
-          .object({
-            padding: z.number().optional(),
-            gap: z.number().optional(),
-            margin: z.number().optional(),
-          })
-          .strict()
-          .optional(),
-        surfaces: z
-          .object({
-            borderRadius: z.number().optional(),
-            shadow: z.enum(["none", "subtle", "layered"]).optional(),
-            borderWidth: z.number().optional(),
-          })
-          .strict()
-          .optional(),
-        /**
-         * Palette slot bindings. Open-ended record — keys are slot names
-         * the consumer chooses, values are either raw hex literals
-         * (`"#1a1a1a"`) or `{palette.dominant.X}` / `{palette.semantic.X}`
-         * references that resolve through the local palette, or opaque
-         * external token refs (`{base.color.brand.x}`) for repos that
-         * pull tokens from a Style-Dictionary-style pipeline.
-         *
-         * Conventional keys (the recipe should reach for these first):
-         * `background`, `foreground`, `surface`, `border`, `accent`,
-         * `muted`, `link`. Phase 5b widened this from a fixed three-key
-         * shape to an open record so richer real-world vocabularies
-         * (separator, ring, popover, …) don't hard-error.
-         */
-        palette: z.record(z.string(), z.string()).optional(),
-      })
-      .strict(),
-    evidence: z.array(z.string()),
+    id: z.string(),
+    canonical: z.string().optional(),
+    kind: z
+      .enum([
+        "color",
+        "radius",
+        "spacing",
+        "type-size",
+        "type-family",
+        "type-weight",
+        "shadow",
+        "motion",
+      ])
+      .optional(),
+    summary: z.string().optional(),
+    pattern: z.string(),
+    paths: z.array(z.string()).optional(),
+    contexts: z.array(z.string()).optional(),
+    severity: z.enum(["critical", "serious", "nit"]).optional(),
+    match: z.enum(["exact", "band", "percent", "structural"]).optional(),
+    tolerance: z.number().optional(),
+    presence_floor: z.number().int().nonnegative().optional(),
+    observed_count: z.number().int().nonnegative().optional(),
+    support: z.number().min(0).max(1).optional(),
   })
   .strict();
 
@@ -133,16 +126,13 @@ const DesignRoleSchema = z
  * Schema for the YAML frontmatter in an expression.md file. Covers the
  * machine-layer of Expression plus expression-level metadata.
  *
- * Note: narrative prose fields (observation.summary, distinctiveTraits,
+ * Note: narrative prose fields (observation.summary,
  * decisions[].decision) are NOT allowed here — they belong in the body.
  * `.strict()` on nested schemas enforces this.
  *
- * v4 changes:
- *   - `embedding` is optional at root; when absent, readers load it from
- *     a sibling `embedding.md` fragment or recompute from structured blocks.
- *   - `metadata` is a loose key-value bag for LLM-authored extensions
- *     (e.g. `tone: "magazine"`) that don't fit the strict structural
- *     blocks. Opaque to comparisons.
+ * `metadata` is a loose key-value bag for LLM-authored extensions
+ * (e.g. `tone: "magazine"`) that don't fit the strict structural
+ * blocks. Opaque to comparisons.
  */
 export const FrontmatterSchema = z
   .object({
@@ -162,30 +152,19 @@ export const FrontmatterSchema = z
     source: z.enum(["registry", "extraction", "llm", "unknown"]),
     timestamp: z.string(),
     sources: z.array(z.string()).optional(),
+    references: ExpressionReferencesSchema.optional(),
 
     // expression — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
+    /** Human-promoted review checks. */
+    checks: z.array(CheckSchema).optional(),
 
     // expression — structured (required)
     palette: PaletteSchema,
     spacing: SpacingSchema,
     typography: TypographySchema,
     surfaces: SurfacesSchema,
-
-    /**
-     * Semantic slot → token bindings. Optional. The bridge from abstract
-     * tokens to rendering: each role names a slot and binds tokens from
-     * the dimensions above.
-     */
-    roles: z.array(DesignRoleSchema).optional(),
-
-    /**
-     * Optional at root — loader falls back to sibling `embedding.md` or
-     * recomputes from structured blocks. Present embeddings are trusted
-     * as cache.
-     */
-    embedding: z.array(z.number()).optional(),
   })
   .strict();
 
@@ -208,16 +187,16 @@ export const PartialFrontmatterSchema = z
     source: z.enum(["registry", "extraction", "llm", "unknown"]).optional(),
     timestamp: z.string().optional(),
     sources: z.array(z.string()).optional(),
+    references: ExpressionReferencesSchema.optional(),
 
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
+    checks: z.array(CheckSchema).optional(),
 
     palette: PaletteSchema.optional(),
     spacing: SpacingSchema.optional(),
     typography: TypographySchema.optional(),
     surfaces: SurfacesSchema.optional(),
-    roles: z.array(DesignRoleSchema).optional(),
-    embedding: z.array(z.number()).optional(),
   })
   .strict();
 

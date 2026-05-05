@@ -17,7 +17,7 @@ input and gating the output, not running the generator.)
 ## Pipeline shape
 
 ```
-expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKILL.md / tokens.css / prompt.md
+expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKILL.md / expression.md / prompt.md / tokens.css
                                               │
                                               ▼
                                        any generator
@@ -35,7 +35,13 @@ expression.md  ──►  [ghost-expression emit context-bundle]  ──►  SKI
 ### `ghost-expression emit context-bundle [flags]` — the one CLI verb
 
 Emit a grounding bundle any generator can consume. Default output writes
-`SKILL.md` + `expression.md` + `tokens.css` into `./ghost-context/`.
+`SKILL.md` + `expression.md` + `prompt.md` + `tokens.css` into
+`./ghost-context/`. The generated `prompt.md` is a generation lens over the
+expression: Character sets feel, Signature carries final-picture posture,
+Local References point to optional source material when accessible, Decisions
+provide style direction, Checks provide curated gates, and Tokens provide the
+portable value digest. It intentionally does not ask the
+generator to explain or cite decisions unless the user asks for explanation.
 
 Flags:
 - `--out <dir>` — output directory (default: `./ghost-context`)
@@ -51,8 +57,9 @@ reads `SKILL.md`.
 
 Driven by the host agent. Loads the expression (the agent typically pulls
 just the sections it needs via `ghost-expression describe`), builds a system
-prompt from Character/Signature/Decisions + tokens, asks the underlying
-model, extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
+prompt from Character + Signature + Local References when accessible +
+Decisions + Checks + Tokens, asks the underlying model,
+extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
 recipe for self-check. Retries with drift feedback until it passes or the
 agent gives up.
 
@@ -103,15 +110,22 @@ distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
 *incidental* drift (the same prompt leaking color, which it wasn't
 supposed to stress).
 
-## How the three-layer expression format earns its keep
+## How the expression format earns its keep
 
 Each layer has a concrete job somewhere in the loop:
 
 | Layer | Role in the loop |
 |---|---|
 | **Character** | Prompt context — shapes feel |
-| **Signature** | Drift-sensitive moves the reviewer weights heavily |
-| **Decisions** | Lookup table the generator consults for specific choices |
+| **Signature** | Final-picture guidance — dominant moves and output posture |
+| **References** | Local provenance / optional source material; use when accessible |
+| **Checks** | Human-promoted drift gates; presence-floor checks codify load-bearing absences |
+| **Decisions** | Abstract pattern lookup the generator consults for specific choices |
+
+Terminal-impact rule: a fact belongs in the terminal expression only when it
+can change generated UI or a drift verdict. `survey.json` can stay broad as
+evidence — including implemented `ui_surfaces[]` specimens and their observed
+composition signals — while `expression.md` stays curated.
 
 If a layer doesn't pull weight somewhere, that's a signal the format is
 over-specified. The `verify` recipe is the schema-discipline mechanism.

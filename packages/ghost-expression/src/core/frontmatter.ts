@@ -26,23 +26,23 @@ export interface FrontmatterData {
 
 /**
  * Expression fields that are populated from YAML frontmatter. Prose
- * fields (observation.summary, observation.distinctiveTraits, decisions[].decision,
- * values) are populated from the markdown body by `applyBody` — they are
- * deliberately NOT listed here.
+ * fields (observation.summary, decisions[].decision) are populated from
+ * the markdown body by `applyBody` — they are deliberately NOT listed
+ * here.
  */
 const EXPRESSION_KEYS = new Set<keyof Expression>([
   "id",
   "source",
   "timestamp",
   "sources",
+  "references",
   "observation",
   "decisions",
+  "checks",
   "palette",
   "spacing",
   "typography",
   "surfaces",
-  "roles",
-  "embedding",
 ]);
 
 /**
@@ -109,14 +109,14 @@ export function mergeFrontmatter(
     "source",
     "timestamp",
     "sources",
+    "references",
     "observation",
     "decisions",
+    "checks",
     "palette",
     "spacing",
     "typography",
     "surfaces",
-    "roles",
-    "embedding",
   ];
   for (const key of ordered) {
     const v = expression[key];
@@ -144,17 +144,13 @@ function stripObservationProse(
   return Object.keys(out).length ? out : undefined;
 }
 
-/**
- * Schema 5: frontmatter decisions[] carries dimension + optional embedding
- * only. Prose rationale and evidence bullets both live in the body.
- */
 function stripDecisionProse(
   decisions: Expression["decisions"],
 ): Array<Record<string, unknown>> | undefined {
   if (!decisions?.length) return undefined;
   return decisions.map((d) => {
     const out: Record<string, unknown> = { dimension: d.dimension };
-    if (d.embedding) out.embedding = d.embedding;
+    if (d.dimension_kind) out.dimension_kind = d.dimension_kind;
     return out;
   });
 }

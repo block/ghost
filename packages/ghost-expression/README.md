@@ -1,10 +1,20 @@
 # ghost-expression
 
-**Author and validate `expression.md` — Ghost's canonical design-language artifact. Four verbs. No LLM calls.**
+**Author the three-stage scan of a project's design language: `map.md` → `survey.json` → `expression.md`. No LLM calls in any verb.**
 
-`ghost-expression` owns the on-disk format every other Ghost tool reads. It parses, lints, lays out (section ranges + token estimates for selective loading), structurally diffs, and emits derived artifacts (per-project review slash commands, generation context bundles, agentskills.io skill bundles).
+`ghost-expression` owns the on-disk artifacts every other Ghost tool reads. A scan runs in three stages, each a separate skill recipe with a deterministic CLI verb as its success gate:
 
-The actual *writing* of an `expression.md` is a host-agent recipe — `profile.md` ships in this package's skill bundle and walks an agent through resolving design sources end-to-end. The CLI here is the success gate at the end of that loop: same answer every time, no LLM in the loop.
+| Stage | Artifact | Schema | Authored via | Validated by |
+|---|---|---|---|---|
+| **Map** | `map.md` | `ghost.map/v2` | `map.md` skill recipe + `ghost-expression inventory` | `ghost-expression lint map.md` |
+| **Survey** | `survey.json` | `ghost.survey/v2` | `survey.md` skill recipe + `ghost-expression survey fix-ids` | `ghost-expression lint survey.json` |
+| **Express** | `expression.md` | (unversioned) | `profile.md` skill recipe (reads survey as ground truth) | `ghost-expression lint expression.md` + `ghost-expression verify-profile expression.md survey.json --root .` |
+
+This is a breaking v0 scan migration: `ghost.map/v1` and `ghost.survey/v1` are no longer accepted. Regenerate old scan artifacts through map → survey so `surface_sources` and `ui_surfaces[]` capture implemented UI evidence.
+
+The CLI parses, lints (auto-detects file kind), verifies profile-to-survey fidelity, inventories raw repo signals, runs deterministic data ops on surveys (`merge`, `fix-ids`, `summarize`, `catalog`), structurally diffs expressions, reports per-stage scan progress, and emits derived artifacts (per-project review slash commands, generation context bundles, agentskills.io skill bundles).
+
+The actual *writing* of each artifact is a host-agent recipe — the four ship in this package's skill bundle and walk an agent through map / survey / expression / end-to-end orchestration. The CLI here is the success gate.
 
 For drift detection, comparison, and stance recording (`compare`, `ack`, `track`, `diverge`), see **[`ghost-drift`](../ghost-drift)**.
 
@@ -23,18 +33,36 @@ pnpm add https://github.com/block/ghost/releases/download/ghost-expression%400.0
 ## Use
 
 ```bash
-ghost-expression lint                                # validate ./expression.md
-ghost-expression lint path/to/expression.md          # validate a specific file
-ghost-expression lint expression.md --format json    # machine-readable output
+# Topology — emit raw repo signals
+ghost-expression inventory                          # signals for cwd
+ghost-expression inventory ../other-repo            # signals for another path
 
-ghost-expression describe                            # section ranges + token estimates for ./expression.md
-ghost-expression describe expression.md --format json
+# Validation — auto-detects expression.md / map.md / survey.json
+ghost-expression lint                                # ./expression.md
+ghost-expression lint map.md                         # validates as ghost.map/v2
+ghost-expression lint survey.json                    # validates as ghost.survey/v2
+ghost-expression lint path/to/file --format json     # machine-readable output
+ghost-expression verify-profile expression.md survey.json --root .
+                                                      # checks expression values/checks against survey evidence
 
-ghost-expression diff a/expression.md b/expression.md # structural prose-level diff
-                                                       # (NOT vector distance — for that, use `ghost-drift compare`)
+# Pipeline orchestration — what stage to run next
+ghost-expression scan-status                         # checks cwd
+ghost-expression scan-status path/to/scan-dir
 
+# Survey ops — deterministic
+ghost-expression survey merge a.json b.json -o merged.json
+ghost-expression survey fix-ids draft.json -o final.json
+ghost-expression survey summarize survey.json
+ghost-expression survey catalog survey.json --kind color
+
+# Inspection of expressions
+ghost-expression describe                            # section ranges + token estimates
+ghost-expression diff a/expression.md b/expression.md  # structural prose-level diff
+                                                       # (NOT vector distance — see `ghost-drift compare`)
+
+# Emit derived artifacts
 ghost-expression emit review-command                 # → .claude/commands/design-review.md
-ghost-expression emit context-bundle                 # → ghost-context/ (SKILL.md + tokens.css + prompt.md)
+ghost-expression emit context-bundle                 # → ghost-context/ (SKILL.md + expression.md + prompt.md + tokens.css)
 ghost-expression emit context-bundle --prompt-only   # single prompt.md
 ghost-expression emit skill                          # install the agent recipe bundle
 ```
@@ -49,34 +77,55 @@ import {
   lintExpression,
   layoutExpression,
   diffExpressions,
+  inventory,
+  lintMap,
+  scanStatus,
+  verifyProfile,
 } from "ghost-expression";
+
+import {
+  catalogSurveyValues,
+  lintSurvey,
+  mergeSurveys,
+  recomputeSurveyIds,
+  type Survey,
+} from "@ghost/core";
 
 const { expression } = parseExpression(await readFile("expression.md", "utf8"));
 const report = lintExpression(source);
 const layout = layoutExpression(source);   // section ranges + token estimates
-const diff = diffExpressions(a, b);          // structural prose diff
+const diff = diffExpressions(a, b);        // structural prose diff
+const status = await scanStatus("./scan");  // per-stage state + recommended next
+const verify = verifyProfile(source, survey, { root: "." }); // profile fidelity
+const catalog = catalogSurveyValues(survey); // derived value enum/spec view
 ```
 
-All exports are browser-safe.
+All exports are browser-safe except `inventory` (reads from disk).
 
 ## BYOA — bring your own agent
 
-Install the skill bundle so your agent can author against the schema:
+Install the skill bundle so your agent can author against the schemas:
 
 ```bash
 ghost-expression emit skill
 ```
 
-The bundle ships:
+The bundle ships four recipes:
 
-- `profile.md` — recipe for writing `expression.md` from a project (mode-branched: `target` / `module` / `rollup`).
-- `schema.md` — condensed reference to the frontmatter schema and three-layer body.
+- **`scan.md`** — meta-recipe orchestrating map → survey → profile end-to-end via `scan-status` checkpoints. Use when the user wants a full scan rather than a specific stage.
+- **`map.md`** — write `map.md` from a target's `inventory` output. Stage 1.
+- **`survey.md`** — write `survey.json` from a target's source code. Stage 2. The load-bearing exhaustiveness rule lives here: enumerate the canonical signal in *this* repo (registry, manifest, named declarations), record implemented UI surfaces in `ui_surfaces[]`, and cross-check counts; sampling is forbidden.
+- **`profile.md`** — interpret a `survey.json` into `expression.md`. Stage 3. Cannot fabricate values not in the survey; cites survey rows as evidence; validates fidelity with `verify-profile`.
 
-Once installed, ask your agent to "profile this design language" and it'll follow the recipe, ending at `ghost-expression lint` as the success gate.
+Plus a condensed schema reference (`schema.md`) for the `expression.md` frontmatter / body partition.
 
-## Canonical artifact
+Once installed, ask your agent to "scan this design language end-to-end" (or just "profile this design language") and it'll follow the recipes, ending each map/survey stage at `lint` and ending the expression stage at `lint` + `verify-profile`.
 
-See [`docs/expression-format.md`](https://github.com/block/ghost/blob/main/docs/expression-format.md) for the full spec, including the 49-dim machine-vector breakdown (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]).
+## Canonical artifacts
+
+See [`docs/expression-format.md`](https://github.com/block/ghost/blob/main/docs/expression-format.md) for the full `expression.md` spec. Runtime comparison derives embeddings from the authored file; no sibling embedding artifact is canonical.
+
+The `ghost.survey/v2` schema and `ghost.map/v2` schema both live in `@ghost/core`; the condensed authoring references ship in this package's skill bundle.
 
 ## License
 
