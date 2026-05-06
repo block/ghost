@@ -14,24 +14,23 @@ const cards: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Workflow",
-    href: "/tools/drift/workflow",
-    description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
+    name: "Ghost loop",
+    href: "/docs/getting-started#how-ghost-works",
+    description: "See how scan, fingerprint, review, and intent fit together.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the ghost-drift skill bundle and start tracking drift against a reference fingerprint.",
+      "Install the skill bundle and review changed UI against fingerprint.md.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost-drift--drift-detection--governance",
+    href: "/docs/cli#ghost-drift--review-and-compare",
     description:
-      "compare, ack, track, diverge, and emit skill — plus the review / verify / remediate recipes.",
+      "Compare fingerprints, record intent, and install review recipes.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -48,7 +47,7 @@ export default function GhostDriftLanding() {
       <AnimatedPageHeader
         kicker="ghost-drift"
         title="Drift"
-        description="Detect divergence the moment it happens, then record the right stance. compare returns scalar distance and per-dimension deltas across two or many fingerprints; ack / track / diverge turn unintended drift into intentional signal. The skill bundle ships the review, verify, compare, and remediate recipes the host agent runs."
+        description="Check whether changed or generated UI still matches the fingerprint. ghost-drift compares fingerprints, reviews PRs for design drift, and records whether a difference should be fixed, accepted, or tracked as the new direction."
       />
 
       <div

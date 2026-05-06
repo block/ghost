@@ -1,41 +1,53 @@
 # Ghost
 
-**Ghost helps agents keep generated UI aligned with a project's design language.**
+**Ghost turns implemented UI into a repo-local design-language file agents can use.**
 
-Agents can ship UI now. The problem is drift: wrong palette, wrong density, wrong hierarchy, wrong feel. Most repos do not have a clear, local answer to “what should this interface look like?”
+Agents can ship UI now. What slips is taste: palette, density, hierarchy, and the small choices that make a product feel like itself. Most repos do not have a clear, local answer to “what should this interface look like?”
 
-Ghost gives the repo that answer. A scan creates three files: `map.md` says where the design system lives, `survey.json` records the values found in source, and `fingerprint.md` is the compact design-language contract agents read for generation and review. Agents do the judgment work; Ghost's CLIs provide deterministic checks, diffs, and comparisons.
+Ghost gives the repo that answer. It scans the UI already in the codebase and writes `fingerprint.md`: a readable design-language file that lives beside the code. Agents read it before generating UI and check against it after they make changes.
 
-## BYOA: bring your own agent
+The scan earns that file with evidence:
 
-Every Ghost workflow runs in the host agent you already use: Claude Code, Codex, Cursor, Goose, or another agent. Each tool ships an [agentskills.io](https://agentskills.io)-compatible recipe bundle for the interpretive work: profile, review, verify, remediate, or summarize a fleet. The agent reads the files, makes the calls, and writes the outputs. When it needs a reproducible answer, such as schema validation or fingerprint distance, it calls a Ghost CLI.
+- **`map.md`** tells Ghost where to look.
+- **`survey.json`** records the values, tokens, components, and surfaces it found.
+- **`fingerprint.md`** explains what those values mean as a design language.
+
+Your agent does the judgment work. Ghost's CLIs handle the repeatable checks: validation, profile verification, diffs, comparisons, and fleet views.
+
+## Works with your agent
+
+Every Ghost workflow runs in the host agent you already use: Claude Code, Codex, Cursor, Goose, or another agent. Each tool ships an [agentskills.io](https://agentskills.io)-compatible recipe bundle for work like scan, review, verify, remediate, or summarize a fleet. The agent reads the files, makes the calls, and writes the outputs. When it needs a reproducible answer, such as schema validation or fingerprint distance, it calls a Ghost CLI.
 
 No API key is required to run any CLI verb. Each tool's `emit skill` verb installs its bundle into your agent.
-
-## The four tools
-
-Ghost is split into one responsibility per tool. A scan produces three artifacts in sequence — `map.md` (map the system) → `survey.json` (survey what exists) → `fingerprint.md` (express what it means) — all owned by `ghost-fingerprint`.
-
-| Tool | Owns | Verbs |
-| --- | --- | --- |
-| **`ghost-fingerprint`** | the three-stage scan pipeline (`map.md`, `survey.json`, `fingerprint.md`) | `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
-| **`ghost-drift`** | `.ghost/history.jsonl` + `.ghost-sync.json` — drift detection and stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
-| **`ghost-fleet`** | `fleet.md` — read-only view across many `(map.md, fingerprint.md)` members | `members`, `view`, `emit skill` |
-| **`ghost-ui`** | A reference design system Ghost dogfoods — 97 shadcn components + an MCP server | (no verbs) |
-
-Scans describe one subject, but they can read more than one source. For example, an app can be the `primary` source while an upstream design-system package acts as a `resolver` for imported tokens. That keeps the fingerprint about the app's actual usage instead of treating the upstream inventory as the app's design language.
-
-`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v2` + `ghost.survey/v2` schemas the three CLIs share.
 
 ## Why Ghost?
 
 Ghost gives agents a few practical abilities:
 
-- **Generate from a local contract**: `fingerprint.md` tells the agent what the design language is before it writes UI.
+- **Generate from a local file**: `fingerprint.md` tells the agent what the design language is before it writes UI.
 - **Review changes for drift**: the review and verify recipes compare generated or changed UI against the fingerprint.
 - **Compare systems**: `ghost-drift compare` and `ghost-fleet view` show how fingerprints differ across projects.
 - **Record intent**: `ack`, `track`, and `diverge` record whether drift is accepted, tracked against a new reference, or intentionally different.
 - **Stay readable**: `fingerprint.md` is Markdown with YAML frontmatter. Humans can review it, agents can use it, and the CLIs can validate and diff it.
+
+## Tools around the loop
+
+Ghost is split into focused tools. The common path is simple:
+
+```text
+map.md -> survey.json -> fingerprint.md -> design review
+```
+
+| Tool | Job | Verbs |
+| --- | --- | --- |
+| **`ghost-fingerprint`** | Create and check `map.md`, `survey.json`, and `fingerprint.md`. | `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
+| **`ghost-drift`** | Compare fingerprints, review UI drift, and record what changed intentionally. | `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| **`ghost-fleet`** | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
+| **`ghost-ui`** | Reference design system Ghost dogfoods — 97 shadcn components + an MCP server. | (no verbs) |
+
+Scans describe one subject, but they can read more than one source. For example, an app can read tokens from an upstream design-system package while still producing a fingerprint about the app's actual UI.
+
+`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v2` + `ghost.survey/v2` schemas the three CLIs share.
 
 ## Repo layout
 
@@ -100,7 +112,7 @@ Once a skill is installed, ask your agent in plain English ("profile this design
 
 ### Quick start
 
-**1. Map the repo** (the topology stage — pre-req for survey + profile). Ask your host agent to write `map.md`, then validate:
+**1. Map the repo** (the first checkpoint before survey and profile). Ask your host agent to write `map.md`, then validate:
 
 ```bash
 ghost-fingerprint inventory      # raw signals as JSON (the agent reads this to author map.md)
@@ -146,7 +158,7 @@ ghost-drift track new-tracked.fingerprint.md
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-**6. Emit derived artifacts** (these all live in `ghost-fingerprint` now — they read your `fingerprint.md`):
+**6. Emit derived outputs** (these all live in `ghost-fingerprint` now — they read your `fingerprint.md`):
 
 ```bash
 ghost-fingerprint emit review-command     # .claude/commands/design-review.md (per-project slash command)
@@ -154,7 +166,7 @@ ghost-fingerprint emit context-bundle     # ghost-context/ (SKILL.md + fingerpri
 ghost-fingerprint emit skill              # .claude/skills/ghost-fingerprint (the agentskills.io bundle)
 ```
 
-**7. Take the fleet elevation** (when you have ≥2 members each with their own `map.md` and `fingerprint.md`):
+**7. View a fleet** (when you have ≥2 members each with their own `map.md` and `fingerprint.md`):
 
 ```bash
 ghost-fleet members ./fleet     # list registered members + freshness
@@ -170,17 +182,17 @@ just dev
 
 ## CLI Commands
 
-Verbs are scoped to the tool that owns the artifact. Pure inputs → pure outputs, no API key required.
+Commands are grouped by the tool that owns the file. Pure inputs → pure outputs, no API key required.
 
 | Tool | Command | Description |
 | --- | --- | --- |
-| `ghost-fingerprint` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-fingerprint` | `lint` | Validate artifact shape for `fingerprint.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
+| `ghost-fingerprint` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the map recipe. |
+| `ghost-fingerprint` | `lint` | Validate file shape for `fingerprint.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
 | `ghost-fingerprint` | `verify-profile` | Validate fingerprint-to-survey fidelity after profiling; palette, spacing, typography, radii, and shadow posture must be survey-backed, and promoted checks must be calibrated. |
 | `ghost-fingerprint` | `describe` | Print section ranges + token estimates so agents can selectively load. |
 | `ghost-fingerprint` | `diff` | Structural prose-level diff between two fingerprints (NOT vector distance — for that, use `ghost-drift compare`). |
 | `ghost-fingerprint` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge`, `fix-ids`, `summarize`, `catalog`. |
-| `ghost-fingerprint` | `emit` | Derive an artifact from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
+| `ghost-fingerprint` | `emit` | Derive an output from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
 | `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over runtime fingerprint embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
 | `ghost-drift` | `ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost-drift` | `track` | Shift the tracked fingerprint. |
@@ -196,7 +208,7 @@ The interpretive work is done by recipes the agent runs. Install the relevant bu
 
 | Recipe | Bundle | Capability | Triggered by |
 | --- | --- | --- | --- |
-| `map`       | `ghost-fingerprint` | Author the topology card (stage 1) | "map this repo", "write map.md" |
+| `map`       | `ghost-fingerprint` | Write the repo map (stage 1) | "map this repo", "write map.md" |
 | `survey`    | `ghost-fingerprint` | Author the survey of values (stage 2) | "survey design values", "extract design tokens" |
 | `profile`   | `ghost-fingerprint` | Author the design language (stage 3) | "profile this design language", "write fingerprint.md" |
 | `review`    | `ghost-drift` | Review PR changes for drift | "review this PR for drift" |
@@ -213,7 +225,7 @@ These are instructions, not code. The agent executes them using its normal tools
 
 ### Environment variables
 
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` (a `@ghost/core` library function) when a host wants enriched runtime embeddings.
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` (a `@ghost/core` library function) when a host wants enriched semantic comparison.
 - `GITHUB_TOKEN`: optional, used by `resolveTrackedFingerprint` when fetching a tracked fingerprint from GitHub (avoids rate limits).
 
 Each CLI auto-loads `.env` and `.env.local` from the working directory.

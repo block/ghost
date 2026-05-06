@@ -1,24 +1,31 @@
 ---
 title: CLI Reference
-description: Eighteen verbs across three tools. Judgment work lives in the skill bundles your host agent runs.
+description: Commands for repeatable checks and comparison. Your agent handles the judgment work.
 kicker: Docs
 section: guide
-order: 20
+order: 30
 slug: cli
 ---
 
 <DocSection title="Overview">
 
-The CLIs give your host agent reproducible answers. A scan produces three artifacts in sequence — **`map.md`**
-(map the system) → **`survey.json`** (survey what exists) → **`fingerprint.md`** (express what it means) —
-all owned by `ghost-fingerprint`. Most commands accept a path; they default to
-`./fingerprint.md` for kind-aware verbs. No API key required.
+The CLIs do the repeatable parts: validate files, compare fingerprints, and
+record decisions. Your agent does the reading, writing, and reviewing.
 
-Verbs are scoped to the tool that owns the artifact:
+A scan follows one path, all owned by `ghost-fingerprint`:
 
-- **`ghost-fingerprint`** — the scan pipeline: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
-- **`ghost-drift`** — drift detection + stance: `compare`, `ack`, `track`, `diverge`, `emit skill`
-- **`ghost-fleet`** — view across many members: `members`, `view`, `emit skill`
+```text
+map.md -> survey.json -> fingerprint.md
+```
+
+Most commands accept a path; kind-aware commands default to
+`./fingerprint.md`. No API key required.
+
+Commands are grouped by job:
+
+- **Create and check the fingerprint** — `ghost-fingerprint`: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
+- **Review and compare drift** — `ghost-drift`: `compare`, `ack`, `track`, `diverge`, `emit skill`
+- **View many projects** — `ghost-fleet`: `members`, `view`, `emit skill`
 
 Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
 _remediate_ are skill recipes your host agent runs — not CLI verbs. Install
@@ -26,23 +33,22 @@ them with each tool's `emit skill` verb.
 
 The tables below are generated from each CLI's source at build time. If a
 flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
-this reference — so these docs can't drift from the binaries.
+this reference.
 
 </DocSection>
 
 <DocSection title="ghost-fingerprint — authoring & validation">
 
-`ghost-fingerprint` owns the three-stage scan pipeline: `map.md` →
-`survey.json` → `fingerprint.md`. Verbs cover
-inventory + lint + profile verification + describe + diff + survey ops +
-emit. Drift detection lives separately in `ghost-drift`.
+`ghost-fingerprint` owns the scan: `map.md` → `survey.json` →
+`fingerprint.md`. It inventories the repo, validates each file, verifies the
+fingerprint against survey evidence, describes and diffs fingerprints, runs
+survey ops, and emits agent-ready outputs.
 
-### Topology — `inventory`
+### Repo map — `inventory`
 
-Emit deterministic raw signals about a frontend repo as JSON: package
+Emit raw signals about a frontend repo as JSON: package
 manifests, language histogram, candidate config files, registry presence,
-top-level tree, git remote. Feeds the topology recipe (the agent's input
-when authoring `map.md`).
+top-level tree, git remote. The map recipe uses this when writing `map.md`.
 
 <CliHelp tool="ghost-fingerprint" command="inventory" hideDescription />
 
@@ -56,10 +62,9 @@ ghost-fingerprint inventory ../other-repo
 
 ### Pipeline progress — `scan-status`
 
-Report which scan stages have produced artifacts in a directory: map
-(`map.md`), survey (`survey.json`), fingerprint (`fingerprint.md`). Tells
-orchestrators which stage to run next. Pure file-presence check today;
-hash-keyed freshness is a planned enhancement.
+Report which scan stages already exist in a directory: map (`map.md`), survey
+(`survey.json`), fingerprint (`fingerprint.md`). This tells the agent which
+stage to run next.
 
 <CliHelp tool="ghost-fingerprint" command="scan-status" hideDescription />
 
@@ -75,7 +80,7 @@ ghost-fingerprint scan-status . --format json
 ```
 
 Output reports each stage as `present` or `missing` and surfaces the
-recommended next stage (or "scan complete" when every artifact is present).
+recommended next stage (or "scan complete" when every file is present).
 
 ### Survey ops — `survey <op>`
 
@@ -114,7 +119,7 @@ ghost-fingerprint survey merge a.json b.json | jq '.values | length'
 
 Validate `fingerprint.md`, `map.md`, or `survey.json` against its schema —
 auto-detects which by `.json` extension, `schema: ghost.map/v2` frontmatter,
-or filename. Use this before declaring an artifact structurally valid; every
+or filename. Use this before declaring a file structurally valid; every
 authoring recipe calls it. For profiled fingerprints, follow `lint` with
 `verify-profile` to check fidelity against `survey.json`.
 
@@ -136,7 +141,7 @@ ghost-fingerprint lint path/to/fingerprint.md --format json
 
 ### Profile fidelity — `verify-profile`
 
-Validate that an `fingerprint.md` matches its `survey.json`. This is stricter
+Validate that a `fingerprint.md` matches its `survey.json`. This is stricter
 than `lint`: palette, spacing, typography, radii, and shadow posture must be
 survey-backed. High-salience survey values omitted from the fingerprint become
 warnings. With `--root`, promoted check patterns are counted under their
@@ -212,9 +217,9 @@ ghost-fingerprint diff a/fingerprint.md b/fingerprint.md
 ghost-fingerprint diff a.md b.md --format json
 ```
 
-### Emit — derive artifacts from `fingerprint.md`
+### Emit — derive outputs from `fingerprint.md`
 
-Derive an artifact from `fingerprint.md`. Kinds: `review-command` (a
+Derive an output from `fingerprint.md`. Kinds: `review-command` (a
 per-project slash command at `.claude/commands/design-review.md`),
 `context-bundle` (SKILL.md + fingerprint.md + prompt.md + tokens.css for any
 generator), or `skill` (the `ghost-fingerprint` agentskills.io bundle —
@@ -241,7 +246,7 @@ ghost-fingerprint emit context-bundle --out dist/context
 
 </DocSection>
 
-<DocSection title="ghost-drift — drift detection & stance">
+<DocSection title="ghost-drift — review and compare">
 
 ### Comparison — `compare`
 
@@ -308,8 +313,8 @@ ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
 
 `ghost-drift emit` ships a single kind: `skill`, the agentskills.io bundle
 that teaches your host agent the review / verify / compare / remediate
-recipes. (Authoring artifacts — `review-command`, `context-bundle` — moved
-to `ghost-fingerprint`.)
+recipes. (Authoring outputs — `review-command`, `context-bundle` — live in
+`ghost-fingerprint`.)
 
 <CliHelp tool="ghost-drift" command="emit" hideDescription />
 
@@ -323,9 +328,10 @@ ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
 
 </DocSection>
 
-<DocSection title="ghost-fleet — view across members">
+<DocSection title="ghost-fleet — view across projects">
 
-A fleet is a directory containing many `(map.md, fingerprint.md)` members.
+A fleet is a directory containing many projects, each with `map.md` and
+`fingerprint.md`.
 `ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +
 `fleet.json`), and ships the agentskills.io bundle for the narrative
 recipe.
@@ -367,7 +373,7 @@ once, then ask your agent in plain English:
 | Recipe     | Bundle             | Trigger                                                |
 | ---------- | ------------------ | ------------------------------------------------------ |
 | `scan`     | `ghost-fingerprint` | "scan this project" / "go end-to-end" — meta-recipe orchestrating map → survey → profile |
-| `map`      | `ghost-fingerprint` | "map this repo" / "write map.md" (topology stage)      |
+| `map`      | `ghost-fingerprint` | "map this repo" / "write map.md"                       |
 | `survey`   | `ghost-fingerprint` | "survey design values" / "extract tokens"              |
 | `profile`  | `ghost-fingerprint` | "profile this design language" / "write fingerprint.md" |
 | `review`   | `ghost-drift`      | "review this PR for drift"                              |
@@ -393,8 +399,8 @@ not migrated to any tool (see [`docs/ideas/phase-0-decisions.md`](https://github
 
 ---
 
-See the [Drift Workflow](/tools/drift/workflow) walkthrough for the
-five-move picture these primitives fit into, or
-[Getting Started](/docs/getting-started) for an installation-first guide.
+See [How Ghost Works](/docs/getting-started#how-ghost-works) for the loop
+these primitives fit into, or [Getting Started](/docs/getting-started) for an
+installation-first guide.
 
 </DocSection>
