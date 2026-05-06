@@ -18,17 +18,21 @@ export function DocsPageLayout({ children }: { children: ReactNode }) {
  * Right column: section content with DocProse-compatible styling.
  */
 export function DocSection({
+  id,
   title,
   children,
   className,
 }: {
+  id?: string;
   title: string;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <section
+      id={id}
       className={cn(
+        "scroll-mt-10",
         "grid grid-cols-1 lg:grid-cols-[12rem_1fr] xl:grid-cols-[14rem_1fr] gap-x-10 gap-y-0 border-t border-border/40 pt-8 pb-2 first:border-t-0 first:pt-0",
         className,
       )}

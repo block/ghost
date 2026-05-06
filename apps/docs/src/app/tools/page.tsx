@@ -1,11 +1,10 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { Compass, FileText, Network, Orbit, Palette } from "lucide-react";
+import { FileText, Network, Orbit, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
-import { WorkflowContent } from "@/components/docs/workflow-content";
 import { SectionWrapper } from "@/components/docs/wrappers";
 
 const tools: {
@@ -15,27 +14,21 @@ const tools: {
   icon: ReactNode;
 }[] = [
   {
-    name: "ghost-map",
-    href: "/tools/map",
-    blurb: "Topology — map.md",
-    icon: <Compass className="size-5" strokeWidth={1.5} />,
-  },
-  {
     name: "ghost-fingerprint",
     href: "/tools/fingerprint",
-    blurb: "Authoring — fingerprint.md",
+    blurb: "Create fingerprint.md",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-drift",
     href: "/tools/drift",
-    blurb: "Detection — compare, ack, track",
+    blurb: "Review UI drift",
     icon: <Orbit className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-fleet",
     href: "/tools/fleet",
-    blurb: "Elevation — fleet.md",
+    blurb: "Compare projects",
     icon: <Network className="size-5" strokeWidth={1.5} />,
   },
   {
@@ -56,7 +49,7 @@ function ToolStrip() {
   return (
     <div
       ref={ref}
-      className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-4 overflow-visible"
+      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 overflow-visible"
     >
       {tools.map((tool) => (
         <Link
@@ -84,13 +77,11 @@ export default function ToolsIndex() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="Tools"
-        title="Working with Ghost"
-        description="Map your project, profile its design language, compare it, review drift, evolve with intent, zoom out to the org."
+        title="Tool Directory"
+        description="Pick the tool you need: create the fingerprint, review drift, compare projects, or inspect the reference UI system."
       />
 
       <ToolStrip />
-
-      <WorkflowContent />
     </SectionWrapper>
   );
 }
