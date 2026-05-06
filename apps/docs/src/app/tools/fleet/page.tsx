@@ -16,22 +16,19 @@ const cards: {
   {
     name: "Get started",
     href: "/docs/getting-started",
-    description:
-      "Install the ghost-fleet skill bundle and run members + view across a directory of registered members.",
+    description: "Compare many projects after each has a fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost-fleet--elevation-across-members",
-    description:
-      "members (list + freshness), view (pairwise distances + group-by tables, emits fleet.md + fleet.json), emit skill.",
+    href: "/docs/cli#ghost-fleet--view-across-projects",
+    description: "List members, compute a view, and emit fleet reports.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Skill bundle",
     href: "https://github.com/block/ghost/tree/main/packages/ghost-fleet/src/skill-bundle",
-    description:
-      "The target recipe — synthesize the fleet.md prose narrative from the view output.",
+    description: "The recipe that turns fleet output into a readable summary.",
     icon: <Network className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -47,8 +44,8 @@ export default function GhostFleetLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost-fleet"
-        title="Elevation"
-        description="A read-only elevation view across many (map.md, fingerprint.md) members. Pairwise distances, group-by tables (platform, build system, design-system status), tracks-graph — the orthogonal axis pure fingerprint-comparison can't see. Emits fleet.md + fleet.json into a reports directory."
+        title="Fleet"
+        description="See how many project fingerprints relate. ghost-fleet lists members, compares design-language distance, groups projects by useful traits, and writes fleet.md plus fleet.json for review."
       />
 
       <div
