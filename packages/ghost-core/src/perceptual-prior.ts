@@ -171,7 +171,7 @@ export function escalateForPresence(
 
 /**
  * Compute the final severity for a check, given its canonical dimension
- * and the survey count for the guarded pattern in the current expression.
+ * and the survey count for the guarded pattern in the current fingerprint.
  *
  * Resolution order:
  *   1. Explicit `check.severity` wins outright.

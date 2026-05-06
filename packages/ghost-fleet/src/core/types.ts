@@ -1,20 +1,20 @@
 /**
  * Shared types for the ghost-fleet package.
  *
- * Fleet is read-only over a directory of (map.md, expression.md) members.
+ * Fleet is read-only over a directory of (map.md, fingerprint.md) members.
  * These types describe how members are loaded, what facts the CLI computes
  * over them, and what the deterministic artifacts look like on disk.
  */
 
-import type { Expression, MapFrontmatter } from "@ghost/core";
+import type { Fingerprint, MapFrontmatter } from "@ghost/core";
 import type { FleetDistance, FleetTrackEdge } from "./schema.js";
 
 /**
- * Lint status for a single member's expression.md and map.md.
+ * Lint status for a single member's fingerprint.md and map.md.
  *
  * Three states keep the surface small:
  *   • "ok"      — the file exists and parses; we don't run the full linter
- *                  here (that's `ghost-expression lint`).
+ *                  here (that's `ghost-fingerprint lint`).
  *   • "missing" — the file is absent from the member directory.
  *   • "error"   — the file is present but fails to load/parse.
  */
@@ -37,14 +37,14 @@ export interface FleetMember {
   mapStatus: MemberFileStatus;
   /** Reason when mapStatus is "error". */
   mapError?: string;
-  /** Loaded expression with embedding backfilled. */
-  expression?: Expression;
-  /** Lint/load status of the member's expression.md. */
-  expressionStatus: MemberFileStatus;
-  /** Reason when expressionStatus is "error". */
-  expressionError?: string;
-  /** ISO date string of the expression.md mtime when present. */
-  expressionMtime?: string;
+  /** Loaded fingerprint with embedding backfilled. */
+  fingerprint?: Fingerprint;
+  /** Lint/load status of the member's fingerprint.md. */
+  fingerprintStatus: MemberFileStatus;
+  /** Reason when fingerprintStatus is "error". */
+  fingerprintError?: string;
+  /** ISO date string of the fingerprint.md mtime when present. */
+  fingerprintMtime?: string;
   /** Parsed `.ghost-sync.json` `tracks.id`/string when present. */
   tracks?: string;
 }
@@ -68,12 +68,12 @@ export interface MemberSummary {
    */
   build_system: string | string[] | null;
   registry: string | null;
-  expression_mtime: string | null;
+  fingerprint_mtime: string | null;
   /** Both files present and parsed. */
   ok: boolean;
   /** Per-file status, surfaced so consumers can render specific cells. */
   mapStatus: MemberFileStatus;
-  expressionStatus: MemberFileStatus;
+  fingerprintStatus: MemberFileStatus;
 }
 
 /**
@@ -121,7 +121,7 @@ export interface FleetView {
     platform: string | string[];
     build_system?: string | string[];
     registry: string | null;
-    expression_at?: string;
+    fingerprint_at?: string;
   }>;
   distances: FleetPairwise[];
   tracks: FleetTrack[];

@@ -37,7 +37,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "members [dir]",
-      "List registered fleet members and their freshness — one row per (map.md, expression.md) subdirectory.",
+      "List registered fleet members and their freshness — one row per (map.md, fingerprint.md) subdirectory.",
     )
     .option("--json", "Output JSON (one object per member) instead of a table")
     .action(async (dir: string | undefined, opts: { json?: boolean }) => {
@@ -166,7 +166,7 @@ export function buildCli(): ReturnType<typeof cac> {
 /**
  * Format the members table for human stdout.
  *
- * Columns: id, platform, build_system, registry, expression mtime, status.
+ * Columns: id, platform, build_system, registry, fingerprint mtime, status.
  */
 function formatMembersTable(
   summaries: ReturnType<typeof summarizeMember>[],
@@ -176,7 +176,7 @@ function formatMembersTable(
     "PLATFORM",
     "BUILD",
     "REGISTRY",
-    "EXPRESSION",
+    "FINGERPRINT",
     "STATUS",
   ];
   const rows = summaries.map((s) => [
@@ -184,8 +184,8 @@ function formatMembersTable(
     formatCellValue(s.platform),
     formatCellValue(s.build_system),
     s.registry ?? "-",
-    s.expression_mtime ? s.expression_mtime.slice(0, 10) : "-",
-    s.ok ? "ok" : `${s.mapStatus}/${s.expressionStatus}`,
+    s.fingerprint_mtime ? s.fingerprint_mtime.slice(0, 10) : "-",
+    s.ok ? "ok" : `${s.mapStatus}/${s.fingerprintStatus}`,
   ]);
   const widths = headers.map((h, i) =>
     Math.max(h.length, ...rows.map((r) => r[i]?.length ?? 0)),

@@ -16,8 +16,8 @@ The contract: other tools opportunistically light up component-level features wh
 
 A three-layer demonstration:
 
-1. **Stays a pure shadcn registry package.** No package-local `map.md`, `survey.json`, or `expression.md`; Ghost scan artifacts belong to the project or workflow that authors them.
-2. **Per-component dimension tags.** Each component in registry.json can carry optional `meta.expression_dimensions: [palette, spacing, typography, surfaces]` declaring which design dimensions the component primarily expresses. Drift uses this for higher-confidence attribution.
+1. **Stays a pure shadcn registry package.** No package-local `map.md`, `survey.json`, or `fingerprint.md`; Ghost scan artifacts belong to the project or workflow that authors them.
+2. **Per-component dimension tags.** Each component in registry.json can carry optional `meta.fingerprint_dimensions: [palette, spacing, typography, surfaces]` declaring which design dimensions the component primarily expresses. Drift uses this for higher-confidence attribution.
 3. **Shape-aware exemplar tags.** Examples can distinguish atoms from composed response shapes with optional `meta.exemplar_kind: "atom" | "shape"` and `meta.response_shapes: ["article" | "tracker" | "comparison" | "card"]`. This gives generators a narrow reference set before they compose a freeform answer.
 
 All layers are optional from the tool side. Tools degrade gracefully when they're absent. ghost-ui is the place the registry case is maximally present.
@@ -36,7 +36,7 @@ Today's registry.json is shadcn-shaped. The extension is purely additive metadat
       "type": "registry:ui",
       "files": ["components/ui/button.tsx"],
       "meta": {
-        "expression_dimensions": ["palette", "surfaces", "typography"]
+        "fingerprint_dimensions": ["palette", "surfaces", "typography"]
       }
     }
   ]
@@ -45,13 +45,13 @@ Today's registry.json is shadcn-shaped. The extension is purely additive metadat
 
 The shadcn schema doesn't care about `meta`. Other registries (boss-ui, future shadcn variants) can adopt the convention without coordination — same way `keywords` works in `package.json`.
 
-If `meta.expression_dimensions` is missing, drift attributes to the component but not to specific dimensions. Pure progressive enhancement.
+If `meta.fingerprint_dimensions` is missing, drift attributes to the component but not to specific dimensions. Pure progressive enhancement.
 
 For exemplar metadata, `atom` means a primitive control such as badge, button, cell, or input. `shape` means a composed output: article for plans/timelines/worksheets, tracker for metrics/progress/reviews, comparison for tradeoffs/options, and card for compact focused recommendations. Card is one shape, not the default layout for every generated answer.
 
 ## CI loop — out of package
 
-Ghost UI should still exercise the loop, but not by checking scan artifacts into `packages/ghost-ui`. Any map/expression/drift CI belongs to the workflow that owns the authored scan artifacts, with `packages/ghost-ui` as the observed source target.
+Ghost UI should still exercise the loop, but not by checking scan artifacts into `packages/ghost-ui`. Any map/fingerprint/drift CI belongs to the workflow that owns the authored scan artifacts, with `packages/ghost-ui` as the observed source target.
 
 ## Component-level dimension provenance
 
@@ -66,7 +66,7 @@ Implementation: a sentinel comment in each component file (`// @ghost-dimensions
 | Tool | When ghost-ui's conventions are present |
 |---|---|
 | **map** | Detects registry.json automatically and records registry shape in map.md. No new code path — just a richer output. |
-| **expression** | Profile recipe can read per-component dimension tags as evidence for which dimensions the design language emphasizes. |
+| **fingerprint** | Profile recipe can read per-component dimension tags as evidence for which dimensions the design language emphasizes. |
 | **drift** | `--by-component` mode is fully deterministic; per-dimension attribution becomes high-confidence. |
 | **fleet** | Group-by `registry:shadcn` returns the cohort that exposes per-component data; the cohort enables sharper cross-repo analysis. |
 
@@ -82,19 +82,19 @@ This is the natural extension — the MCP becomes a focused registry server: "gi
 
 ## Open questions
 
-- **Dimension vocabulary.** Current expression dimensions are palette / spacing / typography / surfaces. Are those the right tags for components? Probably yes (matches the comparison axes), but registry metadata should stay useful even when no package-local expression is present.
+- **Dimension vocabulary.** Current fingerprint dimensions are palette / spacing / typography / surfaces. Are those the right tags for components? Probably yes (matches the comparison axes), but registry metadata should stay useful even when no package-local fingerprint is present.
 - **Comment sentinel format.** `// @ghost-dimensions palette,radius` is one option. JSDoc tag is another. Probably JSDoc tag for compatibility with existing component doc conventions.
 - **CI fail vs report.** Should a Ghost UI scan workflow block on drift, or just report? Lean: block on artifact lint where that workflow owns artifacts, advisory on drift (report on PR comment, don't fail). Drift signals; humans decide.
 
 ## Out of scope
 
-- Coupling other tools to ghost-ui specifically. Anything that requires `meta.expression_dimensions` is wrong; everything that benefits from it when present is right.
+- Coupling other tools to ghost-ui specifically. Anything that requires `meta.fingerprint_dimensions` is wrong; everything that benefits from it when present is right.
 - Republishing ghost-ui to npm. Stays registry-distributed via shadcn `add`.
 - Renaming or restructuring the existing 97-component library. The conventions are additive metadata, not refactors.
 - A "Ghost-flavored shadcn" registry format. The whole point is that shadcn's registry is enough — Ghost just reads it well.
 
 ## Next steps
 
-1. Pick 5–10 components, add `meta.expression_dimensions` to each. Validate the dimension vocabulary feels right.
+1. Pick 5–10 components, add `meta.fingerprint_dimensions` to each. Validate the dimension vocabulary feels right.
 2. Tag the example catalogue as atoms vs shapes where examples are composed outputs, then validate whether agents select narrower references.
 3. Document the convention in the package README so other registries can adopt — this is the part that turns ghost-ui from "our reference" into "the reference."

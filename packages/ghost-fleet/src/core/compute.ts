@@ -1,4 +1,4 @@
-import { compareExpressions } from "@ghost/core";
+import { compareFingerprints } from "@ghost/core";
 import type {
   FleetGroupingsComputed,
   FleetMember,
@@ -8,7 +8,7 @@ import type {
 
 /**
  * Compute the pairwise distance array between every member that has a
- * valid expression. Members without a loadable expression are dropped
+ * valid fingerprint. Members without a loadable fingerprint are dropped
  * from the matrix — they still appear in the members table.
  *
  * Order: ascending by `(a, b)` id pair, so the JSON output is reproducible.
@@ -17,7 +17,7 @@ export function computePairwiseDistances(
   members: FleetMember[],
 ): FleetPairwise[] {
   const eligible = members.filter(
-    (m) => m.expression && m.expressionStatus === "ok",
+    (m) => m.fingerprint && m.fingerprintStatus === "ok",
   );
 
   const out: FleetPairwise[] = [];
@@ -25,8 +25,8 @@ export function computePairwiseDistances(
     for (let j = i + 1; j < eligible.length; j++) {
       const a = eligible[i];
       const b = eligible[j];
-      if (!a.expression || !b.expression) continue;
-      const cmp = compareExpressions(a.expression, b.expression);
+      if (!a.fingerprint || !b.fingerprint) continue;
+      const cmp = compareFingerprints(a.fingerprint, b.fingerprint);
       out.push({ a: a.id, b: b.id, distance: cmp.distance });
     }
   }

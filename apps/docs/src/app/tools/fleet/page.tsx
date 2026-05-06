@@ -48,7 +48,7 @@ export default function GhostFleetLanding() {
       <AnimatedPageHeader
         kicker="ghost-fleet"
         title="Elevation"
-        description="A read-only elevation view across many (map.md, expression.md) members. Pairwise distances, group-by tables (platform, build system, design-system status), tracks-graph — the orthogonal axis pure expression-comparison can't see. Emits fleet.md + fleet.json into a reports directory."
+        description="A read-only elevation view across many (map.md, fingerprint.md) members. Pairwise distances, group-by tables (platform, build system, design-system status), tracks-graph — the orthogonal axis pure fingerprint-comparison can't see. Emits fleet.md + fleet.json into a reports directory."
       />
 
       <div

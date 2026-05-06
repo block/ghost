@@ -1,18 +1,18 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { Expression } from "@ghost/core";
-import { EXPRESSION_FILENAME, serializeExpression } from "ghost-expression";
+import type { Fingerprint } from "@ghost/core";
+import { FINGERPRINT_FILENAME, serializeFingerprint } from "ghost-fingerprint";
 
 /**
- * Write an expression as a publishable artifact (expression.md) to the
+ * Write a fingerprint as a publishable artifact (fingerprint.md) to the
  * project root. Other projects can track this file as a reference.
  */
-export async function emitExpression(
-  expression: Expression,
+export async function emitFingerprint(
+  fingerprint: Fingerprint,
   cwd: string = process.cwd(),
 ): Promise<string> {
-  const target = resolve(cwd, EXPRESSION_FILENAME);
-  await writeFile(target, serializeExpression(expression), "utf-8");
+  const target = resolve(cwd, FINGERPRINT_FILENAME);
+  await writeFile(target, serializeFingerprint(fingerprint), "utf-8");
 
   return target;
 }

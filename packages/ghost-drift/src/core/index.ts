@@ -18,14 +18,14 @@ export type {
   DriftVelocity,
   EmbeddingConfig,
   EnrichedComparison,
-  EnrichedExpression,
-  Expression,
-  ExpressionComparison,
-  ExpressionHistoryEntry,
+  EnrichedFingerprint,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
+  Fingerprint,
+  FingerprintComparison,
+  FingerprintHistoryEntry,
   FontDescriptor,
   GhostConfig,
   NormalizedToken,
@@ -51,57 +51,13 @@ export type {
   ValueDrift,
 } from "@ghost/core";
 export {
-  compareExpressions,
+  compareFingerprints,
   computeEmbedding,
   computeSemanticEmbedding,
-  describeExpression,
+  describeFingerprint,
   embeddingDistance,
   inferSemanticRole,
 } from "@ghost/core";
-// --- Deprecation shim: expression authoring + context emit moved to `ghost-expression`.
-// Re-exported here for one major-version cycle so library consumers can update
-// their imports gradually. New code should `import from "ghost-expression"`.
-export type {
-  BodyData,
-  ColorChange,
-  ContextFormat,
-  DecisionChange,
-  EmitReviewInput,
-  ExpressionLayout,
-  ExpressionLayoutSection,
-  ExpressionMeta,
-  FrontmatterData,
-  FrontmatterShape,
-  LintIssue,
-  LintOptions,
-  LintReport,
-  LintSeverity,
-  ParsedExpression,
-  SemanticDiff,
-  TokenChange,
-  WriteContextOptions,
-  WriteContextResult,
-} from "ghost-expression";
-export {
-  buildSkillMd,
-  buildTokensCss,
-  diffExpressions,
-  EXPRESSION_FILENAME,
-  emitReviewCommand,
-  FrontmatterSchema,
-  formatLayout,
-  formatSemanticDiff,
-  layoutExpression,
-  lintExpression,
-  loadExpression,
-  parseBody,
-  parseExpression,
-  serializeExpression,
-  splitRaw,
-  toJsonSchema,
-  validateFrontmatter,
-  writeContextBundle,
-} from "ghost-expression";
 export type { CompareOptions, CompareResult } from "./compare.js";
 export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";
@@ -117,12 +73,12 @@ export {
   computeDriftVectors,
   computeTemporalComparison,
   DIMENSION_RANGES,
-  emitExpression,
+  emitFingerprint,
   normalizeTrackedSource,
   readHistory,
   readRecentHistory,
   readSyncManifest,
-  resolveTrackedExpression,
+  resolveTrackedFingerprint,
   writeSyncManifest,
 } from "./evolution/index.js";
 export {
@@ -132,9 +88,9 @@ export {
 export {
   formatComparison,
   formatComparisonJSON,
-  formatExpression,
-  formatExpressionJSON,
-} from "./reporters/expression.js";
+  formatFingerprint,
+  formatFingerprintJSON,
+} from "./reporters/fingerprint.js";
 export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,

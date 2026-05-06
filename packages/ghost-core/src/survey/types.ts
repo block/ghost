@@ -2,7 +2,7 @@
  * Types for `ghost.survey/v2` — the observed evidence scan artifact.
  *
  * A survey is the middle artifact in a scan: produced after the map
- * (`map.md`) and before expression synthesis (`expression.md`). It
+ * (`map.md`) and before fingerprint synthesis (`fingerprint.md`). It
  * catalogues every concrete design value and implemented UI surface the
  * agent observed in a target, with structured specs and per-row
  * deterministic IDs.
@@ -242,7 +242,7 @@ export interface UiSurfaceSignals {
   breakpoint_behavior?: string[];
   /** IDs of value rows that are visibly load-bearing for this surface. */
   value_refs?: string[];
-  /** Short factual notes; rationale belongs in expression.md, not here. */
+  /** Short factual notes; rationale belongs in fingerprint.md, not here. */
   notes?: string[];
 }
 
