@@ -21,9 +21,9 @@ const tools: {
     icon: <Compass className="size-5" strokeWidth={1.5} />,
   },
   {
-    name: "ghost-expression",
-    href: "/tools/expression",
-    blurb: "Authoring — expression.md",
+    name: "ghost-fingerprint",
+    href: "/tools/fingerprint",
+    blurb: "Authoring — fingerprint.md",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {

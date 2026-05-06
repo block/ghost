@@ -188,12 +188,12 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/expression");
+                navigate("/tools/fingerprint");
                 setSearchOpen(false);
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost-expression
+              ghost-fingerprint
             </CommandItem>
             <CommandItem
               onSelect={() => {

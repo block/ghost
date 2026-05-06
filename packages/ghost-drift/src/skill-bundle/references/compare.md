@@ -5,15 +5,15 @@ handoffs:
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
     prompt: Accept current drift across the board
-  - label: Track the other expression
+  - label: Track the other fingerprint
     command: ghost-drift track
-    prompt: Track the other expression.md as the new reference
+    prompt: Track the other fingerprint.md as the new reference
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension
 ---
 
-# Recipe: Compare expressions
+# Recipe: Compare fingerprints
 
 **Goal:** answer "how different are these design languages?" or "how has ours drifted over time?"
 
@@ -33,14 +33,14 @@ Flags:
 
     ghost-drift compare a.md b.md c.md d.md
 
-Output: pairwise distance matrix, centroid, spread, and cluster assignments. The centroid is the composite (org-scale) expression: what the members average out to.
+Output: pairwise distance matrix, centroid, spread, and cluster assignments. The centroid is the composite (org-scale) fingerprint: what the members average out to.
 
-Use for: comparing a collection of expressions at the same elevation: which are closest, which are far apart, and whether they cluster into coherent families.
+Use for: comparing a collection of fingerprints at the same elevation: which are closest, which are far apart, and whether they cluster into coherent families.
 
 ### Interpreting output
 
 - **Distance < 0.2**: effectively the same system.
 - **0.2 – 0.5**: recognizable drift; worth a qualitative review.
-- **> 0.5**: the two expressions represent meaningfully different systems. Either one has diverged intentionally, or they were never the same.
+- **> 0.5**: the two fingerprints represent meaningfully different systems. Either one has diverged intentionally, or they were never the same.
 
 If the user asks "why did it change", follow up with `--semantic`.

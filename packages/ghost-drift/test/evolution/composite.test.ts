@@ -1,4 +1,4 @@
-import type { CompositeMember, Expression } from "@ghost/core";
+import type { CompositeMember, Fingerprint } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 import { compareComposite } from "../../src/core/evolution/composite.js";
 
@@ -11,7 +11,7 @@ function makeCompositeMember(
     embedding[Number(idx)] = val;
   }
 
-  const fp: Expression = {
+  const fp: Fingerprint = {
     id,
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -44,7 +44,7 @@ function makeCompositeMember(
     embedding,
   };
 
-  return { id, expression: fp };
+  return { id, fingerprint: fp };
 }
 
 describe("compareComposite", () => {

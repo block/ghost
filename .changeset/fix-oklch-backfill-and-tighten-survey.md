@@ -1,11 +1,11 @@
 ---
-"ghost-expression": patch
+"ghost-fingerprint": patch
 "ghost-drift": patch
 ---
 
 Fix self-distance bug + tighten the survey recipe's exhaustiveness rule.
 
-**Bug fix.** `loadExpression` now backfills `oklch` on palette colors that arrive hex-only (frontmatter without an explicit `oklch` tuple). Without this, `comparePalette` treated hex-only colors as fully unmatched and contributed distance `1.0` per color — even when comparing an expression to itself. Self-distance was reported as 17.5% on a freshly authored expression. Backfill is deterministic (same hex → same oklch), so re-parsing the same file always yields the same in-memory shape.
+**Bug fix.** `loadFingerprint` now backfills `oklch` on palette colors that arrive hex-only (frontmatter without an explicit `oklch` tuple). Without this, `comparePalette` treated hex-only colors as fully unmatched and contributed distance `1.0` per color — even when comparing an fingerprint to itself. Self-distance was reported as 17.5% on a freshly authored fingerprint. Backfill is deterministic (same hex → same oklch), so re-parsing the same file always yields the same in-memory shape.
 
 **Defensive fallback.** `comparePalette` also now resolves oklch on-the-fly when missing, and falls back to hex-string equality when even on-the-fly compute can't parse the color (CSS variables, opaque external refs). This covers third-party producers that don't backfill on write.
 
