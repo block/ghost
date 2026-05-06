@@ -36,7 +36,7 @@ design_system:
   entry_files:
     - packages/ghost-ui/src/styles/tokens.css
     - packages/ghost-ui/registry.json
-    - packages/ghost-ui/expression.md
+    - packages/ghost-ui/fingerprint.md
   status: active
 surface_sources:
   render_strategy: static-source
@@ -58,7 +58,7 @@ feature_areas:
       - packages/ghost-drift/src/skill-bundle
     sub_areas:
       - compare
-      - expression
+      - fingerprint
       - evolution
       - reporters
   - name: ghost-map
@@ -88,7 +88,7 @@ orientation_files:
   - README.md
   - CLAUDE.md
   - INVARIANTS.md
-  - docs/expression-format.md
+  - docs/fingerprint-format.md
   - docs/ideas/phase-0-decisions.md
 ---
 
@@ -96,7 +96,7 @@ orientation_files:
 
 Ghost is a TypeScript pnpm monorepo that helps agents detect and manage
 visual-language drift in the design systems they generate against. The
-canonical artifact is `expression.md` — a human-readable, LLM-editable
+canonical artifact is `fingerprint.md` — a human-readable, LLM-editable
 Markdown file with a YAML machine layer plus a three-section prose body.
 Ghost is BYOA: judgement work (profile, review, verify, generate, discover)
 lives in skill recipes the host agent executes; the CLIs are the calculator
@@ -107,7 +107,7 @@ The repository is in the middle of a five-tool decomposition. Today
 (private reference component library, distributed via shadcn registry) and
 `apps/docs` (the deployed docs site). The `ghost-map` package — the source
 of this map.md — is being bootstrapped here as the first phase of that
-decomposition; future phases extract `@ghost/core`, `ghost-expression`,
+decomposition; future phases extract `@ghost/core`, `ghost-fingerprint`,
 and `ghost-fleet` as siblings.
 
 ## Topology
@@ -115,7 +115,7 @@ and `ghost-fleet` as siblings.
 The design system lives in `packages/ghost-ui/src`. Tokens resolve through
 `src/styles/tokens.css` (the canonical CSS variable layer) and the shadcn
 `registry.json` describes the 97 components shipped to consumers. The
-expression.md at `packages/ghost-ui/expression.md` is the authoritative
+fingerprint.md at `packages/ghost-ui/fingerprint.md` is the authoritative
 language description; `embedding.md` carries the precomputed 49-dim vector.
 
 Customer UI lives in two places. The reference primitives under
@@ -127,7 +127,7 @@ but is not itself customer-visible.
 
 Feature surfaces follow the package boundaries because the repo is a
 verb-decomposed CLI. `ghost-drift` is the engine that owns embedding,
-comparison, expression parsing, evolution (track/ack/diverge), and the
+comparison, fingerprint parsing, evolution (track/ack/diverge), and the
 existing skill bundle. `ghost-map` (this slice) ships only `inventory` and
 `lint` today; `describe` and `emit skill` are deferred to a later
 deliverable. `ghost-ui-components` is the registry surface; `ghost-ui-mcp`
@@ -137,7 +137,7 @@ catalogue site.
 
 Orientation reading order is `README.md` → `CLAUDE.md` (agent context) →
 `INVARIANTS.md` (hard constraints — read before any non-trivial change) →
-`docs/expression-format.md` (the canonical artifact spec) →
+`docs/fingerprint-format.md` (the canonical artifact spec) →
 `docs/ideas/phase-0-decisions.md` (the decomposition plan that
 contextualizes ghost-map's existence).
 

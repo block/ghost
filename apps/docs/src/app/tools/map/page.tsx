@@ -17,7 +17,7 @@ const cards: {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the CLIs and write your first map.md alongside expression.md.",
+      "Install the CLIs and write your first map.md alongside fingerprint.md.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {

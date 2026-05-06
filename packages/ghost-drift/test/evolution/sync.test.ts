@@ -1,7 +1,7 @@
 import type {
   DimensionAck,
-  Expression,
-  ExpressionComparison,
+  Fingerprint,
+  FingerprintComparison,
   SyncManifest,
 } from "@ghost/core";
 import { describe, expect, it } from "vitest";
@@ -21,10 +21,10 @@ function makeManifest(
   }
 
   return {
-    tracks: { type: "path", value: "./tracked.expression.md" },
+    tracks: { type: "path", value: "./tracked.fingerprint.md" },
     ackedAt: new Date().toISOString(),
-    trackedExpressionId: "tracked",
-    localExpressionId: "local",
+    trackedFingerprintId: "tracked",
+    localFingerprintId: "local",
     dimensions: fullDimensions,
     overallDistance: 0.2,
   };
@@ -32,8 +32,8 @@ function makeManifest(
 
 function makeComparison(
   dimensions: Record<string, number>,
-): ExpressionComparison {
-  const fp: Expression = {
+): FingerprintComparison {
+  const fp: Fingerprint = {
     id: "test",
     source: "registry",
     timestamp: new Date().toISOString(),
@@ -115,7 +115,7 @@ describe("checkBounds", () => {
     expect(result.reconverging).toContain("palette");
   });
 
-  it("does not flag reconverging if still far from tracked expression", () => {
+  it("does not flag reconverging if still far from tracked fingerprint", () => {
     const manifest = makeManifest({
       palette: { distance: 0.4, stance: "diverging" },
     });
