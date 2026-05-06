@@ -2,7 +2,7 @@ import manifest from "@/generated/cli-manifest.json";
 
 type ToolName =
   | "ghost-drift"
-  | "ghost-expression"
+  | "ghost-fingerprint"
   | "ghost-map"
   | "ghost-fleet";
 

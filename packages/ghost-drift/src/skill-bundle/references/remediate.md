@@ -7,7 +7,7 @@ handoffs:
     prompt: Re-run the review against the patched files to confirm the drift is closed
   - label: Acknowledge the drift as accepted
     command: ghost-drift ack
-    prompt: Acknowledge that the current expression.md no longer matches and accept the drift
+    prompt: Acknowledge that the current fingerprint.md no longer matches and accept the drift
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension so it stops flagging
@@ -15,9 +15,9 @@ handoffs:
 
 # Recipe: Remediate drift
 
-**Goal:** turn drift findings into a small, surgical patch — the minimal code change that closes the gap between the working tree and the expression. Remediate is the loop after `review`: review *finds* drift; remediate *proposes the fix*.
+**Goal:** turn drift findings into a small, surgical patch — the minimal code change that closes the gap between the working tree and the fingerprint. Remediate is the loop after `review`: review *finds* drift; remediate *proposes the fix*.
 
-Ghost has no `ghost-drift remediate` CLI command. You — the host agent — read the findings, weigh them against the expression, and write the patch.
+Ghost has no `ghost-drift remediate` CLI command. You — the host agent — read the findings, weigh them against the fingerprint, and write the patch.
 
 ## Steps
 
@@ -27,14 +27,14 @@ You need:
 
 - The **drift output** — either the JSON from `ghost-drift compare --semantic --format json` or the structured findings from a [review](review.md) pass.
 - The **offending diff** — `git diff <base> -- <file>` for each flagged file.
-- The **expression** — `ghost-expression describe expression.md` to plan reads, then load the relevant sections (frontmatter is always cheap; pull decision blocks by dimension).
+- The **fingerprint** — `ghost-fingerprint describe fingerprint.md` to plan reads, then load the relevant sections (frontmatter is always cheap; pull decision blocks by dimension).
 - The **sync manifest** if present (`.ghost-sync.json`) — anything stance:`diverging` is intentional and must NOT be remediated.
 
 ### 2. Match each finding to a token
 
 For every drift finding, identify the token the code *should* have used:
 
-- Hardcoded `#3b82f6` → `palette.dominant` or `palette.semantic` entry whose value is closest. If nothing fits, the expression is silent on this color and the right move is to add a decision, not a remediation.
+- Hardcoded `#3b82f6` → `palette.dominant` or `palette.semantic` entry whose value is closest. If nothing fits, the fingerprint is silent on this color and the right move is to add a decision, not a remediation.
 - Off-grid `padding: 14px` → nearest step in `spacing.scale`. Prefer rounding *down* unless the surrounding rhythm suggests otherwise.
 - Hard-coded `border-radius: 12px` not in `surfaces.borderRadii` → snap to nearest declared radius.
 - Font family not in `typography.families` → flag for human; family swaps are rarely a one-line fix.
@@ -71,7 +71,7 @@ Group patches by file. Keep each patch surgical — do not refactor surrounding 
 
 Some findings have no clean fix:
 
-- The expression is silent on the dimension → tell the user the expression is missing a decision; offer to run the profile recipe to add it.
+- The fingerprint is silent on the dimension → tell the user the fingerprint is missing a decision; offer to run the profile recipe to add it.
 - The drift is intentional (e.g. a brand-tier override on a single page) → suggest `ghost-drift diverge <dimension> --reason "..."` instead of a code patch.
 - The fix would cascade across many files → flag and stop. A 30-file refactor disguised as "remediation" is a separate change with its own review.
 
@@ -81,7 +81,7 @@ After the user applies (or rejects) the patches:
 
 - Re-run `ghost-drift compare` — distance should drop. If it doesn't, the patches missed.
 - If the user accepts the drift instead of fixing it, run `ghost-drift ack` (overall) or `ghost-drift diverge <dimension>` (one axis).
-- Never silently re-profile the expression to "absorb" the drift. That hides the act.
+- Never silently re-profile the fingerprint to "absorb" the drift. That hides the act.
 
 ## Why this is a recipe, not a verb
 

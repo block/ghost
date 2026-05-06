@@ -4,12 +4,12 @@ import { resolve } from "node:path";
 import type {
   DimensionAck,
   DimensionStance,
-  Expression,
-  ExpressionComparison,
+  Fingerprint,
+  FingerprintComparison,
   SyncManifest,
   Target,
 } from "@ghost/core";
-import { compareExpressions } from "@ghost/core";
+import { compareFingerprints } from "@ghost/core";
 
 const SYNC_FILENAME = ".ghost-sync.json";
 
@@ -44,24 +44,24 @@ export async function writeSyncManifest(
 
 /**
  * Acknowledge the current drift state.
- * Compares the local expression to the tracked expression, recording
+ * Compares the local fingerprint to the tracked fingerprint, recording
  * per-dimension distances with stances.
  *
  * If dimension/stance are provided, only that dimension is updated —
  * the rest are preserved from the existing manifest or set to "accepted".
  */
 export async function acknowledge(opts: {
-  local: Expression;
-  tracked: Expression;
+  local: Fingerprint;
+  tracked: Fingerprint;
   tracks: Target;
   dimension?: string;
   stance?: DimensionStance;
   reason?: string;
   tolerance?: number;
   cwd?: string;
-}): Promise<{ manifest: SyncManifest; comparison: ExpressionComparison }> {
+}): Promise<{ manifest: SyncManifest; comparison: FingerprintComparison }> {
   const cwd = opts.cwd ?? process.cwd();
-  const comparison = compareExpressions(opts.tracked, opts.local);
+  const comparison = compareFingerprints(opts.tracked, opts.local);
   const now = new Date().toISOString();
 
   // Load existing manifest to preserve previous acks
@@ -93,8 +93,8 @@ export async function acknowledge(opts: {
   const manifest: SyncManifest = {
     tracks: opts.tracks,
     ackedAt: now,
-    trackedExpressionId: opts.tracked.id,
-    localExpressionId: opts.local.id,
+    trackedFingerprintId: opts.tracked.id,
+    localFingerprintId: opts.local.id,
     dimensions,
     overallDistance: comparison.distance,
   };
@@ -122,7 +122,7 @@ export interface CheckBoundsOptions {
  */
 export function checkBounds(
   manifest: SyncManifest,
-  current: ExpressionComparison,
+  current: FingerprintComparison,
   toleranceOrOptions?: number | CheckBoundsOptions,
 ): { exceeded: boolean; dimensions: string[]; reconverging: string[] } {
   const opts: CheckBoundsOptions =

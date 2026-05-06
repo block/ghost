@@ -15,7 +15,7 @@
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
 #     references/scan.md, map.md, survey.md, profile.md, schema.md
-#     assets/expression.template.md
+#     assets/fingerprint.template.md
 #
 # Exit codes:
 #   0  installed
@@ -27,7 +27,7 @@ set -eu
 
 GHOST_REF="${GHOST_REF:-main}"
 GHOST_SOURCE="${GHOST_SOURCE:-https://raw.githubusercontent.com/block/ghost/${GHOST_REF}}"
-GHOST_PACKAGE_PATH="packages/ghost-expression/src/skill-bundle"
+GHOST_PACKAGE_PATH="packages/ghost-fingerprint/src/skill-bundle"
 GHOST_BUNDLE_NAME="ghost"
 FORCE=0
 
@@ -193,5 +193,5 @@ printf 'Next:\n'
 printf '  cd <your-repo>\n'
 printf '  Tell your agent: "Scan this project with ghost"\n'
 printf '\n'
-printf 'The agent will produce map.md → bucket.json → expression.md, then\n'
+printf 'The agent will produce map.md → bucket.json → fingerprint.md, then\n'
 printf 'emit a /design-review slash command tuned to your design language.\n'

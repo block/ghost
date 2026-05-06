@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // One-shot script: remove `# Signature` body blocks from a list of
-// expression.md files. The block runs from the `# Signature` line up to
+// fingerprint.md files. The block runs from the `# Signature` line up to
 // (but not including) the next H1 heading or EOF. Idempotent.
 import { readFileSync, writeFileSync } from "node:fs";
 

@@ -1,6 +1,6 @@
 /**
  * Public surface for `ghost.survey/v2` — types, schemas, ID generation,
- * lint, and merge. Consumed by `ghost-expression` and any future ghost
+ * lint, and merge. Consumed by `ghost-fingerprint` and any future ghost
  * tool that operates on survey data.
  */
 

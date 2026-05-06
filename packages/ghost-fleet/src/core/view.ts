@@ -65,8 +65,8 @@ export async function buildFleetView(
         build_system: map.build_system,
         registry: map.registry ? map.registry.path : null,
       };
-      if (member.expressionMtime) {
-        row.expression_at = member.expressionMtime.slice(0, 10);
+      if (member.fingerprintMtime) {
+        row.fingerprint_at = member.fingerprintMtime.slice(0, 10);
       }
       return row;
     });

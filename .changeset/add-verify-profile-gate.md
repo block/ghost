@@ -1,5 +1,5 @@
 ---
-"ghost-expression": minor
+"ghost-fingerprint": minor
 ---
 
-Add a deterministic profile verification command that checks expression palette provenance and promoted check calibration against survey evidence.
+Add a deterministic profile verification command that checks fingerprint palette provenance and promoted check calibration against survey evidence.

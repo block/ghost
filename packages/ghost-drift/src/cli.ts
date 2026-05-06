@@ -4,16 +4,15 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSkillBundle } from "@ghost/core";
 import { cac } from "cac";
+import { formatSemanticDiff, loadFingerprint } from "ghost-fingerprint";
 import {
   compare,
   formatComparison,
   formatComparisonJSON,
   formatCompositeComparison,
   formatCompositeComparisonJSON,
-  formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
-  loadExpression,
   readHistory,
   readSyncManifest,
 } from "./core/index.js";
@@ -35,21 +34,14 @@ const SKILL_BUNDLE_ROOT = fileURLToPath(
 
 const DEFAULT_SKILL_OUT = ".claude/skills/ghost-drift";
 
-const MOVED_VERBS: Record<string, string> = {
-  lint: "ghost-expression lint",
-  describe: "ghost-expression describe",
-};
-
-const MOVED_EMIT_KINDS = new Set(["review-command", "context-bundle"]);
-
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost-drift");
 
   // --- compare ---
   cli
     .command(
-      "compare [...expressions]",
-      "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
+      "compare [...fingerprints]",
+      "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
     )
     .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
     .option(
@@ -61,12 +53,12 @@ export function buildCli(): ReturnType<typeof cac> {
       "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (expressions: string[], opts) => {
+    .action(async (fingerprints: string[], opts) => {
       try {
         const parsed = await Promise.all(
-          expressions.map((path) => loadExpression(path)),
+          fingerprints.map((path) => loadFingerprint(path)),
         );
-        const exprs = parsed.map((p) => p.expression);
+        const exprs = parsed.map((p) => p.fingerprint);
 
         let history: Awaited<ReturnType<typeof readHistory>> | undefined;
         let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null =
@@ -135,7 +127,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "emit <kind>",
-      "Emit the ghost-drift agentskills.io bundle (kind: skill). For review-command and context-bundle, use `ghost-expression emit`.",
+      "Emit the ghost-drift agentskills.io bundle (kind: skill).",
     )
     .option(
       "-o, --out <path>",
@@ -143,16 +135,9 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .action(async (kind: string, opts) => {
       try {
-        if (MOVED_EMIT_KINDS.has(kind)) {
-          console.error(
-            `Error: \`ghost-drift emit ${kind}\` moved to \`ghost-expression emit ${kind}\`. The expression authoring verbs now live in the ghost-expression package.`,
-          );
-          process.exit(2);
-          return;
-        }
         if (kind !== "skill") {
           console.error(
-            `Error: unknown emit kind '${kind}'. Supported: skill. (review-command and context-bundle moved to ghost-expression.)`,
+            `Error: unknown emit kind '${kind}'. Supported: skill.`,
           );
           process.exit(2);
           return;
@@ -182,21 +167,6 @@ export function buildCli(): ReturnType<typeof cac> {
         process.exit(2);
       }
     });
-
-  // --- moved verbs: stub error commands so users get a clear migration path ---
-  for (const [verb, replacement] of Object.entries(MOVED_VERBS)) {
-    cli
-      .command(
-        `${verb} [...args]`,
-        `Moved to \`${replacement}\`. Install ghost-expression and re-run.`,
-      )
-      .action(() => {
-        console.error(
-          `Error: \`ghost-drift ${verb}\` moved to \`${replacement}\`. The expression authoring verbs now live in the ghost-expression package — install it and re-run.`,
-        );
-        process.exit(2);
-      });
-  }
 
   cli.help();
   cli.version(readPackageVersion());

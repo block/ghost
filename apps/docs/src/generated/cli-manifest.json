@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-05T11:07:11.446Z",
+  "generatedAt": "2026-05-06T02:19:56.135Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -7,8 +7,8 @@
         {
           "tool": "ghost-drift",
           "name": "compare",
-          "rawName": "compare [...expressions]",
-          "description": "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
+          "rawName": "compare [...fingerprints]",
+          "description": "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
           "options": [
             {
               "rawName": "--semantic",
@@ -48,7 +48,7 @@
           "tool": "ghost-drift",
           "name": "ack",
           "rawName": "ack",
-          "description": "Acknowledge current drift — record intentional stance toward the tracked expression",
+          "description": "Acknowledge current drift — record intentional stance toward the tracked fingerprint",
           "options": [
             {
               "rawName": "-c, --config <path>",
@@ -95,8 +95,8 @@
         {
           "tool": "ghost-drift",
           "name": "track",
-          "rawName": "track <expression>",
-          "description": "Track another expression as this repo's reference",
+          "rawName": "track <fingerprint>",
+          "description": "Track another fingerprint as this repo's reference",
           "options": [
             {
               "rawName": "-d, --dimension <name>",
@@ -152,7 +152,7 @@
           "tool": "ghost-drift",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit the ghost-drift agentskills.io bundle (kind: skill). For review-command and context-bundle, use `ghost-expression emit`.",
+          "description": "Emit the ghost-drift agentskills.io bundle (kind: skill).",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -163,20 +163,6 @@
               "negated": false
             }
           ]
-        },
-        {
-          "tool": "ghost-drift",
-          "name": "lint",
-          "rawName": "lint [...args]",
-          "description": "Moved to `ghost-expression lint`. Install ghost-expression and re-run.",
-          "options": []
-        },
-        {
-          "tool": "ghost-drift",
-          "name": "describe",
-          "rawName": "describe [...args]",
-          "description": "Moved to `ghost-expression describe`. Install ghost-expression and re-run.",
-          "options": []
         }
       ],
       "globalOptions": [
@@ -195,13 +181,13 @@
       ]
     },
     {
-      "tool": "ghost-expression",
+      "tool": "ghost-fingerprint",
       "commands": [
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate expression.md, map.md, or survey.json — auto-detects the kind from path/content",
+          "description": "Validate fingerprint.md, map.md, or survey.json — auto-detects the kind from path/content",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -214,10 +200,10 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "verify-profile",
-          "rawName": "verify-profile <expression> <survey>",
-          "description": "Verify expression.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+          "rawName": "verify-profile <fingerprint> <survey>",
+          "description": "Verify fingerprint.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
           "options": [
             {
               "rawName": "--root <dir>",
@@ -238,10 +224,10 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
-          "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), expression (expression.md). Tells orchestrators which stage to run next.",
+          "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), fingerprint (fingerprint.md). Tells orchestrators which stage to run next.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -254,17 +240,17 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "inventory",
           "rawName": "inventory [path]",
           "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
           "options": []
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "describe",
-          "rawName": "describe [expression]",
-          "description": "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+          "rawName": "describe [fingerprint]",
+          "description": "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -277,10 +263,10 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "diff",
           "rawName": "diff <a> <b>",
-          "description": "Structural diff between two expression.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+          "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -293,7 +279,7 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
           "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
@@ -333,15 +319,15 @@
           ]
         },
         {
-          "tool": "ghost-expression",
+          "tool": "ghost-fingerprint",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from expression.md (kinds: review-command, context-bundle, skill)",
+          "description": "Emit a derived artifact from fingerprint.md (kinds: review-command, context-bundle, skill)",
           "options": [
             {
-              "rawName": "-e, --expression <path>",
-              "name": "expression",
-              "description": "Source expression file (default: expression.md)",
+              "rawName": "-e, --fingerprint <path>",
+              "name": "fingerprint",
+              "description": "Source fingerprint file (default: fingerprint.md)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -349,7 +335,7 @@
             {
               "rawName": "-o, --out <path>",
               "name": "out",
-              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-expression/)",
+              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-fingerprint/)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -381,7 +367,7 @@
             {
               "rawName": "--prompt-only",
               "name": "promptOnly",
-              "description": "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
+              "description": "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -389,7 +375,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the skill name (default: expression id) (context-bundle)",
+              "description": "Override the skill name (default: fingerprint id) (context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -419,7 +405,7 @@
           "tool": "ghost-fleet",
           "name": "members",
           "rawName": "members [dir]",
-          "description": "List registered fleet members and their freshness — one row per (map.md, expression.md) subdirectory.",
+          "description": "List registered fleet members and their freshness — one row per (map.md, fingerprint.md) subdirectory.",
           "options": [
             {
               "rawName": "--json",

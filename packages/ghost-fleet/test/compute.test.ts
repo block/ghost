@@ -33,7 +33,7 @@ describe("computePairwiseDistances", () => {
     }
   });
 
-  it("returns the same distance for equivalent expressions across calls", async () => {
+  it("returns the same distance for equivalent fingerprints across calls", async () => {
     const members = await loadMembers(FLEET);
     const a = computePairwiseDistances(members);
     const b = computePairwiseDistances(members);

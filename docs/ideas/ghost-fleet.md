@@ -8,11 +8,11 @@ status: exploring
 
 Per-repo views answer "is *this* repo drifting?" Fleet answers "what does our design world look like?" The existing `~/Development/ghost-fleet` repo proves the value — 50+ Block frontends, distance matrices, cluster reports — but it's a Block-internal orchestration layer with hardcoded targets and bespoke scripts. The decomposition turns that into a generalized verb anyone can run over their own collection.
 
-The unlock is **two orthogonal axes**: design language (expression) and implementation (map). Drift compare is single-axis (expression). Fleet groups by map — "how do all the SwiftUI repos cluster in expression-space?" "what does the design world look like for shadcn-based registries vs not?" — and that orthogonality is what makes a *world model* rather than a bigger compare.
+The unlock is **two orthogonal axes**: design language (fingerprint) and implementation (map). Drift compare is single-axis (fingerprint). Fleet groups by map — "how do all the SwiftUI repos cluster in fingerprint-space?" "what does the design world look like for shadcn-based registries vs not?" — and that orthogonality is what makes a *world model* rather than a bigger compare.
 
 ## What it is — and is not
 
-A read-only **elevation view** over a directory of (map.md, expression.md) members. It does not author, does not update members, does not re-profile. It composes, slices, and renders.
+A read-only **elevation view** over a directory of (map.md, fingerprint.md) members. It does not author, does not update members, does not re-profile. It composes, slices, and renders.
 
 - Composite analysis: pairwise matrix + centroid + clusters across N members.
 - Group-by axes from map.md: platform, build_system, registry presence, primary framework, primary styling.
@@ -26,7 +26,7 @@ A read-only **elevation view** over a directory of (map.md, expression.md) membe
 | `ghost fleet` (skill) | LLM-driven recipe: synthesize the world-model narrative for fleet.md | `packages/ghost-fleet/src/skill-bundle/` |
 | `ghost fleet view` (CLI) | Deterministic composite, group-by, tracks-graph, output artifacts | CLI |
 
-The math is deterministic — composite distances, clustering, group-by. The narrative ("Cash family clusters tight; Tidal pulls away on warmth and density; Afterpay sits in its own region") is judgement and lives in the skill. Same split as map/expression.
+The math is deterministic — composite distances, clustering, group-by. The narrative ("Cash family clusters tight; Tidal pulls away on warmth and density; Afterpay sits in its own region") is judgement and lives in the skill. Same split as map/fingerprint.
 
 ## CLI surface
 
@@ -39,17 +39,17 @@ ghost fleet temporal <dir>                 # time-series across members
 ghost fleet emit skill                     # install skill into host agent
 ```
 
-Five verbs (six with emit). All read-only. The directory layout fleet expects is one subdirectory per member containing both `map.md` and `expression.md`.
+Five verbs (six with emit). All read-only. The directory layout fleet expects is one subdirectory per member containing both `map.md` and `fingerprint.md`.
 
 ```
 fleet/
 ├── members/
 │   ├── cash-android/
 │   │   ├── map.md
-│   │   └── expression.md
+│   │   └── fingerprint.md
 │   ├── cash-ios/
 │   │   ├── map.md
-│   │   └── expression.md
+│   │   └── fingerprint.md
 │   └── ...
 └── reports/
     ├── fleet.md
@@ -59,7 +59,7 @@ fleet/
 
 ## fleet.md schema sketch
 
-Mirrors expression.md / map.md — frontmatter (machine) + body (prose).
+Mirrors fingerprint.md / map.md — frontmatter (machine) + body (prose).
 
 ```yaml
 ---
@@ -68,9 +68,9 @@ id: block-frontends
 generated_at: 2026-04-27
 
 members:
-  - { id: cash-android, platform: android, registry: null, expression_at: 2026-04-26 }
-  - { id: cash-ios, platform: ios, registry: null, expression_at: 2026-04-26 }
-  - { id: ghost-ui, platform: web, registry: shadcn, expression_at: 2026-04-25 }
+  - { id: cash-android, platform: android, registry: null, fingerprint_at: 2026-04-26 }
+  - { id: cash-ios, platform: ios, registry: null, fingerprint_at: 2026-04-26 }
+  - { id: ghost-ui, platform: web, registry: shadcn, fingerprint_at: 2026-04-25 }
   ...
 
 distances:                         # pairwise only — clustering is skill-layer
@@ -119,17 +119,17 @@ The prior art enforces a three-mode profiling pathway that my initial draft elid
 
 | Mode | When | Output |
 |---|---|---|
-| **target** (monolithic) | Default. One coherent product or library. | `expression.md` per repo. |
-| **module** | Federated repos where one expression can't honestly cover the whole (Cash iOS, Cash Android, Tidal iOS, Rocketship). The repo's map.md lists `feature_areas`; each area gets its own profile pass. | `expression.md` per area. |
-| **rollup** | Synthesis pass over modular outputs. Reads all module expressions and writes a repo-level expression that captures both coherence and fragmentation. | One repo-level `expression.md` whose `notes` field declares "synthesized from N modules." |
+| **target** (monolithic) | Default. One coherent product or library. | `fingerprint.md` per repo. |
+| **module** | Federated repos where one fingerprint can't honestly cover the whole (Cash iOS, Cash Android, Tidal iOS, Rocketship). The repo's map.md lists `feature_areas`; each area gets its own profile pass. | `fingerprint.md` per area. |
+| **rollup** | Synthesis pass over modular outputs. Reads all module fingerprints and writes a repo-level fingerprint that captures both coherence and fragmentation. | One repo-level `fingerprint.md` whose `notes` field declares "synthesized from N modules." |
 
-A modular repo therefore produces N+1 expressions: N module-level + 1 rollup. Both live in fleet's expressions directory side-by-side.
+A modular repo therefore produces N+1 fingerprints: N module-level + 1 rollup. Both live in fleet's fingerprints directory side-by-side.
 
 **Implications fleet's CLI must answer:**
 
 - `ghost fleet view` consumes **rollups** by default — they're the repo-level units.
-- `--include-modules` widens the view to include module-level expressions as first-class members (useful when asking "where does Cash iOS Banking sit relative to Cash Web?").
-- A member's mode must be declared. Likely in map.md frontmatter (`profiling_mode: monolithic | modular`) plus a `modules:` list when modular. Fleet reads that to know which expressions are rollups vs leaves.
+- `--include-modules` widens the view to include module-level fingerprints as first-class members (useful when asking "where does Cash iOS Banking sit relative to Cash Web?").
+- A member's mode must be declared. Likely in map.md frontmatter (`profiling_mode: monolithic | modular`) plus a `modules:` list when modular. Fleet reads that to know which fingerprints are rollups vs leaves.
 
 **Skill recipe layering:**
 
@@ -149,14 +149,14 @@ A given fleet view can stack axes (`--groupby platform,registry`) — useful for
 
 ## Temporal — fleet history
 
-Each member has its own expression history (in their `.ghost-sync.json` or git). Fleet temporal aggregates: "the fleet's average distance from the centroid drifted +0.04 over Q1." This is the dashboard view design system leadership actually wants.
+Each member has its own fingerprint history (in their `.ghost-sync.json` or git). Fleet temporal aggregates: "the fleet's average distance from the centroid drifted +0.04 over Q1." This is the dashboard view design system leadership actually wants.
 
 Stored as `fleet.history.json` keyed by date; the skill renders narrative.
 
 ## Open questions
 
 - **Member registration.** `add` verb that pins a snapshot, or just point at a directory of subdirs? Lean directory-based — reproducibility comes from the on-disk state, not a manifest.
-- **Live fetch vs snapshot.** When a member's expression-uri is `github:org/repo`, does fleet fetch on every run or rely on a vendored snapshot? Vendored is reproducible; live is current. Probably vendored with a `--refresh` flag.
+- **Live fetch vs snapshot.** When a member's fingerprint-uri is `github:org/repo`, does fleet fetch on every run or rely on a vendored snapshot? Vendored is reproducible; live is current. Probably vendored with a `--refresh` flag.
 - **Identity.** Does a fleet have a name and version itself, or is it just a directory of members? Lean named — `ghost.fleet/v1` as schema, fleet ID in frontmatter, so multiple fleets can coexist (Block-frontends, Cash-only, Tidal-only).
 - **Visualization.** The existing ghost-fleet has an apps/viz Next.js app. Does that move into ghost-ui? Stay external? Probably external — fleet emits JSON; visualization is a downstream consumer.
 
@@ -165,7 +165,7 @@ Stored as `fleet.history.json` keyed by date; the skill renders narrative.
 After studying `~/Development/ghost-fleet`, here's what the prior art confirmed and what shifted.
 
 **Confirmed:**
-- Member-as-elevation read-only over (map.md, expression.md) pairs.
+- Member-as-elevation read-only over (map.md, fingerprint.md) pairs.
 - Group-by axes from map.md (platform, build_system, registry, rendering, styling).
 - Tracks-graph belongs in fleet but tracking *relationships* are authored in per-repo `.ghost-sync.json` — fleet just reads them.
 - Neutral / equal-weight profile pass is the core invariant. No hierarchy phases.
@@ -181,7 +181,7 @@ After studying `~/Development/ghost-fleet`, here's what the prior art confirmed 
 
 ## Out of scope
 
-- Authoring expressions (that's expression).
+- Authoring fingerprints (that's fingerprint).
 - Per-repo drift verdicts (that's drift).
 - Mutating members (members are read-only inputs to fleet).
 - Live re-profiling (fleet shows the world as members declare it; it doesn't refresh members).
@@ -191,7 +191,7 @@ After studying `~/Development/ghost-fleet`, here's what the prior art confirmed 
 
 1. Spec the `ghost.fleet/v1` schema in detail (pairwise array format, tracks edge type, groupings shape — clusters live in body, not frontmatter).
 2. Spec `profiling_mode` + `modules` in map.md frontmatter so fleet can deterministically distinguish leaves from rollups.
-3. Decide member directory convention. Existing prior art uses `fleet/v2/expressions/<id>/` for monolithic and `fleet/v2/expressions/<id>_<module>/` for module passes. Worth keeping or formalizing as `members/<id>/modules/<module>/`?
+3. Decide member directory convention. Existing prior art uses `fleet/v2/fingerprints/<id>/` for monolithic and `fleet/v2/fingerprints/<id>_<module>/` for module passes. Worth keeping or formalizing as `members/<id>/modules/<module>/`?
 4. Draft the world-model skill as **three layered fragments** (target / module / rollup guidance) plus shared preamble + output-format. Mirror the prior art's fragment architecture.
 5. Map the existing `~/Development/ghost-fleet/scripts/fleet-compare.sh` workflow onto the new verb surface to confirm nothing load-bearing is lost.
 6. Spec temporal — how per-member history is persisted and aggregated into `fleet.history.json`.

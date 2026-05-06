@@ -6,11 +6,11 @@
 
 ## Registry convention
 
-This package intentionally does not carry package-local Ghost scan artifacts (`map.md`, `survey.json`, or `expression.md`). It stays a component registry. Agents should read this README, `registry.json`, `.shadcn/skills.md`, and source files when integrating components.
+This package intentionally does not carry package-local Ghost scan artifacts (`map.md`, `survey.json`, or `fingerprint.md`). It stays a component registry. Agents should read this README, `registry.json`, `.shadcn/skills.md`, and source files when integrating components.
 
 The shadcn `registry.json` can carry opportunistic, namespaced item metadata:
 
-- **`meta.expression_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
+- **`meta.fingerprint_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
 
 Shape-aware examples can add two more optional `meta` fields:
 
@@ -23,7 +23,7 @@ That distinction helps generators pick relevant references instead of treating e
 
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
-- **Registry** — `registry.json`, shadcn-compatible catalogue with optional `meta.expression_dimensions` extensions. Rebuilt by `just build-registry`.
+- **Registry** — `registry.json`, shadcn-compatible catalogue with optional `meta.fingerprint_dimensions` extensions. Rebuilt by `just build-registry`.
 - **Agent context** — `.shadcn/skills.md`, generated from the registry and component sources for AI assistants.
 
 ## Use
