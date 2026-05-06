@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Orbit, Rocket } from "lucide-react";
+import { BookOpen, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -17,22 +17,15 @@ const sections: {
     name: "Getting Started",
     href: "/docs/getting-started",
     description:
-      "Install the CLIs, write your first map.md and fingerprint.md, and track drift across the org — in under five minutes.",
+      "Install Ghost, scan a repo, and learn the loop around fingerprint.md.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Sixteen verbs across four tools — ghost-map, ghost-fingerprint, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
+      "Commands for checks and comparison, plus the skill recipes your agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
-  },
-  {
-    name: "The Workflow",
-    href: "/tools",
-    description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
-    icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
 ];
 
@@ -48,12 +41,12 @@ export default function DocsIndex() {
       <AnimatedPageHeader
         kicker="Docs"
         title="Documentation"
-        description="Cross-tool guides for the Ghost toolchain. Per-tool overviews live under /tools — these pages cover the install, CLI surface, and end-to-end workflow shared across all five tools."
+        description="Start with the simple loop, then reach for the command reference when you need exact flags and outputs."
       />
 
       <div
         ref={ref}
-        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-3"
+        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-2"
       >
         {sections.map((item) => (
           <Link

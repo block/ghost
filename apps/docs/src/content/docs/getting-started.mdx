@@ -1,37 +1,59 @@
 ---
 title: Getting Started
-description: Install the skill bundles, write your first map.md and fingerprint.md, and track drift across the org — in under five minutes.
+description: Install Ghost, scan a repo, and review generated UI against fingerprint.md.
 kicker: Docs
 section: guide
 order: 10
 slug: getting-started
 ---
 
-<DocSection title="The Shape of Ghost">
+<DocSection title="The Simple Model">
 
-Ghost is split into **four small tools**, each with one responsibility, plus a
-shared library (`@ghost/core`). Your host agent (Claude Code, Cursor, Goose,
-Codex, …) does the judgment work: profile, review, verify, remediate. The CLIs
-handle deterministic checks such as linting, profile verification, diffs, and
+Ghost keeps a project's design language in the repo, where your agent can use
+it. The main file is `fingerprint.md`: a readable guide to how the UI should
+look and feel.
+
+The scan earns that file with evidence:
+
+```
+map.md      ->      survey.json      ->      fingerprint.md
+where to look       what exists              what it means
+```
+
+Your host agent (Claude Code, Cursor, Goose, Codex, …) does the judgment work:
+reading the repo, naming patterns, reviewing drift, and suggesting fixes. The
+CLIs handle repeatable checks such as linting, profile verification, diffs, and
 distance.
 
-A scan runs in three stages, all owned by `ghost-fingerprint`:
-
-```
-map            →     survey          →     fingerprint
-map.md               survey.json           fingerprint.md
-ghost.map/v2         ghost.survey/v2       design contract
-```
-
-| Tool | Owns | Verbs |
+| Tool | Job | Verbs |
 | --- | --- | --- |
-| `ghost-fingerprint` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
-| `ghost-drift` | drift detection + stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
-| `ghost-fleet` | `fleet.md` (view across members) | `members`, `view`, `emit skill` |
-| `ghost-ui` | reference design system (97 shadcn components) | — |
+| `ghost-fingerprint` | Create and check `map.md`, `survey.json`, and `fingerprint.md`. | `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
+| `ghost-drift` | Compare fingerprints, review UI drift, and record drift decisions. | `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
+| `ghost-ui` | Reference design system Ghost uses to test itself. | — |
 
 Install the CLI(s) you need, then emit the matching skill bundle into your
 agent.
+
+</DocSection>
+
+<DocSection id="how-ghost-works" title="How Ghost Works">
+
+Ghost has one main loop:
+
+```text
+scan the repo -> write fingerprint.md -> review drift -> update intent
+```
+
+`ghost-fingerprint` owns the scan. It helps your agent find where UI lives,
+record the design evidence, and turn that evidence into `fingerprint.md`.
+`ghost-drift` uses that fingerprint when generated or changed UI needs review.
+`ghost-fleet` is for the moment you have many project fingerprints and want to
+see how they relate.
+
+That is the whole stance: agents do judgment, Ghost gives them a local file and
+repeatable checks. `map.md` and `survey.json` support the scan, but
+`fingerprint.md` is the thing the agent uses before and after it writes UI.
 
 </DocSection>
 
@@ -71,9 +93,9 @@ ghost-fingerprint emit skill       # → .claude/skills/ghost-fingerprint
 # ghost-fleet emit skill          # → .claude/skills/ghost-fleet (workspace tool today)
 ```
 
-Each bundle ships its own `SKILL.md` plus recipes under `references/`:
+Each bundle gives your agent a few recipes:
 
-- **`ghost-fingerprint`** — `scan.md` (meta-recipe orchestrating map → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the map stage), `survey.md` (write `survey.json`, the survey stage), `profile.md` (interpret a survey into `fingerprint.md`, the fingerprint stage), `schema.md` (condensed format reference).
+- **`ghost-fingerprint`** — scan a repo, write `map.md`, write `survey.json`, and turn that evidence into `fingerprint.md`.
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 
@@ -85,30 +107,27 @@ write, and which CLI checks to run.
 
 <DocSection title="Scan Your First System">
 
-Scanning is a recipe your agent runs, not one CLI command. Open your agent in
-the project you want to profile and ask:
+Scanning is a recipe your agent runs. Open your agent in the project you want
+to profile and ask:
 
 ```text
-Scan this design language end-to-end
+Scan this project with Ghost
 ```
 
 The `scan` recipe checkpoints between stages with `scan-status` and
 dispatches into the per-stage recipes:
 
-1. **Map (`map.md`)** — the `map` recipe reads
-   `ghost-fingerprint inventory` (raw repo signals) and writes a `map.md`
-   describing where the design system lives. Validated by
+1. **Map (`map.md`)** — find where UI, tokens, components, examples, and
+   design-system files live. The recipe reads `ghost-fingerprint inventory`
+   and writes a short map. Validated by
    `ghost-fingerprint lint map.md`.
-2. **Survey (`survey.json`)** — the `survey` recipe walks the source
-   exhaustively and writes a `survey.json` cataloguing concrete values,
-   tokens, components, and implemented UI surfaces. Validated by
+2. **Survey (`survey.json`)** — record the concrete colors, spacing, type,
+   tokens, components, and surfaces found in source. Validated by
    `ghost-fingerprint lint survey.json`.
-3. **Fingerprint (`fingerprint.md`)** — the `profile` recipe interprets the
-   survey as evidence: reads `survey summarize` for broad context and
-   `survey catalog` for exact value enums/specs, assigns roles to values,
-   emits direct references, names design decisions, writes Character and
-   Signature, and produces the `fingerprint.md`. Cannot fabricate values not
-   in the survey. Validated by
+3. **Fingerprint (`fingerprint.md`)** — turn the evidence into the
+   design-language file an agent can use. The recipe names important choices,
+   cites source evidence, and cannot invent values not found in the survey.
+   Validated by
    `ghost-fingerprint lint fingerprint.md` and
    `ghost-fingerprint verify-profile fingerprint.md survey.json --root .`.
 
@@ -116,10 +135,10 @@ If you only want one stage, ask for it directly: "map this repo", "survey
 the design values", "profile this fingerprint from the survey". The recipes
 chain via `handoffs`, so the agent surfaces the next stage when ready.
 
-An **fingerprint** is one Markdown file. YAML frontmatter stores compact values
+A **fingerprint** is one Markdown file. YAML frontmatter stores compact values
 such as palette, spacing, typography, surfaces, references, and checks. The
 body stores prose: Character, Signature, and Decisions. Runtime comparison
-derives embeddings from the file; there is no sibling embedding file to edit.
+derives its data from the file; there is no sibling embedding file to edit.
 See the fingerprint fixture at
 [`packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md`](https://github.com/block/ghost/blob/main/packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md)
 for a full example.
@@ -128,7 +147,7 @@ for a full example.
 # Check what stage to run next
 ghost-fingerprint scan-status
 
-# Validate any artifact (auto-detects the kind)
+# Validate any scan file (auto-detects the kind)
 ghost-fingerprint lint                       # ./fingerprint.md
 ghost-fingerprint lint map.md                # ghost.map/v2
 ghost-fingerprint lint survey.json           # ghost.survey/v2
@@ -217,7 +236,7 @@ ghost-drift diverge typography --reason "Editorial product uses a different type
 Ghost can sit inside an AI-generated UI pipeline. The fingerprint gives the
 generator design-language context; the `review` recipe checks the output.
 
-1. `ghost-fingerprint emit context-bundle` — emit a context bundle from an
+1. `ghost-fingerprint emit context-bundle` — emit a context bundle from a
    fingerprint (SKILL.md + fingerprint.md + prompt.md + tokens.css) that any
    generator can consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
@@ -269,9 +288,7 @@ export default defineConfig({
 
 ---
 
-Next: [Drift Workflow](/tools/drift/workflow) for the five-move
-walkthrough — profile, compare, review, evolve, org — with richer examples
-for each. Or jump to the [CLI Reference](/docs/cli) for every verb across
-all three tools.
+Next: jump to the [CLI Reference](/docs/cli) for every verb across all three
+tools.
 
 </DocSection>

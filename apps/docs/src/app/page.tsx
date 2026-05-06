@@ -29,24 +29,23 @@ export default function Home() {
           </p>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
-              AI is becoming the primary author of shipped code. Sometimes it's
-              driven by a human operator through an agentic workflow; sometimes
-              it runs fully autonomously. The economics have shifted with it. We
-              no longer assume humans will sit in every diff; we assume the
-              harness — the guardrails, the reviewers, the verifiers — catches
-              divergence before it lands.
+              Agents can write UI now. The harder question is whether that UI
+              still feels like the product it belongs to: the same palette, the
+              same density, the same hierarchy, the same small choices that make
+              an interface feel intentional instead of generic.
             </p>
             <p className="thesis-item">
-              In that world, ensuring every generation reflects a brand's voice
-              is paramount. It's not a judgment a human can make PR by PR
-              anymore. Brand has to be legible to the agent, enforceable by the
-              harness, and verifiable without a reviewer in the loop.
+              Ghost gives the repo a local answer. It scans the UI already in
+              source, records the evidence, and writes{" "}
+              <code>fingerprint.md</code>: a design-language file that lives
+              beside the code. Agents read it before they generate UI and check
+              against it after they make changes.
             </p>
             <p className="thesis-item">
-              Today, brand lives in artifacts written primarily for humans, to
-              aid collaboration and understanding. It's not the same for agents.
-              They default to generating from whatever the model learned, and
-              brand quality quietly slips.
+              The evidence matters. <code>map.md</code> tells Ghost where to
+              look. <code>survey.json</code> records the values, tokens,
+              components, and surfaces found there. <code>fingerprint.md</code>{" "}
+              is the file people and agents actually use.
             </p>
             <p className="thesis-item">
               Most design-system work for AI starts by codifying the system
@@ -58,7 +57,7 @@ export default function Home() {
               that is hard to recover from the parts.
             </p>
             <p className="thesis-item">
-              That is what Ghost captures as an <em>fingerprint</em>: the
+              That is what Ghost captures as a <em>fingerprint</em>: the
               target's intended implementation of its design language. It names
               the patterns that recur, the hierarchy it prefers, the voice it
               speaks in, the stance it takes, and the things it refuses. A
@@ -90,12 +89,11 @@ export default function Home() {
               the product has moved and the fingerprint needs to move with it.
             </p>
             <p className="thesis-item">
-              The artifact that carries brand has to live where the agent does:
-              in the repo, versioned with the code, edited in the same PRs as
-              the features it shapes. And it has to evolve. Brand isn't locked
-              in at the start; it shifts as the product ships, as taste
-              sharpens, as new surfaces appear, as the org grows new products
-              around it.
+              The file that carries brand has to live where the agent does: in
+              the repo, versioned with the code, edited in the same PRs as the
+              features it shapes. And it has to evolve. Brand isn't locked in at
+              the start; it shifts as the product ships, as taste sharpens, as
+              new surfaces appear, as the org grows new products around it.
             </p>
             <p className="thesis-item">
               Which raises the governance question. The reflex is to centralize:

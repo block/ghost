@@ -1,11 +1,11 @@
 import { ThemeProvider } from "ghost-ui";
-import { Navigate, Route, Routes, useParams } from "react-router";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";
 import GhostFingerprintLanding from "@/app/tools/fingerprint/page";
 import GhostFleetLanding from "@/app/tools/fleet/page";
-import GhostMapLanding from "@/app/tools/map/page";
 import ToolsIndex from "@/app/tools/page";
 import GhostUiLanding from "@/app/tools/ui/page";
 import ComponentPage from "@/app/ui/components/[name]/page";
@@ -22,6 +22,21 @@ function ComponentRedirect() {
   return <Navigate to={`/ui/components/${name}`} replace />;
 }
 
+function ScrollToHash() {
+  const { hash, pathname } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+
+    const id = decodeURIComponent(hash.slice(1));
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ block: "start" });
+    });
+  }, [hash, pathname]);
+
+  return null;
+}
+
 export function App() {
   return (
     <ThemeProvider
@@ -30,14 +45,18 @@ export function App() {
       enableSystem
       disableTransitionOnChange
     >
+      <ScrollToHash />
       <Dock />
       <main className="relative z-10 min-h-screen">
         <Routes>
           <Route index element={<HomePage />} />
 
-          {/* Tools — five-card index plus per-tool landings */}
+          {/* Tools — four-card index plus per-tool landings */}
           <Route path="tools" element={<ToolsIndex />} />
-          <Route path="tools/map" element={<GhostMapLanding />} />
+          <Route
+            path="tools/map"
+            element={<Navigate to="/tools/fingerprint" replace />}
+          />
           <Route
             path="tools/fingerprint"
             element={<GhostFingerprintLanding />}
@@ -48,8 +67,14 @@ export function App() {
 
           {/* Cross-tool docs hub */}
           <Route path="docs" element={<DocsIndex />} />
+          <Route
+            path="docs/workflow"
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
+          />
 
-          {/* MDX-authored doc pages (getting-started + cli reference under /docs/*) */}
+          {/* MDX-authored doc pages under /docs/* */}
           {mdxDocsRoutes()}
 
           {/* Design Language (ghost-ui catalogue) */}
@@ -74,11 +99,15 @@ export function App() {
           />
           <Route
             path="tools/drift/concepts"
-            element={<Navigate to="/tools" replace />}
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
           />
           <Route
             path="tools/drift/workflow"
-            element={<Navigate to="/tools" replace />}
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
           />
 
           {/* Redirects from legacy root /foundations and /components URLs */}
