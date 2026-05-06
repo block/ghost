@@ -1,5 +1,5 @@
 ---
-"ghost-expression": minor
+"ghost-fingerprint": minor
 ---
 
 Phase 5 fixes and schema widening for real-world repo variety.
@@ -11,5 +11,5 @@ Bug fixes (5a):
 
 Schema widenings (5b):
 
-- `roles[].tokens.palette` is now an open record (`Record<string, string>`) instead of a fixed three-key object. Conventional vocabulary (`background`, `foreground`, `surface`, `border`, `accent`, `muted`, `link`) is documented in the schema reference and `expression-format.md`; richer slot names (`ring`, `popover`, `separator`, …) no longer hard-error.
-- `broken-role-reference` accepts opaque external token refs (`{base.color.brand.x}`, `{semantic.text.on-brand}`, …) without trying to resolve them. Style-Dictionary-style consumer expressions can now bind role slots to upstream tokens without the linter rejecting them.
+- `roles[].tokens.palette` is now an open record (`Record<string, string>`) instead of a fixed three-key object. Conventional vocabulary (`background`, `foreground`, `surface`, `border`, `accent`, `muted`, `link`) is documented in the schema reference and `fingerprint-format.md`; richer slot names (`ring`, `popover`, `separator`, …) no longer hard-error.
+- `broken-role-reference` accepts opaque external token refs (`{base.color.brand.x}`, `{semantic.text.on-brand}`, …) without trying to resolve them. Style-Dictionary-style consumer fingerprints can now bind role slots to upstream tokens without the linter rejecting them.

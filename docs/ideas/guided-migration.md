@@ -2,9 +2,9 @@
 status: exploring
 ---
 
-# Guided migration: drifting an expression toward another
+# Guided migration: drifting a fingerprint toward another
 
-An agentic loop where repo A consciously migrates toward repo B's visual direction, driven by expression distance + vector as the signal.
+An agentic loop where repo A consciously migrates toward repo B's visual direction, driven by fingerprint distance + vector as the signal.
 
 ## The observation
 
@@ -39,6 +39,6 @@ No CLI primitive is missing. All the judgement work lives in the recipe.
 ## Open questions
 
 - **Ordering within a tier.** Vector-first (fast, risks mimicry), decisions-first (correct, slow), or interleaved (each `ack` commits one dim + the decisions that justify it). Current lean: interleaved.
-- **Detecting when the scalar is lying.** A local expression can descend the vector gradient without importing decisions, landing at low `d` but not actually looking like B. Candidate: don't declare success until *both* the machine dims and the decisions dim are inside tolerance.
+- **Detecting when the scalar is lying.** A local fingerprint can descend the vector gradient without importing decisions, landing at low `d` but not actually looking like B. Candidate: don't declare success until *both* the machine dims and the decisions dim are inside tolerance.
 - **Diverge budget up front.** Should `track` accept `--diverge <dim>,<dim>` so the floor is known before the loop runs, instead of discovered mid-migration?
 - **Symmetry.** `checkBounds` already flags `reconverging` when a diverging dim has closed to < 50% of acked distance. Guided migration is the deliberate form of that — same bookkeeping, inverted intent. Worth thinking about whether the two should share a verb.

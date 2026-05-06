@@ -17,21 +17,21 @@ const sections: {
     name: "Getting Started",
     href: "/docs/getting-started",
     description:
-      "Install the CLIs, write your first map.md and expression.md, and track drift across the org — in under five minutes.",
+      "Install the CLIs, write your first map.md and fingerprint.md, and track drift across the org — in under five minutes.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Sixteen verbs across four tools — ghost-map, ghost-expression, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
+      "Sixteen verbs across four tools — ghost-map, ghost-fingerprint, ghost-drift, ghost-fleet. Plus the skill recipes the host agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "The Workflow",
     href: "/tools",
     description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
+      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
 ];

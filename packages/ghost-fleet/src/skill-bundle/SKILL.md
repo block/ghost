@@ -1,6 +1,6 @@
 ---
 name: ghost-fleet
-description: Reason about a fleet of design systems — pairwise distances, cohorts, tracks-graph, world-shape narrative. Use when the user has a directory of (map.md, expression.md) members and wants to understand how they relate, where they cluster, who declares whom as reference, or how the fleet's shape should be summarized for design system leadership. Triggers on phrases like "what does our design world look like", "compare these systems as a fleet", "where do our apps cluster", "who tracks whom", "summarize the fleet", "fleet view", or whenever a `fleet/` directory with member subdirectories is being explored.
+description: Reason about a fleet of design systems — pairwise distances, cohorts, tracks-graph, world-shape narrative. Use when the user has a directory of (map.md, fingerprint.md) members and wants to understand how they relate, where they cluster, who declares whom as reference, or how the fleet's shape should be summarized for design system leadership. Triggers on phrases like "what does our design world look like", "compare these systems as a fleet", "where do our apps cluster", "who tracks whom", "summarize the fleet", "fleet view", or whenever a `fleet/` directory with member subdirectories is being explored.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -9,7 +9,7 @@ metadata:
 
 # Ghost Fleet — Reasoning Over Many Members
 
-Fleet is the **elevation view** across many `(map.md, expression.md)` pairs. Per-repo views answer "is this repo drifting?" Fleet answers "what does our design world look like?"
+Fleet is the **elevation view** across many `(map.md, fingerprint.md)` pairs. Per-repo views answer "is this repo drifting?" Fleet answers "what does our design world look like?"
 
 This skill helps you turn the output of `ghost-fleet view` into a **world-model narrative** in the body of `fleet.md`. The CLI is the calculator: pairwise distances, group-by tables, tracks-graph. You give it the prose.
 
@@ -32,7 +32,7 @@ fleet/
 ├── members/
 │   ├── <member-id>/
 │   │   ├── map.md
-│   │   ├── expression.md
+│   │   ├── fingerprint.md
 │   │   └── .ghost-sync.json   # optional — surfaced as a tracks edge
 │   └── ...
 └── reports/                    # written by `ghost-fleet view`
@@ -40,7 +40,7 @@ fleet/
     └── fleet.json
 ```
 
-Each member is read-only. Fleet does **not** re-profile, refresh, or fetch; expressions evolve by deliberate act. If a member is stale, regenerate its `expression.md` in that member's repo and re-run `ghost-fleet view`.
+Each member is read-only. Fleet does **not** re-profile, refresh, or fetch; fingerprints evolve by deliberate act. If a member is stale, regenerate its `fingerprint.md` in that member's repo and re-run `ghost-fleet view`.
 
 ## Workflow — synthesizing fleet.md
 
@@ -59,7 +59,7 @@ For the heuristics and reasoning patterns, see [references/target.md](references
 
 ## What this milestone does not do
 
-- **Modular and rollup profiling.** Fleet currently treats every member as a monolithic target. `references/module.md` and `references/rollup.md` will arrive when the modular profile pathway lands in `ghost-expression`. Until then, federated repos must be profiled as a single rollup expression.
+- **Modular and rollup profiling.** Fleet currently treats every member as a monolithic target. `references/module.md` and `references/rollup.md` will arrive when the modular profile pathway lands in `ghost-fingerprint`. Until then, federated repos must be profiled as a single rollup fingerprint.
 - **Tracks-graph projection beyond the recorded edges.** Fleet emits exactly what each member declared in `.ghost-sync.json`. It does not infer transitive references.
 - **Temporal aggregation.** Per-member history aggregation (`fleet.history.json`) is deferred.
 - **Axis stacking.** `--groupby platform,registry` and similar filters are deferred to a follow-up.

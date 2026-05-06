@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useParams } from "react-router";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";
-import GhostExpressionLanding from "@/app/tools/expression/page";
+import GhostFingerprintLanding from "@/app/tools/fingerprint/page";
 import GhostFleetLanding from "@/app/tools/fleet/page";
 import GhostMapLanding from "@/app/tools/map/page";
 import ToolsIndex from "@/app/tools/page";
@@ -38,7 +38,10 @@ export function App() {
           {/* Tools — five-card index plus per-tool landings */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route path="tools/map" element={<GhostMapLanding />} />
-          <Route path="tools/expression" element={<GhostExpressionLanding />} />
+          <Route
+            path="tools/fingerprint"
+            element={<GhostFingerprintLanding />}
+          />
           <Route path="tools/drift" element={<GhostDriftLanding />} />
           <Route path="tools/fleet" element={<GhostFleetLanding />} />
           <Route path="tools/ui" element={<GhostUiLanding />} />

@@ -1,6 +1,6 @@
 # Reasoning over a fleet of monolithic targets
 
-This fragment guides the world-model narrative for a fleet whose members are each **monolithic targets** — one repo, one expression. It's the only profiling mode supported in the current milestone; modular and rollup fragments arrive when the modular profile pathway lands.
+This fragment guides the world-model narrative for a fleet whose members are each **monolithic targets** — one repo, one fingerprint. It's the only profiling mode supported in the current milestone; modular and rollup fragments arrive when the modular profile pathway lands.
 
 The CLI hands you `fleet.md` with frontmatter populated and three empty body sections: `## World shape`, `## Cohorts`, `## Tracks`. Your job is to fill those sections with prose that's grounded in the frontmatter — never restating it.
 
@@ -8,15 +8,15 @@ The CLI hands you `fleet.md` with frontmatter populated and three empty body sec
 
 The frontmatter holds five structured pieces. Read all five before writing a sentence.
 
-1. `members` — id, platform, build_system, registry presence, expression mtime. Confirm coverage matches what `ghost-fleet members` told you. Members in the table that aren't here mean you've got an orphan map.md or a broken expression.
+1. `members` — id, platform, build_system, registry presence, fingerprint mtime. Confirm coverage matches what `ghost-fleet members` told you. Members in the table that aren't here mean you've got an orphan map.md or a broken fingerprint.
 
-2. `distances` — pairwise array, sorted ascending by `(a, b)`. Each entry is `{a, b, distance}` where distance is in [0, 1] roughly: the cosine-derived embedding distance between two expressions. Treat the numbers as *relative* — there is no universal threshold for "drifted." Look at the distribution.
+2. `distances` — pairwise array, sorted ascending by `(a, b)`. Each entry is `{a, b, distance}` where distance is in [0, 1] roughly: the cosine-derived embedding distance between two fingerprints. Treat the numbers as *relative* — there is no universal threshold for "drifted." Look at the distribution.
 
 3. `tracks` — directed edges from each member's `.ghost-sync.json`. The right-hand side is whatever the member declared (a member id, a target string, or a local path). You decide whether the edge resolves to another member.
 
 4. `groupings.by_platform` / `by_build_system` / `by_registry` / `by_rendering` / `by_styling` — the five axes the CLI reads from each `map.md`. These are your cohort scaffolding.
 
-5. `generated_at` — note staleness. If the timestamp is more than a few weeks old and individual `expression_at` dates are even older, say so.
+5. `generated_at` — note staleness. If the timestamp is more than a few weeks old and individual `fingerprint_at` dates are even older, say so.
 
 ## World shape — the elevation view
 

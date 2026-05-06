@@ -1,15 +1,15 @@
-import type { DesignDecision, Expression } from "@ghost/core";
-import { compareExpressions } from "@ghost/core";
+import type { DesignDecision, Fingerprint } from "@ghost/core";
+import { compareFingerprints } from "@ghost/core";
 import { describe, expect, it } from "vitest";
 
 /**
- * Minimal expression skeleton — identical palette/spacing/typography/surfaces
+ * Minimal fingerprint skeleton — identical palette/spacing/typography/surfaces
  * across fixtures so only the decisions layer affects the compare output.
  */
-function baseExpression(
+function baseFingerprint(
   id: string,
   decisions: DesignDecision[] = [],
-): Expression {
+): Fingerprint {
   return {
     id,
     source: "llm",
@@ -46,11 +46,11 @@ function conceptVector(concept: number, dims = 8, jitter = 0): number[] {
   return v.map((x) => x / norm);
 }
 
-describe("compareExpressions — decisions", () => {
+describe("compareFingerprints — decisions", () => {
   it("paraphrased decisions match when embeddings are close", () => {
-    // Two expressions describe the same design decision with different words,
+    // Two fingerprints describe the same design decision with different words,
     // but the embeddings (simulated here) cluster near the same concept index.
-    const a = baseExpression("a", [
+    const a = baseFingerprint("a", [
       {
         dimension: "color-strategy",
         decision: "Achromatic chrome with chromatic accents",
@@ -65,7 +65,7 @@ describe("compareExpressions — decisions", () => {
       },
     ]);
 
-    const b = baseExpression("b", [
+    const b = baseFingerprint("b", [
       {
         dimension: "color-usage",
         decision: "Neutral UI, saturated accents only",
@@ -80,7 +80,7 @@ describe("compareExpressions — decisions", () => {
       },
     ]);
 
-    const result = compareExpressions(a, b);
+    const result = compareFingerprints(a, b);
     const decisionsDim = result.dimensions.decisions;
 
     expect(decisionsDim).toBeDefined();
@@ -89,7 +89,7 @@ describe("compareExpressions — decisions", () => {
   });
 
   it("unrelated decisions score as divergent", () => {
-    const a = baseExpression("a", [
+    const a = baseFingerprint("a", [
       {
         dimension: "color-strategy",
         decision: "Achromatic chrome",
@@ -104,7 +104,7 @@ describe("compareExpressions — decisions", () => {
       },
     ]);
 
-    const b = baseExpression("b", [
+    const b = baseFingerprint("b", [
       {
         dimension: "density",
         decision: "Generous whitespace",
@@ -119,7 +119,7 @@ describe("compareExpressions — decisions", () => {
       },
     ]);
 
-    const result = compareExpressions(a, b);
+    const result = compareFingerprints(a, b);
     expect(result.dimensions.decisions.distance).toBeGreaterThan(0.5);
     expect(result.dimensions.decisions.description).toMatch(
       /fundamentally|divergence/i,
@@ -128,16 +128,16 @@ describe("compareExpressions — decisions", () => {
 
   it("missing embeddings: decisions recorded but not scored", () => {
     // Decisions exist on both sides but neither has embeddings (pre-embedding
-    // expression or no embedding provider was configured). The dimension
+    // fingerprint or no embedding provider was configured). The dimension
     // should be reported qualitatively and contribute 0 to the weighted score.
-    const a = baseExpression("a", [
+    const a = baseFingerprint("a", [
       { dimension: "color-strategy", decision: "X", evidence: [] },
     ]);
-    const b = baseExpression("b", [
+    const b = baseFingerprint("b", [
       { dimension: "color-strategy", decision: "Y", evidence: [] },
     ]);
 
-    const result = compareExpressions(a, b);
+    const result = compareFingerprints(a, b);
     expect(result.dimensions.decisions.distance).toBe(0);
     expect(result.dimensions.decisions.description).toMatch(/not scored/i);
 
@@ -147,10 +147,10 @@ describe("compareExpressions — decisions", () => {
   });
 
   it("no decisions on either side: decisions dimension absent", () => {
-    const a = baseExpression("a", []);
-    const b = baseExpression("b", []);
+    const a = baseFingerprint("a", []);
+    const b = baseFingerprint("b", []);
 
-    const result = compareExpressions(a, b);
+    const result = compareFingerprints(a, b);
     expect(result.dimensions.decisions).toBeUndefined();
   });
 });

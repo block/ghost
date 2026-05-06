@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install the skill bundles, write your first map.md and expression.md, and track drift across the org — in under five minutes.
+description: Install the skill bundles, write your first map.md and fingerprint.md, and track drift across the org — in under five minutes.
 kicker: Docs
 section: guide
 order: 10
@@ -15,17 +15,17 @@ Codex, …) does the judgment work: profile, review, verify, remediate. The CLIs
 handle deterministic checks such as linting, profile verification, diffs, and
 distance.
 
-A scan runs in three stages, all owned by `ghost-expression`:
+A scan runs in three stages, all owned by `ghost-fingerprint`:
 
 ```
-map            →     survey          →     expression
-map.md               survey.json           expression.md
+map            →     survey          →     fingerprint
+map.md               survey.json           fingerprint.md
 ghost.map/v2         ghost.survey/v2       design contract
 ```
 
 | Tool | Owns | Verbs |
 | --- | --- | --- |
-| `ghost-expression` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
+| `ghost-fingerprint` | the three-stage scan pipeline | `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
 | `ghost-drift` | drift detection + stance | `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | `fleet.md` (view across members) | `members`, `view`, `emit skill` |
 | `ghost-ui` | reference design system (97 shadcn components) | — |
@@ -37,17 +37,17 @@ agent.
 
 <DocSection title="Installation">
 
-`ghost-drift` and `ghost-expression` are the published tools today. Add
+`ghost-drift` and `ghost-fingerprint` are the published tools today. Add
 either or both:
 
 ```bash
-pnpm add -D ghost-drift ghost-expression
+pnpm add -D ghost-drift ghost-fingerprint
 ```
 
 Or install globally:
 
 ```bash
-pnpm add -g ghost-drift ghost-expression
+pnpm add -g ghost-drift ghost-fingerprint
 ```
 
 `ghost-fleet` is workspace-only for now — clone the repo and `pnpm build`
@@ -57,7 +57,7 @@ No API key is required for any CLI verb. If your host agent uses Anthropic
 or OpenAI models, it'll handle auth itself. Each CLI auto-loads `.env` and
 `.env.local` from the working directory for a couple of optional variables
 (`OPENAI_API_KEY` / `VOYAGE_API_KEY` for paraphrase-robust semantic
-embeddings, `GITHUB_TOKEN` for fetching tracked expressions).
+embeddings, `GITHUB_TOKEN` for fetching tracked fingerprints).
 
 </DocSection>
 
@@ -67,13 +67,13 @@ Each tool ships its own recipe bundle:
 
 ```bash
 ghost-drift emit skill            # → .claude/skills/ghost-drift
-ghost-expression emit skill       # → .claude/skills/ghost-expression
+ghost-fingerprint emit skill       # → .claude/skills/ghost-fingerprint
 # ghost-fleet emit skill          # → .claude/skills/ghost-fleet (workspace tool today)
 ```
 
 Each bundle ships its own `SKILL.md` plus recipes under `references/`:
 
-- **`ghost-expression`** — `scan.md` (meta-recipe orchestrating map → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the map stage), `survey.md` (write `survey.json`, the survey stage), `profile.md` (interpret a survey into `expression.md`, the expression stage), `schema.md` (condensed format reference).
+- **`ghost-fingerprint`** — `scan.md` (meta-recipe orchestrating map → survey → profile end-to-end), `map.md` (write `map.md` from a repo, the map stage), `survey.md` (write `survey.json`, the survey stage), `profile.md` (interpret a survey into `fingerprint.md`, the fingerprint stage), `schema.md` (condensed format reference).
 - **`ghost-drift`** — `compare.md` (interpretation), `review.md` (PR review), `verify.md` (generation→review loop), `remediate.md` (suggest minimal fixes).
 - **`ghost-fleet`** — `target.md` (synthesize fleet narrative from `view` output).
 
@@ -96,72 +96,72 @@ The `scan` recipe checkpoints between stages with `scan-status` and
 dispatches into the per-stage recipes:
 
 1. **Map (`map.md`)** — the `map` recipe reads
-   `ghost-expression inventory` (raw repo signals) and writes a `map.md`
+   `ghost-fingerprint inventory` (raw repo signals) and writes a `map.md`
    describing where the design system lives. Validated by
-   `ghost-expression lint map.md`.
+   `ghost-fingerprint lint map.md`.
 2. **Survey (`survey.json`)** — the `survey` recipe walks the source
    exhaustively and writes a `survey.json` cataloguing concrete values,
    tokens, components, and implemented UI surfaces. Validated by
-   `ghost-expression lint survey.json`.
-3. **Expression (`expression.md`)** — the `profile` recipe interprets the
+   `ghost-fingerprint lint survey.json`.
+3. **Fingerprint (`fingerprint.md`)** — the `profile` recipe interprets the
    survey as evidence: reads `survey summarize` for broad context and
    `survey catalog` for exact value enums/specs, assigns roles to values,
    emits direct references, names design decisions, writes Character and
-   Signature, and produces the `expression.md`. Cannot fabricate values not
+   Signature, and produces the `fingerprint.md`. Cannot fabricate values not
    in the survey. Validated by
-   `ghost-expression lint expression.md` and
-   `ghost-expression verify-profile expression.md survey.json --root .`.
+   `ghost-fingerprint lint fingerprint.md` and
+   `ghost-fingerprint verify-profile fingerprint.md survey.json --root .`.
 
 If you only want one stage, ask for it directly: "map this repo", "survey
-the design values", "profile this expression from the survey". The recipes
+the design values", "profile this fingerprint from the survey". The recipes
 chain via `handoffs`, so the agent surfaces the next stage when ready.
 
-An **expression** is one Markdown file. YAML frontmatter stores compact values
+An **fingerprint** is one Markdown file. YAML frontmatter stores compact values
 such as palette, spacing, typography, surfaces, references, and checks. The
 body stores prose: Character, Signature, and Decisions. Runtime comparison
 derives embeddings from the file; there is no sibling embedding file to edit.
-See the expression fixture at
-[`packages/ghost-expression/test/fixtures/ghost-ui-expression/expression.md`](https://github.com/block/ghost/blob/main/packages/ghost-expression/test/fixtures/ghost-ui-expression/expression.md)
+See the fingerprint fixture at
+[`packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md`](https://github.com/block/ghost/blob/main/packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md)
 for a full example.
 
 ```bash
 # Check what stage to run next
-ghost-expression scan-status
+ghost-fingerprint scan-status
 
 # Validate any artifact (auto-detects the kind)
-ghost-expression lint                       # ./expression.md
-ghost-expression lint map.md                # ghost.map/v2
-ghost-expression lint survey.json           # ghost.survey/v2
-ghost-expression verify-profile expression.md survey.json --root .
-                                            # expression-to-survey fidelity
+ghost-fingerprint lint                       # ./fingerprint.md
+ghost-fingerprint lint map.md                # ghost.map/v2
+ghost-fingerprint lint survey.json           # ghost.survey/v2
+ghost-fingerprint verify-profile fingerprint.md survey.json --root .
+                                            # fingerprint-to-survey fidelity
 ```
 
 </DocSection>
 
 <DocSection title="Compare Two Systems">
 
-Once you have two expressions, `ghost-drift compare` returns distance and
+Once you have two fingerprints, `ghost-drift compare` returns distance and
 per-dimension deltas:
 
 ```bash
 # Pairwise (N=2) — distance + per-dimension delta
-ghost-drift compare market.expression.md dashboard.expression.md
+ghost-drift compare market.fingerprint.md dashboard.fingerprint.md
 
 # Qualitative diff of decisions + palette
-ghost-drift compare a.expression.md b.expression.md --semantic
+ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
 
 # Velocity + trajectory (reads .ghost/history.jsonl)
-ghost-drift compare before.expression.md after.expression.md --temporal
+ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
 
 # Composite (N≥3) — pairwise matrix + centroid + clusters
-ghost-drift compare *.expression.md
+ghost-drift compare *.fingerprint.md
 ```
 
 `compare` uses palette, spacing, typography, surfaces, and runtime decision
 embeddings. Decisions can match semantically even when the wording differs.
 
 For a structural prose-level diff (what decisions and palette roles
-changed, ignoring vector distance), use `ghost-expression diff` instead.
+changed, ignoring vector distance), use `ghost-fingerprint diff` instead.
 
 </DocSection>
 
@@ -174,51 +174,51 @@ installed, open a PR branch in your host agent and ask:
 Review this PR for design drift
 ```
 
-The `review` recipe diffs changed files against the local `expression.md`
+The `review` recipe diffs changed files against the local `fingerprint.md`
 and flags hardcoded colors off the palette, spacing off the scale, and type
 choices that violate decisions.
 
 If you want a repeatable, per-project slash command for your agent, emit
-one from the expression itself:
+one from the fingerprint itself:
 
 ```bash
 # Writes .claude/commands/design-review.md
-ghost-expression emit review-command
+ghost-fingerprint emit review-command
 ```
 
-(`emit review-command` lives in `ghost-expression` because it derives from
-`expression.md`. `ghost-drift` ships only `emit skill`.)
+(`emit review-command` lives in `ghost-fingerprint` because it derives from
+`fingerprint.md`. `ghost-drift` ships only `emit skill`.)
 
 </DocSection>
 
-<DocSection title="Track Intent Toward an Expression">
+<DocSection title="Track Intent Toward a Fingerprint">
 
 Drift without intent is noise; drift with intent is signal. Ghost tracks
-your stance toward a tracked expression in `.ghost-sync.json`:
+your stance toward a tracked fingerprint in `.ghost-sync.json`:
 
 ```bash
-# Record an overall stance (reads ghost.config.ts for the tracked expression)
+# Record an overall stance (reads ghost.config.ts for the tracked fingerprint)
 ghost-drift ack --stance aligned --reason "Initial baseline"
 
-# Shift the tracked expression
-ghost-drift track new-tracked.expression.md
+# Shift the tracked fingerprint
+ghost-drift track new-tracked.fingerprint.md
 
 # Mark a dimension as intentionally different
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-`ack` and `diverge` need a tracked expression declared in `ghost.config.ts`.
-`track` takes the tracked expression as its argument.
+`ack` and `diverge` need a tracked fingerprint declared in `ghost.config.ts`.
+`track` takes the tracked fingerprint as its argument.
 
 </DocSection>
 
 <DocSection title="The Generation Loop">
 
-Ghost can sit inside an AI-generated UI pipeline. The expression gives the
+Ghost can sit inside an AI-generated UI pipeline. The fingerprint gives the
 generator design-language context; the `review` recipe checks the output.
 
-1. `ghost-expression emit context-bundle` — emit a context bundle from an
-   expression (SKILL.md + expression.md + prompt.md + tokens.css) that any
+1. `ghost-fingerprint emit context-bundle` — emit a context bundle from an
+   fingerprint (SKILL.md + fingerprint.md + prompt.md + tokens.css) that any
    generator can consume.
 2. Run any generator — your host agent, Cursor, v0, or an in-house tool —
    with the bundle in context.
@@ -228,29 +228,29 @@ generator design-language context; the `review` recipe checks the output.
 
 ```bash
 # Emit a context bundle — default output: ./ghost-context/
-ghost-expression emit context-bundle
+ghost-fingerprint emit context-bundle
 
 # Single prompt.md for plain-text LLM context
-ghost-expression emit context-bundle --prompt-only
+ghost-fingerprint emit context-bundle --prompt-only
 
 # Custom output directory
-ghost-expression emit context-bundle --out dist/context
+ghost-fingerprint emit context-bundle --out dist/context
 ```
 
 </DocSection>
 
 <DocSection title="Optional: ghost.config.ts">
 
-`ack` and `diverge` need a tracked expression declared. Most other verbs
+`ack` and `diverge` need a tracked fingerprint declared. Most other verbs
 are zero-config.
 
 ```ts
 import { defineConfig } from "ghost-drift";
 
 export default defineConfig({
-  // Path to a local expression.md, or a URL / npm package name.
+  // Path to a local fingerprint.md, or a URL / npm package name.
   // Commit that file and point `tracks` at it.
-  tracks: { type: "path", value: "./tracked.expression.md" },
+  tracks: { type: "path", value: "./tracked.fingerprint.md" },
 
   targets: [{ type: "path", value: "./packages/my-ui" }],
 

@@ -2,7 +2,7 @@
   "name": "ghost-fleet",
   "version": "0.0.0",
   "private": true,
-  "description": "Read-only elevation view across many (map.md, expression.md) members — pairwise distances, group-by axes, tracks-graph, fleet.md output",
+  "description": "Read-only elevation view across many (map.md, fingerprint.md) members — pairwise distances, group-by axes, tracks-graph, fleet.md output",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -45,7 +45,7 @@
   "dependencies": {
     "@ghost/core": "workspace:*",
     "cac": "^6.7.14",
-    "ghost-expression": "workspace:*",
+    "ghost-fingerprint": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }
