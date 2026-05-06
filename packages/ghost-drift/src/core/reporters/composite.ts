@@ -21,7 +21,7 @@ export function formatCompositeComparison(
   const lines: string[] = [];
 
   lines.push(
-    c(BOLD, `Composite Expression: ${composite.members.length} members`),
+    c(BOLD, `Composite Fingerprint: ${composite.members.length} members`),
   );
   lines.push("");
 

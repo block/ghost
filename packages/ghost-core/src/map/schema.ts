@@ -112,7 +112,7 @@ export const MapFrontmatterSchema = z.object({
   repo: z.string().min(1),
   /**
    * Optional explicit subject for multi-source scans. `id` remains the
-   * canonical map id; `subject` states what this expression is about.
+   * canonical map id; `subject` states what this fingerprint is about.
    */
   subject: MapSubjectSchema.optional(),
   /**

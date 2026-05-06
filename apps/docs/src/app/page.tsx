@@ -58,7 +58,7 @@ export default function Home() {
               that is hard to recover from the parts.
             </p>
             <p className="thesis-item">
-              That is what Ghost captures as an <em>expression</em>: the
+              That is what Ghost captures as an <em>fingerprint</em>: the
               target's intended implementation of its design language. It names
               the patterns that recur, the hierarchy it prefers, the voice it
               speaks in, the stance it takes, and the things it refuses. A
@@ -69,7 +69,7 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               Specs are still evidence; they are just not the whole language.
-              Specs describe the ingredients. Expression describes the
+              Specs describe the ingredients. Fingerprint describes the
               composition the product keeps choosing. That is the portable
               format: readable enough for an agent to generate against, concrete
               enough for drift to be checked, and close enough to implementation
@@ -83,11 +83,11 @@ export default function Home() {
               someone who isn't you can apply it faithfully.
             </p>
             <p className="thesis-item">
-              Drift is useful because it reveals the boundary of the expression.
-              When an agent fails to compose faithfully, the failure is
-              evidence: maybe the implementation missed the language, maybe the
-              expression did not yet capture the language, or maybe the product
-              has moved and the expression needs to move with it.
+              Drift is useful because it reveals the boundary of the
+              fingerprint. When an agent fails to compose faithfully, the
+              failure is evidence: maybe the implementation missed the language,
+              maybe the fingerprint did not yet capture the language, or maybe
+              the product has moved and the fingerprint needs to move with it.
             </p>
             <p className="thesis-item">
               The artifact that carries brand has to live where the agent does:
@@ -101,10 +101,10 @@ export default function Home() {
               Which raises the governance question. The reflex is to centralize:
               one source of truth, many downstream projects, compliance tracked
               from above. Ghost takes the opposite approach. Each repo owns its
-              expression, its trajectory, and its stance. Decentralization
+              fingerprint, its trajectory, and its stance. Decentralization
               without intent is entropy, so stances (<em>aligned</em>,{" "}
               <em>accepted</em>, <em>diverging</em>) turn divergence into
-              signal. The fleet of expressions drifts in the open; every
+              signal. The fleet of fingerprints drifts in the open; every
               divergence carries reasoning. And read from above, the fleet
               becomes a world model — the shape of the org's design language,
               drawn from the languages inside it. Nothing is prescriptive.

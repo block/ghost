@@ -1,7 +1,7 @@
 import type {
   DimensionDelta,
-  Expression,
-  ExpressionComparison,
+  Fingerprint,
+  FingerprintComparison,
 } from "../types.js";
 import { resolveColorOklch } from "./colors.js";
 import { computeDriftVectors } from "./vector.js";
@@ -17,7 +17,7 @@ const WEIGHTS: Record<string, number> = {
   surfaces: 0.15,
 };
 
-/** Redistributed weights when both expressions have design decisions */
+/** Redistributed weights when both fingerprints have design decisions */
 const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
   decisions: 0.15,
   palette: 0.3,
@@ -26,14 +26,14 @@ const WEIGHTS_WITH_DECISIONS: Record<string, number> = {
   surfaces: 0.15,
 };
 
-export function compareExpressions(
-  source: Expression,
-  target: Expression,
+export function compareFingerprints(
+  source: Fingerprint,
+  target: Fingerprint,
   options?: CompareOptions,
-): ExpressionComparison {
+): FingerprintComparison {
   const dimensions: Record<string, DimensionDelta> = {};
 
-  // Compare decisions when both expressions have them.
+  // Compare decisions when both fingerprints have them.
   // Decisions only contribute to the weighted distance when both sides have
   // embeddings — otherwise we record a qualitative delta without a scalar
   // that would pollute the number.
@@ -64,7 +64,7 @@ export function compareExpressions(
 
   const summary = buildSummary(dimensions, distance);
 
-  const result: ExpressionComparison = {
+  const result: FingerprintComparison = {
     source,
     target,
     distance,
@@ -79,7 +79,7 @@ export function compareExpressions(
   return result;
 }
 
-function comparePalette(a: Expression, b: Expression): DimensionDelta {
+function comparePalette(a: Fingerprint, b: Fingerprint): DimensionDelta {
   const distances: number[] = [];
 
   // Compare dominant colors by role, then by position for unmatched
@@ -167,7 +167,7 @@ function comparePalette(a: Expression, b: Expression): DimensionDelta {
   return { dimension: "palette", distance, description };
 }
 
-function compareSpacing(a: Expression, b: Expression): DimensionDelta {
+function compareSpacing(a: Fingerprint, b: Fingerprint): DimensionDelta {
   const distances: number[] = [];
 
   // Scale similarity (Jaccard-like)
@@ -198,7 +198,7 @@ function compareSpacing(a: Expression, b: Expression): DimensionDelta {
   };
 }
 
-function compareTypography(a: Expression, b: Expression): DimensionDelta {
+function compareTypography(a: Fingerprint, b: Fingerprint): DimensionDelta {
   const distances: number[] = [];
 
   // Family match — fuzzy comparison
@@ -234,7 +234,7 @@ function compareTypography(a: Expression, b: Expression): DimensionDelta {
   };
 }
 
-function compareSurfaces(a: Expression, b: Expression): DimensionDelta {
+function compareSurfaces(a: Fingerprint, b: Fingerprint): DimensionDelta {
   const distances: number[] = [];
 
   // Border radii overlap
@@ -274,7 +274,7 @@ function compareSurfaces(a: Expression, b: Expression): DimensionDelta {
 const DECISION_MATCH_THRESHOLD = 0.75;
 
 /**
- * Compare design decisions between two expressions.
+ * Compare design decisions between two fingerprints.
  *
  * When `bothEmbedded` is true: match decisions pairwise by cosine similarity
  * of their embeddings. Distance blends unmatched coverage with the cosine
@@ -285,8 +285,8 @@ const DECISION_MATCH_THRESHOLD = 0.75;
  * from the weighted distance (see `WEIGHTS` vs `WEIGHTS_WITH_DECISIONS`).
  */
 function compareDecisions(
-  a: Expression,
-  b: Expression,
+  a: Fingerprint,
+  b: Fingerprint,
   bothEmbedded: boolean,
 ): DimensionDelta {
   const aDecs = a.decisions ?? [];
@@ -302,7 +302,7 @@ function compareDecisions(
 
   // Greedy one-to-one match: for each decision in A, find the best unmatched
   // decision in B above threshold. Stable and O(n*m), which is fine for
-  // expressions with ~5–15 decisions.
+  // fingerprints with ~5–15 decisions.
   const matchedB = new Set<number>();
   const matchedCosines: number[] = [];
 
@@ -556,8 +556,8 @@ function avg(values: number[]): number {
 }
 
 function describePaletteChange(
-  _a: Expression,
-  _b: Expression,
+  _a: Fingerprint,
+  _b: Fingerprint,
   distance: number,
 ): string {
   if (distance < 0.1) return "Color palettes are nearly identical";

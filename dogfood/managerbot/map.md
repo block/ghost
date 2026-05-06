@@ -173,7 +173,7 @@ pinned-widgets, pages) wire primitives into product surfaces.
 Excludes follow the usual monorepo noise (`node_modules`, `dist`) plus
 test artifacts (`*.spec.tsx`, `*.stories.tsx`, `managerbot-e2e`,
 `managerbot-eval`) and library wrappers that are secondary to the core
-expression (`visx-charts`, `rjsf`).
+fingerprint (`visx-charts`, `rjsf`).
 
 ## Conventions
 

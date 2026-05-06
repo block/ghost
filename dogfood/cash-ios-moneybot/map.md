@@ -182,7 +182,7 @@ orientation_files:
 
 ## Identity
 
-Moneybot is a Cash iOS feature cluster for the app's assistant surfaces: chat, generated UI, home entry points, automations, a canvas background, and reusable Moneybot UI pieces. It is a module-level iOS target inside `squareup/cash-ios`, not a standalone design system package, so its expression should describe the Moneybot feature language rather than all of Cash App.
+Moneybot is a Cash iOS feature cluster for the app's assistant surfaces: chat, generated UI, home entry points, automations, a canvas background, and reusable Moneybot UI pieces. It is a module-level iOS target inside `squareup/cash-ios`, not a standalone design system package, so its fingerprint should describe the Moneybot feature language rather than all of Cash App.
 
 ## Topology
 

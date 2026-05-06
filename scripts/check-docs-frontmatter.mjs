@@ -76,7 +76,7 @@ for (const { file, fm: _fm } of parsed) {
       "/",
       "/tools",
       "/tools/map",
-      "/tools/expression",
+      "/tools/fingerprint",
       "/tools/drift",
       "/tools/drift/workflow",
       "/tools/fleet",

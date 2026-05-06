@@ -31,15 +31,15 @@ describe("loadMembers", () => {
     expect(cashAndroid?.map?.registry).toBeUndefined();
   });
 
-  it("loads each member's expression with embedding backfilled", async () => {
+  it("loads each member's fingerprint with embedding backfilled", async () => {
     const members = await loadMembers(FLEET);
     for (const member of members) {
-      expect(member.expressionStatus).toBe("ok");
-      expect(member.expression).toBeDefined();
+      expect(member.fingerprintStatus).toBe("ok");
+      expect(member.fingerprint).toBeDefined();
       // Embedding is the load-bearing data structure for fleet's pairwise
       // distances; it must be present (computed if missing in YAML).
-      expect(member.expression?.embedding.length).toBeGreaterThan(0);
-      expect(typeof member.expressionMtime).toBe("string");
+      expect(member.fingerprint?.embedding.length).toBeGreaterThan(0);
+      expect(typeof member.fingerprintMtime).toBe("string");
     }
   });
 
@@ -74,7 +74,7 @@ describe("summarizeMember", () => {
     expect(summary.build_system).toBe("pnpm");
     expect(summary.registry).toBe("registry.json");
     expect(summary.ok).toBe(true);
-    expect(summary.expression_mtime).toMatch(/^\d{4}-\d{2}-\d{2}/);
+    expect(summary.fingerprint_mtime).toMatch(/^\d{4}-\d{2}-\d{2}/);
   });
 
   it("renders 'none' as null for non-shadcn members", async () => {

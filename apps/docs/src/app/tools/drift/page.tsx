@@ -17,14 +17,14 @@ const cards: {
     name: "Workflow",
     href: "/tools/drift/workflow",
     description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
+      "The five moves: profile, compare, review, evolve, and zoom out to the org fingerprint — with examples for each.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the ghost-drift skill bundle and start tracking drift against a reference expression.",
+      "Install the ghost-drift skill bundle and start tracking drift against a reference fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -48,7 +48,7 @@ export default function GhostDriftLanding() {
       <AnimatedPageHeader
         kicker="ghost-drift"
         title="Drift"
-        description="Detect divergence the moment it happens, then record the right stance. compare returns scalar distance and per-dimension deltas across two or many expressions; ack / track / diverge turn unintended drift into intentional signal. The skill bundle ships the review, verify, compare, and remediate recipes the host agent runs."
+        description="Detect divergence the moment it happens, then record the right stance. compare returns scalar distance and per-dimension deltas across two or many fingerprints; ack / track / diverge turn unintended drift into intentional signal. The skill bundle ships the review, verify, compare, and remediate recipes the host agent runs."
       />
 
       <div

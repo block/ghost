@@ -42,7 +42,7 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 2. **No leading repo-specific guidance was needed.** The recipe just said "find the canonical signal." For ghost-ui that's `registry.json`, `package.json`, and `main.css`. For a different repo it would be different files. Recipe stays agnostic.
 
-3. **Pattern-naming worked.** `surface-hierarchy`, `theming-architecture`, `font-sourcing`, `density`, `interactive-patterns`, `elevation` all read as patterns rather than restated tokens. That's the prose discipline the existing pre-survey expression had.
+3. **Pattern-naming worked.** `surface-hierarchy`, `theming-architecture`, `font-sourcing`, `density`, `interactive-patterns`, `elevation` all read as patterns rather than restated tokens. That's the prose discipline the existing pre-survey fingerprint had.
 
 ## Bug fixes verified
 
@@ -51,13 +51,13 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 ## What's still imperfect
 
-- **Spacing scale messiness**: attempt 2 records 22 distinct px values in the spacing scale. Real ghost-ui has a coherent rem-based component-height system (2rem, 2.75rem, 3rem, 3.25rem) layered on top of an ad-hoc px scatter (1, 2, 3, 4, 6, 8, 10, 12...). The survey captured both honestly; the expression flattened them into a single `spacing.scale` array. A future iteration might split rem-component-height from px-utility values explicitly in the spec.
+- **Spacing scale messiness**: attempt 2 records 22 distinct px values in the spacing scale. Real ghost-ui has a coherent rem-based component-height system (2rem, 2.75rem, 3rem, 3.25rem) layered on top of an ad-hoc px scatter (1, 2, 3, 4, 6, 8, 10, 12...). The survey captured both honestly; the fingerprint flattened them into a single `spacing.scale` array. A future iteration might split rem-component-height from px-utility values explicitly in the spec.
 - **No dark-mode-specific rows for tokens that diverge between themes**: each token has a `by_theme` field when light/dark differ, but value-level dark-mode rows aren't separate rows. That's by design but worth noting.
 - **The agent's heuristic categorizers** (e.g. "999px → radius, 1440px → breakpoint, others → spacing") are still heuristics. Misclassifications are possible; cross-checking against `map.md` topology would catch them.
 
 ## Follow-up bug found
 
-`ghost-expression diff` reports `dominant primary: #1a1a1a` as a "+" addition when comparing attempt-2's expression to attempt-1's, even though both have the same dominant color (different role name: `ink` vs `primary`). Worth investigating — diff should match dominant entries by value when role names differ, OR surface "dominant role rename" as a distinct category. Filed as a follow-up; not blocking.
+`ghost-fingerprint diff` reports `dominant primary: #1a1a1a` as a "+" addition when comparing attempt-2's fingerprint to attempt-1's, even though both have the same dominant color (different role name: `ink` vs `primary`). Worth investigating — diff should match dominant entries by value when role names differ, OR surface "dominant role rename" as a distinct category. Filed as a follow-up; not blocking.
 
 ## Lessons for next iteration
 

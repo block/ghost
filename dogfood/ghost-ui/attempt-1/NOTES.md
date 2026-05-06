@@ -1,6 +1,6 @@
 # Attempt 1 — ghost-ui scan, 2026-04-29
 
-First end-to-end dogfood of the new three-stage scan pipeline (`map.md` → `survey.json` → `expression.md`) against `packages/ghost-ui`. Authored by an agent (Claude Opus 4.7) following the bundled `map.md`, `survey.md`, `profile.md` skill recipes. All three artifacts lint clean.
+First end-to-end dogfood of the new three-stage scan pipeline (`map.md` → `survey.json` → `fingerprint.md`) against `packages/ghost-ui`. Authored by an agent (Claude Opus 4.7) following the bundled `map.md`, `survey.md`, `profile.md` skill recipes. All three artifacts lint clean.
 
 ## What worked
 
@@ -26,7 +26,7 @@ The recipe instructed exhaustiveness; the agent sampled. **A 90% undercount is a
 
 ### 2. Decision-level coverage 7/11
 
-Missed four load-bearing decisions named in the prior expression.md (authored under the old single-pass recipe):
+Missed four load-bearing decisions named in the prior fingerprint.md (authored under the old single-pass recipe):
 
 - **`font-sourcing`** — ghost-ui ships zero bundled fonts (`font-faces.css` is one comment). Critical character claim, missed entirely.
 - **`interactive-patterns`** — global `*:focus-visible` discipline applied uniformly; missed.
@@ -40,15 +40,15 @@ Missed four load-bearing decisions named in the prior expression.md (authored un
 
 ### 4. Decision naming bias
 
-The new survey-grounded recipe produced more literal/technical names (`color-strategy`, `shape-language`, `shadow-hierarchy`) where the existing expression named patterns at a more useful abstraction (`surface-hierarchy`, `elevation`, `theming-architecture`, `interactive-patterns`). The recipe should reinforce "name the pattern, not the value."
+The new survey-grounded recipe produced more literal/technical names (`color-strategy`, `shape-language`, `shadow-hierarchy`) where the existing fingerprint named patterns at a more useful abstraction (`surface-hierarchy`, `elevation`, `theming-architecture`, `interactive-patterns`). The recipe should reinforce "name the pattern, not the value."
 
 ### 5. Bug in self-distance check (separate from the recipe)
 
-`ghost-drift compare expression.md expression.md` reports 17.5% self-distance because `loadExpression` doesn't backfill `oklch` on palette colors. `comparePalette` then treats every color as fully unmatched (distance 1). Fix shipping in attempt 2's run; not a recipe issue.
+`ghost-drift compare fingerprint.md fingerprint.md` reports 17.5% self-distance because `loadFingerprint` doesn't backfill `oklch` on palette colors. `comparePalette` then treats every color as fully unmatched (distance 1). Fix shipping in attempt 2's run; not a recipe issue.
 
 ## Lessons for attempt 2
 
 1. **Exhaustiveness is the load-bearing rule** — the agent must enumerate every section's source of truth, not sample. Cross-check counts from two independent passes; a divergence > ~10% means re-pass. Already strengthening this in `survey.md`.
 2. **No leading repo-specific guidance** in the recipe (e.g. don't say "use registry.json") — Ghost is BYOA-agnostic. The recipe states the discipline; the agent identifies the canonical signal in this repo.
 3. **Profile recipe should reinforce "name the pattern, not the value."** Decision dimensions like `font-sourcing`, `interactive-patterns`, `density` are more useful than restated tokens.
-4. **Cross-check decision count against prior art when available.** If the old `expression.md` had 11 dimensions and the new has 7, ask why the four absent ones weren't observable — usually a recall gap upstream.
+4. **Cross-check decision count against prior art when available.** If the old `fingerprint.md` had 11 dimensions and the new has 7, ask why the four absent ones weren't observable — usually a recall gap upstream.

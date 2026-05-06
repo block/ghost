@@ -167,7 +167,7 @@ export interface GhostConfig {
   extractors?: string[];
 }
 
-// --- Expression types ---
+// --- Fingerprint types ---
 
 export interface SemanticColor {
   role: string;
@@ -278,16 +278,16 @@ export interface Check {
   support?: number;
 }
 
-export interface ExpressionReferences {
+export interface FingerprintReferences {
   /** Source-of-truth spec/token/theme files worth opening during generation or drift review. */
   specs?: string[];
   /** Component directories, registries, or local libraries worth using before inventing UI. */
   components?: string[];
-  /** Canonical examples, docs, or registry exemplars that show expression in practice. */
+  /** Canonical examples, docs, or registry exemplars that show fingerprint in practice. */
   examples?: string[];
 }
 
-// --- Observation & decision types (three-layer expression) ---
+// --- Observation & decision types (three-layer fingerprint) ---
 
 export interface DesignObservation {
   /** Holistic summary of the design language */
@@ -322,12 +322,12 @@ export interface DesignDecision {
    * Computed at profile time when an embedding provider is configured,
    * and used by compareDecisions for paraphrase-robust matching.
    *
-   * Runtime-only. `expression.md` no longer stores decision embeddings.
+   * Runtime-only. `fingerprint.md` no longer stores decision embeddings.
    */
   embedding?: number[];
 }
 
-export interface Expression {
+export interface Fingerprint {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
@@ -341,13 +341,13 @@ export interface Expression {
   /** Body-owned signature moves that make this design language recognizable. */
   signature?: string;
   /** Direct pointers to living sources agents should read; map.md stays scan-only. */
-  references?: ExpressionReferences;
+  references?: FingerprintReferences;
   /** Layer 2: Abstract design decisions, implementation-agnostic */
   decisions?: DesignDecision[];
   /**
    * Human-promoted review checks — grep-friendly, severity computed
    * by the perceptual prior at emit time. Coexists with `decisions[]`
-   * while expression prose remains the primary generation surface.
+   * while fingerprint prose remains the primary generation surface.
    */
   checks?: Check[];
 
@@ -423,7 +423,7 @@ export interface SampledMaterial {
 
 // --- AI enrichment types ---
 
-export interface EnrichedExpression extends Expression {
+export interface EnrichedFingerprint extends Fingerprint {
   detectedFormats?: DetectedFormat[];
   targetType: TargetType;
 }
@@ -434,7 +434,7 @@ export type DivergenceClass =
   | "evolution-lag"
   | "incompatible";
 
-export interface EnrichedComparison extends ExpressionComparison {
+export interface EnrichedComparison extends FingerprintComparison {
   classification: DivergenceClass;
   explanations: Record<string, string>;
 }
@@ -502,8 +502,8 @@ export interface EmbeddingConfig {
 
 // --- History types ---
 
-export interface ExpressionHistoryEntry {
-  expression: Expression;
+export interface FingerprintHistoryEntry {
+  fingerprint: Fingerprint;
   trackedRef?: Target;
   comparisonToTracked?: {
     distance: number;
@@ -531,8 +531,8 @@ export interface DimensionAck {
 export interface SyncManifest {
   tracks: Target;
   ackedAt: string;
-  trackedExpressionId: string;
-  localExpressionId: string;
+  trackedFingerprintId: string;
+  localFingerprintId: string;
   dimensions: Record<string, DimensionAck>;
   overallDistance: number;
 }
@@ -545,9 +545,9 @@ export interface DimensionDelta {
   description: string;
 }
 
-export interface ExpressionComparison {
-  source: Expression;
-  target: Expression;
+export interface FingerprintComparison {
+  source: Fingerprint;
+  target: Fingerprint;
   distance: number;
   dimensions: Record<string, DimensionDelta>;
   summary: string;
@@ -569,7 +569,7 @@ export interface DriftVelocity {
   windowDays: number;
 }
 
-export interface TemporalComparison extends ExpressionComparison {
+export interface TemporalComparison extends FingerprintComparison {
   velocity: DriftVelocity[];
   daysSinceAck: number | null;
   exceedsAckedBounds: boolean;
@@ -577,11 +577,11 @@ export interface TemporalComparison extends ExpressionComparison {
   trajectory: "converging" | "diverging" | "stable" | "oscillating";
 }
 
-// --- Composite types (N≥3 expression comparison) ---
+// --- Composite types (N≥3 fingerprint comparison) ---
 
 export interface CompositeMember {
   id: string;
-  expression: Expression;
+  fingerprint: Fingerprint;
   trackedRef?: Target;
   distanceToTracked?: number;
 }
@@ -613,7 +613,7 @@ export interface ValueDrift {
   rule: string;
   severity: RuleSeverity;
   message: string;
-  expressionValue?: string;
+  fingerprintValue?: string;
   implementationValue?: string;
   selector?: string;
   file?: string;
@@ -629,6 +629,6 @@ export interface StructureDrift {
   diff?: string;
   linesAdded: number;
   linesRemoved: number;
-  expressionFile?: string;
+  fingerprintFile?: string;
   implementationFile?: string;
 }

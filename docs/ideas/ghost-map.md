@@ -8,20 +8,20 @@ status: exploring
 
 The cash-android profile pass is a forcing function. ~1,580 Gradle modules. No agent can discover topology from scratch in that repo — the existing fleet works around it with hand-authored YAML manifests at `ghost-fleet/manifests/cash-android.yaml` (27 feature areas, convention plugin IDs, include/exclude globs). Those manifests are accurate and load-bearing, but they're hardcoded — every new repo means a human pre-curates the navigation map before the profile recipe runs.
 
-`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Scan and fleet workflows read map.md as their topology cache, so they do not re-derive "where does the design system live" or "which folders are customer UI." Generation and drift use `expression.md` as their action root. The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
+`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Scan and fleet workflows read map.md as their topology cache, so they do not re-derive "where does the design system live" or "which folders are customer UI." Generation and drift use `fingerprint.md` as their action root. The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
 
-This is one of five decentralized tools (`map`, `expression`, `drift`, `fleet`, `ui`). Map is upstream of the other four.
+This is one of five decentralized tools (`map`, `fingerprint`, `drift`, `fleet`, `ui`). Map is upstream of the other four.
 
 ## What map.md is — and is not
 
 A **navigation card**, not an extraction. It answers *where* and *what kind*, never *how it feels*.
 
-- Not a profile (no design-language judgement — that's expression).
+- Not a profile (no design-language judgement — that's fingerprint).
 - Not exhaustive (six feature areas beat thirty if six are the ones a sampling agent should actually visit).
 - Not aspirational (records what the repo is, not what it should be).
 - Language-agnostic by design (web, iOS, Android, Flutter, desktop, mixed).
 
-## Architecture — mirrors expression
+## Architecture — mirrors fingerprint
 
 The verb is LLM-driven; the CLI is deterministic scaffolding.
 
@@ -32,7 +32,7 @@ The verb is LLM-driven; the CLI is deterministic scaffolding.
 | `ghost map lint` (CLI) | Validate map.md against `ghost.map/v2`, flag missing sections | CLI |
 | `ghost map describe` (CLI) | Print sections + token estimates for selective loading | CLI |
 
-Same shape as `ghost expression` (profile drives, lint/describe support). BYOA invariant holds at the CLI line.
+Same shape as `ghost fingerprint` (profile drives, lint/describe support). BYOA invariant holds at the CLI line.
 
 ## Schema — `ghost.map/v2`
 
@@ -133,9 +133,9 @@ The recipe consumes this, opens what it needs to open, and synthesizes map.md.
 
 ## Cross-tool payoff
 
-- **expression** consumes map.md → profile recipe skips topology discovery, focuses on interpretation. Significant cost reduction on large repos.
+- **fingerprint** consumes map.md → profile recipe skips topology discovery, focuses on interpretation. Significant cost reduction on large repos.
 - **drift** uses `surface_sources.include`/`exclude` and `feature_areas` to scope comparison. With `registry` present, drift can attribute to specific components instead of repo-wide vectors.
-- **fleet** groups repos by `composition` and `platform` axes orthogonal to design language ("how do all SwiftUI apps cluster in expression-space?").
+- **fleet** groups repos by `composition` and `platform` axes orthogonal to design language ("how do all SwiftUI apps cluster in fingerprint-space?").
 - **ghost-ui** remains the exemplary shadcn registry target for testing map detection, but it should not ship package-local scan artifacts.
 
 ## Open questions
@@ -143,7 +143,7 @@ The recipe consumes this, opens what it needs to open, and synthesizes map.md.
 - **`registry` reach.** Drafted as `{path, components}` with shadcn in mind. Fine for now; revisit if a second registry format ever shows up.
 - **`surface_sources.signals` stays out.** Convention plugins and name suffixes land in Topology prose; implemented composition evidence now belongs in `survey.ui_surfaces[]`.
 - ~~**Multi-platform repos.** `platform: mixed` covers it but is coarse. Worth allowing `platform: [ios, android]` if Tidal-style mixed repos prove it useful.~~ Resolved in Phase 4b — `platform` and `build_system` now both accept arrays.
-- **Re-map cadence.** map.md is more stable than expression.md (topology shifts slowly), but it does drift. No formal answer yet — likely "agent re-runs map when it notices a stale signal" rather than a schedule.
+- **Re-map cadence.** map.md is more stable than fingerprint.md (topology shifts slowly), but it does drift. No formal answer yet — likely "agent re-runs map when it notices a stale signal" rather than a schedule.
 
 ## Out of scope
 

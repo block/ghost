@@ -28,7 +28,7 @@ export const FleetMemberEntrySchema = z.object({
   platform: z.string().min(1),
   build_system: z.string().min(1).optional(),
   registry: z.string().min(1).nullable().optional(),
-  expression_at: ISO_DATE_OR_DATETIME.optional(),
+  fingerprint_at: ISO_DATE_OR_DATETIME.optional(),
 });
 
 export const FleetDistanceSchema = z.object({

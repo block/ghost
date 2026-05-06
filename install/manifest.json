@@ -1,10 +1,10 @@
 {
   "$schema": "ghost.install-manifest/v1",
-  "name": "ghost-expression",
-  "description": "Ghost design-language scan + emit recipes — author expression.md, validate it, emit a per-project /design-review slash command.",
+  "name": "ghost-fingerprint",
+  "description": "Ghost design-language scan + emit recipes — author fingerprint.md, validate it, emit a per-project /design-review slash command.",
   "version": "0.1.0",
   "source": {
-    "package": "packages/ghost-expression/src/skill-bundle"
+    "package": "packages/ghost-fingerprint/src/skill-bundle"
   },
   "files": [
     "SKILL.md",
@@ -13,6 +13,6 @@
     "references/survey.md",
     "references/profile.md",
     "references/schema.md",
-    "assets/expression.template.md"
+    "assets/fingerprint.template.md"
   ]
 }

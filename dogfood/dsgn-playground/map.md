@@ -122,7 +122,7 @@ orientation_files:
   - src/lib/components/GridCard.svelte
   - src/lib/components/PostExpanded.svelte
   - src/lib/components/PostEdit.svelte
-  - ../ghost/packages/ghost-ui/expression.md
+  - ../ghost/packages/ghost-ui/fingerprint.md
 ---
 
 ## Identity
@@ -139,4 +139,4 @@ Product surfaces live primarily in `src/lib/components` and `src/routes`. The ho
 
 The app blends Tailwind utility classes with substantial component-local SCSS. Global tokens are monochrome and Square/Cash-branded: Cash Sans, Cash Sans Wide, and Cash Sans Mono are loaded from `cash-f.squarecdn.com`, while color defaults to grayscale with red reserved for destructive/error states. Motion is a first-class convention: GSAP scroll reveal, grid reveal, Flip-like transitions, modal slide-ins, and a hand-drawn SVG loader give the playground a kinetic gallery feel.
 
-For dogfooding Ghost, the closest internal comparison point is `ghost-ui`: this scan keeps a direct orientation reference to `../ghost/packages/ghost-ui/expression.md`. The two systems share monochrome editorial discipline, Cash-family affinity, pill controls, and high-contrast surface treatment, but Playground is more media-first and animated, with local SCSS composition instead of a registry-distributed React design system.
+For dogfooding Ghost, the closest internal comparison point is `ghost-ui`: this scan keeps a direct orientation reference to `../ghost/packages/ghost-ui/fingerprint.md`. The two systems share monochrome editorial discipline, Cash-family affinity, pill controls, and high-contrast surface treatment, but Playground is more media-first and animated, with local SCSS composition instead of a registry-distributed React design system.

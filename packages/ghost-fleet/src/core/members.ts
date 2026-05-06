@@ -6,7 +6,7 @@ import {
   type MapFrontmatter,
   MapFrontmatterSchema,
 } from "@ghost/core";
-import { EXPRESSION_FILENAME, loadExpression } from "ghost-expression";
+import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-fingerprint";
 import { parse as parseYaml } from "yaml";
 import { FLEET_MEMBERS_DIRNAME } from "./schema.js";
 import type { FleetMember, MemberSummary } from "./types.js";
@@ -44,7 +44,7 @@ export async function loadMembers(dir: string): Promise<FleetMember[]> {
 /**
  * Resolve the members directory.
  *
- * Convention is `<root>/members/<id>/{map.md,expression.md}`. We also
+ * Convention is `<root>/members/<id>/{map.md,fingerprint.md}`. We also
  * accept being pointed directly at a `members/` directory.
  */
 function pickMembersRoot(root: string): string {
@@ -62,7 +62,7 @@ function pickMembersRoot(root: string): string {
 /**
  * Load a single member directory.
  *
- * Reads map.md, expression.md, and optional .ghost-sync.json. Each is
+ * Reads map.md, fingerprint.md, and optional .ghost-sync.json. Each is
  * surfaced through a status field so missing/broken inputs are visible
  * without crashing the rest of the load.
  */
@@ -70,7 +70,7 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
   const dirName = memberPath.split("/").pop() ?? "";
 
   const mapPath = join(memberPath, MAP_FILENAME);
-  const expressionPath = join(memberPath, EXPRESSION_FILENAME);
+  const fingerprintPath = join(memberPath, FINGERPRINT_FILENAME);
 
   // Default identity is the directory basename; map.md `id` overrides.
   let id = dirName;
@@ -91,21 +91,21 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
     }
   }
 
-  // --- expression.md ---
-  let expressionStatus: FleetMember["expressionStatus"] = "missing";
-  let expressionError: string | undefined;
-  let expression: FleetMember["expression"];
-  let expressionMtime: string | undefined;
-  if (existsSync(expressionPath)) {
+  // --- fingerprint.md ---
+  let fingerprintStatus: FleetMember["fingerprintStatus"] = "missing";
+  let fingerprintError: string | undefined;
+  let fingerprint: FleetMember["fingerprint"];
+  let fingerprintMtime: string | undefined;
+  if (existsSync(fingerprintPath)) {
     try {
-      const parsed = await loadExpression(expressionPath);
-      expression = parsed.expression;
-      const mtime = (await stat(expressionPath)).mtime;
-      expressionMtime = mtime.toISOString();
-      expressionStatus = "ok";
+      const parsed = await loadFingerprint(fingerprintPath);
+      fingerprint = parsed.fingerprint;
+      const mtime = (await stat(fingerprintPath)).mtime;
+      fingerprintMtime = mtime.toISOString();
+      fingerprintStatus = "ok";
     } catch (err) {
-      expressionStatus = "error";
-      expressionError = err instanceof Error ? err.message : String(err);
+      fingerprintStatus = "error";
+      fingerprintError = err instanceof Error ? err.message : String(err);
     }
   }
 
@@ -118,10 +118,10 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
     map,
     mapStatus,
     mapError,
-    expression,
-    expressionStatus,
-    expressionError,
-    expressionMtime,
+    fingerprint,
+    fingerprintStatus,
+    fingerprintError,
+    fingerprintMtime,
     tracks,
   };
 }
@@ -200,7 +200,7 @@ async function readTracksTarget(
 /**
  * Compact summary row for `ghost fleet members`.
  *
- * Surfaces the freshness signal (expression mtime) and the axes that the
+ * Surfaces the freshness signal (fingerprint mtime) and the axes that the
  * group-by tables use, so the CLI can render either a human table or a
  * machine-readable JSON line per member.
  */
@@ -214,9 +214,9 @@ export function summarizeMember(member: FleetMember): MemberSummary {
     platform,
     build_system,
     registry,
-    expression_mtime: member.expressionMtime ?? null,
-    ok: member.mapStatus === "ok" && member.expressionStatus === "ok",
+    fingerprint_mtime: member.fingerprintMtime ?? null,
+    ok: member.mapStatus === "ok" && member.fingerprintStatus === "ok",
     mapStatus: member.mapStatus,
-    expressionStatus: member.expressionStatus,
+    fingerprintStatus: member.fingerprintStatus,
   };
 }

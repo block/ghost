@@ -116,4 +116,4 @@ The design system is colocated in `packages/ghost-ui`: canonical tokens live in 
 
 ## Conventions
 
-Styling is Tailwind v4 driven by CSS custom properties: raw constants and semantic tokens cascade into `@theme inline` aliases consumed by components. Runtime presets override the same CSS variables rather than branching component code, so the scan should treat tokens and component usage together. The target currently contains already-generated `map.md`, `survey.json`, and `expression.md`; those are orientation artifacts, not source-of-truth inputs for this dogfood scan.
+Styling is Tailwind v4 driven by CSS custom properties: raw constants and semantic tokens cascade into `@theme inline` aliases consumed by components. Runtime presets override the same CSS variables rather than branching component code, so the scan should treat tokens and component usage together. The target currently contains already-generated `map.md`, `survey.json`, and `fingerprint.md`; those are orientation artifacts, not source-of-truth inputs for this dogfood scan.
