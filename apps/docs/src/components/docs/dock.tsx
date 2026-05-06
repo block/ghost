@@ -14,13 +14,33 @@ import {
   useTheme,
 } from "ghost-ui";
 import type { LucideIcon } from "lucide-react";
-import { Home, Monitor, Moon, Search, Sun, Wrench } from "lucide-react";
+import {
+  BookOpen,
+  Home,
+  Monitor,
+  Moon,
+  Rocket,
+  Search,
+  Sun,
+  Wrench,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
-const nav: { name: string; path: string; icon: LucideIcon }[] = [
+const nav: {
+  name: string;
+  path: string;
+  icon: LucideIcon;
+  activePath?: string;
+}[] = [
   { name: "Home", path: "/", icon: Home },
+  {
+    name: "Start",
+    path: "/docs/getting-started",
+    activePath: "/docs",
+    icon: Rocket,
+  },
   { name: "Tools", path: "/tools", icon: Wrench },
 ];
 
@@ -53,9 +73,9 @@ export function Dock() {
   }, []);
 
   const isActive = useCallback(
-    (path: string) => {
+    (path: string, activePath = path) => {
       if (path === "/") return pathname === "/";
-      return pathname.startsWith(path);
+      return pathname.startsWith(activePath);
     },
     [pathname],
   );
@@ -83,7 +103,7 @@ export function Dock() {
                   to={item.path}
                   className={cn(
                     "flex size-10 items-center justify-center rounded-full transition-all duration-200",
-                    isActive(item.path)
+                    isActive(item.path, item.activePath)
                       ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted",
                   )}
@@ -174,18 +194,39 @@ export function Dock() {
               <Home className="mr-2 size-4" />
               Home
             </CommandItem>
-          </CommandGroup>
-
-          <CommandGroup heading="Tools">
             <CommandItem
               onSelect={() => {
-                navigate("/tools/map");
+                navigate("/docs/getting-started");
+                setSearchOpen(false);
+              }}
+            >
+              <Rocket className="mr-2 size-4" />
+              Start
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/tools");
                 setSearchOpen(false);
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost-map
+              Tools
             </CommandItem>
+          </CommandGroup>
+
+          <CommandGroup heading="Reference">
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/cli");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              CLI Reference
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandGroup heading="Tools">
             <CommandItem
               onSelect={() => {
                 navigate("/tools/fingerprint");
@@ -221,36 +262,6 @@ export function Dock() {
             >
               <Wrench className="mr-2 size-4" />
               ghost-ui
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandGroup heading="Docs">
-            <CommandItem
-              onSelect={() => {
-                navigate("/docs/getting-started");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              Getting Started
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/docs/cli");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              CLI Reference
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              Workflow
             </CommandItem>
           </CommandGroup>
         </CommandList>

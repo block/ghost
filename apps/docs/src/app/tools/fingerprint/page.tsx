@@ -17,21 +17,20 @@ const cards: {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the ghost-fingerprint skill bundle and ask your agent to profile a design language.",
+      "Install the skill bundle and ask your agent to write fingerprint.md.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
     href: "/docs/cli#ghost-fingerprint--authoring--validation",
-    description:
-      "lint, describe, diff, and emit (review-command, context-bundle, skill).",
+    description: "Validate, describe, diff, and emit agent-ready context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full fingerprint.md spec — authored frontmatter, portable prose, and derived runtime views.",
+      "The full fingerprint.md format for values, prose, references, and checks.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -47,8 +46,8 @@ export default function GhostFingerprintLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost-fingerprint"
-        title="Authoring"
-        description="The package that owns fingerprint.md — Ghost's authored design-language contract. YAML frontmatter stores compact value digests, while the prose body (Character / Signature / Decisions) explains the design choices for humans and LLMs. Validated, described, diffed, and emitted into per-project review commands and context bundles for any generator."
+        title="Fingerprint"
+        description="The design-language file agents read before they generate UI. ghost-fingerprint helps your agent scan the repo, write fingerprint.md, validate it against source evidence, and emit review commands or context bundles from it."
       />
 
       <div
