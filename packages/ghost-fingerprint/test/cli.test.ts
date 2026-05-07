@@ -191,7 +191,202 @@ describe("ghost-fingerprint CLI defaults", () => {
 
     expect(result.code).toBe(1);
   });
+
+  it("emit viewer writes fingerprint-viewer.html by default", async () => {
+    await writeViewerPackage(join(dir, ".ghost", "fingerprint"));
+
+    const result = await runCli(["emit", "viewer"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stderr).toBe("");
+    const html = await readFile(join(dir, "fingerprint-viewer.html"), "utf-8");
+    expect(html).toContain("<!doctype html>");
+    expect(html).toContain("local");
+    expect(html).toContain("survey.json");
+    expect(html).toContain("Button");
+  });
+
+  it("emit viewer honors --out", async () => {
+    await writeViewerPackage(join(dir, ".ghost", "fingerprint"));
+
+    const result = await runCli(
+      ["emit", "viewer", "--out", "custom.html"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const html = await readFile(join(dir, "custom.html"), "utf-8");
+    expect(html).toContain("Ghost fingerprint viewer");
+  });
+
+  it("emit viewer honors --stdout without writing the default file", async () => {
+    await writeViewerPackage(join(dir, ".ghost", "fingerprint"));
+
+    const result = await runCli(["emit", "viewer", "--stdout"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("<!doctype html>");
+    await expect(
+      readFile(join(dir, "fingerprint-viewer.html"), "utf-8"),
+    ).rejects.toThrow();
+  });
+
+  it("emit viewer loads sibling artifacts next to a custom --profile", async () => {
+    await writeViewerPackage(join(dir, "custom-package"));
+
+    const result = await runCli(
+      ["emit", "viewer", "--profile", "custom-package/profile.md", "--stdout"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.stdout).toContain("src/components/ui");
+    expect(result.stdout).toContain("No red primary buttons");
+    expect(result.stdout).toContain("Button");
+  });
+
+  it("emit viewer exits 2 for an invalid profile", async () => {
+    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
+    await writeFile(join(dir, ".ghost", "fingerprint", "profile.md"), "nope");
+
+    const result = await runCli(["emit", "viewer"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Error:");
+  });
 });
+
+async function writeViewerPackage(packageDir: string): Promise<void> {
+  await mkdir(packageDir, { recursive: true });
+  await writeFile(join(packageDir, "profile.md"), BASE_FINGERPRINT, "utf-8");
+  await writeFile(
+    join(packageDir, "survey.json"),
+    `${JSON.stringify(makeViewerSurvey(), null, 2)}\n`,
+    "utf-8",
+  );
+  await writeFile(
+    join(packageDir, "map.md"),
+    `---
+schema: ghost.map/v2
+id: local
+repo: local
+mapped_at: 2026-05-07T00:00:00.000Z
+platform: web
+languages:
+  - { name: typescript, files: 1, share: 1 }
+build_system: pnpm
+package_manifests:
+  - package.json
+composition:
+  frameworks:
+    - { name: react }
+  rendering: browser
+  styling:
+    - css
+design_system:
+  paths:
+    - src/components/ui
+  status: active
+surface_sources:
+  render_strategy: browser
+  include:
+    - src/**/*.tsx
+  exclude:
+    - "**/node_modules/**"
+feature_areas:
+  - name: docs
+    paths:
+      - apps/docs
+orientation_files:
+  - README.md
+---
+
+## Identity
+
+Local.
+
+## Topology
+
+Web.
+
+## Conventions
+
+Use local tokens.
+`,
+    "utf-8",
+  );
+  await writeFile(
+    join(packageDir, "checks.yml"),
+    `schema: ghost.checks/v1
+id: local
+checks:
+  - id: no-red-primary
+    title: No red primary buttons
+    status: active
+    severity: serious
+    detector:
+      type: forbidden-regex
+      pattern: bg-red
+    evidence:
+      support: 0.96
+      observed_count: 12
+    repair: Use the accent token instead.
+`,
+    "utf-8",
+  );
+}
+
+function makeViewerSurvey(): Survey {
+  return {
+    schema: "ghost.survey/v2",
+    sources: [SOURCE_A],
+    values: [
+      {
+        id: valueRowId(SOURCE_A, "color", "#111111", "#111111"),
+        source: SOURCE_A,
+        kind: "color",
+        value: "#111111",
+        raw: "#111111",
+        occurrences: 4,
+        files_count: 2,
+        role_hypothesis: "primary",
+      },
+    ],
+    tokens: [
+      {
+        id: tokenRowId(SOURCE_A, "--color-primary"),
+        source: SOURCE_A,
+        name: "--color-primary",
+        alias_chain: [],
+        resolved_value: "#111111",
+        occurrences: 3,
+      },
+    ],
+    components: [
+      {
+        id: componentRowId(SOURCE_A, "Button"),
+        source: SOURCE_A,
+        name: "Button",
+        discovered_via: "registry.json",
+        variants: ["primary"],
+      },
+    ],
+    ui_surfaces: [
+      {
+        id: uiSurfaceRowId(SOURCE_A, "Dashboard", "route", "/dashboard"),
+        source: SOURCE_A,
+        name: "Dashboard",
+        kind: "route",
+        locator: "/dashboard",
+        renderability: "rendered",
+        files: ["src/dashboard.tsx"],
+        classification: { layout_shape: "tracker" },
+        signals: { dominant_components: ["Button"] },
+      },
+    ],
+  };
+}
 
 const SOURCE_A: SurveySource = {
   target: "github:block/ghost",

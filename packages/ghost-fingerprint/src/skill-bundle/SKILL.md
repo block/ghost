@@ -38,7 +38,7 @@ summaries, and structural profile diffs.
 | `ghost-fingerprint describe [profile.md]` | Print profile section ranges and token estimates. Defaults to `.ghost/fingerprint/profile.md`. |
 | `ghost-fingerprint diff <a.md> <b.md>` | Structural prose-level diff between two profiles. |
 | `ghost-fingerprint survey <op>` | Survey ops: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
-| `ghost-fingerprint emit <kind>` | Derive static artifacts. Kinds: `review-command`, `context-bundle`, `skill`. |
+| `ghost-fingerprint emit <kind>` | Derive static artifacts. Kinds: `review-command`, `context-bundle`, `viewer`, `skill`. |
 
 When the CLI is unavailable, follow the same recipes manually with file reads,
 search, and careful validation. Do not block on installation.

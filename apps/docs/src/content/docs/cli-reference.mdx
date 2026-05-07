@@ -217,13 +217,14 @@ ghost-fingerprint diff a/fingerprint.md b/fingerprint.md
 ghost-fingerprint diff a.md b.md --format json
 ```
 
-### Emit — derive outputs from `fingerprint.md`
+### Emit — derive outputs from `profile.md`
 
-Derive an output from `fingerprint.md`. Kinds: `review-command` (a
+Derive an output from the fingerprint package profile. Kinds: `review-command` (a
 per-project slash command at `.claude/commands/design-review.md`),
-`context-bundle` (SKILL.md + fingerprint.md + prompt.md + tokens.css for any
-generator), or `skill` (the `ghost-fingerprint` agentskills.io bundle —
-install this into your host agent for the `profile` recipe).
+`context-bundle` (SKILL.md + profile.md + prompt.md + tokens.css for any
+generator), `viewer` (a portable single-file HTML explorer), or `skill` (the
+`ghost-fingerprint` agentskills.io bundle — install this into your host agent
+for the `profile` recipe).
 
 <CliHelp tool="ghost-fingerprint" command="emit" hideDescription />
 
@@ -236,6 +237,9 @@ ghost-fingerprint emit review-command
 
 # Emit a context bundle any generator can consume
 ghost-fingerprint emit context-bundle
+
+# Emit a portable HTML viewer for humans
+ghost-fingerprint emit viewer
 
 # Single prompt.md for plain-text LLM context
 ghost-fingerprint emit context-bundle --prompt-only
