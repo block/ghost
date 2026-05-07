@@ -153,7 +153,14 @@ ghost-fingerprint lint map.md                # ghost.map/v2
 ghost-fingerprint lint survey.json           # ghost.survey/v2
 ghost-fingerprint verify-profile fingerprint.md survey.json --root .
                                             # fingerprint-to-survey fidelity
+
+# Optional human-readable explorer
+ghost-fingerprint emit viewer                # ./fingerprint-viewer.html
 ```
+
+`emit viewer` is a derived artifact, not a second source of truth. It renders
+the profile plus sibling `survey.json`, `map.md`, and `checks.yml` when they
+exist so humans can visually inspect the design-language package.
 
 </DocSection>
 

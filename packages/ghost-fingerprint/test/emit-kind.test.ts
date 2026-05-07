@@ -23,6 +23,13 @@ describe("parseEmitKind", () => {
     });
   });
 
+  it("accepts viewer", () => {
+    expect(parseEmitKind("viewer")).toEqual({
+      ok: true,
+      kind: "viewer",
+    });
+  });
+
   it("rejects unknown kinds with a helpful error", () => {
     const result = parseEmitKind("nope");
     expect(result.ok).toBe(false);
@@ -31,6 +38,7 @@ describe("parseEmitKind", () => {
       expect(result.error).toContain("review-command");
       expect(result.error).toContain("context-bundle");
       expect(result.error).toContain("skill");
+      expect(result.error).toContain("viewer");
     }
   });
 

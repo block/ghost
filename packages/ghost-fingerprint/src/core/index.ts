@@ -29,12 +29,17 @@ export {
 } from "./constants.js";
 // --- Context (review-command + context-bundle) ---
 export type {
+  BuildFingerprintViewerHtmlInput,
   ContextFormat,
   EmitReviewInput,
+  ViewerArtifactName,
+  ViewerArtifactState,
+  ViewerArtifactStatus,
   WriteContextOptions,
   WriteContextResult,
 } from "./context/index.js";
 export {
+  buildFingerprintViewerHtml,
   buildSkillMd,
   buildTokensCss,
   emitReviewCommand,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T00:33:39.453Z",
+  "generatedAt": "2026-05-07T11:10:39.905Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -426,7 +426,7 @@
           "tool": "ghost-fingerprint",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package profile (kinds: review-command, context-bundle, skill)",
+          "description": "Emit a derived artifact from the fingerprint package profile (kinds: review-command, context-bundle, viewer, skill)",
           "options": [
             {
               "rawName": "-p, --profile <path>",
@@ -439,7 +439,7 @@
             {
               "rawName": "-o, --out <path>",
               "name": "out",
-              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-fingerprint/)",
+              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-fingerprint/; viewer → fingerprint-viewer.html)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -447,9 +447,17 @@
             {
               "rawName": "--stdout",
               "name": "stdout",
-              "description": "Write to stdout instead of a file (review-command only)",
+              "description": "Write to stdout instead of a file (review-command, viewer)",
               "default": null,
               "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--budget <budget>",
+              "name": "budget",
+              "description": "Survey summary depth for viewer: compact, standard, or full (default: standard)",
+              "default": null,
+              "takesValue": true,
               "negated": false
             },
             {
