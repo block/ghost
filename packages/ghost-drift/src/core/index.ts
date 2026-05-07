@@ -94,6 +94,7 @@ export {
   resolveTrackedFingerprint,
   writeSyncManifest,
 } from "./evolution/index.js";
+export type { GhostDriftRepairHint } from "./repair-hints.js";
 export {
   formatCompositeComparison,
   formatCompositeComparisonJSON,

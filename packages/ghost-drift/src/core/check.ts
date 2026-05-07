@@ -13,6 +13,12 @@ import {
 } from "@ghost/core";
 import { resolveFingerprintPackage } from "ghost-fingerprint";
 import { parse as parseYaml } from "yaml";
+import {
+  type GhostDriftRepairHint,
+  type GhostDriftSourceSnapshot,
+  inferRepairHints,
+  readSourceSnapshot,
+} from "./repair-hints.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -49,6 +55,7 @@ export interface GhostDriftCheckFinding {
   detector: GhostCheck["detector"]["type"];
   message: string;
   repair?: string;
+  repair_hints?: GhostDriftRepairHint[];
   match?: string;
 }
 
@@ -68,6 +75,10 @@ interface LoadedCheckPackage {
   checks: GhostChecksDocument;
 }
 
+interface EvaluateCheckOptions {
+  source?: GhostDriftSourceSnapshot;
+}
+
 export async function runGhostDriftCheck(
   options: GhostDriftCheckOptions = {},
 ): Promise<GhostDriftCheckReport> {
@@ -81,6 +92,7 @@ export async function runGhostDriftCheck(
   const findings: GhostDriftCheckFinding[] = [];
 
   for (const file of changedFiles) {
+    const source = await readSourceSnapshot(cwd, file.path);
     const routed = routeGhostChecksForPath(
       pkg.checks.checks,
       pkg.map,
@@ -94,7 +106,7 @@ export async function runGhostDriftCheck(
 
     for (const entry of routed) {
       if (!detectorAppliesToPath(entry.check, file.path)) continue;
-      findings.push(...evaluateCheck(entry.check, file));
+      findings.push(...evaluateCheck(entry.check, file, { source }));
     }
   }
 
@@ -188,6 +200,15 @@ export function formatGhostDriftCheckMarkdown(
       `   ${finding.path}:${finding.line} — ${finding.message}`,
     );
     if (finding.match) lines.push(`   Match: \`${finding.match}\``);
+    for (const hint of finding.repair_hints ?? []) {
+      lines.push(
+        `   Use instead: \`${hint.replacement}\``,
+        `   Why: ${hint.reason}`,
+        `   Source: ${hint.source.path}${
+          hint.source.line ? `:${hint.source.line}` : ""
+        }`,
+      );
+    }
     if (finding.repair) lines.push(`   Repair: ${finding.repair}`);
   });
   return `${lines.join("\n")}\n`;
@@ -254,6 +275,7 @@ async function readGitDiff(
 function evaluateCheck(
   check: GhostCheck,
   file: GhostDriftChangedFile,
+  options: EvaluateCheckOptions = {},
 ): GhostDriftCheckFinding[] {
   const regex = detectorRegex(check);
   if (!regex) return [];
@@ -294,6 +316,9 @@ function evaluateCheck(
         detector: check.detector.type,
         message: forbiddenMessage(check),
         match: match[0],
+        ...repairHintsProperty(
+          inferRepairHints(check, file, line, match[0], options.source),
+        ),
         ...(check.repair ? { repair: check.repair } : {}),
       });
       if (match[0] === "") regex.lastIndex += 1;
@@ -301,6 +326,12 @@ function evaluateCheck(
     }
   }
   return findings;
+}
+
+function repairHintsProperty(
+  hints: GhostDriftRepairHint[],
+): { repair_hints: GhostDriftRepairHint[] } | Record<string, never> {
+  return hints.length > 0 ? { repair_hints: hints } : {};
 }
 
 function detectorRegex(check: GhostCheck): RegExp | null {
