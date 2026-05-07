@@ -32,6 +32,25 @@ export interface GhostCheckEvidence {
   examples?: Array<string | { path: string; note?: string }>;
 }
 
+export interface GhostCheckRepairHint {
+  kind: "tailwind-class-replacement" | "component-pattern-replacement";
+  replacement: string;
+  reason: string;
+  inferred_from:
+    | "same-file-class-pattern"
+    | "sibling-file-pattern"
+    | "checks-yml";
+  source: {
+    path: string;
+    line?: number;
+  };
+  sources?: Array<{
+    path: string;
+    line?: number;
+  }>;
+  confidence: "high" | "medium";
+}
+
 export interface GhostCheck {
   id: string;
   title: string;
@@ -41,6 +60,7 @@ export interface GhostCheck {
   detector: GhostCheckDetector;
   evidence?: GhostCheckEvidence;
   repair?: string;
+  repair_hints?: GhostCheckRepairHint[];
 }
 
 export interface GhostChecksDocument {

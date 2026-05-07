@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T00:33:39.453Z",
+  "generatedAt": "2026-05-07T18:11:43.622Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -184,6 +184,62 @@
               "description": "Output format: markdown or json",
               "default": "markdown",
               "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-drift",
+          "name": "github-comment",
+          "rawName": "github-comment",
+          "description": "Run ghost-drift check and create/update GitHub PR inline comments plus one summary comment.",
+          "options": [
+            {
+              "rawName": "--repo <repo>",
+              "name": "repo",
+              "description": "GitHub repository in owner/name form",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--pr <number>",
+              "name": "pr",
+              "description": "Pull request number",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to check instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Fingerprint package directory (default: .ghost/fingerprint)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--dry-run",
+              "name": "dryRun",
+              "description": "Print comments without calling GitHub",
+              "default": null,
+              "takesValue": false,
               "negated": false
             }
           ]

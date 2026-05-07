@@ -201,12 +201,15 @@ export function formatGhostDriftCheckMarkdown(
     );
     if (finding.match) lines.push(`   Match: \`${finding.match}\``);
     for (const hint of finding.repair_hints ?? []) {
+      const sources = hint.sources?.length ? hint.sources : [hint.source];
       lines.push(
         `   Use instead: \`${hint.replacement}\``,
         `   Why: ${hint.reason}`,
-        `   Source: ${hint.source.path}${
-          hint.source.line ? `:${hint.source.line}` : ""
-        }`,
+        `   ${sources.length > 1 ? "Sources" : "Source"}: ${sources
+          .map(
+            (source) => `${source.path}${source.line ? `:${source.line}` : ""}`,
+          )
+          .join(", ")}`,
       );
     }
     if (finding.repair) lines.push(`   Repair: ${finding.repair}`);
@@ -297,6 +300,7 @@ function evaluateCheck(
         line: firstLine.line,
         detector: check.detector.type,
         message: requiredMessage(check),
+        ...repairHintsProperty(check.repair_hints ?? []),
         ...(check.repair ? { repair: check.repair } : {}),
       },
     ];
@@ -316,9 +320,10 @@ function evaluateCheck(
         detector: check.detector.type,
         message: forbiddenMessage(check),
         match: match[0],
-        ...repairHintsProperty(
-          inferRepairHints(check, file, line, match[0], options.source),
-        ),
+        ...repairHintsProperty([
+          ...inferRepairHints(check, file, line, match[0], options.source),
+          ...(check.repair_hints ?? []),
+        ]),
         ...(check.repair ? { repair: check.repair } : {}),
       });
       if (match[0] === "") regex.lastIndex += 1;
