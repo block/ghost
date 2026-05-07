@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   computeGroupings,
+  computeNodeDistances,
   computePairwiseDistances,
   computeTracks,
 } from "../src/core/compute.js";
@@ -45,6 +46,19 @@ describe("computePairwiseDistances", () => {
     const distances = computePairwiseDistances(members);
     const ids = new Set(distances.flatMap((d) => [d.a, d.b]));
     expect(ids).toEqual(new Set(["cash-android", "cash-web", "ghost-ui"]));
+  });
+});
+
+describe("computeNodeDistances", () => {
+  it("computes pairwise distances across parent and scoped fingerprint nodes", async () => {
+    const members = await loadMembers(FLEET);
+    const distances = computeNodeDistances(members);
+
+    expect(distances).toHaveLength(10);
+    const pairs = distances.map((d) => `${d.a}|${d.b}`);
+    expect(pairs).toContain("cash-web/accounts|cash-web/payments");
+    expect(pairs).toContain("cash-web|cash-web/payments");
+    expect(pairs).toContain("cash-android|cash-web/accounts");
   });
 });
 

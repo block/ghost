@@ -69,12 +69,12 @@ afterEach(async () => {
 });
 
 describe("writeContextBundle", () => {
-  it("default: emits SKILL.md + fingerprint.md + prompt.md + tokens.css", async () => {
+  it("default: emits SKILL.md + profile.md + prompt.md + tokens.css", async () => {
     const res = await writeContextBundle(FINGERPRINT, { outDir: dir });
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toEqual([
       "SKILL.md",
-      "fingerprint.md",
+      "profile.md",
       "prompt.md",
       "tokens.css",
     ]);
@@ -85,13 +85,13 @@ describe("writeContextBundle", () => {
     expect(skill).toContain("tokens.css");
   });
 
-  it("--no-tokens: emits SKILL.md + fingerprint.md + prompt.md only", async () => {
+  it("--no-tokens: emits SKILL.md + profile.md + prompt.md only", async () => {
     const res = await writeContextBundle(FINGERPRINT, {
       outDir: dir,
       tokens: false,
     });
     const names = res.files.map((f) => f.split("/").pop());
-    expect(names).toEqual(["SKILL.md", "fingerprint.md", "prompt.md"]);
+    expect(names).toEqual(["SKILL.md", "profile.md", "prompt.md"]);
 
     const skill = await readFile(res.files[0], "utf-8");
     expect(skill).not.toContain("tokens.css");
@@ -105,7 +105,7 @@ describe("writeContextBundle", () => {
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toEqual([
       "SKILL.md",
-      "fingerprint.md",
+      "profile.md",
       "prompt.md",
       "tokens.css",
       "README.md",
@@ -147,8 +147,8 @@ describe("writeContextBundle", () => {
     });
     const prompt = await readFile(res.files[0], "utf-8");
     expect(prompt).toContain("# Checks");
-    expect(prompt).toContain("No promoted `checks[]` are present");
-    expect(prompt).toContain("no promoted checks have been curated yet");
+    expect(prompt).toContain("No package checks were embedded");
+    expect(prompt).toContain("run package checks separately");
     expect(prompt).not.toContain("use checks as gates");
   });
 

@@ -3,6 +3,7 @@ import { basename, join, resolve } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import {
   computeGroupings,
+  computeNodeDistances,
   computePairwiseDistances,
   computeTracks,
 } from "./compute.js";
@@ -48,6 +49,7 @@ export async function buildFleetView(
   const members = options.members ?? (await loadMembers(root));
 
   const distances = computePairwiseDistances(members);
+  const node_distances = computeNodeDistances(members);
   const groupings = computeGroupings(members);
   const tracks = computeTracks(members);
 
@@ -71,12 +73,35 @@ export async function buildFleetView(
       return row;
     });
 
+  const nodes = members.flatMap((member) => {
+    const map = member.map;
+    if (!map) return [];
+    return member.fingerprintNodes.map((node) => {
+      const row: FleetView["nodes"][number] = {
+        id: node.id,
+        member_id: node.memberId,
+        kind: node.kind,
+        platform: map.platform,
+        build_system: map.build_system,
+        registry: map.registry ? map.registry.path : null,
+      };
+      if (node.scopeId) row.scope_id = node.scopeId;
+      if (node.parentId) row.parent_id = node.parentId;
+      if (node.fingerprintMtime) {
+        row.fingerprint_at = node.fingerprintMtime.slice(0, 10);
+      }
+      return row;
+    });
+  });
+
   const view: FleetView = {
     schema: "ghost.fleet/v1",
     id,
     generated_at,
     members: memberRows,
     distances,
+    nodes,
+    node_distances,
     tracks,
     groupings,
   };

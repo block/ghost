@@ -36,6 +36,14 @@ describe("buildFleetView", () => {
       "ghost-ui",
     ]);
     expect(view.distances).toHaveLength(3);
+    expect(view.nodes.map((node) => node.id).sort()).toEqual([
+      "cash-android",
+      "cash-web",
+      "cash-web/accounts",
+      "cash-web/payments",
+      "ghost-ui",
+    ]);
+    expect(view.node_distances).toHaveLength(10);
     expect(view.tracks).toEqual([{ from: "cash-web", to: "ghost-ui" }]);
     expect(Object.keys(view.groupings).sort()).toEqual([
       "by_build_system",
@@ -120,5 +128,7 @@ describe("writeFleetView", () => {
     );
     expect(json.id).toBe("small-fleet");
     expect(json.distances).toHaveLength(3);
+    expect(json.nodes).toHaveLength(5);
+    expect(json.node_distances).toHaveLength(10);
   });
 });

@@ -17,7 +17,7 @@ const cards: {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the skill bundle and ask your agent to write fingerprint.md.",
+      "Install the skill bundle and ask your agent to write .ghost/fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -30,7 +30,7 @@ const cards: {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full fingerprint.md format for values, prose, references, and checks.",
+      "The full package format for map, survey, profile, and checks.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -47,7 +47,7 @@ export default function GhostFingerprintLanding() {
       <AnimatedPageHeader
         kicker="ghost-fingerprint"
         title="Fingerprint"
-        description="The design-language file agents read before they generate UI. ghost-fingerprint helps your agent scan the repo, write fingerprint.md, validate it against source evidence, and emit review commands or context bundles from it."
+        description="The repo-local design memory package agents read before they generate UI. ghost-fingerprint helps your agent scan the repo, write .ghost/fingerprint, validate it against source evidence, and emit context from it."
       />
 
       <div

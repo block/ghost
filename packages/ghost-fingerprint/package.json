@@ -1,7 +1,7 @@
 {
   "name": "ghost-fingerprint",
   "version": "0.0.0",
-  "description": "Author and validate fingerprint.md — Ghost's canonical design-language artifact (parse, lint, describe, diff, emit review-command/context-bundle/skill)",
+  "description": "Author and validate the .ghost/fingerprint design-memory package (map, survey, profile, checks)",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {

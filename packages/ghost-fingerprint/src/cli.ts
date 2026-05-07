@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   catalogSurveyValues,
+  type Fingerprint,
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
+  lintGhostChecks,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
@@ -15,17 +17,20 @@ import {
   summarizeSurvey,
 } from "@ghost/core";
 import { cac } from "cac";
+import { parse as parseYaml } from "yaml";
 import {
   diffFingerprints,
-  FINGERPRINT_FILENAME,
   formatLayout,
   formatSemanticDiff,
   formatVerifyProfileReport,
+  initFingerprintPackage,
   inventory,
   layoutFingerprint,
   lintFingerprint,
+  lintFingerprintPackage,
   lintMap,
   loadFingerprint,
+  resolveFingerprintPackage,
   scanStatus,
   verifyProfile,
 } from "./core/index.js";
@@ -34,13 +39,14 @@ import { registerEmitCommand } from "./emit-command.js";
 /**
  * Build the cac CLI for `ghost-fingerprint`.
  *
- * Verbs author and validate `fingerprint.md` and `survey.json`:
+ * Verbs author and validate the `.ghost/fingerprint/` package:
  * `lint` (schema check, auto-detects file kind), `verify-profile`
- * (fingerprint-to-survey fidelity check), `describe` (section ranges + token
- * estimates for fingerprints), `diff` (structural prose-level diff between two
- * fingerprints), `emit` (derive review-command, context-bundle, or skill
+ * (profile-to-survey fidelity check), `describe` (section ranges + token
+ * estimates for profiles), `diff` (structural prose-level diff between two
+ * profiles), `emit` (derive review-command, context-bundle, or skill
  * artifacts), and `survey` operations for deterministic `ghost.survey/v2`
- * merge, ID repair, bounded summary output, and derived value catalogs.
+ * merge, ID repair, bounded summary output, derived value catalogs, and
+ * observed pattern summaries.
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -53,43 +59,79 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "lint [file]",
-      "Validate fingerprint.md, map.md, or survey.json — auto-detects the kind from path/content",
+      "Validate a fingerprint package, profile.md, map.md, survey.json, or checks.yml — defaults to .ghost/fingerprint",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
-        const raw = await readFile(target, "utf-8");
-        const kind = detectFileKind(target, raw);
+        const target = resolveFingerprintPackage(path, process.cwd()).dir;
+        let report: ReturnType<typeof lintFingerprint>;
+        if (path === undefined || (await isDirectory(target))) {
+          report = await lintFingerprintPackage(path, process.cwd());
+          writeLintReport(report, opts.format);
+          process.exit(report.errors > 0 ? 1 : 0);
+          return;
+        }
 
-        const report =
+        const fileTarget = resolve(process.cwd(), path ?? target);
+        const raw = await readFile(fileTarget, "utf-8");
+        const kind = detectFileKind(fileTarget, raw);
+
+        report =
           kind === "survey"
             ? lintSurveyFile(raw)
             : kind === "map"
               ? lintMap(raw)
-              : lintFingerprint(raw);
+              : kind === "checks"
+                ? lintChecksFile(raw)
+                : lintFingerprint(raw);
 
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-        } else {
-          for (const issue of report.issues) {
-            const prefix =
-              issue.severity === "error"
-                ? "ERROR"
-                : issue.severity === "warning"
-                  ? "WARN "
-                  : "INFO ";
-            const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
-            process.stdout.write(
-              `${prefix} [${issue.rule}] ${issue.message}${pathSuffix}\n`,
+        if (kind === "profile" && hasExtends(raw) && report.errors === 0) {
+          try {
+            await loadFingerprint(fileTarget, { noEmbeddingBackfill: true });
+          } catch (err) {
+            report = appendLintError(
+              report,
+              "extends-resolution",
+              err instanceof Error ? err.message : String(err),
+              "extends",
             );
           }
-          process.stdout.write(
-            `\n${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info\n`,
-          );
         }
 
+        writeLintReport(report, opts.format);
+
         process.exit(report.errors > 0 ? 1 : 0);
+      } catch (err) {
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(2);
+      }
+    });
+
+  // --- init-package ---
+  cli
+    .command(
+      "init-package [dir]",
+      "Create a .ghost/fingerprint package skeleton (map.md, survey.json, profile.md, checks.yml)",
+    )
+    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .action(async (dirArg: string | undefined, opts) => {
+      try {
+        const paths = await initFingerprintPackage(dirArg, process.cwd());
+        if (opts.format === "json") {
+          process.stdout.write(`${JSON.stringify(paths, null, 2)}\n`);
+        } else {
+          process.stdout.write(
+            `Initialized fingerprint package: ${paths.dir}\n`,
+          );
+          process.stdout.write(`  map.md: ${paths.map}\n`);
+          process.stdout.write(`  survey.json: ${paths.survey}\n`);
+          process.stdout.write(`  profile.md: ${paths.profile}\n`);
+          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+        }
+        process.exit(0);
       } catch (err) {
         console.error(
           `Error: ${err instanceof Error ? err.message : String(err)}`,
@@ -101,15 +143,15 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- verify-profile ---
   cli
     .command(
-      "verify-profile <fingerprint> <survey>",
-      "Verify fingerprint.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+      "verify-profile <profile> <survey>",
+      "Verify profile.md is faithful to its survey.json: palette values must be survey-backed",
     )
     .option(
       "--root <dir>",
-      "Optional target root for counting promoted check pattern matches under checks[].paths",
+      "Optional target root used by profile fidelity checks that need repo context",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (fingerprintPath: string, surveyPath: string, opts) => {
+    .action(async (profilePath: string, surveyPath: string, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
           console.error("Error: --format must be 'cli' or 'json'");
@@ -117,10 +159,10 @@ export function buildCli(): ReturnType<typeof cac> {
           return;
         }
 
-        const fingerprintTarget = resolve(process.cwd(), fingerprintPath);
+        const profileTarget = resolve(process.cwd(), profilePath);
         const surveyTarget = resolve(process.cwd(), surveyPath);
         const [fingerprintRaw, surveyRaw] = await Promise.all([
-          readFile(fingerprintTarget, "utf-8"),
+          readFile(profileTarget, "utf-8"),
           readFile(surveyTarget, "utf-8"),
         ]);
 
@@ -135,8 +177,18 @@ export function buildCli(): ReturnType<typeof cac> {
           return;
         }
 
+        let resolvedFingerprint: Fingerprint | undefined;
+        if (hasExtends(fingerprintRaw)) {
+          resolvedFingerprint = (
+            await loadFingerprint(profileTarget, {
+              noEmbeddingBackfill: true,
+            })
+          ).fingerprint;
+        }
+
         const report = verifyProfile(fingerprintRaw, survey, {
           root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
+          resolvedFingerprint,
         });
 
         if (opts.format === "json") {
@@ -158,13 +210,19 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "scan-status [dir]",
-      "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), fingerprint (fingerprint.md). Tells orchestrators which stage to run next.",
+      "Report which fingerprint package stages have produced artifacts: map.md, survey.json, profile.md, checks.yml.",
+    )
+    .option(
+      "--include-scopes",
+      "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const dir = resolve(process.cwd(), dirArg ?? ".");
-        const status = await scanStatus(dir);
+        const dir = resolveFingerprintPackage(dirArg, process.cwd()).dir;
+        const status = await scanStatus(dir, {
+          includeScopes: Boolean(opts.includeScopes),
+        });
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
         } else {
@@ -178,7 +236,10 @@ export function buildCli(): ReturnType<typeof cac> {
             `  survey     (survey.json):   ${fmt(status.survey.state)}\n`,
           );
           process.stdout.write(
-            `  fingerprint (fingerprint.md): ${fmt(status.fingerprint.state)}\n\n`,
+            `  profile    (profile.md):    ${fmt(status.profile.state)}\n`,
+          );
+          process.stdout.write(
+            `  checks     (checks.yml):    ${fmt(status.checks.state)}\n\n`,
           );
           if (status.recommended_next) {
             process.stdout.write(
@@ -186,6 +247,20 @@ export function buildCli(): ReturnType<typeof cac> {
             );
           } else {
             process.stdout.write("next: scan complete — all stages present\n");
+          }
+          if (status.scope_error) {
+            process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
+          } else if (status.scopes) {
+            process.stdout.write("\nscopes:\n");
+            if (status.scopes.length === 0) {
+              process.stdout.write("  none\n");
+            } else {
+              for (const scope of status.scopes) {
+                process.stdout.write(
+                  `  ${scope.id}: survey ${scope.survey.state}, fingerprint ${scope.fingerprint.state}\n`,
+                );
+              }
+            }
           }
         }
         process.exit(0);
@@ -220,13 +295,15 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- describe ---
   cli
     .command(
-      "describe [fingerprint]",
-      "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+      "describe [profile]",
+      "Print a section map of profile.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolve(process.cwd(), path ?? FINGERPRINT_FILENAME);
+        const target = path
+          ? resolve(process.cwd(), path)
+          : resolveFingerprintPackage(undefined, process.cwd()).profile;
         const raw = await readFile(target, "utf-8");
         const layout = layoutFingerprint(raw);
         if (opts.format === "json") {
@@ -249,7 +326,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "diff <a> <b>",
-      "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+      "Structural diff between two profile.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (a: string, b: string, opts) => {
@@ -282,7 +359,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
+      "Operate on ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",
@@ -310,10 +387,11 @@ export function buildCli(): ReturnType<typeof cac> {
           op !== "merge" &&
           op !== "fix-ids" &&
           op !== "summarize" &&
-          op !== "catalog"
+          op !== "catalog" &&
+          op !== "patterns"
         ) {
           console.error(
-            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize, catalog`,
+            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize, catalog, patterns`,
           );
           process.exit(2);
           return;
@@ -333,12 +411,12 @@ export function buildCli(): ReturnType<typeof cac> {
           process.exit(2);
           return;
         }
-        if (op === "catalog" && surveys.length !== 1) {
-          console.error("Error: survey catalog takes exactly one input file");
+        if ((op === "catalog" || op === "patterns") && surveys.length !== 1) {
+          console.error(`Error: survey ${op} takes exactly one input file`);
           process.exit(2);
           return;
         }
-        if (op === "summarize" || op === "catalog") {
+        if (op === "summarize" || op === "catalog" || op === "patterns") {
           if (opts.format !== "markdown" && opts.format !== "json") {
             console.error(
               `Error: survey ${op} --format must be 'markdown' or 'json'`,
@@ -376,7 +454,12 @@ export function buildCli(): ReturnType<typeof cac> {
             process.exit(2);
             return;
           }
-          if (op === "merge" || op === "summarize" || op === "catalog") {
+          if (
+            op === "merge" ||
+            op === "summarize" ||
+            op === "catalog" ||
+            op === "patterns"
+          ) {
             const report = lintSurvey(json);
             if (report.errors > 0) {
               console.error(
@@ -413,6 +496,12 @@ export function buildCli(): ReturnType<typeof cac> {
             opts.format === "json"
               ? `${JSON.stringify(catalog, null, 2)}\n`
               : formatSurveyCatalogMarkdown(catalog);
+        } else if (op === "patterns") {
+          const patterns = summarizeSurveyPatterns(parsed[0]);
+          out =
+            opts.format === "json"
+              ? `${JSON.stringify(patterns, null, 2)}\n`
+              : formatSurveyPatternsMarkdown(patterns);
         } else {
           const result =
             op === "merge"
@@ -446,17 +535,21 @@ export function buildCli(): ReturnType<typeof cac> {
 }
 
 /**
- * Decide whether a file is an `fingerprint.md`, a `map.md`, or a
- * `survey.json`. JSON paths/contents route to the survey linter; markdown
- * with `schema: ghost.map/v2` in its YAML frontmatter routes to the map
- * linter; everything else stays on the fingerprint path.
+ * Decide whether a file is a `profile.md`, `map.md`, `survey.json`, or
+ * `checks.yml`. JSON paths/contents route to the survey linter; markdown with
+ * `schema: ghost.map/v2` in its YAML frontmatter routes to the map linter;
+ * checks YAML routes to the checks linter; everything else stays on the profile
+ * path.
  */
 function detectFileKind(
   path: string,
   raw: string,
-): "survey" | "map" | "fingerprint" {
+): "survey" | "map" | "profile" | "checks" {
   if (path.toLowerCase().endsWith(".json")) return "survey";
+  if (path.toLowerCase().endsWith(".yml")) return "checks";
+  if (path.toLowerCase().endsWith(".yaml")) return "checks";
   if (raw.trimStart().startsWith("{")) return "survey";
+  if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
   // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
   // parse YAML here; the linter does the heavy lift.
   const fmEnd = raw.indexOf("\n---", 3);
@@ -465,7 +558,7 @@ function detectFileKind(
     if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
   }
   if (path.toLowerCase().endsWith("map.md")) return "map";
-  return "fingerprint";
+  return "profile";
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -489,6 +582,94 @@ function lintSurveyFile(raw: string): SurveyLintReport {
   return lintSurvey(json);
 }
 
+function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostChecks(parseYaml(raw));
+  } catch (err) {
+    return {
+      issues: [
+        {
+          severity: "error",
+          rule: "checks-not-yaml",
+          message: `checks file is not valid YAML: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        },
+      ],
+      errors: 1,
+      warnings: 0,
+      info: 0,
+    };
+  }
+}
+
+function writeLintReport(
+  report: ReturnType<typeof lintFingerprint>,
+  format: unknown,
+): void {
+  if (format === "json") {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    return;
+  }
+
+  for (const issue of report.issues) {
+    const prefix =
+      issue.severity === "error"
+        ? "ERROR"
+        : issue.severity === "warning"
+          ? "WARN "
+          : "INFO ";
+    const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
+    process.stdout.write(
+      `${prefix} [${issue.rule}] ${issue.message}${pathSuffix}\n`,
+    );
+  }
+  process.stdout.write(
+    `\n${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info\n`,
+  );
+}
+
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function hasExtends(raw: string): boolean {
+  try {
+    const frontmatter = raw.match(/^---\n([\s\S]*?)\n---/)?.[1];
+    if (!frontmatter) return false;
+    const parsed = parseYaml(frontmatter);
+    return Boolean(
+      parsed &&
+        typeof parsed === "object" &&
+        typeof (parsed as Record<string, unknown>).extends === "string",
+    );
+  } catch {
+    return false;
+  }
+}
+
+function appendLintError(
+  report: ReturnType<typeof lintFingerprint>,
+  rule: string,
+  message: string,
+  path?: string,
+): ReturnType<typeof lintFingerprint> {
+  const issues = [
+    ...report.issues,
+    { severity: "error" as const, rule, message, ...(path ? { path } : {}) },
+  ];
+  return {
+    issues,
+    errors: report.errors + 1,
+    warnings: report.warnings,
+    info: report.info,
+  };
+}
+
 function isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
   return value === "compact" || value === "standard" || value === "full";
 }
@@ -497,7 +678,126 @@ function surveyVerbName(op: string): string {
   if (op === "merge") return "merging";
   if (op === "summarize") return "summarizing";
   if (op === "catalog") return "cataloging";
+  if (op === "patterns") return "summarizing patterns";
   return op;
+}
+
+interface SurveyPatternSummary {
+  schema: "ghost.survey.patterns/v1";
+  surfaces: number;
+  surface_types: Array<{ value: string; count: number; examples: string[] }>;
+  densities: Array<{ value: string; count: number; examples: string[] }>;
+  layout_shapes: Array<{ value: string; count: number; examples: string[] }>;
+  layout_patterns: Array<{ value: string; count: number; examples: string[] }>;
+  components: Array<{ value: string; count: number; examples: string[] }>;
+  examples: Array<{ name: string; locator: string; files: string[] }>;
+}
+
+function summarizeSurveyPatterns(survey: Survey): SurveyPatternSummary {
+  const surfaceTypes = new Map<string, PatternAccumulator>();
+  const densities = new Map<string, PatternAccumulator>();
+  const layoutShapes = new Map<string, PatternAccumulator>();
+  const layoutPatterns = new Map<string, PatternAccumulator>();
+  const components = new Map<string, PatternAccumulator>();
+  const examples: SurveyPatternSummary["examples"] = [];
+
+  for (const surface of survey.ui_surfaces) {
+    const label = surface.locator || surface.name;
+    const classification = surface.classification;
+    if (classification?.surface_type) {
+      addPattern(surfaceTypes, classification.surface_type, label);
+    }
+    if (classification?.density) {
+      addPattern(densities, classification.density, label);
+    }
+    if (classification?.layout_shape) {
+      addPattern(layoutShapes, classification.layout_shape, label);
+    }
+    for (const pattern of surface.signals?.layout_patterns ?? []) {
+      addPattern(layoutPatterns, pattern, label);
+    }
+    for (const component of surface.signals?.dominant_components ?? []) {
+      addPattern(components, component, label);
+    }
+    examples.push({
+      name: surface.name,
+      locator: surface.locator,
+      files: surface.files.slice(0, 3),
+    });
+  }
+
+  return {
+    schema: "ghost.survey.patterns/v1",
+    surfaces: survey.ui_surfaces.length,
+    surface_types: topPatterns(surfaceTypes),
+    densities: topPatterns(densities),
+    layout_shapes: topPatterns(layoutShapes),
+    layout_patterns: topPatterns(layoutPatterns),
+    components: topPatterns(components),
+    examples: examples.slice(0, 12),
+  };
+}
+
+interface PatternAccumulator {
+  count: number;
+  examples: string[];
+}
+
+function addPattern(
+  map: Map<string, PatternAccumulator>,
+  value: string,
+  example: string,
+): void {
+  const current = map.get(value) ?? { count: 0, examples: [] };
+  current.count += 1;
+  if (!current.examples.includes(example) && current.examples.length < 5) {
+    current.examples.push(example);
+  }
+  map.set(value, current);
+}
+
+function topPatterns(
+  map: Map<string, PatternAccumulator>,
+): Array<{ value: string; count: number; examples: string[] }> {
+  return [...map.entries()]
+    .map(([value, accumulator]) => ({
+      value,
+      count: accumulator.count,
+      examples: accumulator.examples,
+    }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+}
+
+function formatSurveyPatternsMarkdown(summary: SurveyPatternSummary): string {
+  const lines = ["# Survey Patterns", "", `Surfaces: ${summary.surfaces}`, ""];
+  appendPatternSection(lines, "Surface Types", summary.surface_types);
+  appendPatternSection(lines, "Densities", summary.densities);
+  appendPatternSection(lines, "Layout Shapes", summary.layout_shapes);
+  appendPatternSection(lines, "Layout Patterns", summary.layout_patterns);
+  appendPatternSection(lines, "Dominant Components", summary.components);
+  lines.push("## Examples", "");
+  for (const example of summary.examples) {
+    lines.push(
+      `- ${example.name} (${example.locator}) — ${example.files.join(", ")}`,
+    );
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function appendPatternSection(
+  lines: string[],
+  title: string,
+  rows: Array<{ value: string; count: number; examples: string[] }>,
+): void {
+  lines.push(`## ${title}`, "");
+  if (rows.length === 0) {
+    lines.push("- none", "");
+    return;
+  }
+  for (const row of rows) {
+    lines.push(`- ${row.value}: ${row.count} (${row.examples.join(", ")})`);
+  }
+  lines.push("");
 }
 
 function readPackageVersion(): string {

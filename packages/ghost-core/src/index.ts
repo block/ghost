@@ -1,5 +1,32 @@
 // --- Embedding primitives ---
 
+export type {
+  GhostCheck,
+  GhostCheckAppliesTo,
+  GhostCheckDetector,
+  GhostCheckDetectorType,
+  GhostCheckEvidence,
+  GhostCheckSeverity,
+  GhostCheckStatus,
+  GhostChecksDocument,
+  GhostChecksLintIssue,
+  GhostChecksLintOptions,
+  GhostChecksLintReport,
+  GhostChecksLintSeverity,
+  RoutedGhostCheck,
+} from "./checks/index.js";
+// --- Checks (ghost.checks/v1) ---
+export {
+  GHOST_CHECKS_FILENAME,
+  GHOST_CHECKS_SCHEMA,
+  GhostCheckSchema,
+  GhostChecksSchema,
+  lintGhostChecks,
+  matchesGhostPath,
+  normalizeGhostPath,
+  routeGhostChecksForPath,
+  routeGhostPathToScopes,
+} from "./checks/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
 export {
   CANONICAL_DECISION_DIMENSIONS,
@@ -28,14 +55,25 @@ export {
 } from "./embedding/index.js";
 // --- Map (ghost.map/v2) ---
 export {
+  FINGERPRINT_PACKAGE_DIR,
+  type FingerprintPackagePaths,
+  PROFILE_FILENAME,
+} from "./fingerprint-package.js";
+// --- Map (ghost.map/v2) ---
+export {
   type GitInfo,
+  getEffectiveMapScopes,
   type InventoryOutput,
   type LanguageHistogramEntry,
   MAP_FILENAME,
+  type MapFeatureArea,
   type MapFrontmatter,
   MapFrontmatterSchema,
+  type MapScope,
+  MapScopeSchema,
   REQUIRED_BODY_SECTIONS,
   type RequiredBodySection,
+  slugifyScopeId,
   type TopLevelEntry,
 } from "./map/index.js";
 // --- Perceptual prior (drift severity calibration) ---

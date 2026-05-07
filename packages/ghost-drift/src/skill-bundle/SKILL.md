@@ -1,60 +1,64 @@
 ---
 name: ghost-drift
-description: Compare fingerprints and review UI drift. Use when the user wants to compare two fingerprints, review frontend code changes against a fingerprint.md, verify generated UI, suggest fixes, or record stance toward a tracked fingerprint (acknowledge, track, diverge). Triggers on phrases like "check for drift", "compare these fingerprints", "review this PR for design issues", "verify this generated UI", or "we accept this divergence".
+description: Run deterministic Ghost checks, emit advisory review packets, compare profiles, and record drift stance. Use for "check for drift", "review this PR", "verify generated UI", "compare profiles", or "accept this divergence".
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
   cli: ghost-drift
 ---
 
-# Ghost Drift — Drift Review
+# Ghost Drift — Check And Review
 
-This skill compares UI changes against the project's `fingerprint.md`. It helps catch palette, spacing, type, surface, and decision drift.
+Ghost Drift consumes the repo-local fingerprint package:
 
-You do the reading and judgment. The `ghost-drift` CLI gives deterministic results: fingerprint distance, temporal aggregates, and stance-file writes.
+```text
+.ghost/fingerprint/
+  map.md
+  survey.json
+  profile.md
+  checks.yml
+```
 
-Authoring an `fingerprint.md` lives in the sibling `ghost-fingerprint` skill. Drift compares them under change.
+The rule is simple:
 
-## CLI verbs
+- `ghost-drift check` is deterministic and blocking.
+- `ghost-drift review` is advisory and evidence-routed.
+- `ghost-drift compare` compares profile embeddings.
+- `ack`, `track`, and `diverge` record intentional drift.
+
+## CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Vector math over embeddings derived from the authored fingerprints. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
-| `ghost-drift ack` / `ghost-drift track <fingerprint.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked fingerprint (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `fingerprint.md`. |
-| `ghost-drift emit skill` | Install this agent skill bundle into your host agent. |
+| `ghost-drift check --base <ref>` | Route changed files through `map.md`, apply active `checks.yml`, and exit nonzero on failures. |
+| `ghost-drift check --diff <patch> --format json` | Check a saved unified diff and emit stable JSON. |
+| `ghost-drift review --base <ref>` | Emit an advisory review prompt packet grounded in profile, survey, checks, and diff. |
+| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise or composite profile distance. |
+| `ghost-drift ack` / `track <profile.md>` / `diverge <dim>` | Record stance in `.ghost-sync.json`. |
+| `ghost-drift emit skill` | Install this skill bundle. |
 
-Five verbs. Authoring (lint/describe/diff/emit-review-command/emit-context-bundle) lives in `ghost-fingerprint`. If you find yourself reaching for `ghost-drift review` or `ghost-drift verify` — those are *your* workflows. Follow the recipes below.
+## Review Rule
 
-## Workflows (your job, not the CLI's)
+Advisory findings are non-blocking unless tied to an active deterministic check.
+Every advisory finding should cite:
 
-When the user asks you to:
+- diff location
+- profile section
+- survey evidence
+- precedent/example
+- repair
 
-- "Compare these two fingerprints" → run `ghost-drift compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
-- "Review this PR/these changes for drift" → [references/review.md](references/review.md)
-- "Verify this generated UI matches the fingerprint" → [references/verify.md](references/verify.md)
-- "Suggest fixes for this drift" / "remediate this" → [references/remediate.md](references/remediate.md)
+## Workflows
 
-For authoring or describing a fingerprint itself (write fingerprint.md, lint, describe, diff, emit review-command/context-bundle), install the `ghost-fingerprint` skill.
+- "Run the gate" → `ghost-drift check --base <ref>`.
+- "Review this PR for design drift" → run `ghost-drift check`, then use `ghost-drift review` as the evidence packet for advisory critique.
+- "Compare these profiles" → run `ghost-drift compare <a> <b>`, add `--semantic` when the user asks why.
+- "Accept this drift" → use `ack`, `track`, or `diverge`.
 
-## The fingerprint.md format (recap)
-
-An `fingerprint.md` has:
-
-- **YAML frontmatter:** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
-- **Markdown body:** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
-
-There are no sibling fragments. Do not look for `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; comparison computes embeddings from `fingerprint.md` at runtime.
-
-Validate via `ghost-fingerprint lint` before drawing conclusions from a drift comparison.
-
-## Always
-
-- Reads of `fingerprint.md` are read-only. Drift never rewrites it. To update a fingerprint, run the profile recipe in `ghost-fingerprint`.
-- A non-zero distance is information, not a verdict. The threshold belongs to the consumer (CI gate, PR review, human judgment).
-- When the user accepts a drift, record it: `ghost-drift ack` / `track` / `diverge`.
+Authoring `.ghost/fingerprint/` lives in the sibling `ghost-fingerprint` skill.
 
 ## Never
 
-- Don't go looking for CLI verbs for `review`, `verify`, or `remediate`. Those are recipes you execute, not commands to invoke.
-- Never auto-update a fingerprint because drift exists. Surface the drift and wait for instruction.
-- Don't expect the CLI to make the judgment call. Vector distance is math; whether the drift is intentional, acceptable, or a regression is for you to decide via the relevant recipe.
+- Never treat profile prose as a CI gate.
+- Never fail a build on advisory-only judgment.
+- Never auto-promote an advisory finding into `checks.yml`; a human must curate deterministic gates.

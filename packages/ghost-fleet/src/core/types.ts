@@ -6,7 +6,7 @@
  * over them, and what the deterministic artifacts look like on disk.
  */
 
-import type { Fingerprint, MapFrontmatter } from "@ghost/core";
+import type { Fingerprint, MapFrontmatter, MapScope } from "@ghost/core";
 import type { FleetDistance, FleetTrackEdge } from "./schema.js";
 
 /**
@@ -47,6 +47,20 @@ export interface FleetMember {
   fingerprintMtime?: string;
   /** Parsed `.ghost-sync.json` `tracks.id`/string when present. */
   tracks?: string;
+  /** Parent + scoped fingerprint nodes that loaded successfully. */
+  fingerprintNodes: FleetFingerprintNode[];
+}
+
+export interface FleetFingerprintNode {
+  id: string;
+  memberId: string;
+  kind: "member" | "scope";
+  fingerprint: Fingerprint;
+  fingerprintPath: string;
+  fingerprintMtime?: string;
+  scopeId?: string;
+  scope?: MapScope;
+  parentId?: string;
 }
 
 /**
@@ -124,6 +138,18 @@ export interface FleetView {
     fingerprint_at?: string;
   }>;
   distances: FleetPairwise[];
+  nodes: Array<{
+    id: string;
+    member_id: string;
+    kind: "member" | "scope";
+    scope_id?: string;
+    parent_id?: string;
+    platform: string | string[];
+    build_system?: string | string[];
+    registry: string | null;
+    fingerprint_at?: string;
+  }>;
+  node_distances: FleetPairwise[];
   tracks: FleetTrack[];
   groupings: FleetGroupingsComputed;
 }

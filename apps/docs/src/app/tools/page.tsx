@@ -16,7 +16,7 @@ const tools: {
   {
     name: "ghost-fingerprint",
     href: "/tools/fingerprint",
-    blurb: "Create fingerprint.md",
+    blurb: "Create .ghost/fingerprint",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {

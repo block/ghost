@@ -263,14 +263,14 @@ describe("emitReviewCommand — checks[]-driven path", () => {
     );
   });
 
-  it("falls back to structured-fallback path when checks[] is absent", () => {
+  it("falls back to structured-fallback path when embedded checks are absent", () => {
     const fp = minimalFingerprint();
     fp.checks = undefined; // explicit
     const out = emitReviewCommand({ fingerprint: fp });
     // Fallback path emits "## 1. Palette drift" — checks-driven never does
     expect(out).toMatch(/## 1\. Palette drift/);
     expect(out).toMatch(/## Calibration note/);
-    expect(out).toMatch(/no promoted `checks\[\]`/);
+    expect(out).toMatch(/no embedded checks/);
     expect(out).toMatch(/coarse token fallback/);
     expect(out).not.toMatch(/^## Critical/m);
   });
