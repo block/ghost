@@ -75,6 +75,24 @@ describe("lintMap", () => {
     ).toBe(true);
   });
 
+  it("accepts explicit product-surface scopes", () => {
+    const raw = load("good.md").replace(
+      "orientation_files:\n",
+      `scopes:
+  - id: catalogue
+    name: Catalogue
+    kind: product-surface
+    paths:
+      - src/components
+    sub_areas:
+      - primitives
+orientation_files:
+`,
+    );
+    const report = lintMap(raw);
+    expect(report.errors).toBe(0);
+  });
+
   it("flags out-of-order body sections", () => {
     const report = lintMap(load("out-of-order.md"));
     const rules = report.issues.map((i) => i.rule);

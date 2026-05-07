@@ -1,7 +1,7 @@
 {
   "name": "ghost-drift",
   "version": "0.2.0",
-  "description": "Deterministic design drift detection — CLI + engine for writing, comparing, and tracking design-language fingerprints across projects and at org scale",
+  "description": "Deterministic Ghost design checks, advisory review packets, profile comparison, and drift stance tracking",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -52,6 +52,7 @@
     "@ghost/core": "workspace:*",
     "cac": "^6.7.14",
     "ghost-fingerprint": "workspace:*",
-    "jiti": "^2.4.0"
+    "jiti": "^2.4.0",
+    "yaml": "^2.8.3"
   }
 }

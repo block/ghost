@@ -5,9 +5,9 @@ handoffs:
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
     prompt: Accept current drift across the board
-  - label: Track the other fingerprint
+  - label: Track the other profile
     command: ghost-drift track
-    prompt: Track the other fingerprint.md as the new reference
+    prompt: Track the other profile.md as the new reference
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension

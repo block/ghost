@@ -126,7 +126,11 @@ describe("ghost-drift CLI", () => {
   });
 
   it("track writes the neutral sync manifest shape", async () => {
-    await writeFile(join(dir, "fingerprint.md"), fingerprintWithId("local"));
+    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "fingerprint", "profile.md"),
+      fingerprintWithId("local"),
+    );
     await writeFile(
       join(dir, "tracked.fingerprint.md"),
       fingerprintWithId("tracked"),
@@ -162,4 +166,199 @@ describe("ghost-drift CLI", () => {
       "unknown emit kind 'review-command'. Supported: skill.",
     );
   });
+
+  it("check fails when an active deterministic check matches added lines", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("UIColor(#ffffff)"),
+    );
+
+    const result = await runCli(
+      ["check", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(1);
+    const report = JSON.parse(result.stdout);
+    expect(report.result).toBe("fail");
+    expect(report.findings[0]).toMatchObject({
+      check_id: "no-hardcoded-ui-color",
+      path: "Code/Features/Lending/View.swift",
+      line: 1,
+    });
+  });
+
+  it("check passes when active scoped checks do not match", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(["check", "--diff", "change.patch"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Design Check: PASS");
+  });
+
+  it("review emits an advisory packet with required citation fields", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(["review", "--diff", "change.patch"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Ghost Advisory Review");
+    expect(result.stdout).toContain("diff location");
+    expect(result.stdout).toContain("profile section");
+    expect(result.stdout).toContain("survey evidence");
+    expect(result.stdout).toContain("precedent/example");
+    expect(result.stdout).toContain("repair");
+  });
 });
+
+async function writeCheckPackage(dir: string): Promise<void> {
+  const pkg = join(dir, ".ghost", "fingerprint");
+  await mkdir(pkg, { recursive: true });
+  await writeFile(join(pkg, "map.md"), mapWithScopes());
+  await writeFile(join(pkg, "profile.md"), profile());
+  await writeFile(
+    join(pkg, "survey.json"),
+    JSON.stringify({
+      schema: "ghost.survey/v2",
+      sources: [{ target: ".", scanned_at: "2026-05-06T00:00:00.000Z" }],
+      values: [],
+      tokens: [],
+      components: [],
+      ui_surfaces: [],
+    }),
+  );
+  await writeFile(
+    join(pkg, "checks.yml"),
+    `schema: ghost.checks/v1
+id: cash-ios
+checks:
+  - id: no-hardcoded-ui-color
+    title: Use design tokens for UI color
+    status: active
+    severity: serious
+    applies_to:
+      scopes: [lending]
+      paths: [Code/Features/Lending]
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}|UIColor\\('
+      contexts: [swift]
+    evidence:
+      support: 0.94
+      observed_count: 47
+      examples:
+        - Code/Features/Lending/LendingUI
+    repair: Replace literals with Arcade/Cash semantic tokens.
+`,
+  );
+}
+
+function profile(): string {
+  return `---
+id: cash-ios
+source: llm
+timestamp: 2026-05-06T00:00:00.000Z
+palette:
+  dominant: []
+  neutrals: { steps: [], count: 0 }
+  semantic: []
+  saturationProfile: muted
+  contrast: moderate
+spacing: { scale: [], baseUnit: null, regularity: 0 }
+typography:
+  families: []
+  sizeRamp: []
+  weightDistribution: {}
+  lineHeightPattern: normal
+surfaces:
+  borderRadii: []
+  shadowComplexity: deliberate-none
+  borderUsage: minimal
+---
+
+# Character
+
+Restrained native Cash surfaces.
+
+# Signature
+
+Feature screens prefer token-backed controls.
+
+# Decisions
+`;
+}
+
+function lendingPatch(line: string): string {
+  return `diff --git a/Code/Features/Lending/View.swift b/Code/Features/Lending/View.swift
+--- a/Code/Features/Lending/View.swift
++++ b/Code/Features/Lending/View.swift
+@@ -0,0 +1,1 @@
++${line}
+`;
+}
+
+function mapWithScopes(): string {
+  return `---
+schema: ghost.map/v2
+id: cash-ios
+repo: squareup/cash-ios
+mapped_at: 2026-05-06T00:00:00.000Z
+platform: ios
+languages:
+  - { name: swift, files: 5, share: 1.0 }
+build_system: bazel
+package_manifests:
+  - MODULE.bazel
+composition:
+  frameworks:
+    - { name: swiftui }
+  rendering: native
+  styling:
+    - design-tokens
+design_system:
+  paths:
+    - Code/DesignSystem
+  status: active
+surface_sources:
+  render_strategy: static-source
+  include:
+    - Code/Features/**
+  exclude:
+    - "**/Tests/**"
+feature_areas:
+  - name: lending
+    paths:
+      - Code/Features/Lending
+scopes:
+  - id: lending
+    name: Lending
+    kind: product-surface
+    paths:
+      - Code/Features/Lending
+orientation_files:
+  - README.md
+---
+
+## Identity
+
+Cash iOS.
+
+## Topology
+
+Native Swift app.
+
+## Conventions
+
+Use feature scopes.
+`;
+}

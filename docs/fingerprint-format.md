@@ -1,109 +1,165 @@
-# The `fingerprint.md` Format
+# The Fingerprint Package Format
 
-A Ghost fingerprint is the design-language contract agents read for generation and drift review. It is one Markdown file: YAML frontmatter for compact values, plus prose for the parts that need judgment.
+A Ghost fingerprint is a repo-local design memory package, not one Markdown
+file. The canonical on-disk shape is:
 
-`survey.json` stores the scan evidence. `survey catalog` and runtime embeddings are derived from existing files; regenerate them instead of editing them by hand.
+```text
+.ghost/fingerprint/
+  map.md
+  survey.json
+  profile.md
+  checks.yml
+```
 
-## Shape
+Checks fail builds. Profile shapes judgment. Survey grounds both. The package is
+the fingerprint.
 
-Frontmatter stores the compact data: identity, references, personality tags, decision slugs, promoted checks, and value digests.
+## Package Artifacts
 
-The body stores the prose: `# Character`, `# Signature`, and `# Decisions` with `### <dimension>` blocks and `**Evidence:**` bullets.
+### `map.md`
 
-Everything authored lives in `fingerprint.md`. Readers do not auto-load `embedding.md`, `# Fragments`, or `decisions/*.md`. Comparisons compute embeddings at runtime from the parsed fingerprint.
+`map.md` is the routing layer. It tells Ghost where UI surfaces live, which
+scopes own which paths, and how changed files should find relevant evidence and
+checks. It uses `ghost.map/v2` frontmatter plus a short human-readable topology
+body.
 
-## Frontmatter
+Validate it directly or as part of the package:
+
+```bash
+ghost-fingerprint lint .ghost/fingerprint/map.md
+ghost-fingerprint lint .ghost/fingerprint
+```
+
+### `survey.json`
+
+`survey.json` is factual observed evidence. It records concrete values, tokens,
+components, and implemented UI surfaces with counts and examples. Agents should
+use it to ground claims rather than inventing design rules from prose alone.
+
+Useful derived views:
+
+```bash
+ghost-fingerprint survey summarize .ghost/fingerprint/survey.json
+ghost-fingerprint survey catalog .ghost/fingerprint/survey.json
+ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
+```
+
+### `profile.md`
+
+`profile.md` is the non-enforcing design-language prior. It is Markdown with
+YAML frontmatter for compact value digests plus prose for judgment-heavy design
+guidance.
+
+Required frontmatter remains focused on design-language evidence:
 
 ```yaml
 ---
-id: claude
+id: cash-ios
 source: llm
-timestamp: 2026-04-18T00:00:00Z
+timestamp: 2026-05-06T00:00:00Z
 references:
-  specs: [src/styles/tokens.css]
-  components: [src/components/ui]
-  examples: [docs/examples/dashboard.md]
+  specs: [Code/DesignSystem]
+  examples: [Code/Features/Lending]
 observation:
-  personality: [restrained, editorial]
-  resembles: [notion, linear]
+  personality: [restrained, utilitarian]
+  resembles: [cash-app]
 decisions:
   - dimension: color-strategy
   - dimension: spatial-system
-checks:
-  - id: no-off-palette-hex
-    canonical: color-strategy
-    kind: color
-    summary: Hex literals must come from the documented palette
-    pattern: '#[0-9a-fA-F]{3,8}'
-    paths: [src]
-    contexts: [className, css_var, inline_style]
-    observed_count: 33
-    support: 0.94
 palette:
-  dominant:
-    - { role: accent, value: '#c96442' }
-  neutrals:
-    steps: ['#faf9f5', '#141413']
-    count: 2
+  dominant: []
+  neutrals: { steps: [], count: 0 }
   semantic: []
   saturationProfile: muted
   contrast: moderate
-spacing:
-  scale: [4, 8, 12, 16, 24, 32]
-  baseUnit: 8
-  regularity: 0.85
+spacing: { scale: [4, 8, 12, 16], baseUnit: 4, regularity: 1 }
 typography:
-  families: ['Inter']
-  sizeRamp: [12, 14, 16, 20, 24, 32]
-  weightDistribution: { 400: 3, 600: 2 }
+  families: []
+  sizeRamp: []
+  weightDistribution: {}
   lineHeightPattern: normal
 surfaces:
-  borderRadii: [8, 12, 16]
-  shadowComplexity: subtle
-  borderUsage: moderate
+  borderRadii: []
+  shadowComplexity: deliberate-none
+  borderUsage: minimal
 ---
 ```
 
-Required: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
+The body stores `# Character`, `# Signature`, and `# Decisions` with
+`### <dimension>` blocks and evidence bullets. Write the body so it can shape
+generation and advisory review. Do not put enforceable gates in `profile.md`.
+`checks[]` is not part of profile frontmatter.
 
-Forbidden: root `embedding`, `decisions[].embedding`, `observation.summary`, `decisions[].decision`, `decisions[].evidence`, `checks[].enforce_at`, `checks[].rationale`, and unknown root keys such as `schema`.
+Validate fidelity:
 
-`checks[].paths` are filesystem scopes used by `verify-profile` for counts. `checks[].contexts` are hints for reviewers and generators. Put the reason for a check in the matching Decision body; keep `summary` short.
-
-## Body
-
-```markdown
-# Character
-
-A warm, unhurried product language that lets prose and hierarchy carry the interface.
-
-# Signature
-
-Long editorial layouts, warm neutral surfaces, and quiet controls make generated output feel composed rather than widget-stacked.
-
-# Decisions
-
-### color-strategy
-
-Every gray carries a warm undertone; hue appears only when it clarifies state or emphasis.
-
-**Evidence:**
-- `#faf9f5`, `#141413`, and `#c96442` appear in survey color rows
-- Survey color evidence: 31 of 33 color observations fall on the documented palette
+```bash
+ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
 ```
 
-Write the body so it still makes sense outside the original repo. Local paths are fine as provenance, but Character, Signature, and Decisions should not depend on opening those files.
+`verify-profile` checks that profile palette, spacing, typography, radii, and
+shadow posture are backed by survey evidence. It does not calibrate gates.
 
-## Derived Views
+### `checks.yml`
 
-- `ghost-fingerprint survey summarize survey.json` gives a short profiling digest.
-- `ghost-fingerprint survey catalog survey.json [--kind <kind>]` lists exact values/specs from the survey.
-- `ghost-drift compare` computes runtime embeddings from `fingerprint.md`; there is no authored embedding file.
+`checks.yml` is the only blocking layer in v1. It uses `ghost.checks/v1` and
+contains human-promoted deterministic gates.
 
-## Validation States
+```yaml
+schema: ghost.checks/v1
+id: cash-ios
+checks:
+  - id: no-hardcoded-ui-color
+    title: Use design tokens for UI color
+    status: active
+    severity: serious
+    applies_to:
+      scopes: [lending]
+      paths: [Code/Features/Lending]
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}|UIColor\\('
+      contexts: [swift]
+    evidence:
+      support: 0.94
+      observed_count: 47
+      examples:
+        - Code/Features/Lending/LendingUI
+    repair: Replace literals with Arcade/Cash semantic tokens.
+```
 
-- `profile-valid`: `ghost-fingerprint lint fingerprint.md` and `ghost-fingerprint verify-profile fingerprint.md survey.json --root <target>` pass.
-- `review-ready`: profile-valid plus human-promoted, calibrated `checks[]`.
-- `survey-fresh`: latest survey/catalog agrees with the fingerprint, or verifier warnings/errors explicitly surface drift.
+Supported detector types:
 
-`verify-profile` is intentionally stronger than lint: fingerprint palette, spacing, typography, radii, and shadow posture must be survey-backed. High-salience values newly found in periodic surveys are reported as warnings; the fingerprint is never auto-updated.
+- `forbidden-regex`
+- `required-regex`
+- `banned-import`
+- `banned-component`
+- `required-token`
+
+Statuses:
+
+- `active`: enforced by `ghost-drift check`
+- `proposed`: linted as a candidate, not enforced
+- `disabled`: retained as historical context, not enforced
+
+## Drift Gates
+
+Run deterministic gates against a diff:
+
+```bash
+ghost-drift check --base main
+ghost-drift check --diff change.patch --format json
+```
+
+`ghost-drift check` reads package `map.md`, `survey.json`, and `checks.yml`,
+routes changed files through map scopes, applies matching active checks, emits
+stable JSON or Markdown, and exits nonzero on active check failures.
+
+Advisory review remains separate:
+
+```bash
+ghost-drift review --base main
+```
+
+Advisory findings are non-blocking unless tied to an active deterministic check.
+Every finding should cite a diff location, profile section, survey evidence,
+precedent/example, and repair.
