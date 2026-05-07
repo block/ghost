@@ -1,19 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { GhostCheck } from "@ghost/core";
+import type { GhostCheck, GhostCheckRepairHint } from "@ghost/core";
 import type { GhostDriftChangedFile, GhostDriftChangedLine } from "./check.js";
 
-export interface GhostDriftRepairHint {
-  kind: "tailwind-class-replacement";
-  replacement: string;
-  reason: string;
-  inferred_from: "same-file-class-pattern";
-  source: {
-    path: string;
-    line?: number;
-  };
-  confidence: "high" | "medium";
-}
+export type GhostDriftRepairHint = GhostCheckRepairHint;
 
 export interface GhostDriftSourceSnapshot {
   path: string;

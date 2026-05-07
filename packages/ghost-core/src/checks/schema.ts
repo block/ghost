@@ -45,6 +45,32 @@ const GhostCheckEvidenceSchema = z
   })
   .strict();
 
+const GhostCheckRepairHintSourceSchema = z
+  .object({
+    path: z.string().min(1),
+    line: z.number().int().positive().optional(),
+  })
+  .strict();
+
+const GhostCheckRepairHintSchema = z
+  .object({
+    kind: z.enum([
+      "tailwind-class-replacement",
+      "component-pattern-replacement",
+    ]),
+    replacement: z.string().min(1),
+    reason: z.string().min(1),
+    inferred_from: z.enum([
+      "same-file-class-pattern",
+      "sibling-file-pattern",
+      "checks-yml",
+    ]),
+    source: GhostCheckRepairHintSourceSchema,
+    sources: z.array(GhostCheckRepairHintSourceSchema).optional(),
+    confidence: z.enum(["high", "medium"]),
+  })
+  .strict();
+
 export const GhostCheckSchema = z
   .object({
     id: z
@@ -61,6 +87,7 @@ export const GhostCheckSchema = z
     detector: GhostCheckDetectorSchema,
     evidence: GhostCheckEvidenceSchema.optional(),
     repair: z.string().min(1).optional(),
+    repair_hints: z.array(GhostCheckRepairHintSchema).optional(),
   })
   .strict();
 

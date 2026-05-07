@@ -64,6 +64,33 @@ describe("ghost.checks/v1", () => {
     expect(report.errors).toBe(0);
   });
 
+  it("validates source-backed repair hints", () => {
+    const report = lintGhostChecks(
+      checks({
+        repair_hints: [
+          {
+            kind: "component-pattern-replacement",
+            replacement: "Use SharedCard.",
+            reason: "Found a sibling file pattern.",
+            inferred_from: "sibling-file-pattern",
+            source: {
+              path: "Code/Features/Lending/SharedCard.swift",
+              line: 12,
+            },
+            sources: [
+              { path: "Code/Features/Lending/SharedCard.swift", line: 12 },
+              { path: "Code/Features/Lending/OtherCard.swift", line: 30 },
+            ],
+            confidence: "high",
+          },
+        ],
+      }),
+      { map: MAP },
+    );
+
+    expect(report.errors).toBe(0);
+  });
+
   it("fails invalid detector regex", () => {
     const report = lintGhostChecks(
       checks({ detector: { type: "forbidden-regex", pattern: "[" } }),
