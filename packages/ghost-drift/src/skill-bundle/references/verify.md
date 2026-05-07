@@ -1,49 +1,35 @@
 ---
 name: verify
-description: Confirm generated UI stays within fingerprint.md bounds; iterate if not.
+description: Confirm generated UI stays within the local Ghost fingerprint package; iterate if not.
 handoffs:
-  - label: Remediate the findings with minimal targeted fixes
+  - label: Remediate deterministic or advisory findings
     skill: remediate
-    prompt: Given the verify findings, suggest the minimal token/code changes that close the drift
-  - label: Update the fingerprint to capture an uncaptured decision
-    command: ghost-fingerprint lint
-    prompt: Add the missing decision to fingerprint.md and re-lint
+    prompt: Given the verify findings, suggest minimal token/code changes that close the drift
 ---
 
-# Recipe: Verify generated UI against the fingerprint
+# Recipe: Verify Generated UI
 
-**Goal:** confirm that generated UI (a component, a page, a variant) stays within the bounds of the local `fingerprint.md`. This is the "generate → review → iterate" loop.
-
-Ghost has no `ghost verify` CLI command. You drive the loop; the fingerprint is the contract.
+**Goal:** run the generate → check → review → repair loop against
+`.ghost/fingerprint/`.
 
 ## Steps
 
-### 1. Generate
+1. Generate the UI using `.ghost/fingerprint/profile.md`, survey pattern
+   summaries, nearest examples, and active checks as context.
+2. Run the deterministic gate:
 
-Produce the UI code. Use whatever generator or recipe this workflow provides; respect `palette`, `spacing.scale`, `typography`, `surfaces`, and `decisions` from the fingerprint. Feed the fingerprint into the generator's system prompt, or load `tokens.css` via `ghost-fingerprint emit context-bundle`.
+   ```bash
+   ghost-drift check --base <ref>
+   ```
 
-### 2. Self-review
+3. Repair any active check failures.
+4. Run advisory review:
 
-Apply the [review recipe](review.md) to the generated file. Scan for hardcoded values that drift from the fingerprint. Group findings by dimension.
+   ```bash
+   ghost-drift review --base <ref>
+   ```
 
-### 3. Decide
+5. Repair high-confidence advisory issues when they cite a diff location,
+   profile section, survey evidence, precedent/example, and repair.
 
-- **No findings** → pass. The generation is aligned. Report back to the user.
-- **Findings exist** → iterate:
-  - For each finding, identify the token the generator should have used.
-  - Regenerate with explicit guidance: "Use `palette.primary` (`#0066cc`) instead of `#3b82f6`; snap padding to `spacing.scale` step 4 (16px) instead of `14px`."
-  - Re-run the review. Up to 3 iterations.
-  - If still drifting after 3 tries: report to the user. The fingerprint may be missing a token the generator needs, or the generation prompt may be too loose. Consider [remediate.md](remediate.md) for fix suggestions.
-
-### 4. (Optional) Suite verification
-
-If the user is iterating on the fingerprint itself and wants coverage stats:
-
-- Generate against a suite of diverse prompts (button variants, a form, a data table, a hero section, etc. — pick a dozen).
-- Run the review against each.
-- Classify each dimension as **tight** (no drift), **leaky** (occasional drift), or **uncaptured** (frequent drift).
-- "Uncaptured" dimensions are the signal the fingerprint is missing a decision. Tell the user which one to add.
-
-## Why the loop matters
-
-The fingerprint is a contract. Generation tests the contract. Drift shows where the contract is ambiguous or silent. Use verify results to refine both the generator's prompt and the fingerprint itself.
+Profile prose shapes judgment. Only active `checks.yml` failures block.

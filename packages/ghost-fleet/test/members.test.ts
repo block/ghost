@@ -43,6 +43,24 @@ describe("loadMembers", () => {
     }
   });
 
+  it("loads scoped fingerprint overlays as nested nodes", async () => {
+    const members = await loadMembers(FLEET);
+    const cashWeb = members.find((m) => m.id === "cash-web");
+
+    expect(cashWeb?.fingerprintNodes.map((node) => node.id).sort()).toEqual([
+      "cash-web",
+      "cash-web/accounts",
+      "cash-web/payments",
+    ]);
+    const payments = cashWeb?.fingerprintNodes.find(
+      (node) => node.id === "cash-web/payments",
+    );
+    expect(payments?.kind).toBe("scope");
+    expect(payments?.scopeId).toBe("payments");
+    expect(payments?.parentId).toBe("cash-web");
+    expect(payments?.fingerprint.id).toBe("cash-web-payments");
+  });
+
   it("surfaces tracks targets from .ghost-sync.json when present", async () => {
     const members = await loadMembers(FLEET);
     const cashWeb = members.find((m) => m.id === "cash-web");

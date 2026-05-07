@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-06T02:19:56.135Z",
+  "generatedAt": "2026-05-07T00:33:39.453Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -150,6 +150,86 @@
         },
         {
           "tool": "ghost-drift",
+          "name": "check",
+          "rawName": "check",
+          "description": "Run active ghost.checks/v1 gates from .ghost/fingerprint/checks.yml against a git diff.",
+          "options": [
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to check instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Fingerprint package directory (default: .ghost/fingerprint)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-drift",
+          "name": "review",
+          "rawName": "review",
+          "description": "Emit an evidence-routed advisory review prompt from the fingerprint package and a git diff.",
+          "options": [
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to review instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Fingerprint package directory (default: .ghost/fingerprint)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-drift",
           "name": "emit",
           "rawName": "emit <kind>",
           "description": "Emit the ghost-drift agentskills.io bundle (kind: skill).",
@@ -187,7 +267,23 @@
           "tool": "ghost-fingerprint",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate fingerprint.md, map.md, or survey.json — auto-detects the kind from path/content",
+          "description": "Validate a fingerprint package, profile.md, map.md, survey.json, or checks.yml — defaults to .ghost/fingerprint",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "init-package",
+          "rawName": "init-package [dir]",
+          "description": "Create a .ghost/fingerprint package skeleton (map.md, survey.json, profile.md, checks.yml)",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -202,13 +298,13 @@
         {
           "tool": "ghost-fingerprint",
           "name": "verify-profile",
-          "rawName": "verify-profile <fingerprint> <survey>",
-          "description": "Verify fingerprint.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+          "rawName": "verify-profile <profile> <survey>",
+          "description": "Verify profile.md is faithful to its survey.json: palette values must be survey-backed",
           "options": [
             {
               "rawName": "--root <dir>",
               "name": "root",
-              "description": "Optional target root for counting promoted check pattern matches under checks[].paths",
+              "description": "Optional target root used by profile fidelity checks that need repo context",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -227,8 +323,16 @@
           "tool": "ghost-fingerprint",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
-          "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), fingerprint (fingerprint.md). Tells orchestrators which stage to run next.",
+          "description": "Report which fingerprint package stages have produced artifacts: map.md, survey.json, profile.md, checks.yml.",
           "options": [
+            {
+              "rawName": "--include-scopes",
+              "name": "includeScopes",
+              "description": "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -249,8 +353,8 @@
         {
           "tool": "ghost-fingerprint",
           "name": "describe",
-          "rawName": "describe [fingerprint]",
-          "description": "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+          "rawName": "describe [profile]",
+          "description": "Print a section map of profile.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -266,7 +370,7 @@
           "tool": "ghost-fingerprint",
           "name": "diff",
           "rawName": "diff <a> <b>",
-          "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+          "description": "Structural diff between two profile.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -282,7 +386,7 @@
           "tool": "ghost-fingerprint",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
+          "description": "Operate on ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -322,12 +426,12 @@
           "tool": "ghost-fingerprint",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from fingerprint.md (kinds: review-command, context-bundle, skill)",
+          "description": "Emit a derived artifact from the fingerprint package profile (kinds: review-command, context-bundle, skill)",
           "options": [
             {
-              "rawName": "-e, --fingerprint <path>",
-              "name": "fingerprint",
-              "description": "Source fingerprint file (default: fingerprint.md)",
+              "rawName": "-p, --profile <path>",
+              "name": "profile",
+              "description": "Source profile file (default: .ghost/fingerprint/profile.md)",
               "default": null,
               "takesValue": true,
               "negated": false

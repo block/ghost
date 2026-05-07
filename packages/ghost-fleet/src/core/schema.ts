@@ -17,6 +17,11 @@ const ISO_DATE_OR_DATETIME = z.iso.datetime({ offset: true }).or(
   }),
 );
 
+const StringOrArraySchema = z.union([
+  z.string().min(1),
+  z.array(z.string().min(1)).min(1),
+]);
+
 export const FleetMemberEntrySchema = z.object({
   id: z
     .string()
@@ -25,8 +30,20 @@ export const FleetMemberEntrySchema = z.object({
       message:
         "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
     }),
-  platform: z.string().min(1),
-  build_system: z.string().min(1).optional(),
+  platform: StringOrArraySchema,
+  build_system: StringOrArraySchema.optional(),
+  registry: z.string().min(1).nullable().optional(),
+  fingerprint_at: ISO_DATE_OR_DATETIME.optional(),
+});
+
+export const FleetFingerprintNodeSchema = z.object({
+  id: z.string().min(1),
+  member_id: z.string().min(1),
+  kind: z.enum(["member", "scope"]),
+  scope_id: z.string().min(1).optional(),
+  parent_id: z.string().min(1).optional(),
+  platform: StringOrArraySchema,
+  build_system: StringOrArraySchema.optional(),
   registry: z.string().min(1).nullable().optional(),
   fingerprint_at: ISO_DATE_OR_DATETIME.optional(),
 });
@@ -59,12 +76,17 @@ export const FleetFrontmatterSchema = z.object({
   generated_at: ISO_DATE_OR_DATETIME,
   members: z.array(FleetMemberEntrySchema).min(1),
   distances: z.array(FleetDistanceSchema),
+  nodes: z.array(FleetFingerprintNodeSchema),
+  node_distances: z.array(FleetDistanceSchema),
   tracks: z.array(FleetTrackEdgeSchema),
   groupings: FleetGroupingsSchema,
 });
 
 export type FleetFrontmatter = z.infer<typeof FleetFrontmatterSchema>;
 export type FleetMemberEntry = z.infer<typeof FleetMemberEntrySchema>;
+export type FleetFingerprintNodeEntry = z.infer<
+  typeof FleetFingerprintNodeSchema
+>;
 export type FleetDistance = z.infer<typeof FleetDistanceSchema>;
 export type FleetTrackEdge = z.infer<typeof FleetTrackEdgeSchema>;
 export type FleetGroupings = z.infer<typeof FleetGroupingsSchema>;

@@ -7,7 +7,7 @@ handoffs:
     prompt: Re-run the review against the patched files to confirm the drift is closed
   - label: Acknowledge the drift as accepted
     command: ghost-drift ack
-    prompt: Acknowledge that the current fingerprint.md no longer matches and accept the drift
+    prompt: Acknowledge that the current profile no longer matches and accept the drift
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension so it stops flagging
@@ -27,7 +27,7 @@ You need:
 
 - The **drift output** — either the JSON from `ghost-drift compare --semantic --format json` or the structured findings from a [review](review.md) pass.
 - The **offending diff** — `git diff <base> -- <file>` for each flagged file.
-- The **fingerprint** — `ghost-fingerprint describe fingerprint.md` to plan reads, then load the relevant sections (frontmatter is always cheap; pull decision blocks by dimension).
+- The **fingerprint package** — `ghost-fingerprint describe` to plan profile reads, plus `.ghost/fingerprint/checks.yml` for active gates and `.ghost/fingerprint/survey.json` for evidence.
 - The **sync manifest** if present (`.ghost-sync.json`) — anything stance:`diverging` is intentional and must NOT be remediated.
 
 ### 2. Match each finding to a token

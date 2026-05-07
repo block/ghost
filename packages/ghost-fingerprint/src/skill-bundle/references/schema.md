@@ -1,120 +1,88 @@
-# fingerprint.md schema reference
+# Fingerprint Package Schema Reference
 
-Expected filename: `fingerprint.md`.
+Canonical package:
 
-`fingerprint.md` is the authored design-language contract. It may point at local `references`, but sibling files are not auto-loaded as authored truth: no `embedding.md`, no `# Fragments`, and no implicit `decisions/` directory.
-
-## Frontmatter
-
-```yaml
----
-id: my-project
-source: llm                     # registry | extraction | llm | unknown
-timestamp: 2026-04-20T00:00:00Z
-sources: [github:owner/repo]
-references:
-  specs: [src/styles/tokens.css]
-  components: [src/components/ui]
-  examples: [docs/examples/dashboard.md]
-
-observation:
-  personality: [restrained, editorial]
-  resembles: [linear, notion]
-
-decisions:
-  - dimension: color-strategy
-  - dimension: spatial-system
-  - dimension: composition-patterns
-
-checks:
-  - id: no-off-palette-hex
-    canonical: color-strategy
-    kind: color
-    summary: Hex literals must come from the documented palette
-    pattern: '#[0-9a-fA-F]{3,8}'
-    paths: [src]
-    contexts: [className, css_var, inline_style]
-    observed_count: 31
-    support: 0.94
-
-palette:
-  dominant:
-    - { role: primary, value: "#0066cc" }
-  neutrals:
-    steps: ["#ffffff", "#f5f5f5", "#0a0a0a"]
-    count: 3
-  semantic:
-    - { role: danger, value: "#dc2626" }
-  saturationProfile: muted
-  contrast: high
-
-spacing:
-  scale: [4, 8, 12, 16, 24, 32]
-  regularity: 0.9
-  baseUnit: 4
-
-typography:
-  families: ["Inter", "Geist Mono"]
-  sizeRamp: [12, 14, 16, 20, 24, 32]
-  weightDistribution: { "400": 5, "700": 3 }
-  lineHeightPattern: normal
-
-surfaces:
-  borderRadii: [4, 8, 12]
-  shadowComplexity: subtle
-  borderUsage: moderate
-
-metadata:
-  tone: editorial
----
+```text
+.ghost/fingerprint/
+  map.md          ghost.map/v2
+  survey.json     ghost.survey/v2
+  profile.md      non-enforcing design-language prior
+  checks.yml      ghost.checks/v1
 ```
 
-Required: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`.
+## `profile.md`
 
-Optional: `sources`, `references`, `observation.personality`, `observation.resembles`, `decisions[]`, `checks[]`, `metadata`, and meta fields such as `name`, `slug`, `generator`, `confidence`, `generated`, `extends`.
+Profile frontmatter may include:
 
-Forbidden in frontmatter: root `embedding`, `decisions[].embedding`, `observation.summary`, `decisions[].decision`, `decisions[].evidence`, `checks[].enforce_at`, `checks[].rationale`, and unknown root keys such as `schema`.
+- required: `id`, `source`, `timestamp`, `palette`, `spacing`, `typography`, `surfaces`
+- optional: `sources`, `references`, `observation.personality`, `observation.resembles`, `decisions[]`, `metadata`, `name`, `slug`, `generator`, `confidence`, `generated`, `extends`
 
-## Body
+Forbidden: root `schema`, root `embedding`, `checks[]`,
+`decisions[].embedding`, `decisions[].decision`,
+`decisions[].evidence`, `observation.summary`, and unknown root keys.
+
+The body uses:
 
 ```markdown
 # Character
 
-2-4 sentences capturing the holistic personality of this design language.
-
 # Signature
-
-2-4 sentences capturing the dominant moves, repeated layout posture, and recognizable final picture.
 
 # Decisions
 
 ### color-strategy
-
-Prose rationale for the color-strategy decision.
-
-**Evidence:**
-- `--color-primary: #0066cc` resolves the primary action color
-- Survey color evidence: 31 of 33 color observations fall on the documented palette
 ```
 
-The parser matches `### dimension` blocks to `decisions[].dimension` by slug. Evidence bullets live in the body. Putting rationale or evidence into YAML is a schema error.
+Evidence bullets live in the body. Profile prose shapes judgment; it does not
+enforce CI.
 
-## Checks
+## `checks.yml`
 
-`checks[]` are human-promoted PR review gates, not candidate scratch space.
+```yaml
+schema: ghost.checks/v1
+id: my-project
+checks:
+  - id: no-hardcoded-ui-color
+    title: Use design tokens for UI color
+    status: active
+    severity: serious
+    applies_to:
+      scopes: [checkout]
+      paths: [src/checkout]
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}'
+      contexts: [typescript]
+    evidence:
+      support: 0.94
+      observed_count: 31
+      examples:
+        - src/checkout/Button.tsx
+    repair: Replace literals with semantic tokens.
+```
 
-- `paths` are repo-relative filesystem scopes used by `verify-profile` for deterministic count calibration.
-- `contexts` are reviewer/generator hints such as `className`, `css_var`, `inline_style`, or `import`.
-- `summary` is the short reviewer label.
-- The rationale belongs in the matching Decision body.
+Detector types:
+
+- `forbidden-regex`
+- `required-regex`
+- `banned-import`
+- `banned-component`
+- `required-token`
+
+Statuses:
+
+- `active`: enforced by `ghost-drift check`
+- `proposed`: kept as a candidate
+- `disabled`: retained but ignored
 
 ## Validation
 
 ```bash
-ghost-fingerprint lint fingerprint.md
-ghost-fingerprint verify-profile fingerprint.md survey.json --root .
+ghost-fingerprint lint .ghost/fingerprint
+ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
+ghost-drift check --base main
 ```
 
-`lint` validates shape and partition. `verify-profile` validates survey fidelity: palette, spacing, typography, radii, and shadow posture must be backed by `survey.json`, and promoted checks must carry calibrated `paths`, `observed_count`, and `support`.
-
-Use `ghost-fingerprint survey summarize survey.json` for broad profiling context and `ghost-fingerprint survey catalog survey.json --kind <kind>` for compact value enums/specs. Raw `survey.json` is for targeted row lookup.
+`lint` validates all four artifacts together, including check scope references
+against `map.md`. `verify-profile` validates profile-to-survey fidelity.
+`ghost-drift check` is the deterministic pass/fail gate.

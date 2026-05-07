@@ -94,6 +94,23 @@ const MapSourceSchema = z.object({
   paths: z.array(z.string().min(1)).optional(),
 });
 
+const SlugIdSchema = z
+  .string()
+  .min(1)
+  .regex(/^[a-z0-9][a-z0-9._-]*$/, {
+    message:
+      "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
+  });
+
+export const MapScopeSchema = z.object({
+  id: SlugIdSchema,
+  name: z.string().min(1).optional(),
+  kind: z.string().min(1),
+  paths: z.array(z.string().min(1)).min(1),
+  parent: SlugIdSchema.optional(),
+  sub_areas: z.array(z.string().min(1)).optional(),
+});
+
 /**
  * Zod schema for `ghost.map/v2` frontmatter.
  *
@@ -102,13 +119,7 @@ const MapSourceSchema = z.object({
  */
 export const MapFrontmatterSchema = z.object({
   schema: z.literal("ghost.map/v2"),
-  id: z
-    .string()
-    .min(1)
-    .regex(/^[a-z0-9][a-z0-9._-]*$/, {
-      message:
-        "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
-    }),
+  id: SlugIdSchema,
   repo: z.string().min(1),
   /**
    * Optional explicit subject for multi-source scans. `id` remains the
@@ -208,10 +219,12 @@ export const MapFrontmatterSchema = z.object({
       }),
     )
     .min(1),
+  scopes: z.array(MapScopeSchema).optional(),
   orientation_files: z.array(z.string().min(1)).min(1),
 });
 
 export type MapFrontmatter = z.infer<typeof MapFrontmatterSchema>;
+export type MapScope = z.infer<typeof MapScopeSchema>;
 
 /** Required body sections in canonical order. */
 export const REQUIRED_BODY_SECTIONS = [

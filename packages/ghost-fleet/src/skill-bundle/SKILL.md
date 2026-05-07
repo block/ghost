@@ -9,7 +9,7 @@ metadata:
 
 # Ghost Fleet — Reasoning Over Many Members
 
-Fleet is the **elevation view** across many `(map.md, fingerprint.md)` pairs. Per-repo views answer "is this repo drifting?" Fleet answers "what does our design world look like?"
+Fleet is the **elevation view** across many `(map.md, fingerprint.md)` pairs. It also reads optional scoped overlays at `fingerprints/<scope>.md`. Per-repo views answer "is this repo drifting?" Fleet answers "what does our design world look like?"
 
 This skill helps you turn the output of `ghost-fleet view` into a **world-model narrative** in the body of `fleet.md`. The CLI is the calculator: pairwise distances, group-by tables, tracks-graph. You give it the prose.
 
@@ -48,7 +48,7 @@ When the user asks you to "summarize the fleet" or "produce a world view":
 
 1. Run `ghost-fleet members <dir>` to confirm coverage. Note any rows that aren't `ok` — missing or broken members are worth surfacing.
 2. Run `ghost-fleet view <dir>`. This writes `fleet.md` (frontmatter + skeleton body) and `fleet.json` (structured sidecar).
-3. Read `fleet.md`. The frontmatter gives you `members`, `distances` (pairwise array), `tracks`, and `groupings` (five axes).
+3. Read `fleet.md`. The frontmatter gives you `members`, parent `distances`, nested `nodes`, `node_distances`, `tracks`, and `groupings` (five axes).
 4. Fill in the three required body sections:
    - `## World shape` — the broad picture. Where does the fleet center? How wide is its spread? What axes (palette, spacing, typography, surfaces) account for the largest distances? Distance is data, not blame.
    - `## Cohorts` — the cluster narrative. Read the pairwise array and the groupings. Identify natural cohorts (often: same platform, same registry, or shared design ancestry). Name them. Note outliers inside each cohort and the dimension they pull on.
@@ -59,7 +59,7 @@ For the heuristics and reasoning patterns, see [references/target.md](references
 
 ## What this milestone does not do
 
-- **Modular and rollup profiling.** Fleet currently treats every member as a monolithic target. `references/module.md` and `references/rollup.md` will arrive when the modular profile pathway lands in `ghost-fingerprint`. Until then, federated repos must be profiled as a single rollup fingerprint.
+- **Scoped governance.** Fleet reads scoped overlays and compares them as nested nodes, but it does not author or promote scoped divergences. The scan/profile pipeline owns those files.
 - **Tracks-graph projection beyond the recorded edges.** Fleet emits exactly what each member declared in `.ghost-sync.json`. It does not infer transitive references.
 - **Temporal aggregation.** Per-member history aggregation (`fleet.history.json`) is deferred.
 - **Axis stacking.** `--groupby platform,registry` and similar filters are deferred to a follow-up.

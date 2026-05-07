@@ -23,14 +23,14 @@ const cards: {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the skill bundle and review changed UI against fingerprint.md.",
+      "Install the skill bundle and review changed UI against .ghost/fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
     href: "/docs/cli#ghost-drift--review-and-compare",
     description:
-      "Compare fingerprints, record intent, and install review recipes.",
+      "Run checks, emit advisory review, compare profiles, and record intent.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -47,7 +47,7 @@ export default function GhostDriftLanding() {
       <AnimatedPageHeader
         kicker="ghost-drift"
         title="Drift"
-        description="Check whether changed or generated UI still matches the fingerprint. ghost-drift compares fingerprints, reviews PRs for design drift, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        description="Check whether changed or generated UI still matches the fingerprint package. ghost-drift runs deterministic checks, emits advisory review packets, compares profiles, and records whether a difference should be fixed, accepted, or tracked as the new direction."
       />
 
       <div

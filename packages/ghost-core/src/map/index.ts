@@ -10,9 +10,13 @@
 export {
   type MapFrontmatter,
   MapFrontmatterSchema,
+  type MapScope,
+  MapScopeSchema,
   REQUIRED_BODY_SECTIONS,
   type RequiredBodySection,
 } from "./schema.js";
+export type { MapFeatureArea } from "./scopes.js";
+export { getEffectiveMapScopes, slugifyScopeId } from "./scopes.js";
 export type {
   GitInfo,
   InventoryOutput,

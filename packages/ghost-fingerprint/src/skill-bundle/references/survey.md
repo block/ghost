@@ -2,9 +2,9 @@
 name: survey
 description: Scan a target and produce a survey.json — the observed catalogue of design values, with no interpretation.
 handoffs:
-  - label: Interpret the survey into fingerprint.md
+  - label: Interpret the survey into profile.md
     command: (next stage — interpreter recipe)
-    prompt: Interpret the survey I just wrote into fingerprint.md
+    prompt: Interpret the survey I just wrote into .ghost/fingerprint/profile.md
   - label: Validate the survey
     command: ghost-fingerprint lint survey.json
     prompt: Lint the survey I just wrote
@@ -14,9 +14,9 @@ handoffs:
 
 **Goal:** produce a valid `survey.json` (`ghost.survey/v2`) that catalogues every concrete design value and implemented UI surface the target ships, with structured specs, occurrence counts, and surface evidence. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
-`survey.json` is the middle artifact in a three-stage scan: map (`map.md`) → survey (`survey.json`) → express (`fingerprint.md`). The interpreter reads your survey as evidence and writes the compact fingerprint. If you skip values or fabricate them here, the fingerprint downstream is wrong.
+`survey.json` is the evidence artifact in the package scan: map (`map.md`) → survey (`survey.json`) → profile (`profile.md`) → checks (`checks.yml`). The interpreter reads your survey as evidence and writes the compact profile. If you skip values or fabricate them here, the package downstream is wrong.
 
-The survey is exhaustive evidence, not prompt context. It should be large enough to support interpretation; the profile stage decides what becomes generation-facing fingerprint.
+The survey is exhaustive evidence, not prompt context. It should be large enough to support interpretation; the profile stage decides what becomes generation-facing guidance and check candidates.
 
 ## Pre-requisite
 

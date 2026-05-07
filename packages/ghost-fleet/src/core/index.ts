@@ -7,12 +7,14 @@
 
 export {
   computeGroupings,
+  computeNodeDistances,
   computePairwiseDistances,
   computeTracks,
 } from "./compute.js";
 export { loadMembers, summarizeMember } from "./members.js";
 export type {
   FleetDistance,
+  FleetFingerprintNodeEntry,
   FleetFrontmatter,
   FleetGroupings,
   FleetMemberEntry,
@@ -28,6 +30,7 @@ export {
   REQUIRED_BODY_SECTIONS,
 } from "./schema.js";
 export type {
+  FleetFingerprintNode,
   FleetGroupingsComputed,
   FleetMember,
   FleetPairwise,

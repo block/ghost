@@ -286,16 +286,6 @@ describe("serializeFingerprint round-trip", () => {
         components: ["src/components/ui"],
         examples: ["docs/examples/editorial.md"],
       },
-      checks: [
-        {
-          id: "no-cool-neutrals",
-          canonical: "color-strategy",
-          kind: "color",
-          pattern: "#(?:0f172a|111827)",
-          support: 0.95,
-          contexts: ["className"],
-        },
-      ],
       decisions: [
         {
           dimension: "warm-only-neutrals",
@@ -329,7 +319,7 @@ describe("serializeFingerprint round-trip", () => {
     );
     expect(fingerprint.signature).toBe(fpWithProse.signature);
     expect(fingerprint.references).toEqual(fpWithProse.references);
-    expect(fingerprint.checks).toEqual(fpWithProse.checks);
+    expect(fingerprint.checks).toBeUndefined();
     expect(fingerprint.decisions).toHaveLength(1);
     expect(fingerprint.decisions?.[0].decision).toBe(
       fpWithProse.decisions?.[0].decision,
