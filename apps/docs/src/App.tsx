@@ -1,9 +1,13 @@
 import { ThemeProvider } from "ghost-ui";
-import { Navigate, Route, Routes, useParams } from "react-router";
-import DriftEngineIndex from "@/app/docs/page";
-import WorkflowPage from "@/app/docs/workflow/page";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router";
+import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
+import GhostDriftLanding from "@/app/tools/drift/page";
+import GhostFingerprintLanding from "@/app/tools/fingerprint/page";
+import GhostFleetLanding from "@/app/tools/fleet/page";
 import ToolsIndex from "@/app/tools/page";
+import GhostUiLanding from "@/app/tools/ui/page";
 import ComponentPage from "@/app/ui/components/[name]/page";
 import ComponentsIndex from "@/app/ui/components/page";
 import ColorsPage from "@/app/ui/foundations/colors/page";
@@ -18,6 +22,21 @@ function ComponentRedirect() {
   return <Navigate to={`/ui/components/${name}`} replace />;
 }
 
+function ScrollToHash() {
+  const { hash, pathname } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+
+    const id = decodeURIComponent(hash.slice(1));
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ block: "start" });
+    });
+  }, [hash, pathname]);
+
+  return null;
+}
+
 export function App() {
   return (
     <ThemeProvider
@@ -26,20 +45,39 @@ export function App() {
       enableSystem
       disableTransitionOnChange
     >
+      <ScrollToHash />
       <Dock />
       <main className="relative z-10 min-h-screen">
         <Routes>
           <Route index element={<HomePage />} />
 
-          {/* Tools */}
+          {/* Tools — four-card index plus per-tool landings */}
           <Route path="tools" element={<ToolsIndex />} />
-          <Route path="tools/drift" element={<DriftEngineIndex />} />
-          <Route path="tools/drift/workflow" element={<WorkflowPage />} />
+          <Route
+            path="tools/map"
+            element={<Navigate to="/tools/fingerprint" replace />}
+          />
+          <Route
+            path="tools/fingerprint"
+            element={<GhostFingerprintLanding />}
+          />
+          <Route path="tools/drift" element={<GhostDriftLanding />} />
+          <Route path="tools/fleet" element={<GhostFleetLanding />} />
+          <Route path="tools/ui" element={<GhostUiLanding />} />
 
-          {/* MDX-authored doc pages */}
+          {/* Cross-tool docs hub */}
+          <Route path="docs" element={<DocsIndex />} />
+          <Route
+            path="docs/workflow"
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
+          />
+
+          {/* MDX-authored doc pages under /docs/* */}
           {mdxDocsRoutes()}
 
-          {/* Design Language (ghost-ui catalogue — not linked from home/dock) */}
+          {/* Design Language (ghost-ui catalogue) */}
           <Route path="ui" element={<DesignLanguageIndex />} />
           <Route path="ui/foundations" element={<FoundationsIndex />} />
           <Route path="ui/foundations/colors" element={<ColorsPage />} />
@@ -50,23 +88,26 @@ export function App() {
           <Route path="ui/components" element={<ComponentsIndex />} />
           <Route path="ui/components/:name" element={<ComponentPage />} />
 
-          {/* Redirects from old /docs/* URLs */}
-          <Route path="docs" element={<Navigate to="/tools/drift" replace />} />
+          {/* Redirects from the previous /tools/drift/{getting-started,cli} URLs */}
           <Route
-            path="docs/getting-started"
-            element={<Navigate to="/tools/drift/getting-started" replace />}
+            path="tools/drift/getting-started"
+            element={<Navigate to="/docs/getting-started" replace />}
           />
           <Route
-            path="docs/cli"
-            element={<Navigate to="/tools/drift/cli" replace />}
-          />
-          <Route
-            path="docs/concepts"
-            element={<Navigate to="/tools/drift/workflow" replace />}
+            path="tools/drift/cli"
+            element={<Navigate to="/docs/cli" replace />}
           />
           <Route
             path="tools/drift/concepts"
-            element={<Navigate to="/tools/drift/workflow" replace />}
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
+          />
+          <Route
+            path="tools/drift/workflow"
+            element={
+              <Navigate to="/docs/getting-started#how-ghost-works" replace />
+            }
           />
 
           {/* Redirects from legacy root /foundations and /components URLs */}

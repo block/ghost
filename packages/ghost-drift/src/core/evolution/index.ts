@@ -1,6 +1,7 @@
+export { computeDriftVectors, DIMENSION_RANGES } from "@ghost/core";
 export type { CompositeClusterOptions } from "./composite.js";
 export { compareComposite } from "./composite.js";
-export { emitExpression } from "./emit.js";
+export { emitFingerprint } from "./emit.js";
 export { appendHistory, readHistory, readRecentHistory } from "./history.js";
 export type { CheckBoundsOptions } from "./sync.js";
 export {
@@ -12,6 +13,5 @@ export {
 export { computeTemporalComparison } from "./temporal.js";
 export {
   normalizeTrackedSource,
-  resolveTrackedExpression,
+  resolveTrackedFingerprint,
 } from "./tracking.js";
-export { computeDriftVectors, DIMENSION_RANGES } from "./vector.js";

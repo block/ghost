@@ -1,5 +1,5 @@
+import { inferSemanticRole } from "@ghost/core";
 import { describe, expect, it } from "vitest";
-import { inferSemanticRole } from "../../src/core/embedding/semantic-roles.js";
 
 describe("inferSemanticRole", () => {
   describe("Layer 1: exact match (shadcn)", () => {

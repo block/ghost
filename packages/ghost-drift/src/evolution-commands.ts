@@ -1,25 +1,24 @@
 import { resolve } from "node:path";
 import type { CAC } from "cac";
+import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-fingerprint";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,
-  EXPRESSION_FILENAME,
   loadConfig,
-  loadExpression,
-  resolveTrackedExpression,
+  resolveTrackedFingerprint,
 } from "./core/index.js";
 
-async function loadLocalExpression() {
-  const path = resolve(process.cwd(), EXPRESSION_FILENAME);
-  const { expression } = await loadExpression(path);
-  return expression;
+async function loadLocalFingerprint() {
+  const path = resolve(process.cwd(), FINGERPRINT_FILENAME);
+  const { fingerprint } = await loadFingerprint(path);
+  return fingerprint;
 }
 
 export function registerAckCommand(cli: CAC): void {
   cli
     .command(
       "ack",
-      "Acknowledge current drift — record intentional stance toward the tracked expression",
+      "Acknowledge current drift — record intentional stance toward the tracked fingerprint",
     )
     .option("-c, --config <path>", "Path to ghost config file")
     .option("-d, --dimension <name>", "Acknowledge a specific dimension only")
@@ -34,17 +33,19 @@ export function registerAckCommand(cli: CAC): void {
 
         if (!config.tracks) {
           console.error(
-            "Error: No tracked expression declared. Set `tracks` in ghost.config.ts.",
+            "Error: No tracked fingerprint declared. Set `tracks` in ghost.config.ts.",
           );
           process.exit(2);
         }
 
-        const trackedExpression = await resolveTrackedExpression(config.tracks);
-        const localExpression = await loadLocalExpression();
+        const trackedFingerprint = await resolveTrackedFingerprint(
+          config.tracks,
+        );
+        const localFingerprint = await loadLocalFingerprint();
 
         const { manifest, comparison } = await acknowledge({
-          local: localExpression,
-          tracked: trackedExpression,
+          local: localFingerprint,
+          tracked: trackedFingerprint,
           tracks: config.tracks,
           dimension: opts.dimension,
           stance: opts.stance as DimensionStance,
@@ -55,7 +56,7 @@ export function registerAckCommand(cli: CAC): void {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
           console.log(
-            `Acknowledged drift from "${manifest.trackedExpressionId}"`,
+            `Acknowledged drift from "${manifest.trackedFingerprintId}"`,
           );
           console.log(`Overall distance: ${comparison.distance.toFixed(3)}`);
           console.log();
@@ -88,21 +89,22 @@ export function registerAckCommand(cli: CAC): void {
 export function registerTrackCommand(cli: CAC): void {
   cli
     .command(
-      "track <expression>",
-      "Track another expression as this repo's reference",
+      "track <fingerprint>",
+      "Track another fingerprint as this repo's reference",
     )
     .option("-d, --dimension <name>", "Track only for a specific dimension")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const { expression: trackedExpression } = await loadExpression(source);
-        const localExpression = await loadLocalExpression();
+        const { fingerprint: trackedFingerprint } =
+          await loadFingerprint(source);
+        const localFingerprint = await loadLocalFingerprint();
 
         const tracks: Target = { type: "path", value: source };
 
         const { manifest, comparison } = await acknowledge({
-          local: localExpression,
-          tracked: trackedExpression,
+          local: localFingerprint,
+          tracked: trackedFingerprint,
           tracks,
           dimension: opts.dimension,
           stance: "accepted",
@@ -111,7 +113,7 @@ export function registerTrackCommand(cli: CAC): void {
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(manifest, null, 2)}\n`);
         } else {
-          console.log(`Now tracking "${trackedExpression.id}"`);
+          console.log(`Now tracking "${trackedFingerprint.id}"`);
           console.log(`New distance: ${comparison.distance.toFixed(3)}`);
           console.log();
           for (const [key, delta] of Object.entries(comparison.dimensions)) {
@@ -149,17 +151,19 @@ export function registerDivergeCommand(cli: CAC): void {
 
         if (!config.tracks) {
           console.error(
-            "Error: No tracked expression declared. Set `tracks` in ghost.config.ts.",
+            "Error: No tracked fingerprint declared. Set `tracks` in ghost.config.ts.",
           );
           process.exit(2);
         }
 
-        const trackedExpression = await resolveTrackedExpression(config.tracks);
-        const localExpression = await loadLocalExpression();
+        const trackedFingerprint = await resolveTrackedFingerprint(
+          config.tracks,
+        );
+        const localFingerprint = await loadLocalFingerprint();
 
         const { manifest } = await acknowledge({
-          local: localExpression,
-          tracked: trackedExpression,
+          local: localFingerprint,
+          tracked: trackedFingerprint,
           tracks: config.tracks,
           dimension,
           stance: "diverging",

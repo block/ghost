@@ -1,13 +1,10 @@
+import type { Fingerprint } from "@ghost/core";
+import { computeEmbedding, embeddingDistance } from "@ghost/core";
 import { describe, expect, it } from "vitest";
-import {
-  computeEmbedding,
-  embeddingDistance,
-} from "../../src/core/embedding/embedding.js";
-import type { Expression } from "../../src/core/types.js";
 
-function makeExpression(
-  overrides: Partial<Omit<Expression, "embedding">> = {},
-): Omit<Expression, "embedding"> {
+function makeFingerprint(
+  overrides: Partial<Omit<Fingerprint, "embedding">> = {},
+): Omit<Fingerprint, "embedding"> {
   return {
     id: "test",
     source: "registry",
@@ -55,13 +52,13 @@ function makeExpression(
 
 describe("computeEmbedding", () => {
   it("produces 49-dimensional vector", () => {
-    const fp = makeExpression();
+    const fp = makeFingerprint();
     const embedding = computeEmbedding(fp);
     expect(embedding).toHaveLength(49);
   });
 
   it("all values are between 0 and 1", () => {
-    const fp = makeExpression();
+    const fp = makeFingerprint();
     const embedding = computeEmbedding(fp);
     for (const v of embedding) {
       expect(v).toBeGreaterThanOrEqual(0);
@@ -69,8 +66,8 @@ describe("computeEmbedding", () => {
     }
   });
 
-  it("identical expressions produce identical embeddings", () => {
-    const fp = makeExpression();
+  it("identical fingerprints produce identical embeddings", () => {
+    const fp = makeFingerprint();
     const e1 = computeEmbedding(fp);
     const e2 = computeEmbedding(fp);
     expect(e1).toEqual(e2);
@@ -80,14 +77,14 @@ describe("computeEmbedding", () => {
 describe("log-scaled normalization", () => {
   it("spacing count: log-scaling differentiates scale sizes", () => {
     const small = computeEmbedding(
-      makeExpression({
-        spacing: { ...makeExpression().spacing, scale: [4, 8] },
+      makeFingerprint({
+        spacing: { ...makeFingerprint().spacing, scale: [4, 8] },
       }),
     );
     const large = computeEmbedding(
-      makeExpression({
+      makeFingerprint({
         spacing: {
-          ...makeExpression().spacing,
+          ...makeFingerprint().spacing,
           scale: [4, 8, 12, 16, 24, 32, 48, 64],
         },
       }),
@@ -101,18 +98,18 @@ describe("log-scaled normalization", () => {
 describe("border usage continuous scoring", () => {
   it("uses borderTokenCount when available", () => {
     const withCount = computeEmbedding(
-      makeExpression({
+      makeFingerprint({
         surfaces: {
-          ...makeExpression().surfaces,
+          ...makeFingerprint().surfaces,
           borderUsage: "moderate",
           borderTokenCount: 5,
         },
       }),
     );
     const withHighCount = computeEmbedding(
-      makeExpression({
+      makeFingerprint({
         surfaces: {
-          ...makeExpression().surfaces,
+          ...makeFingerprint().surfaces,
           borderUsage: "moderate",
           borderTokenCount: 8,
         },
@@ -126,9 +123,9 @@ describe("border usage continuous scoring", () => {
 
 describe("embedding is purely visual", () => {
   it("architecture changes do not affect embedding", () => {
-    const a = computeEmbedding(makeExpression());
+    const a = computeEmbedding(makeFingerprint());
     const b = computeEmbedding(
-      makeExpression({
+      makeFingerprint({
         architecture: {
           tokenization: 0.1,
           methodology: ["scss"],

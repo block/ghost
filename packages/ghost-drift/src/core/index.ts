@@ -1,100 +1,3 @@
-export type { CompareOptions, CompareResult } from "./compare.js";
-export { compare } from "./compare.js";
-export { defineConfig, loadConfig, resolveTarget } from "./config.js";
-export type {
-  ContextFormat,
-  EmitReviewInput,
-  WriteContextOptions,
-  WriteContextResult,
-} from "./context/index.js";
-export {
-  buildSkillMd,
-  buildTokensCss,
-  emitReviewCommand,
-  writeContextBundle,
-} from "./context/index.js";
-export type { RoleCandidate } from "./embedding/index.js";
-export {
-  compareExpressions,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  describeExpression,
-  embeddingDistance,
-  inferSemanticRole,
-} from "./embedding/index.js";
-export type {
-  CheckBoundsOptions,
-  CompositeClusterOptions,
-} from "./evolution/index.js";
-export {
-  acknowledge,
-  appendHistory,
-  checkBounds,
-  compareComposite,
-  computeDriftVectors,
-  computeTemporalComparison,
-  DIMENSION_RANGES,
-  emitExpression,
-  normalizeTrackedSource,
-  readHistory,
-  readRecentHistory,
-  readSyncManifest,
-  resolveTrackedExpression,
-  writeSyncManifest,
-} from "./evolution/index.js";
-export type {
-  BodyData,
-  ColorChange,
-  DecisionChange,
-  ExpressionLayout,
-  ExpressionLayoutSection,
-  ExpressionMeta,
-  FrontmatterData,
-  FrontmatterShape,
-  LintIssue,
-  LintOptions,
-  LintReport,
-  LintSeverity,
-  ParsedExpression,
-  SemanticDiff,
-  TokenChange,
-} from "./expression/index.js";
-export {
-  diffExpressions,
-  EMBEDDING_FRAGMENT_FILENAME,
-  EXPRESSION_FILENAME,
-  embeddingSiblingPath,
-  FrontmatterSchema,
-  findFragmentLinks,
-  formatLayout,
-  formatSemanticDiff,
-  layoutExpression,
-  lintExpression,
-  loadEmbeddingFragment,
-  loadExpression,
-  parseBody,
-  parseExpression,
-  resolveEmbeddingReference,
-  serializeEmbeddingFragment,
-  serializeExpression,
-  splitRaw,
-  toJsonSchema,
-  validateFrontmatter,
-} from "./expression/index.js";
-export {
-  formatCompositeComparison,
-  formatCompositeComparisonJSON,
-} from "./reporters/composite.js";
-export {
-  formatComparison,
-  formatComparisonJSON,
-  formatExpression,
-  formatExpressionJSON,
-} from "./reporters/expression.js";
-export {
-  formatTemporalComparison,
-  formatTemporalComparisonJSON,
-} from "./reporters/temporal.js";
 export type {
   ColorRamp,
   ComponentMeta,
@@ -115,14 +18,14 @@ export type {
   DriftVelocity,
   EmbeddingConfig,
   EnrichedComparison,
-  EnrichedExpression,
-  Expression,
-  ExpressionComparison,
-  ExpressionHistoryEntry,
+  EnrichedFingerprint,
   ExtractedFile,
   ExtractedMaterial,
   Extractor,
   ExtractorOptions,
+  Fingerprint,
+  FingerprintComparison,
+  FingerprintHistoryEntry,
   FontDescriptor,
   GhostConfig,
   NormalizedToken,
@@ -131,6 +34,7 @@ export type {
   RegistryItem,
   RegistryItemType,
   ResolvedRegistry,
+  RoleCandidate,
   RuleSeverity,
   SampledFile,
   SampledMaterial,
@@ -145,4 +49,49 @@ export type {
   TokenCategory,
   TokenFormat,
   ValueDrift,
-} from "./types.js";
+} from "@ghost/core";
+export {
+  compareFingerprints,
+  computeEmbedding,
+  computeSemanticEmbedding,
+  describeFingerprint,
+  embeddingDistance,
+  inferSemanticRole,
+} from "@ghost/core";
+export type { CompareOptions, CompareResult } from "./compare.js";
+export { compare } from "./compare.js";
+export { defineConfig, loadConfig, resolveTarget } from "./config.js";
+export type {
+  CheckBoundsOptions,
+  CompositeClusterOptions,
+} from "./evolution/index.js";
+export {
+  acknowledge,
+  appendHistory,
+  checkBounds,
+  compareComposite,
+  computeDriftVectors,
+  computeTemporalComparison,
+  DIMENSION_RANGES,
+  emitFingerprint,
+  normalizeTrackedSource,
+  readHistory,
+  readRecentHistory,
+  readSyncManifest,
+  resolveTrackedFingerprint,
+  writeSyncManifest,
+} from "./evolution/index.js";
+export {
+  formatCompositeComparison,
+  formatCompositeComparisonJSON,
+} from "./reporters/composite.js";
+export {
+  formatComparison,
+  formatComparisonJSON,
+  formatFingerprint,
+  formatFingerprintJSON,
+} from "./reporters/fingerprint.js";
+export {
+  formatTemporalComparison,
+  formatTemporalComparisonJSON,
+} from "./reporters/temporal.js";

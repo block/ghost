@@ -1,4 +1,4 @@
-import type { CompositeComparison } from "../types.js";
+import type { CompositeComparison } from "@ghost/core";
 
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[2m";
@@ -21,7 +21,7 @@ export function formatCompositeComparison(
   const lines: string[] = [];
 
   lines.push(
-    c(BOLD, `Composite Expression: ${composite.members.length} members`),
+    c(BOLD, `Composite Fingerprint: ${composite.members.length} members`),
   );
   lines.push("");
 

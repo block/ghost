@@ -1,0 +1,5 @@
+# Test fixture — Bazel workspace with Ruby Fastlane + Swift code.
+# Emulates a real-world iOS monorepo (Bazel-built Swift app + Ruby
+# release tooling) and is used to confirm `platform_hints` doesn't leak
+# build-system or runtime signals.
+workspace(name = "test_app")

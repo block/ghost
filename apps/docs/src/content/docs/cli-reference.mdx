@@ -1,135 +1,286 @@
 ---
 title: CLI Reference
-description: Seven deterministic primitives. Everything interpretive lives in the skill bundle.
+description: Commands for repeatable checks and comparison. Your agent handles the judgment work.
 kicker: Docs
-section: drift
-order: 20
+section: guide
+order: 30
 slug: cli
 ---
 
 <DocSection title="Overview">
 
-Ghost's CLI is a set of deterministic primitives. It never calls an LLM.
-The canonical artifact is `expression.md` — a Markdown file with two
-layers: a machine layer (YAML frontmatter: 49-dim vector + palette,
-spacing, typography, surfaces, roles) and a prose body with three
-sections (Character, Signature, Decisions). Most commands accept a path
-to an `expression.md`; they default to `./expression.md` in the current
-directory.
+The CLIs do the repeatable parts: validate files, compare fingerprints, and
+record decisions. Your agent does the reading, writing, and reviewing.
 
-Workflows like _profile_, _review_, _verify_, _generate_, and _discover_
-are skill recipes your host agent runs — not CLI verbs. Install them once
-with `ghost-drift emit skill`.
+A scan follows one path, all owned by `ghost-fingerprint`:
 
-The tables below are generated from the CLI source at build time. If a
-flag changes in `bin.ts`, the next `pnpm dump:cli-help` run regenerates
-this reference — so these docs can't drift from the binary.
-
-</DocSection>
-
-<DocSection title="Comparison">
-
-Pairwise distance (N=2) or fleet analysis (N≥3) over expression
-embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
-and `--temporal` add qualitative enrichment for N=2.
-
-<CliHelp command="compare" hideDescription />
-
-```bash
-# Pairwise (N=2)
-ghost-drift compare market.expression.md dashboard.expression.md
-
-# Qualitative diff of decisions + palette
-ghost-drift compare a.expression.md b.expression.md --semantic
-
-# Velocity + trajectory
-ghost-drift compare before.expression.md after.expression.md --temporal
-
-# Fleet (N≥3) — pairwise matrix + centroid
-ghost-drift compare *.expression.md
+```text
+map.md -> survey.json -> fingerprint.md
 ```
 
+Most commands accept a path; kind-aware commands default to
+`./fingerprint.md`. No API key required.
+
+Commands are grouped by job:
+
+- **Create and check the fingerprint** — `ghost-fingerprint`: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
+- **Review and compare drift** — `ghost-drift`: `compare`, `ack`, `track`, `diverge`, `emit skill`
+- **View many projects** — `ghost-fleet`: `members`, `view`, `emit skill`
+
+Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
+_remediate_ are skill recipes your host agent runs — not CLI verbs. Install
+them with each tool's `emit skill` verb.
+
+The tables below are generated from each CLI's source at build time. If a
+flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
+this reference.
+
 </DocSection>
 
-<DocSection title="Validation">
+<DocSection title="ghost-fingerprint — authoring & validation">
 
-Validate `expression.md` schema + body/frontmatter coherence. Use this
-before declaring an expression valid — the profile recipe ends by calling
-it.
+`ghost-fingerprint` owns the scan: `map.md` → `survey.json` →
+`fingerprint.md`. It inventories the repo, validates each file, verifies the
+fingerprint against survey evidence, describes and diffs fingerprints, runs
+survey ops, and emits agent-ready outputs.
 
-<CliHelp command="lint" hideDescription />
+### Repo map — `inventory`
+
+Emit raw signals about a frontend repo as JSON: package
+manifests, language histogram, candidate config files, registry presence,
+top-level tree, git remote. The map recipe uses this when writing `map.md`.
+
+<CliHelp tool="ghost-fingerprint" command="inventory" hideDescription />
 
 ```bash
-# Default — reads ./expression.md
-ghost-drift lint
+# Inventory the current directory
+ghost-fingerprint inventory
 
-# Specific file, JSON output
-ghost-drift lint path/to/expression.md --format json
+# Inventory a different repo
+ghost-fingerprint inventory ../other-repo
 ```
 
-</DocSection>
+### Pipeline progress — `scan-status`
 
-<DocSection title="Inspection — describe">
+Report which scan stages already exist in a directory: map (`map.md`), survey
+(`survey.json`), fingerprint (`fingerprint.md`). This tells the agent which
+stage to run next.
 
-Print a section map of `expression.md` — frontmatter range, body sections
-(`# Character`, `# Signature`, `# Decisions`, `# Fragments`), and each
-`### dimension` block under Decisions, with line ranges and token estimates.
+<CliHelp tool="ghost-fingerprint" command="scan-status" hideDescription />
+
+```bash
+# Status of the current directory
+ghost-fingerprint scan-status
+
+# Status of a different scan dir
+ghost-fingerprint scan-status fleet/members/cash-ios
+
+# Machine-readable for orchestrators
+ghost-fingerprint scan-status . --format json
+```
+
+Output reports each stage as `present` or `missing` and surfaces the
+recommended next stage (or "scan complete" when every file is present).
+
+### Survey ops — `survey <op>`
+
+Operate on `ghost.survey/v2` files:
+
+- **`merge`** — combine surveys with id-based dedup.
+- **`fix-ids`** — recompute every row's `id` from its content.
+- **`summarize`** — print a short Markdown or JSON digest for profiling.
+- **`catalog`** — print exact value enums/specs derived from survey rows.
+  Markdown is the default; JSON uses `ghost.survey.catalog/v1`.
+
+<CliHelp tool="ghost-fingerprint" command="survey" hideDescription />
+
+```bash
+# Merge two surveys
+ghost-fingerprint survey merge a.json b.json -o merged.json
+
+# Merge a directory of survey files
+ghost-fingerprint survey merge fleet/members/*/survey.json -o cohort.json
+
+# Populate IDs after authoring rows with empty id fields
+ghost-fingerprint survey fix-ids draft.json -o draft.json
+
+# Broad profiling context
+ghost-fingerprint survey summarize survey.json
+
+# Exact value enums/specs
+ghost-fingerprint survey catalog survey.json --kind color
+ghost-fingerprint survey catalog survey.json --format json -o catalog.json
+
+# Stream output to stdout if -o is omitted
+ghost-fingerprint survey merge a.json b.json | jq '.values | length'
+```
+
+### Validation — `lint`
+
+Validate `fingerprint.md`, `map.md`, or `survey.json` against its schema —
+auto-detects which by `.json` extension, `schema: ghost.map/v2` frontmatter,
+or filename. Use this before declaring a file structurally valid; every
+authoring recipe calls it. For profiled fingerprints, follow `lint` with
+`verify-profile` to check fidelity against `survey.json`.
+
+<CliHelp tool="ghost-fingerprint" command="lint" hideDescription />
+
+```bash
+# Default — reads ./fingerprint.md
+ghost-fingerprint lint
+
+# Validate a map.md (auto-detected by frontmatter)
+ghost-fingerprint lint map.md
+
+# Validate a survey.json
+ghost-fingerprint lint survey.json
+
+# JSON output
+ghost-fingerprint lint path/to/fingerprint.md --format json
+```
+
+### Profile fidelity — `verify-profile`
+
+Validate that a `fingerprint.md` matches its `survey.json`. This is stricter
+than `lint`: palette, spacing, typography, radii, and shadow posture must be
+survey-backed. High-salience survey values omitted from the fingerprint become
+warnings. With `--root`, promoted check patterns are counted under their
+`paths` scopes; `contexts` are guidance only.
+
+<CliHelp tool="ghost-fingerprint" command="verify-profile" hideDescription />
+
+```bash
+# Profile success gate after lint
+ghost-fingerprint verify-profile fingerprint.md survey.json --root .
+
+# Machine-readable for CI
+ghost-fingerprint verify-profile fingerprint.md survey.json --root . --format json
+```
+
+### Inspection — `describe`
+
+Print a section map of `fingerprint.md` — frontmatter range, body sections
+(`# Character`, `# Signature`, `# Decisions`), and each `### dimension`
+block under Decisions, with line ranges and token estimates.
 The host agent uses this to load only the sections it needs instead of the
 whole file.
 
-A typical `expression.md` runs 3–5k tokens. The `# Decisions` block alone
+A typical `fingerprint.md` runs 3–5k tokens. The `# Decisions` block alone
 is usually 60–80% of that, and an agent reviewing a single component change
-rarely needs every dimension. `describe` is the deterministic answer to
-"what's in this file and where" — the recall safety rule (when in doubt,
-load the whole `# Decisions` block) lives in the review/generate skill
-recipes.
+rarely needs every dimension. `describe` answers "what's in this file and
+where" with the same answer every time — the recall safety rule (when in
+doubt, load the whole `# Decisions` block) lives in the review/remediate
+skill recipes.
 
-<CliHelp command="describe" hideDescription />
+<CliHelp tool="ghost-fingerprint" command="describe" hideDescription />
 
 ```bash
-# Default — reads ./expression.md
-ghost-drift describe
+# Default — reads ./fingerprint.md
+ghost-fingerprint describe
 
 # Specific file
-ghost-drift describe path/to/expression.md
+ghost-fingerprint describe path/to/fingerprint.md
 
 # Machine-readable for agents
-ghost-drift describe --format json
+ghost-fingerprint describe --format json
 ```
 
-Sample output (against `packages/ghost-ui/expression.md`):
+Sample output (against `packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md`):
 
 ```text
-expression.md — 309 lines, ~3,955 tokens
+fingerprint.md — 305 lines, ~3,934 tokens
 
-FRONTMATTER    1–164      ~973 tok        [palette, spacing, typography, surfaces, roles, observation, decisions]
+FRONTMATTER    1–164      ~973 tok        [references, palette, spacing, typography, surfaces, checks, observation, decisions]
 # Character      166–169    ~159 tok
-# Signature      170–179    ~298 tok
-# Decisions      180–305    ~2,503 tok
-  ### color-strategy           182–192    ~250 tok
-  ### shape-language           205–216    ~181 tok
-  ### typography-voice         217–229    ~258 tok
+# Signature      170–174    ~120 tok
+# Decisions      175–305    ~2,800 tok
+  ### color-strategy           177–187    ~250 tok
+  ### shape-language           195–206    ~181 tok
+  ### typography-voice         207–219    ~258 tok
   …
-# Fragments      306–309    ~21 tok
 ```
 
 Line ranges are 1-indexed and inclusive — they plug directly into a Read
 tool's `offset` / `limit = end - start + 1`. Token counts are a `chars / 4`
 approximation, sufficient for context budgeting.
 
+### Structural diff — `diff`
+
+Diff two fingerprints at the prose / structural level — what decisions,
+palette roles, and tokens changed. **Not** vector distance; for that, use
+`ghost-drift compare`.
+
+<CliHelp tool="ghost-fingerprint" command="diff" hideDescription />
+
+```bash
+ghost-fingerprint diff a/fingerprint.md b/fingerprint.md
+ghost-fingerprint diff a.md b.md --format json
+```
+
+### Emit — derive outputs from `fingerprint.md`
+
+Derive an output from `fingerprint.md`. Kinds: `review-command` (a
+per-project slash command at `.claude/commands/design-review.md`),
+`context-bundle` (SKILL.md + fingerprint.md + prompt.md + tokens.css for any
+generator), or `skill` (the `ghost-fingerprint` agentskills.io bundle —
+install this into your host agent for the `profile` recipe).
+
+<CliHelp tool="ghost-fingerprint" command="emit" hideDescription />
+
+```bash
+# Install the ghost-fingerprint skill bundle
+ghost-fingerprint emit skill
+
+# Emit a per-project design-review slash command
+ghost-fingerprint emit review-command
+
+# Emit a context bundle any generator can consume
+ghost-fingerprint emit context-bundle
+
+# Single prompt.md for plain-text LLM context
+ghost-fingerprint emit context-bundle --prompt-only
+
+# Custom output directory
+ghost-fingerprint emit context-bundle --out dist/context
+```
+
 </DocSection>
 
-<DocSection title="Intent — ack / track / diverge">
+<DocSection title="ghost-drift — review and compare">
+
+### Comparison — `compare`
+
+Pairwise distance (N=2) or composite analysis (N≥3) over fingerprint
+embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
+and `--temporal` add qualitative enrichment for N=2.
+
+<CliHelp tool="ghost-drift" command="compare" hideDescription />
+
+```bash
+# Pairwise (N=2)
+ghost-drift compare market.fingerprint.md dashboard.fingerprint.md
+
+# Qualitative diff of decisions + palette
+ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
+
+# Velocity + trajectory
+ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
+
+# Composite (N≥3) — pairwise matrix + centroid + clusters
+ghost-drift compare *.fingerprint.md
+```
+
+### Intent — `ack` / `track` / `diverge`
 
 These three verbs write per-dimension stances to `.ghost-sync.json`. `ack`
-and `diverge` need a tracked expression declared in `ghost.config.ts`;
-`track` takes the new tracked expression as its argument.
+and `diverge` need a tracked fingerprint declared in `ghost.config.ts`;
+`track` takes the new tracked fingerprint as its argument.
 
 Acknowledge current drift — record your intentional stance (aligned,
-accepted, or diverging). Reads the tracked expression from `ghost.config.ts`
-and the local `expression.md`.
+accepted, or diverging). Reads the tracked fingerprint from `ghost.config.ts`
+and the local `fingerprint.md`.
 
-<CliHelp command="ack" hideDescription />
+<CliHelp tool="ghost-drift" command="ack" hideDescription />
 
 ```bash
 # Acknowledge all dimensions as aligned
@@ -139,85 +290,117 @@ ghost-drift ack --stance aligned --reason "Initial baseline"
 ghost-drift ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
 ```
 
-Shift the tracked expression to a new expression. Use this when you want to
-re-anchor your drift measurements against a different reference expression.
+Shift the tracked fingerprint to a new fingerprint. Use this when you want to
+re-anchor your drift measurements against a different reference fingerprint.
 
-<CliHelp command="track" hideDescription />
+<CliHelp tool="ghost-drift" command="track" hideDescription />
 
 ```bash
-# Track a new reference expression
-ghost-drift track new-tracked.expression.md
+# Track a new reference fingerprint
+ghost-drift track new-tracked.fingerprint.md
 ```
 
 Mark a specific dimension as intentionally diverging. Shorthand for
 `ack --stance diverging` that also records a reason.
 
-<CliHelp command="diverge" hideDescription />
+<CliHelp tool="ghost-drift" command="diverge" hideDescription />
 
 ```bash
 ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
 ```
 
-</DocSection>
+### Emit — `emit skill`
 
-<DocSection title="Emit — derive artifacts from expression.md">
+`ghost-drift emit` ships a single kind: `skill`, the agentskills.io bundle
+that teaches your host agent the review / verify / compare / remediate
+recipes. (Authoring outputs — `review-command`, `context-bundle` — live in
+`ghost-fingerprint`.)
 
-Derive an artifact from `expression.md`. Kinds: `review-command` (a
-per-project slash command at `.claude/commands/design-review.md`),
-`context-bundle` (SKILL.md + tokens.css + optional prompt.md for any
-generator), or `skill` (the `ghost-drift` agentskills.io bundle — install
-this into your host agent).
-
-<CliHelp command="emit" hideDescription />
+<CliHelp tool="ghost-drift" command="emit" hideDescription />
 
 ```bash
-# Install the ghost-drift skill into your host agent
+# Install the ghost-drift skill bundle (default: .claude/skills/ghost-drift)
 ghost-drift emit skill
 
-# Emit a per-project design-review slash command
-ghost-drift emit review-command
+# Custom location
+ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
+```
 
-# Emit a grounding bundle any generator can consume
-ghost-drift emit context-bundle
+</DocSection>
 
-# Single prompt.md for plain-text LLM context
-ghost-drift emit context-bundle --prompt-only
+<DocSection title="ghost-fleet — view across projects">
 
-# Custom output directory
-ghost-drift emit context-bundle --out dist/context
+A fleet is a directory containing many projects, each with `map.md` and
+`fingerprint.md`.
+`ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +
+`fleet.json`), and ships the agentskills.io bundle for the narrative
+recipe.
+
+<CliHelp tool="ghost-fleet" command="members" hideDescription />
+
+```bash
+# List members in the current fleet directory
+ghost-fleet members
+
+# JSON output for scripting
+ghost-fleet members --json
+```
+
+<CliHelp tool="ghost-fleet" command="view" hideDescription />
+
+```bash
+# Compute pairwise distances + group-by tables; write fleet.md + fleet.json
+ghost-fleet view ./fleet
+
+# Override the fleet id and reports directory
+ghost-fleet view ./fleet --id cash-mobile --out reports/cash
+```
+
+<CliHelp tool="ghost-fleet" command="emit" hideDescription />
+
+```bash
+ghost-fleet emit skill
 ```
 
 </DocSection>
 
 <DocSection title="Skill recipes (host agent)">
 
-These aren't CLI verbs — they're instruction files inside the skill bundle
-that your host agent follows. Install the bundle with `ghost-drift emit skill`,
-then ask your agent in plain English:
+These aren't CLI verbs — they're instruction files inside the per-tool
+skill bundles that your host agent follows. Install the relevant bundle
+once, then ask your agent in plain English:
 
-| Recipe     | Trigger                                                |
-| ---------- | ------------------------------------------------------ |
-| `profile`  | "profile this design language" / "write expression.md" |
-| `review`   | "review this PR for drift"                              |
-| `verify`   | "verify generated UI against the expression"           |
-| `generate` | "generate a component matching our design"              |
-| `discover` | "find design languages like Linear"                       |
-| `compare`  | "why did these two expressions drift?"                 |
+| Recipe     | Bundle             | Trigger                                                |
+| ---------- | ------------------ | ------------------------------------------------------ |
+| `scan`     | `ghost-fingerprint` | "scan this project" / "go end-to-end" — meta-recipe orchestrating map → survey → profile |
+| `map`      | `ghost-fingerprint` | "map this repo" / "write map.md"                       |
+| `survey`   | `ghost-fingerprint` | "survey design values" / "extract tokens"              |
+| `profile`  | `ghost-fingerprint` | "profile this design language" / "write fingerprint.md" |
+| `review`   | `ghost-drift`      | "review this PR for drift"                              |
+| `verify`   | `ghost-drift`      | "verify generated UI against the fingerprint"           |
+| `compare`  | `ghost-drift`      | "why did these two fingerprints drift?"                 |
+| `remediate`| `ghost-drift`      | "fix this drift"                                        |
+| `target`   | `ghost-fleet`      | "describe this fleet"                                   |
 
 Source for each recipe lives under
-`packages/ghost-drift/src/skill-bundle/references/`. The agent executes the
-steps with its normal tools and calls `ghost-drift` for any deterministic work.
+`packages/<tool>/src/skill-bundle/references/`. The agent executes the
+steps with its normal tools and calls the relevant CLI when it needs a
+reproducible answer.
 
 Each recipe also declares `handoffs` in its frontmatter — structured
 next-step suggestions that point at another skill (e.g. `profile` →
 `compare`) or a CLI invocation (e.g. `profile` →
-`ghost-drift emit review-command`). Hosts that read the field can surface the
-next action inline; hosts that ignore unknown frontmatter see no change.
+`ghost-fingerprint emit review-command`). Hosts that read the field can
+surface the next action inline; hosts that ignore unknown frontmatter
+see no change.
+
+`discover` and `generate` from earlier Ghost iterations are intentionally
+not migrated to any tool (see [`docs/ideas/phase-0-decisions.md`](https://github.com/block/ghost/blob/main/docs/ideas/phase-0-decisions.md)).
 
 ---
 
-See the [Workflow](/tools/drift/workflow) walkthrough for the five-move
-picture these primitives fit into, or [Getting Started](/tools/drift/getting-started)
-for an installation-first guide.
+See [How Ghost Works](/docs/getting-started#how-ghost-works) for the loop
+these primitives fit into, or [Getting Started](/docs/getting-started) for an
+installation-first guide.
 
 </DocSection>

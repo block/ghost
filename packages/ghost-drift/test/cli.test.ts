@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCli } from "../src/cli.js";
 
-const BASE_EXPRESSION = `---
+const BASE_FINGERPRINT = `---
 id: local
 source: llm
 timestamp: 2026-04-24T00:00:00.000Z
@@ -23,7 +23,7 @@ typography:
   lineHeightPattern: normal
 surfaces:
   borderRadii: [4, 8]
-  shadowComplexity: none
+  shadowComplexity: deliberate-none
   borderUsage: minimal
 ---
 
@@ -31,18 +31,14 @@ surfaces:
 
 Quiet and direct.
 
-# Signature
-
-- Small, plain surfaces
-
 # Decisions
 
 ### shape-language
 Use modest radii.
 `;
 
-function expressionWithId(id: string): string {
-  return BASE_EXPRESSION.replace("id: local", `id: ${id}`);
+function fingerprintWithId(id: string): string {
+  return BASE_FINGERPRINT.replace("id: local", `id: ${id}`);
 }
 
 async function runCli(argv: string[], cwd: string) {
@@ -101,7 +97,7 @@ async function runCli(argv: string[], cwd: string) {
   return { stdout, stderr, code: exitCode ?? 0 };
 }
 
-describe("ghost-drift CLI expression defaults", () => {
+describe("ghost-drift CLI", () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -116,32 +112,12 @@ describe("ghost-drift CLI expression defaults", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("lint defaults to ./expression.md", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
-
-    const result = await runCli(["lint"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("0 error(s)");
-    expect(result.stderr).toBe("");
-  });
-
-  it("describe defaults to ./expression.md", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
-
-    const result = await runCli(["describe"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("expression.md");
-    expect(result.stdout).toContain("# Character");
-  });
-
-  it("compares explicitly supplied expression files", async () => {
-    await writeFile(join(dir, "a.expression.md"), expressionWithId("a"));
-    await writeFile(join(dir, "b.expression.md"), expressionWithId("b"));
+  it("compares explicitly supplied fingerprint files", async () => {
+    await writeFile(join(dir, "a.fingerprint.md"), fingerprintWithId("a"));
+    await writeFile(join(dir, "b.fingerprint.md"), fingerprintWithId("b"));
 
     const result = await runCli(
-      ["compare", "a.expression.md", "b.expression.md"],
+      ["compare", "a.fingerprint.md", "b.fingerprint.md"],
       dir,
     );
 
@@ -150,13 +126,13 @@ describe("ghost-drift CLI expression defaults", () => {
   });
 
   it("track writes the neutral sync manifest shape", async () => {
-    await writeFile(join(dir, "expression.md"), expressionWithId("local"));
+    await writeFile(join(dir, "fingerprint.md"), fingerprintWithId("local"));
     await writeFile(
-      join(dir, "tracked.expression.md"),
-      expressionWithId("tracked"),
+      join(dir, "tracked.fingerprint.md"),
+      fingerprintWithId("tracked"),
     );
 
-    const result = await runCli(["track", "tracked.expression.md"], dir);
+    const result = await runCli(["track", "tracked.fingerprint.md"], dir);
     const manifest = JSON.parse(
       await readFile(join(dir, ".ghost-sync.json"), "utf-8"),
     ) as Record<string, unknown>;
@@ -164,17 +140,26 @@ describe("ghost-drift CLI expression defaults", () => {
     expect(result.code).toBe(0);
     expect(manifest.tracks).toEqual({
       type: "path",
-      value: "tracked.expression.md",
+      value: "tracked.fingerprint.md",
     });
-    expect(manifest.trackedExpressionId).toBe("tracked");
-    expect(manifest.localExpressionId).toBe("local");
+    expect(manifest.trackedFingerprintId).toBe("tracked");
+    expect(manifest.localFingerprintId).toBe("local");
     const legacyRelationFields = [
       "parent",
-      ["parent", "ExpressionId"].join(""),
-      ["child", "ExpressionId"].join(""),
+      ["parent", "FingerprintId"].join(""),
+      ["child", "FingerprintId"].join(""),
     ];
     for (const field of legacyRelationFields) {
       expect(manifest).not.toHaveProperty(field);
     }
+  });
+
+  it("emit review-command is no longer accepted by drift", async () => {
+    const result = await runCli(["emit", "review-command"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain(
+      "unknown emit kind 'review-command'. Supported: skill.",
+    );
   });
 });

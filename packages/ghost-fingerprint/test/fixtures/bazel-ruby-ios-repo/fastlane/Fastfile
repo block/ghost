@@ -1,0 +1,8 @@
+# Fastlane release lane — Ruby tooling co-located with the Swift app.
+default_platform(:ios)
+
+platform :ios do
+  lane :release do
+    build_app(scheme: "App")
+  end
+end

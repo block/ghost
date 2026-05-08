@@ -1,252 +1,477 @@
 {
-  "generatedAt": "2026-04-25T02:58:04.127Z",
-  "commands": [
+  "generatedAt": "2026-05-06T02:19:56.135Z",
+  "tools": [
     {
-      "name": "compare",
-      "rawName": "compare [...expressions]",
-      "description": "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
-      "options": [
+      "tool": "ghost-drift",
+      "commands": [
         {
-          "rawName": "--semantic",
-          "name": "semantic",
-          "description": "Qualitative diff of decisions + palette (N=2 only)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
+          "tool": "ghost-drift",
+          "name": "compare",
+          "rawName": "compare [...fingerprints]",
+          "description": "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
+          "options": [
+            {
+              "rawName": "--semantic",
+              "name": "semantic",
+              "description": "Qualitative diff of decisions + palette (N=2 only)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--temporal",
+              "name": "temporal",
+              "description": "Add velocity, trajectory, and ack bounds (N=2, reads .ghost/history.jsonl)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--history-dir <dir>",
+              "name": "historyDir",
+              "description": "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
         },
         {
-          "rawName": "--temporal",
-          "name": "temporal",
-          "description": "Add velocity, trajectory, and ack bounds (N=2, reads .ghost/history.jsonl)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
+          "tool": "ghost-drift",
+          "name": "ack",
+          "rawName": "ack",
+          "description": "Acknowledge current drift — record intentional stance toward the tracked fingerprint",
+          "options": [
+            {
+              "rawName": "-c, --config <path>",
+              "name": "config",
+              "description": "Path to ghost config file",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "-d, --dimension <name>",
+              "name": "dimension",
+              "description": "Acknowledge a specific dimension only",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--stance <stance>",
+              "name": "stance",
+              "description": "Stance: aligned, accepted, or diverging",
+              "default": "accepted",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--reason <text>",
+              "name": "reason",
+              "description": "Reason for this acknowledgment",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
         },
         {
-          "rawName": "--history-dir <dir>",
-          "name": "historyDir",
-          "description": "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
+          "tool": "ghost-drift",
+          "name": "track",
+          "rawName": "track <fingerprint>",
+          "description": "Track another fingerprint as this repo's reference",
+          "options": [
+            {
+              "rawName": "-d, --dimension <name>",
+              "name": "dimension",
+              "description": "Track only for a specific dimension",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
         },
         {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
+          "tool": "ghost-drift",
+          "name": "diverge",
+          "rawName": "diverge <dimension>",
+          "description": "Declare intentional divergence on a dimension",
+          "options": [
+            {
+              "rawName": "-c, --config <path>",
+              "name": "config",
+              "description": "Path to ghost config file",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "-r, --reason <text>",
+              "name": "reason",
+              "description": "Why this dimension is intentionally diverging",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-drift",
+          "name": "emit",
+          "rawName": "emit <kind>",
+          "description": "Emit the ghost-drift agentskills.io bundle (kind: skill).",
+          "options": [
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Output directory (default: .claude/skills/ghost-drift)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        }
+      ],
+      "globalOptions": [
+        {
+          "rawName": "-h, --help",
+          "name": "help",
+          "description": "Display this message",
+          "default": null
+        },
+        {
+          "rawName": "-v, --version",
+          "name": "version",
+          "description": "Display version number",
+          "default": null
         }
       ]
     },
     {
-      "name": "lint",
-      "rawName": "lint [expression]",
-      "description": "Validate expression.md schema and body/frontmatter coherence",
-      "options": [
+      "tool": "ghost-fingerprint",
+      "commands": [
         {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
+          "tool": "ghost-fingerprint",
+          "name": "lint",
+          "rawName": "lint [file]",
+          "description": "Validate fingerprint.md, map.md, or survey.json — auto-detects the kind from path/content",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "verify-profile",
+          "rawName": "verify-profile <fingerprint> <survey>",
+          "description": "Verify fingerprint.md is faithful to its survey.json: palette values must be survey-backed and promoted checks must be calibrated",
+          "options": [
+            {
+              "rawName": "--root <dir>",
+              "name": "root",
+              "description": "Optional target root for counting promoted check pattern matches under checks[].paths",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "scan-status",
+          "rawName": "scan-status [dir]",
+          "description": "Report which scan stages have produced artifacts in a directory: map (map.md), survey (survey.json), fingerprint (fingerprint.md). Tells orchestrators which stage to run next.",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "inventory",
+          "rawName": "inventory [path]",
+          "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
+          "options": []
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "describe",
+          "rawName": "describe [fingerprint]",
+          "description": "Print a section map of fingerprint.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "diff",
+          "rawName": "diff <a> <b>",
+          "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "survey",
+          "rawName": "survey <op> [...surveys]",
+          "description": "Operate on ghost.survey/v2 files. Ops: merge (concat with id-based dedup), fix-ids (recompute row IDs), summarize (bounded profile digest), catalog (derived value enum/spec view).",
+          "options": [
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Write the result to this path (default: stdout)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "survey summarize/catalog output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--kind <kind>",
+              "name": "kind",
+              "description": "survey catalog filter: include only this value kind",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--budget <name>",
+              "name": "budget",
+              "description": "survey summarize budget: compact, standard, full",
+              "default": "standard",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "emit",
+          "rawName": "emit <kind>",
+          "description": "Emit a derived artifact from fingerprint.md (kinds: review-command, context-bundle, skill)",
+          "options": [
+            {
+              "rawName": "-e, --fingerprint <path>",
+              "name": "fingerprint",
+              "description": "Source fingerprint file (default: fingerprint.md)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-fingerprint/)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--stdout",
+              "name": "stdout",
+              "description": "Write to stdout instead of a file (review-command only)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--no-tokens",
+              "name": "tokens",
+              "description": "Skip tokens.css output (context-bundle)",
+              "default": true,
+              "takesValue": false,
+              "negated": true
+            },
+            {
+              "rawName": "--readme",
+              "name": "readme",
+              "description": "Include README.md (context-bundle)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--prompt-only",
+              "name": "promptOnly",
+              "description": "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--name <name>",
+              "name": "name",
+              "description": "Override the skill name (default: fingerprint id) (context-bundle)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        }
+      ],
+      "globalOptions": [
+        {
+          "rawName": "-h, --help",
+          "name": "help",
+          "description": "Display this message",
+          "default": null
+        },
+        {
+          "rawName": "-v, --version",
+          "name": "version",
+          "description": "Display version number",
+          "default": null
         }
       ]
     },
     {
-      "name": "describe",
-      "rawName": "describe [expression]",
-      "description": "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
-      "options": [
+      "tool": "ghost-fleet",
+      "commands": [
         {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
+          "tool": "ghost-fleet",
+          "name": "members",
+          "rawName": "members [dir]",
+          "description": "List registered fleet members and their freshness — one row per (map.md, fingerprint.md) subdirectory.",
+          "options": [
+            {
+              "rawName": "--json",
+              "name": "json",
+              "description": "Output JSON (one object per member) instead of a table",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fleet",
+          "name": "view",
+          "rawName": "view [dir]",
+          "description": "Compute the fleet's pairwise distances, group-by tables, and tracks-graph; emit fleet.md + fleet.json into <dir>/reports/.",
+          "options": [
+            {
+              "rawName": "--id <id>",
+              "name": "id",
+              "description": "Override the fleet id (default: directory basename slug)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--out <path>",
+              "name": "out",
+              "description": "Reports directory (default: <dir>/reports)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fleet",
+          "name": "emit",
+          "rawName": "emit <kind>",
+          "description": "Emit the ghost-fleet agentskills.io bundle (kind: skill).",
+          "options": [
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Output directory (default: .claude/skills/ghost-fleet)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        }
+      ],
+      "globalOptions": [
+        {
+          "rawName": "-h, --help",
+          "name": "help",
+          "description": "Display this message",
+          "default": null
+        },
+        {
+          "rawName": "-v, --version",
+          "name": "version",
+          "description": "Display version number",
+          "default": null
         }
       ]
-    },
-    {
-      "name": "ack",
-      "rawName": "ack",
-      "description": "Acknowledge current drift — record intentional stance toward the tracked expression",
-      "options": [
-        {
-          "rawName": "-c, --config <path>",
-          "name": "config",
-          "description": "Path to ghost config file",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "-d, --dimension <name>",
-          "name": "dimension",
-          "description": "Acknowledge a specific dimension only",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--stance <stance>",
-          "name": "stance",
-          "description": "Stance: aligned, accepted, or diverging",
-          "default": "accepted",
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--reason <text>",
-          "name": "reason",
-          "description": "Reason for this acknowledgment",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    },
-    {
-      "name": "track",
-      "rawName": "track <expression>",
-      "description": "Track another expression as this repo's reference",
-      "options": [
-        {
-          "rawName": "-d, --dimension <name>",
-          "name": "dimension",
-          "description": "Track only for a specific dimension",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    },
-    {
-      "name": "diverge",
-      "rawName": "diverge <dimension>",
-      "description": "Declare intentional divergence on a dimension",
-      "options": [
-        {
-          "rawName": "-c, --config <path>",
-          "name": "config",
-          "description": "Path to ghost config file",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "-r, --reason <text>",
-          "name": "reason",
-          "description": "Why this dimension is intentionally diverging",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--format <fmt>",
-          "name": "format",
-          "description": "Output format: cli or json",
-          "default": "cli",
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    },
-    {
-      "name": "emit",
-      "rawName": "emit <kind>",
-      "description": "Emit a derived artifact from expression.md (kinds: review-command, context-bundle, skill)",
-      "options": [
-        {
-          "rawName": "-e, --expression <path>",
-          "name": "expression",
-          "description": "Source expression file (default: expression.md)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "-o, --out <path>",
-          "name": "out",
-          "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-drift/)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        },
-        {
-          "rawName": "--stdout",
-          "name": "stdout",
-          "description": "Write to stdout instead of a file (review-command only)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--no-tokens",
-          "name": "tokens",
-          "description": "Skip tokens.css output (context-bundle)",
-          "default": true,
-          "takesValue": false,
-          "negated": true
-        },
-        {
-          "rawName": "--readme",
-          "name": "readme",
-          "description": "Include README.md (context-bundle)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--prompt-only",
-          "name": "promptOnly",
-          "description": "Emit only prompt.md — skips SKILL.md / expression.md / tokens.css (context-bundle)",
-          "default": null,
-          "takesValue": false,
-          "negated": false
-        },
-        {
-          "rawName": "--name <name>",
-          "name": "name",
-          "description": "Override the skill name (default: expression id) (context-bundle)",
-          "default": null,
-          "takesValue": true,
-          "negated": false
-        }
-      ]
-    }
-  ],
-  "globalOptions": [
-    {
-      "rawName": "-h, --help",
-      "name": "help",
-      "description": "Display this message",
-      "default": null
-    },
-    {
-      "rawName": "-v, --version",
-      "name": "version",
-      "description": "Display version number",
-      "default": null
     }
   ]
 }
