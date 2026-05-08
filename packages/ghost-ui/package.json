@@ -35,7 +35,7 @@
     "build:base": "node scripts/build-base-vars.mjs",
     "build:presets": "node scripts/build-presets.mjs",
     "generate:skills": "node scripts/generate-skills.mjs",
-    "build:registry": "npm run build:base && npm run build:presets && npm run generate:skills && shadcn build",
+    "build:registry": "pnpm run build:base && pnpm run build:presets && pnpm run generate:skills && shadcn build && pnpm exec biome format --write registry.json",
     "typecheck": "tsc --noEmit",
     "generate:icons": "npx tsx scripts/generate-icons.ts"
   },
