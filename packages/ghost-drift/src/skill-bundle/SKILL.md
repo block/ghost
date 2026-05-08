@@ -1,61 +1,60 @@
 ---
 name: ghost-drift
-description: Detect and manage visual-language drift in design languages. Use when the user wants to write or update an expression.md, review frontend code changes for design drift, compare design expressions, verify generated UI against an expression, or discover public design languages. Triggers on phrases like "profile this design language", "check for drift", "review this PR for design issues", "write expression.md", "compare expressions", or whenever an `expression.md` file is present and styling/design work is happening.
+description: Compare fingerprints and review UI drift. Use when the user wants to compare two fingerprints, review frontend code changes against a fingerprint.md, verify generated UI, suggest fixes, or record stance toward a tracked fingerprint (acknowledge, track, diverge). Triggers on phrases like "check for drift", "compare these fingerprints", "review this PR for design issues", "verify this generated UI", or "we accept this divergence".
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
-  cli: ghost
+  cli: ghost-drift
 ---
 
-# Ghost — Design Drift Detection
+# Ghost Drift — Drift Review
 
-Ghost captures a project's visual language as an **`expression.md`** file (YAML frontmatter + three-layer Markdown: Character → Signature → Decisions → Values).
+This skill compares UI changes against the project's `fingerprint.md`. It helps catch palette, spacing, type, surface, and decision drift.
 
-Ghost's CLI is a set of **deterministic primitives**. It never calls an LLM. Synthesis, interpretation, and generation happen in **you, the host agent**; Ghost hands you the arithmetic (vector distance, schema validation, manifest writes) you call on when you need a stable answer.
+You do the reading and judgment. The `ghost-drift` CLI gives deterministic results: fingerprint distance, temporal aggregates, and stance-file writes.
 
-## CLI primitives
+Authoring an `fingerprint.md` lives in the sibling `ghost-fingerprint` skill. Drift compares them under change.
+
+## CLI verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Pure math over expression embeddings. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
-| `ghost-drift lint [expression.md]` | Validate schema + body/frontmatter coherence. Use this before declaring an expression valid. |
-| `ghost-drift describe [expression.md]` | Print a section map (line ranges + token estimates) so you can selectively read only the sections you need instead of loading the whole file. Use before review/generate when the expression is large. |
-| `ghost-drift ack` / `ghost-drift track <expression.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked expression (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `expression.md`. |
-| `ghost-drift emit review-command` / `ghost-drift emit context-bundle` / `ghost-drift emit skill` | Derive per-project artifacts from `expression.md`. |
+| `ghost-drift compare <a.md> <b.md> [...more]` | Pairwise distance + per-dimension delta (N=2) or composite (N≥3: pairwise matrix, centroid, spread, clusters). Vector math over embeddings derived from the authored fingerprints. `--semantic` and `--temporal` flags add qualitative enrichment for N=2. |
+| `ghost-drift ack` / `ghost-drift track <fingerprint.md>` / `ghost-drift diverge <dim>` | Record stance toward the tracked fingerprint (aligned / accepted / diverging) in `.ghost-sync.json`. Reads the local `fingerprint.md`. |
+| `ghost-drift emit skill` | Install this agent skill bundle into your host agent. |
 
-That's it. Seven verbs. If you find yourself reaching for `ghost review` or `ghost profile` — those are *your* workflows, not CLI commands. Follow the recipes below.
+Five verbs. Authoring (lint/describe/diff/emit-review-command/emit-context-bundle) lives in `ghost-fingerprint`. If you find yourself reaching for `ghost-drift review` or `ghost-drift verify` — those are *your* workflows. Follow the recipes below.
 
 ## Workflows (your job, not the CLI's)
 
 When the user asks you to:
 
-- "Profile my design language" / "write expression.md" → [references/profile.md](references/profile.md)
+- "Compare these two fingerprints" → run `ghost-drift compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
 - "Review this PR/these changes for drift" → [references/review.md](references/review.md)
-- "Verify this generated UI matches the expression" → [references/verify.md](references/verify.md)
-- "Generate a component matching our design language" → [references/generate.md](references/generate.md)
-- "Compare these two expressions" → run `ghost-drift compare <a> <b>`; if they ask *why* they drifted, add `--semantic`. See [references/compare.md](references/compare.md) for interpretation.
-- "Find design languages like X" / "discover" → [references/discover.md](references/discover.md)
+- "Verify this generated UI matches the fingerprint" → [references/verify.md](references/verify.md)
+- "Suggest fixes for this drift" / "remediate this" → [references/remediate.md](references/remediate.md)
 
-## The expression.md format
+For authoring or describing a fingerprint itself (write fingerprint.md, lint, describe, diff, emit review-command/context-bundle), install the `ghost-fingerprint` skill.
 
-An `expression.md` has:
+## The fingerprint.md format (recap)
 
-- **YAML frontmatter (machine layer):** `id`, `schema`, `source`, `timestamp`, `observation.personality`, `observation.resembles`, `decisions[].dimension`/`.evidence`, `palette`, `spacing`, `typography`, `surfaces`, `roles`.
-- **Markdown body (prose layer):** `# Character` (`observation.summary`), `# Signature` (bullets from `distinctiveTraits`), `# Decisions` with `### <dimension>` rationale blocks.
+An `fingerprint.md` has:
 
-Each field lives in exactly one layer — no duplication. Putting prose in frontmatter is a lint error. Full spec: [references/schema.md](references/schema.md). Starting template: [assets/expression.template.md](assets/expression.template.md).
+- **YAML frontmatter:** `id`, `source`, `timestamp`, `references`, `observation.personality`, `observation.resembles`, `decisions[].dimension`, `checks[]`, `palette`, `spacing`, `typography`, `surfaces`.
+- **Markdown body:** `# Character`, `# Signature`, `# Decisions` with `### <dimension>` rationale blocks ending in `**Evidence:**` bullets.
+
+There are no sibling fragments. Do not look for `embedding.md`, `# Fragments`, or implicit `decisions/*.md`; comparison computes embeddings from `fingerprint.md` at runtime.
+
+Validate via `ghost-fingerprint lint` before drawing conclusions from a drift comparison.
 
 ## Always
 
-- Use `expression.md` as the canonical filename (no slug prefix, no dotfile).
-- Resolve variable chains end-to-end. Follow `var(--primary) → --primary: var(--brand-500) → --brand-500: #0066cc` to the concrete value.
-- Emit colors as hex in frontmatter. The CLI recomputes oklch when it needs it.
-- Every `palette` entry should be cited in at least one decision's `evidence`, or dropped — uncited tokens are noise.
-- Validate with `ghost-drift lint` before declaring success.
+- Reads of `fingerprint.md` are read-only. Drift never rewrites it. To update a fingerprint, run the profile recipe in `ghost-fingerprint`.
+- A non-zero distance is information, not a verdict. The threshold belongs to the consumer (CI gate, PR review, human judgment).
+- When the user accepts a drift, record it: `ghost-drift ack` / `track` / `diverge`.
 
 ## Never
 
-- Never invent tokens. If you did not observe a value in the source, omit the field. A missing field is better than a fabricated one.
-- Never use the W3C Design Tokens or Style Dictionary format. Ghost's `expression.md` is the artifact.
-- Never stop at the first variable indirection. Follow the chain.
-- Never write prose into frontmatter or structural data into the body — the partition is load-bearing.
+- Don't go looking for CLI verbs for `review`, `verify`, or `remediate`. Those are recipes you execute, not commands to invoke.
+- Never auto-update a fingerprint because drift exists. Surface the drift and wait for instruction.
+- Don't expect the CLI to make the judgment call. Vector distance is math; whether the drift is intentional, acceptable, or a regression is for you to decide via the relevant recipe.

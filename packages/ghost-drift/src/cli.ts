@@ -1,31 +1,38 @@
 import { readFileSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadSkillBundle } from "@ghost/core";
 import { cac } from "cac";
+import { formatSemanticDiff, loadFingerprint } from "ghost-fingerprint";
 import {
   compare,
-  EXPRESSION_FILENAME,
   formatComparison,
   formatComparisonJSON,
   formatCompositeComparison,
   formatCompositeComparisonJSON,
-  formatLayout,
-  formatSemanticDiff,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
-  layoutExpression,
-  lintExpression,
-  loadExpression,
   readHistory,
   readSyncManifest,
 } from "./core/index.js";
-import { registerEmitCommand } from "./emit-command.js";
 import {
   registerAckCommand,
   registerDivergeCommand,
   registerTrackCommand,
 } from "./evolution-commands.js";
+
+/**
+ * The skill bundle's source files live in `src/skill-bundle/` as real
+ * markdown and are copied verbatim into `dist/skill-bundle/` by the
+ * package build step. This loader points the shared `@ghost/core`
+ * walker at that built directory at runtime.
+ */
+const SKILL_BUNDLE_ROOT = fileURLToPath(
+  new URL("./skill-bundle", import.meta.url),
+);
+
+const DEFAULT_SKILL_OUT = ".claude/skills/ghost-drift";
 
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost-drift");
@@ -33,8 +40,8 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- compare ---
   cli
     .command(
-      "compare [...expressions]",
-      "Compare two or more expressions. N=2 returns a pairwise delta; N≥3 returns a composite expression (pairwise matrix, centroid, spread, clusters).",
+      "compare [...fingerprints]",
+      "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
     )
     .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
     .option(
@@ -46,12 +53,12 @@ export function buildCli(): ReturnType<typeof cac> {
       "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (expressions: string[], opts) => {
+    .action(async (fingerprints: string[], opts) => {
       try {
         const parsed = await Promise.all(
-          expressions.map((path) => loadExpression(path)),
+          fingerprints.map((path) => loadFingerprint(path)),
         );
-        const exprs = parsed.map((p) => p.expression);
+        const exprs = parsed.map((p) => p.fingerprint);
 
         let history: Awaited<ReturnType<typeof readHistory>> | undefined;
         let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null =
@@ -112,67 +119,46 @@ export function buildCli(): ReturnType<typeof cac> {
       }
     });
 
-  // --- lint ---
+  registerAckCommand(cli);
+  registerTrackCommand(cli);
+  registerDivergeCommand(cli);
+
+  // --- emit (skill only) ---
   cli
     .command(
-      "lint [expression]",
-      "Validate expression.md schema and body/frontmatter coherence",
+      "emit <kind>",
+      "Emit the ghost-drift agentskills.io bundle (kind: skill).",
     )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (path: string | undefined, opts) => {
+    .option(
+      "-o, --out <path>",
+      `Output directory (default: ${DEFAULT_SKILL_OUT})`,
+    )
+    .action(async (kind: string, opts) => {
       try {
-        const target = resolve(process.cwd(), path ?? EXPRESSION_FILENAME);
-        const raw = await readFile(target, "utf-8");
-        const report = lintExpression(raw);
-
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-        } else {
-          for (const issue of report.issues) {
-            const prefix =
-              issue.severity === "error"
-                ? "ERROR"
-                : issue.severity === "warning"
-                  ? "WARN "
-                  : "INFO ";
-            const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
-            process.stdout.write(
-              `${prefix} [${issue.rule}] ${issue.message}${pathSuffix}\n`,
-            );
-          }
-          process.stdout.write(
-            `\n${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info\n`,
+        if (kind !== "skill") {
+          console.error(
+            `Error: unknown emit kind '${kind}'. Supported: skill.`,
           );
+          process.exit(2);
+          return;
         }
 
-        process.exit(report.errors > 0 ? 1 : 0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        const outDir = resolve(
+          process.cwd(),
+          (opts.out as string | undefined) ?? DEFAULT_SKILL_OUT,
         );
-        process.exit(2);
-      }
-    });
-
-  // --- describe ---
-  cli
-    .command(
-      "describe [expression]",
-      "Print a section map of expression.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
-    )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (path: string | undefined, opts) => {
-      try {
-        const target = resolve(process.cwd(), path ?? EXPRESSION_FILENAME);
-        const raw = await readFile(target, "utf-8");
-        const layout = layoutExpression(raw);
-        if (opts.format === "json") {
-          process.stdout.write(
-            `${JSON.stringify({ path: target, ...layout }, null, 2)}\n`,
-          );
-        } else {
-          process.stdout.write(`${formatLayout(layout, target)}\n`);
+        const bundle = loadSkillBundle(SKILL_BUNDLE_ROOT);
+        const written: string[] = [];
+        for (const file of bundle) {
+          const outPath = resolve(outDir, file.path);
+          await mkdir(dirname(outPath), { recursive: true });
+          await writeFile(outPath, file.content, "utf-8");
+          written.push(file.path);
         }
+        process.stdout.write(
+          `Wrote ${written.length} file${written.length === 1 ? "" : "s"} to ${outDir}:\n`,
+        );
+        for (const f of written) process.stdout.write(`  ${f}\n`);
         process.exit(0);
       } catch (err) {
         console.error(
@@ -181,11 +167,6 @@ export function buildCli(): ReturnType<typeof cac> {
         process.exit(2);
       }
     });
-
-  registerAckCommand(cli);
-  registerTrackCommand(cli);
-  registerDivergeCommand(cli);
-  registerEmitCommand(cli);
 
   cli.help();
   cli.version(readPackageVersion());

@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Orbit, Rocket } from "lucide-react";
+import { BookOpen, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -14,24 +14,17 @@ const sections: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Workflow",
-    href: "/tools/drift/workflow",
-    description:
-      "The five moves: profile, compare, review, evolve, and zoom out to the org expression — with examples for each.",
-    icon: <Orbit className="size-8" strokeWidth={1.5} />,
-  },
-  {
     name: "Getting Started",
-    href: "/tools/drift/getting-started",
+    href: "/docs/getting-started",
     description:
-      "Install the skill bundle, write your first expression.md, and track drift against another expression — in under five minutes.",
+      "Install Ghost, scan a repo, and learn the loop around fingerprint.md.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
-    href: "/tools/drift/cli",
+    href: "/docs/cli",
     description:
-      "Seven deterministic primitives — compare, lint, describe, ack, track, diverge, emit. Plus the skill recipes the host agent runs.",
+      "Commands for checks and comparison, plus the skill recipes your agent runs.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -46,14 +39,14 @@ export default function DocsIndex() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="Drift"
-        title="Drift"
-        description="Ghost profiles design languages into human-readable expressions, tracks their evolution, gates AI-generated UI against them, and surfaces divergence before it compounds."
+        kicker="Docs"
+        title="Documentation"
+        description="Start with the simple loop, then reach for the command reference when you need exact flags and outputs."
       />
 
       <div
         ref={ref}
-        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-3"
+        className="pb-16 pt-8 overflow-visible grid gap-4 md:grid-cols-2"
       >
         {sections.map((item) => (
           <Link

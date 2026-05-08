@@ -1,31 +1,31 @@
 import { resolve } from "node:path";
-import { resolveTarget } from "../config.js";
+import type { Fingerprint, Target } from "@ghost/core";
+import { resolveTarget } from "@ghost/core";
 import {
-  EXPRESSION_FILENAME,
-  loadExpression,
-  parseExpression,
-} from "../expression/index.js";
-import type { Expression, Target } from "../types.js";
+  FINGERPRINT_FILENAME,
+  loadFingerprint,
+  parseFingerprint,
+} from "ghost-fingerprint";
 
 /**
- * Resolve a Target to an Expression.
+ * Resolve a Target to a Fingerprint.
  *
- * - "path": reads a local expression.md, or a directory containing one.
- * - "url": fetches a remote expression.md
- * - "npm": resolves node_modules/<name>/expression.md
+ * - "path": reads a local fingerprint.md, or a directory containing one.
+ * - "url": fetches a remote fingerprint.md
+ * - "npm": resolves node_modules/<name>/fingerprint.md
  * - "github": not yet supported for direct resolution (use profile flow instead)
  */
-export async function resolveTrackedExpression(
+export async function resolveTrackedFingerprint(
   target: Target,
   cwd: string = process.cwd(),
-): Promise<Expression> {
+): Promise<Fingerprint> {
   switch (target.type) {
     case "path": {
       const resolved = resolve(cwd, target.value);
       if (resolved.endsWith(".md")) {
-        return readExpressionFile(resolved);
+        return readFingerprintFile(resolved);
       }
-      return readExpressionFromDir(resolved);
+      return readFingerprintFromDir(resolved);
     }
 
     case "url":
@@ -33,35 +33,35 @@ export async function resolveTrackedExpression(
       const response = await fetch(target.value);
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch tracked expression from ${target.value}: ${response.status}`,
+          `Failed to fetch tracked fingerprint from ${target.value}: ${response.status}`,
         );
       }
-      return parseExpression(await response.text()).expression;
+      return parseFingerprint(await response.text()).fingerprint;
     }
 
     case "npm": {
-      return readExpressionFromDir(resolve(cwd, "node_modules", target.value));
+      return readFingerprintFromDir(resolve(cwd, "node_modules", target.value));
     }
 
     default:
       throw new Error(
-        `Cannot resolve tracked expression from target type "${target.type}". Generate one first by running the profile recipe in your host agent (install with "ghost-drift emit skill").`,
+        `Cannot resolve tracked fingerprint from target type "${target.type}". Generate one first by running the profile recipe in your host agent (install with "ghost-drift emit skill").`,
       );
   }
 }
 
-async function readExpressionFile(path: string): Promise<Expression> {
+async function readFingerprintFile(path: string): Promise<Fingerprint> {
   try {
-    return (await loadExpression(path)).expression;
+    return (await loadFingerprint(path)).fingerprint;
   } catch (err) {
     throw new Error(
-      `Could not read expression at ${path}: ${err instanceof Error ? err.message : String(err)}`,
+      `Could not read fingerprint at ${path}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 }
 
-async function readExpressionFromDir(dir: string): Promise<Expression> {
-  return readExpressionFile(resolve(dir, EXPRESSION_FILENAME));
+async function readFingerprintFromDir(dir: string): Promise<Fingerprint> {
+  return readFingerprintFile(resolve(dir, FINGERPRINT_FILENAME));
 }
 
 /**
