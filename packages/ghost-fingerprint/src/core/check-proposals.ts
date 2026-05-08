@@ -420,6 +420,13 @@ function findLine(
     if (safeRelative.startsWith("..")) return undefined;
     const content = readFileSyncCompat(absolute);
     const lines = content.split(/\r?\n/);
+    const jsxIndex = lines.findIndex((line) =>
+      needles.some((needle) =>
+        new RegExp(`<${escapeRegExp(needle)}\\b`).test(line),
+      ),
+    );
+    if (jsxIndex >= 0) return jsxIndex + 1;
+
     const index = lines.findIndex((line) =>
       needles.some((needle) => line.includes(needle)),
     );
