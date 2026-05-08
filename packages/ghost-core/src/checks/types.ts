@@ -26,10 +26,17 @@ export interface GhostCheckDetector {
   contexts?: string[];
 }
 
+export interface GhostCheckEvidenceExample {
+  path: string;
+  line?: number;
+  note?: string;
+}
+
 export interface GhostCheckEvidence {
   support?: number;
   observed_count?: number;
-  examples?: Array<string | { path: string; note?: string }>;
+  examples?: Array<string | GhostCheckEvidenceExample>;
+  notes?: string[];
 }
 
 export interface GhostCheckRepairHint {
