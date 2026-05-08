@@ -260,6 +260,8 @@ function pulseMetricProposal(
   group: PatternGroup,
 ): GhostCheck {
   const sources = sourceRefs(inputs.cwd, group, [
+    "ChartCard",
+    "Trend",
     "MetricDataCard",
     "ComparisonBadge",
   ]);
