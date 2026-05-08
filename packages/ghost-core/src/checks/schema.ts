@@ -32,6 +32,7 @@ const GhostCheckEvidenceExampleSchema = z.union([
   z
     .object({
       path: z.string().min(1),
+      line: z.number().int().positive().optional(),
       note: z.string().min(1).optional(),
     })
     .strict(),
@@ -42,6 +43,7 @@ const GhostCheckEvidenceSchema = z
     support: z.number().min(0).max(1).optional(),
     observed_count: z.number().int().nonnegative().optional(),
     examples: z.array(GhostCheckEvidenceExampleSchema).optional(),
+    notes: z.array(z.string().min(1)).optional(),
   })
   .strict();
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T18:11:43.622Z",
+  "generatedAt": "2026-05-08T02:45:30.096Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -473,6 +473,22 @@
               "name": "budget",
               "description": "survey summarize budget: compact, standard, full",
               "default": "standard",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost-fingerprint",
+          "name": "checks",
+          "rawName": "checks <op> [package]",
+          "description": "Operate on ghost.checks/v1 documents. Ops: propose.",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: yaml or json",
+              "default": "yaml",
               "takesValue": true,
               "negated": false
             }

@@ -17,6 +17,12 @@ function assertMarkdownPath(path: string): void {
 
 export type { BodyData } from "./body.js";
 export { parseBody } from "./body.js";
+export type {
+  CheckProposalAdvisoryPacket,
+  CheckProposalOptions,
+  CheckProposalReport,
+} from "./check-proposals.js";
+export { proposeGhostChecks } from "./check-proposals.js";
 export type { DesignDecision } from "./compose.js";
 export { mergeFingerprint } from "./compose.js";
 export {
