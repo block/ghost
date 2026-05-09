@@ -2,9 +2,10 @@ import { resolve } from "node:path";
 import type { Fingerprint, Target } from "@ghost/core";
 import { resolveTarget } from "@ghost/core";
 import {
-  FINGERPRINT_FILENAME,
   loadFingerprint,
+  PROFILE_FILENAME,
   parseFingerprint,
+  resolveFingerprintPackage,
 } from "ghost-fingerprint";
 
 /**
@@ -61,7 +62,13 @@ async function readFingerprintFile(path: string): Promise<Fingerprint> {
 }
 
 async function readFingerprintFromDir(dir: string): Promise<Fingerprint> {
-  return readFingerprintFile(resolve(dir, FINGERPRINT_FILENAME));
+  try {
+    return await readFingerprintFile(
+      resolveFingerprintPackage(undefined, dir).profile,
+    );
+  } catch {
+    return readFingerprintFile(resolve(dir, PROFILE_FILENAME));
+  }
 }
 
 /**

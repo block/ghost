@@ -84,45 +84,6 @@ const FingerprintReferencesSchema = z
   .strict();
 
 /**
- * Human-promoted reviewer check: a grep-able pattern fitted to this
- * fingerprint's design language. Severity, match shape, and tolerance are
- * typically computed at emit time from the perceptual prior in
- * `@ghost/core`; explicit fields here are overrides.
- *
- * Checks coexist with `decisions[]`; they are the curated review gates.
- * Survey inference may propose candidates, but fingerprint.md stores only
- * checks the human intentionally promotes.
- */
-const CheckSchema = z
-  .object({
-    id: z.string(),
-    canonical: z.string().optional(),
-    kind: z
-      .enum([
-        "color",
-        "radius",
-        "spacing",
-        "type-size",
-        "type-family",
-        "type-weight",
-        "shadow",
-        "motion",
-      ])
-      .optional(),
-    summary: z.string().optional(),
-    pattern: z.string(),
-    paths: z.array(z.string()).optional(),
-    contexts: z.array(z.string()).optional(),
-    severity: z.enum(["critical", "serious", "nit"]).optional(),
-    match: z.enum(["exact", "band", "percent", "structural"]).optional(),
-    tolerance: z.number().optional(),
-    presence_floor: z.number().int().nonnegative().optional(),
-    observed_count: z.number().int().nonnegative().optional(),
-    support: z.number().min(0).max(1).optional(),
-  })
-  .strict();
-
-/**
  * Schema for the YAML frontmatter in a fingerprint.md file. Covers the
  * machine-layer of Fingerprint plus fingerprint-level metadata.
  *
@@ -157,8 +118,6 @@ export const FrontmatterSchema = z
     // fingerprint — narrative tags (optional; prose lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
-    /** Human-promoted review checks. */
-    checks: z.array(CheckSchema).optional(),
 
     // fingerprint — structured (required)
     palette: PaletteSchema,
@@ -191,7 +150,6 @@ export const PartialFrontmatterSchema = z
 
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
-    checks: z.array(CheckSchema).optional(),
 
     palette: PaletteSchema.optional(),
     spacing: SpacingSchema.optional(),

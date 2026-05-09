@@ -1,7 +1,7 @@
 import type { Fingerprint } from "@ghost/core";
 
 export interface TokensCssOptions {
-  /** Source path (e.g. "./fingerprint.md") — surfaced in the provenance header. */
+  /** Source path (e.g. ".ghost/fingerprint/profile.md") — surfaced in the provenance header. */
   sourcePath?: string;
   /** Generator version string — surfaced in the provenance header. */
   generator?: string;
@@ -89,7 +89,7 @@ export function buildTokensCss(
   }
 
   const generator = options.generator ?? "ghost";
-  const source = options.sourcePath ?? "fingerprint.md";
+  const source = options.sourcePath ?? ".ghost/fingerprint/profile.md";
   const timestamp = fingerprint.timestamp ?? new Date().toISOString();
   const header = [
     "/*",

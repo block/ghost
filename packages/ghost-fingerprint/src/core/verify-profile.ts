@@ -1,12 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, isAbsolute, join, relative, resolve } from "node:path";
-import type {
-  Check,
-  Fingerprint,
-  SemanticColor,
-  Survey,
-  ValueRow,
-} from "@ghost/core";
+import type { Fingerprint, SemanticColor, Survey, ValueRow } from "@ghost/core";
 import { lintSurvey } from "@ghost/core";
 import { lintFingerprint } from "./lint.js";
 import { parseFingerprint } from "./parser.js";
@@ -31,6 +23,12 @@ export interface VerifyProfileReport {
 
 export interface VerifyProfileOptions {
   root?: string;
+  /**
+   * Resolved fingerprint after applying `extends:`. CLI callers should pass
+   * this for scoped overlays so provenance checks run against the effective
+   * design contract instead of the partial child frontmatter.
+   */
+  resolvedFingerprint?: Fingerprint;
 }
 
 const HIGH_SALIENCE_ROLE_TOKENS = [
@@ -43,22 +41,11 @@ const HIGH_SALIENCE_ROLE_TOKENS = [
 
 const HIGH_SALIENCE_VALUE_THRESHOLD = 5;
 
-const SKIPPED_DIRECTORIES = new Set([
-  ".git",
-  ".next",
-  ".turbo",
-  "build",
-  "coverage",
-  "dist",
-  "node_modules",
-  "target",
-]);
-
 /**
  * Deterministically verify that a profiled fingerprint is faithful to the
  * survey that produced it. `lint` remains the shape/schema gate; this verifier
- * checks scan-stage provenance: palette colors must be survey-backed, promoted
- * checks must be calibrated, and optional root scanning must confirm counts.
+ * checks scan-stage provenance for the non-enforcing design-language prior.
+ * Enforceable checks live in `checks.yml` and are validated separately.
  */
 export function verifyProfile(
   fingerprintRaw: string,
@@ -77,7 +64,17 @@ export function verifyProfile(
 
   let fingerprint: Fingerprint;
   try {
-    fingerprint = parseFingerprint(fingerprintRaw).fingerprint;
+    const parsed = parseFingerprint(fingerprintRaw);
+    if (parsed.meta.extends && !options.resolvedFingerprint) {
+      issues.push({
+        severity: "error",
+        rule: "fingerprint-extends-unresolved",
+        message:
+          "Fingerprint declares `extends:` but no resolved fingerprint was provided for verification.",
+      });
+      return finalize(issues);
+    }
+    fingerprint = options.resolvedFingerprint ?? parsed.fingerprint;
   } catch (err) {
     issues.push({
       severity: "error",
@@ -99,7 +96,6 @@ export function verifyProfile(
   checkRoleTokenAgreement(fingerprint, survey, issues);
   checkStructuredValueProvenance(fingerprint, evidence, issues);
   checkHighSalienceOmissions(fingerprint, evidence, issues);
-  checkPromotedChecks(fingerprint.checks ?? [], options, issues);
 
   return finalize(issues);
 }
@@ -602,190 +598,6 @@ function isHighSalienceRowOmitted(
   return false;
 }
 
-function checkPromotedChecks(
-  checks: Check[],
-  options: VerifyProfileOptions,
-  issues: VerifyProfileIssue[],
-): void {
-  const root = options.root ? resolve(options.root) : undefined;
-
-  checks.forEach((check, index) => {
-    const path = `checks[${index}]`;
-    const regex = compileCheckPattern(check.pattern, `${path}.pattern`, issues);
-
-    if (typeof check.support !== "number") {
-      issues.push({
-        severity: "error",
-        rule: "check-support-missing",
-        message: "Promoted checks must record survey-derived `support`.",
-        path: `${path}.support`,
-      });
-    }
-    if (typeof check.observed_count !== "number") {
-      issues.push({
-        severity: "error",
-        rule: "check-observed-count-missing",
-        message:
-          "Promoted checks must record `observed_count` so absence escalation and PR gates are calibrated.",
-        path: `${path}.observed_count`,
-      });
-    }
-    if (!check.paths || check.paths.length === 0) {
-      issues.push({
-        severity: "error",
-        rule: "check-paths-missing",
-        message:
-          "Promoted checks must declare `paths` for deterministic verification.",
-        path: `${path}.paths`,
-      });
-    }
-
-    if (
-      !root ||
-      !regex ||
-      typeof check.observed_count !== "number" ||
-      !check.paths?.length
-    ) {
-      return;
-    }
-
-    const files = collectFilesForCheck(root, check.paths, path, issues);
-    const actual = countMatches(files, regex);
-    if (actual !== check.observed_count) {
-      issues.push({
-        severity: "error",
-        rule: "check-observed-count-mismatch",
-        message: `Promoted check '${check.id}' observed_count does not match scoped source matches.`,
-        path: `${path}.observed_count`,
-        expected: check.observed_count,
-        actual,
-      });
-    }
-  });
-}
-
-function compileCheckPattern(
-  pattern: string,
-  path: string,
-  issues: VerifyProfileIssue[],
-): RegExp | null {
-  try {
-    return new RegExp(pattern, "g");
-  } catch (err) {
-    issues.push({
-      severity: "error",
-      rule: "check-pattern-invalid",
-      message: `Check pattern is not a valid JavaScript regular expression: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path,
-    });
-    return null;
-  }
-}
-
-function collectFilesForCheck(
-  root: string,
-  paths: string[],
-  checkPath: string,
-  issues: VerifyProfileIssue[],
-): string[] {
-  const files = new Set<string>();
-  let resolvedScopeCount = 0;
-
-  paths.forEach((scope, index) => {
-    const scopedPath = scope.trim();
-    if (!scopedPath) {
-      issues.push({
-        severity: "error",
-        rule: "check-path-empty",
-        message: "Check paths entries must be non-empty repo-relative paths.",
-        path: `${checkPath}.paths[${index}]`,
-      });
-      return;
-    }
-
-    const absolute = resolve(root, scopedPath);
-    if (!isWithinRoot(root, absolute)) {
-      issues.push({
-        severity: "error",
-        rule: "check-path-outside-root",
-        message: `Check path '${scope}' resolves outside --root.`,
-        path: `${checkPath}.paths[${index}]`,
-      });
-      return;
-    }
-    if (!existsSync(absolute)) {
-      issues.push({
-        severity: "warning",
-        rule: "check-path-missing",
-        message: `Check path '${scope}' does not exist under --root; it was skipped for count calibration.`,
-        path: `${checkPath}.paths[${index}]`,
-      });
-      return;
-    }
-
-    resolvedScopeCount += 1;
-    for (const file of collectFiles(absolute)) files.add(file);
-  });
-
-  if (resolvedScopeCount === 0) {
-    issues.push({
-      severity: "warning",
-      rule: "check-paths-unresolved",
-      message:
-        "No check path resolved under --root; observed_count calibration used zero source files.",
-      path: `${checkPath}.paths`,
-    });
-  }
-
-  return [...files].sort();
-}
-
-function collectFiles(path: string): string[] {
-  const stat = statSync(path);
-  if (stat.isFile()) return [path];
-  if (!stat.isDirectory()) return [];
-
-  const files: string[] = [];
-  for (const entry of readdirSync(path, { withFileTypes: true })) {
-    if (entry.isDirectory() && SKIPPED_DIRECTORIES.has(entry.name)) continue;
-    const child = join(path, entry.name);
-    if (entry.isDirectory()) files.push(...collectFiles(child));
-    else if (entry.isFile()) files.push(child);
-  }
-  return files;
-}
-
-function countMatches(files: string[], regex: RegExp): number {
-  let count = 0;
-  for (const file of files) {
-    if (!isLikelyTextFile(file)) continue;
-    let content: string;
-    try {
-      content = readFileSync(file, "utf-8");
-    } catch {
-      continue;
-    }
-    regex.lastIndex = 0;
-    let match = regex.exec(content);
-    while (match !== null) {
-      count += 1;
-      if (match[0] === "") regex.lastIndex += 1;
-      match = regex.exec(content);
-    }
-  }
-  return count;
-}
-
-function isLikelyTextFile(path: string): boolean {
-  const name = basename(path);
-  if (/^(\.?env|Dockerfile|Makefile|Justfile)$/.test(name)) return true;
-  return /\.(cjs|css|cts|html|js|json|jsx|md|mdx|mjs|mts|scss|sass|svelte|ts|tsx|txt|vue|yaml|yml)$/.test(
-    path,
-  );
-}
-
 function normalizeRole(role: string): string {
   return role.trim().toLowerCase();
 }
@@ -930,11 +742,6 @@ function normalizeHexColor(value: string): string | null {
       .join("")}`;
   }
   return `#${hex}`;
-}
-
-function isWithinRoot(root: string, candidate: string): boolean {
-  const rel = relative(root, candidate);
-  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

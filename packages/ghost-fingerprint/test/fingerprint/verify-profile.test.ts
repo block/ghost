@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { Survey, SurveySource } from "@ghost/core";
 import { tokenRowId, uiSurfaceRowId, valueRowId } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { verifyProfile } from "../../src/core/index.js";
+import { loadFingerprint, verifyProfile } from "../../src/core/index.js";
 
 const SOURCE: SurveySource = {
   id: "local",
@@ -19,18 +19,15 @@ function fingerprint({
   brand = "#1a1a1a",
   background = "#ffffff",
   neutralSteps = ["#ffffff", "#1a1a1a"],
-  checks = "[]",
 }: {
   brand?: string;
   background?: string;
   neutralSteps?: string[];
-  checks?: string;
 } = {}): string {
   return `---
 id: local
 source: llm
 timestamp: 2026-05-04T00:00:00.000Z
-checks: ${checks}
 palette:
   dominant:
     - { role: background, value: "${background}" }
@@ -65,31 +62,6 @@ Compact control surfaces with restrained color.
 
 ### color-strategy
 Use a spare palette anchored by the surveyed brand and neutral values.
-`;
-}
-
-function checkYaml({
-  pattern = "#1a1a1a",
-  observedCount = 1,
-  support = 1,
-  paths = ["src"],
-  contexts = ["className"],
-}: {
-  pattern?: string;
-  observedCount?: number;
-  support?: number;
-  paths?: string[];
-  contexts?: string[];
-} = {}): string {
-  return `
-  - id: brand-color
-    canonical: palette-emphasis
-    kind: color
-    pattern: "${pattern.replace(/"/g, '\\"')}"
-    paths: [${paths.map((entry) => `"${entry}"`).join(", ")}]
-    contexts: [${contexts.map((entry) => `"${entry}"`).join(", ")}]
-    observed_count: ${observedCount}
-    support: ${support}
 `;
 }
 
@@ -215,6 +187,32 @@ describe("verifyProfile", () => {
     );
   });
 
+  it("verifies scoped overlays against the resolved parent fingerprint", async () => {
+    await writeFile(join(dir, "fingerprint.md"), fingerprint(), "utf-8");
+    await mkdir(join(dir, "fingerprints"), { recursive: true });
+    const childPath = join(dir, "fingerprints", "checkout.md");
+    const childRaw = `---
+extends: ../fingerprint.md
+id: checkout
+decisions:
+  - dimension: density
+---
+
+# Decisions
+
+### density
+Checkout tightens the inherited control-surface rhythm.
+`;
+    await writeFile(childPath, childRaw, "utf-8");
+
+    const resolved = (await loadFingerprint(childPath)).fingerprint;
+    const report = verifyProfile(childRaw, makeSurvey(), {
+      resolvedFingerprint: resolved,
+    });
+
+    expect(report.errors).toBe(0);
+  });
+
   it("errors when the fingerprint invents a palette color", () => {
     const report = verifyProfile(
       fingerprint({ brand: "#1c1c1c", neutralSteps: ["#ffffff", "#1a1a1a"] }),
@@ -248,12 +246,6 @@ describe("verifyProfile", () => {
         actual: "#ffffff",
       }),
     );
-  });
-
-  it("passes with empty checks", () => {
-    const report = verifyProfile(fingerprint({ checks: "[]" }), makeSurvey());
-
-    expect(report.errors).toBe(0);
   });
 
   it("errors when spacing, typography, or radii are not survey-backed", () => {
@@ -323,42 +315,6 @@ describe("verifyProfile", () => {
         severity: "warning",
         rule: "survey-high-salience-value-omitted",
         actual: "32px",
-      }),
-    );
-  });
-
-  it("errors when a promoted check count does not match scoped regex hits", async () => {
-    await mkdir(join(dir, "src"), { recursive: true });
-    await writeFile(join(dir, "src", "settings.tsx"), 'color: "#1a1a1a";');
-
-    const report = verifyProfile(
-      fingerprint({ checks: checkYaml({ observedCount: 0 }) }),
-      makeSurvey(),
-      { root: dir },
-    );
-
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "error",
-        rule: "check-observed-count-mismatch",
-        path: "checks[0].observed_count",
-        expected: 0,
-        actual: 1,
-      }),
-    );
-  });
-
-  it("handles invalid regex patterns as clear verifier errors", () => {
-    const report = verifyProfile(
-      fingerprint({ checks: checkYaml({ pattern: "[" }) }),
-      makeSurvey(),
-    );
-
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "error",
-        rule: "check-pattern-invalid",
-        path: "checks[0].pattern",
       }),
     );
   });
