@@ -4,11 +4,14 @@ import { join } from "node:path";
 import type { Survey, SurveySource } from "@ghost/core";
 import {
   componentRowId,
+  GhostChecksSchema,
+  lintGhostChecks,
   tokenRowId,
   uiSurfaceRowId,
   valueRowId,
 } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { parse as parseYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
 
 const BASE_FINGERPRINT = `---
@@ -893,3 +896,314 @@ describe("ghost-fingerprint survey patterns", () => {
     expect(patterns.surface_types[0].value).toBe("settings");
   });
 });
+
+describe("ghost-fingerprint checks propose", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(
+      tmpdir(),
+      `ghost-fingerprint-checks-propose-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    );
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("proposes a component-pattern check from repeated sibling component sequences", async () => {
+    await writeProposalPackage(
+      dir,
+      makePatternSurvey(SOURCE_A, [
+        patternSurface(
+          "Review A",
+          "src/review/a.tsx",
+          [],
+          ["SharedPanel", "SharedActions"],
+        ),
+        patternSurface(
+          "Review B",
+          "src/review/b.tsx",
+          [],
+          ["SharedPanel", "SharedActions"],
+        ),
+      ]),
+    );
+    await writeSource(
+      dir,
+      "src/review/a.tsx",
+      "<SharedPanel>\n  <SharedActions />\n</SharedPanel>\n",
+    );
+    await writeSource(
+      dir,
+      "src/review/b.tsx",
+      "<SharedPanel>\n  <SharedActions />\n</SharedPanel>\n",
+    );
+
+    const result = await runCli(
+      ["checks", "propose", ".ghost/fingerprint"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const parsed = GhostChecksSchema.parse(parseYaml(result.stdout));
+    expect(parsed.checks).toHaveLength(1);
+    expect(parsed.checks[0].status).toBe("proposed");
+    expect(parsed.checks[0].detector.type).toBe("required-regex");
+    expect(parsed.checks[0].repair_hints?.[0].replacement).toBe(
+      "SharedActions + SharedPanel",
+    );
+    expect(parsed.checks[0].evidence?.examples?.[0]).toMatchObject({
+      path: "src/review/a.tsx",
+      line: 1,
+    });
+  });
+
+  it("does not propose weak one-off patterns", async () => {
+    await writeProposalPackage(
+      dir,
+      makePatternSurvey(SOURCE_A, [
+        patternSurface(
+          "Review A",
+          "src/review/a.tsx",
+          [],
+          ["SharedPanel", "SharedActions"],
+        ),
+      ]),
+    );
+
+    const result = await runCli(
+      ["checks", "propose", ".ghost/fingerprint"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const parsed = GhostChecksSchema.parse(parseYaml(result.stdout));
+    expect(parsed.checks).toHaveLength(0);
+  });
+
+  it("does not mutate checks.yml", async () => {
+    const paths = await writeProposalPackage(
+      dir,
+      makePatternSurvey(SOURCE_A, [
+        patternSurface(
+          "Review A",
+          "src/review/a.tsx",
+          [],
+          ["SharedPanel", "SharedActions"],
+        ),
+        patternSurface(
+          "Review B",
+          "src/review/b.tsx",
+          [],
+          ["SharedPanel", "SharedActions"],
+        ),
+      ]),
+    );
+    const before = await readFile(paths.checks, "utf-8");
+
+    const result = await runCli(
+      ["checks", "propose", ".ghost/fingerprint"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    await expect(readFile(paths.checks, "utf-8")).resolves.toBe(before);
+  });
+
+  it("produces Managerbot footer and Pulse metric proposals", async () => {
+    await writeProposalPackage(
+      dir,
+      makePatternSurvey(SOURCE_A, [
+        patternSurface(
+          "Square update preview",
+          "apps/managerbot/managerbot-web/src/components/tools/square-update-preview/square-update-preview-ui.tsx",
+          ["tool-footer-actions"],
+          [
+            "ToolCardFooter",
+            "ToolFooterActions",
+            "ToolCancelButton",
+            "ToolSubmitButton",
+          ],
+        ),
+        patternSurface(
+          "Square remove preview",
+          "apps/managerbot/managerbot-web/src/components/tools/square-remove-preview/square-remove-preview-ui.tsx",
+          ["tool-footer-actions"],
+          [
+            "ToolCardFooter",
+            "ToolFooterActions",
+            "ToolCancelButton",
+            "ToolSubmitButton",
+          ],
+        ),
+        patternSurface(
+          "Pulse gross sales",
+          "apps/managerbot/managerbot-web/src/components/pages/Pulse/gross-sales.tsx",
+          ["pulse-metric-card"],
+          ["MetricDataCard", "ComparisonBadge"],
+        ),
+        patternSurface(
+          "Pulse refunds",
+          "apps/managerbot/managerbot-web/src/components/pages/Pulse/refunds.tsx",
+          ["pulse-metric-card"],
+          ["MetricDataCard", "ComparisonBadge"],
+        ),
+      ]),
+      "managerbot-ui",
+    );
+
+    const result = await runCli(
+      ["checks", "propose", ".ghost/fingerprint", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    const checks = GhostChecksSchema.parse(report.checks);
+    expect(checks.checks.map((check) => check.id)).toEqual([
+      "use-managerbot-tool-footer-actions",
+      "use-pulse-metric-components",
+    ]);
+    expect(report.advisory_packet.proposal_count).toBe(2);
+
+    const promoted = {
+      ...checks,
+      checks: checks.checks.map((check) => ({ ...check, status: "active" })),
+    };
+    expect(lintGhostChecks(promoted).errors).toBe(0);
+  });
+});
+
+async function writeProposalPackage(
+  dir: string,
+  survey: Survey,
+  id = "local",
+): Promise<{ checks: string }> {
+  const packageDir = join(dir, ".ghost", "fingerprint");
+  await mkdir(packageDir, { recursive: true });
+  await writeFile(join(packageDir, "map.md"), proposalMap(id));
+  await writeFile(
+    join(packageDir, "profile.md"),
+    fingerprintWithId(id.replace(/-/g, "_")),
+  );
+  await writeFile(
+    join(packageDir, "survey.json"),
+    JSON.stringify(survey, null, 2),
+  );
+  const checks = join(packageDir, "checks.yml");
+  await writeFile(
+    checks,
+    `schema: ghost.checks/v1
+id: ${id}
+checks: []
+`,
+  );
+  return { checks };
+}
+
+async function writeSource(dir: string, path: string, content: string) {
+  const target = join(dir, path);
+  await mkdir(join(target, ".."), { recursive: true });
+  await writeFile(target, content);
+}
+
+function proposalMap(id: string): string {
+  return `---
+schema: ghost.map/v2
+id: ${id}
+repo: local
+mapped_at: 2026-05-07
+platform: web
+languages:
+  - { name: typescript, files: 4, share: 1 }
+build_system: pnpm
+package_manifests:
+  - package.json
+composition:
+  frameworks:
+    - { name: react }
+  rendering: react
+  styling:
+    - tailwindcss
+design_system:
+  paths:
+    - src/components
+  status: active
+surface_sources:
+  render_strategy: static-source
+  include:
+    - "**/*.tsx"
+  exclude:
+    - "**/node_modules/**"
+feature_areas:
+  - name: app
+    paths:
+      - .
+scopes:
+  - id: managerbot-product-surfaces
+    name: Managerbot product surfaces
+    kind: product-surface
+    paths:
+      - apps/managerbot/managerbot-web/src/components
+      - src/review
+orientation_files:
+  - README.md
+---
+
+## Identity
+
+Local test map.
+
+## Topology
+
+Local test topology.
+
+## Conventions
+
+Local test conventions.
+`;
+}
+
+function makePatternSurvey(
+  source: SurveySource,
+  surfaces: Survey["ui_surfaces"],
+): Survey {
+  return {
+    schema: "ghost.survey/v2",
+    sources: [source],
+    values: [],
+    tokens: [],
+    components: [],
+    ui_surfaces: surfaces,
+  };
+}
+
+function patternSurface(
+  name: string,
+  file: string,
+  layoutPatterns: string[],
+  components: string[],
+): Survey["ui_surfaces"][number] {
+  return {
+    id: uiSurfaceRowId(SOURCE_A, name, "source", file),
+    source: SOURCE_A,
+    name,
+    kind: "source",
+    locator: file,
+    renderability: "source-only",
+    files: [file],
+    classification: {
+      intent: "review",
+      surface_type: "tools",
+      density: "standard",
+      layout_shape: "control-surface",
+      confidence: 0.9,
+    },
+    signals: {
+      dominant_components: components,
+      layout_patterns: layoutPatterns,
+    },
+  };
+}

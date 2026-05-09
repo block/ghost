@@ -94,6 +94,19 @@ export {
   resolveTrackedFingerprint,
   writeSyncManifest,
 } from "./evolution/index.js";
+export type {
+  GhostDriftGitHubCommentOptions,
+  GhostDriftGitHubCommentResult,
+  GhostDriftGroupedFinding,
+} from "./github-comment.js";
+export {
+  buildGitHubInlineComment,
+  buildGitHubSummaryComment,
+  formatGitHubCommentDryRun,
+  groupGhostDriftFindings,
+  runGhostDriftGitHubComment,
+} from "./github-comment.js";
+export type { GhostDriftRepairHint } from "./repair-hints.js";
 export {
   formatCompositeComparison,
   formatCompositeComparisonJSON,

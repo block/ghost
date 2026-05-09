@@ -18,11 +18,13 @@ import {
   formatCompositeComparison,
   formatCompositeComparisonJSON,
   formatGhostDriftCheckMarkdown,
+  formatGitHubCommentDryRun,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
   readHistory,
   readSyncManifest,
   runGhostDriftCheck,
+  runGhostDriftGitHubComment,
 } from "./core/index.js";
 import {
   registerAckCommand,
@@ -174,6 +176,72 @@ export function buildCli(): ReturnType<typeof cac> {
           process.stdout.write(formatGhostDriftCheckMarkdown(report));
         }
         process.exit(report.result === "fail" ? 1 : 0);
+      } catch (err) {
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(2);
+      }
+    });
+
+  // --- github-comment ---
+  cli
+    .command(
+      "github-comment",
+      "Run ghost-drift check and create/update GitHub PR inline comments plus one summary comment.",
+    )
+    .option("--repo <repo>", "GitHub repository in owner/name form")
+    .option("--pr <number>", "Pull request number")
+    .option("--base <ref>", "Git ref to diff against (default: HEAD)")
+    .option(
+      "--diff <patch>",
+      "Unified diff file to check instead of running git diff. Use '-' for stdin.",
+    )
+    .option(
+      "--package <dir>",
+      "Fingerprint package directory (default: .ghost/fingerprint)",
+    )
+    .option("--dry-run", "Print comments without calling GitHub")
+    .action(async (opts) => {
+      try {
+        if (typeof opts.repo !== "string" || opts.repo.trim() === "") {
+          console.error("Error: --repo is required");
+          process.exit(2);
+          return;
+        }
+        const pr = Number(opts.pr);
+        if (!Number.isInteger(pr) || pr < 1) {
+          console.error("Error: --pr must be a positive integer");
+          process.exit(2);
+          return;
+        }
+        const diffText =
+          typeof opts.diff === "string"
+            ? await readDiffInput(opts.diff)
+            : undefined;
+        const result = await runGhostDriftGitHubComment({
+          repo: opts.repo,
+          pr,
+          cwd: process.cwd(),
+          packageDir:
+            typeof opts.package === "string" ? opts.package : undefined,
+          base: typeof opts.base === "string" ? opts.base : undefined,
+          diffText,
+          dryRun: Boolean(opts.dryRun),
+        });
+
+        if (opts.dryRun) {
+          process.stdout.write(formatGitHubCommentDryRun(result));
+        } else {
+          const urls = [
+            ...result.inline_comments.map((comment) => comment.html_url),
+            result.summary_comment_url,
+          ].filter(Boolean);
+          process.stdout.write(
+            `${urls.join("\n") || `Updated PR #${pr} Ghost drift comments.`}\n`,
+          );
+        }
+        process.exit(result.report.result === "fail" ? 1 : 0);
       } catch (err) {
         console.error(
           `Error: ${err instanceof Error ? err.message : String(err)}`,

@@ -6,6 +6,7 @@ export type {
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
+  GhostCheckRepairHint,
   GhostCheckSeverity,
   GhostCheckStatus,
   GhostChecksDocument,
