@@ -1,124 +1,116 @@
 ---
 name: scan
-description: Drive a full three-stage scan of a target — map, survey, express — to produce map.md + survey.json + fingerprint.md.
+description: Drive a full Ghost scan to produce .ghost/fingerprint/{map.md,survey.json,profile.md,checks.yml}.
 handoffs:
-  - label: Compare against another fingerprint
-    command: ghost-drift compare
-    prompt: Compare the fingerprint.md I just wrote against another fingerprint
-  - label: Inspect what stage to run next
+  - label: Inspect stage status
     command: ghost-fingerprint scan-status
-    prompt: What scan stage should I run next in this directory?
+    prompt: What fingerprint package stage should I run next?
+  - label: Run deterministic drift checks
+    command: ghost-drift check
+    prompt: Run ghost-drift check against this package
 ---
 
-# Recipe: Scan a target end-to-end
+# Recipe: Scan A Target End-To-End
 
-**Goal:** drive a target through all three scan stages — map → survey → express — and end with three valid artifacts in the scan directory: `map.md` + `survey.json` + `fingerprint.md`. This is the meta-recipe; each stage has its own deeper recipe (see [map.md](map.md), [survey.md](survey.md), [profile.md](profile.md)) that you dispatch into.
+**Goal:** produce a complete fingerprint package:
 
-You don't run a single CLI verb here. You orchestrate stages, validate after each, and stop when `scan-status` reports complete.
+```text
+.ghost/fingerprint/
+  map.md
+  survey.json
+  profile.md
+  checks.yml
+```
+
+You orchestrate stages. The CLI validates; it does not perform the interpretive
+scan for you.
 
 ## Overview
 
-```
-┌──────────────┐    ┌──────────────┐    ┌──────────────────┐
-│  Stage 1     │ →  │  Stage 2     │ →  │  Stage 3         │
-│  map         │    │  survey      │    │  fingerprint      │
-│  map.md      │    │  survey.json │    │  fingerprint.md   │
-└──────────────┘    └──────────────┘    └──────────────────┘
-   recipe:              recipe:              recipe:
-   map.md               survey.md            profile.md
+```text
+map -> survey -> profile -> checks
 ```
 
-Each stage's output is the next stage's input. Stage 3 is terminal — it's what other ghost tools (drift, fleet) consume.
-
-Terminal-impact rule: keep Stage 2 broad and observed, then make Stage 3 selective. A survey row is evidence; a fingerprint fact is a claim that should change a drift verdict or change generated UI. If it would not affect either consumer, leave it in the survey or scan notes rather than carrying it into `fingerprint.md`.
+- `map.md`: topology and routing.
+- `survey.json`: observed facts.
+- `profile.md`: non-enforcing design-language prior.
+- `checks.yml`: human-promoted deterministic gates.
 
 ## Steps
 
-### 1. Locate the scan directory
+### 0. Initialize
 
-The scan directory is wherever the three artifacts will live. For a local repo, this is usually the repo root. For a fleet member managed centrally, the scan directory lives in the central repo (e.g. `<central>/fleet/members/<id>/`) and the *target* (the source repo being scanned) is a separate location.
+```bash
+ghost-fingerprint init-package
+ghost-fingerprint scan-status
+```
 
-Throughout this recipe, "scan dir" = where artifacts land; "target" = where source code lives. They may or may not be the same path.
+If the CLI is not available, create the directory and four files manually.
 
-### 2. Check status
+### 1. Map
 
-**Preferred (CLI present):**
+Run when `scan-status` recommends `map`.
 
-    ghost-fingerprint scan-status [scan-dir]
+Follow [map.md](map.md). Write `.ghost/fingerprint/map.md`, then validate:
 
-Reports per-stage state (`present` / `missing`) and the recommended next stage. If every stage is `present`, you're done. Otherwise, dispatch to the recipe for the recommended stage.
+```bash
+ghost-fingerprint lint .ghost/fingerprint
+```
 
-Use `--format json` if you want to consume the result programmatically:
+### 2. Survey
 
-    ghost-fingerprint scan-status . --format json
+Run when `scan-status` recommends `survey`.
 
-**Prose fallback (no CLI):**
+Follow [survey.md](survey.md). Write `.ghost/fingerprint/survey.json`, then
+finalize and validate:
 
-Check three paths and report what's missing in this order:
+```bash
+ghost-fingerprint survey fix-ids .ghost/fingerprint/survey.json -o .ghost/fingerprint/survey.json
+ghost-fingerprint lint .ghost/fingerprint
+```
 
-1. `<scan-dir>/map.md` — if missing, recommended_next = `map`. Stop checking.
-2. `<scan-dir>/survey.json` — if missing, recommended_next = `survey`. Stop checking.
-3. `<scan-dir>/fingerprint.md` — if missing, recommended_next = `fingerprint`. If present, recommended_next = `null` (scan complete).
+### 3. Profile
 
-Use `Read` (or `Bash: ls <scan-dir>`) to verify each file exists. The first missing artifact is the next stage to run.
+Run when `scan-status` recommends `profile`.
 
-### 3. Stage 1 — Map (`map.md`)
+Follow [profile.md](profile.md). Use these bounded evidence views:
 
-Run when `scan-status` reports `map: missing`.
+```bash
+ghost-fingerprint survey summarize .ghost/fingerprint/survey.json
+ghost-fingerprint survey catalog .ghost/fingerprint/survey.json
+ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
+```
 
-Recipe: [map.md](map.md). The agent reads `ghost-fingerprint inventory <target>` for raw signals + the recipe's guidance, then writes `map.md` to the scan directory and validates with `ghost-fingerprint lint map.md`. For split repos, this is where the source graph is declared: one primary subject plus resolver sources needed to resolve imported design symbols.
+Write `.ghost/fingerprint/profile.md`. Validate:
 
-After validation, re-run `scan-status` and proceed.
+```bash
+ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root <target>
+ghost-fingerprint lint .ghost/fingerprint
+```
 
-### 4. Stage 2 — Survey (`survey.json`)
+### 4. Checks
 
-Run when `scan-status` reports `map: present` and `survey: missing`.
+Run when `scan-status` recommends `checks`, or whenever a human promotes gates.
 
-Recipe: [survey.md](survey.md). The agent reads `map.md` to recognize the dialect and source graph, runs LLM-driven extraction (its own greps/regexes), records rows with empty `id` fields, finalizes IDs with `ghost-fingerprint survey fix-ids survey.json -o survey.json`, then validates with `ghost-fingerprint lint survey.json`.
+First scans may leave `checks.yml` with `checks: []`. Candidate checks belong in
+your response or scan notes until a human curator promotes them.
 
-The survey is the longest stage and the one with the most discipline (exhaustiveness, saturation, cross-checking counts). Don't shortcut it — the interpreter downstream cannot fabricate values that aren't in the survey, so missed values become missed fingerprint fields permanently. Broad survey evidence is okay; an overstuffed `fingerprint.md` is not.
+When checks are promoted, validate and smoke-test:
 
-After validation, re-run `scan-status` and proceed.
-
-### 5. Stage 3 — Express (`fingerprint.md`)
-
-Run when `scan-status` reports both prior stages `present` and `fingerprint: missing`.
-
-Recipe: [profile.md](profile.md). The agent reads `map.md` (for repo-kind signals), runs `ghost-fingerprint survey summarize survey.json` for bounded survey context, uses `ghost-fingerprint survey catalog survey.json` for exact value enums/specs, and keeps raw `survey.json` available only for targeted row lookup. It writes `fingerprint.md` as a compact contract: local references, named decisions, portable Character and Signature prose, survey-backed frontmatter values, and only human-curated checks. It cannot invent values not in the survey. First scans leave `checks[]` empty unless the user explicitly selects checks to promote; candidate checks belong in the agent response or scan notes. Validates with `ghost-fingerprint lint fingerprint.md`, `ghost-fingerprint verify-profile fingerprint.md survey.json --root <target>`, and a self-distance sanity check (`ghost-drift compare fingerprint.md fingerprint.md` returns 0).
-
-Stage 3 has a different audience from stages 1 and 2. `map.md` and `survey.json` are allowed to be repo-specific because they are scan artifacts. `fingerprint.md` is the drift/generation root and may be used by another project that cannot resolve the original paths, so its body must describe portable design-language patterns. Local paths belong in `references:` or as optional evidence provenance, not as the main content of Character, Signature, or Decisions.
-
-### 6. Confirm complete
-
-Re-run `scan-status`. If `recommended_next` is `null`, the scan is done.
+```bash
+ghost-fingerprint lint .ghost/fingerprint
+ghost-drift check --base HEAD
+```
 
 ## Resumability
 
-Each stage is resumable independently because `scan-status` checks artifact presence at the start. To force a stage rerun, delete its artifact and call `scan-status` again — the recommended_next will surface that stage. Same idiom orchestrators like design-world-model already use.
-
-## When a stage fails
-
-If a stage's lint fails, fix the issue in the recipe pass and re-validate. **Do not move to the next stage on a failed lint** — the next stage's recipe assumes a valid input.
-
-If you cannot make a stage pass (e.g. the target genuinely has no design system), the recipe for that stage tells you what to do — usually: write a minimal valid artifact that surfaces the gap (e.g. `fingerprint.md` with empty palette and a `# Character` note explaining the absence), so downstream tools see honest "no signal" rather than a hallucinated one.
-
-## When the survey should be merged across multiple targets
-
-Modular targets (one repo with N feature modules profiled separately) and fleet cohorts (N members merged into a cohort survey) both run the survey stage per unit, then call:
-
-    ghost-fingerprint survey merge <surveys...> -o merged.json
-
-Then run the interpreter recipe (Stage 3) against `merged.json` instead of a single-source survey. The interpreter recipe handles merged surveys the same way as single-source ones — summarize the merged survey first, every row still has provenance via `source`, and the prose interpretation is grounded in counts that span sources. This composition lives in the orchestrator (`design-world-model`'s pipeline scripts), not in any ghost CLI verb.
-
-## Always
-
-- Run `scan-status` between stages. Don't assume; check.
-- Validate after each stage. Lint passing is the map/survey shape gate; fingerprint profiles also require `verify-profile` before scan completion.
-- Resolve token alias chains end-to-end in stage 2 (the survey records the chain).
-- Cite survey summary row IDs as evidence in stage 3 decisions, using targeted raw `survey.json` lookups when exact provenance is needed; keep portable pattern language first and local paths only as optional provenance.
+Run `ghost-fingerprint scan-status` between stages. To force a stage rerun,
+delete or replace that artifact and re-run status. Do not move forward from a
+failed lint.
 
 ## Never
 
-- Never skip a stage. The recipe semantics depend on each stage running in order.
-- Never edit a downstream artifact (`fingerprint.md`) to fix a missing value — go upstream and re-run the relevant stage.
-- Never invent values absent from `survey.json` when authoring `fingerprint.md`. If a value is missing from the survey, either re-run survey (it was missed) or accept the absence.
+- Never describe root-level `fingerprint.md` as canonical.
+- Never invent values absent from `survey.json`.
+- Never promote subjective prose directly into `checks.yml`; make it lintable or
+  keep it advisory.

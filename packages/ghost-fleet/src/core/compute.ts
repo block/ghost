@@ -38,6 +38,29 @@ export function computePairwiseDistances(
 }
 
 /**
+ * Compute distances across every loaded parent/scope fingerprint node.
+ * Parent-only `computePairwiseDistances` stays unchanged for compatibility.
+ */
+export function computeNodeDistances(members: FleetMember[]): FleetPairwise[] {
+  const nodes = members.flatMap((member) => member.fingerprintNodes);
+
+  const out: FleetPairwise[] = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const cmp = compareFingerprints(a.fingerprint, b.fingerprint);
+      out.push({ a: a.id, b: b.id, distance: cmp.distance });
+    }
+  }
+
+  return out.sort((x, y) => {
+    if (x.a !== y.a) return x.a.localeCompare(y.a);
+    return x.b.localeCompare(y.b);
+  });
+}
+
+/**
  * Compute the five group-by axes from each member's map.md frontmatter.
  *
  * Axes per `docs/ideas/ghost-fleet.md`:

@@ -6,7 +6,7 @@ import {
 import { parse as parseYaml } from "yaml";
 import type { BodyData } from "./body.js";
 import { parseFingerprint, splitRaw } from "./parser.js";
-import { FrontmatterSchema } from "./schema.js";
+import { FrontmatterSchema, PartialFrontmatterSchema } from "./schema.js";
 
 export type LintSeverity = "error" | "warning" | "info";
 
@@ -72,7 +72,6 @@ export function lintFingerprint(
   checkEvidenceHexes(fingerprint, rawIssues);
   checkUnusedPalette(fingerprint, rawIssues);
   checkNonCanonicalDimensions(fingerprint, rawIssues);
-  checkCheckCuration(fingerprint, rawIssues);
 
   return finalize(rawIssues, strict, off);
 }
@@ -116,7 +115,11 @@ function checkSchemaValidity(
   raw: Record<string, unknown>,
   issues: LintIssue[],
 ): void {
-  const result = FrontmatterSchema.safeParse(raw);
+  const schema =
+    typeof raw.extends === "string"
+      ? PartialFrontmatterSchema
+      : FrontmatterSchema;
+  const result = schema.safeParse(raw);
   if (result.success) return;
   for (const issue of result.error.issues) {
     issues.push({
@@ -263,88 +266,6 @@ function checkNonCanonicalDimensions(
       }. Either rename, or add \`dimension_kind: <canonical>\` so fleet aggregation can group this decision.`,
       path: `decisions[${idx}].dimension`,
     });
-  });
-}
-
-const CHECK_SUPPORT_FLOOR = 0.85;
-
-/**
- * Checks are the terminal drift contract, but lint stays advisory: warn when
- * promoted checks look under-supported or under-calibrated without making
- * in-progress fingerprints fail lint.
- */
-function checkCheckCuration(fp: Fingerprint, issues: LintIssue[]): void {
-  const checks = fp.checks ?? [];
-  if (checks.length === 0) {
-    issues.push({
-      severity: "info",
-      rule: "checks-missing",
-      message:
-        "No promoted checks[] are present; review-command will use a coarse token fallback and generation context will be less enforceable.",
-      path: "checks",
-    });
-    return;
-  }
-
-  checks.forEach((check, idx) => {
-    const path = `checks[${idx}]`;
-    if (typeof check.support !== "number") {
-      issues.push({
-        severity: "info",
-        rule: "check-support-missing",
-        message:
-          "Promoted checks should record `support` so curators can tell whether the pattern is load-bearing.",
-        path: `${path}.support`,
-      });
-    } else if (check.support < CHECK_SUPPORT_FLOOR) {
-      issues.push({
-        severity: "warning",
-        rule: "check-support-low",
-        message: `Promoted check \`${check.id}\` has support ${check.support.toFixed(2)}; checks below ${CHECK_SUPPORT_FLOOR} are usually too noisy to enforce.`,
-        path: `${path}.support`,
-      });
-    }
-
-    if ((check.paths?.length ?? 0) === 0) {
-      issues.push({
-        severity: "info",
-        rule: "check-paths-missing",
-        message:
-          "Promoted checks should usually declare `paths` so deterministic verification can count scoped matches.",
-        path: `${path}.paths`,
-      });
-    }
-
-    if ((check.contexts?.length ?? 0) === 0) {
-      issues.push({
-        severity: "info",
-        rule: "check-contexts-missing",
-        message:
-          "Promoted checks should usually declare `contexts` so reviewers know where the pattern appears.",
-        path: `${path}.contexts`,
-      });
-    }
-
-    if (
-      typeof check.presence_floor === "number" &&
-      typeof check.observed_count !== "number"
-    ) {
-      issues.push({
-        severity: "warning",
-        rule: "check-presence-floor-needs-observed-count",
-        message:
-          "`presence_floor` needs `observed_count` to avoid calibrating absence from coarse frontmatter proxies.",
-        path: `${path}.observed_count`,
-      });
-    } else if (typeof check.observed_count !== "number") {
-      issues.push({
-        severity: "info",
-        rule: "check-observed-count-missing",
-        message:
-          "Promoted checks should record `observed_count` when calibrated from survey evidence.",
-        path: `${path}.observed_count`,
-      });
-    }
   });
 }
 

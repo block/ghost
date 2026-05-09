@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author a target's map.md
 
-**Goal:** produce a valid `map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the first stage of a scan: every later stage (`survey.md` → `survey.json`, `profile.md` → `fingerprint.md`) reads it to skip rediscovery.
+**Goal:** produce a valid `.ghost/fingerprint/map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the first stage of a package scan: every later stage (`survey.json`, `profile.md`, and `checks.yml`) reads it to skip rediscovery and route changes.
 
 This recipe is *your* job. Ghost's CLI provides `ghost-fingerprint inventory` (deterministic raw signals) and `ghost-fingerprint lint <map.md>` (validation), but you do the synthesis.
 
