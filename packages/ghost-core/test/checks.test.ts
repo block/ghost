@@ -48,7 +48,14 @@ function checks(
         evidence: {
           support: 0.94,
           observed_count: 47,
-          examples: ["Code/Features/Lending/LendingUI"],
+          examples: [
+            {
+              path: "Code/Features/Lending/LendingUI",
+              line: 12,
+              note: "Source-backed example.",
+            },
+          ],
+          notes: ["False-positive risk: low."],
         },
         repair: "Replace literals with Arcade/Cash semantic tokens.",
         ...overrides,
@@ -60,6 +67,33 @@ function checks(
 describe("ghost.checks/v1", () => {
   it("validates an active human-promoted check", () => {
     const report = lintGhostChecks(checks(), { map: MAP });
+
+    expect(report.errors).toBe(0);
+  });
+
+  it("validates source-backed repair hints", () => {
+    const report = lintGhostChecks(
+      checks({
+        repair_hints: [
+          {
+            kind: "component-pattern-replacement",
+            replacement: "Use SharedCard.",
+            reason: "Found a sibling file pattern.",
+            inferred_from: "sibling-file-pattern",
+            source: {
+              path: "Code/Features/Lending/SharedCard.swift",
+              line: 12,
+            },
+            sources: [
+              { path: "Code/Features/Lending/SharedCard.swift", line: 12 },
+              { path: "Code/Features/Lending/OtherCard.swift", line: 30 },
+            ],
+            confidence: "high",
+          },
+        ],
+      }),
+      { map: MAP },
+    );
 
     expect(report.errors).toBe(0);
   });
@@ -94,6 +128,16 @@ describe("ghost.checks/v1", () => {
     expect(routed).toHaveLength(1);
     expect(routed[0].check.id).toBe("no-hardcoded-ui-color");
     expect(routed[0].matched_scopes[0].id).toBe("lending");
+  });
+
+  it("does not route proposed checks as active gates", () => {
+    const routed = routeGhostChecksForPath(
+      checks({ status: "proposed" }).checks,
+      MAP,
+      "Code/Features/Lending/Sources/View.swift",
+    );
+
+    expect(routed).toHaveLength(0);
   });
 
   it("does not route checks outside their declared scope", () => {

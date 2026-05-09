@@ -17,7 +17,7 @@ import {
   summarizeSurvey,
 } from "@ghost/core";
 import { cac } from "cac";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   diffFingerprints,
   formatLayout,
@@ -30,6 +30,7 @@ import {
   lintFingerprintPackage,
   lintMap,
   loadFingerprint,
+  proposeGhostChecks,
   resolveFingerprintPackage,
   scanStatus,
   verifyProfile,
@@ -517,6 +518,48 @@ export function buildCli(): ReturnType<typeof cac> {
           process.stdout.write(out);
         }
 
+        process.exit(0);
+      } catch (err) {
+        console.error(
+          `Error: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        process.exit(2);
+      }
+    });
+
+  // --- checks <op> ---
+  cli
+    .command(
+      "checks <op> [package]",
+      "Operate on ghost.checks/v1 documents. Ops: propose.",
+    )
+    .option("--format <fmt>", "Output format: yaml or json", {
+      default: "yaml",
+    })
+    .action(async (op: string, packageDir: string | undefined, opts) => {
+      try {
+        if (op !== "propose") {
+          console.error(`Error: unknown checks op '${op}'. Supported: propose`);
+          process.exit(2);
+          return;
+        }
+        if (opts.format !== "yaml" && opts.format !== "json") {
+          console.error(
+            "Error: checks propose --format must be 'yaml' or 'json'",
+          );
+          process.exit(2);
+          return;
+        }
+
+        const report = await proposeGhostChecks({
+          packageDir,
+          cwd: process.cwd(),
+        });
+        const out =
+          opts.format === "json"
+            ? `${JSON.stringify(report, null, 2)}\n`
+            : stringifyYaml(report.checks);
+        process.stdout.write(out.endsWith("\n") ? out : `${out}\n`);
         process.exit(0);
       } catch (err) {
         console.error(
