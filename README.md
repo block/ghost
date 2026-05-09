@@ -1,18 +1,23 @@
 # Ghost
 
-**Ghost turns implemented UI into a repo-local design-language file agents can use.**
+**Ghost gives agents a repo-local fingerprint for preserving product identity while they write UI.**
 
-Agents can ship UI now. What slips is taste: palette, density, hierarchy, and the small choices that make a product feel like itself. Most repos do not have a clear, local answer to “what should this interface look like?”
+Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to.
 
-Ghost gives the repo that answer. It scans the UI already in the codebase and writes `fingerprint.md`: a readable design-language file that lives beside the code. Agents read it before generating UI and check against it after they make changes.
+The failure mode is structural. Large language models generate by matching local patterns, not by maintaining global invariants. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, and refusal.
 
-The scan earns that file with evidence:
+Most design systems encode product inventory: colors, type scales, components. That inventory is necessary, but not sufficient. The same system can produce many different products. What is missing is the policy that governs how those parts are composed.
 
-- **`map.md`** tells Ghost where to look.
-- **`survey.json`** records the values, tokens, components, and surfaces it found.
-- **`fingerprint.md`** explains what those values mean as a design language.
+Ghost introduces that second layer as a repository-local, versioned fingerprint. It captures the product's composition policy — the constraints, preferences, recurring decisions, and anti-patterns that shape how the system is actually used. It does not replace the design system; it conditions it.
 
-Your agent does the judgment work. Ghost's CLIs handle the repeatable checks: validation, profile verification, diffs, comparisons, and fleet views.
+The scan earns that package with evidence:
+
+- **`.ghost/fingerprint/map.md`** routes changes to repo scopes and surfaces.
+- **`.ghost/fingerprint/survey.json`** records the values, tokens, components, and surfaces it found.
+- **`.ghost/fingerprint/profile.md`** shapes agent judgment as non-enforcing design-language guidance.
+- **`.ghost/fingerprint/checks.yml`** stores human-promoted deterministic gates.
+
+Specs describe what exists. The fingerprint package describes how the product repeatedly chooses to use what exists. Checks fail builds. Profile shapes judgment. Survey grounds both. The package is the fingerprint.
 
 ## Works with your agent
 
@@ -24,24 +29,25 @@ No API key is required to run any CLI verb. Each tool's `emit skill` verb instal
 
 Ghost gives agents a few practical abilities:
 
-- **Generate from a local file**: `fingerprint.md` tells the agent what the design language is before it writes UI.
-- **Review changes for drift**: the review and verify recipes compare generated or changed UI against the fingerprint.
+- **Generate from repo-local memory**: `.ghost/fingerprint/profile.md` and survey examples tell the agent what the design language is before it writes UI.
+- **Fail deterministic drift**: `ghost-drift check` applies active `checks.yml` gates to a diff.
+- **Review changes with evidence**: `ghost-drift review` emits an advisory packet grounded in profile, survey, examples, checks, and diff.
 - **Compare systems**: `ghost-drift compare` and `ghost-fleet view` show how fingerprints differ across projects.
 - **Record intent**: `ack`, `track`, and `diverge` record whether drift is accepted, tracked against a new reference, or intentionally different.
-- **Stay readable**: `fingerprint.md` is Markdown with YAML frontmatter. Humans can review it, agents can use it, and the CLIs can validate and diff it.
+- **Stay readable**: `profile.md` and `map.md` are Markdown, `survey.json` is factual evidence, and `checks.yml` is the human-curated gate layer.
 
 ## Tools around the loop
 
 Ghost is split into focused tools. The common path is simple:
 
 ```text
-map.md -> survey.json -> fingerprint.md -> design review
+.ghost/fingerprint/map.md -> survey.json -> profile.md + checks.yml -> check/review
 ```
 
 | Tool | Job | Verbs |
 | --- | --- | --- |
-| **`ghost-fingerprint`** | Create and check `map.md`, `survey.json`, and `fingerprint.md`. | `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
-| **`ghost-drift`** | Compare fingerprints, review UI drift, and record what changed intentionally. | `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| **`ghost-fingerprint`** | Create and check the `.ghost/fingerprint/` package. | `init-package`, `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit` |
+| **`ghost-drift`** | Run deterministic checks, emit advisory review packets, compare profiles, and record what changed intentionally. | `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | **`ghost-fleet`** | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
 | **`ghost-ui`** | Reference design system Ghost dogfoods — 97 shadcn components + an MCP server. | (no verbs) |
 
@@ -55,9 +61,9 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v2` + `ghost.survey/v2` schemas. | ❌ private (`@ghost/core`) |
-| [`packages/ghost-fingerprint`](./packages/ghost-fingerprint) | The three-stage scan pipeline: `map.md` → `survey.json` → `fingerprint.md`. Authoring, lint, profile verification, describe, diff, survey ops, emit. | ✅ intended-public on npm |
-| [`packages/ghost-drift`](./packages/ghost-drift) | Drift detection and stance verbs. | ✅ `ghost-drift` on npm |
+| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.map/v2`, `ghost.survey/v2`, and `ghost.checks/v1` schemas. | ❌ private (`@ghost/core`) |
+| [`packages/ghost-fingerprint`](./packages/ghost-fingerprint) | The scan package pipeline: `.ghost/fingerprint/{map.md,survey.json,profile.md,checks.yml}`. Authoring, lint, profile verification, describe, diff, survey ops, emit. | ✅ intended-public on npm |
+| [`packages/ghost-drift`](./packages/ghost-drift) | Deterministic check, advisory review, comparison, and stance verbs. | ✅ `ghost-drift` on npm |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet view across many members. | ❌ private |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
 | [`apps/docs`](./apps/docs) | Deployed docs site (`ghost-docs`). | ❌ private |
@@ -80,7 +86,7 @@ After install, in any repo:
 > Scan this project with ghost
 ```
 
-The agent walks `map.md` → `survey.json` → `fingerprint.md`, then emits a `/design-review` slash command tuned to your design language. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
+The agent walks `.ghost/fingerprint/map.md` → `survey.json` → `profile.md` + `checks.yml`, then checks or reviews UI changes against that package. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
 
 If you want the CLI helpers for linting, profile verification, diffing, comparing, and fleet views, install from source instead. See *Getting Started* below.
 
@@ -112,33 +118,47 @@ Once a skill is installed, ask your agent in plain English ("profile this design
 
 ### Quick start
 
-**1. Map the repo** (the first checkpoint before survey and profile). Ask your host agent to write `map.md`, then validate:
+**0. Initialize the package**:
 
 ```bash
-ghost-fingerprint inventory      # raw signals as JSON (the agent reads this to author map.md)
-ghost-fingerprint lint map.md    # validate ./map.md against ghost.map/v2
+ghost-fingerprint init-package
 ```
 
-**2. Survey the design values** (the observed evidence stage). Ask your host agent to write `survey.json`, then validate:
+**1. Map the repo** (the first checkpoint before survey and profile). Ask your host agent to write `.ghost/fingerprint/map.md`, then validate:
 
 ```bash
-ghost-fingerprint survey fix-ids survey.json -o survey.json
-ghost-fingerprint lint survey.json
+ghost-fingerprint inventory
+ghost-fingerprint lint .ghost/fingerprint
 ```
 
-**3. Profile your design system** — ask your host agent to write `fingerprint.md`. It'll follow the `profile` recipe and validate at the end. You validate manually with:
+**2. Survey the design values** (the observed evidence stage). Ask your host agent to write `.ghost/fingerprint/survey.json`, then validate:
 
 ```bash
-ghost-fingerprint lint                                   # defaults to ./fingerprint.md
-ghost-fingerprint verify-profile fingerprint.md survey.json --root .
-ghost-fingerprint lint path/to/fingerprint.md --format json
+ghost-fingerprint survey fix-ids .ghost/fingerprint/survey.json -o .ghost/fingerprint/survey.json
+ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
+ghost-fingerprint lint .ghost/fingerprint
 ```
 
-**4. Compare fingerprints:**
+**3. Profile and promote checks** — ask your host agent to write `.ghost/fingerprint/profile.md` and propose lintable checks. Humans promote durable gates into `.ghost/fingerprint/checks.yml`:
+
+```bash
+ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
+ghost-fingerprint lint
+```
+
+**4. Check or review a diff**:
+
+```bash
+ghost-drift check --base main
+ghost-drift check --diff change.patch --format json
+ghost-drift review --base main
+```
+
+**5. Compare profiles:**
 
 ```bash
 # Pairwise: per-dimension distance
-ghost-drift compare market.fingerprint.md dashboard.fingerprint.md
+ghost-drift compare market.profile.md dashboard.profile.md
 
 # Add qualitative interpretation of decisions + palette
 ghost-drift compare a.md b.md --semantic
@@ -147,26 +167,26 @@ ghost-drift compare a.md b.md --semantic
 ghost-drift compare before.md after.md --temporal
 
 # Composite (N≥3): pairwise matrix, centroid, clusters — the org fingerprint
-ghost-drift compare *.fingerprint.md
+ghost-drift compare *.profile.md
 ```
 
-**5. Track intent toward another fingerprint:**
+**6. Track intent toward another profile:**
 
 ```bash
 ghost-drift ack --stance aligned --reason "Initial baseline"
-ghost-drift track new-tracked.fingerprint.md
+ghost-drift track new-tracked.profile.md
 ghost-drift diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-**6. Emit derived outputs** (these all live in `ghost-fingerprint` now — they read your `fingerprint.md`):
+**7. Emit derived outputs**:
 
 ```bash
 ghost-fingerprint emit review-command     # .claude/commands/design-review.md (per-project slash command)
-ghost-fingerprint emit context-bundle     # ghost-context/ (SKILL.md + fingerprint.md + prompt.md + tokens.css)
+ghost-fingerprint emit context-bundle     # ghost-context/ (SKILL.md + profile/fingerprint context + prompt.md + tokens.css)
 ghost-fingerprint emit skill              # .claude/skills/ghost-fingerprint (the agentskills.io bundle)
 ```
 
-**7. View a fleet** (when you have ≥2 members each with their own `map.md` and `fingerprint.md`):
+**8. View a fleet** (when you have ≥2 members each with their own package/profile):
 
 ```bash
 ghost-fleet members ./fleet     # list registered members + freshness
@@ -187,12 +207,15 @@ Commands are grouped by the tool that owns the file. Pure inputs → pure output
 | Tool | Command | Description |
 | --- | --- | --- |
 | `ghost-fingerprint` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the map recipe. |
-| `ghost-fingerprint` | `lint` | Validate file shape for `fingerprint.md`, `map.md`, or `survey.json` — auto-detects by extension/content. |
-| `ghost-fingerprint` | `verify-profile` | Validate fingerprint-to-survey fidelity after profiling; palette, spacing, typography, radii, and shadow posture must be survey-backed, and promoted checks must be calibrated. |
-| `ghost-fingerprint` | `describe` | Print section ranges + token estimates so agents can selectively load. |
+| `ghost-fingerprint` | `init-package` | Create `.ghost/fingerprint/{map.md,survey.json,profile.md,checks.yml}`. |
+| `ghost-fingerprint` | `lint` | Validate the fingerprint package or an individual `profile.md`, `map.md`, `survey.json`, or `checks.yml`. |
+| `ghost-fingerprint` | `verify-profile` | Validate profile-to-survey fidelity after profiling; palette, spacing, typography, radii, and shadow posture must be survey-backed. |
+| `ghost-fingerprint` | `describe` | Print `profile.md` section ranges + token estimates so agents can selectively load. |
 | `ghost-fingerprint` | `diff` | Structural prose-level diff between two fingerprints (NOT vector distance — for that, use `ghost-drift compare`). |
-| `ghost-fingerprint` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge`, `fix-ids`, `summarize`, `catalog`. |
-| `ghost-fingerprint` | `emit` | Derive an output from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
+| `ghost-fingerprint` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
+| `ghost-fingerprint` | `emit` | Derive an output from the profile/package: `review-command`, `context-bundle`, or `skill`. |
+| `ghost-drift` | `check` | Run active `ghost.checks/v1` deterministic gates against a diff; exits nonzero on failures. |
+| `ghost-drift` | `review` | Emit an evidence-routed advisory review packet; findings are non-blocking unless tied to active checks. |
 | `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over runtime fingerprint embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
 | `ghost-drift` | `ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost-drift` | `track` | Shift the tracked fingerprint. |
@@ -210,7 +233,7 @@ The interpretive work is done by recipes the agent runs. Install the relevant bu
 | --- | --- | --- | --- |
 | `map`       | `ghost-fingerprint` | Write the repo map (stage 1) | "map this repo", "write map.md" |
 | `survey`    | `ghost-fingerprint` | Author the survey of values (stage 2) | "survey design values", "extract design tokens" |
-| `profile`   | `ghost-fingerprint` | Author the design language (stage 3) | "profile this design language", "write fingerprint.md" |
+| `profile`   | `ghost-fingerprint` | Author the non-enforcing design-language prior (stage 3) | "profile this design language", "write profile.md" |
 | `review`    | `ghost-drift` | Review PR changes for drift | "review this PR for drift" |
 | `verify`    | `ghost-drift` | Check generated UI against the fingerprint | "verify generated UI against the fingerprint" |
 | `compare`   | `ghost-drift` | Compare fingerprints | "why did these two fingerprints drift?" |
@@ -234,30 +257,30 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ### The fingerprint
 
-What the agent reads when it writes or reviews UI. The main file is **`fingerprint.md`** (owned by `ghost-fingerprint`): Markdown with YAML frontmatter plus a prose body.
+What the agent reads when it writes or reviews UI is the **fingerprint package**:
 
-- **Frontmatter**: `references`, palette, spacing, typography, surfaces, and promoted `checks[]`.
-- **`# Character`**: what the design language feels like.
-- **`# Signature`**: what output should look like when the language comes together.
-- **`# Decisions`**: the important design choices, with evidence. Runtime comparison computes embeddings from this file; no authored embedding file is needed.
+- **`map.md`**: where surfaces live and how changed files route to scopes.
+- **`survey.json`**: factual observed evidence.
+- **`profile.md`**: non-enforcing design-language prior. It shapes judgment but never fails CI by itself.
+- **`checks.yml`**: human-promoted enforceable gates. These are the only blocking mechanism in v1.
 
 Generate one with the `profile` recipe (in the `ghost-fingerprint` skill bundle). See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec.
 
 ### The map
 
-What Ghost uses during scan and fleet workflows to understand the repo. **`map.md`** is stage 1 of a scan. It records languages, build system, package manifests, registry files, design-system paths, observable surfaces, and feature areas. Generation and drift review start from `fingerprint.md`, not `map.md`.
+What Ghost uses during scan and drift workflows to understand the repo. **`.ghost/fingerprint/map.md`** is stage 1 of a scan. It records languages, build system, package manifests, registry files, design-system paths, observable surfaces, feature areas, and scopes. Deterministic drift starts by routing changed files through this map.
 
 Generate one with the `map` recipe (in the `ghost-fingerprint` skill bundle). The agent reads `ghost-fingerprint inventory` (raw repo signals as JSON) and writes the short body.
 
 ### Author + Review Loop
 
-The loop is simple: the agent writes UI, the review or verify recipe checks it against `fingerprint.md`, and a human or agent decides what to do next. Fix the drift, accept it, track a new fingerprint, or mark one dimension as intentionally different. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+The loop is simple: the agent writes UI, `ghost-drift check` fails active gates, `ghost-drift review` provides advisory critique grounded in evidence, and a human or agent decides what to do next. Fix the drift, accept it, track a new profile, or promote a durable rule into `checks.yml`. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Remediation
 
 Three files record what happened:
 
-- **`fingerprint.md`**: The design-language contract.
+- **`.ghost/fingerprint/`**: The repo-local design memory package.
 - **`.ghost-sync.json`**: Per-dimension stances toward the tracked fingerprint (aligned, accepted, or diverging), each with recorded reasoning. Written by `ghost-drift ack` / `track` / `diverge`.
 - **`.ghost/history.jsonl`**: Append-only fingerprint history for temporal analysis. Read by `ghost-drift compare --temporal`.
 
@@ -265,8 +288,8 @@ Three files record what happened:
 
 To look across many projects:
 
-- **Many fingerprints, no map**: run `ghost-drift compare` with three or more `fingerprint.md` files. It returns pairwise distances, a centroid, and similarity clusters.
-- **A registered fleet** (members each with `map.md` + `fingerprint.md`): run `ghost-fleet view`. It adds groupings such as platform, build system, and design-system status.
+- **Many profiles, no map**: run `ghost-drift compare` with three or more `profile.md` files. It returns pairwise distances, a centroid, and similarity clusters.
+- **A registered fleet** (members each with a fingerprint package): run `ghost-fleet view`. It adds groupings such as platform, build system, and design-system status.
 
 ## Project Resources
 

@@ -66,6 +66,26 @@ No cool grays
     expect(report.errors).toBe(0);
   });
 
+  it("accepts partial child overlays when extends is present", () => {
+    const md = `---
+extends: ../fingerprint.md
+id: checkout
+decisions:
+  - dimension: density
+---
+
+# Decisions
+
+### density
+Checkout uses tighter rows than the parent.
+`;
+    const report = lintFingerprint(md);
+    expect(report.errors).toBe(0);
+    expect(report.issues.some((issue) => issue.rule === "schema-invalid")).toBe(
+      false,
+    );
+  });
+
   it("keeps a surface-derived composition-patterns fixture lint-clean", () => {
     const fixtureDir = resolve(FIXTURES, "surface-profile");
     const survey = JSON.parse(
@@ -308,85 +328,17 @@ No cool grays.
     expect(issue?.path).toBe("decisions[0].dimension_kind");
   });
 
-  it("infos when no promoted checks are present", () => {
-    const md = build("", "");
-    const report = lintFingerprint(md);
-    const issue = report.issues.find((i) => i.rule === "checks-missing");
-    expect(issue).toBeDefined();
-    expect(issue?.severity).toBe("info");
-    expect(report.errors).toBe(0);
-  });
-
-  it("warns when a promoted check has low support", () => {
+  it("rejects checks in profile frontmatter because checks.yml owns gates", () => {
     const md = build(
       `\nchecks:
-  - id: shaky-spacing
-    canonical: spatial-system
-    pattern: 'p-\\[\\d+px\\]'
-    paths: [src]
-    contexts: [className]
-    observed_count: 20
-    support: 0.72`,
-      "",
-    );
-    const report = lintFingerprint(md);
-    const issue = report.issues.find((i) => i.rule === "check-support-low");
-    expect(issue).toBeDefined();
-    expect(issue?.severity).toBe("warning");
-    expect(issue?.path).toBe("checks[0].support");
-  });
-
-  it("infos when promoted checks omit support, paths, contexts, or observed_count", () => {
-    const md = build(
-      `\nchecks:
-  - id: uncalibrated-color
+  - id: no-hardcoded-colors
     canonical: color-strategy
     pattern: '#[0-9a-fA-F]{3,8}'`,
       "",
     );
     const report = lintFingerprint(md);
-    const rules = report.issues.map((i) => i.rule);
-    expect(rules).toContain("check-support-missing");
-    expect(rules).toContain("check-paths-missing");
-    expect(rules).toContain("check-contexts-missing");
-    expect(rules).toContain("check-observed-count-missing");
-    expect(report.errors).toBe(0);
-  });
-
-  it("rejects legacy check enforce_at and rationale fields", () => {
-    const md = build(
-      `\nchecks:
-  - id: legacy-check
-    canonical: color-strategy
-    pattern: '#[0-9a-fA-F]{3,8}'
-    enforce_at: [className]
-    rationale: Old prose field.`,
-      "",
-    );
-    const report = lintFingerprint(md);
     expect(report.issues.some((i) => i.rule === "schema-invalid")).toBe(true);
     expect(report.errors).toBeGreaterThan(0);
-  });
-
-  it("warns when presence_floor is set without observed_count", () => {
-    const md = build(
-      `\nchecks:
-  - id: no-decorative-motion
-    canonical: motion
-    pattern: 'transition:\\s*all'
-    paths: [src]
-    contexts: [className]
-    presence_floor: 4
-    support: 0.92`,
-      "",
-    );
-    const report = lintFingerprint(md);
-    const issue = report.issues.find(
-      (i) => i.rule === "check-presence-floor-needs-observed-count",
-    );
-    expect(issue).toBeDefined();
-    expect(issue?.severity).toBe("warning");
-    expect(issue?.path).toBe("checks[0].observed_count");
   });
 
   it("rejects the legacy shadowComplexity: none value", () => {

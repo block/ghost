@@ -6,6 +6,7 @@ import type { CAC } from "cac";
 import {
   emitReviewCommand,
   loadFingerprint,
+  resolveFingerprintPackage,
   writeContextBundle,
 } from "./core/index.js";
 
@@ -19,7 +20,6 @@ const SKILL_BUNDLE_ROOT = fileURLToPath(
   new URL("./skill-bundle", import.meta.url),
 );
 
-const DEFAULT_FINGERPRINT = "fingerprint.md";
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 const DEFAULT_CONTEXT_OUT = "ghost-context";
 const DEFAULT_SKILL_OUT = ".claude/skills/ghost-fingerprint";
@@ -53,11 +53,11 @@ export function registerEmitCommand(cli: CAC): void {
   cli
     .command(
       "emit <kind>",
-      `Emit a derived artifact from fingerprint.md (kinds: ${SUPPORTED_KINDS.join(", ")})`,
+      `Emit a derived artifact from the fingerprint package profile (kinds: ${SUPPORTED_KINDS.join(", ")})`,
     )
     .option(
-      "-e, --fingerprint <path>",
-      `Source fingerprint file (default: ${DEFAULT_FINGERPRINT})`,
+      "-p, --profile <path>",
+      "Source profile file (default: .ghost/fingerprint/profile.md)",
     )
     .option(
       "-o, --out <path>",
@@ -106,13 +106,14 @@ export function registerEmitCommand(cli: CAC): void {
           process.exit(0);
         }
 
-        const fingerprintPath = resolve(
+        const profilePath = resolve(
           process.cwd(),
-          opts.fingerprint ?? DEFAULT_FINGERPRINT,
+          opts.profile ??
+            resolveFingerprintPackage(undefined, process.cwd()).profile,
         );
 
         if (parsed.kind === "review-command") {
-          const loaded = await loadFingerprint(fingerprintPath, {
+          const loaded = await loadFingerprint(profilePath, {
             noEmbeddingBackfill: true,
           });
           const content = emitReviewCommand({
@@ -140,14 +141,14 @@ export function registerEmitCommand(cli: CAC): void {
           (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
         );
 
-        const { fingerprint } = await loadFingerprint(fingerprintPath);
+        const { fingerprint } = await loadFingerprint(profilePath);
         const result = await writeContextBundle(fingerprint, {
           outDir,
           tokens: opts.tokens !== false,
           readme: Boolean(opts.readme),
           promptOnly: Boolean(opts.promptOnly),
           name: opts.name as string | undefined,
-          sourcePath: fingerprintPath,
+          sourcePath: profilePath,
         });
 
         process.stdout.write(

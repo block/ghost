@@ -1,6 +1,5 @@
-import { resolve } from "node:path";
 import type { CAC } from "cac";
-import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-fingerprint";
+import { loadFingerprint, resolveFingerprintPackage } from "ghost-fingerprint";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,
@@ -9,7 +8,7 @@ import {
 } from "./core/index.js";
 
 async function loadLocalFingerprint() {
-  const path = resolve(process.cwd(), FINGERPRINT_FILENAME);
+  const path = resolveFingerprintPackage(undefined, process.cwd()).profile;
   const { fingerprint } = await loadFingerprint(path);
   return fingerprint;
 }

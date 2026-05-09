@@ -29,84 +29,145 @@ export default function Home() {
           </p>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
-              Agents can write UI now. The harder question is whether that UI
-              still feels like the product it belongs to: the same palette, the
-              same density, the same hierarchy, the same small choices that make
-              an interface feel intentional instead of generic.
+              Agents can write UI. What they cannot reliably preserve is the
+              identity of the product that UI belongs to.
             </p>
             <p className="thesis-item">
-              Ghost gives the repo a local answer. It scans the UI already in
-              source, records the evidence, and writes{" "}
-              <code>fingerprint.md</code>: a design-language file that lives
-              beside the code. Agents read it before they generate UI and check
-              against it after they make changes.
+              The failure mode is structural. Large language models generate by
+              matching local patterns, not by maintaining global invariants.
+              They reproduce components, tokens, and layouts, but they do not
+              consistently preserve the higher-order decisions that make a
+              surface feel intentional: its hierarchy, its density, its
+              restraint, the specific ways it repeats and the specific ways it
+              refuses.
             </p>
             <p className="thesis-item">
-              The evidence matters. <code>map.md</code> tells Ghost where to
-              look. <code>survey.json</code> records the values, tokens,
-              components, and surfaces found there. <code>fingerprint.md</code>{" "}
-              is the file people and agents actually use.
+              Most design systems encode the inventory of a product: colors,
+              type scales, components. That inventory is necessary, but it is
+              not sufficient. The same system can produce many different
+              products. What is missing is the policy that governs how those
+              parts are composed.
             </p>
             <p className="thesis-item">
-              Most design-system work for AI starts by codifying the system
-              itself: enumerate the colors, expose the components, describe the
-              pieces. That matters, but it mostly teaches the inventory. The
-              same palette, type scale, and component set can be composed into a
-              multitude of products. The question is not only what tokens and
-              components exist. It's what the surface understands about itself
-              that is hard to recover from the parts.
+              Ghost introduces a second layer: a fingerprint.
             </p>
             <p className="thesis-item">
-              That is what Ghost captures as a <em>fingerprint</em>: the
-              target's intended implementation of its design language. It names
-              the patterns that recur, the hierarchy it prefers, the voice it
-              speaks in, the stance it takes, and the things it refuses. A
-              product's language lives in those higher-order choices: when
-              density becomes confidence, when restraint becomes trust, when
-              repetition becomes rhythm, when a component is bent away from its
-              generic shape because the surface has a sharper job to do.
+              The fingerprint is a repository-local, versioned artifact that
+              captures the product's composition policy: the set of constraints,
+              preferences, and recurring decisions that shape how the system is
+              actually used. It does not replace the design system; it
+              conditions it.
             </p>
             <p className="thesis-item">
-              Specs are still evidence; they are just not the whole language.
-              Specs describe the ingredients. Fingerprint describes the
-              composition the product keeps choosing. That is the portable
-              format: readable enough for an agent to generate against, concrete
-              enough for drift to be checked, and close enough to implementation
-              that it can move with the product instead of floating above it.
+              Ghost builds this fingerprint package from evidence in the
+              codebase:
+            </p>
+            <ul className="thesis-item list-disc space-y-2 pl-6">
+              <li>
+                <code>.ghost/fingerprint/map.md</code> defines where to observe
+                and route UI
+              </li>
+              <li>
+                <code>.ghost/fingerprint/survey.json</code> records extracted
+                tokens, components, and patterns
+              </li>
+              <li>
+                <code>.ghost/fingerprint/profile.md</code> shapes judgment
+                without enforcing CI
+              </li>
+              <li>
+                <code>.ghost/fingerprint/checks.yml</code> stores human-promoted
+                gates
+              </li>
+            </ul>
+            <p className="thesis-item">
+              The distinction is deliberate. Specs describe what exists. The
+              fingerprint describes how the product repeatedly chooses to use
+              what exists.
             </p>
             <p className="thesis-item">
-              And it has to be checkable. A voice that can only be evaluated by
-              its original author can't be delegated — not to an agent, not to a
-              new hire, not to a fork. The harness is how a voice becomes
-              transmissible: enough of it captured outside one person that
-              someone who isn't you can apply it faithfully.
+              This makes the fingerprint closer to a behavioral prior than a
+              spec. It encodes:
+            </p>
+            <ul className="thesis-item list-disc space-y-2 pl-6">
+              <li>preferred hierarchies over possible ones</li>
+              <li>constraints on density, spacing, and interaction patterns</li>
+              <li>allowed deviations from base components</li>
+              <li>explicit anti-patterns the surface avoids</li>
+            </ul>
+            <p className="thesis-item">
+              For an agent, this changes the task. UI generation is no longer
+              unconstrained composition over a design system. It becomes a
+              constrained search guided by a product-specific policy.
+            </p>
+            <p className="thesis-item">A typical loop becomes:</p>
+            <ol className="thesis-item list-decimal space-y-2 pl-6">
+              <li>Condition on the fingerprint</li>
+              <li>Generate UI against the design system</li>
+              <li>Evaluate the result against fingerprint constraints</li>
+              <li>Revise until violations are reduced or resolved</li>
+            </ol>
+            <p className="thesis-item">
+              The fingerprint is therefore not just descriptive. It is partially
+              executable. It enables both generation and evaluation.
             </p>
             <p className="thesis-item">
-              Drift is useful because it reveals the boundary of the
-              fingerprint. When an agent fails to compose faithfully, the
-              failure is evidence: maybe the implementation missed the language,
-              maybe the fingerprint did not yet capture the language, or maybe
-              the product has moved and the fingerprint needs to move with it.
+              This is critical because style that cannot be evaluated cannot be
+              delegated. A design language that only its original author can
+              judge is not transferable: to agents, to new engineers, or to
+              forks of the product.
             </p>
             <p className="thesis-item">
-              The file that carries brand has to live where the agent does: in
-              the repo, versioned with the code, edited in the same PRs as the
-              features it shapes. And it has to evolve. Brand isn't locked in at
-              the start; it shifts as the product ships, as taste sharpens, as
-              new surfaces appear, as the org grows new products around it.
+              Ghost treats evaluation as a first-class concern. Parts of the
+              fingerprint are grounded in:
+            </p>
+            <ul className="thesis-item list-disc space-y-2 pl-6">
+              <li>explicit rules: hard constraints</li>
+              <li>preference gradients: soft constraints</li>
+              <li>negative constraints: anti-patterns</li>
+            </ul>
+            <p className="thesis-item">
+              These allow an agent, or a reviewer, to check whether a surface
+              composes faithfully, not just whether it compiles.
             </p>
             <p className="thesis-item">
-              Which raises the governance question. The reflex is to centralize:
-              one source of truth, many downstream projects, compliance tracked
-              from above. Ghost takes the opposite approach. Each repo owns its
-              fingerprint, its trajectory, and its stance. Decentralization
-              without intent is entropy, so stances (<em>aligned</em>,{" "}
-              <em>accepted</em>, <em>diverging</em>) turn divergence into
-              signal. The fleet of fingerprints drifts in the open; every
-              divergence carries reasoning. And read from above, the fleet
-              becomes a world model — the shape of the org's design language,
-              drawn from the languages inside it. Nothing is prescriptive.
-              Nothing drifts silently. Everything is transparent.
+              Drift becomes measurable within this system. When generated or
+              modified UI diverges from the fingerprint, the failure is not just
+              error; it is signal. Drift can originate from:
+            </p>
+            <ul className="thesis-item list-disc space-y-2 pl-6">
+              <li>incorrect generation: agent failure</li>
+              <li>incomplete fingerprint: under-specified policy</li>
+              <li>intentional product evolution</li>
+            </ul>
+            <p className="thesis-item">
+              Ghost does not eliminate drift; it surfaces and localizes it. The
+              system's boundary becomes visible where composition fails.
+            </p>
+            <p className="thesis-item">
+              The fingerprint package must live where generation happens: in the
+              repository, versioned alongside the code it governs, evolving
+              through the same pull requests that introduce new UI. As the
+              product changes, the package updates with it, maintaining
+              alignment between intent and implementation.
+            </p>
+            <p className="thesis-item">
+              This leads to a different governance model. Instead of a single
+              centralized design authority, each repository owns its
+              fingerprint: its local expression of the design language.
+              Divergence across repositories is not hidden; it is made explicit
+              through declared stances (<em>aligned</em>, <em>accepted</em>,{" "}
+              <em>diverging</em>), turning fragmentation into observable
+              structure.
+            </p>
+            <p className="thesis-item">
+              Across an organization, the collection of fingerprints forms a
+              higher-order map: a distributed model of the design language as it
+              is actually practiced, not as it is prescribed.
+            </p>
+            <p className="thesis-item">
+              Nothing is enforced globally. Nothing drifts silently. Every
+              surface declares its policy, and every deviation carries evidence.
             </p>
           </div>
         </section>

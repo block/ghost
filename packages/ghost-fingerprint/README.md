@@ -1,131 +1,93 @@
 # ghost-fingerprint
 
-**Author the three-stage scan of a project's design language: `map.md` → `survey.json` → `fingerprint.md`. No LLM calls in any verb.**
+**Author and validate Ghost's repo-local design memory package. No LLM calls in any verb.**
 
-`ghost-fingerprint` owns the scan files every other Ghost tool reads. A scan has three stages:
+Canonical package:
 
-| Stage | Artifact | Schema | Authored via | Validated by |
-|---|---|---|---|---|
-| **Map** | `map.md` | `ghost.map/v2` | `map.md` skill recipe + `ghost-fingerprint inventory` | `ghost-fingerprint lint map.md` |
-| **Survey** | `survey.json` | `ghost.survey/v2` | `survey.md` skill recipe + `ghost-fingerprint survey fix-ids` | `ghost-fingerprint lint survey.json` |
-| **Express** | `fingerprint.md` | (unversioned) | `profile.md` skill recipe (reads survey evidence) | `ghost-fingerprint lint fingerprint.md` + `ghost-fingerprint verify-profile fingerprint.md survey.json --root .` |
-
-This is a breaking v0 scan migration: `ghost.map/v1` and `ghost.survey/v1` are no longer accepted. Regenerate old scan artifacts through map → survey so `surface_sources` and `ui_surfaces[]` capture implemented UI evidence.
-
-The CLI validates files, verifies that a fingerprint matches its survey, inventories repo signals, runs survey ops (`merge`, `fix-ids`, `summarize`, `catalog`), diffs fingerprints, reports scan progress, and emits derived artifacts.
-
-The actual writing is done by your host agent using the recipes in this package. The CLI is the checker.
-
-For drift detection, comparison, and stance recording (`compare`, `ack`, `track`, `diverge`), see **[`ghost-drift`](../ghost-drift)**.
-
-## Requirements
-
-- Node.js **18+**
-
-## Install
-
-> `ghost-fingerprint` is part of the same release as `ghost-drift`. Install from the GitHub release tarball until npm registration is unblocked:
-
-```bash
-pnpm add https://github.com/block/ghost/releases/download/ghost-fingerprint%400.0.0/ghost-fingerprint-0.0.0.tgz
+```text
+.ghost/fingerprint/
+  map.md
+  survey.json
+  profile.md
+  checks.yml
 ```
+
+Checks fail builds. Profile shapes judgment. Survey grounds both. The package is
+the fingerprint.
+
+## Stages
+
+| Stage | Artifact | Schema | Role |
+|---|---|---|---|
+| Map | `map.md` | `ghost.map/v2` | Route changes to scopes and observable UI surfaces. |
+| Survey | `survey.json` | `ghost.survey/v2` | Record factual values, tokens, components, and UI surface evidence. |
+| Profile | `profile.md` | profile frontmatter/body | Provide non-enforcing design-language guidance. |
+| Checks | `checks.yml` | `ghost.checks/v1` | Store human-promoted deterministic gates. |
+
+The CLI validates files, verifies profile-to-survey fidelity, inventories repo
+signals, runs survey ops (`merge`, `fix-ids`, `summarize`, `catalog`,
+`patterns`), diffs profiles, reports scan progress, and emits derived artifacts.
+
+The actual writing is done by your host agent using the recipes in this package.
+The CLI is the checker.
+
+For deterministic drift gates and advisory review packets, see
+**[`ghost-drift`](../ghost-drift)**.
 
 ## Use
 
 ```bash
-# Topology — emit raw repo signals
-ghost-fingerprint inventory                          # signals for cwd
-ghost-fingerprint inventory ../other-repo            # signals for another path
+ghost-fingerprint init-package
 
-# Validation — auto-detects fingerprint.md / map.md / survey.json
-ghost-fingerprint lint                                # ./fingerprint.md
-ghost-fingerprint lint map.md                         # validates as ghost.map/v2
-ghost-fingerprint lint survey.json                    # validates as ghost.survey/v2
-ghost-fingerprint lint path/to/file --format json     # machine-readable output
-ghost-fingerprint verify-profile fingerprint.md survey.json --root .
-                                                      # checks fingerprint values/checks against survey evidence
+ghost-fingerprint inventory
+ghost-fingerprint lint                         # defaults to .ghost/fingerprint
+ghost-fingerprint scan-status
 
-# Pipeline orchestration — what stage to run next
-ghost-fingerprint scan-status                         # checks cwd
-ghost-fingerprint scan-status path/to/scan-dir
+ghost-fingerprint survey fix-ids .ghost/fingerprint/survey.json -o .ghost/fingerprint/survey.json
+ghost-fingerprint survey summarize .ghost/fingerprint/survey.json
+ghost-fingerprint survey catalog .ghost/fingerprint/survey.json --kind color
+ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
 
-# Survey ops — deterministic
-ghost-fingerprint survey merge a.json b.json -o merged.json
-ghost-fingerprint survey fix-ids draft.json -o final.json
-ghost-fingerprint survey summarize survey.json
-ghost-fingerprint survey catalog survey.json --kind color
+ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
+ghost-fingerprint describe                     # defaults to .ghost/fingerprint/profile.md
+ghost-fingerprint diff a.profile.md b.profile.md
 
-# Inspection of fingerprints
-ghost-fingerprint describe                            # section ranges + token estimates
-ghost-fingerprint diff a/fingerprint.md b/fingerprint.md  # structural prose-level diff
-                                                       # (NOT vector distance — see `ghost-drift compare`)
-
-# Emit derived artifacts
-ghost-fingerprint emit review-command                 # → .claude/commands/design-review.md
-ghost-fingerprint emit context-bundle                 # → ghost-context/ (SKILL.md + fingerprint.md + prompt.md + tokens.css)
-ghost-fingerprint emit context-bundle --prompt-only   # single prompt.md
-ghost-fingerprint emit skill                          # install the agent recipe bundle
+ghost-fingerprint emit context-bundle
+ghost-fingerprint emit skill
 ```
 
 Zero config for every verb. No API key needed.
 
-## As a library
+## As A Library
 
 ```ts
 import {
+  initFingerprintPackage,
+  lintFingerprintPackage,
   parseFingerprint,
-  lintFingerprint,
-  layoutFingerprint,
-  diffFingerprints,
-  inventory,
-  lintMap,
-  scanStatus,
   verifyProfile,
 } from "ghost-fingerprint";
 
-import {
-  catalogSurveyValues,
-  lintSurvey,
-  mergeSurveys,
-  recomputeSurveyIds,
-  type Survey,
-} from "@ghost/core";
-
-const { fingerprint } = parseFingerprint(await readFile("fingerprint.md", "utf8"));
-const report = lintFingerprint(source);
-const layout = layoutFingerprint(source);   // section ranges + token estimates
-const diff = diffFingerprints(a, b);        // structural prose diff
-const status = await scanStatus("./scan");  // per-stage state + recommended next
-const verify = verifyProfile(source, survey, { root: "." }); // profile fidelity
-const catalog = catalogSurveyValues(survey); // derived value enum/spec view
+const paths = await initFingerprintPackage(undefined, process.cwd());
+const lint = await lintFingerprintPackage(undefined, process.cwd());
+const { fingerprint } = parseFingerprint(await readFile(paths.profile, "utf8"));
+const verify = verifyProfile(profileSource, survey, { root: "." });
 ```
 
-All exports are browser-safe except `inventory` (reads from disk).
-
-## BYOA — bring your own agent
-
-Install the skill bundle so your agent can author against the schemas:
+## Skill Bundle
 
 ```bash
 ghost-fingerprint emit skill
 ```
 
-The bundle ships four recipes:
-
-- **`scan.md`** — meta-recipe orchestrating map → survey → profile end-to-end via `scan-status` checkpoints. Use when the user wants a full scan rather than a specific stage.
-- **`map.md`** — write `map.md` from a target's `inventory` output. Stage 1.
-- **`survey.md`** — write `survey.json` from a target's source code. Stage 2. Enumerate concrete values, tokens, components, and implemented UI surfaces; do not sample.
-- **`profile.md`** — interpret a `survey.json` into `fingerprint.md`. Stage 3. Cannot fabricate values not in the survey; cites survey rows as evidence; validates fidelity with `verify-profile`.
-
-Plus a condensed schema reference (`schema.md`) for the `fingerprint.md` frontmatter and body.
-
-Once installed, ask your agent to "scan this design language end-to-end" or "profile this design language". It will follow the recipes, lint map and survey outputs, then run `lint` and `verify-profile` for the fingerprint.
+The bundle ships recipes for scan, map, survey, profile, and schema reference.
+Ask your agent to "scan this design language end-to-end" or "profile this design
+language"; it will author package artifacts and use the CLI for validation.
 
 ## Format Docs
 
-See [`docs/fingerprint-format.md`](https://github.com/block/ghost/blob/main/docs/fingerprint-format.md) for the full `fingerprint.md` spec. Runtime comparison derives embeddings from the authored file; there is no sibling embedding file.
-
-The `ghost.survey/v2` schema and `ghost.map/v2` schema both live in `@ghost/core`; the condensed authoring references ship in this package's skill bundle.
+See [`docs/fingerprint-format.md`](https://github.com/block/ghost/blob/main/docs/fingerprint-format.md)
+for the full package format.
 
 ## License
 

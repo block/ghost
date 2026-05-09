@@ -96,9 +96,13 @@ export function buildCli(): ReturnType<typeof cac> {
           }
           const memberCount = result.view.members.length;
           const distanceCount = result.view.distances.length;
+          const nodeCount = result.view.nodes.length;
+          const nodeDistanceCount = result.view.node_distances.length;
           process.stdout.write(
             `\n${memberCount} member${memberCount === 1 ? "" : "s"}, ${distanceCount} pairwise distance${
               distanceCount === 1 ? "" : "s"
+            }, ${nodeCount} fingerprint node${nodeCount === 1 ? "" : "s"}, ${nodeDistanceCount} node distance${
+              nodeDistanceCount === 1 ? "" : "s"
             }, ${result.view.tracks.length} track edge${
               result.view.tracks.length === 1 ? "" : "s"
             }\n`,

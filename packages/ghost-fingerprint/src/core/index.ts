@@ -19,6 +19,14 @@ export type { BodyData } from "./body.js";
 export { parseBody } from "./body.js";
 export type { DesignDecision } from "./compose.js";
 export { mergeFingerprint } from "./compose.js";
+export {
+  CHECKS_FILENAME,
+  FINGERPRINT_FILENAME,
+  FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINTS_DIRNAME,
+  PROFILE_FILENAME,
+  SCOPE_SURVEYS_DIRNAME,
+} from "./constants.js";
 // --- Context (review-command + context-bundle) ---
 export type {
   ContextFormat,
@@ -39,6 +47,18 @@ export type {
   TokenChange,
 } from "./diff.js";
 export { diffFingerprints, formatSemanticDiff } from "./diff.js";
+export type { FingerprintPackagePaths } from "./fingerprint-package.js";
+export {
+  initFingerprintPackage,
+  lintFingerprintPackage,
+  resolveFingerprintPackage,
+} from "./fingerprint-package.js";
+export type {
+  LoadedFingerprintNode,
+  LoadedFingerprintSet,
+  LoadFingerprintSetOptions,
+} from "./fingerprint-set.js";
+export { loadFingerprintSet } from "./fingerprint-set.js";
 export type { FingerprintMeta, FrontmatterData } from "./frontmatter.js";
 export { inventory } from "./inventory.js";
 export type {
@@ -62,15 +82,18 @@ export { lintMap } from "./lint-map.js";
 export type { ParsedFingerprint, ParseOptions } from "./parser.js";
 export { parseFingerprint, splitRaw } from "./parser.js";
 export type {
+  ScanScopeReport,
   ScanStage,
   ScanStageReport,
   ScanStageState,
   ScanStatus,
+  ScanStatusOptions,
 } from "./scan-status.js";
 export { scanStatus } from "./scan-status.js";
 export type { FrontmatterShape } from "./schema.js";
 export {
   FrontmatterSchema,
+  PartialFrontmatterSchema,
   toJsonSchema,
   validateFrontmatter,
 } from "./schema.js";
@@ -86,9 +109,6 @@ export {
 } from "./verify-profile.js";
 export type { SerializeOptions } from "./writer.js";
 export { serializeFingerprint } from "./writer.js";
-
-/** Canonical filename for the emitted fingerprint. */
-export const FINGERPRINT_FILENAME = "fingerprint.md";
 
 export interface LoadOptions {
   /** Skip `extends:` resolution. Default: false (extends chains are resolved). */

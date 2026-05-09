@@ -2,14 +2,18 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
+  getEffectiveMapScopes,
   MAP_FILENAME,
   type MapFrontmatter,
   MapFrontmatterSchema,
+  type MapScope,
 } from "@ghost/core";
-import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-fingerprint";
+import { loadFingerprint, PROFILE_FILENAME } from "ghost-fingerprint";
 import { parse as parseYaml } from "yaml";
 import { FLEET_MEMBERS_DIRNAME } from "./schema.js";
 import type { FleetMember, MemberSummary } from "./types.js";
+
+const FINGERPRINTS_DIRNAME = "fingerprints";
 
 /**
  * Walk the canonical fleet layout and produce one FleetMember per
@@ -44,7 +48,7 @@ export async function loadMembers(dir: string): Promise<FleetMember[]> {
 /**
  * Resolve the members directory.
  *
- * Convention is `<root>/members/<id>/{map.md,fingerprint.md}`. We also
+ * Convention is `<root>/members/<id>/{map.md,profile.md}`. We also
  * accept being pointed directly at a `members/` directory.
  */
 function pickMembersRoot(root: string): string {
@@ -62,7 +66,7 @@ function pickMembersRoot(root: string): string {
 /**
  * Load a single member directory.
  *
- * Reads map.md, fingerprint.md, and optional .ghost-sync.json. Each is
+ * Reads map.md, profile.md, and optional .ghost-sync.json. Each is
  * surfaced through a status field so missing/broken inputs are visible
  * without crashing the rest of the load.
  */
@@ -70,7 +74,7 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
   const dirName = memberPath.split("/").pop() ?? "";
 
   const mapPath = join(memberPath, MAP_FILENAME);
-  const fingerprintPath = join(memberPath, FINGERPRINT_FILENAME);
+  const fingerprintPath = join(memberPath, PROFILE_FILENAME);
 
   // Default identity is the directory basename; map.md `id` overrides.
   let id = dirName;
@@ -96,6 +100,7 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
   let fingerprintError: string | undefined;
   let fingerprint: FleetMember["fingerprint"];
   let fingerprintMtime: string | undefined;
+  const fingerprintNodes: FleetMember["fingerprintNodes"] = [];
   if (existsSync(fingerprintPath)) {
     try {
       const parsed = await loadFingerprint(fingerprintPath);
@@ -103,11 +108,23 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
       const mtime = (await stat(fingerprintPath)).mtime;
       fingerprintMtime = mtime.toISOString();
       fingerprintStatus = "ok";
+      fingerprintNodes.push({
+        id,
+        memberId: id,
+        kind: "member",
+        fingerprint,
+        fingerprintPath,
+        fingerprintMtime,
+      });
     } catch (err) {
       fingerprintStatus = "error";
       fingerprintError = err instanceof Error ? err.message : String(err);
     }
   }
+
+  fingerprintNodes.push(
+    ...(await loadScopedFingerprintNodes(memberPath, id, map)),
+  );
 
   // --- .ghost-sync.json (optional) ---
   const tracks = await readTracksTarget(memberPath);
@@ -123,7 +140,58 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
     fingerprintError,
     fingerprintMtime,
     tracks,
+    fingerprintNodes,
   };
+}
+
+async function loadScopedFingerprintNodes(
+  memberPath: string,
+  memberId: string,
+  map: MapFrontmatter | undefined,
+): Promise<FleetMember["fingerprintNodes"]> {
+  const scopesDir = join(memberPath, FINGERPRINTS_DIRNAME);
+  if (!existsSync(scopesDir)) return [];
+
+  const scopeById = new Map<string, MapScope>();
+  if (map) {
+    for (const scope of getEffectiveMapScopes(map)) {
+      scopeById.set(scope.id, scope);
+    }
+  }
+
+  const entries = readdirSync(scopesDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .filter((entry) => entry.name.endsWith(".md"))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const nodes: FleetMember["fingerprintNodes"] = [];
+  for (const entry of entries) {
+    const scopeId = entry.name.slice(0, -".md".length);
+    const fingerprintPath = join(scopesDir, entry.name);
+    try {
+      const parsed = await loadFingerprint(fingerprintPath);
+      const fingerprintMtime = (
+        await stat(fingerprintPath)
+      ).mtime.toISOString();
+      const scope = scopeById.get(scopeId);
+      nodes.push({
+        id: `${memberId}/${scopeId}`,
+        memberId,
+        kind: "scope",
+        fingerprint: parsed.fingerprint,
+        fingerprintPath,
+        fingerprintMtime,
+        scopeId,
+        parentId: memberId,
+        ...(scope ? { scope } : {}),
+      });
+    } catch {
+      // Parent member status remains focused on canonical map/fingerprint.
+      // Malformed scoped overlays simply don't enter the fleet distance graph.
+    }
+  }
+
+  return nodes;
 }
 
 /**
