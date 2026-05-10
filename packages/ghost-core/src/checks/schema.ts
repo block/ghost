@@ -9,6 +9,7 @@ const GhostCheckAppliesToSchema = z
     scopes: z.array(z.string().min(1)).optional(),
     paths: z.array(z.string().min(1)).optional(),
     surface_types: z.array(z.string().min(1)).optional(),
+    pattern_ids: z.array(z.string().min(1)).optional(),
   })
   .strict();
 

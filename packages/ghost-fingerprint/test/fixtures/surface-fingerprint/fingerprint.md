@@ -1,9 +1,9 @@
 ---
-id: surface-profile-fixture
+id: surface-fingerprint-fixture
 source: llm
 timestamp: 2026-05-04T00:00:00Z
 references:
-  specs: [packages/ghost-fingerprint/test/fixtures/surface-profile/survey.json]
+  specs: [packages/ghost-fingerprint/test/fixtures/surface-fingerprint/survey.json]
   components: [src/components/MetricCard.tsx, src/components/StatusTimeline.tsx]
   examples: [src/routes/dashboard.tsx]
 observation:

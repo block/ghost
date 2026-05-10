@@ -200,9 +200,20 @@ async function loadCheckPackage(
   const paths = resolveFingerprintPackage(packageDir, cwd);
   const [mapRaw, checksRaw] = await Promise.all([
     readFile(paths.map, "utf-8"),
-    readFile(paths.checks, "utf-8"),
+    readOptional(paths.checks),
   ]);
   const map = parseMap(mapRaw);
+  if (checksRaw === undefined) {
+    return {
+      dir: paths.dir,
+      map,
+      checks: {
+        schema: "ghost.checks/v1",
+        id: "none",
+        checks: [],
+      },
+    };
+  }
   const checksInput = parseYaml(checksRaw);
   const checksResult = GhostChecksSchema.safeParse(checksInput);
   if (!checksResult.success) {
@@ -222,6 +233,14 @@ async function loadCheckPackage(
     );
   }
   return { dir: paths.dir, map, checks: checksResult.data };
+}
+
+async function readOptional(path: string): Promise<string | undefined> {
+  try {
+    return await readFile(path, "utf-8");
+  } catch {
+    return undefined;
+  }
 }
 
 function parseMap(raw: string): MapFrontmatter {

@@ -4,10 +4,12 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   catalogSurveyValues,
-  type Fingerprint,
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
+  type GhostPatternsDocument,
   lintGhostChecks,
+  lintGhostPatterns,
+  lintGhostResources,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
@@ -17,12 +19,12 @@ import {
   summarizeSurvey,
 } from "@ghost/core";
 import { cac } from "cac";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   diffFingerprints,
   formatLayout,
   formatSemanticDiff,
-  formatVerifyProfileReport,
+  formatVerifyFingerprintReport,
   initFingerprintPackage,
   inventory,
   layoutFingerprint,
@@ -32,21 +34,21 @@ import {
   loadFingerprint,
   resolveFingerprintPackage,
   scanStatus,
-  verifyProfile,
+  verifyFingerprintPackage,
 } from "./core/index.js";
 import { registerEmitCommand } from "./emit-command.js";
 
 /**
  * Build the cac CLI for `ghost-fingerprint`.
  *
- * Verbs author and validate the `.ghost/fingerprint/` package:
- * `lint` (schema check, auto-detects file kind), `verify-profile`
- * (profile-to-survey fidelity check), `describe` (section ranges + token
- * estimates for profiles), `diff` (structural prose-level diff between two
- * profiles), `emit` (derive review-command, context-bundle, or skill
+ * Verbs author and validate the root `.ghost/` fingerprint bundle:
+ * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
+ * fidelity), `describe` (section ranges + token estimates for intent or direct
+ * fingerprint markdown), `diff` (structural prose-level diff between direct
+ * fingerprint files), `emit` (derive review-command, context-bundle, or skill
  * artifacts), and `survey` operations for deterministic `ghost.survey/v2`
  * merge, ID repair, bounded summary output, derived value catalogs, and
- * observed pattern summaries.
+ * operational pattern synthesis.
  *
  * Embedding-based comparison lives in `ghost-drift`. `diff` here is
  * text/structural — what decisions and palette roles changed — not
@@ -59,7 +61,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "lint [file]",
-      "Validate a fingerprint package, profile.md, map.md, survey.json, or checks.yml — defaults to .ghost/fingerprint",
+      "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -82,11 +84,15 @@ export function buildCli(): ReturnType<typeof cac> {
             ? lintSurveyFile(raw)
             : kind === "map"
               ? lintMap(raw)
-              : kind === "checks"
-                ? lintChecksFile(raw)
-                : lintFingerprint(raw);
+              : kind === "resources"
+                ? lintResourcesFile(raw)
+                : kind === "patterns"
+                  ? lintPatternsFile(raw)
+                  : kind === "checks"
+                    ? lintChecksFile(raw)
+                    : lintFingerprint(raw);
 
-        if (kind === "profile" && hasExtends(raw) && report.errors === 0) {
+        if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
             await loadFingerprint(fileTarget, { noEmbeddingBackfill: true });
           } catch (err) {
@@ -114,22 +120,32 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "init-package [dir]",
-      "Create a .ghost/fingerprint package skeleton (map.md, survey.json, profile.md, checks.yml)",
+      "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
+    )
+    .option(
+      "--with-intent",
+      "Also create optional intent.md for human-authored or human-approved intent",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const paths = await initFingerprintPackage(dirArg, process.cwd());
+        const paths = await initFingerprintPackage(dirArg, process.cwd(), {
+          withIntent: Boolean(opts.withIntent),
+        });
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(paths, null, 2)}\n`);
         } else {
           process.stdout.write(
             `Initialized fingerprint package: ${paths.dir}\n`,
           );
+          process.stdout.write(`  resources.yml: ${paths.resources}\n`);
           process.stdout.write(`  map.md: ${paths.map}\n`);
           process.stdout.write(`  survey.json: ${paths.survey}\n`);
-          process.stdout.write(`  profile.md: ${paths.profile}\n`);
+          process.stdout.write(`  patterns.yml: ${paths.patterns}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          if (opts.withIntent) {
+            process.stdout.write(`  intent.md: ${paths.intent}\n`);
+          }
         }
         process.exit(0);
       } catch (err) {
@@ -140,18 +156,18 @@ export function buildCli(): ReturnType<typeof cac> {
       }
     });
 
-  // --- verify-profile ---
+  // --- verify ---
   cli
     .command(
-      "verify-profile <profile> <survey>",
-      "Verify profile.md is faithful to its survey.json: palette values must be survey-backed",
+      "verify [dir]",
+      "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
     )
     .option(
       "--root <dir>",
-      "Optional target root used by profile fidelity checks that need repo context",
+      "Optional target root used to resolve resources.yml local paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (profilePath: string, surveyPath: string, opts) => {
+    .action(async (dirArg: string | undefined, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
           console.error("Error: --format must be 'cli' or 'json'");
@@ -159,42 +175,14 @@ export function buildCli(): ReturnType<typeof cac> {
           return;
         }
 
-        const profileTarget = resolve(process.cwd(), profilePath);
-        const surveyTarget = resolve(process.cwd(), surveyPath);
-        const [fingerprintRaw, surveyRaw] = await Promise.all([
-          readFile(profileTarget, "utf-8"),
-          readFile(surveyTarget, "utf-8"),
-        ]);
-
-        let survey: unknown;
-        try {
-          survey = JSON.parse(surveyRaw);
-        } catch (err) {
-          console.error(
-            `Error: ${surveyTarget} is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-          );
-          process.exit(2);
-          return;
-        }
-
-        let resolvedFingerprint: Fingerprint | undefined;
-        if (hasExtends(fingerprintRaw)) {
-          resolvedFingerprint = (
-            await loadFingerprint(profileTarget, {
-              noEmbeddingBackfill: true,
-            })
-          ).fingerprint;
-        }
-
-        const report = verifyProfile(fingerprintRaw, survey, {
+        const report = await verifyFingerprintPackage(dirArg, process.cwd(), {
           root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
-          resolvedFingerprint,
         });
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
         } else {
-          process.stdout.write(formatVerifyProfileReport(report));
+          process.stdout.write(formatVerifyFingerprintReport(report));
         }
 
         process.exit(report.errors > 0 ? 1 : 0);
@@ -210,7 +198,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "scan-status [dir]",
-      "Report which fingerprint package stages have produced artifacts: map.md, survey.json, profile.md, checks.yml.",
+      "Report which root fingerprint bundle stages have produced artifacts: resources.yml, map.md, survey.json, patterns.yml, and optional checks.yml/intent.md.",
     )
     .option(
       "--include-scopes",
@@ -230,16 +218,22 @@ export function buildCli(): ReturnType<typeof cac> {
             state === "present" ? "present" : "missing";
           process.stdout.write(`scan dir: ${status.dir}\n\n`);
           process.stdout.write(
+            `  resources  (resources.yml): ${fmt(status.resources.state)}\n`,
+          );
+          process.stdout.write(
             `  map        (map.md):        ${fmt(status.map.state)}\n`,
           );
           process.stdout.write(
             `  survey     (survey.json):   ${fmt(status.survey.state)}\n`,
           );
           process.stdout.write(
-            `  profile    (profile.md):    ${fmt(status.profile.state)}\n`,
+            `  patterns   (patterns.yml):  ${fmt(status.patterns.state)}\n`,
           );
           process.stdout.write(
             `  checks     (checks.yml):    ${fmt(status.checks.state)}\n\n`,
+          );
+          process.stdout.write(
+            `  intent     (intent.md):     ${fmt(status.intent.state)}\n\n`,
           );
           if (status.recommended_next) {
             process.stdout.write(
@@ -295,15 +289,15 @@ export function buildCli(): ReturnType<typeof cac> {
   // --- describe ---
   cli
     .command(
-      "describe [profile]",
-      "Print a section map of profile.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+      "describe [fingerprint]",
+      "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
         const target = path
           ? resolve(process.cwd(), path)
-          : resolveFingerprintPackage(undefined, process.cwd()).profile;
+          : resolveFingerprintPackage(undefined, process.cwd()).intent;
         const raw = await readFile(target, "utf-8");
         const layout = layoutFingerprint(raw);
         if (opts.format === "json") {
@@ -326,7 +320,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "diff <a> <b>",
-      "Structural diff between two profile.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+      "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (a: string, b: string, opts) => {
@@ -367,8 +361,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--format <fmt>",
-      "survey summarize/catalog output format: markdown or json",
-      { default: "markdown" },
+      "Output format: summarize/catalog use markdown or json; patterns use yaml, json, or markdown",
     )
     .option(
       "--kind <kind>",
@@ -416,10 +409,20 @@ export function buildCli(): ReturnType<typeof cac> {
           process.exit(2);
           return;
         }
-        if (op === "summarize" || op === "catalog" || op === "patterns") {
-          if (opts.format !== "markdown" && opts.format !== "json") {
+        const format = defaultSurveyFormat(op, opts.format);
+        if (op === "summarize" || op === "catalog") {
+          if (format !== "markdown" && format !== "json") {
             console.error(
               `Error: survey ${op} --format must be 'markdown' or 'json'`,
+            );
+            process.exit(2);
+            return;
+          }
+        }
+        if (op === "patterns") {
+          if (format !== "yaml" && format !== "json" && format !== "markdown") {
+            console.error(
+              "Error: survey patterns --format must be 'yaml', 'json', or 'markdown'",
             );
             process.exit(2);
             return;
@@ -485,7 +488,7 @@ export function buildCli(): ReturnType<typeof cac> {
             budget: opts.budget as SurveySummaryBudget,
           });
           out =
-            opts.format === "json"
+            format === "json"
               ? `${JSON.stringify(summary, null, 2)}\n`
               : formatSurveySummaryMarkdown(summary);
         } else if (op === "catalog") {
@@ -493,15 +496,12 @@ export function buildCli(): ReturnType<typeof cac> {
             kind: typeof opts.kind === "string" ? opts.kind : undefined,
           });
           out =
-            opts.format === "json"
+            format === "json"
               ? `${JSON.stringify(catalog, null, 2)}\n`
               : formatSurveyCatalogMarkdown(catalog);
         } else if (op === "patterns") {
           const patterns = summarizeSurveyPatterns(parsed[0]);
-          out =
-            opts.format === "json"
-              ? `${JSON.stringify(patterns, null, 2)}\n`
-              : formatSurveyPatternsMarkdown(patterns);
+          out = formatPatternsOutput(patterns, format);
         } else {
           const result =
             op === "merge"
@@ -535,20 +535,25 @@ export function buildCli(): ReturnType<typeof cac> {
 }
 
 /**
- * Decide whether a file is a `profile.md`, `map.md`, `survey.json`, or
- * `checks.yml`. JSON paths/contents route to the survey linter; markdown with
- * `schema: ghost.map/v2` in its YAML frontmatter routes to the map linter;
- * checks YAML routes to the checks linter; everything else stays on the profile
- * path.
+ * Decide whether a file is a bundle artifact. JSON paths/contents route to
+ * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
+ * routes to the map linter; YAML schemas route to resources/patterns/checks;
+ * everything else stays on the direct fingerprint markdown path.
  */
 function detectFileKind(
   path: string,
   raw: string,
-): "survey" | "map" | "profile" | "checks" {
+): "survey" | "map" | "fingerprint" | "checks" | "resources" | "patterns" {
   if (path.toLowerCase().endsWith(".json")) return "survey";
+  if (path.toLowerCase().endsWith("resources.yml")) return "resources";
+  if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
+  if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
+  if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
   if (path.toLowerCase().endsWith(".yml")) return "checks";
   if (path.toLowerCase().endsWith(".yaml")) return "checks";
   if (raw.trimStart().startsWith("{")) return "survey";
+  if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
+  if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
   // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
   // parse YAML here; the linter does the heavy lift.
@@ -558,7 +563,7 @@ function detectFileKind(
     if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
   }
   if (path.toLowerCase().endsWith("map.md")) return "map";
-  return "profile";
+  return "fingerprint";
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -592,6 +597,48 @@ function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
           severity: "error",
           rule: "checks-not-yaml",
           message: `checks file is not valid YAML: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        },
+      ],
+      errors: 1,
+      warnings: 0,
+      info: 0,
+    };
+  }
+}
+
+function lintResourcesFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostResources(parseYaml(raw));
+  } catch (err) {
+    return {
+      issues: [
+        {
+          severity: "error",
+          rule: "resources-not-yaml",
+          message: `resources file is not valid YAML: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        },
+      ],
+      errors: 1,
+      warnings: 0,
+      info: 0,
+    };
+  }
+}
+
+function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostPatterns(parseYaml(raw));
+  } catch (err) {
+    return {
+      issues: [
+        {
+          severity: "error",
+          rule: "patterns-not-yaml",
+          message: `patterns file is not valid YAML: ${
             err instanceof Error ? err.message : String(err)
           }`,
         },
@@ -682,24 +729,23 @@ function surveyVerbName(op: string): string {
   return op;
 }
 
-interface SurveyPatternSummary {
-  schema: "ghost.survey.patterns/v1";
-  surfaces: number;
-  surface_types: Array<{ value: string; count: number; examples: string[] }>;
-  densities: Array<{ value: string; count: number; examples: string[] }>;
-  layout_shapes: Array<{ value: string; count: number; examples: string[] }>;
-  layout_patterns: Array<{ value: string; count: number; examples: string[] }>;
-  components: Array<{ value: string; count: number; examples: string[] }>;
-  examples: Array<{ name: string; locator: string; files: string[] }>;
+function defaultSurveyFormat(op: string, format: unknown): string {
+  if (typeof format === "string") return format;
+  return op === "patterns" ? "yaml" : "markdown";
 }
 
-function summarizeSurveyPatterns(survey: Survey): SurveyPatternSummary {
+function formatPatternsOutput(
+  patterns: GhostPatternsDocument,
+  format: string,
+): string {
+  if (format === "json") return `${JSON.stringify(patterns, null, 2)}\n`;
+  if (format === "markdown") return formatSurveyPatternsMarkdown(patterns);
+  return stringifyYaml(patterns);
+}
+
+function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
   const surfaceTypes = new Map<string, PatternAccumulator>();
-  const densities = new Map<string, PatternAccumulator>();
-  const layoutShapes = new Map<string, PatternAccumulator>();
   const layoutPatterns = new Map<string, PatternAccumulator>();
-  const components = new Map<string, PatternAccumulator>();
-  const examples: SurveyPatternSummary["examples"] = [];
 
   for (const surface of survey.ui_surfaces) {
     const label = surface.locator || surface.name;
@@ -707,80 +753,128 @@ function summarizeSurveyPatterns(survey: Survey): SurveyPatternSummary {
     if (classification?.surface_type) {
       addPattern(surfaceTypes, classification.surface_type, label);
     }
-    if (classification?.density) {
-      addPattern(densities, classification.density, label);
-    }
-    if (classification?.layout_shape) {
-      addPattern(layoutShapes, classification.layout_shape, label);
-    }
     for (const pattern of surface.signals?.layout_patterns ?? []) {
-      addPattern(layoutPatterns, pattern, label);
+      addPattern(layoutPatterns, pattern, label, surface);
     }
-    for (const component of surface.signals?.dominant_components ?? []) {
-      addPattern(components, component, label);
-    }
-    examples.push({
-      name: surface.name,
-      locator: surface.locator,
-      files: surface.files.slice(0, 3),
-    });
   }
 
+  const surfaceTypeRows = topPatterns(surfaceTypes).map((entry) => ({
+    id: slug(entry.value),
+    title: entry.value,
+    signals: entry.examples,
+    preferred_patterns: preferredPatternsForSurfaceType(entry.value, survey),
+    evidence: evidenceForSurfaceType(entry.value, survey),
+  }));
+  const surfaceTypeIds = new Set(surfaceTypeRows.map((row) => row.id));
+
   return {
-    schema: "ghost.survey.patterns/v1",
-    surfaces: survey.ui_surfaces.length,
-    surface_types: topPatterns(surfaceTypes),
-    densities: topPatterns(densities),
-    layout_shapes: topPatterns(layoutShapes),
-    layout_patterns: topPatterns(layoutPatterns),
-    components: topPatterns(components),
-    examples: examples.slice(0, 12),
+    schema: "ghost.patterns/v1",
+    id: slug(survey.sources[0]?.id ?? "survey-patterns"),
+    surface_types: surfaceTypeRows,
+    composition_patterns: topPatterns(layoutPatterns).map((entry) => ({
+      id: slug(entry.value),
+      title: entry.value,
+      surface_types: surfaceTypesForPattern(entry.value, survey).filter((id) =>
+        surfaceTypeIds.has(id),
+      ),
+      frequency: entry.count,
+      confidence:
+        survey.ui_surfaces.length > 0
+          ? Number(
+              Math.min(1, entry.count / survey.ui_surfaces.length).toFixed(2),
+            )
+          : 0,
+      anatomy: {
+        ordered: anatomyForPattern(entry.value, survey),
+      },
+      traits: traitsForPattern(entry.value, survey),
+      evidence: entry.evidence,
+      advisory: [
+        "Use as advisory composition evidence; deterministic enforcement belongs in checks.yml.",
+      ],
+    })),
+    advisory: {
+      review_expectations: [
+        "Identify the surface type before judging composition.",
+        "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
+        "Treat intent.md as human authority when present.",
+      ],
+    },
   };
 }
 
 interface PatternAccumulator {
   count: number;
   examples: string[];
+  evidence: Array<{ surface_id?: string; locator?: string; path?: string }>;
 }
 
 function addPattern(
   map: Map<string, PatternAccumulator>,
   value: string,
   example: string,
+  surface?: Survey["ui_surfaces"][number],
 ): void {
-  const current = map.get(value) ?? { count: 0, examples: [] };
+  const current = map.get(value) ?? { count: 0, examples: [], evidence: [] };
   current.count += 1;
   if (!current.examples.includes(example) && current.examples.length < 5) {
     current.examples.push(example);
   }
+  if (surface && current.evidence.length < 5) {
+    current.evidence.push({
+      surface_id: surface.id,
+      locator: surface.locator,
+      ...(surface.files[0] ? { path: surface.files[0] } : {}),
+    });
+  }
   map.set(value, current);
 }
 
-function topPatterns(
-  map: Map<string, PatternAccumulator>,
-): Array<{ value: string; count: number; examples: string[] }> {
+function topPatterns(map: Map<string, PatternAccumulator>): Array<{
+  value: string;
+  count: number;
+  examples: string[];
+  evidence: Array<{ surface_id?: string; locator?: string; path?: string }>;
+}> {
   return [...map.entries()]
     .map(([value, accumulator]) => ({
       value,
       count: accumulator.count,
       examples: accumulator.examples,
+      evidence: accumulator.evidence,
     }))
     .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
 }
 
-function formatSurveyPatternsMarkdown(summary: SurveyPatternSummary): string {
-  const lines = ["# Survey Patterns", "", `Surfaces: ${summary.surfaces}`, ""];
-  appendPatternSection(lines, "Surface Types", summary.surface_types);
-  appendPatternSection(lines, "Densities", summary.densities);
-  appendPatternSection(lines, "Layout Shapes", summary.layout_shapes);
-  appendPatternSection(lines, "Layout Patterns", summary.layout_patterns);
-  appendPatternSection(lines, "Dominant Components", summary.components);
-  lines.push("## Examples", "");
-  for (const example of summary.examples) {
-    lines.push(
-      `- ${example.name} (${example.locator}) — ${example.files.join(", ")}`,
-    );
-  }
+function formatSurveyPatternsMarkdown(summary: GhostPatternsDocument): string {
+  const lines = [
+    "# Survey Patterns",
+    "",
+    `Schema: ${summary.schema}`,
+    `Surface types: ${summary.surface_types.length}`,
+    `Composition patterns: ${summary.composition_patterns.length}`,
+    "",
+  ];
+  appendPatternSection(
+    lines,
+    "Surface Types",
+    summary.surface_types.map((surfaceType) => ({
+      value: surfaceType.id,
+      count: surfaceType.evidence?.length ?? 0,
+      examples: surfaceType.signals ?? [],
+    })),
+  );
+  appendPatternSection(
+    lines,
+    "Composition Patterns",
+    summary.composition_patterns.map((pattern) => ({
+      value: pattern.id,
+      count: pattern.frequency ?? 0,
+      examples:
+        pattern.evidence?.map((entry) => entry.locator ?? entry.path ?? "") ??
+        [],
+    })),
+  );
   return `${lines.join("\n")}\n`;
 }
 
@@ -798,6 +892,97 @@ function appendPatternSection(
     lines.push(`- ${row.value}: ${row.count} (${row.examples.join(", ")})`);
   }
   lines.push("");
+}
+
+function preferredPatternsForSurfaceType(
+  surfaceType: string,
+  survey: Survey,
+): string[] {
+  const counts = new Map<string, number>();
+  for (const surface of survey.ui_surfaces) {
+    if (surface.classification?.surface_type !== surfaceType) continue;
+    for (const pattern of surface.signals?.layout_patterns ?? []) {
+      counts.set(slug(pattern), (counts.get(slug(pattern)) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 5)
+    .map(([id]) => id);
+}
+
+function evidenceForSurfaceType(
+  surfaceType: string,
+  survey: Survey,
+): Array<{ surface_id: string; locator: string; path?: string }> {
+  return survey.ui_surfaces
+    .filter((surface) => surface.classification?.surface_type === surfaceType)
+    .slice(0, 5)
+    .map((surface) => ({
+      surface_id: surface.id,
+      locator: surface.locator,
+      ...(surface.files[0] ? { path: surface.files[0] } : {}),
+    }));
+}
+
+function surfaceTypesForPattern(pattern: string, survey: Survey): string[] {
+  const types = new Set<string>();
+  for (const surface of survey.ui_surfaces) {
+    if (!surface.signals?.layout_patterns?.includes(pattern)) continue;
+    const surfaceType = surface.classification?.surface_type;
+    if (surfaceType) types.add(slug(surfaceType));
+  }
+  return [...types].sort();
+}
+
+function anatomyForPattern(pattern: string, survey: Survey): string[] {
+  const counts = new Map<string, number>();
+  for (const surface of survey.ui_surfaces) {
+    if (!surface.signals?.layout_patterns?.includes(pattern)) continue;
+    for (const item of surface.composition?.anatomy ?? []) {
+      counts.set(item, (counts.get(item) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([item]) => item);
+}
+
+function traitsForPattern(
+  pattern: string,
+  survey: Survey,
+): Record<string, string[]> {
+  const densities = new Set<string>();
+  const layoutShapes = new Set<string>();
+  const components = new Set<string>();
+  for (const surface of survey.ui_surfaces) {
+    if (!surface.signals?.layout_patterns?.includes(pattern)) continue;
+    if (surface.classification?.density) {
+      densities.add(surface.classification.density);
+    }
+    if (surface.classification?.layout_shape) {
+      layoutShapes.add(surface.classification.layout_shape);
+    }
+    for (const component of surface.signals?.dominant_components ?? []) {
+      components.add(component);
+    }
+  }
+  return {
+    density: [...densities].sort(),
+    layout_shape: [...layoutShapes].sort(),
+    dominant_components: [...components].sort().slice(0, 8),
+    source_signal: [pattern],
+  };
+}
+
+function slug(value: string): string {
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+/, "")
+      .replace(/-+$/, "") || "pattern"
+  );
 }
 
 function readPackageVersion(): string {

@@ -7,7 +7,7 @@
  * and N-way overlap on incidentally-shared labels is not a basis for
  * cross-system distance.
  *
- * The fix is a small controlled vocabulary. Profilers pick from this list
+ * The fix is a small controlled vocabulary. Fingerprint authors pick from this list
  * first; non-canonical slugs are still permitted (the schema allows any
  * string), but the recommended pattern is to pair them with a
  * `dimension_kind` that maps to a canonical slug. Lint warns when a
@@ -15,7 +15,7 @@
  * group by `dimension_kind` (or by `dimension` when it's already
  * canonical) so the decision-overlap distance axis becomes meaningful.
  *
- * The list below started from the actual decisions produced by profiling
+ * The list below started from the actual decisions produced by fingerprinting
  * ghost-ui, then absorbed dogfood learnings where generated UI needed a
  * first-class place for task-shaped composition rather than treating every
  * answer as a generic card stack.
@@ -214,7 +214,7 @@ export function isCanonicalDimension(
  *  3. Token-affinity scoring across `TOKEN_HINTS` — wins when a single
  *     dimension scores strictly higher than all others.
  *  4. `null` when there's no clear winner. Callers should treat null as
- *     "this slug is genuinely novel; lint warns and the profile keeps it
+ *     "this slug is genuinely novel; lint warns and the fingerprint keeps it
  *     long-tail."
  *
  * Pure / deterministic. No I/O.
