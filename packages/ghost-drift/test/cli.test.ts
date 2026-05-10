@@ -125,10 +125,20 @@ describe("ghost-drift CLI", () => {
     expect(result.stdout).toContain("Distance");
   });
 
+  it("compares root fingerprint bundle directories", async () => {
+    await writeComparableBundle(join(dir, "a", ".ghost"), "sectioned-form");
+    await writeComparableBundle(join(dir, "b", ".ghost"), "data-table");
+
+    const result = await runCli(["compare", "a/.ghost", "b/.ghost"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Distance");
+  });
+
   it("track writes the neutral sync manifest shape", async () => {
-    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
+    await mkdir(join(dir, ".ghost"), { recursive: true });
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "profile.md"),
+      join(dir, ".ghost", "fingerprint.md"),
       fingerprintWithId("local"),
     );
     await writeFile(
@@ -202,6 +212,19 @@ describe("ghost-drift CLI", () => {
     expect(result.stdout).toContain("Design Check: PASS");
   });
 
+  it("check passes when optional checks.yml is absent", async () => {
+    await writeCheckPackage(dir, { checks: false });
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("UIColor(#ffffff)"),
+    );
+
+    const result = await runCli(["check", "--diff", "change.patch"], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("No active deterministic check failures.");
+  });
+
   it("review emits an advisory packet with required citation fields", async () => {
     await writeCheckPackage(dir);
     await writeFile(
@@ -214,18 +237,29 @@ describe("ghost-drift CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
     expect(result.stdout).toContain("diff location");
-    expect(result.stdout).toContain("profile section");
+    expect(result.stdout).toContain("patterns.yml composition pattern");
     expect(result.stdout).toContain("survey evidence");
+    expect(result.stdout).toContain("intent.md when relevant");
     expect(result.stdout).toContain("precedent/example");
     expect(result.stdout).toContain("repair");
   });
 });
 
-async function writeCheckPackage(dir: string): Promise<void> {
-  const pkg = join(dir, ".ghost", "fingerprint");
+async function writeCheckPackage(
+  dir: string,
+  options: { checks?: boolean } = {},
+): Promise<void> {
+  const pkg = join(dir, ".ghost");
   await mkdir(pkg, { recursive: true });
+  await writeFile(
+    join(pkg, "resources.yml"),
+    `schema: ghost.resources/v1
+id: cash-ios
+primary:
+  target: .
+`,
+  );
   await writeFile(join(pkg, "map.md"), mapWithScopes());
-  await writeFile(join(pkg, "profile.md"), profile());
   await writeFile(
     join(pkg, "survey.json"),
     JSON.stringify({
@@ -237,6 +271,16 @@ async function writeCheckPackage(dir: string): Promise<void> {
       ui_surfaces: [],
     }),
   );
+  await writeFile(
+    join(pkg, "patterns.yml"),
+    `schema: ghost.patterns/v1
+id: cash-ios
+surface_types: []
+composition_patterns: []
+`,
+  );
+  if (options.checks === false) return;
+
   await writeFile(
     join(pkg, "checks.yml"),
     `schema: ghost.checks/v1
@@ -263,39 +307,60 @@ checks:
   );
 }
 
-function profile(): string {
-  return `---
-id: cash-ios
-source: llm
-timestamp: 2026-05-06T00:00:00.000Z
-palette:
-  dominant: []
-  neutrals: { steps: [], count: 0 }
-  semantic: []
-  saturationProfile: muted
-  contrast: moderate
-spacing: { scale: [], baseUnit: null, regularity: 0 }
-typography:
-  families: []
-  sizeRamp: []
-  weightDistribution: {}
-  lineHeightPattern: normal
-surfaces:
-  borderRadii: []
-  shadowComplexity: deliberate-none
-  borderUsage: minimal
----
-
-# Character
-
-Restrained native Cash surfaces.
-
-# Signature
-
-Feature screens prefer token-backed controls.
-
-# Decisions
-`;
+async function writeComparableBundle(
+  pkg: string,
+  patternId: string,
+): Promise<void> {
+  await mkdir(pkg, { recursive: true });
+  await writeFile(
+    join(pkg, "survey.json"),
+    JSON.stringify({
+      schema: "ghost.survey/v2",
+      sources: [
+        { id: patternId, target: ".", scanned_at: "2026-05-10T00:00:00Z" },
+      ],
+      values: [
+        {
+          id: `value_${patternId}`,
+          source: { target: ".", scanned_at: "2026-05-10T00:00:00Z" },
+          kind: "spacing",
+          value: "8px",
+          raw: "p-2",
+          occurrences: 4,
+          files_count: 2,
+        },
+      ],
+      tokens: [],
+      components: [],
+      ui_surfaces: [
+        {
+          id: `surface_${patternId}`,
+          source: { target: ".", scanned_at: "2026-05-10T00:00:00Z" },
+          name: patternId,
+          kind: "route",
+          locator: `/${patternId}`,
+          renderability: "source-only",
+          files: [`src/${patternId}.tsx`],
+          classification: { surface_type: "settings" },
+          signals: { layout_patterns: [patternId] },
+        },
+      ],
+    }),
+  );
+  await writeFile(
+    join(pkg, "patterns.yml"),
+    `schema: ghost.patterns/v1
+id: ${patternId}
+surface_types:
+  - id: settings
+    preferred_patterns: [${patternId}]
+composition_patterns:
+  - id: ${patternId}
+    surface_types: [settings]
+    evidence:
+      - locator: /${patternId}
+`,
+  );
 }
 
 function lendingPatch(line: string): string {

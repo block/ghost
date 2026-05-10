@@ -14,7 +14,7 @@ describe("resolveFingerprintsForPaths", () => {
     );
     await mkdir(join(dir, "fingerprints"), { recursive: true });
     await writeFile(join(dir, "map.md"), mapWithScopes(), "utf-8");
-    await writeFile(join(dir, "profile.md"), "parent", "utf-8");
+    await writeFile(join(dir, "fingerprint.md"), "parent", "utf-8");
     await writeFile(join(dir, "fingerprints", "checkout.md"), "child", "utf-8");
   });
 
@@ -42,7 +42,7 @@ describe("resolveFingerprintsForPaths", () => {
 
     expect(resolution).toEqual({
       changed_path: "packages/core/src/Button.tsx",
-      fingerprint_path: join(dir, "profile.md"),
+      fingerprint_path: join(dir, "fingerprint.md"),
       fallback: true,
       reason: "no-scope-match",
     });
@@ -55,7 +55,7 @@ describe("resolveFingerprintsForPaths", () => {
 
     expect(resolution).toEqual({
       changed_path: "apps/portal/src/page/Home.tsx",
-      fingerprint_path: join(dir, "profile.md"),
+      fingerprint_path: join(dir, "fingerprint.md"),
       fallback: true,
       reason: "scope-fingerprint-missing",
       scope_id: "portal",

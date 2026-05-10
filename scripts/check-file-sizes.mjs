@@ -13,7 +13,7 @@ const EXCEPTIONS = {
   "packages/ghost-drift/src/bin.ts": {
     limit: 580,
     justification:
-      "CLI command registry — each command is small but there are 12 of them, plus multi-target profile parsing",
+      "CLI command registry — each command is small but there are 12 of them, plus multi-target fingerprint parsing",
   },
   "packages/ghost-core/src/embedding/compare.ts": {
     limit: 600,

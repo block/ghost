@@ -1,7 +1,7 @@
 {
   "name": "ghost-drift",
   "version": "0.2.0",
-  "description": "Deterministic Ghost design checks, advisory review packets, profile comparison, and drift stance tracking",
+  "description": "Deterministic Ghost design checks, advisory review packets, root bundle comparison, and drift stance tracking",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {

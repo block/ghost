@@ -26,7 +26,7 @@ export async function computeSemanticEmbedding(
  * Embed a batch of texts in one API call.
  *
  * Returns one vector per input in the same order. Used to embed design
- * decisions at profile time so compare can match them by cosine similarity
+ * decisions at fingerprint authoring time so compare can match them by cosine similarity
  * without making API calls during comparison.
  */
 export async function embedTexts(

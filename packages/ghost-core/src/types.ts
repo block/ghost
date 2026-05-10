@@ -234,7 +234,7 @@ export interface Check {
   /** Regex (or fixed string) the reviewer greps for. */
   pattern: string;
   /**
-   * Repo-relative filesystem scopes used by `verify-profile` when checking
+   * Repo-relative filesystem scopes used by `verify-fingerprint` when checking
    * calibrated `observed_count` values.
    */
   paths?: string[];
@@ -319,7 +319,7 @@ export interface DesignDecision {
   evidence: string[];
   /**
    * Semantic embedding of `${dimension}: ${decision}`.
-   * Computed at profile time when an embedding provider is configured,
+   * Computed at fingerprint authoring time when an embedding provider is configured,
    * and used by compareDecisions for paraphrase-robust matching.
    *
    * Runtime-only. `fingerprint.md` no longer stores decision embeddings.
@@ -331,7 +331,7 @@ export interface Fingerprint {
   id: string;
   source: "registry" | "extraction" | "llm" | "unknown";
   timestamp: string;
-  /** When profiled from multiple sources, lists what was combined */
+  /** When fingerprinted from multiple sources, lists what was combined */
   sources?: string[];
 
   // --- Three-layer model: observation → decisions → values ---
@@ -390,7 +390,7 @@ export interface SampledFile {
   path: string;
   content: string;
   reason: string;
-  /** Which source this file came from (multi-source profiling) */
+  /** Which source this file came from (multi-source fingerprinting) */
   sourceLabel?: string;
 }
 
@@ -407,7 +407,7 @@ export interface SampledMaterial {
     totalFiles: number;
     sampledFiles: number;
     targetType: TargetType;
-    /** When profiled from multiple sources, per-source breakdown */
+    /** When fingerprinted from multiple sources, per-source breakdown */
     sources?: SourceInfo[];
     packageJson?: {
       name?: string;

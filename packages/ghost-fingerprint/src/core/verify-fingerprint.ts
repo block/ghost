@@ -3,10 +3,10 @@ import { lintSurvey } from "@ghost/core";
 import { lintFingerprint } from "./lint.js";
 import { parseFingerprint } from "./parser.js";
 
-export type VerifyProfileSeverity = "error" | "warning" | "info";
+export type VerifyFingerprintSeverity = "error" | "warning" | "info";
 
-export interface VerifyProfileIssue {
-  severity: VerifyProfileSeverity;
+export interface VerifyFingerprintIssue {
+  severity: VerifyFingerprintSeverity;
   rule: string;
   message: string;
   path?: string;
@@ -14,14 +14,14 @@ export interface VerifyProfileIssue {
   actual?: unknown;
 }
 
-export interface VerifyProfileReport {
-  issues: VerifyProfileIssue[];
+export interface VerifyFingerprintReport {
+  issues: VerifyFingerprintIssue[];
   errors: number;
   warnings: number;
   info: number;
 }
 
-export interface VerifyProfileOptions {
+export interface VerifyFingerprintOptions {
   root?: string;
   /**
    * Resolved fingerprint after applying `extends:`. CLI callers should pass
@@ -42,17 +42,17 @@ const HIGH_SALIENCE_ROLE_TOKENS = [
 const HIGH_SALIENCE_VALUE_THRESHOLD = 5;
 
 /**
- * Deterministically verify that a profiled fingerprint is faithful to the
+ * Deterministically verify that a fingerprinted design language is faithful to the
  * survey that produced it. `lint` remains the shape/schema gate; this verifier
  * checks scan-stage provenance for the non-enforcing design-language prior.
  * Enforceable checks live in `checks.yml` and are validated separately.
  */
-export function verifyProfile(
+export function verifyFingerprint(
   fingerprintRaw: string,
   surveyInput: unknown,
-  options: VerifyProfileOptions = {},
-): VerifyProfileReport {
-  const issues: VerifyProfileIssue[] = [];
+  options: VerifyFingerprintOptions = {},
+): VerifyFingerprintReport {
+  const issues: VerifyFingerprintIssue[] = [];
 
   const fingerprintLint = lintFingerprint(fingerprintRaw);
   issues.push(
@@ -100,7 +100,9 @@ export function verifyProfile(
   return finalize(issues);
 }
 
-export function formatVerifyProfileReport(report: VerifyProfileReport): string {
+export function formatVerifyFingerprintReport(
+  report: VerifyFingerprintReport,
+): string {
   const lines: string[] = [];
   for (const issue of report.issues) {
     const prefix =
@@ -127,13 +129,13 @@ export function formatVerifyProfileReport(report: VerifyProfileReport): string {
 
 function fromLintIssue(
   issue: {
-    severity: VerifyProfileSeverity;
+    severity: VerifyFingerprintSeverity;
     rule: string;
     message: string;
     path?: string;
   },
   source: "fingerprint" | "survey",
-): VerifyProfileIssue {
+): VerifyFingerprintIssue {
   return {
     severity: issue.severity,
     rule: `${source}/${issue.rule}`,
@@ -189,34 +191,35 @@ function collectSurveyEvidence(survey: Survey): SurveyValueEvidence {
 
   survey.values.forEach((row, index) => {
     const path = `survey.values[${index}]`;
+    const kind = canonicalSurveyValueKind(row);
     const entry: SurveyValueEvidenceRow = {
-      kind: row.kind,
+      kind,
       value: row.value,
       occurrences: row.occurrences,
       files_count: row.files_count,
       path: `${path}.value`,
     };
 
-    if (row.kind === "color") {
+    if (kind === "color") {
       add(row.value, `${path}.value`);
       const spec = row.spec;
       if (isRecord(spec) && typeof spec.hex === "string") {
         add(spec.hex, `${path}.spec.hex`);
       }
       entry.color = firstHexColor(row.value) ?? specHex(row.spec);
-    } else if (row.kind === "spacing") {
+    } else if (kind === "spacing") {
       const scalar = rowScalarPx(row);
       if (scalar !== null) {
         addNumberEvidence(evidence.spacing, scalar, `${path}.value`);
         entry.scalarPx = scalar;
       }
-    } else if (row.kind === "radius") {
+    } else if (kind === "radius") {
       const scalar = rowScalarPx(row);
       if (scalar !== null) {
         addNumberEvidence(evidence.radii, scalar, `${path}.value`);
         entry.scalarPx = scalar;
       }
-    } else if (row.kind === "typography") {
+    } else if (kind === "typography") {
       const family = rowTypographyFamily(row);
       if (family) {
         addTextEvidence(evidence.typographyFamilies, family, `${path}.value`);
@@ -232,7 +235,7 @@ function collectSurveyEvidence(survey: Survey): SurveyValueEvidence {
         addNumberEvidence(evidence.typographyWeights, weight, `${path}.value`);
         entry.typographyWeight = weight;
       }
-    } else if (row.kind === "shadow") {
+    } else if (kind === "shadow") {
       addTextEvidence(evidence.shadowValues, row.value, `${path}.value`);
     }
     evidence.rows.push(entry);
@@ -248,7 +251,7 @@ function collectSurveyEvidence(survey: Survey): SurveyValueEvidence {
 function checkPaletteProvenance(
   fingerprint: Fingerprint,
   colorEvidence: Map<string, string[]>,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   fingerprint.palette.dominant.forEach((color, index) => {
     checkPaletteColor(
@@ -280,7 +283,7 @@ function checkPaletteColor(
   value: string,
   path: string,
   colorEvidence: Map<string, string[]>,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   const normalized = normalizeHexColor(value);
   if (!normalized) {
@@ -306,7 +309,7 @@ function checkPaletteColor(
 function checkRoleTokenAgreement(
   fingerprint: Fingerprint,
   survey: Survey,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   const paletteByRole = new Map<string, { color: string; path: string }[]>();
   collectSemanticPalette(fingerprint.palette.dominant, "dominant").forEach(
@@ -371,7 +374,7 @@ function addPaletteRole(
 function checkStructuredValueProvenance(
   fingerprint: Fingerprint,
   evidence: SurveyValueEvidence,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   fingerprint.spacing.scale.forEach((value, index) => {
     checkNumberEvidence(
@@ -442,7 +445,7 @@ function checkNumberEvidence(
   rule: string,
   message: string,
   evidence: Map<string, string[]>,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
   decimals = 3,
 ): void {
   const key = numberKey(value, decimals);
@@ -460,7 +463,7 @@ function checkNumberEvidence(
 function checkShadowPosture(
   shadowComplexity: Fingerprint["surfaces"]["shadowComplexity"],
   evidence: SurveyValueEvidence,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   const distinct = evidence.shadowValues.size;
   const matches =
@@ -488,7 +491,7 @@ function checkShadowPosture(
 function checkHighSalienceOmissions(
   fingerprint: Fingerprint,
   evidence: SurveyValueEvidence,
-  issues: VerifyProfileIssue[],
+  issues: VerifyFingerprintIssue[],
 ): void {
   const fingerprintValues = {
     colors: new Set([
@@ -627,10 +630,18 @@ function addTextEvidence(
 
 function rowScalarPx(row: ValueRow): number | null {
   const spec = row.spec;
-  if (isRecord(spec) && typeof spec.scalar === "number") {
-    const unit = typeof spec.unit === "string" ? spec.unit : "px";
-    const px = scalarUnitToPx(spec.scalar, unit);
-    if (px !== null) return px;
+  if (isRecord(spec)) {
+    const scalar =
+      typeof spec.scalar === "number"
+        ? spec.scalar
+        : typeof spec.number === "number"
+          ? spec.number
+          : null;
+    if (scalar !== null) {
+      const unit = typeof spec.unit === "string" ? spec.unit : "px";
+      const px = scalarUnitToPx(scalar, unit);
+      if (px !== null) return px;
+    }
   }
   return parseLengthPx(row.value);
 }
@@ -638,6 +649,9 @@ function rowScalarPx(row: ValueRow): number | null {
 function rowTypographyFamily(row: ValueRow): string | null {
   const spec = row.spec;
   if (isRecord(spec) && typeof spec.family === "string") return spec.family;
+  const declaredFamily = declarationValue(row.value, "font-family");
+  if (declaredFamily) return declaredFamily;
+  if (looksLikeDeclaration(row.value)) return null;
   if (!parseLengthPx(row.value) && rowTypographyWeight(row) === null) {
     return row.value;
   }
@@ -653,8 +667,9 @@ function rowTypographySizePx(row: ValueRow): number | null {
       return scalarUnitToPx(scalar, unit);
     }
   }
-  if (/^[1-9]00$/.test(row.value.trim())) return null;
-  return parseLengthPx(row.value);
+  const value = declarationValue(row.value, "font-size") ?? row.value;
+  if (/^[1-9]00$/.test(value.trim())) return null;
+  return parseLengthPx(value);
 }
 
 function rowTypographyWeight(row: ValueRow): number | null {
@@ -663,24 +678,85 @@ function rowTypographyWeight(row: ValueRow): number | null {
     const parsed = Number(spec.weight);
     return Number.isFinite(parsed) ? parsed : null;
   }
-  if (/^[1-9]00$/.test(row.value.trim())) return Number(row.value.trim());
+  const value = declarationValue(row.value, "font-weight") ?? row.value;
+  if (/^[1-9]00$/.test(value.trim())) return Number(value.trim());
   return null;
 }
 
 function scalarUnitToPx(scalar: number, unit: string): number | null {
   const normalized = unit.trim().toLowerCase();
   if (normalized === "px") return scalar;
+  if (normalized === "dp" || normalized === "sp") return scalar;
   if (normalized === "rem" || normalized === "em") return scalar * 16;
   if (normalized === "") return scalar;
   return null;
 }
 
 function parseLengthPx(value: string): number | null {
-  const match = value.trim().match(/^(-?\d+(?:\.\d+)?)(px|rem|em)?$/i);
+  const match = value.trim().match(/^(-?\d+(?:\.\d+)?)(px|rem|em|dp|sp)?$/i);
   if (!match) return null;
   const scalar = Number(match[1]);
   const unit = match[2] ?? "px";
   return scalarUnitToPx(scalar, unit);
+}
+
+function canonicalSurveyValueKind(row: ValueRow): string {
+  const raw = row as ValueRow & { category?: unknown };
+  const kind =
+    typeof raw.kind === "string" ? raw.kind.trim().toLowerCase() : "";
+  const category =
+    typeof raw.category === "string" ? raw.category.trim().toLowerCase() : "";
+
+  if (isCanonicalValueKind(kind)) return kind;
+  if (isCanonicalValueKind(category)) return category;
+  if (
+    category === "color" &&
+    ["hex-color", "rgba-color", "keyword"].includes(kind)
+  ) {
+    return "color";
+  }
+  if (
+    category === "spacing" &&
+    ["length", "keyword", "number"].includes(kind)
+  ) {
+    return "spacing";
+  }
+  if (category === "radius" && ["length", "number"].includes(kind)) {
+    return "radius";
+  }
+  if (
+    category === "typography" &&
+    ["font-stack", "length", "number", "keyword"].includes(kind)
+  ) {
+    return "typography";
+  }
+  if (category === "shadow") return "shadow";
+  return kind || category;
+}
+
+function isCanonicalValueKind(kind: string): boolean {
+  return [
+    "color",
+    "spacing",
+    "typography",
+    "radius",
+    "shadow",
+    "breakpoint",
+    "motion",
+    "layout-primitive",
+  ].includes(kind);
+}
+
+function declarationValue(value: string, property: string): string | null {
+  const escaped = property.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = value
+    .trim()
+    .match(new RegExp(`^${escaped}\\s*:\\s*(.+)$`, "i"));
+  return match ? (match[1]?.trim() ?? null) : null;
+}
+
+function looksLikeDeclaration(value: string): boolean {
+  return /^[a-z-]+\s*:/i.test(value.trim());
 }
 
 function specHex(spec: unknown): string | undefined {
@@ -756,7 +832,7 @@ function compareStrings(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-function finalize(issues: VerifyProfileIssue[]): VerifyProfileReport {
+function finalize(issues: VerifyFingerprintIssue[]): VerifyFingerprintReport {
   let errors = 0;
   let warnings = 0;
   let info = 0;

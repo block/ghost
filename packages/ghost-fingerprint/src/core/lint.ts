@@ -39,8 +39,8 @@ export interface LintOptions {
  *
  * Under schema 3 the body/frontmatter partition is enforced by zod-strict.
  * Lint adds softer rules: orphan prose (body block with no frontmatter
- * entry), missing rationale (frontmatter entry with no body block),
- * legacy `**Evidence:**` bullets in the body, and broken palette citations.
+ * entry), missing rationale (frontmatter entry with no body block), malformed
+ * Decisions sections, missing body evidence, and broken palette citations.
  */
 export function lintFingerprint(
   raw: string,
@@ -68,6 +68,7 @@ export function lintFingerprint(
 
   checkSchemaValidity(rawYaml, rawIssues);
   checkDecisionPartition(fingerprint, body, rawIssues);
+  checkDecisionBodyShape(bodyText, body, rawIssues);
   checkStrayEvidenceInBody(bodyText, rawIssues);
   checkEvidenceHexes(fingerprint, rawIssues);
   checkUnusedPalette(fingerprint, rawIssues);
@@ -173,6 +174,56 @@ function checkStrayEvidenceInBody(
   _issues: LintIssue[],
 ): void {
   // no-op; body evidence is canonical as of schema 5.
+}
+
+function checkDecisionBodyShape(
+  bodyText: string,
+  body: BodyData,
+  issues: LintIssue[],
+): void {
+  const decisionsSection = h1SectionBody(bodyText, "Decisions");
+  if (
+    decisionsSection?.trim() &&
+    !(body.decisions?.length ?? 0) &&
+    !/^###\s+/m.test(decisionsSection)
+  ) {
+    issues.push({
+      severity: "warning",
+      rule: "missing-decision-headings",
+      message:
+        "`# Decisions` has prose but no `### <dimension>` blocks, so no decisions are parseable.",
+      path: "decisions",
+    });
+  }
+
+  (body.decisions ?? []).forEach((decision, index) => {
+    if (decision.evidence?.length) return;
+    issues.push({
+      severity: "warning",
+      rule: "missing-evidence",
+      message: `Decision \`${decision.dimension}\` has no \`**Evidence:**\` bullet list.`,
+      path: `decisions[${index}].evidence`,
+    });
+  });
+}
+
+function h1SectionBody(bodyText: string, heading: string): string | null {
+  const lines = bodyText.split(/\r?\n/);
+  const target = heading.toLowerCase();
+  const buf: string[] = [];
+  let collecting = false;
+
+  for (const line of lines) {
+    const match = /^#\s+(.*?)\s*$/.exec(line);
+    if (match) {
+      if (collecting) break;
+      collecting = match[1]?.toLowerCase() === target;
+      continue;
+    }
+    if (collecting) buf.push(line);
+  }
+
+  return collecting || buf.length ? buf.join("\n") : null;
 }
 
 const HEX_RE = /#[0-9a-f]{3,8}\b/gi;

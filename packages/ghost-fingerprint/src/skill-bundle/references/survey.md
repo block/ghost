@@ -2,9 +2,9 @@
 name: survey
 description: Scan a target and produce a survey.json — the observed catalogue of design values, with no interpretation.
 handoffs:
-  - label: Interpret the survey into profile.md
+  - label: Interpret the survey into patterns.yml
     command: (next stage — interpreter recipe)
-    prompt: Interpret the survey I just wrote into .ghost/fingerprint/profile.md
+    prompt: Interpret the survey I just wrote into .ghost/patterns.yml
   - label: Validate the survey
     command: ghost-fingerprint lint survey.json
     prompt: Lint the survey I just wrote
@@ -14,9 +14,9 @@ handoffs:
 
 **Goal:** produce a valid `survey.json` (`ghost.survey/v2`) that catalogues every concrete design value and implemented UI surface the target ships, with structured specs, occurrence counts, and surface evidence. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
-`survey.json` is the evidence artifact in the package scan: map (`map.md`) → survey (`survey.json`) → profile (`profile.md`) → checks (`checks.yml`). The interpreter reads your survey as evidence and writes the compact profile. If you skip values or fabricate them here, the package downstream is wrong.
+`survey.json` is the evidence artifact in the package scan: resources (`resources.yml`) → map (`map.md`) → survey (`survey.json`) → patterns (`patterns.yml`). The interpreter reads your survey as evidence and writes operational composition grammar. If you skip values or fabricate them here, the package downstream is wrong.
 
-The survey is exhaustive evidence, not prompt context. It should be large enough to support interpretation; the profile stage decides what becomes generation-facing guidance and check candidates.
+The survey is an evidence ledger, not prompt context. It should be large enough to justify patterns, checks, and advisory review; the patterns stage decides what becomes generation-facing composition guidance and check candidates.
 
 ## Pre-requisite
 
@@ -123,7 +123,7 @@ Procedure:
 1. **Scan primary usage first.** Record every local token/symbol/class usage in the primary target with occurrences and files_count. These counts are the only salience signal.
 2. **Open resolver sources.** Read the upstream package/source/build artifact named by `sources[].role: resolver` or `design_system.upstream`. Find the exported token tables, generated Swift/Kotlin/TS accessors, CSS variables, registry metadata, or other symbol definitions.
 3. **Join symbols to definitions.** Follow `CashTheme.color.background → ArcadeColor.background → #ffffff` (or equivalent) as far as source permits. Preserve the chain in `resolution.chain`.
-4. **Emit resolved rows only for observed usage.** If a resolver defines 400 colors and the primary app uses 12, the app survey gets the 12 observed values. Unused resolver inventory belongs in the resolver's own fingerprint, not the app's.
+4. **Emit resolved rows only for observed usage.** If a resolver defines 400 colors and the primary app uses 12, the app survey gets the 12 observed values. Unused resolver inventory belongs in the resolver's own bundle, not the app's.
 5. **Mark gaps honestly.** For unresolved external symbols, emit token rows with `resolution.status: "unresolved-external"` plus `symbol` / `message`; add a scratchpad coverage note with unresolved counts by kind.
 
 Coverage gate: before declaring done, report resolved vs unresolved counts for each resolver-backed kind (color, spacing, typography, radius, shadow). Weak resolver coverage lowers confidence downstream; it is not a reason to fabricate literals.
@@ -167,7 +167,7 @@ For components:
 
 Use `surface_sources` and `feature_areas[]` from `map.md` to enumerate representative implemented surfaces. This section is required in `ghost.survey/v2`. If no implemented surface can be observed, write `ui_surfaces: []`, ensure `map.md` uses `surface_sources.render_strategy: unknown`, and carry the coverage gap in your scratchpad for the interpreter.
 
-Surface rows are evidence, not exemplars and not prose. Record facts that a later profiler can cluster:
+Surface rows are evidence, not exemplars and not prose. Record facts that the later patterns authoring pass can cluster:
 
 ```json
 {
@@ -183,6 +183,14 @@ Surface rows are evidence, not exemplars and not prose. Record facts that a late
     "surface_type": "settings",
     "density": "standard",
     "layout_shape": "control-surface",
+    "confidence": 0.75
+  },
+  "composition": {
+    "anatomy": ["shell", "compact-header", "sectioned-form", "persistent-actions"],
+    "primary_region": "form",
+    "action_placement": ["footer"],
+    "navigation_context": "persistent-shell",
+    "responsive_behavior": ["mobile stacks sections vertically"],
     "confidence": 0.75
   },
   "signals": {
@@ -201,7 +209,7 @@ Discovery guidance:
 - For `native-screenshot`, record the screenshot or fixture locator and the source files when known.
 - For `static-source`, use route files, screens, stories, examples, or feature entrypoints as the observable specimens.
 - Prefer 1–3 high-signal surfaces per feature area. This is not exhaustive in the same way components are; it is coverage of implemented composition families.
-- Keep `signals.notes` factual. "Sectioned settings form with persistent action row" is survey evidence. "Feels professional and calm" belongs in profile interpretation.
+- Keep `signals.notes` and `composition` factual. "Sectioned settings form with persistent action row" is survey evidence. "Feels professional and calm" belongs in `intent.md` only when human-approved.
 
 ### 5. Sample feature areas for usage counts
 
@@ -281,4 +289,4 @@ If you hit a hard stop with exhaustiveness *not* met, write a `# Coverage` note 
 - **Never undercount silently.** If your coverage is weak (mobile dialects, custom DSLs, no canonical signal in this repo), surface it in a `# Coverage` scratchpad note and tell the interpreter.
 - **Never compute IDs by hand.** Use `survey fix-ids`.
 - **Never use placeholder/glob names.** A component row with `name: "*Button"` or `name: "<various>"` is sampling-disguised-as-a-row. Enumerate concretely.
-- **Never edit a survey after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. Treat the survey used for a profile as frozen evidence.
+- **Never edit a survey after the interpreter has used it.** If you find a missed value later, re-run survey end-to-end. Treat the survey used for `patterns.yml` as frozen evidence.

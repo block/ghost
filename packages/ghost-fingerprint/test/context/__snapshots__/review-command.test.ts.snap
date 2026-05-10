@@ -20,7 +20,7 @@ If \`$ARGUMENTS\` is empty, ask the user which file(s) to review, or offer to sc
 
 ## Calibration note
 
-This profile has no embedded checks, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than \`ghost-drift check\`; promote enforceable rules in \`.ghost/fingerprint/checks.yml\` when a pattern should become a gate.
+This fingerprint has no embedded checks, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than \`ghost-drift check\`; promote enforceable rules in \`.ghost/checks.yml\` when a pattern should become a gate.
 
 ## 1. Palette drift
 
@@ -150,6 +150,6 @@ Drift score: XX/100
 
 ---
 
-Generated from \`profile.md\` (11 decisions). Re-run \`ghost-fingerprint emit review-command\` after package updates.
+Generated from \`fingerprint.md\` (11 decisions). Re-run \`ghost-fingerprint emit review-command\` after package updates.
 "
 `;
