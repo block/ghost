@@ -2,7 +2,7 @@
   "schema": "ghost.survey/v2",
   "sources": [
     {
-      "target": "fixture:surface-profile",
+      "target": "fixture:surface-fingerprint",
       "commit": "surface-v2",
       "scanned_at": "2026-05-04T00:00:00Z",
       "scanner_version": "fixture"
@@ -12,7 +12,7 @@
     {
       "id": "97719a4b33026494",
       "source": {
-        "target": "fixture:surface-profile",
+        "target": "fixture:surface-fingerprint",
         "commit": "surface-v2",
         "scanned_at": "2026-05-04T00:00:00Z",
         "scanner_version": "fixture"
@@ -28,7 +28,7 @@
     {
       "id": "75c94be49fc97eca",
       "source": {
-        "target": "fixture:surface-profile",
+        "target": "fixture:surface-fingerprint",
         "commit": "surface-v2",
         "scanned_at": "2026-05-04T00:00:00Z",
         "scanner_version": "fixture"
@@ -43,7 +43,7 @@
     {
       "id": "9edd2ada171052cb",
       "source": {
-        "target": "fixture:surface-profile",
+        "target": "fixture:surface-fingerprint",
         "commit": "surface-v2",
         "scanned_at": "2026-05-04T00:00:00Z",
         "scanner_version": "fixture"
@@ -56,7 +56,7 @@
     {
       "id": "3df16501df968163",
       "source": {
-        "target": "fixture:surface-profile",
+        "target": "fixture:surface-fingerprint",
         "commit": "surface-v2",
         "scanned_at": "2026-05-04T00:00:00Z",
         "scanner_version": "fixture"

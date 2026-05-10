@@ -1,0 +1,514 @@
+schema: ghost.patterns/v1
+id: ghost
+surface_types:
+  - id: docs-foundation
+    title: docs-foundation
+    signals:
+      - /ui/foundations/colors
+      - /ui/foundations/typography
+    preferred_patterns:
+      - foundation-reference-grid
+      - token-swatch-table
+      - type-specimen-stack
+    evidence:
+      - surface_id: 39aebcb9d8b40803
+        locator: /ui/foundations/colors
+        path: apps/docs/src/app/ui/foundations/colors/page.tsx
+      - surface_id: fb6207f34d22412c
+        locator: /ui/foundations/typography
+        path: apps/docs/src/app/ui/foundations/typography/page.tsx
+  - id: ai-element-demo
+    title: ai-element-demo
+    signals:
+      - /ui/components/agent
+    preferred_patterns:
+      - ai-element-demo-gallery
+      - preview-code-split
+    evidence:
+      - surface_id: 0bb1b078b4d715c4
+        locator: /ui/components/agent
+        path: apps/docs/src/components/docs/ai-elements/index.tsx
+  - id: component-catalogue
+    title: component-catalogue
+    signals:
+      - /ui/components
+    preferred_patterns:
+      - component-catalogue-shell
+      - preview-code-split
+    evidence:
+      - surface_id: 3ef2b46784c9f5c7
+        locator: /ui/components
+        path: apps/docs/src/app/ui/components/page.tsx
+  - id: docs-home
+    title: docs-home
+    signals:
+      - /
+    preferred_patterns:
+      - bento-preview-grid
+      - editorial-home-hero
+    evidence:
+      - surface_id: 70758ab39f697637
+        locator: /
+        path: apps/docs/src/app/page.tsx
+  - id: primitive-demo
+    title: primitive-demo
+    signals:
+      - /ui/components/button
+    preferred_patterns:
+      - preview-code-split
+      - primitive-demo-grid
+    evidence:
+      - surface_id: bc0df98e421cb69c
+        locator: /ui/components/button
+        path: apps/docs/src/components/docs/primitives/index.tsx
+  - id: theme-control
+    title: theme-control
+    signals:
+      - apps/docs/src/components/theme-panel
+    preferred_patterns:
+      - theme-control-panel
+      - token-control-stack
+    evidence:
+      - surface_id: 0d73531a1c4e659f
+        locator: apps/docs/src/components/theme-panel
+        path: apps/docs/src/components/theme-panel/ThemePanel.tsx
+  - id: tool-doc
+    title: tool-doc
+    signals:
+      - /tools/fingerprint
+    preferred_patterns:
+      - cli-reference-block
+      - tool-doc-article
+    evidence:
+      - surface_id: 988c6ea8181325b8
+        locator: /tools/fingerprint
+        path: apps/docs/src/app/tools/fingerprint/page.tsx
+composition_patterns:
+  - id: preview-code-split
+    title: preview-code-split
+    surface_types:
+      - ai-element-demo
+      - component-catalogue
+      - primitive-demo
+    frequency: 3
+    confidence: 0.38
+    anatomy:
+      ordered:
+        - component-page-shell
+        - source-snippet
+        - code-tabs
+        - demo-grid
+        - display-header
+        - interactive-demo
+        - metadata-rail
+        - preview-frame
+        - sidebar
+        - variant-examples
+        - variant-list
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - control-surface
+        - tracker
+      dominant_components:
+        - Accordion
+        - Agent
+        - Button
+        - Card
+        - CodeBlock
+        - Input
+        - Sidebar
+        - Tabs
+      source_signal:
+        - preview-code-split
+    evidence:
+      - surface_id: 3ef2b46784c9f5c7
+        locator: /ui/components
+        path: apps/docs/src/app/ui/components/page.tsx
+      - surface_id: 0bb1b078b4d715c4
+        locator: /ui/components/agent
+        path: apps/docs/src/components/docs/ai-elements/index.tsx
+      - surface_id: bc0df98e421cb69c
+        locator: /ui/components/button
+        path: apps/docs/src/components/docs/primitives/index.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: foundation-reference-grid
+    title: foundation-reference-grid
+    surface_types:
+      - docs-foundation
+    frequency: 2
+    confidence: 0.25
+    anatomy:
+      ordered:
+        - display-header
+        - body-specimens
+        - swatch-grid
+        - token-sections
+        - token-table
+        - type-scale-specimens
+        - usage-notes
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - comparison
+      dominant_components:
+        - Badge
+        - Card
+        - Table
+      source_signal:
+        - foundation-reference-grid
+    evidence:
+      - surface_id: 39aebcb9d8b40803
+        locator: /ui/foundations/colors
+        path: apps/docs/src/app/ui/foundations/colors/page.tsx
+      - surface_id: fb6207f34d22412c
+        locator: /ui/foundations/typography
+        path: apps/docs/src/app/ui/foundations/typography/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: ai-element-demo-gallery
+    title: ai-element-demo-gallery
+    surface_types:
+      - ai-element-demo
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - component-page-shell
+        - interactive-demo
+        - source-snippet
+        - variant-list
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - control-surface
+      dominant_components:
+        - Accordion
+        - Agent
+        - CodeBlock
+        - Tabs
+      source_signal:
+        - ai-element-demo-gallery
+    evidence:
+      - surface_id: 0bb1b078b4d715c4
+        locator: /ui/components/agent
+        path: apps/docs/src/components/docs/ai-elements/index.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: bento-preview-grid
+    title: bento-preview-grid
+    surface_types:
+      - docs-home
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - bento-preview
+        - dock
+        - editorial-hero
+        - tool-links
+    traits:
+      density:
+        - breathing
+      layout_shape:
+        - article
+      dominant_components:
+        - Button
+        - Card
+        - Dock
+      source_signal:
+        - bento-preview-grid
+    evidence:
+      - surface_id: 70758ab39f697637
+        locator: /
+        path: apps/docs/src/app/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: cli-reference-block
+    title: cli-reference-block
+    surface_types:
+      - tool-doc
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - callouts
+        - cli-reference
+        - display-header
+        - prose-sections
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - article
+      dominant_components:
+        - Callout
+        - CliHelp
+        - CodeBlock
+      source_signal:
+        - cli-reference-block
+    evidence:
+      - surface_id: 988c6ea8181325b8
+        locator: /tools/fingerprint
+        path: apps/docs/src/app/tools/fingerprint/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: component-catalogue-shell
+    title: component-catalogue-shell
+    surface_types:
+      - component-catalogue
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - code-tabs
+        - display-header
+        - metadata-rail
+        - preview-frame
+        - sidebar
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - tracker
+      dominant_components:
+        - Button
+        - Input
+        - Sidebar
+        - Tabs
+      source_signal:
+        - component-catalogue-shell
+    evidence:
+      - surface_id: 3ef2b46784c9f5c7
+        locator: /ui/components
+        path: apps/docs/src/app/ui/components/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: editorial-home-hero
+    title: editorial-home-hero
+    surface_types:
+      - docs-home
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - bento-preview
+        - dock
+        - editorial-hero
+        - tool-links
+    traits:
+      density:
+        - breathing
+      layout_shape:
+        - article
+      dominant_components:
+        - Button
+        - Card
+        - Dock
+      source_signal:
+        - editorial-home-hero
+    evidence:
+      - surface_id: 70758ab39f697637
+        locator: /
+        path: apps/docs/src/app/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: primitive-demo-grid
+    title: primitive-demo-grid
+    surface_types:
+      - primitive-demo
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - component-page-shell
+        - demo-grid
+        - source-snippet
+        - variant-examples
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - control-surface
+      dominant_components:
+        - Button
+        - Card
+        - Tabs
+      source_signal:
+        - primitive-demo-grid
+    evidence:
+      - surface_id: bc0df98e421cb69c
+        locator: /ui/components/button
+        path: apps/docs/src/components/docs/primitives/index.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: theme-control-panel
+    title: theme-control-panel
+    surface_types:
+      - theme-control
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - reset-export-actions
+        - section-tabs
+        - sheet
+        - token-controls
+    traits:
+      density:
+        - compressed
+      layout_shape:
+        - control-surface
+      dominant_components:
+        - Button
+        - Input
+        - Sheet
+        - Slider
+        - Tabs
+      source_signal:
+        - theme-control-panel
+    evidence:
+      - surface_id: 0d73531a1c4e659f
+        locator: apps/docs/src/components/theme-panel
+        path: apps/docs/src/components/theme-panel/ThemePanel.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: token-control-stack
+    title: token-control-stack
+    surface_types:
+      - theme-control
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - reset-export-actions
+        - section-tabs
+        - sheet
+        - token-controls
+    traits:
+      density:
+        - compressed
+      layout_shape:
+        - control-surface
+      dominant_components:
+        - Button
+        - Input
+        - Sheet
+        - Slider
+        - Tabs
+      source_signal:
+        - token-control-stack
+    evidence:
+      - surface_id: 0d73531a1c4e659f
+        locator: apps/docs/src/components/theme-panel
+        path: apps/docs/src/components/theme-panel/ThemePanel.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: token-swatch-table
+    title: token-swatch-table
+    surface_types:
+      - docs-foundation
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - display-header
+        - swatch-grid
+        - token-sections
+        - usage-notes
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - comparison
+      dominant_components:
+        - Badge
+        - Card
+      source_signal:
+        - token-swatch-table
+    evidence:
+      - surface_id: 39aebcb9d8b40803
+        locator: /ui/foundations/colors
+        path: apps/docs/src/app/ui/foundations/colors/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: tool-doc-article
+    title: tool-doc-article
+    surface_types:
+      - tool-doc
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - callouts
+        - cli-reference
+        - display-header
+        - prose-sections
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - article
+      dominant_components:
+        - Callout
+        - CliHelp
+        - CodeBlock
+      source_signal:
+        - tool-doc-article
+    evidence:
+      - surface_id: 988c6ea8181325b8
+        locator: /tools/fingerprint
+        path: apps/docs/src/app/tools/fingerprint/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+  - id: type-specimen-stack
+    title: type-specimen-stack
+    surface_types:
+      - docs-foundation
+    frequency: 1
+    confidence: 0.13
+    anatomy:
+      ordered:
+        - body-specimens
+        - display-header
+        - token-table
+        - type-scale-specimens
+    traits:
+      density:
+        - standard
+      layout_shape:
+        - comparison
+      dominant_components:
+        - Card
+        - Table
+      source_signal:
+        - type-specimen-stack
+    evidence:
+      - surface_id: fb6207f34d22412c
+        locator: /ui/foundations/typography
+        path: apps/docs/src/app/ui/foundations/typography/page.tsx
+    advisory:
+      - Use as advisory composition evidence; deterministic enforcement belongs
+        in checks.yml.
+advisory:
+  review_expectations:
+    - Identify the surface type before judging composition.
+    - Cite matching composition_patterns[].evidence and survey.ui_surfaces
+      evidence for advisory findings.
+    - Treat intent.md as human authority when present.

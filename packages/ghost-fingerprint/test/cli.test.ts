@@ -48,16 +48,6 @@ function fingerprintWithId(id: string): string {
   return BASE_FINGERPRINT.replace("id: local", `id: ${id}`);
 }
 
-function profileFingerprintWithPalette(hex: string): string {
-  return BASE_FINGERPRINT.replace(
-    '- { role: primary, value: "#111111" }',
-    `- { role: primary, value: "${hex}" }`,
-  ).replace(
-    'neutrals: { steps: ["#ffffff", "#111111"], count: 2 }',
-    `neutrals: { steps: ["${hex}"], count: 1 }`,
-  );
-}
-
 async function runCli(argv: string[], cwd: string) {
   const cli = buildCli();
   const previousCwd = process.cwd();
@@ -129,17 +119,32 @@ describe("ghost-fingerprint CLI defaults", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("init-package creates the fingerprint package skeleton", async () => {
+  it("init-package creates the root fingerprint package skeleton", async () => {
     const result = await runCli(["init-package"], dir);
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain(".ghost/fingerprint");
+    expect(result.stdout).toContain(".ghost");
     expect(
-      await readFile(join(dir, ".ghost", "fingerprint", "profile.md"), "utf-8"),
-    ).toContain("# Character");
+      await readFile(join(dir, ".ghost", "resources.yml"), "utf-8"),
+    ).toContain("schema: ghost.resources/v1");
+    expect(
+      await readFile(join(dir, ".ghost", "patterns.yml"), "utf-8"),
+    ).toContain("schema: ghost.patterns/v1");
+    await expect(
+      readFile(join(dir, ".ghost", "intent.md"), "utf-8"),
+    ).rejects.toThrow();
   });
 
-  it("lint defaults to .ghost/fingerprint", async () => {
+  it("init-package creates optional intent.md when requested", async () => {
+    const result = await runCli(["init-package", "--with-intent"], dir);
+
+    expect(result.code).toBe(0);
+    expect(await readFile(join(dir, ".ghost", "intent.md"), "utf-8")).toContain(
+      "# Intent",
+    );
+  });
+
+  it("lint defaults to .ghost", async () => {
     await runCli(["init-package"], dir);
 
     const result = await runCli(["lint"], dir);
@@ -149,18 +154,18 @@ describe("ghost-fingerprint CLI defaults", () => {
     expect(result.stderr).toBe("");
   });
 
-  it("describe defaults to .ghost/fingerprint/profile.md", async () => {
-    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
+  it("describe defaults to .ghost/intent.md", async () => {
+    await mkdir(join(dir, ".ghost"), { recursive: true });
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "profile.md"),
-      fingerprintWithId("local"),
+      join(dir, ".ghost", "intent.md"),
+      "# Intent\n\nHuman-authored direction.\n",
     );
 
     const result = await runCli(["describe"], dir);
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("profile.md");
-    expect(result.stdout).toContain("# Character");
+    expect(result.stdout).toContain("intent.md");
+    expect(result.stdout).toContain("# Intent");
   });
 
   it("diff returns 0 (unchanged) when comparing identical fingerprints", async () => {
@@ -397,13 +402,13 @@ describe("ghost-fingerprint lint dispatches by file kind", () => {
   });
 });
 
-describe("ghost-fingerprint verify-profile", () => {
+describe("ghost-fingerprint verify", () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = join(
       tmpdir(),
-      `ghost-fingerprint-verify-profile-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `ghost-fingerprint-verify-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await mkdir(dir, { recursive: true });
   });
@@ -412,18 +417,29 @@ describe("ghost-fingerprint verify-profile", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("writes JSON output for a survey-backed fingerprint", async () => {
+  it("writes JSON output for a survey-backed pattern bundle", async () => {
+    await runCli(["init-package"], dir);
     await writeFile(
-      join(dir, "fingerprint.md"),
-      profileFingerprintWithPalette("#f97316"),
+      join(dir, ".ghost", "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
     );
     await writeFile(
-      join(dir, "survey.json"),
-      JSON.stringify(makeSurvey(SOURCE_A), null, 2),
+      join(dir, ".ghost", "patterns.yml"),
+      `schema: ghost.patterns/v1
+id: local
+surface_types:
+  - id: settings
+    preferred_patterns: [sectioned-form]
+composition_patterns:
+  - id: sectioned-form
+    surface_types: [settings]
+    evidence:
+      - locator: /settings
+`,
     );
 
     const result = await runCli(
-      ["verify-profile", "fingerprint.md", "survey.json", "--format", "json"],
+      ["verify", "--root", dir, "--format", "json"],
       dir,
     );
 
@@ -432,23 +448,39 @@ describe("ghost-fingerprint verify-profile", () => {
     expect(report.errors).toBe(0);
   });
 
-  it("exits non-zero when palette values are absent from the survey", async () => {
+  it("exits non-zero when pattern evidence is absent from the survey", async () => {
+    await runCli(["init-package"], dir);
     await writeFile(
-      join(dir, "fingerprint.md"),
-      profileFingerprintWithPalette("#1c1c1c"),
-    );
-    await writeFile(
-      join(dir, "survey.json"),
+      join(dir, ".ghost", "survey.json"),
       JSON.stringify(makeSurvey(SOURCE_A), null, 2),
     );
-
-    const result = await runCli(
-      ["verify-profile", "fingerprint.md", "survey.json"],
-      dir,
+    await writeFile(
+      join(dir, ".ghost", "patterns.yml"),
+      `schema: ghost.patterns/v1
+id: local
+surface_types:
+  - id: settings
+    preferred_patterns: [sectioned-form]
+composition_patterns:
+  - id: sectioned-form
+    surface_types: [settings]
+    evidence:
+      - locator: /missing
+`,
     );
 
+    const result = await runCli(["verify", "--root", dir], dir);
+
     expect(result.code).toBe(1);
-    expect(result.stdout).toContain("palette-color-not-in-survey");
+    expect(result.stdout).toContain("pattern-evidence-unbacked");
+  });
+
+  it("registers verify and not the old verify-fingerprint command", async () => {
+    const commands = buildCli().commands.map((command) => command.name);
+
+    expect(commands).toContain("verify");
+    expect(commands).not.toContain("verify-fingerprint");
+    expect(commands).not.toContain("verify-profile");
   });
 });
 
@@ -871,7 +903,7 @@ describe("ghost-fingerprint survey patterns", () => {
     const result = await runCli(["survey", "patterns", "survey.json"], dir);
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("# Survey Patterns");
+    expect(result.stdout).toContain("schema: ghost.patterns/v1");
     expect(result.stdout).toContain("settings");
     expect(result.stdout).toContain("sectioned-form");
   });
@@ -889,7 +921,23 @@ describe("ghost-fingerprint survey patterns", () => {
 
     expect(result.code).toBe(0);
     const patterns = JSON.parse(result.stdout);
-    expect(patterns.schema).toBe("ghost.survey.patterns/v1");
-    expect(patterns.surface_types[0].value).toBe("settings");
+    expect(patterns.schema).toBe("ghost.patterns/v1");
+    expect(patterns.surface_types[0].id).toBe("settings");
+    expect(patterns.composition_patterns[0].id).toBe("sectioned-form");
+  });
+
+  it("keeps markdown output available", async () => {
+    await writeFile(
+      join(dir, "survey.json"),
+      JSON.stringify(makeSurvey(SOURCE_A)),
+    );
+
+    const result = await runCli(
+      ["survey", "patterns", "survey.json", "--format", "markdown"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Survey Patterns");
   });
 });

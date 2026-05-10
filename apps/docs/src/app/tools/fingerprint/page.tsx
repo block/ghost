@@ -30,7 +30,7 @@ const cards: {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full package format for map, survey, profile, and checks.",
+      "The full package format for map, survey, fingerprint, and optional checks.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];

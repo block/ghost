@@ -2,7 +2,7 @@
 
 **Deterministic design drift detection. Five verbs. No LLM calls.**
 
-`ghost-drift` compares design-language fingerprints, records intent across drift, and ships the agentskills.io recipes a host agent uses to review, verify, and remediate. It pairs with **[`ghost-fingerprint`](../ghost-fingerprint)** — the package that owns authoring `fingerprint.md` (the compact authored contract this tool consumes).
+`ghost-drift` checks root Ghost fingerprint bundles, compares bundle-derived design signals, records intent across drift, and ships the agentskills.io recipes a host agent uses to review, verify, and remediate. It pairs with **[`ghost-fingerprint`](../ghost-fingerprint)** — the package that owns authoring `.ghost/`.
 
 ## Requirements
 
@@ -35,9 +35,9 @@ Once npm publishing is unblocked this will move to the registry — swap the URL
 ## Use
 
 ```bash
-ghost-drift compare a/fingerprint.md b/fingerprint.md   # pairwise distance (N=2)
-ghost-drift compare ./*/fingerprint.md                  # composite, N≥3
-ghost-drift compare a.md b.md --semantic               # add qualitative diff
+ghost-drift compare a/.ghost b/.ghost                  # pairwise bundle distance (N=2)
+ghost-drift compare ./*/.ghost                         # composite bundle comparison, N≥3
+ghost-drift compare a.md b.md --semantic               # direct markdown qualitative diff
 ghost-drift compare a.md b.md --temporal               # add velocity / trajectory
 ghost-drift ack                                        # acknowledge drift against the tracked fingerprint
 ghost-drift track path/to/new-tracked.fingerprint.md    # track another fingerprint
@@ -49,14 +49,13 @@ Zero config for every verb. No API key needed. `OPENAI_API_KEY` / `VOYAGE_API_KE
 
 ### Authoring a scan?
 
-Scans live in **[`ghost-fingerprint`](../ghost-fingerprint)**, which owns the three-stage pipeline (`map.md` → `survey.json` → `fingerprint.md`). Install it for `inventory`, `lint`, `verify-profile`, `describe`, `diff`, `survey merge` / `fix-ids` / `summarize` / `catalog`, `scan-status`, and `emit review-command` / `emit context-bundle`:
+Scans live in **[`ghost-fingerprint`](../ghost-fingerprint)**, which owns the root bundle pipeline (`resources.yml` → `map.md` → `survey.json` → `patterns.yml`). Install it for `inventory`, `lint`, `verify`, `describe`, `diff`, `survey merge` / `fix-ids` / `summarize` / `catalog` / `patterns`, `scan-status`, and `emit review-command` / `emit context-bundle`:
 
 ```bash
 ghost-fingerprint inventory                  # raw repo signals → JSON (feeds map.md)
 ghost-fingerprint scan-status                # per-stage state + next stage
-ghost-fingerprint lint                       # auto-detects fingerprint.md / map.md / survey.json
-ghost-fingerprint verify-profile fingerprint.md survey.json --root .
-                                            # fingerprint-to-survey fidelity gate
+ghost-fingerprint lint                       # auto-detects .ghost bundle artifacts
+ghost-fingerprint verify .ghost --root .     # cross-artifact fidelity gate
 ghost-fingerprint survey merge a.json b.json # union with id-based dedup
 ghost-fingerprint survey catalog survey.json # derived value enum/spec view
 ghost-fingerprint diff a.md b.md             # structural prose-level diff between fingerprints
@@ -93,7 +92,7 @@ ghost-drift emit skill
 
 The agent runs the recipes; the CLI runs the arithmetic. The CLI never calls an LLM.
 
-(Authoring recipes — `scan` / `map` / `survey` / `profile` — all ship in `ghost-fingerprint`'s skill bundle, since one tool now owns the whole three-stage scan pipeline. Fleet narrative recipes ship in `ghost-fleet`.)
+(Authoring recipes — `scan` / `map` / `survey` / `patterns` — all ship in `ghost-fingerprint`'s skill bundle, since one tool now owns the root bundle pipeline. Fleet narrative recipes ship in `ghost-fleet`.)
 
 ## Full story
 

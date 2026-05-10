@@ -22,7 +22,7 @@ export interface EmitReviewInput {
  *   - **Checks-driven** (legacy programmatic input): when `fingerprint.checks[]`
  *     is non-empty, group checks by computed perceptual severity and render a
  *     Critical / Serious / Nit layout.
- *   - **Structured-fallback**: for normal profile.md inputs,
+ *   - **Structured-fallback**: for normal fingerprint.md inputs,
  *     emit the original palette/radius/spacing/typography sections
  *     derived from frontmatter alone. Preserved verbatim so existing
  *     fingerprints keep working through the v0 transition.
@@ -173,7 +173,7 @@ function calibrationFooter(fp: Fingerprint, resolved: ResolvedCheck[]): string {
     "",
     "Color and font-family checks are loud (critical) by default. Shape, elevation, surface, and interactive-pattern checks are structural (serious). Spacing, density, motion-detail, and theming checks are rhythmic (nit).",
     "",
-    `Generated from a profile object (${(fp.checks ?? []).length} legacy checks). Re-run \`ghost-fingerprint emit review-command\` after package updates.`,
+    `Generated from a fingerprint object (${(fp.checks ?? []).length} legacy checks). Re-run \`ghost-fingerprint emit review-command\` after package updates.`,
   );
   return lines.join("\n");
 }
@@ -206,7 +206,7 @@ function emitStructuredFallback(fp: Fingerprint): string {
 function structuredFallbackNotice(): string {
   return `## Calibration note
 
-This profile has no embedded checks, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than \`ghost-drift check\`; promote enforceable rules in \`.ghost/fingerprint/checks.yml\` when a pattern should become a gate.`;
+This fingerprint has no embedded checks, so this command uses a coarse token fallback from palette, spacing, typography, and surfaces. Treat findings as lower-confidence than \`ghost-drift check\`; promote enforceable rules in \`.ghost/checks.yml\` when a pattern should become a gate.`;
 }
 
 function frontmatter(id: string): string {
@@ -473,7 +473,7 @@ function footer(fp: Fingerprint): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`profile.md\` (${count} decisions). Re-run \`ghost-fingerprint emit review-command\` after package updates.`;
+Generated from \`fingerprint.md\` (${count} decisions). Re-run \`ghost-fingerprint emit review-command\` after package updates.`;
 }
 
 // --- helpers ------------------------------------------------------------

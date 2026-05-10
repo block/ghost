@@ -84,7 +84,7 @@ export function lintMap(raw: string): MapLintReport {
 /**
  * Cross-field checks for `design_system`:
  *   - At least one of `entry_files` or `derived_files` should be present
- *     (warning, not error — early in profiling there may be neither yet).
+ *     (warning, not error — early in fingerprint authoring there may be neither yet).
  *   - `upstream` is meaningful only when `token_source` is `external` or
  *     `mixed`; flag a stray `upstream` paired with `inline` (or unset).
  *   - When `token_source` is `external`, `upstream` should be set.

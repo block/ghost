@@ -8,7 +8,7 @@ import {
   MapFrontmatterSchema,
   type MapScope,
 } from "@ghost/core";
-import { loadFingerprint, PROFILE_FILENAME } from "ghost-fingerprint";
+import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-fingerprint";
 import { parse as parseYaml } from "yaml";
 import { FLEET_MEMBERS_DIRNAME } from "./schema.js";
 import type { FleetMember, MemberSummary } from "./types.js";
@@ -48,7 +48,7 @@ export async function loadMembers(dir: string): Promise<FleetMember[]> {
 /**
  * Resolve the members directory.
  *
- * Convention is `<root>/members/<id>/{map.md,profile.md}`. We also
+ * Convention is `<root>/members/<id>/{map.md,fingerprint.md}`. We also
  * accept being pointed directly at a `members/` directory.
  */
 function pickMembersRoot(root: string): string {
@@ -66,7 +66,7 @@ function pickMembersRoot(root: string): string {
 /**
  * Load a single member directory.
  *
- * Reads map.md, profile.md, and optional .ghost-sync.json. Each is
+ * Reads map.md, fingerprint.md, and optional .ghost-sync.json. Each is
  * surfaced through a status field so missing/broken inputs are visible
  * without crashing the rest of the load.
  */
@@ -74,7 +74,7 @@ async function loadMember(memberPath: string): Promise<FleetMember> {
   const dirName = memberPath.split("/").pop() ?? "";
 
   const mapPath = join(memberPath, MAP_FILENAME);
-  const fingerprintPath = join(memberPath, PROFILE_FILENAME);
+  const fingerprintPath = join(memberPath, FINGERPRINT_FILENAME);
 
   // Default identity is the directory basename; map.md `id` overrides.
   let id = dirName;

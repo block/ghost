@@ -2,8 +2,8 @@ import { resolve } from "node:path";
 import type { Fingerprint, Target } from "@ghost/core";
 import { resolveTarget } from "@ghost/core";
 import {
+  FINGERPRINT_FILENAME,
   loadFingerprint,
-  PROFILE_FILENAME,
   parseFingerprint,
   resolveFingerprintPackage,
 } from "ghost-fingerprint";
@@ -14,7 +14,7 @@ import {
  * - "path": reads a local fingerprint.md, or a directory containing one.
  * - "url": fetches a remote fingerprint.md
  * - "npm": resolves node_modules/<name>/fingerprint.md
- * - "github": not yet supported for direct resolution (use profile flow instead)
+ * - "github": not yet supported for direct resolution (use fingerprint flow instead)
  */
 export async function resolveTrackedFingerprint(
   target: Target,
@@ -46,7 +46,7 @@ export async function resolveTrackedFingerprint(
 
     default:
       throw new Error(
-        `Cannot resolve tracked fingerprint from target type "${target.type}". Generate one first by running the profile recipe in your host agent (install with "ghost-drift emit skill").`,
+        `Cannot resolve tracked fingerprint from target type "${target.type}". Generate one first by running the fingerprint recipe in your host agent (install with "ghost-drift emit skill").`,
       );
   }
 }
@@ -64,10 +64,10 @@ async function readFingerprintFile(path: string): Promise<Fingerprint> {
 async function readFingerprintFromDir(dir: string): Promise<Fingerprint> {
   try {
     return await readFingerprintFile(
-      resolveFingerprintPackage(undefined, dir).profile,
+      resolveFingerprintPackage(undefined, dir).fingerprint,
     );
   } catch {
-    return readFingerprintFile(resolve(dir, PROFILE_FILENAME));
+    return readFingerprintFile(resolve(dir, FINGERPRINT_FILENAME));
   }
 }
 

@@ -5,9 +5,9 @@ handoffs:
   - label: Accept the drift as aligned reality
     command: ghost-drift ack
     prompt: Accept current drift across the board
-  - label: Track the other profile
+  - label: Track the other fingerprint
     command: ghost-drift track
-    prompt: Track the other profile.md as the new reference
+    prompt: Track the other fingerprint.md as the new reference
   - label: Declare a dimension intentionally divergent
     command: ghost-drift diverge
     prompt: Record an intentional divergence on a specific dimension
@@ -21,17 +21,17 @@ handoffs:
 
 ### Pairwise (N=2)
 
-    ghost-drift compare a.md b.md
+    ghost-drift compare a/.ghost b/.ghost
 
-Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas (palette, spacing, typography, surfaces).
+Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Bundle inputs are synthesized from survey values plus pattern frequencies; direct fingerprint markdown files still use their embedded frontmatter.
 
 Flags:
-- `--semantic` — add qualitative diff (which decisions changed, which colors appeared/disappeared)
+- `--semantic` — add qualitative diff for direct fingerprint markdown comparisons
 - `--temporal` — add drift velocity, trajectory, and ack bounds (reads `.ghost/history.jsonl`)
 
 ### Composite (N≥3)
 
-    ghost-drift compare a.md b.md c.md d.md
+    ghost-drift compare a/.ghost b/.ghost c/.ghost d/.ghost
 
 Output: pairwise distance matrix, centroid, spread, and cluster assignments. The centroid is the composite (org-scale) fingerprint: what the members average out to.
 

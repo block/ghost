@@ -3,6 +3,8 @@ import { join, resolve } from "node:path";
 import {
   GHOST_CHECKS_FILENAME,
   lintGhostChecks,
+  lintGhostPatterns,
+  lintGhostResources,
   lintSurvey,
   MAP_FILENAME,
   type MapFrontmatter,
@@ -10,17 +12,30 @@ import {
   SURVEY_FILENAME,
 } from "@ghost/core";
 import { parse as parseYaml } from "yaml";
-import { FINGERPRINT_PACKAGE_DIR, PROFILE_FILENAME } from "./constants.js";
+import {
+  FINGERPRINT_FILENAME,
+  FINGERPRINT_PACKAGE_DIR,
+  INTENT_FILENAME,
+  PATTERNS_FILENAME,
+  RESOURCES_FILENAME,
+} from "./constants.js";
 import type { LintIssue, LintReport } from "./lint.js";
-import { lintFingerprint } from "./lint.js";
 import { lintMap } from "./lint-map.js";
 
 export interface FingerprintPackagePaths {
   dir: string;
+  resources: string;
   map: string;
   survey: string;
-  profile: string;
+  patterns: string;
+  /** Legacy direct markdown path; not part of the canonical root bundle. */
+  fingerprint: string;
   checks: string;
+  intent: string;
+}
+
+export interface InitFingerprintPackageOptions {
+  withIntent?: boolean;
 }
 
 export function resolveFingerprintPackage(
@@ -30,25 +45,33 @@ export function resolveFingerprintPackage(
   const dir = resolve(cwd, dirArg ?? FINGERPRINT_PACKAGE_DIR);
   return {
     dir,
+    resources: join(dir, RESOURCES_FILENAME),
     map: join(dir, MAP_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
-    profile: join(dir, PROFILE_FILENAME),
+    patterns: join(dir, PATTERNS_FILENAME),
+    fingerprint: join(dir, FINGERPRINT_FILENAME),
     checks: join(dir, GHOST_CHECKS_FILENAME),
+    intent: join(dir, INTENT_FILENAME),
   };
 }
 
 export async function initFingerprintPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
+  options: InitFingerprintPackageOptions = {},
 ): Promise<FingerprintPackagePaths> {
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.dir, { recursive: true });
   const now = new Date().toISOString();
   await Promise.all([
+    writeFile(paths.resources, templateResources(), "utf-8"),
     writeFile(paths.map, templateMap(now), "utf-8"),
     writeFile(paths.survey, templateSurvey(now), "utf-8"),
-    writeFile(paths.profile, templateProfile(now), "utf-8"),
+    writeFile(paths.patterns, templatePatterns(), "utf-8"),
     writeFile(paths.checks, templateChecks(), "utf-8"),
+    ...(options.withIntent
+      ? [writeFile(paths.intent, templateIntent(), "utf-8")]
+      : []),
   ]);
   return paths;
 }
@@ -60,10 +83,28 @@ export async function lintFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   const issues: LintIssue[] = [];
 
+  const resourcesRaw = await readRequired(
+    paths.resources,
+    "resources.yml",
+    issues,
+  );
   const mapRaw = await readRequired(paths.map, "map.md", issues);
   const surveyRaw = await readRequired(paths.survey, "survey.json", issues);
-  const profileRaw = await readRequired(paths.profile, "profile.md", issues);
-  const checksRaw = await readRequired(paths.checks, "checks.yml", issues);
+  const patternsRaw = await readRequired(
+    paths.patterns,
+    "patterns.yml",
+    issues,
+  );
+  const checksRaw = await readOptional(paths.checks);
+  const intentRaw = await readOptional(paths.intent);
+
+  if (resourcesRaw !== undefined) {
+    const resources = parseYamlSafe(resourcesRaw, "resources.yml", issues);
+    if (resources !== undefined) {
+      const resourcesReport = lintGhostResources(resources);
+      issues.push(...prefixIssues("resources.yml", resourcesReport.issues));
+    }
+  }
 
   let mapFrontmatter: MapFrontmatter | undefined;
   if (mapRaw !== undefined) {
@@ -80,9 +121,12 @@ export async function lintFingerprintPackage(
     }
   }
 
-  if (profileRaw !== undefined) {
-    const profileReport = lintFingerprint(profileRaw);
-    issues.push(...prefixIssues("profile.md", profileReport.issues));
+  if (patternsRaw !== undefined) {
+    const patterns = parseYamlSafe(patternsRaw, "patterns.yml", issues);
+    if (patterns !== undefined) {
+      const patternsReport = lintGhostPatterns(patterns);
+      issues.push(...prefixIssues("patterns.yml", patternsReport.issues));
+    }
   }
 
   if (checksRaw !== undefined) {
@@ -91,6 +135,16 @@ export async function lintFingerprintPackage(
       const checksReport = lintGhostChecks(checks, { map: mapFrontmatter });
       issues.push(...prefixIssues("checks.yml", checksReport.issues));
     }
+  }
+
+  if (intentRaw !== undefined && intentRaw.trim().length === 0) {
+    issues.push({
+      severity: "warning",
+      rule: "intent-empty",
+      message:
+        "intent.md is optional, but when present it should contain human-authored or human-approved intent.",
+      path: "intent.md",
+    });
   }
 
   return finalize(issues);
@@ -110,6 +164,14 @@ async function readRequired(
       message: `Fingerprint package is missing ${label}.`,
       path: label,
     });
+    return undefined;
+  }
+}
+
+async function readOptional(path: string): Promise<string | undefined> {
+  try {
+    return await readFile(path, "utf-8");
+  } catch {
     return undefined;
   }
 }
@@ -191,6 +253,26 @@ function finalize(issues: LintIssue[]): LintReport {
   };
 }
 
+function templateResources(): string {
+  return `schema: ghost.resources/v1
+id: local
+primary:
+  target: .
+  paths:
+    - .
+design_system: []
+surfaces: []
+screenshots: []
+docs: []
+resolvers: []
+upstreams: []
+include:
+  - "**/*"
+exclude:
+  - "**/node_modules/**"
+`;
+}
+
 function templateMap(now: string): string {
   return `---
 schema: ghost.map/v2
@@ -255,38 +337,14 @@ function templateSurvey(now: string): string {
   )}\n`;
 }
 
-function templateProfile(now: string): string {
-  return `---
+function templatePatterns(): string {
+  return `schema: ghost.patterns/v1
 id: local
-source: unknown
-timestamp: ${now}
-palette:
-  dominant: []
-  neutrals: { steps: [], count: 0 }
-  semantic: []
-  saturationProfile: muted
-  contrast: moderate
-spacing: { scale: [], baseUnit: null, regularity: 0 }
-typography:
-  families: []
-  sizeRamp: []
-  weightDistribution: {}
-  lineHeightPattern: normal
-surfaces:
-  borderRadii: []
-  shadowComplexity: deliberate-none
-  borderUsage: minimal
----
-
-# Character
-
-No design-language prior has been authored yet.
-
-# Signature
-
-No recognizable signature has been authored yet.
-
-# Decisions
+surface_types: []
+composition_patterns: []
+advisory:
+  review_expectations:
+    - Cite survey evidence and pattern evidence for composition findings.
 `;
 }
 
@@ -294,5 +352,12 @@ function templateChecks(): string {
   return `schema: ghost.checks/v1
 id: local
 checks: []
+`;
+}
+
+function templateIntent(): string {
+  return `# Intent
+
+This optional file is reserved for human-authored or human-approved product intent.
 `;
 }

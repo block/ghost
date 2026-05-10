@@ -1,14 +1,17 @@
 /** Canonical directory for the Ghost fingerprint package. */
-export const FINGERPRINT_PACKAGE_DIR = ".ghost/fingerprint";
+export const FINGERPRINT_PACKAGE_DIR = ".ghost";
 
-/** Canonical filename for the non-enforcing design-language prior. */
-export const PROFILE_FILENAME = "profile.md";
+/** Canonical filename for scan resource references. */
+export const RESOURCES_FILENAME = "resources.yml";
 
-/**
- * @deprecated Internal alias kept while older compare/evolution helpers are
- * renamed. New user-facing flows must say `profile.md`.
- */
-export const FINGERPRINT_FILENAME = PROFILE_FILENAME;
+/** Canonical filename for operational composition grammar. */
+export const PATTERNS_FILENAME = "patterns.yml";
+
+/** Optional filename for human-authored or human-approved intent. */
+export const INTENT_FILENAME = "intent.md";
+
+/** Legacy direct fingerprint filename. Not part of the root package shape. */
+export const FINGERPRINT_FILENAME = "fingerprint.md";
 
 /** Directory containing scoped fingerprint overlays. */
 export const FINGERPRINTS_DIRNAME = "fingerprints";

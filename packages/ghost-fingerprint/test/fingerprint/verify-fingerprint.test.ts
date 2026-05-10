@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { Survey, SurveySource } from "@ghost/core";
 import { tokenRowId, uiSurfaceRowId, valueRowId } from "@ghost/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { loadFingerprint, verifyProfile } from "../../src/core/index.js";
+import { loadFingerprint, verifyFingerprint } from "../../src/core/index.js";
 
 const SOURCE: SurveySource = {
   id: "local",
@@ -160,13 +160,13 @@ function makeSurvey({
   };
 }
 
-describe("verifyProfile", () => {
+describe("verifyFingerprint", () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = join(
       tmpdir(),
-      `ghost-fingerprint-verify-profile-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `ghost-fingerprint-verify-fingerprint-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await mkdir(dir, { recursive: true });
   });
@@ -176,7 +176,7 @@ describe("verifyProfile", () => {
   });
 
   it("passes when all palette colors exist in survey values or tokens", () => {
-    const report = verifyProfile(
+    const report = verifyFingerprint(
       fingerprint(),
       makeSurvey({ colors: ["#ffffff"], tokens: { "--brand": "#1a1a1a" } }),
     );
@@ -185,6 +185,51 @@ describe("verifyProfile", () => {
     expect(report.issues.some((issue) => issue.severity === "error")).toBe(
       false,
     );
+  });
+
+  it("uses survey value category as provenance for extension kinds", () => {
+    const survey = makeSurvey();
+    survey.values = survey.values.map((row) => {
+      if (row.kind === "color") {
+        return { ...row, kind: "hex-color", category: "color" };
+      }
+      if (row.kind === "spacing") {
+        const scalar =
+          typeof row.spec === "object" &&
+          row.spec !== null &&
+          "scalar" in row.spec
+            ? Number(row.spec.scalar)
+            : Number.parseFloat(row.value);
+        return {
+          ...row,
+          kind: "length",
+          category: "spacing",
+          spec: { number: scalar, unit: "px" },
+        };
+      }
+      if (row.kind === "radius") {
+        return { ...row, kind: "length", category: "radius" };
+      }
+      if (row.kind === "typography") {
+        if (row.value === "Inter") {
+          return { ...row, kind: "font-stack", category: "typography" };
+        }
+        if (row.value === "400") {
+          return { ...row, kind: "number", category: "typography" };
+        }
+        return {
+          ...row,
+          kind: "length",
+          category: "typography",
+          value: `font-size: ${row.value}`,
+        };
+      }
+      return row;
+    }) as Survey["values"];
+
+    const report = verifyFingerprint(fingerprint(), survey);
+
+    expect(report.errors).toBe(0);
   });
 
   it("verifies scoped overlays against the resolved parent fingerprint", async () => {
@@ -206,7 +251,7 @@ Checkout tightens the inherited control-surface rhythm.
     await writeFile(childPath, childRaw, "utf-8");
 
     const resolved = (await loadFingerprint(childPath)).fingerprint;
-    const report = verifyProfile(childRaw, makeSurvey(), {
+    const report = verifyFingerprint(childRaw, makeSurvey(), {
       resolvedFingerprint: resolved,
     });
 
@@ -214,7 +259,7 @@ Checkout tightens the inherited control-surface rhythm.
   });
 
   it("errors when the fingerprint invents a palette color", () => {
-    const report = verifyProfile(
+    const report = verifyFingerprint(
       fingerprint({ brand: "#1c1c1c", neutralSteps: ["#ffffff", "#1a1a1a"] }),
       makeSurvey(),
     );
@@ -231,7 +276,7 @@ Checkout tightens the inherited control-surface rhythm.
   });
 
   it("warns when a same-role fingerprint palette entry disagrees with a high-salience token", () => {
-    const report = verifyProfile(
+    const report = verifyFingerprint(
       fingerprint({ brand: "#ffffff" }),
       makeSurvey({ colors: ["#ffffff", "#1a1a1a"] }),
     );
@@ -249,7 +294,7 @@ Checkout tightens the inherited control-surface rhythm.
   });
 
   it("errors when spacing, typography, or radii are not survey-backed", () => {
-    const report = verifyProfile(
+    const report = verifyFingerprint(
       fingerprint()
         .replace("scale: [4, 8, 16]", "scale: [4, 10, 16]")
         .replace('families: ["Inter"]', 'families: ["Aspirational Sans"]')
@@ -283,7 +328,7 @@ Checkout tightens the inherited control-surface rhythm.
       files_count: 3,
     });
 
-    const report = verifyProfile(fingerprint(), survey);
+    const report = verifyFingerprint(fingerprint(), survey);
 
     expect(report.issues).toContainEqual(
       expect.objectContaining({
@@ -307,7 +352,7 @@ Checkout tightens the inherited control-surface rhythm.
       files_count: 4,
     });
 
-    const report = verifyProfile(fingerprint(), survey);
+    const report = verifyFingerprint(fingerprint(), survey);
 
     expect(report.errors).toBe(0);
     expect(report.issues).toContainEqual(
@@ -326,7 +371,7 @@ Checkout tightens the inherited control-surface rhythm.
         fixtureDir,
         "..",
         "fixtures",
-        "profile-verifier",
+        "fingerprint-verifier",
         "goose2",
         "fingerprint.md",
       ),
@@ -338,7 +383,7 @@ Checkout tightens the inherited control-surface rhythm.
           fixtureDir,
           "..",
           "fixtures",
-          "profile-verifier",
+          "fingerprint-verifier",
           "goose2",
           "survey.json",
         ),
@@ -346,7 +391,7 @@ Checkout tightens the inherited control-surface rhythm.
       ),
     );
 
-    const report = verifyProfile(fingerprintRaw, survey);
+    const report = verifyFingerprint(fingerprintRaw, survey);
 
     expect(report.issues).toContainEqual(
       expect.objectContaining({

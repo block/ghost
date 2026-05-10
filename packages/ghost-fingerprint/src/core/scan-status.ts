@@ -2,6 +2,8 @@ import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
   GHOST_CHECKS_FILENAME,
+  GHOST_PATTERNS_FILENAME,
+  GHOST_RESOURCES_FILENAME,
   getEffectiveMapScopes,
   MAP_FILENAME,
   type MapFrontmatter,
@@ -11,7 +13,7 @@ import {
 import { parse as parseYaml } from "yaml";
 import {
   FINGERPRINTS_DIRNAME,
-  PROFILE_FILENAME,
+  INTENT_FILENAME,
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
 
@@ -31,7 +33,7 @@ export interface ScanStageReport {
   path: string;
 }
 
-export type ScanStage = "map" | "survey" | "profile" | "checks";
+export type ScanStage = "resources" | "map" | "survey" | "patterns";
 
 export interface ScanScopeReport {
   id: string;
@@ -49,16 +51,19 @@ export interface ScanStatusOptions {
 export interface ScanStatus {
   /** Absolute path to the scan directory. */
   dir: string;
+  resources: ScanStageReport;
   map: ScanStageReport;
   survey: ScanStageReport;
-  profile: ScanStageReport;
+  patterns: ScanStageReport;
   checks: ScanStageReport;
+  intent: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
   /**
-   * The next stage an orchestrator should run, or `null` if every stage
-   * is `present`. Stages run in order: map → survey → profile → checks.
-   * The recommendation surfaces the first stage in `missing` state.
+   * The next stage an orchestrator should run, or `null` if every required
+   * stage is `present`. Stages run in order:
+   * resources → map → survey → patterns. `checks.yml` and `intent.md` are
+   * reported but optional, so they never block completion.
    */
   recommended_next: ScanStage | null;
 }
@@ -68,10 +73,12 @@ export interface ScanStatus {
  *
  * Existence-only check today. The artifacts checked are:
  *
- *   - map        → `map.md`
- *   - survey     → `survey.json`
- *   - profile    → `profile.md`
- *   - checks     → `checks.yml`
+ *   - resources → `resources.yml`
+ *   - map       → `map.md`
+ *   - survey    → `survey.json`
+ *   - patterns  → `patterns.yml`
+ *   - checks    → optional `checks.yml`
+ *   - intent    → optional `intent.md`
  *
  * Hash-keyed freshness (`.scan-meta.json` with input/output hashes per
  * stage) is the planned enhancement. For now, orchestrators that want
@@ -83,19 +90,33 @@ export async function scanStatus(
   options: ScanStatusOptions = {},
 ): Promise<ScanStatus> {
   const dir = resolve(dirPath);
+  const resourcesPath = resolve(dir, GHOST_RESOURCES_FILENAME);
   const mapPath = resolve(dir, MAP_FILENAME);
   const surveyPath = resolve(dir, SURVEY_FILENAME);
-  const profilePath = resolve(dir, PROFILE_FILENAME);
+  const patternsPath = resolve(dir, GHOST_PATTERNS_FILENAME);
   const checksPath = resolve(dir, GHOST_CHECKS_FILENAME);
+  const intentPath = resolve(dir, INTENT_FILENAME);
 
-  const [mapPresent, surveyPresent, profilePresent, checksPresent] =
-    await Promise.all([
-      pathExists(mapPath),
-      pathExists(surveyPath),
-      pathExists(profilePath),
-      pathExists(checksPath),
-    ]);
+  const [
+    resourcesPresent,
+    mapPresent,
+    surveyPresent,
+    patternsPresent,
+    checksPresent,
+    intentPresent,
+  ] = await Promise.all([
+    pathExists(resourcesPath),
+    pathExists(mapPath),
+    pathExists(surveyPath),
+    pathExists(patternsPath),
+    pathExists(checksPath),
+    pathExists(intentPath),
+  ]);
 
+  const resources: ScanStageReport = {
+    state: resourcesPresent ? "present" : "missing",
+    path: resourcesPath,
+  };
   const map: ScanStageReport = {
     state: mapPresent ? "present" : "missing",
     path: mapPath,
@@ -104,27 +125,33 @@ export async function scanStatus(
     state: surveyPresent ? "present" : "missing",
     path: surveyPath,
   };
-  const profile: ScanStageReport = {
-    state: profilePresent ? "present" : "missing",
-    path: profilePath,
+  const patterns: ScanStageReport = {
+    state: patternsPresent ? "present" : "missing",
+    path: patternsPath,
   };
   const checks: ScanStageReport = {
     state: checksPresent ? "present" : "missing",
     path: checksPath,
   };
+  const intent: ScanStageReport = {
+    state: intentPresent ? "present" : "missing",
+    path: intentPath,
+  };
 
   let recommended_next: ScanStage | null = null;
-  if (map.state === "missing") recommended_next = "map";
+  if (resources.state === "missing") recommended_next = "resources";
+  else if (map.state === "missing") recommended_next = "map";
   else if (survey.state === "missing") recommended_next = "survey";
-  else if (profile.state === "missing") recommended_next = "profile";
-  else if (checks.state === "missing") recommended_next = "checks";
+  else if (patterns.state === "missing") recommended_next = "patterns";
 
   const status: ScanStatus = {
     dir,
+    resources,
     map,
     survey,
-    profile,
+    patterns,
     checks,
+    intent,
     recommended_next,
   };
 

@@ -6,8 +6,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   buildSkillMd,
   writeContextBundle,
+  writePackageContextBundle,
 } from "../../src/core/context/index.js";
 import { buildTokensCss } from "../../src/core/context/tokens-css.js";
+import { initFingerprintPackage } from "../../src/core/fingerprint-package.js";
 
 const FINGERPRINT: Fingerprint = {
   id: "sample-ds",
@@ -69,12 +71,12 @@ afterEach(async () => {
 });
 
 describe("writeContextBundle", () => {
-  it("default: emits SKILL.md + profile.md + prompt.md + tokens.css", async () => {
+  it("default: emits SKILL.md + fingerprint.md + prompt.md + tokens.css", async () => {
     const res = await writeContextBundle(FINGERPRINT, { outDir: dir });
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toEqual([
       "SKILL.md",
-      "profile.md",
+      "fingerprint.md",
       "prompt.md",
       "tokens.css",
     ]);
@@ -85,13 +87,13 @@ describe("writeContextBundle", () => {
     expect(skill).toContain("tokens.css");
   });
 
-  it("--no-tokens: emits SKILL.md + profile.md + prompt.md only", async () => {
+  it("--no-tokens: emits SKILL.md + fingerprint.md + prompt.md only", async () => {
     const res = await writeContextBundle(FINGERPRINT, {
       outDir: dir,
       tokens: false,
     });
     const names = res.files.map((f) => f.split("/").pop());
-    expect(names).toEqual(["SKILL.md", "profile.md", "prompt.md"]);
+    expect(names).toEqual(["SKILL.md", "fingerprint.md", "prompt.md"]);
 
     const skill = await readFile(res.files[0], "utf-8");
     expect(skill).not.toContain("tokens.css");
@@ -105,7 +107,7 @@ describe("writeContextBundle", () => {
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toEqual([
       "SKILL.md",
-      "profile.md",
+      "fingerprint.md",
       "prompt.md",
       "tokens.css",
       "README.md",
@@ -228,6 +230,52 @@ describe("writeContextBundle", () => {
     const names = res.files.map((f) => f.split("/").pop());
     expect(names).toContain("tokens.css");
     expect(names).toContain("README.md");
+  });
+});
+
+describe("writePackageContextBundle", () => {
+  it("emits portable context from root package artifacts", async () => {
+    const paths = await initFingerprintPackage(join(dir, ".ghost"), undefined, {
+      withIntent: true,
+    });
+    const res = await writePackageContextBundle(paths, {
+      outDir: join(dir, "bundle"),
+      readme: true,
+    });
+
+    const names = res.files.map((f) => f.split("/").pop());
+    expect(names).toEqual([
+      "prompt.md",
+      "SKILL.md",
+      "resources.yml",
+      "map.md",
+      "survey-summary.md",
+      "patterns.yml",
+      "checks.yml",
+      "intent.md",
+      "README.md",
+    ]);
+
+    const prompt = await readFile(res.files[0], "utf-8");
+    expect(prompt).toContain("# Use The Package");
+    expect(prompt).toContain("patterns.yml");
+
+    const summary = await readFile(
+      res.files.find((f) => f.endsWith("survey-summary.md")) ?? "",
+      "utf-8",
+    );
+    expect(summary).toContain("# Survey Summary");
+  });
+
+  it("promptOnly emits just prompt.md for package bundles", async () => {
+    const paths = await initFingerprintPackage(join(dir, ".ghost"), undefined);
+    const res = await writePackageContextBundle(paths, {
+      outDir: join(dir, "bundle"),
+      promptOnly: true,
+    });
+
+    expect(res.files).toHaveLength(1);
+    expect(res.files[0]).toMatch(/prompt\.md$/);
   });
 });
 

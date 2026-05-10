@@ -17,6 +17,7 @@ export interface GhostCheckAppliesTo {
   scopes?: string[];
   paths?: string[];
   surface_types?: string[];
+  pattern_ids?: string[];
 }
 
 export interface GhostCheckDetector {

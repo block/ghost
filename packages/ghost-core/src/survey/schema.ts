@@ -187,6 +187,17 @@ const UiSurfaceSignalsSchema = z
   })
   .strict();
 
+const UiSurfaceCompositionSchema = z
+  .object({
+    anatomy: z.array(z.string().min(1)).optional(),
+    primary_region: z.string().min(1).optional(),
+    action_placement: z.array(z.string().min(1)).optional(),
+    navigation_context: z.string().min(1).optional(),
+    responsive_behavior: z.array(z.string().min(1)).optional(),
+    confidence: z.number().min(0).max(1).optional(),
+  })
+  .strict();
+
 const UiSurfaceRowSchema = RowBaseSchema.extend({
   name: z.string().min(1),
   kind: UiSurfaceKindSchema,
@@ -194,6 +205,7 @@ const UiSurfaceRowSchema = RowBaseSchema.extend({
   renderability: UiSurfaceRenderabilitySchema,
   files: z.array(z.string().min(1)),
   classification: UiSurfaceClassificationSchema.optional(),
+  composition: UiSurfaceCompositionSchema.optional(),
   signals: UiSurfaceSignalsSchema,
 });
 
@@ -213,6 +225,7 @@ export {
   SurveySourceSchema,
   TokenRowSchema,
   UiSurfaceClassificationSchema,
+  UiSurfaceCompositionSchema,
   UiSurfaceKindSchema,
   UiSurfaceRenderabilitySchema,
   UiSurfaceRowSchema,

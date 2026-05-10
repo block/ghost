@@ -1,5 +1,5 @@
 ---
-extends: ../profile.md
+extends: ../fingerprint.md
 id: cash-web-payments
 decisions:
   - dimension: density
