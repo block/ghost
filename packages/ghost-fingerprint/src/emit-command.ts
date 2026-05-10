@@ -8,6 +8,7 @@ import {
   loadFingerprint,
   resolveFingerprintPackage,
   writeContextBundle,
+  writePackageContextBundle,
 } from "./core/index.js";
 
 /**
@@ -57,7 +58,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "-f, --fingerprint <path>",
-      "Source direct fingerprint markdown file (default: .ghost/fingerprint.md)",
+      "Source legacy direct fingerprint markdown file (required for review-command; optional legacy mode for context-bundle)",
     )
     .option(
       "-o, --out <path>",
@@ -68,15 +69,15 @@ export function registerEmitCommand(cli: CAC): void {
       "Write to stdout instead of a file (review-command only)",
     )
     // context-bundle flags:
-    .option("--no-tokens", "Skip tokens.css output (context-bundle)")
-    .option("--readme", "Include README.md (context-bundle)")
     .option(
-      "--prompt-only",
-      "Emit only prompt.md (skips SKILL.md / fingerprint.md / tokens.css) (context-bundle)",
+      "--no-tokens",
+      "Skip tokens.css output (legacy direct fingerprint context-bundle)",
     )
+    .option("--readme", "Include README.md (context-bundle)")
+    .option("--prompt-only", "Emit only prompt.md (context-bundle)")
     .option(
       "--name <name>",
-      "Override the skill name (default: fingerprint id) (context-bundle)",
+      "Override the skill name (default: package or fingerprint id) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {
@@ -106,13 +107,14 @@ export function registerEmitCommand(cli: CAC): void {
           process.exit(0);
         }
 
-        const fingerprintPath = resolve(
-          process.cwd(),
-          opts.fingerprint ??
-            resolveFingerprintPackage(undefined, process.cwd()).fingerprint,
-        );
+        const explicitFingerprint = typeof opts.fingerprint === "string";
 
         if (parsed.kind === "review-command") {
+          const fingerprintPath = resolve(
+            process.cwd(),
+            opts.fingerprint ??
+              resolveFingerprintPackage(undefined, process.cwd()).fingerprint,
+          );
           const loaded = await loadFingerprint(fingerprintPath, {
             noEmbeddingBackfill: true,
           });
@@ -141,6 +143,29 @@ export function registerEmitCommand(cli: CAC): void {
           (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
         );
 
+        if (!explicitFingerprint) {
+          const result = await writePackageContextBundle(
+            resolveFingerprintPackage(undefined, process.cwd()),
+            {
+              outDir,
+              readme: Boolean(opts.readme),
+              promptOnly: Boolean(opts.promptOnly),
+              name: opts.name as string | undefined,
+            },
+          );
+
+          process.stdout.write(
+            `Wrote ${result.files.length} file${
+              result.files.length === 1 ? "" : "s"
+            } to ${result.outDir}:\n`,
+          );
+          for (const f of result.files) {
+            process.stdout.write(`  ${f}\n`);
+          }
+          process.exit(0);
+        }
+
+        const fingerprintPath = resolve(process.cwd(), opts.fingerprint);
         const { fingerprint } = await loadFingerprint(fingerprintPath);
         const result = await writeContextBundle(fingerprint, {
           outDir,
