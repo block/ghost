@@ -98,7 +98,7 @@ Ghost is a TypeScript pnpm monorepo that helps agents detect and manage
 visual-language drift in the design systems they generate against. The
 canonical artifact is `fingerprint.md` — a human-readable, LLM-editable
 Markdown file with a YAML machine layer plus a three-section prose body.
-Ghost is BYOA: judgement work (profile, review, verify, generate, discover)
+Ghost is BYOA: judgement work (fingerprint, review, verify, generate, discover)
 lives in skill recipes the host agent executes; the CLIs are the calculator
 the agent reaches for when it needs a reproducible answer.
 

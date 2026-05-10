@@ -6,6 +6,7 @@ import {
   initFingerprintPackage,
   lintFingerprintPackage,
   resolveFingerprintPackage,
+  verifyFingerprintPackage,
 } from "../src/core/index.js";
 
 describe("fingerprint package", () => {
@@ -23,16 +24,26 @@ describe("fingerprint package", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("discovers .ghost/fingerprint by default", () => {
+  it("discovers .ghost by default", () => {
     const paths = resolveFingerprintPackage(undefined, dir);
 
-    expect(paths.dir).toBe(join(dir, ".ghost", "fingerprint"));
-    expect(paths.profile).toBe(join(paths.dir, "profile.md"));
+    expect(paths.dir).toBe(join(dir, ".ghost"));
+    expect(paths.resources).toBe(join(paths.dir, "resources.yml"));
+    expect(paths.patterns).toBe(join(paths.dir, "patterns.yml"));
     expect(paths.checks).toBe(join(paths.dir, "checks.yml"));
   });
 
-  it("lints all four package artifacts together", async () => {
+  it("lints package artifacts together when checks are present", async () => {
     await initFingerprintPackage(undefined, dir);
+
+    const report = await lintFingerprintPackage(undefined, dir);
+
+    expect(report.errors).toBe(0);
+  });
+
+  it("passes package lint when optional checks.yml is absent", async () => {
+    const paths = await initFingerprintPackage(undefined, dir);
+    await rm(paths.checks, { force: true });
 
     const report = await lintFingerprintPackage(undefined, dir);
 
@@ -69,5 +80,52 @@ checks:
     expect(report.issues.map((issue) => issue.rule)).toContain(
       "check-scope-unknown",
     );
+  });
+
+  it("verifies patterns against survey evidence", async () => {
+    const paths = await initFingerprintPackage(undefined, dir);
+    await writeFile(
+      paths.survey,
+      JSON.stringify({
+        schema: "ghost.survey/v2",
+        sources: [{ target: ".", scanned_at: "2026-05-10T00:00:00Z" }],
+        values: [],
+        tokens: [],
+        components: [],
+        ui_surfaces: [
+          {
+            id: "surface_settings",
+            source: { target: ".", scanned_at: "2026-05-10T00:00:00Z" },
+            name: "Settings",
+            kind: "route",
+            locator: "/settings",
+            renderability: "source-only",
+            files: ["src/settings.tsx"],
+            classification: { surface_type: "settings" },
+            signals: { layout_patterns: ["sectioned-form"] },
+          },
+        ],
+      }),
+    );
+    await writeFile(
+      paths.patterns,
+      `schema: ghost.patterns/v1
+id: local
+surface_types:
+  - id: settings
+    preferred_patterns: [sectioned-form]
+composition_patterns:
+  - id: sectioned-form
+    surface_types: [settings]
+    evidence:
+      - surface_id: surface_settings
+`,
+    );
+
+    const report = await verifyFingerprintPackage(undefined, dir, {
+      root: dir,
+    });
+
+    expect(report.errors).toBe(0);
   });
 });

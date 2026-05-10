@@ -255,6 +255,30 @@ describe("lintSurvey", () => {
     );
   });
 
+  it("accepts factual composition observations on UI surfaces", () => {
+    const report = lintSurvey(
+      makeSurvey(
+        [],
+        [],
+        [SOURCE],
+        [
+          makeUiSurfaceRow({
+            composition: {
+              anatomy: ["shell", "compact-header", "sectioned-form"],
+              primary_region: "form",
+              action_placement: ["footer", "section-local"],
+              navigation_context: "persistent-shell",
+              responsive_behavior: ["mobile stacks sections vertically"],
+              confidence: 0.74,
+            },
+          }),
+        ],
+      ),
+    );
+
+    expect(report.errors).toBe(0);
+  });
+
   it("rejects sources array with no entries", () => {
     const survey: unknown = {
       ...makeSurvey(),

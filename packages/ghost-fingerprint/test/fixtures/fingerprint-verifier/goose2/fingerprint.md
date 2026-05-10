@@ -35,5 +35,5 @@ Dense operational surfaces with restrained neutrals.
 # Decisions
 
 ### color-strategy
-The profile claims a near-black neutral, but the observed survey evidence used
+The fingerprint claims a near-black neutral, but the observed survey evidence used
 `#1a1a1a`, not `#1c1c1c`.

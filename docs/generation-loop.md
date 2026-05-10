@@ -1,144 +1,124 @@
 # Generation Loop
 
-Ghost gives UI generators a local design-language input and a review loop.
-`fingerprint.md` is the file the generator reads. The *review* recipe checks
-the result for drift. The *verify* recipe repeats that loop across a prompt
-suite to show where the fingerprint needs more detail.
+Ghost gives UI generators a local design-language input and a review loop. The
+canonical input is the root `.ghost/` fingerprint bundle:
 
-Only the bundle step is a deterministic CLI verb (`ghost-fingerprint
-emit context-bundle`). *Review*, *verify*, and *remediate* are skill recipes
-the host agent follows — installed with `ghost-drift emit skill`.
-
-Use any generator — the host agent itself, Cursor, v0, or an in-house tool —
-with the emitted context bundle in its prompt. Ghost prepares the input and
-checks the output; it does not run the generator.
-
-## Pipeline shape
-
+```text
+.ghost/
+  resources.yml
+  map.md
+  survey.json
+  patterns.yml
+  checks.yml
+  intent.md
 ```
-fingerprint.md  ──►  [ghost-fingerprint emit context-bundle]  ──►  SKILL.md / fingerprint.md / prompt.md / tokens.css
-                                              │
-                                              ▼
-                                       any generator
-                                  (host agent, Cursor, v0,
-                                   in-house tool)
-                                              │
-                                              ▼ HTML / JSX
-                                  [review recipe — ghost-drift]  ──►  drift disposition
-                                                                       (block / annotate
-                                                                        / ack / track)
+
+`patterns.yml` is the operational composition grammar, `survey.json` is the
+evidence ledger, `resources.yml` says what the scan is grounded in, `checks.yml`
+contains deterministic gates, and `intent.md` is optional human authority. The
+generator can work without `intent.md`; when it is present, treat it as
+human-authored or human-approved context.
+
+## Pipeline Shape
+
+```text
+.ghost/resources.yml
+.ghost/map.md
+.ghost/survey.json
+.ghost/patterns.yml
+.ghost/checks.yml
+.ghost/intent.md
+        |
+        v
+any generator
+(host agent, Cursor, v0, in-house tool)
+        |
+        v
+HTML / JSX / app code
+        |
+        v
+ghost-drift review + ghost-drift check
+        |
+        v
+advisory composition findings + deterministic check results
 ```
+
+Ghost prepares the input and checks the output; it does not own the generator.
+Use any generator that can read local context.
 
 ## Pieces
 
-### `ghost-fingerprint emit context-bundle [flags]` — the one CLI verb
+### `.ghost/patterns.yml`
 
-Emit a context bundle any generator can consume. Default output writes
-`SKILL.md` + `fingerprint.md` + `prompt.md` + `tokens.css` into
-`./ghost-context/`. The generated `prompt.md` turns the fingerprint into a
-short generation prompt: Character sets feel, Signature describes the final
-picture, Local References point to optional source material, Decisions give
-style direction, Checks name review gates, and Tokens provide portable values.
-It does not ask the generator to explain or cite decisions unless the user asks.
+The generator should read this before composing UI. It contains surface types,
+composition pattern IDs, repeated anatomy, variants, traits, confidence, and
+evidence links back into `survey.json`.
 
-Flags:
-- `--out <dir>` — output directory (default: `./ghost-context`)
-- `--prompt-only` — single `prompt.md` only; skips `SKILL.md` / `fingerprint.md` / `tokens.css`
-- `--no-tokens` — skip `tokens.css`
-- `--readme` — include `README.md`
-- `--name <name>` — override the skill name (default: fingerprint id)
+Patterns are advisory in this version. They affect review packets and repair
+guidance, not deterministic blocking gates.
 
-Point a Claude Code or MCP client at the output directory and the agent
-reads `SKILL.md`.
+### `.ghost/survey.json`
 
-### Driving the generator
+The survey is a lean evidence ledger. It records factual observations:
+implemented values, tokens, components, UI surfaces, and optional composition
+facts such as ordered anatomy, primary region, action placement, navigation
+context, responsive behavior, and confidence.
 
-The host agent drives this step. It loads the fingerprint (often just the
-sections it needs via `ghost-fingerprint describe`), builds a system
-prompt from Character + Signature + Local References when accessible +
-Decisions + Checks + Tokens, asks the underlying model,
-extracts the artifact (HTML/JSX/etc.), and hands it to the `review`
-recipe for self-check. Retries with drift feedback until it passes or the
-agent gives up.
+Interpretation belongs in `patterns.yml` or human-approved `intent.md`, not in
+survey prose.
 
-This isn't a recipe Ghost ships — `generate.md` was dropped. The agent's
-own driver code (or whatever generator it shells out to) owns this step.
-Ghost's job is the bundle that goes in and the review that checks the output.
+### `.ghost/checks.yml`
 
-### The `review` recipe
+Checks are deterministic gates: color allowlists, radius floors, banned
+classes, required attributes, and similar rules that can be evaluated without
+AI judgment. Checks may carry `surface_types` or `pattern_ids` as metadata so a
+reviewer knows which composition scope they belong to, but composition
+detectors are a later feature.
 
-The agent diffs generated output against the fingerprint. Flags hardcoded
-colors outside the palette, spacing off the scale, and type choices that
-violate decisions. For pre-baked, per-project review commands use
-`ghost-fingerprint emit review-command` (which writes a slash command at
-`.claude/commands/design-review.md`).
+### `.ghost/intent.md`
 
-Source: `packages/ghost-drift/src/skill-bundle/references/review.md`.
+Intent is optional. It is where humans can name product purpose, audience,
+voice, or strategic constraints that cannot be proven from code. Agents may
+summarize it, but tooling should not require it and should not pretend generated
+intent is the user's voice unless a human approves it.
 
-### The `verify` recipe
+## Review Loop
 
-Runs the generate→review loop over a versioned prompt suite. Aggregates
-drift per dimension and classifies:
+`ghost-drift review` reads `.ghost/patterns.yml`, `.ghost/survey.json`,
+optional `.ghost/intent.md`, and optional `.ghost/checks.yml`. Advisory
+findings should cite both pattern evidence and survey evidence.
 
-- **tight** (mean < 1): fingerprint reproduces faithfully
-- **leaky** (1–3): generator drifts here often — tighten Decisions
-- **uncaptured** (≥ 3): fingerprint likely under-specifies this dimension
+`ghost-drift check` reads `.ghost/checks.yml` and remains deterministic. It is
+the blocking side of the loop.
 
-A useful test: run `verify` on a mature fingerprint, remove one section
-(for example, motion), then run it again. Drift should rise in the dimension
-that lost guidance.
+When review flags drift, the host agent applies the smallest correction that
+brings the output back toward the observed composition grammar. If the drift is
+intentional, record a stance with `ghost-drift ack`, `ghost-drift track`, or
+`ghost-drift diverge` as appropriate.
 
-Source: `packages/ghost-drift/src/skill-bundle/references/verify.md`.
+## Verification
 
-### The `remediate` recipe
+`ghost-fingerprint verify [dir] --root <root>` checks cross-artifact fidelity:
 
-Once `review` flags drift, `remediate` walks the agent through the smallest
-correction that lands the output back inside the fingerprint. The output is
-either a fix proposal (the agent applies it) or — when the drift turns out
-to be intentional — a recommendation to record stance with `ghost-drift ack`
-or `ghost-drift diverge` instead of correcting the code.
+- pattern evidence exists in `survey.json`
+- resource paths are reachable from the supplied root when local
+- checks reference known surface types and pattern IDs
 
-Source: `packages/ghost-drift/src/skill-bundle/references/remediate.md`.
+The skill-level verify recipe can still run a generate -> review loop over a
+prompt suite, but the deterministic package verifier is the first gate for the
+bundle itself.
 
-## The standard prompt suite
+## Integration Patterns
 
-A versioned set of UI-construction tasks, each tagged with the fingerprint
-dimensions it stresses. Tagging prompts with dimensions lets the agent
-distinguish *targeted* drift (a pricing-page prompt leaking spacing) from
-*incidental* drift (the same prompt leaking color, which it wasn't
-supposed to stress).
+**In a generation pipeline:** load the root `.ghost/` bundle into the host
+agent, generate the requested UI, then run `ghost-drift review` and
+`ghost-drift check`.
 
-## Why Each Section Exists
+**In CI:** run deterministic checks for UI-touching changes and attach advisory
+review packets when generated or changed UI appears to drift from
+`patterns.yml`.
 
-Each layer has a concrete job somewhere in the loop:
-
-| Layer | Role in the loop |
-|---|---|
-| **Character** | Prompt context — shapes feel |
-| **Signature** | Final-picture guidance — dominant moves and output shape |
-| **References** | Local provenance / optional source material; use when accessible |
-| **Checks** | Human-promoted drift gates; presence-floor checks codify important absences |
-| **Decisions** | Pattern guidance the generator consults for specific choices |
-
-Fingerprint filter: include a fact in `fingerprint.md` only when it can change
-generated UI or a drift verdict. `survey.json` can stay broad as evidence —
-including implemented `ui_surfaces[]` specimens and their observed composition
-signals — while `fingerprint.md` stays compact.
-
-If a section does not affect generation or review, the format is probably too
-large. The `verify` recipe is how you notice that.
-
-## Integration patterns
-
-**CI**: a per-project `design-review` slash command emitted from
-`ghost-fingerprint emit review-command`, invoked by the host agent as a
-required check on PRs that touch UI files.
-
-**In a generation pipeline**: `ghost-fingerprint emit context-bundle` writes
-the skill bundle into the generator's context; the generator produces; the
-`review` recipe checks the output. Drift disposition belongs to the pipeline
-owner (block, annotate, require `ghost-drift ack`).
-
-**Fingerprint maintenance**: run `verify` periodically. When a dimension
-shows up consistently leaky, the fingerprint needs more Decisions for
-that dimension.
+**Fingerprint maintenance:** scan in order:
+`resources -> map -> survey -> patterns`. Keep `survey.json` factual, promote
+repeated composition observations into `patterns.yml`, and add `intent.md` only
+when a human has supplied or approved the intent.

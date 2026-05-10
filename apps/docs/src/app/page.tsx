@@ -64,20 +64,22 @@ export default function Home() {
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
-                <code>.ghost/fingerprint/map.md</code> defines where to observe
-                and route UI
+                <code>.ghost/resources.yml</code> names what the bundle is
+                grounded in
               </li>
               <li>
-                <code>.ghost/fingerprint/survey.json</code> records extracted
-                tokens, components, and patterns
+                <code>.ghost/map.md</code> defines where to observe and route UI
               </li>
               <li>
-                <code>.ghost/fingerprint/profile.md</code> shapes judgment
+                <code>.ghost/survey.json</code> records factual extracted
+                evidence
+              </li>
+              <li>
+                <code>.ghost/patterns.yml</code> shapes advisory judgment
                 without enforcing CI
               </li>
               <li>
-                <code>.ghost/fingerprint/checks.yml</code> stores human-promoted
-                gates
+                <code>.ghost/checks.yml</code> stores human-promoted gates
               </li>
             </ul>
             <p className="thesis-item">

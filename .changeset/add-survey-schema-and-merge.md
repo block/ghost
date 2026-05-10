@@ -17,10 +17,10 @@ Land the three-stage scan pipeline: map (`map.md`) → survey (`survey.json`) �
 **New skill recipes:**
 - `map.md` — author `map.md` from a target (the topology stage). Migrated from the standalone `ghost-map` package.
 - `survey.md` — author `survey.json` from a target (the observed evidence stage). Walks the agent through LLM-driven extraction with dialect-specific grep strategies, exhaustiveness discipline, and saturation predicate.
-- `scan.md` — meta-recipe that orchestrates map → survey → profile end-to-end via `scan-status` checkpoints. Use when the user wants a full scan rather than a specific stage.
+- `scan.md` — meta-recipe that orchestrates map → survey → fingerprint end-to-end via `scan-status` checkpoints. Use when the user wants a full scan rather than a specific stage.
 
 **Refactored skill recipe:**
-- `profile.md` — now strictly the fingerprint stage. Reads `survey.json` as ground truth; cannot fabricate values not in the survey; cites survey rows as evidence. Pre-requires `map.md` + `survey.json`. Hard split from the previous one-pass extract+interpret recipe.
+- `fingerprint.md` — now strictly the fingerprint stage. Reads `survey.json` as ground truth; cannot fabricate values not in the survey; cites survey rows as evidence. Pre-requires `map.md` + `survey.json`. Hard split from the previous one-pass extract+interpret recipe.
 
 **Removed:** the `ghost-map` package is deleted. `ghost.map/v1` schema and types now live in `@ghost/core`; `inventory` and `lint` (for `map.md`) move to `ghost-fingerprint`. Consumers that imported from `ghost-map` should switch to `@ghost/core` (schemas/types) or `ghost-fingerprint` (CLI verbs / library functions).
 

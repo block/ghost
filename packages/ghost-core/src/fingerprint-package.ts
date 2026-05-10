@@ -1,10 +1,17 @@
-export const FINGERPRINT_PACKAGE_DIR = ".ghost/fingerprint" as const;
-export const PROFILE_FILENAME = "profile.md" as const;
+export const FINGERPRINT_PACKAGE_DIR = ".ghost" as const;
+export const RESOURCES_FILENAME = "resources.yml" as const;
+export const PATTERNS_FILENAME = "patterns.yml" as const;
+export const INTENT_FILENAME = "intent.md" as const;
+export const FINGERPRINT_FILENAME = "fingerprint.md" as const;
 
 export interface FingerprintPackagePaths {
   dir: string;
+  resources: string;
   map: string;
   survey: string;
-  profile: string;
+  patterns: string;
+  /** Legacy direct markdown path; not part of the canonical root bundle. */
+  fingerprint: string;
   checks: string;
+  intent: string;
 }

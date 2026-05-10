@@ -1,5 +1,5 @@
 ---
-extends: ../profile.md
+extends: ../fingerprint.md
 id: cash-web-accounts
 palette:
   dominant:
@@ -19,7 +19,7 @@ decisions:
 ### color-strategy
 
 Account management softens the inherited green into a calmer teal accent for
-settings and profile surfaces.
+settings and account surfaces.
 
 **Evidence:**
 - `#00b894` appears as the local account accent in `src/accounts`.

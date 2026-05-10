@@ -213,7 +213,7 @@ function checkResolution(
       severity: "info",
       rule: "resolution-unresolved-context-missing",
       message:
-        "unresolved rows should include `symbol` or `message` so the profile can surface coverage gaps.",
+        "unresolved rows should include `symbol` or `message` so the fingerprint can surface coverage gaps.",
       path,
     });
   }

@@ -55,9 +55,12 @@ export {
 } from "./embedding/index.js";
 // --- Map (ghost.map/v2) ---
 export {
+  FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   type FingerprintPackagePaths,
-  PROFILE_FILENAME,
+  INTENT_FILENAME,
+  PATTERNS_FILENAME,
+  RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
 // --- Map (ghost.map/v2) ---
 export {
@@ -76,6 +79,27 @@ export {
   slugifyScopeId,
   type TopLevelEntry,
 } from "./map/index.js";
+// --- Patterns (ghost.patterns/v1) ---
+export type {
+  GhostCompositionAnatomy,
+  GhostCompositionPattern,
+  GhostPatternEvidence,
+  GhostPatternsDocument,
+  GhostPatternsLintIssue,
+  GhostPatternsLintReport,
+  GhostPatternsLintSeverity,
+  GhostSurfaceTypePattern,
+} from "./patterns/index.js";
+export {
+  GHOST_PATTERNS_FILENAME,
+  GHOST_PATTERNS_SCHEMA,
+  GhostCompositionAnatomySchema,
+  GhostCompositionPatternSchema,
+  GhostPatternEvidenceSchema,
+  GhostPatternsSchema,
+  GhostSurfaceTypePatternSchema,
+  lintGhostPatterns,
+} from "./patterns/index.js";
 // --- Perceptual prior (drift severity calibration) ---
 export {
   computeCheckSeverity,
@@ -90,6 +114,23 @@ export {
   TIER_SEVERITY,
   tierForCanonical,
 } from "./perceptual-prior.js";
+// --- Resources (ghost.resources/v1) ---
+export type {
+  GhostResourceRef,
+  GhostResourcesDocument,
+  GhostResourcesLintIssue,
+  GhostResourcesLintReport,
+  GhostResourcesLintSeverity,
+  GhostSurfaceResource,
+} from "./resources/index.js";
+export {
+  GHOST_RESOURCES_FILENAME,
+  GHOST_RESOURCES_SCHEMA,
+  GhostResourceRefSchema,
+  GhostResourcesSchema,
+  GhostSurfaceResourceSchema,
+  lintGhostResources,
+} from "./resources/index.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
@@ -151,6 +192,8 @@ export {
   tokenRowId,
   type UiSurfaceClassification,
   UiSurfaceClassificationSchema,
+  type UiSurfaceComposition,
+  UiSurfaceCompositionSchema,
   type UiSurfaceDensity,
   type UiSurfaceEvidenceSummary,
   type UiSurfaceGroupSummary,

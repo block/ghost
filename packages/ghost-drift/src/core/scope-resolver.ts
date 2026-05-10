@@ -8,7 +8,7 @@ import {
   MapFrontmatterSchema,
   type MapScope,
 } from "@ghost/core";
-import { PROFILE_FILENAME } from "ghost-fingerprint";
+import { FINGERPRINT_FILENAME } from "ghost-fingerprint";
 import { parse as parseYaml } from "yaml";
 
 const FINGERPRINTS_DIRNAME = "fingerprints";
@@ -28,7 +28,7 @@ export interface ResolveFingerprintsForPathsOptions {
 /**
  * Resolve the governing fingerprint for each changed path in a scan
  * directory. Paths matching a product-surface scope use
- * `fingerprints/<scope>.md`; everything else falls back to `profile.md`.
+ * `fingerprints/<scope>.md`; everything else falls back to `fingerprint.md`.
  */
 export async function resolveFingerprintsForPaths(
   scanDir: string,
@@ -90,7 +90,7 @@ function parentResolution(
 ): PathFingerprintResolution {
   return {
     changed_path: changedPath,
-    fingerprint_path: join(root, PROFILE_FILENAME),
+    fingerprint_path: join(root, FINGERPRINT_FILENAME),
     fallback: true,
     reason,
   };

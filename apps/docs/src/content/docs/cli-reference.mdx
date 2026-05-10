@@ -9,25 +9,25 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLIs do the repeatable parts: validate files, compare fingerprints, and
+The CLIs do the repeatable parts: validate files, compare bundles, and
 record decisions. Your agent does the reading, writing, and reviewing.
 
 A scan follows one path, all owned by `ghost-fingerprint`:
 
 ```text
-map.md -> survey.json -> fingerprint.md
+resources.yml -> map.md -> survey.json -> patterns.yml
 ```
 
-Most commands accept a path; kind-aware commands default to
-`./fingerprint.md`. No API key required.
+Most commands accept a path; bundle-aware commands default to `.ghost`.
+No API key required.
 
 Commands are grouped by job:
 
-- **Create and check the fingerprint** — `ghost-fingerprint`: `inventory`, `scan-status`, `lint`, `verify-profile`, `describe`, `diff`, `survey <op>`, `emit`
+- **Create and check the fingerprint bundle** — `ghost-fingerprint`: `inventory`, `scan-status`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`
 - **Review and compare drift** — `ghost-drift`: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **View many projects** — `ghost-fleet`: `members`, `view`, `emit skill`
 
-Workflows like _scan_, _map_, _survey_, _profile_, _review_, _verify_, and
+Workflows like _scan_, _map_, _survey_, _patterns_, _review_, _verify_, and
 _remediate_ are skill recipes your host agent runs — not CLI verbs. Install
 them with each tool's `emit skill` verb.
 
@@ -39,10 +39,10 @@ this reference.
 
 <DocSection title="ghost-fingerprint — authoring & validation">
 
-`ghost-fingerprint` owns the scan: `map.md` → `survey.json` →
-`fingerprint.md`. It inventories the repo, validates each file, verifies the
-fingerprint against survey evidence, describes and diffs fingerprints, runs
-survey ops, and emits agent-ready outputs.
+`ghost-fingerprint` owns the root bundle scan: `resources.yml` → `map.md` →
+`survey.json` → `patterns.yml`. It inventories the repo, validates each file,
+verifies cross-artifact fidelity, describes markdown, diffs direct fingerprint
+files, runs survey ops, and emits agent-ready outputs.
 
 ### Repo map — `inventory`
 
@@ -62,9 +62,9 @@ ghost-fingerprint inventory ../other-repo
 
 ### Pipeline progress — `scan-status`
 
-Report which scan stages already exist in a directory: map (`map.md`), survey
-(`survey.json`), fingerprint (`fingerprint.md`). This tells the agent which
-stage to run next.
+Report which scan stages already exist in a directory: resources
+(`resources.yml`), map (`map.md`), survey (`survey.json`), and patterns
+(`patterns.yml`). This tells the agent which stage to run next.
 
 <CliHelp tool="ghost-fingerprint" command="scan-status" hideDescription />
 
@@ -88,9 +88,10 @@ Operate on `ghost.survey/v2` files:
 
 - **`merge`** — combine surveys with id-based dedup.
 - **`fix-ids`** — recompute every row's `id` from its content.
-- **`summarize`** — print a short Markdown or JSON digest for profiling.
+- **`summarize`** — print a short Markdown or JSON digest for pattern authoring.
 - **`catalog`** — print exact value enums/specs derived from survey rows.
   Markdown is the default; JSON uses `ghost.survey.catalog/v1`.
+- **`patterns`** — derive a `ghost.patterns/v1` draft from surface evidence.
 
 <CliHelp tool="ghost-fingerprint" command="survey" hideDescription />
 
@@ -104,7 +105,7 @@ ghost-fingerprint survey merge fleet/members/*/survey.json -o cohort.json
 # Populate IDs after authoring rows with empty id fields
 ghost-fingerprint survey fix-ids draft.json -o draft.json
 
-# Broad profiling context
+# Broad bundle context
 ghost-fingerprint survey summarize survey.json
 
 # Exact value enums/specs
@@ -117,16 +118,14 @@ ghost-fingerprint survey merge a.json b.json | jq '.values | length'
 
 ### Validation — `lint`
 
-Validate `fingerprint.md`, `map.md`, or `survey.json` against its schema —
-auto-detects which by `.json` extension, `schema: ghost.map/v2` frontmatter,
-or filename. Use this before declaring a file structurally valid; every
-authoring recipe calls it. For profiled fingerprints, follow `lint` with
-`verify-profile` to check fidelity against `survey.json`.
+Validate a root `.ghost` bundle or an individual artifact against its schema.
+Use this before declaring a file structurally valid; every authoring recipe
+calls it. Follow `lint` with `verify` to check cross-artifact fidelity.
 
 <CliHelp tool="ghost-fingerprint" command="lint" hideDescription />
 
 ```bash
-# Default — reads ./fingerprint.md
+# Default — reads .ghost
 ghost-fingerprint lint
 
 # Validate a map.md (auto-detected by frontmatter)
@@ -136,46 +135,35 @@ ghost-fingerprint lint map.md
 ghost-fingerprint lint survey.json
 
 # JSON output
-ghost-fingerprint lint path/to/fingerprint.md --format json
+ghost-fingerprint lint .ghost/patterns.yml --format json
 ```
 
-### Profile fidelity — `verify-profile`
+### Bundle fidelity — `verify`
 
-Validate that a `fingerprint.md` matches its `survey.json`. This is stricter
-than `lint`: palette, spacing, typography, radii, and shadow posture must be
-survey-backed. High-salience survey values omitted from the fingerprint become
-warnings. With `--root`, promoted check patterns are counted under their
-`paths` scopes; `contexts` are guidance only.
+Validate that a root `.ghost` bundle is internally faithful. This is stricter
+than `lint`: resources should resolve from `--root`, composition patterns must
+cite survey-backed evidence, and checks must reference known pattern IDs when
+they use pattern metadata.
 
-<CliHelp tool="ghost-fingerprint" command="verify-profile" hideDescription />
+<CliHelp tool="ghost-fingerprint" command="verify" hideDescription />
 
 ```bash
-# Profile success gate after lint
-ghost-fingerprint verify-profile fingerprint.md survey.json --root .
+# Bundle success gate after lint
+ghost-fingerprint verify .ghost --root .
 
 # Machine-readable for CI
-ghost-fingerprint verify-profile fingerprint.md survey.json --root . --format json
+ghost-fingerprint verify .ghost --root . --format json
 ```
 
 ### Inspection — `describe`
 
-Print a section map of `fingerprint.md` — frontmatter range, body sections
-(`# Character`, `# Signature`, `# Decisions`), and each `### dimension`
-block under Decisions, with line ranges and token estimates.
-The host agent uses this to load only the sections it needs instead of the
-whole file.
-
-A typical `fingerprint.md` runs 3–5k tokens. The `# Decisions` block alone
-is usually 60–80% of that, and an agent reviewing a single component change
-rarely needs every dimension. `describe` answers "what's in this file and
-where" with the same answer every time — the recall safety rule (when in
-doubt, load the whole `# Decisions` block) lives in the review/remediate
-skill recipes.
+Print a section map of optional `.ghost/intent.md` or a direct fingerprint
+markdown file. The host agent uses this to load only the sections it needs.
 
 <CliHelp tool="ghost-fingerprint" command="describe" hideDescription />
 
 ```bash
-# Default — reads ./fingerprint.md
+# Default — reads .ghost/intent.md
 ghost-fingerprint describe
 
 # Specific file
@@ -185,24 +173,8 @@ ghost-fingerprint describe path/to/fingerprint.md
 ghost-fingerprint describe --format json
 ```
 
-Sample output (against `packages/ghost-fingerprint/test/fixtures/ghost-ui-fingerprint/fingerprint.md`):
-
-```text
-fingerprint.md — 305 lines, ~3,934 tokens
-
-FRONTMATTER    1–164      ~973 tok        [references, palette, spacing, typography, surfaces, checks, observation, decisions]
-# Character      166–169    ~159 tok
-# Signature      170–174    ~120 tok
-# Decisions      175–305    ~2,800 tok
-  ### color-strategy           177–187    ~250 tok
-  ### shape-language           195–206    ~181 tok
-  ### typography-voice         207–219    ~258 tok
-  …
-```
-
-Line ranges are 1-indexed and inclusive — they plug directly into a Read
-tool's `offset` / `limit = end - start + 1`. Token counts are a `chars / 4`
-approximation, sufficient for context budgeting.
+Line ranges are 1-indexed and inclusive; token counts are a `chars / 4`
+approximation.
 
 ### Structural diff — `diff`
 
@@ -217,13 +189,12 @@ ghost-fingerprint diff a/fingerprint.md b/fingerprint.md
 ghost-fingerprint diff a.md b.md --format json
 ```
 
-### Emit — derive outputs from `fingerprint.md`
+### Emit — derived outputs and skill bundles
 
-Derive an output from `fingerprint.md`. Kinds: `review-command` (a
-per-project slash command at `.claude/commands/design-review.md`),
-`context-bundle` (SKILL.md + fingerprint.md + prompt.md + tokens.css for any
-generator), or `skill` (the `ghost-fingerprint` agentskills.io bundle —
-install this into your host agent for the `profile` recipe).
+Kinds: `review-command`, `context-bundle`, or `skill`. The skill bundle installs
+the scan/map/survey/patterns recipes into your host agent. Review/context
+outputs still operate on direct fingerprint markdown until their bundle-native
+replacement lands.
 
 <CliHelp tool="ghost-fingerprint" command="emit" hideDescription />
 
@@ -250,15 +221,16 @@ ghost-fingerprint emit context-bundle --out dist/context
 
 ### Comparison — `compare`
 
-Pairwise distance (N=2) or composite analysis (N≥3) over fingerprint
-embeddings. Pure math. Exits non-zero when drift exceeds 0.5. `--semantic`
-and `--temporal` add qualitative enrichment for N=2.
+Pairwise distance (N=2) or composite analysis (N≥3) over root bundles or direct
+fingerprint markdown. Bundle inputs are synthesized from survey value
+distributions and pattern frequencies. Direct markdown inputs still support
+`--semantic` and `--temporal`.
 
 <CliHelp tool="ghost-drift" command="compare" hideDescription />
 
 ```bash
 # Pairwise (N=2)
-ghost-drift compare market.fingerprint.md dashboard.fingerprint.md
+ghost-drift compare market/.ghost dashboard/.ghost
 
 # Qualitative diff of decisions + palette
 ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
@@ -267,7 +239,7 @@ ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
 ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
 
 # Composite (N≥3) — pairwise matrix + centroid + clusters
-ghost-drift compare *.fingerprint.md
+ghost-drift compare */.ghost
 ```
 
 ### Intent — `ack` / `track` / `diverge`
@@ -278,7 +250,7 @@ and `diverge` need a tracked fingerprint declared in `ghost.config.ts`;
 
 Acknowledge current drift — record your intentional stance (aligned,
 accepted, or diverging). Reads the tracked fingerprint from `ghost.config.ts`
-and the local `fingerprint.md`.
+and the local direct fingerprint markdown.
 
 <CliHelp tool="ghost-drift" command="ack" hideDescription />
 
@@ -330,8 +302,8 @@ ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
 
 <DocSection title="ghost-fleet — view across projects">
 
-A fleet is a directory containing many projects, each with `map.md` and
-`fingerprint.md`.
+A fleet is a directory containing many projects, each with a Ghost fingerprint
+bundle.
 `ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +
 `fleet.json`), and ships the agentskills.io bundle for the narrative
 recipe.
@@ -372,12 +344,12 @@ once, then ask your agent in plain English:
 
 | Recipe     | Bundle             | Trigger                                                |
 | ---------- | ------------------ | ------------------------------------------------------ |
-| `scan`     | `ghost-fingerprint` | "scan this project" / "go end-to-end" — meta-recipe orchestrating map → survey → profile |
+| `scan`     | `ghost-fingerprint` | "scan this project" / "go end-to-end" — meta-recipe orchestrating resources → map → survey → patterns |
 | `map`      | `ghost-fingerprint` | "map this repo" / "write map.md"                       |
 | `survey`   | `ghost-fingerprint` | "survey design values" / "extract tokens"              |
-| `profile`  | `ghost-fingerprint` | "profile this design language" / "write fingerprint.md" |
+| `patterns` | `ghost-fingerprint` | "write patterns.yml" / "codify composition patterns" |
 | `review`   | `ghost-drift`      | "review this PR for drift"                              |
-| `verify`   | `ghost-drift`      | "verify generated UI against the fingerprint"           |
+| `verify`   | `ghost-drift`      | "verify generated UI against the bundle"                |
 | `compare`  | `ghost-drift`      | "why did these two fingerprints drift?"                 |
 | `remediate`| `ghost-drift`      | "fix this drift"                                        |
 | `target`   | `ghost-fleet`      | "describe this fleet"                                   |
@@ -388,8 +360,8 @@ steps with its normal tools and calls the relevant CLI when it needs a
 reproducible answer.
 
 Each recipe also declares `handoffs` in its frontmatter — structured
-next-step suggestions that point at another skill (e.g. `profile` →
-`compare`) or a CLI invocation (e.g. `profile` →
+next-step suggestions that point at another skill (e.g. `fingerprint` →
+`compare`) or a CLI invocation (e.g. `fingerprint` →
 `ghost-fingerprint emit review-command`). Hosts that read the field can
 surface the next action inline; hosts that ignore unknown frontmatter
 see no change.

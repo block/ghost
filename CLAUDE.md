@@ -55,7 +55,7 @@ Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `tes
 
 ## Architecture
 
-Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (profile, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs).
+Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (fingerprint, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs).
 
 The repo decomposes into **four tools plus a reference design system**, each with a single responsibility:
 
@@ -85,7 +85,7 @@ Each tool lives under `packages/<tool>/` with the same shape:
 |---------|-----------|-------------|
 | `packages/ghost-core` | ❌ private (`@ghost/core`) | Workspace-only library. Embedding math, shared types, target resolution, skill-bundle loader, `ghost.map/v2` schema, `ghost.survey/v2` schema + lint/merge/fix-ids primitives. No CLI. Consumed by every other tool. |
 | `packages/ghost-drift` | ✅ `ghost-drift` on npm (v0.2+) | Drift detection. CLI verbs: `compare`, `ack`, `track`, `diverge`, `emit skill`. Skill recipes: `compare.md`, `review.md`, `verify.md`, `remediate.md`. Old `lint`/`describe`/`emit review-command`/`emit context-bundle` stay registered as stub commands that point users to `ghost-fingerprint`. |
-| `packages/ghost-fingerprint` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the three-stage scan pipeline (`map.md` → `survey.json` → `fingerprint.md`). CLI verbs: `lint` (auto-detects file kind), `verify-profile` (fingerprint-to-survey fidelity), `inventory`, `describe`, `diff`, `survey <op>` (merge / fix-ids), `emit` (kinds: `review-command`, `context-bundle`, `skill`). Skill recipes: `map.md`, `survey.md`, `profile.md`, `schema.md`. |
+| `packages/ghost-fingerprint` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the root `.ghost/` fingerprint bundle (`resources.yml` → `map.md` → `survey.json` → `patterns.yml`, plus optional `checks.yml` / `intent.md`). CLI verbs: `init-package`, `lint`, `verify`, `inventory`, `describe`, `diff`, `survey <op>`, `emit`. Skill recipes: `scan.md`, `map.md`, `survey.md`, `patterns.md`, `schema.md`. |
 | `packages/ghost-fleet` | ❌ private | Read-only elevation across many `(map.md, fingerprint.md)` members. CLI verbs: `members`, `view`, `emit skill`. Skill recipes: `target.md`. |
 | `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm. Also ships the `ghost-mcp` bin (`src/mcp/`, built via `tsconfig.mcp.json` → `dist-mcp/`) — an MCP server re-exposing the registry to AI assistants (5 tools, 2 resources). |
 | `apps/docs` | ❌ private | The deployed docs site (`ghost-docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `ghost-ui`. |
@@ -97,9 +97,9 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 | Tool | Command | Description |
 |------|---------|-------------|
 | `ghost-fingerprint` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-fingerprint` | `scan-status [dir]` | Report which scan stages have produced artifacts (`map.md` / `survey.json` / `fingerprint.md`) and which stage to run next. |
-| `ghost-fingerprint` | `lint [file]` | Validate `fingerprint.md`, `map.md`, or `survey.json` — auto-detects the kind from path/content. |
-| `ghost-fingerprint` | `verify-profile <fingerprint> <survey>` | Verify fingerprint-to-survey fidelity after profiling; palette values must be survey-backed and promoted checks must be calibrated. |
+| `ghost-fingerprint` | `scan-status [dir]` | Report which scan stages have produced artifacts (`resources.yml` / `map.md` / `survey.json` / `patterns.yml`) and which stage to run next. |
+| `ghost-fingerprint` | `lint [file]` | Validate a root `.ghost/` bundle or a single artifact — auto-detects the kind from path/content. |
+| `ghost-fingerprint` | `verify [dir] --root <root>` | Verify cross-artifact fidelity: pattern evidence exists in survey, resources are reachable, and checks reference known scopes/patterns. |
 | `ghost-fingerprint` | `describe [fingerprint]` | Print section ranges + token estimates (so agents can selectively load). |
 | `ghost-fingerprint` | `diff <a> <b>` | Structural prose-level diff between fingerprints (decisions + palette roles). **Not** vector distance. |
 | `ghost-fingerprint` | `survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. Ops: `merge` (concat with id-based dedup), `fix-ids` (recompute IDs from content). |
@@ -115,10 +115,10 @@ Verbs are scoped to the tool that owns the artifact. The full surface across all
 
 **Workflows (agent recipes).** Each tool ships its own skill-bundle references under `packages/<tool>/src/skill-bundle/references/`. These are the agent's job, not CLI verbs:
 
-- **Scan** (orchestrate map → survey → profile end-to-end) — `ghost-fingerprint/.../scan.md`
+- **Scan** (orchestrate map → survey → fingerprint end-to-end) — `ghost-fingerprint/.../scan.md`
 - **Map** (write `map.md` from a repo, the topology stage) — `ghost-fingerprint/.../map.md`
 - **Survey** (write `survey.json` from a target, the observed evidence stage) — `ghost-fingerprint/.../survey.md`
-- **Profile** (interpret a `survey.json` into `fingerprint.md`, the fingerprint stage) — `ghost-fingerprint/.../profile.md`
+- **Fingerprint** (interpret a `survey.json` into `fingerprint.md`, the fingerprint stage) — `ghost-fingerprint/.../fingerprint.md`
 - **Review** (flag drift in PR changes) — `ghost-drift/.../review.md`
 - **Verify** (generate → review loop) — `ghost-drift/.../verify.md`
 - **Compare interpretation** — `ghost-drift/.../compare.md`
@@ -136,7 +136,7 @@ The `resolveTarget()` function in `@ghost/core` (`packages/ghost-core/src/target
 - `https://...` — URL
 - `.` — current directory
 
-Used by `resolveTrackedFingerprint` (in `ghost-drift`) and legacy library consumers. Profile and map flows don't consume targets directly — the host agent explores whatever directory is relevant.
+Used by `resolveTrackedFingerprint` (in `ghost-drift`) and legacy library consumers. Fingerprint and map flows don't consume targets directly — the host agent explores whatever directory is relevant.
 
 ## Canonical artifacts
 
@@ -144,7 +144,7 @@ Three artifacts produced in sequence by a scan, all owned by `ghost-fingerprint`
 
 - **`map.md`** — the topology card (stage 1). Human-readable answer to "where is the design system, which folders matter, and where are implemented surfaces observable?" Schema is `ghost.map/v2` (lives in `@ghost/core`), validated by `ghost-fingerprint lint map.md`. Authored from `ghost-fingerprint inventory` + the `map.md` skill recipe. The repo's own `map.md` lives at the root.
 - **`survey.json`** — the observed evidence scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens, components, and implemented UI surfaces observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.survey/v2` (lives in `@ghost/core`); four sections — `values`, `tokens`, `components`, `ui_surfaces`. External libraries (icons, primitives, charting) deliberately *do not* have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*; load-bearing library choices surface as prose evidence in the interpreter stage. Validated by `ghost-fingerprint lint survey.json`. Authored via the `survey.md` skill recipe.
-- **`fingerprint.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: references + 49-dim embedding + palette/spacing/typography/surfaces/checks) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `survey.json` per the `profile.md` skill recipe. See `docs/fingerprint-format.md` for the full spec; the condensed reference ships at `packages/ghost-fingerprint/src/skill-bundle/references/schema.md`.
+- **`fingerprint.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: references + 49-dim embedding + palette/spacing/typography/surfaces/checks) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `survey.json` per the `fingerprint.md` skill recipe. See `docs/fingerprint-format.md` for the full spec; the condensed reference ships at `packages/ghost-fingerprint/src/skill-bundle/references/schema.md`.
 
 ## Releasing & Changesets
 
@@ -183,10 +183,10 @@ The slug should be short and descriptive: `add-temporal-flag.md`, `fix-palette-l
 
 ## Key Conventions
 
-- Each `fingerprint.md` carries a 49-dimensional embedding vector (palette [0–20], spacing [21–30], typography [31–40], surfaces [41–48]; see `packages/ghost-core/src/embedding/embedding.ts`). The canonical on-disk form is the Markdown file itself — there is no parallel JSON/DTCG representation.
-- `ghost-drift compare` takes **file paths** to `fingerprint.md`, not target strings. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 returns a composite fingerprint.
-- `ghost-drift ack` / `track` / `diverge` read the local `fingerprint.md`. The host agent is responsible for regenerating `fingerprint.md` (via the `profile` recipe) before acknowledging drift.
+- The canonical on-disk form is the root `.ghost/` bundle. Direct `fingerprint.md` remains only for legacy/direct compare and context-bundle flows.
+- `ghost-drift compare` accepts `.ghost` bundle directories and direct fingerprint markdown files. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 returns a composite fingerprint.
+- `ghost-drift ack` / `track` / `diverge` read the local `fingerprint.md`. The host agent is responsible for regenerating `fingerprint.md` (via the `fingerprint` recipe) before acknowledging drift.
 - `ghost-fingerprint lint` takes a single `fingerprint.md` and reports schema/partition violations. Use as the shape gate when authoring a fingerprint.
-- `ghost-fingerprint verify-profile fingerprint.md survey.json --root .` is the required scan-stage fidelity gate after profiling: it checks palette provenance and promoted-check calibration against the survey/root.
+- `ghost-fingerprint verify .ghost --root .` is the required scan-stage fidelity gate after bundle authoring.
 - `ghost-fingerprint lint <map.md>` validates against `ghost.map/v2` (auto-detected by frontmatter or filename). Use as the success gate when authoring a map.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is auto-generated by `pnpm dump:cli-help`. CI guards drift via `pnpm check:cli-manifest`. Re-run `pnpm dump:cli-help` after adding/removing flags or verbs to any tool.
