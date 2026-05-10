@@ -1,0 +1,44 @@
+schema: ghost.checks/v1
+id: ghost
+checks:
+  - id: no-hardcoded-surface-hex
+    title: Prefer semantic color tokens over inline hex in UI surfaces
+    status: proposed
+    severity: serious
+    applies_to:
+      scopes:
+        - ghost-ui-components
+        - docs-site
+      surface_types:
+        - component-catalogue
+        - docs-foundation
+        - docs-home
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{6,8}'
+    evidence:
+      support: 0.9
+      observed_count: 1
+      examples:
+        - path: packages/ghost-ui/src/styles/main.css
+          note: Canonical color values are declared as CSS variables before use.
+    repair: Move repeatable UI colors into the semantic token layer in packages/ghost-ui/src/styles/main.css.
+  - id: component-pages-use-display-scale
+    title: Component catalogue pages keep the editorial display scale
+    status: proposed
+    severity: nit
+    applies_to:
+      scopes:
+        - docs-site
+      pattern_ids:
+        - component-catalogue-shell
+    detector:
+      type: required-regex
+      pattern: 'font-display'
+    evidence:
+      support: 0.88
+      observed_count: 4
+      examples:
+        - apps/docs/src/components/docs/page-header.tsx
+        - apps/docs/src/components/docs/component-page-shell.tsx
+    repair: Use the existing display heading helpers or `font-display` heading scale instead of local one-off title styling.

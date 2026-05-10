@@ -35,12 +35,14 @@ export type {
   EmitReviewInput,
   WriteContextOptions,
   WriteContextResult,
+  WritePackageContextOptions,
 } from "./context/index.js";
 export {
   buildSkillMd,
   buildTokensCss,
   emitReviewCommand,
   writeContextBundle,
+  writePackageContextBundle,
 } from "./context/index.js";
 export type {
   ColorChange,

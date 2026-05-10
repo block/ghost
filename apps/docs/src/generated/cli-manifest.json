@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-10T06:12:15.163Z",
+  "generatedAt": "2026-05-10T22:20:03.558Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -439,7 +439,7 @@
             {
               "rawName": "-f, --fingerprint <path>",
               "name": "fingerprint",
-              "description": "Source direct fingerprint markdown file (default: .ghost/fingerprint.md)",
+              "description": "Source legacy direct fingerprint markdown file (required for review-command; optional legacy mode for context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -463,7 +463,7 @@
             {
               "rawName": "--no-tokens",
               "name": "tokens",
-              "description": "Skip tokens.css output (context-bundle)",
+              "description": "Skip tokens.css output (legacy direct fingerprint context-bundle)",
               "default": true,
               "takesValue": false,
               "negated": true
@@ -479,7 +479,7 @@
             {
               "rawName": "--prompt-only",
               "name": "promptOnly",
-              "description": "Emit only prompt.md (skips SKILL.md / fingerprint.md / tokens.css) (context-bundle)",
+              "description": "Emit only prompt.md (context-bundle)",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -487,7 +487,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the skill name (default: fingerprint id) (context-bundle)",
+              "description": "Override the skill name (default: package or fingerprint id) (context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
