@@ -87,7 +87,7 @@ Checkout uses tighter rows than the parent.
   });
 
   it("keeps a surface-derived composition-patterns fixture lint-clean", () => {
-    const fixtureDir = resolve(FIXTURES, "surface-profile");
+    const fixtureDir = resolve(FIXTURES, "surface-fingerprint");
     const survey = JSON.parse(
       readFileSync(resolve(fixtureDir, "survey.json"), "utf-8"),
     );
@@ -136,6 +136,42 @@ Rationale without frontmatter decisions[] entry — body is authoritative.
     // only unmatched frontmatter slugs are flagged.
     expect(report.issues.some((i) => i.rule === "orphan-dimension")).toBe(
       false,
+    );
+  });
+
+  it("warns when the Decisions section has prose but no parseable H3 blocks", () => {
+    const md = build(
+      ``,
+      `# Decisions
+
+**Color strategy.** This looks like a decision, but it is not addressable.
+`,
+    );
+    const report = lintFingerprint(md);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "missing-decision-headings",
+      }),
+    );
+  });
+
+  it("warns when a decision block has no Evidence list", () => {
+    const md = build(
+      ``,
+      `# Decisions
+
+### spatial-system
+Spacing is compact and regular.
+`,
+    );
+    const report = lintFingerprint(md);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "missing-evidence",
+        path: "decisions[0].evidence",
+      }),
     );
   });
 
@@ -328,7 +364,7 @@ No cool grays.
     expect(issue?.path).toBe("decisions[0].dimension_kind");
   });
 
-  it("rejects checks in profile frontmatter because checks.yml owns gates", () => {
+  it("rejects checks in fingerprint frontmatter because checks.yml owns gates", () => {
     const md = build(
       `\nchecks:
   - id: no-hardcoded-colors

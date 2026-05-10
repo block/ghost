@@ -8,7 +8,7 @@ import {
 } from "./core/index.js";
 
 async function loadLocalFingerprint() {
-  const path = resolveFingerprintPackage(undefined, process.cwd()).profile;
+  const path = resolveFingerprintPackage(undefined, process.cwd()).fingerprint;
   const { fingerprint } = await loadFingerprint(path);
   return fingerprint;
 }

@@ -21,14 +21,25 @@ describe("scanStatus", () => {
 
   it("reports all-missing for an empty directory", async () => {
     const status = await scanStatus(dir);
+    expect(status.resources.state).toBe("missing");
     expect(status.map.state).toBe("missing");
     expect(status.survey.state).toBe("missing");
-    expect(status.profile.state).toBe("missing");
+    expect(status.patterns.state).toBe("missing");
     expect(status.checks.state).toBe("missing");
+    expect(status.intent.state).toBe("missing");
+    expect(status.recommended_next).toBe("resources");
+  });
+
+  it("recommends map when only resources.yml exists", async () => {
+    await writeFile(join(dir, "resources.yml"), "schema: ghost.resources/v1\n");
+    const status = await scanStatus(dir);
+    expect(status.resources.state).toBe("present");
+    expect(status.map.state).toBe("missing");
     expect(status.recommended_next).toBe("map");
   });
 
-  it("recommends survey when only map.md exists", async () => {
+  it("recommends survey when resources.yml and map.md exist", async () => {
+    await writeFile(join(dir, "resources.yml"), "schema: ghost.resources/v1\n");
     await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v2\n---\n");
     const status = await scanStatus(dir);
     expect(status.map.state).toBe("present");
@@ -36,7 +47,8 @@ describe("scanStatus", () => {
     expect(status.recommended_next).toBe("survey");
   });
 
-  it("recommends profile when map + survey exist but profile is missing", async () => {
+  it("recommends patterns when resources + map + survey exist but patterns are missing", async () => {
+    await writeFile(join(dir, "resources.yml"), "schema: ghost.resources/v1\n");
     await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v2\n---\n");
     await writeFile(
       join(dir, "survey.json"),
@@ -45,28 +57,32 @@ describe("scanStatus", () => {
     const status = await scanStatus(dir);
     expect(status.map.state).toBe("present");
     expect(status.survey.state).toBe("present");
-    expect(status.profile.state).toBe("missing");
-    expect(status.recommended_next).toBe("profile");
+    expect(status.patterns.state).toBe("missing");
+    expect(status.recommended_next).toBe("patterns");
   });
 
-  it("recommends checks when map + survey + profile exist but checks is missing", async () => {
+  it("reports complete when required artifacts exist but checks and intent are missing", async () => {
+    await writeFile(join(dir, "resources.yml"), "x");
     await writeFile(join(dir, "map.md"), "---\nschema: ghost.map/v2\n---\n");
     await writeFile(
       join(dir, "survey.json"),
       JSON.stringify({ schema: "ghost.survey/v2" }),
     );
-    await writeFile(join(dir, "profile.md"), "y");
+    await writeFile(join(dir, "patterns.yml"), "y");
     const status = await scanStatus(dir);
-    expect(status.profile.state).toBe("present");
+    expect(status.patterns.state).toBe("present");
     expect(status.checks.state).toBe("missing");
-    expect(status.recommended_next).toBe("checks");
+    expect(status.intent.state).toBe("missing");
+    expect(status.recommended_next).toBeNull();
   });
 
   it("returns recommended_next: null when every stage is present", async () => {
+    await writeFile(join(dir, "resources.yml"), "w");
     await writeFile(join(dir, "map.md"), "x");
     await writeFile(join(dir, "survey.json"), "{}");
-    await writeFile(join(dir, "profile.md"), "y");
+    await writeFile(join(dir, "patterns.yml"), "y");
     await writeFile(join(dir, "checks.yml"), "z");
+    await writeFile(join(dir, "intent.md"), "intent");
     const status = await scanStatus(dir);
     expect(status.recommended_next).toBeNull();
   });
@@ -74,8 +90,8 @@ describe("scanStatus", () => {
   it("treats empty (zero-byte) artifacts as missing", async () => {
     await writeFile(join(dir, "map.md"), "");
     const status = await scanStatus(dir);
-    expect(status.map.state).toBe("missing");
-    expect(status.recommended_next).toBe("map");
+    expect(status.resources.state).toBe("missing");
+    expect(status.recommended_next).toBe("resources");
   });
 
   it("paths returned in the report are absolute", async () => {

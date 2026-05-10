@@ -1,56 +1,51 @@
 # ghost-fingerprint
 
-**Author and validate Ghost's repo-local design memory package. No LLM calls in any verb.**
+**Author and validate Ghost's root repo-local fingerprint bundle. No LLM calls in any verb.**
 
 Canonical package:
 
 ```text
-.ghost/fingerprint/
+.ghost/
+  resources.yml
   map.md
   survey.json
-  profile.md
+  patterns.yml
   checks.yml
+  intent.md        # optional
 ```
 
-Checks fail builds. Profile shapes judgment. Survey grounds both. The package is
-the fingerprint.
+Survey grounds the bundle. Patterns make composition operational. Optional
+checks fail builds. Optional intent records human-authored or human-approved
+product direction.
 
 ## Stages
 
 | Stage | Artifact | Schema | Role |
 |---|---|---|---|
+| Resources | `resources.yml` | `ghost.resources/v1` | Declare references that define the product. |
 | Map | `map.md` | `ghost.map/v2` | Route changes to scopes and observable UI surfaces. |
-| Survey | `survey.json` | `ghost.survey/v2` | Record factual values, tokens, components, and UI surface evidence. |
-| Profile | `profile.md` | profile frontmatter/body | Provide non-enforcing design-language guidance. |
-| Checks | `checks.yml` | `ghost.checks/v1` | Store human-promoted deterministic gates. |
-
-The CLI validates files, verifies profile-to-survey fidelity, inventories repo
-signals, runs survey ops (`merge`, `fix-ids`, `summarize`, `catalog`,
-`patterns`), diffs profiles, reports scan progress, and emits derived artifacts.
-
-The actual writing is done by your host agent using the recipes in this package.
-The CLI is the checker.
-
-For deterministic drift gates and advisory review packets, see
-**[`ghost-drift`](../ghost-drift)**.
+| Survey | `survey.json` | `ghost.survey/v2` | Record factual values, tokens, components, surfaces, and composition observations. |
+| Patterns | `patterns.yml` | `ghost.patterns/v1` | Codify surface types and composition grammar with evidence. |
+| Checks | `checks.yml` | `ghost.checks/v1` | Store optional human-promoted deterministic gates. |
+| Intent | `intent.md` | Markdown | Optional human authority. |
 
 ## Use
 
 ```bash
-ghost-fingerprint init-package
+ghost-fingerprint init-package --with-intent
 
 ghost-fingerprint inventory
-ghost-fingerprint lint                         # defaults to .ghost/fingerprint
+ghost-fingerprint lint                         # defaults to .ghost
 ghost-fingerprint scan-status
 
-ghost-fingerprint survey fix-ids .ghost/fingerprint/survey.json -o .ghost/fingerprint/survey.json
-ghost-fingerprint survey summarize .ghost/fingerprint/survey.json
-ghost-fingerprint survey catalog .ghost/fingerprint/survey.json --kind color
-ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
+ghost-fingerprint survey fix-ids .ghost/survey.json -o .ghost/survey.json
+ghost-fingerprint survey summarize .ghost/survey.json
+ghost-fingerprint survey catalog .ghost/survey.json --kind color
+ghost-fingerprint survey patterns .ghost/survey.json -o .ghost/patterns.yml
 
-ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
-ghost-fingerprint describe                     # defaults to .ghost/fingerprint/profile.md
-ghost-fingerprint diff a.profile.md b.profile.md
+ghost-fingerprint verify .ghost --root .
+ghost-fingerprint describe                     # defaults to .ghost/intent.md
+ghost-fingerprint diff a.fingerprint.md b.fingerprint.md
 
 ghost-fingerprint emit context-bundle
 ghost-fingerprint emit skill
@@ -64,14 +59,16 @@ Zero config for every verb. No API key needed.
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
-  parseFingerprint,
-  verifyProfile,
+  verifyFingerprintPackage,
 } from "ghost-fingerprint";
 
-const paths = await initFingerprintPackage(undefined, process.cwd());
+const paths = await initFingerprintPackage(undefined, process.cwd(), {
+  withIntent: true,
+});
 const lint = await lintFingerprintPackage(undefined, process.cwd());
-const { fingerprint } = parseFingerprint(await readFile(paths.profile, "utf8"));
-const verify = verifyProfile(profileSource, survey, { root: "." });
+const verify = await verifyFingerprintPackage(undefined, process.cwd(), {
+  root: ".",
+});
 ```
 
 ## Skill Bundle
@@ -80,9 +77,9 @@ const verify = verifyProfile(profileSource, survey, { root: "." });
 ghost-fingerprint emit skill
 ```
 
-The bundle ships recipes for scan, map, survey, profile, and schema reference.
-Ask your agent to "scan this design language end-to-end" or "profile this design
-language"; it will author package artifacts and use the CLI for validation.
+The bundle ships recipes for scan, map, survey, patterns, and schema reference.
+Ask your agent to "scan this design language end-to-end"; it will author package
+artifacts and use the CLI for validation.
 
 ## Format Docs
 

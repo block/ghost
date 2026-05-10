@@ -8,9 +8,10 @@ import { loadSkillBundle } from "@ghost/core";
 import { cac } from "cac";
 import {
   formatSemanticDiff,
-  loadFingerprint,
   resolveFingerprintPackage,
 } from "ghost-fingerprint";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {
   compare,
   formatComparison,
@@ -50,7 +51,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "compare [...fingerprints]",
-      "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
+      "Compare two or more fingerprints or root .ghost bundles. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint.",
     )
     .option("--semantic", "Qualitative diff of decisions + palette (N=2 only)")
     .option(
@@ -64,10 +65,9 @@ export function buildCli(): ReturnType<typeof cac> {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (fingerprints: string[], opts) => {
       try {
-        const parsed = await Promise.all(
-          fingerprints.map((path) => loadFingerprint(path)),
+        const exprs = await Promise.all(
+          fingerprints.map((path) => loadComparableFingerprint(path)),
         );
-        const exprs = parsed.map((p) => p.fingerprint);
 
         let history: Awaited<ReturnType<typeof readHistory>> | undefined;
         let manifest: Awaited<ReturnType<typeof readSyncManifest>> | null =
@@ -136,7 +136,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "check",
-      "Run active ghost.checks/v1 gates from .ghost/fingerprint/checks.yml against a git diff.",
+      "Run active ghost.checks/v1 gates from .ghost/checks.yml against a git diff.",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(
@@ -145,7 +145,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--package <dir>",
-      "Fingerprint package directory (default: .ghost/fingerprint)",
+      "Fingerprint package directory (default: .ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -195,7 +195,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--package <dir>",
-      "Fingerprint package directory (default: .ghost/fingerprint)",
+      "Fingerprint package directory (default: .ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -217,14 +217,16 @@ export function buildCli(): ReturnType<typeof cac> {
         const packet = {
           schema: "ghost.advisory-review/v1",
           package_dir: paths.dir,
-          profile: await readFile(paths.profile, "utf-8"),
+          patterns: parseYaml(await readFile(paths.patterns, "utf-8")),
           survey: JSON.parse(await readFile(paths.survey, "utf-8")),
-          checks: await readFile(paths.checks, "utf-8"),
+          intent: (await readOptional(paths.intent)) ?? null,
+          checks: (await readOptional(paths.checks)) ?? null,
           diff: diffText,
           required_finding_citations: [
             "diff location",
-            "profile section",
+            "patterns.yml composition pattern",
             "survey evidence",
+            "intent.md when relevant",
             "precedent/example",
             "repair",
           ],
@@ -329,9 +331,10 @@ async function readGitDiff(cwd: string, base: unknown): Promise<string> {
 
 function formatReviewPacketMarkdown(packet: {
   package_dir: string;
-  profile: string;
+  patterns: unknown;
   survey: unknown;
-  checks: string;
+  intent: string | null;
+  checks: string | null;
   diff: string;
   required_finding_citations: string[];
 }): string {
@@ -341,10 +344,10 @@ Package: ${packet.package_dir}
 
 Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml.
 
-## Profile
+## Patterns
 
-\`\`\`markdown
-${packet.profile}
+\`\`\`yaml
+${stringifyYaml(packet.patterns)}
 \`\`\`
 
 ## Survey Evidence
@@ -353,10 +356,16 @@ ${packet.profile}
 ${JSON.stringify(packet.survey, null, 2)}
 \`\`\`
 
+## Human Intent
+
+\`\`\`markdown
+${packet.intent ?? "_No intent.md present. Treat patterns.yml and survey.json as observed evidence, not declared human intent._"}
+\`\`\`
+
 ## Active Checks
 
 \`\`\`yaml
-${packet.checks}
+${packet.checks ?? "schema: ghost.checks/v1\nid: none\nchecks: []\n"}
 \`\`\`
 
 ## Diff
@@ -365,4 +374,12 @@ ${packet.checks}
 ${packet.diff}
 \`\`\`
 `;
+}
+
+async function readOptional(path: string): Promise<string | undefined> {
+  try {
+    return await readFile(path, "utf-8");
+  } catch {
+    return undefined;
+  }
 }

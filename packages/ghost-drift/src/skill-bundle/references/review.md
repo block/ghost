@@ -1,13 +1,13 @@
 ---
 name: review
-description: Review PR or working-tree changes against the local Ghost fingerprint package.
+description: Review PR or working-tree changes against the local Ghost fingerprint bundle.
 handoffs:
   - label: Suggest minimal fixes
     skill: remediate
     prompt: Given the drift findings, suggest the minimal code changes that bring the diff back inside the fingerprint package
   - label: Accept the drift
     command: ghost-drift ack
-    prompt: Acknowledge that the current profile no longer matches and record the drift
+    prompt: Acknowledge that the current fingerprint no longer matches and record the drift
 ---
 
 # Recipe: Review Code Changes For Design Drift
@@ -33,9 +33,10 @@ ghost-drift review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- `.ghost/fingerprint/profile.md`
-- `.ghost/fingerprint/survey.json`
-- `.ghost/fingerprint/checks.yml`
+- `.ghost/patterns.yml`
+- `.ghost/survey.json`
+- optional `.ghost/intent.md`
+- optional `.ghost/checks.yml`
 - the diff
 
 ### 3. Write Advisory Findings
@@ -44,8 +45,9 @@ Advisory findings are non-blocking unless tied to an active deterministic check.
 Each finding must cite:
 
 - diff location
-- profile section
+- `patterns.yml` composition pattern
 - survey evidence
+- `intent.md` when relevant
 - precedent/example
 - repair
 
@@ -60,7 +62,7 @@ Good advisory topics:
 Bad advisory topics:
 
 - vague taste objections with no example
-- restating profile prose without a diff location
+- restating pattern prose without a diff location
 - enforcing a rule that is not in `checks.yml`
 
 ### 4. Promote Durable Rules Later

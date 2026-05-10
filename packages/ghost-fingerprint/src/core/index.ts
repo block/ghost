@@ -10,7 +10,7 @@ import { validateFrontmatter } from "./schema.js";
 function assertMarkdownPath(path: string): void {
   if (!path.endsWith(".md")) {
     throw new Error(
-      `Fingerprint files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the profile recipe in your host agent (install with \`ghost-fingerprint emit skill\`).`,
+      `Fingerprint files must be Markdown (.md). Got: ${path}. The legacy JSON format has been removed — regenerate by running the fingerprint recipe in your host agent (install with \`ghost-fingerprint emit skill\`).`,
     );
   }
 }
@@ -24,7 +24,9 @@ export {
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINTS_DIRNAME,
-  PROFILE_FILENAME,
+  INTENT_FILENAME,
+  PATTERNS_FILENAME,
+  RESOURCES_FILENAME,
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
 // --- Context (review-command + context-bundle) ---
@@ -98,15 +100,17 @@ export {
   validateFrontmatter,
 } from "./schema.js";
 export type {
-  VerifyProfileIssue,
-  VerifyProfileOptions,
-  VerifyProfileReport,
-  VerifyProfileSeverity,
-} from "./verify-profile.js";
+  VerifyFingerprintIssue,
+  VerifyFingerprintOptions,
+  VerifyFingerprintReport,
+  VerifyFingerprintSeverity,
+} from "./verify-fingerprint.js";
 export {
-  formatVerifyProfileReport,
-  verifyProfile,
-} from "./verify-profile.js";
+  formatVerifyFingerprintReport,
+  verifyFingerprint,
+} from "./verify-fingerprint.js";
+export type { VerifyFingerprintPackageOptions } from "./verify-package.js";
+export { verifyFingerprintPackage } from "./verify-package.js";
 export type { SerializeOptions } from "./writer.js";
 export { serializeFingerprint } from "./writer.js";
 
