@@ -6,7 +6,7 @@ import {
 } from "ghost-fingerprint";
 
 /**
- * Write a profile as the publishable design-language prior inside the
+ * Write a fingerprint as the publishable design-language prior inside the
  * fingerprint package. Other projects can track this file as a reference.
  */
 export async function emitFingerprint(
@@ -15,7 +15,7 @@ export async function emitFingerprint(
 ): Promise<string> {
   const paths = resolveFingerprintPackage(undefined, cwd);
   await mkdir(paths.dir, { recursive: true });
-  const target = paths.profile;
+  const target = paths.fingerprint;
   await writeFile(target, serializeFingerprint(fingerprint), "utf-8");
 
   return target;

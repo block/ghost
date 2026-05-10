@@ -1,0 +1,92 @@
+schema: ghost.resources/v1
+id: ghost
+primary:
+  id: ghost
+  target: github:block/ghost
+  paths:
+    - .
+  note: Ghost dogfoods its own root fingerprint package.
+design_system:
+  - id: ghost-ui
+    target: .
+    kind: shadcn-registry
+    paths:
+      - packages/ghost-ui/src/components
+      - packages/ghost-ui/src/styles
+      - packages/ghost-ui/src/lib/theme-defaults.ts
+      - packages/ghost-ui/registry.json
+surfaces:
+  - id: docs-home
+    name: Docs home
+    kind: route
+    locator: /
+    paths:
+      - apps/docs/src/app/page.tsx
+      - apps/docs/src/components/docs/hero.tsx
+  - id: docs-component-catalogue
+    name: Component catalogue
+    kind: route
+    locator: /ui/components
+    paths:
+      - apps/docs/src/app/ui/components/page.tsx
+      - apps/docs/src/components/docs/component-page-shell.tsx
+  - id: docs-foundations
+    name: Foundations
+    kind: route
+    locator: /ui/foundations
+    paths:
+      - apps/docs/src/app/ui/foundations/page.tsx
+      - apps/docs/src/components/docs/foundations/colors.tsx
+      - apps/docs/src/components/docs/foundations/typography.tsx
+  - id: docs-ai-elements
+    name: AI element demos
+    kind: doc-example
+    locator: /ui/components/agent
+    paths:
+      - apps/docs/src/components/docs/ai-elements/index.tsx
+  - id: docs-theme-panel
+    name: Theme panel
+    kind: source
+    locator: apps/docs/src/components/theme-panel
+    paths:
+      - apps/docs/src/components/theme-panel
+docs:
+  - id: readme
+    target: .
+    paths:
+      - README.md
+      - docs/fingerprint-format.md
+      - packages/ghost-fingerprint/README.md
+  - id: agent-orientation
+    target: .
+    paths:
+      - CLAUDE.md
+      - GOVERNANCE.md
+resolvers:
+  - id: registry
+    target: .
+    kind: component-registry
+    paths:
+      - packages/ghost-ui/registry.json
+  - id: theme
+    target: .
+    kind: token-source
+    paths:
+      - packages/ghost-ui/src/styles/main.css
+      - packages/ghost-ui/src/lib/theme-defaults.ts
+include:
+  - ".ghost/**"
+  - "packages/ghost-core/src/**"
+  - "packages/ghost-drift/src/**"
+  - "packages/ghost-fingerprint/src/**"
+  - "packages/ghost-fleet/src/**"
+  - "packages/ghost-ui/src/**"
+  - "apps/docs/src/**"
+  - "docs/**"
+exclude:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/dist-lib/**"
+  - "**/coverage/**"
+  - "**/*.test.ts"
+  - "packages/ghost-fingerprint/test/fixtures/**"

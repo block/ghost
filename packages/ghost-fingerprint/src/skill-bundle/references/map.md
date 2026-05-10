@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author a target's map.md
 
-**Goal:** produce a valid `.ghost/fingerprint/map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the first stage of a package scan: every later stage (`survey.json`, `profile.md`, and `checks.yml`) reads it to skip rediscovery and route changes.
+**Goal:** produce a valid `.ghost/map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the topology stage of a package scan: later stages (`survey.json`, `patterns.yml`, and optional `checks.yml`) read it to skip rediscovery and route changes.
 
 This recipe is *your* job. Ghost's CLI provides `ghost-fingerprint inventory` (deterministic raw signals) and `ghost-fingerprint lint <map.md>` (validation), but you do the synthesis.
 
@@ -44,7 +44,7 @@ The `ghost.map/v2` frontmatter requires:
 - **`schema: ghost.map/v2`** (literal)
 - **`id`** — slug (lowercase alphanumeric plus `.` `_` `-`, leading alphanumeric). For fleet scans, this is the fleet target id.
 - **`repo`** — GitHub `org/repo`, or any source identifier that uniquely names this target.
-- **`subject`** — optional `{id, target}` that names the single thing this fingerprint will describe. Use it when the scan needs multiple sources; `subject` stays the primary claim.
+- **`subject`** — optional `{id, target}` that names the single thing this bundle will describe. Use it when the scan needs multiple sources; `subject` stays the primary claim.
 - **`sources`** — optional scan source graph. Each source is `{id?, role, target, resolves?, paths?}` where `role` is `primary` or `resolver`. `primary` supplies usage/salience; `resolver` supplies concrete meaning for imported symbols. Declare exactly one primary when `sources[]` is present.
 - **`mapped_at`** — current ISO date (`YYYY-MM-DD`) or full datetime.
 - **`platform`** — one of `web`, `ios`, `android`, `desktop`, `flutter`, `mixed`, `other`, or an array spanning multiple. The inventory's `platform_hints` is your starting point — accept it when consistent, override when you have evidence.
@@ -83,7 +83,7 @@ Choose the strongest observation path the target supports:
 
 ### 3a. Source graph for split repos
 
-Use a source graph when the target's design language is only observable through dependencies (apps consuming token packages, native apps importing design-system modules, wrappers over upstream registries). The fingerprint still has one subject; the scan may have many sources.
+Use a source graph when the target's design language is only observable through dependencies (apps consuming token packages, native apps importing design-system modules, wrappers over upstream registries). The bundle still has one subject; the scan may have many sources.
 
 Rule:
 

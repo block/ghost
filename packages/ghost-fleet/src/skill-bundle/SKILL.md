@@ -40,7 +40,7 @@ fleet/
     └── fleet.json
 ```
 
-Each member is read-only. Fleet does **not** re-profile, refresh, or fetch; fingerprints evolve by deliberate act. If a member is stale, regenerate its `fingerprint.md` in that member's repo and re-run `ghost-fleet view`.
+Each member is read-only. Fleet does **not** regenerate, refresh, or fetch; fingerprints evolve by deliberate act. If a member is stale, regenerate its `fingerprint.md` in that member's repo and re-run `ghost-fleet view`.
 
 ## Workflow — synthesizing fleet.md
 
@@ -59,7 +59,7 @@ For the heuristics and reasoning patterns, see [references/target.md](references
 
 ## What this milestone does not do
 
-- **Scoped governance.** Fleet reads scoped overlays and compares them as nested nodes, but it does not author or promote scoped divergences. The scan/profile pipeline owns those files.
+- **Scoped governance.** Fleet reads scoped overlays and compares them as nested nodes, but it does not author or promote scoped divergences. The scan/fingerprint pipeline owns those files.
 - **Tracks-graph projection beyond the recorded edges.** Fleet emits exactly what each member declared in `.ghost-sync.json`. It does not infer transitive references.
 - **Temporal aggregation.** Per-member history aggregation (`fleet.history.json`) is deferred.
 - **Axis stacking.** `--groupby platform,registry` and similar filters are deferred to a follow-up.
@@ -73,7 +73,7 @@ For the heuristics and reasoning patterns, see [references/target.md](references
 
 ## Never
 
-- Never re-profile a member from inside the fleet recipe. Members are read-only inputs.
+- Never regenerate a member from inside the fleet recipe. Members are read-only inputs.
 - Never invent clusters from thin air — anchor every cohort in either the pairwise distances or a group-by axis.
 - Never write distances back into the body. Numbers go in frontmatter; the body explains them.
 - Never rename a member in the CLI's output. If the id is wrong, fix the member's `map.md` and re-run.

@@ -242,8 +242,23 @@ export interface UiSurfaceSignals {
   breakpoint_behavior?: string[];
   /** IDs of value rows that are visibly load-bearing for this surface. */
   value_refs?: string[];
-  /** Short factual notes; rationale belongs in fingerprint.md, not here. */
+  /** Short factual notes; rationale belongs in patterns.yml or intent.md, not here. */
   notes?: string[];
+}
+
+export interface UiSurfaceComposition {
+  /** Ordered factual anatomy (`shell`, `compact-header`, `filter-row`, `table`). */
+  anatomy?: string[];
+  /** Dominant region carrying the surface's work (`table`, `form`, `canvas`). */
+  primary_region?: string;
+  /** Where actions live relative to objects or regions. */
+  action_placement?: string[];
+  /** Navigation relationship (`persistent-shell`, `local-tabs`, `none`). */
+  navigation_context?: string;
+  /** Factual responsive behavior observed for this surface. */
+  responsive_behavior?: string[];
+  /** Confidence in the observed composition facts, not in interpretation. */
+  confidence?: number;
 }
 
 export interface UiSurfaceRow extends RowBase {
@@ -254,6 +269,7 @@ export interface UiSurfaceRow extends RowBase {
   renderability: UiSurfaceRenderability;
   files: string[];
   classification?: UiSurfaceClassification;
+  composition?: UiSurfaceComposition;
   signals: UiSurfaceSignals;
 }
 

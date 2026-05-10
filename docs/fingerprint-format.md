@@ -1,165 +1,134 @@
-# The Fingerprint Package Format
+# The Root Fingerprint Bundle Format
 
-A Ghost fingerprint is a repo-local design memory package, not one Markdown
-file. The canonical on-disk shape is:
+A Ghost fingerprint is a repo-local identity bundle rooted at `.ghost/`. It is
+not a single prose file. The canonical on-disk shape is:
 
 ```text
-.ghost/fingerprint/
+.ghost/
+  resources.yml
   map.md
   survey.json
-  profile.md
+  patterns.yml
   checks.yml
+  intent.md        # optional
 ```
 
-Checks fail builds. Profile shapes judgment. Survey grounds both. The package is
-the fingerprint.
+`survey.json` is the evidence ledger. `patterns.yml` is the operational
+composition grammar. `checks.yml` is the deterministic gate layer. `intent.md`
+is optional human-authored or human-approved intent.
 
 ## Package Artifacts
 
+### `resources.yml`
+
+`resources.yml` tells Ghost what references define the product: the primary
+target, design-system references, canonical surfaces, screenshots, docs,
+resolver/upstream sources, and include/exclude boundaries.
+
+```yaml
+schema: ghost.resources/v1
+id: cash-ios
+primary:
+  target: .
+  paths: [Code]
+design_system:
+  - id: arcade
+    target: ../arcade-ios-package
+    paths: [Sources]
+surfaces:
+  - id: lending
+    locator: Code/Features/Lending
+    paths: [Code/Features/Lending]
+include: ["Code/**"]
+exclude: ["**/Tests/**"]
+```
+
 ### `map.md`
 
-`map.md` is the routing layer. It tells Ghost where UI surfaces live, which
-scopes own which paths, and how changed files should find relevant evidence and
-checks. It uses `ghost.map/v2` frontmatter plus a short human-readable topology
-body.
-
-Validate it directly or as part of the package:
-
-```bash
-ghost-fingerprint lint .ghost/fingerprint/map.md
-ghost-fingerprint lint .ghost/fingerprint
-```
+`map.md` is the topology layer. It tells Ghost where UI surfaces live, which
+scopes own which paths, and how changed files should route to evidence and
+checks. It still uses `ghost.map/v2` frontmatter plus a short topology body.
 
 ### `survey.json`
 
-`survey.json` is factual observed evidence. It records concrete values, tokens,
-components, and implemented UI surfaces with counts and examples. Agents should
-use it to ground claims rather than inventing design rules from prose alone.
+`survey.json` is factual observed evidence. It records values, tokens,
+components, implemented UI surfaces, and factual per-surface composition
+observations. It should not assign design meaning or declare intent.
 
-Useful derived views:
+Surface rows may include:
 
-```bash
-ghost-fingerprint survey summarize .ghost/fingerprint/survey.json
-ghost-fingerprint survey catalog .ghost/fingerprint/survey.json
-ghost-fingerprint survey patterns .ghost/fingerprint/survey.json
+```json
+{
+  "composition": {
+    "anatomy": ["shell", "compact-header", "filter-row", "table"],
+    "primary_region": "table",
+    "action_placement": ["row", "selection-toolbar"],
+    "navigation_context": "persistent-shell",
+    "responsive_behavior": ["mobile filters collapse above table"],
+    "confidence": 0.82
+  }
+}
 ```
 
-### `profile.md`
+### `patterns.yml`
 
-`profile.md` is the non-enforcing design-language prior. It is Markdown with
-YAML frontmatter for compact value digests plus prose for judgment-heavy design
-guidance.
-
-Required frontmatter remains focused on design-language evidence:
+`patterns.yml` is the operational composition grammar derived from survey
+evidence and curated by the agent/human loop. It names surface types and
+composition patterns so generation and review have stable handles.
 
 ```yaml
----
+schema: ghost.patterns/v1
 id: cash-ios
-source: llm
-timestamp: 2026-05-06T00:00:00Z
-references:
-  specs: [Code/DesignSystem]
-  examples: [Code/Features/Lending]
-observation:
-  personality: [restrained, utilitarian]
-  resembles: [cash-app]
-decisions:
-  - dimension: color-strategy
-  - dimension: spatial-system
-palette:
-  dominant: []
-  neutrals: { steps: [], count: 0 }
-  semantic: []
-  saturationProfile: muted
-  contrast: moderate
-spacing: { scale: [4, 8, 12, 16], baseUnit: 4, regularity: 1 }
-typography:
-  families: []
-  sizeRamp: []
-  weightDistribution: {}
-  lineHeightPattern: normal
-surfaces:
-  borderRadii: []
-  shadowComplexity: deliberate-none
-  borderUsage: minimal
----
+surface_types:
+  - id: resource-index
+    preferred_patterns: [dense-resource-index]
+    evidence:
+      - surface_id: customers-index
+composition_patterns:
+  - id: dense-resource-index
+    surface_types: [resource-index]
+    frequency: 7
+    confidence: 0.88
+    anatomy:
+      ordered: [shell, compact-header, filter-row, table]
+      required: [filter-row, table]
+      forbidden: [oversized-hero]
+    traits:
+      density: [compressed]
+      dominant_components: [Table, SearchInput]
+    evidence:
+      - surface_id: customers-index
+        locator: /customers
+    advisory:
+      - Resource-index surfaces should preserve the work surface before explanation.
 ```
-
-The body stores `# Character`, `# Signature`, and `# Decisions` with
-`### <dimension>` blocks and evidence bullets. Write the body so it can shape
-generation and advisory review. Do not put enforceable gates in `profile.md`.
-`checks[]` is not part of profile frontmatter.
-
-Validate fidelity:
-
-```bash
-ghost-fingerprint verify-profile .ghost/fingerprint/profile.md .ghost/fingerprint/survey.json --root .
-```
-
-`verify-profile` checks that profile palette, spacing, typography, radii, and
-shadow posture are backed by survey evidence. It does not calibrate gates.
 
 ### `checks.yml`
 
-`checks.yml` is the only blocking layer in v1. It uses `ghost.checks/v1` and
-contains human-promoted deterministic gates.
+`checks.yml` remains deterministic-only in this version. It uses
+`ghost.checks/v1`; checks may reference `surface_types` and `pattern_ids` as
+metadata, but composition policy is advisory until a later detector layer
+exists.
 
-```yaml
-schema: ghost.checks/v1
-id: cash-ios
-checks:
-  - id: no-hardcoded-ui-color
-    title: Use design tokens for UI color
-    status: active
-    severity: serious
-    applies_to:
-      scopes: [lending]
-      paths: [Code/Features/Lending]
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}|UIColor\\('
-      contexts: [swift]
-    evidence:
-      support: 0.94
-      observed_count: 47
-      examples:
-        - Code/Features/Lending/LendingUI
-    repair: Replace literals with Arcade/Cash semantic tokens.
-```
+### `intent.md`
 
-Supported detector types:
+`intent.md` is optional. When present, it should contain human-authored or
+human-approved product intent: tradeoffs to preserve, misleading observations,
+and what the product refuses to become. AI may draft it, but it is not
+authoritative until accepted by a human.
 
-- `forbidden-regex`
-- `required-regex`
-- `banned-import`
-- `banned-component`
-- `required-token`
-
-Statuses:
-
-- `active`: enforced by `ghost-drift check`
-- `proposed`: linted as a candidate, not enforced
-- `disabled`: retained as historical context, not enforced
-
-## Drift Gates
-
-Run deterministic gates against a diff:
+## Commands
 
 ```bash
+ghost-fingerprint init-package --with-intent
+ghost-fingerprint lint
+ghost-fingerprint survey patterns .ghost/survey.json -o .ghost/patterns.yml
+ghost-fingerprint verify --root .
 ghost-drift check --base main
-ghost-drift check --diff change.patch --format json
-```
-
-`ghost-drift check` reads package `map.md`, `survey.json`, and `checks.yml`,
-routes changed files through map scopes, applies matching active checks, emits
-stable JSON or Markdown, and exits nonzero on active check failures.
-
-Advisory review remains separate:
-
-```bash
 ghost-drift review --base main
+ghost-drift compare .ghost ../other/.ghost
 ```
 
-Advisory findings are non-blocking unless tied to an active deterministic check.
-Every finding should cite a diff location, profile section, survey evidence,
-precedent/example, and repair.
+`ghost-fingerprint verify` validates cross-artifact fidelity: resources should
+resolve, composition patterns must cite survey-backed evidence, and checks must
+reference known pattern IDs when they use pattern metadata.

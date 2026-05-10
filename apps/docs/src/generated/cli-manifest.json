@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T00:33:39.453Z",
+  "generatedAt": "2026-05-10T22:20:03.558Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -8,7 +8,7 @@
           "tool": "ghost-drift",
           "name": "compare",
           "rawName": "compare [...fingerprints]",
-          "description": "Compare two or more fingerprints. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint (pairwise matrix, centroid, spread, clusters).",
+          "description": "Compare two or more fingerprints or root .ghost bundles. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint.",
           "options": [
             {
               "rawName": "--semantic",
@@ -152,7 +152,7 @@
           "tool": "ghost-drift",
           "name": "check",
           "rawName": "check",
-          "description": "Run active ghost.checks/v1 gates from .ghost/fingerprint/checks.yml against a git diff.",
+          "description": "Run active ghost.checks/v1 gates from .ghost/checks.yml against a git diff.",
           "options": [
             {
               "rawName": "--base <ref>",
@@ -173,7 +173,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Fingerprint package directory (default: .ghost/fingerprint)",
+              "description": "Fingerprint package directory (default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -213,7 +213,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Fingerprint package directory (default: .ghost/fingerprint)",
+              "description": "Fingerprint package directory (default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -267,7 +267,7 @@
           "tool": "ghost-fingerprint",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate a fingerprint package, profile.md, map.md, survey.json, or checks.yml — defaults to .ghost/fingerprint",
+          "description": "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -283,8 +283,16 @@
           "tool": "ghost-fingerprint",
           "name": "init-package",
           "rawName": "init-package [dir]",
-          "description": "Create a .ghost/fingerprint package skeleton (map.md, survey.json, profile.md, checks.yml)",
+          "description": "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
           "options": [
+            {
+              "rawName": "--with-intent",
+              "name": "withIntent",
+              "description": "Also create optional intent.md for human-authored or human-approved intent",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -297,14 +305,14 @@
         },
         {
           "tool": "ghost-fingerprint",
-          "name": "verify-profile",
-          "rawName": "verify-profile <profile> <survey>",
-          "description": "Verify profile.md is faithful to its survey.json: palette values must be survey-backed",
+          "name": "verify",
+          "rawName": "verify [dir]",
+          "description": "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
           "options": [
             {
               "rawName": "--root <dir>",
               "name": "root",
-              "description": "Optional target root used by profile fidelity checks that need repo context",
+              "description": "Optional target root used to resolve resources.yml local paths (default: cwd)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -323,7 +331,7 @@
           "tool": "ghost-fingerprint",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
-          "description": "Report which fingerprint package stages have produced artifacts: map.md, survey.json, profile.md, checks.yml.",
+          "description": "Report which root fingerprint bundle stages have produced artifacts: resources.yml, map.md, survey.json, patterns.yml, and optional checks.yml/intent.md.",
           "options": [
             {
               "rawName": "--include-scopes",
@@ -353,8 +361,8 @@
         {
           "tool": "ghost-fingerprint",
           "name": "describe",
-          "rawName": "describe [profile]",
-          "description": "Print a section map of profile.md (line ranges + token estimates) so agents can selectively load only the sections they need.",
+          "rawName": "describe [fingerprint]",
+          "description": "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -370,7 +378,7 @@
           "tool": "ghost-fingerprint",
           "name": "diff",
           "rawName": "diff <a> <b>",
-          "description": "Structural diff between two profile.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
+          "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -399,8 +407,8 @@
             {
               "rawName": "--format <fmt>",
               "name": "format",
-              "description": "survey summarize/catalog output format: markdown or json",
-              "default": "markdown",
+              "description": "Output format: summarize/catalog use markdown or json; patterns use yaml, json, or markdown",
+              "default": null,
               "takesValue": true,
               "negated": false
             },
@@ -426,12 +434,12 @@
           "tool": "ghost-fingerprint",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package profile (kinds: review-command, context-bundle, skill)",
+          "description": "Emit a derived artifact from the fingerprint package (kinds: review-command, context-bundle, skill)",
           "options": [
             {
-              "rawName": "-p, --profile <path>",
-              "name": "profile",
-              "description": "Source profile file (default: .ghost/fingerprint/profile.md)",
+              "rawName": "-f, --fingerprint <path>",
+              "name": "fingerprint",
+              "description": "Source legacy direct fingerprint markdown file (required for review-command; optional legacy mode for context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -455,7 +463,7 @@
             {
               "rawName": "--no-tokens",
               "name": "tokens",
-              "description": "Skip tokens.css output (context-bundle)",
+              "description": "Skip tokens.css output (legacy direct fingerprint context-bundle)",
               "default": true,
               "takesValue": false,
               "negated": true
@@ -471,7 +479,7 @@
             {
               "rawName": "--prompt-only",
               "name": "promptOnly",
-              "description": "Emit only prompt.md — skips SKILL.md / fingerprint.md / tokens.css (context-bundle)",
+              "description": "Emit only prompt.md (context-bundle)",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -479,7 +487,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the skill name (default: fingerprint id) (context-bundle)",
+              "description": "Override the skill name (default: package or fingerprint id) (context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false

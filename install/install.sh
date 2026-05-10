@@ -14,7 +14,7 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/scan.md, map.md, survey.md, profile.md, schema.md
+#     references/scan.md, map.md, survey.md, fingerprint.md, schema.md
 #     assets/fingerprint.template.md
 #
 # Exit codes:
