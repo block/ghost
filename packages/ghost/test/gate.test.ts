@@ -288,8 +288,13 @@ async function runCli(argv: string[], cwd: string) {
 
   const stdoutSpy = vi
     .spyOn(process.stdout, "write")
-    .mockImplementation((chunk: string | Uint8Array) => {
+    .mockImplementation((chunk: string | Uint8Array, ...rest: unknown[]) => {
       stdout += chunk.toString();
+      // Honor the optional flush callback so writers using the
+      // `write(chunk, cb)` signature (see runGateCli's writeAndFlush)
+      // resolve instead of hanging on the test's mocked stdout.
+      const cb = rest[rest.length - 1];
+      if (typeof cb === "function") cb();
       return true;
     });
   const stderrSpy = vi

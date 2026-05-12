@@ -86,9 +86,11 @@ export function buildGateReport(args: BuildGateReportArgs): GateReport {
       continue;
     }
 
-    const effectiveTolerance = ack.tolerance ?? tolerance;
-
     if (exceededSet.has(key)) {
+      // `effectiveTolerance` mirrors the per-dimension override that
+      // `checkBounds` already applied; we recompute it here only to surface
+      // the same number in the human-readable reason string.
+      const effectiveTolerance = ack.tolerance ?? tolerance;
       const reason =
         ack.stance === "diverging"
           ? buildDivergenceExceededReason(ack, args.maxDivergenceDays)
@@ -234,93 +236,141 @@ function buildDivergenceExceededReason(
 export interface RunGateCliOptions {
   fingerprints: string[];
   cwd: string;
-  sync?: unknown;
-  format?: unknown;
-  maxDivergenceDays?: unknown;
+  /** From `--sync <path>`; defaults to `./.ghost-sync.json`. */
+  sync?: string;
+  /** From `--format <fmt>`; "cli" (default) or "json". */
+  format?: string;
+  /**
+   * From `--max-divergence-days <n>`. cac may forward this as a number
+   * when it parses cleanly or as the raw string, so both shapes are
+   * accepted; `parseMaxDivergenceDays` validates inside this module.
+   */
+  maxDivergenceDays?: number | string;
   loadFingerprint: (path: string) => Promise<Fingerprint>;
   compare: (fingerprints: Fingerprint[]) => CompareResult;
 }
 
+type GateRunResult =
+  | { kind: "error"; code: 2; message: string }
+  | { kind: "ok"; code: 0 | 1; stdout: string };
+
 /**
  * CLI adapter for `ghost-drift compare --gate`. Validates inputs, loads
  * the sync manifest, runs the comparison, and writes the verdict to
- * stdout. Calls `process.exit` with the gate exit code (or 2 on error).
+ * stdout. Calls `process.exit` exactly once at the end with the gate
+ * exit code (or 2 on any validation/error path).
  */
 export async function runGateCli(opts: RunGateCliOptions): Promise<void> {
+  const result = await computeGateRun(opts);
+  if (result.kind === "error") {
+    console.error(`Error: ${result.message}`);
+  } else {
+    await writeAndFlush(`${result.stdout}\n`);
+  }
+  process.exit(result.code);
+}
+
+async function computeGateRun(opts: RunGateCliOptions): Promise<GateRunResult> {
   if (opts.fingerprints.length !== 2) {
-    console.error(
-      `Error: --gate requires exactly 2 fingerprints (got ${opts.fingerprints.length}).`,
-    );
-    process.exit(2);
-    return;
+    return {
+      kind: "error",
+      code: 2,
+      message: `--gate requires exactly 2 fingerprints (got ${opts.fingerprints.length}).`,
+    };
   }
 
-  const syncPath = resolve(
-    opts.cwd,
-    typeof opts.sync === "string" ? opts.sync : DEFAULT_SYNC_PATH,
-  );
+  const syncPath = resolve(opts.cwd, opts.sync ?? DEFAULT_SYNC_PATH);
   if (!existsSync(syncPath)) {
-    console.error(
-      `Error: sync manifest not found at ${syncPath}. Run \`ghost-drift ack\` first or pass --sync <path>.`,
-    );
-    process.exit(2);
-    return;
+    return {
+      kind: "error",
+      code: 2,
+      message: `sync manifest not found at ${syncPath}. Run \`ghost-drift ack\` first or pass --sync <path>.`,
+    };
   }
 
   let manifest: SyncManifest;
   try {
     manifest = JSON.parse(await readFile(syncPath, "utf-8")) as SyncManifest;
   } catch (err) {
-    console.error(
-      `Error: failed to load sync manifest at ${syncPath}: ${
+    return {
+      kind: "error",
+      code: 2,
+      message: `failed to load sync manifest at ${syncPath}: ${
         err instanceof Error ? err.message : String(err)
       }`,
-    );
-    process.exit(2);
-    return;
+    };
   }
 
   if (!manifest || typeof manifest !== "object" || !manifest.dimensions) {
-    console.error(
-      `Error: sync manifest at ${syncPath} is malformed (missing dimensions).`,
-    );
-    process.exit(2);
-    return;
+    return {
+      kind: "error",
+      code: 2,
+      message: `sync manifest at ${syncPath} is malformed (missing dimensions).`,
+    };
   }
 
   const maxDivergenceDays = parseMaxDivergenceDays(opts.maxDivergenceDays);
   if (maxDivergenceDays === "invalid") {
-    console.error(
-      "Error: --max-divergence-days must be a non-negative integer.",
-    );
-    process.exit(2);
-    return;
+    return {
+      kind: "error",
+      code: 2,
+      message: "--max-divergence-days must be a non-negative integer.",
+    };
   }
 
-  const exprs = await Promise.all(opts.fingerprints.map(opts.loadFingerprint));
-  const result = opts.compare(exprs);
-  if (result.mode !== "pairwise") {
-    console.error("Error: --gate requires pairwise comparison.");
-    process.exit(2);
-    return;
+  let fingerprints: Fingerprint[];
+  try {
+    fingerprints = await Promise.all(
+      opts.fingerprints.map((path) => opts.loadFingerprint(path)),
+    );
+  } catch (err) {
+    return {
+      kind: "error",
+      code: 2,
+      message: `failed to load fingerprints: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    };
+  }
+
+  const compared = opts.compare(fingerprints);
+  if (compared.mode !== "pairwise") {
+    return {
+      kind: "error",
+      code: 2,
+      message: "--gate requires pairwise comparison.",
+    };
   }
 
   const report = buildGateReport({
-    comparison: result.comparison,
+    comparison: compared.comparison,
     manifest,
-    maxDivergenceDays:
-      maxDivergenceDays === undefined ? undefined : maxDivergenceDays,
+    maxDivergenceDays,
   });
 
-  const output =
+  const stdout =
     opts.format === "json"
       ? formatGateReportJSON(report)
       : formatGateReportCLI(report);
-  process.stdout.write(`${output}\n`);
-  process.exit(gateExitCode(report));
+
+  return { kind: "ok", code: gateExitCode(report), stdout };
 }
 
-function parseMaxDivergenceDays(raw: unknown): number | undefined | "invalid" {
+/**
+ * Write to stdout and wait for the stream to flush before resolving.
+ * `process.exit` does not drain async stdout (e.g., when the gate
+ * report is piped into another command on Unix), so the explicit
+ * callback flush prevents truncated JSON output.
+ */
+async function writeAndFlush(text: string): Promise<void> {
+  await new Promise<void>((resolve) => {
+    process.stdout.write(text, () => resolve());
+  });
+}
+
+function parseMaxDivergenceDays(
+  raw: number | string | undefined,
+): number | undefined | "invalid" {
   if (raw === undefined) return undefined;
   const n = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) return "invalid";
