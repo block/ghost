@@ -133,7 +133,7 @@ A modular repo therefore produces N+1 fingerprints: N module-level + 1 rollup. B
 
 **Skill recipe layering:**
 
-The existing prompts assemble from fragments — preamble + cli-usage + manifest-injection + (holistic | module | rollup) guidance + output-format. The fleet world-model skill should mirror that fragment architecture rather than ship one monolithic recipe. Three guidance fragments at minimum: how to reason over targets, modules, and rollups respectively. The neutral-profile invariant depends on getting that calibration right.
+The existing prompts assemble from fragments — preamble + cli-usage + manifest-injection + (holistic | module | rollup) guidance + output-format. The fleet world-model skill should mirror that fragment architecture rather than ship one monolithic recipe. Three guidance fragments at minimum: how to reason over targets, modules, and rollups respectively. The neutral-profile rule depends on getting that calibration right.
 
 ## Group-by — the axes that matter
 
@@ -168,14 +168,14 @@ After studying `~/Development/ghost-fleet`, here's what the prior art confirmed 
 - Member-as-elevation read-only over (map.md, fingerprint.md) pairs.
 - Group-by axes from map.md (platform, build_system, registry, rendering, styling).
 - Tracks-graph belongs in fleet but tracking *relationships* are authored in per-repo `.ghost-sync.json` — fleet just reads them.
-- Neutral / equal-weight profile pass is the core invariant. No hierarchy phases.
+- Neutral / equal-weight profile pass is the core rule. No hierarchy phases.
 - Vendored snapshot beats live fetch for reproducibility.
 - Visualization stays external (the existing `apps/viz` is a downstream JSON consumer; fleet doesn't own it).
 
 **What shifted:**
 - **Three profiling modes (target / module / rollup), not one.** Captured above as its own section. This is the single biggest miss in the original draft.
 - **Schema narrows.** Today's `fleet.distances.json` is `{ pairwise: [{a, b, distance}] }` — flat pairwise array, no clusters. Clustering is a skill/viz-layer projection over the matrix, not orchestrator output. My initial schema overspecified `clusters:` in frontmatter; it's been moved to body-only narrative.
-- **Layered prompt fragments are the architecture, not a stylistic choice.** Preamble + cli-usage + manifest-injection + (holistic | module | rollup) guidance + output-format. The world-model skill should mirror this layering. A monolithic recipe will conflate the three modes and break the neutral-profile invariant.
+- **Layered prompt fragments are the architecture, not a stylistic choice.** Preamble + cli-usage + manifest-injection + (holistic | module | rollup) guidance + output-format. The world-model skill should mirror this layering. A monolithic recipe will conflate the three modes and break the neutral-profile calibration.
 - **Mode signaling.** A member's profiling mode (monolithic vs modular) and its module list must be declared somewhere fleet can read deterministically. Likely map.md frontmatter (`profiling_mode`, `modules`). Original draft didn't surface this.
 - **CLI contract for modular repos.** `ghost fleet view` consumes rollups by default; `--include-modules` widens. Original draft treated members as atomic.
 

@@ -218,7 +218,7 @@ describe("resolveTolerance", () => {
   });
 });
 
-describe("perceptual-prior tier-coverage invariant", () => {
+describe("perceptual-prior tier coverage", () => {
   it("every canonical dimension lands in one of three tiers", () => {
     const tiers = new Set<PerceptualTier>(["loud", "structural", "rhythmic"]);
     for (const dim of CANONICAL_DECISION_DIMENSIONS) {
