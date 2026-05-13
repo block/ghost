@@ -167,7 +167,7 @@ review suite [fingerprint]
 - Docs: biggest rewrite here — review is now three pages, not three commands
 - Tests: expand review test to cover scope dispatch; keep verify/comply tests targeting the library APIs
 
-**Library API invariant:** `review()`, `verify()`, and `Director.comply()` all stay exported from `@ghost/core`. This is what the GitHub Action uses. The CLI restructure is presentation-layer only.
+**Library API contract:** `review()`, `verify()`, and `Director.comply()` all stay exported from `@ghost/core`. This is what the GitHub Action uses. The CLI restructure is presentation-layer only.
 
 **Exit criteria:** 10 verbs (9 after removing deprecation shims). The four drift verbs are now one.
 
