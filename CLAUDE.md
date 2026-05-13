@@ -1,6 +1,6 @@
 # Ghost
 
-Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to. The failure mode is structural: models generate by matching local patterns, not by maintaining global invariants, so they reproduce components, tokens, and layouts while losing the higher-order decisions that make a surface feel intentional.
+Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to. The failure mode is structural: models generate by matching local patterns, so they reproduce components, tokens, and layouts while losing the higher-order decisions that make a surface feel intentional.
 
 Ghost introduces a second layer: a repository-local, versioned fingerprint that captures the product's composition policy — the constraints, preferences, recurring decisions, and anti-patterns that shape how the design system is actually used. Agents read `fingerprint.md` before generating, compare against it after, and either correct drift or codify the divergence as a deliberate change. A scan runs in three stages — map (`map.md`) → survey (`survey.json`) → express (`fingerprint.md`) — all owned by `ghost-fingerprint`. Four tools plus a reference design system split the loop:
 
