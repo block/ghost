@@ -87,7 +87,6 @@ feature_areas:
 orientation_files:
   - README.md
   - CLAUDE.md
-  - INVARIANTS.md
   - docs/fingerprint-format.md
   - docs/ideas/phase-0-decisions.md
 ---
@@ -136,10 +135,9 @@ is the MCP server re-exposing the registry to AI assistants.
 catalogue site.
 
 Orientation reading order is `README.md` → `CLAUDE.md` (agent context) →
-`INVARIANTS.md` (hard constraints — read before any non-trivial change) →
 `docs/fingerprint-format.md` (the canonical artifact spec) →
-`docs/ideas/phase-0-decisions.md` (the decomposition plan that
-contextualizes ghost-map's existence).
+`docs/ideas/phase-0-decisions.md` (the decomposition plan that contextualizes
+ghost-map's existence).
 
 ## Conventions
 

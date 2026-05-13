@@ -32,7 +32,7 @@ The verb is LLM-driven; the CLI is deterministic scaffolding.
 | `ghost map lint` (CLI) | Validate map.md against `ghost.map/v2`, flag missing sections | CLI |
 | `ghost map describe` (CLI) | Print sections + token estimates for selective loading | CLI |
 
-Same shape as `ghost fingerprint` (profile drives, lint/describe support). BYOA invariant holds at the CLI line.
+Same shape as `ghost fingerprint` (profile drives, lint/describe support). The BYOA boundary holds at the CLI line.
 
 ## Schema — `ghost.map/v2`
 

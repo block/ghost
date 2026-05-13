@@ -4,7 +4,7 @@
 
 Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to.
 
-The failure mode is structural. Large language models generate by matching local patterns, not by maintaining global invariants. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, and refusal.
+The failure mode is structural. Large language models generate by matching local patterns. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, and refusal.
 
 Most design systems encode product inventory: colors, type scales, components. That inventory is necessary, but not sufficient. The same system can produce many different products. What is missing is the policy that governs how those parts are composed.
 
