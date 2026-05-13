@@ -34,12 +34,11 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               The failure mode is structural. Large language models generate by
-              matching local patterns, not by maintaining global invariants.
-              They reproduce components, tokens, and layouts, but they do not
-              consistently preserve the higher-order decisions that make a
-              surface feel intentional: its hierarchy, its density, its
-              restraint, the specific ways it repeats and the specific ways it
-              refuses.
+              matching local patterns. They reproduce components, tokens, and
+              layouts, but they do not consistently preserve the higher-order
+              decisions that make a surface feel intentional: its hierarchy, its
+              density, its restraint, the specific ways it repeats and the
+              specific ways it refuses.
             </p>
             <p className="thesis-item">
               Most design systems encode the inventory of a product: colors,
