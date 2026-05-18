@@ -318,9 +318,9 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      ghost-fingerprint:
+      ghost-scan:
         specifier: workspace:*
-        version: link:../ghost-fingerprint
+        version: link:../ghost-scan
       jiti:
         specifier: ^2.4.0
         version: 2.6.1
@@ -328,7 +328,7 @@ importers:
         specifier: ^2.8.3
         version: 2.8.3
 
-  packages/ghost-fingerprint:
+  packages/ghost-scan:
     dependencies:
       '@ghost/core':
         specifier: workspace:*
@@ -351,24 +351,15 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      ghost-fingerprint:
+      ghost-scan:
         specifier: workspace:*
-        version: link:../ghost-fingerprint
+        version: link:../ghost-scan
       yaml:
         specifier: ^2.8.3
         version: 2.8.3
       zod:
         specifier: ^4.3.6
         version: 4.3.6
-
-  packages/ghost-memory:
-    dependencies:
-      '@ghost/core':
-        specifier: workspace:*
-        version: link:../ghost-core
-      cac:
-        specifier: ^6.7.14
-        version: 6.7.14
 
   packages/ghost-ui:
     dependencies:

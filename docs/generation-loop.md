@@ -122,7 +122,7 @@ intentional, record a stance with `ghost-drift ack`, `ghost-drift track`, or
 
 ## Verification
 
-`ghost-fingerprint verify [dir] --root <root>` checks cross-artifact fidelity:
+`ghost-scan verify [dir] --root <root>` checks cross-artifact fidelity:
 
 - pattern evidence exists in `survey.json`
 - resource paths are reachable from the supplied root when local
@@ -148,7 +148,7 @@ review packets when generated or changed UI appears to drift from
 repeated composition observations into `patterns.yml`, and add `intent.md` only
 when a human has supplied or approved the intent.
 
-**Product-experience memory:** use `ghost-memory` recipes to recall, brief,
+**Product-experience memory:** use `ghost-scan` recipes to recall, brief,
 critique, capture, and promote optional decisions/proposals. Keep promotion
 deliberate: proposals are working memory; accepted decisions are advisory
 memory; active checks are the only blocking mechanism.

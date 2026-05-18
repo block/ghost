@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { Brain, FileText, Network, Orbit, Palette } from "lucide-react";
+import { FileText, Network, Orbit, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -14,9 +14,9 @@ const tools: {
   icon: ReactNode;
 }[] = [
   {
-    name: "ghost-fingerprint",
-    href: "/tools/fingerprint",
-    blurb: "Create .ghost/fingerprint",
+    name: "ghost-scan",
+    href: "/tools/scan",
+    blurb: "Create the fingerprint",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
@@ -30,12 +30,6 @@ const tools: {
     href: "/tools/fleet",
     blurb: "Compare projects",
     icon: <Network className="size-5" strokeWidth={1.5} />,
-  },
-  {
-    name: "ghost-memory",
-    href: "/docs/cli#ghost-memory--product-experience-companion",
-    blurb: "Recall experience memory",
-    icon: <Brain className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-ui",
@@ -55,7 +49,7 @@ function ToolStrip() {
   return (
     <div
       ref={ref}
-      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 mb-4 overflow-visible"
+      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 overflow-visible"
     >
       {tools.map((tool) => (
         <Link

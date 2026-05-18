@@ -174,15 +174,15 @@ proposed_action:
 ## Commands
 
 ```bash
-ghost-fingerprint init-package --with-intent
-ghost-fingerprint lint
-ghost-fingerprint survey patterns .ghost/survey.json -o .ghost/patterns.yml
-ghost-fingerprint verify --root .
+ghost-scan init-package --with-intent
+ghost-scan lint
+ghost-scan survey patterns .ghost/survey.json -o .ghost/patterns.yml
+ghost-scan verify --root .
 ghost-drift check --base main
 ghost-drift review --base main --include-memory
 ghost-drift compare .ghost ../other/.ghost
 ```
 
-`ghost-fingerprint verify` validates cross-artifact fidelity: resources should
+`ghost-scan verify` validates cross-artifact fidelity: resources should
 resolve, composition patterns must cite survey-backed evidence, and checks must
 reference known pattern IDs when they use pattern metadata.

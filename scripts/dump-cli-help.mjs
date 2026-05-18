@@ -13,9 +13,8 @@ const ROOT = process.cwd();
 
 const TOOLS = [
   { name: "ghost-drift", dist: "packages/ghost-drift/dist/cli.js" },
-  { name: "ghost-fingerprint", dist: "packages/ghost-fingerprint/dist/cli.js" },
+  { name: "ghost-scan", dist: "packages/ghost-scan/dist/cli.js" },
   { name: "ghost-fleet", dist: "packages/ghost-fleet/dist/cli.js" },
-  { name: "ghost-memory", dist: "packages/ghost-memory/dist/cli.js" },
 ];
 
 const OUT = resolve(ROOT, "apps/docs/src/generated/cli-manifest.json");

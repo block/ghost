@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-18T13:15:15.982Z",
+  "generatedAt": "2026-05-18T16:49:21.560Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -269,10 +269,10 @@
       ]
     },
     {
-      "tool": "ghost-fingerprint",
+      "tool": "ghost-scan",
       "commands": [
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "lint",
           "rawName": "lint [file]",
           "description": "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
@@ -288,7 +288,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "init-package",
           "rawName": "init-package [dir]",
           "description": "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
@@ -312,7 +312,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "verify",
           "rawName": "verify [dir]",
           "description": "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
@@ -336,7 +336,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "scan-status",
           "rawName": "scan-status [dir]",
           "description": "Report which root fingerprint bundle stages have produced artifacts: resources.yml, map.md, survey.json, patterns.yml, and optional checks.yml/intent.md.",
@@ -360,14 +360,14 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "inventory",
           "rawName": "inventory [path]",
           "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
           "options": []
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "describe",
           "rawName": "describe [fingerprint]",
           "description": "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
@@ -383,7 +383,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "diff",
           "rawName": "diff <a> <b>",
           "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost-drift compare`).",
@@ -399,7 +399,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
           "description": "Operate on ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
@@ -439,7 +439,7 @@
           ]
         },
         {
-          "tool": "ghost-fingerprint",
+          "tool": "ghost-scan",
           "name": "emit",
           "rawName": "emit <kind>",
           "description": "Emit a derived artifact from the fingerprint package (kinds: review-command, context-bundle, skill)",
@@ -455,7 +455,7 @@
             {
               "rawName": "-o, --out <path>",
               "name": "out",
-              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-fingerprint/)",
+              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/; skill → .claude/skills/ghost-scan/)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -571,41 +571,6 @@
               "rawName": "-o, --out <path>",
               "name": "out",
               "description": "Output directory (default: .claude/skills/ghost-fleet)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        }
-      ],
-      "globalOptions": [
-        {
-          "rawName": "-h, --help",
-          "name": "help",
-          "description": "Display this message",
-          "default": null
-        },
-        {
-          "rawName": "-v, --version",
-          "name": "version",
-          "description": "Display version number",
-          "default": null
-        }
-      ]
-    },
-    {
-      "tool": "ghost-memory",
-      "commands": [
-        {
-          "tool": "ghost-memory",
-          "name": "emit",
-          "rawName": "emit <kind>",
-          "description": "Emit the ghost-memory agentskills.io bundle (kind: skill).",
-          "options": [
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Output directory (default: .claude/skills/ghost-memory)",
               "default": null,
               "takesValue": true,
               "negated": false

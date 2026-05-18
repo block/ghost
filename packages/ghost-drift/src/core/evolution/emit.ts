@@ -1,9 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import type { Fingerprint } from "@ghost/core";
-import {
-  resolveFingerprintPackage,
-  serializeFingerprint,
-} from "ghost-fingerprint";
+import { resolveFingerprintPackage, serializeFingerprint } from "ghost-scan";
 
 /**
  * Write a fingerprint as the publishable design-language prior inside the

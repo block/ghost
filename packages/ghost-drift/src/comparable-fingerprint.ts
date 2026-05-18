@@ -6,7 +6,7 @@ import {
   type GhostPatternsDocument,
   type Survey,
 } from "@ghost/core";
-import { loadFingerprint, resolveFingerprintPackage } from "ghost-fingerprint";
+import { loadFingerprint, resolveFingerprintPackage } from "ghost-scan";
 import { parse as parseYaml } from "yaml";
 
 export async function loadComparableFingerprint(

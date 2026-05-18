@@ -229,12 +229,12 @@ export function Dock() {
           <CommandGroup heading="Tools">
             <CommandItem
               onSelect={() => {
-                navigate("/tools/fingerprint");
+                navigate("/tools/scan");
                 setSearchOpen(false);
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost-fingerprint
+              ghost-scan
             </CommandItem>
             <CommandItem
               onSelect={() => {
