@@ -6,7 +6,11 @@
  * over them, and what the deterministic artifacts look like on disk.
  */
 
-import type { Fingerprint, MapFrontmatter, MapScope } from "@ghost/core";
+import type {
+  Fingerprint,
+  MapFrontmatter,
+  MapScope,
+} from "@anarchitecture/ghost/core";
 import type { FleetDistance, FleetTrackEdge } from "./schema.js";
 
 /**
@@ -14,7 +18,7 @@ import type { FleetDistance, FleetTrackEdge } from "./schema.js";
  *
  * Three states keep the surface small:
  *   • "ok"      — the file exists and parses; we don't run the full linter
- *                  here (that's `ghost-scan lint`).
+ *                  here (that's `ghost lint`).
  *   • "missing" — the file is absent from the member directory.
  *   • "error"   — the file is present but fails to load/parse.
  */
