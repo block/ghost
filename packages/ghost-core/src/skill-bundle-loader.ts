@@ -1,7 +1,7 @@
 /**
  * Generic loader for an agentskills.io-compatible skill bundle.
  *
- * Each tool in the Ghost monorepo (`ghost-drift`, `ghost-fingerprint`, …) ships
+ * Each tool in the Ghost monorepo (`ghost-drift`, `ghost-scan`, …) ships
  * its own skill bundle as real markdown under `src/skill-bundle/` and copies
  * it verbatim to `dist/skill-bundle/` at build time. This loader walks any
  * given root directory and returns a flat, deterministically ordered list of

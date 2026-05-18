@@ -11,10 +11,7 @@ import {
   loadSkillBundle,
 } from "@ghost/core";
 import { cac } from "cac";
-import {
-  formatSemanticDiff,
-  resolveFingerprintPackage,
-} from "ghost-fingerprint";
+import { formatSemanticDiff, resolveFingerprintPackage } from "ghost-scan";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {

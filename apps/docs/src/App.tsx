@@ -4,9 +4,9 @@ import { Navigate, Route, Routes, useLocation, useParams } from "react-router";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";
-import GhostFingerprintLanding from "@/app/tools/fingerprint/page";
 import GhostFleetLanding from "@/app/tools/fleet/page";
 import ToolsIndex from "@/app/tools/page";
+import GhostScanLanding from "@/app/tools/scan/page";
 import GhostUiLanding from "@/app/tools/ui/page";
 import ComponentPage from "@/app/ui/components/[name]/page";
 import ComponentsIndex from "@/app/ui/components/page";
@@ -55,12 +55,9 @@ export function App() {
           <Route path="tools" element={<ToolsIndex />} />
           <Route
             path="tools/map"
-            element={<Navigate to="/tools/fingerprint" replace />}
+            element={<Navigate to="/tools/scan" replace />}
           />
-          <Route
-            path="tools/fingerprint"
-            element={<GhostFingerprintLanding />}
-          />
+          <Route path="tools/scan" element={<GhostScanLanding />} />
           <Route path="tools/drift" element={<GhostDriftLanding />} />
           <Route path="tools/fleet" element={<GhostFleetLanding />} />
           <Route path="tools/ui" element={<GhostUiLanding />} />

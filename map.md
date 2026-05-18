@@ -106,7 +106,7 @@ The repository is in the middle of a five-tool decomposition. Today
 (private reference component library, distributed via shadcn registry) and
 `apps/docs` (the deployed docs site). The `ghost-map` package — the source
 of this map.md — is being bootstrapped here as the first phase of that
-decomposition; future phases extract `@ghost/core`, `ghost-fingerprint`,
+decomposition; future phases extract `@ghost/core`, `ghost-scan`,
 and `ghost-fleet` as siblings.
 
 ## Topology

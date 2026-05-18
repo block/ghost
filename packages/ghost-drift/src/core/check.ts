@@ -11,7 +11,7 @@ import {
   type MapScope,
   routeGhostChecksForPath,
 } from "@ghost/core";
-import { resolveFingerprintPackage } from "ghost-fingerprint";
+import { resolveFingerprintPackage } from "ghost-scan";
 import { parse as parseYaml } from "yaml";
 
 const execFileAsync = promisify(execFile);

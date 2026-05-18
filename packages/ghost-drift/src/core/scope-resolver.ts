@@ -8,7 +8,7 @@ import {
   MapFrontmatterSchema,
   type MapScope,
 } from "@ghost/core";
-import { FINGERPRINT_FILENAME } from "ghost-fingerprint";
+import { FINGERPRINT_FILENAME } from "ghost-scan";
 import { parse as parseYaml } from "yaml";
 
 const FINGERPRINTS_DIRNAME = "fingerprints";

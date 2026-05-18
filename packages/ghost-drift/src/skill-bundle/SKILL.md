@@ -62,7 +62,7 @@ Every advisory finding should cite:
 - "Compare these bundles" → run `ghost-drift compare <a/.ghost> <b/.ghost>`.
 - "Accept this drift" → use `ack`, `track`, or `diverge` for direct tracked fingerprints.
 
-Authoring `.ghost/` lives in the sibling `ghost-fingerprint` skill.
+Authoring `.ghost/` lives in the sibling `ghost-scan` skill.
 
 ## Never
 

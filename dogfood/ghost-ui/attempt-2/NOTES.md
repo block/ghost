@@ -57,7 +57,7 @@ Coverage went from 7/11 (64%) → 11/11 (100%) of the load-bearing decisions ide
 
 ## Follow-up bug found
 
-`ghost-fingerprint diff` reports `dominant primary: #1a1a1a` as a "+" addition when comparing attempt-2's fingerprint to attempt-1's, even though both have the same dominant color (different role name: `ink` vs `primary`). Worth investigating — diff should match dominant entries by value when role names differ, OR surface "dominant role rename" as a distinct category. Filed as a follow-up; not blocking.
+`ghost-scan diff` reports `dominant primary: #1a1a1a` as a "+" addition when comparing attempt-2's fingerprint to attempt-1's, even though both have the same dominant color (different role name: `ink` vs `primary`). Worth investigating — diff should match dominant entries by value when role names differ, OR surface "dominant role rename" as a distinct category. Filed as a follow-up; not blocking.
 
 ## Lessons for next iteration
 

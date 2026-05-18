@@ -45,7 +45,7 @@
   "dependencies": {
     "@ghost/core": "workspace:*",
     "cac": "^6.7.14",
-    "ghost-fingerprint": "workspace:*",
+    "ghost-scan": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }
