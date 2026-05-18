@@ -304,29 +304,41 @@ importers:
         specifier: ^6.3.0
         version: 6.4.2(@types/node@22.19.17)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.3)
 
-  packages/ghost-core:
+  packages/ghost:
     dependencies:
-      zod:
-        specifier: ^4.3.6
-        version: 4.3.6
-
-  packages/ghost-drift:
-    dependencies:
-      '@ghost/core':
-        specifier: workspace:*
-        version: link:../ghost-core
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      ghost-scan:
-        specifier: workspace:*
-        version: link:../ghost-scan
       jiti:
         specifier: ^2.4.0
         version: 2.6.1
       yaml:
         specifier: ^2.8.3
         version: 2.8.3
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+
+  packages/ghost-core:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+
+  packages/ghost-fleet:
+    dependencies:
+      '@anarchitecture/ghost':
+        specifier: workspace:*
+        version: link:../ghost
+      cac:
+        specifier: ^6.7.14
+        version: 6.7.14
+      yaml:
+        specifier: ^2.8.3
+        version: 2.8.3
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
   packages/ghost-scan:
     dependencies:
@@ -336,24 +348,6 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      yaml:
-        specifier: ^2.8.3
-        version: 2.8.3
-      zod:
-        specifier: ^4.3.6
-        version: 4.3.6
-
-  packages/ghost-fleet:
-    dependencies:
-      '@ghost/core':
-        specifier: workspace:*
-        version: link:../ghost-core
-      cac:
-        specifier: ^6.7.14
-        version: 6.7.14
-      ghost-scan:
-        specifier: workspace:*
-        version: link:../ghost-scan
       yaml:
         specifier: ^2.8.3
         version: 2.8.3

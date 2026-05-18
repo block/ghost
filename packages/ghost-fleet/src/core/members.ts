@@ -7,8 +7,11 @@ import {
   type MapFrontmatter,
   MapFrontmatterSchema,
   type MapScope,
-} from "@ghost/core";
-import { FINGERPRINT_FILENAME, loadFingerprint } from "ghost-scan";
+} from "@anarchitecture/ghost/core";
+import {
+  FINGERPRINT_FILENAME,
+  loadFingerprint,
+} from "@anarchitecture/ghost/scan";
 import { parse as parseYaml } from "yaml";
 import { FLEET_MEMBERS_DIRNAME } from "./schema.js";
 import type { FleetMember, MemberSummary } from "./types.js";

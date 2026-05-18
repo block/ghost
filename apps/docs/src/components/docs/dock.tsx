@@ -234,7 +234,7 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost-scan
+              ghost scan
             </CommandItem>
             <CommandItem
               onSelect={() => {
@@ -243,7 +243,7 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost-drift
+              ghost review
             </CommandItem>
             <CommandItem
               onSelect={() => {
