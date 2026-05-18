@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-10T22:20:03.558Z",
+  "generatedAt": "2026-05-18T13:15:15.982Z",
   "tools": [
     {
       "tool": "ghost-drift",
@@ -216,6 +216,14 @@
               "description": "Fingerprint package directory (default: .ghost)",
               "default": null,
               "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--include-memory",
+              "name": "includeMemory",
+              "description": "Include accepted product-experience decisions from .ghost/decisions in the advisory packet.",
+              "default": null,
+              "takesValue": false,
               "negated": false
             },
             {
@@ -563,6 +571,41 @@
               "rawName": "-o, --out <path>",
               "name": "out",
               "description": "Output directory (default: .claude/skills/ghost-fleet)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        }
+      ],
+      "globalOptions": [
+        {
+          "rawName": "-h, --help",
+          "name": "help",
+          "description": "Display this message",
+          "default": null
+        },
+        {
+          "rawName": "-v, --version",
+          "name": "version",
+          "description": "Display version number",
+          "default": null
+        }
+      ]
+    },
+    {
+      "tool": "ghost-memory",
+      "commands": [
+        {
+          "tool": "ghost-memory",
+          "name": "emit",
+          "rawName": "emit <kind>",
+          "description": "Emit the ghost-memory agentskills.io bundle (kind: skill).",
+          "options": [
+            {
+              "rawName": "-o, --out <path>",
+              "name": "out",
+              "description": "Output directory (default: .claude/skills/ghost-memory)",
               "default": null,
               "takesValue": true,
               "negated": false

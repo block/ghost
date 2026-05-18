@@ -10,6 +10,8 @@ Canonical package:
   patterns.yml   ghost.patterns/v1
   checks.yml     optional ghost.checks/v1 gates
   intent.md      optional human intent
+  decisions/     optional ghost.decision/v1 rationale
+  proposals/     optional ghost.proposal/v1 candidates
 ```
 
 ## `resources.yml`
@@ -89,6 +91,46 @@ Detector types remain deterministic only:
 - `banned-component`
 - `required-token`
 
+## `decisions/*.yml`
+
+```yaml
+schema: ghost.decision/v1
+id: checkout-reversibility
+status: accepted
+title: Reversibility before money movement
+claim: Payment review must make reversibility visible before final submission.
+rationale: Users need confidence before committing money movement.
+scope:
+  roles: [design, engineering, pm, qa]
+  scopes: [checkout]
+  surface_types: [payment-review]
+  pattern_ids: [confirmation-before-commit]
+evidence:
+  - path: apps/checkout/review.tsx
+    note: Review step exposes edit affordances before submit.
+decided_at: "2026-05-17T00:00:00.000Z"
+```
+
+## `proposals/*.yml`
+
+```yaml
+schema: ghost.proposal/v1
+id: saved-payment-empty-state
+status: open
+kind: decision
+title: Saved payment empty state should teach recovery
+claim: Empty states for saved payment methods should prioritize recovery over education.
+rationale: The user is blocked from paying, not browsing product concepts.
+scope:
+  roles: [design, pm, qa]
+  surface_types: [empty-state]
+evidence:
+  - path: apps/payments/empty-state.tsx
+proposed_action:
+  target: decisions
+  summary: Promote into an accepted product-experience decision if repeated.
+```
+
 ## Validation
 
 ```bash
@@ -99,4 +141,5 @@ ghost-drift check --base main
 
 `lint` validates artifact shape. `verify` validates cross-artifact fidelity:
 resources resolve, patterns cite survey evidence, and checks reference known
-pattern IDs. `ghost-drift check` is the deterministic pass/fail gate.
+pattern IDs. Optional decisions/proposals are linted when present. `ghost-drift
+check` is the deterministic pass/fail gate.

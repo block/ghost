@@ -1,9 +1,12 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import type { Dirent } from "node:fs";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import {
   GHOST_CHECKS_FILENAME,
   lintGhostChecks,
+  lintGhostDecision,
   lintGhostPatterns,
+  lintGhostProposal,
   lintGhostResources,
   lintSurvey,
   MAP_FILENAME,
@@ -13,10 +16,12 @@ import {
 } from "@ghost/core";
 import { parse as parseYaml } from "yaml";
 import {
+  DECISIONS_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
+  PROPOSALS_DIRNAME,
   RESOURCES_FILENAME,
 } from "./constants.js";
 import type { LintIssue, LintReport } from "./lint.js";
@@ -32,6 +37,8 @@ export interface FingerprintPackagePaths {
   fingerprint: string;
   checks: string;
   intent: string;
+  decisions: string;
+  proposals: string;
 }
 
 export interface InitFingerprintPackageOptions {
@@ -52,6 +59,8 @@ export function resolveFingerprintPackage(
     fingerprint: join(dir, FINGERPRINT_FILENAME),
     checks: join(dir, GHOST_CHECKS_FILENAME),
     intent: join(dir, INTENT_FILENAME),
+    decisions: join(dir, DECISIONS_DIRNAME),
+    proposals: join(dir, PROPOSALS_DIRNAME),
   };
 }
 
@@ -97,6 +106,20 @@ export async function lintFingerprintPackage(
   );
   const checksRaw = await readOptional(paths.checks);
   const intentRaw = await readOptional(paths.intent);
+  await lintMemoryDirectory(
+    paths.decisions,
+    "decisions",
+    "decision",
+    lintGhostDecision,
+    issues,
+  );
+  await lintMemoryDirectory(
+    paths.proposals,
+    "proposals",
+    "proposal",
+    lintGhostProposal,
+    issues,
+  );
 
   if (resourcesRaw !== undefined) {
     const resources = parseYamlSafe(resourcesRaw, "resources.yml", issues);
@@ -148,6 +171,63 @@ export async function lintFingerprintPackage(
   }
 
   return finalize(issues);
+}
+
+async function lintMemoryDirectory(
+  dirPath: string,
+  label: "decisions" | "proposals",
+  itemLabel: "decision" | "proposal",
+  lint: (input: unknown) => ReturnType<typeof lintGhostDecision>,
+  issues: LintIssue[],
+): Promise<void> {
+  let entries: Dirent[];
+  try {
+    entries = await readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  const docs: Array<{ id: string; path: string }> = [];
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (entry.name.startsWith(".")) continue;
+    if (!/\.ya?ml$/i.test(entry.name)) continue;
+
+    const relPath = `${label}/${entry.name}`;
+    const raw = await readRequired(join(dirPath, entry.name), relPath, issues);
+    if (raw === undefined) continue;
+    const parsed = parseYamlSafe(raw, relPath, issues);
+    if (parsed === undefined) continue;
+
+    const report = lint(parsed);
+    issues.push(...prefixIssues(relPath, report.issues));
+    if (
+      report.errors === 0 &&
+      isRecord(parsed) &&
+      typeof parsed.id === "string"
+    ) {
+      docs.push({ id: parsed.id, path: `${relPath}.id` });
+    }
+  }
+
+  const seen = new Map<string, string>();
+  for (const doc of docs) {
+    const previous = seen.get(doc.id);
+    if (previous) {
+      issues.push({
+        severity: "error",
+        rule: `${itemLabel}-id-duplicate`,
+        message: `${itemLabel} id '${doc.id}' is duplicated (also at ${previous})`,
+        path: doc.path,
+      });
+    } else {
+      seen.set(doc.id, doc.path);
+    }
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 async function readRequired(

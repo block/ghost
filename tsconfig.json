@@ -17,6 +17,7 @@
     { "path": "packages/ghost-drift" },
     { "path": "packages/ghost-fingerprint" },
     { "path": "packages/ghost-fleet" },
+    { "path": "packages/ghost-memory" },
     { "path": "packages/ghost-ui/tsconfig.mcp.json" }
   ]
 }

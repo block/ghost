@@ -1,6 +1,6 @@
 ---
 name: ghost-fingerprint
-description: Author and validate the repo-local Ghost fingerprint bundle. Use when the user wants to create or update .ghost, write resources.yml/map.md/survey.json/patterns.yml/checks.yml/intent.md, lint or verify the bundle, derive patterns from survey evidence, or emit derived artifacts.
+description: Author and validate the repo-local Ghost fingerprint bundle. Use when the user wants to create or update .ghost, write resources.yml/map.md/survey.json/patterns.yml/checks.yml/intent.md, validate optional decisions/proposals, derive patterns from survey evidence, or emit derived artifacts.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -19,11 +19,13 @@ A Ghost fingerprint is the root `.ghost/` bundle, not one prose file:
   patterns.yml
   checks.yml
   intent.md        # optional
+  decisions/       # optional ghost.decision/v1
+  proposals/       # optional ghost.proposal/v1
 ```
 
 Survey grounds the bundle. Patterns make composition operational. Checks are
 deterministic gates. Intent is optional human-authored or human-approved product
-direction.
+direction. Decisions and proposals are optional product-experience memory.
 
 ## CLI Verbs
 
@@ -47,6 +49,7 @@ direction.
 - Derive/codify composition grammar: follow [references/patterns.md](references/patterns.md). Output `.ghost/patterns.yml`.
 - Promote deterministic checks: write human-selected gates into `.ghost/checks.yml` using `ghost.checks/v1`.
 - Capture human intent only when supplied or approved: write `.ghost/intent.md`.
+- Product-experience recall/capture/promotion recipes live in `ghost-memory`.
 
 Drift detection and PR checking live in the sibling `ghost-drift` skill:
 `ghost-drift check` is blocking; `ghost-drift review` is advisory.
@@ -59,6 +62,8 @@ Drift detection and PR checking live in the sibling `ghost-drift` skill:
 - `patterns.yml` names surface types and composition grammar with survey-backed evidence.
 - `checks.yml` is the optional deterministic gate layer.
 - `intent.md` is optional human authority; never treat AI-generated prose as authoritative until accepted.
+- `decisions/*.yml` is optional accepted/rejected product-experience rationale.
+- `proposals/*.yml` is optional working memory; never treat proposals as canonical.
 - Prefer lintable checks: regex, imports, components, required tokens, and path-scoped patterns.
 
 ## Always
