@@ -9,7 +9,8 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost keeps a project's design memory in the repo, where your agent can use it.
+Ghost keeps a project's product-experience memory in the repo, where your agent
+can use it.
 The fingerprint is the root `.ghost/` bundle:
 
 ```text
@@ -17,14 +18,16 @@ resources.yml -> map.md -> survey.json -> patterns.yml
 what to read     where UI lives  what exists   composition grammar
 ```
 
-`checks.yml` is optional deterministic enforcement. `intent.md` is optional
-human-authored or human-approved product intent.
+`checks.yml` is optional deterministic enforcement. `intent.md`,
+`decisions/*.yml`, and `proposals/*.yml` are optional human-approved or
+human-staged product-experience memory.
 
 | Tool | Job | Verbs |
 | --- | --- | --- |
 | `ghost-fingerprint` | Create and check the root `.ghost/` bundle. | `inventory`, `scan-status`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit` |
 | `ghost-drift` | Check diffs, emit advisory review packets, compare bundles, and record drift decisions. | `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
+| `ghost-memory` | Activate and capture optional product-experience memory. | `emit skill` |
 | `ghost-ui` | Reference design system Ghost uses to test itself. | — |
 
 </DocSection>
@@ -34,6 +37,7 @@ human-authored or human-approved product intent.
 ```bash
 ghost-drift emit skill
 ghost-fingerprint emit skill
+ghost-memory emit skill
 # ghost-fleet emit skill
 ```
 
@@ -97,6 +101,23 @@ Review this PR for design drift
 `ghost-drift check` applies active deterministic gates from `.ghost/checks.yml`.
 `ghost-drift review` emits advisory context grounded in `.ghost/patterns.yml`,
 `.ghost/survey.json`, optional `.ghost/intent.md`, checks, and the diff.
+Add `--include-memory` to include accepted `.ghost/decisions/*.yml` in the
+advisory packet.
+
+</DocSection>
+
+<DocSection title="Capture Product-Experience Memory">
+
+Use `ghost-memory` when work reveals a decision Ghost should remember:
+
+```text
+Brief this work with Ghost memory
+Capture this product-experience decision as a proposal
+Promote this accepted proposal
+```
+
+`ghost-memory` recipes write proposals first. Humans promote durable memory into
+accepted decisions, `patterns.yml`, `checks.yml`, or `intent.md`.
 
 </DocSection>
 

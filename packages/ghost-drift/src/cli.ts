@@ -1,10 +1,15 @@
 import { execFile } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { type Dirent, readFileSync } from "node:fs";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { loadSkillBundle } from "@ghost/core";
+import {
+  GHOST_DECISIONS_DIRNAME,
+  type GhostDecisionDocument,
+  lintGhostDecision,
+  loadSkillBundle,
+} from "@ghost/core";
 import { cac } from "cac";
 import {
   formatSemanticDiff,
@@ -197,6 +202,10 @@ export function buildCli(): ReturnType<typeof cac> {
       "--package <dir>",
       "Fingerprint package directory (default: .ghost)",
     )
+    .option(
+      "--include-memory",
+      "Include accepted product-experience decisions from .ghost/decisions in the advisory packet.",
+    )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -214,7 +223,7 @@ export function buildCli(): ReturnType<typeof cac> {
           typeof opts.diff === "string"
             ? await readDiffInput(opts.diff)
             : await readGitDiff(process.cwd(), opts.base ?? "HEAD");
-        const packet = {
+        const packet: ReviewPacket = {
           schema: "ghost.advisory-review/v1",
           package_dir: paths.dir,
           patterns: parseYaml(await readFile(paths.patterns, "utf-8")),
@@ -231,6 +240,13 @@ export function buildCli(): ReturnType<typeof cac> {
             "repair",
           ],
         };
+        if (opts.includeMemory) {
+          packet.memory = {
+            decisions: await readAcceptedDecisions(
+              resolve(paths.dir, GHOST_DECISIONS_DIRNAME),
+            ),
+          };
+        }
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
         } else {
@@ -329,15 +345,19 @@ async function readGitDiff(cwd: string, base: unknown): Promise<string> {
   return stdout;
 }
 
-function formatReviewPacketMarkdown(packet: {
+interface ReviewPacket {
+  schema: "ghost.advisory-review/v1";
   package_dir: string;
   patterns: unknown;
   survey: unknown;
   intent: string | null;
   checks: string | null;
+  memory?: { decisions: GhostDecisionDocument[] };
   diff: string;
   required_finding_citations: string[];
-}): string {
+}
+
+function formatReviewPacketMarkdown(packet: ReviewPacket): string {
   return `# Ghost Advisory Review
 
 Package: ${packet.package_dir}
@@ -362,6 +382,8 @@ ${JSON.stringify(packet.survey, null, 2)}
 ${packet.intent ?? "_No intent.md present. Treat patterns.yml and survey.json as observed evidence, not declared human intent._"}
 \`\`\`
 
+${formatMemorySection(packet.memory ?? null)}
+
 ## Active Checks
 
 \`\`\`yaml
@@ -382,4 +404,91 @@ async function readOptional(path: string): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+async function readAcceptedDecisions(
+  dirPath: string,
+): Promise<GhostDecisionDocument[]> {
+  let entries: Dirent[];
+  try {
+    entries = await readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const decisions: GhostDecisionDocument[] = [];
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!entry.isFile()) continue;
+    if (entry.name.startsWith(".")) continue;
+    if (!/\.ya?ml$/i.test(entry.name)) continue;
+
+    const path = resolve(dirPath, entry.name);
+    const parsed = parseYaml(await readFile(path, "utf-8"));
+    const report = lintGhostDecision(parsed);
+    if (report.errors > 0) {
+      const first = report.issues.find((issue) => issue.severity === "error");
+      const suffix = first?.path ? ` @ ${first.path}` : "";
+      throw new Error(
+        `${path} failed decision lint: ${first?.message ?? "invalid decision"}${suffix}`,
+      );
+    }
+    const decision = parsed as GhostDecisionDocument;
+    if (decision.status === "accepted") decisions.push(decision);
+  }
+
+  return decisions;
+}
+
+function formatMemorySection(
+  memory: { decisions: GhostDecisionDocument[] } | null,
+): string {
+  if (!memory) return "";
+  if (memory.decisions.length === 0) {
+    return `## Accepted Product-Experience Decisions
+
+_No accepted decisions found in .ghost/decisions._
+`;
+  }
+
+  const lines = ["## Accepted Product-Experience Decisions", ""];
+  for (const decision of memory.decisions) {
+    lines.push(`### ${decision.title}`);
+    lines.push("");
+    lines.push(`- **ID:** \`${decision.id}\``);
+    lines.push(`- **Claim:** ${decision.claim}`);
+    lines.push(`- **Rationale:** ${decision.rationale}`);
+    if (decision.scope) {
+      lines.push(`- **Scope:** ${formatDecisionScope(decision.scope)}`);
+    }
+    lines.push(
+      `- **Evidence:** ${decision.evidence
+        .map(
+          (entry) =>
+            entry.path ??
+            entry.survey_surface_id ??
+            entry.locator ??
+            entry.note,
+        )
+        .join(", ")}`,
+    );
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+function formatDecisionScope(
+  scope: NonNullable<GhostDecisionDocument["scope"]>,
+): string {
+  const parts: string[] = [];
+  if (scope.roles?.length) parts.push(`roles=${scope.roles.join("/")}`);
+  if (scope.scopes?.length) parts.push(`scopes=${scope.scopes.join("/")}`);
+  if (scope.surface_types?.length) {
+    parts.push(`surface_types=${scope.surface_types.join("/")}`);
+  }
+  if (scope.pattern_ids?.length) {
+    parts.push(`pattern_ids=${scope.pattern_ids.join("/")}`);
+  }
+  if (scope.paths?.length) parts.push(`paths=${scope.paths.join("/")}`);
+  return parts.length ? parts.join("; ") : "global";
 }

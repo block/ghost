@@ -361,6 +361,15 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
 
+  packages/ghost-memory:
+    dependencies:
+      '@ghost/core':
+        specifier: workspace:*
+        version: link:../ghost-core
+      cac:
+        specifier: ^6.7.14
+        version: 6.7.14
+
   packages/ghost-ui:
     dependencies:
       '@hookform/resolvers':

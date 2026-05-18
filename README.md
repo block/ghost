@@ -1,14 +1,16 @@
 # Ghost
 
-**Ghost gives agents a repo-local fingerprint for preserving product identity while they write UI.**
+**Ghost gives agents auditable, repo-local memory for product experience.**
 
-Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to.
+Agents can write UI. What they cannot reliably preserve is the thought behind the product experience they are changing.
 
-The failure mode is structural. Large language models generate by matching local patterns. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, and refusal.
+The failure mode is structural. Large language models generate by matching local patterns. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, refusal, reversibility, trust, and flow.
 
 Most design systems encode product inventory: colors, type scales, components. That inventory is necessary, but not sufficient. The same system can produce many different products. What is missing is the policy that governs how those parts are composed.
 
 Ghost introduces that second layer as a repository-local, versioned fingerprint. It captures the product's composition policy — the constraints, preferences, recurring decisions, and anti-patterns that shape how the system is actually used. It does not replace the design system; it conditions it.
+
+The broader boundary is product experience: anything that shapes how the product is perceived, used, trusted, understood, or safely changed. Ghost keeps that memory evidence-backed and reviewable instead of hiding it in chat history.
 
 The scan earns that package with evidence:
 
@@ -18,8 +20,10 @@ The scan earns that package with evidence:
 - **`.ghost/patterns.yml`** codifies repeated composition grammar with evidence.
 - **`.ghost/checks.yml`** optionally stores human-promoted deterministic gates.
 - **`.ghost/intent.md`** optionally records human-authored or human-approved product intent.
+- **`.ghost/decisions/*.yml`** optionally records accepted/rejected product-experience rationale.
+- **`.ghost/proposals/*.yml`** optionally stages candidate memory changes before promotion.
 
-Specs describe what exists. The fingerprint bundle describes how the product repeatedly chooses to use what exists. Survey grounds it; patterns operationalize composition; optional checks fail builds; optional intent preserves the human voice.
+Specs describe what exists. The fingerprint bundle describes how the product repeatedly chooses to use what exists. Survey grounds it; patterns operationalize composition; optional checks fail builds; optional intent preserves the human voice; optional decisions and proposals capture the why behind product-experience changes.
 
 ## Works with your agent
 
@@ -34,6 +38,7 @@ Ghost gives agents a few practical abilities:
 - **Generate from repo-local memory**: `.ghost/patterns.yml`, `.ghost/survey.json`, and optional `.ghost/intent.md` tell the agent how the product composes UI before it writes.
 - **Fail deterministic drift**: `ghost-drift check` applies active `checks.yml` gates to a diff.
 - **Review changes with evidence**: `ghost-drift review` emits an advisory packet grounded in patterns, survey, optional intent, checks, and diff.
+- **Recall product-experience memory**: `ghost-memory` helps agents brief, critique, capture, and promote optional decisions/proposals without making them deterministic gates.
 - **Compare systems**: `ghost-drift compare` and `ghost-fleet view` show how fingerprints differ across projects.
 - **Record intent**: `ack`, `track`, and `diverge` record whether drift is accepted, tracked against a new reference, or intentionally different.
 - **Stay readable**: `map.md` and optional `intent.md` are Markdown, `survey.json` is factual evidence, `patterns.yml` is operational grammar, and `checks.yml` is the human-curated gate layer.
@@ -51,6 +56,7 @@ Ghost is split into focused tools. The common path is simple:
 | **`ghost-fingerprint`** | Create and check the root `.ghost/` bundle. | `init-package`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit` |
 | **`ghost-drift`** | Run deterministic checks, emit advisory review packets, compare fingerprints, and record what changed intentionally. | `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill` |
 | **`ghost-fleet`** | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
+| **`ghost-memory`** | Optional product-experience companion recipes for recall, brief, critique, capture, and promote. | `emit skill` |
 | **`ghost-ui`** | Reference design system Ghost dogfoods — 97 shadcn components + an MCP server. | (no verbs) |
 
 Scans describe one subject, but they can read more than one source. For example, an app can read tokens from an upstream design-system package while still producing a fingerprint about the app's actual UI.
@@ -63,14 +69,15 @@ Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.resources/v1`, `ghost.map/v2`, `ghost.survey/v2`, `ghost.patterns/v1`, and `ghost.checks/v1` schemas. | ❌ private (`@ghost/core`) |
+| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.resources/v1`, `ghost.map/v2`, `ghost.survey/v2`, `ghost.patterns/v1`, `ghost.checks/v1`, `ghost.decision/v1`, and `ghost.proposal/v1` schemas. | ❌ private (`@ghost/core`) |
 | [`packages/ghost-fingerprint`](./packages/ghost-fingerprint) | The root bundle pipeline: `.ghost/{resources.yml,map.md,survey.json,patterns.yml}` plus optional checks and intent. Authoring, lint, verify, describe, diff, survey ops, emit. | ✅ intended-public on npm |
 | [`packages/ghost-drift`](./packages/ghost-drift) | Deterministic check, advisory review, comparison, and stance verbs. | ✅ `ghost-drift` on npm |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet view across many members. | ❌ private |
+| [`packages/ghost-memory`](./packages/ghost-memory) | Optional companion skill bundle for product-experience recall, brief, critique, capture, and promotion guidance. | ❌ private |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
 | [`apps/docs`](./apps/docs) | Deployed docs site (`ghost-docs`). | ❌ private |
 
-Dependency flow: `@ghost/core` ← everyone. `ghost-fingerprint` ← `ghost-drift`, `ghost-fleet`. No cycles.
+Dependency flow: `@ghost/core` ← everyone. `ghost-fingerprint` ← `ghost-drift`, `ghost-fleet`. `ghost-memory` depends only on `@ghost/core` and its recipes call sibling CLIs. No cycles.
 
 ## Quick install
 
@@ -114,6 +121,7 @@ Each tool ships its own bundle. Install whichever you need.
 ghost-drift emit skill            # → ./.claude/skills/ghost-drift
 ghost-fingerprint emit skill       # → ./.claude/skills/ghost-fingerprint
 ghost-fleet emit skill            # → ./.claude/skills/ghost-fleet
+ghost-memory emit skill           # → ./.claude/skills/ghost-memory
 ```
 
 Once a skill is installed, ask your agent in plain English ("scan this project with Ghost", "review this PR for drift", "compute the fleet view") and it'll follow the recipe, calling the relevant CLI whenever it needs a reproducible answer.
@@ -226,6 +234,7 @@ Commands are grouped by the tool that owns the file. Pure inputs → pure output
 | `ghost-fleet` | `members` | List registered fleet members + freshness. |
 | `ghost-fleet` | `view` | Compute pairwise distances + group-by tables; emit `fleet.md` + `fleet.json`. |
 | `ghost-fleet` | `emit skill` | Install the `ghost-fleet` agentskills.io bundle. |
+| `ghost-memory` | `emit skill` | Install the optional product-experience memory companion skill bundle. |
 
 ### Skill recipes: run by the host agent
 
@@ -241,6 +250,7 @@ The interpretive work is done by recipes the agent runs. Install the relevant bu
 | `compare`   | `ghost-drift` | Compare fingerprints | "why did these two fingerprints drift?" |
 | `remediate` | `ghost-drift` | Suggest minimal fixes for drift | "fix this drift" |
 | `target`    | `ghost-fleet` | Synthesize fleet narrative | "describe this fleet" |
+| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost-memory` | Activate and capture product-experience memory | "what does Ghost remember?", "brief this work", "capture this decision" |
 
 These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus the relevant Ghost CLI when it needs a reproducible answer. (`discover` and `generate` are intentionally not migrated — see [`docs/ideas/phase-0-decisions.md`](./docs/ideas/phase-0-decisions.md).)
 
@@ -266,6 +276,8 @@ What the agent reads when it writes or reviews UI is the **fingerprint bundle**:
 - **`patterns.yml`**: operational composition grammar. It shapes advisory review but never fails CI by itself.
 - **`intent.md`**: optional human-authored or human-approved product intent.
 - **`checks.yml`**: optional human-promoted enforceable gates. These are the only blocking mechanism in v1.
+- **`decisions/*.yml`**: optional accepted/rejected product-experience rationale.
+- **`proposals/*.yml`**: optional candidate memory changes. Proposals are never canonical until promoted.
 
 Generate one with the `scan` and `patterns` recipes (in the `ghost-fingerprint` skill bundle). See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec.
 
@@ -277,7 +289,7 @@ Generate one with the `map` recipe (in the `ghost-fingerprint` skill bundle). Th
 
 ### Author + Review Loop
 
-The loop is simple: the agent writes UI, `ghost-drift check` fails active gates, `ghost-drift review` provides advisory critique grounded in evidence, and a human or agent decides what to do next. Fix the drift, accept it, track a new fingerprint, or promote a durable rule into `checks.yml`. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
+The loop is simple: the agent writes UI, `ghost-drift check` fails active gates, `ghost-drift review` provides advisory critique grounded in evidence, and a human or agent decides what to do next. Fix the drift, accept it, track a new fingerprint, promote a durable rule into `checks.yml`, or capture a candidate product-experience memory proposal. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
 
 ### Remediation
 

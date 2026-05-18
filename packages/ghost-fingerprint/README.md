@@ -12,11 +12,14 @@ Canonical package:
   patterns.yml
   checks.yml
   intent.md        # optional
+  decisions/       # optional
+  proposals/       # optional
 ```
 
 Survey grounds the bundle. Patterns make composition operational. Optional
 checks fail builds. Optional intent records human-authored or human-approved
-product direction.
+product direction. Optional decisions and proposals record auditable
+product-experience memory without becoming deterministic gates.
 
 ## Stages
 
@@ -28,6 +31,8 @@ product direction.
 | Patterns | `patterns.yml` | `ghost.patterns/v1` | Codify surface types and composition grammar with evidence. |
 | Checks | `checks.yml` | `ghost.checks/v1` | Store optional human-promoted deterministic gates. |
 | Intent | `intent.md` | Markdown | Optional human authority. |
+| Decisions | `decisions/*.yml` | `ghost.decision/v1` | Optional accepted/rejected product-experience rationale. |
+| Proposals | `proposals/*.yml` | `ghost.proposal/v1` | Optional candidate memory changes before promotion. |
 
 ## Use
 

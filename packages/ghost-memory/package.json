@@ -1,0 +1,44 @@
+{
+  "name": "ghost-memory",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Optional Ghost product-experience memory companion skill bundle",
+  "license": "Apache-2.0",
+  "author": "Block, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/block/ghost.git"
+  },
+  "homepage": "https://github.com/block/ghost#readme",
+  "bugs": {
+    "url": "https://github.com/block/ghost/issues"
+  },
+  "keywords": [
+    "product-experience",
+    "design-memory",
+    "agent-skill",
+    "cli"
+  ],
+  "type": "module",
+  "main": "./dist/cli.js",
+  "types": "./dist/cli.d.ts",
+  "bin": {
+    "ghost-memory": "./dist/bin.js"
+  },
+  "exports": {
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle"
+  },
+  "dependencies": {
+    "@ghost/core": "workspace:*",
+    "cac": "^6.7.14"
+  }
+}

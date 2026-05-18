@@ -30,15 +30,15 @@ export default function Home() {
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
               Agents can write UI. What they cannot reliably preserve is the
-              identity of the product that UI belongs to.
+              thought behind the product experience they are changing.
             </p>
             <p className="thesis-item">
               The failure mode is structural. Large language models generate by
               matching local patterns. They reproduce components, tokens, and
               layouts, but they do not consistently preserve the higher-order
               decisions that make a surface feel intentional: its hierarchy, its
-              density, its restraint, the specific ways it repeats and the
-              specific ways it refuses.
+              density, its restraint, the specific ways it repeats and refuses,
+              and the ways it earns trust.
             </p>
             <p className="thesis-item">
               Most design systems encode the inventory of a product: colors,
@@ -56,6 +56,12 @@ export default function Home() {
               preferences, and recurring decisions that shape how the system is
               actually used. It does not replace the design system; it
               conditions it.
+            </p>
+            <p className="thesis-item">
+              The broader boundary is product experience: anything that shapes
+              how the product is perceived, used, trusted, understood, or safely
+              changed. Ghost keeps that memory auditable instead of letting it
+              disappear into chats, reviews, and one-off prompts.
             </p>
             <p className="thesis-item">
               Ghost builds this fingerprint package from evidence in the
@@ -79,6 +85,10 @@ export default function Home() {
               </li>
               <li>
                 <code>.ghost/checks.yml</code> stores human-promoted gates
+              </li>
+              <li>
+                <code>.ghost/decisions</code> and <code>.ghost/proposals</code>{" "}
+                capture optional product-experience memory
               </li>
             </ul>
             <p className="thesis-item">

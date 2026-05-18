@@ -39,6 +39,7 @@ ghost-drift compare a/.ghost b/.ghost                  # pairwise bundle distanc
 ghost-drift compare ./*/.ghost                         # composite bundle comparison, N≥3
 ghost-drift compare a.md b.md --semantic               # direct markdown qualitative diff
 ghost-drift compare a.md b.md --temporal               # add velocity / trajectory
+ghost-drift review --include-memory                    # include accepted .ghost/decisions in advisory packets
 ghost-drift ack                                        # acknowledge drift against the tracked fingerprint
 ghost-drift track path/to/new-tracked.fingerprint.md    # track another fingerprint
 ghost-drift diverge <dimension>                        # declare intentional divergence
@@ -64,6 +65,13 @@ ghost-fingerprint emit context-bundle        # generation context bundle
 ```
 
 The authoring verbs that used to live under `ghost-drift` were moved in v0.2.0; running them on `ghost-drift` now prints a deprecation message pointing here.
+
+### Product-experience memory
+
+`ghost-drift check` remains deterministic and reads only active `checks.yml`
+gates. `ghost-drift review --include-memory` can include accepted
+`.ghost/decisions/*.yml` in the advisory packet. Rejected decisions and
+`.ghost/proposals/*.yml` are ignored by drift.
 
 ## As a library
 

@@ -26,6 +26,7 @@ Commands are grouped by job:
 - **Create and check the fingerprint bundle** — `ghost-fingerprint`: `inventory`, `scan-status`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`
 - **Review and compare drift** — `ghost-drift`: `compare`, `ack`, `track`, `diverge`, `emit skill`
 - **View many projects** — `ghost-fleet`: `members`, `view`, `emit skill`
+- **Activate product-experience memory** — `ghost-memory`: `emit skill`
 
 Workflows like _scan_, _map_, _survey_, _patterns_, _review_, _verify_, and
 _remediate_ are skill recipes your host agent runs — not CLI verbs. Install
@@ -300,6 +301,24 @@ ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
 
 </DocSection>
 
+<DocSection title="ghost-memory — product-experience companion">
+
+`ghost-memory` ships optional host-agent recipes for recall, brief shaping,
+role-aware critique, proposal capture, and promotion guidance. Its CLI only
+emits the skill bundle; interpretation remains agent-led.
+
+<CliHelp tool="ghost-memory" command="emit" hideDescription />
+
+```bash
+# Install the ghost-memory skill bundle
+ghost-memory emit skill
+
+# Custom location
+ghost-memory emit skill --out ~/.my-agent/skills/ghost-memory
+```
+
+</DocSection>
+
 <DocSection title="ghost-fleet — view across projects">
 
 A fleet is a directory containing many projects, each with a Ghost fingerprint
@@ -353,6 +372,7 @@ once, then ask your agent in plain English:
 | `compare`  | `ghost-drift`      | "why did these two fingerprints drift?"                 |
 | `remediate`| `ghost-drift`      | "fix this drift"                                        |
 | `target`   | `ghost-fleet`      | "describe this fleet"                                   |
+| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost-memory` | "what does Ghost remember?" / "brief this work" / "capture this decision" |
 
 Source for each recipe lives under
 `packages/<tool>/src/skill-bundle/references/`. The agent executes the
