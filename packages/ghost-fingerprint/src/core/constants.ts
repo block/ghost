@@ -21,3 +21,9 @@ export const SCOPE_SURVEYS_DIRNAME = "modules";
 
 /** Canonical filename for human-promoted deterministic gates. */
 export const CHECKS_FILENAME = "checks.yml";
+
+/** Optional directory containing accepted/rejected product-experience decisions. */
+export const DECISIONS_DIRNAME = "decisions";
+
+/** Optional directory containing candidate product-experience memory changes. */
+export const PROPOSALS_DIRNAME = "proposals";

@@ -1,6 +1,10 @@
 import manifest from "@/generated/cli-manifest.json";
 
-type ToolName = "ghost-drift" | "ghost-fingerprint" | "ghost-fleet";
+type ToolName =
+  | "ghost-drift"
+  | "ghost-fingerprint"
+  | "ghost-fleet"
+  | "ghost-memory";
 
 interface CliHelpProps {
   command: string;

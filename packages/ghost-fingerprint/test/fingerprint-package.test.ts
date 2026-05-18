@@ -31,6 +31,8 @@ describe("fingerprint package", () => {
     expect(paths.resources).toBe(join(paths.dir, "resources.yml"));
     expect(paths.patterns).toBe(join(paths.dir, "patterns.yml"));
     expect(paths.checks).toBe(join(paths.dir, "checks.yml"));
+    expect(paths.decisions).toBe(join(paths.dir, "decisions"));
+    expect(paths.proposals).toBe(join(paths.dir, "proposals"));
   });
 
   it("lints package artifacts together when checks are present", async () => {
@@ -48,6 +50,115 @@ describe("fingerprint package", () => {
     const report = await lintFingerprintPackage(undefined, dir);
 
     expect(report.errors).toBe(0);
+  });
+
+  it("passes package lint when optional decisions and proposals are absent", async () => {
+    await initFingerprintPackage(undefined, dir);
+
+    const report = await lintFingerprintPackage(undefined, dir);
+
+    expect(report.errors).toBe(0);
+  });
+
+  it("lints optional product-experience memory directories", async () => {
+    const paths = await initFingerprintPackage(undefined, dir);
+    await mkdir(paths.decisions, { recursive: true });
+    await mkdir(paths.proposals, { recursive: true });
+    await writeFile(
+      join(paths.decisions, "checkout-reversibility.yml"),
+      `schema: ghost.decision/v1
+id: checkout-reversibility
+status: accepted
+title: Reversibility before money movement
+claim: Payment review must make reversibility visible before final submission.
+rationale: Users need confidence before committing money movement.
+scope:
+  roles: [design, engineering, pm, qa]
+  scopes: [checkout]
+  surface_types: [payment-review]
+  pattern_ids: [confirmation-before-commit]
+evidence:
+  - path: apps/checkout/review.tsx
+    note: Review step exposes edit affordances before submit.
+decided_at: "2026-05-17T00:00:00.000Z"
+`,
+    );
+    await writeFile(
+      join(paths.proposals, "saved-payment-empty-state.yml"),
+      `schema: ghost.proposal/v1
+id: saved-payment-empty-state
+status: open
+kind: decision
+title: Saved payment empty state should teach recovery
+claim: Empty states for saved payment methods should prioritize recovery over education.
+rationale: The user is blocked from paying, not browsing product concepts.
+scope:
+  roles: [design, pm, qa]
+  surface_types: [empty-state]
+evidence:
+  - path: apps/payments/empty-state.tsx
+proposed_action:
+  target: decisions
+  summary: Promote into an accepted product-experience decision if repeated.
+`,
+    );
+
+    const report = await lintFingerprintPackage(undefined, dir);
+
+    expect(report.errors).toBe(0);
+  });
+
+  it("fails package lint for invalid memory artifacts", async () => {
+    const paths = await initFingerprintPackage(undefined, dir);
+    await mkdir(paths.decisions, { recursive: true });
+    await writeFile(
+      join(paths.decisions, "bad.yml"),
+      `schema: ghost.decision/v1
+id: bad-decision
+status: accepted
+title: Missing evidence
+claim: This decision is not auditable.
+rationale: It has no evidence.
+evidence: []
+decided_at: "2026-05-17T00:00:00.000Z"
+`,
+    );
+
+    const report = await lintFingerprintPackage(undefined, dir);
+
+    expect(report.errors).toBeGreaterThan(0);
+    expect(
+      report.issues.some(
+        (issue) => issue.path === "decisions/bad.yml.evidence",
+      ),
+    ).toBe(true);
+  });
+
+  it("fails package lint for duplicate memory ids", async () => {
+    const paths = await initFingerprintPackage(undefined, dir);
+    await mkdir(paths.proposals, { recursive: true });
+    const proposal = `schema: ghost.proposal/v1
+id: duplicate-proposal
+status: open
+kind: decision
+title: Duplicate proposal
+claim: A candidate memory change.
+rationale: Used to test duplicate IDs.
+evidence:
+  - note: Product team discussion.
+proposed_action:
+  target: decisions
+  summary: Promote if accepted.
+`;
+    await writeFile(join(paths.proposals, "a.yml"), proposal);
+    await writeFile(join(paths.proposals, "b.yml"), proposal);
+
+    const report = await lintFingerprintPackage(undefined, dir);
+
+    expect(report.errors).toBeGreaterThan(0);
+    expect(report.issues.map((issue) => issue.rule)).toContain(
+      "proposal-id-duplicate",
+    );
   });
 
   it("fails package lint when checks reference unknown map scopes", async () => {
