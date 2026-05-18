@@ -9,322 +9,276 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLIs do the repeatable parts: validate files, compare bundles, and
-record decisions. Your agent does the reading, writing, and reviewing.
+The CLI does the repeatable parts: initialize bundles, validate files, transform
+survey data, compare bundles, check diffs, emit handoff packets, and record
+intent. Your agent does the reading, writing, and reviewing.
 
-A scan follows one path, all owned by `ghost-scan`:
+A scan follows one path:
 
 ```text
 resources.yml -> map.md -> survey.json -> patterns.yml
 ```
 
-Most commands accept a path; bundle-aware commands default to `.ghost`.
-No API key required.
+Install the public package and one skill bundle:
+
+```bash
+npm install -D @anarchitecture/ghost
+npx ghost skill install
+```
 
 Commands are grouped by job:
 
-- **Create and check the fingerprint bundle** — `ghost-scan`: `inventory`, `scan-status`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`
-- **Review and compare drift** — `ghost-drift`: `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill`
-- **View many projects** — `ghost-fleet`: `members`, `view`, `emit skill`
+- **Create and check the fingerprint bundle**: `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`.
+- **Review and compare drift**: `check`, `review`, `compare`, `ack`, `track`, `diverge`.
+- **Install BYOA recipes**: `skill install`.
+- **View many projects**: `ghost-fleet members`, `ghost-fleet view`, `ghost-fleet emit skill`.
 
-Workflows like _scan_, _map_, _survey_, _patterns_, _review_, _verify_, and
-_remediate_ are skill recipes your host agent runs — not CLI verbs. Install
-them with each tool's `emit skill` verb.
+Workflows like _scan_, _map_, _survey_, _patterns_, _recall_, _brief_,
+_critique_, _capture_, _promote_, _review_, _verify_, _compare_, and
+_remediate_ are skill recipes your host agent runs. They are installed by
+`ghost skill install`; they are not LLM-running CLI verbs.
 
-The tables below are generated from each CLI's source at build time. If a
-flag changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates
-this reference.
+The tables below are generated from each CLI's source at build time. If a flag
+changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates this
+reference.
 
 </DocSection>
 
-<DocSection title="ghost-scan — authoring & validation">
+<DocSection title="ghost - scan and bundle">
 
-`ghost-scan` owns the root bundle scan: `resources.yml` → `map.md` →
-`survey.json` → `patterns.yml`. It inventories the repo, validates each file,
+`ghost` owns the root bundle scan. It inventories the repo, validates each file,
 verifies cross-artifact fidelity, describes markdown, diffs direct fingerprint
 files, runs survey ops, and emits agent-ready outputs.
 
-### Repo map — `inventory`
+### Initialize - `init`
 
-Emit raw signals about a frontend repo as JSON: package
-manifests, language histogram, candidate config files, registry presence,
-top-level tree, git remote. The map recipe uses this when writing `map.md`.
+Create a `.ghost/` bundle skeleton with `resources.yml`, `map.md`,
+`survey.json`, `patterns.yml`, and `checks.yml`.
 
-<CliHelp tool="ghost-scan" command="inventory" hideDescription />
-
-```bash
-# Inventory the current directory
-ghost-scan inventory
-
-# Inventory a different repo
-ghost-scan inventory ../other-repo
-```
-
-### Pipeline progress — `scan-status`
-
-Report which scan stages already exist in a directory: resources
-(`resources.yml`), map (`map.md`), survey (`survey.json`), and patterns
-(`patterns.yml`). This tells the agent which stage to run next.
-
-<CliHelp tool="ghost-scan" command="scan-status" hideDescription />
+<CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
-# Status of the current directory
-ghost-scan scan-status
-
-# Status of a different scan dir
-ghost-scan scan-status fleet/members/cash-ios
-
-# Machine-readable for orchestrators
-ghost-scan scan-status . --format json
+ghost init
+ghost init --with-intent
 ```
 
-Output reports each stage as `present` or `missing` and surfaces the
-recommended next stage (or "scan complete" when every file is present).
+### Pipeline progress - `scan`
 
-### Survey ops — `survey <op>`
+Report which scan stages already exist in a directory and which stage the
+agent should run next. `--format json` is the deterministic BYOA handoff.
 
-Operate on `ghost.survey/v2` files:
-
-- **`merge`** — combine surveys with id-based dedup.
-- **`fix-ids`** — recompute every row's `id` from its content.
-- **`summarize`** — print a short Markdown or JSON digest for pattern authoring.
-- **`catalog`** — print exact value enums/specs derived from survey rows.
-  Markdown is the default; JSON uses `ghost.survey.catalog/v1`.
-- **`patterns`** — derive a `ghost.patterns/v1` draft from surface evidence.
-
-<CliHelp tool="ghost-scan" command="survey" hideDescription />
+<CliHelp tool="ghost" command="scan" hideDescription />
 
 ```bash
-# Merge two surveys
-ghost-scan survey merge a.json b.json -o merged.json
-
-# Merge a directory of survey files
-ghost-scan survey merge fleet/members/*/survey.json -o cohort.json
-
-# Populate IDs after authoring rows with empty id fields
-ghost-scan survey fix-ids draft.json -o draft.json
-
-# Broad bundle context
-ghost-scan survey summarize survey.json
-
-# Exact value enums/specs
-ghost-scan survey catalog survey.json --kind color
-ghost-scan survey catalog survey.json --format json -o catalog.json
-
-# Stream output to stdout if -o is omitted
-ghost-scan survey merge a.json b.json | jq '.values | length'
+ghost scan
+ghost scan fleet/members/cash-ios
+ghost scan . --format json
 ```
 
-### Validation — `lint`
+### Repo map - `inventory`
+
+Emit raw signals about a frontend repo as JSON: package manifests, language
+histogram, candidate config files, registry presence, top-level tree, and git
+remote. The map recipe uses this when writing `map.md`.
+
+<CliHelp tool="ghost" command="inventory" hideDescription />
+
+```bash
+ghost inventory
+ghost inventory ../other-repo
+```
+
+### Validation - `lint`
 
 Validate a root `.ghost` bundle or an individual artifact against its schema.
 Use this before declaring a file structurally valid; every authoring recipe
 calls it. Follow `lint` with `verify` to check cross-artifact fidelity.
 
-<CliHelp tool="ghost-scan" command="lint" hideDescription />
+<CliHelp tool="ghost" command="lint" hideDescription />
 
 ```bash
-# Default — reads .ghost
-ghost-scan lint
-
-# Validate a map.md (auto-detected by frontmatter)
-ghost-scan lint map.md
-
-# Validate a survey.json
-ghost-scan lint survey.json
-
-# JSON output
-ghost-scan lint .ghost/patterns.yml --format json
+ghost lint
+ghost lint map.md
+ghost lint survey.json
+ghost lint .ghost/patterns.yml --format json
 ```
 
-### Bundle fidelity — `verify`
+### Bundle fidelity - `verify`
 
-Validate that a root `.ghost` bundle is internally faithful. This is stricter
-than `lint`: resources should resolve from `--root`, composition patterns must
-cite survey-backed evidence, and checks must reference known pattern IDs when
-they use pattern metadata.
+Validate that a root `.ghost` bundle is internally faithful. Resources should
+resolve from `--root`, composition patterns must cite survey-backed evidence,
+and checks must reference known pattern IDs when they use pattern metadata.
 
-<CliHelp tool="ghost-scan" command="verify" hideDescription />
+<CliHelp tool="ghost" command="verify" hideDescription />
 
 ```bash
-# Bundle success gate after lint
-ghost-scan verify .ghost --root .
-
-# Machine-readable for CI
-ghost-scan verify .ghost --root . --format json
+ghost verify .ghost --root .
+ghost verify .ghost --root . --format json
 ```
 
-### Inspection — `describe`
+### Survey ops - `survey <op>`
+
+Operate on `ghost.survey/v2` files.
+
+- `merge` combines surveys with id-based dedup.
+- `fix-ids` recomputes every row's `id` from its content.
+- `summarize` prints a bounded Markdown or JSON digest for pattern authoring.
+- `catalog` prints exact value enums/specs derived from survey rows.
+- `patterns` derives a `ghost.patterns/v1` draft from surface evidence.
+
+<CliHelp tool="ghost" command="survey" hideDescription />
+
+```bash
+ghost survey merge a.json b.json -o merged.json
+ghost survey fix-ids draft.json -o draft.json
+ghost survey summarize survey.json
+ghost survey catalog survey.json --kind color
+ghost survey catalog survey.json --format json -o catalog.json
+ghost survey patterns survey.json -o .ghost/patterns.yml
+```
+
+### Inspection - `describe`
 
 Print a section map of optional `.ghost/intent.md` or a direct fingerprint
 markdown file. The host agent uses this to load only the sections it needs.
 
-<CliHelp tool="ghost-scan" command="describe" hideDescription />
+<CliHelp tool="ghost" command="describe" hideDescription />
 
 ```bash
-# Default — reads .ghost/intent.md
-ghost-scan describe
-
-# Specific file
-ghost-scan describe path/to/fingerprint.md
-
-# Machine-readable for agents
-ghost-scan describe --format json
+ghost describe
+ghost describe path/to/fingerprint.md
+ghost describe --format json
 ```
 
-Line ranges are 1-indexed and inclusive; token counts are a `chars / 4`
-approximation.
+### Structural diff - `diff`
 
-### Structural diff — `diff`
+Diff two fingerprints at the prose and structural level: decisions, palette
+roles, and tokens. This is not vector distance; use `ghost compare` for that.
 
-Diff two fingerprints at the prose / structural level — what decisions,
-palette roles, and tokens changed. **Not** vector distance; for that, use
-`ghost-drift compare`.
-
-<CliHelp tool="ghost-scan" command="diff" hideDescription />
+<CliHelp tool="ghost" command="diff" hideDescription />
 
 ```bash
-ghost-scan diff a/fingerprint.md b/fingerprint.md
-ghost-scan diff a.md b.md --format json
+ghost diff a/fingerprint.md b/fingerprint.md
+ghost diff a.md b.md --format json
 ```
 
-### Emit — derived outputs and skill bundles
+### Derived outputs - `emit`
 
-Kinds: `review-command`, `context-bundle`, or `skill`. The skill bundle installs
-scan/map/survey/patterns plus recall/brief/critique/capture/promote recipes
-into your host agent. Review/context outputs still operate on direct fingerprint
-markdown until their bundle-native replacement lands.
+Emit deterministic artifacts for agents and editors. Supported kinds are
+`review-command` and `context-bundle`; skill installation lives at
+`ghost skill install`.
 
-<CliHelp tool="ghost-scan" command="emit" hideDescription />
+<CliHelp tool="ghost" command="emit" hideDescription />
 
 ```bash
-# Install the ghost-scan skill bundle
-ghost-scan emit skill
-
-# Emit a per-project design-review slash command
-ghost-scan emit review-command
-
-# Emit a context bundle any generator can consume
-ghost-scan emit context-bundle
-
-# Single prompt.md for plain-text LLM context
-ghost-scan emit context-bundle --prompt-only
-
-# Custom output directory
-ghost-scan emit context-bundle --out dist/context
+ghost emit review-command
+ghost emit context-bundle
+ghost emit context-bundle --prompt-only
+ghost emit context-bundle --out dist/context
 ```
 
 </DocSection>
 
-<DocSection title="ghost-drift — review and compare">
+<DocSection title="ghost - review and compare">
 
-### Comparison — `compare`
+### Deterministic gates - `check`
 
-Pairwise distance (N=2) or composite analysis (N≥3) over root bundles or direct
+Run active `ghost.checks/v1` gates from `.ghost/checks.yml` against a git diff.
+
+<CliHelp tool="ghost" command="check" hideDescription />
+
+```bash
+ghost check --base main
+ghost check --diff patch.diff --format json
+```
+
+### Advisory packet - `review`
+
+Emit an evidence-routed advisory review packet grounded in `.ghost/patterns.yml`,
+`.ghost/survey.json`, optional `.ghost/intent.md`, optional memory, checks, and
+the diff.
+
+<CliHelp tool="ghost" command="review" hideDescription />
+
+```bash
+ghost review --base main
+ghost review --base main --include-memory --format json
+```
+
+### Comparison - `compare`
+
+Pairwise distance (N=2) or composite analysis (N>=3) over root bundles or direct
 fingerprint markdown. Bundle inputs are synthesized from survey value
 distributions and pattern frequencies. Direct markdown inputs still support
 `--semantic` and `--temporal`.
 
-<CliHelp tool="ghost-drift" command="compare" hideDescription />
+<CliHelp tool="ghost" command="compare" hideDescription />
 
 ```bash
-# Pairwise (N=2)
-ghost-drift compare market/.ghost dashboard/.ghost
-
-# Qualitative diff of decisions + palette
-ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
-
-# Velocity + trajectory
-ghost-drift compare before.fingerprint.md after.fingerprint.md --temporal
-
-# Composite (N≥3) — pairwise matrix + centroid + clusters
-ghost-drift compare */.ghost
+ghost compare market/.ghost dashboard/.ghost
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
+ghost compare before.fingerprint.md after.fingerprint.md --temporal
+ghost compare */.ghost
 ```
 
-### Intent — `ack` / `track` / `diverge`
+### Intent - `ack` / `track` / `diverge`
 
-These three verbs write per-dimension stances to `.ghost-sync.json`. `ack`
-and `diverge` need a tracked fingerprint declared in `ghost.config.ts`;
-`track` takes the new tracked fingerprint as its argument.
+These three verbs write per-dimension stances to `.ghost-sync.json`. `ack` and
+`diverge` need a tracked fingerprint declared in `ghost.config.ts`; `track`
+takes the new tracked fingerprint as its argument.
 
-Acknowledge current drift — record your intentional stance (aligned,
-accepted, or diverging). Reads the tracked fingerprint from `ghost.config.ts`
-and the local direct fingerprint markdown.
-
-<CliHelp tool="ghost-drift" command="ack" hideDescription />
+<CliHelp tool="ghost" command="ack" hideDescription />
 
 ```bash
-# Acknowledge all dimensions as aligned
-ghost-drift ack --stance aligned --reason "Initial baseline"
-
-# Mark typography as intentionally diverging
-ghost-drift ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
+ghost ack --stance aligned --reason "Initial baseline"
+ghost ack -d typography --stance diverging --reason "Brand refresh requires different type scale"
 ```
 
-Shift the tracked fingerprint to a new fingerprint. Use this when you want to
-re-anchor your drift measurements against a different reference fingerprint.
-
-<CliHelp tool="ghost-drift" command="track" hideDescription />
+<CliHelp tool="ghost" command="track" hideDescription />
 
 ```bash
-# Track a new reference fingerprint
-ghost-drift track new-tracked.fingerprint.md
+ghost track new-tracked.fingerprint.md
 ```
 
-Mark a specific dimension as intentionally diverging. Shorthand for
-`ack --stance diverging` that also records a reason.
-
-<CliHelp tool="ghost-drift" command="diverge" hideDescription />
+<CliHelp tool="ghost" command="diverge" hideDescription />
 
 ```bash
-ghost-drift diverge palette --reason "Dark-mode-first palette for this product"
+ghost diverge palette --reason "Dark-mode-first palette for this product"
 ```
 
-### Emit — `emit skill`
+### Skill bundle - `skill install`
 
-`ghost-drift emit` ships a single kind: `skill`, the agentskills.io bundle
-that teaches your host agent the review / verify / compare / remediate
-recipes. (Authoring outputs — `review-command`, `context-bundle` — live in
-`ghost-scan`.)
+Install the unified `ghost` skill bundle into a host agent. It contains scan,
+map, survey, patterns, schema, recall, brief, critique, capture, promote,
+review, verify, compare, and remediate recipes.
 
-<CliHelp tool="ghost-drift" command="emit" hideDescription />
+<CliHelp tool="ghost" command="skill" hideDescription />
 
 ```bash
-# Install the ghost-drift skill bundle (default: .claude/skills/ghost-drift)
-ghost-drift emit skill
-
-# Custom location
-ghost-drift emit skill --out ~/.my-agent/skills/ghost-drift
+ghost skill install
+ghost skill install --agent codex --force
+ghost skill install --dest ~/.my-agent/skills/ghost
 ```
 
 </DocSection>
 
-<DocSection title="ghost-fleet — view across projects">
+<DocSection title="ghost-fleet - view across projects">
 
 A fleet is a directory containing many projects, each with a Ghost fingerprint
-bundle.
-`ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` +
-`fleet.json`), and ships the agentskills.io bundle for the narrative
-recipe.
+bundle. `ghost-fleet` reads the fleet, emits per-fleet outputs (`fleet.md` and
+`fleet.json`), and ships the agentskills.io bundle for the narrative recipe.
 
 <CliHelp tool="ghost-fleet" command="members" hideDescription />
 
 ```bash
-# List members in the current fleet directory
 ghost-fleet members
-
-# JSON output for scripting
 ghost-fleet members --json
 ```
 
 <CliHelp tool="ghost-fleet" command="view" hideDescription />
 
 ```bash
-# Compute pairwise distances + group-by tables; write fleet.md + fleet.json
 ghost-fleet view ./fleet
-
-# Override the fleet id and reports directory
 ghost-fleet view ./fleet --id cash-mobile --out reports/cash
 ```
 
@@ -336,44 +290,26 @@ ghost-fleet emit skill
 
 </DocSection>
 
-<DocSection title="Skill recipes (host agent)">
+<DocSection title="Skill recipes">
 
-These aren't CLI verbs — they're instruction files inside the per-tool
-skill bundles that your host agent follows. Install the relevant bundle
-once, then ask your agent in plain English:
+These are instruction files inside the unified skill bundle. Install them once,
+then ask your agent in plain English.
 
-| Recipe     | Bundle             | Trigger                                                |
-| ---------- | ------------------ | ------------------------------------------------------ |
-| `scan`     | `ghost-scan` | "scan this project" / "go end-to-end" — meta-recipe orchestrating resources → map → survey → patterns |
-| `map`      | `ghost-scan` | "map this repo" / "write map.md"                       |
-| `survey`   | `ghost-scan` | "survey design values" / "extract tokens"              |
-| `patterns` | `ghost-scan` | "write patterns.yml" / "codify composition patterns" |
-| `review`   | `ghost-drift`      | "review this PR for drift"                              |
-| `verify`   | `ghost-drift`      | "verify generated UI against the bundle"                |
-| `compare`  | `ghost-drift`      | "why did these two fingerprints drift?"                 |
-| `remediate`| `ghost-drift`      | "fix this drift"                                        |
-| `target`   | `ghost-fleet`      | "describe this fleet"                                   |
-| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost-scan` | "what does Ghost remember?" / "brief this work" / "capture this decision" |
+| Recipe | Bundle | Trigger |
+| --- | --- | --- |
+| `scan` | `ghost` | "scan this project" / "go end-to-end" |
+| `map` | `ghost` | "map this repo" / "write map.md" |
+| `survey` | `ghost` | "survey design values" / "extract tokens" |
+| `patterns` | `ghost` | "write patterns.yml" / "codify composition patterns" |
+| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost` | "what does Ghost remember?" / "brief this work" / "capture this decision" |
+| `review` | `ghost` | "review this PR for drift" |
+| `verify` | `ghost` | "verify generated UI against the bundle" |
+| `compare` | `ghost` | "why did these two fingerprints drift?" |
+| `remediate` | `ghost` | "fix this drift" |
+| `target` | `ghost-fleet` | "describe this fleet" |
 
-Source for each recipe lives under
-`packages/<tool>/src/skill-bundle/references/`. The agent executes the
-steps with its normal tools and calls the relevant CLI when it needs a
-reproducible answer.
-
-Each recipe also declares `handoffs` in its frontmatter — structured
-next-step suggestions that point at another skill (e.g. `fingerprint` →
-`compare`) or a CLI invocation (e.g. `fingerprint` →
-`ghost-scan emit review-command`). Hosts that read the field can
-surface the next action inline; hosts that ignore unknown frontmatter
-see no change.
-
-`discover` and `generate` from earlier Ghost iterations are intentionally
-not migrated to any tool (see [`docs/ideas/phase-0-decisions.md`](https://github.com/block/ghost/blob/main/docs/ideas/phase-0-decisions.md)).
-
----
-
-See [How Ghost Works](/docs/getting-started#how-ghost-works) for the loop
-these primitives fit into, or [Getting Started](/docs/getting-started) for an
-installation-first guide.
+Source lives under `packages/ghost/src/skill-bundle/references/`. The agent
+executes the steps with its normal tools and calls the relevant CLI command
+when it needs a reproducible answer.
 
 </DocSection>

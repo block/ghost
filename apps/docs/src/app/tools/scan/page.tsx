@@ -22,7 +22,7 @@ const cards: {
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost-scan--authoring--validation",
+    href: "/docs/cli#ghost--authoring--validation",
     description: "Validate, describe, diff, and emit agent-ready context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
@@ -45,7 +45,7 @@ export default function GhostScanLanding() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="ghost-scan"
+        kicker="ghost scan"
         title="Ghost Scan"
         description="The authoring tool that creates and maintains the repo-local fingerprint agents read before they generate UI."
       />

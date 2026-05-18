@@ -34,12 +34,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter ghost-fingerprint build && pnpm --filter ghost-drift build
+      - run: pnpm --filter @anarchitecture/ghost build
 
       - name: Create Release PR or publish
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
         with:
-          publish: pnpm -r publish --access public --no-git-checks
+          publish: pnpm --filter @anarchitecture/ghost publish --access public --no-git-checks
           version: pnpm changeset version
           commit: "chore: version packages"
           title: "chore: version packages"

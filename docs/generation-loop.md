@@ -43,7 +43,7 @@ any generator
 HTML / JSX / app code
         |
         v
-ghost-drift review + ghost-drift check
+ghost review + ghost check
         |
         v
 advisory composition findings + deterministic check results
@@ -96,7 +96,7 @@ but narrower than product strategy: the boundary is anything that shapes how the
 product is perceived, used, trusted, understood, or safely changed.
 
 Accepted decisions can be included in advisory review with
-`ghost-drift review --include-memory`. They do not affect `ghost-drift check`.
+`ghost review --include-memory`. They do not affect `ghost check`.
 
 ### `.ghost/proposals/*.yml`
 
@@ -106,23 +106,23 @@ discussion. They are never canonical until a human promotes them.
 
 ## Review Loop
 
-`ghost-drift review` reads `.ghost/patterns.yml`, `.ghost/survey.json`,
+`ghost review` reads `.ghost/patterns.yml`, `.ghost/survey.json`,
 optional `.ghost/intent.md`, and optional `.ghost/checks.yml`. With
 `--include-memory`, it also reads accepted `.ghost/decisions/*.yml`. Advisory
 findings should cite pattern evidence, survey evidence, and accepted decisions
 when relevant.
 
-`ghost-drift check` reads `.ghost/checks.yml` and remains deterministic. It is
+`ghost check` reads `.ghost/checks.yml` and remains deterministic. It is
 the blocking side of the loop.
 
 When review flags drift, the host agent applies the smallest correction that
 brings the output back toward the observed composition grammar. If the drift is
-intentional, record a stance with `ghost-drift ack`, `ghost-drift track`, or
-`ghost-drift diverge` as appropriate.
+intentional, record a stance with `ghost ack`, `ghost track`, or
+`ghost diverge` as appropriate.
 
 ## Verification
 
-`ghost-scan verify [dir] --root <root>` checks cross-artifact fidelity:
+`ghost verify [dir] --root <root>` checks cross-artifact fidelity:
 
 - pattern evidence exists in `survey.json`
 - resource paths are reachable from the supplied root when local
@@ -136,8 +136,8 @@ bundle itself.
 ## Integration Patterns
 
 **In a generation pipeline:** load the root `.ghost/` bundle into the host
-agent, generate the requested UI, then run `ghost-drift review` and
-`ghost-drift check`.
+agent, generate the requested UI, then run `ghost review` and
+`ghost check`.
 
 **In CI:** run deterministic checks for UI-touching changes and attach advisory
 review packets when generated or changed UI appears to drift from
@@ -148,7 +148,7 @@ review packets when generated or changed UI appears to drift from
 repeated composition observations into `patterns.yml`, and add `intent.md` only
 when a human has supplied or approved the intent.
 
-**Product-experience memory:** use `ghost-scan` recipes to recall, brief,
+**Product-experience memory:** use `ghost` recipes to recall, brief,
 critique, capture, and promote optional decisions/proposals. Keep promotion
 deliberate: proposals are working memory; accepted decisions are advisory
 memory; active checks are the only blocking mechanism.

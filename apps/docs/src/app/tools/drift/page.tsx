@@ -28,7 +28,7 @@ const cards: {
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost-drift--review-and-compare",
+    href: "/docs/cli#ghost--review-and-compare",
     description:
       "Run checks, emit advisory review, compare fingerprints, and record intent.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
@@ -45,9 +45,9 @@ export default function GhostDriftLanding() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="ghost-drift"
+        kicker="ghost review"
         title="Drift"
-        description="Check whether changed or generated UI still matches the fingerprint package. ghost-drift runs deterministic checks, emits advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        description="Check whether changed or generated UI still matches the fingerprint package. ghost runs deterministic checks, emits advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
       />
 
       <div
