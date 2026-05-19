@@ -17,20 +17,20 @@ const cards: {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the skill bundle and ask your agent to create a fingerprint.",
+      "Install the skill bundle and ask your agent to capture a fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--authoring--validation",
-    description: "Validate, describe, diff, and emit agent-ready context.",
+    href: "/docs/cli#ghost--capture-support-and-bundle-checks",
+    description: "Check capture progress, validate bundles, and emit context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full package format for map, survey, fingerprint, and optional checks.",
+      "The full bundle format for resources, map, survey, patterns, checks, and optional memory.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -46,8 +46,8 @@ export default function GhostScanLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost scan"
-        title="Ghost Scan"
-        description="The authoring tool that creates and maintains the repo-local fingerprint agents read before they generate UI."
+        title="Fingerprint Capture"
+        description="The BYOA workflow that produces the repo-local .ghost bundle agents read before they generate or review UI."
       />
 
       <div
