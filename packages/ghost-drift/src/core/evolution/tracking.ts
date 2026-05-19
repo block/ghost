@@ -6,7 +6,7 @@ import {
   loadFingerprint,
   parseFingerprint,
   resolveFingerprintPackage,
-} from "ghost-fingerprint";
+} from "ghost-scan";
 
 /**
  * Resolve a Target to a Fingerprint.

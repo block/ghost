@@ -15,9 +15,9 @@ Dogfood scan after adding source graph provenance, check curation guidance, and 
 ## Validation
 
 ```bash
-node packages/ghost-fingerprint/dist/bin.js lint dogfood/ghost-ui/attempt-4/map.md
-node packages/ghost-fingerprint/dist/bin.js lint dogfood/ghost-ui/attempt-4/survey.json
-node packages/ghost-fingerprint/dist/bin.js lint dogfood/ghost-ui/attempt-4/fingerprint.md
+node packages/ghost-scan/dist/bin.js lint dogfood/ghost-ui/attempt-4/map.md
+node packages/ghost-scan/dist/bin.js lint dogfood/ghost-ui/attempt-4/survey.json
+node packages/ghost-scan/dist/bin.js lint dogfood/ghost-ui/attempt-4/fingerprint.md
 ```
 
 All three return `0 error(s), 0 warning(s), 0 info`.

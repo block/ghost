@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
  * same fingerprint to itself.
  *
  * Two layers of defense:
- *   - `loadFingerprint` backfills oklch on read (in ghost-fingerprint).
+ *   - `loadFingerprint` backfills oklch on read (in ghost-scan).
  *   - `comparePalette` computes oklch on-the-fly when missing AND falls
  *     back to hex equality when even on-the-fly compute can't resolve.
  */

@@ -243,6 +243,54 @@ describe("ghost-drift CLI", () => {
     expect(result.stdout).toContain("precedent/example");
     expect(result.stdout).toContain("repair");
   });
+
+  it("review omits product-experience memory by default", async () => {
+    await writeCheckPackage(dir);
+    await writeMemoryFiles(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      ["review", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.memory).toBeUndefined();
+  });
+
+  it("review includes only accepted decisions when requested", async () => {
+    await writeCheckPackage(dir);
+    await writeMemoryFiles(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      [
+        "review",
+        "--diff",
+        "change.patch",
+        "--include-memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.memory.decisions).toHaveLength(1);
+    expect(packet.memory.decisions[0].id).toBe("checkout-reversibility");
+    expect(JSON.stringify(packet.memory)).not.toContain("rejected-decision");
+    expect(JSON.stringify(packet.memory)).not.toContain(
+      "saved-payment-empty-state",
+    );
+  });
 });
 
 async function writeCheckPackage(
@@ -303,6 +351,60 @@ checks:
       examples:
         - Code/Features/Lending/LendingUI
     repair: Replace literals with Arcade/Cash semantic tokens.
+`,
+  );
+}
+
+async function writeMemoryFiles(dir: string): Promise<void> {
+  const pkg = join(dir, ".ghost");
+  await mkdir(join(pkg, "decisions"), { recursive: true });
+  await mkdir(join(pkg, "proposals"), { recursive: true });
+  await writeFile(
+    join(pkg, "decisions", "checkout-reversibility.yml"),
+    `schema: ghost.decision/v1
+id: checkout-reversibility
+status: accepted
+title: Reversibility before money movement
+claim: Payment review must make reversibility visible before final submission.
+rationale: Users need confidence before committing money movement.
+scope:
+  roles: [design, engineering, pm, qa]
+  scopes: [checkout]
+  surface_types: [payment-review]
+  pattern_ids: [confirmation-before-commit]
+evidence:
+  - path: apps/checkout/review.tsx
+    note: Review step exposes edit affordances before submit.
+decided_at: "2026-05-17T00:00:00.000Z"
+`,
+  );
+  await writeFile(
+    join(pkg, "decisions", "rejected-decision.yml"),
+    `schema: ghost.decision/v1
+id: rejected-decision
+status: rejected
+title: Rejected experience direction
+claim: This should not appear in drift packets.
+rationale: Rejected decisions are non-canonical memory.
+evidence:
+  - note: Rejected in design review.
+decided_at: "2026-05-17T00:00:00.000Z"
+`,
+  );
+  await writeFile(
+    join(pkg, "proposals", "saved-payment-empty-state.yml"),
+    `schema: ghost.proposal/v1
+id: saved-payment-empty-state
+status: accepted
+kind: decision
+title: Saved payment empty state should teach recovery
+claim: Empty states for saved payment methods should prioritize recovery.
+rationale: The user is blocked from paying, not browsing product concepts.
+evidence:
+  - path: apps/payments/empty-state.tsx
+proposed_action:
+  target: decisions
+  summary: Promote into an accepted product-experience decision if repeated.
 `,
   );
 }

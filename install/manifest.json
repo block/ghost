@@ -1,18 +1,23 @@
 {
   "$schema": "ghost.install-manifest/v1",
-  "name": "ghost-fingerprint",
-  "description": "Ghost design-language scan + emit recipes — author fingerprint.md, validate it, emit a per-project /design-review slash command.",
+  "name": "ghost-scan",
+  "description": "Ghost Scan recipes — create and activate the repo-local fingerprint bundle.",
   "version": "0.1.0",
   "source": {
-    "package": "packages/ghost-fingerprint/src/skill-bundle"
+    "package": "packages/ghost-scan/src/skill-bundle"
   },
   "files": [
     "SKILL.md",
     "references/scan.md",
     "references/map.md",
     "references/survey.md",
-    "references/fingerprint.md",
+    "references/patterns.md",
     "references/schema.md",
+    "references/recall.md",
+    "references/brief.md",
+    "references/critique.md",
+    "references/capture.md",
+    "references/promote.md",
     "assets/fingerprint.template.md"
   ]
 }

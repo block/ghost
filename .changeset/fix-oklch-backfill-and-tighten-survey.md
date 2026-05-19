@@ -1,5 +1,5 @@
 ---
-"ghost-fingerprint": patch
+"ghost-scan": patch
 "ghost-drift": patch
 ---
 

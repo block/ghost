@@ -14,9 +14,9 @@ const tools: {
   icon: ReactNode;
 }[] = [
   {
-    name: "ghost-fingerprint",
-    href: "/tools/fingerprint",
-    blurb: "Create .ghost/fingerprint",
+    name: "ghost-scan",
+    href: "/tools/scan",
+    blurb: "Create the fingerprint",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {

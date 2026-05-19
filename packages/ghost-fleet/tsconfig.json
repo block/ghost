@@ -6,8 +6,5 @@
     "rootDir": "./src"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../ghost-core" },
-    { "path": "../ghost-fingerprint" }
-  ]
+  "references": [{ "path": "../ghost-core" }, { "path": "../ghost-scan" }]
 }

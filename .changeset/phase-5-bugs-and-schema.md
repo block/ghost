@@ -1,5 +1,5 @@
 ---
-"ghost-fingerprint": minor
+"ghost-scan": minor
 ---
 
 Phase 5 fixes and schema widening for real-world repo variety.

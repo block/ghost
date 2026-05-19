@@ -11,11 +11,15 @@ not a single prose file. The canonical on-disk shape is:
   patterns.yml
   checks.yml
   intent.md        # optional
+  decisions/       # optional ghost.decision/v1 product-experience rationale
+  proposals/       # optional ghost.proposal/v1 candidate memory changes
 ```
 
 `survey.json` is the evidence ledger. `patterns.yml` is the operational
 composition grammar. `checks.yml` is the deterministic gate layer. `intent.md`
-is optional human-authored or human-approved intent.
+is optional human-authored or human-approved intent. `decisions/` and
+`proposals/` are optional product-experience memory: accepted/rejected rationale
+and candidate changes that may later be promoted.
 
 ## Package Artifacts
 
@@ -117,18 +121,68 @@ human-approved product intent: tradeoffs to preserve, misleading observations,
 and what the product refuses to become. AI may draft it, but it is not
 authoritative until accepted by a human.
 
+### `decisions/*.yml`
+
+Accepted or rejected product-experience decisions use `ghost.decision/v1`.
+These are rationale artifacts: they explain why an experience invariant matters
+and cite evidence, but they do not block CI.
+
+```yaml
+schema: ghost.decision/v1
+id: checkout-reversibility
+status: accepted
+title: Reversibility before money movement
+claim: Payment review must make reversibility visible before final submission.
+rationale: Users need confidence before committing money movement.
+scope:
+  roles: [design, engineering, pm, qa]
+  scopes: [checkout]
+  surface_types: [payment-review]
+  pattern_ids: [confirmation-before-commit]
+evidence:
+  - path: apps/checkout/review.tsx
+    note: Review step exposes edit affordances before submit.
+decided_at: "2026-05-17T00:00:00.000Z"
+```
+
+`ghost-drift review --include-memory` reads only decisions with
+`status: accepted`.
+
+### `proposals/*.yml`
+
+Candidate memory changes use `ghost.proposal/v1`. They are working memory until
+a human promotes them into decisions, patterns, checks, or intent.
+
+```yaml
+schema: ghost.proposal/v1
+id: saved-payment-empty-state
+status: open
+kind: decision
+title: Saved payment empty state should teach recovery
+claim: Empty states for saved payment methods should prioritize recovery over education.
+rationale: The user is blocked from paying, not browsing product concepts.
+scope:
+  roles: [design, pm, qa]
+  surface_types: [empty-state]
+evidence:
+  - path: apps/payments/empty-state.tsx
+proposed_action:
+  target: decisions
+  summary: Promote into an accepted product-experience decision if repeated.
+```
+
 ## Commands
 
 ```bash
-ghost-fingerprint init-package --with-intent
-ghost-fingerprint lint
-ghost-fingerprint survey patterns .ghost/survey.json -o .ghost/patterns.yml
-ghost-fingerprint verify --root .
+ghost-scan init-package --with-intent
+ghost-scan lint
+ghost-scan survey patterns .ghost/survey.json -o .ghost/patterns.yml
+ghost-scan verify --root .
 ghost-drift check --base main
-ghost-drift review --base main
+ghost-drift review --base main --include-memory
 ghost-drift compare .ghost ../other/.ghost
 ```
 
-`ghost-fingerprint verify` validates cross-artifact fidelity: resources should
+`ghost-scan verify` validates cross-artifact fidelity: resources should
 resolve, composition patterns must cite survey-backed evidence, and checks must
 reference known pattern IDs when they use pattern metadata.
