@@ -65,7 +65,24 @@ Bad advisory topics:
 - restating pattern prose without a diff location
 - enforcing a rule that is not in `checks.yml`
 
-### 4. Promote Durable Rules Later
+### 4. Deterministic gate (CI / programmatic)
+
+When a non-interactive caller (CI, another agent, a script) needs a structured
+pass/fail signal — not advisory prose — reach for the `--gate` mode of
+`compare`. It reconciles the current pairwise distance against the recorded
+ack stance in `.ghost-sync.json` and prints a per-dimension verdict
+(`aligned` / `covered` / `reconverging` / `uncovered`).
+
+```bash
+ghost-drift compare <canon> <target> --gate --sync .ghost-sync.json --format json
+```
+
+Exit codes: `0` no uncovered drift, `1` at least one dimension is uncovered
+(or new and unacked), `2` hard error (missing manifest, malformed JSON, N≠2).
+The JSON schema is `ghost.compare.gate/v1` and is safe for programmatic
+consumers to parse.
+
+### 5. Promote Durable Rules Later
 
 If an advisory finding recurs and can be detected deterministically, propose a
 new `ghost.checks/v1` entry. Do not add it to `checks.yml` unless a human

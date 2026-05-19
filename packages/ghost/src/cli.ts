@@ -24,6 +24,7 @@ import {
   formatTemporalComparisonJSON,
   readHistory,
   readSyncManifest,
+  runGateCli,
   runGhostDriftCheck,
 } from "./core/index.js";
 import {
@@ -56,9 +57,34 @@ export function buildCli(): ReturnType<typeof cac> {
       "--history-dir <dir>",
       "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
     )
+    .option(
+      "--gate",
+      "Reconcile against a sync manifest and emit a structured pass/fail verdict (N=2 only)",
+    )
+    .option(
+      "--sync <path>",
+      "Sync manifest path for --gate (default: ./.ghost-sync.json)",
+    )
+    .option(
+      "--max-divergence-days <n>",
+      "For --gate: flag diverging dimensions older than this many days as uncovered",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (fingerprints: string[], opts) => {
       try {
+        if (opts.gate) {
+          await runGateCli({
+            fingerprints,
+            cwd: process.cwd(),
+            sync: opts.sync,
+            format: opts.format,
+            maxDivergenceDays: opts.maxDivergenceDays,
+            loadFingerprint: loadComparableFingerprint,
+            compare,
+          });
+          return;
+        }
+
         const exprs = await Promise.all(
           fingerprints.map((path) => loadComparableFingerprint(path)),
         );
