@@ -1,12 +1,12 @@
 ---
 name: critique
-description: Critique generated or changed work using Ghost memory and ghost.
+description: Critique generated or changed work using the Ghost fingerprint and CLI.
 ---
 
-# Critique With Ghost Scan
+# Critique With The Ghost Fingerprint
 
-Use this after generated or changed UI exists. `ghost` remains the judge;
-Ghost Scan adds role-aware interpretation.
+Use this after generated or changed UI exists. `ghost` emits deterministic
+checks and advisory packets; the fingerprint supplies role-aware interpretation.
 
 ## Steps
 
@@ -18,11 +18,11 @@ Ghost Scan adds role-aware interpretation.
    - engineering: implementation choices that preserve experience
    - pm: product promise and tradeoffs
    - qa: experience invariants and edge states
-5. Classify each issue as fix, intentional divergence, or missing memory.
+5. Classify each issue as fix, intentional divergence, or missing fingerprint context.
 
 ## Output
 
 Lead with actionable findings. Cite diff locations, patterns, survey evidence,
 intent, accepted decisions, and repairs where relevant.
 
-Never fail a build on advisory-only memory. Only active `checks.yml` gates block.
+Never fail a build on advisory-only context. Only active `checks.yml` gates block.

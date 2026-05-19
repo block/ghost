@@ -14,7 +14,7 @@ handoffs:
 
 **Goal:** produce a valid `survey.json` (`ghost.survey/v2`) that catalogues every concrete design value and implemented UI surface the target ships, with structured specs, occurrence counts, and surface evidence. **You are the surveyor, not the interpreter.** Record what is there. Do not assign meaning. Do not write prose. Do not invent.
 
-`survey.json` is the evidence artifact in the package scan: resources (`resources.yml`) → map (`map.md`) → survey (`survey.json`) → patterns (`patterns.yml`). The interpreter reads your survey as evidence and writes operational composition grammar. If you skip values or fabricate them here, the package downstream is wrong.
+`survey.json` is the evidence artifact in Fingerprint Capture: resources (`resources.yml`) -> map (`map.md`) -> survey (`survey.json`) -> patterns (`patterns.yml`). The interpreter reads your survey as evidence and writes operational composition grammar. If you skip values or fabricate them here, the package downstream is wrong.
 
 The survey is an evidence ledger, not prompt context. It should be large enough to justify patterns, checks, and advisory review; the patterns stage decides what becomes generation-facing composition guidance and check candidates.
 
@@ -42,11 +42,11 @@ Each row carries an `id` (deterministic SHA-256 prefix you do **not** compute by
 - **`values[]`** — every concrete literal that ships in the design language. `kind` is open; recommended values: `color`, `spacing`, `typography`, `radius`, `shadow`, `breakpoint`, `motion`, `layout-primitive`. Other kinds (`z-index`, `opacity`, `cursor`, `gradient`, `iconography`, `aspect-ratio`) get a `value-kind-unknown` warning but are accepted — emit them when they matter.
 - **`tokens[]`** — every named token declared in source (CSS variables, theme keys, design-token entries). Each row has `name`, `alias_chain` (path through any indirection — `["--button-bg", "--color-brand-primary"]` for a two-step chain; `[]` for a leaf defined inline), `resolved_value` (end-of-chain literal), optional `by_theme` for light/dark variants.
 - **`components[]`** — every named component you can confidently identify (registry entries, exported PascalCase components with variants/sizes). Loose schema: `name`, `discovered_via` (`registry.json` / `heuristic` / etc.), optional `variants[]` and `sizes[]`.
-- **`ui_surfaces[]`** — implemented UI specimens the design language can be inferred from. Each row has `name`, `kind` (`route`, `story`, `screen`, `fixture`, `doc-example`, `screenshot`, `source`), `locator`, `renderability` (`rendered`, `screenshot`, `source-only`, `unknown`), `files[]`, optional soft `classification`, and factual `signals`.
+- **`ui_surfaces[]`** — implemented UI specimens the design language can be inferred from. Each row has `name`, `kind` (`route`, `story`, `screen`, `fixture`, `doc-example`, `screenshot`, `source`), `locator`, `renderability` (`rendered`, `screenshot`, `source-only`, `unknown`), `files[]`, optional soft `classification`, and factual `signals`. For net-new component libraries, `story`, `doc-example`, and `fixture` rows are useful demo evidence; do not classify them as product routes/screens.
 
 External libraries (icon sets, primitive collections, motion libs, charting, etc.) are intentionally *not* a survey section. Whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*. When a library matters to the design language (icon family, font sourcing), surface it in the interpreter stage as prose evidence under the relevant decision dimension instead.
 
-Every row needs `occurrences` (total count across the scan) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
+Every row needs `occurrences` (total count across the capture) and (for values) `files_count` (distinct files that contain the value). Optional `usage` breaks down by context: `{className: 30, css_var: 17}`. Optional `role_hypothesis` is a single tentative role tag (`brand-primary`, `surface-elevated`); **leave it empty if you are not sure** — the interpreter does role assignment, not you.
 
 `ui_surfaces[].classification` is a retrieval lens, not design truth. `intent` and `surface_type` are open strings; `density`, `layout_shape`, and `confidence` should be omitted unless evidence is clear. `ui_surfaces[].signals` contains observed facts only: `dominant_components`, `layout_patterns`, `breakpoint_behavior`, `value_refs`, and short factual `notes`.
 
@@ -78,7 +78,7 @@ Open `map.md`. Note:
 - `composition.styling` — Tailwind, CSS modules, styled-components, scss, swift-tokens, etc. Drives your extraction strategy.
 - `composition.frameworks` — react, next, swiftui, compose, …
 - `design_system.entry_files` — start here. These declare the canonical token set.
-- `sources[]` — scan source graph when the target needs upstream packages to resolve symbols. `primary` supplies usage; `resolver` supplies values.
+- `sources[]` — capture source graph when the target needs upstream packages to resolve symbols. `primary` supplies usage; `resolver` supplies values.
 - `design_system.paths` — directories where the design system lives.
 - `surface_sources.render_strategy` — how implemented UI can be observed.
 - `surface_sources.include` / `.exclude` — globs that bound surface discovery.
@@ -88,7 +88,7 @@ Decide your extraction strategy from these signals — see Step 2.
 
 ## The exhaustiveness rule
 
-Recall is the failure mode and the only one. A survey missing 90% of a section's rows is a failed scan, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
+Recall is the failure mode and the only one. A survey missing 90% of a section's rows is a failed capture, even if every row that *is* there is well-formed — the interpreter downstream cannot recover what you didn't record.
 
 For every section (`values[]`, `tokens[]`, `components[]`, `ui_surfaces[]`):
 
@@ -114,7 +114,7 @@ If the repo mixes dialects (e.g. `swiftui` + `arcade`), run extraction per diale
 
 ## Resolver pass for source graphs
 
-For split repos, a local app scan is not complete until symbolic usage has been resolved through the declared resolver sources where possible. This is still an app scan: the primary source decides salience, resolver sources only supply meaning.
+For split repos, a local app capture is not complete until symbolic usage has been resolved through the declared resolver sources where possible. This is still an app capture: the primary source decides salience, resolver sources only supply meaning.
 
 Run this pass when `map.md` has `sources[]` with a `resolver` role, or when `design_system.token_source` is `external` / `mixed`.
 
@@ -165,7 +165,7 @@ For components:
 
 ### 4. Record implemented UI surfaces
 
-Use `surface_sources` and `feature_areas[]` from `map.md` to enumerate representative implemented surfaces. This section is required in `ghost.survey/v2`. If no implemented surface can be observed, write `ui_surfaces: []`, ensure `map.md` uses `surface_sources.render_strategy: unknown`, and carry the coverage gap in your scratchpad for the interpreter.
+Use `surface_sources` and `feature_areas[]` from `map.md` to enumerate representative implemented surfaces. This section is required in `ghost.survey/v2`. If only component demos exist, record them honestly as `story`, `doc-example`, or `fixture` rows. If no implemented or demo surface can be observed, write `ui_surfaces: []`, ensure `map.md` uses `surface_sources.render_strategy: unknown`, and carry the coverage gap in your scratchpad for the interpreter.
 
 Surface rows are evidence, not exemplars and not prose. Record facts that the later patterns authoring pass can cluster:
 
@@ -257,9 +257,10 @@ Before declaring the survey done, walk each section and confirm exhaustiveness:
 
 - **`components[]`** — what's the canonical signal in this repo? Count it independently. If your row count is below that count, you've under-recorded. Either add the missing rows or, if the section truly isn't enumerable here, leave the array empty.
 - **`ui_surfaces[]`** — compare rows against `surface_sources` and `feature_areas[]`. Every major implemented surface family should have at least one row, or the coverage gap should be explicit.
+- **Readiness** — after validation, run `ghost scan --format json`. If readiness is `substrate-only`, the survey can support token/component/value guidance but not product composition. If readiness is `component-demo`, story/doc/example evidence can support component anatomy and demo composition, not product flow or hierarchy.
 - **`tokens[]`** — count the named-token declarations in the canonical token source(s) named in `map.md`. Your row count should match.
 - **`values[]`** — frequency-cluster again with a fresh grep. New top-N entries that aren't in your survey = missed.
-  For resolver-backed scans, also check unresolved symbols by kind; top unresolved symbols should either be resolved or explicitly surfaced as coverage gaps.
+  For resolver-backed captures, also check unresolved symbols by kind; top unresolved symbols should either be resolved or explicitly surfaced as coverage gaps.
 The survey is **saturated** when another exhaustiveness pass adds fewer than ~2 new rows across all sections AND your component/token row counts match (or come very close to) an independent count of the canonical signal. If exhaustiveness disagrees with what you have, exhaustiveness wins — re-pass.
 
 Hard stop conditions:
