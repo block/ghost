@@ -15,15 +15,16 @@ const cards: {
 }[] = [
   {
     name: "Ghost loop",
-    href: "/docs/getting-started#how-ghost-works",
-    description: "See how scan, fingerprint, review, and intent fit together.",
+    href: "/docs/getting-started#the-simple-model",
+    description:
+      "See how capture, review, comparison, and intent fit together.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the skill bundle and review changed UI against .ghost/fingerprint.",
+      "Install the skill bundle and review changed UI against the .ghost bundle.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -47,7 +48,7 @@ export default function GhostDriftLanding() {
       <AnimatedPageHeader
         kicker="ghost review"
         title="Drift"
-        description="Check whether changed or generated UI still matches the fingerprint package. ghost runs deterministic checks, emits advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        description="Check whether changed or generated UI still matches the .ghost bundle. ghost runs deterministic checks, emits advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
       />
 
       <div
