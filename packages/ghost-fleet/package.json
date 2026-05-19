@@ -43,9 +43,8 @@
     "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle"
   },
   "dependencies": {
-    "@ghost/core": "workspace:*",
+    "@anarchitecture/ghost": "workspace:*",
     "cac": "^6.7.14",
-    "ghost-scan": "workspace:*",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }

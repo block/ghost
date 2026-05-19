@@ -1,18 +1,14 @@
 # Ghost
 
-**Ghost gives agents auditable, repo-local memory for product experience.**
+**Ghost gives agents repo-local design memory for product experience.**
 
-Agents can write UI. What they cannot reliably preserve is the thought behind the product experience they are changing.
+Agents can write UI. What they cannot reliably preserve is the thought behind
+the product experience they are changing: hierarchy, density, restraint,
+repetition, refusal, reversibility, trust, and flow. Ghost captures that second
+layer as a versioned `.ghost/` fingerprint bundle that agents can read before
+generation and validate after changes.
 
-The failure mode is structural. Large language models generate by matching local patterns. They reproduce components, tokens, and layouts, but they do not consistently preserve the higher-order decisions that make a surface feel intentional: hierarchy, density, restraint, repetition, refusal, reversibility, trust, and flow.
-
-Most design systems encode product inventory: colors, type scales, components. That inventory is necessary, but not sufficient. The same system can produce many different products. What is missing is the policy that governs how those parts are composed.
-
-Ghost introduces that second layer as a repository-local, versioned fingerprint. It captures the product's composition policy — the constraints, preferences, recurring decisions, and anti-patterns that shape how the system is actually used. It does not replace the design system; it conditions it.
-
-The broader boundary is product experience: anything that shapes how the product is perceived, used, trusted, understood, or safely changed. Ghost keeps that memory evidence-backed and reviewable instead of hiding it in chat history.
-
-The scan earns that package with evidence:
+The bundle is evidence-first:
 
 - **`.ghost/resources.yml`** declares the references that define the product.
 - **`.ghost/map.md`** routes changes to repo scopes and surfaces.
@@ -23,290 +19,131 @@ The scan earns that package with evidence:
 - **`.ghost/decisions/*.yml`** optionally records accepted/rejected product-experience rationale.
 - **`.ghost/proposals/*.yml`** optionally stages candidate memory changes before promotion.
 
-Specs describe what exists. The fingerprint bundle describes how the product repeatedly chooses to use what exists. Survey grounds it; patterns operationalize composition; optional checks fail builds; optional intent preserves the human voice; optional decisions and proposals capture the why behind product-experience changes.
+## Install
 
-## Works with your agent
+The public npm package is **`@anarchitecture/ghost`**. It installs one CLI:
+**`ghost`**.
 
-Every Ghost workflow runs in the host agent you already use: Claude Code, Codex, Cursor, Goose, or another agent. Each tool ships an [agentskills.io](https://agentskills.io)-compatible recipe bundle for work like scan, review, verify, remediate, or summarize a fleet. The agent reads the files, makes the calls, and writes the outputs. When it needs a reproducible answer, such as schema validation or fingerprint distance, it calls a Ghost CLI.
-
-No API key is required to run any CLI verb. Each tool's `emit skill` verb installs its bundle into your agent.
-
-## Why Ghost?
-
-Ghost gives agents a few practical abilities:
-
-- **Generate from repo-local memory**: `.ghost/patterns.yml`, `.ghost/survey.json`, and optional `.ghost/intent.md` tell the agent how the product composes UI before it writes.
-- **Fail deterministic drift**: `ghost-drift check` applies active `checks.yml` gates to a diff.
-- **Review changes with evidence**: `ghost-drift review` emits an advisory packet grounded in patterns, survey, optional intent, checks, and diff.
-- **Recall product-experience memory**: `ghost-scan` helps agents brief, critique, capture, and promote optional decisions/proposals without making them deterministic gates.
-- **Compare systems**: `ghost-drift compare` and `ghost-fleet view` show how fingerprints differ across projects.
-- **Record intent**: `ack`, `track`, and `diverge` record whether drift is accepted, tracked against a new reference, or intentionally different.
-- **Stay readable**: `map.md` and optional `intent.md` are Markdown, `survey.json` is factual evidence, `patterns.yml` is operational grammar, and `checks.yml` is the human-curated gate layer.
-
-## Tools around the loop
-
-Ghost is split into focused tools. The common path is simple:
-
-```text
-.ghost/resources.yml -> map.md -> survey.json -> patterns.yml -> check/review
+```bash
+npm install -D @anarchitecture/ghost
+npx ghost --help
 ```
 
-| Tool | Job | Verbs |
-| --- | --- | --- |
-| **`ghost-scan`** | Create and check the root `.ghost/` bundle. | `init-package`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit` |
-| **`ghost-drift`** | Run deterministic checks, emit advisory review packets, compare fingerprints, and record what changed intentionally. | `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill` |
-| **`ghost-fleet`** | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
-| **`ghost-ui`** | Reference design system Ghost dogfoods — 97 shadcn components + an MCP server. | (no verbs) |
+Install the unified BYOA skill bundle:
 
-Scans describe one subject, but they can read more than one source. For example, an app can read tokens from an upstream design-system package while still producing a fingerprint about the app's actual UI.
+```bash
+npx ghost skill install
+# or choose an explicit destination
+npx ghost skill install --dest ~/.codex/skills/ghost
+```
 
-`@ghost/core` underneath is a workspace-only library with embedding math, target resolution, skill-bundle loader, and the `ghost.map/v2` + `ghost.survey/v2` schemas the three CLIs share.
+After that, ask your agent in plain English:
 
-## Repo layout
+```text
+Scan this project with Ghost.
+Review this PR for Ghost drift.
+Compare these two Ghost bundles.
+Brief this work from Ghost memory.
+```
 
-Ghost is a pnpm monorepo. Four tools, one reference design system, one docs site.
+## Core Workflow
+
+```bash
+# 0. Create the bundle skeleton
+ghost init --with-intent
+
+# 1. Ask your agent to map the repo, then validate
+ghost inventory
+ghost lint .ghost
+
+# 2. Ask your agent to survey values and composition evidence
+ghost survey fix-ids .ghost/survey.json -o .ghost/survey.json
+ghost lint .ghost
+
+# 3. Derive patterns and verify evidence
+ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
+ghost verify .ghost --root .
+ghost lint .ghost
+
+# 4. Check or review changes
+ghost check --base main
+ghost review --base main --include-memory
+
+# 5. Compare fingerprints or bundles
+ghost compare market/.ghost dashboard/.ghost
+ghost compare a.md b.md --semantic
+ghost compare before.md after.md --temporal
+ghost compare */.ghost
+
+# 6. Record intentional drift
+ghost ack --stance aligned --reason "Initial baseline"
+ghost track new-tracked.fingerprint.md
+ghost diverge typography --reason "Editorial product uses a different type scale"
+
+# 7. Emit derived context
+ghost emit review-command
+ghost emit context-bundle
+```
+
+`ghost scan --format json` emits deterministic BYOA state: which artifacts are
+present, which stage is next, and enough structure for the host agent to choose
+the next recipe. It does not call an LLM.
+
+## CLI Commands
+
+| Command | Description |
+| --- | --- |
+| `ghost init` | Create `.ghost/{resources.yml,map.md,survey.json,patterns.yml,checks.yml}`. |
+| `ghost scan` | Report scan state and emit the next BYOA handoff. |
+| `ghost inventory` | Emit raw repo signals as JSON for map authoring. |
+| `ghost lint` | Validate a bundle or individual artifact. |
+| `ghost verify` | Validate resource reachability, pattern evidence, checks, and optional memory. |
+| `ghost describe` | Print optional `intent.md` or direct markdown section ranges + token estimates. |
+| `ghost diff` | Structural prose-level diff between direct fingerprints. |
+| `ghost survey <op>` | Operate on `ghost.survey/v2` files: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
+| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
+| `ghost review` | Emit an evidence-routed advisory review packet. |
+| `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
+| `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
+| `ghost track` | Shift the tracked fingerprint. |
+| `ghost diverge` | Declare intentional divergence on a dimension. |
+| `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
+| `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
+
+## Repo Layout
+
+Ghost is a pnpm monorepo. The public package is self-contained for npm; private
+workspace packages remain only for historical/development context.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost-core`](./packages/ghost-core) | Workspace-only shared library — embedding math, target resolver, skill loader, `ghost.resources/v1`, `ghost.map/v2`, `ghost.survey/v2`, `ghost.patterns/v1`, `ghost.checks/v1`, `ghost.decision/v1`, and `ghost.proposal/v1` schemas. | ❌ private (`@ghost/core`) |
-| [`packages/ghost-scan`](./packages/ghost-scan) | The root bundle pipeline: `.ghost/{resources.yml,map.md,survey.json,patterns.yml}` plus optional checks and intent. Authoring, lint, verify, describe, diff, survey ops, emit. | ✅ intended-public on npm |
-| [`packages/ghost-drift`](./packages/ghost-drift) | Deterministic check, advisory review, comparison, and stance verbs. | ✅ `ghost-drift` on npm |
-| [`packages/ghost-fleet`](./packages/ghost-fleet) | Fleet view across many members. | ❌ private |
-| [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: 97 shadcn components + the `ghost-mcp` MCP server. | ❌ private (distributed via shadcn registry, not npm) |
-| [`apps/docs`](./apps/docs) | Deployed docs site (`ghost-docs`). | ❌ private |
+| [`packages/ghost`](./packages/ghost) | Unified public package. Ships the `ghost` CLI, scan/memory authoring, deterministic checks, advisory review packets, comparison, stance tracking, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
+| [`packages/ghost-core`](./packages/ghost-core) | Private historical shared library. Runtime code is folded into `packages/ghost` for publishing. | no |
+| [`packages/ghost-scan`](./packages/ghost-scan) | Private historical scan package. Runtime code is folded into `packages/ghost` for publishing. | no |
+| [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many members. | no |
+| [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: shadcn registry + `ghost-mcp` MCP server. | no |
+| [`apps/docs`](./apps/docs) | Docs site. | no |
 
-Dependency flow: `@ghost/core` ← everyone. `ghost-scan` ← `ghost-drift`, `ghost-fleet`. No cycles.
-
-## Quick install
-
-If you just want the design-language scan + emit recipes installed into your host agent — no Node, no pnpm, no build:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
-```
-
-The installer detects your agent (`claude` / `cursor` / `codex` / `opencode`), drops the `ghost` skill bundle into the right skills directory (e.g. `~/.claude/skills/ghost/`), and tells you what to do next. Pass `--agent claude` (or `--dest <path>`) to override detection. Re-run with `--force` to upgrade.
-
-After install, in any repo:
-
-```
-> Scan this project with ghost
-```
-
-The agent walks `.ghost/resources.yml` → `map.md` → `survey.json` → `patterns.yml` + optional `checks.yml` / `intent.md`, then checks or reviews UI changes against that bundle. The recipes work without any Ghost CLI on PATH — every CLI-using step has a prose fallback.
-
-If you want the CLI helpers for linting, fingerprint verification, diffing, comparing, and fleet views, install from source instead. See *Getting Started* below.
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- [pnpm](https://pnpm.io/) 10+
-
-### Install
+## Development
 
 ```bash
 pnpm install
 pnpm build
+pnpm test
+pnpm check
+pnpm dump:cli-help
+pnpm --filter @anarchitecture/ghost pack
 ```
 
-### Install the skill bundles into your host agent
+No API key is required to run Ghost. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are
+optional and only used by semantic embedding helpers when a host opts in.
+`GITHUB_TOKEN` is optional for resolving tracked fingerprints from GitHub.
 
-Each tool ships its own bundle. Install whichever you need.
+## Resources
 
-```bash
-ghost-drift emit skill            # → ./.claude/skills/ghost-drift
-ghost-scan emit skill             # → ./.claude/skills/ghost-scan
-ghost-fleet emit skill            # → ./.claude/skills/ghost-fleet
-```
-
-Once a skill is installed, ask your agent in plain English ("scan this project with Ghost", "review this PR for drift", "compute the fleet view") and it'll follow the recipe, calling the relevant CLI whenever it needs a reproducible answer.
-
-### Quick start
-
-**0. Initialize the package**:
-
-```bash
-ghost-scan init-package
-```
-
-**1. Map the repo**. Ask your host agent to write `.ghost/map.md`, then validate:
-
-```bash
-ghost-scan inventory
-ghost-scan lint .ghost
-```
-
-**2. Survey the design values and composition observations**. Ask your host agent to write `.ghost/survey.json`, then validate:
-
-```bash
-ghost-scan survey fix-ids .ghost/survey.json -o .ghost/survey.json
-ghost-scan lint .ghost
-```
-
-**3. Codify patterns and promote checks** — ask your host agent to write `.ghost/patterns.yml` and propose lintable checks. Humans promote durable gates into `.ghost/checks.yml`:
-
-```bash
-ghost-scan survey patterns .ghost/survey.json -o .ghost/patterns.yml
-ghost-scan verify .ghost --root .
-ghost-scan lint
-```
-
-**4. Check or review a diff**:
-
-```bash
-ghost-drift check --base main
-ghost-drift check --diff change.patch --format json
-ghost-drift review --base main
-```
-
-**5. Compare fingerprints:**
-
-```bash
-# Pairwise: per-dimension distance
-ghost-drift compare market/.ghost dashboard/.ghost
-
-# Add qualitative interpretation of decisions + palette
-ghost-drift compare a.md b.md --semantic
-
-# Add velocity / trajectory (reads .ghost/history.jsonl)
-ghost-drift compare before.md after.md --temporal
-
-# Composite (N≥3): pairwise matrix, centroid, clusters — the org fingerprint
-ghost-drift compare */.ghost
-```
-
-**6. Track intent toward another fingerprint:**
-
-```bash
-ghost-drift ack --stance aligned --reason "Initial baseline"
-ghost-drift track new-tracked.fingerprint.md
-ghost-drift diverge typography --reason "Editorial product uses a different type scale"
-```
-
-**7. Emit derived outputs**:
-
-```bash
-ghost-scan emit review-command     # .claude/commands/design-review.md (per-project slash command)
-ghost-scan emit context-bundle     # ghost-context/ (SKILL.md + fingerprint context + prompt.md + tokens.css)
-ghost-scan emit skill              # .claude/skills/ghost-scan (the agentskills.io bundle)
-```
-
-**8. View a fleet** (when you have ≥2 members each with their own package/fingerprint):
-
-```bash
-ghost-fleet members ./fleet     # list registered members + freshness
-ghost-fleet view ./fleet         # emit fleet.md + fleet.json with pairwise matrix, centroid, clusters
-```
-
-**Run the docs site locally:**
-
-```bash
-just dev
-# or: pnpm -F ghost-docs dev
-```
-
-## CLI Commands
-
-Commands are grouped by the tool that owns the file. Pure inputs → pure outputs, no API key required.
-
-| Tool | Command | Description |
-| --- | --- | --- |
-| `ghost-scan` | `inventory` | Emit raw repo signals (manifests, language histogram, registry presence, top-level tree, git remote) as JSON. Feeds the map recipe. |
-| `ghost-scan` | `init-package` | Create `.ghost/{resources.yml,map.md,survey.json,patterns.yml,checks.yml}`. |
-| `ghost-scan` | `lint` | Validate the fingerprint bundle or an individual artifact. |
-| `ghost-scan` | `verify` | Validate cross-artifact fidelity: resources, pattern evidence, and check references. |
-| `ghost-scan` | `describe` | Print optional `intent.md` or direct markdown section ranges + token estimates. |
-| `ghost-scan` | `diff` | Structural prose-level diff between two fingerprints (NOT vector distance — for that, use `ghost-drift compare`). |
-| `ghost-scan` | `survey <op>` | Operate on `ghost.survey/v2` files. Ops: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
-| `ghost-scan` | `emit` | Derive an output from direct fingerprint markdown or install the skill bundle. |
-| `ghost-drift` | `check` | Run active `ghost.checks/v1` deterministic gates against a diff; exits nonzero on failures. |
-| `ghost-drift` | `review` | Emit an evidence-routed advisory review packet; findings are non-blocking unless tied to active checks. |
-| `ghost-drift` | `compare` | Pairwise (N=2) or composite (N≥3) over runtime fingerprint embeddings. `--semantic` / `--temporal` add qualitative enrichment. |
-| `ghost-drift` | `ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
-| `ghost-drift` | `track` | Shift the tracked fingerprint. |
-| `ghost-drift` | `diverge` | Declare intentional divergence on a dimension. |
-| `ghost-drift` | `emit skill` | Install the `ghost-drift` agentskills.io bundle. |
-| `ghost-fleet` | `members` | List registered fleet members + freshness. |
-| `ghost-fleet` | `view` | Compute pairwise distances + group-by tables; emit `fleet.md` + `fleet.json`. |
-| `ghost-fleet` | `emit skill` | Install the `ghost-fleet` agentskills.io bundle. |
-
-### Skill recipes: run by the host agent
-
-The interpretive work is done by recipes the agent runs. Install the relevant bundle once, then ask in plain English. Each tool ships its own recipes.
-
-| Recipe | Bundle | Capability | Triggered by |
-| --- | --- | --- | --- |
-| `map`       | `ghost-scan` | Write the repo map (stage 1) | "map this repo", "write map.md" |
-| `survey`    | `ghost-scan` | Author the survey of values (stage 2) | "survey design values", "extract design tokens" |
-| `patterns` | `ghost-scan` | Author operational composition grammar (stage 4) | "write patterns.yml", "codify composition patterns" |
-| `review`    | `ghost-drift` | Review PR changes for drift | "review this PR for drift" |
-| `verify`    | `ghost-drift` | Check generated UI against the fingerprint | "verify generated UI against the fingerprint" |
-| `compare`   | `ghost-drift` | Compare fingerprints | "why did these two fingerprints drift?" |
-| `remediate` | `ghost-drift` | Suggest minimal fixes for drift | "fix this drift" |
-| `target`    | `ghost-fleet` | Synthesize fleet narrative | "describe this fleet" |
-| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost-scan` | Activate and capture product-experience memory | "what does Ghost remember?", "brief this work", "capture this decision" |
-
-These are instructions, not code. The agent executes them using its normal tools (file search, reading, editing) plus the relevant Ghost CLI when it needs a reproducible answer. (`discover` and `generate` are intentionally not migrated — see [`docs/ideas/phase-0-decisions.md`](./docs/ideas/phase-0-decisions.md).)
-
-## Configuration
-
-`ghost.config.ts` is optional — only `ghost-drift ack` and `ghost-drift diverge` consult it (to locate the tracked fingerprint). Everything else is zero-config.
-
-### Environment variables
-
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY`: optional, consumed by `computeSemanticEmbedding` (a `@ghost/core` library function) when a host wants enriched semantic comparison.
-- `GITHUB_TOKEN`: optional, used by `resolveTrackedFingerprint` when fetching a tracked fingerprint from GitHub (avoids rate limits).
-
-Each CLI auto-loads `.env` and `.env.local` from the working directory.
-
-## How It Works
-
-### The fingerprint
-
-What the agent reads when it writes or reviews UI is the **fingerprint bundle**:
-
-- **`map.md`**: where surfaces live and how changed files route to scopes.
-- **`survey.json`**: factual observed evidence.
-- **`patterns.yml`**: operational composition grammar. It shapes advisory review but never fails CI by itself.
-- **`intent.md`**: optional human-authored or human-approved product intent.
-- **`checks.yml`**: optional human-promoted enforceable gates. These are the only blocking mechanism in v1.
-- **`decisions/*.yml`**: optional accepted/rejected product-experience rationale.
-- **`proposals/*.yml`**: optional candidate memory changes. Proposals are never canonical until promoted.
-
-Generate one with the `scan` and `patterns` recipes (in the `ghost-scan` skill bundle). See [`docs/fingerprint-format.md`](./docs/fingerprint-format.md) for the full spec.
-
-### The map
-
-What Ghost uses during scan and drift workflows to understand the repo. **`.ghost/map.md`** is the topology stage of a scan. It records languages, build system, package manifests, registry files, design-system paths, observable surfaces, feature areas, and scopes. Deterministic drift starts by routing changed files through this map.
-
-Generate one with the `map` recipe (in the `ghost-scan` skill bundle). The agent reads `ghost-scan inventory` (raw repo signals as JSON) and writes the short body.
-
-### Author + Review Loop
-
-The loop is simple: the agent writes UI, `ghost-drift check` fails active gates, `ghost-drift review` provides advisory critique grounded in evidence, and a human or agent decides what to do next. Fix the drift, accept it, track a new fingerprint, promote a durable rule into `checks.yml`, or capture a candidate product-experience memory proposal. See [`docs/generation-loop.md`](./docs/generation-loop.md) for details.
-
-### Remediation
-
-Three files record what happened:
-
-- **`.ghost/`**: The repo-local design memory bundle.
-- **`.ghost-sync.json`**: Per-dimension stances toward the tracked fingerprint (aligned, accepted, or diverging), each with recorded reasoning. Written by `ghost-drift ack` / `track` / `diverge`.
-- **`.ghost/history.jsonl`**: Append-only fingerprint history for temporal analysis. Read by `ghost-drift compare --temporal`.
-
-### Org-scale observability
-
-To look across many projects:
-
-- **Many bundles, no fleet**: run `ghost-drift compare` with three or more `.ghost` bundle directories. It returns pairwise distances, a centroid, and similarity clusters.
-- **A registered fleet** (members each with a fingerprint bundle): run `ghost-fleet view`. It adds groupings such as platform, build system, and design-system status.
-
-## Project Resources
-
-| Resource                             | Description                 |
-| ------------------------------------ | --------------------------- |
-| [CODEOWNERS](./CODEOWNERS)           | Project lead(s)             |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | How to contribute           |
-| [GOVERNANCE.md](./GOVERNANCE.md)     | Project governance          |
-| [LICENSE](./LICENSE)                 | Apache License, Version 2.0 |
+| Resource | Description |
+| --- | --- |
+| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` bundle format |
+| [docs/generation-loop.md](./docs/generation-loop.md) | Generate, check, review, and remediate loop |
+| [GOVERNANCE.md](./GOVERNANCE.md) | Project governance |
+| [LICENSE](./LICENSE) | Apache License, Version 2.0 |

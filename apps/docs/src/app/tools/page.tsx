@@ -14,13 +14,13 @@ const tools: {
   icon: ReactNode;
 }[] = [
   {
-    name: "ghost-scan",
+    name: "ghost scan",
     href: "/tools/scan",
     blurb: "Create the fingerprint",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
-    name: "ghost-drift",
+    name: "ghost review",
     href: "/tools/drift",
     blurb: "Review UI drift",
     icon: <Orbit className="size-5" strokeWidth={1.5} />,
@@ -78,7 +78,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Tools"
         title="Tool Directory"
-        description="Pick the tool you need: create the fingerprint, review drift, compare projects, or inspect the reference UI system."
+        description="Pick the workflow you need: create the fingerprint, review drift, compare projects, or inspect the reference UI system."
       />
 
       <ToolStrip />
