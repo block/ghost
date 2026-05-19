@@ -94,6 +94,21 @@ export {
   resolveTrackedFingerprint,
   writeSyncManifest,
 } from "./evolution/index.js";
+export type {
+  BuildGateReportArgs,
+  GateDimensionReport,
+  GateDimensionVerdict,
+  GateOverallVerdict,
+  GateReport,
+  RunGateCliOptions,
+} from "./gate.js";
+export {
+  buildGateReport,
+  formatGateReportCLI,
+  formatGateReportJSON,
+  gateExitCode,
+  runGateCli,
+} from "./gate.js";
 export {
   formatCompositeComparison,
   formatCompositeComparisonJSON,

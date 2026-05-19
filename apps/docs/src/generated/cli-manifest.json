@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T14:36:11.941Z",
+  "generatedAt": "2026-05-19T16:33:13.019Z",
   "tools": [
     {
       "tool": "ghost",
@@ -261,6 +261,30 @@
               "rawName": "--history-dir <dir>",
               "name": "historyDir",
               "description": "Directory containing .ghost/history.jsonl (for --temporal, defaults to cwd)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--gate",
+              "name": "gate",
+              "description": "Reconcile against a sync manifest and emit a structured pass/fail verdict (N=2 only)",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--sync <path>",
+              "name": "sync",
+              "description": "Sync manifest path for --gate (default: ./.ghost-sync.json)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--max-divergence-days <n>",
+              "name": "maxDivergenceDays",
+              "description": "For --gate: flag diverging dimensions older than this many days as uncovered",
               "default": null,
               "takesValue": true,
               "negated": false
