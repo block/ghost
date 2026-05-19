@@ -23,7 +23,7 @@
     "lint": "biome lint .",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm --filter ghost-fingerprint build && pnpm --filter ghost-drift build && changeset publish"
+    "release": "pnpm --filter ghost-scan build && pnpm --filter ghost-drift build && changeset publish"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

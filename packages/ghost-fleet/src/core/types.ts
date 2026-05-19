@@ -14,7 +14,7 @@ import type { FleetDistance, FleetTrackEdge } from "./schema.js";
  *
  * Three states keep the surface small:
  *   • "ok"      — the file exists and parses; we don't run the full linter
- *                  here (that's `ghost-fingerprint lint`).
+ *                  here (that's `ghost-scan lint`).
  *   • "missing" — the file is absent from the member directory.
  *   • "error"   — the file is present but fails to load/parse.
  */

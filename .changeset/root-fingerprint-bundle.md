@@ -1,5 +1,5 @@
 ---
-"ghost-fingerprint": major
+"ghost-scan": major
 "ghost-drift": major
 ---
 
