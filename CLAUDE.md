@@ -1,192 +1,135 @@
 # Ghost
 
-Agents can write UI. What they cannot reliably preserve is the identity of the product that UI belongs to. The failure mode is structural: models generate by matching local patterns, so they reproduce components, tokens, and layouts while losing the higher-order decisions that make a surface feel intentional.
+Agents can write UI. What they cannot reliably preserve is the product
+experience identity behind that UI: hierarchy, density, restraint, repetition,
+trust, flow, and the decisions that make a surface feel intentional.
 
-Ghost introduces a second layer: a repository-local, versioned fingerprint that captures the product's composition policy — the constraints, preferences, recurring decisions, and anti-patterns that shape how the design system is actually used. Agents read `fingerprint.md` before generating, compare against it after, and either correct drift or codify the divergence as a deliberate change. A scan runs in three stages — map (`map.md`) → survey (`survey.json`) → express (`fingerprint.md`) — all owned by `ghost-scan`. Four tools plus a reference design system split the loop:
-
-- **ghost-scan** — authors all three scan artifacts (`map.md`, `survey.json`, `fingerprint.md`); the canonical home of the design language
-- **ghost-drift** — when generated UI strays
-- **ghost-fleet** — how the language propagates across many projects
-- **ghost-ui** — a reference design system to test the loop against
+Ghost keeps that memory in a repo-local `.ghost/` bundle. The public npm shape
+is one package, `@anarchitecture/ghost`, with one user-facing bin, `ghost`.
+The CLI validates, computes, compares, and emits deterministic packets. The
+host agent does the interpretive BYOA work through the installed `ghost` skill.
 
 ## Build & Run
 
 ```bash
 pnpm install          # install dependencies (pnpm 10+, Node 18+)
-pnpm build            # build all packages (tsc --build, copies skill-bundle to dist)
+pnpm build            # build all packages
+pnpm test             # vitest across packages
+pnpm check            # biome, typecheck, file-size, CLI manifest drift
+pnpm dump:cli-help    # regenerate apps/docs/src/generated/cli-manifest.json
 ```
 
-Run any tool's CLI after building:
+Run the public CLI after building:
 
 ```bash
-node packages/ghost-drift/dist/bin.js <command>
-node packages/ghost-scan/dist/bin.js <command>
-node packages/ghost-fleet/dist/bin.js <command>
-# or via the workspace
-pnpm --filter ghost-drift exec ghost-drift <command>
-pnpm --filter ghost-scan exec ghost-scan <command>
+node packages/ghost/dist/bin.js <command>
+pnpm --filter @anarchitecture/ghost exec ghost <command>
 ```
-
-## Environment Variables
-
-No API key is required to run Ghost. The variables below are optional.
-
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY` — consumed only by `computeSemanticEmbedding` (library function in `@ghost/core`; used when a host writes an `fingerprint.md` and wants an enriched 49-dim vector for paraphrase-robust comparison).
-- `GITHUB_TOKEN` — used by `resolveTrackedFingerprint` when fetching a tracked fingerprint from GitHub (avoids rate limits).
-
-Each CLI auto-loads `.env` and `.env.local` from the working directory.
-
-## Test & Lint
-
-```bash
-pnpm test             # vitest run (across all packages)
-pnpm test:watch       # vitest watch mode
-pnpm check            # biome check + typecheck + file-size check + cli-manifest drift check
-pnpm fmt              # biome format --write
-pnpm lint             # biome lint
-```
-
-Pre-commit hook (lefthook): `biome format --write`, `biome check --fix`, `just check`.
-Pre-push hook: `just check`, `just test`, `just build` (parallel).
-
-## Justfile
-
-Run `just` to list all recipes. Key ones: `setup`, `build`, `check`, `fmt`, `test`, `dev` (docs site at apps/docs), `build-ui` (docs build), `build-lib` (ghost-ui library), `build-registry`, `build-pages`, `clean`, `ci`.
 
 ## Architecture
 
-Ghost is **BYOA (bring-your-own-agent)**. The host agent — Claude Code, Codex, Cursor, Goose, whatever ships next — does the reading, deciding, and writing. The judgement work (fingerprint, review, verify, remediate) lives in [agentskills.io](https://agentskills.io)-compatible skill bundles the agent executes. Ghost's CLIs are the calculator the agent reaches for when it needs a reproducible answer (vector math, schema validation, structural diffs).
+Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
+another host agent reads, decides, and writes. Ghost is the deterministic
+calculator the agent reaches for: schema validation, survey transforms,
+structural diffs, drift checks, comparison math, and handoff packets.
 
-The repo decomposes into **four tools plus a reference design system**, each with a single responsibility:
+The root `.ghost/` bundle follows:
 
-```
-@ghost/core       library only — embedding math, target resolver, skill loader,
-                                  ghost.map/v2 schema, ghost.survey/v2 schema
-ghost-scan  scan pipeline (map.md → survey.json → fingerprint.md)
-                                   — inventory, lint, describe, diff, survey, emit
-ghost-drift       drift     (.ghost/*)      — compare, ack, track, diverge, emit skill
-ghost-fleet       elevation (fleet.md)      — members, view, emit skill
-ghost-ui          reference design system   — 97 shadcn components + MCP server
+```text
+resources.yml -> map.md -> survey.json -> patterns.yml
+what to read     where UI lives  what exists   composition grammar
 ```
 
-Dependency flow: `@ghost/core` ← everyone. `ghost-scan` ← `ghost-drift`, `ghost-fleet`. No cycles.
+Optional memory lives beside it:
 
-Each tool lives under `packages/<tool>/` with the same shape:
-
-- `src/bin.ts` — shebang entry
-- `src/cli.ts` — `buildCli()` builder (cac)
-- `src/core/` — deterministic library surface, public via `src/core/index.ts`
-- `src/skill-bundle/` — `SKILL.md` + `references/*.md` (only tools that ship recipes)
-- `test/` — vitest, with `test/fixtures/` for sample data
+- `checks.yml` for deterministic gates.
+- `intent.md` for human-authored or human-approved product intent.
+- `decisions/*.yml` for accepted/rejected product-experience rationale.
+- `proposals/*.yml` for staged memory changes before promotion.
 
 ## Packages
 
 | Package | Published? | Description |
-|---------|-----------|-------------|
-| `packages/ghost-core` | ❌ private (`@ghost/core`) | Workspace-only library. Embedding math, shared types, target resolution, skill-bundle loader, `ghost.map/v2` schema, `ghost.survey/v2` schema + lint/merge/fix-ids primitives. No CLI. Consumed by every other tool. |
-| `packages/ghost-drift` | ✅ `ghost-drift` on npm (v0.2+) | Drift detection. CLI verbs: `compare`, `ack`, `track`, `diverge`, `emit skill`. Skill recipes: `compare.md`, `review.md`, `verify.md`, `remediate.md`. Old `lint`/`describe`/`emit review-command`/`emit context-bundle` stay registered as stub commands that point users to `ghost-scan`. |
-| `packages/ghost-scan` | ✅ intended-public (`publishConfig.access: public`, currently v0.0.0) | Owns the root `.ghost/` fingerprint bundle (`resources.yml` → `map.md` → `survey.json` → `patterns.yml`, plus optional `checks.yml` / `intent.md`). CLI verbs: `init-package`, `lint`, `verify`, `inventory`, `describe`, `diff`, `survey <op>`, `emit`. Skill recipes: `scan.md`, `map.md`, `survey.md`, `patterns.md`, `schema.md`. |
-| `packages/ghost-fleet` | ❌ private | Read-only elevation across many `(map.md, fingerprint.md)` members. CLI verbs: `members`, `view`, `emit skill`. Skill recipes: `target.md`. |
-| `packages/ghost-ui` | ❌ private | Reference component library — 49 UI primitives + 48 AI elements + theme + hooks, distributed via the shadcn `registry.json`, not npm. Also ships the `ghost-mcp` bin (`src/mcp/`, built via `tsconfig.mcp.json` → `dist-mcp/`) — an MCP server re-exposing the registry to AI assistants (5 tools, 2 resources). |
-| `apps/docs` | ❌ private | The deployed docs site (`ghost-docs`) — home, drift tooling docs, design language foundations, live component catalogue. Consumes `ghost-ui`. |
+| --- | --- | --- |
+| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, scan/memory authoring, checks, advisory review packets, comparison, drift stance verbs, and the unified skill bundle. |
+| `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
+| `packages/ghost-scan` | no | Private historical scan package. Runtime code needed by npm is folded into `packages/ghost/src/scan`. |
+| `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
+| `packages/ghost-ui` | no | Reference design system: shadcn registry plus `ghost-mcp` MCP server. |
+| `apps/docs` | no | Docs site. |
 
 ## CLI Commands
 
-Verbs are scoped to the tool that owns the artifact. The full surface across all three tools:
+| Command | Description |
+| --- | --- |
+| `ghost init` | Create `.ghost/{resources.yml,map.md,survey.json,patterns.yml,checks.yml}`. |
+| `ghost scan` | Report scan state and BYOA next-step guidance. |
+| `ghost inventory` | Emit raw repo signals as JSON for map authoring. |
+| `ghost lint` | Validate a bundle or single artifact. |
+| `ghost verify` | Validate resource reachability, pattern evidence, checks, and optional memory. |
+| `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
+| `ghost diff` | Structural prose-level diff between direct fingerprints. |
+| `ghost survey <op>` | `merge`, `fix-ids`, `summarize`, `catalog`, or `patterns` over `ghost.survey/v2`. |
+| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
+| `ghost review` | Emit an evidence-routed advisory review packet. |
+| `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
+| `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
+| `ghost track` | Shift the tracked fingerprint. |
+| `ghost diverge` | Declare intentional divergence on a dimension. |
+| `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
+| `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
-| Tool | Command | Description |
-|------|---------|-------------|
-| `ghost-scan` | `inventory [path]` | Emit raw repo signals (manifests, language histogram, registry, top-level tree, git remote) as JSON. Feeds the topology recipe. |
-| `ghost-scan` | `scan-status [dir]` | Report which scan stages have produced artifacts (`resources.yml` / `map.md` / `survey.json` / `patterns.yml`) and which stage to run next. |
-| `ghost-scan` | `lint [file]` | Validate a root `.ghost/` bundle or a single artifact — auto-detects the kind from path/content. |
-| `ghost-scan` | `verify [dir] --root <root>` | Verify cross-artifact fidelity: pattern evidence exists in survey, resources are reachable, and checks reference known scopes/patterns. |
-| `ghost-scan` | `describe [fingerprint]` | Print section ranges + token estimates (so agents can selectively load). |
-| `ghost-scan` | `diff <a> <b>` | Structural prose-level diff between fingerprints (decisions + palette roles). **Not** vector distance. |
-| `ghost-scan` | `survey <op> [...surveys]` | Operate on `ghost.survey/v2` files. Ops: `merge` (concat with id-based dedup), `fix-ids` (recompute IDs from content). |
-| `ghost-scan` | `emit <kind>` | Derive an artifact from `fingerprint.md`: `review-command`, `context-bundle`, or `skill`. |
-| `ghost-drift` | `compare [...fingerprints]` | Pairwise (N=2) or composite (N≥3) over fingerprint embeddings. `--semantic`, `--temporal`. |
-| `ghost-drift` | `ack` | Record a stance toward the tracked fingerprint in `.ghost-sync.json`. |
-| `ghost-drift` | `track <fingerprint>` | Shift the tracked fingerprint. |
-| `ghost-drift` | `diverge <dimension>` | Declare intentional divergence on a dimension. |
-| `ghost-drift` | `emit skill` | Install the `ghost-drift` agentskills.io bundle. |
-| `ghost-fleet` | `members [dir]` | List registered fleet members + freshness. |
-| `ghost-fleet` | `view [dir]` | Compute pairwise distances + group-by tables; emit `fleet.md` + `fleet.json`. |
-| `ghost-fleet` | `emit skill` | Install the `ghost-fleet` agentskills.io bundle. |
+`ghost scan --format json` is deterministic handoff state for the host agent.
+It does not run an LLM.
 
-**Workflows (agent recipes).** Each tool ships its own skill-bundle references under `packages/<tool>/src/skill-bundle/references/`. These are the agent's job, not CLI verbs:
+## Public Exports
 
-- **Scan** (orchestrate map → survey → fingerprint end-to-end) — `ghost-scan/.../scan.md`
-- **Map** (write `map.md` from a repo, the topology stage) — `ghost-scan/.../map.md`
-- **Survey** (write `survey.json` from a target, the observed evidence stage) — `ghost-scan/.../survey.md`
-- **Fingerprint** (interpret a `survey.json` into `fingerprint.md`, the fingerprint stage) — `ghost-scan/.../fingerprint.md`
-- **Review** (flag drift in PR changes) — `ghost-drift/.../review.md`
-- **Verify** (generate → review loop) — `ghost-drift/.../verify.md`
-- **Compare interpretation** — `ghost-drift/.../compare.md`
-- **Remediate** (suggest minimal fixes for drift) — `ghost-drift/.../remediate.md`
-- **Fleet narrative** (synthesize `fleet.md` prose from CLI output) — `ghost-fleet/.../target.md`
+- `@anarchitecture/ghost` for the combined surface.
+- `@anarchitecture/ghost/scan` for scan and bundle helpers.
+- `@anarchitecture/ghost/drift` for check/review/compare/stance helpers.
+- `@anarchitecture/ghost/core` for shared schemas, types, and loaders.
+- `@anarchitecture/ghost/cli` for `buildCli()`.
 
-## Target Types
+## Environment Variables
 
-The `resolveTarget()` function in `@ghost/core` (`packages/ghost-core/src/target-resolver.ts`) accepts:
+No API key is required to run Ghost. Optional variables:
 
-- `github:owner/repo` — GitHub repository
-- `npm:package-name` — npm package
-- `figma:file-url` — Figma file
-- `./path` or `/absolute/path` — local directory
-- `https://...` — URL
-- `.` — current directory
+- `OPENAI_API_KEY` / `VOYAGE_API_KEY` are consumed only by semantic embedding
+  helpers when a host opts into enriched comparison.
+- `GITHUB_TOKEN` helps resolve tracked fingerprints from GitHub without rate
+  limit surprises.
 
-Used by `resolveTrackedFingerprint` (in `ghost-drift`) and legacy library consumers. Fingerprint and map flows don't consume targets directly — the host agent explores whatever directory is relevant.
-
-## Canonical artifacts
-
-Three artifacts produced in sequence by a scan, all owned by `ghost-scan`:
-
-- **`map.md`** — the topology card (stage 1). Human-readable answer to "where is the design system, which folders matter, and where are implemented surfaces observable?" Schema is `ghost.map/v2` (lives in `@ghost/core`), validated by `ghost-scan lint map.md`. Authored from `ghost-scan inventory` + the `map.md` skill recipe. The repo's own `map.md` lives at the root.
-- **`survey.json`** — the observed evidence scan (stage 2). Catalogues every concrete design value (colors, spacings, typography, radii, shadows, breakpoints, motion, layout primitives) plus tokens, components, and implemented UI surfaces observed in the target. Each row carries occurrence counts and a deterministic content-hashed `id`. Schema is `ghost.survey/v2` (lives in `@ghost/core`); four sections — `values`, `tokens`, `components`, `ui_surfaces`. External libraries (icons, primitives, charting) deliberately *do not* have a survey section — whether a system uses Radix or hand-rolls primitives doesn't change what its design language *is*; load-bearing library choices surface as prose evidence in the interpreter stage. Validated by `ghost-scan lint survey.json`. Authored via the `survey.md` skill recipe.
-- **`fingerprint.md`** — the design language (stage 3, terminal). Human-readable, LLM-editable, with YAML frontmatter (machine layer: references + 49-dim embedding + palette/spacing/typography/surfaces/checks) and a three-section prose body (Character → Signature → Decisions). Authored by interpreting `survey.json` per the `fingerprint.md` skill recipe. See `docs/fingerprint-format.md` for the full spec; the condensed reference ships at `packages/ghost-scan/src/skill-bundle/references/schema.md`.
+Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ## Releasing & Changesets
 
-`ghost-drift` is the only currently-published package. `ghost-scan` is set up to publish (`publishConfig.access: public`); `ghost-fleet` is private workspace-only for now. Releases go through [Changesets](https://github.com/changesets/changesets); the `.github/workflows/release.yml` workflow opens a "Version Packages" PR whenever pending changesets are on `main`, and publishes to npm when that PR merges.
+`@anarchitecture/ghost` is the only public package. Private packages are
+ignored by Changesets.
 
-The Changesets config ignores private packages (`@ghost/core`, `ghost-fleet`, `ghost-ui`, `apps/docs`) — they don't appear in version PRs.
-
-**When you (the agent) complete a user-visible change to a published package, write a changeset file yourself instead of asking the user to run `pnpm changeset`.** Create `.changeset/<short-kebab-slug>.md` with this shape:
-
-```markdown
----
-"ghost-drift": patch
----
-
-One sentence, user-facing, present tense. What changed from the user's POV — not "refactor the X module."
-```
-
-Multiple packages can be bumped in one changeset:
+When an agent completes a user-visible change to the public package, write a
+changeset file instead of asking the user to run `pnpm changeset`:
 
 ```markdown
 ---
-"ghost-drift": patch
-"ghost-scan": minor
+"@anarchitecture/ghost": patch
 ---
+
+One sentence, user-facing, present tense.
 ```
 
-Guidance on the bump level:
+Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
+`major` for removed or renamed public behavior. For this PR 81 package-shape
+change, the source version stays `0.0.0` and the changeset is `minor` so the
+first publish becomes `0.1.0`.
 
-- **`patch`** — bug fixes, doc fixes, non-breaking internal refactors. The default; when in doubt, pick this.
-- **`minor`** — new CLI verb, new flag, new library export, new capability. Anything a user might want to reach for.
-- **`major`** — removed/renamed CLI verb, removed/renamed library export, changed default behavior, breaking fingerprint schema change, changed exit codes. **Always flag this explicitly in the PR description and ask the user to confirm — do not `major`-bump unreviewed.**
+## Conventions
 
-Skip the changeset entirely for: CI/workflow-only changes, test-only changes, changes scoped to private packages.
-
-The slug should be short and descriptive: `add-temporal-flag.md`, `fix-palette-lint-crash.md`. Avoid dates or PR numbers — Changesets consumes and deletes the file at version time.
-
-## Key Conventions
-
-- The canonical on-disk form is the root `.ghost/` bundle. Direct `fingerprint.md` remains only for legacy/direct compare and context-bundle flows.
-- `ghost-drift compare` accepts `.ghost` bundle directories and direct fingerprint markdown files. Mode auto-detects from N and flags: `--semantic` / `--temporal` require N=2; N≥3 returns a composite fingerprint.
-- `ghost-drift ack` / `track` / `diverge` read the local `fingerprint.md`. The host agent is responsible for regenerating `fingerprint.md` (via the `fingerprint` recipe) before acknowledging drift.
-- `ghost-scan lint` takes a single `fingerprint.md` and reports schema/partition violations. Use as the shape gate when authoring a fingerprint.
-- `ghost-scan verify .ghost --root .` is the required scan-stage fidelity gate after bundle authoring.
-- `ghost-scan lint <map.md>` validates against `ghost.map/v2` (auto-detected by frontmatter or filename). Use as the success gate when authoring a map.
-- The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is auto-generated by `pnpm dump:cli-help`. CI guards drift via `pnpm check:cli-manifest`. Re-run `pnpm dump:cli-help` after adding/removing flags or verbs to any tool.
+- Keep publishable runtime code self-contained in `packages/ghost`; no
+  `workspace:*` runtime dependencies in the packed public artifact.
+- The canonical on-disk form is the root `.ghost/` bundle. Direct
+  `fingerprint.md` remains for legacy/direct compare and context-bundle flows.
+- Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
+  them with `ghost skill install`.
+- The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated
+  by `pnpm dump:cli-help`. Re-run it after adding, removing, or renaming CLI
+  commands or flags.

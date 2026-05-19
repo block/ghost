@@ -1,6 +1,7 @@
 {
   "name": "ghost-scan",
   "version": "0.0.0",
+  "private": true,
   "description": "Author and validate the root .ghost design-memory bundle (resources, map, survey, patterns, checks, intent)",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
@@ -38,10 +39,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
   "scripts": {
     "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle",
     "prepublishOnly": "pnpm build"
