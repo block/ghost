@@ -1,7 +1,7 @@
 {
   "name": "@anarchitecture/ghost",
   "version": "0.0.0",
-  "description": "Unified Ghost CLI for repo-local product-experience memory, scan workflows, deterministic checks, advisory review, and drift tracking",
+  "description": "Unified Ghost CLI for repo-local product fingerprints, deterministic checks, advisory review, and drift tracking",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {

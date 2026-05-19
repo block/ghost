@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-18T18:58:16.311Z",
+  "generatedAt": "2026-05-19T14:36:11.941Z",
   "tools": [
     {
       "tool": "ghost",
@@ -72,7 +72,7 @@
           "tool": "ghost",
           "name": "scan",
           "rawName": "scan [dir]",
-          "description": "Report which root fingerprint bundle stages have produced artifacts: resources.yml, map.md, survey.json, patterns.yml, and optional checks.yml/intent.md.",
+          "description": "Report fingerprint capture progress: produced artifacts, evidence readiness, and the next BYOA step.",
           "options": [
             {
               "rawName": "--include-scopes",
