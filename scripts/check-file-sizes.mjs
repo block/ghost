@@ -5,27 +5,39 @@ const DEFAULT_LIMIT = 500;
 
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
-  "packages/ghost-core/src/types.ts": {
+  "packages/ghost/src/ghost-core/types.ts": {
     limit: 780,
     justification:
       "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
   },
-  "packages/ghost-drift/src/bin.ts": {
+  "packages/ghost/src/cli.ts": {
     limit: 580,
     justification:
-      "CLI command registry — each command is small but there are 12 of them, plus multi-target fingerprint parsing",
+      "Unified CLI command registry — review/check/compare plus drift stance verbs live together for one public bin",
   },
-  "packages/ghost-core/src/embedding/compare.ts": {
+  "packages/ghost/src/scan-commands.ts": {
+    limit: 1050,
+    justification:
+      "Scan and fingerprint bundle command registry — one unified CLI groups init, scan, lint, verify, survey, describe, diff, and emit verbs",
+  },
+  "packages/ghost/src/scan/inventory.ts": {
+    limit: 1120,
+    justification:
+      "Deterministic repository inventory collector — intentionally broad because map authoring depends on one cohesive raw signal pass",
+  },
+  "packages/ghost/src/scan/verify-fingerprint.ts": {
+    limit: 900,
+    justification:
+      "Fingerprint fidelity verifier — schema, reference, and survey evidence checks stay together so reports share one issue model",
+  },
+  "packages/ghost/src/ghost-core/embedding/compare.ts": {
     limit: 600,
     justification:
       "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 
-const DIRS_TO_CHECK = [
-  { dir: "packages/ghost-core/src", glob: /\.[jt]sx?$/ },
-  { dir: "packages/ghost-drift/src", glob: /\.[jt]sx?$/ },
-];
+const DIRS_TO_CHECK = [{ dir: "packages/ghost/src", glob: /\.[jt]sx?$/ }];
 
 function countLines(filePath) {
   const content = readFileSync(filePath, "utf8");
