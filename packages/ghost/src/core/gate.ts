@@ -6,7 +6,7 @@ import type {
   Fingerprint,
   FingerprintComparison,
   SyncManifest,
-} from "@ghost/core";
+} from "#ghost-core";
 import type { CompareResult } from "./compare.js";
 import { checkBounds } from "./evolution/sync.js";
 
