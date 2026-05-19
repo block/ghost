@@ -12,14 +12,15 @@ not a single prose file. The canonical on-disk shape is:
   checks.yml
   intent.md        # optional
   decisions/       # optional ghost.decision/v1 product-experience rationale
-  proposals/       # optional ghost.proposal/v1 candidate memory changes
+  proposals/       # optional ghost.proposal/v1 candidate fingerprint updates
 ```
 
 `survey.json` is the evidence ledger. `patterns.yml` is the operational
 composition grammar. `checks.yml` is the deterministic gate layer. `intent.md`
 is optional human-authored or human-approved intent. `decisions/` and
-`proposals/` are optional product-experience memory: accepted/rejected rationale
-and candidate changes that may later be promoted.
+`proposals/` are optional product-experience context: accepted/rejected
+rationale and candidate changes that may later be promoted into the
+fingerprint.
 
 ## Package Artifacts
 
@@ -150,8 +151,9 @@ decided_at: "2026-05-17T00:00:00.000Z"
 
 ### `proposals/*.yml`
 
-Candidate memory changes use `ghost.proposal/v1`. They are working memory until
-a human promotes them into decisions, patterns, checks, or intent.
+Candidate fingerprint updates use `ghost.proposal/v1`. They remain unresolved
+proposals until a human promotes them into decisions, patterns, checks, or
+intent.
 
 ```yaml
 schema: ghost.proposal/v1
