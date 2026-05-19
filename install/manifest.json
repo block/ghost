@@ -1,10 +1,10 @@
 {
   "$schema": "ghost.install-manifest/v1",
-  "name": "ghost-scan",
-  "description": "Ghost Scan recipes — create and activate the repo-local fingerprint bundle.",
+  "name": "ghost",
+  "description": "Ghost recipes — create, activate, review, and evolve the repo-local fingerprint bundle.",
   "version": "0.1.0",
   "source": {
-    "package": "packages/ghost-scan/src/skill-bundle"
+    "package": "packages/ghost/src/skill-bundle"
   },
   "files": [
     "SKILL.md",
@@ -18,6 +18,10 @@
     "references/critique.md",
     "references/capture.md",
     "references/promote.md",
+    "references/review.md",
+    "references/verify.md",
+    "references/compare.md",
+    "references/remediate.md",
     "assets/fingerprint.template.md"
   ]
 }
