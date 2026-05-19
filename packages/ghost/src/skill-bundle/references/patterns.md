@@ -25,6 +25,12 @@ ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
 
 Then curate the draft. Keep every pattern evidence-backed.
 
+If `ghost scan --format json` reports `readiness.state: substrate-only`, leave
+`composition_patterns` empty and keep advisory expectations focused on
+tokens/components/values. If readiness is `component-demo`, mark patterns as
+demo or component-anatomy evidence; do not present them as product composition,
+surface flow, or hierarchy.
+
 ## Authoring Rules
 
 - Use stable slugs: `resource-index`, `dense-resource-index`, `settings-stack`.

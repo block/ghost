@@ -10,6 +10,7 @@ import {
   type MapFrontmatter,
   MapFrontmatterSchema,
   SURVEY_FILENAME,
+  type Survey,
 } from "#ghost-core";
 import {
   FINGERPRINTS_DIRNAME,
@@ -18,7 +19,7 @@ import {
 } from "./constants.js";
 
 /**
- * Per-stage state in a scan directory.
+ * Per-stage state in a fingerprint capture directory.
  *
  *   `missing` — the artifact doesn't exist yet.
  *   `present` — the artifact exists. Existence is the only signal this
@@ -44,12 +45,34 @@ export interface ScanScopeReport {
   fingerprint: ScanStageReport;
 }
 
+export type ScanReadinessState =
+  | "pending"
+  | "product-observed"
+  | "component-demo"
+  | "substrate-only"
+  | "unobservable"
+  | "unknown";
+
+export interface ScanReadinessReport {
+  state: ScanReadinessState;
+  product_surface_count: number;
+  demo_surface_count: number;
+  substrate_rows: {
+    values: number;
+    tokens: number;
+    components: number;
+  };
+  can_review: string[];
+  cannot_review: string[];
+  reasons: string[];
+}
+
 export interface ScanStatusOptions {
   includeScopes?: boolean;
 }
 
 export interface ScanStatus {
-  /** Absolute path to the scan directory. */
+  /** Absolute path to the fingerprint capture directory. */
   dir: string;
   resources: ScanStageReport;
   map: ScanStageReport;
@@ -60,6 +83,11 @@ export interface ScanStatus {
   scopes?: ScanScopeReport[];
   scope_error?: string;
   /**
+   * Best-effort evidence maturity derived from map.md + survey.json. This is
+   * advisory: invalid or missing artifacts still surface through lint/verify.
+   */
+  readiness: ScanReadinessReport;
+  /**
    * The next stage an orchestrator should run, or `null` if every required
    * stage is `present`. Stages run in order:
    * resources → map → survey → patterns. `checks.yml` and `intent.md` are
@@ -69,7 +97,8 @@ export interface ScanStatus {
 }
 
 /**
- * Inspect a scan directory and report which stages have produced artifacts.
+ * Inspect a fingerprint capture directory and report which stages have produced
+ * artifacts.
  *
  * Existence-only check today. The artifacts checked are:
  *
@@ -144,6 +173,13 @@ export async function scanStatus(
   else if (survey.state === "missing") recommended_next = "survey";
   else if (patterns.state === "missing") recommended_next = "patterns";
 
+  const readiness = await scanReadiness({
+    mapPath,
+    mapPresent,
+    surveyPath,
+    surveyPresent,
+  });
+
   const status: ScanStatus = {
     dir,
     resources,
@@ -152,6 +188,7 @@ export async function scanStatus(
     patterns,
     checks,
     intent,
+    readiness,
     recommended_next,
   };
 
@@ -165,6 +202,187 @@ export async function scanStatus(
   }
 
   return status;
+}
+
+async function scanReadiness(options: {
+  mapPath: string;
+  mapPresent: boolean;
+  surveyPath: string;
+  surveyPresent: boolean;
+}): Promise<ScanReadinessReport> {
+  const reasons: string[] = [];
+
+  if (!options.mapPresent || !options.surveyPresent) {
+    if (!options.mapPresent) {
+      reasons.push("map.md is missing, so observation paths are unknown.");
+    }
+    if (!options.surveyPresent) {
+      reasons.push("survey.json is missing, so evidence rows are unknown.");
+    }
+    return readinessReport("pending", {
+      reasons,
+      can_review: [],
+      cannot_review: [],
+    });
+  }
+
+  let map: MapFrontmatter | undefined;
+  try {
+    map = await readMapFrontmatter(options.mapPath);
+  } catch (err) {
+    reasons.push(
+      `map.md could not be read for readiness: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+  }
+
+  let survey: Pick<Survey, "values" | "tokens" | "components" | "ui_surfaces">;
+  try {
+    survey = await readSurveyEvidence(options.surveyPath);
+  } catch (err) {
+    return readinessReport("unknown", {
+      reasons: [
+        `survey.json could not be read for readiness: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      ],
+      can_review: [],
+      cannot_review: [
+        "product composition",
+        "surface flow",
+        "tokens",
+        "components",
+      ],
+    });
+  }
+
+  const productSurfaceCount = survey.ui_surfaces.filter((surface) =>
+    isProductSurfaceKind(surface.kind),
+  ).length;
+  const demoSurfaceCount = survey.ui_surfaces.filter((surface) =>
+    isDemoSurfaceKind(surface.kind),
+  ).length;
+  const substrateRows = {
+    values: survey.values.length,
+    tokens: survey.tokens.length,
+    components: survey.components.length,
+  };
+  const substrateRowCount =
+    substrateRows.values + substrateRows.tokens + substrateRows.components;
+
+  if (productSurfaceCount > 0) {
+    reasons.push(
+      `${productSurfaceCount} product surface(s) were observed in survey.ui_surfaces.`,
+    );
+    return readinessReport("product-observed", {
+      product_surface_count: productSurfaceCount,
+      demo_surface_count: demoSurfaceCount,
+      substrate_rows: substrateRows,
+      reasons,
+      can_review: [
+        "product composition",
+        "surface flow",
+        "tokens",
+        "components",
+        "design values",
+      ],
+      cannot_review: [],
+    });
+  }
+
+  if (demoSurfaceCount > 0) {
+    reasons.push(
+      `${demoSurfaceCount} demo surface(s) were observed, but no product route, screen, screenshot, or source surface is present.`,
+    );
+    return readinessReport("component-demo", {
+      demo_surface_count: demoSurfaceCount,
+      substrate_rows: substrateRows,
+      reasons,
+      can_review: [
+        "tokens",
+        "components",
+        "design values",
+        "component demonstration composition",
+      ],
+      cannot_review: ["product composition", "surface flow"],
+    });
+  }
+
+  if (substrateRowCount > 0) {
+    reasons.push(
+      `survey.json has ${substrateRowCount} value/token/component row(s), but no UI surfaces.`,
+    );
+    if (map?.surface_sources.render_strategy === "unknown") {
+      reasons.push("map.md declares surface_sources.render_strategy: unknown.");
+    }
+    return readinessReport("substrate-only", {
+      substrate_rows: substrateRows,
+      reasons,
+      can_review: ["tokens", "components", "design values"],
+      cannot_review: [
+        "product composition",
+        "surface flow",
+        "surface hierarchy",
+      ],
+    });
+  }
+
+  reasons.push(
+    "survey.json has no values, tokens, components, or UI surfaces to support product-experience judgment.",
+  );
+  return readinessReport("unobservable", {
+    reasons,
+    can_review: [],
+    cannot_review: [
+      "product composition",
+      "surface flow",
+      "surface hierarchy",
+      "tokens",
+      "components",
+    ],
+  });
+}
+
+function readinessReport(
+  state: ScanReadinessState,
+  overrides: Partial<Omit<ScanReadinessReport, "state">> = {},
+): ScanReadinessReport {
+  return {
+    state,
+    product_surface_count: 0,
+    demo_surface_count: 0,
+    substrate_rows: { values: 0, tokens: 0, components: 0 },
+    can_review: [],
+    cannot_review: [],
+    reasons: [],
+    ...overrides,
+  };
+}
+
+async function readSurveyEvidence(
+  path: string,
+): Promise<Pick<Survey, "values" | "tokens" | "components" | "ui_surfaces">> {
+  const raw = JSON.parse(await readFile(path, "utf-8")) as Partial<Survey>;
+  return {
+    values: Array.isArray(raw.values) ? raw.values : [],
+    tokens: Array.isArray(raw.tokens) ? raw.tokens : [],
+    components: Array.isArray(raw.components) ? raw.components : [],
+    ui_surfaces: Array.isArray(raw.ui_surfaces) ? raw.ui_surfaces : [],
+  };
+}
+
+function isProductSurfaceKind(kind: string): boolean {
+  return (
+    kind === "route" ||
+    kind === "screen" ||
+    kind === "screenshot" ||
+    kind === "source"
+  );
+}
+
+function isDemoSurfaceKind(kind: string): boolean {
+  return kind === "story" || kind === "doc-example" || kind === "fixture";
 }
 
 async function pathExists(path: string): Promise<boolean> {

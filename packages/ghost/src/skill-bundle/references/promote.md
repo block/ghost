@@ -1,9 +1,9 @@
 ---
 name: promote
-description: Promote a human-approved proposal into canonical Ghost memory.
+description: Promote a human-approved proposal into the Ghost fingerprint.
 ---
 
-# Promote A Memory Proposal
+# Promote A Fingerprint Proposal
 
 Use this only when a human has accepted a proposal or explicitly asks to record
 the decision.

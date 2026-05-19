@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, scan a repo, and review generated UI against a root fingerprint bundle.
+description: Install Ghost, capture a repo fingerprint, and review generated UI against it.
 kicker: Docs
 section: guide
 order: 10
@@ -9,9 +9,9 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost keeps a project's product-experience memory in the repo, where your agent
-can use it. The public package is `@anarchitecture/ghost`, and it installs one
-CLI: `ghost`.
+Ghost captures a project's product identity in the repo, where your agent can
+use it. The public package is `@anarchitecture/ghost`, and it installs one CLI:
+`ghost`.
 
 The fingerprint is the root `.ghost/` bundle:
 
@@ -22,7 +22,7 @@ what to read     where UI lives  what exists   composition grammar
 
 `checks.yml` is optional deterministic enforcement. `intent.md`,
 `decisions/*.yml`, and `proposals/*.yml` are optional human-approved or
-human-staged product-experience memory.
+human-staged context around the fingerprint.
 
 | Surface | Job | Verbs |
 | --- | --- | --- |
@@ -40,19 +40,19 @@ npx ghost --help
 npx ghost skill install
 ```
 
-Once the skill is installed, ask your agent in plain English: "scan this
-project with Ghost" or "review this PR for drift". The recipe tells the agent
-what to read, what to write, and which CLI checks to run.
+Once the skill is installed, ask your agent in plain English: "Capture a Ghost
+fingerprint for this repo" or "review this PR for drift". The recipe tells the
+agent what to read, what to write, and which CLI checks to run.
 
 </DocSection>
 
-<DocSection title="Scan Your First System">
+<DocSection title="Capture Your First Fingerprint">
 
 ```text
-Scan this project with Ghost
+Capture a Ghost fingerprint for this repo.
 ```
 
-The `scan` recipe checkpoints between stages:
+Fingerprint Capture checkpoints between stages:
 
 1. **Resources (`resources.yml`)** - declare the primary target, design-system
    references, canonical surfaces, screenshots, docs, resolvers, and path
@@ -105,18 +105,18 @@ advisory packet.
 
 </DocSection>
 
-<DocSection title="Capture Product-Experience Memory">
+<DocSection title="Propose Fingerprint Updates">
 
 Use the installed `ghost` skill when work reveals a decision Ghost should
-remember:
+consider adding to the fingerprint:
 
 ```text
-Brief this work with Ghost memory
-Capture this product-experience decision as a proposal
+Brief this work from the Ghost fingerprint
+Propose this product-experience decision as a fingerprint update
 Promote this accepted proposal
 ```
 
-The recipes write proposals first. Humans promote durable memory into accepted
+The recipes write proposals first. Humans promote durable context into accepted
 decisions, `patterns.yml`, `checks.yml`, or `intent.md`.
 
 </DocSection>
