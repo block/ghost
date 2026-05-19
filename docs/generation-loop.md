@@ -1,8 +1,7 @@
-# Product-Experience Memory Loop
+# Product Fingerprint Loop
 
-Ghost gives UI generators and product-development agents local, auditable memory
-for product experience. The canonical input is the root `.ghost/` fingerprint
-bundle:
+Ghost gives UI generators and product-development agents a local, auditable
+product fingerprint. The canonical input is the root `.ghost/` bundle:
 
 ```text
 .ghost/
@@ -17,12 +16,12 @@ bundle:
 ```
 
 `patterns.yml` is the operational composition grammar, `survey.json` is the
-evidence ledger, `resources.yml` says what the scan is grounded in, `checks.yml`
-contains deterministic gates, `intent.md` is optional human authority,
-`decisions/` records optional product-experience rationale, and `proposals/`
-stages candidate memory changes. The generator can work without optional memory;
-when it is present, treat accepted decisions as advisory context and proposals as
-working memory.
+evidence ledger, `resources.yml` says what the capture is grounded in,
+`checks.yml` contains deterministic gates, `intent.md` is optional human
+authority, `decisions/` records optional product-experience rationale, and
+`proposals/` stages candidate fingerprint updates. The generator can work
+without optional decisions; when they are present, treat accepted decisions as
+advisory context and proposals as unresolved candidates.
 
 ## Pipeline Shape
 
@@ -100,8 +99,8 @@ Accepted decisions can be included in advisory review with
 
 ### `.ghost/proposals/*.yml`
 
-Proposals are optional `ghost.proposal/v1` files. They capture candidate memory
-changes from design reviews, generated UI, QA findings, or PM/engineering
+Proposals are optional `ghost.proposal/v1` files. They record candidate changes
+from design reviews, generated UI, QA findings, or PM/engineering
 discussion. They are never canonical until a human promotes them.
 
 ## Review Loop
@@ -143,12 +142,12 @@ agent, generate the requested UI, then run `ghost review` and
 review packets when generated or changed UI appears to drift from
 `patterns.yml`.
 
-**Fingerprint maintenance:** scan in order:
+**Fingerprint Capture:** ask your agent to capture the fingerprint, then move in order:
 `resources -> map -> survey -> patterns`. Keep `survey.json` factual, promote
 repeated composition observations into `patterns.yml`, and add `intent.md` only
 when a human has supplied or approved the intent.
 
-**Product-experience memory:** use `ghost` recipes to recall, brief,
-critique, capture, and promote optional decisions/proposals. Keep promotion
-deliberate: proposals are working memory; accepted decisions are advisory
-memory; active checks are the only blocking mechanism.
+**Fingerprint updates:** use `ghost` recipes to recall, brief, critique,
+propose, and promote optional decisions/proposals. Keep promotion deliberate:
+proposals are unresolved candidates; accepted decisions are advisory context;
+active checks are the only blocking mechanism.

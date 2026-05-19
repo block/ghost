@@ -1,6 +1,6 @@
 ---
 name: map
-description: Author the map.md for a target — Ghost's topology card. The first stage of a scan.
+description: Author the map.md for a target - Ghost's topology card. The first stage of Fingerprint Capture.
 handoffs:
   - label: Survey values into survey.json
     command: (next stage — survey recipe)
@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author a target's map.md
 
-**Goal:** produce a valid `.ghost/map.md` (`ghost.map/v2`) that captures the *topology* of the target — what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the topology stage of a package scan: later stages (`survey.json`, `patterns.yml`, and optional `checks.yml`) read it to skip rediscovery and route changes.
+**Goal:** produce a valid `.ghost/map.md` (`ghost.map/v2`) that captures the *topology* of the target - what platform it ships on, what it builds with, where the design system lives, and where implemented UI can actually be observed. `map.md` is the topology stage of Fingerprint Capture: later stages (`survey.json`, `patterns.yml`, and optional `checks.yml`) read it to skip rediscovery and route changes.
 
 This recipe is *your* job. Ghost's CLI provides `ghost inventory` (deterministic raw signals) and `ghost lint <map.md>` (validation), but you do the synthesis.
 
@@ -44,8 +44,8 @@ The `ghost.map/v2` frontmatter requires:
 - **`schema: ghost.map/v2`** (literal)
 - **`id`** — slug (lowercase alphanumeric plus `.` `_` `-`, leading alphanumeric). For fleet scans, this is the fleet target id.
 - **`repo`** — GitHub `org/repo`, or any source identifier that uniquely names this target.
-- **`subject`** — optional `{id, target}` that names the single thing this bundle will describe. Use it when the scan needs multiple sources; `subject` stays the primary claim.
-- **`sources`** — optional scan source graph. Each source is `{id?, role, target, resolves?, paths?}` where `role` is `primary` or `resolver`. `primary` supplies usage/salience; `resolver` supplies concrete meaning for imported symbols. Declare exactly one primary when `sources[]` is present.
+- **`subject`** — optional `{id, target}` that names the single thing this bundle will describe. Use it when capture needs multiple sources; `subject` stays the primary claim.
+- **`sources`** — optional capture source graph. Each source is `{id?, role, target, resolves?, paths?}` where `role` is `primary` or `resolver`. `primary` supplies usage/salience; `resolver` supplies concrete meaning for imported symbols. Declare exactly one primary when `sources[]` is present.
 - **`mapped_at`** — current ISO date (`YYYY-MM-DD`) or full datetime.
 - **`platform`** — one of `web`, `ios`, `android`, `desktop`, `flutter`, `mixed`, `other`, or an array spanning multiple. The inventory's `platform_hints` is your starting point — accept it when consistent, override when you have evidence.
 - **`languages`** — array of `{name, files, share}` from the inventory histogram. `share` is fraction in [0,1].
@@ -55,10 +55,10 @@ The `ghost.map/v2` frontmatter requires:
 - **`composition.rendering`** — short slug (`react-spa`, `next-app-router`, `swiftui`, `compose`, `static`, `mixed`, …).
 - **`composition.styling`** — array (e.g. `["tailwindcss"]`, `["scss-modules"]`, `["styled-components"]`).
 - **`composition.navigation`** — optional short slug (`next-router`, `react-router`, `swiftui-navigation`, …).
-- **`registry`** — optional `{path, components}` if a shadcn-style registry exists.
-- **`design_system`** — `{paths[], entry_files?, derived_files?, path_patterns?, token_source?, upstream?, status}`. `token_source` is `inline` / `external` / `mixed`. `status` is `active` / `mixed` / `unclear`. Set `upstream` when `token_source` is `external` or `mixed`, and prefer representing each upstream as a `sources[]` resolver when the scan author can inspect it.
+- **`registry`** — optional `{path, components}` if a shadcn-style registry exists. Component registries are substrate evidence; they do not imply product surfaces by themselves.
+- **`design_system`** — `{paths[], entry_files?, derived_files?, path_patterns?, token_source?, upstream?, status}`. `token_source` is `inline` / `external` / `mixed`. `status` is `active` / `mixed` / `unclear`. Set `upstream` when `token_source` is `external` or `mixed`, and prefer representing each upstream as a `sources[]` resolver when the capture author can inspect it.
 - **`surface_sources`** — `{render_strategy, include[], exclude[], coverage_gaps?}` — globs for implemented UI plus how the surveyor can observe it. `render_strategy` is one of `browser`, `storybook`, `docs`, `native-screenshot`, `static-source`, `mixed`, or `unknown`.
-- **`feature_areas`** — array of `{name, paths[], sub_areas?[]}` describing sampling clusters for implemented surfaces. These are product or documentation surfaces, not just folders. 3–8 areas is typical; fewer is fine for small repos.
+- **`feature_areas`** — array of `{name, paths[], sub_areas?[]}` describing sampling clusters for implemented surfaces. These are product or documentation surfaces, not just folders. For component-library-only repos, use areas like `components`, `tokens`, `stories`, or `docs` so the survey can record substrate/demo evidence without pretending product flows exist.
 - **`orientation_files`** — array of files an agent should read first to understand the target.
 
 ### 3. Use a manifest if one is provided
@@ -72,18 +72,18 @@ If no manifest is provided, derive `feature_areas` and `surface_sources` from th
 Choose the strongest observation path the target supports:
 
 - `browser` — app routes can be launched and inspected in a browser.
-- `storybook` — Storybook or equivalent component stories are the primary observable surface.
-- `docs` — docs/catalogue examples are the primary observable surface.
+- `storybook` — Storybook or equivalent component stories are the primary observable demo surface.
+- `docs` — docs/catalogue examples are the primary observable demo surface.
 - `native-screenshot` — native UI is represented by screenshot fixtures or simulator captures.
 - `static-source` — no renderer is available; surveyor must infer from source files.
 - `mixed` — more than one strategy is materially needed.
 - `unknown` — no trustworthy implemented UI surface is discoverable. Use only with `coverage_gaps` explaining what is missing.
 
-`coverage_gaps` should list important blind spots ("native screens require simulator access", "marketing routes are generated from CMS", "no screenshots checked in"). Empty or absent means the scan author believes the declared sources are enough for the survey stage.
+`coverage_gaps` should list important blind spots ("no product screens exist yet", "native screens require simulator access", "marketing routes are generated from CMS", "no screenshots checked in"). Empty or absent means the capture author believes the declared sources are enough for the survey stage.
 
 ### 3a. Source graph for split repos
 
-Use a source graph when the target's design language is only observable through dependencies (apps consuming token packages, native apps importing design-system modules, wrappers over upstream registries). The bundle still has one subject; the scan may have many sources.
+Use a source graph when the target's design language is only observable through dependencies (apps consuming token packages, native apps importing design-system modules, wrappers over upstream registries). The bundle still has one subject; Fingerprint Capture may have many sources.
 
 Rule:
 

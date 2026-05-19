@@ -37,7 +37,7 @@ import {
 import { registerEmitCommand } from "./scan-emit-command.js";
 
 /**
- * Register scan and fingerprint-bundle commands on the unified Ghost CLI.
+ * Register fingerprint-bundle commands on the unified Ghost CLI.
  *
  * Verbs author and validate the root `.ghost/` fingerprint bundle:
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
@@ -194,7 +194,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report which root fingerprint bundle stages have produced artifacts: resources.yml, map.md, survey.json, patterns.yml, and optional checks.yml/intent.md.",
+      "Report fingerprint capture progress: produced artifacts, evidence readiness, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
@@ -212,7 +212,7 @@ export function registerScanCommands(cli: CAC): void {
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
-          process.stdout.write(`scan dir: ${status.dir}\n\n`);
+          process.stdout.write(`capture dir: ${status.dir}\n\n`);
           process.stdout.write(
             `  resources  (resources.yml): ${fmt(status.resources.state)}\n`,
           );
@@ -236,7 +236,23 @@ export function registerScanCommands(cli: CAC): void {
               `next: run the ${status.recommended_next} stage\n`,
             );
           } else {
-            process.stdout.write("next: scan complete — all stages present\n");
+            process.stdout.write(
+              "next: fingerprint capture complete - all stages present\n",
+            );
+          }
+          process.stdout.write(`readiness: ${status.readiness.state}\n`);
+          if (status.readiness.can_review.length > 0) {
+            process.stdout.write(
+              `  can review: ${status.readiness.can_review.join(", ")}\n`,
+            );
+          }
+          if (status.readiness.cannot_review.length > 0) {
+            process.stdout.write(
+              `  cannot review: ${status.readiness.cannot_review.join(", ")}\n`,
+            );
+          }
+          if (status.readiness.reasons[0]) {
+            process.stdout.write(`  reason: ${status.readiness.reasons[0]}\n`);
           }
           if (status.scope_error) {
             process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
@@ -785,13 +801,45 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       ],
     })),
     advisory: {
-      review_expectations: [
-        "Identify the surface type before judging composition.",
-        "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-        "Treat intent.md as human authority when present.",
-      ],
+      review_expectations: surveyPatternReviewExpectations(survey),
     },
   };
+}
+
+function surveyPatternReviewExpectations(survey: Survey): string[] {
+  if (survey.ui_surfaces.length === 0) {
+    return [
+      "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
+      "Use survey values, tokens, and components as substrate evidence until implemented surfaces are observed.",
+      "Treat intent.md as human authority when present.",
+    ];
+  }
+
+  const hasProductSurface = survey.ui_surfaces.some((surface) =>
+    isProductSurfaceKind(surface.kind),
+  );
+  if (!hasProductSurface) {
+    return [
+      "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
+      "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
+      "Treat intent.md as human authority when present.",
+    ];
+  }
+
+  return [
+    "Identify the surface type before judging composition.",
+    "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
+    "Treat intent.md as human authority when present.",
+  ];
+}
+
+function isProductSurfaceKind(kind: string): boolean {
+  return (
+    kind === "route" ||
+    kind === "screen" ||
+    kind === "screenshot" ||
+    kind === "source"
+  );
 }
 
 interface PatternAccumulator {
