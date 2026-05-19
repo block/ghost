@@ -64,7 +64,7 @@ export default function Home() {
               disappear into chats, reviews, and one-off prompts.
             </p>
             <p className="thesis-item">
-              Ghost builds this fingerprint package from evidence in the
+              Ghost builds this fingerprint bundle from evidence in the
               codebase:
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
@@ -156,7 +156,7 @@ export default function Home() {
               system's boundary becomes visible where composition fails.
             </p>
             <p className="thesis-item">
-              The fingerprint package must live where generation happens: in the
+              The fingerprint bundle must live where generation happens: in the
               repository, versioned alongside the code it governs, evolving
               through the same pull requests that introduce new UI. As the
               product changes, the package updates with it, maintaining

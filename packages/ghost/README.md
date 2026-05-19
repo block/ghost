@@ -56,7 +56,7 @@ Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
 lint, verify, compare, check, and handoff packet generation. The installed
 `ghost` skill teaches your host agent how to capture a product fingerprint: map
 the repo, survey evidence, codify patterns, review drift, verify generated UI,
-remediate issues, and propose accepted fingerprint updates.
+remediate issues, and propose candidate fingerprint updates.
 
 ```bash
 ghost skill install

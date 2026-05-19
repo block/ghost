@@ -2,11 +2,18 @@
 
 **Reference design system for the Ghost project. 97 components, shadcn registry, not published to npm.**
 
-`ghost-ui` is the reference component system Ghost uses to exercise registry and agent-integration workflows. It's distributed as a shadcn registry (`registry.json`) for drop-in consumption, not as an npm package. If you're looking for the drift-detection tool, that's [`ghost-drift`](../ghost-drift).
+`ghost-ui` is the reference component system Ghost uses to exercise registry
+and agent-integration workflows. It's distributed as a shadcn registry
+(`registry.json`) for drop-in consumption, not as an npm package. If you're
+looking for the fingerprint capture and drift-review tool, that's
+[`@anarchitecture/ghost`](../ghost).
 
 ## Registry convention
 
-This package intentionally does not carry package-local Ghost scan artifacts (`map.md`, `survey.json`, or `fingerprint.md`). It stays a component registry. Agents should read this README, `registry.json`, `.shadcn/skills.md`, and source files when integrating components.
+This package intentionally does not carry package-local Ghost capture artifacts
+(`resources.yml`, `map.md`, `survey.json`, `patterns.yml`, or `checks.yml`). It
+stays a component registry. Agents should read this README, `registry.json`,
+`.shadcn/skills.md`, and source files when integrating components.
 
 The shadcn `registry.json` can carry opportunistic, namespaced item metadata:
 

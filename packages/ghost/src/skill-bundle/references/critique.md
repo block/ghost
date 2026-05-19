@@ -17,7 +17,7 @@ checks and advisory packets; the fingerprint supplies role-aware interpretation.
    - design: feel, hierarchy, flow, density, tone
    - engineering: implementation choices that preserve experience
    - pm: product promise and tradeoffs
-   - qa: experience invariants and edge states
+   - qa: experience commitments and edge states
 5. Classify each issue as fix, intentional divergence, or missing fingerprint context.
 
 ## Output
