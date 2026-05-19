@@ -10,7 +10,9 @@ slug: getting-started
 <DocSection title="The Simple Model">
 
 Ghost keeps a project's product-experience memory in the repo, where your agent
-can use it.
+can use it. The public package is `@anarchitecture/ghost`, and it installs one
+CLI: `ghost`.
+
 The fingerprint is the root `.ghost/` bundle:
 
 ```text
@@ -22,26 +24,25 @@ what to read     where UI lives  what exists   composition grammar
 `decisions/*.yml`, and `proposals/*.yml` are optional human-approved or
 human-staged product-experience memory.
 
-| Tool | Job | Verbs |
+| Surface | Job | Verbs |
 | --- | --- | --- |
-| `ghost-scan` | Create and check the root `.ghost/` bundle. | `inventory`, `scan-status`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit` |
-| `ghost-drift` | Check diffs, emit advisory review packets, compare bundles, and record drift decisions. | `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit skill` |
+| `ghost` | Create and check the root `.ghost/` bundle, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
 | `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
-| `ghost-ui` | Reference design system Ghost uses to test itself. | — |
+| `ghost-ui` | Reference design system Ghost uses to test itself. | - |
 
 </DocSection>
 
-<DocSection title="Install the Skill Bundles">
+<DocSection title="Install Ghost">
 
 ```bash
-ghost-drift emit skill
-ghost-scan emit skill
-# ghost-fleet emit skill
+npm install -D @anarchitecture/ghost
+npx ghost --help
+npx ghost skill install
 ```
 
-Once installed, ask your agent in plain English: "scan this project with Ghost"
-or "review this PR for drift". The recipe tells the agent what to read, what to
-write, and which CLI checks to run.
+Once the skill is installed, ask your agent in plain English: "scan this
+project with Ghost" or "review this PR for drift". The recipe tells the agent
+what to read, what to write, and which CLI checks to run.
 
 </DocSection>
 
@@ -53,22 +54,22 @@ Scan this project with Ghost
 
 The `scan` recipe checkpoints between stages:
 
-1. **Resources (`resources.yml`)** — declare the primary target, design-system
+1. **Resources (`resources.yml`)** - declare the primary target, design-system
    references, canonical surfaces, screenshots, docs, resolvers, and path
    boundaries.
-2. **Map (`map.md`)** — find where UI, tokens, components, examples, and
+2. **Map (`map.md`)** - find where UI, tokens, components, examples, and
    design-system files live.
-3. **Survey (`survey.json`)** — record values, tokens, components, implemented
+3. **Survey (`survey.json`)** - record values, tokens, components, implemented
    surfaces, and factual composition observations.
-4. **Patterns (`patterns.yml`)** — codify surface types and repeated
+4. **Patterns (`patterns.yml`)** - codify surface types and repeated
    composition grammar with survey-backed evidence.
 
 ```bash
-ghost-scan init-package
-ghost-scan scan-status
-ghost-scan lint
-ghost-scan survey patterns .ghost/survey.json -o .ghost/patterns.yml
-ghost-scan verify .ghost --root .
+ghost init
+ghost scan
+ghost lint
+ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
+ghost verify .ghost --root .
 ```
 
 </DocSection>
@@ -76,8 +77,8 @@ ghost-scan verify .ghost --root .
 <DocSection title="Compare Two Systems">
 
 ```bash
-ghost-drift compare market/.ghost dashboard/.ghost
-ghost-drift compare */.ghost
+ghost compare market/.ghost dashboard/.ghost
+ghost compare */.ghost
 ```
 
 Bundle comparison synthesizes comparable design signals from survey value
@@ -85,7 +86,7 @@ distributions and pattern frequencies. Direct fingerprint markdown files still
 work for legacy semantic comparison:
 
 ```bash
-ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
 ```
 
 </DocSection>
@@ -96,8 +97,8 @@ ghost-drift compare a.fingerprint.md b.fingerprint.md --semantic
 Review this PR for design drift
 ```
 
-`ghost-drift check` applies active deterministic gates from `.ghost/checks.yml`.
-`ghost-drift review` emits advisory context grounded in `.ghost/patterns.yml`,
+`ghost check` applies active deterministic gates from `.ghost/checks.yml`.
+`ghost review` emits advisory context grounded in `.ghost/patterns.yml`,
 `.ghost/survey.json`, optional `.ghost/intent.md`, checks, and the diff.
 Add `--include-memory` to include accepted `.ghost/decisions/*.yml` in the
 advisory packet.
@@ -106,7 +107,8 @@ advisory packet.
 
 <DocSection title="Capture Product-Experience Memory">
 
-Use `ghost-scan` when work reveals a decision Ghost should remember:
+Use the installed `ghost` skill when work reveals a decision Ghost should
+remember:
 
 ```text
 Brief this work with Ghost memory
@@ -114,8 +116,8 @@ Capture this product-experience decision as a proposal
 Promote this accepted proposal
 ```
 
-`ghost-scan` recipes write proposals first. Humans promote durable memory into
-accepted decisions, `patterns.yml`, `checks.yml`, or `intent.md`.
+The recipes write proposals first. Humans promote durable memory into accepted
+decisions, `patterns.yml`, `checks.yml`, or `intent.md`.
 
 </DocSection>
 
@@ -125,9 +127,9 @@ Drift without intent is noise; drift with intent is signal. `ack`, `track`, and
 `diverge` still operate on tracked direct fingerprint markdown files:
 
 ```bash
-ghost-drift ack --stance aligned --reason "Initial baseline"
-ghost-drift track new-tracked.fingerprint.md
-ghost-drift diverge typography --reason "Editorial product uses a different type scale"
+ghost ack --stance aligned --reason "Initial baseline"
+ghost track new-tracked.fingerprint.md
+ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 
 </DocSection>

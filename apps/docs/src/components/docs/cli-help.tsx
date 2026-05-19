@@ -1,6 +1,6 @@
 import manifest from "@/generated/cli-manifest.json";
 
-type ToolName = "ghost-drift" | "ghost-scan" | "ghost-fleet";
+type ToolName = "ghost" | "ghost-fleet";
 
 interface CliHelpProps {
   command: string;
@@ -43,7 +43,7 @@ function findCommand(tool: ToolName, name: string): CliCommand | undefined {
 
 export function CliHelp({
   command,
-  tool = "ghost-drift",
+  tool = "ghost",
   show = "all",
   hideDescription = false,
 }: CliHelpProps) {

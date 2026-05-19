@@ -2,14 +2,14 @@ import { readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSkillBundle } from "@ghost/core";
+import { loadSkillBundle } from "@anarchitecture/ghost/core";
 import { cac } from "cac";
 import { loadMembers, summarizeMember, writeFleetView } from "./core/index.js";
 
 /**
  * The skill bundle's source files live in `src/skill-bundle/` as real
  * markdown and are copied verbatim into `dist/skill-bundle/` by the
- * package build step. This loader points the shared `@ghost/core`
+ * package build step. This loader points the shared Ghost skill loader
  * walker at that built directory at runtime.
  */
 const SKILL_BUNDLE_ROOT = fileURLToPath(
@@ -24,7 +24,7 @@ const DEFAULT_SKILL_OUT = ".claude/skills/ghost-fleet";
  * Three deterministic verbs:
  *   - `members <dir>` — list registered members + freshness signal
  *   - `view <dir>` — emit fleet.md + fleet.json into `<dir>/reports/`
- *   - `emit skill` — install the agentskills.io bundle into a host agent
+ *   - `emit skill` — install the fleet agentskills.io bundle into a host agent
  *
  * Tracks-graph extraction, temporal aggregation, and group-by axis stacking
  * are scoped out of this milestone — see the per-verb deferral notes in
