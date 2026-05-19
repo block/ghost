@@ -1,5 +1,5 @@
 import type { CAC } from "cac";
-import { loadFingerprint, resolveFingerprintPackage } from "ghost-fingerprint";
+import { loadFingerprint, resolveFingerprintPackage } from "ghost-scan";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,

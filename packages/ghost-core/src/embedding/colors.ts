@@ -271,7 +271,7 @@ export function colorToSemanticColor(
  * this, hex-only colors land in the "unmatched" branch and contribute
  * distance 1 even when both sides have the same hex.
  *
- * `loadFingerprint` (in ghost-fingerprint) already backfills oklch on read;
+ * `loadFingerprint` (in ghost-scan) already backfills oklch on read;
  * this fallback covers third-party producers that emit hex-only.
  */
 export function resolveColorOklch(

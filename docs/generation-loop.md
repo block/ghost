@@ -1,7 +1,8 @@
-# Generation Loop
+# Product-Experience Memory Loop
 
-Ghost gives UI generators a local design-language input and a review loop. The
-canonical input is the root `.ghost/` fingerprint bundle:
+Ghost gives UI generators and product-development agents local, auditable memory
+for product experience. The canonical input is the root `.ghost/` fingerprint
+bundle:
 
 ```text
 .ghost/
@@ -11,13 +12,17 @@ canonical input is the root `.ghost/` fingerprint bundle:
   patterns.yml
   checks.yml
   intent.md
+  decisions/
+  proposals/
 ```
 
 `patterns.yml` is the operational composition grammar, `survey.json` is the
 evidence ledger, `resources.yml` says what the scan is grounded in, `checks.yml`
-contains deterministic gates, and `intent.md` is optional human authority. The
-generator can work without `intent.md`; when it is present, treat it as
-human-authored or human-approved context.
+contains deterministic gates, `intent.md` is optional human authority,
+`decisions/` records optional product-experience rationale, and `proposals/`
+stages candidate memory changes. The generator can work without optional memory;
+when it is present, treat accepted decisions as advisory context and proposals as
+working memory.
 
 ## Pipeline Shape
 
@@ -28,6 +33,7 @@ human-authored or human-approved context.
 .ghost/patterns.yml
 .ghost/checks.yml
 .ghost/intent.md
+.ghost/decisions/*.yml
         |
         v
 any generator
@@ -82,11 +88,29 @@ voice, or strategic constraints that cannot be proven from code. Agents may
 summarize it, but tooling should not require it and should not pretend generated
 intent is the user's voice unless a human approves it.
 
+### `.ghost/decisions/*.yml`
+
+Decisions are optional `ghost.decision/v1` files that record accepted/rejected
+product-experience rationale with evidence. They are broader than visual style
+but narrower than product strategy: the boundary is anything that shapes how the
+product is perceived, used, trusted, understood, or safely changed.
+
+Accepted decisions can be included in advisory review with
+`ghost-drift review --include-memory`. They do not affect `ghost-drift check`.
+
+### `.ghost/proposals/*.yml`
+
+Proposals are optional `ghost.proposal/v1` files. They capture candidate memory
+changes from design reviews, generated UI, QA findings, or PM/engineering
+discussion. They are never canonical until a human promotes them.
+
 ## Review Loop
 
 `ghost-drift review` reads `.ghost/patterns.yml`, `.ghost/survey.json`,
-optional `.ghost/intent.md`, and optional `.ghost/checks.yml`. Advisory
-findings should cite both pattern evidence and survey evidence.
+optional `.ghost/intent.md`, and optional `.ghost/checks.yml`. With
+`--include-memory`, it also reads accepted `.ghost/decisions/*.yml`. Advisory
+findings should cite pattern evidence, survey evidence, and accepted decisions
+when relevant.
 
 `ghost-drift check` reads `.ghost/checks.yml` and remains deterministic. It is
 the blocking side of the loop.
@@ -98,11 +122,12 @@ intentional, record a stance with `ghost-drift ack`, `ghost-drift track`, or
 
 ## Verification
 
-`ghost-fingerprint verify [dir] --root <root>` checks cross-artifact fidelity:
+`ghost-scan verify [dir] --root <root>` checks cross-artifact fidelity:
 
 - pattern evidence exists in `survey.json`
 - resource paths are reachable from the supplied root when local
 - checks reference known surface types and pattern IDs
+- optional decisions/proposals are structurally valid when present
 
 The skill-level verify recipe can still run a generate -> review loop over a
 prompt suite, but the deterministic package verifier is the first gate for the
@@ -122,3 +147,8 @@ review packets when generated or changed UI appears to drift from
 `resources -> map -> survey -> patterns`. Keep `survey.json` factual, promote
 repeated composition observations into `patterns.yml`, and add `intent.md` only
 when a human has supplied or approved the intent.
+
+**Product-experience memory:** use `ghost-scan` recipes to recall, brief,
+critique, capture, and promote optional decisions/proposals. Keep promotion
+deliberate: proposals are working memory; accepted decisions are advisory
+memory; active checks are the only blocking mechanism.
