@@ -5,7 +5,18 @@ owner: nahiyan
 branch: refactor/fingerprint (or a follow-up branch)
 ---
 
-> **Historical document.** This plan describes a pre-BYOA consolidation from 18 verbs to ~11. The current BYOA surface is **7 deterministic primitives** (`compare`, `lint`, `describe`, `ack`, `track`, `diverge`, `emit`) and `profile`, `review`, `verify`, `generate`, and `discover` are skill recipes the host agent runs. Kept for history; don't treat the exploratory verb list below as current. See the [README](../README.md) and the [CLI reference](../apps/docs/src/content/docs/cli-reference.mdx) for the current surface.
+> **Historical document.** This plan describes a pre-BYOA consolidation from 18
+> verbs to ~11. The current public surface is the unified
+> `@anarchitecture/ghost` package with the `ghost` CLI (`init`, `scan`,
+> `inventory`, `lint`, `verify`, `describe`, `diff`, `survey`, `check`,
+> `review`, `compare`, `ack`, `track`, `diverge`, `emit`, and `skill install`)
+> plus the private `ghost-fleet` CLI. Capture, map, survey, patterns, recall,
+> brief, critique, propose, promote, verify, compare, and remediate are
+> host-agent skill recipes installed by `ghost skill install`. Kept for history;
+> don't treat the exploratory verb list below as current. See the
+> [README](../README.md) and the
+> [CLI reference](../apps/docs/src/content/docs/cli-reference.mdx) for the
+> current surface.
 
 # Ghost CLI consolidation — 18 verbs → 9
 

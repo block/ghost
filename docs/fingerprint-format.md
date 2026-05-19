@@ -125,7 +125,7 @@ authoritative until accepted by a human.
 ### `decisions/*.yml`
 
 Accepted or rejected product-experience decisions use `ghost.decision/v1`.
-These are rationale artifacts: they explain why an experience invariant matters
+These are rationale artifacts: they explain why a product-experience decision matters
 and cite evidence, but they do not block CI.
 
 ```yaml

@@ -1,8 +1,14 @@
 # ghost-scan
 
-**Author and validate Ghost's root repo-local fingerprint bundle. No LLM calls in any verb.**
+**Private historical scan package. Use `@anarchitecture/ghost` and the `ghost`
+CLI for current workflows.**
 
-Canonical package:
+The scan runtime and skill recipes needed by the public package are now folded
+into [`packages/ghost`](../ghost). This package remains in the monorepo for
+historical/development context and compatibility while the public npm surface is
+the unified `@anarchitecture/ghost` package.
+
+The current canonical bundle shape is:
 
 ```text
 .ghost/
@@ -34,38 +40,47 @@ product-experience memory without becoming deterministic gates.
 | Decisions | `decisions/*.yml` | `ghost.decision/v1` | Optional accepted/rejected product-experience rationale. |
 | Proposals | `proposals/*.yml` | `ghost.proposal/v1` | Optional candidate memory changes before promotion. |
 
-## Use
+## Current CLI
+
+Install and use the unified package:
 
 ```bash
-ghost-scan init-package --with-intent
+npm install -D @anarchitecture/ghost
+npx ghost skill install
+```
 
-ghost-scan inventory
-ghost-scan lint                         # defaults to .ghost
-ghost-scan scan-status
+The current commands are:
 
-ghost-scan survey fix-ids .ghost/survey.json -o .ghost/survey.json
-ghost-scan survey summarize .ghost/survey.json
-ghost-scan survey catalog .ghost/survey.json --kind color
-ghost-scan survey patterns .ghost/survey.json -o .ghost/patterns.yml
+```bash
+ghost init --with-intent
 
-ghost-scan verify .ghost --root .
-ghost-scan describe                     # defaults to .ghost/intent.md
-ghost-scan diff a.fingerprint.md b.fingerprint.md
+ghost inventory
+ghost scan --format json
+ghost lint .ghost
 
-ghost-scan emit context-bundle
-ghost-scan emit skill
+ghost survey fix-ids .ghost/survey.json -o .ghost/survey.json
+ghost survey summarize .ghost/survey.json
+ghost survey catalog .ghost/survey.json --kind color
+ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
+
+ghost verify .ghost --root .
+ghost describe
+ghost diff a.fingerprint.md b.fingerprint.md
+
+ghost emit context-bundle
+ghost skill install
 ```
 
 Zero config for every verb. No API key needed.
 
-## As A Library
+## Current Library Imports
 
 ```ts
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
   verifyFingerprintPackage,
-} from "ghost-scan";
+} from "@anarchitecture/ghost/scan";
 
 const paths = await initFingerprintPackage(undefined, process.cwd(), {
   withIntent: true,
@@ -79,18 +94,19 @@ const verify = await verifyFingerprintPackage(undefined, process.cwd(), {
 ## Skill Bundle
 
 ```bash
-ghost-scan emit skill
+ghost skill install
 ```
 
-The bundle ships recipes for scan, map, survey, patterns, schema reference,
-recall, brief, critique, capture, and promote. Ask your agent to "scan this
-design language end-to-end" or "brief this work with Ghost"; it will author or
-activate package artifacts and use the CLI for validation.
+The unified bundle ships recipes for capture, map, survey, patterns, schema
+reference, recall, brief, critique, review, verify, compare, remediate, propose,
+and promote. Ask your agent to "capture a Ghost fingerprint for this repo" or
+"brief this work with Ghost"; it will author or activate `.ghost/` artifacts
+and use the CLI for deterministic validation.
 
 ## Format Docs
 
-See [`docs/fingerprint-format.md`](https://github.com/block/ghost/blob/main/docs/fingerprint-format.md)
-for the full package format.
+See [`docs/fingerprint-format.md`](../../docs/fingerprint-format.md) for the
+full bundle format.
 
 ## License
 

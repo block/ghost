@@ -4,7 +4,7 @@ description: Review PR or working-tree changes against the local Ghost fingerpri
 handoffs:
   - label: Suggest minimal fixes
     skill: remediate
-    prompt: Given the drift findings, suggest the minimal code changes that bring the diff back inside the fingerprint package
+    prompt: Given the drift findings, suggest the minimal code changes that bring the diff back inside the .ghost bundle
   - label: Accept the drift
     command: ghost ack
     prompt: Acknowledge that the current fingerprint no longer matches and record the drift
