@@ -12,9 +12,16 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 
 const TOOLS = [
-  { name: "ghost-drift", dist: "packages/ghost-drift/dist/cli.js" },
-  { name: "ghost-scan", dist: "packages/ghost-scan/dist/cli.js" },
-  { name: "ghost-fleet", dist: "packages/ghost-fleet/dist/cli.js" },
+  {
+    name: "ghost",
+    filter: "@anarchitecture/ghost",
+    dist: "packages/ghost/dist/cli.js",
+  },
+  {
+    name: "ghost-fleet",
+    filter: "ghost-fleet",
+    dist: "packages/ghost-fleet/dist/cli.js",
+  },
 ];
 
 const OUT = resolve(ROOT, "apps/docs/src/generated/cli-manifest.json");
@@ -24,7 +31,7 @@ for (const tool of TOOLS) {
   const cliDist = resolve(ROOT, tool.dist);
   if (!existsSync(cliDist)) {
     console.error(
-      `${tool.name} dist not built. Run \`pnpm --filter ${tool.name} build\` first (or \`pnpm build\`).`,
+      `${tool.name} dist not built. Run \`pnpm --filter ${tool.filter} build\` first (or \`pnpm build\`).`,
     );
     process.exit(1);
   }

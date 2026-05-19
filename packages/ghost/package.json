@@ -1,0 +1,79 @@
+{
+  "name": "@anarchitecture/ghost",
+  "version": "0.0.0",
+  "description": "Unified Ghost CLI for repo-local product-experience memory, scan workflows, deterministic checks, advisory review, and drift tracking",
+  "license": "Apache-2.0",
+  "author": "Block, Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/block/ghost.git"
+  },
+  "homepage": "https://github.com/block/ghost#readme",
+  "bugs": {
+    "url": "https://github.com/block/ghost/issues"
+  },
+  "keywords": [
+    "design-system",
+    "drift-detection",
+    "fingerprint",
+    "design-tokens",
+    "shadcn",
+    "design-language",
+    "cli"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "ghost": "./dist/bin.js"
+  },
+  "imports": {
+    "#ghost-core": {
+      "types": "./src/ghost-core/index.ts",
+      "import": "./dist/ghost-core/index.js"
+    },
+    "#scan": {
+      "types": "./src/scan/index.ts",
+      "import": "./dist/scan/index.js"
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/ghost-core/index.d.ts",
+      "import": "./dist/ghost-core/index.js"
+    },
+    "./drift": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./scan": {
+      "types": "./dist/scan/index.d.ts",
+      "import": "./dist/scan/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "cac": "^6.7.14",
+    "jiti": "^2.4.0",
+    "yaml": "^2.8.3",
+    "zod": "^4.3.6"
+  }
+}

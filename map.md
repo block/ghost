@@ -2,7 +2,7 @@
 schema: ghost.map/v2
 id: ghost
 repo: block/ghost
-mapped_at: 2026-04-27
+mapped_at: 2026-05-18
 platform: web
 languages:
   - { name: typescript, files: 580, share: 0.78 }
@@ -51,23 +51,37 @@ surface_sources:
     - packages/ghost-ui/scripts/**
     - packages/*/dist/**
 feature_areas:
-  - name: ghost-drift
+  - name: ghost-cli-package
     paths:
-      - packages/ghost-drift/src/core
-      - packages/ghost-drift/src/cli.ts
-      - packages/ghost-drift/src/skill-bundle
+      - packages/ghost/src/cli.ts
+      - packages/ghost/src/scan-commands.ts
+      - packages/ghost/src/skill-command.ts
+      - packages/ghost/src/skill-bundle
     sub_areas:
+      - scan
+      - review
       - compare
-      - fingerprint
-      - evolution
-      - reporters
-  - name: ghost-map
+      - stance
+      - skill-install
+  - name: ghost-shared-core
     paths:
-      - packages/ghost-map/src/core
-      - packages/ghost-map/src/cli.ts
+      - packages/ghost/src/ghost-core
+      - packages/ghost/src/core
+      - packages/ghost/src/scan
     sub_areas:
-      - inventory
-      - lint
+      - schemas
+      - fingerprint
+      - survey
+      - checks
+      - memory
+      - embedding
+  - name: ghost-fleet
+    paths:
+      - packages/ghost-fleet/src
+    sub_areas:
+      - members
+      - view
+      - fleet-skill
   - name: ghost-ui-components
     paths:
       - packages/ghost-ui/src/components
@@ -81,81 +95,57 @@ feature_areas:
     paths:
       - apps/docs/src
     sub_areas:
-      - drift
+      - cli-reference
       - design-language
       - catalogue
 orientation_files:
   - README.md
   - CLAUDE.md
   - docs/fingerprint-format.md
-  - docs/ideas/phase-0-decisions.md
+  - docs/generation-loop.md
 ---
 
 ## Identity
 
-Ghost is a TypeScript pnpm monorepo that helps agents detect and manage
-visual-language drift in the design systems they generate against. The
-canonical artifact is `fingerprint.md` — a human-readable, LLM-editable
-Markdown file with a YAML machine layer plus a three-section prose body.
-Ghost is BYOA: judgement work (fingerprint, review, verify, generate, discover)
-lives in skill recipes the host agent executes; the CLIs are the calculator
-the agent reaches for when it needs a reproducible answer.
+Ghost is a TypeScript pnpm monorepo that gives AI agents repo-local design and
+product-experience memory. The public npm package is
+`@anarchitecture/ghost`, and its only user-facing bin is `ghost`.
 
-The repository is in the middle of a five-tool decomposition. Today
-`ghost-drift` is the only published package; alongside it sit `ghost-ui`
-(private reference component library, distributed via shadcn registry) and
-`apps/docs` (the deployed docs site). The `ghost-map` package — the source
-of this map.md — is being bootstrapped here as the first phase of that
-decomposition; future phases extract `@ghost/core`, `ghost-scan`,
-and `ghost-fleet` as siblings.
+The canonical artifact is the root `.ghost/` bundle: `resources.yml` declares
+what to read, `map.md` routes repo topology, `survey.json` records observed
+design evidence, and `patterns.yml` turns repeated composition into a grammar.
+Optional `checks.yml`, `intent.md`, `decisions/*.yml`, and `proposals/*.yml`
+carry enforcement and product-experience memory.
+
+Ghost is BYOA. The host agent performs the reading, judgement, and authoring.
+The CLI validates schemas, computes deterministic transforms, compares
+fingerprints, checks diffs, emits review packets, and installs the unified
+`ghost` skill bundle.
 
 ## Topology
 
+The publishable package lives in `packages/ghost`. It folds the previous drift,
+scan, and shared-core runtime into one npm-safe package with no `workspace:*`
+runtime dependencies. Its public exports are split by subpath:
+`@anarchitecture/ghost`, `/scan`, `/drift`, `/core`, and `/cli`.
+
+`packages/ghost-fleet` remains private and consumes workspace exports from
+`@anarchitecture/ghost`. `packages/ghost-ui` is the reference component
+library and MCP server. `apps/docs` is the deployed documentation site and
+renders CLI help from the generated manifest.
+
 The design system lives in `packages/ghost-ui/src`. Tokens resolve through
-`src/styles/tokens.css` (the canonical CSS variable layer) and the shadcn
-`registry.json` describes the 97 components shipped to consumers. The
-fingerprint.md at `packages/ghost-ui/fingerprint.md` is the authoritative
-language description; `embedding.md` carries the precomputed 49-dim vector.
-
-Customer UI lives in two places. The reference primitives under
-`packages/ghost-ui/src/components` are the catalogue tools index, and the
-docs site under `apps/docs/src` consumes them as a live showcase. Excludes
-are the standard monorepo noise (`dist/`, `node_modules/`) plus the
-`packages/ghost-ui/scripts/` build harness, which generates the registry
-but is not itself customer-visible.
-
-Feature surfaces follow the package boundaries because the repo is a
-verb-decomposed CLI. `ghost-drift` is the engine that owns embedding,
-comparison, fingerprint parsing, evolution (track/ack/diverge), and the
-existing skill bundle. `ghost-map` (this slice) ships only `inventory` and
-`lint` today; `describe` and `emit skill` are deferred to a later
-deliverable. `ghost-ui-components` is the registry surface; `ghost-ui-mcp`
-is the MCP server re-exposing the registry to AI assistants.
-`docs-site` consumes both of the above for the deployed marketing and
-catalogue site.
-
-Orientation reading order is `README.md` → `CLAUDE.md` (agent context) →
-`docs/fingerprint-format.md` (the canonical artifact spec) →
-`docs/ideas/phase-0-decisions.md` (the decomposition plan that contextualizes
-ghost-map's existence).
+`src/styles/tokens.css`, and the shadcn `registry.json` describes the 97
+components shipped to consumers.
 
 ## Conventions
 
-Each published package mirrors the same shape: `src/bin.ts` is the
-shebang entry, `src/cli.ts` exposes a `buildCli()` builder, `src/core/`
-holds the deterministic library surface, and tests live under
-`test/` (with `test/fixtures/` for sample data — biome ignores fixtures).
-Public exports flow through `src/core/index.ts` only; deep imports from
-`./core/*` are not part of the contract.
+Each package keeps the standard shape: `src/bin.ts` for the shebang entry,
+`src/cli.ts` for the `buildCli()` builder when it has a CLI, `src/core/` for
+deterministic library code, `src/skill-bundle/` for agent recipes, and `test/`
+for vitest coverage.
 
-Code style is enforced by Biome (`pnpm fmt`, `pnpm check`) with the lefthook
-pre-commit hook running `biome format --write && biome check --fix && just
-check`. Line-length budgets per file are enforced by
-`scripts/check-file-sizes.mjs` (default 500, narrow exceptions inline).
-TypeScript is strict everywhere with project references — every package
-ships its own `tsconfig.json` extending the root.
-
-Skill bundles live in `src/skill-bundle/` per package. Each carries its own
-`SKILL.md` plus `references/`. Cross-recipe references happen through verb
-names in prose, not through a meta-emit step. Vitest is the test runner;
-tests are colocated under each package's `test/` directory.
+For the public package, keep npm runtime code under `packages/ghost/src`.
+Private historical packages may remain in the workspace, but the packed
+`@anarchitecture/ghost` artifact must not reference `@ghost/core`,
+`ghost-scan`, `ghost-drift`, or any `workspace:*` dependency.

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Ghost — install the design-language scan + emit skill bundle.
+# Ghost — install the unified design-memory skill bundle.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
@@ -16,6 +16,7 @@
 #     SKILL.md
 #     references/scan.md, map.md, survey.md, patterns.md, schema.md
 #     references/recall.md, brief.md, critique.md, capture.md, promote.md
+#     references/review.md, verify.md, compare.md, remediate.md
 #     assets/fingerprint.template.md
 #
 # Exit codes:
@@ -28,7 +29,7 @@ set -eu
 
 GHOST_REF="${GHOST_REF:-main}"
 GHOST_SOURCE="${GHOST_SOURCE:-https://raw.githubusercontent.com/block/ghost/${GHOST_REF}}"
-GHOST_PACKAGE_PATH="packages/ghost-scan/src/skill-bundle"
+GHOST_PACKAGE_PATH="packages/ghost/src/skill-bundle"
 GHOST_BUNDLE_NAME="ghost"
 FORCE=0
 
