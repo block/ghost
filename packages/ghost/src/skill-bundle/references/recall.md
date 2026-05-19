@@ -1,12 +1,12 @@
 ---
 name: recall
-description: Summarize relevant Ghost product-experience memory for a task.
+description: Summarize relevant Ghost fingerprint context for a task.
 ---
 
-# Recall Product-Experience Memory
+# Recall Fingerprint Context
 
-Use this when the user asks what Ghost remembers, how a product usually handles
-a surface, or what constraints matter before work begins.
+Use this when the user asks what the fingerprint says, how a product usually
+handles a surface, or what constraints matter before work begins.
 
 ## Steps
 
@@ -15,7 +15,7 @@ a surface, or what constraints matter before work begins.
 3. Read `.ghost/patterns.yml` for matching surface and composition patterns.
 4. Read `.ghost/checks.yml` for active or proposed deterministic gates.
 5. Read `.ghost/decisions/*.yml`; include only `status: accepted` as canonical.
-6. Skim `.ghost/proposals/*.yml` separately as unresolved working memory.
+6. Skim `.ghost/proposals/*.yml` separately as unresolved candidate updates.
 
 ## Output
 

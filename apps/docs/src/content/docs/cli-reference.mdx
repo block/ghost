@@ -9,11 +9,12 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts: initialize bundles, validate files, transform
-survey data, compare bundles, check diffs, emit handoff packets, and record
-intent. Your agent does the reading, writing, and reviewing.
+The CLI does the repeatable parts: initialize bundles, report Fingerprint
+Capture progress, validate files, transform survey data, compare bundles, check
+diffs, emit handoff packets, and record intent. Your agent does the reading,
+writing, and reviewing.
 
-A scan follows one path:
+Fingerprint Capture follows one path:
 
 ```text
 resources.yml -> map.md -> survey.json -> patterns.yml
@@ -26,6 +27,12 @@ npm install -D @anarchitecture/ghost
 npx ghost skill install
 ```
 
+Ask your agent to run the workflow:
+
+```text
+Capture a Ghost fingerprint for this repo.
+```
+
 Commands are grouped by job:
 
 - **Create and check the fingerprint bundle**: `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`.
@@ -33,8 +40,8 @@ Commands are grouped by job:
 - **Install BYOA recipes**: `skill install`.
 - **View many projects**: `ghost-fleet members`, `ghost-fleet view`, `ghost-fleet emit skill`.
 
-Workflows like _scan_, _map_, _survey_, _patterns_, _recall_, _brief_,
-_critique_, _capture_, _promote_, _review_, _verify_, _compare_, and
+Workflows like _capture_, _map_, _survey_, _patterns_, _recall_, _brief_,
+_critique_, _propose_, _promote_, _review_, _verify_, _compare_, and
 _remediate_ are skill recipes your host agent runs. They are installed by
 `ghost skill install`; they are not LLM-running CLI verbs.
 
@@ -44,11 +51,12 @@ reference.
 
 </DocSection>
 
-<DocSection title="ghost - scan and bundle">
+<DocSection title="ghost - capture support and bundle checks">
 
-`ghost` owns the root bundle scan. It inventories the repo, validates each file,
-verifies cross-artifact fidelity, describes markdown, diffs direct fingerprint
-files, runs survey ops, and emits agent-ready outputs.
+`ghost` supports Fingerprint Capture. It inventories the repo, reports capture
+progress, validates each file, verifies cross-artifact fidelity, describes
+markdown, diffs direct fingerprint files, runs survey ops, and emits
+agent-ready outputs.
 
 ### Initialize - `init`
 
@@ -62,10 +70,11 @@ ghost init
 ghost init --with-intent
 ```
 
-### Pipeline progress - `scan`
+### Capture progress - `scan`
 
-Report which scan stages already exist in a directory and which stage the
-agent should run next. `--format json` is the deterministic BYOA handoff.
+Report which fingerprint capture stages already exist in a directory, evidence
+readiness, and which stage the agent should run next. `--format json` is the
+deterministic BYOA handoff.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
 
@@ -195,8 +204,8 @@ ghost check --diff patch.diff --format json
 ### Advisory packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in `.ghost/patterns.yml`,
-`.ghost/survey.json`, optional `.ghost/intent.md`, optional memory, checks, and
-the diff.
+`.ghost/survey.json`, optional `.ghost/intent.md`, accepted decisions, checks,
+and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
@@ -248,9 +257,9 @@ ghost diverge palette --reason "Dark-mode-first palette for this product"
 
 ### Skill bundle - `skill install`
 
-Install the unified `ghost` skill bundle into a host agent. It contains scan,
-map, survey, patterns, schema, recall, brief, critique, capture, promote,
-review, verify, compare, and remediate recipes.
+Install the unified `ghost` skill bundle into a host agent. It contains
+Fingerprint Capture, map, survey, patterns, schema, recall, brief, critique,
+propose, promote, review, verify, compare, and remediate recipes.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
 
@@ -297,11 +306,11 @@ then ask your agent in plain English.
 
 | Recipe | Bundle | Trigger |
 | --- | --- | --- |
-| `scan` | `ghost` | "scan this project" / "go end-to-end" |
+| `capture` | `ghost` | "Capture a Ghost fingerprint for this repo" |
 | `map` | `ghost` | "map this repo" / "write map.md" |
 | `survey` | `ghost` | "survey design values" / "extract tokens" |
 | `patterns` | `ghost` | "write patterns.yml" / "codify composition patterns" |
-| `recall` / `brief` / `critique` / `capture` / `promote` | `ghost` | "what does Ghost remember?" / "brief this work" / "capture this decision" |
+| `recall` / `brief` / `critique` / `propose` / `promote` | `ghost` | "brief this work" / "propose this decision" / "promote this proposal" |
 | `review` | `ghost` | "review this PR for drift" |
 | `verify` | `ghost` | "verify generated UI against the bundle" |
 | `compare` | `ghost` | "why did these two fingerprints drift?" |

@@ -223,7 +223,7 @@ describe("ghost CLI", () => {
     expect(manifest.dimensions.typography.reason).toBe("editorial");
   });
 
-  it("initializes a bundle and reports scan state as json", async () => {
+  it("initializes a bundle and reports fingerprint capture state as json", async () => {
     const init = await runCli(["init", "--with-intent"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
 
@@ -238,6 +238,7 @@ describe("ghost CLI", () => {
     const status = JSON.parse(scan.stdout);
     expect(status.resources.state).toBe("present");
     expect(status.map.state).toBe("present");
+    expect(status.readiness.state).toBe("unobservable");
   });
 
   it("runs inventory, lint, and verify from the unified cli", async () => {
@@ -278,6 +279,42 @@ describe("ghost CLI", () => {
     expect(catalog.stdout).toContain("spacing");
     expect(patterns.code).toBe(0);
     expect(JSON.parse(patterns.stdout).schema).toBe("ghost.patterns/v1");
+  });
+
+  it("keeps derived patterns substrate-aware when no UI surfaces exist", async () => {
+    await mkdir(join(dir, ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "survey.json"),
+      JSON.stringify({
+        schema: "ghost.survey/v2",
+        sources: [
+          { id: "library", target: ".", scanned_at: "2026-05-19T00:00:00Z" },
+        ],
+        values: [],
+        tokens: [],
+        components: [
+          {
+            id: "component_button",
+            source: { target: ".", scanned_at: "2026-05-19T00:00:00Z" },
+            name: "Button",
+            discovered_via: "registry.json",
+          },
+        ],
+        ui_surfaces: [],
+      }),
+    );
+
+    const result = await runCli(
+      ["survey", "patterns", ".ghost/survey.json", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const patterns = JSON.parse(result.stdout);
+    expect(patterns.composition_patterns).toHaveLength(0);
+    expect(patterns.advisory.review_expectations[0]).toContain(
+      "No UI surface evidence",
+    );
   });
 
   it("runs survey fix-ids from the unified cli", async () => {
@@ -327,7 +364,8 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     for (const path of [
       "SKILL.md",
-      "references/scan.md",
+      "references/capture.md",
+      "references/propose.md",
       "references/review.md",
       "references/remediate.md",
       "references/brief.md",
