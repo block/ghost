@@ -45,4 +45,5 @@ jobs:
           title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN || secrets.NPM_PUBLISH_TOKEN || secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
