@@ -20,9 +20,11 @@ export { parseBody } from "./body.js";
 export type { DesignDecision } from "./compose.js";
 export { mergeFingerprint } from "./compose.js";
 export {
+  CACHE_DIRNAME,
   CHECKS_FILENAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_YML_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
