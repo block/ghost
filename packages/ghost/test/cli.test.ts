@@ -229,16 +229,17 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     expect(
-      await readFile(join(dir, ".ghost", "resources.yml"), "utf-8"),
-    ).toContain("schema: ghost.resources/v1");
+      await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
+    ).toContain("schema: ghost.fingerprint/v1");
     expect(await readFile(join(dir, ".ghost", "intent.md"), "utf-8")).toContain(
       "# Intent",
     );
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
-    expect(status.resources.state).toBe("present");
-    expect(status.map.state).toBe("present");
-    expect(status.readiness.state).toBe("unobservable");
+    expect(status.fingerprint.state).toBe("present");
+    expect(status.proposals.state).toBe("present");
+    expect(status.cache.state).toBe("present");
+    expect(status.readiness.state).toBe("memory-empty");
   });
 
   it("runs inventory, lint, and verify from the unified cli", async () => {
@@ -498,6 +499,36 @@ async function writeCheckPackage(
 ): Promise<void> {
   const pkg = join(dir, ".ghost");
   await mkdir(pkg, { recursive: true });
+  await writeFile(
+    join(pkg, "fingerprint.yml"),
+    `schema: ghost.fingerprint/v1
+summary:
+  product: Cash iOS
+topology:
+  scopes:
+    - id: lending
+      paths: [Code/Features/Lending]
+      surface_types: [native-feature]
+  surface_types: [native-feature]
+situations: []
+principles:
+  - id: tokenized-ui-color
+    status: accepted
+    principle: UI colors should come from the product token system.
+    check_refs: [check:no-hardcoded-ui-color]
+experience_contracts: []
+patterns:
+  - id: tokenized-ui-color
+    status: accepted
+    kind: visual
+    pattern: Product UI color uses semantic tokens instead of literals.
+    check_refs: [check:no-hardcoded-ui-color]
+substrate:
+  tokens: [CashTheme.primary]
+  components: []
+review_policy: {}
+`,
+  );
   await writeFile(
     join(pkg, "resources.yml"),
     `schema: ghost.resources/v1
