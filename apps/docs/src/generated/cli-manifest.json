@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-19T16:33:13.019Z",
+  "generatedAt": "2026-05-24T20:39:47.948Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
+          "description": "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -24,7 +24,7 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init [dir]",
-          "description": "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
+          "description": "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
           "options": [
             {
               "rawName": "--with-intent",
@@ -48,7 +48,7 @@
           "tool": "ghost",
           "name": "verify",
           "rawName": "verify [dir]",
-          "description": "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
+          "description": "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
           "options": [
             {
               "rawName": "--root <dir>",

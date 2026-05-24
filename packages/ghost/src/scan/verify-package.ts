@@ -3,10 +3,11 @@ import { isAbsolute, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type {
   GhostCheck,
-  GhostPatternsDocument,
-  GhostResourcesDocument,
-  Survey,
+  GhostChecksDocument,
+  GhostFingerprintDocument,
+  GhostFingerprintEvidence,
 } from "#ghost-core";
+import { GhostChecksSchema, GhostFingerprintSchema } from "#ghost-core";
 import {
   lintFingerprintPackage,
   resolveFingerprintPackage,
@@ -40,234 +41,178 @@ export async function verifyFingerprintPackage(
   );
   if (packageLint.errors > 0) return finalize(issues);
 
-  const [resources, survey, patterns, checks] = await Promise.all([
-    readYaml<GhostResourcesDocument>(paths.resources, "resources.yml", issues),
-    readJson<Survey>(paths.survey, "survey.json", issues),
-    readYaml<GhostPatternsDocument>(paths.patterns, "patterns.yml", issues),
-    readOptionalYaml<{ checks?: GhostCheck[] }>(
-      paths.checks,
-      "checks.yml",
-      issues,
-    ),
+  const [fingerprint, checks] = await Promise.all([
+    readFingerprint(paths.fingerprintYml, issues),
+    readOptionalChecks(paths.checks, issues),
   ]);
 
-  if (resources) {
-    await verifyResourcesReachable(resources, root, issues);
+  if (fingerprint) {
+    await verifyFingerprintEvidence(fingerprint, root, issues);
   }
 
-  if (survey && patterns) {
-    verifyPatternEvidence(patterns, survey, issues);
-    verifyPatternSurfaceTypes(patterns, survey, issues);
-  }
-
-  if (patterns && checks?.checks) {
-    verifyCheckPatternReferences(patterns, checks.checks, issues);
+  if (fingerprint && checks) {
+    verifyFingerprintCheckRefs(fingerprint, checks.checks, issues);
   }
 
   return finalize(issues);
 }
 
-async function readYaml<T>(
+async function readFingerprint(
   path: string,
-  label: string,
   issues: VerifyFingerprintIssue[],
-): Promise<T | undefined> {
+): Promise<GhostFingerprintDocument | undefined> {
   try {
-    return parseYaml(await readFile(path, "utf-8")) as T;
+    const parsed = parseYaml(await readFile(path, "utf-8"));
+    const result = GhostFingerprintSchema.safeParse(parsed);
+    if (result.success) return result.data as GhostFingerprintDocument;
+    issues.push({
+      severity: "error",
+      rule: "verify-fingerprint-read-failed",
+      message: "fingerprint.yml failed schema validation after package lint.",
+      path: "fingerprint.yml",
+    });
+    return undefined;
   } catch (err) {
     issues.push({
       severity: "error",
-      rule: "verify-yaml-read-failed",
-      message: `${label} could not be read as YAML: ${
+      rule: "verify-fingerprint-read-failed",
+      message: `fingerprint.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: label,
+      path: "fingerprint.yml",
     });
     return undefined;
   }
 }
 
-async function readOptionalYaml<T>(
+async function readOptionalChecks(
   path: string,
-  label: string,
   issues: VerifyFingerprintIssue[],
-): Promise<T | undefined> {
+): Promise<GhostChecksDocument | undefined> {
   try {
-    return parseYaml(await readFile(path, "utf-8")) as T;
+    const parsed = parseYaml(await readFile(path, "utf-8"));
+    const result = GhostChecksSchema.safeParse(parsed);
+    if (result.success) return result.data as GhostChecksDocument;
+    issues.push({
+      severity: "error",
+      rule: "verify-checks-read-failed",
+      message: "checks.yml failed schema validation after package lint.",
+      path: "checks.yml",
+    });
+    return undefined;
   } catch (err) {
     if (isMissingFileError(err)) return undefined;
     issues.push({
       severity: "error",
-      rule: "verify-yaml-read-failed",
-      message: `${label} could not be read as YAML: ${
+      rule: "verify-checks-read-failed",
+      message: `checks.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: label,
+      path: "checks.yml",
     });
     return undefined;
   }
 }
 
-async function readJson<T>(
-  path: string,
-  label: string,
-  issues: VerifyFingerprintIssue[],
-): Promise<T | undefined> {
-  try {
-    return JSON.parse(await readFile(path, "utf-8")) as T;
-  } catch (err) {
-    issues.push({
-      severity: "error",
-      rule: "verify-json-read-failed",
-      message: `${label} could not be read as JSON: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path: label,
-    });
-    return undefined;
-  }
-}
-
-async function verifyResourcesReachable(
-  resources: GhostResourcesDocument,
+async function verifyFingerprintEvidence(
+  fingerprint: GhostFingerprintDocument,
   root: string,
   issues: VerifyFingerprintIssue[],
 ): Promise<void> {
-  const refs: Array<
-    readonly [
-      string,
-      {
-        target?: string;
-        paths?: string[];
-      },
-    ]
-  > = [
-    ["primary", resources.primary],
-    ...(resources.design_system ?? []).map(
-      (ref, index) => [`design_system[${index}]`, ref] as const,
-    ),
-    ...(resources.surfaces ?? []).map(
-      (ref, index) => [`surfaces[${index}]`, ref] as const,
-    ),
-    ...(resources.screenshots ?? []).map(
-      (ref, index) => [`screenshots[${index}]`, ref] as const,
-    ),
-    ...(resources.docs ?? []).map(
-      (ref, index) => [`docs[${index}]`, ref] as const,
-    ),
-    ...(resources.resolvers ?? []).map(
-      (ref, index) => [`resolvers[${index}]`, ref] as const,
-    ),
-    ...(resources.upstreams ?? []).map(
-      (ref, index) => [`upstreams[${index}]`, ref] as const,
-    ),
-  ];
-
-  for (const [label, ref] of refs) {
-    const target =
-      "target" in ref && typeof ref.target === "string" ? ref.target : "";
-    const candidates = [
-      ...(target && isLocalTarget(target) ? [target] : []),
-      ...(ref.paths ?? []),
+  const evidenceLists: Array<[string, GhostFingerprintEvidence[] | undefined]> =
+    [
+      ...fingerprint.situations.map(
+        (entry, index) =>
+          [`fingerprint.yml.situations[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
+      ),
+      ...fingerprint.principles.map(
+        (entry, index) =>
+          [`fingerprint.yml.principles[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
+      ),
+      ...fingerprint.experience_contracts.map(
+        (entry, index) =>
+          [
+            `fingerprint.yml.experience_contracts[${index}].evidence`,
+            entry.evidence,
+          ] as [string, GhostFingerprintEvidence[] | undefined],
+      ),
+      ...fingerprint.patterns.map(
+        (entry, index) =>
+          [`fingerprint.yml.patterns[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
+      ),
     ];
-    for (const candidate of candidates) {
-      const path = isAbsolute(candidate) ? candidate : resolve(root, candidate);
-      if (await pathExists(path)) continue;
-      issues.push({
-        severity: "warning",
-        rule: "resource-unreachable",
-        message: `resource path '${candidate}' could not be resolved from ${root}.`,
-        path: `resources.yml.${label}`,
-      });
-    }
+
+  for (const [path, evidence] of evidenceLists) {
+    if (!evidence) continue;
+    await Promise.all(
+      evidence.map(async (entry, index) => {
+        if (!entry.path) return;
+        const evidencePath = isAbsolute(entry.path)
+          ? entry.path
+          : resolve(root, entry.path);
+        if (await pathExists(evidencePath)) return;
+        issues.push({
+          severity: "warning",
+          rule: "fingerprint-evidence-unreachable",
+          message: `fingerprint evidence path '${entry.path}' could not be resolved from ${root}.`,
+          path: `${path}[${index}].path`,
+        });
+      }),
+    );
   }
 }
 
-function verifyPatternEvidence(
-  patterns: GhostPatternsDocument,
-  survey: Survey,
-  issues: VerifyFingerprintIssue[],
-): void {
-  patterns.composition_patterns.forEach((pattern, index) => {
-    const evidence = pattern.evidence ?? [];
-    if (evidence.length === 0) {
-      issues.push({
-        severity: "error",
-        rule: "pattern-evidence-missing",
-        message: `composition pattern '${pattern.id}' has no survey evidence.`,
-        path: `patterns.yml.composition_patterns[${index}].evidence`,
-      });
-      return;
-    }
-
-    const supported = evidence.some((entry) =>
-      survey.ui_surfaces.some((surface) => {
-        if (entry.surface_id && surface.id === entry.surface_id) return true;
-        if (entry.locator && surface.locator === entry.locator) return true;
-        if (entry.path && surface.files.includes(entry.path)) return true;
-        return false;
-      }),
-    );
-    if (!supported) {
-      issues.push({
-        severity: "error",
-        rule: "pattern-evidence-unbacked",
-        message: `composition pattern '${pattern.id}' evidence does not match any survey surface id, locator, or file.`,
-        path: `patterns.yml.composition_patterns[${index}].evidence`,
-      });
-    }
-  });
-}
-
-function verifyPatternSurfaceTypes(
-  patterns: GhostPatternsDocument,
-  survey: Survey,
-  issues: VerifyFingerprintIssue[],
-): void {
-  const surveyedTypes = new Set(
-    survey.ui_surfaces
-      .map((surface) => surface.classification?.surface_type)
-      .filter((value): value is string => Boolean(value)),
-  );
-  patterns.surface_types.forEach((surfaceType, index) => {
-    if (surveyedTypes.size === 0 || surveyedTypes.has(surfaceType.id)) return;
-    issues.push({
-      severity: "warning",
-      rule: "surface-type-unobserved",
-      message: `surface type '${surfaceType.id}' is not observed in survey.ui_surfaces[].classification.surface_type.`,
-      path: `patterns.yml.surface_types[${index}].id`,
-    });
-  });
-}
-
-function verifyCheckPatternReferences(
-  patterns: GhostPatternsDocument,
+function verifyFingerprintCheckRefs(
+  fingerprint: GhostFingerprintDocument,
   checks: GhostCheck[],
   issues: VerifyFingerprintIssue[],
 ): void {
-  const patternIds = new Set(
-    patterns.composition_patterns.map((pattern) => pattern.id),
-  );
-  checks.forEach((check, checkIndex) => {
-    check.applies_to?.pattern_ids?.forEach((patternId, patternIndex) => {
-      if (patternIds.has(patternId)) return;
+  const checkIds = new Set(checks.map((check) => check.id));
+  const checkRefLists: Array<[string, string[] | undefined]> = [
+    ...fingerprint.principles.map(
+      (entry, index) =>
+        [
+          `fingerprint.yml.principles[${index}].check_refs`,
+          entry.check_refs,
+        ] as [string, string[] | undefined],
+    ),
+    ...fingerprint.experience_contracts.map(
+      (entry, index) =>
+        [
+          `fingerprint.yml.experience_contracts[${index}].check_refs`,
+          entry.check_refs,
+        ] as [string, string[] | undefined],
+    ),
+    ...fingerprint.patterns.map(
+      (entry, index) =>
+        [`fingerprint.yml.patterns[${index}].check_refs`, entry.check_refs] as [
+          string,
+          string[] | undefined,
+        ],
+    ),
+  ];
+
+  checkRefLists.forEach(([path, refs]) => {
+    refs?.forEach((ref, index) => {
+      const [, id] = ref.split(":");
+      if (id && checkIds.has(id)) return;
       issues.push({
         severity: "error",
-        rule: "check-pattern-unknown",
-        message: `check '${check.id}' references unknown composition pattern '${patternId}'.`,
-        path: `checks.yml.checks[${checkIndex}].applies_to.pattern_ids[${patternIndex}]`,
+        rule: "fingerprint-check-unknown",
+        message: `fingerprint.yml references unknown check '${ref}'.`,
+        path: `${path}[${index}]`,
       });
     });
   });
-}
-
-function isLocalTarget(target: string): boolean {
-  return (
-    target === "." ||
-    target.startsWith("./") ||
-    target.startsWith("../") ||
-    target.startsWith("/")
-  );
 }
 
 async function pathExists(path: string): Promise<boolean> {
