@@ -10,21 +10,27 @@ handles a surface, or what constraints matter before work begins.
 
 ## Steps
 
-1. Read `.ghost/intent.md` when present.
-2. Read `.ghost/map.md` to identify likely scopes and surface types.
-3. Read `.ghost/patterns.yml` for matching surface and composition patterns.
-4. Read `.ghost/checks.yml` for active or proposed deterministic gates.
-5. Read `.ghost/decisions/*.yml`; include only `status: accepted` as canonical.
-6. Skim `.ghost/proposals/*.yml` separately as unresolved candidate updates.
+1. Read `.ghost/fingerprint.yml`.
+2. Identify matching topology scopes, surface types, situations, and examples.
+3. Select relevant principles, experience contracts, patterns, and substrate.
+4. Read `.ghost/checks.yml` for active deterministic gates.
+5. Read `.ghost/decisions/*.yml`; include only `status: accepted` as
+   supplemental rationale.
+6. Skim `.ghost/proposals/*.yml`; include only open proposals as unresolved
+   context.
 
 ## Output
 
 Return a short, cited recall packet:
 
-- Relevant intent.
-- Matching surface patterns.
+- Relevant situation.
+- Product-experience principles.
+- Applicable experience contracts.
+- Matching patterns.
+- Substrate constraints.
 - Active checks.
-- Accepted decisions.
-- Open proposals or unresolved tensions.
+- Accepted rationale.
+- Open proposals or known gaps.
 
-Do not edit files during recall.
+Do not edit files during recall. If the fingerprint does not cover the task,
+say that plainly and suggest the smallest proposal type to record later.
