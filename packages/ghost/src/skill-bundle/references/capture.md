@@ -1,135 +1,118 @@
 ---
 name: capture
-description: Drive Ghost Fingerprint Capture to produce .ghost/{resources.yml,map.md,survey.json,patterns.yml} plus optional checks.yml and intent.md.
+description: Capture repo-local Ghost product-experience memory in .ghost/fingerprint.yml.
 handoffs:
-  - label: Inspect stage status
+  - label: Inspect memory status
     command: ghost scan
-    prompt: What fingerprint capture stage should I run next?
-  - label: Run deterministic drift checks
+    prompt: What fingerprint memory is present and what is missing?
+  - label: Run deterministic checks
     command: ghost check
     prompt: Run ghost check against this bundle
 ---
 
 # Recipe: Capture A Ghost Fingerprint
 
-**Goal:** capture the product's repo-local Ghost fingerprint:
+**Goal:** produce durable product-experience memory that helps agents build,
+review, and repair on-brand work.
 
 ```text
 .ghost/
-  resources.yml
-  map.md
-  survey.json
-  patterns.yml
-  checks.yml
-  intent.md        # optional
+  fingerprint.yml  # canonical product-experience memory
+  checks.yml       # optional deterministic gates
+  proposals/       # candidate memory changes
+  cache/           # optional generated inventory
+  intent.md        # optional human-approved context
 ```
 
-## Overview
-
-```text
-resources -> map -> survey -> patterns
-```
-
-- `resources.yml`: references that define the product.
-- `map.md`: topology and routing.
-- `survey.json`: observed factual evidence.
-- `patterns.yml`: operational composition grammar backed by survey evidence.
-- `checks.yml`: optional human-promoted deterministic gates.
-- `intent.md`: optional human-authored or human-approved product intent.
-
-Fingerprint Capture is a BYOA workflow: the host agent reads, interprets, and
-writes the fingerprint artifacts; the `ghost` CLI supplies deterministic status,
-validation, derivation, and review helpers.
-
-`ghost scan --format json` reports capture progress and `readiness.state`. A
-capture can be structurally complete while still being `substrate-only` or
-`component-demo`; in those states, use tokens, components, and demo evidence,
-but do not treat product composition, hierarchy, surface flow, or product
-rhythm as observed.
+`fingerprint.yml` answers what matters and why. Generated inventory answers
+what exists right now. Keep those separate: inventory may be refreshed or
+discarded, but canonical memory changes only through deliberate edits.
 
 ## Steps
 
-### 0. Initialize
+### 1. Initialize
 
 ```bash
 ghost init
 ghost scan
 ```
 
-Use `--with-intent` only when you have human-authored or human-approved intent
-to record.
+Use `--with-intent` only when you have human-authored or human-approved context
+to preserve. New projects may start with an empty but valid fingerprint and add
+memory as product choices become real.
 
-### 1. Resources
+### 2. Orient
 
-Run when `ghost scan` recommends `resources`.
+Read the product, not just the component library. Look for the surfaces, docs,
+tests, stories, routes, screenshots, or examples that reveal identity,
+hierarchy, behavior, copy, accessibility, and trust.
 
-Author `.ghost/resources.yml` from the target, any design-system repositories,
-canonical screenshots, docs, resolver sources, and include/exclude boundaries.
+Optional helpers:
 
-### 2. Map
+```bash
+ghost inventory . > .ghost/cache/inventory.json
+```
 
-Run when `ghost scan` recommends `map`.
+Treat cache output as scratch material. Do not promote raw inventory into
+fingerprint memory without judgment.
 
-Follow [map.md](map.md). Write `.ghost/map.md`, then validate:
+### 3. Author `fingerprint.yml`
+
+Fill the smallest useful memory:
+
+- `summary`: product identity, audience, goals, anti-goals, tradeoffs, tone.
+- `topology`: scopes, surface types, and representative examples.
+- `situations`: user/task/state moments that change obligations.
+- `principles`: durable product-experience truths.
+- `experience_contracts`: behavior, disclosure, failure, recovery, and trust.
+- `patterns`: visual, behavioral, content, and composition patterns.
+- `substrate`: tokens, components, accessibility, and responsive policy.
+- `review_policy`: proposal and experience-gap handling.
+
+Prefer a few high-confidence entries over a comprehensive but noisy catalog.
+Every accepted entry should be useful to a future agent making or reviewing a
+product change.
+
+### 4. Add Checks Sparingly
+
+`checks.yml` is the executable appendix. Add only deterministic checks with a
+typed `derives_from` reference into `fingerprint.yml`.
+
+```yaml
+derives_from: pattern:resource-index-stays-tabular
+```
+
+Candidate checks belong in `.ghost/proposals/` as `kind: check-candidate` until
+a human promotes them.
+
+### 5. Validate
 
 ```bash
 ghost lint .ghost
-```
-
-### 3. Survey
-
-Run when `ghost scan` recommends `survey`.
-
-Follow [survey.md](survey.md). Write `.ghost/survey.json`, then finalize and
-validate:
-
-```bash
-ghost survey fix-ids .ghost/survey.json -o .ghost/survey.json
-ghost lint .ghost
-```
-
-### 4. Patterns
-
-Run when `ghost scan` recommends `patterns`.
-
-Follow [patterns.md](patterns.md). Start from the derived pattern draft:
-
-```bash
-ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
-```
-
-Curate names, anatomy, variants, anti-patterns, confidence, and evidence. Then:
-
-```bash
 ghost verify .ghost --root <target>
-ghost lint .ghost
-```
-
-If readiness is `substrate-only` or `component-demo`, keep `patterns.yml`
-honest about that limited authority. Empty `composition_patterns` is acceptable
-when no implemented product surfaces exist.
-
-### Optional. Checks
-
-First captures may leave `checks.yml` with `checks: []`. Candidate checks belong
-in your response or capture notes until a human curator promotes them.
-
-When checks are promoted, validate and smoke-test:
-
-```bash
-ghost lint .ghost
 ghost check --base HEAD
 ```
 
-## Resumability
+`lint` validates shape, `verify` validates evidence paths and typed check refs,
+and `check` runs only active deterministic gates.
 
-Run `ghost scan` between stages. To force a stage rerun, delete or replace that
-artifact and re-run status. Do not move forward from a failed lint or verify
-result.
+## Gaps
+
+If the repo does not yet contain enough product experience to capture, say so.
+For missing or contradictory memory, write a proposal with one of:
+
+- `missing-memory`
+- `intentional-divergence`
+- `experience-gap`
+- `check-candidate`
+
+Humans promote durable truth. Agents do not silently rewrite canonical memory.
 
 ## Never
 
 - Never describe root-level `fingerprint.md` as canonical.
-- Never invent values or composition observations absent from `survey.json`.
-- Never promote subjective composition prose directly into `checks.yml`; make it
+- Never treat generated inventory as canonical memory.
+- Never invent product-experience obligations absent from evidence or human
+  direction.
+- Never promote subjective judgment directly into `checks.yml`; make it
   deterministic or keep it advisory.
