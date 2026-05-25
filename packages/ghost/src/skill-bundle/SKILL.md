@@ -13,30 +13,29 @@ Ghost captures product identity in a repo-local fingerprint bundle:
 
 ```text
 .ghost/
-  resources.yml
-  map.md
-  survey.json
-  patterns.yml
+  fingerprint.yml
   checks.yml        # optional deterministic gates
   intent.md         # optional human-approved intent
   decisions/        # optional accepted/rejected rationale
   proposals/        # optional candidate updates
+  cache/            # optional generated caches
 ```
 
-Survey grounds the bundle. Patterns make composition operational. Checks are
-deterministic gates. Intent and decisions preserve human-approved product
-experience context. The host agent reads and writes the fingerprint; the CLI
-provides deterministic validation, comparison, routing, and handoff packets.
+`fingerprint.yml` is the canonical product-experience memory. Checks are
+deterministic gates. Proposals capture missing memory, intentional divergence,
+experience gaps, and check candidates until a human promotes them. The host
+agent reads and writes the fingerprint; the CLI provides deterministic
+validation, comparison, routing, and handoff packets.
 
 ## CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir] [--with-intent]` | Create the root `.ghost` bundle skeleton. |
-| `ghost scan [dir] [--format json]` | Report fingerprint capture progress and the next BYOA step. |
+| `ghost init [dir] [--with-intent]` | Create the root `.ghost` memory skeleton. |
+| `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
 | `ghost inventory [path]` | Emit raw repo signals for map authoring. |
 | `ghost lint [file-or-dir]` | Validate a bundle or individual artifact. |
-| `ghost verify [dir] --root <dir>` | Validate resources, pattern evidence, checks, and optional decisions/proposals. |
+| `ghost verify [dir] --root <dir>` | Validate fingerprint evidence, checks, and optional decisions/proposals. |
 | `ghost survey <op>` | Survey ops: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory review packet grounded in bundle evidence. |
@@ -71,6 +70,6 @@ provides deterministic validation, comparison, routing, and handoff packets.
 ## Never
 
 - Never treat advisory composition judgment as a CI gate.
-- Never invent values or composition patterns absent from `survey.json`.
+- Never invent product-experience memory absent from `fingerprint.yml`.
 - Never treat `intent.md` as authoritative unless human-authored or human-approved.
 - Never treat proposals or rejected decisions as canonical inputs.
