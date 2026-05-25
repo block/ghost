@@ -41,7 +41,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "-f, --fingerprint <path>",
-      "Source legacy direct fingerprint markdown file (required for review-command; optional legacy mode for context-bundle)",
+      "Source legacy direct fingerprint markdown file (required for review-command; legacy mode for context-bundle)",
     )
     .option(
       "-o, --out <path>",
@@ -54,13 +54,13 @@ export function registerEmitCommand(cli: CAC): void {
     // context-bundle flags:
     .option(
       "--no-tokens",
-      "Skip tokens.css output (legacy direct fingerprint context-bundle)",
+      "Skip tokens.css output (legacy direct fingerprint context-bundle only)",
     )
     .option("--readme", "Include README.md (context-bundle)")
     .option("--prompt-only", "Emit only prompt.md (context-bundle)")
     .option(
       "--name <name>",
-      "Override the skill name (default: package or fingerprint id) (context-bundle)",
+      "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {
