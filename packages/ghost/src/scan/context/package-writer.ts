@@ -1,14 +1,8 @@
-import type { Dirent } from "node:fs";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
-import {
-  type GhostFingerprintDocument,
-  type GhostProposalDocument,
-  lintGhostFingerprint,
-  lintGhostProposal,
-} from "#ghost-core";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import type { GhostProposalDocument } from "#ghost-core";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
+import { loadPackageMemory, type PackageMemory } from "./package-memory.js";
 import type { WriteContextResult } from "./writer.js";
 
 export interface WritePackageContextOptions {
@@ -21,20 +15,11 @@ export interface WritePackageContextOptions {
   readme?: boolean;
 }
 
-interface PackageContext {
-  name: string;
-  fingerprint: GhostFingerprintDocument;
-  fingerprintRaw: string;
-  checks?: string;
-  intent?: string;
-  openProposals: GhostProposalDocument[];
-}
-
 export async function writePackageContextBundle(
   paths: FingerprintPackagePaths,
   options: WritePackageContextOptions,
 ): Promise<WriteContextResult> {
-  const context = await loadPackageContext(paths, options.name);
+  const context = await loadPackageMemory(paths, options.name);
   await mkdir(options.outDir, { recursive: true });
   const files: string[] = [];
 
@@ -56,8 +41,13 @@ export async function writePackageContextBundle(
     "fingerprint.yml",
     context.fingerprintRaw,
   );
-  if (context.checks) {
-    await writeContextFile(options.outDir, files, "checks.yml", context.checks);
+  if (context.checksRaw) {
+    await writeContextFile(
+      options.outDir,
+      files,
+      "checks.yml",
+      context.checksRaw,
+    );
   }
   if (context.openProposals.length > 0) {
     await writeContextFile(
@@ -82,93 +72,6 @@ export async function writePackageContextBundle(
   return { outDir: options.outDir, files };
 }
 
-async function loadPackageContext(
-  paths: FingerprintPackagePaths,
-  nameOverride?: string,
-): Promise<PackageContext> {
-  const [fingerprintRaw, checks, intent, openProposals] = await Promise.all([
-    readFile(paths.fingerprintYml, "utf-8"),
-    readOptional(paths.checks),
-    readOptional(paths.intent),
-    readOpenProposals(paths.proposals),
-  ]);
-
-  const parsed = parseYamlSafe(fingerprintRaw, "fingerprint.yml");
-  const report = lintGhostFingerprint(parsed);
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.path ? ` @ ${first.path}` : "";
-    throw new Error(
-      `fingerprint.yml failed lint with ${report.errors} error(s): ${
-        first?.message ?? "invalid fingerprint"
-      }${suffix}`,
-    );
-  }
-
-  const fingerprint = parsed as GhostFingerprintDocument;
-  return {
-    name: sanitizeName(nameOverride ?? inferPackageName(fingerprint)),
-    fingerprint,
-    fingerprintRaw,
-    checks,
-    intent,
-    openProposals,
-  };
-}
-
-async function readOpenProposals(
-  dirPath: string,
-): Promise<GhostProposalDocument[]> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dirPath, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-
-  const proposals: GhostProposalDocument[] = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!entry.isFile()) continue;
-    if (entry.name.startsWith(".")) continue;
-    if (!/\.ya?ml$/i.test(entry.name)) continue;
-
-    const path = resolve(dirPath, entry.name);
-    const parsed = parseYamlSafe(await readFile(path, "utf-8"), path);
-    const report = lintGhostProposal(parsed);
-    if (report.errors > 0) {
-      const first = report.issues.find((issue) => issue.severity === "error");
-      const suffix = first?.path ? ` @ ${first.path}` : "";
-      throw new Error(
-        `${path} failed proposal lint: ${first?.message ?? "invalid proposal"}${suffix}`,
-      );
-    }
-    const proposal = parsed as GhostProposalDocument;
-    if (proposal.status === "open") proposals.push(proposal);
-  }
-
-  return proposals;
-}
-
-function parseYamlSafe(raw: string, label: string): unknown {
-  try {
-    return parseYaml(raw);
-  } catch (err) {
-    throw new Error(
-      `${label} is not valid YAML: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-  }
-}
-
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
-
 async function writeContextFile(
   outDir: string,
   files: string[],
@@ -180,22 +83,7 @@ async function writeContextFile(
   files.push(outPath);
 }
 
-function inferPackageName(fingerprint: GhostFingerprintDocument): string {
-  if (fingerprint.summary.product) return fingerprint.summary.product;
-  const firstScope = fingerprint.topology.scopes?.[0]?.id;
-  if (firstScope) return firstScope;
-  return "ghost-package";
-}
-
-function sanitizeName(value: string): string {
-  const name = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return name || "ghost-package";
-}
-
-function buildPackageSkillMd(context: PackageContext): string {
+function buildPackageSkillMd(context: PackageMemory): string {
   return `---
 name: ${context.name}
 description: Use this Ghost product-experience memory to preserve on-brand UI generation and review.
@@ -217,7 +105,7 @@ proposals as unresolved context, not canonical truth.
 `;
 }
 
-function buildPackagePromptMd(context: PackageContext): string {
+function buildPackagePromptMd(context: PackageMemory): string {
   const parts = [
     `You are working inside the **${context.name}** product experience as captured by Ghost.`,
   ];
@@ -228,11 +116,11 @@ function buildPackagePromptMd(context: PackageContext): string {
 ${context.fingerprintRaw.trim()}
 \`\`\``);
 
-  if (context.checks?.trim()) {
+  if (context.checksRaw?.trim()) {
     parts.push(`# Active Checks
 
 \`\`\`yaml
-${context.checks.trim()}
+${context.checksRaw.trim()}
 \`\`\``);
   }
 
@@ -275,7 +163,7 @@ function formatOpenProposals(proposals: GhostProposalDocument[]): string {
   return lines.join("\n");
 }
 
-function buildPackageReadmeMd(context: PackageContext): string {
+function buildPackageReadmeMd(context: PackageMemory): string {
   return `# ${context.name} context bundle
 
 Generated by \`ghost emit context-bundle\` from a root Ghost fingerprint
@@ -286,7 +174,7 @@ package.
 - \`SKILL.md\` - agent skill manifest.
 - \`prompt.md\` - portable prompt distilled from \`fingerprint.yml\`.
 - \`fingerprint.yml\` - canonical product-experience memory.
-${context.checks ? "- `checks.yml` - deterministic gates.\n" : ""}${context.openProposals.length > 0 ? "- `open-proposals.md` - unresolved candidate memory updates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-approved context.\n" : ""}
+${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.openProposals.length > 0 ? "- `open-proposals.md` - unresolved candidate memory updates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-approved context.\n" : ""}
 Regenerate this bundle when \`fingerprint.yml\`, active checks, or open
 proposals change.
 `;

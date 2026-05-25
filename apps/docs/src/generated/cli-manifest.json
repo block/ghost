@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T03:08:24.462Z",
+  "generatedAt": "2026-05-25T03:16:23.560Z",
   "tools": [
     {
       "tool": "ghost",
@@ -180,7 +180,7 @@
             {
               "rawName": "-f, --fingerprint <path>",
               "name": "fingerprint",
-              "description": "Source legacy direct fingerprint markdown file (required for review-command; legacy mode for context-bundle)",
+              "description": "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -228,7 +228,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the skill name (default: fingerprint.yml product or fingerprint id) (context-bundle)",
+              "description": "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false
