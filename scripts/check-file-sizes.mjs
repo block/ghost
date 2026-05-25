@@ -16,9 +16,9 @@ const EXCEPTIONS = {
       "Unified CLI command registry — review/check/compare plus drift stance verbs live together for one public bin",
   },
   "packages/ghost/src/scan-commands.ts": {
-    limit: 1050,
+    limit: 1100,
     justification:
-      "Scan and fingerprint bundle command registry — one unified CLI groups init, scan, lint, verify, survey, describe, diff, and emit verbs",
+      "Scan and fingerprint bundle command registry — temporarily holds legacy markdown and fingerprint.yml package verbs until the command registry is split",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,
