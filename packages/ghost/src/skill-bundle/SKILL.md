@@ -33,7 +33,7 @@ validation, comparison, routing, and handoff packets.
 |---|---|
 | `ghost init [dir] [--with-intent]` | Create the root `.ghost` memory skeleton. |
 | `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
-| `ghost inventory [path]` | Emit raw repo signals for map authoring. |
+| `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
 | `ghost lint [file-or-dir]` | Validate a bundle or individual artifact. |
 | `ghost verify [dir] --root <dir>` | Validate fingerprint evidence, checks, and optional decisions/proposals. |
 | `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |

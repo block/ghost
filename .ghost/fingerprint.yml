@@ -1,0 +1,254 @@
+schema: ghost.fingerprint/v1
+summary:
+  product: Ghost
+  audience:
+    - OSS maintainers adopting AI-assisted product workflows
+    - agents generating or reviewing product UI
+    - Ghost contributors
+  goals:
+    - Keep product-experience memory repo-local, portable, and easy for agents to read.
+    - Preserve product identity across generation, review, and remediation.
+    - Separate durable judgment from generated inventory and cache.
+  anti_goals:
+    - Treat raw inventory as canonical product truth.
+    - Turn Ghost into a design-system snapshot or screenshot archive.
+    - Let advisory review block work without deterministic checks.
+  tradeoffs:
+    - Prefer compact durable memory over exhaustive surveys.
+    - Keep checks separate so fingerprint.yml stays readable.
+    - Preserve OSS-friendly language over company-specific strategy.
+  tone:
+    - plain
+    - precise
+    - restrained
+    - product-minded
+topology:
+  scopes:
+    - id: public-cli
+      paths:
+        - packages/ghost/src
+      surface_types:
+        - cli-command
+        - emitted-agent-prompt
+    - id: skill-bundle
+      paths:
+        - packages/ghost/src/skill-bundle
+      surface_types:
+        - agent-recipe
+    - id: docs-site
+      paths:
+        - docs
+        - README.md
+        - apps/docs
+      surface_types:
+        - docs-home
+        - docs-foundation
+        - tool-doc
+    - id: ghost-ui-components
+      paths:
+        - packages/ghost-ui
+      surface_types:
+        - component-catalogue
+        - primitive-demo
+        - theme-control
+  surface_types:
+    - agent-recipe
+    - cli-command
+    - component-catalogue
+    - docs-foundation
+    - docs-home
+    - emitted-agent-prompt
+    - primitive-demo
+    - theme-control
+    - tool-doc
+  examples:
+    - path: README.md
+      surface_type: docs-home
+      note: Public entry point must describe fingerprint.yml as canonical memory.
+    - path: packages/ghost/src/scan/context/package-review-command.ts
+      surface_type: emitted-agent-prompt
+      note: Review command is generated from fingerprint.yml memory.
+situations:
+  - id: capturing-memory
+    title: Capturing repo memory
+    user_intent: Create or update Ghost memory for a project.
+    product_obligation: Help the agent distinguish canonical memory from optional inventory.
+    principles:
+      - principle:fingerprint-is-canonical
+      - principle:inventory-is-cache
+    experience_contracts:
+      - experience_contract:agents-propose-before-promoting
+    patterns:
+      - pattern:fingerprint-first-bundle
+  - id: reviewing-generated-ui
+    title: Reviewing generated or changed UI
+    user_intent: Know whether a change preserves the product experience.
+    product_obligation: Separate deterministic blocking checks from advisory critique.
+    principles:
+      - principle:checks-are-executable-appendix
+    experience_contracts:
+      - experience_contract:review-cites-memory-and-diff
+    patterns:
+      - pattern:compact-agent-handoff
+  - id: documenting-ghost
+    title: Explaining Ghost in public docs
+    user_intent: Understand the model without internal company context.
+    product_obligation: Use OSS-safe language and examples that fit many repo shapes.
+    principles:
+      - principle:oss-language-is-portable
+    patterns:
+      - pattern:editorial-workbench-docs
+principles:
+  - id: fingerprint-is-canonical
+    status: accepted
+    principle: fingerprint.yml is canonical product-experience memory; other generated artifacts are source material or output.
+    guidance:
+      - Describe the fingerprint as product experience memory, not a design-system snapshot.
+      - Keep durable identity, hierarchy, behavior, copy, accessibility, trust, and flow in fingerprint.yml.
+    evidence:
+      - path: docs/fingerprint-format.md
+        note: Public format docs define fingerprint.yml as the source of truth.
+      - path: packages/ghost/src/scan/fingerprint-package.ts
+        note: init writes fingerprint.yml, checks.yml, proposals, and cache.
+  - id: inventory-is-cache
+    status: accepted
+    principle: Generated inventory answers what exists; fingerprint memory answers what matters and why.
+    guidance:
+      - Store generated inventory under cache when useful.
+      - Promote only durable conclusions into fingerprint.yml.
+    evidence:
+      - path: README.md
+        note: README frames inventory as optional cache/source material.
+  - id: checks-are-executable-appendix
+    status: accepted
+    principle: Deterministic checks stay outside fingerprint.yml and must be grounded in typed memory refs.
+    guidance:
+      - Active checks can block; advisory findings cannot block unless check-backed.
+      - Use typed refs such as pattern:token-first-interface.
+    evidence:
+      - path: packages/ghost/src/ghost-core/checks/lint.ts
+        note: Active checks require typed derives_from grounding.
+  - id: oss-language-is-portable
+    status: accepted
+    principle: Public Ghost docs and generated prompts should work for arbitrary OSS repos without internal strategy language.
+    guidance:
+      - Use examples that fit docs sites, dashboards, SaaS apps, games, and component libraries.
+      - Avoid private company concepts in public docs.
+    evidence:
+      - path: docs/fingerprint-format.md
+      - path: docs/generation-loop.md
+experience_contracts:
+  - id: review-cites-memory-and-diff
+    status: accepted
+    contract: Advisory review findings must cite the diff location and the relevant fingerprint memory.
+    obligations:
+      - Use active checks only when a finding should block.
+      - Use missing-memory or experience-gap when the fingerprint cannot support a confident judgment.
+    evidence:
+      - path: packages/ghost/src/scan/context/package-review-command.ts
+        note: Emitted review command tells agents what to cite.
+  - id: agents-propose-before-promoting
+    status: accepted
+    contract: Agents create proposals for gaps or intentional divergence; humans promote durable memory.
+    obligations:
+      - Do not rewrite canonical memory silently during generation or review.
+      - Use proposals for missing-memory, intentional-divergence, experience-gap, and check-candidate cases.
+    evidence:
+      - path: packages/ghost/src/skill-bundle/references/propose.md
+  - id: emitted-context-prefers-memory
+    status: accepted
+    contract: Emitted context bundles and review commands should prefer fingerprint.yml over legacy survey or markdown artifacts.
+    obligations:
+      - Default emit paths load fingerprint.yml package memory.
+      - Explicit legacy markdown emission requires --fingerprint.
+    evidence:
+      - path: packages/ghost/src/scan/context/package-writer.ts
+      - path: packages/ghost/src/scan-emit-command.ts
+patterns:
+  - id: fingerprint-first-bundle
+    status: accepted
+    kind: composition
+    pattern: Root Ghost bundles start from fingerprint.yml, then attach checks, proposals, decisions, intent, and cache only when useful.
+    guidance:
+      - Do not require survey or inventory for a valid new project.
+      - Keep optional cache outside canonical memory.
+    evidence:
+      - path: README.md
+      - path: docs/fingerprint-format.md
+  - id: compact-agent-handoff
+    status: accepted
+    kind: content
+    pattern: CLI and emitted prompts should tell the host agent exactly which memory to read and which findings can block.
+    guidance:
+      - Prefer short ordered workflows over broad conceptual lectures.
+      - Name proposal categories when memory is missing or contradictory.
+    evidence:
+      - path: packages/ghost/src/scan/context/package-review-command.ts
+  - id: editorial-workbench-docs
+    status: accepted
+    kind: visual
+    pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.
+    applies_to:
+      scopes:
+        - docs-site
+      surface_types:
+        - docs-home
+        - docs-foundation
+        - tool-doc
+    guidance:
+      - Keep concepts plain and examples inspectable.
+      - Avoid oversized marketing composition for reference pages.
+    check_refs:
+      - check:component-pages-use-display-scale
+    evidence:
+      - path: apps/docs/src/components/docs/page-header.tsx
+      - path: apps/docs/src/components/docs/component-page-shell.tsx
+  - id: token-first-interface
+    status: accepted
+    kind: visual
+    pattern: Ghost UI surfaces use semantic tokens for repeatable color and avoid ad hoc surface hex values.
+    applies_to:
+      scopes:
+        - docs-site
+        - ghost-ui-components
+      surface_types:
+        - component-catalogue
+        - docs-foundation
+        - docs-home
+        - primitive-demo
+        - theme-control
+    guidance:
+      - Define color meaning in the token layer before repeating values in components.
+      - Treat one-off literal colors in UI surfaces as review-worthy drift.
+    check_refs:
+      - check:no-hardcoded-surface-hex
+    evidence:
+      - path: packages/ghost-ui/src/styles/main.css
+substrate:
+  tokens:
+    - semantic color CSS variables
+    - font-display
+    - spacing and radius scales
+  components:
+    - Button
+    - CodeBlock
+    - ComponentPageShell
+    - PageHeader
+  accessibility:
+    - Preserve keyboard-reachable controls and readable code examples.
+    - Keep advisory review separate from dedicated accessibility audits.
+  responsive:
+    - Keep docs and reference content readable on narrow screens.
+    - Let dense work surfaces collapse controls before hiding primary content.
+review_policy:
+  proposal_policy:
+    - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.
+    - Humans promote durable memory into fingerprint.yml or checks.yml.
+  experience_gap_categories:
+    - missing-memory
+    - intentional-divergence
+    - experience-gap
+    - check-candidate
+  memory_gap_policy:
+    - Report uncertainty instead of inventing product truth.
+    - Treat repeated composition failures as product signal.
