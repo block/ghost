@@ -34,7 +34,9 @@ export {
 // --- Context (review-command + context-bundle) ---
 export type {
   ContextFormat,
+  EmitPackageReviewInput,
   EmitReviewInput,
+  PackageMemory,
   WriteContextOptions,
   WriteContextResult,
   WritePackageContextOptions,
@@ -42,7 +44,9 @@ export type {
 export {
   buildSkillMd,
   buildTokensCss,
+  emitPackageReviewCommand,
   emitReviewCommand,
+  loadPackageMemory,
   writeContextBundle,
   writePackageContextBundle,
 } from "./context/index.js";

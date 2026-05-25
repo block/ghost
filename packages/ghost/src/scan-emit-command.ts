@@ -2,8 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
+  emitPackageReviewCommand,
   emitReviewCommand,
   loadFingerprint,
+  loadPackageMemory,
   resolveFingerprintPackage,
   writeContextBundle,
   writePackageContextBundle,
@@ -41,7 +43,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "-f, --fingerprint <path>",
-      "Source legacy direct fingerprint markdown file (required for review-command; legacy mode for context-bundle)",
+      "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
     )
     .option(
       "-o, --out <path>",
@@ -72,19 +74,26 @@ export function registerEmitCommand(cli: CAC): void {
         }
 
         const explicitFingerprint = typeof opts.fingerprint === "string";
+        const packagePaths = resolveFingerprintPackage(
+          undefined,
+          process.cwd(),
+        );
 
         if (parsed.kind === "review-command") {
-          const fingerprintPath = resolve(
-            process.cwd(),
-            opts.fingerprint ??
-              resolveFingerprintPackage(undefined, process.cwd()).fingerprint,
-          );
-          const loaded = await loadFingerprint(fingerprintPath, {
-            noEmbeddingBackfill: true,
-          });
-          const content = emitReviewCommand({
-            fingerprint: loaded.fingerprint,
-          });
+          let content: string;
+          if (explicitFingerprint) {
+            const loaded = await loadFingerprint(
+              resolve(process.cwd(), opts.fingerprint),
+              {
+                noEmbeddingBackfill: true,
+              },
+            );
+            content = emitReviewCommand({ fingerprint: loaded.fingerprint });
+          } else {
+            content = emitPackageReviewCommand({
+              memory: await loadPackageMemory(packagePaths),
+            });
+          }
 
           if (opts.stdout) {
             process.stdout.write(content);
@@ -110,15 +119,12 @@ export function registerEmitCommand(cli: CAC): void {
         );
 
         if (!explicitFingerprint) {
-          const result = await writePackageContextBundle(
-            resolveFingerprintPackage(undefined, process.cwd()),
-            {
-              outDir,
-              readme: Boolean(opts.readme),
-              promptOnly: Boolean(opts.promptOnly),
-              name: opts.name as string | undefined,
-            },
-          );
+          const result = await writePackageContextBundle(packagePaths, {
+            outDir,
+            readme: Boolean(opts.readme),
+            promptOnly: Boolean(opts.promptOnly),
+            name: opts.name as string | undefined,
+          });
 
           process.stdout.write(
             `Wrote ${result.files.length} file${
