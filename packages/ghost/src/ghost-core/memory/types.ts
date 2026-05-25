@@ -10,12 +10,12 @@ export type GhostProposalStatus =
   | "accepted"
   | "rejected"
   | "superseded";
-export type GhostProposalKind = "decision" | "pattern" | "check" | "intent";
-export type GhostProposalTarget =
-  | "decisions"
-  | "patterns"
-  | "checks"
-  | "intent";
+export type GhostProposalKind =
+  | "missing-memory"
+  | "intentional-divergence"
+  | "experience-gap"
+  | "check-candidate";
+export type GhostProposalTarget = "fingerprint" | "checks" | "review_policy";
 
 export interface GhostExperienceScope {
   roles?: string[];
