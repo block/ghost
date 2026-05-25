@@ -437,11 +437,11 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
     expect(result.stdout).toContain("diff location");
-    expect(result.stdout).toContain("patterns.yml composition pattern");
-    expect(result.stdout).toContain("survey evidence");
-    expect(result.stdout).toContain("intent.md when relevant");
-    expect(result.stdout).toContain("precedent/example");
-    expect(result.stdout).toContain("repair");
+    expect(result.stdout).toContain("fingerprint.yml memory");
+    expect(result.stdout).toContain("active check when blocking");
+    expect(result.stdout).toContain("missing-memory");
+    expect(result.stdout).toContain("experience-gap");
+    expect(result.stdout).toContain("repair or intentional-divergence");
   });
 
   it("review omits product-experience memory by default", async () => {
@@ -459,6 +459,10 @@ describe("ghost CLI", () => {
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
+    expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v1");
+    expect(packet.finding_categories).toContain("experience-gap");
+    expect(packet.proposal_types).toContain("check-candidate");
+    expect(packet.open_proposals).toEqual([]);
     expect(packet.memory).toBeUndefined();
   });
 
