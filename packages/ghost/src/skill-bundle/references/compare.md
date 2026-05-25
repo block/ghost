@@ -7,7 +7,7 @@ handoffs:
     prompt: Accept current drift across the board
   - label: Track the other fingerprint
     command: ghost track
-    prompt: Track the other fingerprint.md as the new reference
+    prompt: Track the other fingerprint as the new reference
   - label: Declare a dimension intentionally divergent
     command: ghost diverge
     prompt: Record an intentional divergence on a specific dimension
@@ -23,7 +23,7 @@ handoffs:
 
     ghost compare a/.ghost b/.ghost
 
-Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Bundle inputs are synthesized from survey values plus pattern frequencies; direct fingerprint markdown files still use their embedded frontmatter.
+Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Bundle inputs use canonical Ghost memory when available; direct fingerprint markdown files still use their embedded frontmatter as legacy inputs.
 
 Flags:
 - `--semantic` — add qualitative diff for direct fingerprint markdown comparisons
