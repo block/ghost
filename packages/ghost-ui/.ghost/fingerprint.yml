@@ -1,0 +1,47 @@
+schema: ghost.fingerprint/v1
+summary:
+  product: Ghost UI
+  audience:
+    - Agents and engineers composing AI/product interfaces from the Ghost UI registry.
+  goals:
+    - Provide a reusable implementation vocabulary of tokens, primitives, AI elements, and interaction conventions.
+  anti_goals:
+    - Define product-specific flows, copy, trust obligations, or business intent for consuming apps.
+topology:
+  scopes:
+    - id: ui-primitives
+      paths: [src/components/ui]
+      surface_types: [component-library]
+    - id: ai-elements
+      paths: [src/components/ai-elements]
+      surface_types: [component-library]
+    - id: tokens
+      paths: [src/styles]
+      surface_types: [token-system]
+    - id: registry
+      paths: [registry.json, public/r/registry.json]
+      surface_types: [shadcn-registry]
+situations: []
+principles: []
+experience_contracts: []
+patterns: []
+implementation_vocabulary:
+  tokens:
+    - src/styles/main.css
+  components:
+    - src/components/ui
+    - src/components/ai-elements
+    - public/r/registry.json
+    - registry.json
+  libraries:
+    - shadcn-registry
+    - radix-ui
+    - lucide-react
+    - tailwindcss
+  assets:
+    - src/fonts
+  notes:
+    - Ghost UI is registry-distributed implementation vocabulary, not an installable npm package or consuming-product experience memory.
+review_policy:
+  proposal_policy:
+    - Consumers create product-specific proposals in their own .ghost bundle.

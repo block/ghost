@@ -14,7 +14,12 @@ import {
   lintGhostDecision,
   lintGhostProposal,
 } from "#ghost-core";
-import { formatSemanticDiff, resolveFingerprintPackage } from "#scan";
+import {
+  formatSemanticDiff,
+  type GhostPackageConfig,
+  readOptionalPackageConfig,
+  resolveFingerprintPackage,
+} from "#scan";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {
   compare,
@@ -248,6 +253,7 @@ export function buildCli(): ReturnType<typeof cac> {
           fingerprint: parseYaml(await readFile(paths.fingerprintYml, "utf-8")),
           intent: (await readOptional(paths.intent)) ?? null,
           checks: (await readOptional(paths.checks)) ?? null,
+          config: (await readOptionalPackageConfig(paths.config)) ?? null,
           open_proposals: await readOpenProposals(
             resolve(paths.dir, GHOST_PROPOSALS_DIRNAME),
           ),
@@ -339,6 +345,7 @@ interface ReviewPacket {
   fingerprint: unknown;
   intent: string | null;
   checks: string | null;
+  config: GhostPackageConfig | null;
   open_proposals: GhostProposalDocument[];
   memory?: { decisions: GhostDecisionDocument[] };
   diff: string;
@@ -371,6 +378,8 @@ ${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonica
 \`\`\`
 
 ${formatMemorySection(packet.memory ?? null)}
+
+${formatConfigSection(packet.config)}
 
 ${formatProposalSection(packet.open_proposals)}
 
@@ -498,6 +507,22 @@ _No accepted decisions found in .ghost/decisions._
   }
 
   return lines.join("\n");
+}
+
+function formatConfigSection(config: GhostPackageConfig | null): string {
+  if (!config) {
+    return `## Implementation Config
+
+_No config.yml present. Review uses fingerprint.yml memory and the provided diff only._
+`;
+  }
+
+  return `## Implementation Config
+
+\`\`\`yaml
+${stringifyYaml(config)}
+\`\`\`
+`;
 }
 
 function formatProposalSection(proposals: GhostProposalDocument[]): string {

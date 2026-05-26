@@ -19,6 +19,7 @@ export type { MapFeatureArea } from "./scopes.js";
 export { getEffectiveMapScopes, slugifyScopeId } from "./scopes.js";
 export type {
   GitInfo,
+  InventoryConfigSummary,
   InventoryOutput,
   LanguageHistogramEntry,
   TopLevelEntry,
