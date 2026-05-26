@@ -6,6 +6,7 @@ A Ghost fingerprint is a repo-local product experience memory bundle rooted at
 ```text
 .ghost/
   fingerprint.yml  # canonical product experience memory
+  config.yml       # optional implementation roots and reference registries/libraries
   checks.yml       # optional deterministic gates
   intent.md        # optional human-authored or human-approved intent
   decisions/       # optional ghost.decision/v1 rationale
@@ -13,9 +14,10 @@ A Ghost fingerprint is a repo-local product experience memory bundle rooted at
   cache/           # optional generated inventory and other ephemeral facts
 ```
 
-`fingerprint.yml` is the source of truth. `checks.yml` is the executable
-appendix. Proposals are unresolved candidate changes. Cache is refreshable and
-may be deleted without losing canonical memory.
+`fingerprint.yml` is the source of truth. `config.yml` routes implementation
+and reference registry/library context without defining product intent. `checks.yml` is
+the executable appendix. Proposals are unresolved candidate changes. Cache is
+refreshable and may be deleted without losing canonical memory.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` files may
 still appear in older repos or as migration/source material. They are not
@@ -185,6 +187,7 @@ proposed_action:
 
 ```bash
 ghost init --with-intent
+ghost init --with-config --reference packages/ghost-ui/.ghost
 ghost lint .ghost
 ghost verify .ghost --root .
 ghost check --base main
@@ -192,6 +195,11 @@ ghost review --base main --include-memory
 ghost emit review-command
 ghost emit context-bundle
 ```
+
+When `--reference packages/ghost-ui/.ghost` is used, generated config points to
+`registry:packages/ghost-ui/public/r/registry.json` and separately records
+`packages/ghost-ui/.ghost/fingerprint.yml`. The registry is implementation
+vocabulary; it is not copied into the product's own memory.
 
 Use `ghost inventory > .ghost/cache/inventory.json` when observed repo facts are
 useful source material. Promote only durable conclusions into

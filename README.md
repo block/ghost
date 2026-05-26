@@ -13,6 +13,9 @@ The canonical bundle is intentionally small:
 - **`.ghost/fingerprint.yml`** is the source of truth for product experience
   memory: summary, topology, situations, principles, experience contracts,
   patterns, implementation vocabulary, and review policy.
+- **`.ghost/config.yml`** optionally records implementation roots and
+  reference registries/libraries so agents know where to look without treating
+  reference defaults as product intent.
 - **`.ghost/checks.yml`** optionally stores deterministic gates grounded in
   fingerprint memory.
 - **`.ghost/intent.md`** optionally records human-authored or human-approved
@@ -70,14 +73,21 @@ During capture, the agent checkpoints with commands like:
 
 ```bash
 ghost init --with-intent
+ghost init --with-config --reference packages/ghost-ui/.ghost
 ghost scan --format json
 ghost inventory > .ghost/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
+For Ghost UI, `--reference packages/ghost-ui/.ghost` writes config that points
+at `registry:packages/ghost-ui/public/r/registry.json` plus the Ghost UI
+reference fingerprint. It does not create or require an installable Ghost UI
+package.
+
 Inventory is optional source material. Durable conclusions belong in
-`.ghost/fingerprint.yml`; executable gates belong in `.ghost/checks.yml`.
+`.ghost/fingerprint.yml`; implementation routing belongs in optional
+`.ghost/config.yml`; executable gates belong in `.ghost/checks.yml`.
 
 ## Drift Workflow
 
@@ -101,7 +111,7 @@ LLM.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`. |
+| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`; use `--with-config` and optional `--reference` for implementation/library wiring. |
 | `ghost scan` | Report fingerprint capture progress and emit the next BYOA handoff. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/material gathering. |
 | `ghost lint` | Validate a bundle or individual artifact. |

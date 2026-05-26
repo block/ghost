@@ -10,6 +10,9 @@ export const PATTERNS_FILENAME = "patterns.yml";
 /** Canonical product experience memory artifact. */
 export const FINGERPRINT_YML_FILENAME = "fingerprint.yml";
 
+/** Optional data-only package configuration artifact. */
+export const CONFIG_FILENAME = "config.yml";
+
 /** Optional filename for human-authored or human-approved intent. */
 export const INTENT_FILENAME = "intent.md";
 

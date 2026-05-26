@@ -16,6 +16,7 @@ import {
 } from "#ghost-core";
 import {
   CACHE_DIRNAME,
+  CONFIG_FILENAME,
   DECISIONS_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
@@ -26,10 +27,16 @@ import {
   RESOURCES_FILENAME,
 } from "./constants.js";
 import type { LintIssue, LintReport } from "./lint.js";
+import {
+  lintGhostPackageConfig,
+  normalizeReferenceInput,
+  templatePackageConfig,
+} from "./package-config.js";
 
 export interface FingerprintPackagePaths {
   dir: string;
   fingerprintYml: string;
+  config: string;
   resources: string;
   map: string;
   survey: string;
@@ -45,6 +52,8 @@ export interface FingerprintPackagePaths {
 
 export interface InitFingerprintPackageOptions {
   withIntent?: boolean;
+  withConfig?: boolean;
+  reference?: string;
 }
 
 export function resolveFingerprintPackage(
@@ -55,6 +64,7 @@ export function resolveFingerprintPackage(
   return {
     dir,
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
+    config: join(dir, CONFIG_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
     map: join(dir, MAP_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
@@ -78,8 +88,21 @@ export async function initFingerprintPackage(
   await Promise.all([
     mkdir(paths.proposals, { recursive: true }),
     mkdir(paths.cache, { recursive: true }),
-    writeFile(paths.fingerprintYml, templateFingerprintYml(), "utf-8"),
+    writeFile(
+      paths.fingerprintYml,
+      templateFingerprintYml(options.reference),
+      "utf-8",
+    ),
     writeFile(paths.checks, templateChecks(), "utf-8"),
+    ...(options.withConfig
+      ? [
+          writeFile(
+            paths.config,
+            templatePackageConfig(options.reference),
+            "utf-8",
+          ),
+        ]
+      : []),
     ...(options.withIntent
       ? [writeFile(paths.intent, templateIntent(), "utf-8")]
       : []),
@@ -99,6 +122,7 @@ export async function lintFingerprintPackage(
     "fingerprint.yml",
     issues,
   );
+  const configRaw = await readOptional(paths.config);
   const checksRaw = await readOptional(paths.checks);
   const intentRaw = await readOptional(paths.intent);
   await lintMemoryDirectory(
@@ -126,6 +150,14 @@ export async function lintFingerprintPackage(
       fingerprint = result.success
         ? (result.data as GhostFingerprintDocument)
         : undefined;
+    }
+  }
+
+  if (configRaw !== undefined) {
+    const config = parseYamlSafe(configRaw, "config.yml", issues);
+    if (config !== undefined) {
+      const configReport = lintGhostPackageConfig(config);
+      issues.push(...prefixIssues("config.yml", configReport.issues));
     }
   }
 
@@ -279,7 +311,19 @@ function finalize(issues: LintIssue[]): LintReport {
   };
 }
 
-function templateFingerprintYml(): string {
+function templateFingerprintYml(reference?: string): string {
+  const referenceInput = reference
+    ? normalizeReferenceInput(reference)
+    : undefined;
+  const implementationVocabulary = referenceInput
+    ? `implementation_vocabulary:
+  libraries:
+    - ${referenceInput.id}
+  notes:
+    - Product experience memory is intentionally blank until human-authored or human-approved.
+`
+    : "implementation_vocabulary: {}\n";
+
   return `schema: ${GHOST_FINGERPRINT_SCHEMA}
 summary: {}
 topology: {}
@@ -287,8 +331,7 @@ situations: []
 principles: []
 experience_contracts: []
 patterns: []
-implementation_vocabulary: {}
-review_policy:
+${implementationVocabulary}review_policy:
   proposal_policy:
     - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.
     - Humans promote durable memory into fingerprint.yml and checks.yml.
