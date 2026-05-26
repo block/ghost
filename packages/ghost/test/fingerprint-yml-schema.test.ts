@@ -19,11 +19,22 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.issues).toEqual([]);
   });
 
-  it("rejects unknown top-level fields", () => {
+  it("rejects old substrate top-level fields", () => {
     const result = GhostFingerprintSchema.safeParse({
       ...minimalFingerprint(),
-      survey: {},
+      substrate: {},
     });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects implementation vocabulary as a typed ref target", () => {
+    const input = fullFingerprint();
+    input.situations[0].patterns = [
+      "implementation_vocabulary:semantic-tokens",
+    ];
+
+    const result = GhostFingerprintSchema.safeParse(input);
 
     expect(result.success).toBe(false);
   });
@@ -92,7 +103,7 @@ function minimalFingerprint() {
     principles: [],
     experience_contracts: [],
     patterns: [],
-    substrate: {},
+    implementation_vocabulary: {},
     review_policy: {},
   };
 }
@@ -183,11 +194,12 @@ function fullFingerprint() {
         guidance: ["keep primary filters before secondary actions"],
       },
     ],
-    substrate: {
+    implementation_vocabulary: {
       tokens: ["use semantic color tokens"],
       components: ["prefer shared table primitives"],
-      accessibility: ["preserve keyboard filtering path"],
-      responsive: ["preserve row comparability across breakpoints"],
+      libraries: ["local dashboard primitives"],
+      assets: ["status icons"],
+      notes: ["current vocabulary is replaceable implementation material"],
     },
     review_policy: {
       proposal_policy: ["agents may propose but not promote memory"],

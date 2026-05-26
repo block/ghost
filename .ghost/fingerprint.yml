@@ -164,6 +164,17 @@ experience_contracts:
     evidence:
       - path: packages/ghost/src/scan/context/package-writer.ts
       - path: packages/ghost/src/scan-emit-command.ts
+  - id: interfaces-preserve-operability
+    status: accepted
+    contract: Ghost interfaces should preserve operability, readable examples, and responsive access before visual polish.
+    obligations:
+      - Preserve keyboard-reachable controls and readable code examples.
+      - Keep docs and reference content readable on narrow screens.
+      - Let dense work surfaces collapse controls before hiding primary content.
+      - Keep advisory review separate from dedicated accessibility audits.
+    evidence:
+      - path: docs/generation-loop.md
+      - path: apps/docs/src/components/docs/component-page-shell.tsx
 patterns:
   - id: fingerprint-first-bundle
     status: accepted
@@ -220,11 +231,12 @@ patterns:
     guidance:
       - Define color meaning in the token layer before repeating values in components.
       - Treat one-off literal colors in UI surfaces as review-worthy drift.
+      - Using the right token is not enough if hierarchy, disclosure, or operability regresses.
     check_refs:
       - check:no-hardcoded-surface-hex
     evidence:
       - path: packages/ghost-ui/src/styles/main.css
-substrate:
+implementation_vocabulary:
   tokens:
     - semantic color CSS variables
     - font-display
@@ -234,12 +246,15 @@ substrate:
     - CodeBlock
     - ComponentPageShell
     - PageHeader
-  accessibility:
-    - Preserve keyboard-reachable controls and readable code examples.
-    - Keep advisory review separate from dedicated accessibility audits.
-  responsive:
-    - Keep docs and reference content readable on narrow screens.
-    - Let dense work surfaces collapse controls before hiding primary content.
+  libraries:
+    - shadcn-style registry primitives
+    - lucide icons
+  assets:
+    - CLI manifest JSON
+    - docs code examples
+  notes:
+    - Implementation vocabulary is replaceable material; product memory owns the judgment.
+    - Correct components or tokens do not prove an experience is on-brand.
 review_policy:
   proposal_policy:
     - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.

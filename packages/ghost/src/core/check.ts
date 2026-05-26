@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { parse as parseYaml } from "yaml";
 import {
+  GHOST_CHECKS_SCHEMA,
   type GhostCheck,
   type GhostChecksDocument,
   GhostChecksSchema,
@@ -222,7 +223,7 @@ async function loadCheckPackage(
       dir: paths.dir,
       map,
       checks: {
-        schema: "ghost.checks/v1",
+        schema: GHOST_CHECKS_SCHEMA,
         id: "none",
         checks: [],
       },

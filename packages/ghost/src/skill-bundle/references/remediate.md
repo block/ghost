@@ -40,8 +40,8 @@ You need:
 
 For every finding, identify the relevant fingerprint entry:
 
-- Token drift -> `substrate.tokens`, related pattern, or active check.
-- Component drift -> `substrate.components` or applicable pattern.
+- Token drift -> related principle, pattern, or active check.
+- Component drift -> related principle, pattern, or active check.
 - Hierarchy/density drift -> principle, situation, or composition pattern.
 - Disclosure/recovery drift -> experience contract.
 - Copy/trust drift -> principle, experience contract, or review policy.
@@ -55,7 +55,7 @@ Rank findings by how much product experience they restore:
 
 - **Blocking**: active check failures.
 - **Load-bearing**: violations of principles, contracts, or required patterns.
-- **Local cleanup**: small substrate mismatches with obvious fixes.
+- **Local cleanup**: small implementation mismatches with obvious fixes.
 - **Uncertain**: advisory drift that needs human judgment.
 
 If the finding is intentional for this change, suggest an

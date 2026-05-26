@@ -8,7 +8,7 @@ status: exploring
 
 ghost-ui is the canonical witness. The other four tools must remain stack-agnostic — they need to work on Cash iOS (Bazel, SwiftUI), Cash Android (Gradle, Compose), and arbitrary one-off web repos. ghost-ui's job is the opposite: lean *all the way in* on the convention, and prove the loop end-to-end. When the system works perfectly somewhere, it should work here.
 
-The opportunity is **registry.json**. Every shadcn registry has it. It already lists components, files, and dependencies. With minimal extension it becomes the universal substrate for component-level design metadata — and ghost-ui is the place to demonstrate that without coupling other tools to it.
+The opportunity is **registry.json**. Every shadcn registry has it. It already lists components, files, and dependencies. With minimal extension it becomes useful implementation vocabulary for component-level metadata — and ghost-ui is the place to demonstrate that without coupling other tools to it.
 
 The contract: other tools opportunistically light up component-level features when registry.json is present and well-tended. They never *require* it. Tools see registries and tools see filesystems; ghost-ui makes the registry case sing.
 

@@ -74,6 +74,17 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]?.rule).toBe("schema/invalid_format");
   });
+
+  it("rejects implementation-only derives_from references at schema level", () => {
+    const doc = checksDocument({
+      derives_from: "substrate:tokens" as never,
+    });
+
+    const report = lintGhostChecks(doc);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]?.rule).toBe("schema/invalid_format");
+  });
 });
 
 function checksDocument(
@@ -123,7 +134,7 @@ function fingerprintDocument(): GhostFingerprintDocument {
     ],
     experience_contracts: [],
     patterns: [],
-    substrate: {},
+    implementation_vocabulary: {},
     review_policy: {},
   };
 }

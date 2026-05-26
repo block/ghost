@@ -67,13 +67,11 @@ patterns:
     status: accepted
     kind: composition
     pattern: Reference pages prioritize the working surface before visual flourish.
-substrate:
+implementation_vocabulary:
   tokens: [--color-bg, --color-fg]
   components: [Button, CodeBlock]
-  accessibility:
-    - Preserve keyboard-reachable controls.
-  responsive:
-    - Keep reference content readable on narrow screens.
+  notes:
+    - Use these as current implementation material, not as proof of product fit.
 review_policy:
   proposal_policy:
     - Agents create proposals for missing memory, intentional divergence, experience gaps, and check candidates.
@@ -95,7 +93,7 @@ Canonical sections:
 | `principles` | Durable product experience rules and judgment. |
 | `experience_contracts` | How surfaces and capabilities speak, disclose, fail, and recover. |
 | `patterns` | Reusable visual, behavioral, content, or composition patterns. |
-| `substrate` | Tokens, components, accessibility, and responsive policy. |
+| `implementation_vocabulary` | Current tokens, components, libraries, assets, and notes available for implementation. |
 | `review_policy` | How agents handle gaps, proposals, and uncertainty. |
 
 ## `checks.yml`
@@ -127,7 +125,8 @@ checks:
 ```
 
 Allowed grounding prefixes are `principle:*`, `situation:*`,
-`experience_contract:*`, `pattern:*`, and `substrate:*`.
+`experience_contract:*`, and `pattern:*`. Implementation vocabulary can help a
+detector run, but it is not a grounding target.
 
 ## `intent.md`
 
