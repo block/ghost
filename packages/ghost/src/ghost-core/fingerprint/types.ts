@@ -12,7 +12,6 @@ export type GhostFingerprintRefPrefix =
   | "situation"
   | "experience_contract"
   | "pattern"
-  | "substrate"
   | "check";
 
 export type GhostFingerprintRef = `${GhostFingerprintRefPrefix}:${string}`;
@@ -104,11 +103,12 @@ export interface GhostFingerprintPattern {
   check_refs?: GhostFingerprintRef[];
 }
 
-export interface GhostFingerprintSubstrate {
+export interface GhostFingerprintImplementationVocabulary {
   tokens?: string[];
   components?: string[];
-  accessibility?: string[];
-  responsive?: string[];
+  libraries?: string[];
+  assets?: string[];
+  notes?: string[];
 }
 
 export interface GhostFingerprintReviewPolicy {
@@ -125,7 +125,7 @@ export interface GhostFingerprintDocument {
   principles: GhostFingerprintPrinciple[];
   experience_contracts: GhostFingerprintExperienceContract[];
   patterns: GhostFingerprintPattern[];
-  substrate: GhostFingerprintSubstrate;
+  implementation_vocabulary: GhostFingerprintImplementationVocabulary;
   review_policy: GhostFingerprintReviewPolicy;
 }
 

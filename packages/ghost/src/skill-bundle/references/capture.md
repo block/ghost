@@ -66,7 +66,8 @@ Fill the smallest useful memory:
 - `principles`: durable product-experience truths.
 - `experience_contracts`: behavior, disclosure, failure, recovery, and trust.
 - `patterns`: visual, behavioral, content, and composition patterns.
-- `substrate`: tokens, components, accessibility, and responsive policy.
+- `implementation_vocabulary`: current tokens, components, libraries, assets,
+  and notes that may help implement the product memory.
 - `review_policy`: proposal and experience-gap handling.
 
 Prefer a few high-confidence entries over a comprehensive but noisy catalog.

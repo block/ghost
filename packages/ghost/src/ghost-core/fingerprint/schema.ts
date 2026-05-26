@@ -27,7 +27,6 @@ export const GhostFingerprintRefPrefixSchema = z.enum([
   "situation",
   "experience_contract",
   "pattern",
-  "substrate",
   "check",
 ]);
 
@@ -35,7 +34,7 @@ export const GhostFingerprintRefSchema = z
   .string()
   .min(1)
   .regex(
-    /^(principle|situation|experience_contract|pattern|substrate|check):[a-z0-9][a-z0-9._-]*$/,
+    /^(principle|situation|experience_contract|pattern|check):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
         "ref must be typed as prefix:slug, e.g. principle:dense-workflows",
@@ -149,12 +148,13 @@ export const GhostFingerprintPatternSchema = z
   })
   .strict();
 
-export const GhostFingerprintSubstrateSchema = z
+export const GhostFingerprintImplementationVocabularySchema = z
   .object({
     tokens: z.array(z.string().min(1)).optional(),
     components: z.array(z.string().min(1)).optional(),
-    accessibility: z.array(z.string().min(1)).optional(),
-    responsive: z.array(z.string().min(1)).optional(),
+    libraries: z.array(z.string().min(1)).optional(),
+    assets: z.array(z.string().min(1)).optional(),
+    notes: z.array(z.string().min(1)).optional(),
   })
   .strict();
 
@@ -175,7 +175,7 @@ export const GhostFingerprintSchema = z
     principles: z.array(GhostFingerprintPrincipleSchema),
     experience_contracts: z.array(GhostFingerprintExperienceContractSchema),
     patterns: z.array(GhostFingerprintPatternSchema),
-    substrate: GhostFingerprintSubstrateSchema,
+    implementation_vocabulary: GhostFingerprintImplementationVocabularySchema,
     review_policy: GhostFingerprintReviewPolicySchema,
   })
   .strict();

@@ -41,6 +41,7 @@ export interface ScanScopeReport {
 export type ScanReadinessState =
   | "pending"
   | "memory-empty"
+  | "implementation-only"
   | "memory-ready"
   | "unknown";
 
@@ -48,10 +49,12 @@ export interface ScanReadinessReport {
   state: ScanReadinessState;
   product_surface_count: number;
   demo_surface_count: number;
-  substrate_rows: {
-    values: number;
+  implementation_vocabulary_rows: {
     tokens: number;
     components: number;
+    libraries: number;
+    assets: number;
+    notes: number;
   };
   can_review: string[];
   cannot_review: string[];
@@ -206,33 +209,53 @@ async function scanReadiness(
     experience_contracts?: unknown[];
     patterns?: unknown[];
     topology?: { examples?: unknown[] };
-    substrate?: {
+    implementation_vocabulary?: {
       tokens?: unknown[];
       components?: unknown[];
-      accessibility?: unknown[];
-      responsive?: unknown[];
+      libraries?: unknown[];
+      assets?: unknown[];
+      notes?: unknown[];
     };
   };
-  const substrateRows = {
-    values:
-      (fingerprint.substrate?.accessibility?.length ?? 0) +
-      (fingerprint.substrate?.responsive?.length ?? 0),
-    tokens: fingerprint.substrate?.tokens?.length ?? 0,
-    components: fingerprint.substrate?.components?.length ?? 0,
+  const implementationVocabularyRows = {
+    tokens: fingerprint.implementation_vocabulary?.tokens?.length ?? 0,
+    components: fingerprint.implementation_vocabulary?.components?.length ?? 0,
+    libraries: fingerprint.implementation_vocabulary?.libraries?.length ?? 0,
+    assets: fingerprint.implementation_vocabulary?.assets?.length ?? 0,
+    notes: fingerprint.implementation_vocabulary?.notes?.length ?? 0,
   };
-  const memoryCount =
+  const productMemoryCount =
     (fingerprint.situations?.length ?? 0) +
     (fingerprint.principles?.length ?? 0) +
     (fingerprint.experience_contracts?.length ?? 0) +
-    (fingerprint.patterns?.length ?? 0) +
-    substrateRows.values +
-    substrateRows.tokens +
-    substrateRows.components;
+    (fingerprint.patterns?.length ?? 0);
+  const implementationVocabularyCount =
+    implementationVocabularyRows.tokens +
+    implementationVocabularyRows.components +
+    implementationVocabularyRows.libraries +
+    implementationVocabularyRows.assets +
+    implementationVocabularyRows.notes;
 
-  if (memoryCount === 0) {
+  if (productMemoryCount === 0 && implementationVocabularyCount === 0) {
     return readinessReport("memory-empty", {
       reasons: [
-        "fingerprint.yml is valid but has no principles, situations, experience contracts, patterns, or substrate entries yet.",
+        "fingerprint.yml is valid but has no principles, situations, experience contracts, patterns, or implementation vocabulary yet.",
+      ],
+      cannot_review: [
+        "product identity",
+        "surface behavior",
+        "copy",
+        "accessibility",
+        "trust",
+      ],
+    });
+  }
+
+  if (productMemoryCount === 0) {
+    return readinessReport("implementation-only", {
+      implementation_vocabulary_rows: implementationVocabularyRows,
+      reasons: [
+        "fingerprint.yml only records implementation vocabulary; components and tokens are available material, not product-experience memory.",
       ],
       cannot_review: [
         "product identity",
@@ -246,7 +269,7 @@ async function scanReadiness(
 
   return readinessReport("memory-ready", {
     product_surface_count: fingerprint.topology?.examples?.length ?? 0,
-    substrate_rows: substrateRows,
+    implementation_vocabulary_rows: implementationVocabularyRows,
     reasons: ["fingerprint.yml contains product-experience memory."],
     can_review: [
       "product identity",
@@ -266,7 +289,13 @@ function readinessReport(
     state,
     product_surface_count: 0,
     demo_surface_count: 0,
-    substrate_rows: { values: 0, tokens: 0, components: 0 },
+    implementation_vocabulary_rows: {
+      tokens: 0,
+      components: 0,
+      libraries: 0,
+      assets: 0,
+      notes: 0,
+    },
     can_review: [],
     cannot_review: [],
     reasons: [],

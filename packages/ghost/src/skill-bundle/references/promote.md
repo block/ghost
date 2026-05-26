@@ -13,8 +13,9 @@ the decision.
 1. Read the proposal in `.ghost/proposals/`.
 2. Choose the target from `proposed_action.target`.
 3. For `fingerprint`, update `.ghost/fingerprint.yml` with the smallest
-   durable principle, situation, experience contract, pattern, or substrate
-   addition.
+   durable principle, situation, experience contract, or pattern addition. Use
+   `implementation_vocabulary` only for current materials that help agents
+   implement the durable memory.
 4. For `checks`, update `.ghost/checks.yml` only with deterministic detectors
    and typed `derives_from` references.
 5. For `review_policy`, update only the proposal or review rules in

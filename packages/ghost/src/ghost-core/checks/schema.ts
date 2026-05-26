@@ -8,7 +8,7 @@ export const GhostCheckDerivesFromSchema = z
   .string()
   .min(1)
   .regex(
-    /^(principle|situation|experience_contract|pattern|substrate):[a-z0-9][a-z0-9._-]*$/,
+    /^(principle|situation|experience_contract|pattern):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
         "derives_from must use a typed fingerprint ref, e.g. principle:dense-workflows",

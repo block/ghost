@@ -255,6 +255,19 @@ export function registerScanCommands(cli: CAC): void {
           if (status.readiness.reasons[0]) {
             process.stdout.write(`  reason: ${status.readiness.reasons[0]}\n`);
           }
+          const vocabularyRows =
+            status.readiness.implementation_vocabulary_rows;
+          const vocabularyCount =
+            vocabularyRows.tokens +
+            vocabularyRows.components +
+            vocabularyRows.libraries +
+            vocabularyRows.assets +
+            vocabularyRows.notes;
+          if (vocabularyCount > 0) {
+            process.stdout.write(
+              `  implementation vocabulary: ${vocabularyRows.tokens} token(s), ${vocabularyRows.components} component(s), ${vocabularyRows.libraries} libraries, ${vocabularyRows.assets} asset(s), ${vocabularyRows.notes} note(s)\n`,
+            );
+          }
           if (status.scope_error) {
             process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
           } else if (status.scopes) {
@@ -865,7 +878,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
   if (survey.ui_surfaces.length === 0) {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
-      "Use survey values, tokens, and components as substrate evidence until implemented surfaces are observed.",
+      "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
       "Treat intent.md as human authority when present.",
     ];
   }

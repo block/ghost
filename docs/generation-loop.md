@@ -33,10 +33,12 @@ Build a brief from canonical memory:
 
 1. Read `.ghost/fingerprint.yml`.
 2. Select the relevant `situations`.
-3. Carry applicable `principles`, `experience_contracts`, `patterns`, and
-   `substrate` into the work.
-4. Read `.ghost/checks.yml` to know which deterministic rules can block.
-5. Read open `.ghost/proposals/*.yml` as unresolved context, not truth.
+3. Carry applicable `principles`, `experience_contracts`, and `patterns` into
+   the work.
+4. Use `implementation_vocabulary` only as current material that may help
+   satisfy the selected product memory.
+5. Read `.ghost/checks.yml` to know which deterministic rules can block.
+6. Read open `.ghost/proposals/*.yml` as unresolved context, not truth.
 
 Generated inventory can help orient an agent, but it is cache:
 
@@ -55,8 +57,9 @@ The generator should preserve:
 - relevant user/task/state obligations
 - interface and capability behavior
 - copy, disclosure, failure, and recovery contracts
-- visual substrate, accessibility, and responsive policy
 - restraint and pacing from accepted patterns
+- accessibility, responsive behavior, and visual choices when they are grounded
+  in principles, contracts, or patterns
 
 If the requested work intentionally diverges from memory, the agent should name
 the divergence in its response or create a proposal. It should not rewrite
@@ -72,7 +75,7 @@ ghost check --base main
 
 Only active checks in `.ghost/checks.yml` can block. Active checks must be
 grounded in typed fingerprint refs such as `principle:*`,
-`experience_contract:*`, `pattern:*`, `situation:*`, or `substrate:*`.
+`experience_contract:*`, `pattern:*`, or `situation:*`.
 
 `ghost review` is advisory:
 

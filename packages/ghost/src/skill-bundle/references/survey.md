@@ -53,6 +53,7 @@ ghost survey catalog .ghost/survey.json
 ghost survey patterns .ghost/survey.json
 ```
 
-Treat their output as draft material. Curate it into `principles`,
-`experience_contracts`, `patterns`, or `substrate` in `fingerprint.yml` before
-using it for generation or review.
+Treat their output as draft material. Curate durable judgment into
+`principles`, `experience_contracts`, or `patterns`; put current tokens,
+components, libraries, or assets into `implementation_vocabulary` only when
+they help agents implement the product memory.

@@ -14,7 +14,6 @@ const GROUNDING_PREFIXES = [
   "situation",
   "experience_contract",
   "pattern",
-  "substrate",
 ] as const;
 type GroundingPrefix = (typeof GROUNDING_PREFIXES)[number];
 
@@ -200,7 +199,6 @@ function collectFingerprintTargets(
       fingerprint.experience_contracts.map((entry) => entry.id),
     ),
     pattern: new Set(fingerprint.patterns.map((entry) => entry.id)),
-    substrate: new Set(Object.keys(fingerprint.substrate)),
   };
 }
 

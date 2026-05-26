@@ -12,7 +12,7 @@ The canonical bundle is intentionally small:
 
 - **`.ghost/fingerprint.yml`** is the source of truth for product experience
   memory: summary, topology, situations, principles, experience contracts,
-  patterns, substrate, and review policy.
+  patterns, implementation vocabulary, and review policy.
 - **`.ghost/checks.yml`** optionally stores deterministic gates grounded in
   fingerprint memory.
 - **`.ghost/intent.md`** optionally records human-authored or human-approved
