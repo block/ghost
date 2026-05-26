@@ -7,18 +7,14 @@ import {
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
   type GhostPatternsDocument,
-  lintGhostChecks,
-  lintGhostFingerprint,
-  lintGhostPatterns,
-  lintGhostResources,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
   type Survey,
-  type SurveyLintReport,
   type SurveySummaryBudget,
   summarizeSurvey,
 } from "#ghost-core";
+import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   diffFingerprints,
   formatLayout,
@@ -27,9 +23,8 @@ import {
   initFingerprintPackage,
   inventory,
   layoutFingerprint,
-  lintFingerprint,
+  type lintFingerprint,
   lintFingerprintPackage,
-  lintMap,
   loadFingerprint,
   resolveFingerprintPackage,
   scanStatus,
@@ -76,20 +71,7 @@ export function registerScanCommands(cli: CAC): void {
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
 
-        report =
-          kind === "survey"
-            ? lintSurveyFile(raw)
-            : kind === "fingerprint-yml"
-              ? lintFingerprintYmlFile(raw)
-              : kind === "map"
-                ? lintMap(raw)
-                : kind === "resources"
-                  ? lintResourcesFile(raw)
-                  : kind === "patterns"
-                    ? lintPatternsFile(raw)
-                    : kind === "checks"
-                      ? lintChecksFile(raw)
-                      : lintFingerprint(raw);
+        report = lintDetectedFileKind(kind, raw);
 
         if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
@@ -125,15 +107,33 @@ export function registerScanCommands(cli: CAC): void {
       "--with-intent",
       "Also create optional intent.md for human-authored or human-approved intent",
     )
+    .option(
+      "--with-config",
+      "Also create optional config.yml for implementation roots and reference registries/libraries",
+    )
+    .option(
+      "--reference <path-or-registry>",
+      "Reference UI registry, library path, or fingerprint to record in config.yml and implementation vocabulary",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
         const paths = await initFingerprintPackage(dirArg, process.cwd(), {
           withIntent: Boolean(opts.withIntent),
+          withConfig: Boolean(opts.withConfig || opts.reference),
+          reference:
+            typeof opts.reference === "string" ? opts.reference : undefined,
         });
         if (opts.format === "json") {
           process.stdout.write(
-            `${JSON.stringify(initCommandOutput(paths, Boolean(opts.withIntent)), null, 2)}\n`,
+            `${JSON.stringify(
+              initCommandOutput(paths, {
+                includeIntent: Boolean(opts.withIntent),
+                includeConfig: Boolean(opts.withConfig || opts.reference),
+              }),
+              null,
+              2,
+            )}\n`,
           );
         } else {
           process.stdout.write(
@@ -141,6 +141,9 @@ export function registerScanCommands(cli: CAC): void {
           );
           process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          if (opts.withConfig || opts.reference) {
+            process.stdout.write(`  config.yml: ${paths.config}\n`);
+          }
           process.stdout.write(`  proposals/: ${paths.proposals}\n`);
           process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
@@ -219,6 +222,9 @@ export function registerScanCommands(cli: CAC): void {
           process.stdout.write(`capture dir: ${status.dir}\n\n`);
           process.stdout.write(
             `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
+          );
+          process.stdout.write(
+            `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
             `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
@@ -557,172 +563,17 @@ export function registerScanCommands(cli: CAC): void {
 
 function initCommandOutput(
   paths: ReturnType<typeof resolveFingerprintPackage>,
-  includeIntent: boolean,
+  options: { includeIntent: boolean; includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
     fingerprintYml: paths.fingerprintYml,
+    ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
     proposals: paths.proposals,
     cache: paths.cache,
-    ...(includeIntent ? { intent: paths.intent } : {}),
+    ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
-}
-
-/**
- * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
- * routes to the map linter; YAML schemas route to fingerprint.yml,
- * resources/patterns/checks; everything else stays on the direct fingerprint
- * markdown path.
- */
-function detectFileKind(
-  path: string,
-  raw: string,
-):
-  | "survey"
-  | "map"
-  | "fingerprint"
-  | "fingerprint-yml"
-  | "checks"
-  | "resources"
-  | "patterns" {
-  if (path.toLowerCase().endsWith(".json")) return "survey";
-  if (path.toLowerCase().endsWith("fingerprint.yml")) {
-    return "fingerprint-yml";
-  }
-  if (path.toLowerCase().endsWith("fingerprint.yaml")) {
-    return "fingerprint-yml";
-  }
-  if (path.toLowerCase().endsWith("resources.yml")) return "resources";
-  if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
-  if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
-  if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
-  if (raw.trimStart().startsWith("{")) return "survey";
-  if (/^\s*schema:\s*ghost\.fingerprint\/v1\b/m.test(raw)) {
-    return "fingerprint-yml";
-  }
-  if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
-  if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
-  if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
-  if (path.toLowerCase().endsWith(".yml")) return "checks";
-  if (path.toLowerCase().endsWith(".yaml")) return "checks";
-  // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
-  // parse YAML here; the linter does the heavy lift.
-  const fmEnd = raw.indexOf("\n---", 3);
-  if (raw.startsWith("---") && fmEnd > 0) {
-    const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
-  }
-  if (path.toLowerCase().endsWith("map.md")) return "map";
-  return "fingerprint";
-}
-
-function lintSurveyFile(raw: string): SurveyLintReport {
-  let json: unknown;
-  try {
-    json = JSON.parse(raw);
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "survey-not-json",
-          message: `survey file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-  return lintSurvey(json);
-}
-
-function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostChecks(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "checks-not-yaml",
-          message: `checks file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-}
-
-function lintFingerprintYmlFile(
-  raw: string,
-): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostFingerprint(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "fingerprint-yml-not-yaml",
-          message: `fingerprint.yml is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-}
-
-function lintResourcesFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostResources(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "resources-not-yaml",
-          message: `resources file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-}
-
-function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostPatterns(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "patterns-not-yaml",
-          message: `patterns file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
 }
 
 function writeLintReport(

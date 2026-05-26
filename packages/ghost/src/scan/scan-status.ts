@@ -13,6 +13,7 @@ import {
 } from "#ghost-core";
 import {
   CACHE_DIRNAME,
+  CONFIG_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
   PROPOSALS_DIRNAME,
@@ -69,6 +70,7 @@ export interface ScanStatus {
   /** Absolute path to the Ghost memory directory. */
   dir: string;
   fingerprint: ScanStageReport;
+  config: ScanStageReport;
   checks: ScanStageReport;
   intent: ScanStageReport;
   proposals: ScanStageReport;
@@ -91,6 +93,7 @@ export async function scanStatus(
 ): Promise<ScanStatus> {
   const dir = resolve(dirPath);
   const fingerprintPath = resolve(dir, GHOST_FINGERPRINT_YML_FILENAME);
+  const configPath = resolve(dir, CONFIG_FILENAME);
   const checksPath = resolve(dir, GHOST_CHECKS_FILENAME);
   const intentPath = resolve(dir, INTENT_FILENAME);
   const proposalsPath = resolve(dir, PROPOSALS_DIRNAME);
@@ -98,12 +101,14 @@ export async function scanStatus(
 
   const [
     fingerprintPresent,
+    configPresent,
     checksPresent,
     intentPresent,
     proposalsPresent,
     cachePresent,
   ] = await Promise.all([
     pathExists(fingerprintPath, "file"),
+    pathExists(configPath, "file"),
     pathExists(checksPath, "file"),
     pathExists(intentPath, "file"),
     pathExists(proposalsPath, "directory"),
@@ -117,6 +122,10 @@ export async function scanStatus(
   const checks: ScanStageReport = {
     state: checksPresent ? "present" : "missing",
     path: checksPath,
+  };
+  const config: ScanStageReport = {
+    state: configPresent ? "present" : "missing",
+    path: configPath,
   };
   const intent: ScanStageReport = {
     state: intentPresent ? "present" : "missing",
@@ -134,6 +143,7 @@ export async function scanStatus(
   const status: ScanStatus = {
     dir,
     fingerprint,
+    config,
     checks,
     intent,
     proposals,
@@ -257,6 +267,7 @@ async function scanReadiness(
       reasons: [
         "fingerprint.yml only records implementation vocabulary; components and tokens are available material, not product-experience memory.",
       ],
+      can_review: ["implementation vocabulary", "library adoption"],
       cannot_review: [
         "product identity",
         "surface behavior",

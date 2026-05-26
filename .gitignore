@@ -8,7 +8,9 @@ dist-mcp
 packages/ghost-ui/public/r/
 .env
 .env.local
-packages/ghost-ui/.ghost/
+packages/ghost-ui/.ghost/history.jsonl
+packages/ghost-ui/.ghost/cache/*
+!packages/ghost-ui/.ghost/cache/.gitkeep
 
 # Claude Code local harness state
 .claude/scheduled_tasks.lock
