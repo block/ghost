@@ -73,6 +73,7 @@ function checkOne(
   const path = `checks[${index}]`;
   checkDetector(check, path, issues);
   checkGrounding(check, path, options, issues);
+  checkAppliesToTargets(check, path, options, issues);
 
   if (check.status === "disabled") return;
 
@@ -147,6 +148,48 @@ function checkOne(
   }
 }
 
+function checkAppliesToTargets(
+  check: GhostCheck,
+  path: string,
+  options: GhostChecksLintOptions,
+  issues: GhostChecksLintIssue[],
+): void {
+  if (!check.applies_to || !options.fingerprint) return;
+
+  const severity = check.status === "active" ? "error" : "warning";
+  const targets = collectFingerprintRoutingTargets(options.fingerprint);
+
+  check.applies_to.scopes?.forEach((scope, scopeIndex) => {
+    if (targets.scopes.has(scope)) return;
+    issues.push({
+      severity,
+      rule: "check-scope-unknown",
+      message: `Check references unknown fingerprint scope '${scope}'.`,
+      path: `${path}.applies_to.scopes[${scopeIndex}]`,
+    });
+  });
+
+  check.applies_to.surface_types?.forEach((surfaceType, surfaceIndex) => {
+    if (targets.surfaceTypes.has(surfaceType)) return;
+    issues.push({
+      severity,
+      rule: "check-surface-type-unknown",
+      message: `Check references unknown fingerprint surface type '${surfaceType}'.`,
+      path: `${path}.applies_to.surface_types[${surfaceIndex}]`,
+    });
+  });
+
+  check.applies_to.pattern_ids?.forEach((patternId, patternIndex) => {
+    if (targets.patterns.has(patternId)) return;
+    issues.push({
+      severity,
+      rule: "check-pattern-unknown",
+      message: `Check references unknown fingerprint pattern '${patternId}'.`,
+      path: `${path}.applies_to.pattern_ids[${patternIndex}]`,
+    });
+  });
+}
+
 function checkGrounding(
   check: GhostCheck,
   path: string,
@@ -178,6 +221,28 @@ function checkGrounding(
     message: `Check derives_from references unknown fingerprint memory '${check.derives_from}'.`,
     path: `${path}.derives_from`,
   });
+}
+
+function collectFingerprintRoutingTargets(
+  fingerprint: NonNullable<GhostChecksLintOptions["fingerprint"]>,
+): {
+  scopes: Set<string>;
+  surfaceTypes: Set<string>;
+  patterns: Set<string>;
+} {
+  const surfaceTypes = new Set(fingerprint.topology.surface_types ?? []);
+  for (const scope of fingerprint.topology.scopes ?? []) {
+    for (const surfaceType of scope.surface_types ?? []) {
+      surfaceTypes.add(surfaceType);
+    }
+  }
+  return {
+    scopes: new Set(
+      fingerprint.topology.scopes?.map((entry) => entry.id) ?? [],
+    ),
+    surfaceTypes,
+    patterns: new Set(fingerprint.patterns.map((entry) => entry.id)),
+  };
 }
 
 function parseGroundingRef(
