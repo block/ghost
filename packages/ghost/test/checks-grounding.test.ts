@@ -31,6 +31,43 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.warnings).toBe(0);
   });
 
+  it("accepts active checks scoped to known fingerprint topology", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        applies_to: {
+          scopes: ["lending"],
+          surface_types: ["native-feature"],
+          pattern_ids: ["tokenized-ui-color"],
+        },
+      }),
+      {
+        fingerprint: fingerprintDocument({
+          topology: {
+            scopes: [
+              {
+                id: "lending",
+                paths: ["Code/Features/Lending"],
+                surface_types: ["native-feature"],
+              },
+            ],
+            surface_types: ["native-feature"],
+          },
+          patterns: [
+            {
+              id: "tokenized-ui-color",
+              status: "accepted",
+              kind: "visual",
+              pattern: "Use semantic colors.",
+            },
+          ],
+        }),
+      },
+    );
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
   it("reports active checks grounded in missing fingerprint.yml memory", () => {
     const doc = checksDocument({
       derives_from: "principle:missing-principle",
@@ -44,6 +81,78 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.issues[0]).toMatchObject({
       rule: "check-grounding-unknown",
       path: "checks[0].derives_from",
+    });
+  });
+
+  it("reports active checks scoped to unknown fingerprint targets", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        applies_to: {
+          scopes: ["unknown-scope"],
+          surface_types: ["unknown-surface"],
+          pattern_ids: ["unknown-pattern"],
+        },
+      }),
+      {
+        fingerprint: fingerprintDocument({
+          topology: {
+            scopes: [
+              {
+                id: "lending",
+                paths: ["Code/Features/Lending"],
+                surface_types: ["native-feature"],
+              },
+            ],
+            surface_types: ["native-feature"],
+          },
+          patterns: [
+            {
+              id: "tokenized-ui-color",
+              status: "accepted",
+              kind: "visual",
+              pattern: "Use semantic colors.",
+            },
+          ],
+        }),
+      },
+    );
+
+    expect(report.errors).toBe(3);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "check-scope-unknown",
+          path: "checks[0].applies_to.scopes[0]",
+        }),
+        expect.objectContaining({
+          rule: "check-surface-type-unknown",
+          path: "checks[0].applies_to.surface_types[0]",
+        }),
+        expect.objectContaining({
+          rule: "check-pattern-unknown",
+          path: "checks[0].applies_to.pattern_ids[0]",
+        }),
+      ]),
+    );
+  });
+
+  it("downgrades proposed check target misses to warnings", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        status: "proposed",
+        applies_to: {
+          scopes: ["unknown-scope"],
+        },
+      }),
+      {
+        fingerprint: fingerprintDocument(),
+      },
+    );
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-scope-unknown",
     });
   });
 
@@ -118,7 +227,9 @@ function checksDocument(
   };
 }
 
-function fingerprintDocument(): GhostFingerprintDocument {
+function fingerprintDocument(
+  overrides: Partial<GhostFingerprintDocument> = {},
+): GhostFingerprintDocument {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
     summary: {},
@@ -136,5 +247,6 @@ function fingerprintDocument(): GhostFingerprintDocument {
     patterns: [],
     implementation_vocabulary: {},
     review_policy: {},
+    ...overrides,
   };
 }
