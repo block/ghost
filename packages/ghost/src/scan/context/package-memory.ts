@@ -17,6 +17,7 @@ import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 
 export interface PackageMemory {
   name: string;
+  memoryDir?: string;
   fingerprint: GhostFingerprintDocument;
   fingerprintRaw: string;
   checks?: GhostChecksDocument;

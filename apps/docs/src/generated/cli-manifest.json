@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-26T18:21:56.055Z",
+  "generatedAt": "2026-05-28T15:52:08.538Z",
   "tools": [
     {
       "tool": "ghost",
@@ -17,6 +17,22 @@
               "default": "cli",
               "takesValue": true,
               "negated": false
+            },
+            {
+              "rawName": "--all",
+              "name": "all",
+              "description": "Validate every nested memory bundle and its resolved memory stack",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
             }
           ]
         },
@@ -26,6 +42,22 @@
           "rawName": "init [dir]",
           "description": "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
           "options": [
+            {
+              "rawName": "--scope <path>",
+              "name": "scope",
+              "description": "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for init --scope or default root init (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
             {
               "rawName": "--with-intent",
               "name": "withIntent",
@@ -81,6 +113,22 @@
               "default": "cli",
               "takesValue": true,
               "negated": false
+            },
+            {
+              "rawName": "--all",
+              "name": "all",
+              "description": "Verify every nested memory bundle and its resolved memory stack",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
             }
           ]
         },
@@ -96,6 +144,46 @@
               "description": "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
               "default": null,
               "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--include-nested",
+              "name": "includeNested",
+              "description": "Also list nested memory bundles and readiness",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for nested discovery and default scan (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "stack",
+          "rawName": "stack [paths...]",
+          "description": "Inspect the nested Ghost memory stack for one or more repo paths.",
+          "options": [
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for stack discovery (default: .ghost)",
+              "default": null,
+              "takesValue": true,
               "negated": false
             },
             {
@@ -189,6 +277,110 @@
         },
         {
           "tool": "ghost",
+          "name": "proposal",
+          "rawName": "proposal <op> [id]",
+          "description": "Create, list, or resolve scoped Ghost memory proposals.",
+          "options": [
+            {
+              "rawName": "--path <path>",
+              "name": "path",
+              "description": "Repo path used to resolve the memory stack",
+              "default": ".",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for proposal stack resolution (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--id <id>",
+              "name": "id",
+              "description": "Proposal id for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--kind <kind>",
+              "name": "kind",
+              "description": "Proposal kind for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--title <title>",
+              "name": "title",
+              "description": "Proposal title for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--claim <text>",
+              "name": "claim",
+              "description": "Proposal claim for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--rationale <text>",
+              "name": "rationale",
+              "description": "Proposal rationale for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--target <target>",
+              "name": "target",
+              "description": "Proposed target: fingerprint, checks, or review_policy",
+              "default": "fingerprint",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--summary <text>",
+              "name": "summary",
+              "description": "Proposed action summary for create",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--evidence <path-or-note>",
+              "name": "evidence",
+              "description": "Evidence path or note for create; repeat or comma-separate for multiple values",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--status <status>",
+              "name": "status",
+              "description": "Resolution status: accepted, rejected, or superseded",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
           "name": "emit",
           "rawName": "emit <kind>",
           "description": "Emit a derived artifact from the fingerprint package (kinds: review-command, context-bundle)",
@@ -197,6 +389,30 @@
               "rawName": "-f, --fingerprint <path>",
               "name": "fingerprint",
               "description": "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--path <path>",
+              "name": "path",
+              "description": "Resolve a nested memory stack for this repo path",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use exactly this memory package directory instead of resolving a stack",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for --path stack resolution (default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -455,7 +671,7 @@
           "tool": "ghost",
           "name": "check",
           "rawName": "check",
-          "description": "Run active ghost.checks/v1 gates from .ghost/checks.yml against a git diff.",
+          "description": "Run active ghost.checks/v1 gates from the resolved memory stack against a git diff.",
           "options": [
             {
               "rawName": "--base <ref>",
@@ -476,7 +692,15 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Fingerprint package directory (default: .ghost)",
+              "description": "Exact fingerprint package directory; bypasses stack discovery",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for stack discovery (default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -516,7 +740,15 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Fingerprint package directory (default: .ghost)",
+              "description": "Exact fingerprint package directory; bypasses stack discovery",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative memory package directory for stack discovery (default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -524,7 +756,7 @@
             {
               "rawName": "--include-memory",
               "name": "includeMemory",
-              "description": "Include accepted product-experience decisions from .ghost/decisions in the advisory packet.",
+              "description": "Include accepted product-experience decisions from decisions/ in the advisory packet.",
               "default": null,
               "takesValue": false,
               "negated": false

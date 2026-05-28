@@ -31,7 +31,7 @@ const REVIEW_PROPOSAL_TYPES = [
  *
  * The command stays intentionally light: it tells the host agent which Ghost
  * files and CLI packets to use, then includes a compact accepted-memory index.
- * Full canonical truth remains in .ghost/fingerprint.yml and checks.yml.
+ * Full canonical truth remains in fingerprint.yml and checks.yml.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
@@ -48,8 +48,8 @@ export function emitPackageReviewCommand(
     packageFrontmatter(product),
     heading,
     packageModeSection(),
-    packageWorkflowSection(),
-    packageFindingPolicySection(),
+    packageWorkflowSection(memory),
+    packageFindingPolicySection(memory),
     packageMemoryIndex(memory),
     packageChecksSection(activeChecks),
     packageProposalSection(memory),
@@ -70,26 +70,29 @@ function packageModeSection(): string {
 If \`$ARGUMENTS\` is provided, review that file, path, or diff range. If it is empty, inspect the current working-tree or PR diff first, then choose the relevant changed surfaces.`;
 }
 
-function packageWorkflowSection(): string {
+function packageWorkflowSection(memory: PackageMemory): string {
+  const memoryDir = memory.memoryDir ?? ".ghost";
+  const memoryDirFlag = stackMemoryDirFlag(memory);
   return `## Review Workflow
 
-1. Read \`.ghost/fingerprint.yml\` as the canonical product-experience memory.
+1. Read \`${memoryDir}/fingerprint.yml\` as the canonical product-experience memory.
 2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, accessibility, or interaction behavior.
 3. Apply accepted principles, experience contracts, and patterns before choosing implementation details. Treat proposed or deprecated memory as non-canonical unless the user explicitly asks to explore it.
 4. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
-5. Run \`ghost check\` when a diff is available. Active checks are deterministic and can block.
-6. Run \`ghost review --include-memory\` for the advisory packet when you need full diff context, open proposals, and accepted decisions.
+5. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
+6. Run \`ghost review --include-memory${memoryDirFlag}\` for the advisory packet when you need full diff context, open proposals, and accepted decisions.
 7. Cite the diff location, fingerprint.yml memory, any active check, and any relevant open proposal for every finding.`;
 }
 
-function packageFindingPolicySection(): string {
+function packageFindingPolicySection(memory: PackageMemory): string {
+  const memoryDir = memory.memoryDir ?? ".ghost";
   return `## Finding Policy
 
 Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${category}\``).join(", ")}.
 
 Only findings backed by an active check should be treated as blocking. Everything else is advisory product-experience critique.
 
-If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` and propose one of: ${REVIEW_PROPOSAL_TYPES.map((kind) => `\`${kind}\``).join(", ")}. Do not silently rewrite \`.ghost/fingerprint.yml\`, \`.ghost/checks.yml\`, or proposal files.`;
+If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` and propose one of: ${REVIEW_PROPOSAL_TYPES.map((kind) => `\`${kind}\``).join(", ")}. Do not silently rewrite \`${memoryDir}/fingerprint.yml\`, \`${memoryDir}/checks.yml\`, or proposal files.`;
 }
 
 function packageMemoryIndex(memory: PackageMemory): string {
@@ -227,7 +230,7 @@ function packageChecksSection(activeChecks: GhostCheck[]): string {
   if (activeChecks.length === 0) {
     return `## Active Checks
 
-No active checks are recorded. Review remains advisory unless \`.ghost/checks.yml\` adds deterministic active checks.`;
+No active checks are recorded. Review remains advisory unless \`checks.yml\` adds deterministic active checks.`;
   }
   const lines = ["## Active Checks", ""];
   for (const check of activeChecks.slice(0, 12)) {
@@ -239,7 +242,7 @@ No active checks are recorded. Review remains advisory unless \`.ghost/checks.ym
   }
   if (activeChecks.length > 12) {
     lines.push(
-      `- ${activeChecks.length - 12} more active check(s); read \`.ghost/checks.yml\` before deciding whether a finding blocks.`,
+      `- ${activeChecks.length - 12} more active check(s); read \`checks.yml\` before deciding whether a finding blocks.`,
     );
   }
   return lines.join("\n");
@@ -259,7 +262,7 @@ function packageProposalSection(memory: PackageMemory): string {
     }
     if (openProposals.length > 8) {
       lines.push(
-        `- ${openProposals.length - 8} more open proposal(s); read \`.ghost/proposals/\` before judging related drift.`,
+        `- ${openProposals.length - 8} more open proposal(s); read \`proposals/\` before judging related drift.`,
       );
     }
   }
@@ -275,9 +278,16 @@ function packageProposalSection(memory: PackageMemory): string {
 }
 
 function packageReviewFooter(memory: PackageMemory): string {
+  const memoryDir = memory.memoryDir ?? ".ghost";
   return `---
 
-Generated from \`.ghost/fingerprint.yml\` for ${memory.name}. Re-run \`ghost emit review-command\` after updating fingerprint.yml, checks.yml, or open proposals.`;
+Generated from \`${memoryDir}/fingerprint.yml\` for ${memory.name}. Re-run \`ghost emit review-command${stackMemoryDirFlag(memory)}\` after updating fingerprint.yml, checks.yml, or open proposals.`;
+}
+
+function stackMemoryDirFlag(memory: PackageMemory): string {
+  return memory.memoryDir && memory.memoryDir !== ".ghost"
+    ? ` --memory-dir ${memory.memoryDir}`
+    : "";
 }
 
 function pushJoined(

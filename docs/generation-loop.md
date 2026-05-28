@@ -1,14 +1,14 @@
 # Product Fingerprint Loop
 
-Ghost gives UI generators and product-development agents a local, auditable
-product experience memory. The canonical input is `.ghost/fingerprint.yml`.
+Ghost gives UI generators and product-development agents local, auditable
+product experience memory. The canonical input is the resolved Ghost memory
+stack for the task path, starting with `.ghost/fingerprint.yml` and adding any
+nested child bundles.
 
 ```text
 .ghost/fingerprint.yml
-.ghost/checks.yml
-.ghost/intent.md
-.ghost/decisions/*.yml
-.ghost/proposals/*.yml
+apps/checkout/.ghost/fingerprint.yml
+merged checks, intent, decisions, proposals
 .ghost/cache/inventory.json
         |
         v
@@ -29,16 +29,18 @@ Use any agent or tool that can read local context and apply changes.
 
 ## Before Generation
 
-Build a brief from canonical memory:
+Build a brief from the resolved memory stack:
 
-1. Read `.ghost/fingerprint.yml`.
-2. Select the relevant `situations`.
-3. Carry applicable `principles`, `experience_contracts`, and `patterns` into
+1. Run `ghost stack <path>` or resolve the applicable `.ghost/` layers for the
+   task path.
+2. Read broad-to-local merged `fingerprint.yml` memory.
+3. Select the relevant `situations`.
+4. Carry applicable `principles`, `experience_contracts`, and `patterns` into
    the work.
-4. Use `implementation_vocabulary` only as current material that may help
+5. Use `implementation_vocabulary` only as current material that may help
    satisfy the selected product memory.
-5. Read `.ghost/checks.yml` to know which deterministic rules can block.
-6. Read open `.ghost/proposals/*.yml` as unresolved context, not truth.
+6. Read merged checks to know which deterministic rules can block.
+7. Read open proposals from the stack as unresolved context, not truth.
 
 Generated inventory can help orient an agent, but it is cache:
 
@@ -70,18 +72,25 @@ canonical memory silently.
 `ghost check` is deterministic:
 
 ```bash
-ghost check --base main
+ghost check --base main --format json
 ```
 
-Only active checks in `.ghost/checks.yml` can block. Active checks must be
-grounded in typed fingerprint refs such as `principle:*`,
-`experience_contract:*`, `pattern:*`, or `situation:*`.
+Without `--package`, `ghost check` groups changed files by resolved memory
+stack and runs the merged checks for each group. Only active checks can block.
+Active checks must be grounded in typed fingerprint refs such as
+`principle:*`, `experience_contract:*`, `pattern:*`, or `situation:*`.
+The JSON report uses schema `ghost.check-report/v1`; host adapters should map
+Ghost severities into their own review vocabulary outside Ghost.
 
 `ghost review` is advisory:
 
 ```bash
 ghost review --base main --include-memory
 ```
+
+Without `--package`, advisory review packets include `stacks[]`, one for each
+changed-file memory stack. Each stack includes changed files, layer dirs, merged
+fingerprint memory, merged checks, proposals, and provenance.
 
 Advisory review packets include:
 
@@ -127,6 +136,10 @@ backed by an active check.
 ghost check --base main
 ghost review --base main --format markdown
 ```
+
+Wrappers that store memory outside `.ghost` can pass
+`--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
+exact single-bundle mode and bypasses stack discovery.
 
 ## Legacy Cache Helpers
 

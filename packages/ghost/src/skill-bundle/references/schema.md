@@ -12,6 +12,10 @@ Canonical package:
   cache/         optional generated caches
 ```
 
+Nested packages use the same shape at any product-area root, for example
+`apps/checkout/.ghost/`. Resolve the stack with `ghost stack <path>`; child
+entries with the same `id` override parent entries.
+
 ## `fingerprint.yml`
 
 ```yaml
@@ -135,6 +139,8 @@ proposed_action:
 ```bash
 ghost lint .ghost
 ghost verify .ghost --root .
+ghost lint --all
+ghost verify --all
 ghost check --base main
 ```
 

@@ -10,14 +10,16 @@ handles a surface, or what constraints matter before work begins.
 
 ## Steps
 
-1. Read `.ghost/fingerprint.yml`.
-2. Identify matching topology scopes, surface types, situations, and examples.
-3. Select relevant principles, experience contracts, and patterns.
-4. Read implementation vocabulary only as current replaceable material.
-5. Read `.ghost/checks.yml` for active deterministic gates.
-6. Read `.ghost/decisions/*.yml`; include only `status: accepted` as
+1. Resolve the memory stack for the task path with `ghost stack <path>` when a
+   path is known.
+2. Read merged `fingerprint.yml` memory broad-to-local.
+3. Identify matching topology scopes, surface types, situations, and examples.
+4. Select relevant principles, experience contracts, and patterns.
+5. Read implementation vocabulary only as current replaceable material.
+6. Read merged checks for active deterministic gates.
+7. Read decisions from the resolved stack; include only `status: accepted` as
    supplemental rationale.
-7. Skim `.ghost/proposals/*.yml`; include only open proposals as unresolved
+8. Skim proposals from the stack; include only open proposals as unresolved
    context.
 
 ## Output

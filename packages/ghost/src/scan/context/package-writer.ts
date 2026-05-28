@@ -20,6 +20,13 @@ export async function writePackageContextBundle(
   options: WritePackageContextOptions,
 ): Promise<WriteContextResult> {
   const context = await loadPackageMemory(paths, options.name);
+  return writePackageContextBundleFromMemory(context, options);
+}
+
+export async function writePackageContextBundleFromMemory(
+  context: PackageMemory,
+  options: WritePackageContextOptions,
+): Promise<WriteContextResult> {
   await mkdir(options.outDir, { recursive: true });
   const files: string[] = [];
 

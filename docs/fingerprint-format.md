@@ -23,6 +23,42 @@ Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` files may
 still appear in older repos or as migration/source material. They are not
 canonical Ghost memory.
 
+## Nested Bundles
+
+Large repos can add scoped bundles below the root:
+
+```text
+.ghost/
+apps/checkout/.ghost/
+apps/checkout/review/page.tsx
+```
+
+For a path like `apps/checkout/review/page.tsx`, Ghost resolves every
+`.ghost/fingerprint.yml` from the repo root down to the nearest child bundle.
+The merged stack is broad-to-local:
+
+1. Root memory supplies product-wide identity, shared situations, principles,
+   contracts, patterns, checks, decisions, proposals, and intent.
+2. Child memory adds local product-area detail.
+3. Entries with the same `id` are replaced by the nearest child entry.
+4. Child-relative paths are normalized to repo-root paths in reports, routing,
+   and emitted context.
+
+`summary.product` and other scalar summary fields use the nearest child value.
+Summary arrays, topology surface types, implementation vocabulary, and review
+policy arrays merge parent-to-child with de-dupe. Checks merge by `id`, so a
+child check with `status: disabled` suppresses an inherited active check.
+`intent.md` files concatenate with layer headings. Decisions and proposals also
+merge by `id` with child entries winning.
+
+No `extends` field is needed in canonical `fingerprint.yml`; stack inheritance
+is filesystem-based.
+
+The default memory directory is `.ghost`. Host adapters can use another safe
+relative directory by passing `--memory-dir <relative-dir>` to stack-aware
+commands. For example, `--memory-dir .design/memory` resolves
+`.design/memory/fingerprint.yml` at the root and in nested product areas.
+
 ## `fingerprint.yml`
 
 `fingerprint.yml` uses `ghost.fingerprint/v1`. It should stay compact enough
@@ -188,11 +224,17 @@ proposed_action:
 ```bash
 ghost init --with-intent
 ghost init --with-config --reference packages/ghost-ui/.ghost
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
 ghost lint .ghost
 ghost verify .ghost --root .
-ghost check --base main
+ghost lint --all
+ghost verify --all
+ghost stack apps/checkout/review/page.tsx
+ghost check --base main --format json
 ghost review --base main --include-memory
-ghost emit review-command
+ghost proposal create --path apps/checkout/review/page.tsx --id checkout-copy-memory --kind missing-memory --title "Checkout copy memory" --claim "Checkout copy needs local memory." --rationale "The checkout surface has specific payment review language." --summary "Add checkout copy guidance."
+ghost emit review-command --path apps/checkout/review/page.tsx
 ghost emit context-bundle
 ```
 

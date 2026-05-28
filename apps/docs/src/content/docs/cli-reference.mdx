@@ -14,11 +14,13 @@ progress, validate files, emit raw inventory, compare bundles, check diffs,
 emit handoff packets, and record intent. Your agent does the reading, writing,
 and reviewing.
 
-Canonical Ghost memory starts here:
+Canonical Ghost memory starts here, with optional child bundles for scoped
+product areas:
 
 ```text
 .ghost/fingerprint.yml
 .ghost/checks.yml
+apps/checkout/.ghost/fingerprint.yml
 ```
 
 Install the public package and one skill bundle:
@@ -36,7 +38,7 @@ Capture a Ghost fingerprint for this repo.
 
 Commands are grouped by job:
 
-- **Create and check the memory bundle**: `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`.
+- **Create and check memory bundles**: `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `proposal <op>`, `emit`.
 - **Review and compare drift**: `check`, `review`, `compare`, `ack`, `track`, `diverge`.
 - **Install BYOA recipes**: `skill install`.
 - **View many projects**: `ghost-fleet members`, `ghost-fleet view`, `ghost-fleet emit skill`.
@@ -62,13 +64,17 @@ legacy/cache survey ops, and emits agent-ready outputs.
 ### Initialize - `init`
 
 Create a `.ghost/` memory skeleton with `fingerprint.yml`, `checks.yml`,
-`proposals/`, and `cache/`.
+`proposals/`, and `cache/`. Use `--scope <path>` for nested
+`<path>/.ghost/` memory. Use `--memory-dir <relative-dir>` when a host adapter
+stores Ghost memory under a different safe relative directory.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
 ghost init
 ghost init --with-intent
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
 ```
 
 ### Capture progress - `scan`
@@ -84,6 +90,21 @@ ghost scan
 ghost scan ../other-repo/.ghost
 ghost scan . --format json
 ghost scan . --include-scopes
+ghost scan . --include-nested
+ghost scan --include-nested --memory-dir .design/memory --format json
+```
+
+### Stack inspection - `stack`
+
+Inspect the root-to-leaf memory stack for one or more paths. This shows which
+layers will feed `check`, `review`, and `emit --path`.
+
+<CliHelp tool="ghost" command="stack" hideDescription />
+
+```bash
+ghost stack apps/checkout/review/page.tsx
+ghost stack apps/checkout/review/page.tsx --format json
+ghost stack apps/checkout/review/page.tsx --memory-dir .design/memory --format json
 ```
 
 ### Inventory cache - `inventory`
@@ -103,7 +124,8 @@ ghost inventory ../other-repo > .ghost/cache/inventory.json
 
 Validate a root `.ghost` bundle or an individual artifact against its schema.
 Use this before declaring a file structurally valid; every authoring recipe
-calls it. Follow `lint` with `verify` to check evidence and references.
+calls it. `--all` validates every nested bundle and its merged stack. Follow
+`lint` with `verify` to check evidence and references.
 
 <CliHelp tool="ghost" command="lint" hideDescription />
 
@@ -111,6 +133,8 @@ calls it. Follow `lint` with `verify` to check evidence and references.
 ghost lint
 ghost lint .ghost/fingerprint.yml
 ghost lint .ghost/checks.yml --format json
+ghost lint --all
+ghost lint --all --memory-dir .design/memory
 ```
 
 ### Bundle fidelity - `verify`
@@ -119,12 +143,15 @@ Validate that a root `.ghost` bundle is internally faithful:
 `fingerprint.yml` evidence paths should resolve from `--root`, typed check refs
 must point at known checks, and active checks must be grounded in fingerprint
 memory.
+With `--all`, Ghost verifies every discovered bundle and stack merge.
 
 <CliHelp tool="ghost" command="verify" hideDescription />
 
 ```bash
 ghost verify .ghost --root .
 ghost verify .ghost --root . --format json
+ghost verify --all
+ghost verify --all --memory-dir .design/memory
 ```
 
 ### Legacy survey ops - `survey <op>`
@@ -177,15 +204,35 @@ ghost diff a.md b.md --format json
 Emit deterministic artifacts for agents and editors. Supported kinds are
 `review-command` and `context-bundle`; both default to `.ghost/fingerprint.yml`
 memory. Explicit `--fingerprint` keeps legacy direct markdown mode available.
+Use `--path` to emit from the merged stack for a repo path, or `--package` to
+stay in exact single-bundle mode. `--memory-dir` applies only to stack
+resolution through `--path`; `--package` remains exact-path mode.
 Skill installation lives at `ghost skill install`.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
 
 ```bash
 ghost emit review-command
+ghost emit review-command --path apps/checkout/review/page.tsx
+ghost emit review-command --path apps/checkout/review/page.tsx --memory-dir .design/memory
 ghost emit context-bundle
 ghost emit context-bundle --prompt-only
 ghost emit context-bundle --out dist/context
+```
+
+### Scoped proposals - `proposal <op>`
+
+Create, list, and resolve candidate memory updates in the nearest applicable
+scoped bundle. These commands do not promote prose into `fingerprint.yml` or
+`checks.yml`; promotion remains explicit.
+
+<CliHelp tool="ghost" command="proposal" hideDescription />
+
+```bash
+ghost proposal list --path apps/checkout/review/page.tsx
+ghost proposal create --path apps/checkout/review/page.tsx --id checkout-copy-memory --kind missing-memory --title "Checkout copy memory" --claim "Checkout copy needs local memory." --rationale "Payment review language is checkout-specific." --summary "Add checkout copy guidance."
+ghost proposal resolve checkout-copy-memory --path apps/checkout/review/page.tsx --status accepted
+ghost proposal list --path apps/checkout/review/page.tsx --memory-dir .design/memory --format json
 ```
 
 </DocSection>
@@ -194,27 +241,44 @@ ghost emit context-bundle --out dist/context
 
 ### Deterministic gates - `check`
 
-Run active `ghost.checks/v1` gates from `.ghost/checks.yml` against a git diff.
+Run active `ghost.checks/v1` gates against a git diff. Without `--package`,
+Ghost groups changed files by resolved memory stack and runs merged checks per
+group. `--package <dir>` keeps exact single-bundle behavior. `--format json`
+emits the adapter contract `ghost.check-report/v1`; wrappers should map Ghost
+severities outside Ghost.
 
 <CliHelp tool="ghost" command="check" hideDescription />
 
 ```bash
 ghost check --base main
 ghost check --diff patch.diff --format json
+ghost check --base main --memory-dir .design/memory --format json
 ```
 
 ### Advisory packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in
 `.ghost/fingerprint.yml`, optional `.ghost/intent.md`, open proposals, accepted
-decisions, checks, and the diff.
+decisions, checks, and the diff. Without `--package`, JSON output includes
+`stacks[]`, each with changed files, layer dirs, merged memory, checks,
+proposals, and provenance. Use `--memory-dir` for adapter-owned memory
+locations.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
 ```bash
 ghost review --base main
 ghost review --base main --include-memory --format json
+ghost review --base main --memory-dir .design/memory --format json
 ```
+
+### Host adapters
+
+Ghost does not emit host-specific review or check formats. A host adapter should
+consume `ghost check --format json`, map `critical | serious | nit` into its own
+severity vocabulary, and emit the host-native artifact outside Ghost. The
+repository doc `docs/host-adapters.md` describes the adapter contract and
+proposal flow.
 
 ### Comparison - `compare`
 
