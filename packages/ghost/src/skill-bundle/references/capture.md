@@ -47,6 +47,10 @@ routing into `.ghost/config.yml` and records only implementation vocabulary in
 the blank product fingerprint; it does not copy reference memory into product
 intent.
 
+For a monorepo or a deeply scoped product area, initialize local memory with
+`ghost init --scope <path>`. Keep broad product identity in the root bundle and
+put local situations, patterns, checks, decisions, and proposals in the child.
+
 ### 2. Orient
 
 Read the product, not just the component library. Look for the surfaces, docs,
@@ -97,6 +101,8 @@ a human promotes them.
 ```bash
 ghost lint .ghost
 ghost verify .ghost --root <target>
+ghost lint --all
+ghost verify --all
 ghost check --base HEAD
 ```
 

@@ -50,6 +50,7 @@ export {
   loadPackageMemory,
   writeContextBundle,
   writePackageContextBundle,
+  writePackageContextBundleFromMemory,
 } from "./context/index.js";
 export type {
   ColorChange,
@@ -90,6 +91,29 @@ export type {
   MapLintSeverity,
 } from "./lint-map.js";
 export { lintMap } from "./lint-map.js";
+export type {
+  DiscoveredGhostPackage,
+  GhostMemoryStack,
+  GhostMemoryStackGroup,
+  GhostMemoryStackLayer,
+  GhostMemoryStackLayerRef,
+  MemoryDirectoryOptions,
+} from "./memory-stack.js";
+export {
+  buildMemoryStack,
+  discoverGhostPackages,
+  discoverMemoryStack,
+  groupMemoryStacksForPaths,
+  initScopedMemoryPackage,
+  lintAllMemoryStacks,
+  loadMemoryStackForPath,
+  mapFromFingerprint,
+  memoryPackageDisplayPath,
+  memoryStackToPackageMemory,
+  normalizeMemoryDir,
+  resolveGitRoot,
+  verifyAllMemoryStacks,
+} from "./memory-stack.js";
 export type {
   GhostPackageConfig,
   GhostPackageConfigLibrary,

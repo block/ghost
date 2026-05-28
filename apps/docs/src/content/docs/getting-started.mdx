@@ -20,13 +20,21 @@ The canonical fingerprint is small:
 memory and why            deterministic gates
 ```
 
+Nested product areas can add child bundles such as
+`apps/checkout/.ghost/fingerprint.yml`. Ghost resolves memory root-to-leaf for
+the file or diff being reviewed.
+
+Host adapters can use a different safe relative memory directory with
+`--memory-dir`, such as `.design/memory`. Ghost still emits adapter-neutral JSON;
+the wrapper maps findings into its own review or check format.
+
 `intent.md`, `decisions/*.yml`, and `proposals/*.yml` are optional
 human-approved or staged context. `cache/` can hold generated inventory, but it
 is not canonical memory.
 
 | Surface | Job | Verbs |
 | --- | --- | --- |
-| `ghost` | Create and check the root `.ghost/` memory bundle, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
+| `ghost` | Create and check root or nested `.ghost/` memory bundles, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `proposal <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
 | `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
 | `ghost-ui` | Reference design system Ghost uses to test itself. | - |
 
@@ -65,10 +73,15 @@ Fingerprint Capture writes durable memory first:
 
 ```bash
 ghost init --with-intent
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
 ghost scan --format json
+ghost scan --include-nested --format json
 ghost inventory > .ghost/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
+ghost lint --all
+ghost verify --all
 ```
 
 Inventory is optional source material. Promote only durable conclusions into
@@ -98,11 +111,15 @@ ghost compare a.fingerprint.md b.fingerprint.md --semantic
 Review this PR for design drift
 ```
 
-`ghost check` applies active deterministic gates from `.ghost/checks.yml`.
-`ghost review` emits advisory context grounded in `.ghost/fingerprint.yml`,
-optional `.ghost/intent.md`, open proposals, checks, and the diff. Add
-`--include-memory` to include accepted `.ghost/decisions/*.yml` in the
-advisory packet.
+`ghost check` applies active deterministic gates from the resolved memory stack
+for each changed file. `ghost review` emits advisory context grounded in
+merged `fingerprint.yml` memory, optional `intent.md`, open proposals, checks,
+and the diff. Add `--include-memory` to include accepted decisions in the
+advisory packet. Use `--package <dir>` when you need exact single-bundle
+behavior.
+
+Wrappers should consume `ghost check --format json` and map Ghost severities
+outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
 
 </DocSection>
 
@@ -119,6 +136,11 @@ Promote this accepted proposal
 
 The recipes write proposals first. Humans promote durable context into
 `fingerprint.yml` or `checks.yml`.
+
+For scoped product areas, use `ghost proposal create --path <path> ...` to
+write the proposal into the nearest applicable child bundle, then
+`ghost proposal resolve <id> --path <path> --status accepted|rejected` after
+the explicit promotion work is done.
 
 </DocSection>
 

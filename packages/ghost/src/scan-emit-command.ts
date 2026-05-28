@@ -5,10 +5,15 @@ import {
   emitPackageReviewCommand,
   emitReviewCommand,
   loadFingerprint,
+  loadMemoryStackForPath,
   loadPackageMemory,
+  memoryStackToPackageMemory,
+  normalizeMemoryDir,
+  type PackageMemory,
   resolveFingerprintPackage,
   writeContextBundle,
   writePackageContextBundle,
+  writePackageContextBundleFromMemory,
 } from "./scan/index.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
@@ -45,6 +50,15 @@ export function registerEmitCommand(cli: CAC): void {
       "-f, --fingerprint <path>",
       "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
     )
+    .option("--path <path>", "Resolve a nested memory stack for this repo path")
+    .option(
+      "--package <dir>",
+      "Use exactly this memory package directory instead of resolving a stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --path stack resolution (default: .ghost)",
+    )
     .option(
       "-o, --out <path>",
       `Output path (review-command → ${DEFAULT_REVIEW_OUT}; context-bundle → ${DEFAULT_CONTEXT_OUT}/)`,
@@ -74,10 +88,20 @@ export function registerEmitCommand(cli: CAC): void {
         }
 
         const explicitFingerprint = typeof opts.fingerprint === "string";
-        const packagePaths = resolveFingerprintPackage(
-          undefined,
-          process.cwd(),
-        );
+        const explicitPath = typeof opts.path === "string";
+        const explicitPackage = typeof opts.package === "string";
+        const explicitSources = [
+          explicitFingerprint,
+          explicitPath,
+          explicitPackage,
+        ].filter(Boolean).length;
+        if (explicitSources > 1) {
+          console.error(
+            "Error: use only one of --fingerprint, --path, or --package",
+          );
+          process.exit(2);
+          return;
+        }
 
         if (parsed.kind === "review-command") {
           let content: string;
@@ -90,8 +114,9 @@ export function registerEmitCommand(cli: CAC): void {
             );
             content = emitReviewCommand({ fingerprint: loaded.fingerprint });
           } else {
+            const memory = await loadEmitPackageMemory(opts);
             content = emitPackageReviewCommand({
-              memory: await loadPackageMemory(packagePaths),
+              memory,
             });
           }
 
@@ -119,12 +144,23 @@ export function registerEmitCommand(cli: CAC): void {
         );
 
         if (!explicitFingerprint) {
-          const result = await writePackageContextBundle(packagePaths, {
-            outDir,
-            readme: Boolean(opts.readme),
-            promptOnly: Boolean(opts.promptOnly),
-            name: opts.name as string | undefined,
-          });
+          const memory = await loadEmitPackageMemory(opts);
+          const result = explicitPackage
+            ? await writePackageContextBundle(
+                resolveFingerprintPackage(opts.package, process.cwd()),
+                {
+                  outDir,
+                  readme: Boolean(opts.readme),
+                  promptOnly: Boolean(opts.promptOnly),
+                  name: opts.name as string | undefined,
+                },
+              )
+            : await writePackageContextBundleFromMemory(memory, {
+                outDir,
+                readme: Boolean(opts.readme),
+                promptOnly: Boolean(opts.promptOnly),
+                name: opts.name as string | undefined,
+              });
 
           process.stdout.write(
             `Wrote ${result.files.length} file${
@@ -166,4 +202,32 @@ export function registerEmitCommand(cli: CAC): void {
         process.exit(2);
       }
     });
+}
+
+async function loadEmitPackageMemory(opts: {
+  path?: unknown;
+  package?: unknown;
+  name?: unknown;
+  memoryDir?: unknown;
+}): Promise<PackageMemory> {
+  if (typeof opts.package === "string") {
+    return loadPackageMemory(
+      resolveFingerprintPackage(opts.package, process.cwd()),
+      typeof opts.name === "string" ? opts.name : undefined,
+    );
+  }
+
+  const stack = await loadMemoryStackForPath(
+    typeof opts.path === "string" ? opts.path : ".",
+    process.cwd(),
+    {
+      memoryDir: normalizeMemoryDir(
+        typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
+      ),
+    },
+  );
+  return memoryStackToPackageMemory(
+    stack,
+    typeof opts.name === "string" ? opts.name : undefined,
+  );
 }

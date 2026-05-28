@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Confirm generated UI stays within .ghost/fingerprint.yml; iterate if not.
+description: Confirm generated UI stays within the resolved Ghost memory stack; iterate if not.
 handoffs:
   - label: Remediate deterministic or advisory findings
     skill: remediate
@@ -13,8 +13,9 @@ handoffs:
 
 ## Steps
 
-1. Generate the UI from a brief grounded in `.ghost/fingerprint.yml`,
-   `.ghost/checks.yml`, open proposals, nearest examples, and human context.
+1. Generate the UI from a brief grounded in the resolved memory stack:
+   merged `fingerprint.yml`, merged checks, open proposals, nearest examples,
+   and human context.
 2. Run the deterministic gate:
 
    ```bash
@@ -31,7 +32,8 @@ handoffs:
 5. Repair high-confidence advisory issues when they cite a diff location,
    fingerprint memory, and a concrete repair.
 6. If the review exposes missing or contradictory memory, record a proposal
-   instead of rewriting `fingerprint.yml` during verification.
+   with `ghost proposal create --path <path>` instead of rewriting
+   `fingerprint.yml` during verification.
 
 Only active `checks.yml` failures block. Advisory findings guide judgment and
 may become proposals when they reveal durable memory gaps.

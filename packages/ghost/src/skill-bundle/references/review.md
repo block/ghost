@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review PR or working-tree changes against .ghost/fingerprint.yml.
+description: Review PR or working-tree changes against resolved Ghost memory stacks.
 handoffs:
   - label: Suggest minimal fixes
     skill: remediate
@@ -23,7 +23,9 @@ ghost check --base <ref>
 ```
 
 Fix deterministic failures first. These come from active human-promoted
-`checks.yml` rules and are the only blocking findings in v1.
+`checks.yml` rules in the resolved memory stack and are the only blocking
+findings in v1. Use `--package <dir>` only when the user asks for exact
+single-bundle behavior.
 
 ### 2. Build Advisory Context
 
@@ -33,10 +35,12 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- `.ghost/fingerprint.yml`
-- optional `.ghost/checks.yml`
-- open `.ghost/proposals/*.yml`
+- `stacks[]` for changed files when nested bundles apply
+- merged `fingerprint.yml` memory
+- merged checks
+- open proposals
 - optional accepted decisions when requested with `--include-memory`
+- layer provenance
 - the diff
 
 ### 3. Write Advisory Findings
@@ -77,7 +81,8 @@ Bad advisory topics:
 ### 4. Propose Durable Memory Later
 
 If a finding exposes missing or contradictory memory, write a proposal instead
-of silently editing canonical truth. Use:
+of silently editing canonical truth. Use `ghost proposal create --path <path>`
+so the proposal lands in the nearest applicable scoped bundle. Use:
 
 - `missing-memory`
 - `intentional-divergence`
