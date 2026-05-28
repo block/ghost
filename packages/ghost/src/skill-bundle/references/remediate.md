@@ -16,11 +16,12 @@ handoffs:
 # Recipe: Remediate Drift
 
 **Goal:** turn drift findings into a small, targeted patch that brings the
-working tree back inside `.ghost/fingerprint.yml` and active checks.
+working tree back inside the resolved Ghost memory stack and active checks.
 
 Ghost has no `ghost remediate` CLI command. You, the host agent, read the
-findings, weigh them against `fingerprint.yml`, active checks, accepted
-rationale, and open proposals, then write the smallest useful patch.
+findings, weigh them against merged `fingerprint.yml`, active checks, accepted
+rationale, open proposals, and stack provenance, then write the smallest useful
+patch.
 
 ## Steps
 
@@ -30,9 +31,10 @@ You need:
 
 - The drift output from `ghost review`, `ghost check`, or compare.
 - The offending diff: `git diff <base> -- <file>`.
-- `.ghost/fingerprint.yml`.
-- `.ghost/checks.yml` for active gates.
-- `.ghost/proposals/*.yml` for known gaps or accepted divergence candidates.
+- The resolved stack from `ghost stack <path>` when the affected path is known.
+- Merged `fingerprint.yml` memory.
+- Merged checks for active gates.
+- Open proposals from the stack for known gaps or accepted divergence candidates.
 - `.ghost-sync.json` when present; anything stance:`diverging` is intentional
   and must not be remediated as accidental drift.
 
@@ -47,7 +49,8 @@ For every finding, identify the relevant fingerprint entry:
 - Copy/trust drift -> principle, experience contract, or review policy.
 
 If no entry applies, do not invent one inside the code patch. Report a
-`missing-memory` or `experience-gap` proposal.
+`missing-memory` or `experience-gap` proposal, scoped with
+`ghost proposal create --path <path>`.
 
 ### 3. Score By Impact
 

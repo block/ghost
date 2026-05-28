@@ -1,5 +1,5 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
@@ -17,20 +17,28 @@ import {
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   diffFingerprints,
+  discoverGhostPackages,
   formatLayout,
   formatSemanticDiff,
   formatVerifyFingerprintReport,
   initFingerprintPackage,
+  initScopedMemoryPackage,
   inventory,
   layoutFingerprint,
+  lintAllMemoryStacks,
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
+  memoryPackageDisplayPath,
+  normalizeMemoryDir,
   resolveFingerprintPackage,
   scanStatus,
+  verifyAllMemoryStacks,
   verifyFingerprintPackage,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
+import { registerProposalCommand } from "./scan-proposal-command.js";
+import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
  * Register fingerprint-bundle commands on the unified Ghost CLI.
@@ -56,12 +64,35 @@ export function registerScanCommands(cli: CAC): void {
       "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .option(
+      "--all",
+      "Validate every nested memory bundle and its resolved memory stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+    )
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolveFingerprintPackage(path, process.cwd()).dir;
+        const memoryDir = memoryDirFromOpts(opts);
+        if (opts.all) {
+          const report = await lintAllMemoryStacks(
+            resolve(process.cwd(), path ?? "."),
+            { memoryDir },
+          );
+          writeLintReport(report, opts.format);
+          process.exit(report.errors > 0 ? 1 : 0);
+          return;
+        }
+
+        const packagePath = path ?? memoryDir;
+        const target = resolveFingerprintPackage(
+          packagePath,
+          process.cwd(),
+        ).dir;
         let report: ReturnType<typeof lintFingerprint>;
         if (path === undefined || (await isDirectory(target))) {
-          report = await lintFingerprintPackage(path, process.cwd());
+          report = await lintFingerprintPackage(packagePath, process.cwd());
           writeLintReport(report, opts.format);
           process.exit(report.errors > 0 ? 1 : 0);
           return;
@@ -104,6 +135,14 @@ export function registerScanCommands(cli: CAC): void {
       "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
     )
     .option(
+      "--scope <path>",
+      "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for init --scope or default root init (default: .ghost)",
+    )
+    .option(
       "--with-intent",
       "Also create optional intent.md for human-authored or human-approved intent",
     )
@@ -118,12 +157,36 @@ export function registerScanCommands(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const paths = await initFingerprintPackage(dirArg, process.cwd(), {
+        if (dirArg && typeof opts.scope === "string") {
+          console.error("Error: use either init [dir] or init --scope <path>");
+          process.exit(2);
+          return;
+        }
+        if (dirArg && typeof opts.memoryDir === "string") {
+          console.error("Error: use either init [dir] or --memory-dir");
+          process.exit(2);
+          return;
+        }
+        const memoryDir = memoryDirFromOpts(opts);
+        const initOptions = {
           withIntent: Boolean(opts.withIntent),
           withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
-        });
+          memoryDir,
+        };
+        const paths =
+          typeof opts.scope === "string"
+            ? await initScopedMemoryPackage(
+                opts.scope,
+                process.cwd(),
+                initOptions,
+              )
+            : await initFingerprintPackage(
+                dirArg ?? memoryDir,
+                process.cwd(),
+                initOptions,
+              );
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
@@ -170,6 +233,14 @@ export function registerScanCommands(cli: CAC): void {
       "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .option(
+      "--all",
+      "Verify every nested memory bundle and its resolved memory stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+    )
     .action(async (dirArg: string | undefined, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
@@ -178,9 +249,14 @@ export function registerScanCommands(cli: CAC): void {
           return;
         }
 
-        const report = await verifyFingerprintPackage(dirArg, process.cwd(), {
-          root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
-        });
+        const memoryDir = memoryDirFromOpts(opts);
+        const report = opts.all
+          ? await verifyAllMemoryStacks(resolve(process.cwd(), dirArg ?? "."), {
+              memoryDir,
+            })
+          : await verifyFingerprintPackage(dirArg ?? memoryDir, process.cwd(), {
+              root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
+            });
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -207,15 +283,36 @@ export function registerScanCommands(cli: CAC): void {
       "--include-scopes",
       "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
     )
+    .option("--include-nested", "Also list nested memory bundles and readiness")
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for nested discovery and default scan (default: .ghost)",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const dir = resolveFingerprintPackage(dirArg, process.cwd()).dir;
+        const memoryDir = memoryDirFromOpts(opts);
+        const dir = resolveFingerprintPackage(
+          dirArg ?? memoryDir,
+          process.cwd(),
+        ).dir;
         const status = await scanStatus(dir, {
           includeScopes: Boolean(opts.includeScopes),
         });
+        const nested = opts.includeNested
+          ? await nestedBundleStatus(
+              dirnameForMemoryPackageDir(dir, memoryDir),
+              memoryDir,
+            )
+          : undefined;
         if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
+          process.stdout.write(
+            `${JSON.stringify(
+              nested ? { ...status, nested_bundles: nested } : status,
+              null,
+              2,
+            )}\n`,
+          );
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
@@ -288,6 +385,18 @@ export function registerScanCommands(cli: CAC): void {
               }
             }
           }
+          if (nested) {
+            process.stdout.write("\nnested bundles:\n");
+            if (nested.length === 0) {
+              process.stdout.write("  none\n");
+            } else {
+              for (const bundle of nested) {
+                process.stdout.write(
+                  `  ${memoryPackageDisplayPath(bundle.relative_root, bundle.memory_dir)}: ${bundle.readiness.state}\n`,
+                );
+              }
+            }
+          }
         }
         process.exit(0);
       } catch (err) {
@@ -297,6 +406,8 @@ export function registerScanCommands(cli: CAC): void {
         process.exit(2);
       }
     });
+
+  registerStackCommand(cli);
 
   // --- inventory ---
   cli
@@ -558,7 +669,54 @@ export function registerScanCommands(cli: CAC): void {
       }
     });
 
+  registerProposalCommand(cli);
   registerEmitCommand(cli);
+}
+
+async function nestedBundleStatus(
+  root: string,
+  memoryDir: string,
+): Promise<NestedBundleStatus[]> {
+  const packages = await discoverGhostPackages(root, { memoryDir });
+  return Promise.all(
+    packages.map(async (pkg) => {
+      const status = await scanStatus(pkg.dir);
+      return {
+        ...pkg,
+        fingerprint: status.fingerprint,
+        checks: status.checks,
+        proposals: status.proposals,
+        intent: status.intent,
+        readiness: status.readiness,
+      };
+    }),
+  );
+}
+
+interface NestedBundleStatus {
+  dir: string;
+  root: string;
+  relative_root: string;
+  memory_dir: string;
+  fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
+  checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
+  proposals: Awaited<ReturnType<typeof scanStatus>>["proposals"];
+  intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
+  readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
+}
+
+function dirnameForMemoryPackageDir(dir: string, memoryDir: string): string {
+  let root = dir;
+  for (const _segment of normalizeMemoryDir(memoryDir).split("/")) {
+    root = dirname(root);
+  }
+  return root;
+}
+
+function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
+  return normalizeMemoryDir(
+    typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
+  );
 }
 
 function initCommandOutput(

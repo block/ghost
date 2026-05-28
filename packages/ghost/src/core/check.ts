@@ -15,13 +15,18 @@ import {
   type MapScope,
   routeGhostChecksForPath,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "#scan";
+import {
+  groupMemoryStacksForPaths,
+  mapFromFingerprint,
+  resolveFingerprintPackage,
+} from "../scan/index.js";
 
 const execFileAsync = promisify(execFile);
 
 export interface GhostDriftCheckOptions {
   cwd?: string;
   packageDir?: string;
+  memoryDir?: string;
   base?: string;
   diffText?: string;
 }
@@ -59,10 +64,28 @@ export interface GhostDriftCheckReport {
   schema: "ghost.check-report/v1";
   result: "pass" | "fail";
   package_dir: string;
+  memory_dir?: string;
   base?: string;
   changed_files: string[];
   routed_files: GhostDriftRoutedFile[];
   findings: GhostDriftCheckFinding[];
+  stacks?: GhostDriftCheckStack[];
+}
+
+export interface GhostDriftCheckStack {
+  target_path: string;
+  package_dir: string;
+  memory_dir: string;
+  changed_files: string[];
+  layer_dirs: string[];
+  provenance: {
+    merge: "child-wins-by-id";
+    layers: Array<{
+      dir: string;
+      root: string;
+      relative_root: string;
+    }>;
+  };
 }
 
 interface LoadedCheckPackage {
@@ -75,40 +98,68 @@ export async function runGhostDriftCheck(
   options: GhostDriftCheckOptions = {},
 ): Promise<GhostDriftCheckReport> {
   const cwd = options.cwd ?? process.cwd();
-  const pkg = await loadCheckPackage(options.packageDir, cwd);
   const diffText =
     options.diffText ??
     (await readGitDiff(cwd, options.base ?? "HEAD", "--unified=0"));
   const changedFiles = parseUnifiedDiff(diffText);
+
+  if (options.packageDir) {
+    const pkg = await loadCheckPackage(options.packageDir, cwd);
+    const evaluated = evaluateChangedFiles(changedFiles, pkg);
+    return {
+      schema: "ghost.check-report/v1",
+      result: evaluated.findings.length > 0 ? "fail" : "pass",
+      package_dir: pkg.dir,
+      ...(options.base ? { base: options.base } : {}),
+      changed_files: changedFiles.map((file) => file.path),
+      routed_files: evaluated.routedFiles,
+      findings: evaluated.findings,
+    };
+  }
+
+  const groups = await groupMemoryStacksForPaths(
+    changedFiles.map((file) => file.path),
+    cwd,
+    { memoryDir: options.memoryDir },
+  );
   const routedFiles: GhostDriftRoutedFile[] = [];
   const findings: GhostDriftCheckFinding[] = [];
+  const stacks: GhostDriftCheckStack[] = [];
 
-  for (const file of changedFiles) {
-    const routed = routeGhostChecksForPath(
-      pkg.checks.checks,
-      pkg.map,
-      file.path,
+  for (const group of groups) {
+    const filesForStack = changedFiles.filter((file) =>
+      group.changed_files.includes(file.path),
     );
-    routedFiles.push({
-      path: file.path,
-      scopes: uniqueScopeIds(routed.flatMap((entry) => entry.matched_scopes)),
-      checks: routed.map((entry) => entry.check.id),
+    const leaf = group.stack.layers.at(-1);
+    const pkg: LoadedCheckPackage = {
+      dir: leaf?.dir ?? group.stack.layers[0].dir,
+      map: mapFromFingerprint(group.stack.merged.fingerprint),
+      checks: group.stack.merged.checks,
+    };
+    const evaluated = evaluateChangedFiles(filesForStack, pkg);
+    routedFiles.push(...evaluated.routedFiles);
+    findings.push(...evaluated.findings);
+    stacks.push({
+      target_path: group.stack.target_path,
+      package_dir: pkg.dir,
+      memory_dir: group.stack.memory_dir,
+      changed_files: group.changed_files,
+      layer_dirs: group.stack.layers.map((layer) => layer.dir),
+      provenance: group.stack.provenance,
     });
-
-    for (const entry of routed) {
-      if (!detectorAppliesToPath(entry.check, file.path)) continue;
-      findings.push(...evaluateCheck(entry.check, file));
-    }
   }
 
   return {
     schema: "ghost.check-report/v1",
     result: findings.length > 0 ? "fail" : "pass",
-    package_dir: pkg.dir,
+    package_dir:
+      stacks.length === 1 ? stacks[0].package_dir : "memory-stack/multiple",
+    memory_dir: stacks[0]?.memory_dir ?? options.memoryDir,
     ...(options.base ? { base: options.base } : {}),
     changed_files: changedFiles.map((file) => file.path),
     routed_files: routedFiles,
     findings,
+    stacks,
   };
 }
 
@@ -251,6 +302,37 @@ async function loadCheckPackage(
   return { dir: paths.dir, map, checks };
 }
 
+function evaluateChangedFiles(
+  changedFiles: GhostDriftChangedFile[],
+  pkg: LoadedCheckPackage,
+): {
+  routedFiles: GhostDriftRoutedFile[];
+  findings: GhostDriftCheckFinding[];
+} {
+  const routedFiles: GhostDriftRoutedFile[] = [];
+  const findings: GhostDriftCheckFinding[] = [];
+
+  for (const file of changedFiles) {
+    const routed = routeGhostChecksForPath(
+      pkg.checks.checks,
+      pkg.map,
+      file.path,
+    );
+    routedFiles.push({
+      path: file.path,
+      scopes: uniqueScopeIds(routed.flatMap((entry) => entry.matched_scopes)),
+      checks: routed.map((entry) => entry.check.id),
+    });
+
+    for (const entry of routed) {
+      if (!detectorAppliesToPath(entry.check, file.path)) continue;
+      findings.push(...evaluateCheck(entry.check, file));
+    }
+  }
+
+  return { routedFiles, findings };
+}
+
 async function readOptional(path: string): Promise<string | undefined> {
   try {
     return await readFile(path, "utf-8");
@@ -272,20 +354,6 @@ function parseMap(raw: string): MapFrontmatter {
     );
   }
   return result.data;
-}
-
-function mapFromFingerprint(
-  fingerprint: GhostFingerprintDocument,
-): Pick<MapFrontmatter, "scopes" | "feature_areas"> {
-  return {
-    scopes: fingerprint.topology.scopes?.map((scope) => ({
-      id: scope.id,
-      name: scope.id,
-      kind: "fingerprint-topology",
-      paths: [...scope.paths],
-    })),
-    feature_areas: [],
-  };
 }
 
 async function readGitDiff(

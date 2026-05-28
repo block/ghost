@@ -1,6 +1,6 @@
 ---
 name: brief
-description: Shape a pre-generation brief from .ghost/fingerprint.yml.
+description: Shape a pre-generation brief from the resolved Ghost memory stack.
 ---
 
 # Brief From The Ghost Fingerprint
@@ -11,13 +11,15 @@ where it has freedom, and what needs human judgment.
 
 ## Steps
 
-1. Read `.ghost/fingerprint.yml`.
-2. Select the relevant `situation` for the task, or state that none fits.
-3. Pull applicable `principles`, `experience_contracts`, and `patterns`.
-4. Read `implementation_vocabulary` only as current replaceable material.
-5. Read `.ghost/checks.yml` for active deterministic gates.
-6. Skim `.ghost/proposals/*.yml` for open gaps or intentional divergences.
-7. Name missing or contradictory memory explicitly.
+1. Resolve the memory stack for the task path with `ghost stack <path>` when a
+   path is known.
+2. Read merged `fingerprint.yml` memory broad-to-local.
+3. Select the relevant `situation` for the task, or state that none fits.
+4. Pull applicable `principles`, `experience_contracts`, and `patterns`.
+5. Read `implementation_vocabulary` only as current replaceable material.
+6. Read merged checks for active deterministic gates.
+7. Skim open proposals from the stack for gaps or intentional divergences.
+8. Name missing or contradictory memory explicitly.
 
 ## Output
 

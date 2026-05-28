@@ -506,7 +506,7 @@ describe("ghost CLI", () => {
       dir,
     );
 
-    expect(result.code).toBe(1);
+    expect(result.code, result.stderr).toBe(1);
     const report = JSON.parse(result.stdout);
     expect(report.result).toBe("fail");
     expect(report.findings[0]).toMatchObject({
@@ -645,6 +645,407 @@ libraries:
     expect(JSON.stringify(packet.memory)).not.toContain(
       "saved-payment-empty-state",
     );
+  });
+
+  it("check routes changed files through nested stacks by default", async () => {
+    await writeNestedCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
+    );
+
+    const result = await runCli(
+      ["check", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.schema).toBe("ghost.check-report/v1");
+    expect(report.result).toBe("pass");
+    expect(report.memory_dir).toBe(".ghost");
+    expect(report.stacks[0].layer_dirs).toHaveLength(2);
+    expect(report.routed_files[0]).toMatchObject({
+      path: "apps/checkout/review/page.tsx",
+      checks: [],
+    });
+  });
+
+  it("--package keeps check in exact single-bundle mode", async () => {
+    await writeNestedCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
+    );
+
+    const result = await runCli(
+      [
+        "check",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(1);
+    const report = JSON.parse(result.stdout);
+    expect(report.schema).toBe("ghost.check-report/v1");
+    expect(report.findings[0].check_id).toBe("no-hardcoded-color");
+    expect(report.findings[0]).toMatchObject({
+      path: "apps/checkout/review/page.tsx",
+      line: 1,
+      title: "No hardcoded colors",
+      severity: "serious",
+      detector: "forbidden-regex",
+      message: "Added UI code matched a forbidden pattern.",
+      match: "#ffffff",
+    });
+    expect(report.stacks).toBeUndefined();
+  });
+
+  it("resolves stack checks from a custom memory directory", async () => {
+    await writeNestedCheckPackage(dir, ".design/memory");
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
+    );
+
+    const result = await runCli(
+      [
+        "check",
+        "--diff",
+        "change.patch",
+        "--memory-dir",
+        ".design/memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.memory_dir).toBe(".design/memory");
+    expect(report.stacks[0]).toMatchObject({
+      memory_dir: ".design/memory",
+      changed_files: ["apps/checkout/review/page.tsx"],
+    });
+    expect(report.stacks[0].layer_dirs).toEqual([
+      await realpath(join(dir, ".design", "memory")),
+      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
+    ]);
+  });
+
+  it("review emits stack packets for mixed diffs", async () => {
+    await writeNestedCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      [
+        webPatch("apps/checkout/review/page.tsx", "const x = CheckoutTheme;"),
+        webPatch("shared/home.tsx", "const x = RootTheme;"),
+      ].join("\n"),
+    );
+
+    const result = await runCli(
+      ["review", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.stacks).toHaveLength(2);
+    expect(packet.stacks[0].memory_dir).toBe(".ghost");
+    expect(packet.stacks[0].merged.fingerprint.summary.product).toBe(
+      "Checkout",
+    );
+    expect(packet.stacks[0].layer_dirs).toHaveLength(2);
+    expect(packet.stacks[1].layer_dirs).toHaveLength(1);
+  });
+
+  it("stack inspects resolved nested layers", async () => {
+    await writeNestedCheckPackage(dir);
+
+    const result = await runCli(
+      ["stack", "apps/checkout/review/page.tsx", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const stacks = JSON.parse(result.stdout);
+    expect(stacks[0].layers).toHaveLength(2);
+    expect(stacks[0].merged.fingerprint.summary.product).toBe("Checkout");
+  });
+
+  it("rejects unsafe memory directory overrides", async () => {
+    const result = await runCli(
+      ["stack", ".", "--memory-dir", "../outside"],
+      dir,
+    );
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--memory-dir must not contain");
+  });
+
+  it("emit review-command resolves merged memory for --path", async () => {
+    await writeNestedCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "emit",
+        "review-command",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--stdout",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("RootTheme");
+    expect(result.stdout).toContain("Checkout");
+    expect(result.stdout).toContain("CheckoutTheme");
+  });
+
+  it("init --scope creates a nested .ghost bundle", async () => {
+    const result = await runCli(
+      ["init", "--scope", "apps/checkout", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(await realpath(out.dir)).toBe(
+      await realpath(join(dir, "apps", "checkout", ".ghost")),
+    );
+    expect(
+      await readFile(
+        join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
+        "utf-8",
+      ),
+    ).toContain("ghost.fingerprint/v1");
+  });
+
+  it("init --scope creates a nested bundle under a custom memory directory", async () => {
+    const result = await runCli(
+      [
+        "init",
+        "--scope",
+        "apps/checkout",
+        "--memory-dir",
+        ".design/memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(await realpath(out.dir)).toBe(
+      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
+    );
+    expect(
+      await readFile(
+        join(dir, "apps", "checkout", ".design", "memory", "fingerprint.yml"),
+        "utf-8",
+      ),
+    ).toContain("ghost.fingerprint/v1");
+  });
+
+  it("proposal create/list/resolve targets the nearest scoped bundle", async () => {
+    await writeNestedCheckPackage(dir);
+
+    const create = await runCli(
+      [
+        "proposal",
+        "create",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--id",
+        "checkout-copy-memory",
+        "--kind",
+        "missing-memory",
+        "--title",
+        "Checkout copy memory",
+        "--claim",
+        "Checkout review copy needs local memory.",
+        "--rationale",
+        "The checkout surface has specific payment review language.",
+        "--target",
+        "fingerprint",
+        "--summary",
+        "Add checkout copy guidance.",
+        "--evidence",
+        "apps/checkout/review/page.tsx",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(create.code).toBe(0);
+    const created = JSON.parse(create.stdout);
+    expect(await realpath(created.package_dir)).toBe(
+      await realpath(join(dir, "apps", "checkout", ".ghost")),
+    );
+    expect(created.proposal.evidence[0].path).toBe("review/page.tsx");
+
+    const list = await runCli(
+      [
+        "proposal",
+        "list",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    expect(JSON.parse(list.stdout).open_proposals[0].id).toBe(
+      "checkout-copy-memory",
+    );
+
+    const resolveResult = await runCli(
+      [
+        "proposal",
+        "resolve",
+        "checkout-copy-memory",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--status",
+        "accepted",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    expect(resolveResult.code).toBe(0);
+    expect(JSON.parse(resolveResult.stdout).proposal.status).toBe("accepted");
+  });
+
+  it("proposal create/list/resolve supports custom memory directories", async () => {
+    await writeNestedCheckPackage(dir, ".design/memory");
+
+    const create = await runCli(
+      [
+        "proposal",
+        "create",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--memory-dir",
+        ".design/memory",
+        "--id",
+        "checkout-custom-memory",
+        "--kind",
+        "missing-memory",
+        "--title",
+        "Checkout custom memory",
+        "--claim",
+        "Checkout has wrapper-specific memory.",
+        "--rationale",
+        "The host wrapper stores memory outside .ghost.",
+        "--summary",
+        "Add wrapper-specific checkout guidance.",
+        "--evidence",
+        "apps/checkout/review/page.tsx",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(create.code).toBe(0);
+    const created = JSON.parse(create.stdout);
+    expect(await realpath(created.package_dir)).toBe(
+      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
+    );
+    expect(created).toMatchObject({
+      path: expect.stringContaining("checkout-custom-memory.yml"),
+      proposal: { id: "checkout-custom-memory", status: "open" },
+    });
+
+    const list = await runCli(
+      [
+        "proposal",
+        "list",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--memory-dir",
+        ".design/memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    const listed = JSON.parse(list.stdout);
+    expect(listed.memory_dir).toBe(".design/memory");
+    expect(listed.open_proposals[0].id).toBe("checkout-custom-memory");
+
+    const resolveResult = await runCli(
+      [
+        "proposal",
+        "resolve",
+        "checkout-custom-memory",
+        "--path",
+        "apps/checkout/review/page.tsx",
+        "--memory-dir",
+        ".design/memory",
+        "--status",
+        "accepted",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    expect(resolveResult.code).toBe(0);
+    expect(JSON.parse(resolveResult.stdout).proposal.status).toBe("accepted");
+  });
+
+  it("lint --all and verify --all include nested bundles", async () => {
+    await writeNestedCheckPackage(dir);
+
+    const lint = await runCli(["lint", "--all", "--format", "json"], dir);
+    const verify = await runCli(["verify", "--all", "--format", "json"], dir);
+    const scan = await runCli(
+      ["scan", "--include-nested", "--format", "json"],
+      dir,
+    );
+
+    expect(lint.code).toBe(0);
+    expect(verify.code).toBe(0);
+    expect(JSON.parse(scan.stdout).nested_bundles).toHaveLength(2);
+  });
+
+  it("lint, verify, and scan discover nested custom memory directories", async () => {
+    await writeNestedCheckPackage(dir, ".design/memory");
+
+    const lint = await runCli(
+      ["lint", "--all", "--memory-dir", ".design/memory", "--format", "json"],
+      dir,
+    );
+    const verify = await runCli(
+      ["verify", "--all", "--memory-dir", ".design/memory", "--format", "json"],
+      dir,
+    );
+    const scan = await runCli(
+      [
+        "scan",
+        "--include-nested",
+        "--memory-dir",
+        ".design/memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(lint.code).toBe(0);
+    expect(verify.code).toBe(0);
+    expect(JSON.parse(scan.stdout).nested_bundles).toHaveLength(2);
   });
 });
 
@@ -793,6 +1194,132 @@ proposed_action:
   summary: Promote into fingerprint.yml if repeated.
 `,
   );
+}
+
+async function writeNestedCheckPackage(
+  dir: string,
+  memoryDir = ".ghost",
+): Promise<void> {
+  const rootMemory = memoryPackagePath(dir, memoryDir);
+  const checkoutMemory = memoryPackagePath(
+    join(dir, "apps", "checkout"),
+    memoryDir,
+  );
+  await mkdir(join(rootMemory, "proposals"), { recursive: true });
+  await mkdir(join(rootMemory, "cache"), { recursive: true });
+  await mkdir(join(checkoutMemory, "proposals"), {
+    recursive: true,
+  });
+  await mkdir(join(checkoutMemory, "cache"), {
+    recursive: true,
+  });
+  await mkdir(join(dir, "apps", "checkout", "review"), { recursive: true });
+  await mkdir(join(dir, "shared"), { recursive: true });
+  await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");
+  await writeFile(join(dir, "shared", "home.tsx"), "");
+
+  await writeFile(
+    join(rootMemory, "fingerprint.yml"),
+    `schema: ghost.fingerprint/v1
+summary:
+  product: Root Product
+topology:
+  scopes:
+    - id: app
+      paths: [apps, shared]
+  surface_types: [web-app]
+situations: []
+principles: []
+experience_contracts: []
+patterns:
+  - id: root-token-pattern
+    status: accepted
+    kind: visual
+    pattern: Web UI color uses semantic product tokens.
+implementation_vocabulary:
+  tokens: [RootTheme]
+review_policy: {}
+`,
+  );
+  await writeFile(
+    join(rootMemory, "checks.yml"),
+    `schema: ghost.checks/v1
+id: root
+checks:
+  - id: no-hardcoded-color
+    title: No hardcoded colors
+    status: active
+    severity: serious
+    derives_from: pattern:root-token-pattern
+    applies_to:
+      paths: [apps, shared]
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}'
+      contexts: [react]
+    evidence:
+      support: 0.93
+      observed_count: 8
+      examples:
+        - shared/home.tsx
+`,
+  );
+
+  await writeFile(
+    join(checkoutMemory, "fingerprint.yml"),
+    `schema: ghost.fingerprint/v1
+summary:
+  product: Checkout
+topology:
+  scopes:
+    - id: checkout
+      paths: [review]
+      surface_types: [payment-review]
+  surface_types: [payment-review]
+situations: []
+principles: []
+experience_contracts: []
+patterns:
+  - id: checkout-token-pattern
+    status: accepted
+    kind: visual
+    pattern: Checkout review uses checkout product tokens.
+    applies_to:
+      paths: [review]
+implementation_vocabulary:
+  tokens: [CheckoutTheme]
+review_policy: {}
+`,
+  );
+  await writeFile(
+    join(checkoutMemory, "checks.yml"),
+    `schema: ghost.checks/v1
+id: checkout
+checks:
+  - id: no-hardcoded-color
+    title: No hardcoded colors
+    status: disabled
+    severity: serious
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}'
+      contexts: [react]
+`,
+  );
+}
+
+function memoryPackagePath(root: string, memoryDir: string): string {
+  return join(root, ...memoryDir.split("/"));
+}
+
+function webPatch(path: string, added: string): string {
+  return `diff --git a/${path} b/${path}
+index 1111111..2222222 100644
+--- a/${path}
++++ b/${path}
+@@ -0,0 +1 @@
++${added}
+`;
 }
 
 async function writeComparableBundle(

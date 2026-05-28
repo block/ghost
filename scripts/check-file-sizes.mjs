@@ -16,14 +16,19 @@ const EXCEPTIONS = {
       "Unified CLI command registry — review/check/compare plus drift stance verbs live together for one public bin",
   },
   "packages/ghost/src/scan-commands.ts": {
-    limit: 1100,
+    limit: 1120,
     justification:
-      "Scan and fingerprint bundle command registry — temporarily holds legacy markdown and fingerprint.yml package verbs until the command registry is split",
+      "Scan and fingerprint bundle command registry — temporarily holds legacy markdown, fingerprint.yml package verbs, and adapter-neutral memory-dir routing until the command registry is split",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,
     justification:
       "Deterministic repository inventory collector — intentionally broad because map authoring depends on one cohesive raw signal pass",
+  },
+  "packages/ghost/src/scan/memory-stack.ts": {
+    limit: 1120,
+    justification:
+      "Canonical nested memory stack loader — discovery, merge, path normalization, memory-dir validation, and stack validation stay together so CLI routing shares one provenance model",
   },
   "packages/ghost/src/scan/verify-fingerprint.ts": {
     limit: 900,

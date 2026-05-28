@@ -30,18 +30,30 @@ until a human promotes them. The host agent reads and writes the fingerprint;
 the CLI provides deterministic validation, comparison, routing, and handoff
 packets.
 
+Repos may also contain nested bundles such as `apps/checkout/.ghost/`. Resolve
+the memory stack for the task path and read layers broad-to-local. Child entries
+with the same `id` override parent entries; child-relative paths are normalized
+to repo-root paths by the CLI.
+
+Host wrappers may store memory under another safe relative directory and pass
+`--memory-dir <relative-dir>` to stack-aware commands. Ghost stays
+adapter-neutral: consume JSON and let the wrapper map severities into its own
+review or check format.
+
 ## CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir] [--with-intent] [--with-config] [--reference <path-or-registry>]` | Create the root `.ghost` memory skeleton. |
-| `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
+| `ghost init [dir] [--scope <path>] [--memory-dir <relative-dir>] [--with-intent] [--with-config] [--reference <path-or-registry>]` | Create a root or scoped memory skeleton. |
+| `ghost scan [dir] [--include-nested] [--memory-dir <relative-dir>] [--format json]` | Report fingerprint memory presence and nested readiness. |
+| `ghost stack [path...] [--memory-dir <relative-dir>]` | Inspect resolved broad-to-local memory layers and merged output. |
 | `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
-| `ghost lint [file-or-dir]` | Validate a bundle or individual artifact. |
-| `ghost verify [dir] --root <dir>` | Validate fingerprint evidence, checks, and optional decisions/proposals. |
+| `ghost lint [file-or-dir] [--all] [--memory-dir <relative-dir>]` | Validate a bundle, artifact, or all nested stack merges. |
+| `ghost verify [dir] --root <dir> [--all] [--memory-dir <relative-dir>]` | Validate fingerprint evidence, checks, optional decisions/proposals, and stack integrity. |
 | `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
-| `ghost check --base <ref>` | Run active deterministic gates against a diff. |
-| `ghost review --base <ref>` | Emit an advisory review packet grounded in bundle evidence. |
+| `ghost check --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Run active deterministic gates against a diff; default groups files by memory stack. |
+| `ghost review --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Emit an advisory review packet grounded in resolved stack evidence. |
+| `ghost proposal <create|list|resolve> [--memory-dir <relative-dir>]` | Create, list, or close scoped proposals without auto-promoting memory. |
 | `ghost compare <a> <b> [...more]` | Compare root bundles or direct fingerprints. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 | `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
@@ -63,10 +75,10 @@ packets.
 
 ## Always
 
-- Treat `.ghost/` as the source of truth.
+- Treat the resolved `.ghost/` memory stack as the source of truth.
 - Use `.ghost/config.yml` for implementation/library routing; keep product
   meaning in `fingerprint.yml` or approved memory.
-- Validate with `ghost lint` and `ghost verify --root <target>` before declaring Fingerprint Capture complete.
+- Validate with `ghost lint` and `ghost verify --root <target>` before declaring Fingerprint Capture complete; use `--all` when nested bundles exist.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
 - Include accepted decisions with `ghost review --include-memory` when product-experience rationale matters.
 
