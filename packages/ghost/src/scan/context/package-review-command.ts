@@ -38,11 +38,15 @@ export function emitPackageReviewCommand(
 ): string {
   const { memory } = input;
   const product = memory.fingerprint.summary.product ?? memory.name;
+  const heading =
+    product.toLowerCase() === "ghost"
+      ? "# Ghost review"
+      : `# ${product} Ghost review`;
   const activeChecks =
     memory.checks?.checks.filter((check) => check.status === "active") ?? [];
   const parts = [
     packageFrontmatter(product),
-    `# ${product} Ghost review`,
+    heading,
     packageModeSection(),
     packageWorkflowSection(),
     packageFindingPolicySection(),
