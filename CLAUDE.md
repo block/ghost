@@ -12,7 +12,7 @@ host agent does the interpretive BYOA work through the installed `ghost` skill.
 ## Build & Run
 
 ```bash
-pnpm install          # install dependencies (pnpm 10+, Node 18+)
+pnpm install          # install dependencies (pnpm 10+, Node 20.19+ or 22.12+)
 pnpm build            # build all packages
 pnpm test             # vitest across packages
 pnpm check            # biome, typecheck, file-size, CLI manifest drift
