@@ -223,7 +223,8 @@ async function loadCheckPackage(
         .join("; ")}`,
     );
   }
-  const checkLint = lintGhostChecks(checksResult.data, { map });
+  const checks = checksResult.data as GhostChecksDocument;
+  const checkLint = lintGhostChecks(checks, { map });
   if (checkLint.errors > 0) {
     throw new Error(
       `checks.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
@@ -232,7 +233,7 @@ async function loadCheckPackage(
         .join("; ")}`,
     );
   }
-  return { dir: paths.dir, map, checks: checksResult.data };
+  return { dir: paths.dir, map, checks };
 }
 
 async function readOptional(path: string): Promise<string | undefined> {

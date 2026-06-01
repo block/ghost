@@ -4,6 +4,17 @@ import { GHOST_CHECKS_SCHEMA } from "./types.js";
 const GhostCheckStatusSchema = z.enum(["active", "proposed", "disabled"]);
 const GhostCheckSeveritySchema = z.enum(["critical", "serious", "nit"]);
 
+export const GhostCheckDerivesFromSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^(principle|situation|experience_contract|pattern|substrate):[a-z0-9][a-z0-9._-]*$/,
+    {
+      message:
+        "derives_from must use a typed fingerprint ref, e.g. principle:dense-workflows",
+    },
+  );
+
 const GhostCheckAppliesToSchema = z
   .object({
     scopes: z.array(z.string().min(1)).optional(),
@@ -58,6 +69,7 @@ export const GhostCheckSchema = z
     title: z.string().min(1),
     status: GhostCheckStatusSchema,
     severity: GhostCheckSeveritySchema,
+    derives_from: GhostCheckDerivesFromSchema.optional(),
     applies_to: GhostCheckAppliesToSchema.optional(),
     detector: GhostCheckDetectorSchema,
     evidence: GhostCheckEvidenceSchema.optional(),

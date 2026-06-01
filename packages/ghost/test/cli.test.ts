@@ -537,6 +537,7 @@ checks:
     title: Use design tokens for UI color
     status: active
     severity: serious
+    derives_from: pattern:tokenized-ui-color
     applies_to:
       scopes: [lending]
       paths: [Code/Features/Lending]
