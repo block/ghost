@@ -14,6 +14,7 @@ Ghost captures product identity in a repo-local fingerprint bundle:
 ```text
 .ghost/
   fingerprint.yml
+  config.yml       # optional implementation roots and reference registries/libraries
   checks.yml        # optional deterministic gates
   intent.md         # optional human-approved intent
   decisions/        # optional accepted/rejected rationale
@@ -21,17 +22,19 @@ Ghost captures product identity in a repo-local fingerprint bundle:
   cache/            # optional generated caches
 ```
 
-`fingerprint.yml` is the canonical product-experience memory. Checks are
-deterministic gates. Proposals capture missing memory, intentional divergence,
-experience gaps, and check candidates until a human promotes them. The host
-agent reads and writes the fingerprint; the CLI provides deterministic
-validation, comparison, routing, and handoff packets.
+`fingerprint.yml` is the canonical product-experience memory. `config.yml`
+maps implementation roots and reference UI registries/libraries without making
+those references product intent. Checks are deterministic gates. Proposals capture
+missing memory, intentional divergence, experience gaps, and check candidates
+until a human promotes them. The host agent reads and writes the fingerprint;
+the CLI provides deterministic validation, comparison, routing, and handoff
+packets.
 
 ## CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir] [--with-intent]` | Create the root `.ghost` memory skeleton. |
+| `ghost init [dir] [--with-intent] [--with-config] [--reference <path-or-registry>]` | Create the root `.ghost` memory skeleton. |
 | `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
 | `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
 | `ghost lint [file-or-dir]` | Validate a bundle or individual artifact. |
@@ -61,6 +64,8 @@ validation, comparison, routing, and handoff packets.
 ## Always
 
 - Treat `.ghost/` as the source of truth.
+- Use `.ghost/config.yml` for implementation/library routing; keep product
+  meaning in `fingerprint.yml` or approved memory.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring Fingerprint Capture complete.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
 - Include accepted decisions with `ghost review --include-memory` when product-experience rationale matters.

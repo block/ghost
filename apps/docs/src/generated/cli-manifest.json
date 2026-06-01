@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T03:50:05.815Z",
+  "generatedAt": "2026-05-26T18:21:56.055Z",
   "tools": [
     {
       "tool": "ghost",
@@ -32,6 +32,22 @@
               "description": "Also create optional intent.md for human-authored or human-approved intent",
               "default": null,
               "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--with-config",
+              "name": "withConfig",
+              "description": "Also create optional config.yml for implementation roots and reference registries/libraries",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--reference <path-or-registry>",
+              "name": "reference",
+              "description": "Reference UI registry, library path, or fingerprint to record in config.yml and implementation vocabulary",
+              "default": null,
+              "takesValue": true,
               "negated": false
             },
             {

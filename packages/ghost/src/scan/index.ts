@@ -22,6 +22,7 @@ export { mergeFingerprint } from "./compose.js";
 export {
   CACHE_DIRNAME,
   CHECKS_FILENAME,
+  CONFIG_FILENAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_YML_FILENAME,
@@ -89,6 +90,21 @@ export type {
   MapLintSeverity,
 } from "./lint-map.js";
 export { lintMap } from "./lint-map.js";
+export type {
+  GhostPackageConfig,
+  GhostPackageConfigLibrary,
+  GhostPackageConfigTarget,
+} from "./package-config.js";
+export {
+  GHOST_PACKAGE_CONFIG_SCHEMA,
+  GhostPackageConfigSchema,
+  lintGhostPackageConfig,
+  normalizeReferenceInput,
+  parsePackageConfig,
+  readOptionalPackageConfig,
+  readOptionalPackageConfigSync,
+  templatePackageConfig,
+} from "./package-config.js";
 export type { ParsedFingerprint, ParseOptions } from "./parser.js";
 export { parseFingerprint, splitRaw } from "./parser.js";
 export type {
