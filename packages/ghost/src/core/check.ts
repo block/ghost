@@ -6,6 +6,8 @@ import {
   type GhostCheck,
   type GhostChecksDocument,
   GhostChecksSchema,
+  type GhostFingerprintDocument,
+  GhostFingerprintSchema,
   lintGhostChecks,
   type MapFrontmatter,
   MapFrontmatterSchema,
@@ -64,7 +66,7 @@ export interface GhostDriftCheckReport {
 
 interface LoadedCheckPackage {
   dir: string;
-  map: MapFrontmatter;
+  map: Pick<MapFrontmatter, "scopes" | "feature_areas">;
   checks: GhostChecksDocument;
 }
 
@@ -198,11 +200,23 @@ async function loadCheckPackage(
   cwd: string,
 ): Promise<LoadedCheckPackage> {
   const paths = resolveFingerprintPackage(packageDir, cwd);
-  const [mapRaw, checksRaw] = await Promise.all([
-    readFile(paths.map, "utf-8"),
+  const [fingerprintRaw, mapRaw, checksRaw] = await Promise.all([
+    readFile(paths.fingerprintYml, "utf-8"),
+    readOptional(paths.map),
     readOptional(paths.checks),
   ]);
-  const map = parseMap(mapRaw);
+  const fingerprintResult = GhostFingerprintSchema.safeParse(
+    parseYaml(fingerprintRaw),
+  );
+  if (!fingerprintResult.success) {
+    throw new Error(
+      `fingerprint.yml failed validation: ${fingerprintResult.error.issues
+        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
+        .join("; ")}`,
+    );
+  }
+  const fingerprint = fingerprintResult.data as GhostFingerprintDocument;
+  const map = mapRaw ? parseMap(mapRaw) : mapFromFingerprint(fingerprint);
   if (checksRaw === undefined) {
     return {
       dir: paths.dir,
@@ -224,7 +238,7 @@ async function loadCheckPackage(
     );
   }
   const checks = checksResult.data as GhostChecksDocument;
-  const checkLint = lintGhostChecks(checks, { map });
+  const checkLint = lintGhostChecks(checks, { fingerprint, map });
   if (checkLint.errors > 0) {
     throw new Error(
       `checks.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
@@ -257,6 +271,20 @@ function parseMap(raw: string): MapFrontmatter {
     );
   }
   return result.data;
+}
+
+function mapFromFingerprint(
+  fingerprint: GhostFingerprintDocument,
+): Pick<MapFrontmatter, "scopes" | "feature_areas"> {
+  return {
+    scopes: fingerprint.topology.scopes?.map((scope) => ({
+      id: scope.id,
+      name: scope.id,
+      kind: "fingerprint-topology",
+      paths: [...scope.paths],
+    })),
+    feature_areas: [],
+  };
 }
 
 async function readGitDiff(

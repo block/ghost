@@ -8,6 +8,7 @@ import {
   formatSurveySummaryMarkdown,
   type GhostPatternsDocument,
   lintGhostChecks,
+  lintGhostFingerprint,
   lintGhostPatterns,
   lintGhostResources,
   lintSurvey,
@@ -57,7 +58,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "lint [file]",
-      "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
+      "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -78,15 +79,17 @@ export function registerScanCommands(cli: CAC): void {
         report =
           kind === "survey"
             ? lintSurveyFile(raw)
-            : kind === "map"
-              ? lintMap(raw)
-              : kind === "resources"
-                ? lintResourcesFile(raw)
-                : kind === "patterns"
-                  ? lintPatternsFile(raw)
-                  : kind === "checks"
-                    ? lintChecksFile(raw)
-                    : lintFingerprint(raw);
+            : kind === "fingerprint-yml"
+              ? lintFingerprintYmlFile(raw)
+              : kind === "map"
+                ? lintMap(raw)
+                : kind === "resources"
+                  ? lintResourcesFile(raw)
+                  : kind === "patterns"
+                    ? lintPatternsFile(raw)
+                    : kind === "checks"
+                      ? lintChecksFile(raw)
+                      : lintFingerprint(raw);
 
         if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
@@ -116,7 +119,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
+      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
     )
     .option(
       "--with-intent",
@@ -129,16 +132,17 @@ export function registerScanCommands(cli: CAC): void {
           withIntent: Boolean(opts.withIntent),
         });
         if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(paths, null, 2)}\n`);
+          process.stdout.write(
+            `${JSON.stringify(initCommandOutput(paths, Boolean(opts.withIntent)), null, 2)}\n`,
+          );
         } else {
           process.stdout.write(
             `Initialized fingerprint package: ${paths.dir}\n`,
           );
-          process.stdout.write(`  resources.yml: ${paths.resources}\n`);
-          process.stdout.write(`  map.md: ${paths.map}\n`);
-          process.stdout.write(`  survey.json: ${paths.survey}\n`);
-          process.stdout.write(`  patterns.yml: ${paths.patterns}\n`);
+          process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          process.stdout.write(`  proposals/: ${paths.proposals}\n`);
+          process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
             process.stdout.write(`  intent.md: ${paths.intent}\n`);
           }
@@ -156,11 +160,11 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
+      "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
     )
     .option(
       "--root <dir>",
-      "Optional target root used to resolve resources.yml local paths (default: cwd)",
+      "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
@@ -214,19 +218,16 @@ export function registerScanCommands(cli: CAC): void {
             state === "present" ? "present" : "missing";
           process.stdout.write(`capture dir: ${status.dir}\n\n`);
           process.stdout.write(
-            `  resources  (resources.yml): ${fmt(status.resources.state)}\n`,
+            `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
           );
           process.stdout.write(
-            `  map        (map.md):        ${fmt(status.map.state)}\n`,
+            `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
           );
           process.stdout.write(
-            `  survey     (survey.json):   ${fmt(status.survey.state)}\n`,
+            `  proposals   (proposals/):      ${fmt(status.proposals.state)}\n`,
           );
           process.stdout.write(
-            `  patterns   (patterns.yml):  ${fmt(status.patterns.state)}\n`,
-          );
-          process.stdout.write(
-            `  checks     (checks.yml):    ${fmt(status.checks.state)}\n\n`,
+            `  cache       (cache/):          ${fmt(status.cache.state)}\n`,
           );
           process.stdout.write(
             `  intent     (intent.md):     ${fmt(status.intent.state)}\n\n`,
@@ -541,27 +542,58 @@ export function registerScanCommands(cli: CAC): void {
   registerEmitCommand(cli);
 }
 
+function initCommandOutput(
+  paths: ReturnType<typeof resolveFingerprintPackage>,
+  includeIntent: boolean,
+): Record<string, string> {
+  return {
+    dir: paths.dir,
+    fingerprintYml: paths.fingerprintYml,
+    checks: paths.checks,
+    proposals: paths.proposals,
+    cache: paths.cache,
+    ...(includeIntent ? { intent: paths.intent } : {}),
+  };
+}
+
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
  * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
- * routes to the map linter; YAML schemas route to resources/patterns/checks;
- * everything else stays on the direct fingerprint markdown path.
+ * routes to the map linter; YAML schemas route to fingerprint.yml,
+ * resources/patterns/checks; everything else stays on the direct fingerprint
+ * markdown path.
  */
 function detectFileKind(
   path: string,
   raw: string,
-): "survey" | "map" | "fingerprint" | "checks" | "resources" | "patterns" {
+):
+  | "survey"
+  | "map"
+  | "fingerprint"
+  | "fingerprint-yml"
+  | "checks"
+  | "resources"
+  | "patterns" {
   if (path.toLowerCase().endsWith(".json")) return "survey";
+  if (path.toLowerCase().endsWith("fingerprint.yml")) {
+    return "fingerprint-yml";
+  }
+  if (path.toLowerCase().endsWith("fingerprint.yaml")) {
+    return "fingerprint-yml";
+  }
   if (path.toLowerCase().endsWith("resources.yml")) return "resources";
   if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
   if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
   if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
-  if (path.toLowerCase().endsWith(".yml")) return "checks";
-  if (path.toLowerCase().endsWith(".yaml")) return "checks";
   if (raw.trimStart().startsWith("{")) return "survey";
+  if (/^\s*schema:\s*ghost\.fingerprint\/v1\b/m.test(raw)) {
+    return "fingerprint-yml";
+  }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
+  if (path.toLowerCase().endsWith(".yml")) return "checks";
+  if (path.toLowerCase().endsWith(".yaml")) return "checks";
   // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
   // parse YAML here; the linter does the heavy lift.
   const fmEnd = raw.indexOf("\n---", 3);
@@ -604,6 +636,29 @@ function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
           severity: "error",
           rule: "checks-not-yaml",
           message: `checks file is not valid YAML: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        },
+      ],
+      errors: 1,
+      warnings: 0,
+      info: 0,
+    };
+  }
+}
+
+function lintFingerprintYmlFile(
+  raw: string,
+): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostFingerprint(parseYaml(raw));
+  } catch (err) {
+    return {
+      issues: [
+        {
+          severity: "error",
+          rule: "fingerprint-yml-not-yaml",
+          message: `fingerprint.yml is not valid YAML: ${
             err instanceof Error ? err.message : String(err)
           }`,
         },
