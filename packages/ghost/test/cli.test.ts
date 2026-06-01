@@ -631,15 +631,15 @@ decided_at: "2026-05-17T00:00:00.000Z"
     `schema: ghost.proposal/v1
 id: saved-payment-empty-state
 status: accepted
-kind: decision
+kind: missing-memory
 title: Saved payment empty state should teach recovery
 claim: Empty states for saved payment methods should prioritize recovery.
 rationale: The user is blocked from paying, not browsing product concepts.
 evidence:
   - path: apps/payments/empty-state.tsx
 proposed_action:
-  target: decisions
-  summary: Promote into an accepted product-experience decision if repeated.
+  target: fingerprint
+  summary: Promote into fingerprint.yml if repeated.
 `,
   );
 }
