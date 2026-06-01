@@ -102,9 +102,11 @@ export {
 } from "./fingerprint/index.js";
 // --- Map (ghost.map/v2) ---
 export {
+  CACHE_DIRNAME,
   DECISIONS_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_YML_FILENAME,
   type FingerprintPackagePaths,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
