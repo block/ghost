@@ -287,7 +287,7 @@ situations: []
 principles: []
 experience_contracts: []
 patterns: []
-substrate: {}
+implementation_vocabulary: {}
 review_policy:
   proposal_policy:
     - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.

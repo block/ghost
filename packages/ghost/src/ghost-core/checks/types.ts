@@ -15,7 +15,6 @@ export type GhostCheckDerivesFrom = Extract<
   | `situation:${string}`
   | `experience_contract:${string}`
   | `pattern:${string}`
-  | `substrate:${string}`
 >;
 
 export type GhostCheckDetectorType =

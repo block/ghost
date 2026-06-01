@@ -11,15 +11,13 @@ type RefTargetPrefix =
   | "principle"
   | "situation"
   | "experience_contract"
-  | "pattern"
-  | "substrate";
+  | "pattern";
 
 const REF_TARGET_PREFIXES = [
   "principle",
   "situation",
   "experience_contract",
   "pattern",
-  "substrate",
 ] as const satisfies readonly RefTargetPrefix[];
 
 export function lintGhostFingerprint(
@@ -119,7 +117,6 @@ function collectTargets(
       doc.experience_contracts.map((entry) => entry.id),
     ),
     pattern: new Set(doc.patterns.map((entry) => entry.id)),
-    substrate: new Set(Object.keys(doc.substrate)),
   };
 }
 
