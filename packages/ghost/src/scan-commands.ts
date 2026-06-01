@@ -366,7 +366,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+      "Legacy/cache helpers for ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",
