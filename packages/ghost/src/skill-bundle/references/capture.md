@@ -41,6 +41,12 @@ Use `--with-intent` only when you have human-authored or human-approved context
 to preserve. New projects may start with an empty but valid fingerprint and add
 memory as product choices become real.
 
+Use `--with-config --reference <path-or-registry>` when the product uses a
+reference UI registry or library such as Ghost UI. This writes implementation
+routing into `.ghost/config.yml` and records only implementation vocabulary in
+the blank product fingerprint; it does not copy reference memory into product
+intent.
+
 ### 2. Orient
 
 Read the product, not just the component library. Look for the surfaces, docs,

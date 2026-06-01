@@ -103,6 +103,7 @@ export {
 // --- Map (ghost.map/v2) ---
 export {
   CACHE_DIRNAME,
+  CONFIG_FILENAME,
   DECISIONS_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
@@ -117,6 +118,7 @@ export {
 export {
   type GitInfo,
   getEffectiveMapScopes,
+  type InventoryConfigSummary,
   type InventoryOutput,
   type LanguageHistogramEntry,
   MAP_FILENAME,

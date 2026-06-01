@@ -1,8 +1,12 @@
 import { mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { parse as parseYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 const BASE_FINGERPRINT = `---
 id: local
@@ -242,6 +246,78 @@ describe("ghost CLI", () => {
     expect(status.readiness.state).toBe("memory-empty");
   });
 
+  it("initializes a blank product scaffold with config and reference library wiring", async () => {
+    const init = await runCli(
+      [
+        "init",
+        "--with-config",
+        "--reference",
+        "packages/ghost-ui/.ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    const scan = await runCli(["scan", "--format", "json"], dir);
+    const inventory = await runCli(["inventory"], dir);
+    await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
+      recursive: true,
+    });
+    await mkdir(join(dir, "packages", "ghost-ui", "public", "r"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "packages", "ghost-ui", ".ghost", "fingerprint.yml"),
+      "placeholder\n",
+    );
+    await writeFile(
+      join(dir, "packages", "ghost-ui", "public", "r", "registry.json"),
+      "{}\n",
+    );
+    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(await realpath(initOutput.config)).toBe(
+      await realpath(join(dir, ".ghost", "config.yml")),
+    );
+
+    const fingerprint = parseYaml(
+      await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
+    ) as Record<string, unknown>;
+    expect(fingerprint.situations).toEqual([]);
+    expect(fingerprint.principles).toEqual([]);
+    expect(fingerprint.experience_contracts).toEqual([]);
+    expect(fingerprint.patterns).toEqual([]);
+    expect(fingerprint.implementation_vocabulary).toMatchObject({
+      libraries: ["ghost-ui"],
+    });
+
+    const config = parseYaml(
+      await readFile(join(dir, ".ghost", "config.yml"), "utf-8"),
+    ) as Record<string, unknown>;
+    expect(config).toMatchObject({
+      schema: "ghost.config/v1",
+      targets: [{ id: "product", platform: "web", roots: [] }],
+      libraries: [
+        {
+          id: "ghost-ui",
+          role: "primary-ui-registry",
+          source: "registry:packages/ghost-ui/public/r/registry.json",
+          fingerprint: "packages/ghost-ui/.ghost/fingerprint.yml",
+        },
+      ],
+    });
+
+    const status = JSON.parse(scan.stdout);
+    expect(status.config.state).toBe("present");
+    expect(status.readiness.state).toBe("implementation-only");
+
+    const inventoryOutput = JSON.parse(inventory.stdout);
+    expect(inventoryOutput.config.libraries[0].id).toBe("ghost-ui");
+    expect(verify.code).toBe(0);
+  });
+
   it("runs inventory, lint, and verify from the unified cli", async () => {
     await writeCheckPackage(dir);
     const inventory = await runCli(["inventory"], dir);
@@ -256,6 +332,29 @@ describe("ghost CLI", () => {
     expect(lint.stdout).toContain("0 error");
     expect(verify.code).toBe(0);
     expect(verify.stdout).toContain("0 error");
+  });
+
+  it("lints, verifies, and scans the Ghost UI reference bundle", async () => {
+    const lint = await runCli(["lint", "packages/ghost-ui/.ghost"], REPO_ROOT);
+    const verify = await runCli(
+      ["verify", "packages/ghost-ui/.ghost", "--root", "packages/ghost-ui"],
+      REPO_ROOT,
+    );
+    const scan = await runCli(
+      ["scan", "packages/ghost-ui/.ghost", "--format", "json"],
+      REPO_ROOT,
+    );
+
+    expect(lint.code).toBe(0);
+    expect(verify.code).toBe(0);
+    expect(scan.code).toBe(0);
+    const status = JSON.parse(scan.stdout);
+    expect(status.fingerprint.state).toBe("present");
+    expect(status.checks.state).toBe("present");
+    expect(status.proposals.state).toBe("present");
+    expect(status.cache.state).toBe("present");
+    expect(status.readiness.state).toBe("implementation-only");
+    expect(status.readiness.reasons[0]).toContain("implementation vocabulary");
   });
 
   it("runs survey summary, catalog, and patterns from the unified cli", async () => {
@@ -460,6 +559,40 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("missing-memory");
     expect(result.stdout).toContain("experience-gap");
     expect(result.stdout).toContain("repair or intentional-divergence");
+  });
+
+  it("review includes config reference registries when config.yml is present", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, ".ghost", "config.yml"),
+      `schema: ghost.config/v1
+targets:
+  - id: product
+    platform: web
+    roots: []
+libraries:
+  - id: ghost-ui
+    role: primary-ui-registry
+    source: registry:packages/ghost-ui/public/r/registry.json
+    fingerprint: packages/ghost-ui/.ghost/fingerprint.yml
+`,
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      ["review", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.config.libraries[0]).toMatchObject({
+      id: "ghost-ui",
+      role: "primary-ui-registry",
+    });
   });
 
   it("review omits product-experience memory by default", async () => {

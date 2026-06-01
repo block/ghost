@@ -3,19 +3,26 @@
 **Reference design system for the Ghost project. 97 components, shadcn registry, not published to npm.**
 
 `ghost-ui` is the reference component system Ghost uses to exercise registry
-and agent-integration workflows. It's distributed as a shadcn registry
-(`registry.json`) for drop-in consumption, not as an npm package. If you're
+and agent-integration workflows. It's distributed as a generated shadcn registry
+(`public/r/registry.json`) for drop-in consumption, not as an npm package. If you're
 looking for the fingerprint capture and drift-review tool, that's
 [`@anarchitecture/ghost`](../ghost).
 
 ## Registry convention
 
-This package intentionally does not carry package-local Ghost capture artifacts
-(`resources.yml`, `map.md`, `survey.json`, `patterns.yml`, or `checks.yml`). It
-stays a component registry. Agents should read this README, `registry.json`,
-`.shadcn/skills.md`, and source files when integrating components.
+This workspace carries a repo-local Ghost reference bundle in `.ghost/`.
+`fingerprint.yml` describes Ghost UI as implementation vocabulary: tokens,
+component families, registry shape, and reference-registry boundaries. It does
+not define product-specific flows, copy, trust obligations, or business intent
+for consuming apps. New products should reference this bundle and the generated
+`public/r/registry.json`, then fill their own product experience memory
+separately.
 
-The shadcn `registry.json` can carry opportunistic, namespaced item metadata:
+Agents should read this README, `.ghost/fingerprint.yml`,
+`public/r/registry.json`, `registry.json`, `.shadcn/skills.md`, and source files
+when integrating components.
+
+The shadcn registry entries can carry opportunistic, namespaced item metadata:
 
 - **`meta.fingerprint_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
 
@@ -30,7 +37,8 @@ That distinction helps generators pick relevant references instead of treating e
 
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
-- **Registry** — `registry.json`, shadcn-compatible catalogue with optional `meta.fingerprint_dimensions` extensions. Rebuilt by `just build-registry`.
+- **Registry** — `public/r/registry.json`, generated shadcn-compatible catalogue for consumption. Source entries live in `registry.json`; rebuilt by `just build-registry`.
+- **Ghost reference memory** — `.ghost/fingerprint.yml` + `.ghost/checks.yml`, used as reference-registry context by consuming products.
 - **Agent context** — `.shadcn/skills.md`, generated from the registry and component sources for AI assistants.
 
 ## Use
