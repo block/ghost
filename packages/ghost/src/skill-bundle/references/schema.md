@@ -4,58 +4,54 @@ Canonical package:
 
 ```text
 .ghost/
-  resources.yml  ghost.resources/v1
-  map.md         ghost.map/v2
-  survey.json    ghost.survey/v2
-  patterns.yml   ghost.patterns/v1
+  fingerprint.yml ghost.fingerprint/v1
   checks.yml     optional ghost.checks/v1 gates
   intent.md      optional human intent
   decisions/     optional ghost.decision/v1 rationale
   proposals/     optional ghost.proposal/v1 candidates
+  cache/         optional generated caches
 ```
 
-## `resources.yml`
+## `fingerprint.yml`
 
 ```yaml
-schema: ghost.resources/v1
-id: my-project
-primary:
-  target: .
-  paths: [src]
-design_system:
-  - id: ui
-    target: ../ui
-    paths: [packages/ui]
-surfaces:
-  - id: settings
-    locator: /settings
-    paths: [src/routes/settings.tsx]
-include: ["src/**"]
-exclude: ["**/node_modules/**"]
-```
-
-## `patterns.yml`
-
-```yaml
-schema: ghost.patterns/v1
-id: my-project
-surface_types:
-  - id: settings
-    preferred_patterns: [settings-stack]
+schema: ghost.fingerprint/v1
+summary:
+  product: Example dashboard
+  goals:
+    - Preserve dense comparison workflows.
+  anti_goals:
+    - Do not turn operational screens into marketing pages.
+topology:
+  scopes:
+    - id: orders
+      paths: [src/orders]
+      surface_types: [resource-index]
+situations:
+  - id: triaging-orders
+    title: Triaging orders
+    product_obligation: Keep status, owner, and recovery actions visible.
+principles:
+  - id: density-supports-comparison
+    status: accepted
+    principle: Dense work surfaces prioritize scanning and comparison.
+experience_contracts:
+  - id: destructive-actions-disclose-consequence
+    status: accepted
+    contract: Destructive actions disclose consequence and recovery path.
+patterns:
+  - id: resource-index-stays-tabular
+    status: accepted
+    kind: composition
+    pattern: Resource index views stay tabular when comparison is the task.
     evidence:
-      - surface_id: settings-account
-composition_patterns:
-  - id: settings-stack
-    surface_types: [settings]
-    frequency: 4
-    confidence: 0.8
-    anatomy:
-      ordered: [shell, compact-header, sections, actions]
-      required: [sections]
-      forbidden: [oversized-hero]
-    evidence:
-      - surface_id: settings-account
-        locator: /settings/account
+      - path: src/orders/index.tsx
+substrate:
+  tokens: [color.background, color.text]
+  components: [DataTable]
+review_policy:
+  proposal_policy:
+    - Agents propose memory changes; humans promote durable truth.
 ```
 
 ## `checks.yml`
@@ -118,7 +114,7 @@ decided_at: "2026-05-17T00:00:00.000Z"
 schema: ghost.proposal/v1
 id: saved-payment-empty-state
 status: open
-kind: decision
+kind: missing-memory
 title: Saved payment empty state should teach recovery
 claim: Empty states for saved payment methods should prioritize recovery over education.
 rationale: The user is blocked from paying, not browsing product concepts.
@@ -128,8 +124,8 @@ scope:
 evidence:
   - path: apps/payments/empty-state.tsx
 proposed_action:
-  target: decisions
-  summary: Promote into an accepted product-experience decision if repeated.
+  target: fingerprint
+  summary: Promote into fingerprint.yml if repeated.
 ```
 
 ## Validation
@@ -141,6 +137,6 @@ ghost check --base main
 ```
 
 `lint` validates artifact shape. `verify` validates cross-artifact fidelity:
-resources resolve, patterns cite survey evidence, and checks reference known
-pattern IDs. Optional decisions/proposals are linted when present. `ghost
-check` is the deterministic pass/fail gate.
+fingerprint evidence paths resolve and checks reference known fingerprint
+memory. Optional decisions/proposals are linted when present. `ghost check` is
+the deterministic pass/fail gate.
