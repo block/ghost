@@ -352,6 +352,16 @@ describe("ghost CLI", () => {
 
     expect(reviewCommand.code).toBe(0);
     expect(reviewCommand.stdout).toContain("design-review.md");
+    const emittedReviewCommand = await readFile(
+      join(dir, ".claude", "commands", "design-review.md"),
+      "utf-8",
+    );
+    expect(emittedReviewCommand).toContain("fingerprint.yml memory");
+    expect(emittedReviewCommand).toContain("experience-gap");
+    expect(emittedReviewCommand).toContain("no-hardcoded-ui-color");
+    expect(emittedReviewCommand).not.toContain(
+      "Generated from `fingerprint.md`",
+    );
     expect(contextBundle.code).toBe(0);
     expect(contextBundle.stdout).toContain("prompt.md");
     expect(contextBundle.stdout).toContain("fingerprint.yml");
