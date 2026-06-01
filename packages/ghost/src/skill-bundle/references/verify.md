@@ -1,20 +1,21 @@
 ---
 name: verify
-description: Confirm generated UI stays within the local Ghost fingerprint bundle; iterate if not.
+description: Confirm generated UI stays within the resolved Ghost memory stack; iterate if not.
 handoffs:
   - label: Remediate deterministic or advisory findings
     skill: remediate
-    prompt: Given the verify findings, suggest minimal token/code changes that close the drift
+    prompt: Given the verify findings, suggest minimal code changes that close the drift
 ---
 
 # Recipe: Verify Generated UI
 
-**Goal:** run the generate → check → review → repair loop against `.ghost/`.
+**Goal:** run the generate -> check -> review -> repair loop against `.ghost/`.
 
 ## Steps
 
-1. Generate the UI using `.ghost/patterns.yml`, `.ghost/survey.json`,
-   optional `.ghost/intent.md`, nearest examples, and active checks as context.
+1. Generate the UI from a brief grounded in the resolved memory stack:
+   merged `fingerprint.yml`, merged checks, open proposals, nearest examples,
+   and human context.
 2. Run the deterministic gate:
 
    ```bash
@@ -29,6 +30,10 @@ handoffs:
    ```
 
 5. Repair high-confidence advisory issues when they cite a diff location,
-   `patterns.yml` composition pattern, survey evidence, precedent/example, and repair.
+   fingerprint memory, and a concrete repair.
+6. If the review exposes missing or contradictory memory, record a proposal
+   with `ghost proposal create --path <path>` instead of rewriting
+   `fingerprint.yml` during verification.
 
-Patterns and optional intent shape judgment. Only active `checks.yml` failures block.
+Only active `checks.yml` failures block. Advisory findings guide judgment and
+may become proposals when they reveal durable memory gaps.

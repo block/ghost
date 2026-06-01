@@ -30,22 +30,27 @@ pnpm --filter @anarchitecture/ghost exec ghost <command>
 
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. Ghost is the deterministic
-calculator the agent reaches for: schema validation, survey transforms,
+calculator the agent reaches for: schema validation, inventory/cache helpers,
 structural diffs, drift checks, comparison math, and handoff packets.
 
-The root `.ghost/` bundle follows:
+The canonical root `.ghost/` bundle follows:
 
 ```text
-resources.yml -> map.md -> survey.json -> patterns.yml
-what to read     where UI lives  what exists   composition grammar
+fingerprint.yml -> checks.yml
+memory and why     deterministic gates
 ```
 
 Optional memory lives beside it:
 
-- `checks.yml` for deterministic gates.
 - `intent.md` for human-authored or human-approved product intent.
 - `decisions/*.yml` for accepted/rejected product-experience rationale.
 - `proposals/*.yml` for staged memory changes before promotion.
+- `cache/` for generated inventory. Cache answers what exists; fingerprint
+  memory answers what matters and why.
+
+Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
+appear in older repos or as migration source material. They are not canonical
+memory for new Ghost work.
 
 ## Packages
 
@@ -62,14 +67,14 @@ Optional memory lives beside it:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{resources.yml,map.md,survey.json,patterns.yml,checks.yml}`. |
+| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`. |
 | `ghost scan` | Report scan state and BYOA next-step guidance. |
-| `ghost inventory` | Emit raw repo signals as JSON for map authoring. |
+| `ghost inventory` | Emit raw repo signals as JSON for optional cache/source material. |
 | `ghost lint` | Validate a bundle or single artifact. |
-| `ghost verify` | Validate resource reachability, pattern evidence, checks, and optional memory. |
+| `ghost verify` | Validate fingerprint evidence paths, typed check refs, and optional memory. |
 | `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
-| `ghost survey <op>` | `merge`, `fix-ids`, `summarize`, `catalog`, or `patterns` over `ghost.survey/v2`. |
+| `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v2` workflows. |
 | `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory review packet. |
 | `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
@@ -126,8 +131,11 @@ first publish becomes `0.1.0`.
 
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
-- The canonical on-disk form is the root `.ghost/` bundle. Direct
-  `fingerprint.md` remains for legacy/direct compare and context-bundle flows.
+- The canonical on-disk form is `.ghost/fingerprint.yml` plus optional
+  `.ghost/checks.yml`, `.ghost/proposals/`, `.ghost/decisions/`,
+  `.ghost/intent.md`, and `.ghost/cache/`.
+- Direct `fingerprint.md` remains only for legacy/direct compare and explicit
+  `--fingerprint` emit flows.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated

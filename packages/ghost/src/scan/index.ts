@@ -20,9 +20,12 @@ export { parseBody } from "./body.js";
 export type { DesignDecision } from "./compose.js";
 export { mergeFingerprint } from "./compose.js";
 export {
+  CACHE_DIRNAME,
   CHECKS_FILENAME,
+  CONFIG_FILENAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_YML_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
@@ -32,7 +35,9 @@ export {
 // --- Context (review-command + context-bundle) ---
 export type {
   ContextFormat,
+  EmitPackageReviewInput,
   EmitReviewInput,
+  PackageMemory,
   WriteContextOptions,
   WriteContextResult,
   WritePackageContextOptions,
@@ -40,9 +45,12 @@ export type {
 export {
   buildSkillMd,
   buildTokensCss,
+  emitPackageReviewCommand,
   emitReviewCommand,
+  loadPackageMemory,
   writeContextBundle,
   writePackageContextBundle,
+  writePackageContextBundleFromMemory,
 } from "./context/index.js";
 export type {
   ColorChange,
@@ -83,6 +91,44 @@ export type {
   MapLintSeverity,
 } from "./lint-map.js";
 export { lintMap } from "./lint-map.js";
+export type {
+  DiscoveredGhostPackage,
+  GhostMemoryStack,
+  GhostMemoryStackGroup,
+  GhostMemoryStackLayer,
+  GhostMemoryStackLayerRef,
+  MemoryDirectoryOptions,
+} from "./memory-stack.js";
+export {
+  buildMemoryStack,
+  discoverGhostPackages,
+  discoverMemoryStack,
+  groupMemoryStacksForPaths,
+  initScopedMemoryPackage,
+  lintAllMemoryStacks,
+  loadMemoryStackForPath,
+  mapFromFingerprint,
+  memoryPackageDisplayPath,
+  memoryStackToPackageMemory,
+  normalizeMemoryDir,
+  resolveGitRoot,
+  verifyAllMemoryStacks,
+} from "./memory-stack.js";
+export type {
+  GhostPackageConfig,
+  GhostPackageConfigLibrary,
+  GhostPackageConfigTarget,
+} from "./package-config.js";
+export {
+  GHOST_PACKAGE_CONFIG_SCHEMA,
+  GhostPackageConfigSchema,
+  lintGhostPackageConfig,
+  normalizeReferenceInput,
+  parsePackageConfig,
+  readOptionalPackageConfig,
+  readOptionalPackageConfigSync,
+  templatePackageConfig,
+} from "./package-config.js";
 export type { ParsedFingerprint, ParseOptions } from "./parser.js";
 export { parseFingerprint, splitRaw } from "./parser.js";
 export type {

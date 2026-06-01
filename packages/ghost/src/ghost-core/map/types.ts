@@ -31,6 +31,25 @@ export interface GitInfo {
   default_branch: string | null;
 }
 
+/** Data-only `.ghost/config.yml` summary included when present. */
+export interface InventoryConfigSummary {
+  /** Absolute path to the config file. */
+  path: string;
+  /** Configured implementation targets. */
+  targets: Array<{
+    id: string;
+    platform?: string;
+    roots: string[];
+  }>;
+  /** Configured reference libraries. */
+  libraries: Array<{
+    id: string;
+    role: string;
+    source: string;
+    fingerprint?: string;
+  }>;
+}
+
 /** Full output shape of `ghost map inventory`. */
 export interface InventoryOutput {
   /** Resolved absolute path that was inventoried. */
@@ -62,4 +81,6 @@ export interface InventoryOutput {
   git_remote: string | null;
   /** Best-effort git default branch. */
   git_default_branch: string | null;
+  /** Parsed `.ghost/config.yml` summary when present. */
+  config?: InventoryConfigSummary;
 }

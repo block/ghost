@@ -10,16 +10,19 @@ the decision.
 
 ## Steps
 
-1. Read the proposal in `.ghost/proposals/`.
+1. Resolve the memory stack for the affected path, then read the proposal from
+   the matching `.ghost/proposals/` layer.
 2. Choose the target from `proposed_action.target`.
-3. For `decisions`, create `.ghost/decisions/<id>.yml` with schema
-   `ghost.decision/v1` and `status: accepted`.
-4. For `patterns`, update `.ghost/patterns.yml` only when survey evidence
-   supports the pattern.
-5. For `checks`, update `.ghost/checks.yml` only with deterministic detectors.
-6. For `intent`, update `.ghost/intent.md` only with human-approved direction.
-7. Mark the proposal `status: accepted` or leave a note if it was superseded.
-8. Run `ghost lint .ghost`.
+3. For `fingerprint`, update the appropriate root or scoped
+   `fingerprint.yml` with the smallest durable principle, situation,
+   experience contract, or pattern addition. Use `implementation_vocabulary`
+   only for current materials that help agents implement the durable memory.
+4. For `checks`, update the appropriate `checks.yml` only with deterministic
+   detectors and typed `derives_from` references.
+5. For `review_policy`, update only the proposal or review rules in
+   `fingerprint.yml`.
+6. Mark the proposal with `ghost proposal resolve <id> --path <path> --status accepted` or leave a note if it was superseded.
+7. Run `ghost lint --all` and `ghost verify --all` when nested bundles exist.
 
 Canonical promotion should be deliberate. Keep rejected or unresolved ideas in
-proposals, not in `patterns.yml`, `checks.yml`, or `intent.md`.
+proposals, not in `fingerprint.yml` or `checks.yml`.

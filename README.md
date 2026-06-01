@@ -1,23 +1,46 @@
 # Ghost
 
-**Ghost captures a repo-local product fingerprint for agents.**
+**Ghost keeps repo-local product experience memory for AI agents.**
 
-Agents can write UI. What they cannot reliably preserve is the thought behind
-the product experience they are changing: hierarchy, density, restraint,
-repetition, refusal, reversibility, trust, and flow. Ghost captures that second
-layer as a versioned `.ghost/` fingerprint bundle that agents can read before
-generation and validate after changes.
+Agents can write UI. What they cannot reliably preserve is the product
+experience identity behind that UI: hierarchy, density, restraint, behavior,
+copy, accessibility, trust, and flow. Ghost stores that memory in a versioned
+`.ghost/` bundle that agents can read before generation and validate after
+changes.
 
-The bundle is evidence-first:
+The canonical bundle is intentionally small:
 
-- **`.ghost/resources.yml`** declares the references that define the product.
-- **`.ghost/map.md`** routes changes to repo scopes and surfaces.
-- **`.ghost/survey.json`** records values, tokens, components, surfaces, and factual composition observations.
-- **`.ghost/patterns.yml`** codifies repeated composition grammar with evidence.
-- **`.ghost/checks.yml`** optionally stores human-promoted deterministic gates.
-- **`.ghost/intent.md`** optionally records human-authored or human-approved product intent.
-- **`.ghost/decisions/*.yml`** optionally records accepted/rejected product-experience rationale.
-- **`.ghost/proposals/*.yml`** optionally stages candidate fingerprint updates before promotion.
+- **`.ghost/fingerprint.yml`** is the source of truth for product experience
+  memory: summary, topology, situations, principles, experience contracts,
+  patterns, implementation vocabulary, and review policy.
+- **`.ghost/config.yml`** optionally records implementation roots and
+  reference registries/libraries so agents know where to look without treating
+  reference defaults as product intent.
+- **`.ghost/checks.yml`** optionally stores deterministic gates grounded in
+  fingerprint memory.
+- **`.ghost/intent.md`** optionally records human-authored or human-approved
+  product intent.
+- **`.ghost/decisions/*.yml`** optionally records accepted/rejected
+  product-experience rationale.
+- **`.ghost/proposals/*.yml`** stages missing memory, intentional divergence,
+  experience gaps, and check candidates before human promotion.
+- **`.ghost/cache/`** may hold generated inventory. Cache answers what exists;
+  `fingerprint.yml` answers what matters and why.
+
+Older `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` artifacts are
+legacy/cache material. They are not canonical Ghost memory.
+
+Ghost also supports nested memory for real product surfaces. A repo may keep a
+root `.ghost/` for broad product identity and a child bundle such as
+`apps/checkout/.ghost/` for local checkout rules. For a file under
+`apps/checkout`, Ghost resolves layers from root to leaf, merges them with
+child entries winning by `id`, and normalizes child-relative paths back to the
+repo root for routing and reports.
+
+Host tools can wrap Ghost without adopting the default directory name. Use
+`--memory-dir <relative-dir>` on stack-aware commands to resolve memory from a
+safe relative directory such as `.design/memory`; use `--package <dir>` only for
+exact single-bundle mode.
 
 ## Install
 
@@ -37,20 +60,20 @@ npx ghost skill install
 npx ghost skill install --dest ~/.codex/skills/ghost
 ```
 
-After that, ask your agent in plain English:
+Then ask your agent in plain English:
 
 ```text
 Capture a Ghost fingerprint for this repo.
+Brief this work from the Ghost fingerprint.
 Review this PR for Ghost drift.
 Compare these two Ghost bundles.
-Brief this work from the Ghost fingerprint.
 ```
 
 ## Fingerprint Capture
 
-Fingerprint Capture is a BYOA workflow. Your agent reads, interprets, and writes
-the fingerprint artifacts; the CLI supplies deterministic status, validation,
-derivation, and review helpers.
+Fingerprint Capture is a BYOA workflow. Your agent reads, interprets, and
+writes the memory artifacts; the CLI supplies deterministic status,
+validation, checks, emitted prompts, and review packets.
 
 Ask your agent:
 
@@ -62,56 +85,68 @@ During capture, the agent checkpoints with commands like:
 
 ```bash
 ghost init --with-intent
+ghost init --with-config --reference packages/ghost-ui/.ghost
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
 ghost scan --format json
-ghost inventory
+ghost scan --include-nested --format json
+ghost inventory > .ghost/cache/inventory.json
 ghost lint .ghost
-ghost survey fix-ids .ghost/survey.json -o .ghost/survey.json
-ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
 ghost verify .ghost --root .
-ghost lint .ghost
+ghost lint --all
+ghost verify --all
 ```
+
+For Ghost UI, `--reference packages/ghost-ui/.ghost` writes config that points
+at `registry:packages/ghost-ui/public/r/registry.json` plus the Ghost UI
+reference fingerprint. It does not create or require an installable Ghost UI
+package.
+
+Inventory is optional source material. Durable conclusions belong in
+`.ghost/fingerprint.yml`; implementation routing belongs in optional
+`.ghost/config.yml`; executable gates belong in `.ghost/checks.yml`.
 
 ## Drift Workflow
 
 ```bash
 ghost check --base main
 ghost review --base main --include-memory
-ghost compare market/.ghost dashboard/.ghost
-ghost compare a.md b.md --semantic
-ghost compare before.md after.md --temporal
-ghost compare */.ghost
-ghost ack --stance aligned --reason "Initial baseline"
-ghost track new-tracked.fingerprint.md
-ghost diverge typography --reason "Editorial product uses a different type scale"
+ghost stack apps/checkout/review/page.tsx
 ghost emit review-command
+ghost emit review-command --path apps/checkout/review/page.tsx
 ghost emit context-bundle
+ghost compare market/.ghost dashboard/.ghost
+ghost compare a.md b.md --semantic          # legacy direct markdown compare
+ghost ack --stance aligned --reason "Initial baseline"
+ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-`ghost scan --format json` emits deterministic Fingerprint Capture state: which
-artifacts are present, which stage is next, and evidence readiness. Readiness
-distinguishes a product-observed bundle from component-demo, substrate-only, or
-unobservable evidence, so agents know when tokens/components are available but
-product composition has not been earned yet. It does not call an LLM.
+`ghost scan --format json` emits deterministic capture state: whether
+`fingerprint.yml` is present, whether memory has accepted entries, which
+optional files exist, and what the next BYOA step should be. It does not call an
+LLM.
 
 ## CLI Commands
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{resources.yml,map.md,survey.json,patterns.yml,checks.yml}`. |
-| `ghost scan` | Report fingerprint capture progress and emit the next BYOA handoff. |
-| `ghost inventory` | Emit raw repo signals as JSON for map authoring. |
-| `ghost lint` | Validate a bundle or individual artifact. |
-| `ghost verify` | Validate resource reachability, pattern evidence, checks, and optional decisions/proposals. |
-| `ghost describe` | Print optional `intent.md` or direct markdown section ranges + token estimates. |
-| `ghost diff` | Structural prose-level diff between direct fingerprints. |
-| `ghost survey <op>` | Operate on `ghost.survey/v2` files: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
-| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
-| `ghost review` | Emit an evidence-routed advisory review packet. |
+| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`; use `--scope <path>` for scoped memory and `--memory-dir` for a non-default memory directory. |
+| `ghost scan` | Report fingerprint capture progress and, with `--include-nested`, nested bundle readiness. Supports `--memory-dir`. |
+| `ghost inventory` | Emit raw repo signals as JSON for optional cache/material gathering. |
+| `ghost lint` | Validate a bundle or individual artifact; `--all` validates nested bundles and stack merges. Supports `--memory-dir`. |
+| `ghost verify` | Validate fingerprint evidence paths, typed check refs, optional memory, and with `--all` nested stack integrity. Supports `--memory-dir`. |
+| `ghost stack` | Inspect resolved root-to-leaf memory layers and merged output for one or more paths. Supports `--memory-dir`. |
+| `ghost describe` | Print optional `intent.md` or legacy direct markdown section ranges. |
+| `ghost diff` | Structural prose-level diff between legacy direct fingerprints. |
+| `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v2` files. Not canonical memory. |
+| `ghost check` | Run active `ghost.checks/v1` gates against a diff, grouping changed files by memory stack unless `--package` is provided. `--format json` emits `ghost.check-report/v1` for wrappers. |
+| `ghost review` | Emit an evidence-routed advisory packet with `stacks[]` unless `--package` is provided. Supports `--memory-dir`. |
+| `ghost proposal <op>` | Create, list, or resolve scoped proposal files without auto-promoting canonical memory. Supports `--memory-dir`. |
 | `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
 | `ghost diverge` | Declare intentional divergence on a dimension. |
-| `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
+| `ghost emit <kind>` | Emit `review-command` or `context-bundle`; use `--path` for a merged stack or `--package` for exact bundle mode. Supports `--memory-dir` with `--path`. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
 ## Repo Layout
@@ -147,7 +182,8 @@ optional and only used by semantic embedding helpers when a host opts in.
 
 | Resource | Description |
 | --- | --- |
-| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` bundle format |
-| [docs/generation-loop.md](./docs/generation-loop.md) | Generate, check, review, and remediate loop |
+| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` memory format |
+| [docs/generation-loop.md](./docs/generation-loop.md) | Brief, generate, check, review, and remediate loop |
+| [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, proposals, and custom memory directories |
 | [GOVERNANCE.md](./GOVERNANCE.md) | Project governance |
 | [LICENSE](./LICENSE) | Apache License, Version 2.0 |

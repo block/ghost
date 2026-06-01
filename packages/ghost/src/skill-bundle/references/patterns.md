@@ -1,46 +1,67 @@
 ---
 name: patterns
-description: Interpret .ghost/survey.json surface evidence into .ghost/patterns.yml, the operational composition grammar.
+description: Author product-experience patterns inside .ghost/fingerprint.yml.
 handoffs:
   - label: Verify bundle
     command: ghost verify .ghost --root .
     prompt: Verify the root fingerprint bundle
 ---
 
-# Recipe: Write `patterns.yml`
+# Recipe: Author Fingerprint Patterns
 
-**Goal:** produce `.ghost/patterns.yml` (`ghost.patterns/v1`) from
-`.ghost/survey.json`.
+**Goal:** write useful `patterns[]` entries in `.ghost/fingerprint.yml`.
 
-`patterns.yml` is operational composition grammar. It names surface types,
-composition patterns, anatomy, variants, anti-patterns, confidence, and evidence
-so generation and advisory review have stable handles. It is not human intent;
-use optional `intent.md` for accepted product strategy.
+Patterns are durable product-experience memory. They may describe visual,
+behavioral, content, or composition choices. They are not a raw inventory of
+everything the repo does.
 
-## Start From Survey Evidence
+## When To Add A Pattern
 
-```bash
-ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
+Add a pattern when it helps a future agent choose or review:
+
+- a repeated layout or surface structure
+- a content or disclosure convention
+- a behavior or recovery flow
+- a visual treatment tied to product meaning
+- a restraint rule that preserves hierarchy, density, trust, or pacing
+
+Do not add a pattern just because a value or component exists. Put raw
+observations in `.ghost/cache/` or keep them in scratch notes.
+
+## Shape
+
+```yaml
+patterns:
+  - id: resource-index-stays-tabular
+    status: accepted
+    kind: composition
+    pattern: Resource index views stay tabular when comparison is the task.
+    applies_to:
+      surface_types: [resource-index]
+      paths: [src/orders]
+    guidance:
+      - Preserve row density and sortable columns.
+      - Avoid decorative card grids for primary comparison views.
+    evidence:
+      - path: src/orders/index.tsx
 ```
 
-Then curate the draft. Keep every pattern evidence-backed.
+Allowed `kind` values:
 
-If `ghost scan --format json` reports `readiness.state: substrate-only`, leave
-`composition_patterns` empty and keep advisory expectations focused on
-tokens/components/values. If readiness is `component-demo`, mark patterns as
-demo or component-anatomy evidence; do not present them as product composition,
-surface flow, or hierarchy.
+- `visual`
+- `behavioral`
+- `content`
+- `composition`
 
 ## Authoring Rules
 
-- Use stable slugs: `resource-index`, `dense-resource-index`, `settings-stack`.
-- Record surface type selection policy in `surface_types[].preferred_patterns`.
-- Record pattern anatomy in `composition_patterns[].anatomy`.
-- Put sparse but important differences in `variants` or `anti_patterns`.
-- Use `confidence` for observed support, not taste.
-- Cite `survey.ui_surfaces` via `surface_id`, `locator`, or `path`.
-- Keep subjective or strategic rationale out of `patterns.yml`; put approved
-  intent in `intent.md`.
+- Use stable slugs.
+- Keep the pattern actionable for generation and review.
+- Cite paths, locators, or notes as evidence.
+- Put obligations that affect failure, disclosure, recovery, or trust in
+  `experience_contracts`, not only `patterns`.
+- Put broad product judgment in `principles`.
+- Add `check_refs` only when a deterministic check exists in `checks.yml`.
 
 ## Validate
 
@@ -49,4 +70,5 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Verification fails when composition patterns lack survey-backed evidence.
+If a pattern is speculative, record a proposal instead of adding it as accepted
+memory.

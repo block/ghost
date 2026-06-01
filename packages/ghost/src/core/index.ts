@@ -64,6 +64,7 @@ export type {
   GhostDriftCheckFinding,
   GhostDriftCheckOptions,
   GhostDriftCheckReport,
+  GhostDriftCheckStack,
   GhostDriftRoutedFile,
 } from "./check.js";
 export {

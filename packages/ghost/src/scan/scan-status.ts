@@ -3,38 +3,32 @@ import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   GHOST_CHECKS_FILENAME,
-  GHOST_PATTERNS_FILENAME,
-  GHOST_RESOURCES_FILENAME,
+  GHOST_FINGERPRINT_YML_FILENAME,
   getEffectiveMapScopes,
+  lintGhostFingerprint,
   MAP_FILENAME,
   type MapFrontmatter,
   MapFrontmatterSchema,
   SURVEY_FILENAME,
-  type Survey,
 } from "#ghost-core";
 import {
+  CACHE_DIRNAME,
+  CONFIG_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
+  PROPOSALS_DIRNAME,
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
 
-/**
- * Per-stage state in a fingerprint capture directory.
- *
- *   `missing` — the artifact doesn't exist yet.
- *   `present` — the artifact exists. Existence is the only signal this
- *     surfaces; hash-based freshness (`stale` vs `present`) is a planned
- *     enhancement once `.scan-meta.json` is in play.
- */
 export type ScanStageState = "missing" | "present";
 
 export interface ScanStageReport {
   state: ScanStageState;
-  /** Absolute path to the artifact (whether it exists or not). */
+  /** Absolute path to the artifact or directory. */
   path: string;
 }
 
-export type ScanStage = "resources" | "map" | "survey" | "patterns";
+export type ScanStage = "fingerprint";
 
 export interface ScanScopeReport {
   id: string;
@@ -47,20 +41,21 @@ export interface ScanScopeReport {
 
 export type ScanReadinessState =
   | "pending"
-  | "product-observed"
-  | "component-demo"
-  | "substrate-only"
-  | "unobservable"
+  | "memory-empty"
+  | "implementation-only"
+  | "memory-ready"
   | "unknown";
 
 export interface ScanReadinessReport {
   state: ScanReadinessState;
   product_surface_count: number;
   demo_surface_count: number;
-  substrate_rows: {
-    values: number;
+  implementation_vocabulary_rows: {
     tokens: number;
     components: number;
+    libraries: number;
+    assets: number;
+    notes: number;
   };
   can_review: string[];
   cannot_review: string[];
@@ -72,129 +67,95 @@ export interface ScanStatusOptions {
 }
 
 export interface ScanStatus {
-  /** Absolute path to the fingerprint capture directory. */
+  /** Absolute path to the Ghost memory directory. */
   dir: string;
-  resources: ScanStageReport;
-  map: ScanStageReport;
-  survey: ScanStageReport;
-  patterns: ScanStageReport;
+  fingerprint: ScanStageReport;
+  config: ScanStageReport;
   checks: ScanStageReport;
   intent: ScanStageReport;
+  proposals: ScanStageReport;
+  cache: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
-  /**
-   * Best-effort evidence maturity derived from map.md + survey.json. This is
-   * advisory: invalid or missing artifacts still surface through lint/verify.
-   */
   readiness: ScanReadinessReport;
-  /**
-   * The next stage an orchestrator should run, or `null` if every required
-   * stage is `present`. Stages run in order:
-   * resources → map → survey → patterns. `checks.yml` and `intent.md` are
-   * reported but optional, so they never block completion.
-   */
   recommended_next: ScanStage | null;
 }
 
 /**
- * Inspect a fingerprint capture directory and report which stages have produced
- * artifacts.
- *
- * Existence-only check today. The artifacts checked are:
- *
- *   - resources → `resources.yml`
- *   - map       → `map.md`
- *   - survey    → `survey.json`
- *   - patterns  → `patterns.yml`
- *   - checks    → optional `checks.yml`
- *   - intent    → optional `intent.md`
- *
- * Hash-keyed freshness (`.scan-meta.json` with input/output hashes per
- * stage) is the planned enhancement. For now, orchestrators that want
- * "force rerun" behavior delete the artifact themselves before calling
- * scan — same idiom design-world-model already uses.
+ * Inspect a Ghost memory directory and report whether the canonical
+ * `fingerprint.yml` exists. Generated inventory is cache, not a prerequisite:
+ * the durable product-experience memory is fingerprint.yml plus optional
+ * checks/proposals.
  */
 export async function scanStatus(
   dirPath: string,
   options: ScanStatusOptions = {},
 ): Promise<ScanStatus> {
   const dir = resolve(dirPath);
-  const resourcesPath = resolve(dir, GHOST_RESOURCES_FILENAME);
-  const mapPath = resolve(dir, MAP_FILENAME);
-  const surveyPath = resolve(dir, SURVEY_FILENAME);
-  const patternsPath = resolve(dir, GHOST_PATTERNS_FILENAME);
+  const fingerprintPath = resolve(dir, GHOST_FINGERPRINT_YML_FILENAME);
+  const configPath = resolve(dir, CONFIG_FILENAME);
   const checksPath = resolve(dir, GHOST_CHECKS_FILENAME);
   const intentPath = resolve(dir, INTENT_FILENAME);
+  const proposalsPath = resolve(dir, PROPOSALS_DIRNAME);
+  const cachePath = resolve(dir, CACHE_DIRNAME);
 
   const [
-    resourcesPresent,
-    mapPresent,
-    surveyPresent,
-    patternsPresent,
+    fingerprintPresent,
+    configPresent,
     checksPresent,
     intentPresent,
+    proposalsPresent,
+    cachePresent,
   ] = await Promise.all([
-    pathExists(resourcesPath),
-    pathExists(mapPath),
-    pathExists(surveyPath),
-    pathExists(patternsPath),
-    pathExists(checksPath),
-    pathExists(intentPath),
+    pathExists(fingerprintPath, "file"),
+    pathExists(configPath, "file"),
+    pathExists(checksPath, "file"),
+    pathExists(intentPath, "file"),
+    pathExists(proposalsPath, "directory"),
+    pathExists(cachePath, "directory"),
   ]);
 
-  const resources: ScanStageReport = {
-    state: resourcesPresent ? "present" : "missing",
-    path: resourcesPath,
-  };
-  const map: ScanStageReport = {
-    state: mapPresent ? "present" : "missing",
-    path: mapPath,
-  };
-  const survey: ScanStageReport = {
-    state: surveyPresent ? "present" : "missing",
-    path: surveyPath,
-  };
-  const patterns: ScanStageReport = {
-    state: patternsPresent ? "present" : "missing",
-    path: patternsPath,
+  const fingerprint: ScanStageReport = {
+    state: fingerprintPresent ? "present" : "missing",
+    path: fingerprintPath,
   };
   const checks: ScanStageReport = {
     state: checksPresent ? "present" : "missing",
     path: checksPath,
   };
+  const config: ScanStageReport = {
+    state: configPresent ? "present" : "missing",
+    path: configPath,
+  };
   const intent: ScanStageReport = {
     state: intentPresent ? "present" : "missing",
     path: intentPath,
   };
-
-  let recommended_next: ScanStage | null = null;
-  if (resources.state === "missing") recommended_next = "resources";
-  else if (map.state === "missing") recommended_next = "map";
-  else if (survey.state === "missing") recommended_next = "survey";
-  else if (patterns.state === "missing") recommended_next = "patterns";
-
-  const readiness = await scanReadiness({
-    mapPath,
-    mapPresent,
-    surveyPath,
-    surveyPresent,
-  });
+  const proposals: ScanStageReport = {
+    state: proposalsPresent ? "present" : "missing",
+    path: proposalsPath,
+  };
+  const cache: ScanStageReport = {
+    state: cachePresent ? "present" : "missing",
+    path: cachePath,
+  };
 
   const status: ScanStatus = {
     dir,
-    resources,
-    map,
-    survey,
-    patterns,
+    fingerprint,
+    config,
     checks,
     intent,
-    readiness,
-    recommended_next,
+    proposals,
+    cache,
+    readiness: await scanReadiness(fingerprintPath, fingerprintPresent),
+    recommended_next: fingerprintPresent ? null : "fingerprint",
   };
 
   if (options.includeScopes) {
     try {
-      status.scopes = await scanScopes(dir, mapPath, map.state === "present");
+      const mapPath = resolve(dir, MAP_FILENAME);
+      status.scopes = await scanScopes(dir, mapPath, await pathExists(mapPath));
     } catch (err) {
       status.scope_error = err instanceof Error ? err.message : String(err);
       status.scopes = [];
@@ -204,142 +165,129 @@ export async function scanStatus(
   return status;
 }
 
-async function scanReadiness(options: {
-  mapPath: string;
-  mapPresent: boolean;
-  surveyPath: string;
-  surveyPresent: boolean;
-}): Promise<ScanReadinessReport> {
-  const reasons: string[] = [];
-
-  if (!options.mapPresent || !options.surveyPresent) {
-    if (!options.mapPresent) {
-      reasons.push("map.md is missing, so observation paths are unknown.");
-    }
-    if (!options.surveyPresent) {
-      reasons.push("survey.json is missing, so evidence rows are unknown.");
-    }
+async function scanReadiness(
+  fingerprintPath: string,
+  fingerprintPresent: boolean,
+): Promise<ScanReadinessReport> {
+  if (!fingerprintPresent) {
     return readinessReport("pending", {
-      reasons,
-      can_review: [],
-      cannot_review: [],
+      reasons: [
+        "fingerprint.yml is missing, so product-experience memory is unavailable.",
+      ],
+      cannot_review: [
+        "product identity",
+        "surface behavior",
+        "copy",
+        "accessibility",
+        "trust",
+      ],
     });
   }
 
-  let map: MapFrontmatter | undefined;
+  let doc: unknown;
   try {
-    map = await readMapFrontmatter(options.mapPath);
-  } catch (err) {
-    reasons.push(
-      `map.md could not be read for readiness: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-    );
-  }
-
-  let survey: Pick<Survey, "values" | "tokens" | "components" | "ui_surfaces">;
-  try {
-    survey = await readSurveyEvidence(options.surveyPath);
+    doc = parseYaml(await readFile(fingerprintPath, "utf-8"));
   } catch (err) {
     return readinessReport("unknown", {
       reasons: [
-        `survey.json could not be read for readiness: ${
+        `fingerprint.yml could not be read: ${
           err instanceof Error ? err.message : String(err)
         }`,
       ],
-      can_review: [],
+    });
+  }
+
+  const lint = lintGhostFingerprint(doc);
+  if (lint.errors > 0) {
+    return readinessReport("unknown", {
+      reasons: [
+        `fingerprint.yml has ${lint.errors} lint error(s); run ghost lint for details.`,
+      ],
       cannot_review: [
-        "product composition",
-        "surface flow",
-        "tokens",
-        "components",
+        "product identity",
+        "surface behavior",
+        "copy",
+        "accessibility",
+        "trust",
       ],
     });
   }
 
-  const productSurfaceCount = survey.ui_surfaces.filter((surface) =>
-    isProductSurfaceKind(surface.kind),
-  ).length;
-  const demoSurfaceCount = survey.ui_surfaces.filter((surface) =>
-    isDemoSurfaceKind(surface.kind),
-  ).length;
-  const substrateRows = {
-    values: survey.values.length,
-    tokens: survey.tokens.length,
-    components: survey.components.length,
+  const fingerprint = doc as {
+    situations?: unknown[];
+    principles?: unknown[];
+    experience_contracts?: unknown[];
+    patterns?: unknown[];
+    topology?: { examples?: unknown[] };
+    implementation_vocabulary?: {
+      tokens?: unknown[];
+      components?: unknown[];
+      libraries?: unknown[];
+      assets?: unknown[];
+      notes?: unknown[];
+    };
   };
-  const substrateRowCount =
-    substrateRows.values + substrateRows.tokens + substrateRows.components;
+  const implementationVocabularyRows = {
+    tokens: fingerprint.implementation_vocabulary?.tokens?.length ?? 0,
+    components: fingerprint.implementation_vocabulary?.components?.length ?? 0,
+    libraries: fingerprint.implementation_vocabulary?.libraries?.length ?? 0,
+    assets: fingerprint.implementation_vocabulary?.assets?.length ?? 0,
+    notes: fingerprint.implementation_vocabulary?.notes?.length ?? 0,
+  };
+  const productMemoryCount =
+    (fingerprint.situations?.length ?? 0) +
+    (fingerprint.principles?.length ?? 0) +
+    (fingerprint.experience_contracts?.length ?? 0) +
+    (fingerprint.patterns?.length ?? 0);
+  const implementationVocabularyCount =
+    implementationVocabularyRows.tokens +
+    implementationVocabularyRows.components +
+    implementationVocabularyRows.libraries +
+    implementationVocabularyRows.assets +
+    implementationVocabularyRows.notes;
 
-  if (productSurfaceCount > 0) {
-    reasons.push(
-      `${productSurfaceCount} product surface(s) were observed in survey.ui_surfaces.`,
-    );
-    return readinessReport("product-observed", {
-      product_surface_count: productSurfaceCount,
-      demo_surface_count: demoSurfaceCount,
-      substrate_rows: substrateRows,
-      reasons,
-      can_review: [
-        "product composition",
-        "surface flow",
-        "tokens",
-        "components",
-        "design values",
+  if (productMemoryCount === 0 && implementationVocabularyCount === 0) {
+    return readinessReport("memory-empty", {
+      reasons: [
+        "fingerprint.yml is valid but has no principles, situations, experience contracts, patterns, or implementation vocabulary yet.",
       ],
-      cannot_review: [],
-    });
-  }
-
-  if (demoSurfaceCount > 0) {
-    reasons.push(
-      `${demoSurfaceCount} demo surface(s) were observed, but no product route, screen, screenshot, or source surface is present.`,
-    );
-    return readinessReport("component-demo", {
-      demo_surface_count: demoSurfaceCount,
-      substrate_rows: substrateRows,
-      reasons,
-      can_review: [
-        "tokens",
-        "components",
-        "design values",
-        "component demonstration composition",
-      ],
-      cannot_review: ["product composition", "surface flow"],
-    });
-  }
-
-  if (substrateRowCount > 0) {
-    reasons.push(
-      `survey.json has ${substrateRowCount} value/token/component row(s), but no UI surfaces.`,
-    );
-    if (map?.surface_sources.render_strategy === "unknown") {
-      reasons.push("map.md declares surface_sources.render_strategy: unknown.");
-    }
-    return readinessReport("substrate-only", {
-      substrate_rows: substrateRows,
-      reasons,
-      can_review: ["tokens", "components", "design values"],
       cannot_review: [
-        "product composition",
-        "surface flow",
-        "surface hierarchy",
+        "product identity",
+        "surface behavior",
+        "copy",
+        "accessibility",
+        "trust",
       ],
     });
   }
 
-  reasons.push(
-    "survey.json has no values, tokens, components, or UI surfaces to support product-experience judgment.",
-  );
-  return readinessReport("unobservable", {
-    reasons,
-    can_review: [],
-    cannot_review: [
-      "product composition",
-      "surface flow",
-      "surface hierarchy",
-      "tokens",
-      "components",
+  if (productMemoryCount === 0) {
+    return readinessReport("implementation-only", {
+      implementation_vocabulary_rows: implementationVocabularyRows,
+      reasons: [
+        "fingerprint.yml only records implementation vocabulary; components and tokens are available material, not product-experience memory.",
+      ],
+      can_review: ["implementation vocabulary", "library adoption"],
+      cannot_review: [
+        "product identity",
+        "surface behavior",
+        "copy",
+        "accessibility",
+        "trust",
+      ],
+    });
+  }
+
+  return readinessReport("memory-ready", {
+    product_surface_count: fingerprint.topology?.examples?.length ?? 0,
+    implementation_vocabulary_rows: implementationVocabularyRows,
+    reasons: ["fingerprint.yml contains product-experience memory."],
+    can_review: [
+      "product identity",
+      "surface behavior",
+      "copy",
+      "accessibility",
+      "trust",
     ],
   });
 }
@@ -352,7 +300,13 @@ function readinessReport(
     state,
     product_surface_count: 0,
     demo_surface_count: 0,
-    substrate_rows: { values: 0, tokens: 0, components: 0 },
+    implementation_vocabulary_rows: {
+      tokens: 0,
+      components: 0,
+      libraries: 0,
+      assets: 0,
+      notes: 0,
+    },
     can_review: [],
     cannot_review: [],
     reasons: [],
@@ -360,35 +314,13 @@ function readinessReport(
   };
 }
 
-async function readSurveyEvidence(
+async function pathExists(
   path: string,
-): Promise<Pick<Survey, "values" | "tokens" | "components" | "ui_surfaces">> {
-  const raw = JSON.parse(await readFile(path, "utf-8")) as Partial<Survey>;
-  return {
-    values: Array.isArray(raw.values) ? raw.values : [],
-    tokens: Array.isArray(raw.tokens) ? raw.tokens : [],
-    components: Array.isArray(raw.components) ? raw.components : [],
-    ui_surfaces: Array.isArray(raw.ui_surfaces) ? raw.ui_surfaces : [],
-  };
-}
-
-function isProductSurfaceKind(kind: string): boolean {
-  return (
-    kind === "route" ||
-    kind === "screen" ||
-    kind === "screenshot" ||
-    kind === "source"
-  );
-}
-
-function isDemoSurfaceKind(kind: string): boolean {
-  return kind === "story" || kind === "doc-example" || kind === "fixture";
-}
-
-async function pathExists(path: string): Promise<boolean> {
+  kind: "file" | "directory" = "file",
+): Promise<boolean> {
   try {
     const s = await stat(path);
-    return s.isFile() && s.size > 0;
+    return kind === "directory" ? s.isDirectory() : s.isFile() && s.size > 0;
   } catch {
     return false;
   }

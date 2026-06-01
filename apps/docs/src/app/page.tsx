@@ -52,10 +52,11 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               The fingerprint is a repository-local, versioned artifact that
-              captures the product's composition policy: the set of constraints,
-              preferences, and recurring decisions that shape how the system is
-              actually used. It does not replace the design system; it
-              conditions it.
+              captures product experience memory: the situations, principles,
+              contracts, and patterns that shape how the system is actually
+              used. Components, tokens, and libraries remain replaceable
+              implementation material; Ghost gives agents the judgment that sits
+              around them.
             </p>
             <p className="thesis-item">
               The broader boundary is product experience: anything that shapes
@@ -64,37 +65,34 @@ export default function Home() {
               disappear into chats, reviews, and one-off prompts.
             </p>
             <p className="thesis-item">
-              Ghost builds this fingerprint bundle from evidence in the
-              codebase:
+              Ghost keeps this memory in a compact bundle:
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
-                <code>.ghost/resources.yml</code> names what the bundle is
-                grounded in
+                <code>.ghost/fingerprint.yml</code> stores canonical product
+                experience memory
               </li>
               <li>
-                <code>.ghost/map.md</code> defines where to observe and route UI
+                <code>.ghost/checks.yml</code> stores deterministic gates
+                grounded in that memory
               </li>
               <li>
-                <code>.ghost/survey.json</code> records factual extracted
-                evidence
+                <code>.ghost/proposals</code> stages missing memory, intentional
+                divergence, experience gaps, and check candidates
               </li>
               <li>
-                <code>.ghost/patterns.yml</code> shapes advisory judgment
-                without enforcing CI
+                <code>.ghost/decisions</code> records optional accepted or
+                rejected rationale
               </li>
               <li>
-                <code>.ghost/checks.yml</code> stores human-promoted gates
-              </li>
-              <li>
-                <code>.ghost/decisions</code> and <code>.ghost/proposals</code>{" "}
-                capture optional product-experience memory
+                <code>.ghost/cache</code> can hold generated inventory without
+                becoming canonical truth
               </li>
             </ul>
             <p className="thesis-item">
-              The distinction is deliberate. Specs describe what exists. The
-              fingerprint describes how the product repeatedly chooses to use
-              what exists.
+              The distinction is deliberate. Inventory describes what exists.
+              The fingerprint describes how the product repeatedly chooses to
+              use what exists.
             </p>
             <p className="thesis-item">
               This makes the fingerprint closer to a behavioral prior than a

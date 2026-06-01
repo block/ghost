@@ -1,6 +1,6 @@
 ---
 name: remediate
-description: Given drift findings (from review or compare) and the offending diff, suggest the minimal targeted fixes that close the gap.
+description: Given drift findings and the offending diff, suggest the minimal targeted fixes that close the gap.
 handoffs:
   - label: Re-review after applying the suggested fixes
     skill: review
@@ -13,76 +13,85 @@ handoffs:
     prompt: Record an intentional divergence on a specific dimension so it stops flagging
 ---
 
-# Recipe: Remediate drift
+# Recipe: Remediate Drift
 
-**Goal:** turn drift findings into a small, surgical patch — the minimal code change that closes the gap between the working tree and the root fingerprint bundle. Remediate is the loop after `review`: review *finds* drift; remediate *proposes the fix*.
+**Goal:** turn drift findings into a small, targeted patch that brings the
+working tree back inside the resolved Ghost memory stack and active checks.
 
-Ghost has no `ghost remediate` CLI command. You — the host agent — read the findings, weigh them against `patterns.yml`, `survey.json`, optional `intent.md`, and active checks, then write the patch.
+Ghost has no `ghost remediate` CLI command. You, the host agent, read the
+findings, weigh them against merged `fingerprint.yml`, active checks, accepted
+rationale, open proposals, and stack provenance, then write the smallest useful
+patch.
 
 ## Steps
 
-### 1. Gather inputs
+### 1. Gather Inputs
 
 You need:
 
-- The **drift output** — either the JSON from `ghost compare --semantic --format json` or the structured findings from a [review](review.md) pass.
-- The **offending diff** — `git diff <base> -- <file>` for each flagged file.
-- The **fingerprint bundle** — `.ghost/patterns.yml`, `.ghost/survey.json`, optional `.ghost/intent.md`, and `.ghost/checks.yml` for active gates.
-- The **sync manifest** if present (`.ghost-sync.json`) — anything stance:`diverging` is intentional and must NOT be remediated.
+- The drift output from `ghost review`, `ghost check`, or compare.
+- The offending diff: `git diff <base> -- <file>`.
+- The resolved stack from `ghost stack <path>` when the affected path is known.
+- Merged `fingerprint.yml` memory.
+- Merged checks for active gates.
+- Open proposals from the stack for known gaps or accepted divergence candidates.
+- `.ghost-sync.json` when present; anything stance:`diverging` is intentional
+  and must not be remediated as accidental drift.
 
-### 2. Match each finding to a token
+### 2. Match Findings To Memory
 
-For every drift finding, identify the token the code *should* have used:
+For every finding, identify the relevant fingerprint entry:
 
-- Hardcoded `#3b82f6` → token or value evidenced in `survey.json`. If nothing fits, the bundle is silent and the right move is to add evidence or human intent, not a remediation.
-- Off-pattern composition → restore the `patterns.yml` anatomy or use an allowed variant.
-- Off-grid `padding: 14px` → nearest survey-backed spacing/token value. Prefer rounding *down* unless the surrounding rhythm suggests otherwise.
-- Hard-coded radius not evidenced in `survey.json` → snap to a survey-backed radius or flag for human review.
-- Behavioral drift → propose removing the offending property; cite the relevant pattern or intent.
+- Token drift -> related principle, pattern, or active check.
+- Component drift -> related principle, pattern, or active check.
+- Hierarchy/density drift -> principle, situation, or composition pattern.
+- Disclosure/recovery drift -> experience contract.
+- Copy/trust drift -> principle, experience contract, or review policy.
 
-### 3. Score by impact
+If no entry applies, do not invent one inside the code patch. Report a
+`missing-memory` or `experience-gap` proposal, scoped with
+`ghost proposal create --path <path>`.
 
-Rank findings by how much distance they close:
+### 3. Score By Impact
 
-- **Load-bearing** — fixes that restore required pattern anatomy, token usage, or active checks. Patch first.
-- **Snap-to-grid** — off-scale spacing/radii values. Patch in the same pass.
-- **Cosmetic** — values that drift slightly (`16px` vs `15px`) but don't break a decision. Group these into one cleanup commit.
+Rank findings by how much product experience they restore:
 
-If the drift number quoted in the finding is `< 0.05`, ask before patching — it may be acceptable noise.
+- **Blocking**: active check failures.
+- **Load-bearing**: violations of principles, contracts, or required patterns.
+- **Local cleanup**: small implementation mismatches with obvious fixes.
+- **Uncertain**: advisory drift that needs human judgment.
 
-### 4. Propose the patch
+If the finding is intentional for this change, suggest an
+`intentional-divergence` proposal instead of a code patch.
+
+### 4. Propose The Patch
 
 For each finding, write a unified-diff suggestion in the form:
 
-```
-file:line   before  →  after   (closes <dimension> drift of ~0.NN)
-```
-
-Example:
-
-```
-src/components/button.tsx:42   border-radius: 12px;   →   border-radius: var(--radius-md);
-                                                          (matches surfaces.borderRadii: [4, 8, 16] — closes ~0.14 of 0.18 radius drift)
+```text
+file:line   before  ->  after   (why this satisfies fingerprint memory)
 ```
 
-Group patches by file. Keep each patch surgical — do not refactor surrounding code, do not rewrite imports, do not "clean up while you're there."
+Group patches by file. Keep each patch surgical. Do not refactor surrounding
+code, rewrite unrelated imports, or clean up nearby style while remediating.
 
-### 5. Surface what cannot be remediated
+### 5. Surface What Cannot Be Remediated
 
-Some findings have no clean fix:
+Some findings have no clean code fix:
 
-- The bundle is silent on the dimension → tell the user the bundle is missing evidence, pattern policy, or accepted intent; offer to update the bundle.
-- The drift is intentional (e.g. a brand-tier override on a single page) → suggest `ghost diverge <dimension> --reason "..."` instead of a code patch.
-- The fix would cascade across many files → flag and stop. A 30-file refactor disguised as "remediation" is a separate change with its own review.
+- The fingerprint is silent -> propose `missing-memory`.
+- The product is intentionally changing -> propose `intentional-divergence`.
+- The generated work failed to compose despite available memory -> propose
+  `experience-gap`.
+- A recurring deterministic issue can be detected -> propose `check-candidate`.
+- The fix would cascade across many files -> stop and call out the separate
+  implementation plan.
 
-### 6. Record the outcome
+### 6. Record The Outcome
 
-After the user applies (or rejects) the patches:
+After the user applies or rejects patches:
 
-- Re-run `ghost compare` — distance should drop. If it doesn't, the patches missed.
-- If the user accepts the drift instead of fixing it, run `ghost ack` (overall) or `ghost diverge <dimension>` (one axis).
-- Never silently regenerate the bundle to "absorb" the drift. That hides the act.
-
-## Why this is a recipe, not a verb
-
-Remediation requires judgment: which token is "closest", what matters enough to fix, when to escalate vs auto-patch. None of that is deterministic, so it stays in the recipe — the CLI gives you the math (`compare`), the recipe gives you the procedure, and you write the patch.
+- Re-run `ghost check` and `ghost review`.
+- If the user accepts drift instead of fixing it, run `ghost ack` or
+  `ghost diverge <dimension>`.
+- Never regenerate or rewrite `fingerprint.yml` to hide drift.
