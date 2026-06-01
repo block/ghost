@@ -32,8 +32,6 @@ checks:
     applies_to:
       scopes:
         - docs-site
-      pattern_ids:
-        - component-catalogue-shell
     detector:
       type: required-regex
       pattern: 'font-display'

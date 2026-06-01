@@ -29,10 +29,16 @@ export function lintGhostFingerprint(
 
   const doc = result.data as GhostFingerprintDocument;
   checkDuplicateIds("topology.scopes", doc.topology.scopes ?? [], issues);
+  checkDuplicateStrings(
+    "topology.surface_types",
+    doc.topology.surface_types ?? [],
+    issues,
+  );
   checkDuplicateIds("situations", doc.situations, issues);
   checkDuplicateIds("principles", doc.principles, issues);
   checkDuplicateIds("experience_contracts", doc.experience_contracts, issues);
   checkDuplicateIds("patterns", doc.patterns, issues);
+  checkTopologyRefs(doc, issues);
   checkRefs(doc, issues);
 
   return finalize(issues);
@@ -56,6 +62,94 @@ function checkDuplicateIds(
     } else {
       seen.set(entry.id, index);
     }
+  });
+}
+
+function checkDuplicateStrings(
+  collectionPath: string,
+  entries: string[],
+  issues: GhostFingerprintLintIssue[],
+): void {
+  const seen = new Map<string, number>();
+  entries.forEach((entry, index) => {
+    const previous = seen.get(entry);
+    if (previous !== undefined) {
+      issues.push({
+        severity: "error",
+        rule: "duplicate-id",
+        message: `'${entry}' is duplicated (also at ${collectionPath}[${previous}])`,
+        path: `${collectionPath}[${index}]`,
+      });
+    } else {
+      seen.set(entry, index);
+    }
+  });
+}
+
+function checkTopologyRefs(
+  doc: GhostFingerprintDocument,
+  issues: GhostFingerprintLintIssue[],
+): void {
+  const topology = collectTopology(doc);
+
+  doc.topology.scopes?.forEach((scope, scopeIndex) => {
+    scope.surface_types?.forEach((surfaceType, surfaceIndex) => {
+      if (
+        topology.explicitSurfaceTypes.size === 0 ||
+        topology.explicitSurfaceTypes.has(surfaceType)
+      ) {
+        return;
+      }
+      issues.push({
+        severity: "error",
+        rule: "fingerprint-surface-type-unknown",
+        message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
+        path: `topology.scopes[${scopeIndex}].surface_types[${surfaceIndex}]`,
+      });
+    });
+  });
+
+  doc.topology.examples?.forEach((example, exampleIndex) => {
+    checkSurfaceTypeRef(
+      example.surface_type,
+      `topology.examples[${exampleIndex}].surface_type`,
+      topology,
+      issues,
+    );
+  });
+
+  doc.situations.forEach((situation, situationIndex) => {
+    checkSurfaceTypeRef(
+      situation.surface_type,
+      `situations[${situationIndex}].surface_type`,
+      topology,
+      issues,
+    );
+  });
+
+  doc.principles.forEach((principle, index) => {
+    checkScopeRefs(
+      principle.applies_to,
+      `principles[${index}].applies_to`,
+      topology,
+      issues,
+    );
+  });
+  doc.experience_contracts.forEach((contract, index) => {
+    checkScopeRefs(
+      contract.applies_to,
+      `experience_contracts[${index}].applies_to`,
+      topology,
+      issues,
+    );
+  });
+  doc.patterns.forEach((pattern, index) => {
+    checkScopeRefs(
+      pattern.applies_to,
+      `patterns[${index}].applies_to`,
+      topology,
+      issues,
+    );
   });
 }
 
@@ -104,6 +198,84 @@ function checkRefs(
   });
   doc.patterns.forEach((pattern, index) => {
     checkCheckRefs(pattern.check_refs, `patterns[${index}].check_refs`, issues);
+  });
+}
+
+function collectTopology(doc: GhostFingerprintDocument): {
+  scopes: Set<string>;
+  explicitSurfaceTypes: Set<string>;
+  surfaceTypes: Set<string>;
+  situations: Set<string>;
+} {
+  const explicitSurfaceTypes = new Set(doc.topology.surface_types ?? []);
+  const surfaceTypes = new Set(explicitSurfaceTypes);
+  for (const scope of doc.topology.scopes ?? []) {
+    for (const surfaceType of scope.surface_types ?? []) {
+      surfaceTypes.add(surfaceType);
+    }
+  }
+  return {
+    scopes: new Set(doc.topology.scopes?.map((entry) => entry.id) ?? []),
+    explicitSurfaceTypes,
+    surfaceTypes,
+    situations: new Set(doc.situations.map((entry) => entry.id)),
+  };
+}
+
+function checkSurfaceTypeRef(
+  surfaceType: string | undefined,
+  path: string,
+  topology: ReturnType<typeof collectTopology>,
+  issues: GhostFingerprintLintIssue[],
+): void {
+  if (!surfaceType) return;
+  if (topology.surfaceTypes.has(surfaceType)) return;
+  issues.push({
+    severity: "error",
+    rule: "fingerprint-surface-type-unknown",
+    message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
+    path,
+  });
+}
+
+function checkScopeRefs(
+  scope:
+    | {
+        scopes?: string[];
+        surface_types?: string[];
+        situations?: string[];
+      }
+    | undefined,
+  path: string,
+  topology: ReturnType<typeof collectTopology>,
+  issues: GhostFingerprintLintIssue[],
+): void {
+  scope?.scopes?.forEach((scopeId, index) => {
+    if (topology.scopes.has(scopeId)) return;
+    issues.push({
+      severity: "error",
+      rule: "fingerprint-scope-unknown",
+      message: `Scope '${scopeId}' is not declared in topology.scopes.`,
+      path: `${path}.scopes[${index}]`,
+    });
+  });
+  scope?.surface_types?.forEach((surfaceType, index) => {
+    if (topology.surfaceTypes.has(surfaceType)) return;
+    issues.push({
+      severity: "error",
+      rule: "fingerprint-surface-type-unknown",
+      message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
+      path: `${path}.surface_types[${index}]`,
+    });
+  });
+  scope?.situations?.forEach((situation, index) => {
+    if (topology.situations.has(situation)) return;
+    issues.push({
+      severity: "error",
+      rule: "fingerprint-situation-unknown",
+      message: `Situation '${situation}' is not declared in situations.`,
+      path: `${path}.situations[${index}]`,
+    });
   });
 }
 
