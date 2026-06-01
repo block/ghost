@@ -8,8 +8,11 @@ import { cac } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   GHOST_DECISIONS_DIRNAME,
+  GHOST_PROPOSALS_DIRNAME,
   type GhostDecisionDocument,
+  type GhostProposalDocument,
   lintGhostDecision,
+  lintGhostProposal,
 } from "#ghost-core";
 import { formatSemanticDiff, resolveFingerprintPackage } from "#scan";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
@@ -242,18 +245,32 @@ export function buildCli(): ReturnType<typeof cac> {
         const packet: ReviewPacket = {
           schema: "ghost.advisory-review/v1",
           package_dir: paths.dir,
-          patterns: parseYaml(await readFile(paths.patterns, "utf-8")),
-          survey: JSON.parse(await readFile(paths.survey, "utf-8")),
+          fingerprint: parseYaml(await readFile(paths.fingerprintYml, "utf-8")),
           intent: (await readOptional(paths.intent)) ?? null,
           checks: (await readOptional(paths.checks)) ?? null,
+          open_proposals: await readOpenProposals(
+            resolve(paths.dir, GHOST_PROPOSALS_DIRNAME),
+          ),
           diff: diffText,
+          finding_categories: [
+            "fix",
+            "intentional-divergence",
+            "missing-memory",
+            "experience-gap",
+            "eval-uncertainty",
+          ],
+          proposal_types: [
+            "missing-memory",
+            "intentional-divergence",
+            "experience-gap",
+            "check-candidate",
+          ],
           required_finding_citations: [
             "diff location",
-            "patterns.yml composition pattern",
-            "survey evidence",
-            "intent.md when relevant",
-            "precedent/example",
-            "repair",
+            "fingerprint.yml memory",
+            "active check when blocking",
+            "open proposal when relevant",
+            "repair or intentional-divergence rationale",
           ],
         };
         if (opts.includeMemory) {
@@ -319,12 +336,14 @@ async function readGitDiff(cwd: string, base: unknown): Promise<string> {
 interface ReviewPacket {
   schema: "ghost.advisory-review/v1";
   package_dir: string;
-  patterns: unknown;
-  survey: unknown;
+  fingerprint: unknown;
   intent: string | null;
   checks: string | null;
+  open_proposals: GhostProposalDocument[];
   memory?: { decisions: GhostDecisionDocument[] };
   diff: string;
+  finding_categories: string[];
+  proposal_types: string[];
   required_finding_citations: string[];
 }
 
@@ -335,25 +354,25 @@ Package: ${packet.package_dir}
 
 Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml.
 
-## Patterns
+Use these finding categories: ${packet.finding_categories.join(", ")}.
+
+If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap and propose one of: ${packet.proposal_types.join(", ")}. Do not silently rewrite canonical memory.
+
+## Fingerprint Memory
 
 \`\`\`yaml
-${stringifyYaml(packet.patterns)}
-\`\`\`
-
-## Survey Evidence
-
-\`\`\`json
-${JSON.stringify(packet.survey, null, 2)}
+${stringifyYaml(packet.fingerprint)}
 \`\`\`
 
 ## Human Intent
 
 \`\`\`markdown
-${packet.intent ?? "_No intent.md present. Treat patterns.yml and survey.json as observed evidence, not declared human intent._"}
+${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonical product-experience memory._"}
 \`\`\`
 
 ${formatMemorySection(packet.memory ?? null)}
+
+${formatProposalSection(packet.open_proposals)}
 
 ## Active Checks
 
@@ -410,6 +429,39 @@ async function readAcceptedDecisions(
   return decisions;
 }
 
+async function readOpenProposals(
+  dirPath: string,
+): Promise<GhostProposalDocument[]> {
+  let entries: Dirent[];
+  try {
+    entries = await readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const proposals: GhostProposalDocument[] = [];
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!entry.isFile()) continue;
+    if (entry.name.startsWith(".")) continue;
+    if (!/\.ya?ml$/i.test(entry.name)) continue;
+
+    const path = resolve(dirPath, entry.name);
+    const parsed = parseYaml(await readFile(path, "utf-8"));
+    const report = lintGhostProposal(parsed);
+    if (report.errors > 0) {
+      const first = report.issues.find((issue) => issue.severity === "error");
+      const suffix = first?.path ? ` @ ${first.path}` : "";
+      throw new Error(
+        `${path} failed proposal lint: ${first?.message ?? "invalid proposal"}${suffix}`,
+      );
+    }
+    const proposal = parsed as GhostProposalDocument;
+    if (proposal.status === "open") proposals.push(proposal);
+  }
+
+  return proposals;
+}
+
 function formatMemorySection(
   memory: { decisions: GhostDecisionDocument[] } | null,
 ): string {
@@ -442,6 +494,29 @@ _No accepted decisions found in .ghost/decisions._
         )
         .join(", ")}`,
     );
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+function formatProposalSection(proposals: GhostProposalDocument[]): string {
+  if (proposals.length === 0) {
+    return `## Open Proposals
+
+_No open proposals found in .ghost/proposals._
+`;
+  }
+
+  const lines = ["## Open Proposals", ""];
+  for (const proposal of proposals) {
+    lines.push(`### ${proposal.title}`);
+    lines.push("");
+    lines.push(`- **ID:** \`${proposal.id}\``);
+    lines.push(`- **Kind:** ${proposal.kind}`);
+    lines.push(`- **Claim:** ${proposal.claim}`);
+    lines.push(`- **Rationale:** ${proposal.rationale}`);
+    lines.push(`- **Proposed action:** ${proposal.proposed_action.summary}`);
     lines.push("");
   }
 
