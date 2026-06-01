@@ -3,22 +3,30 @@ import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { parse as parseYaml } from "yaml";
 import {
+  GHOST_CHECKS_SCHEMA,
   type GhostCheck,
   type GhostChecksDocument,
   GhostChecksSchema,
+  type GhostFingerprintDocument,
+  GhostFingerprintSchema,
   lintGhostChecks,
   type MapFrontmatter,
   MapFrontmatterSchema,
   type MapScope,
   routeGhostChecksForPath,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "#scan";
+import {
+  groupMemoryStacksForPaths,
+  mapFromFingerprint,
+  resolveFingerprintPackage,
+} from "../scan/index.js";
 
 const execFileAsync = promisify(execFile);
 
 export interface GhostDriftCheckOptions {
   cwd?: string;
   packageDir?: string;
+  memoryDir?: string;
   base?: string;
   diffText?: string;
 }
@@ -56,15 +64,33 @@ export interface GhostDriftCheckReport {
   schema: "ghost.check-report/v1";
   result: "pass" | "fail";
   package_dir: string;
+  memory_dir?: string;
   base?: string;
   changed_files: string[];
   routed_files: GhostDriftRoutedFile[];
   findings: GhostDriftCheckFinding[];
+  stacks?: GhostDriftCheckStack[];
+}
+
+export interface GhostDriftCheckStack {
+  target_path: string;
+  package_dir: string;
+  memory_dir: string;
+  changed_files: string[];
+  layer_dirs: string[];
+  provenance: {
+    merge: "child-wins-by-id";
+    layers: Array<{
+      dir: string;
+      root: string;
+      relative_root: string;
+    }>;
+  };
 }
 
 interface LoadedCheckPackage {
   dir: string;
-  map: MapFrontmatter;
+  map: Pick<MapFrontmatter, "scopes" | "feature_areas">;
   checks: GhostChecksDocument;
 }
 
@@ -72,40 +98,68 @@ export async function runGhostDriftCheck(
   options: GhostDriftCheckOptions = {},
 ): Promise<GhostDriftCheckReport> {
   const cwd = options.cwd ?? process.cwd();
-  const pkg = await loadCheckPackage(options.packageDir, cwd);
   const diffText =
     options.diffText ??
     (await readGitDiff(cwd, options.base ?? "HEAD", "--unified=0"));
   const changedFiles = parseUnifiedDiff(diffText);
+
+  if (options.packageDir) {
+    const pkg = await loadCheckPackage(options.packageDir, cwd);
+    const evaluated = evaluateChangedFiles(changedFiles, pkg);
+    return {
+      schema: "ghost.check-report/v1",
+      result: evaluated.findings.length > 0 ? "fail" : "pass",
+      package_dir: pkg.dir,
+      ...(options.base ? { base: options.base } : {}),
+      changed_files: changedFiles.map((file) => file.path),
+      routed_files: evaluated.routedFiles,
+      findings: evaluated.findings,
+    };
+  }
+
+  const groups = await groupMemoryStacksForPaths(
+    changedFiles.map((file) => file.path),
+    cwd,
+    { memoryDir: options.memoryDir },
+  );
   const routedFiles: GhostDriftRoutedFile[] = [];
   const findings: GhostDriftCheckFinding[] = [];
+  const stacks: GhostDriftCheckStack[] = [];
 
-  for (const file of changedFiles) {
-    const routed = routeGhostChecksForPath(
-      pkg.checks.checks,
-      pkg.map,
-      file.path,
+  for (const group of groups) {
+    const filesForStack = changedFiles.filter((file) =>
+      group.changed_files.includes(file.path),
     );
-    routedFiles.push({
-      path: file.path,
-      scopes: uniqueScopeIds(routed.flatMap((entry) => entry.matched_scopes)),
-      checks: routed.map((entry) => entry.check.id),
+    const leaf = group.stack.layers.at(-1);
+    const pkg: LoadedCheckPackage = {
+      dir: leaf?.dir ?? group.stack.layers[0].dir,
+      map: mapFromFingerprint(group.stack.merged.fingerprint),
+      checks: group.stack.merged.checks,
+    };
+    const evaluated = evaluateChangedFiles(filesForStack, pkg);
+    routedFiles.push(...evaluated.routedFiles);
+    findings.push(...evaluated.findings);
+    stacks.push({
+      target_path: group.stack.target_path,
+      package_dir: pkg.dir,
+      memory_dir: group.stack.memory_dir,
+      changed_files: group.changed_files,
+      layer_dirs: group.stack.layers.map((layer) => layer.dir),
+      provenance: group.stack.provenance,
     });
-
-    for (const entry of routed) {
-      if (!detectorAppliesToPath(entry.check, file.path)) continue;
-      findings.push(...evaluateCheck(entry.check, file));
-    }
   }
 
   return {
     schema: "ghost.check-report/v1",
     result: findings.length > 0 ? "fail" : "pass",
-    package_dir: pkg.dir,
+    package_dir:
+      stacks.length === 1 ? stacks[0].package_dir : "memory-stack/multiple",
+    memory_dir: stacks[0]?.memory_dir ?? options.memoryDir,
     ...(options.base ? { base: options.base } : {}),
     changed_files: changedFiles.map((file) => file.path),
     routed_files: routedFiles,
     findings,
+    stacks,
   };
 }
 
@@ -198,17 +252,29 @@ async function loadCheckPackage(
   cwd: string,
 ): Promise<LoadedCheckPackage> {
   const paths = resolveFingerprintPackage(packageDir, cwd);
-  const [mapRaw, checksRaw] = await Promise.all([
-    readFile(paths.map, "utf-8"),
+  const [fingerprintRaw, mapRaw, checksRaw] = await Promise.all([
+    readFile(paths.fingerprintYml, "utf-8"),
+    readOptional(paths.map),
     readOptional(paths.checks),
   ]);
-  const map = parseMap(mapRaw);
+  const fingerprintResult = GhostFingerprintSchema.safeParse(
+    parseYaml(fingerprintRaw),
+  );
+  if (!fingerprintResult.success) {
+    throw new Error(
+      `fingerprint.yml failed validation: ${fingerprintResult.error.issues
+        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
+        .join("; ")}`,
+    );
+  }
+  const fingerprint = fingerprintResult.data as GhostFingerprintDocument;
+  const map = mapRaw ? parseMap(mapRaw) : mapFromFingerprint(fingerprint);
   if (checksRaw === undefined) {
     return {
       dir: paths.dir,
       map,
       checks: {
-        schema: "ghost.checks/v1",
+        schema: GHOST_CHECKS_SCHEMA,
         id: "none",
         checks: [],
       },
@@ -223,7 +289,8 @@ async function loadCheckPackage(
         .join("; ")}`,
     );
   }
-  const checkLint = lintGhostChecks(checksResult.data, { map });
+  const checks = checksResult.data as GhostChecksDocument;
+  const checkLint = lintGhostChecks(checks, { fingerprint, map });
   if (checkLint.errors > 0) {
     throw new Error(
       `checks.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
@@ -232,7 +299,38 @@ async function loadCheckPackage(
         .join("; ")}`,
     );
   }
-  return { dir: paths.dir, map, checks: checksResult.data };
+  return { dir: paths.dir, map, checks };
+}
+
+function evaluateChangedFiles(
+  changedFiles: GhostDriftChangedFile[],
+  pkg: LoadedCheckPackage,
+): {
+  routedFiles: GhostDriftRoutedFile[];
+  findings: GhostDriftCheckFinding[];
+} {
+  const routedFiles: GhostDriftRoutedFile[] = [];
+  const findings: GhostDriftCheckFinding[] = [];
+
+  for (const file of changedFiles) {
+    const routed = routeGhostChecksForPath(
+      pkg.checks.checks,
+      pkg.map,
+      file.path,
+    );
+    routedFiles.push({
+      path: file.path,
+      scopes: uniqueScopeIds(routed.flatMap((entry) => entry.matched_scopes)),
+      checks: routed.map((entry) => entry.check.id),
+    });
+
+    for (const entry of routed) {
+      if (!detectorAppliesToPath(entry.check, file.path)) continue;
+      findings.push(...evaluateCheck(entry.check, file));
+    }
+  }
+
+  return { routedFiles, findings };
 }
 
 async function readOptional(path: string): Promise<string | undefined> {

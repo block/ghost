@@ -1,5 +1,5 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
@@ -7,34 +7,38 @@ import {
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
   type GhostPatternsDocument,
-  lintGhostChecks,
-  lintGhostPatterns,
-  lintGhostResources,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
   type Survey,
-  type SurveyLintReport,
   type SurveySummaryBudget,
   summarizeSurvey,
 } from "#ghost-core";
+import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   diffFingerprints,
+  discoverGhostPackages,
   formatLayout,
   formatSemanticDiff,
   formatVerifyFingerprintReport,
   initFingerprintPackage,
+  initScopedMemoryPackage,
   inventory,
   layoutFingerprint,
-  lintFingerprint,
+  lintAllMemoryStacks,
+  type lintFingerprint,
   lintFingerprintPackage,
-  lintMap,
   loadFingerprint,
+  memoryPackageDisplayPath,
+  normalizeMemoryDir,
   resolveFingerprintPackage,
   scanStatus,
+  verifyAllMemoryStacks,
   verifyFingerprintPackage,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
+import { registerProposalCommand } from "./scan-proposal-command.js";
+import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
  * Register fingerprint-bundle commands on the unified Ghost CLI.
@@ -57,15 +61,38 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "lint [file]",
-      "Validate a root fingerprint bundle, resources.yml, map.md, survey.json, patterns.yml, checks.yml, or markdown — defaults to .ghost",
+      "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .option(
+      "--all",
+      "Validate every nested memory bundle and its resolved memory stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+    )
     .action(async (path: string | undefined, opts) => {
       try {
-        const target = resolveFingerprintPackage(path, process.cwd()).dir;
+        const memoryDir = memoryDirFromOpts(opts);
+        if (opts.all) {
+          const report = await lintAllMemoryStacks(
+            resolve(process.cwd(), path ?? "."),
+            { memoryDir },
+          );
+          writeLintReport(report, opts.format);
+          process.exit(report.errors > 0 ? 1 : 0);
+          return;
+        }
+
+        const packagePath = path ?? memoryDir;
+        const target = resolveFingerprintPackage(
+          packagePath,
+          process.cwd(),
+        ).dir;
         let report: ReturnType<typeof lintFingerprint>;
         if (path === undefined || (await isDirectory(target))) {
-          report = await lintFingerprintPackage(path, process.cwd());
+          report = await lintFingerprintPackage(packagePath, process.cwd());
           writeLintReport(report, opts.format);
           process.exit(report.errors > 0 ? 1 : 0);
           return;
@@ -75,18 +102,7 @@ export function registerScanCommands(cli: CAC): void {
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
 
-        report =
-          kind === "survey"
-            ? lintSurveyFile(raw)
-            : kind === "map"
-              ? lintMap(raw)
-              : kind === "resources"
-                ? lintResourcesFile(raw)
-                : kind === "patterns"
-                  ? lintPatternsFile(raw)
-                  : kind === "checks"
-                    ? lintChecksFile(raw)
-                    : lintFingerprint(raw);
+        report = lintDetectedFileKind(kind, raw);
 
         if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
@@ -116,29 +132,83 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost fingerprint bundle skeleton (resources.yml, map.md, survey.json, patterns.yml, checks.yml)",
+      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
+    )
+    .option(
+      "--scope <path>",
+      "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for init --scope or default root init (default: .ghost)",
     )
     .option(
       "--with-intent",
       "Also create optional intent.md for human-authored or human-approved intent",
     )
+    .option(
+      "--with-config",
+      "Also create optional config.yml for implementation roots and reference registries/libraries",
+    )
+    .option(
+      "--reference <path-or-registry>",
+      "Reference UI registry, library path, or fingerprint to record in config.yml and implementation vocabulary",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const paths = await initFingerprintPackage(dirArg, process.cwd(), {
+        if (dirArg && typeof opts.scope === "string") {
+          console.error("Error: use either init [dir] or init --scope <path>");
+          process.exit(2);
+          return;
+        }
+        if (dirArg && typeof opts.memoryDir === "string") {
+          console.error("Error: use either init [dir] or --memory-dir");
+          process.exit(2);
+          return;
+        }
+        const memoryDir = memoryDirFromOpts(opts);
+        const initOptions = {
           withIntent: Boolean(opts.withIntent),
-        });
+          withConfig: Boolean(opts.withConfig || opts.reference),
+          reference:
+            typeof opts.reference === "string" ? opts.reference : undefined,
+          memoryDir,
+        };
+        const paths =
+          typeof opts.scope === "string"
+            ? await initScopedMemoryPackage(
+                opts.scope,
+                process.cwd(),
+                initOptions,
+              )
+            : await initFingerprintPackage(
+                dirArg ?? memoryDir,
+                process.cwd(),
+                initOptions,
+              );
         if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(paths, null, 2)}\n`);
+          process.stdout.write(
+            `${JSON.stringify(
+              initCommandOutput(paths, {
+                includeIntent: Boolean(opts.withIntent),
+                includeConfig: Boolean(opts.withConfig || opts.reference),
+              }),
+              null,
+              2,
+            )}\n`,
+          );
         } else {
           process.stdout.write(
             `Initialized fingerprint package: ${paths.dir}\n`,
           );
-          process.stdout.write(`  resources.yml: ${paths.resources}\n`);
-          process.stdout.write(`  map.md: ${paths.map}\n`);
-          process.stdout.write(`  survey.json: ${paths.survey}\n`);
-          process.stdout.write(`  patterns.yml: ${paths.patterns}\n`);
+          process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          if (opts.withConfig || opts.reference) {
+            process.stdout.write(`  config.yml: ${paths.config}\n`);
+          }
+          process.stdout.write(`  proposals/: ${paths.proposals}\n`);
+          process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
             process.stdout.write(`  intent.md: ${paths.intent}\n`);
           }
@@ -156,13 +226,21 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root fingerprint bundle: resources are reachable, patterns are survey-backed, and checks reference known patterns.",
+      "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
     )
     .option(
       "--root <dir>",
-      "Optional target root used to resolve resources.yml local paths (default: cwd)",
+      "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
+    .option(
+      "--all",
+      "Verify every nested memory bundle and its resolved memory stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+    )
     .action(async (dirArg: string | undefined, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
@@ -171,9 +249,14 @@ export function registerScanCommands(cli: CAC): void {
           return;
         }
 
-        const report = await verifyFingerprintPackage(dirArg, process.cwd(), {
-          root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
-        });
+        const memoryDir = memoryDirFromOpts(opts);
+        const report = opts.all
+          ? await verifyAllMemoryStacks(resolve(process.cwd(), dirArg ?? "."), {
+              memoryDir,
+            })
+          : await verifyFingerprintPackage(dirArg ?? memoryDir, process.cwd(), {
+              root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
+            });
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -200,33 +283,54 @@ export function registerScanCommands(cli: CAC): void {
       "--include-scopes",
       "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
     )
+    .option("--include-nested", "Also list nested memory bundles and readiness")
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for nested discovery and default scan (default: .ghost)",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const dir = resolveFingerprintPackage(dirArg, process.cwd()).dir;
+        const memoryDir = memoryDirFromOpts(opts);
+        const dir = resolveFingerprintPackage(
+          dirArg ?? memoryDir,
+          process.cwd(),
+        ).dir;
         const status = await scanStatus(dir, {
           includeScopes: Boolean(opts.includeScopes),
         });
+        const nested = opts.includeNested
+          ? await nestedBundleStatus(
+              dirnameForMemoryPackageDir(dir, memoryDir),
+              memoryDir,
+            )
+          : undefined;
         if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
+          process.stdout.write(
+            `${JSON.stringify(
+              nested ? { ...status, nested_bundles: nested } : status,
+              null,
+              2,
+            )}\n`,
+          );
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
           process.stdout.write(`capture dir: ${status.dir}\n\n`);
           process.stdout.write(
-            `  resources  (resources.yml): ${fmt(status.resources.state)}\n`,
+            `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
           );
           process.stdout.write(
-            `  map        (map.md):        ${fmt(status.map.state)}\n`,
+            `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
-            `  survey     (survey.json):   ${fmt(status.survey.state)}\n`,
+            `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
           );
           process.stdout.write(
-            `  patterns   (patterns.yml):  ${fmt(status.patterns.state)}\n`,
+            `  proposals   (proposals/):      ${fmt(status.proposals.state)}\n`,
           );
           process.stdout.write(
-            `  checks     (checks.yml):    ${fmt(status.checks.state)}\n\n`,
+            `  cache       (cache/):          ${fmt(status.cache.state)}\n`,
           );
           process.stdout.write(
             `  intent     (intent.md):     ${fmt(status.intent.state)}\n\n`,
@@ -254,6 +358,19 @@ export function registerScanCommands(cli: CAC): void {
           if (status.readiness.reasons[0]) {
             process.stdout.write(`  reason: ${status.readiness.reasons[0]}\n`);
           }
+          const vocabularyRows =
+            status.readiness.implementation_vocabulary_rows;
+          const vocabularyCount =
+            vocabularyRows.tokens +
+            vocabularyRows.components +
+            vocabularyRows.libraries +
+            vocabularyRows.assets +
+            vocabularyRows.notes;
+          if (vocabularyCount > 0) {
+            process.stdout.write(
+              `  implementation vocabulary: ${vocabularyRows.tokens} token(s), ${vocabularyRows.components} component(s), ${vocabularyRows.libraries} libraries, ${vocabularyRows.assets} asset(s), ${vocabularyRows.notes} note(s)\n`,
+            );
+          }
           if (status.scope_error) {
             process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
           } else if (status.scopes) {
@@ -268,6 +385,18 @@ export function registerScanCommands(cli: CAC): void {
               }
             }
           }
+          if (nested) {
+            process.stdout.write("\nnested bundles:\n");
+            if (nested.length === 0) {
+              process.stdout.write("  none\n");
+            } else {
+              for (const bundle of nested) {
+                process.stdout.write(
+                  `  ${memoryPackageDisplayPath(bundle.relative_root, bundle.memory_dir)}: ${bundle.readiness.state}\n`,
+                );
+              }
+            }
+          }
         }
         process.exit(0);
       } catch (err) {
@@ -277,6 +406,8 @@ export function registerScanCommands(cli: CAC): void {
         process.exit(2);
       }
     });
+
+  registerStackCommand(cli);
 
   // --- inventory ---
   cli
@@ -365,7 +496,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Operate on ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+      "Legacy/cache helpers for ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",
@@ -538,123 +669,69 @@ export function registerScanCommands(cli: CAC): void {
       }
     });
 
+  registerProposalCommand(cli);
   registerEmitCommand(cli);
 }
 
-/**
- * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
- * routes to the map linter; YAML schemas route to resources/patterns/checks;
- * everything else stays on the direct fingerprint markdown path.
- */
-function detectFileKind(
-  path: string,
-  raw: string,
-): "survey" | "map" | "fingerprint" | "checks" | "resources" | "patterns" {
-  if (path.toLowerCase().endsWith(".json")) return "survey";
-  if (path.toLowerCase().endsWith("resources.yml")) return "resources";
-  if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
-  if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
-  if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
-  if (path.toLowerCase().endsWith(".yml")) return "checks";
-  if (path.toLowerCase().endsWith(".yaml")) return "checks";
-  if (raw.trimStart().startsWith("{")) return "survey";
-  if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
-  if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
-  if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
-  // Cheap markdown frontmatter sniff for `schema: ghost.map/v2`. We don't
-  // parse YAML here; the linter does the heavy lift.
-  const fmEnd = raw.indexOf("\n---", 3);
-  if (raw.startsWith("---") && fmEnd > 0) {
-    const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
-  }
-  if (path.toLowerCase().endsWith("map.md")) return "map";
-  return "fingerprint";
+async function nestedBundleStatus(
+  root: string,
+  memoryDir: string,
+): Promise<NestedBundleStatus[]> {
+  const packages = await discoverGhostPackages(root, { memoryDir });
+  return Promise.all(
+    packages.map(async (pkg) => {
+      const status = await scanStatus(pkg.dir);
+      return {
+        ...pkg,
+        fingerprint: status.fingerprint,
+        checks: status.checks,
+        proposals: status.proposals,
+        intent: status.intent,
+        readiness: status.readiness,
+      };
+    }),
+  );
 }
 
-function lintSurveyFile(raw: string): SurveyLintReport {
-  let json: unknown;
-  try {
-    json = JSON.parse(raw);
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "survey-not-json",
-          message: `survey file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-  return lintSurvey(json);
+interface NestedBundleStatus {
+  dir: string;
+  root: string;
+  relative_root: string;
+  memory_dir: string;
+  fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
+  checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
+  proposals: Awaited<ReturnType<typeof scanStatus>>["proposals"];
+  intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
+  readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
 }
 
-function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostChecks(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "checks-not-yaml",
-          message: `checks file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
+function dirnameForMemoryPackageDir(dir: string, memoryDir: string): string {
+  let root = dir;
+  for (const _segment of normalizeMemoryDir(memoryDir).split("/")) {
+    root = dirname(root);
   }
+  return root;
 }
 
-function lintResourcesFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostResources(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "resources-not-yaml",
-          message: `resources file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
+function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
+  return normalizeMemoryDir(
+    typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
+  );
 }
 
-function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostPatterns(parseYaml(raw));
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "patterns-not-yaml",
-          message: `patterns file is not valid YAML: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
+function initCommandOutput(
+  paths: ReturnType<typeof resolveFingerprintPackage>,
+  options: { includeIntent: boolean; includeConfig: boolean },
+): Record<string, string> {
+  return {
+    dir: paths.dir,
+    fingerprintYml: paths.fingerprintYml,
+    ...(options.includeConfig ? { config: paths.config } : {}),
+    checks: paths.checks,
+    proposals: paths.proposals,
+    cache: paths.cache,
+    ...(options.includeIntent ? { intent: paths.intent } : {}),
+  };
 }
 
 function writeLintReport(
@@ -810,7 +887,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
   if (survey.ui_surfaces.length === 0) {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
-      "Use survey values, tokens, and components as substrate evidence until implemented surfaces are observed.",
+      "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
       "Treat intent.md as human authority when present.",
     ];
   }

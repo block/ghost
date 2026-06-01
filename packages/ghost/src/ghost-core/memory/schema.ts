@@ -59,7 +59,7 @@ export const GhostDecisionSchema = z
 
 export const GhostProposalActionSchema = z
   .object({
-    target: z.enum(["decisions", "patterns", "checks", "intent"]),
+    target: z.enum(["fingerprint", "checks", "review_policy"]),
     summary: z.string().min(1),
   })
   .strict();
@@ -69,7 +69,12 @@ export const GhostProposalSchema = z
     schema: z.literal(GHOST_PROPOSAL_SCHEMA),
     id: SlugIdSchema,
     status: z.enum(["open", "accepted", "rejected", "superseded"]),
-    kind: z.enum(["decision", "pattern", "check", "intent"]),
+    kind: z.enum([
+      "missing-memory",
+      "intentional-divergence",
+      "experience-gap",
+      "check-candidate",
+    ]),
     title: z.string().min(1),
     claim: z.string().min(1),
     rationale: z.string().min(1),

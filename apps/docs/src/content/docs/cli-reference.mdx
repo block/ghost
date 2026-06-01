@@ -9,15 +9,18 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts: initialize bundles, report Fingerprint
-Capture progress, validate files, transform survey data, compare bundles, check
-diffs, emit handoff packets, and record intent. Your agent does the reading,
-writing, and reviewing.
+The CLI does the repeatable parts: initialize memory bundles, report capture
+progress, validate files, emit raw inventory, compare bundles, check diffs,
+emit handoff packets, and record intent. Your agent does the reading, writing,
+and reviewing.
 
-Fingerprint Capture follows one path:
+Canonical Ghost memory starts here, with optional child bundles for scoped
+product areas:
 
 ```text
-resources.yml -> map.md -> survey.json -> patterns.yml
+.ghost/fingerprint.yml
+.ghost/checks.yml
+apps/checkout/.ghost/fingerprint.yml
 ```
 
 Install the public package and one skill bundle:
@@ -35,15 +38,15 @@ Capture a Ghost fingerprint for this repo.
 
 Commands are grouped by job:
 
-- **Create and check the fingerprint bundle**: `init`, `scan`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `emit`.
+- **Create and check memory bundles**: `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `proposal <op>`, `emit`.
 - **Review and compare drift**: `check`, `review`, `compare`, `ack`, `track`, `diverge`.
 - **Install BYOA recipes**: `skill install`.
 - **View many projects**: `ghost-fleet members`, `ghost-fleet view`, `ghost-fleet emit skill`.
 
-Workflows like _capture_, _map_, _survey_, _patterns_, _recall_, _brief_,
-_critique_, _propose_, _promote_, _review_, _verify_, _compare_, and
-_remediate_ are skill recipes your host agent runs. They are installed by
-`ghost skill install`; they are not LLM-running CLI verbs.
+Workflows like _capture_, _survey_, _patterns_, _recall_, _brief_, _critique_,
+_propose_, _promote_, _review_, _verify_, _compare_, and _remediate_ are skill
+recipes your host agent runs. They are installed by `ghost skill install`; they
+are not LLM-running CLI verbs.
 
 The tables below are generated from each CLI's source at build time. If a flag
 changes in any `cli.ts`, the next `pnpm dump:cli-help` run regenerates this
@@ -54,27 +57,31 @@ reference.
 <DocSection title="ghost - capture support and bundle checks">
 
 `ghost` supports Fingerprint Capture. It inventories the repo, reports capture
-progress, validates each file, verifies cross-artifact fidelity, describes
-markdown, diffs direct fingerprint files, runs survey ops, and emits
-agent-ready outputs.
+progress, validates memory, verifies evidence paths and typed refs, describes
+legacy direct markdown when needed, diffs direct fingerprint files, runs
+legacy/cache survey ops, and emits agent-ready outputs.
 
 ### Initialize - `init`
 
-Create a `.ghost/` bundle skeleton with `resources.yml`, `map.md`,
-`survey.json`, `patterns.yml`, and `checks.yml`.
+Create a `.ghost/` memory skeleton with `fingerprint.yml`, `checks.yml`,
+`proposals/`, and `cache/`. Use `--scope <path>` for nested
+`<path>/.ghost/` memory. Use `--memory-dir <relative-dir>` when a host adapter
+stores Ghost memory under a different safe relative directory.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
 ghost init
 ghost init --with-intent
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
 ```
 
 ### Capture progress - `scan`
 
-Report which fingerprint capture stages already exist in a directory, evidence
-readiness, and which stage the agent should run next. `--format json` is the
-deterministic BYOA handoff.
+Report whether fingerprint memory is present, whether it has accepted entries,
+which optional files exist, and which BYOA step the agent should run next.
+`--format json` is the deterministic handoff.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
 
@@ -83,58 +90,79 @@ ghost scan
 ghost scan ../other-repo/.ghost
 ghost scan . --format json
 ghost scan . --include-scopes
+ghost scan . --include-nested
+ghost scan --include-nested --memory-dir .design/memory --format json
 ```
 
-### Repo map - `inventory`
+### Stack inspection - `stack`
+
+Inspect the root-to-leaf memory stack for one or more paths. This shows which
+layers will feed `check`, `review`, and `emit --path`.
+
+<CliHelp tool="ghost" command="stack" hideDescription />
+
+```bash
+ghost stack apps/checkout/review/page.tsx
+ghost stack apps/checkout/review/page.tsx --format json
+ghost stack apps/checkout/review/page.tsx --memory-dir .design/memory --format json
+```
+
+### Inventory cache - `inventory`
 
 Emit raw signals about a frontend repo as JSON: package manifests, language
 histogram, candidate config files, registry presence, top-level tree, and git
-remote. The map recipe uses this when writing `map.md`.
+remote. Use this as optional source material, usually under `.ghost/cache/`.
 
 <CliHelp tool="ghost" command="inventory" hideDescription />
 
 ```bash
 ghost inventory
-ghost inventory ../other-repo
+ghost inventory ../other-repo > .ghost/cache/inventory.json
 ```
 
 ### Validation - `lint`
 
 Validate a root `.ghost` bundle or an individual artifact against its schema.
 Use this before declaring a file structurally valid; every authoring recipe
-calls it. Follow `lint` with `verify` to check cross-artifact fidelity.
+calls it. `--all` validates every nested bundle and its merged stack. Follow
+`lint` with `verify` to check evidence and references.
 
 <CliHelp tool="ghost" command="lint" hideDescription />
 
 ```bash
 ghost lint
-ghost lint map.md
-ghost lint survey.json
-ghost lint .ghost/patterns.yml --format json
+ghost lint .ghost/fingerprint.yml
+ghost lint .ghost/checks.yml --format json
+ghost lint --all
+ghost lint --all --memory-dir .design/memory
 ```
 
 ### Bundle fidelity - `verify`
 
-Validate that a root `.ghost` bundle is internally faithful. Resources should
-resolve from `--root`, composition patterns must cite survey-backed evidence,
-and checks must reference known pattern IDs when they use pattern metadata.
+Validate that a root `.ghost` bundle is internally faithful:
+`fingerprint.yml` evidence paths should resolve from `--root`, typed check refs
+must point at known checks, and active checks must be grounded in fingerprint
+memory.
+With `--all`, Ghost verifies every discovered bundle and stack merge.
 
 <CliHelp tool="ghost" command="verify" hideDescription />
 
 ```bash
 ghost verify .ghost --root .
 ghost verify .ghost --root . --format json
+ghost verify --all
+ghost verify --all --memory-dir .design/memory
 ```
 
-### Survey ops - `survey <op>`
+### Legacy survey ops - `survey <op>`
 
-Operate on `ghost.survey/v2` files.
+Operate on `ghost.survey/v2` files as legacy/cache source material.
 
 - `merge` combines surveys with id-based dedup.
 - `fix-ids` recomputes every row's `id` from its content.
-- `summarize` prints a bounded Markdown or JSON digest for pattern authoring.
+- `summarize` prints a bounded Markdown or JSON digest for migration.
 - `catalog` prints exact value enums/specs derived from survey rows.
-- `patterns` derives a `ghost.patterns/v1` draft from surface evidence.
+- `patterns` derives a legacy `ghost.patterns/v1` draft from surface evidence.
 
 <CliHelp tool="ghost" command="survey" hideDescription />
 
@@ -143,13 +171,11 @@ ghost survey merge a.json b.json -o merged.json
 ghost survey fix-ids draft.json -o draft.json
 ghost survey summarize survey.json
 ghost survey catalog survey.json --kind color
-ghost survey catalog survey.json --format json -o catalog.json
-ghost survey patterns survey.json -o .ghost/patterns.yml
 ```
 
 ### Inspection - `describe`
 
-Print a section map of optional `.ghost/intent.md` or a direct fingerprint
+Print optional `.ghost/intent.md` or a section map of a direct fingerprint
 markdown file. The host agent uses this to load only the sections it needs.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
@@ -162,8 +188,9 @@ ghost describe --format json
 
 ### Structural diff - `diff`
 
-Diff two fingerprints at the prose and structural level: decisions, palette
-roles, and tokens. This is not vector distance; use `ghost compare` for that.
+Diff two legacy direct fingerprints at the prose and structural level:
+decisions, palette roles, and tokens. This is not vector distance; use
+`ghost compare` for that.
 
 <CliHelp tool="ghost" command="diff" hideDescription />
 
@@ -175,16 +202,37 @@ ghost diff a.md b.md --format json
 ### Derived outputs - `emit`
 
 Emit deterministic artifacts for agents and editors. Supported kinds are
-`review-command` and `context-bundle`; skill installation lives at
-`ghost skill install`.
+`review-command` and `context-bundle`; both default to `.ghost/fingerprint.yml`
+memory. Explicit `--fingerprint` keeps legacy direct markdown mode available.
+Use `--path` to emit from the merged stack for a repo path, or `--package` to
+stay in exact single-bundle mode. `--memory-dir` applies only to stack
+resolution through `--path`; `--package` remains exact-path mode.
+Skill installation lives at `ghost skill install`.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
 
 ```bash
 ghost emit review-command
+ghost emit review-command --path apps/checkout/review/page.tsx
+ghost emit review-command --path apps/checkout/review/page.tsx --memory-dir .design/memory
 ghost emit context-bundle
 ghost emit context-bundle --prompt-only
 ghost emit context-bundle --out dist/context
+```
+
+### Scoped proposals - `proposal <op>`
+
+Create, list, and resolve candidate memory updates in the nearest applicable
+scoped bundle. These commands do not promote prose into `fingerprint.yml` or
+`checks.yml`; promotion remains explicit.
+
+<CliHelp tool="ghost" command="proposal" hideDescription />
+
+```bash
+ghost proposal list --path apps/checkout/review/page.tsx
+ghost proposal create --path apps/checkout/review/page.tsx --id checkout-copy-memory --kind missing-memory --title "Checkout copy memory" --claim "Checkout copy needs local memory." --rationale "Payment review language is checkout-specific." --summary "Add checkout copy guidance."
+ghost proposal resolve checkout-copy-memory --path apps/checkout/review/page.tsx --status accepted
+ghost proposal list --path apps/checkout/review/page.tsx --memory-dir .design/memory --format json
 ```
 
 </DocSection>
@@ -193,34 +241,50 @@ ghost emit context-bundle --out dist/context
 
 ### Deterministic gates - `check`
 
-Run active `ghost.checks/v1` gates from `.ghost/checks.yml` against a git diff.
+Run active `ghost.checks/v1` gates against a git diff. Without `--package`,
+Ghost groups changed files by resolved memory stack and runs merged checks per
+group. `--package <dir>` keeps exact single-bundle behavior. `--format json`
+emits the adapter contract `ghost.check-report/v1`; wrappers should map Ghost
+severities outside Ghost.
 
 <CliHelp tool="ghost" command="check" hideDescription />
 
 ```bash
 ghost check --base main
 ghost check --diff patch.diff --format json
+ghost check --base main --memory-dir .design/memory --format json
 ```
 
 ### Advisory packet - `review`
 
-Emit an evidence-routed advisory review packet grounded in `.ghost/patterns.yml`,
-`.ghost/survey.json`, optional `.ghost/intent.md`, accepted decisions, checks,
-and the diff.
+Emit an evidence-routed advisory review packet grounded in
+`.ghost/fingerprint.yml`, optional `.ghost/intent.md`, open proposals, accepted
+decisions, checks, and the diff. Without `--package`, JSON output includes
+`stacks[]`, each with changed files, layer dirs, merged memory, checks,
+proposals, and provenance. Use `--memory-dir` for adapter-owned memory
+locations.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
 ```bash
 ghost review --base main
 ghost review --base main --include-memory --format json
+ghost review --base main --memory-dir .design/memory --format json
 ```
+
+### Host adapters
+
+Ghost does not emit host-specific review or check formats. A host adapter should
+consume `ghost check --format json`, map `critical | serious | nit` into its own
+severity vocabulary, and emit the host-native artifact outside Ghost. The
+repository doc `docs/host-adapters.md` describes the adapter contract and
+proposal flow.
 
 ### Comparison - `compare`
 
 Pairwise distance (N=2) or composite analysis (N>=3) over root bundles or direct
-fingerprint markdown. Bundle inputs are synthesized from survey value
-distributions and pattern frequencies. Direct markdown inputs still support
-`--semantic` and `--temporal`.
+fingerprint markdown. Bundle inputs use canonical Ghost memory when available.
+Direct markdown inputs still support `--semantic` and `--temporal`.
 
 <CliHelp tool="ghost" command="compare" hideDescription />
 
@@ -259,7 +323,7 @@ ghost diverge palette --reason "Dark-mode-first palette for this product"
 ### Skill bundle - `skill install`
 
 Install the unified `ghost` skill bundle into a host agent. It contains
-Fingerprint Capture, map, survey, patterns, schema, recall, brief, critique,
+Fingerprint Capture, survey/cache, patterns, schema, recall, brief, critique,
 propose, promote, review, verify, compare, and remediate recipes.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
@@ -308,9 +372,8 @@ then ask your agent in plain English.
 | Recipe | Bundle | Trigger |
 | --- | --- | --- |
 | `capture` | `ghost` | "Capture a Ghost fingerprint for this repo" |
-| `map` | `ghost` | "map this repo" / "write map.md" |
-| `survey` | `ghost` | "survey design values" / "extract tokens" |
-| `patterns` | `ghost` | "write patterns.yml" / "codify composition patterns" |
+| `survey` | `ghost` | "use survey cache" / "extract tokens as source material" |
+| `patterns` | `ghost` | "write fingerprint patterns" / "codify product-experience patterns" |
 | `recall` / `brief` / `critique` / `propose` / `promote` | `ghost` | "brief this work" / "propose this decision" / "promote this proposal" |
 | `review` | `ghost` | "review this PR for drift" |
 | `verify` | `ghost` | "verify generated UI against the bundle" |

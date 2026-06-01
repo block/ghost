@@ -3,6 +3,7 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
+  GhostCheckDerivesFrom,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
@@ -19,6 +20,7 @@ export type {
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
+  GhostCheckDerivesFromSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,
@@ -58,6 +60,7 @@ export type {
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
   GhostFingerprintExperienceContract,
+  GhostFingerprintImplementationVocabulary,
   GhostFingerprintLintIssue,
   GhostFingerprintLintReport,
   GhostFingerprintLintSeverity,
@@ -70,7 +73,6 @@ export type {
   GhostFingerprintScope,
   GhostFingerprintSituation,
   GhostFingerprintStatus,
-  GhostFingerprintSubstrate,
   GhostFingerprintSummary,
   GhostFingerprintTopology,
   GhostFingerprintTopologyExample,
@@ -81,6 +83,7 @@ export {
   GHOST_FINGERPRINT_YML_FILENAME,
   GhostFingerprintEvidenceSchema,
   GhostFingerprintExperienceContractSchema,
+  GhostFingerprintImplementationVocabularySchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
@@ -91,7 +94,6 @@ export {
   GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintStatusSchema,
-  GhostFingerprintSubstrateSchema,
   GhostFingerprintSummarySchema,
   GhostFingerprintTopologyExampleSchema,
   GhostFingerprintTopologySchema,
@@ -100,9 +102,12 @@ export {
 } from "./fingerprint/index.js";
 // --- Map (ghost.map/v2) ---
 export {
+  CACHE_DIRNAME,
+  CONFIG_FILENAME,
   DECISIONS_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_YML_FILENAME,
   type FingerprintPackagePaths,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
@@ -113,6 +118,7 @@ export {
 export {
   type GitInfo,
   getEffectiveMapScopes,
+  type InventoryConfigSummary,
   type InventoryOutput,
   type LanguageHistogramEntry,
   MAP_FILENAME,

@@ -2,11 +2,18 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
+  emitPackageReviewCommand,
   emitReviewCommand,
   loadFingerprint,
+  loadMemoryStackForPath,
+  loadPackageMemory,
+  memoryStackToPackageMemory,
+  normalizeMemoryDir,
+  type PackageMemory,
   resolveFingerprintPackage,
   writeContextBundle,
   writePackageContextBundle,
+  writePackageContextBundleFromMemory,
 } from "./scan/index.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
@@ -41,7 +48,16 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "-f, --fingerprint <path>",
-      "Source legacy direct fingerprint markdown file (required for review-command; optional legacy mode for context-bundle)",
+      "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
+    )
+    .option("--path <path>", "Resolve a nested memory stack for this repo path")
+    .option(
+      "--package <dir>",
+      "Use exactly this memory package directory instead of resolving a stack",
+    )
+    .option(
+      "--memory-dir <relative-dir>",
+      "Relative memory package directory for --path stack resolution (default: .ghost)",
     )
     .option(
       "-o, --out <path>",
@@ -54,13 +70,13 @@ export function registerEmitCommand(cli: CAC): void {
     // context-bundle flags:
     .option(
       "--no-tokens",
-      "Skip tokens.css output (legacy direct fingerprint context-bundle)",
+      "Skip tokens.css output (legacy direct fingerprint context-bundle only)",
     )
     .option("--readme", "Include README.md (context-bundle)")
     .option("--prompt-only", "Emit only prompt.md (context-bundle)")
     .option(
       "--name <name>",
-      "Override the skill name (default: package or fingerprint id) (context-bundle)",
+      "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {
@@ -72,19 +88,37 @@ export function registerEmitCommand(cli: CAC): void {
         }
 
         const explicitFingerprint = typeof opts.fingerprint === "string";
+        const explicitPath = typeof opts.path === "string";
+        const explicitPackage = typeof opts.package === "string";
+        const explicitSources = [
+          explicitFingerprint,
+          explicitPath,
+          explicitPackage,
+        ].filter(Boolean).length;
+        if (explicitSources > 1) {
+          console.error(
+            "Error: use only one of --fingerprint, --path, or --package",
+          );
+          process.exit(2);
+          return;
+        }
 
         if (parsed.kind === "review-command") {
-          const fingerprintPath = resolve(
-            process.cwd(),
-            opts.fingerprint ??
-              resolveFingerprintPackage(undefined, process.cwd()).fingerprint,
-          );
-          const loaded = await loadFingerprint(fingerprintPath, {
-            noEmbeddingBackfill: true,
-          });
-          const content = emitReviewCommand({
-            fingerprint: loaded.fingerprint,
-          });
+          let content: string;
+          if (explicitFingerprint) {
+            const loaded = await loadFingerprint(
+              resolve(process.cwd(), opts.fingerprint),
+              {
+                noEmbeddingBackfill: true,
+              },
+            );
+            content = emitReviewCommand({ fingerprint: loaded.fingerprint });
+          } else {
+            const memory = await loadEmitPackageMemory(opts);
+            content = emitPackageReviewCommand({
+              memory,
+            });
+          }
 
           if (opts.stdout) {
             process.stdout.write(content);
@@ -110,15 +144,23 @@ export function registerEmitCommand(cli: CAC): void {
         );
 
         if (!explicitFingerprint) {
-          const result = await writePackageContextBundle(
-            resolveFingerprintPackage(undefined, process.cwd()),
-            {
-              outDir,
-              readme: Boolean(opts.readme),
-              promptOnly: Boolean(opts.promptOnly),
-              name: opts.name as string | undefined,
-            },
-          );
+          const memory = await loadEmitPackageMemory(opts);
+          const result = explicitPackage
+            ? await writePackageContextBundle(
+                resolveFingerprintPackage(opts.package, process.cwd()),
+                {
+                  outDir,
+                  readme: Boolean(opts.readme),
+                  promptOnly: Boolean(opts.promptOnly),
+                  name: opts.name as string | undefined,
+                },
+              )
+            : await writePackageContextBundleFromMemory(memory, {
+                outDir,
+                readme: Boolean(opts.readme),
+                promptOnly: Boolean(opts.promptOnly),
+                name: opts.name as string | undefined,
+              });
 
           process.stdout.write(
             `Wrote ${result.files.length} file${
@@ -160,4 +202,32 @@ export function registerEmitCommand(cli: CAC): void {
         process.exit(2);
       }
     });
+}
+
+async function loadEmitPackageMemory(opts: {
+  path?: unknown;
+  package?: unknown;
+  name?: unknown;
+  memoryDir?: unknown;
+}): Promise<PackageMemory> {
+  if (typeof opts.package === "string") {
+    return loadPackageMemory(
+      resolveFingerprintPackage(opts.package, process.cwd()),
+      typeof opts.name === "string" ? opts.name : undefined,
+    );
+  }
+
+  const stack = await loadMemoryStackForPath(
+    typeof opts.path === "string" ? opts.path : ".",
+    process.cwd(),
+    {
+      memoryDir: normalizeMemoryDir(
+        typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
+      ),
+    },
+  );
+  return memoryStackToPackageMemory(
+    stack,
+    typeof opts.name === "string" ? opts.name : undefined,
+  );
 }
