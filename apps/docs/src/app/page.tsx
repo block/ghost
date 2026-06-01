@@ -53,9 +53,10 @@ export default function Home() {
             <p className="thesis-item">
               The fingerprint is a repository-local, versioned artifact that
               captures product experience memory: the situations, principles,
-              contracts, patterns, and substrate that shape how the system is
-              actually used. It does not replace the design system; it gives
-              agents the judgment that sits around it.
+              contracts, and patterns that shape how the system is actually
+              used. Components, tokens, and libraries remain replaceable
+              implementation material; Ghost gives agents the judgment that sits
+              around them.
             </p>
             <p className="thesis-item">
               The broader boundary is product experience: anything that shapes

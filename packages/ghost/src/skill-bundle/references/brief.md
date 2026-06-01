@@ -13,11 +13,11 @@ where it has freedom, and what needs human judgment.
 
 1. Read `.ghost/fingerprint.yml`.
 2. Select the relevant `situation` for the task, or state that none fits.
-3. Pull applicable `principles`, `experience_contracts`, `patterns`, and
-   `substrate` entries.
-4. Read `.ghost/checks.yml` for active deterministic gates.
-5. Skim `.ghost/proposals/*.yml` for open gaps or intentional divergences.
-6. Name missing or contradictory memory explicitly.
+3. Pull applicable `principles`, `experience_contracts`, and `patterns`.
+4. Read `implementation_vocabulary` only as current replaceable material.
+5. Read `.ghost/checks.yml` for active deterministic gates.
+6. Skim `.ghost/proposals/*.yml` for open gaps or intentional divergences.
+7. Name missing or contradictory memory explicitly.
 
 ## Output
 
@@ -26,7 +26,7 @@ Produce:
 - Task framing and selected situation.
 - Relevant principles and experience contracts.
 - Product-native pattern guidance.
-- Substrate constraints: tokens, components, accessibility, responsive policy.
+- Implementation vocabulary that may help satisfy the product memory.
 - Active checks to run afterward.
 - Open proposals or known gaps.
 - Decisions the human should make before generation.

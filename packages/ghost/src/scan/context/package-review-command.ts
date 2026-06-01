@@ -75,10 +75,11 @@ function packageWorkflowSection(): string {
 
 1. Read \`.ghost/fingerprint.yml\` as the canonical product-experience memory.
 2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, accessibility, or interaction behavior.
-3. Apply accepted principles, experience contracts, patterns, and substrate. Treat proposed or deprecated memory as non-canonical unless the user explicitly asks to explore it.
-4. Run \`ghost check\` when a diff is available. Active checks are deterministic and can block.
-5. Run \`ghost review --include-memory\` for the advisory packet when you need full diff context, open proposals, and accepted decisions.
-6. Cite the diff location, fingerprint.yml memory, any active check, and any relevant open proposal for every finding.`;
+3. Apply accepted principles, experience contracts, and patterns before choosing implementation details. Treat proposed or deprecated memory as non-canonical unless the user explicitly asks to explore it.
+4. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
+5. Run \`ghost check\` when a diff is available. Active checks are deterministic and can block.
+6. Run \`ghost review --include-memory\` for the advisory packet when you need full diff context, open proposals, and accepted decisions.
+7. Cite the diff location, fingerprint.yml memory, any active check, and any relevant open proposal for every finding.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -98,7 +99,7 @@ function packageMemoryIndex(memory: PackageMemory): string {
   const principles = formatPrinciples(fingerprint.principles);
   const contracts = formatExperienceContracts(fingerprint.experience_contracts);
   const patterns = formatPatterns(fingerprint.patterns);
-  const substrate = formatSubstrate(memory);
+  const implementationVocabulary = formatImplementationVocabulary(memory);
 
   return `## Fingerprint Memory Index
 
@@ -112,7 +113,7 @@ ${contracts}
 
 ${patterns}
 
-${substrate}`;
+${implementationVocabulary}`;
 }
 
 function formatSummary(memory: PackageMemory): string {
@@ -205,15 +206,19 @@ function formatPatterns(patterns: GhostFingerprintPattern[]): string {
   return lines.join("\n");
 }
 
-function formatSubstrate(memory: PackageMemory): string {
-  const { substrate } = memory.fingerprint;
-  const lines = ["### Substrate"];
-  pushJoined(lines, "Tokens", substrate.tokens, { code: true });
-  pushJoined(lines, "Components", substrate.components, { code: true });
-  pushJoined(lines, "Accessibility", substrate.accessibility);
-  pushJoined(lines, "Responsive", substrate.responsive);
-  if (lines.length === 1) {
-    lines.push("- No substrate recorded yet.");
+function formatImplementationVocabulary(memory: PackageMemory): string {
+  const { implementation_vocabulary: vocabulary } = memory.fingerprint;
+  const lines = ["### Implementation Vocabulary"];
+  lines.push(
+    "- Use this as replaceable implementation material, not product-experience authority.",
+  );
+  pushJoined(lines, "Tokens", vocabulary.tokens, { code: true });
+  pushJoined(lines, "Components", vocabulary.components, { code: true });
+  pushJoined(lines, "Libraries", vocabulary.libraries, { code: true });
+  pushJoined(lines, "Assets", vocabulary.assets, { code: true });
+  pushJoined(lines, "Notes", vocabulary.notes);
+  if (lines.length === 2) {
+    lines.push("- No implementation vocabulary recorded yet.");
   }
   return lines.join("\n");
 }

@@ -68,7 +68,8 @@ preserved, what should be avoided, and what is still only a proposal?
 - `experience_contracts`: reusable obligations for interaction, content,
   disclosure, recovery, and accessibility.
 - `patterns`: visual, behavioral, content, and composition patterns.
-- `substrate`: compact token, component, accessibility, and responsive policy.
+- `implementation_vocabulary`: compact, replaceable tokens, components,
+  libraries, assets, and notes.
 - `review_policy`: memory-gap, experience-gap, proposal, and review policy.
 
 Situations are first-class because product experience depends on context. A docs
@@ -143,7 +144,7 @@ situations: []
 principles: []
 experience_contracts: []
 patterns: []
-substrate: {}
+implementation_vocabulary: {}
 review_policy: {}
 ```
 
@@ -176,6 +177,13 @@ review_policy: {}
 - Content patterns: labels, summaries, warnings, explanations.
 - Composition patterns: how multiple UI, content, and behavior pieces hold
   together as one coherent surface.
+
+`implementation_vocabulary` owns current implementation material:
+
+- Tokens, components, libraries, assets, and notes are useful vocabulary.
+- They are not proof that a generated experience is on-brand.
+- Durable accessibility, responsive, hierarchy, disclosure, and recovery
+  obligations belong in principles, contracts, or patterns.
 
 `review_policy` owns how Ghost handles uncertainty:
 
@@ -220,8 +228,10 @@ Validation rules:
 - Every `status: active` check must include `derives_from`.
 - `derives_from` must use a typed grounding ref.
 - Valid grounding prefixes are `principle`, `situation`,
-  `experience_contract`, `pattern`, and `substrate`.
+  `experience_contract`, and `pattern`.
 - A typed grounding ref must reference existing memory in `fingerprint.yml`.
+- Implementation vocabulary may help a detector run, but it is not a grounding
+  target.
 - Orphan active checks fail `ghost lint` and `ghost verify`.
 - Proposed checks may be ungrounded while still in `proposals/`, but they cannot
   become active until grounded.
@@ -239,7 +249,7 @@ Phase 1: Doctrine and schema.
 - Add docs defining the new artifact authority.
 - Add `ghost.fingerprint/v1` schema and TypeScript types for `summary`,
   `topology`, `situations`, `principles`, `experience_contracts`, `patterns`,
-  `substrate`, and `review_policy`.
+  `implementation_vocabulary`, and `review_policy`.
 - Add fixtures for valid minimal, valid full, and invalid fingerprints.
 - No command behavior changes in this first PR.
 
@@ -265,10 +275,11 @@ Phase 3: Command rewrite.
 - `ghost verify` validates evidence paths, typed refs, check references, and
   active check grounding.
 - `ghost brief` emits task-scoped context from selected situation, relevant
-  summary, principles, `experience_contracts` entries, patterns, substrate,
-  active checks, open proposals, and known gaps.
+  summary, principles, `experience_contracts` entries, patterns, active checks,
+  open proposals, known gaps, and implementation vocabulary.
 - `ghost review` builds advisory context from situations, principles,
-  `experience_contracts` entries, patterns, substrate, checks, and proposals.
+  `experience_contracts` entries, patterns, checks, proposals, and
+  implementation vocabulary.
 - `ghost check` evaluates active checks in `checks.yml`.
 - `ghost compare` compares canonical fingerprints.
 - `ghost emit context-bundle` emits a compact prompt from the canonical
@@ -315,10 +326,11 @@ Generation rules:
 
 - Start from relevant situations, principles, `experience_contracts` entries,
   and patterns.
-- Prefer local components and substrate policy.
+- Use local components and tokens only when they satisfy product memory.
 - Preserve hierarchy, density, flow, copy fit, accessibility, and recovery
   behavior.
-- Do not infer full product flow from component-demo or substrate-only evidence.
+- Do not infer full product flow from component-demo or
+  implementation-only evidence.
 - If memory is silent, say so and create a proposal after the work if needed.
 
 Review rules:

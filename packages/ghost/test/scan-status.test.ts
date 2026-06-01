@@ -54,7 +54,7 @@ patterns:
     status: accepted
     kind: composition
     pattern: Keep dense operational tables scannable.
-substrate:
+implementation_vocabulary:
   tokens:
     - color.background
   components:
@@ -65,9 +65,30 @@ substrate:
     const status = await scanStatus(dir);
 
     expect(status.readiness.state).toBe("memory-ready");
-    expect(status.readiness.substrate_rows.tokens).toBe(1);
-    expect(status.readiness.substrate_rows.components).toBe(1);
+    expect(status.readiness.implementation_vocabulary_rows.tokens).toBe(1);
+    expect(status.readiness.implementation_vocabulary_rows.components).toBe(1);
     expect(status.readiness.can_review).toContain("surface behavior");
+  });
+
+  it("reports implementation-only when only components and tokens are recorded", async () => {
+    await writeFile(
+      join(dir, "fingerprint.yml"),
+      fingerprintFile(`
+principles: []
+patterns: []
+implementation_vocabulary:
+  tokens:
+    - color.background
+  components:
+    - DataTable
+`),
+    );
+
+    const status = await scanStatus(dir);
+
+    expect(status.readiness.state).toBe("implementation-only");
+    expect(status.readiness.cannot_review).toContain("product identity");
+    expect(status.readiness.reasons.join(" ")).toContain("available material");
   });
 });
 
@@ -88,7 +109,7 @@ situations: []
 principles: []
 experience_contracts: []
 patterns: []
-substrate: {}
+implementation_vocabulary: {}
 review_policy: {}
 ${overrides}`;
 }

@@ -100,8 +100,10 @@ Read the files in this order:
 4. \`intent.md\` when present - supplemental human-approved context.
 
 When generating or reviewing UI, select the relevant situation, principles,
-experience contracts, patterns, and substrate from \`fingerprint.yml\`. Treat
-proposals as unresolved context, not canonical truth.
+experience contracts, and patterns from \`fingerprint.yml\` before choosing
+implementation details. Use implementation vocabulary only as replaceable
+material that may help satisfy product memory. Treat proposals as unresolved
+context, not canonical truth.
 `;
 }
 
@@ -139,7 +141,8 @@ ${context.intent.trim()}
   parts.push(`# Use This Context
 
 - Select the relevant situation before generating or reviewing UI.
-- Preserve applicable principles, experience contracts, patterns, and substrate.
+- Preserve applicable principles, experience contracts, and patterns.
+- Use implementation vocabulary only when it supports the selected product memory.
 - Only active checks are blocking.
 - Treat open proposals as unresolved context that may explain gaps or intentional divergence.
 - If the task exposes missing or contradictory memory, propose a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently.`);

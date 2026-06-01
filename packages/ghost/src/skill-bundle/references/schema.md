@@ -46,9 +46,11 @@ patterns:
     pattern: Resource index views stay tabular when comparison is the task.
     evidence:
       - path: src/orders/index.tsx
-substrate:
+implementation_vocabulary:
   tokens: [color.background, color.text]
   components: [DataTable]
+  notes:
+    - Current vocabulary is replaceable implementation material.
 review_policy:
   proposal_policy:
     - Agents propose memory changes; humans promote durable truth.

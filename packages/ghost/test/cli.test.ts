@@ -282,7 +282,7 @@ describe("ghost CLI", () => {
     expect(JSON.parse(patterns.stdout).schema).toBe("ghost.patterns/v1");
   });
 
-  it("keeps derived patterns substrate-aware when no UI surfaces exist", async () => {
+  it("keeps derived patterns implementation-aware when no UI surfaces exist", async () => {
     await mkdir(join(dir, ".ghost"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "survey.json"),
@@ -545,7 +545,7 @@ patterns:
     kind: visual
     pattern: Product UI color uses semantic tokens instead of literals.
     check_refs: [check:no-hardcoded-ui-color]
-substrate:
+implementation_vocabulary:
   tokens: [CashTheme.primary]
   components: []
 review_policy: {}
