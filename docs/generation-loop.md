@@ -1,153 +1,149 @@
 # Product Fingerprint Loop
 
-Ghost gives UI generators and product-development agents a local, auditable
-product fingerprint. The canonical input is the root `.ghost/` bundle:
+Ghost gives UI generators and product-development agents local, auditable
+product experience memory. The canonical input is the resolved Ghost memory
+stack for the task path, starting with `.ghost/fingerprint.yml` and adding any
+nested child bundles.
 
 ```text
-.ghost/
-  resources.yml
-  map.md
-  survey.json
-  patterns.yml
-  checks.yml
-  intent.md
-  decisions/
-  proposals/
-```
-
-`patterns.yml` is the operational composition grammar, `survey.json` is the
-evidence ledger, `resources.yml` says what the capture is grounded in,
-`checks.yml` contains deterministic gates, `intent.md` is optional human
-authority, `decisions/` records optional product-experience rationale, and
-`proposals/` stages candidate fingerprint updates. The generator can work
-without optional decisions; when they are present, treat accepted decisions as
-advisory context and proposals as unresolved candidates.
-
-## Pipeline Shape
-
-```text
-.ghost/resources.yml
-.ghost/map.md
-.ghost/survey.json
-.ghost/patterns.yml
-.ghost/checks.yml
-.ghost/intent.md
-.ghost/decisions/*.yml
+.ghost/fingerprint.yml
+apps/checkout/.ghost/fingerprint.yml
+merged checks, intent, decisions, proposals
+.ghost/cache/inventory.json
         |
         v
-any generator
-(host agent, Cursor, v0, in-house tool)
+host agent or generator
         |
         v
 HTML / JSX / app code
         |
         v
-ghost review + ghost check
+ghost check + ghost review
         |
         v
-advisory composition findings + deterministic check results
+deterministic gates + advisory product-experience findings
 ```
 
-Ghost prepares the input and checks the output; it does not own the generator.
-Use any generator that can read local context.
+Ghost prepares the input and checks the output. It does not own the generator.
+Use any agent or tool that can read local context and apply changes.
 
-## Pieces
+## Before Generation
 
-### `.ghost/patterns.yml`
+Build a brief from the resolved memory stack:
 
-The generator should read this before composing UI. It contains surface types,
-composition pattern IDs, repeated anatomy, variants, traits, confidence, and
-evidence links back into `survey.json`.
+1. Run `ghost stack <path>` or resolve the applicable `.ghost/` layers for the
+   task path.
+2. Read broad-to-local merged `fingerprint.yml` memory.
+3. Select the relevant `situations`.
+4. Carry applicable `principles`, `experience_contracts`, and `patterns` into
+   the work.
+5. Use `implementation_vocabulary` only as current material that may help
+   satisfy the selected product memory.
+6. Read merged checks to know which deterministic rules can block.
+7. Read open proposals from the stack as unresolved context, not truth.
 
-Patterns are advisory in this version. They affect review packets and repair
-guidance, not deterministic blocking gates.
+Generated inventory can help orient an agent, but it is cache:
 
-### `.ghost/survey.json`
+```bash
+ghost inventory > .ghost/cache/inventory.json
+```
 
-The survey is a lean evidence ledger. It records factual observations:
-implemented values, tokens, components, UI surfaces, and optional composition
-facts such as ordered anatomy, primary region, action placement, navigation
-context, responsive behavior, and confidence.
+Inventory answers what exists now. The fingerprint answers what matters, why,
+and how agents should compose or review product experience.
 
-Interpretation belongs in `patterns.yml` or human-approved `intent.md`, not in
-survey prose.
+## Generation
 
-### `.ghost/checks.yml`
+The generator should preserve:
 
-Checks are deterministic gates: color allowlists, radius floors, banned
-classes, required attributes, and similar rules that can be evaluated without
-AI judgment. Checks may carry `surface_types` or `pattern_ids` as metadata so a
-reviewer knows which composition scope they belong to, but composition
-detectors are a later feature.
+- product identity and hierarchy
+- relevant user/task/state obligations
+- interface and capability behavior
+- copy, disclosure, failure, and recovery contracts
+- restraint and pacing from accepted patterns
+- accessibility, responsive behavior, and visual choices when they are grounded
+  in principles, contracts, or patterns
 
-### `.ghost/intent.md`
+If the requested work intentionally diverges from memory, the agent should name
+the divergence in its response or create a proposal. It should not rewrite
+canonical memory silently.
 
-Intent is optional. It is where humans can name product purpose, audience,
-voice, or strategic constraints that cannot be proven from code. Agents may
-summarize it, but tooling should not require it and should not pretend generated
-intent is the user's voice unless a human approves it.
+## Review
 
-### `.ghost/decisions/*.yml`
+`ghost check` is deterministic:
 
-Decisions are optional `ghost.decision/v1` files that record accepted/rejected
-product-experience rationale with evidence. They are broader than visual style
-but narrower than product strategy: the boundary is anything that shapes how the
-product is perceived, used, trusted, understood, or safely changed.
+```bash
+ghost check --base main --format json
+```
 
-Accepted decisions can be included in advisory review with
-`ghost review --include-memory`. They do not affect `ghost check`.
+Without `--package`, `ghost check` groups changed files by resolved memory
+stack and runs the merged checks for each group. Only active checks can block.
+Active checks must be grounded in typed fingerprint refs such as
+`principle:*`, `experience_contract:*`, `pattern:*`, or `situation:*`.
+The JSON report uses schema `ghost.check-report/v1`; host adapters should map
+Ghost severities into their own review vocabulary outside Ghost.
 
-### `.ghost/proposals/*.yml`
+`ghost review` is advisory:
 
-Proposals are optional `ghost.proposal/v1` files. They record candidate changes
-from design reviews, generated UI, QA findings, or PM/engineering
-discussion. They are never canonical until a human promotes them.
+```bash
+ghost review --base main --include-memory
+```
 
-## Review Loop
+Without `--package`, advisory review packets include `stacks[]`, one for each
+changed-file memory stack. Each stack includes changed files, layer dirs, merged
+fingerprint memory, merged checks, proposals, and provenance.
 
-`ghost review` reads `.ghost/patterns.yml`, `.ghost/survey.json`,
-optional `.ghost/intent.md`, and optional `.ghost/checks.yml`. With
-`--include-memory`, it also reads accepted `.ghost/decisions/*.yml`. Advisory
-findings should cite pattern evidence, survey evidence, and accepted decisions
-when relevant.
+Advisory review packets include:
 
-`ghost check` reads `.ghost/checks.yml` and remains deterministic. It is
-the blocking side of the loop.
+- the current diff
+- `fingerprint.yml` memory
+- active checks
+- optional accepted decisions
+- open proposals
+- finding categories for fixes, intentional divergence, missing memory,
+  experience gaps, and eval uncertainty
 
-When review flags drift, the host agent applies the smallest correction that
-brings the output back toward the observed composition grammar. If the drift is
-intentional, record a stance with `ghost ack`, `ghost track`, or
-`ghost diverge` as appropriate.
+Review findings should cite the diff location, relevant fingerprint memory, any
+active check when blocking, and open proposals when relevant.
 
-## Verification
+## Remediation
 
-`ghost verify [dir] --root <root>` checks cross-artifact fidelity:
+When review flags drift, the host agent chooses the smallest useful response:
 
-- pattern evidence exists in `survey.json`
-- resource paths are reachable from the supplied root when local
-- checks reference known surface types and pattern IDs
-- optional decisions/proposals are structurally valid when present
+- Fix the generated or changed code.
+- Explain why a divergence is intentional.
+- Create a `missing-memory`, `intentional-divergence`, `experience-gap`, or
+  `check-candidate` proposal.
+- Promote memory only when a human accepts the change.
 
-The skill-level verify recipe can still run a generate -> review loop over a
-prompt suite, but the deterministic package verifier is the first gate for the
-bundle itself.
+The loop is:
 
-## Integration Patterns
+```text
+brief from fingerprint
+  -> generate or edit
+  -> run ghost check
+  -> run ghost review
+  -> fix code or propose memory
+  -> human promotes durable memory
+```
 
-**In a generation pipeline:** load the root `.ghost/` bundle into the host
-agent, generate the requested UI, then run `ghost review` and
-`ghost check`.
+## CI
 
-**In CI:** run deterministic checks for UI-touching changes and attach advisory
-review packets when generated or changed UI appears to drift from
-`patterns.yml`.
+CI should run deterministic checks for UI-touching changes. Advisory review can
+attach a packet or comment, but it should not fail the build unless a finding is
+backed by an active check.
 
-**Fingerprint Capture:** ask your agent to capture the fingerprint, then move in order:
-`resources -> map -> survey -> patterns`. Keep `survey.json` factual, promote
-repeated composition observations into `patterns.yml`, and add `intent.md` only
-when a human has supplied or approved the intent.
+```bash
+ghost check --base main
+ghost review --base main --format markdown
+```
 
-**Fingerprint updates:** use `ghost` recipes to recall, brief, critique,
-propose, and promote optional decisions/proposals. Keep promotion deliberate:
-proposals are unresolved candidates; accepted decisions are advisory context;
-active checks are the only blocking mechanism.
+Wrappers that store memory outside `.ghost` can pass
+`--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
+exact single-bundle mode and bypasses stack discovery.
+
+## Legacy Cache Helpers
+
+Older Ghost bundles used `resources.yml`, `map.md`, `survey.json`, and
+`patterns.yml` as a capture pipeline. Those files are now legacy/cache source
+material. Keep them only when useful for migration or optional inventory
+workflows, and promote durable conclusions into `fingerprint.yml`.

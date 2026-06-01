@@ -12,10 +12,13 @@ reveals a product-experience decision that may belong in the Ghost fingerprint.
 
 1. Confirm the observation is about product experience: perceived, used,
    trusted, understood, or safely changed.
-2. Check whether accepted decisions, patterns, checks, or intent already cover it.
-3. If it is new, write `.ghost/proposals/<slug>.yml`.
-4. Use schema `ghost.proposal/v1`.
-5. Run `ghost lint .ghost`.
+2. Resolve the memory stack for the affected path with `ghost stack <path>`.
+3. Check whether merged `fingerprint.yml`, active checks, or open proposals
+   already cover it.
+4. If it is new, run `ghost proposal create --path <path> ...` so the proposal
+   lands in the nearest applicable scoped bundle.
+5. Use schema `ghost.proposal/v1`.
+6. Run `ghost lint --all` when nested bundles exist.
 
 ## Proposal Shape
 
@@ -23,7 +26,7 @@ reveals a product-experience decision that may belong in the Ghost fingerprint.
 schema: ghost.proposal/v1
 id: saved-payment-empty-state
 status: open
-kind: decision
+kind: missing-memory
 title: Saved payment empty state should teach recovery
 claim: Empty states for saved payment methods should prioritize recovery over education.
 rationale: The user is blocked from paying, not browsing product concepts.
@@ -33,8 +36,10 @@ scope:
 evidence:
   - path: apps/payments/empty-state.tsx
 proposed_action:
-  target: decisions
-  summary: Promote into an accepted product-experience decision if repeated.
+  target: fingerprint
+  summary: Promote into fingerprint.yml if repeated.
 ```
 
-Do not write accepted decisions without human approval.
+Use `missing-memory`, `intentional-divergence`, `experience-gap`, or
+`check-candidate`. Do not rewrite `fingerprint.yml` or `checks.yml` without
+human approval.

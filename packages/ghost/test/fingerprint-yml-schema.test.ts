@@ -19,11 +19,22 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.issues).toEqual([]);
   });
 
-  it("rejects unknown top-level fields", () => {
+  it("rejects old substrate top-level fields", () => {
     const result = GhostFingerprintSchema.safeParse({
       ...minimalFingerprint(),
-      survey: {},
+      substrate: {},
     });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects implementation vocabulary as a typed ref target", () => {
+    const input = fullFingerprint();
+    input.situations[0].patterns = [
+      "implementation_vocabulary:semantic-tokens",
+    ];
+
+    const result = GhostFingerprintSchema.safeParse(input);
 
     expect(result.success).toBe(false);
   });
@@ -69,6 +80,53 @@ describe("ghost.fingerprint/v1", () => {
     });
   });
 
+  it("reports duplicate topology surface types", () => {
+    const input = fullFingerprint();
+    input.topology.surface_types.push("dense-dashboard");
+
+    const report = lintGhostFingerprint(input);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "duplicate-id",
+      path: "topology.surface_types[2]",
+    });
+  });
+
+  it("reports unknown topology scope and surface type references", () => {
+    const input = fullFingerprint();
+    input.situations[0].surface_type = "unknown-surface";
+    input.principles[0].applies_to = {
+      scopes: ["unknown-scope"],
+      surface_types: ["unknown-surface"],
+      situations: ["unknown-situation"],
+    };
+
+    const report = lintGhostFingerprint(input);
+
+    expect(report.errors).toBe(4);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "fingerprint-surface-type-unknown",
+          path: "situations[0].surface_type",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-scope-unknown",
+          path: "principles[0].applies_to.scopes[0]",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-surface-type-unknown",
+          path: "principles[0].applies_to.surface_types[0]",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-situation-unknown",
+          path: "principles[0].applies_to.situations[0]",
+        }),
+      ]),
+    );
+  });
+
   it("requires check refs to use check:*", () => {
     const input = fullFingerprint();
     input.principles[0].check_refs = ["pattern:compact-filter-toolbar"];
@@ -92,7 +150,7 @@ function minimalFingerprint() {
     principles: [],
     experience_contracts: [],
     patterns: [],
-    substrate: {},
+    implementation_vocabulary: {},
     review_policy: {},
   };
 }
@@ -183,11 +241,12 @@ function fullFingerprint() {
         guidance: ["keep primary filters before secondary actions"],
       },
     ],
-    substrate: {
+    implementation_vocabulary: {
       tokens: ["use semantic color tokens"],
       components: ["prefer shared table primitives"],
-      accessibility: ["preserve keyboard filtering path"],
-      responsive: ["preserve row comparability across breakpoints"],
+      libraries: ["local dashboard primitives"],
+      assets: ["status icons"],
+      notes: ["current vocabulary is replaceable implementation material"],
     },
     review_policy: {
       proposal_policy: ["agents may propose but not promote memory"],

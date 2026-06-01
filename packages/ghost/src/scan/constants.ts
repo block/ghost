@@ -7,6 +7,12 @@ export const RESOURCES_FILENAME = "resources.yml";
 /** Canonical filename for operational composition grammar. */
 export const PATTERNS_FILENAME = "patterns.yml";
 
+/** Canonical product experience memory artifact. */
+export const FINGERPRINT_YML_FILENAME = "fingerprint.yml";
+
+/** Optional data-only package configuration artifact. */
+export const CONFIG_FILENAME = "config.yml";
+
 /** Optional filename for human-authored or human-approved intent. */
 export const INTENT_FILENAME = "intent.md";
 
@@ -27,3 +33,6 @@ export const DECISIONS_DIRNAME = "decisions";
 
 /** Optional directory containing candidate product-experience memory changes. */
 export const PROPOSALS_DIRNAME = "proposals";
+
+/** Optional directory containing generated, non-canonical caches. */
+export const CACHE_DIRNAME = "cache";
