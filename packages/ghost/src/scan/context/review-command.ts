@@ -15,8 +15,8 @@ export interface EmitReviewInput {
  * typography values. Default output path: `.claude/commands/design-review.md`.
  *
  * Scope is drift-only: off-palette hex, off-ramp spacing, non-canonical
- * radii and weights. Universal accessibility checks are out of scope —
- * those belong in Rams or a sibling a11y skill.
+ * radii and weights. Unrelated audit categories are out of scope; only
+ * fingerprint-backed obligations count as drift.
  *
  * Two emission paths:
  *   - **Checks-driven** (legacy programmatic input): when `fingerprint.checks[]`
@@ -231,7 +231,7 @@ function header(
   if (character) lines.push("", character);
   lines.push(
     "",
-    "Your job: check code for **drift** from the values below — hardcoded hexes, off-ramp spacing, typography outside the scale, radii outside the set. You are **not** checking accessibility or universal design rules; use `/rams` or a dedicated a11y skill for that.",
+    "Your job: check code for **drift** from the values below — hardcoded hexes, off-ramp spacing, typography outside the scale, radii outside the set. Keep findings grounded in this fingerprint or active checks; do not expand the review into unrelated audit categories.",
   );
   return lines.join("\n");
 }
@@ -465,7 +465,7 @@ function guidelines(): string {
 1. Read the file(s) first before making assessments
 2. Be specific with line numbers and code snippets
 3. Suggest the canonical token, not just "use a different color"
-4. Do not flag accessibility or universal-design issues here — this is drift-only
+4. Do not expand into unrelated audit categories — this is drift-only unless the fingerprint or an active check makes the issue a drift obligation
 5. If asked, offer to fix directly`;
 }
 

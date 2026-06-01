@@ -76,7 +76,7 @@ function packageWorkflowSection(memory: PackageMemory): string {
   return `## Review Workflow
 
 1. Read \`${memoryDir}/fingerprint.yml\` as the canonical product-experience memory.
-2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, accessibility, or interaction behavior.
+2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in resolved Ghost memory or active checks; do not expand the review into unrelated audit categories.
 3. Apply accepted principles, experience contracts, and patterns before choosing implementation details. Treat proposed or deprecated memory as non-canonical unless the user explicitly asks to explore it.
 4. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
 5. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
@@ -91,6 +91,8 @@ function packageFindingPolicySection(memory: PackageMemory): string {
 Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${category}\``).join(", ")}.
 
 Only findings backed by an active check should be treated as blocking. Everything else is advisory product-experience critique.
+
+Review only what Ghost memory or active checks make relevant to the product experience.
 
 If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` and propose one of: ${REVIEW_PROPOSAL_TYPES.map((kind) => `\`${kind}\``).join(", ")}. Do not silently rewrite \`${memoryDir}/fingerprint.yml\`, \`${memoryDir}/checks.yml\`, or proposal files.`;
 }

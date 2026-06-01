@@ -70,13 +70,15 @@ Good advisory topics:
 - generic composition
 - awkward action placement
 - copy or trust-contract mismatch
-- accessibility or responsive obligation drift
+- obligations grounded in fingerprint memory, human intent, open proposals, or
+  active checks
 
 Bad advisory topics:
 
 - vague taste objections with no diff location
 - restating fingerprint prose without applying it to the change
 - enforcing a rule that is not in `checks.yml`
+- unrelated audit categories not grounded in Ghost memory
 
 ### 4. Propose Durable Memory Later
 
