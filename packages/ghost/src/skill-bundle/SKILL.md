@@ -36,7 +36,7 @@ validation, comparison, routing, and handoff packets.
 | `ghost inventory [path]` | Emit raw repo signals for map authoring. |
 | `ghost lint [file-or-dir]` | Validate a bundle or individual artifact. |
 | `ghost verify [dir] --root <dir>` | Validate fingerprint evidence, checks, and optional decisions/proposals. |
-| `ghost survey <op>` | Survey ops: `merge`, `fix-ids`, `summarize`, `catalog`, `patterns`. |
+| `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory review packet grounded in bundle evidence. |
 | `ghost compare <a> <b> [...more]` | Compare root bundles or direct fingerprints. |
@@ -47,9 +47,7 @@ validation, comparison, routing, and handoff packets.
 ## Workflows
 
 - Fingerprint Capture: follow [references/capture.md](references/capture.md).
-- Map the repo: follow [references/map.md](references/map.md).
-- Survey design evidence: follow [references/survey.md](references/survey.md).
-- Derive composition grammar: follow [references/patterns.md](references/patterns.md).
+- Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
 - Recall accepted product-experience context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
