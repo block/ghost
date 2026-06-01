@@ -354,6 +354,14 @@ describe("ghost CLI", () => {
     expect(reviewCommand.stdout).toContain("design-review.md");
     expect(contextBundle.code).toBe(0);
     expect(contextBundle.stdout).toContain("prompt.md");
+    expect(contextBundle.stdout).toContain("fingerprint.yml");
+    expect(contextBundle.stdout).not.toContain("survey-summary.md");
+    await expect(
+      readFile(join(dir, "ghost-context", "fingerprint.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.fingerprint/v1");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Fingerprint Memory");
   });
 
   it("installs the unified ghost skill bundle", async () => {
