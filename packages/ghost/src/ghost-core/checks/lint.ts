@@ -9,6 +9,14 @@ import type {
 } from "./types.js";
 
 const SUPPORT_FLOOR = 0.85;
+const GROUNDING_PREFIXES = [
+  "principle",
+  "situation",
+  "experience_contract",
+  "pattern",
+  "substrate",
+] as const;
+type GroundingPrefix = (typeof GROUNDING_PREFIXES)[number];
 
 export function lintGhostChecks(
   input: unknown,
@@ -65,6 +73,7 @@ function checkOne(
 ): void {
   const path = `checks[${index}]`;
   checkDetector(check, path, issues);
+  checkGrounding(check, path, options, issues);
 
   if (check.status === "disabled") return;
 
@@ -137,6 +146,62 @@ function checkOne(
       path: `${path}.evidence.examples`,
     });
   }
+}
+
+function checkGrounding(
+  check: GhostCheck,
+  path: string,
+  options: GhostChecksLintOptions,
+  issues: GhostChecksLintIssue[],
+): void {
+  if (check.status === "active" && !check.derives_from) {
+    issues.push({
+      severity: "error",
+      rule: "check-grounding-missing",
+      message:
+        "Active checks must declare derives_from with a typed fingerprint.yml reference.",
+      path: `${path}.derives_from`,
+    });
+    return;
+  }
+
+  if (!check.derives_from || !options.fingerprint) return;
+
+  const parsed = parseGroundingRef(check.derives_from);
+  if (!parsed) return;
+
+  const targets = collectFingerprintTargets(options.fingerprint);
+  if (targets[parsed.prefix].has(parsed.id)) return;
+
+  issues.push({
+    severity: check.status === "active" ? "error" : "warning",
+    rule: "check-grounding-unknown",
+    message: `Check derives_from references unknown fingerprint memory '${check.derives_from}'.`,
+    path: `${path}.derives_from`,
+  });
+}
+
+function parseGroundingRef(
+  ref: string,
+): { prefix: GroundingPrefix; id: string } | undefined {
+  const [prefix, id] = ref.split(":");
+  if (!prefix || !id) return undefined;
+  if (!GROUNDING_PREFIXES.includes(prefix as GroundingPrefix)) return undefined;
+  return { prefix: prefix as GroundingPrefix, id };
+}
+
+function collectFingerprintTargets(
+  fingerprint: NonNullable<GhostChecksLintOptions["fingerprint"]>,
+): Record<GroundingPrefix, Set<string>> {
+  return {
+    principle: new Set(fingerprint.principles.map((entry) => entry.id)),
+    situation: new Set(fingerprint.situations.map((entry) => entry.id)),
+    experience_contract: new Set(
+      fingerprint.experience_contracts.map((entry) => entry.id),
+    ),
+    pattern: new Set(fingerprint.patterns.map((entry) => entry.id)),
+    substrate: new Set(Object.keys(fingerprint.substrate)),
+  };
 }
 
 function checkDetector(

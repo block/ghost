@@ -3,6 +3,7 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
+  GhostCheckDerivesFrom,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
@@ -19,6 +20,7 @@ export type {
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
+  GhostCheckDerivesFromSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,
