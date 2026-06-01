@@ -80,6 +80,53 @@ describe("ghost.fingerprint/v1", () => {
     });
   });
 
+  it("reports duplicate topology surface types", () => {
+    const input = fullFingerprint();
+    input.topology.surface_types.push("dense-dashboard");
+
+    const report = lintGhostFingerprint(input);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "duplicate-id",
+      path: "topology.surface_types[2]",
+    });
+  });
+
+  it("reports unknown topology scope and surface type references", () => {
+    const input = fullFingerprint();
+    input.situations[0].surface_type = "unknown-surface";
+    input.principles[0].applies_to = {
+      scopes: ["unknown-scope"],
+      surface_types: ["unknown-surface"],
+      situations: ["unknown-situation"],
+    };
+
+    const report = lintGhostFingerprint(input);
+
+    expect(report.errors).toBe(4);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "fingerprint-surface-type-unknown",
+          path: "situations[0].surface_type",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-scope-unknown",
+          path: "principles[0].applies_to.scopes[0]",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-surface-type-unknown",
+          path: "principles[0].applies_to.surface_types[0]",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-situation-unknown",
+          path: "principles[0].applies_to.situations[0]",
+        }),
+      ]),
+    );
+  });
+
   it("requires check refs to use check:*", () => {
     const input = fullFingerprint();
     input.principles[0].check_refs = ["pattern:compact-filter-toolbar"];
