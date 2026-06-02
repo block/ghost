@@ -80,6 +80,13 @@ Bad advisory topics:
 - enforcing a rule that is not in `checks.yml`
 - unrelated audit categories not grounded in Ghost memory
 
+When accepted fingerprint memory is silent, local evidence can still support
+advisory critique. Label those findings as provisional and non-Ghost-backed, and
+ground them in nearby product surfaces, local components, token or copy
+conventions, accepted decisions, or human intent. Ask the human before judging
+high-risk, irreversible, privacy/security/legal, or product-identity-defining
+choices.
+
 ### 4. Apply The Proposal Threshold
 
 Do not create proposals for every ambiguity. A proposal is warranted only when
