@@ -222,9 +222,11 @@ ghost emit context-bundle --out dist/context
 
 ### Scoped proposals - `proposal <op>`
 
-Create, list, and resolve candidate memory updates in the nearest applicable
-scoped bundle. These commands do not promote prose into `fingerprint.yml` or
-`checks.yml`; promotion remains explicit.
+Create, list, and resolve thresholded candidate memory updates in the nearest
+applicable scoped bundle. Use proposals for durable gaps: repeated,
+high-impact, explicitly human-stated, intentionally divergent, likely to recur,
+or blocking confident future review. These commands do not promote prose into
+`fingerprint.yml` or `checks.yml`; promotion remains explicit.
 
 <CliHelp tool="ghost" command="proposal" hideDescription />
 

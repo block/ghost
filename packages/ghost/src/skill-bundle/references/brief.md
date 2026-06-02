@@ -33,6 +33,10 @@ Produce:
 - Open proposals or known gaps.
 - Decisions the human should make before generation.
 
-Do not invent fingerprint context. If memory is missing, say which proposal
-type should be recorded after the work: `missing-memory`,
-`intentional-divergence`, `experience-gap`, or `check-candidate`.
+Do not invent fingerprint context. If memory is missing, apply the Proposal
+Threshold before recommending memory action. A proposal candidate should be
+repeated, high-impact, explicitly human-stated, intentionally divergent, likely
+to recur, or blocking confident future review; otherwise name the gap as local
+uncertainty. If it qualifies, say which proposal type should be recorded after
+the work: `missing-memory`, `intentional-divergence`, `experience-gap`, or
+`check-candidate`.

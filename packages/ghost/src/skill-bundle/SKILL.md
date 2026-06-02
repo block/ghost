@@ -24,11 +24,11 @@ Ghost captures product identity in a repo-local fingerprint bundle:
 
 `fingerprint.yml` is the canonical product-experience memory. `config.yml`
 maps implementation roots and reference UI registries/libraries without making
-those references product intent. Checks are deterministic gates. Proposals capture
-missing memory, intentional divergence, experience gaps, and check candidates
-until a human promotes them. The host agent reads and writes the fingerprint;
-the CLI provides deterministic validation, comparison, routing, and handoff
-packets.
+those references product intent. Checks are deterministic gates. Proposals
+capture thresholded missing memory, intentional divergence, experience gaps, and
+check candidates until a human promotes them. The host agent reads and writes
+the fingerprint; the CLI provides deterministic validation, comparison,
+routing, and handoff packets.
 
 Repos may also contain nested bundles such as `apps/checkout/.ghost/`. Resolve
 the memory stack for the task path and read layers broad-to-local. Child entries
