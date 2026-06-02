@@ -1,6 +1,6 @@
 {
   "name": "@anarchitecture/ghost",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Unified Ghost CLI for repo-local product fingerprints, deterministic checks, advisory review, and drift tracking",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
