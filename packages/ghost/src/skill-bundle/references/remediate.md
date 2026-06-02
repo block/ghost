@@ -48,9 +48,12 @@ For every finding, identify the relevant fingerprint entry:
 - Disclosure/recovery drift -> experience contract.
 - Copy/trust drift -> principle, experience contract, or review policy.
 
-If no entry applies, do not invent one inside the code patch. Report a
-`missing-memory` or `experience-gap` proposal, scoped with
-`ghost proposal create --path <path>`.
+If no entry applies, do not invent one inside the code patch. Apply the
+Proposal Threshold: recommend a `missing-memory` or `experience-gap` proposal
+only when the gap is repeated, high-impact, explicitly human-stated, likely to
+recur, or blocking confident future review. Create it with
+`ghost proposal create --path <path>` only when the user explicitly asks to
+capture memory.
 
 Then classify the repair scope:
 
@@ -94,10 +97,11 @@ unrelated cleanup, but do not under-fix the issue just to keep the diff small.
 
 Some findings have no clean code fix:
 
-- The fingerprint is silent -> propose `missing-memory`.
-- The product is intentionally changing -> propose `intentional-divergence`.
+- The fingerprint is silent -> recommend `missing-memory` when it meets the
+  Proposal Threshold.
+- The product is intentionally changing -> recommend `intentional-divergence`.
 - The generated work failed to compose despite available memory -> propose
-  `experience-gap`.
+  `experience-gap` when the gap is durable.
 - A recurring deterministic issue can be detected -> propose `check-candidate`.
 - The fix would cascade across many files -> stop and call out the separate
   implementation plan.

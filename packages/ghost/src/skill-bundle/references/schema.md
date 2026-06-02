@@ -57,7 +57,7 @@ implementation_vocabulary:
     - Current vocabulary is replaceable implementation material.
 review_policy:
   proposal_policy:
-    - Agents propose memory changes; humans promote durable truth.
+    - Agents recommend or create thresholded proposals; humans promote durable truth.
 ```
 
 ## `checks.yml`
