@@ -15,7 +15,7 @@ memory.
 2. Run `ghost review --include-memory` for advisory critique.
 3. Read the review packet, accepted decisions, and open proposals.
 4. Separate findings by role:
-   - design: hierarchy, flow, density, tone, accessibility
+   - design: hierarchy, flow, density, tone, and Ghost-backed obligations
    - engineering: implementation choices that preserve experience
    - pm: product promise, tradeoffs, trust, disclosure
    - qa: experience commitments and edge states

@@ -10,7 +10,7 @@ The frontmatter holds five structured pieces. Read all five before writing a sen
 
 1. `members` — id, platform, build_system, registry presence, fingerprint mtime. Confirm coverage matches what `ghost-fleet members` told you. Members in the table that aren't here mean you've got an orphan map.md or a broken fingerprint.
 
-2. `distances` — parent-only pairwise array, sorted ascending by `(a, b)`. Each entry is `{a, b, distance}` where distance is in [0, 1] roughly: the cosine-derived embedding distance between two fingerprints. Treat the numbers as *relative* — there is no universal threshold for "drifted." Look at the distribution.
+2. `distances` — parent-only pairwise array, sorted ascending by `(a, b)`. Each entry is `{a, b, distance}` where distance is in [0, 1] roughly: the cosine-derived embedding distance between two fingerprints. Treat the numbers as *relative* — there is no universal threshold for "drifted." Look at the distribution first; use any numeric bands below only as narrative calibration, never as pass/fail gates.
 
 3. `nodes` / `node_distances` — parent and scoped fingerprint nodes. Parent ids are `<member>`; scope ids are `<member>/<scope>` and carry `parent_id`. Use these when asking whether checkout-like or portal-like surfaces cluster across products.
 
@@ -26,7 +26,7 @@ Two paragraphs. Anchor each claim in a number from `distances` or a group-by tab
 
 Three questions to answer:
 
-- **Where does the fleet center?** Look at the median pairwise distance. Tight (e.g., median < 0.10) means a coherent family. Wide (median > 0.30) means several distinct languages coexist. Don't say "tight" or "wide" without naming the median.
+- **Where does the fleet center?** Look at the median pairwise distance. In many fleets, a median around or below 0.10 suggests a coherent family, while a median above roughly 0.30 suggests several distinct languages coexist. Let the fleet's own spread override those examples, and don't say "tight" or "wide" without naming the median.
 - **How is it shaped?** Is the spread uniform, or are there one or two outliers pulling the mean? Look at the max distance vs the median.
 - **What account axes drive the distances?** Cross-reference the largest distances against the group-by tables. Big distances between platforms? Between registries? Between two specific members regardless of axis?
 
