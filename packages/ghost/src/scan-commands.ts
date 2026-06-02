@@ -413,7 +413,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "inventory [path]",
-      "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
+      "Emit deterministic raw signals about a frontend repo as JSON for optional cache/source material: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
     )
     .action(async (path: string | undefined) => {
       try {
@@ -463,7 +463,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "diff <a> <b>",
-      "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
+      "Legacy direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (a: string, b: string, opts) => {

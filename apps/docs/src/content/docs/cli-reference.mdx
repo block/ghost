@@ -203,7 +203,7 @@ ghost diff a.md b.md --format json
 
 Emit deterministic artifacts for agents and editors. Supported kinds are
 `review-command` and `context-bundle`; both default to `.ghost/fingerprint.yml`
-memory. Explicit `--fingerprint` keeps legacy direct markdown mode available.
+memory.
 Use `--path` to emit from the merged stack for a repo path, or `--package` to
 stay in exact single-bundle mode. `--memory-dir` applies only to stack
 resolution through `--path`; `--package` remains exact-path mode.
@@ -297,7 +297,8 @@ ghost compare */.ghost
 
 ### Intent - `ack` / `track` / `diverge`
 
-These three verbs write per-dimension stances to `.ghost-sync.json`. `ack` and
+These three compatibility verbs write per-dimension stances to
+`.ghost-sync.json` for tracked direct fingerprint markdown files. `ack` and
 `diverge` need a tracked fingerprint declared in `ghost.config.ts`; `track`
 takes the new tracked fingerprint as its argument.
 
