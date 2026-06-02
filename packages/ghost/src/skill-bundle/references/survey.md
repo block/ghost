@@ -40,8 +40,9 @@ Skip it when:
 - Keep generated output under `.ghost/cache/` unless a legacy command requires
   `.ghost/survey.json`.
 - Promote only useful, durable conclusions into `fingerprint.yml`.
-- If observation is incomplete, write a proposal instead of pretending the
-  fingerprint is complete.
+- If observation is incomplete, say so. Recommend a proposal only when the gap
+  is durable enough to help future generation or review; otherwise leave it as
+  local uncertainty.
 
 ## Optional Legacy Helpers
 

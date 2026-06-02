@@ -333,7 +333,8 @@ experience_contracts: []
 patterns: []
 ${implementationVocabulary}review_policy:
   proposal_policy:
-    - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.
+    - Agents recommend or create thresholded proposals for durable missing memory, intentional divergences, experience gaps, and check candidates.
+    - Proposal candidates should be repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocking confident future review.
     - Humans promote durable memory into fingerprint.yml and checks.yml.
   experience_gap_categories:
     - missing-memory

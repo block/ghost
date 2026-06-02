@@ -456,6 +456,10 @@ describe("ghost CLI", () => {
       "utf-8",
     );
     expect(emittedReviewCommand).toContain("fingerprint.yml memory");
+    expect(emittedReviewCommand).toContain("Proposal Threshold");
+    expect(emittedReviewCommand).toContain(
+      "Memory action: none | recommend-proposal | create-proposal",
+    );
     expect(emittedReviewCommand).toContain("experience-gap");
     expect(emittedReviewCommand).toContain("no-hardcoded-ui-color");
     expect(emittedReviewCommand).not.toContain(
@@ -471,6 +475,9 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.toContain("Fingerprint Memory");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Proposal Threshold");
   });
 
   it("rejects removed legacy direct markdown emit flags", () => {
@@ -510,6 +517,20 @@ describe("ghost CLI", () => {
         readFile(join(dir, "skills", "ghost", path), "utf-8"),
       ).resolves.toBeTruthy();
     }
+    await expect(
+      readFile(
+        join(dir, "skills", "ghost", "references", "propose.md"),
+        "utf-8",
+      ),
+    ).resolves.toContain("Proposal Threshold");
+    await expect(
+      readFile(
+        join(dir, "skills", "ghost", "references", "review.md"),
+        "utf-8",
+      ),
+    ).resolves.toContain(
+      "Memory action: none | recommend-proposal | create-proposal",
+    );
   });
 
   it("check fails when an active deterministic check matches added lines", async () => {
@@ -574,6 +595,10 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain("fingerprint.yml memory");
     expect(result.stdout).toContain("active check when blocking");
+    expect(result.stdout).toContain("Proposal Threshold");
+    expect(result.stdout).toContain(
+      "Memory action: none | recommend-proposal | create-proposal",
+    );
     expect(result.stdout).toContain("missing-memory");
     expect(result.stdout).toContain("experience-gap");
     expect(result.stdout).toContain("repair or intentional-divergence");
@@ -839,12 +864,14 @@ libraries:
     expect(await realpath(out.dir)).toBe(
       await realpath(join(dir, "apps", "checkout", ".ghost")),
     );
-    expect(
-      await readFile(
-        join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
-        "utf-8",
-      ),
-    ).toContain("ghost.fingerprint/v1");
+    const fingerprint = await readFile(
+      join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
+      "utf-8",
+    );
+    expect(fingerprint).toContain("ghost.fingerprint/v1");
+    expect(fingerprint).toContain(
+      "Agents recommend or create thresholded proposals",
+    );
   });
 
   it("init --scope creates a nested bundle under a custom memory directory", async () => {

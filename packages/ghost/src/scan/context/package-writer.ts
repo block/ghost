@@ -152,7 +152,9 @@ ${context.intent.trim()}
 - Use implementation vocabulary only when it supports the selected product memory.
 - Only active checks are blocking.
 - Treat open proposals as unresolved context that may explain gaps or intentional divergence.
-- If the task exposes missing or contradictory memory, propose a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently.`);
+- Proposal Threshold: create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review.
+- Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
+- If the task exposes missing or contradictory memory that meets the threshold, recommend a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently; create it only when the user explicitly asks to capture memory.`);
 
   return `${parts.join("\n\n")}\n`;
 }

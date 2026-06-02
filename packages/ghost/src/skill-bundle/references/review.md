@@ -80,11 +80,33 @@ Bad advisory topics:
 - enforcing a rule that is not in `checks.yml`
 - unrelated audit categories not grounded in Ghost memory
 
-### 4. Propose Durable Memory Later
+### 4. Apply The Proposal Threshold
 
-If a finding exposes missing or contradictory memory, write a proposal instead
-of silently editing canonical truth. Use `ghost proposal create --path <path>`
-so the proposal lands in the nearest applicable scoped bundle. Use:
+Do not create proposals for every ambiguity. A proposal is warranted only when
+the gap is durable enough to help a future agent generate or review work:
+
+- repeated across a surface, pattern, or workflow
+- high-impact for trust, safety, recovery, money, permissions, destructive
+  actions, or user confidence
+- explicitly stated by a human
+- intentionally divergent from accepted memory
+- likely to recur in future reviews
+- blocking confident classification as `fix`, `intentional-divergence`, or
+  `eval-uncertainty`
+
+Do not propose for isolated implementation details, weak local context,
+duplicates of open proposals, issues already fixable from accepted memory,
+vague taste concerns, or generic code quality.
+
+For memory-gap findings, include:
+
+```text
+Memory action: none | recommend-proposal | create-proposal
+```
+
+Default to `recommend-proposal`. Use `create-proposal` only when the user
+explicitly asks to capture memory or when following `propose.md`. Candidate
+proposal kinds:
 
 - `missing-memory`
 - `intentional-divergence`

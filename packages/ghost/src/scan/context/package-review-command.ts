@@ -94,7 +94,11 @@ Only findings backed by an active check should be treated as blocking. Everythin
 
 Review only what Ghost memory or active checks make relevant to the product experience.
 
-If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` and propose one of: ${REVIEW_PROPOSAL_TYPES.map((kind) => `\`${kind}\``).join(", ")}. Do not silently rewrite \`${memoryDir}/fingerprint.yml\`, \`${memoryDir}/checks.yml\`, or proposal files.`;
+## Proposal Threshold
+
+Create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review. Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
+
+If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` only after applying the threshold. Include \`Memory action: none | recommend-proposal | create-proposal\` for each memory-gap finding. Default to \`recommend-proposal\`; use \`create-proposal\` only when the user explicitly asks to capture memory or when following the dedicated proposal workflow. Candidate proposal kinds: ${REVIEW_PROPOSAL_TYPES.map((kind) => `\`${kind}\``).join(", ")}. Do not silently rewrite \`${memoryDir}/fingerprint.yml\`, \`${memoryDir}/checks.yml\`, or proposal files.`;
 }
 
 function packageMemoryIndex(memory: PackageMemory): string {

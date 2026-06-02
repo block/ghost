@@ -31,9 +31,12 @@ handoffs:
 
 5. Repair high-confidence advisory issues when they cite a diff location,
    fingerprint memory, and a concrete repair.
-6. If the review exposes missing or contradictory memory, record a proposal
-   with `ghost proposal create --path <path>` instead of rewriting
-   `fingerprint.yml` during verification.
+6. If the review exposes missing or contradictory memory, apply the Proposal
+   Threshold before taking memory action. Recommend a proposal candidate only
+   when the gap is repeated, high-impact, explicitly human-stated,
+   intentionally divergent, likely to recur, or blocks confident future review.
+   Create it with `ghost proposal create --path <path>` only when the user
+   explicitly asks to capture memory.
 
 Only active `checks.yml` failures block. Advisory findings guide judgment and
 may become proposals when they reveal durable memory gaps.

@@ -70,5 +70,7 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-If a pattern is speculative, record a proposal instead of adding it as accepted
-memory.
+If a pattern is speculative, do not add it as accepted memory. Recommend or
+create a proposal only when the speculation is durable enough to help future
+generation or review: repeated, high-impact, explicitly human-stated, likely to
+recur, or blocking confident review.
