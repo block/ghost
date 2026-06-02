@@ -4,6 +4,10 @@ status: settled
 
 # Phase 0 — settled decisions
 
+> Historical design note: this decomposition plan predates the unified
+> `@anarchitecture/ghost` package. The separate `ghost-scan` package mentioned
+> below was removed; current runtime code lives in `packages/ghost`.
+
 Decisions that unblock the five-tool decomposition. Captured here so worktree agents reference one canonical source rather than scrolling open questions across five plan files.
 
 ## Decision 1 — Skill bundle strategy: per-tool, no meta-emit
