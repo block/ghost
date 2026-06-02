@@ -475,6 +475,7 @@ describe("ghost CLI", () => {
 
   it("rejects removed legacy direct markdown emit flags", () => {
     const cli = buildCli();
+
     expect(() =>
       cli.parse([
         "node",
@@ -486,8 +487,10 @@ describe("ghost CLI", () => {
         "--stdout",
       ]),
     ).toThrow("Unknown option `--fingerprint`");
+    expect(() =>
+      cli.parse(["node", "ghost", "emit", "context-bundle", "--no-tokens"]),
+    ).toThrow("Unknown option `--tokens`");
   });
-
   it("installs the unified ghost skill bundle", async () => {
     const result = await runCli(
       ["skill", "install", "--dest", "skills/ghost"],
