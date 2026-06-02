@@ -27,6 +27,12 @@ memory.
 Lead with actionable findings. Cite diff locations, fingerprint memory, active
 checks, open proposals, accepted decisions, and repairs where relevant.
 
+When accepted fingerprint memory is silent, you may use nearby product surfaces,
+local components, token and copy conventions, accepted decisions or human intent,
+and ordinary UX judgment for provisional critique. Label that reasoning as
+non-Ghost-backed, and ask the human before judging high-risk, irreversible,
+privacy/security/legal, or product-identity-defining choices.
+
 For memory-gap findings, include
 `Memory action: none | recommend-proposal | create-proposal`. Default to
 `recommend-proposal` only when the gap meets the Proposal Threshold: repeated,

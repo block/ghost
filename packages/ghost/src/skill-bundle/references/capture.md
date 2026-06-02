@@ -117,6 +117,11 @@ the gap is durable enough to help a future agent. It should be repeated,
 high-impact, explicitly human-stated, intentionally divergent, likely to recur,
 or blocking confident future review.
 
+When accepted fingerprint memory is silent, that silence does not block useful
+work by itself. Continue from nearby product surfaces, local components, token
+and copy conventions, accepted decisions or human intent, and ordinary UX
+judgment when safe. Label that reasoning as provisional and non-Ghost-backed.
+
 Do not create proposals for isolated implementation details, weak local context,
 duplicates of open proposals, issues already fixable from accepted memory,
 vague taste concerns, or generic code quality.

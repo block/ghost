@@ -111,6 +111,12 @@ experience contracts, and patterns from \`fingerprint.yml\` before choosing
 implementation details. Use implementation vocabulary only as replaceable
 material that may help satisfy product memory. Treat proposals as unresolved
 context, not canonical truth.
+
+When accepted fingerprint memory is silent, proceed from nearby product
+surfaces, local components, token and copy conventions, accepted decisions or
+human intent, and ordinary UX judgment when safe. Label that reasoning as
+provisional and non-Ghost-backed. Ask a human before making high-risk,
+irreversible, privacy/security/legal, or product-identity-defining choices.
 `;
 }
 
@@ -152,6 +158,8 @@ ${context.intent.trim()}
 - Use implementation vocabulary only when it supports the selected product memory.
 - Only active checks are blocking.
 - Treat open proposals as unresolved context that may explain gaps or intentional divergence.
+- When accepted fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, accepted decisions or human intent, and ordinary UX judgment when safe.
+- Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 - Proposal Threshold: create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review.
 - Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
 - If the task exposes missing or contradictory memory that meets the threshold, recommend a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently; create it only when the user explicitly asks to capture memory.`);
