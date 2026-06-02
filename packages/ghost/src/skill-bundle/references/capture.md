@@ -112,7 +112,16 @@ and `check` runs only active deterministic gates.
 ## Gaps
 
 If the repo does not yet contain enough product experience to capture, say so.
-For missing or contradictory memory, write a proposal with one of:
+For missing or contradictory memory, recommend or create a proposal only when
+the gap is durable enough to help a future agent. It should be repeated,
+high-impact, explicitly human-stated, intentionally divergent, likely to recur,
+or blocking confident future review.
+
+Do not create proposals for isolated implementation details, weak local context,
+duplicates of open proposals, issues already fixable from accepted memory,
+vague taste concerns, or generic code quality.
+
+Use:
 
 - `missing-memory`
 - `intentional-divergence`

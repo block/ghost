@@ -201,7 +201,11 @@ Review this diff as a non-blocking design-language critic. Advisory findings mus
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
-If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap and propose one of: ${packet.proposal_types.join(", ")}. Do not silently rewrite canonical memory.
+## Proposal Threshold
+
+Create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review. Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
+
+If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap only after applying the threshold. Include \`Memory action: none | recommend-proposal | create-proposal\` for each memory-gap finding. Default to \`recommend-proposal\`; use \`create-proposal\` only when the user explicitly asks to capture memory or when following the dedicated proposal workflow. Candidate proposal kinds: ${packet.proposal_types.join(", ")}. Do not silently rewrite canonical memory.
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 

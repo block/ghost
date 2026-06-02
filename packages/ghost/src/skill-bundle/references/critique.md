@@ -27,5 +27,12 @@ memory.
 Lead with actionable findings. Cite diff locations, fingerprint memory, active
 checks, open proposals, accepted decisions, and repairs where relevant.
 
+For memory-gap findings, include
+`Memory action: none | recommend-proposal | create-proposal`. Default to
+`recommend-proposal` only when the gap meets the Proposal Threshold: repeated,
+high-impact, explicitly human-stated, intentionally divergent, likely to recur,
+or blocking confident future review. Use `create-proposal` only when the user
+explicitly asks to capture memory or when following `propose.md`.
+
 Never fail a build on advisory-only context. Only active `checks.yml` gates
 block.
