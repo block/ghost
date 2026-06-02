@@ -1,5 +1,13 @@
 # @anarchitecture/ghost
 
+## 0.2.1
+
+### Patch Changes
+
+- [#103](https://github.com/block/ghost/pull/103) [`1b9ad4a`](https://github.com/block/ghost/commit/1b9ad4a13f14e240b7f2dfd17b4546cbe632008d) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify Ghost review prompts stay grounded in fingerprint memory and active checks.
+
+- [#104](https://github.com/block/ghost/pull/104) [`b900cf8`](https://github.com/block/ghost/commit/b900cf8d71aed7cc2a242e212b216d195512939e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify that drift remediation should make the minimum sufficient repair instead of optimizing for the smallest diff.
+
 ## 0.2.0
 
 ### Minor Changes
