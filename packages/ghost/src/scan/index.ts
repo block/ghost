@@ -36,7 +36,6 @@ export {
 export type {
   ContextFormat,
   EmitPackageReviewInput,
-  EmitReviewInput,
   PackageMemory,
   WriteContextOptions,
   WriteContextResult,
@@ -46,7 +45,6 @@ export {
   buildSkillMd,
   buildTokensCss,
   emitPackageReviewCommand,
-  emitReviewCommand,
   loadPackageMemory,
   writeContextBundle,
   writePackageContextBundle,
