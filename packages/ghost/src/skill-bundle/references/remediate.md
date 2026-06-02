@@ -1,6 +1,6 @@
 ---
 name: remediate
-description: Given drift findings and the offending diff, suggest the minimal targeted fixes that close the gap.
+description: Given drift findings and the offending diff, suggest the minimum sufficient fixes that close the gap.
 handoffs:
   - label: Re-review after applying the suggested fixes
     skill: review
@@ -15,13 +15,13 @@ handoffs:
 
 # Recipe: Remediate Drift
 
-**Goal:** turn drift findings into a small, targeted patch that brings the
+**Goal:** turn drift findings into the minimum sufficient patch that brings the
 working tree back inside the resolved Ghost memory stack and active checks.
 
 Ghost has no `ghost remediate` CLI command. You, the host agent, read the
 findings, weigh them against merged `fingerprint.yml`, active checks, accepted
-rationale, open proposals, and stack provenance, then write the smallest useful
-patch.
+rationale, open proposals, and stack provenance, then write the smallest patch
+that actually satisfies the cited product-experience obligation.
 
 ## Steps
 
@@ -52,6 +52,19 @@ If no entry applies, do not invent one inside the code patch. Report a
 `missing-memory` or `experience-gap` proposal, scoped with
 `ghost proposal create --path <path>`.
 
+Then classify the repair scope:
+
+- **Local**: a token, class, copy, import, component substitution, or small state
+  visibility change can satisfy the cited memory.
+- **Structural**: layout, hierarchy, flow, action placement, component anatomy,
+  state model, disclosure, recovery, or trust behavior must change.
+- **Unresolved**: the fingerprint is silent or contradictory, or the product is
+  intentionally changing.
+
+Do not choose a local token or class patch when the cited memory is about
+hierarchy, disclosure, recovery, trust, flow, or task structure. In those cases,
+propose a structural patch or a short implementation plan.
+
 ### 3. Score By Impact
 
 Rank findings by how much product experience they restore:
@@ -72,8 +85,10 @@ For each finding, write a unified-diff suggestion in the form:
 file:line   before  ->  after   (why this satisfies fingerprint memory)
 ```
 
-Group patches by file. Keep each patch surgical. Do not refactor surrounding
-code, rewrite unrelated imports, or clean up nearby style while remediating.
+Group patches by file. Keep changes as narrow as the obligation allows, but let
+the scope match the finding. A structural product-experience failure may require
+changing component anatomy, layout, state visibility, or action placement. Avoid
+unrelated cleanup, but do not under-fix the issue just to keep the diff small.
 
 ### 5. Surface What Cannot Be Remediated
 
