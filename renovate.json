@@ -1,4 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"]
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "packageRules": [
+    {
+      "groupName": "Vite stack",
+      "matchPackageNames": ["vite", "@vitejs/plugin-react", "@tailwindcss/vite"]
+    }
+  ]
 }
