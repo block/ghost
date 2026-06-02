@@ -160,7 +160,7 @@ experience_contracts:
     contract: Emitted context bundles and review commands should prefer fingerprint.yml over legacy survey or markdown artifacts.
     obligations:
       - Default emit paths load fingerprint.yml package memory.
-      - Explicit legacy markdown emission requires --fingerprint.
+      - Legacy direct markdown emit is unsupported.
     evidence:
       - path: packages/ghost/src/scan/context/package-writer.ts
       - path: packages/ghost/src/scan-emit-command.ts

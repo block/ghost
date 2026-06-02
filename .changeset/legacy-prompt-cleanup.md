@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost": major
 ---
 
-Remove legacy direct fingerprint emit support and stale scan-package prompts.
+Remove legacy direct fingerprint emit support and stale direct-markdown review prompt exports.

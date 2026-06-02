@@ -7,8 +7,6 @@ export {
   writePackageContextBundle,
   writePackageContextBundleFromMemory,
 } from "./package-writer.js";
-export type { EmitReviewInput } from "./review-command.js";
-export { emitReviewCommand } from "./review-command.js";
 export { buildTokensCss } from "./tokens-css.js";
 export type {
   ContextFormat,
