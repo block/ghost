@@ -1,5 +1,15 @@
 # @anarchitecture/ghost
 
+## 0.3.0
+
+### Minor Changes
+
+- [#106](https://github.com/block/ghost/pull/106) [`b56d58d`](https://github.com/block/ghost/commit/b56d58d222248d5225ba80741296749635bf0199) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove legacy direct fingerprint emit support and stale direct-markdown review prompt exports.
+
+### Patch Changes
+
+- [#108](https://github.com/block/ghost/pull/108) [`2ed0b3d`](https://github.com/block/ghost/commit/2ed0b3d4734b84a0807a81f99f57fa2a32b2ca8e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify proposal and silent-memory guidance so agents threshold durable memory candidates and label provisional local reasoning.
+
 ## 0.2.1
 
 ### Patch Changes
