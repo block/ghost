@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": patch
 ---
 
-Clarify proposal guidance so agents recommend or create durable memory candidates only after applying a proposal threshold.
+Clarify proposal and silent-memory guidance so agents threshold durable memory candidates and label provisional local reasoning.

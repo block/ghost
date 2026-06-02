@@ -62,7 +62,8 @@ Then classify the repair scope:
 - **Structural**: layout, hierarchy, flow, action placement, component anatomy,
   state model, disclosure, recovery, or trust behavior must change.
 - **Unresolved**: the fingerprint is silent or contradictory, or the product is
-  intentionally changing.
+  intentionally changing. Silent memory does not block a safe local repair, but
+  local-evidence reasoning must be labeled provisional and non-Ghost-backed.
 
 Do not choose a local token or class patch when the cited memory is about
 hierarchy, disclosure, recovery, trust, flow, or task structure. In those cases,

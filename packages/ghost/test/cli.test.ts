@@ -456,6 +456,7 @@ describe("ghost CLI", () => {
       "utf-8",
     );
     expect(emittedReviewCommand).toContain("fingerprint.yml memory");
+    expect(emittedReviewCommand).toContain("provisional and non-Ghost-backed");
     expect(emittedReviewCommand).toContain("Proposal Threshold");
     expect(emittedReviewCommand).toContain(
       "Memory action: none | recommend-proposal | create-proposal",
@@ -478,6 +479,12 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.toContain("Proposal Threshold");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Label silent-memory reasoning as provisional");
+    await expect(
+      readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
+    ).resolves.toContain("provisional and non-Ghost-backed");
   });
 
   it("rejects removed legacy direct markdown emit flags", () => {
@@ -517,6 +524,14 @@ describe("ghost CLI", () => {
         readFile(join(dir, "skills", "ghost", path), "utf-8"),
       ).resolves.toBeTruthy();
     }
+    await expect(
+      readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
+    ).resolves.toContain("When Memory Is Silent");
+    await expect(
+      readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
+    ).resolves.toContain(
+      "Never claim provisional judgment, local convention, or general UX reasoning",
+    );
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),
@@ -596,6 +611,7 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("fingerprint.yml memory");
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).toContain("Proposal Threshold");
+    expect(result.stdout).toContain("provisional and non-Ghost-backed");
     expect(result.stdout).toContain(
       "Memory action: none | recommend-proposal | create-proposal",
     );

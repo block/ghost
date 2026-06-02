@@ -82,9 +82,19 @@ review or check format.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
 - Include accepted decisions with `ghost review --include-memory` when product-experience rationale matters.
 
+## When Memory Is Silent
+
+Silent fingerprint memory does not require stopping by default. When accepted
+memory does not cover the task, proceed from nearby product surfaces, local
+components, token and copy conventions, accepted decisions or human intent, and
+ordinary UX judgment when safe. Label that reasoning as provisional and
+non-Ghost-backed. Ask a human before making high-risk, irreversible,
+privacy/security/legal, or product-identity-defining choices.
+
 ## Never
 
 - Never treat advisory composition judgment as a CI gate.
-- Never invent product-experience memory absent from `fingerprint.yml`.
+- Never claim provisional judgment, local convention, or general UX reasoning as
+  Ghost-backed memory.
 - Never treat `intent.md` as authoritative unless human-authored or human-approved.
 - Never treat proposals or rejected decisions as canonical inputs.
