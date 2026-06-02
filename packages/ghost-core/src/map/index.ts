@@ -1,10 +1,8 @@
 /**
  * Public surface for `ghost.map/v2` schema and types.
  *
- * Map authoring (`inventory`, `lint`) lives in `ghost-scan` (the tool
- * that owns the recipe). The schema/types live here so any ghost tool that
- * reads `map.md` can do so via `@ghost/core` without depending on the
- * authoring CLI.
+ * `map.md` is retained for legacy/cache workflows. The schema/types live here
+ * so any ghost tool that reads a legacy map can do so via `@ghost/core`.
  */
 
 export {

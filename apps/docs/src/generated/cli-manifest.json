@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T15:52:08.538Z",
+  "generatedAt": "2026-06-02T03:59:12.669Z",
   "tools": [
     {
       "tool": "ghost",
@@ -200,7 +200,7 @@
           "tool": "ghost",
           "name": "inventory",
           "rawName": "inventory [path]",
-          "description": "Emit deterministic raw signals about a frontend repo as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, git remote. Feeds the topology recipe (map.md authoring).",
+          "description": "Emit deterministic raw signals about a frontend repo as JSON for optional cache/source material: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
           "options": []
         },
         {
@@ -223,7 +223,7 @@
           "tool": "ghost",
           "name": "diff",
           "rawName": "diff <a> <b>",
-          "description": "Structural diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
+          "description": "Legacy direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -386,14 +386,6 @@
           "description": "Emit a derived artifact from the fingerprint package (kinds: review-command, context-bundle)",
           "options": [
             {
-              "rawName": "-f, --fingerprint <path>",
-              "name": "fingerprint",
-              "description": "Source legacy direct fingerprint markdown file (legacy mode for review-command/context-bundle)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--path <path>",
               "name": "path",
               "description": "Resolve a nested memory stack for this repo path",
@@ -432,14 +424,6 @@
               "default": null,
               "takesValue": false,
               "negated": false
-            },
-            {
-              "rawName": "--no-tokens",
-              "name": "tokens",
-              "description": "Skip tokens.css output (legacy direct fingerprint context-bundle only)",
-              "default": true,
-              "takesValue": false,
-              "negated": true
             },
             {
               "rawName": "--readme",

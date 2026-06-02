@@ -473,7 +473,7 @@ function footer(fp: Fingerprint): string {
   const count = fp.decisions?.length ?? 0;
   return `---
 
-Generated from \`fingerprint.md\` (${count} decisions). Re-run \`ghost emit review-command\` after package updates.`;
+Generated from deprecated legacy direct-markdown \`fingerprint.md\` (${count} decisions). Prefer package memory and re-run \`ghost emit review-command\` after package updates.`;
 }
 
 // --- helpers ------------------------------------------------------------
