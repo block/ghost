@@ -33,10 +33,17 @@ Produce:
 - Open proposals or known gaps.
 - Decisions the human should make before generation.
 
-Do not invent fingerprint context. If memory is missing, apply the Proposal
-Threshold before recommending memory action. A proposal candidate should be
-repeated, high-impact, explicitly human-stated, intentionally divergent, likely
-to recur, or blocking confident future review; otherwise name the gap as local
-uncertainty. If it qualifies, say which proposal type should be recorded after
-the work: `missing-memory`, `intentional-divergence`, `experience-gap`, or
-`check-candidate`.
+When accepted fingerprint memory is silent, do not stop by default. Continue
+from nearby product surfaces, local components, token and copy conventions,
+accepted decisions or human intent, and ordinary UX judgment when safe. Label
+that guidance as provisional and non-Ghost-backed, and ask the human only for
+high-risk, irreversible, privacy/security/legal, or product-identity-defining
+choices.
+
+Do not claim provisional guidance as fingerprint context. If memory is missing,
+apply the Proposal Threshold before recommending memory action. A proposal
+candidate should be repeated, high-impact, explicitly human-stated,
+intentionally divergent, likely to recur, or blocking confident future review;
+otherwise name the gap as local uncertainty. If it qualifies, say which proposal
+type should be recorded after the work: `missing-memory`,
+`intentional-divergence`, `experience-gap`, or `check-candidate`.
