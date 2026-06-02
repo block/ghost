@@ -459,7 +459,7 @@ describe("ghost CLI", () => {
     expect(emittedReviewCommand).toContain("experience-gap");
     expect(emittedReviewCommand).toContain("no-hardcoded-ui-color");
     expect(emittedReviewCommand).not.toContain(
-      "Generated from `fingerprint.md`",
+      "deprecated legacy direct-markdown",
     );
     expect(contextBundle.code).toBe(0);
     expect(contextBundle.stdout).toContain("prompt.md");
@@ -471,6 +471,21 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.toContain("Fingerprint Memory");
+  });
+
+  it("rejects removed legacy direct markdown emit flags", () => {
+    const cli = buildCli();
+    expect(() =>
+      cli.parse([
+        "node",
+        "ghost",
+        "emit",
+        "review-command",
+        "--fingerprint",
+        "legacy.fingerprint.md",
+        "--stdout",
+      ]),
+    ).toThrow("Unknown option `--fingerprint`");
   });
 
   it("installs the unified ghost skill bundle", async () => {

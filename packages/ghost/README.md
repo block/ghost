@@ -21,13 +21,10 @@ ghost scan --format json
 ghost inventory
 ghost lint .ghost
 ghost verify .ghost --root .
-ghost survey summarize .ghost/survey.json
-ghost survey patterns .ghost/survey.json -o .ghost/patterns.yml
 ghost check --base main
 ghost review --base main --include-memory
 ghost compare a/.ghost b/.ghost
 ghost ack
-ghost track path/to/new-tracked.fingerprint.md
 ghost diverge typography --reason "Product deliberately uses an editorial scale"
 ghost emit review-command
 ghost emit context-bundle
@@ -54,9 +51,9 @@ import { compareFingerprints } from "@anarchitecture/ghost/core";
 
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
 lint, verify, compare, check, and handoff packet generation. The installed
-`ghost` skill teaches your host agent how to capture a product fingerprint: map
-the repo, survey evidence, codify patterns, review drift, verify generated UI,
-remediate issues, and propose candidate fingerprint updates.
+`ghost` skill teaches your host agent how to capture canonical
+`.ghost/fingerprint.yml` memory, brief work from it, review drift, verify
+generated UI, remediate issues, and propose candidate fingerprint updates.
 
 ```bash
 ghost skill install

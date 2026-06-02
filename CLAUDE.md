@@ -58,7 +58,6 @@ memory for new Ghost work.
 | --- | --- | --- |
 | `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, scan/memory authoring, checks, advisory review packets, comparison, drift stance verbs, and the unified skill bundle. |
 | `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
-| `packages/ghost-scan` | no | Private historical scan package. Runtime code needed by npm is folded into `packages/ghost/src/scan`. |
 | `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
 | `packages/ghost-ui` | no | Reference design system: shadcn registry plus `ghost-mcp` MCP server. |
 | `apps/docs` | no | Docs site. |
@@ -134,8 +133,7 @@ first publish becomes `0.1.0`.
 - The canonical on-disk form is `.ghost/fingerprint.yml` plus optional
   `.ghost/checks.yml`, `.ghost/proposals/`, `.ghost/decisions/`,
   `.ghost/intent.md`, and `.ghost/cache/`.
-- Direct `fingerprint.md` remains only for legacy/direct compare and explicit
-  `--fingerprint` emit flows.
+- Direct `fingerprint.md` remains only for legacy/direct compare workflows.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated
