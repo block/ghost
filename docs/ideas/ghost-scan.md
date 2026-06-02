@@ -4,6 +4,11 @@ status: exploring
 
 # ghost fingerprint
 
+> Historical design note: the separate `packages/ghost-scan` package described
+> here was removed. The public Ghost CLI and current fingerprint capture
+> workflow live in `packages/ghost` and canonical `.ghost/fingerprint.yml`
+> memory.
+
 ## Why it's interesting
 
 Fingerprint is the flagship — the verb everyone meets first. Today it's tangled with the rest of the engine in `packages/ghost-drift`. Decomposing means stripping `ghost fingerprint` back to its real job: **authoring fingerprint.md**. Compare/ack/track/diverge are about *change* and belong in drift. Fingerprint owns the artifact, the format, the lint, the parse/compose/diff math, and the profile recipe that writes it.

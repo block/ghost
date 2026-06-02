@@ -158,7 +158,6 @@ workspace packages remain only for historical/development context.
 | ---- | ---- | --- |
 | [`packages/ghost`](./packages/ghost) | Unified public package. Ships the `ghost` CLI, fingerprint capture helpers, deterministic checks, advisory review packets, comparison, stance tracking, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
 | [`packages/ghost-core`](./packages/ghost-core) | Private historical shared library. Runtime code is folded into `packages/ghost` for publishing. | no |
-| [`packages/ghost-scan`](./packages/ghost-scan) | Private historical scan package. Runtime code is folded into `packages/ghost` for publishing. | no |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many members. | no |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: shadcn registry + `ghost-mcp` MCP server. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
