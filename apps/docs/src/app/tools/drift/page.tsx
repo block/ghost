@@ -17,7 +17,7 @@ const cards: {
     name: "Ghost loop",
     href: "/docs/getting-started#the-simple-model",
     description:
-      "See how capture, review, comparison, and intent fit together.",
+      "See how memory, checks, review, comparison, and intent fit together.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -31,7 +31,7 @@ const cards: {
     name: "CLI reference",
     href: "/docs/cli#ghost--review-and-compare",
     description:
-      "Run checks, emit advisory review, compare fingerprints, and record intent.",
+      "Run checks, emit exemplar-guided advisory review, compare fingerprints, and record intent.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -48,7 +48,7 @@ export default function GhostDriftLanding() {
       <AnimatedPageHeader
         kicker="ghost review"
         title="Drift"
-        description="Check whether changed or generated UI still matches the .ghost bundle. ghost runs deterministic checks, emits advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        description="Check whether changed or generated UI still matches the .ghost bundle. ghost runs deterministic checks, emits exemplar-guided advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
       />
 
       <div

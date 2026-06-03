@@ -1,7 +1,6 @@
 export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v1" as const;
 export const GHOST_FINGERPRINT_YML_FILENAME = "fingerprint.yml" as const;
 
-export type GhostFingerprintStatus = "accepted" | "proposed" | "deprecated";
 export type GhostFingerprintPatternKind =
   | "visual"
   | "behavioral"
@@ -44,16 +43,20 @@ export interface GhostFingerprintTopologyScope {
   surface_types?: string[];
 }
 
-export interface GhostFingerprintTopologyExample {
+export interface GhostFingerprintExemplar {
+  id: string;
   path: string;
+  title?: string;
   surface_type?: string;
+  scope?: string;
   note?: string;
+  why?: string;
+  refs?: GhostFingerprintRef[];
 }
 
 export interface GhostFingerprintTopology {
   scopes?: GhostFingerprintTopologyScope[];
   surface_types?: string[];
-  examples?: GhostFingerprintTopologyExample[];
 }
 
 export interface GhostFingerprintSituation {
@@ -72,7 +75,6 @@ export interface GhostFingerprintSituation {
 
 export interface GhostFingerprintPrinciple {
   id: string;
-  status: GhostFingerprintStatus;
   principle: string;
   applies_to?: GhostFingerprintScope;
   guidance?: string[];
@@ -83,7 +85,6 @@ export interface GhostFingerprintPrinciple {
 
 export interface GhostFingerprintExperienceContract {
   id: string;
-  status: GhostFingerprintStatus;
   contract: string;
   applies_to?: GhostFingerprintScope;
   obligations?: string[];
@@ -93,7 +94,6 @@ export interface GhostFingerprintExperienceContract {
 
 export interface GhostFingerprintPattern {
   id: string;
-  status: GhostFingerprintStatus;
   kind: GhostFingerprintPatternKind;
   pattern: string;
   applies_to?: GhostFingerprintScope;
@@ -111,12 +111,6 @@ export interface GhostFingerprintImplementationVocabulary {
   notes?: string[];
 }
 
-export interface GhostFingerprintReviewPolicy {
-  proposal_policy?: string[];
-  experience_gap_categories?: string[];
-  memory_gap_policy?: string[];
-}
-
 export interface GhostFingerprintDocument {
   schema: typeof GHOST_FINGERPRINT_SCHEMA;
   summary: GhostFingerprintSummary;
@@ -125,8 +119,8 @@ export interface GhostFingerprintDocument {
   principles: GhostFingerprintPrinciple[];
   experience_contracts: GhostFingerprintExperienceContract[];
   patterns: GhostFingerprintPattern[];
+  exemplars: GhostFingerprintExemplar[];
   implementation_vocabulary: GhostFingerprintImplementationVocabulary;
-  review_policy: GhostFingerprintReviewPolicy;
 }
 
 export type GhostFingerprintLintSeverity = "error" | "warning" | "info";

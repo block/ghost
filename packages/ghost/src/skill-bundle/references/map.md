@@ -2,7 +2,7 @@
 name: map
 description: Use repo topology as optional source material for fingerprint.yml.
 handoffs:
-  - label: Capture fingerprint memory
+  - label: Update fingerprint memory
     skill: capture
     prompt: Use topology observations to update .ghost/fingerprint.yml
 ---
@@ -15,13 +15,13 @@ handoffs:
 Use this recipe when an older workflow, existing repo, or migration still has a
 `.ghost/map.md`, or when you need to orient before writing `fingerprint.yml`.
 
-## What To Capture
+## What To Record
 
 Look for facts that help agents route product-experience judgment:
 
 - product scopes and owned paths
 - surface types
-- representative examples
+- exemplar surfaces worth inspecting
 - frameworks, platforms, and rendering constraints
 - design-system or component-library locations
 - places where UI can actually be observed
@@ -35,9 +35,12 @@ topology:
       paths: [src/checkout]
       surface_types: [payment-review]
   surface_types: [payment-review, empty-state]
-  examples:
-    - path: src/checkout/review.tsx
-      surface_type: payment-review
+exemplars:
+  - id: checkout-review
+    path: src/checkout/review.tsx
+    surface_type: payment-review
+    scope: checkout
+    why: Shows the payment-review surface worth preserving.
 ```
 
 ## Optional Inventory

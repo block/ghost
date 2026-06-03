@@ -1,18 +1,38 @@
 # Root Fingerprint Bundle Schema Reference
 
-Canonical package:
+Core package:
 
 ```text
 .ghost/
   fingerprint.yml ghost.fingerprint/v1
-  checks.yml     optional ghost.checks/v1 gates
-  intent.md      optional human intent
-  decisions/     optional ghost.decision/v1 rationale
-  proposals/     optional ghost.proposal/v1 candidates
-  cache/         optional generated caches
+  checks.yml      optional ghost.checks/v1 gates
 ```
 
-Nested packages use the same shape at any product-area root, for example
+Optional files:
+
+```text
+.ghost/
+  intent.md       optional human intent
+  decisions/      optional ghost.decision/v1 rationale
+  cache/          optional generated caches
+```
+
+Git is the approval boundary: checked-in `fingerprint.yml` is canonical memory,
+and uncommitted or unmerged edits are draft work. Ghost validates memory and
+runs gates; it is not a lifecycle manager, proposal system, or design-system
+registry.
+
+`fingerprint.yml` may start sparse:
+
+```yaml
+schema: ghost.fingerprint/v1
+```
+
+Top-level sections are optional on disk and default internally to empty
+`summary`, `topology`, memory arrays, `exemplars`, and
+`implementation_vocabulary`.
+
+Advanced nested packages use the same shape at any product-area root, for example
 `apps/checkout/.ghost/`. Resolve the stack with `ghost stack <path>`; child
 entries with the same `id` override parent entries.
 
@@ -37,27 +57,29 @@ situations:
     product_obligation: Keep status, owner, and recovery actions visible.
 principles:
   - id: density-supports-comparison
-    status: accepted
     principle: Dense work surfaces prioritize scanning and comparison.
 experience_contracts:
   - id: destructive-actions-disclose-consequence
-    status: accepted
     contract: Destructive actions disclose consequence and recovery path.
 patterns:
   - id: resource-index-stays-tabular
-    status: accepted
     kind: composition
     pattern: Resource index views stay tabular when comparison is the task.
     evidence:
       - path: src/orders/index.tsx
+exemplars:
+  - id: orders-index
+    path: src/orders/index.tsx
+    title: Orders index
+    surface_type: resource-index
+    scope: orders
+    why: Shows the dense tabular precedent for order triage.
+    refs: [pattern:resource-index-stays-tabular]
 implementation_vocabulary:
   tokens: [color.background, color.text]
   components: [DataTable]
   notes:
     - Current vocabulary is replaceable implementation material.
-review_policy:
-  proposal_policy:
-    - Agents recommend or create thresholded proposals; humans promote durable truth.
 ```
 
 ## `checks.yml`
@@ -94,6 +116,9 @@ Detector types remain deterministic only:
 - `banned-component`
 - `required-token`
 
+Checks keep `status: active | proposed | disabled` because enforcement still
+needs lifecycle state. Fingerprint entries do not have status fields.
+
 ## `decisions/*.yml`
 
 ```yaml
@@ -114,26 +139,6 @@ evidence:
 decided_at: "2026-05-17T00:00:00.000Z"
 ```
 
-## `proposals/*.yml`
-
-```yaml
-schema: ghost.proposal/v1
-id: saved-payment-empty-state
-status: open
-kind: missing-memory
-title: Saved payment empty state should teach recovery
-claim: Empty states for saved payment methods should prioritize recovery over education.
-rationale: The user is blocked from paying, not browsing product concepts.
-scope:
-  roles: [design, pm, qa]
-  surface_types: [empty-state]
-evidence:
-  - path: apps/payments/empty-state.tsx
-proposed_action:
-  target: fingerprint
-  summary: Promote into fingerprint.yml if repeated.
-```
-
 ## Validation
 
 ```bash
@@ -146,5 +151,6 @@ ghost check --base main
 
 `lint` validates artifact shape. `verify` validates cross-artifact fidelity:
 fingerprint evidence paths resolve and checks reference known fingerprint
-memory. Optional decisions/proposals are linted when present. `ghost check` is
-the deterministic pass/fail gate.
+memory. Exemplar paths are verified as generation anchors. Optional decisions
+are linted when present. `ghost check` is the
+deterministic pass/fail gate.

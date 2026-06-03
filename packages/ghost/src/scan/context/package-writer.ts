@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { GhostProposalDocument } from "#ghost-core";
+import { stringify as stringifyYaml } from "yaml";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 import { loadPackageMemory, type PackageMemory } from "./package-memory.js";
 import type { WriteContextResult } from "./writer.js";
@@ -56,14 +56,6 @@ export async function writePackageContextBundleFromMemory(
       context.checksRaw,
     );
   }
-  if (context.openProposals.length > 0) {
-    await writeContextFile(
-      options.outDir,
-      files,
-      "open-proposals.md",
-      formatOpenProposals(context.openProposals),
-    );
-  }
   if (context.intent) {
     await writeContextFile(options.outDir, files, "intent.md", context.intent);
   }
@@ -101,22 +93,24 @@ This skill grounds work in the **${context.name}** Ghost fingerprint.
 
 Read the files in this order:
 
-1. \`fingerprint.yml\` - canonical product-experience memory.
-2. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
-3. \`open-proposals.md\` when present - unresolved missing memory, intentional divergences, experience gaps, or check candidates.
-4. \`intent.md\` when present - supplemental human-approved context.
+1. \`prompt.md\` - generation packet: product prose, inventory, exemplars, and active checks.
+2. \`fingerprint.yml\` - canonical product prose and exemplar anchors.
+3. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
+4. \`intent.md\` when present - supplemental human-authored context.
 
-When generating or reviewing UI, select the relevant situation, principles,
-experience contracts, and patterns from \`fingerprint.yml\` before choosing
-implementation details. Use implementation vocabulary only as replaceable
-material that may help satisfy product memory. Treat proposals as unresolved
-context, not canonical truth.
+When generating UI, combine product prose from \`fingerprint.yml\`, optional
+inventory facts, and curated exemplars. Use implementation vocabulary and
+inventory only as replaceable material that may help satisfy product memory.
+When reviewing, use active checks for blocking validation and keep other
+findings advisory.
 
-When accepted fingerprint memory is silent, proceed from nearby product
-surfaces, local components, token and copy conventions, accepted decisions or
-human intent, and ordinary UX judgment when safe. Label that reasoning as
-provisional and non-Ghost-backed. Ask a human before making high-risk,
-irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint memory is silent, proceed from nearby product surfaces, local
+components, token and copy conventions, optional rationale files when present,
+and ordinary UX judgment when safe. Label that reasoning as provisional and
+non-Ghost-backed. Ask a human before making high-risk, irreversible,
+privacy/security/legal, or product-identity-defining choices. Memory changes
+are ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and
+optional rationale files when present.
 `;
 }
 
@@ -125,22 +119,43 @@ function buildPackagePromptMd(context: PackageMemory): string {
     `You are working inside the **${context.name}** product experience as captured by Ghost.`,
   ];
 
-  parts.push(`# Fingerprint Memory
+  parts.push(`# Product Prose
+
+Canonical product memory lives in \`fingerprint.yml\`. Use situations, principles, experience contracts, and patterns as the source of product judgment.
 
 \`\`\`yaml
 ${context.fingerprintRaw.trim()}
 \`\`\``);
 
-  if (context.checksRaw?.trim()) {
-    parts.push(`# Active Checks
+  parts.push(`# Inventory
+
+${formatInventory(context)}`);
+
+  parts.push(`# Exemplars
+
+${formatExemplars(context)}`);
+
+  if (context.checks) {
+    const activeChecks = context.checks.checks.filter(
+      (check) => check.status === "active",
+    );
+    if (activeChecks.length > 0) {
+      parts.push(`# Active Checks
 
 \`\`\`yaml
-${context.checksRaw.trim()}
+${stringifyYaml(
+  {
+    ...context.checks,
+    checks: activeChecks,
+  },
+  { lineWidth: 0 },
+).trim()}
 \`\`\``);
-  }
+    } else {
+      parts.push(`# Active Checks
 
-  if (context.openProposals.length > 0) {
-    parts.push(formatOpenProposals(context.openProposals));
+No active checks are recorded. Proposed or disabled checks are not blocking validation.`);
+    }
   }
 
   if (context.intent?.trim()) {
@@ -153,34 +168,17 @@ ${context.intent.trim()}
 
   parts.push(`# Use This Context
 
+- Generate from product prose + inventory + exemplars.
 - Select the relevant situation before generating or reviewing UI.
 - Preserve applicable principles, experience contracts, and patterns.
-- Use implementation vocabulary only when it supports the selected product memory.
-- Only active checks are blocking.
-- Treat open proposals as unresolved context that may explain gaps or intentional divergence.
-- When accepted fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, accepted decisions or human intent, and ordinary UX judgment when safe.
+- Inspect exemplars as concrete anchors for what good looks like.
+- Use inventory and implementation vocabulary only when they support the selected product memory.
+- Treat checks as validation; only active checks are blocking.
+- When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
 - Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
-- Proposal Threshold: create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review.
-- Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
-- If the task exposes missing or contradictory memory that meets the threshold, recommend a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently; create it only when the user explicitly asks to capture memory.`);
+- Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
 
   return `${parts.join("\n\n")}\n`;
-}
-
-function formatOpenProposals(proposals: GhostProposalDocument[]): string {
-  const lines = ["# Open Proposals", ""];
-  for (const proposal of proposals) {
-    lines.push(`## ${proposal.title}`);
-    lines.push("");
-    lines.push(`- **ID:** \`${proposal.id}\``);
-    lines.push(`- **Kind:** ${proposal.kind}`);
-    lines.push(`- **Target:** ${proposal.proposed_action.target}`);
-    lines.push(`- **Claim:** ${proposal.claim}`);
-    lines.push(`- **Rationale:** ${proposal.rationale}`);
-    lines.push(`- **Proposed action:** ${proposal.proposed_action.summary}`);
-    lines.push("");
-  }
-  return lines.join("\n");
 }
 
 function buildPackageReadmeMd(context: PackageMemory): string {
@@ -192,12 +190,109 @@ package.
 ## Files
 
 - \`SKILL.md\` - agent skill manifest.
-- \`prompt.md\` - portable prompt distilled from \`fingerprint.yml\`.
-- \`fingerprint.yml\` - canonical product-experience memory.
-${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.openProposals.length > 0 ? "- `open-proposals.md` - unresolved candidate memory updates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-approved context.\n" : ""}
-Regenerate this bundle when \`fingerprint.yml\`, active checks, or open
-proposals change.
+- \`prompt.md\` - portable generation packet: product prose, inventory, exemplars, and checks.
+- \`fingerprint.yml\` - canonical product prose and exemplar anchors.
+${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
+Regenerate this bundle when \`fingerprint.yml\`, active checks, or optional
+rationale files change.
 `;
+}
+
+function formatInventory(context: PackageMemory): string {
+  const { inventory } = context;
+  if (inventory.state === "missing") {
+    return `No generated inventory cache is present. Inventory is optional; generate it when useful with \`mkdir -p .ghost/cache && ghost inventory > .ghost/cache/inventory.json\`.`;
+  }
+  if (inventory.state === "unreadable") {
+    return `Inventory cache exists at \`${inventory.path}\`, but it could not be read: ${inventory.error}. Treat inventory as unavailable until the cache is regenerated.`;
+  }
+
+  const { summary } = inventory;
+  const lines = [
+    `Inventory cache: \`${inventory.path}\``,
+    "- Inventory is generated source material, not canonical product memory.",
+  ];
+  pushJoined(lines, "Platform hints", summary.platform_hints, { code: true });
+  pushJoined(lines, "Build hints", summary.build_system_hints, { code: true });
+  if (summary.language_histogram.length) {
+    lines.push(
+      `- Languages: ${summary.language_histogram
+        .map((entry) => `${entry.name} (${entry.files})`)
+        .join(", ")}`,
+    );
+  }
+  pushJoined(lines, "Package manifests", summary.package_manifests, {
+    code: true,
+  });
+  pushJoined(lines, "Config candidates", summary.candidate_config_files, {
+    code: true,
+  });
+  pushJoined(lines, "Registry files", summary.registry_files, { code: true });
+  if (summary.top_level_tree.length) {
+    lines.push(
+      `- Top-level tree: ${summary.top_level_tree
+        .map((entry) => `\`${entry.path}\``)
+        .join(", ")}`,
+    );
+  }
+  if (summary.config?.targets?.length) {
+    lines.push(
+      `- Config targets: ${summary.config.targets
+        .map((target) => `\`${target.id}\``)
+        .join(", ")}`,
+    );
+  }
+  if (summary.config?.libraries?.length) {
+    lines.push(
+      `- Reference libraries: ${summary.config.libraries
+        .map((library) => `\`${library.id}\``)
+        .join(", ")}`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatExemplars(context: PackageMemory): string {
+  const { exemplars } = context.fingerprint;
+  if (exemplars.length === 0) {
+    return "No curated exemplars are recorded yet. Use nearby product surfaces as provisional anchors and label that reasoning as non-Ghost-backed.";
+  }
+  const lines: string[] = [];
+  for (const exemplar of exemplars.slice(0, 16)) {
+    const detail = [
+      exemplar.title ?? exemplar.note,
+      exemplar.surface_type ? `surface: ${exemplar.surface_type}` : undefined,
+      exemplar.scope ? `scope: ${exemplar.scope}` : undefined,
+    ].filter(Boolean);
+    lines.push(
+      `- \`${exemplar.id}\` - \`${exemplar.path}\`${detail.length ? ` (${detail.join("; ")})` : ""}`,
+    );
+    if (exemplar.why) lines.push(`  - Why: ${exemplar.why}`);
+    if (exemplar.refs?.length) {
+      lines.push(
+        `  - Memory refs: ${exemplar.refs.map((ref) => `\`${ref}\``).join(", ")}`,
+      );
+    }
+  }
+  if (exemplars.length > 16) {
+    lines.push(
+      `- ${exemplars.length - 16} more exemplar(s); read \`fingerprint.yml\` before generating.`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function pushJoined(
+  lines: string[],
+  label: string,
+  values: string[] | undefined,
+  options: { code?: boolean } = {},
+): void {
+  if (!values?.length) return;
+  const formatted = values
+    .map((value) => (options.code ? `\`${value}\`` : value))
+    .join(", ");
+  lines.push(`- ${label}: ${formatted}`);
 }
 
 function ensureTrailingNewline(value: string): string {

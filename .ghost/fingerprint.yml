@@ -8,10 +8,12 @@ summary:
   goals:
     - Keep product-experience memory repo-local, portable, and easy for agents to read.
     - Preserve product identity across generation, review, and remediation.
-    - Separate durable judgment from generated inventory and cache.
+    - Use Git as the staging and approval boundary for memory edits.
   anti_goals:
     - Treat raw inventory as canonical product truth.
+    - Add special lifecycle files for the MVP.
     - Turn Ghost into a design-system snapshot or screenshot archive.
+    - Become a memory lifecycle manager or proposal system.
     - Let advisory review block work without deterministic checks.
   tradeoffs:
     - Prefer compact durable memory over exhaustive surveys.
@@ -61,13 +63,27 @@ topology:
     - primitive-demo
     - theme-control
     - tool-doc
-  examples:
-    - path: README.md
-      surface_type: docs-home
-      note: Public entry point must describe fingerprint.yml as canonical memory.
-    - path: packages/ghost/src/scan/context/package-review-command.ts
-      surface_type: emitted-agent-prompt
-      note: Review command is generated from fingerprint.yml memory.
+exemplars:
+  - id: public-readme-memory-model
+    path: README.md
+    title: Public README memory model
+    surface_type: docs-home
+    scope: docs-site
+    note: Public entry point describes fingerprint.yml as canonical memory.
+    why: Shows how Ghost explains repo-local prose memory, optional inventory, and Git-reviewed approval.
+    refs:
+      - principle:fingerprint-is-canonical
+      - principle:inventory-is-cache
+  - id: review-command-memory-packet
+    path: packages/ghost/src/scan/context/package-review-command.ts
+    title: Generated review command
+    surface_type: emitted-agent-prompt
+    scope: public-cli
+    note: Review command is generated from fingerprint.yml memory.
+    why: Shows how Ghost turns canonical memory into an agent-facing review instruction.
+    refs:
+      - experience_contract:review-cites-memory-and-diff
+      - pattern:compact-agent-handoff
 situations:
   - id: capturing-memory
     title: Capturing repo memory
@@ -77,7 +93,7 @@ situations:
       - principle:fingerprint-is-canonical
       - principle:inventory-is-cache
     experience_contracts:
-      - experience_contract:agents-propose-before-promoting
+      - experience_contract:git-is-approval-boundary
     patterns:
       - pattern:fingerprint-first-bundle
   - id: reviewing-generated-ui
@@ -100,36 +116,35 @@ situations:
       - pattern:editorial-workbench-docs
 principles:
   - id: fingerprint-is-canonical
-    status: accepted
-    principle: fingerprint.yml is canonical product-experience memory; other generated artifacts are source material or output.
+    principle: fingerprint.yml is canonical product-experience memory when checked in; generated artifacts are source material or output.
     guidance:
       - Describe the fingerprint as product experience memory, not a design-system snapshot.
       - Keep durable identity, hierarchy, behavior, copy, accessibility, trust, and flow in fingerprint.yml.
+      - Treat uncommitted or unmerged memory edits as drafts handled by Git, not by a Ghost-specific lifecycle.
     evidence:
       - path: docs/fingerprint-format.md
         note: Public format docs define fingerprint.yml as the source of truth.
       - path: packages/ghost/src/scan/fingerprint-package.ts
-        note: init writes fingerprint.yml, checks.yml, proposals, and cache.
+        note: init writes fingerprint.yml and checks.yml; cache appears only when inventory is explicitly generated.
   - id: inventory-is-cache
-    status: accepted
     principle: Generated inventory answers what exists; fingerprint memory answers what matters and why.
     guidance:
       - Store generated inventory under cache when useful.
-      - Promote only durable conclusions into fingerprint.yml.
+      - Curate only durable conclusions into fingerprint.yml.
+      - Do not let cache or implementation vocabulary become product authority.
     evidence:
       - path: README.md
         note: README frames inventory as optional cache/source material.
   - id: checks-are-executable-appendix
-    status: accepted
     principle: Deterministic checks stay outside fingerprint.yml and must be grounded in typed memory refs.
     guidance:
       - Active checks can block; advisory findings cannot block unless check-backed.
       - Use typed refs such as pattern:token-first-interface.
+      - Checks keep enforcement status because gates need lifecycle state.
     evidence:
       - path: packages/ghost/src/ghost-core/checks/lint.ts
         note: Active checks require typed derives_from grounding.
   - id: oss-language-is-portable
-    status: accepted
     principle: Public Ghost docs and generated prompts should work for arbitrary OSS repos without internal strategy language.
     guidance:
       - Use examples that fit docs sites, dashboards, SaaS apps, games, and component libraries.
@@ -139,7 +154,6 @@ principles:
       - path: docs/generation-loop.md
 experience_contracts:
   - id: review-cites-memory-and-diff
-    status: accepted
     contract: Advisory review findings must cite the diff location and the relevant fingerprint memory.
     obligations:
       - Use active checks only when a finding should block.
@@ -147,16 +161,15 @@ experience_contracts:
     evidence:
       - path: packages/ghost/src/scan/context/package-review-command.ts
         note: Emitted review command tells agents what to cite.
-  - id: agents-propose-before-promoting
-    status: accepted
-    contract: Agents create proposals for gaps or intentional divergence; humans promote durable memory.
+  - id: git-is-approval-boundary
+    contract: Memory edits use ordinary Git workflow; checked-in fingerprint.yml is truth.
     obligations:
       - Do not rewrite canonical memory silently during generation or review.
-      - Use proposals for missing-memory, intentional-divergence, experience-gap, and check-candidate cases.
+      - Treat uncommitted or unmerged memory edits as draft work.
+      - Record durable product memory in fingerprint.yml and deterministic gates in checks.yml; optional rationale files are secondary.
     evidence:
-      - path: packages/ghost/src/skill-bundle/references/propose.md
+      - path: packages/ghost/src/skill-bundle/references/capture.md
   - id: emitted-context-prefers-memory
-    status: accepted
     contract: Emitted context bundles and review commands should prefer fingerprint.yml over legacy survey or markdown artifacts.
     obligations:
       - Default emit paths load fingerprint.yml package memory.
@@ -165,7 +178,6 @@ experience_contracts:
       - path: packages/ghost/src/scan/context/package-writer.ts
       - path: packages/ghost/src/scan-emit-command.ts
   - id: interfaces-preserve-operability
-    status: accepted
     contract: Ghost interfaces should preserve operability, readable examples, and responsive access before visual polish.
     obligations:
       - Preserve keyboard-reachable controls and readable code examples.
@@ -177,26 +189,26 @@ experience_contracts:
       - path: apps/docs/src/components/docs/component-page-shell.tsx
 patterns:
   - id: fingerprint-first-bundle
-    status: accepted
     kind: composition
-    pattern: Root Ghost bundles start from fingerprint.yml, then attach checks, proposals, decisions, intent, and cache only when useful.
+    pattern: Root Ghost bundles start from fingerprint.yml and checks.yml, then attach optional rationale, config, or cache only when useful.
     guidance:
       - Do not require survey or inventory for a valid new project.
+      - Do not create cache during initialization; cache appears only after explicit inventory work.
+      - Allow sparse fingerprint.yml authoring; omitted top-level sections normalize to empty memory internally.
       - Keep optional cache outside canonical memory.
+      - Use Git review for memory approval instead of Ghost-specific draft files.
     evidence:
       - path: README.md
       - path: docs/fingerprint-format.md
   - id: compact-agent-handoff
-    status: accepted
     kind: content
     pattern: CLI and emitted prompts should tell the host agent exactly which memory to read and which findings can block.
     guidance:
       - Prefer short ordered workflows over broad conceptual lectures.
-      - Name proposal categories when memory is missing or contradictory.
+      - Name memory gaps plainly without creating a separate memory-change workflow.
     evidence:
       - path: packages/ghost/src/scan/context/package-review-command.ts
   - id: editorial-workbench-docs
-    status: accepted
     kind: visual
     pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.
     applies_to:
@@ -215,7 +227,6 @@ patterns:
       - path: apps/docs/src/components/docs/page-header.tsx
       - path: apps/docs/src/components/docs/component-page-shell.tsx
   - id: token-first-interface
-    status: accepted
     kind: visual
     pattern: Ghost UI surfaces use semantic tokens for repeatable color and avoid ad hoc surface hex values.
     applies_to:
@@ -255,15 +266,3 @@ implementation_vocabulary:
   notes:
     - Implementation vocabulary is replaceable material; product memory owns the judgment.
     - Correct components or tokens do not prove an experience is on-brand.
-review_policy:
-  proposal_policy:
-    - Agents create proposals for missing memory, intentional divergences, experience gaps, and check candidates.
-    - Humans promote durable memory into fingerprint.yml or checks.yml.
-  experience_gap_categories:
-    - missing-memory
-    - intentional-divergence
-    - experience-gap
-    - check-candidate
-  memory_gap_policy:
-    - Report uncertainty instead of inventing product truth.
-    - Treat repeated composition failures as product signal.

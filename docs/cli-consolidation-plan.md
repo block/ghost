@@ -11,9 +11,9 @@ branch: refactor/fingerprint (or a follow-up branch)
 > `inventory`, `lint`, `verify`, `describe`, `diff`, `survey`, `check`,
 > `review`, `compare`, `ack`, `track`, `diverge`, `emit`, and `skill install`)
 > plus the private `ghost-fleet` CLI. Capture, map, survey, patterns, recall,
-> brief, critique, propose, promote, verify, compare, and remediate are
-> host-agent skill recipes installed by `ghost skill install`. Kept for history;
-> don't treat the exploratory verb list below as current. See the
+> brief, critique, review, verify, compare, and remediate are host-agent skill
+> recipes installed by `ghost skill install`. Kept for history; don't treat the
+> exploratory verb list below as current. See the
 > [README](../README.md) and the
 > [CLI reference](../apps/docs/src/content/docs/cli-reference.mdx) for the
 > current surface.

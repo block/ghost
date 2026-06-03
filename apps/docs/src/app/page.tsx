@@ -30,33 +30,31 @@ export default function Home() {
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
               Agents can write UI. What they cannot reliably preserve is the
-              thought behind the product experience they are changing.
+              product experience identity behind that UI.
             </p>
             <p className="thesis-item">
               The failure mode is structural. Large language models generate by
               matching local patterns. They reproduce components, tokens, and
-              layouts, but they do not consistently preserve the higher-order
-              decisions that make a surface feel intentional: its hierarchy, its
-              density, its restraint, the specific ways it repeats and refuses,
-              and the ways it earns trust.
+              layouts, but they do not consistently preserve the decisions that
+              make a surface feel intentional: hierarchy, density, restraint,
+              behavior, copy, accessibility, trust, and flow.
             </p>
             <p className="thesis-item">
-              Most design systems encode the inventory of a product: colors,
-              type scales, components. That inventory is necessary, but it is
-              not sufficient. The same system can produce many different
-              products. What is missing is the policy that governs how those
-              parts are composed.
+              Most design systems encode inventory: colors, type scales,
+              components, libraries, and examples. That inventory is necessary,
+              but it is not sufficient. Inventory answers what exists. It does
+              not answer what matters, why it matters, or how a product chooses
+              among valid possibilities.
             </p>
             <p className="thesis-item">
-              Ghost introduces a second layer: a fingerprint.
+              Ghost introduces repo-local product experience memory.
             </p>
             <p className="thesis-item">
-              The fingerprint is a repository-local, versioned artifact that
-              captures product experience memory: the situations, principles,
-              contracts, and patterns that shape how the system is actually
-              used. Components, tokens, and libraries remain replaceable
-              implementation material; Ghost gives agents the judgment that sits
-              around them.
+              That memory lives in a compact, versioned bundle that agents can
+              read before generation and deterministic tooling can validate
+              after changes. Components, tokens, libraries, and generated
+              inventory remain implementation material; Ghost preserves the
+              product judgment that sits around them.
             </p>
             <p className="thesis-item">
               The broader boundary is product experience: anything that shapes
@@ -70,15 +68,15 @@ export default function Home() {
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
                 <code>.ghost/fingerprint.yml</code> stores canonical product
-                experience memory
+                experience memory and curated exemplars
               </li>
               <li>
-                <code>.ghost/checks.yml</code> stores deterministic gates
-                grounded in that memory
+                <code>.ghost/checks.yml</code> stores optional deterministic
+                gates grounded in that memory
               </li>
               <li>
-                <code>.ghost/proposals</code> stages missing memory, intentional
-                divergence, experience gaps, and check candidates
+                ordinary Git review separates draft memory edits from checked-in
+                truth
               </li>
               <li>
                 <code>.ghost/decisions</code> records optional accepted or
@@ -90,63 +88,60 @@ export default function Home() {
               </li>
             </ul>
             <p className="thesis-item">
-              The distinction is deliberate. Inventory describes what exists.
-              The fingerprint describes how the product repeatedly chooses to
-              use what exists.
+              The distinction is deliberate. Fingerprint prose explains what
+              matters and why. Optional cache explains what exists. Exemplars
+              show concrete surfaces worth inspecting before generation or
+              review. Checks validate output; they are not generation memory.
             </p>
             <p className="thesis-item">
-              This makes the fingerprint closer to a behavioral prior than a
-              spec. It encodes:
+              Fingerprint memory may start sparse and grow only where the
+              product has durable memory to record. It can encode:
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
-              <li>preferred hierarchies over possible ones</li>
-              <li>constraints on density, spacing, and interaction patterns</li>
-              <li>allowed deviations from base components</li>
-              <li>explicit anti-patterns the surface avoids</li>
+              <li>the product, audience, goals, anti-goals, and tradeoffs</li>
+              <li>situations where user intent changes product obligations</li>
+              <li>principles and contracts for behavior, copy, and recovery</li>
+              <li>visual, content, behavior, and composition patterns</li>
+              <li>curated examples of what good looks like in practice</li>
             </ul>
             <p className="thesis-item">
               For an agent, this changes the task. UI generation is no longer
               unconstrained composition over a design system. It becomes a
-              constrained search guided by a product-specific policy.
+              product-specific brief grounded in checked-in memory, optional
+              inventory, and exemplars.
             </p>
             <p className="thesis-item">A typical loop becomes:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
-              <li>Condition on the fingerprint</li>
-              <li>Generate UI against the design system</li>
-              <li>Evaluate the result against fingerprint constraints</li>
-              <li>Revise until violations are reduced or resolved</li>
+              <li>
+                Brief from fingerprint memory, optional inventory, and exemplars
+              </li>
+              <li>Generate or edit with the host agent</li>
+              <li>Run active deterministic checks and advisory review</li>
+              <li>
+                Fix code, explain intentional divergence, or update memory
+                through Git
+              </li>
             </ol>
             <p className="thesis-item">
-              The fingerprint is therefore not just descriptive. It is partially
-              executable. It enables both generation and evaluation.
+              Ghost stays bring-your-own-agent. The agent reads, decides, and
+              writes. Ghost does the repeatable work: initialization, schema
+              validation, inventory, evidence verification, checks, advisory
+              review packets, comparison, and handoff packets.
             </p>
             <p className="thesis-item">
-              This is critical because style that cannot be evaluated cannot be
-              delegated. A design language that only its original author can
-              judge is not transferable: to agents, to new engineers, or to
-              forks of the product.
-            </p>
-            <p className="thesis-item">
-              Ghost treats evaluation as a first-class concern. Parts of the
-              fingerprint are grounded in:
-            </p>
-            <ul className="thesis-item list-disc space-y-2 pl-6">
-              <li>explicit rules: hard constraints</li>
-              <li>preference gradients: soft constraints</li>
-              <li>negative constraints: anti-patterns</li>
-            </ul>
-            <p className="thesis-item">
-              These allow an agent, or a reviewer, to check whether a surface
-              composes faithfully, not just whether it compiles.
+              This is critical because product judgment that cannot be recalled
+              or evaluated cannot be delegated. A product experience that only
+              its original author can judge is not transferable: to agents, to
+              new engineers, or to forks of the product.
             </p>
             <p className="thesis-item">
               Drift becomes measurable within this system. When generated or
-              modified UI diverges from the fingerprint, the failure is not just
-              error; it is signal. Drift can originate from:
+              modified UI diverges from checked-in memory, the failure is not
+              just error; it is signal. Drift can originate from:
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>incorrect generation: agent failure</li>
-              <li>incomplete fingerprint: under-specified policy</li>
+              <li>missing memory: under-specified product judgment</li>
               <li>intentional product evolution</li>
             </ul>
             <p className="thesis-item">
@@ -154,29 +149,26 @@ export default function Home() {
               system's boundary becomes visible where composition fails.
             </p>
             <p className="thesis-item">
-              The fingerprint bundle must live where generation happens: in the
-              repository, versioned alongside the code it governs, evolving
-              through the same pull requests that introduce new UI. As the
-              product changes, the package updates with it, maintaining
-              alignment between intent and implementation.
+              The memory bundle must live where generation happens: in the
+              repository, versioned alongside the code it governs. As the
+              product changes, memory changes through the same ordinary Git
+              review that introduces new UI.
             </p>
             <p className="thesis-item">
-              This leads to a different governance model. Instead of a single
-              centralized design authority, each repository owns its
-              fingerprint: its local expression of the design language.
-              Divergence across repositories is not hidden; it is made explicit
-              through declared stances (<em>aligned</em>, <em>accepted</em>,{" "}
-              <em>diverging</em>), turning fragmentation into observable
-              structure.
+              This leads to a practical governance model. Each repository owns
+              its product experience memory. Advanced workflows can add nested
+              bundles for product areas, custom memory directories for host
+              wrappers, comparison across systems, and declared drift stances.
             </p>
             <p className="thesis-item">
-              Across an organization, the collection of fingerprints forms a
-              higher-order map: a distributed model of the design language as it
-              is actually practiced, not as it is prescribed.
+              Across an organization, the collection of Ghost bundles forms a
+              higher-order map: a distributed model of product experience as it
+              is actually practiced, not as it is only described.
             </p>
             <p className="thesis-item">
-              Nothing is enforced globally. Nothing drifts silently. Every
-              surface declares its policy, and every deviation carries evidence.
+              Nothing is enforced globally. Nothing needs to drift silently.
+              Every surface can carry its memory, and every deviation can carry
+              evidence.
             </p>
           </div>
         </section>

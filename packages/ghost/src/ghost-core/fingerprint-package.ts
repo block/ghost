@@ -6,7 +6,6 @@ export const CONFIG_FILENAME = "config.yml" as const;
 export const INTENT_FILENAME = "intent.md" as const;
 export const FINGERPRINT_FILENAME = "fingerprint.md" as const;
 export const DECISIONS_DIRNAME = "decisions" as const;
-export const PROPOSALS_DIRNAME = "proposals" as const;
 export const CACHE_DIRNAME = "cache" as const;
 
 export interface FingerprintPackagePaths {
@@ -22,6 +21,5 @@ export interface FingerprintPackagePaths {
   checks: string;
   intent: string;
   decisions: string;
-  proposals: string;
   cache: string;
 }

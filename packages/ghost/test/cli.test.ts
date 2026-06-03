@@ -129,6 +129,7 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("ghost");
     expect(result.stdout).toContain("skill");
+    expect(result.stdout).not.toContain("proposal <op>");
   });
 
   it("compares explicitly supplied fingerprint files", async () => {
@@ -227,11 +228,82 @@ describe("ghost CLI", () => {
     expect(manifest.dimensions.typography.reason).toBe("editorial");
   });
 
+  it("initializes the default memory skeleton without cache", async () => {
+    const init = await runCli(["init", "--format", "json"], dir);
+    const scan = await runCli(["scan", "--format", "json"], dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(Object.keys(initOutput).sort()).toEqual([
+      "checks",
+      "dir",
+      "fingerprintYml",
+    ]);
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
+    ).resolves.toBe("schema: ghost.fingerprint/v1\n");
+    await expect(
+      readFile(join(dir, ".ghost", "checks.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.checks/v1");
+    const status = JSON.parse(scan.stdout);
+    expect(status.cache.state).toBe("missing");
+
+    const lint = await runCli(["lint"], dir);
+    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const check = await runCli(["check", "--diff", "change.patch"], dir);
+    const review = await runCli(["review", "--diff", "change.patch"], dir);
+    const reviewCommand = await runCli(["emit", "review-command"], dir);
+    const contextBundle = await runCli(["emit", "context-bundle"], dir);
+
+    expect(lint.code).toBe(0);
+    expect(verify.code).toBe(0);
+    expect(check.code).toBe(0);
+    expect(review.code).toBe(0);
+    expect(review.stdout).toContain("schema: ghost.fingerprint/v1");
+    expect(reviewCommand.code).toBe(0);
+    expect(contextBundle.code).toBe(0);
+  });
+
+  it("rejects checks grounded in omitted sparse fingerprint memory", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "checks.yml"),
+      `schema: ghost.checks/v1
+id: local
+checks:
+  - id: missing-memory-check
+    title: Missing memory check
+    status: active
+    severity: serious
+    derives_from: principle:not-recorded
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}'
+`,
+    );
+
+    const lint = await runCli(["lint", ".ghost", "--format", "json"], dir);
+
+    expect(lint.code).toBe(1);
+    const report = JSON.parse(lint.stdout);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-grounding-unknown",
+      path: "checks.yml.checks[0].derives_from",
+    });
+  });
+
   it("initializes a bundle and reports fingerprint capture state as json", async () => {
     const init = await runCli(["init", "--with-intent"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
 
     expect(init.code).toBe(0);
+    expect(init.stdout).toContain("fingerprint.yml:");
+    expect(init.stdout).toContain("checks.yml:");
+    expect(init.stdout).not.toContain("cache/:");
     expect(
       await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
     ).toContain("schema: ghost.fingerprint/v1");
@@ -241,8 +313,8 @@ describe("ghost CLI", () => {
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
-    expect(status.proposals.state).toBe("present");
-    expect(status.cache.state).toBe("present");
+    expect(status.proposals).toBeUndefined();
+    expect(status.cache.state).toBe("missing");
     expect(status.readiness.state).toBe("memory-empty");
   });
 
@@ -278,6 +350,7 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.cache).toBeUndefined();
     expect(await realpath(initOutput.config)).toBe(
       await realpath(join(dir, ".ghost", "config.yml")),
     );
@@ -285,11 +358,11 @@ describe("ghost CLI", () => {
     const fingerprint = parseYaml(
       await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
     ) as Record<string, unknown>;
-    expect(fingerprint.situations).toEqual([]);
-    expect(fingerprint.principles).toEqual([]);
-    expect(fingerprint.experience_contracts).toEqual([]);
-    expect(fingerprint.patterns).toEqual([]);
-    expect(fingerprint.implementation_vocabulary).toMatchObject({
+    expect(fingerprint).not.toHaveProperty("situations");
+    expect(fingerprint).not.toHaveProperty("principles");
+    expect(fingerprint).not.toHaveProperty("experience_contracts");
+    expect(fingerprint).not.toHaveProperty("patterns");
+    expect(fingerprint.implementation_vocabulary).toEqual({
       libraries: ["ghost-ui"],
     });
 
@@ -351,7 +424,7 @@ describe("ghost CLI", () => {
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
     expect(status.checks.state).toBe("present");
-    expect(status.proposals.state).toBe("present");
+    expect(status.proposals).toBeUndefined();
     expect(status.cache.state).toBe("present");
     expect(status.readiness.state).toBe("implementation-only");
     expect(status.readiness.reasons[0]).toContain("implementation vocabulary");
@@ -441,6 +514,24 @@ describe("ghost CLI", () => {
 
   it("emits review commands and context bundles from the unified cli", async () => {
     await writeCheckPackage(dir);
+    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "cache", "inventory.json"),
+      JSON.stringify(
+        {
+          root: dir,
+          platform_hints: ["ios"],
+          build_system_hints: ["spm"],
+          language_histogram: [{ name: "swift", files: 12 }],
+          package_manifests: ["Package.swift"],
+          candidate_config_files: ["Code/Theme.swift"],
+          registry_files: [],
+          top_level_tree: [{ path: "Code/", kind: "dir", child_count: 3 }],
+        },
+        null,
+        2,
+      ),
+    );
     await writeFile(
       join(dir, ".ghost", "fingerprint.md"),
       fingerprintWithId("local"),
@@ -456,11 +547,11 @@ describe("ghost CLI", () => {
       "utf-8",
     );
     expect(emittedReviewCommand).toContain("fingerprint.yml memory");
+    expect(emittedReviewCommand).toContain("Exemplars");
+    expect(emittedReviewCommand).toContain("lending-tokenized-screen");
     expect(emittedReviewCommand).toContain("provisional and non-Ghost-backed");
-    expect(emittedReviewCommand).toContain("Proposal Threshold");
-    expect(emittedReviewCommand).toContain(
-      "Memory action: none | recommend-proposal | create-proposal",
-    );
+    expect(emittedReviewCommand).not.toContain("Proposal Threshold");
+    expect(emittedReviewCommand).not.toContain("recommend-proposal");
     expect(emittedReviewCommand).toContain("experience-gap");
     expect(emittedReviewCommand).toContain("no-hardcoded-ui-color");
     expect(emittedReviewCommand).not.toContain(
@@ -475,16 +566,67 @@ describe("ghost CLI", () => {
     ).resolves.toContain("schema: ghost.fingerprint/v1");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
-    ).resolves.toContain("Fingerprint Memory");
+    ).resolves.toContain("Product Prose");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
-    ).resolves.toContain("Proposal Threshold");
+    ).resolves.toContain("Inventory cache");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Package.swift");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Exemplars");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("no-hardcoded-ui-color");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.not.toContain("candidate-density-check");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.not.toContain("status: proposed");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.not.toContain("Proposal Threshold");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.toContain("Label silent-memory reasoning as provisional");
     await expect(
       readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("provisional and non-Ghost-backed");
+    ).resolves.toContain("provisional and\nnon-Ghost-backed");
+  });
+
+  it("emits context bundles when inventory cache is malformed", async () => {
+    await writeCheckPackage(dir);
+    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
+    await writeFile(join(dir, ".ghost", "cache", "inventory.json"), "{nope");
+
+    const contextBundle = await runCli(["emit", "context-bundle"], dir);
+
+    expect(contextBundle.code).toBe(0);
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("could not be read");
+  });
+
+  it("warns when fingerprint exemplar paths are unreachable", async () => {
+    await writeCheckPackage(dir);
+
+    const verify = await runCli(
+      ["verify", ".ghost", "--root", ".", "--format", "json"],
+      dir,
+    );
+
+    expect(verify.code).toBe(0);
+    const report = JSON.parse(verify.stdout);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "fingerprint-exemplar-unreachable",
+          path: "fingerprint.yml.exemplars[0].path",
+        }),
+      ]),
+    );
   });
 
   it("rejects removed legacy direct markdown emit flags", () => {
@@ -515,7 +657,6 @@ describe("ghost CLI", () => {
     for (const path of [
       "SKILL.md",
       "references/capture.md",
-      "references/propose.md",
       "references/review.md",
       "references/remediate.md",
       "references/brief.md",
@@ -534,18 +675,16 @@ describe("ghost CLI", () => {
     );
     await expect(
       readFile(
-        join(dir, "skills", "ghost", "references", "propose.md"),
-        "utf-8",
-      ),
-    ).resolves.toContain("Proposal Threshold");
-    await expect(
-      readFile(
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain(
-      "Memory action: none | recommend-proposal | create-proposal",
-    );
+    ).resolves.toContain("memory is silent");
+    await expect(
+      readFile(
+        join(dir, "skills", "ghost", "references", "propose.md"),
+        "utf-8",
+      ),
+    ).rejects.toThrow();
   });
 
   it("check fails when an active deterministic check matches added lines", async () => {
@@ -610,11 +749,9 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain("fingerprint.yml memory");
     expect(result.stdout).toContain("active check when blocking");
-    expect(result.stdout).toContain("Proposal Threshold");
+    expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
-    expect(result.stdout).toContain(
-      "Memory action: none | recommend-proposal | create-proposal",
-    );
+    expect(result.stdout).not.toContain("recommend-proposal");
     expect(result.stdout).toContain("missing-memory");
     expect(result.stdout).toContain("experience-gap");
     expect(result.stdout).toContain("repair or intentional-divergence");
@@ -671,8 +808,8 @@ libraries:
     const packet = JSON.parse(result.stdout);
     expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v1");
     expect(packet.finding_categories).toContain("experience-gap");
-    expect(packet.proposal_types).toContain("check-candidate");
-    expect(packet.open_proposals).toEqual([]);
+    expect(packet.proposal_types).toBeUndefined();
+    expect(packet.open_proposals).toBeUndefined();
     expect(packet.memory).toBeUndefined();
   });
 
@@ -885,9 +1022,8 @@ libraries:
       "utf-8",
     );
     expect(fingerprint).toContain("ghost.fingerprint/v1");
-    expect(fingerprint).toContain(
-      "Agents recommend or create thresholded proposals",
-    );
+    expect(fingerprint).not.toContain("review_policy");
+    expect(fingerprint).not.toContain("proposal");
   });
 
   it("init --scope creates a nested bundle under a custom memory directory", async () => {
@@ -915,155 +1051,6 @@ libraries:
         "utf-8",
       ),
     ).toContain("ghost.fingerprint/v1");
-  });
-
-  it("proposal create/list/resolve targets the nearest scoped bundle", async () => {
-    await writeNestedCheckPackage(dir);
-
-    const create = await runCli(
-      [
-        "proposal",
-        "create",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--id",
-        "checkout-copy-memory",
-        "--kind",
-        "missing-memory",
-        "--title",
-        "Checkout copy memory",
-        "--claim",
-        "Checkout review copy needs local memory.",
-        "--rationale",
-        "The checkout surface has specific payment review language.",
-        "--target",
-        "fingerprint",
-        "--summary",
-        "Add checkout copy guidance.",
-        "--evidence",
-        "apps/checkout/review/page.tsx",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(create.code).toBe(0);
-    const created = JSON.parse(create.stdout);
-    expect(await realpath(created.package_dir)).toBe(
-      await realpath(join(dir, "apps", "checkout", ".ghost")),
-    );
-    expect(created.proposal.evidence[0].path).toBe("review/page.tsx");
-
-    const list = await runCli(
-      [
-        "proposal",
-        "list",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    expect(JSON.parse(list.stdout).open_proposals[0].id).toBe(
-      "checkout-copy-memory",
-    );
-
-    const resolveResult = await runCli(
-      [
-        "proposal",
-        "resolve",
-        "checkout-copy-memory",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--status",
-        "accepted",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    expect(resolveResult.code).toBe(0);
-    expect(JSON.parse(resolveResult.stdout).proposal.status).toBe("accepted");
-  });
-
-  it("proposal create/list/resolve supports custom memory directories", async () => {
-    await writeNestedCheckPackage(dir, ".design/memory");
-
-    const create = await runCli(
-      [
-        "proposal",
-        "create",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--memory-dir",
-        ".design/memory",
-        "--id",
-        "checkout-custom-memory",
-        "--kind",
-        "missing-memory",
-        "--title",
-        "Checkout custom memory",
-        "--claim",
-        "Checkout has wrapper-specific memory.",
-        "--rationale",
-        "The host wrapper stores memory outside .ghost.",
-        "--summary",
-        "Add wrapper-specific checkout guidance.",
-        "--evidence",
-        "apps/checkout/review/page.tsx",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(create.code).toBe(0);
-    const created = JSON.parse(create.stdout);
-    expect(await realpath(created.package_dir)).toBe(
-      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
-    );
-    expect(created).toMatchObject({
-      path: expect.stringContaining("checkout-custom-memory.yml"),
-      proposal: { id: "checkout-custom-memory", status: "open" },
-    });
-
-    const list = await runCli(
-      [
-        "proposal",
-        "list",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--memory-dir",
-        ".design/memory",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    const listed = JSON.parse(list.stdout);
-    expect(listed.memory_dir).toBe(".design/memory");
-    expect(listed.open_proposals[0].id).toBe("checkout-custom-memory");
-
-    const resolveResult = await runCli(
-      [
-        "proposal",
-        "resolve",
-        "checkout-custom-memory",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--memory-dir",
-        ".design/memory",
-        "--status",
-        "accepted",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    expect(resolveResult.code).toBe(0);
-    expect(JSON.parse(resolveResult.stdout).proposal.status).toBe("accepted");
   });
 
   it("lint --all and verify --all include nested bundles", async () => {
@@ -1130,20 +1117,25 @@ topology:
 situations: []
 principles:
   - id: tokenized-ui-color
-    status: accepted
     principle: UI colors should come from the product token system.
     check_refs: [check:no-hardcoded-ui-color]
 experience_contracts: []
 patterns:
   - id: tokenized-ui-color
-    status: accepted
     kind: visual
     pattern: Product UI color uses semantic tokens instead of literals.
     check_refs: [check:no-hardcoded-ui-color]
+exemplars:
+  - id: lending-tokenized-screen
+    path: Code/Features/Lending/LendingUI
+    title: Lending tokenized UI
+    surface_type: native-feature
+    scope: lending
+    why: Shows semantic CashTheme color usage for native lending UI.
+    refs: [principle:tokenized-ui-color, pattern:tokenized-ui-color]
 implementation_vocabulary:
   tokens: [CashTheme.primary]
   components: []
-review_policy: {}
 `,
   );
   await writeFile(
@@ -1199,6 +1191,22 @@ checks:
       examples:
         - Code/Features/Lending/LendingUI
     repair: Replace literals with Arcade/Cash semantic tokens.
+  - id: candidate-density-check
+    title: Candidate density check
+    status: proposed
+    severity: nit
+    derives_from: principle:tokenized-ui-color
+    applies_to:
+      scopes: [lending]
+      paths: [Code/Features/Lending]
+    detector:
+      type: required-regex
+      pattern: 'CashTheme'
+    evidence:
+      support: 0.5
+      observed_count: 1
+      examples:
+        - Code/Features/Lending/LendingUI
 `,
   );
 }
@@ -1206,7 +1214,6 @@ checks:
 async function writeMemoryFiles(dir: string): Promise<void> {
   const pkg = join(dir, ".ghost");
   await mkdir(join(pkg, "decisions"), { recursive: true });
-  await mkdir(join(pkg, "proposals"), { recursive: true });
   await writeFile(
     join(pkg, "decisions", "checkout-reversibility.yml"),
     `schema: ghost.decision/v1
@@ -1239,22 +1246,6 @@ evidence:
 decided_at: "2026-05-17T00:00:00.000Z"
 `,
   );
-  await writeFile(
-    join(pkg, "proposals", "saved-payment-empty-state.yml"),
-    `schema: ghost.proposal/v1
-id: saved-payment-empty-state
-status: accepted
-kind: missing-memory
-title: Saved payment empty state should teach recovery
-claim: Empty states for saved payment methods should prioritize recovery.
-rationale: The user is blocked from paying, not browsing product concepts.
-evidence:
-  - path: apps/payments/empty-state.tsx
-proposed_action:
-  target: fingerprint
-  summary: Promote into fingerprint.yml if repeated.
-`,
-  );
 }
 
 async function writeNestedCheckPackage(
@@ -1266,11 +1257,7 @@ async function writeNestedCheckPackage(
     join(dir, "apps", "checkout"),
     memoryDir,
   );
-  await mkdir(join(rootMemory, "proposals"), { recursive: true });
   await mkdir(join(rootMemory, "cache"), { recursive: true });
-  await mkdir(join(checkoutMemory, "proposals"), {
-    recursive: true,
-  });
   await mkdir(join(checkoutMemory, "cache"), {
     recursive: true,
   });
@@ -1294,12 +1281,10 @@ principles: []
 experience_contracts: []
 patterns:
   - id: root-token-pattern
-    status: accepted
     kind: visual
     pattern: Web UI color uses semantic product tokens.
 implementation_vocabulary:
   tokens: [RootTheme]
-review_policy: {}
 `,
   );
   await writeFile(
@@ -1342,14 +1327,12 @@ principles: []
 experience_contracts: []
 patterns:
   - id: checkout-token-pattern
-    status: accepted
     kind: visual
     pattern: Checkout review uses checkout product tokens.
     applies_to:
       paths: [review]
 implementation_vocabulary:
   tokens: [CheckoutTheme]
-review_policy: {}
 `,
   );
   await writeFile(
