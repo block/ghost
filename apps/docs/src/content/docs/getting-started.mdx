@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, capture repo-local product experience memory, and review generated UI against it.
+description: Install Ghost, author repo-local product experience memory, and review generated UI against it.
 kicker: Docs
 section: guide
 order: 10
@@ -9,9 +9,9 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost captures a project's product experience memory in the repo, where your
-agent can use it. The public package is `@anarchitecture/ghost`, and it
-installs one CLI: `ghost`.
+Ghost keeps a project's product experience memory in the repo, where your agent
+can use it. The public package is `@anarchitecture/ghost`, and it installs one
+CLI: `ghost`.
 
 The canonical fingerprint is small:
 
@@ -28,13 +28,17 @@ Host adapters can use a different safe relative memory directory with
 `--memory-dir`, such as `.design/memory`. Ghost still emits adapter-neutral JSON;
 the wrapper maps findings into its own review or check format.
 
-`intent.md`, `decisions/*.yml`, and `proposals/*.yml` are optional
-human-approved or staged context. `cache/` can hold generated inventory, but it
-is not canonical memory.
+`intent.md` and `decisions/*.yml` are optional human-authored context. `cache/`
+can hold generated inventory, but it is not canonical memory. Ordinary Git
+workflow is the staging layer: uncommitted or unmerged memory edits are drafts,
+and checked-in `fingerprint.yml` is truth for Ghost.
+
+Generation starts from product prose, optional generated inventory, and curated
+exemplars. Checks validate the result afterward; they are not generation memory.
 
 | Surface | Job | Verbs |
 | --- | --- | --- |
-| `ghost` | Create and check root or nested `.ghost/` memory bundles, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `proposal <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
+| `ghost` | Create and check root or nested `.ghost/` memory bundles, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
 | `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
 | `ghost-ui` | Reference design system Ghost uses to test itself. | - |
 
@@ -48,28 +52,29 @@ npx ghost --help
 npx ghost skill install
 ```
 
-Once the skill is installed, ask your agent in plain English: "Capture a Ghost
-fingerprint for this repo" or "review this PR for drift". The recipe tells the
+Once the skill is installed, ask your agent in plain English: "Set up Ghost
+memory for this repo" or "review this PR for drift". The recipe tells the
 agent what to read, what to write, and which CLI checks to run.
 
 </DocSection>
 
-<DocSection title="Capture Your First Fingerprint">
+<DocSection title="Author Your First Fingerprint">
 
 ```text
-Capture a Ghost fingerprint for this repo.
+Set up Ghost memory for this repo.
 ```
 
-Fingerprint Capture writes durable memory first:
+Fingerprint memory records durable product-experience guidance:
 
 1. **Summary and topology** - what product this is, who it serves, and where UI
    surfaces live.
 2. **Situations** - user, task, and state moments that change obligations.
 3. **Principles and contracts** - durable product judgment plus behavior,
    disclosure, failure, and recovery rules.
-4. **Patterns and implementation vocabulary** - accepted visual, content,
-   behavior, and composition memory plus current tokens and components agents
-   may use to implement it.
+4. **Patterns and exemplars** - visual, content, behavior, and composition
+   memory plus concrete surfaces that show what good looks like.
+5. **Implementation vocabulary** - current tokens and components agents may use
+   to implement the memory.
 
 ```bash
 ghost init --with-intent
@@ -84,8 +89,14 @@ ghost lint --all
 ghost verify --all
 ```
 
-Inventory is optional source material. Promote only durable conclusions into
-`fingerprint.yml`.
+Inventory is optional source material. Curate durable conclusions into
+`fingerprint.yml`, then use normal Git review for approval.
+
+For generation, emit a packet that keeps these inputs separate:
+
+```bash
+ghost emit context-bundle
+```
 
 </DocSection>
 
@@ -112,37 +123,29 @@ Review this PR for design drift
 ```
 
 `ghost check` applies active deterministic gates from the resolved memory stack
-for each changed file. `ghost review` emits advisory context grounded in
-merged `fingerprint.yml` memory, optional `intent.md`, open proposals, checks,
-and the diff. Add `--include-memory` to include accepted decisions in the
-advisory packet. Use `--package <dir>` when you need exact single-bundle
-behavior.
+for each changed file. `ghost review` emits advisory context grounded in merged
+`fingerprint.yml` memory, exemplars, optional `intent.md`, checks, and the diff.
+Add `--include-memory` to include accepted decisions in the advisory packet. Use
+`--package <dir>` when you need exact single-bundle behavior.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities
 outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
 
 </DocSection>
 
-<DocSection title="Propose Fingerprint Updates">
+<DocSection title="Update Fingerprint Memory">
 
 Use the installed `ghost` skill when work reveals durable memory Ghost should
-consider adding to the fingerprint:
+add to the fingerprint:
 
 ```text
 Brief this work from the Ghost fingerprint
-Propose this product-experience decision as a fingerprint update
-Promote this accepted proposal
+Update the fingerprint with this product-experience decision
 ```
 
-The recipes recommend proposals only when the gap is repeated, high-impact,
-explicitly human-stated, intentionally divergent, likely to recur, or blocks
-confident future review. Humans promote durable context into `fingerprint.yml`
-or `checks.yml`.
-
-For scoped product areas, use `ghost proposal create --path <path> ...` to
-write the proposal into the nearest applicable child bundle, then
-`ghost proposal resolve <id> --path <path> --status accepted|rejected` after
-the explicit promotion work is done.
+Memory updates are ordinary edits to `fingerprint.yml`, `checks.yml`,
+`intent.md`, or `decisions/*.yml`. Uncommitted or unmerged edits are drafts;
+checked-in memory is canonical.
 
 </DocSection>
 

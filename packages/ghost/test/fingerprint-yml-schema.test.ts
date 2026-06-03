@@ -10,6 +10,18 @@ describe("ghost.fingerprint/v1", () => {
     const result = GhostFingerprintSchema.safeParse(minimalFingerprint());
 
     expect(result.success).toBe(true);
+    if (!result.success) throw new Error("minimal fingerprint should parse");
+    expect(result.data).toEqual({
+      schema: GHOST_FINGERPRINT_SCHEMA,
+      summary: {},
+      topology: {},
+      situations: [],
+      principles: [],
+      experience_contracts: [],
+      patterns: [],
+      exemplars: [],
+      implementation_vocabulary: {},
+    });
   });
 
   it("accepts a full OSS-friendly fingerprint.yml document", () => {
@@ -28,6 +40,20 @@ describe("ghost.fingerprint/v1", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects old topology examples", () => {
+    const input = fullFingerprint();
+    (input.topology as Record<string, unknown>).examples = [
+      {
+        path: "apps/dashboard/src/routes/orders/page.tsx",
+        surface_type: "dense-dashboard",
+      },
+    ];
+
+    const result = GhostFingerprintSchema.safeParse(input);
+
+    expect(result.success).toBe(false);
+  });
+
   it("rejects implementation vocabulary as a typed ref target", () => {
     const input = fullFingerprint();
     input.situations[0].patterns = [
@@ -37,6 +63,20 @@ describe("ghost.fingerprint/v1", () => {
     const result = GhostFingerprintSchema.safeParse(input);
 
     expect(result.success).toBe(false);
+  });
+
+  it("rejects legacy status fields in canonical fingerprint.yml entries", () => {
+    const principle = fullFingerprint();
+    principle.principles[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(principle).success).toBe(false);
+
+    const contract = fullFingerprint();
+    contract.experience_contracts[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(contract).success).toBe(false);
+
+    const pattern = fullFingerprint();
+    pattern.patterns[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(pattern).success).toBe(false);
   });
 
   it("reports unknown typed refs inside the fingerprint", () => {
@@ -96,6 +136,8 @@ describe("ghost.fingerprint/v1", () => {
   it("reports unknown topology scope and surface type references", () => {
     const input = fullFingerprint();
     input.situations[0].surface_type = "unknown-surface";
+    input.exemplars[0].scope = "unknown-scope";
+    input.exemplars[0].surface_type = "unknown-surface";
     input.principles[0].applies_to = {
       scopes: ["unknown-scope"],
       surface_types: ["unknown-surface"],
@@ -104,7 +146,7 @@ describe("ghost.fingerprint/v1", () => {
 
     const report = lintGhostFingerprint(input);
 
-    expect(report.errors).toBe(4);
+    expect(report.errors).toBe(6);
     expect(report.issues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -123,8 +165,29 @@ describe("ghost.fingerprint/v1", () => {
           rule: "fingerprint-situation-unknown",
           path: "principles[0].applies_to.situations[0]",
         }),
+        expect.objectContaining({
+          rule: "fingerprint-scope-unknown",
+          path: "exemplars[0].scope",
+        }),
+        expect.objectContaining({
+          rule: "fingerprint-surface-type-unknown",
+          path: "exemplars[0].surface_type",
+        }),
       ]),
     );
+  });
+
+  it("reports unknown exemplar refs", () => {
+    const input = fullFingerprint();
+    input.exemplars[0].refs = ["pattern:missing-pattern"];
+
+    const report = lintGhostFingerprint(input);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "fingerprint-ref-unknown",
+      path: "exemplars[0].refs[0]",
+    });
   });
 
   it("requires check refs to use check:*", () => {
@@ -144,14 +207,6 @@ describe("ghost.fingerprint/v1", () => {
 function minimalFingerprint() {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    summary: {},
-    topology: {},
-    situations: [],
-    principles: [],
-    experience_contracts: [],
-    patterns: [],
-    implementation_vocabulary: {},
-    review_policy: {},
   };
 }
 
@@ -175,14 +230,22 @@ function fullFingerprint() {
         },
       ],
       surface_types: ["dense-dashboard", "docs"],
-      examples: [
-        {
-          path: "apps/dashboard/src/routes/orders/page.tsx",
-          surface_type: "dense-dashboard",
-          note: "Order review table",
-        },
-      ],
     },
+    exemplars: [
+      {
+        id: "orders-table",
+        path: "apps/dashboard/src/routes/orders/page.tsx",
+        title: "Order review table",
+        surface_type: "dense-dashboard",
+        scope: "dashboard",
+        note: "Dense filtering and comparison surface.",
+        why: "Shows the compact hierarchy future dashboard work should preserve.",
+        refs: [
+          "principle:dense-workflows-prioritize-scanning",
+          "pattern:compact-filter-toolbar",
+        ],
+      },
+    ],
     situations: [
       {
         id: "user-is-filtering-an-operations-table",
@@ -204,7 +267,6 @@ function fullFingerprint() {
     principles: [
       {
         id: "dense-workflows-prioritize-scanning",
-        status: "accepted",
         principle:
           "Dense operational workflows should optimize for comparison, speed, and recovery before visual novelty.",
         applies_to: {
@@ -226,7 +288,6 @@ function fullFingerprint() {
     experience_contracts: [
       {
         id: "destructive-actions-require-clear-confirmation",
-        status: "accepted",
         contract:
           "Destructive actions need explicit confirmation and a clear recovery path.",
         obligations: ["confirm intent", "explain consequence"],
@@ -235,7 +296,6 @@ function fullFingerprint() {
     patterns: [
       {
         id: "compact-filter-toolbar",
-        status: "accepted",
         kind: "composition",
         pattern: "Filters stay visually attached to the table they affect.",
         guidance: ["keep primary filters before secondary actions"],
@@ -247,11 +307,6 @@ function fullFingerprint() {
       libraries: ["local dashboard primitives"],
       assets: ["status icons"],
       notes: ["current vocabulary is replaceable implementation material"],
-    },
-    review_policy: {
-      proposal_policy: ["agents may propose but not promote memory"],
-      experience_gap_categories: ["missing-memory", "unclear-intent"],
-      memory_gap_policy: ["continue conservatively and propose durable memory"],
     },
   };
 }

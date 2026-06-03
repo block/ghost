@@ -17,7 +17,7 @@ const sections: {
     name: "Getting Started",
     href: "/docs/getting-started",
     description:
-      "Install Ghost, capture a repo fingerprint, and learn the loop around .ghost.",
+      "Install Ghost, set up repo memory, and learn the loop around .ghost.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {

@@ -31,8 +31,5 @@ export const CHECKS_FILENAME = "checks.yml";
 /** Optional directory containing accepted/rejected product-experience decisions. */
 export const DECISIONS_DIRNAME = "decisions";
 
-/** Optional directory containing candidate product-experience memory changes. */
-export const PROPOSALS_DIRNAME = "proposals";
-
 /** Optional directory containing generated, non-canonical caches. */
 export const CACHE_DIRNAME = "cache";

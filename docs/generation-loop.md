@@ -1,15 +1,11 @@
 # Product Fingerprint Loop
 
 Ghost gives UI generators and product-development agents local, auditable
-product experience memory. The canonical input is the resolved Ghost memory
-stack for the task path, starting with `.ghost/fingerprint.yml` and adding any
-nested child bundles.
+product experience memory. Generation starts from checked-in prose,
+optional inventory, and exemplars. Checks validate the result afterward.
 
 ```text
-.ghost/fingerprint.yml
-apps/checkout/.ghost/fingerprint.yml
-merged checks, intent, decisions, proposals
-.ghost/cache/inventory.json
+product prose + inventory + exemplars
         |
         v
 host agent or generator
@@ -24,32 +20,37 @@ ghost check + ghost review
 deterministic gates + advisory product-experience findings
 ```
 
-Ghost prepares the input and checks the output. It does not own the generator.
-Use any agent or tool that can read local context and apply changes.
+Ghost prepares the input and checks the output. It does not own the generator,
+memory lifecycle, approval workflow, or design-system registry. Use any agent or
+tool that can read local context and apply changes.
 
 ## Before Generation
 
-Build a brief from the resolved memory stack:
+Build a brief from the generation packet:
 
-1. Run `ghost stack <path>` or resolve the applicable `.ghost/` layers for the
-   task path.
-2. Read broad-to-local merged `fingerprint.yml` memory.
-3. Select the relevant `situations`.
-4. Carry applicable `principles`, `experience_contracts`, and `patterns` into
+1. Read `.ghost/fingerprint.yml` as canonical product prose and exemplar
+   anchors.
+2. Select the relevant `situations`.
+3. Carry applicable `principles`, `experience_contracts`, and `patterns` into
    the work.
-5. Use `implementation_vocabulary` only as current material that may help
-   satisfy the selected product memory.
-6. Read merged checks to know which deterministic rules can block.
-7. Read open proposals from the stack as unresolved context, not truth.
+4. Inspect relevant `exemplars` as concrete examples of what good looks like.
+5. Use generated inventory and `implementation_vocabulary` only as material
+   that may help satisfy the selected product memory.
+6. Read active checks in `.ghost/checks.yml` to know which deterministic rules
+   can block.
+7. Use optional `intent.md`, accepted decisions, and nested stacks only when
+   the project has opted into those advanced inputs.
 
 Generated inventory can help orient an agent, but it is cache:
 
 ```bash
+mkdir -p .ghost/cache
 ghost inventory > .ghost/cache/inventory.json
 ```
 
-Inventory answers what exists now. The fingerprint answers what matters, why,
-and how agents should compose or review product experience.
+Inventory answers what exists now. Fingerprint prose answers what matters and
+why. Exemplars show concrete surfaces an agent should inspect before composing
+or reviewing product experience.
 
 ## Generation
 
@@ -59,13 +60,14 @@ The generator should preserve:
 - relevant user/task/state obligations
 - interface and capability behavior
 - copy, disclosure, failure, and recovery contracts
-- restraint and pacing from accepted patterns
+- restraint and pacing from patterns
+- concrete precedent from exemplars
 - accessibility, responsive behavior, and visual choices when they are grounded
   in principles, contracts, or patterns
 
-If the requested work intentionally diverges from memory, the agent should name
-the divergence in its response or create a proposal. It should not rewrite
-canonical memory silently.
+If requested work intentionally diverges from memory, the agent should name the
+divergence in its response. Memory changes are ordinary Git-reviewed edits to
+`fingerprint.yml`, `checks.yml`, and optional rationale files when present.
 
 ## Review
 
@@ -90,20 +92,20 @@ ghost review --base main --include-memory
 
 Without `--package`, advisory review packets include `stacks[]`, one for each
 changed-file memory stack. Each stack includes changed files, layer dirs, merged
-fingerprint memory, merged checks, proposals, and provenance.
+fingerprint memory, merged checks, decisions, and provenance.
 
 Advisory review packets include:
 
 - the current diff
 - `fingerprint.yml` memory
+- relevant exemplars
 - active checks
 - optional accepted decisions
-- open proposals
 - finding categories for fixes, intentional divergence, missing memory,
   experience gaps, and eval uncertainty
 
-Review findings should cite the diff location, relevant fingerprint memory, any
-active check when blocking, and open proposals when relevant.
+Review findings should cite the diff location, relevant fingerprint memory,
+relevant exemplars when useful, and any active check when blocking.
 
 ## Remediation
 
@@ -111,9 +113,8 @@ When review flags drift, the host agent chooses the smallest useful response:
 
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.
-- Create a `missing-memory`, `intentional-divergence`, `experience-gap`, or
-  `check-candidate` proposal.
-- Promote memory only when a human accepts the change.
+- Update `fingerprint.yml`, `checks.yml`, or optional rationale files when the
+  user asks to change memory.
 
 The loop is:
 
@@ -122,8 +123,7 @@ brief from fingerprint
   -> generate or edit
   -> run ghost check
   -> run ghost review
-  -> fix code or propose memory
-  -> human promotes durable memory
+  -> fix code or update memory through Git
 ```
 
 ## CI
@@ -137,7 +137,7 @@ ghost check --base main
 ghost review --base main --format markdown
 ```
 
-Wrappers that store memory outside `.ghost` can pass
+Advanced wrappers that store memory outside `.ghost` can pass
 `--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
 exact single-bundle mode and bypasses stack discovery.
 

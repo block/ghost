@@ -16,7 +16,6 @@ import {
   CONFIG_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
-  PROPOSALS_DIRNAME,
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
 
@@ -73,7 +72,6 @@ export interface ScanStatus {
   config: ScanStageReport;
   checks: ScanStageReport;
   intent: ScanStageReport;
-  proposals: ScanStageReport;
   cache: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
@@ -85,7 +83,7 @@ export interface ScanStatus {
  * Inspect a Ghost memory directory and report whether the canonical
  * `fingerprint.yml` exists. Generated inventory is cache, not a prerequisite:
  * the durable product-experience memory is fingerprint.yml plus optional
- * checks/proposals.
+ * checks. Other files are supplemental when present.
  */
 export async function scanStatus(
   dirPath: string,
@@ -96,7 +94,6 @@ export async function scanStatus(
   const configPath = resolve(dir, CONFIG_FILENAME);
   const checksPath = resolve(dir, GHOST_CHECKS_FILENAME);
   const intentPath = resolve(dir, INTENT_FILENAME);
-  const proposalsPath = resolve(dir, PROPOSALS_DIRNAME);
   const cachePath = resolve(dir, CACHE_DIRNAME);
 
   const [
@@ -104,14 +101,12 @@ export async function scanStatus(
     configPresent,
     checksPresent,
     intentPresent,
-    proposalsPresent,
     cachePresent,
   ] = await Promise.all([
     pathExists(fingerprintPath, "file"),
     pathExists(configPath, "file"),
     pathExists(checksPath, "file"),
     pathExists(intentPath, "file"),
-    pathExists(proposalsPath, "directory"),
     pathExists(cachePath, "directory"),
   ]);
 
@@ -131,10 +126,6 @@ export async function scanStatus(
     state: intentPresent ? "present" : "missing",
     path: intentPath,
   };
-  const proposals: ScanStageReport = {
-    state: proposalsPresent ? "present" : "missing",
-    path: proposalsPath,
-  };
   const cache: ScanStageReport = {
     state: cachePresent ? "present" : "missing",
     path: cachePath,
@@ -146,7 +137,6 @@ export async function scanStatus(
     config,
     checks,
     intent,
-    proposals,
     cache,
     readiness: await scanReadiness(fingerprintPath, fingerprintPresent),
     recommended_next: fingerprintPresent ? null : "fingerprint",
@@ -218,7 +208,7 @@ async function scanReadiness(
     principles?: unknown[];
     experience_contracts?: unknown[];
     patterns?: unknown[];
-    topology?: { examples?: unknown[] };
+    exemplars?: unknown[];
     implementation_vocabulary?: {
       tokens?: unknown[];
       components?: unknown[];
@@ -249,7 +239,7 @@ async function scanReadiness(
   if (productMemoryCount === 0 && implementationVocabularyCount === 0) {
     return readinessReport("memory-empty", {
       reasons: [
-        "fingerprint.yml is valid but has no principles, situations, experience contracts, patterns, or implementation vocabulary yet.",
+        "fingerprint.yml is valid but has no product-experience entries or implementation vocabulary yet.",
       ],
       cannot_review: [
         "product identity",
@@ -279,7 +269,7 @@ async function scanReadiness(
   }
 
   return readinessReport("memory-ready", {
-    product_surface_count: fingerprint.topology?.examples?.length ?? 0,
+    product_surface_count: fingerprint.exemplars?.length ?? 0,
     implementation_vocabulary_rows: implementationVocabularyRows,
     reasons: ["fingerprint.yml contains product-experience memory."],
     can_review: [

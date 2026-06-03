@@ -36,24 +36,36 @@ describe("scanStatus readiness", () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("present");
+    expect(status.cache.state).toBe("missing");
     expect(status.recommended_next).toBeNull();
     expect(status.readiness.state).toBe("memory-empty");
     expect(status.readiness.cannot_review).toContain("product identity");
   });
 
-  it("reports ready memory when fingerprint.yml has accepted experience entries", async () => {
+  it("reports ready memory when fingerprint.yml has experience entries", async () => {
     await writeFile(
       join(dir, "fingerprint.yml"),
       fingerprintFile(`
 principles:
   - id: dense-workflows-prioritize-scanning
-    status: accepted
     principle: Dense workflows optimize for comparison and recovery.
+topology:
+  scopes:
+    - id: dashboard
+      paths: [apps/dashboard]
+      surface_types: [dense-dashboard]
+  surface_types: [dense-dashboard]
 patterns:
   - id: preserve-table-density
-    status: accepted
     kind: composition
     pattern: Keep dense operational tables scannable.
+exemplars:
+  - id: orders-table
+    path: apps/dashboard/orders.tsx
+    surface_type: dense-dashboard
+    scope: dashboard
+    refs:
+      - pattern:preserve-table-density
 implementation_vocabulary:
   tokens:
     - color.background
@@ -64,9 +76,11 @@ implementation_vocabulary:
 
     const status = await scanStatus(dir);
 
+    expect(status.cache.state).toBe("missing");
     expect(status.readiness.state).toBe("memory-ready");
     expect(status.readiness.implementation_vocabulary_rows.tokens).toBe(1);
     expect(status.readiness.implementation_vocabulary_rows.components).toBe(1);
+    expect(status.readiness.product_surface_count).toBe(1);
     expect(status.readiness.can_review).toContain("surface behavior");
   });
 
@@ -95,21 +109,7 @@ implementation_vocabulary:
 function fingerprintFile(overrides = ""): string {
   if (overrides.trim()) {
     return `schema: ghost.fingerprint/v1
-summary: {}
-topology: {}
-situations: []
-experience_contracts: []
-review_policy: {}
 ${overrides}`;
   }
-  return `schema: ghost.fingerprint/v1
-summary: {}
-topology: {}
-situations: []
-principles: []
-experience_contracts: []
-patterns: []
-implementation_vocabulary: {}
-review_policy: {}
-${overrides}`;
+  return "schema: ghost.fingerprint/v1\n";
 }

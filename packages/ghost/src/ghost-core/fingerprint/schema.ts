@@ -9,12 +9,6 @@ const SlugIdSchema = z
       "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
   });
 
-export const GhostFingerprintStatusSchema = z.enum([
-  "accepted",
-  "proposed",
-  "deprecated",
-]);
-
 export const GhostFingerprintPatternKindSchema = z.enum([
   "visual",
   "behavioral",
@@ -35,6 +29,17 @@ export const GhostFingerprintRefSchema = z
   .min(1)
   .regex(
     /^(principle|situation|experience_contract|pattern|check):[a-z0-9][a-z0-9._-]*$/,
+    {
+      message:
+        "ref must be typed as prefix:slug, e.g. principle:dense-workflows",
+    },
+  );
+
+export const GhostFingerprintMemoryRefSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^(principle|situation|experience_contract|pattern):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
         "ref must be typed as prefix:slug, e.g. principle:dense-workflows",
@@ -77,19 +82,23 @@ export const GhostFingerprintTopologyScopeSchema = z
   })
   .strict();
 
-export const GhostFingerprintTopologyExampleSchema = z
-  .object({
-    path: z.string().min(1),
-    surface_type: SlugIdSchema.optional(),
-    note: z.string().min(1).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintTopologySchema = z
   .object({
     scopes: z.array(GhostFingerprintTopologyScopeSchema).optional(),
     surface_types: z.array(SlugIdSchema).optional(),
-    examples: z.array(GhostFingerprintTopologyExampleSchema).optional(),
+  })
+  .strict();
+
+export const GhostFingerprintExemplarSchema = z
+  .object({
+    id: SlugIdSchema,
+    path: z.string().min(1),
+    title: z.string().min(1).optional(),
+    surface_type: SlugIdSchema.optional(),
+    scope: SlugIdSchema.optional(),
+    note: z.string().min(1).optional(),
+    why: z.string().min(1).optional(),
+    refs: z.array(GhostFingerprintMemoryRefSchema).optional(),
   })
   .strict();
 
@@ -112,7 +121,6 @@ export const GhostFingerprintSituationSchema = z
 export const GhostFingerprintPrincipleSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     principle: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
     guidance: z.array(z.string().min(1)).optional(),
@@ -125,7 +133,6 @@ export const GhostFingerprintPrincipleSchema = z
 export const GhostFingerprintExperienceContractSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     contract: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
     obligations: z.array(z.string().min(1)).optional(),
@@ -137,7 +144,6 @@ export const GhostFingerprintExperienceContractSchema = z
 export const GhostFingerprintPatternSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     kind: GhostFingerprintPatternKindSchema,
     pattern: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
@@ -158,24 +164,20 @@ export const GhostFingerprintImplementationVocabularySchema = z
   })
   .strict();
 
-export const GhostFingerprintReviewPolicySchema = z
-  .object({
-    proposal_policy: z.array(z.string().min(1)).optional(),
-    experience_gap_categories: z.array(z.string().min(1)).optional(),
-    memory_gap_policy: z.array(z.string().min(1)).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintSchema = z
   .object({
     schema: z.literal(GHOST_FINGERPRINT_SCHEMA),
-    summary: GhostFingerprintSummarySchema,
-    topology: GhostFingerprintTopologySchema,
-    situations: z.array(GhostFingerprintSituationSchema),
-    principles: z.array(GhostFingerprintPrincipleSchema),
-    experience_contracts: z.array(GhostFingerprintExperienceContractSchema),
-    patterns: z.array(GhostFingerprintPatternSchema),
-    implementation_vocabulary: GhostFingerprintImplementationVocabularySchema,
-    review_policy: GhostFingerprintReviewPolicySchema,
+    summary: GhostFingerprintSummarySchema.optional().default({}),
+    topology: GhostFingerprintTopologySchema.optional().default({}),
+    situations: z.array(GhostFingerprintSituationSchema).optional().default([]),
+    principles: z.array(GhostFingerprintPrincipleSchema).optional().default([]),
+    experience_contracts: z
+      .array(GhostFingerprintExperienceContractSchema)
+      .optional()
+      .default([]),
+    patterns: z.array(GhostFingerprintPatternSchema).optional().default([]),
+    exemplars: z.array(GhostFingerprintExemplarSchema).optional().default([]),
+    implementation_vocabulary:
+      GhostFingerprintImplementationVocabularySchema.optional().default({}),
   })
   .strict();
