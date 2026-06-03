@@ -53,10 +53,10 @@ export default function Home() {
             <p className="thesis-item">
               The fingerprint is a repository-local, versioned artifact that
               captures product experience memory: the situations, principles,
-              contracts, and patterns that shape how the system is actually
-              used. Components, tokens, and libraries remain replaceable
-              implementation material; Ghost gives agents the judgment that sits
-              around them.
+              contracts, patterns, and exemplars that shape how the system is
+              actually used. Components, tokens, and libraries remain
+              replaceable implementation material; Ghost gives agents the
+              judgment that sits around them.
             </p>
             <p className="thesis-item">
               The broader boundary is product experience: anything that shapes
@@ -70,7 +70,7 @@ export default function Home() {
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
                 <code>.ghost/fingerprint.yml</code> stores canonical product
-                experience memory
+                experience prose and exemplars
               </li>
               <li>
                 <code>.ghost/checks.yml</code> stores deterministic gates
@@ -92,7 +92,8 @@ export default function Home() {
             <p className="thesis-item">
               The distinction is deliberate. Inventory describes what exists.
               The fingerprint describes how the product repeatedly chooses to
-              use what exists.
+              use what exists. Exemplars show concrete surfaces worth inspecting
+              before generation or review.
             </p>
             <p className="thesis-item">
               This makes the fingerprint closer to a behavioral prior than a
@@ -103,6 +104,7 @@ export default function Home() {
               <li>constraints on density, spacing, and interaction patterns</li>
               <li>allowed deviations from base components</li>
               <li>explicit anti-patterns the surface avoids</li>
+              <li>curated examples of what good looks like in practice</li>
             </ul>
             <p className="thesis-item">
               For an agent, this changes the task. UI generation is no longer
@@ -111,9 +113,11 @@ export default function Home() {
             </p>
             <p className="thesis-item">A typical loop becomes:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
-              <li>Condition on the fingerprint</li>
+              <li>Condition on product prose, inventory, and exemplars</li>
               <li>Generate UI against the design system</li>
-              <li>Evaluate the result against fingerprint constraints</li>
+              <li>
+                Evaluate the result against active checks and review memory
+              </li>
               <li>Revise until violations are reduced or resolved</li>
             </ol>
             <p className="thesis-item">

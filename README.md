@@ -74,25 +74,25 @@ npx ghost skill install --dest ~/.codex/skills/ghost
 Then ask your agent in plain English:
 
 ```text
-Capture a Ghost fingerprint for this repo.
+Set up Ghost memory for this repo.
 Brief this work from the Ghost fingerprint.
 Review this PR for Ghost drift.
 Compare these two Ghost bundles.
 ```
 
-## Fingerprint Capture
+## Fingerprint Memory
 
-Fingerprint Capture is a BYOA workflow. Your agent reads, interprets, and edits
-memory through ordinary file changes. The CLI supplies deterministic status,
-validation, checks, emitted prompts, and review packets.
+Fingerprint Memory is a BYOA workflow. Your agent reads, interprets, and edits
+checked-in product prose and exemplars through ordinary file changes. Optional
+inventory can orient generation; active checks validate the result.
 
 Ask your agent:
 
 ```text
-Capture a Ghost fingerprint for this repo.
+Set up Ghost memory for this repo.
 ```
 
-During capture, the agent checkpoints with commands like:
+During setup or memory edits, the agent checkpoints with commands like:
 
 ```bash
 ghost init
@@ -155,7 +155,7 @@ ghost ack --stance aligned --reason "Initial baseline"
 ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-`ghost scan --format json` emits deterministic capture state: whether
+`ghost scan --format json` emits deterministic memory state: whether
 `fingerprint.yml` is present, whether it has product-experience entries, which
 optional files exist, and what the next BYOA step should be. It does not call an
 LLM.
@@ -167,10 +167,10 @@ LLM.
 | `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml}`; use options only when optional files or scoped memory are needed. |
 | `ghost scan` | Report whether canonical fingerprint memory exists and whether it is ready to guide review. |
 | `ghost lint` | Validate a bundle or individual artifact. |
-| `ghost verify` | Validate fingerprint evidence paths, typed check refs, and optional memory. |
+| `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional memory. |
 | `ghost check` | Run active `ghost.checks/v1` gates against a diff, grouping changed files by memory stack unless `--package` is provided. `--format json` emits `ghost.check-report/v1` for wrappers. |
 | `ghost review` | Emit an evidence-routed advisory packet grounded in fingerprint memory, active checks, and the diff. |
-| `ghost emit <kind>` | Emit `review-command` or `context-bundle` from checked-in memory. |
+| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet from checked-in memory. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
 ## Advanced And Legacy Commands
@@ -194,7 +194,7 @@ workspace packages remain only for historical/development context.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | Unified public package. Ships the `ghost` CLI, fingerprint capture helpers, deterministic checks, advisory review packets, advanced comparison/stance helpers, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
+| [`packages/ghost`](./packages/ghost) | Unified public package. Ships the `ghost` CLI, fingerprint memory helpers, deterministic checks, advisory review packets, advanced comparison/stance helpers, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
 | [`packages/ghost-core`](./packages/ghost-core) | Private historical shared library. Runtime code is folded into `packages/ghost` for publishing. | no |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many members. | no |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: shadcn registry + `ghost-mcp` MCP server. | no |

@@ -10,10 +10,13 @@ are written.
 
 Ghost provides:
 
-- `fingerprint.yml`, `checks.yml`, decisions, intent, and stack merge rules.
+- `fingerprint.yml` product prose and exemplars, optional `checks.yml`,
+  decisions, intent, and stack merge rules.
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved
   memory stack.
+- `ghost emit context-bundle` for a generation packet that separates product
+  prose, optional inventory, exemplars, and active checks.
 - `--memory-dir <relative-dir>` for wrappers that store Ghost memory somewhere
   other than `.ghost`.
 
@@ -27,6 +30,10 @@ Host adapters provide:
 
 Ghost does not emit host-specific check formats. Consume JSON and translate it
 outside Ghost.
+
+Inventory cache is optional source material. Adapters should not treat
+`.ghost/cache/inventory.json` as canonical product memory; checked-in
+`fingerprint.yml` remains the authority.
 
 ## Check Flow
 

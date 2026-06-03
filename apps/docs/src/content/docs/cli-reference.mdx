@@ -9,10 +9,10 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts: initialize memory bundles, report capture
-progress, validate files, emit raw inventory, compare bundles, check diffs,
-emit handoff packets, and record intent. Your agent does the reading, writing,
-and reviewing.
+The CLI does the repeatable parts: initialize memory bundles, report
+fingerprint readiness, validate files, emit raw inventory, compare bundles,
+check diffs, emit handoff packets, and record intent. Your agent does the
+reading, writing, and reviewing.
 
 Canonical Ghost memory starts here, with optional child bundles for scoped
 product areas:
@@ -33,7 +33,7 @@ npx ghost skill install
 Ask your agent to run the workflow:
 
 ```text
-Capture a Ghost fingerprint for this repo.
+Set up Ghost memory for this repo.
 ```
 
 Commands are grouped by job:
@@ -54,20 +54,20 @@ reference.
 
 </DocSection>
 
-<DocSection title="ghost - capture support and bundle checks">
+<DocSection title="ghost - memory support and bundle checks">
 
-`ghost` supports Fingerprint Capture. It inventories the repo, reports capture
-progress, validates memory, verifies evidence paths and typed refs,
-describes legacy direct markdown when needed, diffs direct fingerprint files,
-runs legacy/cache survey ops, and emits agent-ready outputs. Ordinary Git
-workflow is the staging layer for memory edits.
+`ghost` supports repo-local fingerprint memory. It inventories the repo,
+reports memory/readiness state, validates memory, verifies evidence, exemplar
+paths, and typed refs, describes legacy direct markdown when needed, diffs
+direct fingerprint files, runs legacy/cache survey ops, and emits agent-ready
+outputs. Ordinary Git workflow is the staging layer for memory edits.
 
 ### Initialize - `init`
 
-Create a `.ghost/` memory skeleton with `fingerprint.yml`, `checks.yml`, and
-`cache/`. Use `--scope <path>` for nested
-`<path>/.ghost/` memory. Use `--memory-dir <relative-dir>` when a host adapter
-stores Ghost memory under a different safe relative directory.
+Create a `.ghost/` memory skeleton with `fingerprint.yml` and `checks.yml`.
+Use `--scope <path>` for nested `<path>/.ghost/` memory. Use
+`--memory-dir <relative-dir>` when a host adapter stores Ghost memory under a
+different safe relative directory.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
@@ -78,7 +78,7 @@ ghost init --scope apps/checkout --with-intent
 ghost init --scope apps/checkout --memory-dir .design/memory
 ```
 
-### Capture progress - `scan`
+### Memory readiness - `scan`
 
 Report whether canonical fingerprint memory is present, whether it has
 entries, which optional files exist, and which BYOA step the agent should run
@@ -141,9 +141,9 @@ ghost lint --all --memory-dir .design/memory
 ### Bundle fidelity - `verify`
 
 Validate that a root `.ghost` bundle is internally faithful:
-`fingerprint.yml` evidence paths should resolve from `--root`, typed check refs
-must point at known checks, and active checks must be grounded in fingerprint
-memory.
+`fingerprint.yml` evidence and exemplar paths should resolve from `--root`,
+typed check refs must point at known checks, and active checks must be grounded
+in fingerprint memory.
 With `--all`, Ghost verifies every discovered bundle and stack merge.
 
 <CliHelp tool="ghost" command="verify" hideDescription />
@@ -204,7 +204,9 @@ ghost diff a.md b.md --format json
 
 Emit deterministic artifacts for agents and editors. Supported kinds are
 `review-command` and `context-bundle`; both default to `.ghost/fingerprint.yml`
-memory. Legacy direct markdown emit is no longer supported.
+memory. `context-bundle` is the generation packet: product prose, optional
+inventory cache, curated exemplars, and active checks. Legacy direct markdown
+emit is no longer supported.
 Use `--path` to emit from the merged stack for a repo path, or `--package` to
 stay in exact single-bundle mode. `--memory-dir` applies only to stack
 resolution through `--path`; `--package` remains exact-path mode.
@@ -244,8 +246,8 @@ ghost check --base main --memory-dir .design/memory --format json
 ### Advisory packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in
-`.ghost/fingerprint.yml`, optional `.ghost/intent.md`, accepted decisions,
-checks, and the diff. Without `--package`, JSON output includes
+`.ghost/fingerprint.yml`, exemplars, optional `.ghost/intent.md`, accepted
+decisions, checks, and the diff. Without `--package`, JSON output includes
 `stacks[]`, each with changed files, layer dirs, merged memory, checks,
 decisions, and provenance. Use `--memory-dir` for adapter-owned memory
 locations.
@@ -310,7 +312,7 @@ ghost diverge palette --reason "Dark-mode-first palette for this product"
 ### Skill bundle - `skill install`
 
 Install the unified `ghost` skill bundle into a host agent. It contains
-Fingerprint Capture, survey/cache, patterns, schema, recall, brief, critique,
+fingerprint memory, survey/cache, patterns, schema, recall, brief, critique,
 review, verify, compare, and remediate recipes.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
@@ -358,7 +360,7 @@ then ask your agent in plain English.
 
 | Recipe | Bundle | Trigger |
 | --- | --- | --- |
-| `capture` | `ghost` | "Capture a Ghost fingerprint for this repo" |
+| `capture` | `ghost` | "Set up Ghost memory for this repo" |
 | `survey` | `ghost` | "use survey cache" / "extract tokens as source material" |
 | `patterns` | `ghost` | "write fingerprint patterns" / "codify product-experience patterns" |
 | `recall` / `brief` / `critique` | `ghost` | "brief this work" / "critique this change" |
