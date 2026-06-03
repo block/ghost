@@ -1,5 +1,5 @@
 #!/bin/sh
-# Ghost — install the unified design-memory skill bundle.
+# Ghost — install the unified product-experience memory skill bundle.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
@@ -195,4 +195,5 @@ printf '  cd <your-repo>\n'
 printf '  Tell your agent: "Set up Ghost memory for this repo"\n'
 printf '\n'
 printf 'The agent will use fingerprint.yml as checked-in product-experience memory,\n'
-printf 'optionally gather inventory cache, and run ghost lint/verify/check/review.\n'
+printf 'curate exemplars, keep checks.yml as deterministic gates, optionally gather\n'
+printf 'inventory cache, and run ghost lint/verify/check/review.\n'
