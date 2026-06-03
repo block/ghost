@@ -10,7 +10,7 @@ handoffs:
     prompt: Run ghost check against this bundle
 ---
 
-# Recipe: Capture A Ghost Fingerprint
+# Recipe: Author Ghost Fingerprint Memory
 
 **Goal:** record durable product-experience memory in `.ghost/fingerprint.yml`.
 If a change is uncommitted or unmerged, it is draft work. If it is checked in,
@@ -129,7 +129,7 @@ exist.
 
 ## Gaps
 
-If the repo does not yet contain enough product experience to capture, say so.
+If the repo does not yet contain enough product experience to record, say so.
 When memory is silent, continue from nearby product surfaces, local components,
 token and copy conventions, optional rationale files when present, and ordinary
 UX judgment when safe. Label that reasoning as provisional and

@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, capture repo-local product experience memory, and review generated UI against it.
+description: Install Ghost, author repo-local product experience memory, and review generated UI against it.
 kicker: Docs
 section: guide
 order: 10
@@ -9,9 +9,9 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost keeps a project's accepted product experience memory in the repo, where
-your agent can use it. The public package is `@anarchitecture/ghost`, and it
-installs one CLI: `ghost`.
+Ghost keeps a project's product experience memory in the repo, where your agent
+can use it. The public package is `@anarchitecture/ghost`, and it installs one
+CLI: `ghost`.
 
 The canonical fingerprint is small:
 
@@ -33,6 +33,9 @@ can hold generated inventory, but it is not canonical memory. Ordinary Git
 workflow is the staging layer: uncommitted or unmerged memory edits are drafts,
 and checked-in `fingerprint.yml` is truth for Ghost.
 
+Generation starts from product prose, optional generated inventory, and curated
+exemplars. Checks validate the result afterward; they are not generation memory.
+
 | Surface | Job | Verbs |
 | --- | --- | --- |
 | `ghost` | Create and check root or nested `.ghost/` memory bundles, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
@@ -49,28 +52,29 @@ npx ghost --help
 npx ghost skill install
 ```
 
-Once the skill is installed, ask your agent in plain English: "Capture a Ghost
-fingerprint for this repo" or "review this PR for drift". The recipe tells the
+Once the skill is installed, ask your agent in plain English: "Set up Ghost
+memory for this repo" or "review this PR for drift". The recipe tells the
 agent what to read, what to write, and which CLI checks to run.
 
 </DocSection>
 
-<DocSection title="Capture Your First Fingerprint">
+<DocSection title="Author Your First Fingerprint">
 
 ```text
-Capture a Ghost fingerprint for this repo.
+Set up Ghost memory for this repo.
 ```
 
-Fingerprint Capture records durable product-experience memory:
+Fingerprint memory records durable product-experience guidance:
 
 1. **Summary and topology** - what product this is, who it serves, and where UI
    surfaces live.
 2. **Situations** - user, task, and state moments that change obligations.
 3. **Principles and contracts** - durable product judgment plus behavior,
    disclosure, failure, and recovery rules.
-4. **Patterns and implementation vocabulary** - accepted visual, content,
-   behavior, and composition memory plus current tokens and components agents
-   may use to implement it.
+4. **Patterns and exemplars** - visual, content, behavior, and composition
+   memory plus concrete surfaces that show what good looks like.
+5. **Implementation vocabulary** - current tokens and components agents may use
+   to implement the memory.
 
 ```bash
 ghost init --with-intent
@@ -87,6 +91,12 @@ ghost verify --all
 
 Inventory is optional source material. Curate durable conclusions into
 `fingerprint.yml`, then use normal Git review for approval.
+
+For generation, emit a packet that keeps these inputs separate:
+
+```bash
+ghost emit context-bundle
+```
 
 </DocSection>
 
@@ -114,8 +124,8 @@ Review this PR for design drift
 
 `ghost check` applies active deterministic gates from the resolved memory stack
 for each changed file. `ghost review` emits advisory context grounded in merged
-`fingerprint.yml` memory, optional `intent.md`, checks, and the diff. Add
-`--include-memory` to include accepted decisions in the advisory packet. Use
+`fingerprint.yml` memory, exemplars, optional `intent.md`, checks, and the diff.
+Add `--include-memory` to include accepted decisions in the advisory packet. Use
 `--package <dir>` when you need exact single-bundle behavior.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities

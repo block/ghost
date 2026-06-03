@@ -242,5 +242,5 @@ When `--reference packages/ghost-ui/.ghost` is used, generated config points to
 vocabulary; it is not copied into the product's own memory.
 
 Use `ghost inventory > .ghost/cache/inventory.json` when observed repo facts are
-useful source material. Create `.ghost/cache/` first when it does not exist.
+useful source material. Make `.ghost/cache/` first when it does not exist.
 Curate durable conclusions into `fingerprint.yml`.

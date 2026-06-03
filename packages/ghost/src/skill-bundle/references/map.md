@@ -2,7 +2,7 @@
 name: map
 description: Use repo topology as optional source material for fingerprint.yml.
 handoffs:
-  - label: Capture fingerprint memory
+  - label: Update fingerprint memory
     skill: capture
     prompt: Use topology observations to update .ghost/fingerprint.yml
 ---
@@ -15,7 +15,7 @@ handoffs:
 Use this recipe when an older workflow, existing repo, or migration still has a
 `.ghost/map.md`, or when you need to orient before writing `fingerprint.yml`.
 
-## What To Capture
+## What To Record
 
 Look for facts that help agents route product-experience judgment:
 

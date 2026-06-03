@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Capture, validate, and review repo-local Ghost memory. Use when the user wants to capture a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or use advanced comparison/drift stance workflows.
+description: Author, validate, and review repo-local Ghost memory. Use when the user wants to set up a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or use advanced comparison/drift stance workflows.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -52,10 +52,10 @@ or check format.
 | `ghost init [dir]` | Create `.ghost/fingerprint.yml` and `.ghost/checks.yml`. |
 | `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
 | `ghost lint [file-or-dir]` | Validate a bundle or artifact. |
-| `ghost verify [dir] --root <dir>` | Validate evidence paths and typed check refs. |
+| `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
-| `ghost review --base <ref>` | Emit an advisory review packet grounded in memory and diff evidence. |
-| `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
+| `ghost review --base <ref>` | Emit an advisory review packet grounded in memory, exemplars, checks, and diff evidence. |
+| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced And Legacy CLI Verbs
@@ -72,7 +72,7 @@ or check format.
 
 ## Workflows
 
-- Fingerprint Capture: follow [references/capture.md](references/capture.md).
+- Fingerprint memory: follow [references/capture.md](references/capture.md).
 - Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
 - Recall product-experience context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
@@ -90,7 +90,7 @@ or check format.
 - Use local evidence as provisional when fingerprint memory is silent.
 - Treat memory changes as ordinary Git-reviewed edits.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
-  Fingerprint Capture complete.
+  fingerprint memory complete.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
 - Use optional config, intent, decisions, cache, nested stacks, and custom memory
   dirs only when present or requested.

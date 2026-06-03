@@ -223,11 +223,11 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
+      "Verify a root Ghost memory bundle: fingerprint evidence, exemplars, and checks are grounded.",
     )
     .option(
       "--root <dir>",
-      "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
+      "Optional target root used to resolve fingerprint.yml evidence and exemplar paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
@@ -274,7 +274,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report fingerprint capture progress: produced artifacts, evidence readiness, and the next BYOA step.",
+      "Report fingerprint memory/readiness state: produced artifacts, review readiness, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
@@ -313,7 +313,7 @@ export function registerScanCommands(cli: CAC): void {
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
-          process.stdout.write(`capture dir: ${status.dir}\n\n`);
+          process.stdout.write(`memory dir: ${status.dir}\n\n`);
           process.stdout.write(
             `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
           );

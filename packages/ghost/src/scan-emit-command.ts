@@ -41,7 +41,7 @@ export function registerEmitCommand(cli: CAC): void {
   cli
     .command(
       "emit <kind>",
-      `Emit a derived artifact from the fingerprint package (kinds: ${SUPPORTED_KINDS.join(", ")})`,
+      `Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)`,
     )
     .option("--path <path>", "Resolve a nested memory stack for this repo path")
     .option(
@@ -62,7 +62,10 @@ export function registerEmitCommand(cli: CAC): void {
     )
     // context-bundle flags:
     .option("--readme", "Include README.md (context-bundle)")
-    .option("--prompt-only", "Emit only prompt.md (context-bundle)")
+    .option(
+      "--prompt-only",
+      "Emit only prompt.md (context-bundle generation packet)",
+    )
     .option(
       "--name <name>",
       "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",

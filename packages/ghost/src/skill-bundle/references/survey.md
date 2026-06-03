@@ -5,7 +5,7 @@ handoffs:
   - label: Author fingerprint patterns
     skill: patterns
     prompt: Interpret observed facts into .ghost/fingerprint.yml patterns
-  - label: Capture fingerprint memory
+  - label: Update fingerprint memory
     skill: capture
     prompt: Use observed facts to update .ghost/fingerprint.yml
 ---

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T02:20:45.727Z",
+  "generatedAt": "2026-06-03T03:48:35.268Z",
   "tools": [
     {
       "tool": "ghost",
@@ -96,12 +96,12 @@
           "tool": "ghost",
           "name": "verify",
           "rawName": "verify [dir]",
-          "description": "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
+          "description": "Verify a root Ghost memory bundle: fingerprint evidence, exemplars, and checks are grounded.",
           "options": [
             {
               "rawName": "--root <dir>",
               "name": "root",
-              "description": "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
+              "description": "Optional target root used to resolve fingerprint.yml evidence and exemplar paths (default: cwd)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -136,7 +136,7 @@
           "tool": "ghost",
           "name": "scan",
           "rawName": "scan [dir]",
-          "description": "Report fingerprint capture progress: produced artifacts, evidence readiness, and the next BYOA step.",
+          "description": "Report fingerprint memory/readiness state: produced artifacts, review readiness, and the next BYOA step.",
           "options": [
             {
               "rawName": "--include-scopes",
@@ -279,7 +279,7 @@
           "tool": "ghost",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package (kinds: review-command, context-bundle)",
+          "description": "Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)",
           "options": [
             {
               "rawName": "--path <path>",
@@ -332,7 +332,7 @@
             {
               "rawName": "--prompt-only",
               "name": "promptOnly",
-              "description": "Emit only prompt.md (context-bundle)",
+              "description": "Emit only prompt.md (context-bundle generation packet)",
               "default": null,
               "takesValue": false,
               "negated": false
