@@ -83,7 +83,7 @@ export interface ScanStatus {
  * Inspect a Ghost memory directory and report whether the canonical
  * `fingerprint.yml` exists. Generated inventory is cache, not a prerequisite:
  * the durable product-experience memory is fingerprint.yml plus optional
- * checks, decisions, and intent.
+ * checks. Other files are supplemental when present.
  */
 export async function scanStatus(
   dirPath: string,

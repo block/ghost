@@ -228,11 +228,82 @@ describe("ghost CLI", () => {
     expect(manifest.dimensions.typography.reason).toBe("editorial");
   });
 
+  it("initializes the default memory skeleton without cache", async () => {
+    const init = await runCli(["init", "--format", "json"], dir);
+    const scan = await runCli(["scan", "--format", "json"], dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(Object.keys(initOutput).sort()).toEqual([
+      "checks",
+      "dir",
+      "fingerprintYml",
+    ]);
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
+    ).resolves.toBe("schema: ghost.fingerprint/v1\n");
+    await expect(
+      readFile(join(dir, ".ghost", "checks.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.checks/v1");
+    const status = JSON.parse(scan.stdout);
+    expect(status.cache.state).toBe("missing");
+
+    const lint = await runCli(["lint"], dir);
+    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const check = await runCli(["check", "--diff", "change.patch"], dir);
+    const review = await runCli(["review", "--diff", "change.patch"], dir);
+    const reviewCommand = await runCli(["emit", "review-command"], dir);
+    const contextBundle = await runCli(["emit", "context-bundle"], dir);
+
+    expect(lint.code).toBe(0);
+    expect(verify.code).toBe(0);
+    expect(check.code).toBe(0);
+    expect(review.code).toBe(0);
+    expect(review.stdout).toContain("schema: ghost.fingerprint/v1");
+    expect(reviewCommand.code).toBe(0);
+    expect(contextBundle.code).toBe(0);
+  });
+
+  it("rejects checks grounded in omitted sparse fingerprint memory", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "checks.yml"),
+      `schema: ghost.checks/v1
+id: local
+checks:
+  - id: missing-memory-check
+    title: Missing memory check
+    status: active
+    severity: serious
+    derives_from: principle:not-recorded
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{3,8}'
+`,
+    );
+
+    const lint = await runCli(["lint", ".ghost", "--format", "json"], dir);
+
+    expect(lint.code).toBe(1);
+    const report = JSON.parse(lint.stdout);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-grounding-unknown",
+      path: "checks.yml.checks[0].derives_from",
+    });
+  });
+
   it("initializes a bundle and reports fingerprint capture state as json", async () => {
     const init = await runCli(["init", "--with-intent"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
 
     expect(init.code).toBe(0);
+    expect(init.stdout).toContain("fingerprint.yml:");
+    expect(init.stdout).toContain("checks.yml:");
+    expect(init.stdout).not.toContain("cache/:");
     expect(
       await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
     ).toContain("schema: ghost.fingerprint/v1");
@@ -243,7 +314,7 @@ describe("ghost CLI", () => {
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
     expect(status.proposals).toBeUndefined();
-    expect(status.cache.state).toBe("present");
+    expect(status.cache.state).toBe("missing");
     expect(status.readiness.state).toBe("memory-empty");
   });
 
@@ -279,6 +350,7 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.cache).toBeUndefined();
     expect(await realpath(initOutput.config)).toBe(
       await realpath(join(dir, ".ghost", "config.yml")),
     );
@@ -286,11 +358,11 @@ describe("ghost CLI", () => {
     const fingerprint = parseYaml(
       await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
     ) as Record<string, unknown>;
-    expect(fingerprint.situations).toEqual([]);
-    expect(fingerprint.principles).toEqual([]);
-    expect(fingerprint.experience_contracts).toEqual([]);
-    expect(fingerprint.patterns).toEqual([]);
-    expect(fingerprint.implementation_vocabulary).toMatchObject({
+    expect(fingerprint).not.toHaveProperty("situations");
+    expect(fingerprint).not.toHaveProperty("principles");
+    expect(fingerprint).not.toHaveProperty("experience_contracts");
+    expect(fingerprint).not.toHaveProperty("patterns");
+    expect(fingerprint.implementation_vocabulary).toEqual({
       libraries: ["ghost-ui"],
     });
 

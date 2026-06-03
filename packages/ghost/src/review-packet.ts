@@ -176,13 +176,13 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint memory, human intent, accepted decisions, or active deterministic checks; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint memory, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
-When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, accepted decisions, or human intent. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 
-If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap. Do not silently rewrite memory during review; memory changes are ordinary Git-reviewed edits to fingerprint.yml, checks.yml, decisions, or intent.
+If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap. Do not silently rewrite memory during review; memory changes are ordinary Git-reviewed edits to fingerprint.yml, checks.yml, and optional rationale files when present.
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 

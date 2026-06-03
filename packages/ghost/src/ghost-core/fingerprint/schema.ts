@@ -152,12 +152,16 @@ export const GhostFingerprintImplementationVocabularySchema = z
 export const GhostFingerprintSchema = z
   .object({
     schema: z.literal(GHOST_FINGERPRINT_SCHEMA),
-    summary: GhostFingerprintSummarySchema,
-    topology: GhostFingerprintTopologySchema,
-    situations: z.array(GhostFingerprintSituationSchema),
-    principles: z.array(GhostFingerprintPrincipleSchema),
-    experience_contracts: z.array(GhostFingerprintExperienceContractSchema),
-    patterns: z.array(GhostFingerprintPatternSchema),
-    implementation_vocabulary: GhostFingerprintImplementationVocabularySchema,
+    summary: GhostFingerprintSummarySchema.optional().default({}),
+    topology: GhostFingerprintTopologySchema.optional().default({}),
+    situations: z.array(GhostFingerprintSituationSchema).optional().default([]),
+    principles: z.array(GhostFingerprintPrincipleSchema).optional().default([]),
+    experience_contracts: z
+      .array(GhostFingerprintExperienceContractSchema)
+      .optional()
+      .default([]),
+    patterns: z.array(GhostFingerprintPatternSchema).optional().default([]),
+    implementation_vocabulary:
+      GhostFingerprintImplementationVocabularySchema.optional().default({}),
   })
   .strict();

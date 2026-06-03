@@ -20,15 +20,25 @@ Ghost treats it as canonical memory.
 .ghost/
   fingerprint.yml # canonical product-experience memory
   checks.yml      # optional deterministic gates
-  cache/          # optional generated inventory
-  intent.md       # optional human-authored context
-  decisions/      # optional historical rationale
 ```
 
-Generated inventory answers what exists right now. `fingerprint.yml` answers
-what matters and why. Keep those layers separate: cache may be refreshed or
-discarded, while fingerprint memory is edited deliberately and reviewed through
-Git.
+`fingerprint.yml` answers what matters and why. `checks.yml` contains only
+optional active gates. Git is the approval boundary; Ghost does not manage a
+separate memory lifecycle.
+
+`fingerprint.yml` may start sparse:
+
+```yaml
+schema: ghost.fingerprint/v1
+```
+
+Add only sections that contain real memory. Ghost normalizes omitted top-level
+sections internally, so an empty project does not need placeholder arrays or
+objects.
+
+Optional files may appear beside the core files: `intent.md` for human-authored
+context, `decisions/` for historical rationale, `config.yml` for implementation
+routing, and `cache/` for explicit generated inventory.
 
 ## Steps
 
@@ -48,9 +58,9 @@ reference UI registry or library. This writes implementation routing into
 `.ghost/config.yml` and records only implementation vocabulary in the blank
 product fingerprint; it does not copy reference memory into product intent.
 
-For a monorepo or deeply scoped product area, initialize local memory with
-`ghost init --scope <path>`. Keep broad product identity in the root bundle and
-put local situations, patterns, checks, decisions, and intent in the child.
+For a monorepo or deeply scoped product area, `ghost init --scope <path>` is an
+advanced option. Keep broad product identity in the root bundle and put local
+situations, patterns, and checks in the child only when scoped memory is needed.
 
 ### 2. Orient
 
@@ -61,6 +71,7 @@ hierarchy, behavior, copy, accessibility, and trust.
 Optional helper:
 
 ```bash
+mkdir -p .ghost/cache
 ghost inventory . > .ghost/cache/inventory.json
 ```
 
@@ -69,7 +80,8 @@ fingerprint memory without judgment.
 
 ### 3. Write Memory
 
-Edit `fingerprint.yml` with the smallest useful durable memory:
+Edit `fingerprint.yml` with the smallest useful durable memory. Omit sections
+until they have real entries:
 
 - `summary`: product identity, audience, goals, anti-goals, tradeoffs, tone.
 - `topology`: scopes, surface types, and representative examples.
@@ -101,20 +113,22 @@ enforcement still has its own lifecycle.
 ```bash
 ghost lint .ghost
 ghost verify .ghost --root <target>
-ghost lint --all
-ghost verify --all
 ghost check --base HEAD
 ```
 
 `lint` validates canonical shape, `verify` validates evidence paths and typed
 check refs, and `check` runs only active deterministic gates.
 
+Use `ghost lint --all` and `ghost verify --all` only when nested memory bundles
+exist.
+
 ## Gaps
 
 If the repo does not yet contain enough product experience to capture, say so.
 When memory is silent, continue from nearby product surfaces, local components,
-token and copy conventions, accepted decisions or human intent, and ordinary UX
-judgment when safe. Label that reasoning as provisional and non-Ghost-backed.
+token and copy conventions, optional rationale files when present, and ordinary
+UX judgment when safe. Label that reasoning as provisional and
+non-Ghost-backed.
 
 ## Never
 

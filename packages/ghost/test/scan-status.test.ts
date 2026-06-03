@@ -36,6 +36,7 @@ describe("scanStatus readiness", () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("present");
+    expect(status.cache.state).toBe("missing");
     expect(status.recommended_next).toBeNull();
     expect(status.readiness.state).toBe("memory-empty");
     expect(status.readiness.cannot_review).toContain("product identity");
@@ -62,6 +63,7 @@ implementation_vocabulary:
 
     const status = await scanStatus(dir);
 
+    expect(status.cache.state).toBe("missing");
     expect(status.readiness.state).toBe("memory-ready");
     expect(status.readiness.implementation_vocabulary_rows.tokens).toBe(1);
     expect(status.readiness.implementation_vocabulary_rows.components).toBe(1);
@@ -93,19 +95,7 @@ implementation_vocabulary:
 function fingerprintFile(overrides = ""): string {
   if (overrides.trim()) {
     return `schema: ghost.fingerprint/v1
-summary: {}
-topology: {}
-situations: []
-experience_contracts: []
 ${overrides}`;
   }
-  return `schema: ghost.fingerprint/v1
-summary: {}
-topology: {}
-situations: []
-principles: []
-experience_contracts: []
-patterns: []
-implementation_vocabulary: {}
-${overrides}`;
+  return "schema: ghost.fingerprint/v1\n";
 }

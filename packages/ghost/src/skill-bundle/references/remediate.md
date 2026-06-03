@@ -12,11 +12,11 @@ description: Suggest minimal code or memory changes after Ghost drift findings.
 4. For advisory findings, cite the relevant fingerprint memory and suggest the
    smallest product-aligned change.
 5. If the finding is actually intentional divergence, say so and ask whether to
-   record it as a decision or memory update.
+   update checked-in memory.
 
 Use `ghost check` after implementation changes. Use `ghost lint` and
 `ghost verify` after memory changes.
 
 Do not broaden the patch into unrelated refactors. Do not edit memory silently
-unless the user asks to update `fingerprint.yml`, `checks.yml`, decisions, or
-intent.
+unless the user asks to update `fingerprint.yml`, `checks.yml`, or optional
+rationale files.

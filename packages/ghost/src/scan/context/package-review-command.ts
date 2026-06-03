@@ -72,7 +72,7 @@ function packageWorkflowSection(memory: PackageMemory): string {
 3. Apply principles, experience contracts, and patterns before choosing implementation details.
 4. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
 5. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-6. Run \`ghost review --include-memory${memoryDirFlag}\` for the advisory packet when you need full diff context and memory excerpts.
+6. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and memory excerpts; add \`--include-memory\` only when optional decisions matter.
 7. Cite the diff location, fingerprint.yml memory, and any active check for every finding.`;
 }
 
@@ -85,7 +85,7 @@ Only findings backed by an active check should be treated as blocking. Everythin
 
 Review only what Ghost memory or active checks make relevant to the product experience.
 
-When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, accepted decisions, or human intent. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 
 If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` as a review finding. Do not silently rewrite memory during review; memory changes are ordinary edits that go through normal Git review.`;
 }
@@ -244,7 +244,7 @@ function packageReviewFooter(memory: PackageMemory): string {
   const memoryDir = memory.memoryDir ?? ".ghost";
   return `---
 
-Generated from \`${memoryDir}/fingerprint.yml\` for ${memory.name}. Re-run \`ghost emit review-command${stackMemoryDirFlag(memory)}\` after updating fingerprint.yml, checks.yml, decisions, or intent.`;
+Generated from \`${memoryDir}/fingerprint.yml\` for ${memory.name}. Re-run \`ghost emit review-command${stackMemoryDirFlag(memory)}\` after updating fingerprint.yml, checks.yml, or optional rationale files.`;
 }
 
 function stackMemoryDirFlag(memory: PackageMemory): string {
