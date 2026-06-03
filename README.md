@@ -213,7 +213,6 @@ pnpm --filter @anarchitecture/ghost pack
 
 No API key is required to run Ghost. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are
 optional and only used by semantic embedding helpers when a host opts in.
-`GITHUB_TOKEN` is optional for resolving tracked fingerprints from GitHub.
 
 ## Resources
 
