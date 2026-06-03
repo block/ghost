@@ -578,6 +578,15 @@ checks:
     ).resolves.toContain("Exemplars");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("no-hardcoded-ui-color");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.not.toContain("candidate-density-check");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.not.toContain("status: proposed");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.not.toContain("Proposal Threshold");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
@@ -1182,6 +1191,22 @@ checks:
       examples:
         - Code/Features/Lending/LendingUI
     repair: Replace literals with Arcade/Cash semantic tokens.
+  - id: candidate-density-check
+    title: Candidate density check
+    status: proposed
+    severity: nit
+    derives_from: principle:tokenized-ui-color
+    applies_to:
+      scopes: [lending]
+      paths: [Code/Features/Lending]
+    detector:
+      type: required-regex
+      pattern: 'CashTheme'
+    evidence:
+      support: 0.5
+      observed_count: 1
+      examples:
+        - Code/Features/Lending/LendingUI
 `,
   );
 }

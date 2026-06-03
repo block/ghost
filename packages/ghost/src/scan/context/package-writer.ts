@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { stringify as stringifyYaml } from "yaml";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 import { loadPackageMemory, type PackageMemory } from "./package-memory.js";
 import type { WriteContextResult } from "./writer.js";
@@ -134,12 +135,27 @@ ${formatInventory(context)}`);
 
 ${formatExemplars(context)}`);
 
-  if (context.checksRaw?.trim()) {
-    parts.push(`# Active Checks
+  if (context.checks) {
+    const activeChecks = context.checks.checks.filter(
+      (check) => check.status === "active",
+    );
+    if (activeChecks.length > 0) {
+      parts.push(`# Active Checks
 
 \`\`\`yaml
-${context.checksRaw.trim()}
+${stringifyYaml(
+  {
+    ...context.checks,
+    checks: activeChecks,
+  },
+  { lineWidth: 0 },
+).trim()}
 \`\`\``);
+    } else {
+      parts.push(`# Active Checks
+
+No active checks are recorded. Proposed or disabled checks are not blocking validation.`);
+    }
   }
 
   if (context.intent?.trim()) {
