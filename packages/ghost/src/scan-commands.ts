@@ -37,7 +37,6 @@ import {
   verifyFingerprintPackage,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
-import { registerProposalCommand } from "./scan-proposal-command.js";
 import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
@@ -132,11 +131,11 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
+      "Create a root .ghost memory skeleton (fingerprint.yml and checks.yml)",
     )
     .option(
       "--scope <path>",
-      "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+      "Create a scoped <path>/<memory-dir> memory skeleton",
     )
     .option(
       "--memory-dir <relative-dir>",
@@ -200,15 +199,13 @@ export function registerScanCommands(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            `Initialized fingerprint package: ${paths.dir}\n`,
+            `Initialized Ghost memory skeleton: ${paths.dir}\n`,
           );
           process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
           }
-          process.stdout.write(`  proposals/: ${paths.proposals}\n`);
-          process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
             process.stdout.write(`  intent.md: ${paths.intent}\n`);
           }
@@ -226,11 +223,11 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root Ghost memory bundle: fingerprint evidence paths and checks are grounded.",
+      "Verify a root Ghost memory bundle: fingerprint evidence, exemplars, and checks are grounded.",
     )
     .option(
       "--root <dir>",
-      "Optional target root used to resolve fingerprint.yml evidence paths (default: cwd)",
+      "Optional target root used to resolve fingerprint.yml evidence and exemplar paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
@@ -277,7 +274,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report fingerprint capture progress: produced artifacts, evidence readiness, and the next BYOA step.",
+      "Report fingerprint memory/readiness state: produced artifacts, review readiness, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
@@ -316,7 +313,7 @@ export function registerScanCommands(cli: CAC): void {
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
-          process.stdout.write(`capture dir: ${status.dir}\n\n`);
+          process.stdout.write(`memory dir: ${status.dir}\n\n`);
           process.stdout.write(
             `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
           );
@@ -325,9 +322,6 @@ export function registerScanCommands(cli: CAC): void {
           );
           process.stdout.write(
             `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
-          );
-          process.stdout.write(
-            `  proposals   (proposals/):      ${fmt(status.proposals.state)}\n`,
           );
           process.stdout.write(
             `  cache       (cache/):          ${fmt(status.cache.state)}\n`,
@@ -341,7 +335,7 @@ export function registerScanCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: fingerprint capture complete - all stages present\n",
+              "next: edit fingerprint.yml, then run ghost verify/check/review\n",
             );
           }
           process.stdout.write(`readiness: ${status.readiness.state}\n`);
@@ -669,7 +663,6 @@ export function registerScanCommands(cli: CAC): void {
       }
     });
 
-  registerProposalCommand(cli);
   registerEmitCommand(cli);
 }
 
@@ -685,7 +678,6 @@ async function nestedBundleStatus(
         ...pkg,
         fingerprint: status.fingerprint,
         checks: status.checks,
-        proposals: status.proposals,
         intent: status.intent,
         readiness: status.readiness,
       };
@@ -700,7 +692,6 @@ interface NestedBundleStatus {
   memory_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
   checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
-  proposals: Awaited<ReturnType<typeof scanStatus>>["proposals"];
   intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
   readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
 }
@@ -728,8 +719,6 @@ function initCommandOutput(
     fingerprintYml: paths.fingerprintYml,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    proposals: paths.proposals,
-    cache: paths.cache,
     ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
 }

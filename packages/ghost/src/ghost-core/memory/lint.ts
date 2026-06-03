@@ -1,15 +1,9 @@
 import type { ZodIssue } from "zod";
-import { GhostDecisionSchema, GhostProposalSchema } from "./schema.js";
+import { GhostDecisionSchema } from "./schema.js";
 import type { GhostMemoryLintIssue, GhostMemoryLintReport } from "./types.js";
 
 export function lintGhostDecision(input: unknown): GhostMemoryLintReport {
   const result = GhostDecisionSchema.safeParse(input);
-  if (!result.success) return finalize(zodIssues(result.error.issues));
-  return finalize([]);
-}
-
-export function lintGhostProposal(input: unknown): GhostMemoryLintReport {
-  const result = GhostProposalSchema.safeParse(input);
   if (!result.success) return finalize(zodIssues(result.error.issues));
   return finalize([]);
 }

@@ -44,9 +44,13 @@ Optional memory lives beside it:
 
 - `intent.md` for human-authored or human-approved product intent.
 - `decisions/*.yml` for accepted/rejected product-experience rationale.
-- `proposals/*.yml` for staged memory changes before promotion.
 - `cache/` for generated inventory. Cache answers what exists; fingerprint
   memory answers what matters and why.
+
+Generation starts from product prose in `fingerprint.yml`, optional generated
+inventory in `cache/`, and curated exemplars in `fingerprint.yml`. Checks remain
+validation and enforcement, not generation memory. Ordinary Git review is the
+approval boundary for memory edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
 appear in older repos or as migration source material. They are not canonical
@@ -66,21 +70,21 @@ memory for new Ghost work.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`. |
-| `ghost scan` | Report scan state and BYOA next-step guidance. |
+| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml}`. |
+| `ghost scan` | Report fingerprint memory/readiness state and BYOA next-step guidance. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/source material. |
 | `ghost lint` | Validate a bundle or single artifact. |
-| `ghost verify` | Validate fingerprint evidence paths, typed check refs, and optional memory. |
+| `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional memory. |
 | `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
 | `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v2` workflows. |
 | `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
-| `ghost review` | Emit an evidence-routed advisory review packet. |
+| `ghost review` | Emit an evidence-routed advisory review packet grounded in memory, exemplars, checks, and the diff. |
 | `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
 | `ghost diverge` | Declare intentional divergence on a dimension. |
-| `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
+| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
 `ghost scan --format json` is deterministic handoff state for the host agent.
@@ -131,8 +135,8 @@ first publish becomes `0.1.0`.
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
 - The canonical on-disk form is `.ghost/fingerprint.yml` plus optional
-  `.ghost/checks.yml`, `.ghost/proposals/`, `.ghost/decisions/`,
-  `.ghost/intent.md`, and `.ghost/cache/`.
+  `.ghost/checks.yml`, `.ghost/decisions/`, `.ghost/intent.md`, and
+  `.ghost/cache/`.
 - Direct `fingerprint.md` remains only for legacy/direct compare workflows.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.

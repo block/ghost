@@ -4,11 +4,8 @@ import { resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   GHOST_DECISIONS_DIRNAME,
-  GHOST_PROPOSALS_DIRNAME,
   type GhostDecisionDocument,
-  type GhostProposalDocument,
   lintGhostDecision,
-  lintGhostProposal,
 } from "#ghost-core";
 import { parseUnifiedDiff } from "./core/index.js";
 import {
@@ -42,9 +39,6 @@ async function buildSingleBundleReviewPacket(options: {
     intent: (await readOptional(paths.intent)) ?? null,
     checks: (await readOptional(paths.checks)) ?? null,
     config: (await readOptionalPackageConfig(paths.config)) ?? null,
-    open_proposals: await readOpenProposals(
-      resolve(paths.dir, GHOST_PROPOSALS_DIRNAME),
-    ),
   };
   if (options.includeMemory) {
     packet.memory = {
@@ -83,7 +77,6 @@ async function buildStackReviewPacket(options: {
     intent: first.merged.intent,
     checks: stringifyYaml(first.merged.checks, { lineWidth: 0 }),
     config: config ?? null,
-    open_proposals: first.merged.open_proposals,
     stacks,
   };
   if (options.includeMemory) {
@@ -111,17 +104,10 @@ function baseReviewPacket(
       "experience-gap",
       "eval-uncertainty",
     ],
-    proposal_types: [
-      "missing-memory",
-      "intentional-divergence",
-      "experience-gap",
-      "check-candidate",
-    ],
     required_finding_citations: [
       "diff location",
       "fingerprint.yml memory",
       "active check when blocking",
-      "open proposal when relevant",
       "repair or intentional-divergence rationale",
     ],
   };
@@ -142,8 +128,6 @@ function reviewStackFromMemoryStack(
       fingerprint: stack.merged.fingerprint,
       intent: stack.merged.intent,
       checks: stack.merged.checks,
-      proposals: stack.merged.proposals,
-      open_proposals: stack.merged.open_proposals,
       decisions: stack.merged.decisions,
     },
     provenance: stack.provenance,
@@ -155,7 +139,6 @@ interface ReviewPacketBase {
   package_dir: string;
   diff: string;
   finding_categories: string[];
-  proposal_types: string[];
   required_finding_citations: string[];
 }
 
@@ -166,12 +149,10 @@ interface ReviewPacket {
   intent: string | null;
   checks: string | null;
   config: GhostPackageConfig | null;
-  open_proposals: GhostProposalDocument[];
   memory?: { decisions: GhostDecisionDocument[] };
   stacks?: ReviewStackPacket[];
   diff: string;
   finding_categories: string[];
-  proposal_types: string[];
   required_finding_citations: string[];
 }
 
@@ -185,8 +166,6 @@ interface ReviewStackPacket {
     fingerprint: unknown;
     intent: string | null;
     checks: unknown;
-    proposals: GhostProposalDocument[];
-    open_proposals: GhostProposalDocument[];
     decisions: GhostDecisionDocument[];
   };
   provenance: GhostMemoryStack["provenance"];
@@ -197,17 +176,13 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint memory, human intent, open proposals, or active deterministic checks; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint memory, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
-When accepted fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, accepted decisions, or human intent. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 
-## Proposal Threshold
-
-Create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review. Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
-
-If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap only after applying the threshold. Include \`Memory action: none | recommend-proposal | create-proposal\` for each memory-gap finding. Default to \`recommend-proposal\`; use \`create-proposal\` only when the user explicitly asks to capture memory or when following the dedicated proposal workflow. Candidate proposal kinds: ${packet.proposal_types.join(", ")}. Do not silently rewrite canonical memory.
+If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap. Do not silently rewrite memory during review; memory changes are ordinary Git-reviewed edits to fingerprint.yml, checks.yml, and optional rationale files when present.
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 
@@ -226,8 +201,6 @@ ${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonica
 ${formatMemorySection(packet.memory ?? null)}
 
 ${formatConfigSection(packet.config)}
-
-${formatProposalSection(packet.open_proposals)}
 
 ## Active Checks
 
@@ -259,7 +232,6 @@ function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
         {
           fingerprint: stack.merged.fingerprint,
           checks: stack.merged.checks,
-          open_proposals: stack.merged.open_proposals,
           provenance: stack.provenance,
         },
         { lineWidth: 0 },
@@ -315,39 +287,6 @@ async function readAcceptedDecisions(
   return decisions;
 }
 
-async function readOpenProposals(
-  dirPath: string,
-): Promise<GhostProposalDocument[]> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dirPath, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-
-  const proposals: GhostProposalDocument[] = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!entry.isFile()) continue;
-    if (entry.name.startsWith(".")) continue;
-    if (!/\.ya?ml$/i.test(entry.name)) continue;
-
-    const path = resolve(dirPath, entry.name);
-    const parsed = parseYaml(await readFile(path, "utf-8"));
-    const report = lintGhostProposal(parsed);
-    if (report.errors > 0) {
-      const first = report.issues.find((issue) => issue.severity === "error");
-      const suffix = first?.path ? ` @ ${first.path}` : "";
-      throw new Error(
-        `${path} failed proposal lint: ${first?.message ?? "invalid proposal"}${suffix}`,
-      );
-    }
-    const proposal = parsed as GhostProposalDocument;
-    if (proposal.status === "open") proposals.push(proposal);
-  }
-
-  return proposals;
-}
-
 function formatMemorySection(
   memory: { decisions: GhostDecisionDocument[] } | null,
 ): string {
@@ -390,7 +329,7 @@ function formatConfigSection(config: GhostPackageConfig | null): string {
   if (!config) {
     return `## Implementation Config
 
-_No config.yml present. Review uses fingerprint.yml memory and the provided diff only._
+_No config.yml present. Review uses canonical fingerprint.yml memory and the provided diff only._
 `;
   }
 
@@ -400,29 +339,6 @@ _No config.yml present. Review uses fingerprint.yml memory and the provided diff
 ${stringifyYaml(config)}
 \`\`\`
 `;
-}
-
-function formatProposalSection(proposals: GhostProposalDocument[]): string {
-  if (proposals.length === 0) {
-    return `## Open Proposals
-
-_No open proposals found in .ghost/proposals._
-`;
-  }
-
-  const lines = ["## Open Proposals", ""];
-  for (const proposal of proposals) {
-    lines.push(`### ${proposal.title}`);
-    lines.push("");
-    lines.push(`- **ID:** \`${proposal.id}\``);
-    lines.push(`- **Kind:** ${proposal.kind}`);
-    lines.push(`- **Claim:** ${proposal.claim}`);
-    lines.push(`- **Rationale:** ${proposal.rationale}`);
-    lines.push(`- **Proposed action:** ${proposal.proposed_action.summary}`);
-    lines.push("");
-  }
-
-  return lines.join("\n");
 }
 
 function formatDecisionScope(

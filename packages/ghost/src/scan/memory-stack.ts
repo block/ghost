@@ -16,25 +16,24 @@ import {
   type GhostExperienceScope,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
-  type GhostFingerprintReviewPolicy,
   GhostFingerprintSchema,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
-  type GhostFingerprintTopologyExample,
   type GhostFingerprintTopologyScope,
-  type GhostProposalDocument,
-  GhostProposalSchema,
   lintGhostChecks,
   lintGhostDecision,
   lintGhostFingerprint,
-  lintGhostProposal,
   type MapFrontmatter,
 } from "#ghost-core";
 import {
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_YML_FILENAME,
 } from "./constants.js";
-import type { PackageMemory } from "./context/package-memory.js";
+import {
+  loadPackageInventory,
+  type PackageInventory,
+  type PackageMemory,
+} from "./context/package-memory.js";
 import type { FingerprintPackagePaths } from "./fingerprint-package.js";
 import {
   lintFingerprintPackage,
@@ -78,8 +77,8 @@ export interface GhostMemoryStackLayer extends GhostMemoryStackLayerRef {
   checks?: GhostChecksDocument;
   checks_raw?: string;
   intent?: string;
+  inventory: PackageInventory;
   decisions: GhostDecisionDocument[];
-  proposals: GhostProposalDocument[];
 }
 
 export interface GhostMemoryStack {
@@ -92,8 +91,6 @@ export interface GhostMemoryStack {
     checks: GhostChecksDocument;
     intent: string | null;
     decisions: GhostDecisionDocument[];
-    proposals: GhostProposalDocument[];
-    open_proposals: GhostProposalDocument[];
   };
   provenance: {
     merge: "child-wins-by-id";
@@ -262,7 +259,6 @@ export function buildMemoryStack(
   );
   const checks = mergeChecks(layers.map((layer) => layer.checks));
   const decisions = mergeById(layers.flatMap((layer) => layer.decisions));
-  const proposals = mergeById(layers.flatMap((layer) => layer.proposals));
   const checkLint = lintGhostChecks(checks, {
     fingerprint,
     map: mapFromFingerprint(fingerprint),
@@ -286,10 +282,6 @@ export function buildMemoryStack(
       checks,
       intent: mergeIntent(layers),
       decisions,
-      proposals,
-      open_proposals: proposals.filter(
-        (proposal) => proposal.status === "open",
-      ),
     },
     provenance: {
       merge: "child-wins-by-id",
@@ -306,13 +298,13 @@ export async function loadMemoryStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   const root = rootForMemoryPackageDir(paths.dir, normalizedMemoryDir);
-  const [fingerprintRaw, checksRaw, intent, decisions, proposals] =
+  const [fingerprintRaw, checksRaw, intent, inventory, decisions] =
     await Promise.all([
       readFile(paths.fingerprintYml, "utf-8"),
       readOptional(paths.checks),
       readOptional(paths.intent),
+      loadPackageInventory(paths),
       readDecisionDirectory(paths.decisions),
-      readProposalDirectory(paths.proposals),
     ]);
 
   const fingerprint = normalizeFingerprintPaths(
@@ -344,11 +336,9 @@ export async function loadMemoryStackLayer(
     ...(checks ? { checks } : {}),
     ...(checksRaw ? { checks_raw: checksRaw } : {}),
     ...(intent ? { intent } : {}),
+    inventory,
     decisions: decisions.map((decision) =>
       normalizeDecisionPaths(decision, root, repoRoot),
-    ),
-    proposals: proposals.map((proposal) =>
-      normalizeProposalPaths(proposal, root, repoRoot),
     ),
   };
 }
@@ -371,7 +361,10 @@ export function memoryStackToPackageMemory(
     checks: stack.merged.checks,
     checksRaw: stringifyYaml(stack.merged.checks, { lineWidth: 0 }),
     intent: stack.merged.intent ?? undefined,
-    openProposals: stack.merged.open_proposals,
+    inventory: stack.layers.at(-1)?.inventory ?? {
+      state: "missing",
+      path: `${stack.memory_dir}/cache/inventory.json`,
+    },
   };
 }
 
@@ -545,19 +538,6 @@ async function readDecisionDirectory(
   return docs;
 }
 
-async function readProposalDirectory(
-  dirPath: string,
-): Promise<GhostProposalDocument[]> {
-  const parsed = await readYamlFiles(dirPath);
-  const docs: GhostProposalDocument[] = [];
-  for (const { path, value } of parsed) {
-    const report = lintGhostProposal(value);
-    if (report.errors > 0) throwMemoryLintError(path, report.issues);
-    docs.push(GhostProposalSchema.parse(value) as GhostProposalDocument);
-  }
-  return docs;
-}
-
 async function readYamlFiles(
   dirPath: string,
 ): Promise<Array<{ path: string; value: unknown }>> {
@@ -604,8 +584,8 @@ function mergeFingerprints(
     principles: [],
     experience_contracts: [],
     patterns: [],
+    exemplars: [],
     implementation_vocabulary: {},
-    review_policy: {},
   };
 
   for (const fingerprint of fingerprints) {
@@ -624,6 +604,10 @@ function mergeFingerprints(
       ...fingerprint.experience_contracts,
     ]);
     merged.patterns = mergeById([...merged.patterns, ...fingerprint.patterns]);
+    merged.exemplars = mergeById([
+      ...merged.exemplars,
+      ...fingerprint.exemplars,
+    ]);
     merged.implementation_vocabulary = {
       tokens: mergeStrings(
         merged.implementation_vocabulary.tokens,
@@ -646,10 +630,6 @@ function mergeFingerprints(
         fingerprint.implementation_vocabulary.notes,
       ),
     };
-    merged.review_policy = mergeReviewPolicy(
-      merged.review_policy,
-      fingerprint.review_policy,
-    );
   }
 
   const report = lintGhostFingerprint(merged);
@@ -686,50 +666,19 @@ function mergeTopology(
     ...(parent.scopes ?? []),
     ...(child.scopes ?? []),
   ]) as GhostFingerprintTopologyScope[];
-  const examples = mergeByKey(
-    [...(parent.examples ?? []), ...(child.examples ?? [])],
-    (example) => example.path,
-  ) as GhostFingerprintTopologyExample[];
   return {
     scopes,
     surface_types: mergeStrings(
       mergeStrings(parent.surface_types, child.surface_types),
-      collectSurfaceTypes(scopes, examples),
+      collectSurfaceTypes(scopes),
     ),
-    examples,
   };
 }
 
 function collectSurfaceTypes(
   scopes: GhostFingerprintTopologyScope[],
-  examples: GhostFingerprintTopologyExample[],
 ): string[] | undefined {
-  return mergeStrings(
-    scopes.flatMap((scope) => scope.surface_types ?? []),
-    examples.flatMap((example) =>
-      example.surface_type ? [example.surface_type] : [],
-    ),
-  );
-}
-
-function mergeReviewPolicy(
-  parent: GhostFingerprintReviewPolicy,
-  child: GhostFingerprintReviewPolicy,
-): GhostFingerprintReviewPolicy {
-  return {
-    proposal_policy: mergeStrings(
-      parent.proposal_policy,
-      child.proposal_policy,
-    ),
-    experience_gap_categories: mergeStrings(
-      parent.experience_gap_categories,
-      child.experience_gap_categories,
-    ),
-    memory_gap_policy: mergeStrings(
-      parent.memory_gap_policy,
-      child.memory_gap_policy,
-    ),
-  };
+  return mergeStrings(scopes.flatMap((scope) => scope.surface_types ?? []));
 }
 
 function mergeChecks(
@@ -780,12 +729,10 @@ function normalizeFingerprintPaths(
     ...scope,
     paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
   }));
-  fingerprint.topology.examples = fingerprint.topology.examples?.map(
-    (example) => ({
-      ...example,
-      path: normalizePath(example.path, baseRoot, repoRoot),
-    }),
-  );
+  fingerprint.exemplars = fingerprint.exemplars.map((exemplar) => ({
+    ...exemplar,
+    path: normalizePath(exemplar.path, baseRoot, repoRoot),
+  }));
   fingerprint.situations = fingerprint.situations.map((entry) => ({
     ...entry,
     evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
@@ -858,23 +805,6 @@ function normalizeDecisionPaths(
     scope: normalizeExperienceScopePaths(decision.scope, baseRoot, repoRoot),
     evidence: normalizeExperienceEvidence(
       decision.evidence,
-      baseRoot,
-      repoRoot,
-    ),
-  };
-}
-
-function normalizeProposalPaths(
-  input: GhostProposalDocument,
-  baseRoot: string,
-  repoRoot: string,
-): GhostProposalDocument {
-  const proposal = clone(input);
-  return {
-    ...proposal,
-    scope: normalizeExperienceScopePaths(proposal.scope, baseRoot, repoRoot),
-    evidence: normalizeExperienceEvidence(
-      proposal.evidence,
       baseRoot,
       repoRoot,
     ),
