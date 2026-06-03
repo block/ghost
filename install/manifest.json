@@ -1,27 +1,24 @@
 {
   "$schema": "ghost.install-manifest/v1",
   "name": "ghost",
-  "description": "Ghost recipes — create, activate, review, and evolve the repo-local fingerprint bundle.",
+  "description": "Ghost recipes — create, brief, review, and preserve the repo-local fingerprint bundle.",
   "version": "0.1.0",
   "source": {
     "package": "packages/ghost/src/skill-bundle"
   },
   "files": [
     "SKILL.md",
-    "references/scan.md",
+    "references/brief.md",
+    "references/capture.md",
+    "references/compare.md",
+    "references/critique.md",
     "references/map.md",
     "references/survey.md",
     "references/patterns.md",
-    "references/schema.md",
     "references/recall.md",
-    "references/brief.md",
-    "references/critique.md",
-    "references/capture.md",
-    "references/promote.md",
-    "references/review.md",
-    "references/verify.md",
-    "references/compare.md",
     "references/remediate.md",
-    "assets/fingerprint.template.md"
+    "references/review.md",
+    "references/schema.md",
+    "references/verify.md"
   ]
 }

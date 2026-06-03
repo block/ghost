@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GHOST_DECISION_SCHEMA, GHOST_PROPOSAL_SCHEMA } from "./types.js";
+import { GHOST_DECISION_SCHEMA } from "./types.js";
 
 const SlugIdSchema = z
   .string()
@@ -54,27 +54,5 @@ export const GhostDecisionSchema = z
     scope: GhostExperienceScopeSchema.optional(),
     evidence: z.array(GhostExperienceEvidenceSchema).min(1),
     decided_at: z.string().datetime({ offset: true }),
-  })
-  .strict();
-
-export const GhostProposalActionSchema = z
-  .object({
-    target: z.enum(["decisions", "patterns", "checks", "intent"]),
-    summary: z.string().min(1),
-  })
-  .strict();
-
-export const GhostProposalSchema = z
-  .object({
-    schema: z.literal(GHOST_PROPOSAL_SCHEMA),
-    id: SlugIdSchema,
-    status: z.enum(["open", "accepted", "rejected", "superseded"]),
-    kind: z.enum(["decision", "pattern", "check", "intent"]),
-    title: z.string().min(1),
-    claim: z.string().min(1),
-    rationale: z.string().min(1),
-    scope: GhostExperienceScopeSchema.optional(),
-    evidence: z.array(GhostExperienceEvidenceSchema).min(1),
-    proposed_action: GhostProposalActionSchema,
   })
   .strict();
