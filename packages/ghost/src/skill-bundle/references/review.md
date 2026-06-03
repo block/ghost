@@ -22,10 +22,9 @@ handoffs:
 ghost check --base <ref>
 ```
 
-Fix deterministic failures first. These come from active human-promoted
-`checks.yml` rules in the resolved memory stack and are the only blocking
-findings in v1. Use `--package <dir>` only when the user asks for exact
-single-bundle behavior.
+Fix deterministic failures first. These come from active `checks.yml` rules in
+the resolved memory stack and are the only blocking findings in v1. Use
+`--package <dir>` only when the user asks for exact single-bundle behavior.
 
 ### 2. Build Advisory Context
 
@@ -38,7 +37,6 @@ Use the emitted packet as context. It includes:
 - `stacks[]` for changed files when nested bundles apply
 - merged `fingerprint.yml` memory
 - merged checks
-- open proposals
 - optional accepted decisions when requested with `--include-memory`
 - layer provenance
 - the diff
@@ -59,7 +57,6 @@ Each finding must cite:
 - diff location
 - `fingerprint.yml` memory
 - active check when blocking
-- open proposal when relevant
 - repair or intentional-divergence rationale
 
 Good advisory topics:
@@ -70,8 +67,8 @@ Good advisory topics:
 - generic composition
 - awkward action placement
 - copy or trust-contract mismatch
-- obligations grounded in fingerprint memory, human intent, open proposals, or
-  active checks
+- obligations grounded in fingerprint memory, human intent, accepted decisions,
+  or active checks
 
 Bad advisory topics:
 
@@ -80,44 +77,12 @@ Bad advisory topics:
 - enforcing a rule that is not in `checks.yml`
 - unrelated audit categories not grounded in Ghost memory
 
-When accepted fingerprint memory is silent, local evidence can still support
-advisory critique. Label those findings as provisional and non-Ghost-backed, and
-ground them in nearby product surfaces, local components, token or copy
-conventions, accepted decisions, or human intent. Ask the human before judging
-high-risk, irreversible, privacy/security/legal, or product-identity-defining
-choices.
+When fingerprint memory is silent, local evidence can still support advisory
+critique. Label those findings as provisional and non-Ghost-backed, and ground
+them in nearby product surfaces, local components, token or copy conventions,
+accepted decisions, or human intent. Ask the human before judging high-risk,
+irreversible, privacy/security/legal, or product-identity-defining choices.
 
-### 4. Apply The Proposal Threshold
-
-Do not create proposals for every ambiguity. A proposal is warranted only when
-the gap is durable enough to help a future agent generate or review work:
-
-- repeated across a surface, pattern, or workflow
-- high-impact for trust, safety, recovery, money, permissions, destructive
-  actions, or user confidence
-- explicitly stated by a human
-- intentionally divergent from accepted memory
-- likely to recur in future reviews
-- blocking confident classification as `fix`, `intentional-divergence`, or
-  `eval-uncertainty`
-
-Do not propose for isolated implementation details, weak local context,
-duplicates of open proposals, issues already fixable from accepted memory,
-vague taste concerns, or generic code quality.
-
-For memory-gap findings, include:
-
-```text
-Memory action: none | recommend-proposal | create-proposal
-```
-
-Default to `recommend-proposal`. Use `create-proposal` only when the user
-explicitly asks to capture memory or when following `propose.md`. Candidate
-proposal kinds:
-
-- `missing-memory`
-- `intentional-divergence`
-- `experience-gap`
-- `check-candidate`
-
-Humans promote durable memory into `fingerprint.yml` or `checks.yml`.
+Memory changes are ordinary Git-reviewed edits to `fingerprint.yml`,
+`checks.yml`, decisions, or intent. Do not silently rewrite memory during a
+review unless the user asks to update memory.

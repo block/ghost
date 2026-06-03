@@ -8,7 +8,7 @@ nested child bundles.
 ```text
 .ghost/fingerprint.yml
 apps/checkout/.ghost/fingerprint.yml
-merged checks, intent, decisions, proposals
+merged checks, intent, decisions
 .ghost/cache/inventory.json
         |
         v
@@ -40,7 +40,7 @@ Build a brief from the resolved memory stack:
 5. Use `implementation_vocabulary` only as current material that may help
    satisfy the selected product memory.
 6. Read merged checks to know which deterministic rules can block.
-7. Read open proposals from the stack as unresolved context, not truth.
+7. Read accepted decisions and `intent.md` when product rationale matters.
 
 Generated inventory can help orient an agent, but it is cache:
 
@@ -59,13 +59,13 @@ The generator should preserve:
 - relevant user/task/state obligations
 - interface and capability behavior
 - copy, disclosure, failure, and recovery contracts
-- restraint and pacing from accepted patterns
+- restraint and pacing from patterns
 - accessibility, responsive behavior, and visual choices when they are grounded
   in principles, contracts, or patterns
 
-If the requested work intentionally diverges from memory, the agent should name
-the divergence in its response or create a proposal. It should not rewrite
-canonical memory silently.
+If requested work intentionally diverges from memory, the agent should name the
+divergence in its response. Memory changes are ordinary edits to
+`fingerprint.yml`, `checks.yml`, decisions, or intent that go through Git review.
 
 ## Review
 
@@ -90,7 +90,7 @@ ghost review --base main --include-memory
 
 Without `--package`, advisory review packets include `stacks[]`, one for each
 changed-file memory stack. Each stack includes changed files, layer dirs, merged
-fingerprint memory, merged checks, proposals, and provenance.
+fingerprint memory, merged checks, decisions, and provenance.
 
 Advisory review packets include:
 
@@ -98,12 +98,11 @@ Advisory review packets include:
 - `fingerprint.yml` memory
 - active checks
 - optional accepted decisions
-- open proposals
 - finding categories for fixes, intentional divergence, missing memory,
   experience gaps, and eval uncertainty
 
-Review findings should cite the diff location, relevant fingerprint memory, any
-active check when blocking, and open proposals when relevant.
+Review findings should cite the diff location, relevant fingerprint memory, and
+any active check when blocking.
 
 ## Remediation
 
@@ -111,9 +110,8 @@ When review flags drift, the host agent chooses the smallest useful response:
 
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.
-- Create a `missing-memory`, `intentional-divergence`, `experience-gap`, or
-  `check-candidate` proposal.
-- Promote memory only when a human accepts the change.
+- Update `fingerprint.yml`, `checks.yml`, decisions, or intent when the user
+  asks to change memory.
 
 The loop is:
 
@@ -122,8 +120,7 @@ brief from fingerprint
   -> generate or edit
   -> run ghost check
   -> run ghost review
-  -> fix code or propose memory
-  -> human promotes durable memory
+  -> fix code or update memory through Git
 ```
 
 ## CI

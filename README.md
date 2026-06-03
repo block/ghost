@@ -12,7 +12,7 @@ The canonical bundle is intentionally small:
 
 - **`.ghost/fingerprint.yml`** is the source of truth for product experience
   memory: summary, topology, situations, principles, experience contracts,
-  patterns, implementation vocabulary, and review policy.
+  patterns, and implementation vocabulary.
 - **`.ghost/config.yml`** optionally records implementation roots and
   reference registries/libraries so agents know where to look without treating
   reference defaults as product intent.
@@ -22,10 +22,11 @@ The canonical bundle is intentionally small:
   product intent.
 - **`.ghost/decisions/*.yml`** optionally records accepted/rejected
   product-experience rationale.
-- **`.ghost/proposals/*.yml`** stages missing memory, intentional divergence,
-  experience gaps, and check candidates before human promotion.
 - **`.ghost/cache/`** may hold generated inventory. Cache answers what exists;
   `fingerprint.yml` answers what matters and why.
+
+Ordinary Git workflow is the staging layer. Uncommitted or unmerged edits are
+drafts; checked-in `fingerprint.yml` memory is canonical truth for Ghost.
 
 Older `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` artifacts are
 legacy/cache material. They are not canonical Ghost memory.
@@ -71,8 +72,8 @@ Compare these two Ghost bundles.
 
 ## Fingerprint Capture
 
-Fingerprint Capture is a BYOA workflow. Your agent reads, interprets, and
-writes the memory artifacts; the CLI supplies deterministic status,
+Fingerprint Capture is a BYOA workflow. Your agent reads, interprets, and edits
+memory through ordinary file changes. The CLI supplies deterministic status,
 validation, checks, emitted prompts, and review packets.
 
 Ask your agent:
@@ -122,7 +123,7 @@ ghost diverge typography --reason "Editorial product uses a different type scale
 ```
 
 `ghost scan --format json` emits deterministic capture state: whether
-`fingerprint.yml` is present, whether memory has accepted entries, which
+`fingerprint.yml` is present, whether it has product-experience entries, which
 optional files exist, and what the next BYOA step should be. It does not call an
 LLM.
 
@@ -130,7 +131,7 @@ LLM.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,proposals/,cache/}`; use `--scope <path>` for scoped memory and `--memory-dir` for a non-default memory directory. |
+| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml,cache/}`; use `--scope <path>` for scoped memory and `--memory-dir` for a non-default memory directory. |
 | `ghost scan` | Report fingerprint capture progress and, with `--include-nested`, nested bundle readiness. Supports `--memory-dir`. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/material gathering. |
 | `ghost lint` | Validate a bundle or individual artifact; `--all` validates nested bundles and stack merges. Supports `--memory-dir`. |
@@ -141,7 +142,6 @@ LLM.
 | `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v2` files. Not canonical memory. |
 | `ghost check` | Run active `ghost.checks/v1` gates against a diff, grouping changed files by memory stack unless `--package` is provided. `--format json` emits `ghost.check-report/v1` for wrappers. |
 | `ghost review` | Emit an evidence-routed advisory packet with `stacks[]` unless `--package` is provided. Supports `--memory-dir`. |
-| `ghost proposal <op>` | Create, list, or resolve scoped proposal files without auto-promoting canonical memory. Supports `--memory-dir`. |
 | `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
@@ -183,6 +183,6 @@ optional and only used by semantic embedding helpers when a host opts in.
 | --- | --- |
 | [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` memory format |
 | [docs/generation-loop.md](./docs/generation-loop.md) | Brief, generate, check, review, and remediate loop |
-| [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, proposals, and custom memory directories |
+| [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, and custom memory directories |
 | [GOVERNANCE.md](./GOVERNANCE.md) | Project governance |
 | [LICENSE](./LICENSE) | Apache License, Version 2.0 |

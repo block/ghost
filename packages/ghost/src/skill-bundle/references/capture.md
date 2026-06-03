@@ -1,6 +1,6 @@
 ---
 name: capture
-description: Capture repo-local Ghost product-experience memory in .ghost/fingerprint.yml.
+description: Author repo-local Ghost product-experience memory.
 handoffs:
   - label: Inspect memory status
     command: ghost scan
@@ -12,21 +12,23 @@ handoffs:
 
 # Recipe: Capture A Ghost Fingerprint
 
-**Goal:** produce durable product-experience memory that helps agents build,
-review, and repair on-brand work.
+**Goal:** record durable product-experience memory in `.ghost/fingerprint.yml`.
+If a change is uncommitted or unmerged, it is draft work. If it is checked in,
+Ghost treats it as canonical memory.
 
 ```text
 .ghost/
-  fingerprint.yml  # canonical product-experience memory
-  checks.yml       # optional deterministic gates
-  proposals/       # candidate memory changes
-  cache/           # optional generated inventory
-  intent.md        # optional human-approved context
+  fingerprint.yml # canonical product-experience memory
+  checks.yml      # optional deterministic gates
+  cache/          # optional generated inventory
+  intent.md       # optional human-authored context
+  decisions/      # optional historical rationale
 ```
 
-`fingerprint.yml` answers what matters and why. Generated inventory answers
-what exists right now. Keep those separate: inventory may be refreshed or
-discarded, but canonical memory changes only through deliberate edits.
+Generated inventory answers what exists right now. `fingerprint.yml` answers
+what matters and why. Keep those layers separate: cache may be refreshed or
+discarded, while fingerprint memory is edited deliberately and reviewed through
+Git.
 
 ## Steps
 
@@ -42,33 +44,32 @@ to preserve. New projects may start with an empty but valid fingerprint and add
 memory as product choices become real.
 
 Use `--with-config --reference <path-or-registry>` when the product uses a
-reference UI registry or library such as Ghost UI. This writes implementation
-routing into `.ghost/config.yml` and records only implementation vocabulary in
-the blank product fingerprint; it does not copy reference memory into product
-intent.
+reference UI registry or library. This writes implementation routing into
+`.ghost/config.yml` and records only implementation vocabulary in the blank
+product fingerprint; it does not copy reference memory into product intent.
 
-For a monorepo or a deeply scoped product area, initialize local memory with
+For a monorepo or deeply scoped product area, initialize local memory with
 `ghost init --scope <path>`. Keep broad product identity in the root bundle and
-put local situations, patterns, checks, decisions, and proposals in the child.
+put local situations, patterns, checks, decisions, and intent in the child.
 
 ### 2. Orient
 
-Read the product, not just the component library. Look for the surfaces, docs,
+Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal identity,
 hierarchy, behavior, copy, accessibility, and trust.
 
-Optional helpers:
+Optional helper:
 
 ```bash
 ghost inventory . > .ghost/cache/inventory.json
 ```
 
-Treat cache output as scratch material. Do not promote raw inventory into
+Treat cache output as scratch material. Do not copy raw inventory into
 fingerprint memory without judgment.
 
-### 3. Author `fingerprint.yml`
+### 3. Write Memory
 
-Fill the smallest useful memory:
+Edit `fingerprint.yml` with the smallest useful durable memory:
 
 - `summary`: product identity, audience, goals, anti-goals, tradeoffs, tone.
 - `topology`: scopes, surface types, and representative examples.
@@ -78,11 +79,9 @@ Fill the smallest useful memory:
 - `patterns`: visual, behavioral, content, and composition patterns.
 - `implementation_vocabulary`: current tokens, components, libraries, assets,
   and notes that may help implement the product memory.
-- `review_policy`: proposal and experience-gap handling.
 
 Prefer a few high-confidence entries over a comprehensive but noisy catalog.
-Every accepted entry should be useful to a future agent making or reviewing a
-product change.
+Every entry should help a future agent make or review a product change.
 
 ### 4. Add Checks Sparingly
 
@@ -93,8 +92,9 @@ typed `derives_from` reference into `fingerprint.yml`.
 derives_from: pattern:resource-index-stays-tabular
 ```
 
-Candidate checks belong in `.ghost/proposals/` as `kind: check-candidate` until
-a human promotes them.
+Keep speculative checks out of `checks.yml` until they have a deterministic
+detector and evidence. Proposed checks may use `status: proposed` because check
+enforcement still has its own lifecycle.
 
 ### 5. Validate
 
@@ -106,34 +106,15 @@ ghost verify --all
 ghost check --base HEAD
 ```
 
-`lint` validates shape, `verify` validates evidence paths and typed check refs,
-and `check` runs only active deterministic gates.
+`lint` validates canonical shape, `verify` validates evidence paths and typed
+check refs, and `check` runs only active deterministic gates.
 
 ## Gaps
 
 If the repo does not yet contain enough product experience to capture, say so.
-For missing or contradictory memory, recommend or create a proposal only when
-the gap is durable enough to help a future agent. It should be repeated,
-high-impact, explicitly human-stated, intentionally divergent, likely to recur,
-or blocking confident future review.
-
-When accepted fingerprint memory is silent, that silence does not block useful
-work by itself. Continue from nearby product surfaces, local components, token
-and copy conventions, accepted decisions or human intent, and ordinary UX
+When memory is silent, continue from nearby product surfaces, local components,
+token and copy conventions, accepted decisions or human intent, and ordinary UX
 judgment when safe. Label that reasoning as provisional and non-Ghost-backed.
-
-Do not create proposals for isolated implementation details, weak local context,
-duplicates of open proposals, issues already fixable from accepted memory,
-vague taste concerns, or generic code quality.
-
-Use:
-
-- `missing-memory`
-- `intentional-divergence`
-- `experience-gap`
-- `check-candidate`
-
-Humans promote durable truth. Agents do not silently rewrite canonical memory.
 
 ## Never
 
