@@ -92,6 +92,49 @@ describe("nested Ghost memory stacks", () => {
     ]);
   });
 
+  it("merges sparse parent and child fingerprints with normalized defaults", async () => {
+    await mkdir(join(dir, ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "fingerprint.yml"),
+      "schema: ghost.fingerprint/v1\n",
+    );
+    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
+      `schema: ghost.fingerprint/v1
+summary:
+  product: Checkout
+principles:
+  - id: checkout-review-stays-reversible
+    principle: Checkout review keeps reversal visible before payment.
+`,
+    );
+
+    const stack = await loadMemoryStackForPath(
+      "apps/checkout/review/page.tsx",
+      dir,
+    );
+
+    expect(stack.layers).toHaveLength(2);
+    expect(stack.merged.fingerprint.summary.product).toBe("Checkout");
+    expect(stack.merged.fingerprint.topology).toEqual({
+      scopes: [],
+      surface_types: undefined,
+      examples: [],
+    });
+    expect(stack.merged.fingerprint.situations).toEqual([]);
+    expect(stack.merged.fingerprint.principles).toHaveLength(1);
+    expect(stack.merged.fingerprint.experience_contracts).toEqual([]);
+    expect(stack.merged.fingerprint.patterns).toEqual([]);
+    expect(stack.merged.fingerprint.implementation_vocabulary).toEqual({
+      tokens: undefined,
+      components: undefined,
+      libraries: undefined,
+      assets: undefined,
+      notes: undefined,
+    });
+  });
+
   it("resolves root-to-leaf layers from a custom memory directory", async () => {
     await writeStackFixture(dir, ".design/memory");
 

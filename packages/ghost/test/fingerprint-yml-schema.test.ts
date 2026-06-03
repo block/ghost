@@ -10,6 +10,17 @@ describe("ghost.fingerprint/v1", () => {
     const result = GhostFingerprintSchema.safeParse(minimalFingerprint());
 
     expect(result.success).toBe(true);
+    if (!result.success) throw new Error("minimal fingerprint should parse");
+    expect(result.data).toEqual({
+      schema: GHOST_FINGERPRINT_SCHEMA,
+      summary: {},
+      topology: {},
+      situations: [],
+      principles: [],
+      experience_contracts: [],
+      patterns: [],
+      implementation_vocabulary: {},
+    });
   });
 
   it("accepts a full OSS-friendly fingerprint.yml document", () => {
@@ -158,13 +169,6 @@ describe("ghost.fingerprint/v1", () => {
 function minimalFingerprint() {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    summary: {},
-    topology: {},
-    situations: [],
-    principles: [],
-    experience_contracts: [],
-    patterns: [],
-    implementation_vocabulary: {},
   };
 }
 

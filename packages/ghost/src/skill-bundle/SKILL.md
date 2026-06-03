@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Capture, validate, review, and evolve a repo-local Ghost fingerprint. Use when the user wants to capture a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, compare fingerprints, or record accepted divergence.
+description: Capture, validate, and review repo-local Ghost memory. Use when the user wants to capture a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or use advanced comparison/drift stance workflows.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -9,53 +9,58 @@ metadata:
 
 # Ghost - Product Fingerprints
 
-Ghost captures product identity in a repo-local fingerprint bundle:
+Ghost captures product identity in a repo-local memory contract:
 
 ```text
 .ghost/
   fingerprint.yml # canonical product-experience memory
-  config.yml      # optional implementation roots and reference registries/libraries
-  checks.yml      # optional deterministic gates
-  intent.md       # optional human-authored intent
-  decisions/      # optional accepted/rejected rationale
-  cache/          # optional generated caches
+  checks.yml      # optional deterministic gates grounded in memory
 ```
 
 `fingerprint.yml` is the source of truth when it is checked in. Ordinary Git
 workflow is the staging and approval boundary: uncommitted or unmerged changes
-are drafts, and committed memory is canonical for Ghost. `config.yml` maps
-implementation roots and reference UI registries/libraries without making those
-references product intent. Checks are deterministic gates. Decisions preserve
-historical rationale. The CLI provides deterministic validation, comparison,
-routing, and handoff packets.
+are drafts, and committed memory is canonical for Ghost. Checks are optional
+deterministic gates. Ghost is not a lifecycle manager, proposal system,
+design-system registry, or screenshot archive.
 
-Repos may also contain nested bundles such as `apps/checkout/.ghost/`. Resolve
-the memory stack for the task path and read layers broad-to-local. Child entries
-with the same `id` override parent entries; child-relative paths are normalized
-to repo-root paths by the CLI.
+`fingerprint.yml` may start with only `schema: ghost.fingerprint/v1`. Add only
+sections that contain real memory; Ghost normalizes omitted top-level sections
+internally for checks, review, emit, and stack resolution.
 
-Host wrappers may store memory under another safe relative directory and pass
-`--memory-dir <relative-dir>` to stack-aware commands. Ghost stays
-adapter-neutral: consume JSON and let the wrapper map severities into its own
-review or check format.
+Optional material may sit beside the core files: `config.yml` for
+implementation routing, `intent.md` for human-authored intent, `decisions/` for
+historical rationale, and `cache/` for explicit generated inventory. Use these
+only when present or requested.
 
-## CLI Verbs
+Advanced repos may contain nested bundles such as `apps/checkout/.ghost/`, and
+host wrappers may use `--memory-dir <relative-dir>`. Ghost stays
+adapter-neutral: wrappers consume JSON and map severities into their own review
+or check format.
+
+## Core CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir] [--scope <path>] [--memory-dir <relative-dir>] [--with-intent] [--with-config] [--reference <path-or-registry>]` | Create a root or scoped memory skeleton. |
-| `ghost scan [dir] [--include-nested] [--memory-dir <relative-dir>] [--format json]` | Report fingerprint memory presence and nested readiness. |
-| `ghost stack [path...] [--memory-dir <relative-dir>]` | Inspect resolved broad-to-local memory layers and merged output. |
-| `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
-| `ghost lint [file-or-dir] [--all] [--memory-dir <relative-dir>]` | Validate a bundle, artifact, or all nested stack merges. |
-| `ghost verify [dir] --root <dir> [--all] [--memory-dir <relative-dir>]` | Validate fingerprint evidence, checks, optional decisions, and stack integrity. |
-| `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
-| `ghost check --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Run active deterministic gates against a diff; default groups files by memory stack. |
-| `ghost review --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Emit an advisory review packet grounded in resolved stack evidence. |
-| `ghost compare <a> <b> [...more]` | Compare root bundles or direct fingerprints. |
-| `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
+| `ghost init [dir]` | Create `.ghost/fingerprint.yml` and `.ghost/checks.yml`. |
+| `ghost scan [dir] [--format json]` | Report fingerprint memory presence and readiness. |
+| `ghost lint [file-or-dir]` | Validate a bundle or artifact. |
+| `ghost verify [dir] --root <dir>` | Validate evidence paths and typed check refs. |
+| `ghost check --base <ref>` | Run active deterministic gates against a diff. |
+| `ghost review --base <ref>` | Emit an advisory review packet grounded in memory and diff evidence. |
 | `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
 | `ghost skill install` | Install this unified skill bundle. |
+
+## Advanced And Legacy CLI Verbs
+
+| Verb | Purpose |
+|---|---|
+| `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom memory. |
+| `ghost stack [path...]` | Inspect resolved broad-to-local memory layers and merged output. |
+| `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
+| `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
+| `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
+| `ghost compare <a> <b> [...more]` | Compare root bundles or direct fingerprints. |
+| `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 
 ## Workflows
 
@@ -66,25 +71,28 @@ review or check format.
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
 - Review drift: follow [references/review.md](references/review.md).
 - Verify generation: follow [references/verify.md](references/verify.md).
-- Compare bundles: follow [references/compare.md](references/compare.md).
 - Remediate drift: follow [references/remediate.md](references/remediate.md).
+- Advanced compare bundles: follow [references/compare.md](references/compare.md).
 
 ## Always
 
-- Treat the resolved `.ghost/` memory stack as the source of truth.
-- Use `.ghost/config.yml` for implementation/library routing; keep product
-  meaning in `fingerprint.yml`, `intent.md`, or decisions.
+- Treat checked-in `fingerprint.yml` as the source of truth.
+- Run active checks from `checks.yml`; only active deterministic checks block.
+- Use local evidence as provisional when fingerprint memory is silent.
+- Treat memory changes as ordinary Git-reviewed edits.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
-  Fingerprint Capture complete; use `--all` when nested bundles exist.
+  Fingerprint Capture complete.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
-- Include accepted decisions with `ghost review --include-memory` when product-experience rationale matters.
+- Use optional config, intent, decisions, cache, nested stacks, and custom memory
+  dirs only when present or requested.
 
 ## When Memory Is Silent
 
 Silent fingerprint memory does not require stopping by default. When memory does
 not cover the task, proceed from nearby product surfaces, local components,
-token and copy conventions, accepted decisions or human intent, and ordinary UX
-judgment when safe. Label that reasoning as provisional and non-Ghost-backed.
+token and copy conventions, optional rationale files when present, and ordinary
+UX judgment when safe. Label that reasoning as provisional and
+non-Ghost-backed.
 Ask a human before making high-risk, irreversible, privacy/security/legal, or
 product-identity-defining choices.
 

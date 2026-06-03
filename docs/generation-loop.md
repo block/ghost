@@ -1,15 +1,13 @@
 # Product Fingerprint Loop
 
 Ghost gives UI generators and product-development agents local, auditable
-product experience memory. The canonical input is the resolved Ghost memory
-stack for the task path, starting with `.ghost/fingerprint.yml` and adding any
-nested child bundles.
+product experience memory. The core input is checked-in
+`.ghost/fingerprint.yml`, plus active checks in `.ghost/checks.yml` when
+present.
 
 ```text
 .ghost/fingerprint.yml
-apps/checkout/.ghost/fingerprint.yml
-merged checks, intent, decisions
-.ghost/cache/inventory.json
+.ghost/checks.yml
         |
         v
 host agent or generator
@@ -24,27 +22,29 @@ ghost check + ghost review
 deterministic gates + advisory product-experience findings
 ```
 
-Ghost prepares the input and checks the output. It does not own the generator.
-Use any agent or tool that can read local context and apply changes.
+Ghost prepares the input and checks the output. It does not own the generator,
+memory lifecycle, approval workflow, or design-system registry. Use any agent or
+tool that can read local context and apply changes.
 
 ## Before Generation
 
-Build a brief from the resolved memory stack:
+Build a brief from checked-in memory:
 
-1. Run `ghost stack <path>` or resolve the applicable `.ghost/` layers for the
-   task path.
-2. Read broad-to-local merged `fingerprint.yml` memory.
-3. Select the relevant `situations`.
-4. Carry applicable `principles`, `experience_contracts`, and `patterns` into
+1. Read `.ghost/fingerprint.yml` as canonical product-experience memory.
+2. Select the relevant `situations`.
+3. Carry applicable `principles`, `experience_contracts`, and `patterns` into
    the work.
-5. Use `implementation_vocabulary` only as current material that may help
+4. Use `implementation_vocabulary` only as current material that may help
    satisfy the selected product memory.
-6. Read merged checks to know which deterministic rules can block.
-7. Read accepted decisions and `intent.md` when product rationale matters.
+5. Read active checks in `.ghost/checks.yml` to know which deterministic rules
+   can block.
+6. Use optional `intent.md`, accepted decisions, nested stacks, and cache
+   inventory only when the project has opted into those advanced inputs.
 
 Generated inventory can help orient an agent, but it is cache:
 
 ```bash
+mkdir -p .ghost/cache
 ghost inventory > .ghost/cache/inventory.json
 ```
 
@@ -64,8 +64,8 @@ The generator should preserve:
   in principles, contracts, or patterns
 
 If requested work intentionally diverges from memory, the agent should name the
-divergence in its response. Memory changes are ordinary edits to
-`fingerprint.yml`, `checks.yml`, decisions, or intent that go through Git review.
+divergence in its response. Memory changes are ordinary Git-reviewed edits to
+`fingerprint.yml`, `checks.yml`, and optional rationale files when present.
 
 ## Review
 
@@ -110,8 +110,8 @@ When review flags drift, the host agent chooses the smallest useful response:
 
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.
-- Update `fingerprint.yml`, `checks.yml`, decisions, or intent when the user
-  asks to change memory.
+- Update `fingerprint.yml`, `checks.yml`, or optional rationale files when the
+  user asks to change memory.
 
 The loop is:
 
@@ -134,7 +134,7 @@ ghost check --base main
 ghost review --base main --format markdown
 ```
 
-Wrappers that store memory outside `.ghost` can pass
+Advanced wrappers that store memory outside `.ghost` can pass
 `--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
 exact single-bundle mode and bypasses stack discovery.
 

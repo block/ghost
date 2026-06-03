@@ -1,30 +1,49 @@
 # The Root Fingerprint Bundle Format
 
 A Ghost fingerprint is a repo-local product experience memory bundle rooted at
-`.ghost/`. The canonical on-disk shape is:
+`.ghost/`. The core on-disk shape is:
 
 ```text
 .ghost/
   fingerprint.yml  # canonical product experience memory
-  config.yml       # optional implementation roots and reference registries/libraries
   checks.yml       # optional deterministic gates
+```
+
+Git is the staging and approval boundary: uncommitted or unmerged edits are
+draft work, and checked-in `fingerprint.yml` memory is canonical for Ghost.
+Ghost is not a lifecycle manager, proposal system, design-system registry, or
+screenshot archive. It validates checked-in memory and runs checked-in gates.
+
+`fingerprint.yml` may start with only:
+
+```yaml
+schema: ghost.fingerprint/v1
+```
+
+Add only top-level sections that contain real memory. Ghost normalizes omitted
+sections internally to empty `summary`, `topology`, memory arrays, and
+`implementation_vocabulary` so existing checks, review packets, and stack
+merges still see the full shape.
+
+Optional material can sit beside the core files:
+
+```text
+.ghost/
+  config.yml       # optional implementation roots and reference registries/libraries
   intent.md        # optional human-authored or human-approved intent
   decisions/       # optional ghost.decision/v1 rationale
   cache/           # optional generated inventory and other ephemeral facts
 ```
 
-`fingerprint.yml` is the source of truth. Ordinary Git workflow is the staging
-and approval boundary: uncommitted or unmerged edits are draft work, and
-checked-in memory is canonical for Ghost. `config.yml` routes implementation and
-reference registry/library context without defining product intent. `checks.yml`
-is the executable appendix. Cache is refreshable and may be deleted without
-losing canonical memory.
+`config.yml` routes implementation and reference registry/library context
+without defining product intent. `checks.yml` is the executable appendix. Cache
+is refreshable and may be deleted without losing canonical memory.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` files may
 still appear in older repos or as migration/source material. They are not
 canonical Ghost memory.
 
-## Nested Bundles
+## Advanced: Nested Bundles
 
 Large repos can add scoped bundles below the root:
 
@@ -104,7 +123,7 @@ implementation_vocabulary:
     - Use these as current implementation material, not as proof of product fit.
 ```
 
-Canonical sections:
+Top-level sections are optional on disk and default to empty when omitted:
 
 | Section | Purpose |
 | --- | --- |
@@ -180,22 +199,28 @@ decided_at: "2026-05-17T00:00:00.000Z"
 
 `ghost review --include-memory` reads only decisions with `status: accepted`.
 
-## Commands
+## Core Commands
+
+```bash
+ghost init
+ghost lint .ghost
+ghost verify .ghost --root .
+ghost check --base main --format json
+ghost review --base main --include-memory
+ghost emit review-command --path apps/checkout/review/page.tsx
+ghost emit context-bundle
+```
+
+Advanced scoped-memory and wrapper commands remain available:
 
 ```bash
 ghost init --with-intent
 ghost init --with-config --reference packages/ghost-ui/.ghost
 ghost init --scope apps/checkout --with-intent
 ghost init --scope apps/checkout --memory-dir .design/memory
-ghost lint .ghost
-ghost verify .ghost --root .
 ghost lint --all
 ghost verify --all
 ghost stack apps/checkout/review/page.tsx
-ghost check --base main --format json
-ghost review --base main --include-memory
-ghost emit review-command --path apps/checkout/review/page.tsx
-ghost emit context-bundle
 ```
 
 When `--reference packages/ghost-ui/.ghost` is used, generated config points to
@@ -204,4 +229,5 @@ When `--reference packages/ghost-ui/.ghost` is used, generated config points to
 vocabulary; it is not copied into the product's own memory.
 
 Use `ghost inventory > .ghost/cache/inventory.json` when observed repo facts are
-useful source material. Curate durable conclusions into `fingerprint.yml`.
+useful source material. Create `.ghost/cache/` first when it does not exist.
+Curate durable conclusions into `fingerprint.yml`.

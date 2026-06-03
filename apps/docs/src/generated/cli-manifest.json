@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T01:29:15.750Z",
+  "generatedAt": "2026-06-03T02:20:45.727Z",
   "tools": [
     {
       "tool": "ghost",
@@ -40,12 +40,12 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init [dir]",
-          "description": "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, cache/)",
+          "description": "Create a root .ghost memory skeleton (fingerprint.yml and checks.yml)",
           "options": [
             {
               "rawName": "--scope <path>",
               "name": "scope",
-              "description": "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+              "description": "Create a scoped <path>/<memory-dir> memory skeleton",
               "default": null,
               "takesValue": true,
               "negated": false

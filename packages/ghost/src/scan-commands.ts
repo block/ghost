@@ -131,11 +131,11 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, cache/)",
+      "Create a root .ghost memory skeleton (fingerprint.yml and checks.yml)",
     )
     .option(
       "--scope <path>",
-      "Create a scoped <path>/<memory-dir> product experience memory skeleton",
+      "Create a scoped <path>/<memory-dir> memory skeleton",
     )
     .option(
       "--memory-dir <relative-dir>",
@@ -199,14 +199,13 @@ export function registerScanCommands(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            `Initialized fingerprint package: ${paths.dir}\n`,
+            `Initialized Ghost memory skeleton: ${paths.dir}\n`,
           );
           process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
           }
-          process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
             process.stdout.write(`  intent.md: ${paths.intent}\n`);
           }
@@ -336,7 +335,7 @@ export function registerScanCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: fingerprint capture complete - all stages present\n",
+              "next: edit fingerprint.yml, then run ghost verify/check/review\n",
             );
           }
           process.stdout.write(`readiness: ${status.readiness.state}\n`);
@@ -720,7 +719,6 @@ function initCommandOutput(
     fingerprintYml: paths.fingerprintYml,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    cache: paths.cache,
     ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
 }

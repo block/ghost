@@ -102,12 +102,12 @@ implementation details. Use implementation vocabulary only as replaceable
 material that may help satisfy product memory.
 
 When fingerprint memory is silent, proceed from nearby product surfaces, local
-components, token and copy conventions, accepted decisions or human intent, and
-ordinary UX judgment when safe. Label that reasoning as provisional and
+components, token and copy conventions, optional rationale files when present,
+and ordinary UX judgment when safe. Label that reasoning as provisional and
 non-Ghost-backed. Ask a human before making high-risk, irreversible,
 privacy/security/legal, or product-identity-defining choices. Memory changes
-are ordinary edits to \`fingerprint.yml\`, \`checks.yml\`, decisions, or intent
-that go through normal Git review.
+are ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and
+optional rationale files when present.
 `;
 }
 
@@ -144,9 +144,9 @@ ${context.intent.trim()}
 - Preserve applicable principles, experience contracts, and patterns.
 - Use implementation vocabulary only when it supports the selected product memory.
 - Only active checks are blocking.
-- When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, accepted decisions or human intent, and ordinary UX judgment when safe.
+- When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
 - Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
-- Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, decisions, or intent.`);
+- Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
 
   return `${parts.join("\n\n")}\n`;
 }
@@ -163,8 +163,8 @@ package.
 - \`prompt.md\` - portable prompt distilled from \`fingerprint.yml\`.
 - \`fingerprint.yml\` - canonical product-experience memory.
 ${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
-Regenerate this bundle when \`fingerprint.yml\`, active checks, decisions, or
-intent change.
+Regenerate this bundle when \`fingerprint.yml\`, active checks, or optional
+rationale files change.
 `;
 }
 

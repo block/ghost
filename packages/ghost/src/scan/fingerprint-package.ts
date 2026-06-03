@@ -82,7 +82,6 @@ export async function initFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.dir, { recursive: true });
   await Promise.all([
-    mkdir(paths.cache, { recursive: true }),
     writeFile(
       paths.fingerprintYml,
       templateFingerprintYml(options.reference),
@@ -303,23 +302,15 @@ function templateFingerprintYml(reference?: string): string {
   const referenceInput = reference
     ? normalizeReferenceInput(reference)
     : undefined;
-  const implementationVocabulary = referenceInput
-    ? `implementation_vocabulary:
+  if (referenceInput) {
+    return `schema: ${GHOST_FINGERPRINT_SCHEMA}
+implementation_vocabulary:
   libraries:
     - ${referenceInput.id}
-  notes:
-    - Product experience memory is intentionally blank until human-authored or human-approved.
-`
-    : "implementation_vocabulary: {}\n";
+`;
+  }
 
   return `schema: ${GHOST_FINGERPRINT_SCHEMA}
-summary: {}
-topology: {}
-situations: []
-principles: []
-experience_contracts: []
-patterns: []
-${implementationVocabulary}
 `;
 }
 

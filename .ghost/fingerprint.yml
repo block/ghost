@@ -13,6 +13,7 @@ summary:
     - Treat raw inventory as canonical product truth.
     - Add special lifecycle files for the MVP.
     - Turn Ghost into a design-system snapshot or screenshot archive.
+    - Become a memory lifecycle manager or proposal system.
     - Let advisory review block work without deterministic checks.
   tradeoffs:
     - Prefer compact durable memory over exhaustive surveys.
@@ -110,7 +111,7 @@ principles:
       - path: docs/fingerprint-format.md
         note: Public format docs define fingerprint.yml as the source of truth.
       - path: packages/ghost/src/scan/fingerprint-package.ts
-        note: init writes fingerprint.yml, checks.yml, and cache.
+        note: init writes fingerprint.yml and checks.yml; cache appears only when inventory is explicitly generated.
   - id: inventory-is-cache
     principle: Generated inventory answers what exists; fingerprint memory answers what matters and why.
     guidance:
@@ -151,7 +152,7 @@ experience_contracts:
     obligations:
       - Do not rewrite canonical memory silently during generation or review.
       - Treat uncommitted or unmerged memory edits as draft work.
-      - Record durable product memory in fingerprint.yml, deterministic gates in checks.yml, and historical rationale in decisions.
+      - Record durable product memory in fingerprint.yml and deterministic gates in checks.yml; optional rationale files are secondary.
     evidence:
       - path: packages/ghost/src/skill-bundle/references/capture.md
   - id: emitted-context-prefers-memory
@@ -175,9 +176,11 @@ experience_contracts:
 patterns:
   - id: fingerprint-first-bundle
     kind: composition
-    pattern: Root Ghost bundles start from fingerprint.yml, then attach checks, decisions, intent, and cache only when useful.
+    pattern: Root Ghost bundles start from fingerprint.yml and checks.yml, then attach optional rationale, config, or cache only when useful.
     guidance:
       - Do not require survey or inventory for a valid new project.
+      - Do not create cache during initialization; cache appears only after explicit inventory work.
+      - Allow sparse fingerprint.yml authoring; omitted top-level sections normalize to empty memory internally.
       - Keep optional cache outside canonical memory.
       - Use Git review for memory approval instead of Ghost-specific draft files.
     evidence:

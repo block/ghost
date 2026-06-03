@@ -1,17 +1,37 @@
 # Root Fingerprint Bundle Schema Reference
 
-Canonical package:
+Core package:
 
 ```text
 .ghost/
   fingerprint.yml ghost.fingerprint/v1
   checks.yml      optional ghost.checks/v1 gates
+```
+
+Optional files:
+
+```text
+.ghost/
   intent.md       optional human intent
   decisions/      optional ghost.decision/v1 rationale
   cache/          optional generated caches
 ```
 
-Nested packages use the same shape at any product-area root, for example
+Git is the approval boundary: checked-in `fingerprint.yml` is canonical memory,
+and uncommitted or unmerged edits are draft work. Ghost validates memory and
+runs gates; it is not a lifecycle manager, proposal system, or design-system
+registry.
+
+`fingerprint.yml` may start sparse:
+
+```yaml
+schema: ghost.fingerprint/v1
+```
+
+Top-level sections are optional on disk and default internally to empty
+`summary`, `topology`, memory arrays, and `implementation_vocabulary`.
+
+Advanced nested packages use the same shape at any product-area root, for example
 `apps/checkout/.ghost/`. Resolve the stack with `ghost stack <path>`; child
 entries with the same `id` override parent entries.
 
