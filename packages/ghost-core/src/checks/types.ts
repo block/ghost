@@ -5,6 +5,22 @@ export const GHOST_CHECKS_FILENAME = "checks.yml" as const;
 
 export type GhostCheckStatus = "active" | "proposed" | "disabled";
 export type GhostCheckSeverity = "critical" | "serious" | "nit";
+export type GhostCheckDerivesFrom =
+  | `principle:${string}`
+  | `situation:${string}`
+  | `experience_contract:${string}`
+  | `pattern:${string}`;
+
+export interface GhostChecksFingerprintMemory {
+  topology?: {
+    scopes?: { id: string; surface_types?: string[] }[];
+    surface_types?: string[];
+  };
+  principles?: { id: string }[];
+  situations?: { id: string }[];
+  experience_contracts?: { id: string }[];
+  patterns?: { id: string }[];
+}
 
 export type GhostCheckDetectorType =
   | "forbidden-regex"
@@ -38,6 +54,7 @@ export interface GhostCheck {
   title: string;
   status: GhostCheckStatus;
   severity: GhostCheckSeverity;
+  derives_from?: GhostCheckDerivesFrom;
   applies_to?: GhostCheckAppliesTo;
   detector: GhostCheckDetector;
   evidence?: GhostCheckEvidence;
@@ -68,6 +85,7 @@ export interface GhostChecksLintReport {
 
 export interface GhostChecksLintOptions {
   map?: Pick<MapFrontmatter, "scopes" | "feature_areas">;
+  fingerprint?: GhostChecksFingerprintMemory;
 }
 
 export interface RoutedGhostCheck {

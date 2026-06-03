@@ -9,6 +9,7 @@ export type {
   GhostCheckSeverity,
   GhostCheckStatus,
   GhostChecksDocument,
+  GhostChecksFingerprintMemory,
   GhostChecksLintIssue,
   GhostChecksLintOptions,
   GhostChecksLintReport,
