@@ -43,8 +43,8 @@ Commands are grouped by job:
 - **Install BYOA recipes**: `skill install`.
 - **View many projects**: `ghost-fleet members`, `ghost-fleet view`, `ghost-fleet emit skill`.
 
-Workflows like _capture_, _survey_, _patterns_, _recall_, _brief_, _critique_,
-_review_, _verify_, _compare_, and _remediate_ are skill
+Workflows like _capture_, _map_, _survey_, _patterns_, _schema_, _recall_,
+_brief_, _critique_, _review_, _verify_, _compare_, and _remediate_ are skill
 recipes your host agent runs. They are installed by `ghost skill install`; they
 are not LLM-running CLI verbs.
 
@@ -312,8 +312,8 @@ ghost diverge palette --reason "Dark-mode-first palette for this product"
 ### Skill bundle - `skill install`
 
 Install the unified `ghost` skill bundle into a host agent. It contains
-fingerprint memory, survey/cache, patterns, schema, recall, brief, critique,
-review, verify, compare, and remediate recipes.
+fingerprint memory, topology/source-material reading, survey/cache, patterns,
+schema, recall, brief, critique, review, verify, compare, and remediate recipes.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
 
@@ -361,8 +361,10 @@ then ask your agent in plain English.
 | Recipe | Bundle | Trigger |
 | --- | --- | --- |
 | `capture` | `ghost` | "Set up Ghost memory for this repo" |
+| `map` | `ghost` | "read topology source material" / "migrate map.md into fingerprint memory" |
 | `survey` | `ghost` | "use survey cache" / "extract tokens as source material" |
 | `patterns` | `ghost` | "write fingerprint patterns" / "codify product-experience patterns" |
+| `schema` | `ghost` | "show the Ghost fingerprint schema" |
 | `recall` / `brief` / `critique` | `ghost` | "brief this work" / "critique this change" |
 | `review` | `ghost` | "review this PR for drift" |
 | `verify` | `ghost` | "verify generated UI against the bundle" |

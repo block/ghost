@@ -104,8 +104,6 @@ No API key is required to run Ghost. Optional variables:
 
 - `OPENAI_API_KEY` / `VOYAGE_API_KEY` are consumed only by semantic embedding
   helpers when a host opts into enriched comparison.
-- `GITHUB_TOKEN` helps resolve tracked fingerprints from GitHub without rate
-  limit surprises.
 
 Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
