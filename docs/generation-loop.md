@@ -1,13 +1,11 @@
 # Product Fingerprint Loop
 
 Ghost gives UI generators and product-development agents local, auditable
-product experience memory. The core input is checked-in
-`.ghost/fingerprint.yml`, plus active checks in `.ghost/checks.yml` when
-present.
+product experience memory. Generation starts from checked-in prose,
+optional inventory, and exemplars. Checks validate the result afterward.
 
 ```text
-.ghost/fingerprint.yml
-.ghost/checks.yml
+product prose + inventory + exemplars
         |
         v
 host agent or generator
@@ -28,18 +26,20 @@ tool that can read local context and apply changes.
 
 ## Before Generation
 
-Build a brief from checked-in memory:
+Build a brief from the generation packet:
 
-1. Read `.ghost/fingerprint.yml` as canonical product-experience memory.
+1. Read `.ghost/fingerprint.yml` as canonical product prose and exemplar
+   anchors.
 2. Select the relevant `situations`.
 3. Carry applicable `principles`, `experience_contracts`, and `patterns` into
    the work.
-4. Use `implementation_vocabulary` only as current material that may help
-   satisfy the selected product memory.
-5. Read active checks in `.ghost/checks.yml` to know which deterministic rules
+4. Inspect relevant `exemplars` as concrete examples of what good looks like.
+5. Use generated inventory and `implementation_vocabulary` only as material
+   that may help satisfy the selected product memory.
+6. Read active checks in `.ghost/checks.yml` to know which deterministic rules
    can block.
-6. Use optional `intent.md`, accepted decisions, nested stacks, and cache
-   inventory only when the project has opted into those advanced inputs.
+7. Use optional `intent.md`, accepted decisions, and nested stacks only when
+   the project has opted into those advanced inputs.
 
 Generated inventory can help orient an agent, but it is cache:
 
@@ -48,8 +48,9 @@ mkdir -p .ghost/cache
 ghost inventory > .ghost/cache/inventory.json
 ```
 
-Inventory answers what exists now. The fingerprint answers what matters, why,
-and how agents should compose or review product experience.
+Inventory answers what exists now. Fingerprint prose answers what matters and
+why. Exemplars show concrete surfaces an agent should inspect before composing
+or reviewing product experience.
 
 ## Generation
 
@@ -60,6 +61,7 @@ The generator should preserve:
 - interface and capability behavior
 - copy, disclosure, failure, and recovery contracts
 - restraint and pacing from patterns
+- concrete precedent from exemplars
 - accessibility, responsive behavior, and visual choices when they are grounded
   in principles, contracts, or patterns
 
@@ -96,13 +98,14 @@ Advisory review packets include:
 
 - the current diff
 - `fingerprint.yml` memory
+- relevant exemplars
 - active checks
 - optional accepted decisions
 - finding categories for fixes, intentional divergence, missing memory,
   experience gaps, and eval uncertainty
 
-Review findings should cite the diff location, relevant fingerprint memory, and
-any active check when blocking.
+Review findings should cite the diff location, relevant fingerprint memory,
+relevant exemplars when useful, and any active check when blocking.
 
 ## Remediation
 

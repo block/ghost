@@ -67,6 +67,16 @@ describe("nested Ghost memory stacks", () => {
       )?.evidence?.[0],
     ).toMatchObject({ path: "apps/checkout/review/page.tsx" });
     expect(
+      stack.merged.fingerprint.exemplars.find(
+        (exemplar) => exemplar.id === "shared-exemplar",
+      ),
+    ).toMatchObject({
+      title: "Child review exemplar",
+      path: "apps/checkout/review/page.tsx",
+      scope: "checkout",
+      surface_type: "payment-review",
+    });
+    expect(
       stack.merged.checks.checks.find(
         (check) => check.id === "no-hardcoded-color",
       )?.status,
@@ -120,12 +130,12 @@ principles:
     expect(stack.merged.fingerprint.topology).toEqual({
       scopes: [],
       surface_types: undefined,
-      examples: [],
     });
     expect(stack.merged.fingerprint.situations).toEqual([]);
     expect(stack.merged.fingerprint.principles).toHaveLength(1);
     expect(stack.merged.fingerprint.experience_contracts).toEqual([]);
     expect(stack.merged.fingerprint.patterns).toEqual([]);
+    expect(stack.merged.fingerprint.exemplars).toEqual([]);
     expect(stack.merged.fingerprint.implementation_vocabulary).toEqual({
       tokens: undefined,
       components: undefined,
@@ -205,6 +215,13 @@ patterns:
   - id: child-pattern
     kind: visual
     pattern: Parent version of child pattern.
+exemplars:
+  - id: shared-exemplar
+    path: apps/root.tsx
+    title: Parent exemplar
+    surface_type: app-shell
+    scope: app
+    refs: [pattern:root-pattern]
 implementation_vocabulary:
   tokens: [RootTheme.color]
 `,
@@ -284,6 +301,13 @@ patterns:
       paths: [review]
     evidence:
       - path: review/page.tsx
+exemplars:
+  - id: shared-exemplar
+    path: review/page.tsx
+    title: Child review exemplar
+    surface_type: payment-review
+    scope: checkout
+    refs: [pattern:child-pattern]
 implementation_vocabulary:
   tokens: [CheckoutTheme.action]
 `,

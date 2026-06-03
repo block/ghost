@@ -1,8 +1,10 @@
 export { lintGhostFingerprint } from "./lint.js";
 export {
   GhostFingerprintEvidenceSchema,
+  GhostFingerprintExemplarSchema,
   GhostFingerprintExperienceContractSchema,
   GhostFingerprintImplementationVocabularySchema,
+  GhostFingerprintMemoryRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
@@ -12,13 +14,13 @@ export {
   GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintSummarySchema,
-  GhostFingerprintTopologyExampleSchema,
   GhostFingerprintTopologySchema,
   GhostFingerprintTopologyScopeSchema,
 } from "./schema.js";
 export type {
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
+  GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
   GhostFingerprintImplementationVocabulary,
   GhostFingerprintLintIssue,
@@ -33,7 +35,6 @@ export type {
   GhostFingerprintSituation,
   GhostFingerprintSummary,
   GhostFingerprintTopology,
-  GhostFingerprintTopologyExample,
   GhostFingerprintTopologyScope,
 } from "./types.js";
 export {

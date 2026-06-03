@@ -26,6 +26,10 @@ Ghost treats it as canonical memory.
 optional active gates. Git is the approval boundary; Ghost does not manage a
 separate memory lifecycle.
 
+Generation uses product prose, optional generated inventory, and curated
+exemplars. Checks validate output after generation; they are not generation
+memory.
+
 `fingerprint.yml` may start sparse:
 
 ```yaml
@@ -84,11 +88,12 @@ Edit `fingerprint.yml` with the smallest useful durable memory. Omit sections
 until they have real entries:
 
 - `summary`: product identity, audience, goals, anti-goals, tradeoffs, tone.
-- `topology`: scopes, surface types, and representative examples.
+- `topology`: scopes and surface types.
 - `situations`: user/task/state moments that change obligations.
 - `principles`: durable product-experience truths.
 - `experience_contracts`: behavior, disclosure, failure, recovery, and trust.
 - `patterns`: visual, behavioral, content, and composition patterns.
+- `exemplars`: concrete surfaces that show what good looks like.
 - `implementation_vocabulary`: current tokens, components, libraries, assets,
   and notes that may help implement the product memory.
 

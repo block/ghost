@@ -59,6 +59,7 @@ export {
 export type {
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
+  GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
   GhostFingerprintImplementationVocabulary,
   GhostFingerprintLintIssue,
@@ -73,15 +74,16 @@ export type {
   GhostFingerprintSituation,
   GhostFingerprintSummary,
   GhostFingerprintTopology,
-  GhostFingerprintTopologyExample,
   GhostFingerprintTopologyScope,
 } from "./fingerprint/index.js";
 export {
   GHOST_FINGERPRINT_SCHEMA,
   GHOST_FINGERPRINT_YML_FILENAME,
   GhostFingerprintEvidenceSchema,
+  GhostFingerprintExemplarSchema,
   GhostFingerprintExperienceContractSchema,
   GhostFingerprintImplementationVocabularySchema,
+  GhostFingerprintMemoryRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
@@ -91,7 +93,6 @@ export {
   GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintSummarySchema,
-  GhostFingerprintTopologyExampleSchema,
   GhostFingerprintTopologySchema,
   GhostFingerprintTopologyScopeSchema,
   lintGhostFingerprint,

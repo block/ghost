@@ -49,10 +49,23 @@ describe("scanStatus readiness", () => {
 principles:
   - id: dense-workflows-prioritize-scanning
     principle: Dense workflows optimize for comparison and recovery.
+topology:
+  scopes:
+    - id: dashboard
+      paths: [apps/dashboard]
+      surface_types: [dense-dashboard]
+  surface_types: [dense-dashboard]
 patterns:
   - id: preserve-table-density
     kind: composition
     pattern: Keep dense operational tables scannable.
+exemplars:
+  - id: orders-table
+    path: apps/dashboard/orders.tsx
+    surface_type: dense-dashboard
+    scope: dashboard
+    refs:
+      - pattern:preserve-table-density
 implementation_vocabulary:
   tokens:
     - color.background
@@ -67,6 +80,7 @@ implementation_vocabulary:
     expect(status.readiness.state).toBe("memory-ready");
     expect(status.readiness.implementation_vocabulary_rows.tokens).toBe(1);
     expect(status.readiness.implementation_vocabulary_rows.components).toBe(1);
+    expect(status.readiness.product_surface_count).toBe(1);
     expect(status.readiness.can_review).toContain("surface behavior");
   });
 

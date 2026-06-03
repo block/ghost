@@ -514,6 +514,24 @@ checks:
 
   it("emits review commands and context bundles from the unified cli", async () => {
     await writeCheckPackage(dir);
+    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "cache", "inventory.json"),
+      JSON.stringify(
+        {
+          root: dir,
+          platform_hints: ["ios"],
+          build_system_hints: ["spm"],
+          language_histogram: [{ name: "swift", files: 12 }],
+          package_manifests: ["Package.swift"],
+          candidate_config_files: ["Code/Theme.swift"],
+          registry_files: [],
+          top_level_tree: [{ path: "Code/", kind: "dir", child_count: 3 }],
+        },
+        null,
+        2,
+      ),
+    );
     await writeFile(
       join(dir, ".ghost", "fingerprint.md"),
       fingerprintWithId("local"),
@@ -529,6 +547,8 @@ checks:
       "utf-8",
     );
     expect(emittedReviewCommand).toContain("fingerprint.yml memory");
+    expect(emittedReviewCommand).toContain("Exemplars");
+    expect(emittedReviewCommand).toContain("lending-tokenized-screen");
     expect(emittedReviewCommand).toContain("provisional and non-Ghost-backed");
     expect(emittedReviewCommand).not.toContain("Proposal Threshold");
     expect(emittedReviewCommand).not.toContain("recommend-proposal");
@@ -546,7 +566,16 @@ checks:
     ).resolves.toContain("schema: ghost.fingerprint/v1");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
-    ).resolves.toContain("Fingerprint Memory");
+    ).resolves.toContain("Product Prose");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Inventory cache");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Package.swift");
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("Exemplars");
     await expect(
       readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
     ).resolves.not.toContain("Proposal Threshold");
@@ -556,6 +585,39 @@ checks:
     await expect(
       readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
     ).resolves.toContain("provisional and\nnon-Ghost-backed");
+  });
+
+  it("emits context bundles when inventory cache is malformed", async () => {
+    await writeCheckPackage(dir);
+    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
+    await writeFile(join(dir, ".ghost", "cache", "inventory.json"), "{nope");
+
+    const contextBundle = await runCli(["emit", "context-bundle"], dir);
+
+    expect(contextBundle.code).toBe(0);
+    await expect(
+      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
+    ).resolves.toContain("could not be read");
+  });
+
+  it("warns when fingerprint exemplar paths are unreachable", async () => {
+    await writeCheckPackage(dir);
+
+    const verify = await runCli(
+      ["verify", ".ghost", "--root", ".", "--format", "json"],
+      dir,
+    );
+
+    expect(verify.code).toBe(0);
+    const report = JSON.parse(verify.stdout);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule: "fingerprint-exemplar-unreachable",
+          path: "fingerprint.yml.exemplars[0].path",
+        }),
+      ]),
+    );
   });
 
   it("rejects removed legacy direct markdown emit flags", () => {
@@ -1054,6 +1116,14 @@ patterns:
     kind: visual
     pattern: Product UI color uses semantic tokens instead of literals.
     check_refs: [check:no-hardcoded-ui-color]
+exemplars:
+  - id: lending-tokenized-screen
+    path: Code/Features/Lending/LendingUI
+    title: Lending tokenized UI
+    surface_type: native-feature
+    scope: lending
+    why: Shows semantic CashTheme color usage for native lending UI.
+    refs: [principle:tokenized-ui-color, pattern:tokenized-ui-color]
 implementation_vocabulary:
   tokens: [CashTheme.primary]
   components: []
