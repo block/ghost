@@ -39,6 +39,20 @@ describe("ghost.fingerprint/v1", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects legacy status fields in canonical fingerprint.yml entries", () => {
+    const principle = fullFingerprint();
+    principle.principles[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(principle).success).toBe(false);
+
+    const contract = fullFingerprint();
+    contract.experience_contracts[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(contract).success).toBe(false);
+
+    const pattern = fullFingerprint();
+    pattern.patterns[0].status = "accepted" as never;
+    expect(GhostFingerprintSchema.safeParse(pattern).success).toBe(false);
+  });
+
   it("reports unknown typed refs inside the fingerprint", () => {
     const input = fullFingerprint();
     input.situations[0].principles = ["principle:missing-principle"];
@@ -151,7 +165,6 @@ function minimalFingerprint() {
     experience_contracts: [],
     patterns: [],
     implementation_vocabulary: {},
-    review_policy: {},
   };
 }
 
@@ -204,7 +217,6 @@ function fullFingerprint() {
     principles: [
       {
         id: "dense-workflows-prioritize-scanning",
-        status: "accepted",
         principle:
           "Dense operational workflows should optimize for comparison, speed, and recovery before visual novelty.",
         applies_to: {
@@ -226,7 +238,6 @@ function fullFingerprint() {
     experience_contracts: [
       {
         id: "destructive-actions-require-clear-confirmation",
-        status: "accepted",
         contract:
           "Destructive actions need explicit confirmation and a clear recovery path.",
         obligations: ["confirm intent", "explain consequence"],
@@ -235,7 +246,6 @@ function fullFingerprint() {
     patterns: [
       {
         id: "compact-filter-toolbar",
-        status: "accepted",
         kind: "composition",
         pattern: "Filters stay visually attached to the table they affect.",
         guidance: ["keep primary filters before secondary actions"],
@@ -247,11 +257,6 @@ function fullFingerprint() {
       libraries: ["local dashboard primitives"],
       assets: ["status icons"],
       notes: ["current vocabulary is replaceable implementation material"],
-    },
-    review_policy: {
-      proposal_policy: ["agents may propose but not promote memory"],
-      experience_gap_categories: ["missing-memory", "unclear-intent"],
-      memory_gap_policy: ["continue conservatively and propose durable memory"],
     },
   };
 }

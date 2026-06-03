@@ -10,7 +10,6 @@ import {
   lintGhostChecks,
   lintGhostDecision,
   lintGhostFingerprint,
-  lintGhostProposal,
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -23,7 +22,6 @@ import {
   FINGERPRINT_YML_FILENAME,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
-  PROPOSALS_DIRNAME,
   RESOURCES_FILENAME,
 } from "./constants.js";
 import type { LintIssue, LintReport } from "./lint.js";
@@ -46,7 +44,6 @@ export interface FingerprintPackagePaths {
   checks: string;
   intent: string;
   decisions: string;
-  proposals: string;
   cache: string;
 }
 
@@ -73,7 +70,6 @@ export function resolveFingerprintPackage(
     checks: join(dir, GHOST_CHECKS_FILENAME),
     intent: join(dir, INTENT_FILENAME),
     decisions: join(dir, DECISIONS_DIRNAME),
-    proposals: join(dir, PROPOSALS_DIRNAME),
     cache: join(dir, CACHE_DIRNAME),
   };
 }
@@ -86,7 +82,6 @@ export async function initFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.dir, { recursive: true });
   await Promise.all([
-    mkdir(paths.proposals, { recursive: true }),
     mkdir(paths.cache, { recursive: true }),
     writeFile(
       paths.fingerprintYml,
@@ -130,13 +125,6 @@ export async function lintFingerprintPackage(
     "decisions",
     "decision",
     lintGhostDecision,
-    issues,
-  );
-  await lintMemoryDirectory(
-    paths.proposals,
-    "proposals",
-    "proposal",
-    lintGhostProposal,
     issues,
   );
 
@@ -184,8 +172,8 @@ export async function lintFingerprintPackage(
 
 async function lintMemoryDirectory(
   dirPath: string,
-  label: "decisions" | "proposals",
-  itemLabel: "decision" | "proposal",
+  label: "decisions",
+  itemLabel: "decision",
   lint: (input: unknown) => ReturnType<typeof lintGhostDecision>,
   issues: LintIssue[],
 ): Promise<void> {
@@ -331,16 +319,7 @@ situations: []
 principles: []
 experience_contracts: []
 patterns: []
-${implementationVocabulary}review_policy:
-  proposal_policy:
-    - Agents recommend or create thresholded proposals for durable missing memory, intentional divergences, experience gaps, and check candidates.
-    - Proposal candidates should be repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocking confident future review.
-    - Humans promote durable memory into fingerprint.yml and checks.yml.
-  experience_gap_categories:
-    - missing-memory
-    - intentional-divergence
-    - experience-gap
-    - check-candidate
+${implementationVocabulary}
 `;
 }
 

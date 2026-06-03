@@ -16,18 +16,14 @@ import {
   type GhostExperienceScope,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
-  type GhostFingerprintReviewPolicy,
   GhostFingerprintSchema,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
   type GhostFingerprintTopologyExample,
   type GhostFingerprintTopologyScope,
-  type GhostProposalDocument,
-  GhostProposalSchema,
   lintGhostChecks,
   lintGhostDecision,
   lintGhostFingerprint,
-  lintGhostProposal,
   type MapFrontmatter,
 } from "#ghost-core";
 import {
@@ -79,7 +75,6 @@ export interface GhostMemoryStackLayer extends GhostMemoryStackLayerRef {
   checks_raw?: string;
   intent?: string;
   decisions: GhostDecisionDocument[];
-  proposals: GhostProposalDocument[];
 }
 
 export interface GhostMemoryStack {
@@ -92,8 +87,6 @@ export interface GhostMemoryStack {
     checks: GhostChecksDocument;
     intent: string | null;
     decisions: GhostDecisionDocument[];
-    proposals: GhostProposalDocument[];
-    open_proposals: GhostProposalDocument[];
   };
   provenance: {
     merge: "child-wins-by-id";
@@ -262,7 +255,6 @@ export function buildMemoryStack(
   );
   const checks = mergeChecks(layers.map((layer) => layer.checks));
   const decisions = mergeById(layers.flatMap((layer) => layer.decisions));
-  const proposals = mergeById(layers.flatMap((layer) => layer.proposals));
   const checkLint = lintGhostChecks(checks, {
     fingerprint,
     map: mapFromFingerprint(fingerprint),
@@ -286,10 +278,6 @@ export function buildMemoryStack(
       checks,
       intent: mergeIntent(layers),
       decisions,
-      proposals,
-      open_proposals: proposals.filter(
-        (proposal) => proposal.status === "open",
-      ),
     },
     provenance: {
       merge: "child-wins-by-id",
@@ -306,14 +294,12 @@ export async function loadMemoryStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   const root = rootForMemoryPackageDir(paths.dir, normalizedMemoryDir);
-  const [fingerprintRaw, checksRaw, intent, decisions, proposals] =
-    await Promise.all([
-      readFile(paths.fingerprintYml, "utf-8"),
-      readOptional(paths.checks),
-      readOptional(paths.intent),
-      readDecisionDirectory(paths.decisions),
-      readProposalDirectory(paths.proposals),
-    ]);
+  const [fingerprintRaw, checksRaw, intent, decisions] = await Promise.all([
+    readFile(paths.fingerprintYml, "utf-8"),
+    readOptional(paths.checks),
+    readOptional(paths.intent),
+    readDecisionDirectory(paths.decisions),
+  ]);
 
   const fingerprint = normalizeFingerprintPaths(
     parseFingerprint(fingerprintRaw),
@@ -347,9 +333,6 @@ export async function loadMemoryStackLayer(
     decisions: decisions.map((decision) =>
       normalizeDecisionPaths(decision, root, repoRoot),
     ),
-    proposals: proposals.map((proposal) =>
-      normalizeProposalPaths(proposal, root, repoRoot),
-    ),
   };
 }
 
@@ -371,7 +354,6 @@ export function memoryStackToPackageMemory(
     checks: stack.merged.checks,
     checksRaw: stringifyYaml(stack.merged.checks, { lineWidth: 0 }),
     intent: stack.merged.intent ?? undefined,
-    openProposals: stack.merged.open_proposals,
   };
 }
 
@@ -545,19 +527,6 @@ async function readDecisionDirectory(
   return docs;
 }
 
-async function readProposalDirectory(
-  dirPath: string,
-): Promise<GhostProposalDocument[]> {
-  const parsed = await readYamlFiles(dirPath);
-  const docs: GhostProposalDocument[] = [];
-  for (const { path, value } of parsed) {
-    const report = lintGhostProposal(value);
-    if (report.errors > 0) throwMemoryLintError(path, report.issues);
-    docs.push(GhostProposalSchema.parse(value) as GhostProposalDocument);
-  }
-  return docs;
-}
-
 async function readYamlFiles(
   dirPath: string,
 ): Promise<Array<{ path: string; value: unknown }>> {
@@ -605,7 +574,6 @@ function mergeFingerprints(
     experience_contracts: [],
     patterns: [],
     implementation_vocabulary: {},
-    review_policy: {},
   };
 
   for (const fingerprint of fingerprints) {
@@ -646,10 +614,6 @@ function mergeFingerprints(
         fingerprint.implementation_vocabulary.notes,
       ),
     };
-    merged.review_policy = mergeReviewPolicy(
-      merged.review_policy,
-      fingerprint.review_policy,
-    );
   }
 
   const report = lintGhostFingerprint(merged);
@@ -710,26 +674,6 @@ function collectSurfaceTypes(
       example.surface_type ? [example.surface_type] : [],
     ),
   );
-}
-
-function mergeReviewPolicy(
-  parent: GhostFingerprintReviewPolicy,
-  child: GhostFingerprintReviewPolicy,
-): GhostFingerprintReviewPolicy {
-  return {
-    proposal_policy: mergeStrings(
-      parent.proposal_policy,
-      child.proposal_policy,
-    ),
-    experience_gap_categories: mergeStrings(
-      parent.experience_gap_categories,
-      child.experience_gap_categories,
-    ),
-    memory_gap_policy: mergeStrings(
-      parent.memory_gap_policy,
-      child.memory_gap_policy,
-    ),
-  };
 }
 
 function mergeChecks(
@@ -858,23 +802,6 @@ function normalizeDecisionPaths(
     scope: normalizeExperienceScopePaths(decision.scope, baseRoot, repoRoot),
     evidence: normalizeExperienceEvidence(
       decision.evidence,
-      baseRoot,
-      repoRoot,
-    ),
-  };
-}
-
-function normalizeProposalPaths(
-  input: GhostProposalDocument,
-  baseRoot: string,
-  repoRoot: string,
-): GhostProposalDocument {
-  const proposal = clone(input);
-  return {
-    ...proposal,
-    scope: normalizeExperienceScopePaths(proposal.scope, baseRoot, repoRoot),
-    evidence: normalizeExperienceEvidence(
-      proposal.evidence,
       baseRoot,
       repoRoot,
     ),

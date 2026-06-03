@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-02T13:29:31.526Z",
+  "generatedAt": "2026-06-03T01:29:15.750Z",
   "tools": [
     {
       "tool": "ghost",
@@ -40,7 +40,7 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init [dir]",
-          "description": "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
+          "description": "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, cache/)",
           "options": [
             {
               "rawName": "--scope <path>",
@@ -270,110 +270,6 @@
               "name": "budget",
               "description": "survey summarize budget: compact, standard, full",
               "default": "standard",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "proposal",
-          "rawName": "proposal <op> [id]",
-          "description": "Create, list, or resolve scoped Ghost memory proposals.",
-          "options": [
-            {
-              "rawName": "--path <path>",
-              "name": "path",
-              "description": "Repo path used to resolve the memory stack",
-              "default": ".",
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative memory package directory for proposal stack resolution (default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--id <id>",
-              "name": "id",
-              "description": "Proposal id for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--kind <kind>",
-              "name": "kind",
-              "description": "Proposal kind for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--title <title>",
-              "name": "title",
-              "description": "Proposal title for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--claim <text>",
-              "name": "claim",
-              "description": "Proposal claim for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--rationale <text>",
-              "name": "rationale",
-              "description": "Proposal rationale for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--target <target>",
-              "name": "target",
-              "description": "Proposed target: fingerprint, checks, or review_policy",
-              "default": "fingerprint",
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--summary <text>",
-              "name": "summary",
-              "description": "Proposed action summary for create",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--evidence <path-or-note>",
-              "name": "evidence",
-              "description": "Evidence path or note for create; repeat or comma-separate for multiple values",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--status <status>",
-              "name": "status",
-              "description": "Resolution status: accepted, rejected, or superseded",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
               "takesValue": true,
               "negated": false
             }

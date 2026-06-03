@@ -238,7 +238,6 @@ function fingerprintDocument(
     principles: [
       {
         id: "dense-workflows-prioritize-scanning",
-        status: "accepted",
         principle:
           "Dense workflows optimize for comparison, speed, and recovery.",
       },
@@ -246,7 +245,6 @@ function fingerprintDocument(
     experience_contracts: [],
     patterns: [],
     implementation_vocabulary: {},
-    review_policy: {},
     ...overrides,
   };
 }

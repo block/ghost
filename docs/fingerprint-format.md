@@ -10,14 +10,15 @@ A Ghost fingerprint is a repo-local product experience memory bundle rooted at
   checks.yml       # optional deterministic gates
   intent.md        # optional human-authored or human-approved intent
   decisions/       # optional ghost.decision/v1 rationale
-  proposals/       # optional ghost.proposal/v1 candidate memory updates
   cache/           # optional generated inventory and other ephemeral facts
 ```
 
-`fingerprint.yml` is the source of truth. `config.yml` routes implementation
-and reference registry/library context without defining product intent. `checks.yml` is
-the executable appendix. Proposals are unresolved candidate changes. Cache is
-refreshable and may be deleted without losing canonical memory.
+`fingerprint.yml` is the source of truth. Ordinary Git workflow is the staging
+and approval boundary: uncommitted or unmerged edits are draft work, and
+checked-in memory is canonical for Ghost. `config.yml` routes implementation and
+reference registry/library context without defining product intent. `checks.yml`
+is the executable appendix. Cache is refreshable and may be deleted without
+losing canonical memory.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` files may
 still appear in older repos or as migration/source material. They are not
@@ -38,31 +39,25 @@ For a path like `apps/checkout/review/page.tsx`, Ghost resolves every
 The merged stack is broad-to-local:
 
 1. Root memory supplies product-wide identity, shared situations, principles,
-   contracts, patterns, checks, decisions, proposals, and intent.
+   contracts, patterns, checks, decisions, and intent.
 2. Child memory adds local product-area detail.
 3. Entries with the same `id` are replaced by the nearest child entry.
 4. Child-relative paths are normalized to repo-root paths in reports, routing,
    and emitted context.
 
 `summary.product` and other scalar summary fields use the nearest child value.
-Summary arrays, topology surface types, implementation vocabulary, and review
-policy arrays merge parent-to-child with de-dupe. Checks merge by `id`, so a
-child check with `status: disabled` suppresses an inherited active check.
-`intent.md` files concatenate with layer headings. Decisions and proposals also
-merge by `id` with child entries winning.
-
-No `extends` field is needed in canonical `fingerprint.yml`; stack inheritance
-is filesystem-based.
-
-The default memory directory is `.ghost`. Host adapters can use another safe
-relative directory by passing `--memory-dir <relative-dir>` to stack-aware
-commands. For example, `--memory-dir .design/memory` resolves
-`.design/memory/fingerprint.yml` at the root and in nested product areas.
+Summary arrays, topology surface types, and implementation vocabulary merge
+parent-to-child with de-dupe. Checks merge by `id`, so a child check with
+`status: disabled` suppresses an inherited active check. `intent.md` files
+concatenate with layer headings. Decisions merge by `id` with child entries
+winning.
 
 ## `fingerprint.yml`
 
 `fingerprint.yml` uses `ghost.fingerprint/v1`. It should stay compact enough
-for agents to read before generation and review.
+for agents to read before generation and review. Fingerprint entries do not
+have lifecycle status fields; if an entry is in checked-in `fingerprint.yml`,
+Ghost treats it as memory.
 
 ```yaml
 schema: ghost.fingerprint/v1
@@ -94,15 +89,12 @@ situations:
     patterns: [pattern:reference-before-decoration]
 principles:
   - id: memory-before-inventory
-    status: accepted
     principle: Canonical memory should explain what matters and why; generated inventory only explains what exists.
 experience_contracts:
   - id: review-cites-memory
-    status: accepted
     contract: Advisory review findings must cite the diff and the relevant fingerprint memory.
 patterns:
   - id: reference-before-decoration
-    status: accepted
     kind: composition
     pattern: Reference pages prioritize the working surface before visual flourish.
 implementation_vocabulary:
@@ -110,15 +102,6 @@ implementation_vocabulary:
   components: [Button, CodeBlock]
   notes:
     - Use these as current implementation material, not as proof of product fit.
-review_policy:
-  proposal_policy:
-    - Agents create proposals for missing memory, intentional divergence, experience gaps, and check candidates.
-    - Humans promote durable memory into fingerprint.yml or checks.yml.
-  experience_gap_categories:
-    - missing-memory
-    - intentional-divergence
-    - experience-gap
-    - check-candidate
 ```
 
 Canonical sections:
@@ -132,12 +115,12 @@ Canonical sections:
 | `experience_contracts` | How surfaces and capabilities speak, disclose, fail, and recover. |
 | `patterns` | Reusable visual, behavioral, content, or composition patterns. |
 | `implementation_vocabulary` | Current tokens, components, libraries, assets, and notes available for implementation. |
-| `review_policy` | How agents handle gaps, proposals, and uncertainty. |
 
 ## `checks.yml`
 
 `checks.yml` uses `ghost.checks/v1`. Active checks are deterministic and must
-declare a typed `derives_from` reference into `fingerprint.yml`.
+declare a typed `derives_from` reference into `fingerprint.yml`. Checks keep
+`status: active | proposed | disabled` because enforcement still needs state.
 
 ```yaml
 schema: ghost.checks/v1
@@ -197,28 +180,6 @@ decided_at: "2026-05-17T00:00:00.000Z"
 
 `ghost review --include-memory` reads only decisions with `status: accepted`.
 
-## `proposals/*.yml`
-
-Candidate memory updates use `ghost.proposal/v1`. Agents create proposals when
-generation or review exposes missing memory, intentional divergence,
-experience gaps, or possible deterministic checks. Proposals are never
-canonical until a human promotes them.
-
-```yaml
-schema: ghost.proposal/v1
-id: saved-payment-empty-state
-status: open
-kind: missing-memory
-title: Saved payment empty state should teach recovery
-claim: Empty states for saved payment methods should prioritize recovery.
-rationale: The user is blocked from paying, not browsing product concepts.
-evidence:
-  - path: apps/payments/empty-state.tsx
-proposed_action:
-  target: fingerprint
-  summary: Promote into fingerprint.yml if repeated.
-```
-
 ## Commands
 
 ```bash
@@ -233,7 +194,6 @@ ghost verify --all
 ghost stack apps/checkout/review/page.tsx
 ghost check --base main --format json
 ghost review --base main --include-memory
-ghost proposal create --path apps/checkout/review/page.tsx --id checkout-copy-memory --kind missing-memory --title "Checkout copy memory" --claim "Checkout copy needs local memory." --rationale "The checkout surface has specific payment review language." --summary "Add checkout copy guidance."
 ghost emit review-command --path apps/checkout/review/page.tsx
 ghost emit context-bundle
 ```
@@ -244,5 +204,4 @@ When `--reference packages/ghost-ui/.ghost` is used, generated config points to
 vocabulary; it is not copied into the product's own memory.
 
 Use `ghost inventory > .ghost/cache/inventory.json` when observed repo facts are
-useful source material. Promote only durable conclusions into
-`fingerprint.yml`.
+useful source material. Curate durable conclusions into `fingerprint.yml`.

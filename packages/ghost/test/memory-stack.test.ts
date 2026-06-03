@@ -76,11 +76,6 @@ describe("nested Ghost memory stacks", () => {
         (decision) => decision.id === "shared-decision",
       )?.status,
     ).toBe("rejected");
-    expect(
-      stack.merged.proposals.find(
-        (proposal) => proposal.id === "shared-proposal",
-      )?.claim,
-    ).toBe("Checkout has its own proposal.");
   });
 
   it("groups changed files by resolved memory stack", async () => {
@@ -141,7 +136,6 @@ async function writeRootBundle(
 ): Promise<void> {
   const ghost = memoryPackagePath(dir, memoryDir);
   await mkdir(join(ghost, "decisions"), { recursive: true });
-  await mkdir(join(ghost, "proposals"), { recursive: true });
   await writeFile(
     join(ghost, "fingerprint.yml"),
     `schema: ghost.fingerprint/v1
@@ -159,21 +153,17 @@ situations:
     product_obligation: preserve broad product continuity
 principles:
   - id: shared-principle
-    status: accepted
     principle: Parent product memory.
 experience_contracts: []
 patterns:
   - id: root-pattern
-    status: accepted
     kind: visual
     pattern: Root pattern.
   - id: child-pattern
-    status: accepted
     kind: visual
     pattern: Parent version of child pattern.
 implementation_vocabulary:
   tokens: [RootTheme.color]
-review_policy: {}
 `,
   );
   await writeFile(
@@ -212,22 +202,6 @@ evidence:
 decided_at: "2026-05-17T00:00:00.000Z"
 `,
   );
-  await writeFile(
-    join(ghost, "proposals", "shared-proposal.yml"),
-    `schema: ghost.proposal/v1
-id: shared-proposal
-status: open
-kind: missing-memory
-title: Parent proposal
-claim: Parent proposal.
-rationale: Parent rationale.
-evidence:
-  - note: Parent evidence.
-proposed_action:
-  target: fingerprint
-  summary: Parent action.
-`,
-  );
 }
 
 async function writeChildBundle(
@@ -236,7 +210,6 @@ async function writeChildBundle(
 ): Promise<void> {
   const ghost = memoryPackagePath(root, memoryDir);
   await mkdir(join(ghost, "decisions"), { recursive: true });
-  await mkdir(join(ghost, "proposals"), { recursive: true });
   await mkdir(join(root, "review"), { recursive: true });
   await writeFile(
     join(ghost, "fingerprint.yml"),
@@ -256,14 +229,12 @@ situations:
     surface_type: payment-review
 principles:
   - id: shared-principle
-    status: accepted
     principle: Checkout review must make reversal obvious.
     applies_to:
       paths: [review]
 experience_contracts: []
 patterns:
   - id: child-pattern
-    status: accepted
     kind: behavioral
     pattern: Checkout keeps review controls visible.
     applies_to:
@@ -272,7 +243,6 @@ patterns:
       - path: review/page.tsx
 implementation_vocabulary:
   tokens: [CheckoutTheme.action]
-review_policy: {}
 `,
   );
   await writeFile(
@@ -316,22 +286,6 @@ rationale: Child rationale.
 evidence:
   - path: review/page.tsx
 decided_at: "2026-05-18T00:00:00.000Z"
-`,
-  );
-  await writeFile(
-    join(ghost, "proposals", "shared-proposal.yml"),
-    `schema: ghost.proposal/v1
-id: shared-proposal
-status: open
-kind: experience-gap
-title: Child proposal
-claim: Checkout has its own proposal.
-rationale: Child rationale.
-evidence:
-  - path: review/page.tsx
-proposed_action:
-  target: fingerprint
-  summary: Child action.
 `,
   );
 }
