@@ -77,8 +77,8 @@ export default function Home() {
                 grounded in that memory
               </li>
               <li>
-                <code>.ghost/proposals</code> stages missing memory, intentional
-                divergence, experience gaps, and check candidates
+                ordinary Git review separates draft memory edits from checked-in
+                truth
               </li>
               <li>
                 <code>.ghost/decisions</code> records optional accepted or

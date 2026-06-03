@@ -41,17 +41,15 @@ describe("scanStatus readiness", () => {
     expect(status.readiness.cannot_review).toContain("product identity");
   });
 
-  it("reports ready memory when fingerprint.yml has accepted experience entries", async () => {
+  it("reports ready memory when fingerprint.yml has experience entries", async () => {
     await writeFile(
       join(dir, "fingerprint.yml"),
       fingerprintFile(`
 principles:
   - id: dense-workflows-prioritize-scanning
-    status: accepted
     principle: Dense workflows optimize for comparison and recovery.
 patterns:
   - id: preserve-table-density
-    status: accepted
     kind: composition
     pattern: Keep dense operational tables scannable.
 implementation_vocabulary:
@@ -99,7 +97,6 @@ summary: {}
 topology: {}
 situations: []
 experience_contracts: []
-review_policy: {}
 ${overrides}`;
   }
   return `schema: ghost.fingerprint/v1
@@ -110,6 +107,5 @@ principles: []
 experience_contracts: []
 patterns: []
 implementation_vocabulary: {}
-review_policy: {}
 ${overrides}`;
 }

@@ -64,15 +64,12 @@ function formatStackJson(stack: GhostMemoryStack): Record<string, unknown> {
       memory_dir: layer.memory_dir,
       fingerprint_id: layer.fingerprint.summary.product ?? null,
       checks: layer.checks?.checks.length ?? 0,
-      proposals: layer.proposals.length,
     })),
     merged: {
       fingerprint: stack.merged.fingerprint,
       checks: stack.merged.checks,
       intent: stack.merged.intent,
       decisions: stack.merged.decisions,
-      proposals: stack.merged.proposals,
-      open_proposals: stack.merged.open_proposals,
     },
     provenance: stack.provenance,
   };
@@ -96,7 +93,6 @@ function formatStackCli(stack: GhostMemoryStack): string {
       stack.merged.checks.checks.filter((check) => check.status === "active")
         .length
     }`,
-    `  open proposals: ${stack.merged.open_proposals.length}`,
     "",
   ];
   return `${lines.join("\n")}\n`;

@@ -1,17 +1,12 @@
-import type { Dirent } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import {
   type GhostChecksDocument,
   GhostChecksSchema,
   type GhostFingerprintDocument,
   GhostFingerprintSchema,
-  type GhostProposalDocument,
-  GhostProposalSchema,
   lintGhostChecks,
   lintGhostFingerprint,
-  lintGhostProposal,
 } from "#ghost-core";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 
@@ -23,18 +18,16 @@ export interface PackageMemory {
   checks?: GhostChecksDocument;
   checksRaw?: string;
   intent?: string;
-  openProposals: GhostProposalDocument[];
 }
 
 export async function loadPackageMemory(
   paths: FingerprintPackagePaths,
   nameOverride?: string,
 ): Promise<PackageMemory> {
-  const [fingerprintRaw, checksRaw, intent, openProposals] = await Promise.all([
+  const [fingerprintRaw, checksRaw, intent] = await Promise.all([
     readFile(paths.fingerprintYml, "utf-8"),
     readOptional(paths.checks),
     readOptional(paths.intent),
-    readOpenProposals(paths.proposals),
   ]);
 
   const fingerprint = parseFingerprint(fingerprintRaw);
@@ -46,7 +39,6 @@ export async function loadPackageMemory(
     checks,
     checksRaw,
     intent,
-    openProposals,
   };
 }
 
@@ -91,45 +83,6 @@ function parseChecks(
     throw new Error("checks.yml failed schema validation.");
   }
   return result.data as GhostChecksDocument;
-}
-
-async function readOpenProposals(
-  dirPath: string,
-): Promise<GhostProposalDocument[]> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dirPath, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-
-  const proposals: GhostProposalDocument[] = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!entry.isFile()) continue;
-    if (entry.name.startsWith(".")) continue;
-    if (!/\.ya?ml$/i.test(entry.name)) continue;
-
-    const path = resolve(dirPath, entry.name);
-    const parsed = parseYamlSafe(await readFile(path, "utf-8"), path);
-    const report = lintGhostProposal(parsed);
-    if (report.errors > 0) {
-      const first = report.issues.find((issue) => issue.severity === "error");
-      const suffix = first?.path ? ` @ ${first.path}` : "";
-      throw new Error(
-        `${path} failed proposal lint: ${first?.message ?? "invalid proposal"}${suffix}`,
-      );
-    }
-
-    const result = GhostProposalSchema.safeParse(parsed);
-    if (!result.success) {
-      throw new Error(`${path} failed proposal schema validation.`);
-    }
-
-    const proposal = result.data as GhostProposalDocument;
-    if (proposal.status === "open") proposals.push(proposal);
-  }
-
-  return proposals;
 }
 
 function parseYamlSafe(raw: string, label: string): unknown {

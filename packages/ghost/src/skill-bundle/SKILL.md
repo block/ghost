@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Capture, validate, review, and evolve a repo-local Ghost fingerprint. Use when the user wants to capture a product fingerprint, update .ghost, brief work from accepted product-experience context, review drift, verify generated UI, compare fingerprints, or record accepted divergence.
+description: Capture, validate, review, and evolve a repo-local Ghost fingerprint. Use when the user wants to capture a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, compare fingerprints, or record accepted divergence.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -13,21 +13,20 @@ Ghost captures product identity in a repo-local fingerprint bundle:
 
 ```text
 .ghost/
-  fingerprint.yml
-  config.yml       # optional implementation roots and reference registries/libraries
-  checks.yml        # optional deterministic gates
-  intent.md         # optional human-approved intent
-  decisions/        # optional accepted/rejected rationale
-  proposals/        # optional candidate updates
-  cache/            # optional generated caches
+  fingerprint.yml # canonical product-experience memory
+  config.yml      # optional implementation roots and reference registries/libraries
+  checks.yml      # optional deterministic gates
+  intent.md       # optional human-authored intent
+  decisions/      # optional accepted/rejected rationale
+  cache/          # optional generated caches
 ```
 
-`fingerprint.yml` is the canonical product-experience memory. `config.yml`
-maps implementation roots and reference UI registries/libraries without making
-those references product intent. Checks are deterministic gates. Proposals
-capture thresholded missing memory, intentional divergence, experience gaps, and
-check candidates until a human promotes them. The host agent reads and writes
-the fingerprint; the CLI provides deterministic validation, comparison,
+`fingerprint.yml` is the source of truth when it is checked in. Ordinary Git
+workflow is the staging and approval boundary: uncommitted or unmerged changes
+are drafts, and committed memory is canonical for Ghost. `config.yml` maps
+implementation roots and reference UI registries/libraries without making those
+references product intent. Checks are deterministic gates. Decisions preserve
+historical rationale. The CLI provides deterministic validation, comparison,
 routing, and handoff packets.
 
 Repos may also contain nested bundles such as `apps/checkout/.ghost/`. Resolve
@@ -49,11 +48,10 @@ review or check format.
 | `ghost stack [path...] [--memory-dir <relative-dir>]` | Inspect resolved broad-to-local memory layers and merged output. |
 | `ghost inventory [path]` | Emit raw repo signals for optional cache/source material. |
 | `ghost lint [file-or-dir] [--all] [--memory-dir <relative-dir>]` | Validate a bundle, artifact, or all nested stack merges. |
-| `ghost verify [dir] --root <dir> [--all] [--memory-dir <relative-dir>]` | Validate fingerprint evidence, checks, optional decisions/proposals, and stack integrity. |
+| `ghost verify [dir] --root <dir> [--all] [--memory-dir <relative-dir>]` | Validate fingerprint evidence, checks, optional decisions, and stack integrity. |
 | `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
 | `ghost check --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Run active deterministic gates against a diff; default groups files by memory stack. |
 | `ghost review --base <ref> [--memory-dir <relative-dir>] [--package <dir>]` | Emit an advisory review packet grounded in resolved stack evidence. |
-| `ghost proposal <create|list|resolve> [--memory-dir <relative-dir>]` | Create, list, or close scoped proposals without auto-promoting memory. |
 | `ghost compare <a> <b> [...more]` | Compare root bundles or direct fingerprints. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 | `ghost emit <kind>` | Emit `review-command` or `context-bundle`. |
@@ -63,33 +61,32 @@ review or check format.
 
 - Fingerprint Capture: follow [references/capture.md](references/capture.md).
 - Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
-- Recall accepted product-experience context: follow [references/recall.md](references/recall.md).
+- Recall product-experience context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
 - Review drift: follow [references/review.md](references/review.md).
 - Verify generation: follow [references/verify.md](references/verify.md).
 - Compare bundles: follow [references/compare.md](references/compare.md).
 - Remediate drift: follow [references/remediate.md](references/remediate.md).
-- Propose a candidate fingerprint update: follow [references/propose.md](references/propose.md).
-- Promote a human-approved proposal: follow [references/promote.md](references/promote.md).
 
 ## Always
 
 - Treat the resolved `.ghost/` memory stack as the source of truth.
 - Use `.ghost/config.yml` for implementation/library routing; keep product
-  meaning in `fingerprint.yml` or approved memory.
-- Validate with `ghost lint` and `ghost verify --root <target>` before declaring Fingerprint Capture complete; use `--all` when nested bundles exist.
+  meaning in `fingerprint.yml`, `intent.md`, or decisions.
+- Validate with `ghost lint` and `ghost verify --root <target>` before declaring
+  Fingerprint Capture complete; use `--all` when nested bundles exist.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
 - Include accepted decisions with `ghost review --include-memory` when product-experience rationale matters.
 
 ## When Memory Is Silent
 
-Silent fingerprint memory does not require stopping by default. When accepted
-memory does not cover the task, proceed from nearby product surfaces, local
-components, token and copy conventions, accepted decisions or human intent, and
-ordinary UX judgment when safe. Label that reasoning as provisional and
-non-Ghost-backed. Ask a human before making high-risk, irreversible,
-privacy/security/legal, or product-identity-defining choices.
+Silent fingerprint memory does not require stopping by default. When memory does
+not cover the task, proceed from nearby product surfaces, local components,
+token and copy conventions, accepted decisions or human intent, and ordinary UX
+judgment when safe. Label that reasoning as provisional and non-Ghost-backed.
+Ask a human before making high-risk, irreversible, privacy/security/legal, or
+product-identity-defining choices.
 
 ## Never
 
@@ -97,4 +94,4 @@ privacy/security/legal, or product-identity-defining choices.
 - Never claim provisional judgment, local convention, or general UX reasoning as
   Ghost-backed memory.
 - Never treat `intent.md` as authoritative unless human-authored or human-approved.
-- Never treat proposals or rejected decisions as canonical inputs.
+- Never treat rejected decisions as canonical inputs.

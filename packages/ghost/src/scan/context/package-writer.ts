@@ -1,6 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { GhostProposalDocument } from "#ghost-core";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 import { loadPackageMemory, type PackageMemory } from "./package-memory.js";
 import type { WriteContextResult } from "./writer.js";
@@ -56,14 +55,6 @@ export async function writePackageContextBundleFromMemory(
       context.checksRaw,
     );
   }
-  if (context.openProposals.length > 0) {
-    await writeContextFile(
-      options.outDir,
-      files,
-      "open-proposals.md",
-      formatOpenProposals(context.openProposals),
-    );
-  }
   if (context.intent) {
     await writeContextFile(options.outDir, files, "intent.md", context.intent);
   }
@@ -103,20 +94,20 @@ Read the files in this order:
 
 1. \`fingerprint.yml\` - canonical product-experience memory.
 2. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
-3. \`open-proposals.md\` when present - unresolved missing memory, intentional divergences, experience gaps, or check candidates.
-4. \`intent.md\` when present - supplemental human-approved context.
+3. \`intent.md\` when present - supplemental human-authored context.
 
 When generating or reviewing UI, select the relevant situation, principles,
 experience contracts, and patterns from \`fingerprint.yml\` before choosing
 implementation details. Use implementation vocabulary only as replaceable
-material that may help satisfy product memory. Treat proposals as unresolved
-context, not canonical truth.
+material that may help satisfy product memory.
 
-When accepted fingerprint memory is silent, proceed from nearby product
-surfaces, local components, token and copy conventions, accepted decisions or
-human intent, and ordinary UX judgment when safe. Label that reasoning as
-provisional and non-Ghost-backed. Ask a human before making high-risk,
-irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint memory is silent, proceed from nearby product surfaces, local
+components, token and copy conventions, accepted decisions or human intent, and
+ordinary UX judgment when safe. Label that reasoning as provisional and
+non-Ghost-backed. Ask a human before making high-risk, irreversible,
+privacy/security/legal, or product-identity-defining choices. Memory changes
+are ordinary edits to \`fingerprint.yml\`, \`checks.yml\`, decisions, or intent
+that go through normal Git review.
 `;
 }
 
@@ -139,10 +130,6 @@ ${context.checksRaw.trim()}
 \`\`\``);
   }
 
-  if (context.openProposals.length > 0) {
-    parts.push(formatOpenProposals(context.openProposals));
-  }
-
   if (context.intent?.trim()) {
     parts.push(`# Human Context
 
@@ -157,30 +144,11 @@ ${context.intent.trim()}
 - Preserve applicable principles, experience contracts, and patterns.
 - Use implementation vocabulary only when it supports the selected product memory.
 - Only active checks are blocking.
-- Treat open proposals as unresolved context that may explain gaps or intentional divergence.
-- When accepted fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, accepted decisions or human intent, and ordinary UX judgment when safe.
+- When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, accepted decisions or human intent, and ordinary UX judgment when safe.
 - Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
-- Proposal Threshold: create or recommend a proposal only when the gap is repeated, high-impact, explicitly human-stated, intentionally divergent, likely to recur, or blocks confident future review.
-- Do not propose for isolated implementation details, weak local context, duplicate open proposals, issues already fixable from accepted memory, vague taste concerns, or generic code quality.
-- If the task exposes missing or contradictory memory that meets the threshold, recommend a \`missing-memory\`, \`intentional-divergence\`, \`experience-gap\`, or \`check-candidate\` update instead of rewriting canonical memory silently; create it only when the user explicitly asks to capture memory.`);
+- Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, decisions, or intent.`);
 
   return `${parts.join("\n\n")}\n`;
-}
-
-function formatOpenProposals(proposals: GhostProposalDocument[]): string {
-  const lines = ["# Open Proposals", ""];
-  for (const proposal of proposals) {
-    lines.push(`## ${proposal.title}`);
-    lines.push("");
-    lines.push(`- **ID:** \`${proposal.id}\``);
-    lines.push(`- **Kind:** ${proposal.kind}`);
-    lines.push(`- **Target:** ${proposal.proposed_action.target}`);
-    lines.push(`- **Claim:** ${proposal.claim}`);
-    lines.push(`- **Rationale:** ${proposal.rationale}`);
-    lines.push(`- **Proposed action:** ${proposal.proposed_action.summary}`);
-    lines.push("");
-  }
-  return lines.join("\n");
 }
 
 function buildPackageReadmeMd(context: PackageMemory): string {
@@ -194,9 +162,9 @@ package.
 - \`SKILL.md\` - agent skill manifest.
 - \`prompt.md\` - portable prompt distilled from \`fingerprint.yml\`.
 - \`fingerprint.yml\` - canonical product-experience memory.
-${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.openProposals.length > 0 ? "- `open-proposals.md` - unresolved candidate memory updates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-approved context.\n" : ""}
-Regenerate this bundle when \`fingerprint.yml\`, active checks, or open
-proposals change.
+${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
+Regenerate this bundle when \`fingerprint.yml\`, active checks, decisions, or
+intent change.
 `;
 }
 

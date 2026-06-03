@@ -9,12 +9,6 @@ const SlugIdSchema = z
       "id must be a slug (lowercase alphanumeric plus . _ -, leading alphanumeric)",
   });
 
-export const GhostFingerprintStatusSchema = z.enum([
-  "accepted",
-  "proposed",
-  "deprecated",
-]);
-
 export const GhostFingerprintPatternKindSchema = z.enum([
   "visual",
   "behavioral",
@@ -112,7 +106,6 @@ export const GhostFingerprintSituationSchema = z
 export const GhostFingerprintPrincipleSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     principle: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
     guidance: z.array(z.string().min(1)).optional(),
@@ -125,7 +118,6 @@ export const GhostFingerprintPrincipleSchema = z
 export const GhostFingerprintExperienceContractSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     contract: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
     obligations: z.array(z.string().min(1)).optional(),
@@ -137,7 +129,6 @@ export const GhostFingerprintExperienceContractSchema = z
 export const GhostFingerprintPatternSchema = z
   .object({
     id: SlugIdSchema,
-    status: GhostFingerprintStatusSchema,
     kind: GhostFingerprintPatternKindSchema,
     pattern: z.string().min(1),
     applies_to: GhostFingerprintScopeSchema.optional(),
@@ -158,14 +149,6 @@ export const GhostFingerprintImplementationVocabularySchema = z
   })
   .strict();
 
-export const GhostFingerprintReviewPolicySchema = z
-  .object({
-    proposal_policy: z.array(z.string().min(1)).optional(),
-    experience_gap_categories: z.array(z.string().min(1)).optional(),
-    memory_gap_policy: z.array(z.string().min(1)).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintSchema = z
   .object({
     schema: z.literal(GHOST_FINGERPRINT_SCHEMA),
@@ -176,6 +159,5 @@ export const GhostFingerprintSchema = z
     experience_contracts: z.array(GhostFingerprintExperienceContractSchema),
     patterns: z.array(GhostFingerprintPatternSchema),
     implementation_vocabulary: GhostFingerprintImplementationVocabularySchema,
-    review_policy: GhostFingerprintReviewPolicySchema,
   })
   .strict();

@@ -37,7 +37,6 @@ import {
   verifyFingerprintPackage,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
-import { registerProposalCommand } from "./scan-proposal-command.js";
 import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
@@ -132,7 +131,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, proposals/, cache/)",
+      "Create a root .ghost product experience memory skeleton (fingerprint.yml, checks.yml, cache/)",
     )
     .option(
       "--scope <path>",
@@ -207,7 +206,6 @@ export function registerScanCommands(cli: CAC): void {
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
           }
-          process.stdout.write(`  proposals/: ${paths.proposals}\n`);
           process.stdout.write(`  cache/: ${paths.cache}\n`);
           if (opts.withIntent) {
             process.stdout.write(`  intent.md: ${paths.intent}\n`);
@@ -325,9 +323,6 @@ export function registerScanCommands(cli: CAC): void {
           );
           process.stdout.write(
             `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
-          );
-          process.stdout.write(
-            `  proposals   (proposals/):      ${fmt(status.proposals.state)}\n`,
           );
           process.stdout.write(
             `  cache       (cache/):          ${fmt(status.cache.state)}\n`,
@@ -669,7 +664,6 @@ export function registerScanCommands(cli: CAC): void {
       }
     });
 
-  registerProposalCommand(cli);
   registerEmitCommand(cli);
 }
 
@@ -685,7 +679,6 @@ async function nestedBundleStatus(
         ...pkg,
         fingerprint: status.fingerprint,
         checks: status.checks,
-        proposals: status.proposals,
         intent: status.intent,
         readiness: status.readiness,
       };
@@ -700,7 +693,6 @@ interface NestedBundleStatus {
   memory_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
   checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
-  proposals: Awaited<ReturnType<typeof scanStatus>>["proposals"];
   intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
   readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
 }
@@ -728,7 +720,6 @@ function initCommandOutput(
     fingerprintYml: paths.fingerprintYml,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    proposals: paths.proposals,
     cache: paths.cache,
     ...(options.includeIntent ? { intent: paths.intent } : {}),
   };

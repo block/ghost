@@ -42,6 +42,3 @@ implementation_vocabulary:
     - src/fonts
   notes:
     - Ghost UI is registry-distributed implementation vocabulary, not an installable npm package or consuming-product experience memory.
-review_policy:
-  proposal_policy:
-    - Consumers create product-specific proposals in their own .ghost bundle.

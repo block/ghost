@@ -69,10 +69,8 @@ export type {
   GhostFingerprintPrinciple,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
-  GhostFingerprintReviewPolicy,
   GhostFingerprintScope,
   GhostFingerprintSituation,
-  GhostFingerprintStatus,
   GhostFingerprintSummary,
   GhostFingerprintTopology,
   GhostFingerprintTopologyExample,
@@ -89,11 +87,9 @@ export {
   GhostFingerprintPrincipleSchema,
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
-  GhostFingerprintReviewPolicySchema,
   GhostFingerprintSchema,
   GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
-  GhostFingerprintStatusSchema,
   GhostFingerprintSummarySchema,
   GhostFingerprintTopologyExampleSchema,
   GhostFingerprintTopologySchema,
@@ -111,7 +107,6 @@ export {
   type FingerprintPackagePaths,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
-  PROPOSALS_DIRNAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
 // --- Map (ghost.map/v2) ---
@@ -132,7 +127,7 @@ export {
   slugifyScopeId,
   type TopLevelEntry,
 } from "./map/index.js";
-// --- Memory (ghost.decision/v1 + ghost.proposal/v1) ---
+// --- Memory (ghost.decision/v1) ---
 export type {
   GhostDecisionDocument,
   GhostDecisionStatus,
@@ -141,24 +136,14 @@ export type {
   GhostMemoryLintIssue,
   GhostMemoryLintReport,
   GhostMemoryLintSeverity,
-  GhostProposalAction,
-  GhostProposalDocument,
-  GhostProposalKind,
-  GhostProposalStatus,
-  GhostProposalTarget,
 } from "./memory/index.js";
 export {
   GHOST_DECISION_SCHEMA,
   GHOST_DECISIONS_DIRNAME,
-  GHOST_PROPOSAL_SCHEMA,
-  GHOST_PROPOSALS_DIRNAME,
   GhostDecisionSchema,
   GhostExperienceEvidenceSchema,
   GhostExperienceScopeSchema,
-  GhostProposalActionSchema,
-  GhostProposalSchema,
   lintGhostDecision,
-  lintGhostProposal,
 } from "./memory/index.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
