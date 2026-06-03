@@ -63,13 +63,27 @@ topology:
     - primitive-demo
     - theme-control
     - tool-doc
-  examples:
-    - path: README.md
-      surface_type: docs-home
-      note: Public entry point describes fingerprint.yml as canonical memory.
-    - path: packages/ghost/src/scan/context/package-review-command.ts
-      surface_type: emitted-agent-prompt
-      note: Review command is generated from fingerprint.yml memory.
+exemplars:
+  - id: public-readme-memory-model
+    path: README.md
+    title: Public README memory model
+    surface_type: docs-home
+    scope: docs-site
+    note: Public entry point describes fingerprint.yml as canonical memory.
+    why: Shows how Ghost explains repo-local prose memory, optional inventory, and Git-reviewed approval.
+    refs:
+      - principle:fingerprint-is-canonical
+      - principle:inventory-is-cache
+  - id: review-command-memory-packet
+    path: packages/ghost/src/scan/context/package-review-command.ts
+    title: Generated review command
+    surface_type: emitted-agent-prompt
+    scope: public-cli
+    note: Review command is generated from fingerprint.yml memory.
+    why: Shows how Ghost turns canonical memory into an agent-facing review instruction.
+    refs:
+      - experience_contract:review-cites-memory-and-diff
+      - pattern:compact-agent-handoff
 situations:
   - id: capturing-memory
     title: Capturing repo memory

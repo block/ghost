@@ -51,6 +51,7 @@ export async function verifyFingerprintPackage(
 
   if (fingerprint) {
     await verifyFingerprintEvidence(fingerprint, root, issues);
+    await verifyFingerprintExemplars(fingerprint, root, issues);
   }
 
   if (fingerprint && checks) {
@@ -62,6 +63,27 @@ export async function verifyFingerprintPackage(
   }
 
   return finalize(issues);
+}
+
+async function verifyFingerprintExemplars(
+  fingerprint: GhostFingerprintDocument,
+  root: string,
+  issues: VerifyFingerprintIssue[],
+): Promise<void> {
+  await Promise.all(
+    fingerprint.exemplars.map(async (entry, index) => {
+      const exemplarPath = isAbsolute(entry.path)
+        ? entry.path
+        : resolve(root, entry.path);
+      if (await pathExists(exemplarPath)) return;
+      issues.push({
+        severity: "warning",
+        rule: "fingerprint-exemplar-unreachable",
+        message: `fingerprint exemplar path '${entry.path}' could not be resolved from ${root}.`,
+        path: `fingerprint.yml.exemplars[${index}].path`,
+      });
+    }),
+  );
 }
 
 async function readFingerprint(

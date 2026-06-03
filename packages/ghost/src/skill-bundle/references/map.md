@@ -21,7 +21,7 @@ Look for facts that help agents route product-experience judgment:
 
 - product scopes and owned paths
 - surface types
-- representative examples
+- exemplar surfaces worth inspecting
 - frameworks, platforms, and rendering constraints
 - design-system or component-library locations
 - places where UI can actually be observed
@@ -35,9 +35,12 @@ topology:
       paths: [src/checkout]
       surface_types: [payment-review]
   surface_types: [payment-review, empty-state]
-  examples:
-    - path: src/checkout/review.tsx
-      surface_type: payment-review
+exemplars:
+  - id: checkout-review
+    path: src/checkout/review.tsx
+    surface_type: payment-review
+    scope: checkout
+    why: Shows the payment-review surface worth preserving.
 ```
 
 ## Optional Inventory

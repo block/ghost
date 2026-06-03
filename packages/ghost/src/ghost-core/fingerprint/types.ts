@@ -43,16 +43,20 @@ export interface GhostFingerprintTopologyScope {
   surface_types?: string[];
 }
 
-export interface GhostFingerprintTopologyExample {
+export interface GhostFingerprintExemplar {
+  id: string;
   path: string;
+  title?: string;
   surface_type?: string;
+  scope?: string;
   note?: string;
+  why?: string;
+  refs?: GhostFingerprintRef[];
 }
 
 export interface GhostFingerprintTopology {
   scopes?: GhostFingerprintTopologyScope[];
   surface_types?: string[];
-  examples?: GhostFingerprintTopologyExample[];
 }
 
 export interface GhostFingerprintSituation {
@@ -115,6 +119,7 @@ export interface GhostFingerprintDocument {
   principles: GhostFingerprintPrinciple[];
   experience_contracts: GhostFingerprintExperienceContract[];
   patterns: GhostFingerprintPattern[];
+  exemplars: GhostFingerprintExemplar[];
   implementation_vocabulary: GhostFingerprintImplementationVocabulary;
 }
 

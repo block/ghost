@@ -38,6 +38,7 @@ export function lintGhostFingerprint(
   checkDuplicateIds("principles", doc.principles, issues);
   checkDuplicateIds("experience_contracts", doc.experience_contracts, issues);
   checkDuplicateIds("patterns", doc.patterns, issues);
+  checkDuplicateIds("exemplars", doc.exemplars, issues);
   checkTopologyRefs(doc, issues);
   checkRefs(doc, issues);
 
@@ -109,15 +110,6 @@ function checkTopologyRefs(
     });
   });
 
-  doc.topology.examples?.forEach((example, exampleIndex) => {
-    checkSurfaceTypeRef(
-      example.surface_type,
-      `topology.examples[${exampleIndex}].surface_type`,
-      topology,
-      issues,
-    );
-  });
-
   doc.situations.forEach((situation, situationIndex) => {
     checkSurfaceTypeRef(
       situation.surface_type,
@@ -147,6 +139,20 @@ function checkTopologyRefs(
     checkScopeRefs(
       pattern.applies_to,
       `patterns[${index}].applies_to`,
+      topology,
+      issues,
+    );
+  });
+  doc.exemplars.forEach((exemplar, index) => {
+    checkScopeIdRef(
+      exemplar.scope,
+      `exemplars[${index}].scope`,
+      topology,
+      issues,
+    );
+    checkSurfaceTypeRef(
+      exemplar.surface_type,
+      `exemplars[${index}].surface_type`,
       topology,
       issues,
     );
@@ -198,6 +204,9 @@ function checkRefs(
   });
   doc.patterns.forEach((pattern, index) => {
     checkCheckRefs(pattern.check_refs, `patterns[${index}].check_refs`, issues);
+  });
+  doc.exemplars.forEach((exemplar, index) => {
+    checkMemoryRefs(exemplar.refs, `exemplars[${index}].refs`, targets, issues);
   });
 }
 
@@ -279,6 +288,22 @@ function checkScopeRefs(
   });
 }
 
+function checkScopeIdRef(
+  scope: string | undefined,
+  path: string,
+  topology: ReturnType<typeof collectTopology>,
+  issues: GhostFingerprintLintIssue[],
+): void {
+  if (!scope) return;
+  if (topology.scopes.has(scope)) return;
+  issues.push({
+    severity: "error",
+    rule: "fingerprint-scope-unknown",
+    message: `Scope '${scope}' is not declared in topology.scopes.`,
+    path,
+  });
+}
+
 function collectTargets(
   doc: GhostFingerprintDocument,
 ): Record<RefTargetPrefix, Set<string>> {
@@ -335,6 +360,35 @@ function checkCheckRefs(
       message: "check_refs entries must use check:* references.",
       path: `${path}[${index}]`,
     });
+  });
+}
+
+function checkMemoryRefs(
+  refs: GhostFingerprintRef[] | undefined,
+  path: string,
+  targets: Record<RefTargetPrefix, Set<string>>,
+  issues: GhostFingerprintLintIssue[],
+): void {
+  refs?.forEach((ref, index) => {
+    const parsed = parseRef(ref);
+    if (!parsed || parsed.prefix === "check") {
+      issues.push({
+        severity: "error",
+        rule: "fingerprint-ref-prefix",
+        message:
+          "Expected principle:*, situation:*, experience_contract:*, or pattern:* reference.",
+        path: `${path}[${index}]`,
+      });
+      return;
+    }
+    if (!targets[parsed.prefix].has(parsed.id)) {
+      issues.push({
+        severity: "error",
+        rule: "fingerprint-ref-unknown",
+        message: `Reference '${ref}' does not exist in fingerprint.yml.`,
+        path: `${path}[${index}]`,
+      });
+    }
   });
 }
 

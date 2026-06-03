@@ -19,7 +19,6 @@ import {
   GhostFingerprintSchema,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
-  type GhostFingerprintTopologyExample,
   type GhostFingerprintTopologyScope,
   lintGhostChecks,
   lintGhostDecision,
@@ -30,7 +29,11 @@ import {
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_YML_FILENAME,
 } from "./constants.js";
-import type { PackageMemory } from "./context/package-memory.js";
+import {
+  loadPackageInventory,
+  type PackageInventory,
+  type PackageMemory,
+} from "./context/package-memory.js";
 import type { FingerprintPackagePaths } from "./fingerprint-package.js";
 import {
   lintFingerprintPackage,
@@ -74,6 +77,7 @@ export interface GhostMemoryStackLayer extends GhostMemoryStackLayerRef {
   checks?: GhostChecksDocument;
   checks_raw?: string;
   intent?: string;
+  inventory: PackageInventory;
   decisions: GhostDecisionDocument[];
 }
 
@@ -294,12 +298,14 @@ export async function loadMemoryStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   const root = rootForMemoryPackageDir(paths.dir, normalizedMemoryDir);
-  const [fingerprintRaw, checksRaw, intent, decisions] = await Promise.all([
-    readFile(paths.fingerprintYml, "utf-8"),
-    readOptional(paths.checks),
-    readOptional(paths.intent),
-    readDecisionDirectory(paths.decisions),
-  ]);
+  const [fingerprintRaw, checksRaw, intent, inventory, decisions] =
+    await Promise.all([
+      readFile(paths.fingerprintYml, "utf-8"),
+      readOptional(paths.checks),
+      readOptional(paths.intent),
+      loadPackageInventory(paths),
+      readDecisionDirectory(paths.decisions),
+    ]);
 
   const fingerprint = normalizeFingerprintPaths(
     parseFingerprint(fingerprintRaw),
@@ -330,6 +336,7 @@ export async function loadMemoryStackLayer(
     ...(checks ? { checks } : {}),
     ...(checksRaw ? { checks_raw: checksRaw } : {}),
     ...(intent ? { intent } : {}),
+    inventory,
     decisions: decisions.map((decision) =>
       normalizeDecisionPaths(decision, root, repoRoot),
     ),
@@ -354,6 +361,10 @@ export function memoryStackToPackageMemory(
     checks: stack.merged.checks,
     checksRaw: stringifyYaml(stack.merged.checks, { lineWidth: 0 }),
     intent: stack.merged.intent ?? undefined,
+    inventory: stack.layers.at(-1)?.inventory ?? {
+      state: "missing",
+      path: `${stack.memory_dir}/cache/inventory.json`,
+    },
   };
 }
 
@@ -573,6 +584,7 @@ function mergeFingerprints(
     principles: [],
     experience_contracts: [],
     patterns: [],
+    exemplars: [],
     implementation_vocabulary: {},
   };
 
@@ -592,6 +604,10 @@ function mergeFingerprints(
       ...fingerprint.experience_contracts,
     ]);
     merged.patterns = mergeById([...merged.patterns, ...fingerprint.patterns]);
+    merged.exemplars = mergeById([
+      ...merged.exemplars,
+      ...fingerprint.exemplars,
+    ]);
     merged.implementation_vocabulary = {
       tokens: mergeStrings(
         merged.implementation_vocabulary.tokens,
@@ -650,30 +666,19 @@ function mergeTopology(
     ...(parent.scopes ?? []),
     ...(child.scopes ?? []),
   ]) as GhostFingerprintTopologyScope[];
-  const examples = mergeByKey(
-    [...(parent.examples ?? []), ...(child.examples ?? [])],
-    (example) => example.path,
-  ) as GhostFingerprintTopologyExample[];
   return {
     scopes,
     surface_types: mergeStrings(
       mergeStrings(parent.surface_types, child.surface_types),
-      collectSurfaceTypes(scopes, examples),
+      collectSurfaceTypes(scopes),
     ),
-    examples,
   };
 }
 
 function collectSurfaceTypes(
   scopes: GhostFingerprintTopologyScope[],
-  examples: GhostFingerprintTopologyExample[],
 ): string[] | undefined {
-  return mergeStrings(
-    scopes.flatMap((scope) => scope.surface_types ?? []),
-    examples.flatMap((example) =>
-      example.surface_type ? [example.surface_type] : [],
-    ),
-  );
+  return mergeStrings(scopes.flatMap((scope) => scope.surface_types ?? []));
 }
 
 function mergeChecks(
@@ -724,12 +729,10 @@ function normalizeFingerprintPaths(
     ...scope,
     paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
   }));
-  fingerprint.topology.examples = fingerprint.topology.examples?.map(
-    (example) => ({
-      ...example,
-      path: normalizePath(example.path, baseRoot, repoRoot),
-    }),
-  );
+  fingerprint.exemplars = fingerprint.exemplars.map((exemplar) => ({
+    ...exemplar,
+    path: normalizePath(exemplar.path, baseRoot, repoRoot),
+  }));
   fingerprint.situations = fingerprint.situations.map((entry) => ({
     ...entry,
     evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),

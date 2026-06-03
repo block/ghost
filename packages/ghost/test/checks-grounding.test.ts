@@ -244,6 +244,7 @@ function fingerprintDocument(
     ],
     experience_contracts: [],
     patterns: [],
+    exemplars: [],
     implementation_vocabulary: {},
     ...overrides,
   };

@@ -1,5 +1,6 @@
 import type {
   GhostCheck,
+  GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
   GhostFingerprintPattern,
   GhostFingerprintPrinciple,
@@ -70,10 +71,11 @@ function packageWorkflowSection(memory: PackageMemory): string {
 1. Read \`${memoryDir}/fingerprint.yml\` as the canonical product-experience memory.
 2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in resolved Ghost memory or active checks; do not expand the review into unrelated audit categories.
 3. Apply principles, experience contracts, and patterns before choosing implementation details.
-4. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
-5. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-6. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and memory excerpts; add \`--include-memory\` only when optional decisions matter.
-7. Cite the diff location, fingerprint.yml memory, and any active check for every finding.`;
+4. Inspect relevant exemplars as concrete anchors for what good looks like.
+5. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
+6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
+7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and memory excerpts; add \`--include-memory\` only when optional decisions matter.
+8. Cite the diff location, fingerprint.yml memory, relevant exemplars when useful, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -97,6 +99,7 @@ function packageMemoryIndex(memory: PackageMemory): string {
   const principles = formatPrinciples(fingerprint.principles);
   const contracts = formatExperienceContracts(fingerprint.experience_contracts);
   const patterns = formatPatterns(fingerprint.patterns);
+  const exemplars = formatExemplars(fingerprint.exemplars);
   const implementationVocabulary = formatImplementationVocabulary(memory);
 
   return `## Fingerprint Memory Index
@@ -110,6 +113,8 @@ ${principles}
 ${contracts}
 
 ${patterns}
+
+${exemplars}
 
 ${implementationVocabulary}`;
 }
@@ -214,6 +219,26 @@ function formatImplementationVocabulary(memory: PackageMemory): string {
   pushJoined(lines, "Notes", vocabulary.notes);
   if (lines.length === 2) {
     lines.push("- No implementation vocabulary recorded yet.");
+  }
+  return lines.join("\n");
+}
+
+function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
+  if (exemplars.length === 0) {
+    return "### Exemplars\n- No curated exemplars recorded yet.";
+  }
+  const lines = ["### Exemplars"];
+  for (const exemplar of exemplars.slice(0, 12)) {
+    const detail = exemplar.title ?? exemplar.note ?? exemplar.surface_type;
+    lines.push(
+      `- \`${exemplar.id}\` - \`${exemplar.path}\`${detail ? `: ${detail}` : ""}`,
+    );
+    if (exemplar.why) lines.push(`  - Why: ${exemplar.why}`);
+  }
+  if (exemplars.length > 12) {
+    lines.push(
+      `- ${exemplars.length - 12} more exemplar(s); inspect \`fingerprint.yml\` before deciding.`,
+    );
   }
   return lines.join("\n");
 }

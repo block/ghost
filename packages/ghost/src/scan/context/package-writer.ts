@@ -92,14 +92,16 @@ This skill grounds work in the **${context.name}** Ghost fingerprint.
 
 Read the files in this order:
 
-1. \`fingerprint.yml\` - canonical product-experience memory.
-2. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
-3. \`intent.md\` when present - supplemental human-authored context.
+1. \`prompt.md\` - generation packet: product prose, inventory, exemplars, and active checks.
+2. \`fingerprint.yml\` - canonical product prose and exemplar anchors.
+3. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
+4. \`intent.md\` when present - supplemental human-authored context.
 
-When generating or reviewing UI, select the relevant situation, principles,
-experience contracts, and patterns from \`fingerprint.yml\` before choosing
-implementation details. Use implementation vocabulary only as replaceable
-material that may help satisfy product memory.
+When generating UI, combine product prose from \`fingerprint.yml\`, optional
+inventory facts, and curated exemplars. Use implementation vocabulary and
+inventory only as replaceable material that may help satisfy product memory.
+When reviewing, use active checks for blocking validation and keep other
+findings advisory.
 
 When fingerprint memory is silent, proceed from nearby product surfaces, local
 components, token and copy conventions, optional rationale files when present,
@@ -116,11 +118,21 @@ function buildPackagePromptMd(context: PackageMemory): string {
     `You are working inside the **${context.name}** product experience as captured by Ghost.`,
   ];
 
-  parts.push(`# Fingerprint Memory
+  parts.push(`# Product Prose
+
+Canonical product memory lives in \`fingerprint.yml\`. Use situations, principles, experience contracts, and patterns as the source of product judgment.
 
 \`\`\`yaml
 ${context.fingerprintRaw.trim()}
 \`\`\``);
+
+  parts.push(`# Inventory
+
+${formatInventory(context)}`);
+
+  parts.push(`# Exemplars
+
+${formatExemplars(context)}`);
 
   if (context.checksRaw?.trim()) {
     parts.push(`# Active Checks
@@ -140,10 +152,12 @@ ${context.intent.trim()}
 
   parts.push(`# Use This Context
 
+- Generate from product prose + inventory + exemplars.
 - Select the relevant situation before generating or reviewing UI.
 - Preserve applicable principles, experience contracts, and patterns.
-- Use implementation vocabulary only when it supports the selected product memory.
-- Only active checks are blocking.
+- Inspect exemplars as concrete anchors for what good looks like.
+- Use inventory and implementation vocabulary only when they support the selected product memory.
+- Treat checks as validation; only active checks are blocking.
 - When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
 - Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 - Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
@@ -160,12 +174,109 @@ package.
 ## Files
 
 - \`SKILL.md\` - agent skill manifest.
-- \`prompt.md\` - portable prompt distilled from \`fingerprint.yml\`.
-- \`fingerprint.yml\` - canonical product-experience memory.
+- \`prompt.md\` - portable generation packet: product prose, inventory, exemplars, and checks.
+- \`fingerprint.yml\` - canonical product prose and exemplar anchors.
 ${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
 Regenerate this bundle when \`fingerprint.yml\`, active checks, or optional
 rationale files change.
 `;
+}
+
+function formatInventory(context: PackageMemory): string {
+  const { inventory } = context;
+  if (inventory.state === "missing") {
+    return `No generated inventory cache is present. Inventory is optional; generate it when useful with \`mkdir -p .ghost/cache && ghost inventory > .ghost/cache/inventory.json\`.`;
+  }
+  if (inventory.state === "unreadable") {
+    return `Inventory cache exists at \`${inventory.path}\`, but it could not be read: ${inventory.error}. Treat inventory as unavailable until the cache is regenerated.`;
+  }
+
+  const { summary } = inventory;
+  const lines = [
+    `Inventory cache: \`${inventory.path}\``,
+    "- Inventory is generated source material, not canonical product memory.",
+  ];
+  pushJoined(lines, "Platform hints", summary.platform_hints, { code: true });
+  pushJoined(lines, "Build hints", summary.build_system_hints, { code: true });
+  if (summary.language_histogram.length) {
+    lines.push(
+      `- Languages: ${summary.language_histogram
+        .map((entry) => `${entry.name} (${entry.files})`)
+        .join(", ")}`,
+    );
+  }
+  pushJoined(lines, "Package manifests", summary.package_manifests, {
+    code: true,
+  });
+  pushJoined(lines, "Config candidates", summary.candidate_config_files, {
+    code: true,
+  });
+  pushJoined(lines, "Registry files", summary.registry_files, { code: true });
+  if (summary.top_level_tree.length) {
+    lines.push(
+      `- Top-level tree: ${summary.top_level_tree
+        .map((entry) => `\`${entry.path}\``)
+        .join(", ")}`,
+    );
+  }
+  if (summary.config?.targets?.length) {
+    lines.push(
+      `- Config targets: ${summary.config.targets
+        .map((target) => `\`${target.id}\``)
+        .join(", ")}`,
+    );
+  }
+  if (summary.config?.libraries?.length) {
+    lines.push(
+      `- Reference libraries: ${summary.config.libraries
+        .map((library) => `\`${library.id}\``)
+        .join(", ")}`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatExemplars(context: PackageMemory): string {
+  const { exemplars } = context.fingerprint;
+  if (exemplars.length === 0) {
+    return "No curated exemplars are recorded yet. Use nearby product surfaces as provisional anchors and label that reasoning as non-Ghost-backed.";
+  }
+  const lines: string[] = [];
+  for (const exemplar of exemplars.slice(0, 16)) {
+    const detail = [
+      exemplar.title ?? exemplar.note,
+      exemplar.surface_type ? `surface: ${exemplar.surface_type}` : undefined,
+      exemplar.scope ? `scope: ${exemplar.scope}` : undefined,
+    ].filter(Boolean);
+    lines.push(
+      `- \`${exemplar.id}\` - \`${exemplar.path}\`${detail.length ? ` (${detail.join("; ")})` : ""}`,
+    );
+    if (exemplar.why) lines.push(`  - Why: ${exemplar.why}`);
+    if (exemplar.refs?.length) {
+      lines.push(
+        `  - Memory refs: ${exemplar.refs.map((ref) => `\`${ref}\``).join(", ")}`,
+      );
+    }
+  }
+  if (exemplars.length > 16) {
+    lines.push(
+      `- ${exemplars.length - 16} more exemplar(s); read \`fingerprint.yml\` before generating.`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function pushJoined(
+  lines: string[],
+  label: string,
+  values: string[] | undefined,
+  options: { code?: boolean } = {},
+): void {
+  if (!values?.length) return;
+  const formatted = values
+    .map((value) => (options.code ? `\`${value}\`` : value))
+    .join(", ");
+  lines.push(`- ${label}: ${formatted}`);
 }
 
 function ensureTrailingNewline(value: string): string {

@@ -208,7 +208,7 @@ async function scanReadiness(
     principles?: unknown[];
     experience_contracts?: unknown[];
     patterns?: unknown[];
-    topology?: { examples?: unknown[] };
+    exemplars?: unknown[];
     implementation_vocabulary?: {
       tokens?: unknown[];
       components?: unknown[];
@@ -269,7 +269,7 @@ async function scanReadiness(
   }
 
   return readinessReport("memory-ready", {
-    product_surface_count: fingerprint.topology?.examples?.length ?? 0,
+    product_surface_count: fingerprint.exemplars?.length ?? 0,
     implementation_vocabulary_rows: implementationVocabularyRows,
     reasons: ["fingerprint.yml contains product-experience memory."],
     can_review: [
