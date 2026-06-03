@@ -9,8 +9,9 @@ description: Critique generated or changed UI using Ghost memory.
 2. Read checked-in `fingerprint.yml` and active checks.
 3. Compare the work against the relevant situations, principles, contracts, and
    patterns.
-4. Lead with actionable findings. Cite diff locations, fingerprint memory,
-   active checks, and repairs where relevant.
+4. Inspect relevant exemplars as concrete anchors for what good looks like.
+5. Lead with actionable findings. Cite diff locations, fingerprint memory,
+   exemplars, active checks, and repairs where relevant.
 
 When fingerprint memory is silent, you may use nearby product surfaces, local
 components, token and copy conventions, accepted decisions, or human intent when

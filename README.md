@@ -11,6 +11,9 @@ changes.
 The MVP rule is intentionally small:
 
 - **`.ghost/fingerprint.yml`** is checked-in product-experience memory.
+- **Generation uses prose + inventory + exemplars.** Fingerprint prose explains
+  what matters, optional inventory says what exists, and exemplars show what
+  good looks like.
 - **`.ghost/checks.yml`** is optional deterministic enforcement grounded in
   that memory.
 - **Git is the approval boundary.** Uncommitted or unmerged edits are draft
@@ -117,6 +120,19 @@ ghost inventory > .ghost/cache/inventory.json
 Durable conclusions belong in `.ghost/fingerprint.yml`; executable gates belong
 in `.ghost/checks.yml`; implementation routing belongs in optional
 `.ghost/config.yml`.
+
+## Generation Packet
+
+`ghost emit context-bundle` writes a portable packet for agents. Its `prompt.md`
+is organized around:
+
+- **Product Prose** from checked-in `fingerprint.yml`.
+- **Inventory** from `.ghost/cache/inventory.json` when present.
+- **Exemplars** from `fingerprint.yml` as curated anchors.
+- **Active Checks** from `checks.yml` for validation, not generation memory.
+
+Checks and review validate output after generation. They do not replace the
+prose, inventory, and exemplar inputs that help agents produce the right thing.
 
 ## Drift Workflow
 

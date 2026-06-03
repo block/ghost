@@ -35,6 +35,17 @@ export const GhostFingerprintRefSchema = z
     },
   );
 
+export const GhostFingerprintMemoryRefSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^(principle|situation|experience_contract|pattern):[a-z0-9][a-z0-9._-]*$/,
+    {
+      message:
+        "ref must be typed as prefix:slug, e.g. principle:dense-workflows",
+    },
+  );
+
 export const GhostFingerprintEvidenceSchema = z
   .object({
     path: z.string().min(1).optional(),
@@ -71,19 +82,23 @@ export const GhostFingerprintTopologyScopeSchema = z
   })
   .strict();
 
-export const GhostFingerprintTopologyExampleSchema = z
-  .object({
-    path: z.string().min(1),
-    surface_type: SlugIdSchema.optional(),
-    note: z.string().min(1).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintTopologySchema = z
   .object({
     scopes: z.array(GhostFingerprintTopologyScopeSchema).optional(),
     surface_types: z.array(SlugIdSchema).optional(),
-    examples: z.array(GhostFingerprintTopologyExampleSchema).optional(),
+  })
+  .strict();
+
+export const GhostFingerprintExemplarSchema = z
+  .object({
+    id: SlugIdSchema,
+    path: z.string().min(1),
+    title: z.string().min(1).optional(),
+    surface_type: SlugIdSchema.optional(),
+    scope: SlugIdSchema.optional(),
+    note: z.string().min(1).optional(),
+    why: z.string().min(1).optional(),
+    refs: z.array(GhostFingerprintMemoryRefSchema).optional(),
   })
   .strict();
 
@@ -161,6 +176,7 @@ export const GhostFingerprintSchema = z
       .optional()
       .default([]),
     patterns: z.array(GhostFingerprintPatternSchema).optional().default([]),
+    exemplars: z.array(GhostFingerprintExemplarSchema).optional().default([]),
     implementation_vocabulary:
       GhostFingerprintImplementationVocabularySchema.optional().default({}),
   })

@@ -29,7 +29,8 @@ schema: ghost.fingerprint/v1
 ```
 
 Top-level sections are optional on disk and default internally to empty
-`summary`, `topology`, memory arrays, and `implementation_vocabulary`.
+`summary`, `topology`, memory arrays, `exemplars`, and
+`implementation_vocabulary`.
 
 Advanced nested packages use the same shape at any product-area root, for example
 `apps/checkout/.ghost/`. Resolve the stack with `ghost stack <path>`; child
@@ -66,6 +67,14 @@ patterns:
     pattern: Resource index views stay tabular when comparison is the task.
     evidence:
       - path: src/orders/index.tsx
+exemplars:
+  - id: orders-index
+    path: src/orders/index.tsx
+    title: Orders index
+    surface_type: resource-index
+    scope: orders
+    why: Shows the dense tabular precedent for order triage.
+    refs: [pattern:resource-index-stays-tabular]
 implementation_vocabulary:
   tokens: [color.background, color.text]
   components: [DataTable]
@@ -142,5 +151,6 @@ ghost check --base main
 
 `lint` validates artifact shape. `verify` validates cross-artifact fidelity:
 fingerprint evidence paths resolve and checks reference known fingerprint
-memory. Optional decisions are linted when present. `ghost check` is the
+memory. Exemplar paths are verified as generation anchors. Optional decisions
+are linted when present. `ghost check` is the
 deterministic pass/fail gate.

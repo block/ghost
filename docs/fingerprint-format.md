@@ -21,7 +21,7 @@ schema: ghost.fingerprint/v1
 ```
 
 Add only top-level sections that contain real memory. Ghost normalizes omitted
-sections internally to empty `summary`, `topology`, memory arrays, and
+sections internally to empty `summary`, `topology`, memory arrays, `exemplars`, and
 `implementation_vocabulary` so existing checks, review packets, and stack
 merges still see the full shape.
 
@@ -58,14 +58,14 @@ For a path like `apps/checkout/review/page.tsx`, Ghost resolves every
 The merged stack is broad-to-local:
 
 1. Root memory supplies product-wide identity, shared situations, principles,
-   contracts, patterns, checks, decisions, and intent.
+   contracts, patterns, exemplars, checks, decisions, and intent.
 2. Child memory adds local product-area detail.
 3. Entries with the same `id` are replaced by the nearest child entry.
 4. Child-relative paths are normalized to repo-root paths in reports, routing,
    and emitted context.
 
 `summary.product` and other scalar summary fields use the nearest child value.
-Summary arrays, topology surface types, and implementation vocabulary merge
+Summary arrays, topology surface types, exemplars, and implementation vocabulary merge
 parent-to-child with de-dupe. Checks merge by `id`, so a child check with
 `status: disabled` suppresses an inherited active check. `intent.md` files
 concatenate with layer headings. Decisions merge by `id` with child entries
@@ -116,6 +116,14 @@ patterns:
   - id: reference-before-decoration
     kind: composition
     pattern: Reference pages prioritize the working surface before visual flourish.
+exemplars:
+  - id: cli-reference-page
+    path: apps/docs/src/content/docs/cli-reference.mdx
+    title: CLI reference page
+    surface_type: reference-page
+    scope: docs-site
+    why: Shows how command docs stay inspectable before decorative framing.
+    refs: [pattern:reference-before-decoration]
 implementation_vocabulary:
   tokens: [--color-bg, --color-fg]
   components: [Button, CodeBlock]
@@ -128,12 +136,17 @@ Top-level sections are optional on disk and default to empty when omitted:
 | Section | Purpose |
 | --- | --- |
 | `summary` | Product identity, audience, goals, anti-goals, tradeoffs, and tone. |
-| `topology` | Repo scopes, paths, surface types, and examples. |
+| `topology` | Repo scopes, paths, and surface types. |
 | `situations` | User/task/state moments that change product obligations. |
 | `principles` | Durable product experience rules and judgment. |
 | `experience_contracts` | How surfaces and capabilities speak, disclose, fail, and recover. |
 | `patterns` | Reusable visual, behavioral, content, or composition patterns. |
+| `exemplars` | Curated paths that show what good looks like for generation and review. |
 | `implementation_vocabulary` | Current tokens, components, libraries, assets, and notes available for implementation. |
+
+`exemplars` are canonical generation anchors when checked into
+`fingerprint.yml`. Entry-level `evidence` remains proof or citation for a
+memory claim; exemplars are the concrete surfaces an agent should inspect.
 
 ## `checks.yml`
 

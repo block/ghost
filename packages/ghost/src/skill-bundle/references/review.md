@@ -33,6 +33,7 @@ ghost review --base <ref>
 Use the emitted packet as context. It includes:
 
 - `fingerprint.yml` memory
+- curated exemplars from `fingerprint.yml`
 - active checks from `checks.yml`
 - optional stack, config, intent, or accepted decision context when present or
   requested
@@ -53,6 +54,7 @@ Each finding must cite:
 
 - diff location
 - `fingerprint.yml` memory
+- relevant exemplars when useful
 - active check when blocking
 - repair or intentional-divergence rationale
 

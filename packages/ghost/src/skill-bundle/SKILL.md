@@ -23,6 +23,14 @@ are drafts, and committed memory is canonical for Ghost. Checks are optional
 deterministic gates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
+Generation uses **prose + inventory + exemplars**:
+
+- Prose in `fingerprint.yml` explains what matters and why.
+- Optional inventory in `cache/inventory.json` says what exists now.
+- Exemplars in `fingerprint.yml` show concrete surfaces worth inspecting.
+
+Checks and review validate output; they are not generation memory.
+
 `fingerprint.yml` may start with only `schema: ghost.fingerprint/v1`. Add only
 sections that contain real memory; Ghost normalizes omitted top-level sections
 internally for checks, review, emit, and stack resolution.
@@ -77,6 +85,7 @@ or check format.
 ## Always
 
 - Treat checked-in `fingerprint.yml` as the source of truth.
+- Generate from product prose, optional inventory, and curated exemplars.
 - Run active checks from `checks.yml`; only active deterministic checks block.
 - Use local evidence as provisional when fingerprint memory is silent.
 - Treat memory changes as ordinary Git-reviewed edits.
