@@ -1,21 +1,8 @@
 export const GHOST_DECISION_SCHEMA = "ghost.decision/v1" as const;
-export const GHOST_PROPOSAL_SCHEMA = "ghost.proposal/v1" as const;
 
 export const GHOST_DECISIONS_DIRNAME = "decisions" as const;
-export const GHOST_PROPOSALS_DIRNAME = "proposals" as const;
 
 export type GhostDecisionStatus = "accepted" | "rejected" | "superseded";
-export type GhostProposalStatus =
-  | "open"
-  | "accepted"
-  | "rejected"
-  | "superseded";
-export type GhostProposalKind = "decision" | "pattern" | "check" | "intent";
-export type GhostProposalTarget =
-  | "decisions"
-  | "patterns"
-  | "checks"
-  | "intent";
 
 export interface GhostExperienceScope {
   roles?: string[];
@@ -42,24 +29,6 @@ export interface GhostDecisionDocument {
   scope?: GhostExperienceScope;
   evidence: GhostExperienceEvidence[];
   decided_at: string;
-}
-
-export interface GhostProposalAction {
-  target: GhostProposalTarget;
-  summary: string;
-}
-
-export interface GhostProposalDocument {
-  schema: typeof GHOST_PROPOSAL_SCHEMA;
-  id: string;
-  status: GhostProposalStatus;
-  kind: GhostProposalKind;
-  title: string;
-  claim: string;
-  rationale: string;
-  scope?: GhostExperienceScope;
-  evidence: GhostExperienceEvidence[];
-  proposed_action: GhostProposalAction;
 }
 
 export type GhostMemoryLintSeverity = "error" | "warning" | "info";

@@ -14,10 +14,9 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/scan.md, map.md, survey.md, patterns.md, schema.md
-#     references/recall.md, brief.md, critique.md, capture.md, promote.md
-#     references/review.md, verify.md, compare.md, remediate.md
-#     assets/fingerprint.template.md
+#     references/brief.md, capture.md, compare.md, critique.md, map.md
+#     references/patterns.md, recall.md, remediate.md, review.md
+#     references/schema.md, survey.md, verify.md
 #
 # Exit codes:
 #   0  installed
@@ -193,7 +192,7 @@ printf '\nInstalled %d files to %s\n' "$count" "$GHOST_DEST"
 printf '\n'
 printf 'Next:\n'
 printf '  cd <your-repo>\n'
-printf '  Tell your agent: "Scan this project with ghost"\n'
+printf '  Tell your agent: "Set up Ghost memory for this repo"\n'
 printf '\n'
-printf 'The agent will produce resources.yml → map.md → survey.json → patterns.yml,\n'
-printf 'then use the fingerprint to brief, review, or capture product-experience memory.\n'
+printf 'The agent will use fingerprint.yml as checked-in product-experience memory,\n'
+printf 'optionally gather inventory cache, and run ghost lint/verify/check/review.\n'
