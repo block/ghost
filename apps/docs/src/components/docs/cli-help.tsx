@@ -23,6 +23,10 @@ interface CliCommand {
   name: string;
   rawName: string;
   description: string;
+  group?: string;
+  defaultHelp?: boolean;
+  compactName?: string;
+  summary?: string;
   options: CliOption[];
 }
 
