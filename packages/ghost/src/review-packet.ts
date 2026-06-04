@@ -203,7 +203,7 @@ ${formatConfigSection(packet.config)}
 ## Active Checks
 
 \`\`\`yaml
-${packet.checks ?? "schema: ghost.checks/v2\nid: none\nchecks: []\n"}
+${packet.checks ?? "schema: ghost.checks/v1\nid: none\nchecks: []\n"}
 \`\`\`
 
 ## Diff

@@ -105,7 +105,7 @@ function makeSurvey(
   uiSurfaces: UiSurfaceRow[] = [makeUiSurfaceRow()],
 ): Survey {
   return {
-    schema: "ghost.survey/v2",
+    schema: "ghost.survey/v1",
     sources,
     values,
     tokens,
@@ -138,10 +138,8 @@ describe("lintSurvey", () => {
   });
 
   it("rejects missing schema field", () => {
-    const survey: unknown = {
-      ...makeSurvey(),
-      schema: "ghost.survey/v1",
-    };
+    const survey = makeSurvey() as Record<string, unknown>;
+    delete survey.schema;
     const report = lintSurvey(survey);
     expect(report.errors).toBeGreaterThan(0);
     expect(report.issues.some((i) => i.rule.startsWith("schema/"))).toBe(true);

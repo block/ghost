@@ -4,7 +4,7 @@ import type {
 } from "../fingerprint/index.js";
 import type { MapFrontmatter, MapScope } from "../map/index.js";
 
-export const GHOST_CHECKS_SCHEMA = "ghost.checks/v2" as const;
+export const GHOST_CHECKS_SCHEMA = "ghost.checks/v1" as const;
 export const GHOST_CHECKS_FILENAME = "checks.yml" as const;
 
 export type GhostCheckStatus = "active" | "proposed" | "disabled";

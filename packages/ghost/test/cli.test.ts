@@ -245,10 +245,10 @@ describe("ghost CLI", () => {
     ]);
     await expect(
       readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
-    ).resolves.toBe("schema: ghost.fingerprint/v2\n");
+    ).resolves.toBe("schema: ghost.fingerprint/v1\n");
     await expect(
       readFile(join(dir, ".ghost", "checks.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.checks/v2");
+    ).resolves.toContain("schema: ghost.checks/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache.state).toBe("missing");
 
@@ -263,7 +263,7 @@ describe("ghost CLI", () => {
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("schema: ghost.fingerprint/v2");
+    expect(review.stdout).toContain("schema: ghost.fingerprint/v1");
     expect(reviewCommand.code).toBe(0);
     expect(contextBundle.code).toBe(0);
   });
@@ -272,7 +272,7 @@ describe("ghost CLI", () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "checks.yml"),
-      `schema: ghost.checks/v2
+      `schema: ghost.checks/v1
 id: local
 checks:
   - id: missing-memory-check
@@ -342,7 +342,7 @@ checks:
 
   it("keeps standalone checks.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
     await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(join(dir, ".ghost", "fingerprint.yml"), "not: v2\n");
+    await writeFile(join(dir, ".ghost", "fingerprint.yml"), "not: draft\n");
     await writeFile(
       join(dir, ".ghost", "checks.yml"),
       checksFileWithDerivation("prose.principle:tokenized-ui-color"),
@@ -373,7 +373,7 @@ checks:
     expect(init.stdout).not.toContain("cache/:");
     expect(
       await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
-    ).toContain("schema: ghost.fingerprint/v2");
+    ).toContain("schema: ghost.fingerprint/v1");
     expect(await readFile(join(dir, ".ghost", "intent.md"), "utf-8")).toContain(
       "# Intent",
     );
@@ -549,7 +549,7 @@ checks:
     await writeFile(
       join(dir, ".ghost", "survey.json"),
       JSON.stringify({
-        schema: "ghost.survey/v2",
+        schema: "ghost.survey/v1",
         sources: [
           { id: "library", target: ".", scanned_at: "2026-05-19T00:00:00Z" },
         ],
@@ -598,7 +598,7 @@ checks:
     const fixed = JSON.parse(
       await readFile(join(dir, ".ghost", "survey.fixed.json"), "utf-8"),
     );
-    expect(fixed.schema).toBe("ghost.survey/v2");
+    expect(fixed.schema).toBe("ghost.survey/v1");
     expect(fixed.values[0].id).toBeTruthy();
   });
 
@@ -655,7 +655,7 @@ checks:
     expect(contextBundle.stdout).not.toContain("survey-summary.md");
     await expect(
       readFile(join(dir, "ghost-context", "fingerprint.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint/v2");
+    ).resolves.toContain("schema: ghost.fingerprint/v1");
     const prompt = await readFile(
       join(dir, "ghost-context", "prompt.md"),
       "utf-8",
@@ -901,7 +901,7 @@ libraries:
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v2");
+    expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v1");
     expect(packet.finding_categories).toContain("experience-gap");
     expect(packet.proposal_types).toBeUndefined();
     expect(packet.open_proposals).toBeUndefined();
@@ -1128,7 +1128,7 @@ libraries:
       join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
       "utf-8",
     );
-    expect(fingerprint).toContain("ghost.fingerprint/v2");
+    expect(fingerprint).toContain("ghost.fingerprint/v1");
     expect(fingerprint).not.toContain("review_policy");
     expect(fingerprint).not.toContain("proposal");
   });
@@ -1157,7 +1157,7 @@ libraries:
         join(dir, "apps", "checkout", ".design", "memory", "fingerprint.yml"),
         "utf-8",
       ),
-    ).toContain("ghost.fingerprint/v2");
+    ).toContain("ghost.fingerprint/v1");
   });
 
   it("lint --all and verify --all include nested bundles", async () => {
@@ -1212,7 +1212,7 @@ async function writeCheckPackage(
   await mkdir(pkg, { recursive: true });
   await writeFile(
     join(pkg, "fingerprint.yml"),
-    `schema: ghost.fingerprint/v2
+    `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Cash iOS
@@ -1262,7 +1262,7 @@ primary:
   await writeFile(
     join(pkg, "survey.json"),
     JSON.stringify({
-      schema: "ghost.survey/v2",
+      schema: "ghost.survey/v1",
       sources: [{ target: ".", scanned_at: "2026-05-06T00:00:00.000Z" }],
       values: [],
       tokens: [],
@@ -1282,7 +1282,7 @@ composition_patterns: []
 
   await writeFile(
     join(pkg, "checks.yml"),
-    `schema: ghost.checks/v2
+    `schema: ghost.checks/v1
 id: cash-ios
 checks:
   - id: no-hardcoded-ui-color
@@ -1328,7 +1328,7 @@ checks:
 }
 
 function checksFileWithDerivation(proseRef: string): string {
-  return `schema: ghost.checks/v2
+  return `schema: ghost.checks/v1
 id: local
 checks:
   - id: no-hardcoded-ui-color
@@ -1408,7 +1408,7 @@ async function writeNestedCheckPackage(
 
   await writeFile(
     join(rootMemory, "fingerprint.yml"),
-    `schema: ghost.fingerprint/v2
+    `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Root Product
@@ -1432,7 +1432,7 @@ composition:
   );
   await writeFile(
     join(rootMemory, "checks.yml"),
-    `schema: ghost.checks/v2
+    `schema: ghost.checks/v1
 id: root
 checks:
   - id: no-hardcoded-color
@@ -1457,7 +1457,7 @@ checks:
 
   await writeFile(
     join(checkoutMemory, "fingerprint.yml"),
-    `schema: ghost.fingerprint/v2
+    `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Checkout
@@ -1484,7 +1484,7 @@ composition:
   );
   await writeFile(
     join(checkoutMemory, "checks.yml"),
-    `schema: ghost.checks/v2
+    `schema: ghost.checks/v1
 id: checkout
 checks:
   - id: no-hardcoded-color
@@ -1521,7 +1521,7 @@ async function writeComparableBundle(
   await writeFile(
     join(pkg, "survey.json"),
     JSON.stringify({
-      schema: "ghost.survey/v2",
+      schema: "ghost.survey/v1",
       sources: [
         { id: patternId, target: ".", scanned_at: "2026-05-10T00:00:00Z" },
       ],
@@ -1580,7 +1580,7 @@ function lendingPatch(line: string): string {
 
 function mapWithScopes(): string {
   return `---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: cash-ios
 repo: squareup/cash-ios
 mapped_at: 2026-05-06T00:00:00.000Z

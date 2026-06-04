@@ -20,7 +20,7 @@ export type {
   GhostChecksLintSeverity,
   RoutedGhostCheck,
 } from "./checks/index.js";
-// --- Checks (ghost.checks/v2) ---
+// --- Checks (ghost.checks/v1) ---
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
@@ -59,7 +59,7 @@ export {
   parseColorToOklch,
   saturationScore,
 } from "./embedding/index.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
@@ -72,7 +72,7 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   type GitInfo,
   getEffectiveMapScopes,
@@ -162,7 +162,7 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Survey (ghost.survey/v2) ---
+// --- Survey (ghost.survey/v1) ---
 export {
   type BreakpointSpec,
   type ColorSpec,

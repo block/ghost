@@ -18,7 +18,7 @@ and runs checked-in gates.
 `fingerprint.yml` may start with only:
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 ```
 
 Ghost normalizes omitted layer sections internally to empty `prose`,
@@ -74,7 +74,7 @@ headings. Decisions merge by `id` with child entries winning.
 
 ## `fingerprint.yml`
 
-`fingerprint.yml` uses `ghost.fingerprint/v2`. It is explicitly three-layered:
+`fingerprint.yml` uses `ghost.fingerprint/v1`. It is explicitly three-layered:
 
 - `prose` explains what matters and why.
 - `inventory` points to building blocks and precedents an agent can inspect or
@@ -84,7 +84,7 @@ headings. Decisions merge by `id` with child entries winning.
   arrangements.
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Example Docs
@@ -170,13 +170,13 @@ fingerprint claim; exemplars are the concrete surfaces an agent should inspect.
 
 ## `checks.yml`
 
-`checks.yml` uses `ghost.checks/v2`. Active checks are deterministic and must
+`checks.yml` uses `ghost.checks/v1`. Active checks are deterministic and must
 declare `derivation` with at least one prose or composition ref. Inventory refs
 can support a check, but inventory-only grounding is not enough for an active
 gate. Proposed checks may have incomplete derivation and lint as warnings.
 
 ```yaml
-schema: ghost.checks/v2
+schema: ghost.checks/v1
 id: example-docs
 checks:
   - id: no-hardcoded-brand-color

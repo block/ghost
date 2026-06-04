@@ -24,7 +24,7 @@ The MVP rule is intentionally small:
 `fingerprint.yml` can start sparse:
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 ```
 
 Add only the sections that contain real layer content. Ghost normalizes omitted
@@ -179,7 +179,7 @@ content. It does not call an LLM.
 | `ghost scan` | Report canonical fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
-| `ghost check` | Run active `ghost.checks/v2` gates against a diff, grouping changed files by fingerprint stack unless `--package` is provided. `--format json` emits `ghost.check-report/v1` for wrappers. |
+| `ghost check` | Run active `ghost.checks/v1` gates against a diff, grouping changed files by fingerprint stack unless `--package` is provided. `--format json` emits `ghost.check-report/v1` for wrappers. |
 | `ghost review` | Emit an evidence-routed advisory packet grounded in fingerprint layers, active checks, and the diff. |
 | `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet from checked-in fingerprint layers. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
@@ -192,7 +192,7 @@ content. It does not call an LLM.
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stack and merged output for one or more paths. Supports `--memory-dir`. |
 | `ghost describe` | Print optional `intent.md` or legacy direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between legacy direct fingerprints. |
-| `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v2` files. Not canonical fingerprint input. |
+| `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v1` files. Not canonical fingerprint input. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |

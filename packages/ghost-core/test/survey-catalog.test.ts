@@ -35,7 +35,7 @@ function valueRow(
 
 function survey(): Survey {
   return {
-    schema: "ghost.survey/v2",
+    schema: "ghost.survey/v1",
     sources: [SOURCE],
     values: [
       valueRow("color", "#111111", "#111111", 4, {

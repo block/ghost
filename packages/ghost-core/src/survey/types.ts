@@ -1,5 +1,5 @@
 /**
- * Types for `ghost.survey/v2` — the observed evidence scan artifact.
+ * Types for `ghost.survey/v1` — the observed evidence scan artifact.
  *
  * A survey is the middle artifact in a scan: produced after the map
  * (`map.md`) and before fingerprint synthesis (`fingerprint.md`). It
@@ -276,7 +276,7 @@ export interface UiSurfaceRow extends RowBase {
 // --- Survey --------------------------------------------------------------
 
 export interface Survey {
-  schema: "ghost.survey/v2";
+  schema: "ghost.survey/v1";
   /**
    * Source(s) the survey came from. Always an array — pre-merge surveys
    * have length 1, merged surveys have N entries (one per source scan).

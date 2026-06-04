@@ -228,8 +228,8 @@ composition:
 
 function fingerprintFile(overrides = ""): string {
   if (overrides.trim()) {
-    return `schema: ghost.fingerprint/v2
+    return `schema: ghost.fingerprint/v1
 ${overrides}`;
   }
-  return "schema: ghost.fingerprint/v2\n";
+  return "schema: ghost.fingerprint/v1\n";
 }

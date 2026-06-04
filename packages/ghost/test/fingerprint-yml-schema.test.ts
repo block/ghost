@@ -5,7 +5,7 @@ import {
   lintGhostFingerprint,
 } from "../src/ghost-core/fingerprint/index.js";
 
-describe("ghost.fingerprint/v2", () => {
+describe("ghost.fingerprint/v1", () => {
   it("accepts a minimal fingerprint.yml document", () => {
     const result = GhostFingerprintSchema.safeParse(minimalFingerprint());
 

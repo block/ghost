@@ -28,7 +28,7 @@ export interface LintDetectedFileKindOptions {
 
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
+ * the survey linter; markdown with `schema: ghost.map/v1` in frontmatter
  * routes to the map linter; YAML schemas route to fingerprint.yml,
  * config/resources/patterns/checks; everything else stays on the direct
  * fingerprint markdown path.
@@ -60,7 +60,7 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const fmEnd = raw.indexOf("\n---", 3);
   if (raw.startsWith("---") && fmEnd > 0) {
     const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
+    if (/\bschema:\s*ghost\.map\/v1\b/.test(fm)) return "map";
   }
   if (path.toLowerCase().endsWith("map.md")) return "map";
   return "fingerprint";

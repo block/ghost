@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: dsgn-playground
 repo: squareup/dsgn-playground
 mapped_at: 2026-05-04

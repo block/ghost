@@ -4,8 +4,8 @@ Core package:
 
 ```text
 .ghost/
-  fingerprint.yml ghost.fingerprint/v2
-  checks.yml      optional ghost.checks/v2 gates
+  fingerprint.yml ghost.fingerprint/v1
+  checks.yml      optional ghost.checks/v1 gates
 ```
 
 Optional files:
@@ -25,7 +25,7 @@ registry.
 `fingerprint.yml` may start sparse:
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 ```
 
 Layer sections are optional on disk and default internally to empty `prose`,
@@ -38,7 +38,7 @@ entries with the same `id` override parent entries.
 ## `fingerprint.yml`
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Example dashboard
@@ -100,7 +100,7 @@ Use these typed refs:
 ## `checks.yml`
 
 ```yaml
-schema: ghost.checks/v2
+schema: ghost.checks/v1
 id: my-project
 checks:
   - id: no-hardcoded-ui-color
