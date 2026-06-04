@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getEffectiveMapScopes, MapFrontmatterSchema } from "../src/index.js";
 
 const BASE_MAP = {
-  schema: "ghost.map/v2",
+  schema: "ghost.map/v1",
   id: "fixture",
   repo: "example/fixture",
   mapped_at: "2026-04-27",
@@ -35,7 +35,7 @@ const BASE_MAP = {
   orientation_files: ["README.md"],
 };
 
-describe("ghost.map/v2 scopes", () => {
+describe("ghost.map/v1 scopes", () => {
   it("accepts explicit scopes in map frontmatter", () => {
     const parsed = MapFrontmatterSchema.parse({
       ...BASE_MAP,

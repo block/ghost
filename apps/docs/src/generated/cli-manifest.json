@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T14:32:47.285Z",
+  "generatedAt": "2026-06-04T15:42:44.164Z",
   "tools": [
     {
       "tool": "ghost",
@@ -239,7 +239,7 @@
           "tool": "ghost",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Legacy/cache helpers for ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+          "description": "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -551,7 +551,7 @@
           "tool": "ghost",
           "name": "check",
           "rawName": "check",
-          "description": "Run active ghost.checks/v2 gates from the resolved fingerprint stack against a git diff.",
+          "description": "Run active ghost.checks/v1 gates from the resolved fingerprint stack against a git diff.",
           "options": [
             {
               "rawName": "--base <ref>",

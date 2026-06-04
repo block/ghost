@@ -50,7 +50,7 @@ import { registerStackCommand } from "./scan-stack-command.js";
  * fidelity), `describe` (section ranges + token estimates for intent or direct
  * fingerprint markdown), `diff` (structural prose-level diff between direct
  * fingerprint files), `emit` (derive review-command, context-bundle, or skill
- * artifacts), and `survey` operations for deterministic `ghost.survey/v2`
+ * artifacts), and `survey` operations for deterministic `ghost.survey/v1`
  * merge, ID repair, bounded summary output, derived value catalogs, and
  * operational pattern synthesis.
  */
@@ -508,7 +508,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Legacy/cache helpers for ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+      "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",

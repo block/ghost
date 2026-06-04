@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: cash-android
 repo: example/cash-android
 mapped_at: 2026-04-26

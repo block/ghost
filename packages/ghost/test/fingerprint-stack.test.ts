@@ -106,12 +106,12 @@ describe("nested Ghost fingerprint stacks", () => {
     await mkdir(join(dir, ".ghost"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "fingerprint.yml"),
-      "schema: ghost.fingerprint/v2\n",
+      "schema: ghost.fingerprint/v1\n",
     );
     await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
     await writeFile(
       join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
-      `schema: ghost.fingerprint/v2
+      `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Checkout
@@ -194,7 +194,7 @@ async function writeRootBundle(
   await mkdir(join(ghost, "decisions"), { recursive: true });
   await writeFile(
     join(ghost, "fingerprint.yml"),
-    `schema: ghost.fingerprint/v2
+    `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Root Product
@@ -234,7 +234,7 @@ composition:
   );
   await writeFile(
     join(ghost, "checks.yml"),
-    `schema: ghost.checks/v2
+    `schema: ghost.checks/v1
 id: root
 checks:
   - id: no-hardcoded-color
@@ -280,7 +280,7 @@ async function writeChildBundle(
   await mkdir(join(root, "review"), { recursive: true });
   await writeFile(
     join(ghost, "fingerprint.yml"),
-    `schema: ghost.fingerprint/v2
+    `schema: ghost.fingerprint/v1
 prose:
   summary:
     product: Checkout
@@ -324,7 +324,7 @@ composition:
   );
   await writeFile(
     join(ghost, "checks.yml"),
-    `schema: ghost.checks/v2
+    `schema: ghost.checks/v1
 id: checkout
 checks:
   - id: no-hardcoded-color

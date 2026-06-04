@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Zod schemas for `ghost.survey/v2`.
+ * Zod schemas for `ghost.survey/v1`.
  *
  * The `kind` field on value rows is intentionally open (a plain string).
  * The validator does not reject unknown kinds — instead the lint step
@@ -210,7 +210,7 @@ const UiSurfaceRowSchema = RowBaseSchema.extend({
 });
 
 export const SurveySchema = z.object({
-  schema: z.literal("ghost.survey/v2"),
+  schema: z.literal("ghost.survey/v1"),
   sources: z.array(SurveySourceSchema).min(1),
   values: z.array(ValueRowSchema),
   tokens: z.array(TokenRowSchema),

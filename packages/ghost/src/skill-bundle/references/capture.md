@@ -32,7 +32,7 @@ generation; they are not generation input.
 `fingerprint.yml` may start sparse:
 
 ```yaml
-schema: ghost.fingerprint/v2
+schema: ghost.fingerprint/v1
 ```
 
 Add only sections that contain real layer content. Ghost normalizes omitted layer

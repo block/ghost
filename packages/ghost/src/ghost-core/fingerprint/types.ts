@@ -1,4 +1,4 @@
-export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v2" as const;
+export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v1" as const;
 export const GHOST_FINGERPRINT_YML_FILENAME = "fingerprint.yml" as const;
 
 export type GhostFingerprintPatternKind =

@@ -4,7 +4,7 @@ Loose space for concepts that aren't ready to be docs or a changeset but shouldn
 
 Conventions:
 
-- One file per idea, kebab-case slug (`guided-migration.md`, not `migration-v2.md`).
+- One file per idea, kebab-case slug (`guided-migration.md`, not `migration-rewrite.md`).
 - No obligation to ship. Most of these won't.
 - Optional frontmatter: `status: exploring | deferred | shipped | dropped`. Omit if it's too early to tell.
 - Capture *why* it's interesting, not a full spec. Open questions are fine — often the point.
