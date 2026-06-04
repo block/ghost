@@ -4,6 +4,8 @@ import { parse as parseYaml } from "yaml";
 import {
   GHOST_CHECKS_FILENAME,
   GHOST_FINGERPRINT_YML_FILENAME,
+  type GhostFingerprintDocument,
+  GhostFingerprintSchema,
   getEffectiveMapScopes,
   lintGhostFingerprint,
   MAP_FILENAME,
@@ -39,21 +41,30 @@ export interface ScanScopeReport {
 }
 
 export type ScanReadinessState =
-  | "pending"
-  | "memory-empty"
-  | "implementation-only"
-  | "memory-ready"
-  | "unknown";
+  | "fingerprint-missing"
+  | "fingerprint-invalid"
+  | "fingerprint-empty"
+  | "prose-only"
+  | "inventory-only"
+  | "composition-only"
+  | "fingerprint-partial"
+  | "fingerprint-ready";
+
+export type ScanFingerprintLayer = "prose" | "inventory" | "composition";
 
 export interface ScanReadinessReport {
   state: ScanReadinessState;
+  layer_counts: Record<ScanFingerprintLayer, number>;
+  missing_layers: ScanFingerprintLayer[];
   product_surface_count: number;
   demo_surface_count: number;
-  implementation_vocabulary_rows: {
+  building_block_rows: {
     tokens: number;
     components: number;
     libraries: number;
     assets: number;
+    routes: number;
+    files: number;
     notes: number;
   };
   can_review: string[];
@@ -66,7 +77,7 @@ export interface ScanStatusOptions {
 }
 
 export interface ScanStatus {
-  /** Absolute path to the Ghost memory directory. */
+  /** Absolute path to the Ghost fingerprint directory. */
   dir: string;
   fingerprint: ScanStageReport;
   config: ScanStageReport;
@@ -80,10 +91,11 @@ export interface ScanStatus {
 }
 
 /**
- * Inspect a Ghost memory directory and report whether the canonical
- * `fingerprint.yml` exists. Generated inventory is cache, not a prerequisite:
- * the durable product-experience memory is fingerprint.yml plus optional
- * checks. Other files are supplemental when present.
+ * Inspect a Ghost fingerprint directory and report whether the canonical
+ * `fingerprint.yml` exists with useful prose, inventory, and composition.
+ * Generated cache is source material, not readiness for the curated
+ * inventory layer. Optional checks and rationale files are supplemental when
+ * present.
  */
 export async function scanStatus(
   dirPath: string,
@@ -160,17 +172,11 @@ async function scanReadiness(
   fingerprintPresent: boolean,
 ): Promise<ScanReadinessReport> {
   if (!fingerprintPresent) {
-    return readinessReport("pending", {
+    return readinessReport("fingerprint-missing", {
       reasons: [
-        "fingerprint.yml is missing, so product-experience memory is unavailable.",
+        "fingerprint.yml is missing, so no canonical fingerprint layers are available.",
       ],
-      cannot_review: [
-        "product identity",
-        "surface behavior",
-        "copy",
-        "accessibility",
-        "trust",
-      ],
+      cannot_review: ["prose", "inventory", "composition"],
     });
   }
 
@@ -178,7 +184,7 @@ async function scanReadiness(
   try {
     doc = parseYaml(await readFile(fingerprintPath, "utf-8"));
   } catch (err) {
-    return readinessReport("unknown", {
+    return readinessReport("fingerprint-invalid", {
       reasons: [
         `fingerprint.yml could not be read: ${
           err instanceof Error ? err.message : String(err)
@@ -189,96 +195,105 @@ async function scanReadiness(
 
   const lint = lintGhostFingerprint(doc);
   if (lint.errors > 0) {
-    return readinessReport("unknown", {
+    return readinessReport("fingerprint-invalid", {
       reasons: [
         `fingerprint.yml has ${lint.errors} lint error(s); run ghost lint for details.`,
       ],
-      cannot_review: [
-        "product identity",
-        "surface behavior",
-        "copy",
-        "accessibility",
-        "trust",
-      ],
+      cannot_review: ["prose", "inventory", "composition"],
     });
   }
 
-  const fingerprint = doc as {
-    situations?: unknown[];
-    principles?: unknown[];
-    experience_contracts?: unknown[];
-    patterns?: unknown[];
-    exemplars?: unknown[];
-    implementation_vocabulary?: {
-      tokens?: unknown[];
-      components?: unknown[];
-      libraries?: unknown[];
-      assets?: unknown[];
-      notes?: unknown[];
-    };
+  const fingerprint = GhostFingerprintSchema.parse(
+    doc,
+  ) as GhostFingerprintDocument;
+  const buildingBlocks = fingerprint.inventory.building_blocks;
+  const buildingBlockRows = {
+    tokens: buildingBlocks?.tokens?.length ?? 0,
+    components: buildingBlocks?.components?.length ?? 0,
+    libraries: buildingBlocks?.libraries?.length ?? 0,
+    assets: buildingBlocks?.assets?.length ?? 0,
+    routes: buildingBlocks?.routes?.length ?? 0,
+    files: buildingBlocks?.files?.length ?? 0,
+    notes: buildingBlocks?.notes?.length ?? 0,
   };
-  const implementationVocabularyRows = {
-    tokens: fingerprint.implementation_vocabulary?.tokens?.length ?? 0,
-    components: fingerprint.implementation_vocabulary?.components?.length ?? 0,
-    libraries: fingerprint.implementation_vocabulary?.libraries?.length ?? 0,
-    assets: fingerprint.implementation_vocabulary?.assets?.length ?? 0,
-    notes: fingerprint.implementation_vocabulary?.notes?.length ?? 0,
+  const proseCount =
+    summaryFieldCount(fingerprint.prose.summary) +
+    fingerprint.prose.situations.length +
+    fingerprint.prose.principles.length +
+    fingerprint.prose.experience_contracts.length;
+  const inventoryCount =
+    (fingerprint.inventory.topology.scopes?.length ?? 0) +
+    (fingerprint.inventory.topology.surface_types?.length ?? 0) +
+    fingerprint.inventory.exemplars.length +
+    buildingBlockRows.tokens +
+    buildingBlockRows.components +
+    buildingBlockRows.libraries +
+    buildingBlockRows.assets +
+    buildingBlockRows.routes +
+    buildingBlockRows.files +
+    buildingBlockRows.notes;
+  const compositionCount = fingerprint.composition.patterns.length;
+  const layerCounts: Record<ScanFingerprintLayer, number> = {
+    prose: proseCount,
+    inventory: inventoryCount,
+    composition: compositionCount,
   };
-  const productMemoryCount =
-    (fingerprint.situations?.length ?? 0) +
-    (fingerprint.principles?.length ?? 0) +
-    (fingerprint.experience_contracts?.length ?? 0) +
-    (fingerprint.patterns?.length ?? 0);
-  const implementationVocabularyCount =
-    implementationVocabularyRows.tokens +
-    implementationVocabularyRows.components +
-    implementationVocabularyRows.libraries +
-    implementationVocabularyRows.assets +
-    implementationVocabularyRows.notes;
+  const presentLayers = fingerprintLayers.filter(
+    (layer) => layerCounts[layer] > 0,
+  );
+  const missingLayers = fingerprintLayers.filter(
+    (layer) => layerCounts[layer] === 0,
+  );
 
-  if (productMemoryCount === 0 && implementationVocabularyCount === 0) {
-    return readinessReport("memory-empty", {
+  if (presentLayers.length === 0) {
+    return readinessReport("fingerprint-empty", {
+      layer_counts: layerCounts,
+      missing_layers: missingLayers,
       reasons: [
-        "fingerprint.yml is valid but has no product-experience entries or implementation vocabulary yet.",
+        "fingerprint.yml is valid but has no useful prose, inventory, or composition entries yet.",
       ],
-      cannot_review: [
-        "product identity",
-        "surface behavior",
-        "copy",
-        "accessibility",
-        "trust",
-      ],
+      cannot_review: ["prose", "inventory", "composition"],
     });
   }
 
-  if (productMemoryCount === 0) {
-    return readinessReport("implementation-only", {
-      implementation_vocabulary_rows: implementationVocabularyRows,
+  if (presentLayers.length === 1) {
+    const [layer] = presentLayers;
+    return readinessReport(singleLayerStates[layer], {
+      layer_counts: layerCounts,
+      missing_layers: missingLayers,
+      product_surface_count: fingerprint.inventory.exemplars.length,
+      building_block_rows: buildingBlockRows,
       reasons: [
-        "fingerprint.yml only records implementation vocabulary; components and tokens are available material, not product-experience memory.",
+        `fingerprint.yml only has useful ${layer}; add ${missingLayers.join(" and ")} for a ready fingerprint.`,
       ],
-      can_review: ["implementation vocabulary", "library adoption"],
-      cannot_review: [
-        "product identity",
-        "surface behavior",
-        "copy",
-        "accessibility",
-        "trust",
-      ],
+      can_review: canReviewForLayers(presentLayers),
+      cannot_review: missingLayers,
     });
   }
 
-  return readinessReport("memory-ready", {
-    product_surface_count: fingerprint.exemplars?.length ?? 0,
-    implementation_vocabulary_rows: implementationVocabularyRows,
-    reasons: ["fingerprint.yml contains product-experience memory."],
-    can_review: [
-      "product identity",
-      "surface behavior",
-      "copy",
-      "accessibility",
-      "trust",
+  if (missingLayers.length > 0) {
+    return readinessReport("fingerprint-partial", {
+      layer_counts: layerCounts,
+      missing_layers: missingLayers,
+      product_surface_count: fingerprint.inventory.exemplars.length,
+      building_block_rows: buildingBlockRows,
+      reasons: [
+        `fingerprint.yml has ${presentLayers.join(" and ")} but is missing ${missingLayers.join(" and ")}.`,
+      ],
+      can_review: canReviewForLayers(presentLayers),
+      cannot_review: missingLayers,
+    });
+  }
+
+  return readinessReport("fingerprint-ready", {
+    layer_counts: layerCounts,
+    missing_layers: [],
+    product_surface_count: fingerprint.inventory.exemplars.length,
+    building_block_rows: buildingBlockRows,
+    reasons: [
+      "fingerprint.yml has useful prose, inventory, and composition layers.",
     ],
+    can_review: ["prose", "inventory", "composition"],
   });
 }
 
@@ -288,13 +303,21 @@ function readinessReport(
 ): ScanReadinessReport {
   return {
     state,
+    layer_counts: {
+      prose: 0,
+      inventory: 0,
+      composition: 0,
+    },
+    missing_layers: ["prose", "inventory", "composition"],
     product_surface_count: 0,
     demo_surface_count: 0,
-    implementation_vocabulary_rows: {
+    building_block_rows: {
       tokens: 0,
       components: 0,
       libraries: 0,
       assets: 0,
+      routes: 0,
+      files: 0,
       notes: 0,
     },
     can_review: [],
@@ -302,6 +325,43 @@ function readinessReport(
     reasons: [],
     ...overrides,
   };
+}
+
+const fingerprintLayers: ScanFingerprintLayer[] = [
+  "prose",
+  "inventory",
+  "composition",
+];
+
+const singleLayerStates: Record<ScanFingerprintLayer, ScanReadinessState> = {
+  prose: "prose-only",
+  inventory: "inventory-only",
+  composition: "composition-only",
+};
+
+function summaryFieldCount(
+  summary: GhostFingerprintDocument["prose"]["summary"],
+): number {
+  let count = 0;
+  if (summary.product?.trim()) count += 1;
+  for (const field of [
+    summary.audience,
+    summary.goals,
+    summary.anti_goals,
+    summary.tradeoffs,
+    summary.tone,
+  ]) {
+    count += field?.length ?? 0;
+  }
+  return count;
+}
+
+function canReviewForLayers(layers: ScanFingerprintLayer[]): string[] {
+  const canReview: string[] = [];
+  if (layers.includes("prose")) canReview.push("product prose");
+  if (layers.includes("inventory")) canReview.push("inventory anchors");
+  if (layers.includes("composition")) canReview.push("composition patterns");
+  return canReview;
 }
 
 async function pathExists(

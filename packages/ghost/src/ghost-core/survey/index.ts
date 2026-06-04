@@ -1,5 +1,5 @@
 /**
- * Public surface for `ghost.survey/v2` — types, schemas, ID generation,
+ * Public surface for `ghost.survey/v1` — types, schemas, ID generation,
  * lint, and merge. Consumed by `ghost` and any future ghost
  * tool that operates on survey data.
  */

@@ -16,20 +16,22 @@ const cards: {
   {
     name: "Get started",
     href: "/docs/getting-started",
-    description: "Install the skill bundle and set up repo-local Ghost memory.",
+    description:
+      "Install the skill bundle and set up repo-local Ghost fingerprints.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--memory-support-and-bundle-checks",
-    description: "Check memory readiness, validate bundles, and emit context.",
+    href: "/docs/cli#ghost--fingerprint-layers-and-package-checks",
+    description:
+      "Check fingerprint layer readiness, validate packages, and emit context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full bundle format for fingerprint prose, exemplars, checks, and optional memory.",
+      "The full package format for fingerprint prose, inventory, composition, and checks.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -45,8 +47,8 @@ export default function GhostScanLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost scan"
-        title="Memory Readiness"
-        description="The deterministic handoff that shows whether repo-local Ghost memory is ready to guide generation and review."
+        title="Fingerprint Readiness"
+        description="The deterministic handoff that shows whether repo-local Ghost fingerprint layers are ready to guide generation and review."
       />
 
       <div

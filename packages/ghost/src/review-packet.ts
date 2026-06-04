@@ -9,9 +9,9 @@ import {
 } from "#ghost-core";
 import { parseUnifiedDiff } from "./core/index.js";
 import {
-  type GhostMemoryStack,
+  type GhostFingerprintStack,
   type GhostPackageConfig,
-  groupMemoryStacksForPaths,
+  groupFingerprintStacksForPaths,
   readOptionalPackageConfig,
   resolveFingerprintPackage,
 } from "./scan/index.js";
@@ -20,7 +20,7 @@ export async function buildReviewPacket(options: {
   packageDir?: string;
   memoryDir?: string;
   diffText: string;
-  includeMemory: boolean;
+  includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   return options.packageDir
     ? buildSingleBundleReviewPacket(options)
@@ -30,7 +30,7 @@ export async function buildReviewPacket(options: {
 async function buildSingleBundleReviewPacket(options: {
   packageDir?: string;
   diffText: string;
-  includeMemory: boolean;
+  includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
   const packet: ReviewPacket = {
@@ -40,12 +40,10 @@ async function buildSingleBundleReviewPacket(options: {
     checks: (await readOptional(paths.checks)) ?? null,
     config: (await readOptionalPackageConfig(paths.config)) ?? null,
   };
-  if (options.includeMemory) {
-    packet.memory = {
-      decisions: await readAcceptedDecisions(
-        resolve(paths.dir, GHOST_DECISIONS_DIRNAME),
-      ),
-    };
+  if (options.includeAcceptedDecisions) {
+    packet.accepted_decisions = await readAcceptedDecisions(
+      resolve(paths.dir, GHOST_DECISIONS_DIRNAME),
+    );
   }
   return packet;
 }
@@ -53,16 +51,18 @@ async function buildSingleBundleReviewPacket(options: {
 async function buildStackReviewPacket(options: {
   memoryDir?: string;
   diffText: string;
-  includeMemory: boolean;
+  includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   const changedFiles = parseUnifiedDiff(options.diffText).map(
     (file) => file.path,
   );
-  const groups = await groupMemoryStacksForPaths(changedFiles, process.cwd(), {
-    memoryDir: options.memoryDir,
-  });
+  const groups = await groupFingerprintStacksForPaths(
+    changedFiles,
+    process.cwd(),
+    { memoryDir: options.memoryDir },
+  );
   const stacks = groups.map((group) =>
-    reviewStackFromMemoryStack(group.stack, group.changed_files),
+    reviewStackFromFingerprintStack(group.stack, group.changed_files),
   );
   const first = stacks[0];
   const config = await readOptionalPackageConfig(
@@ -70,7 +70,7 @@ async function buildStackReviewPacket(options: {
   );
   const packet: ReviewPacket = {
     ...baseReviewPacket(
-      stacks.length === 1 ? first.package_dir : "memory-stack/multiple",
+      stacks.length === 1 ? first.package_dir : "fingerprint-stack/multiple",
       options.diffText,
     ),
     fingerprint: first.merged.fingerprint,
@@ -79,12 +79,10 @@ async function buildStackReviewPacket(options: {
     config: config ?? null,
     stacks,
   };
-  if (options.includeMemory) {
-    packet.memory = {
-      decisions: stacks
-        .flatMap((stack) => stack.merged.decisions)
-        .filter((decision) => decision.status === "accepted"),
-    };
+  if (options.includeAcceptedDecisions) {
+    packet.accepted_decisions = stacks
+      .flatMap((stack) => stack.merged.decisions)
+      .filter((decision) => decision.status === "accepted");
   }
   return packet;
 }
@@ -106,22 +104,22 @@ function baseReviewPacket(
     ],
     required_finding_citations: [
       "diff location",
-      "fingerprint.yml memory",
+      "fingerprint.yml prose/inventory/composition",
       "active check when blocking",
       "repair or intentional-divergence rationale",
     ],
   };
 }
 
-function reviewStackFromMemoryStack(
-  stack: GhostMemoryStack,
+function reviewStackFromFingerprintStack(
+  stack: GhostFingerprintStack,
   changedFiles: string[],
 ): ReviewStackPacket {
   const leaf = stack.layers.at(-1);
   return {
     target_path: stack.target_path,
     package_dir: leaf?.dir ?? stack.layers[0].dir,
-    memory_dir: stack.memory_dir,
+    fingerprint_dir: stack.fingerprint_dir,
     changed_files: changedFiles,
     layer_dirs: stack.layers.map((layer) => layer.dir),
     merged: {
@@ -149,7 +147,7 @@ interface ReviewPacket {
   intent: string | null;
   checks: string | null;
   config: GhostPackageConfig | null;
-  memory?: { decisions: GhostDecisionDocument[] };
+  accepted_decisions?: GhostDecisionDocument[];
   stacks?: ReviewStackPacket[];
   diff: string;
   finding_categories: string[];
@@ -159,7 +157,7 @@ interface ReviewPacket {
 interface ReviewStackPacket {
   target_path: string;
   package_dir: string;
-  memory_dir: string;
+  fingerprint_dir: string;
   changed_files: string[];
   layer_dirs: string[];
   merged: {
@@ -168,7 +166,7 @@ interface ReviewStackPacket {
     checks: unknown;
     decisions: GhostDecisionDocument[];
   };
-  provenance: GhostMemoryStack["provenance"];
+  provenance: GhostFingerprintStack["provenance"];
 }
 
 export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
@@ -176,17 +174,17 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint memory, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint.yml prose/inventory/composition, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
-When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 
-If the diff exposes missing or contradictory memory, report it as missing-memory or experience-gap. Do not silently rewrite memory during review; memory changes are ordinary Git-reviewed edits to fingerprint.yml, checks.yml, and optional rationale files when present.
+If the diff exposes missing fingerprint grounding or layer coverage, report it as missing-memory or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 
-## Fingerprint Memory
+## Fingerprint Layers
 
 \`\`\`yaml
 ${stringifyYaml(packet.fingerprint)}
@@ -195,10 +193,10 @@ ${stringifyYaml(packet.fingerprint)}
 ## Human Intent
 
 \`\`\`markdown
-${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonical product-experience memory._"}
+${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonical prose, inventory, and composition source._"}
 \`\`\`
 
-${formatMemorySection(packet.memory ?? null)}
+${formatAcceptedDecisionsSection(packet.accepted_decisions ?? null)}
 
 ${formatConfigSection(packet.config)}
 
@@ -219,7 +217,7 @@ ${packet.diff}
 function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
   if (!stacks?.length) return "";
 
-  const lines = ["## Resolved Memory Stacks", ""];
+  const lines = ["## Resolved Fingerprint Stacks", ""];
   for (const [index, stack] of stacks.entries()) {
     lines.push(`### Stack ${index + 1}: ${stack.package_dir}`);
     lines.push("");
@@ -287,11 +285,11 @@ async function readAcceptedDecisions(
   return decisions;
 }
 
-function formatMemorySection(
-  memory: { decisions: GhostDecisionDocument[] } | null,
+function formatAcceptedDecisionsSection(
+  decisions: GhostDecisionDocument[] | null,
 ): string {
-  if (!memory) return "";
-  if (memory.decisions.length === 0) {
+  if (!decisions) return "";
+  if (decisions.length === 0) {
     return `## Accepted Product-Experience Decisions
 
 _No accepted decisions found in .ghost/decisions._
@@ -299,7 +297,7 @@ _No accepted decisions found in .ghost/decisions._
   }
 
   const lines = ["## Accepted Product-Experience Decisions", ""];
-  for (const decision of memory.decisions) {
+  for (const decision of decisions) {
     lines.push(`### ${decision.title}`);
     lines.push("");
     lines.push(`- **ID:** \`${decision.id}\``);
@@ -329,7 +327,7 @@ function formatConfigSection(config: GhostPackageConfig | null): string {
   if (!config) {
     return `## Implementation Config
 
-_No config.yml present. Review uses canonical fingerprint.yml memory and the provided diff only._
+_No config.yml present. Review uses canonical fingerprint.yml prose/inventory/composition and the provided diff only._
 `;
   }
 

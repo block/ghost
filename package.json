@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "private": true,
-  "description": "Design drift detection system",
+  "description": "Product-experience world model tooling for AI agents",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.33.0",
   "engines": {
@@ -14,8 +14,9 @@
     "test:watch": "vitest",
     "typecheck": "tsc --build",
     "build:ui": "pnpm --filter ghost-ui build",
-    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes && pnpm check:docs && pnpm check:install-bundle && pnpm check:cli-manifest",
+    "check": "biome check . && pnpm typecheck && pnpm check:file-sizes && pnpm check:terminology && pnpm check:docs && pnpm check:install-bundle && pnpm check:cli-manifest",
     "check:file-sizes": "node scripts/check-file-sizes.mjs",
+    "check:terminology": "node scripts/check-terminology.mjs",
     "check:docs": "node scripts/check-docs-frontmatter.mjs",
     "check:install-bundle": "node scripts/check-install-bundle.mjs",
     "check:cli-manifest": "node scripts/dump-cli-help.mjs --check",

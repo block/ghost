@@ -1,268 +1,279 @@
 schema: ghost.fingerprint/v1
-summary:
-  product: Ghost
-  audience:
-    - OSS maintainers adopting AI-assisted product workflows
-    - agents generating or reviewing product UI
-    - Ghost contributors
-  goals:
-    - Keep product-experience memory repo-local, portable, and easy for agents to read.
-    - Preserve product identity across generation, review, and remediation.
-    - Use Git as the staging and approval boundary for memory edits.
-  anti_goals:
-    - Treat raw inventory as canonical product truth.
-    - Add special lifecycle files for the MVP.
-    - Turn Ghost into a design-system snapshot or screenshot archive.
-    - Become a memory lifecycle manager or proposal system.
-    - Let advisory review block work without deterministic checks.
-  tradeoffs:
-    - Prefer compact durable memory over exhaustive surveys.
-    - Keep checks separate so fingerprint.yml stays readable.
-    - Preserve OSS-friendly language over company-specific strategy.
-  tone:
-    - plain
-    - precise
-    - restrained
-    - product-minded
-topology:
-  scopes:
-    - id: public-cli
-      paths:
-        - packages/ghost/src
-      surface_types:
-        - cli-command
-        - emitted-agent-prompt
-    - id: skill-bundle
-      paths:
-        - packages/ghost/src/skill-bundle
-      surface_types:
-        - agent-recipe
-    - id: docs-site
-      paths:
-        - docs
-        - README.md
-        - apps/docs
-      surface_types:
-        - docs-home
-        - docs-foundation
-        - tool-doc
-    - id: ghost-ui-components
-      paths:
-        - packages/ghost-ui
-      surface_types:
-        - component-catalogue
-        - primitive-demo
-        - theme-control
-  surface_types:
-    - agent-recipe
-    - cli-command
-    - component-catalogue
-    - docs-foundation
-    - docs-home
-    - emitted-agent-prompt
-    - primitive-demo
-    - theme-control
-    - tool-doc
-exemplars:
-  - id: public-readme-memory-model
-    path: README.md
-    title: Public README memory model
-    surface_type: docs-home
-    scope: docs-site
-    note: Public entry point describes fingerprint.yml as canonical memory.
-    why: Shows how Ghost explains repo-local prose memory, optional inventory, and Git-reviewed approval.
-    refs:
-      - principle:fingerprint-is-canonical
-      - principle:inventory-is-cache
-  - id: review-command-memory-packet
-    path: packages/ghost/src/scan/context/package-review-command.ts
-    title: Generated review command
-    surface_type: emitted-agent-prompt
-    scope: public-cli
-    note: Review command is generated from fingerprint.yml memory.
-    why: Shows how Ghost turns canonical memory into an agent-facing review instruction.
-    refs:
-      - experience_contract:review-cites-memory-and-diff
-      - pattern:compact-agent-handoff
-situations:
-  - id: capturing-memory
-    title: Capturing repo memory
-    user_intent: Create or update Ghost memory for a project.
-    product_obligation: Help the agent distinguish canonical memory from optional inventory.
-    principles:
-      - principle:fingerprint-is-canonical
-      - principle:inventory-is-cache
-    experience_contracts:
-      - experience_contract:git-is-approval-boundary
-    patterns:
-      - pattern:fingerprint-first-bundle
-  - id: reviewing-generated-ui
-    title: Reviewing generated or changed UI
-    user_intent: Know whether a change preserves the product experience.
-    product_obligation: Separate deterministic blocking checks from advisory critique.
-    principles:
-      - principle:checks-are-executable-appendix
-    experience_contracts:
-      - experience_contract:review-cites-memory-and-diff
-    patterns:
-      - pattern:compact-agent-handoff
-  - id: documenting-ghost
-    title: Explaining Ghost in public docs
-    user_intent: Understand the model without internal company context.
-    product_obligation: Use OSS-safe language and examples that fit many repo shapes.
-    principles:
-      - principle:oss-language-is-portable
-    patterns:
-      - pattern:editorial-workbench-docs
-principles:
-  - id: fingerprint-is-canonical
-    principle: fingerprint.yml is canonical product-experience memory when checked in; generated artifacts are source material or output.
-    guidance:
-      - Describe the fingerprint as product experience memory, not a design-system snapshot.
-      - Keep durable identity, hierarchy, behavior, copy, accessibility, trust, and flow in fingerprint.yml.
-      - Treat uncommitted or unmerged memory edits as drafts handled by Git, not by a Ghost-specific lifecycle.
-    evidence:
-      - path: docs/fingerprint-format.md
-        note: Public format docs define fingerprint.yml as the source of truth.
-      - path: packages/ghost/src/scan/fingerprint-package.ts
-        note: init writes fingerprint.yml and checks.yml; cache appears only when inventory is explicitly generated.
-  - id: inventory-is-cache
-    principle: Generated inventory answers what exists; fingerprint memory answers what matters and why.
-    guidance:
-      - Store generated inventory under cache when useful.
-      - Curate only durable conclusions into fingerprint.yml.
-      - Do not let cache or implementation vocabulary become product authority.
-    evidence:
-      - path: README.md
-        note: README frames inventory as optional cache/source material.
-  - id: checks-are-executable-appendix
-    principle: Deterministic checks stay outside fingerprint.yml and must be grounded in typed memory refs.
-    guidance:
-      - Active checks can block; advisory findings cannot block unless check-backed.
-      - Use typed refs such as pattern:token-first-interface.
-      - Checks keep enforcement status because gates need lifecycle state.
-    evidence:
-      - path: packages/ghost/src/ghost-core/checks/lint.ts
-        note: Active checks require typed derives_from grounding.
-  - id: oss-language-is-portable
-    principle: Public Ghost docs and generated prompts should work for arbitrary OSS repos without internal strategy language.
-    guidance:
-      - Use examples that fit docs sites, dashboards, SaaS apps, games, and component libraries.
-      - Avoid private company concepts in public docs.
-    evidence:
-      - path: docs/fingerprint-format.md
-      - path: docs/generation-loop.md
-experience_contracts:
-  - id: review-cites-memory-and-diff
-    contract: Advisory review findings must cite the diff location and the relevant fingerprint memory.
-    obligations:
-      - Use active checks only when a finding should block.
-      - Use missing-memory or experience-gap when the fingerprint cannot support a confident judgment.
-    evidence:
-      - path: packages/ghost/src/scan/context/package-review-command.ts
-        note: Emitted review command tells agents what to cite.
-  - id: git-is-approval-boundary
-    contract: Memory edits use ordinary Git workflow; checked-in fingerprint.yml is truth.
-    obligations:
-      - Do not rewrite canonical memory silently during generation or review.
-      - Treat uncommitted or unmerged memory edits as draft work.
-      - Record durable product memory in fingerprint.yml and deterministic gates in checks.yml; optional rationale files are secondary.
-    evidence:
-      - path: packages/ghost/src/skill-bundle/references/capture.md
-  - id: emitted-context-prefers-memory
-    contract: Emitted context bundles and review commands should prefer fingerprint.yml over legacy survey or markdown artifacts.
-    obligations:
-      - Default emit paths load fingerprint.yml package memory.
-      - Legacy direct markdown emit is unsupported.
-    evidence:
-      - path: packages/ghost/src/scan/context/package-writer.ts
-      - path: packages/ghost/src/scan-emit-command.ts
-  - id: interfaces-preserve-operability
-    contract: Ghost interfaces should preserve operability, readable examples, and responsive access before visual polish.
-    obligations:
-      - Preserve keyboard-reachable controls and readable code examples.
-      - Keep docs and reference content readable on narrow screens.
-      - Let dense work surfaces collapse controls before hiding primary content.
-      - Keep advisory review separate from dedicated accessibility audits.
-    evidence:
-      - path: docs/generation-loop.md
-      - path: apps/docs/src/components/docs/component-page-shell.tsx
-patterns:
-  - id: fingerprint-first-bundle
-    kind: composition
-    pattern: Root Ghost bundles start from fingerprint.yml and checks.yml, then attach optional rationale, config, or cache only when useful.
-    guidance:
-      - Do not require survey or inventory for a valid new project.
-      - Do not create cache during initialization; cache appears only after explicit inventory work.
-      - Allow sparse fingerprint.yml authoring; omitted top-level sections normalize to empty memory internally.
-      - Keep optional cache outside canonical memory.
-      - Use Git review for memory approval instead of Ghost-specific draft files.
-    evidence:
-      - path: README.md
-      - path: docs/fingerprint-format.md
-  - id: compact-agent-handoff
-    kind: content
-    pattern: CLI and emitted prompts should tell the host agent exactly which memory to read and which findings can block.
-    guidance:
-      - Prefer short ordered workflows over broad conceptual lectures.
-      - Name memory gaps plainly without creating a separate memory-change workflow.
-    evidence:
-      - path: packages/ghost/src/scan/context/package-review-command.ts
-  - id: editorial-workbench-docs
-    kind: visual
-    pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.
-    applies_to:
-      scopes:
-        - docs-site
-      surface_types:
-        - docs-home
-        - docs-foundation
-        - tool-doc
-    guidance:
-      - Keep concepts plain and examples inspectable.
-      - Avoid oversized marketing composition for reference pages.
-    check_refs:
-      - check:component-pages-use-display-scale
-    evidence:
-      - path: apps/docs/src/components/docs/page-header.tsx
-      - path: apps/docs/src/components/docs/component-page-shell.tsx
-  - id: token-first-interface
-    kind: visual
-    pattern: Ghost UI surfaces use semantic tokens for repeatable color and avoid ad hoc surface hex values.
-    applies_to:
-      scopes:
-        - docs-site
-        - ghost-ui-components
-      surface_types:
-        - component-catalogue
-        - docs-foundation
-        - docs-home
-        - primitive-demo
-        - theme-control
-    guidance:
-      - Define color meaning in the token layer before repeating values in components.
-      - Treat one-off literal colors in UI surfaces as review-worthy drift.
-      - Using the right token is not enough if hierarchy, disclosure, or operability regresses.
-    check_refs:
-      - check:no-hardcoded-surface-hex
-    evidence:
-      - path: packages/ghost-ui/src/styles/main.css
-implementation_vocabulary:
-  tokens:
-    - semantic color CSS variables
-    - font-display
-    - spacing and radius scales
-  components:
-    - Button
-    - CodeBlock
-    - ComponentPageShell
-    - PageHeader
-  libraries:
-    - shadcn-style registry primitives
-    - lucide icons
-  assets:
-    - CLI manifest JSON
-    - docs code examples
-  notes:
-    - Implementation vocabulary is replaceable material; product memory owns the judgment.
-    - Correct components or tokens do not prove an experience is on-brand.
+prose:
+  summary:
+    product: Ghost
+    audience:
+      - OSS maintainers adopting AI-assisted product workflows
+      - agents generating or reviewing product UI
+      - Ghost contributors
+    goals:
+      - Keep product-experience fingerprints repo-local, portable, and easy for agents to read.
+      - Preserve product identity across generation, review, and remediation.
+      - Use Git as the staging and approval boundary for fingerprint edits.
+    anti_goals:
+      - Treat raw inventory as canonical product truth.
+      - Add special lifecycle files for the MVP.
+      - Turn Ghost into a design-system snapshot or screenshot archive.
+      - Become a fingerprint lifecycle manager or proposal system.
+      - Let advisory review block work without deterministic checks.
+    tradeoffs:
+      - Prefer compact durable prose over exhaustive surveys.
+      - Keep checks separate so fingerprint.yml stays readable.
+      - Preserve OSS-friendly language over company-specific strategy.
+    tone:
+      - plain
+      - precise
+      - restrained
+      - product-minded
+  situations:
+    - id: capturing-fingerprint
+      title: Capturing fingerprint layers
+      user_intent: Create or update the Ghost fingerprint for a project.
+      product_obligation: Help the agent distinguish canonical prose/inventory/composition from generated cache.
+      principles:
+        - prose.principle:fingerprint-is-canonical
+        - prose.principle:generated-cache-is-source-material
+      experience_contracts:
+        - prose.experience_contract:git-is-approval-boundary
+      patterns:
+        - composition.pattern:fingerprint-first-package
+    - id: reviewing-generated-ui
+      title: Reviewing generated or changed UI
+      user_intent: Know whether a change preserves the product experience.
+      product_obligation: Separate deterministic blocking checks from advisory critique.
+      principles:
+        - prose.principle:checks-are-executable-appendix
+      experience_contracts:
+        - prose.experience_contract:review-cites-fingerprint-and-diff
+      patterns:
+        - composition.pattern:compact-agent-handoff
+    - id: documenting-ghost
+      title: Explaining Ghost in public docs
+      user_intent: Understand the model without internal company context.
+      product_obligation: Use OSS-safe language and examples that fit many repo shapes.
+      principles:
+        - prose.principle:oss-language-is-portable
+      patterns:
+        - composition.pattern:editorial-workbench-docs
+  principles:
+    - id: fingerprint-is-canonical
+      principle: fingerprint.yml is canonical prose, inventory, and composition when checked in; generated artifacts are source material or output.
+      guidance:
+        - Describe the fingerprint as product-experience memory only as a high-level metaphor, not as an operational layer.
+        - Keep durable identity, hierarchy, behavior, copy, accessibility, trust, and flow in fingerprint.yml.
+        - Treat uncommitted or unmerged fingerprint edits as drafts handled by Git, not by a Ghost-specific lifecycle.
+      evidence:
+        - path: docs/fingerprint-format.md
+          note: Public format docs define fingerprint.yml as the source of truth.
+        - path: packages/ghost/src/scan/fingerprint-package.ts
+          note: init writes fingerprint.yml and checks.yml; cache appears only when inventory is explicitly generated.
+    - id: generated-cache-is-source-material
+      principle: Generated cache answers what exists; curated inventory points to the building blocks and precedents an agent can inspect or use.
+      guidance:
+        - Store generated cache under cache/ when useful.
+        - Curate durable building blocks, files, routes, libraries, assets, notes, and exemplars into inventory.
+        - Do not let cache or building blocks become product authority without prose and composition.
+      evidence:
+        - path: README.md
+          note: README frames generated cache as optional source material.
+    - id: checks-are-executable-appendix
+      principle: Deterministic checks stay outside fingerprint.yml and must be grounded in typed fingerprint refs.
+      guidance:
+        - Active checks can block; advisory findings cannot block unless check-backed.
+        - Use typed refs such as composition.pattern:token-first-interface.
+        - Checks keep enforcement status because gates need lifecycle state.
+      evidence:
+        - path: packages/ghost/src/ghost-core/checks/lint.ts
+          note: Active checks require typed derivation grounding.
+    - id: oss-language-is-portable
+      principle: Public Ghost docs and generated prompts should work for arbitrary OSS repos without internal strategy language.
+      guidance:
+        - Use examples that fit docs sites, dashboards, SaaS apps, games, and component libraries.
+        - Avoid private company concepts in public docs.
+      evidence:
+        - path: docs/fingerprint-format.md
+        - path: docs/generation-loop.md
+  experience_contracts:
+    - id: review-cites-fingerprint-and-diff
+      contract: Advisory review findings must cite the diff location and the relevant fingerprint refs.
+      obligations:
+        - Use active checks only when a finding should block.
+        - Use missing-memory or experience-gap when the fingerprint cannot support a confident judgment.
+      evidence:
+        - path: packages/ghost/src/scan/context/package-review-command.ts
+          note: Emitted review command tells agents what to cite.
+    - id: git-is-approval-boundary
+      contract: Fingerprint edits use ordinary Git workflow; checked-in fingerprint.yml is truth.
+      obligations:
+        - Do not rewrite canonical fingerprint layers silently during generation or review.
+        - Treat uncommitted or unmerged fingerprint edits as draft work.
+        - Record durable product judgment in fingerprint.yml and deterministic gates in checks.yml; optional rationale files are secondary.
+      evidence:
+        - path: packages/ghost/src/skill-bundle/references/capture.md
+    - id: emitted-context-prefers-fingerprint-layers
+      contract: Emitted context bundles and review commands should prefer fingerprint.yml layers over legacy survey or markdown artifacts.
+      obligations:
+        - Default emit paths load the resolved fingerprint package or stack.
+        - Legacy direct markdown emit is unsupported.
+      evidence:
+        - path: packages/ghost/src/scan/context/package-writer.ts
+        - path: packages/ghost/src/scan-emit-command.ts
+    - id: interfaces-preserve-operability
+      contract: Ghost interfaces should preserve operability, readable examples, and responsive access before visual polish.
+      obligations:
+        - Preserve keyboard-reachable controls and readable code examples.
+        - Keep docs and reference content readable on narrow screens.
+        - Let dense work surfaces collapse controls before hiding primary content.
+        - Keep advisory review separate from dedicated accessibility audits.
+      evidence:
+        - path: docs/generation-loop.md
+        - path: apps/docs/src/components/docs/component-page-shell.tsx
+inventory:
+  topology:
+    scopes:
+      - id: public-cli
+        paths:
+          - packages/ghost/src
+        surface_types:
+          - cli-command
+          - emitted-agent-prompt
+      - id: skill-bundle
+        paths:
+          - packages/ghost/src/skill-bundle
+        surface_types:
+          - agent-recipe
+      - id: docs-site
+        paths:
+          - docs
+          - README.md
+          - apps/docs
+        surface_types:
+          - docs-home
+          - docs-foundation
+          - tool-doc
+      - id: ghost-ui-components
+        paths:
+          - packages/ghost-ui
+        surface_types:
+          - component-catalogue
+          - primitive-demo
+          - theme-control
+    surface_types:
+      - agent-recipe
+      - cli-command
+      - component-catalogue
+      - docs-foundation
+      - docs-home
+      - emitted-agent-prompt
+      - primitive-demo
+      - theme-control
+      - tool-doc
+  building_blocks:
+    tokens:
+      - semantic color CSS variables
+      - font-display
+      - spacing and radius scales
+    components:
+      - Button
+      - CodeBlock
+      - ComponentPageShell
+      - PageHeader
+    libraries:
+      - shadcn-style registry primitives
+      - lucide icons
+    assets:
+      - CLI manifest JSON
+      - docs code examples
+    routes:
+      - apps/docs/src/app
+    files:
+      - README.md
+      - docs/fingerprint-format.md
+      - docs/generation-loop.md
+      - packages/ghost/src/scan/context/package-writer.ts
+      - packages/ghost/src/scan/context/package-review-command.ts
+    notes:
+      - Inventory is replaceable material; prose owns the judgment and composition owns how material is assembled.
+      - Correct components or tokens do not prove an experience is on-brand.
+  exemplars:
+    - id: public-readme-fingerprint-model
+      path: README.md
+      title: Public README fingerprint model
+      surface_type: docs-home
+      scope: docs-site
+      note: Public entry point describes fingerprint.yml as canonical prose, inventory, and composition.
+      why: Shows how Ghost explains repo-local fingerprint layers, curated inventory, generated cache, and Git-reviewed approval.
+      refs:
+        - prose.principle:fingerprint-is-canonical
+        - prose.principle:generated-cache-is-source-material
+    - id: review-command-fingerprint-packet
+      path: packages/ghost/src/scan/context/package-review-command.ts
+      title: Generated review command
+      surface_type: emitted-agent-prompt
+      scope: public-cli
+      note: Review command is generated from fingerprint.yml prose/inventory/composition.
+      why: Shows how Ghost turns fingerprint layers into an agent-facing review instruction.
+      refs:
+        - prose.experience_contract:review-cites-fingerprint-and-diff
+        - composition.pattern:compact-agent-handoff
+composition:
+  patterns:
+    - id: fingerprint-first-package
+      kind: structure
+      pattern: Root Ghost packages start from fingerprint.yml and checks.yml, then attach optional rationale, config, or cache only when useful.
+      guidance:
+        - Do not require generated cache for a valid new project.
+        - Do not create cache during initialization; cache appears only after explicit inventory work.
+        - Allow sparse fingerprint.yml authoring; omitted layer sections normalize to empty layers internally.
+        - Keep generated cache outside canonical inventory.
+        - Use Git review for fingerprint approval instead of Ghost-specific draft files.
+      evidence:
+        - path: README.md
+        - path: docs/fingerprint-format.md
+    - id: compact-agent-handoff
+      kind: content
+      pattern: CLI and emitted prompts should tell the host agent exactly which fingerprint layers to read and which findings can block.
+      guidance:
+        - Prefer short ordered workflows over broad conceptual lectures.
+        - Name missing fingerprint grounding or layer coverage plainly without creating a separate fingerprint-change workflow.
+      evidence:
+        - path: packages/ghost/src/scan/context/package-review-command.ts
+    - id: editorial-workbench-docs
+      kind: visual
+      pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.
+      applies_to:
+        scopes:
+          - docs-site
+        surface_types:
+          - docs-home
+          - docs-foundation
+          - tool-doc
+      guidance:
+        - Keep concepts plain and examples inspectable.
+        - Avoid oversized marketing composition for reference pages.
+      check_refs:
+        - check:component-pages-use-display-scale
+      evidence:
+        - path: apps/docs/src/components/docs/page-header.tsx
+        - path: apps/docs/src/components/docs/component-page-shell.tsx
+    - id: token-first-interface
+      kind: visual
+      pattern: Ghost UI surfaces use semantic tokens for repeatable color and avoid ad hoc surface hex values.
+      applies_to:
+        scopes:
+          - docs-site
+          - ghost-ui-components
+        surface_types:
+          - component-catalogue
+          - docs-foundation
+          - docs-home
+          - primitive-demo
+          - theme-control
+      guidance:
+        - Define color meaning in the token layer before repeating values in components.
+        - Treat one-off literal colors in UI surfaces as review-worthy drift.
+        - Using the right token is not enough if hierarchy, disclosure, or operability regresses.
+      check_refs:
+        - check:no-hardcoded-surface-hex
+      evidence:
+        - path: packages/ghost-ui/src/styles/main.css

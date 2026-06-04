@@ -1,24 +1,24 @@
 ---
 name: recall
-description: Recall applicable Ghost memory for a task or file path.
+description: Recall applicable Ghost fingerprint layers for a task or file path.
 ---
 
-# Recipe: Recall Ghost Memory
+# Recipe: Recall Ghost Fingerprint
 
 1. Read checked-in `fingerprint.yml` entries.
-2. Select relevant situations, principles, contracts, patterns, exemplars, and
-   active checks.
+2. Select relevant prose, inventory exemplars, composition patterns, and active
+   checks.
 3. Use `ghost stack <path>`, accepted decisions, and intent only when the repo
    has opted into those advanced inputs.
-4. Summarize only memory that applies to the task.
+4. Summarize only fingerprint refs that apply to the task.
 
 Return:
 
-- Applicable memory IDs and short claims.
-- Exemplars to inspect when generation or review needs a concrete anchor.
+- Applicable fingerprint refs and short claims.
+- Inventory exemplars to inspect when generation or review needs a concrete anchor.
 - Active checks that may affect the work.
 - Optional decisions or intent that explain why, when present.
 - Any gaps where local evidence must carry the reasoning.
 
 If the fingerprint is silent, say that plainly and continue with provisional
-local reasoning when safe. Memory updates are ordinary Git-reviewed edits.
+local reasoning when safe. Fingerprint edits are ordinary Git-reviewed edits.

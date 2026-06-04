@@ -31,9 +31,9 @@ export type PackageInventory =
   | { state: "present"; path: string; summary: PackageInventorySummary }
   | { state: "unreadable"; path: string; error: string };
 
-export interface PackageMemory {
+export interface PackageContext {
   name: string;
-  memoryDir?: string;
+  fingerprintDir?: string;
   fingerprint: GhostFingerprintDocument;
   fingerprintRaw: string;
   checks?: GhostChecksDocument;
@@ -42,10 +42,10 @@ export interface PackageMemory {
   inventory: PackageInventory;
 }
 
-export async function loadPackageMemory(
+export async function loadPackageContext(
   paths: FingerprintPackagePaths,
   nameOverride?: string,
-): Promise<PackageMemory> {
+): Promise<PackageContext> {
   const [fingerprintRaw, checksRaw, intent, inventory] = await Promise.all([
     readFile(paths.fingerprintYml, "utf-8"),
     readOptional(paths.checks),
@@ -222,8 +222,9 @@ async function readOptional(path: string): Promise<string | undefined> {
 }
 
 function inferPackageName(fingerprint: GhostFingerprintDocument): string {
-  if (fingerprint.summary.product) return fingerprint.summary.product;
-  const firstScope = fingerprint.topology.scopes?.[0]?.id;
+  if (fingerprint.prose.summary.product)
+    return fingerprint.prose.summary.product;
+  const firstScope = fingerprint.inventory.topology.scopes?.[0]?.id;
   if (firstScope) return firstScope;
   return "ghost-package";
 }

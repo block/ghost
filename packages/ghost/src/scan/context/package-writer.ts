@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
-import { loadPackageMemory, type PackageMemory } from "./package-memory.js";
+import { loadPackageContext, type PackageContext } from "./package-context.js";
 import type { WriteContextResult } from "./writer.js";
 
 export interface WritePackageContextOptions {
@@ -19,12 +19,12 @@ export async function writePackageContextBundle(
   paths: FingerprintPackagePaths,
   options: WritePackageContextOptions,
 ): Promise<WriteContextResult> {
-  const context = await loadPackageMemory(paths, options.name);
-  return writePackageContextBundleFromMemory(context, options);
+  const context = await loadPackageContext(paths, options.name);
+  return writePackageContextBundleFromContext(context, options);
 }
 
-export async function writePackageContextBundleFromMemory(
-  context: PackageMemory,
+export async function writePackageContextBundleFromContext(
+  context: PackageContext,
   options: WritePackageContextOptions,
 ): Promise<WriteContextResult> {
   await mkdir(options.outDir, { recursive: true });
@@ -82,58 +82,74 @@ async function writeContextFile(
   files.push(outPath);
 }
 
-function buildPackageSkillMd(context: PackageMemory): string {
+function buildPackageSkillMd(context: PackageContext): string {
   return `---
 name: ${context.name}
-description: Use this Ghost product-experience memory to preserve on-brand UI generation and review.
+description: Use this Ghost product-experience world model to preserve coherent UI generation and review.
 user-invocable: true
 ---
 
 This skill grounds work in the **${context.name}** Ghost fingerprint.
 
+Treat this bundle as the upstream handoff for agentic UI work. Use it before
+generation so the output extends the product-experience world model, then
+validate the resulting diff with Ghost checks or review when available.
+
 Read the files in this order:
 
-1. \`prompt.md\` - generation packet: product prose, inventory, exemplars, and active checks.
-2. \`fingerprint.yml\` - canonical product prose and exemplar anchors.
+1. \`prompt.md\` - generation packet: prose, inventory, composition, and active checks.
+2. \`fingerprint.yml\` - canonical prose, inventory, and composition.
 3. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
 4. \`intent.md\` when present - supplemental human-authored context.
 
-When generating UI, combine product prose from \`fingerprint.yml\`, optional
-inventory facts, and curated exemplars. Use implementation vocabulary and
-inventory only as replaceable material that may help satisfy product memory.
+When generating UI, combine prose, inventory, and composition from
+\`fingerprint.yml\`. Use generated cache only as replaceable source material
+that may help satisfy canonical prose, inventory, and composition.
 When reviewing, use active checks for blocking validation and keep other
 findings advisory.
 
-When fingerprint memory is silent, proceed from nearby product surfaces, local
+When fingerprint layers are silent, proceed from nearby product surfaces, local
 components, token and copy conventions, optional rationale files when present,
 and ordinary UX judgment when safe. Label that reasoning as provisional and
 non-Ghost-backed. Ask a human before making high-risk, irreversible,
-privacy/security/legal, or product-identity-defining choices. Memory changes
+privacy/security/legal, or product-identity-defining choices. Fingerprint edits
 are ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and
 optional rationale files when present.
 `;
 }
 
-function buildPackagePromptMd(context: PackageMemory): string {
+function buildPackagePromptMd(context: PackageContext): string {
   const parts = [
     `You are working inside the **${context.name}** product experience as captured by Ghost.`,
   ];
 
-  parts.push(`# Product Prose
+  parts.push(`# Agent Handoff
 
-Canonical product memory lives in \`fingerprint.yml\`. Use situations, principles, experience contracts, and patterns as the source of product judgment.
+This packet is upstream input for agentic UI work, not post-hoc commentary. Use it before writing or revising product surfaces so the output extends the same product-experience world model instead of merely passing local checks.
+
+After generating, validate the diff with Ghost checks or review when available, and keep Ghost package edits as ordinary Git-reviewed edits to the source \`.ghost\` package.`);
+
+  parts.push(`# Prose
+
+Canonical product meaning lives in \`fingerprint.yml\`. Use situations, principles, and experience contracts as the source of product judgment.
 
 \`\`\`yaml
-${context.fingerprintRaw.trim()}
+${stringifyYaml(context.fingerprint.prose, { lineWidth: 0 }).trim()}
 \`\`\``);
 
   parts.push(`# Inventory
 
-${formatInventory(context)}`);
+${formatTopology(context)}
 
-  parts.push(`# Exemplars
+${formatBuildingBlocks(context)}
 
-${formatExemplars(context)}`);
+${formatExemplars(context)}
+
+${formatGeneratedCache(context)}`);
+
+  parts.push(`# Composition
+
+${formatComposition(context)}`);
 
   if (context.checks) {
     const activeChecks = context.checks.checks.filter(
@@ -168,49 +184,90 @@ ${context.intent.trim()}
 
   parts.push(`# Use This Context
 
-- Generate from product prose + inventory + exemplars.
+- Treat this packet as the upstream handoff before generating or revising UI.
+- Generate from prose + inventory + composition.
 - Select the relevant situation before generating or reviewing UI.
-- Preserve applicable principles, experience contracts, and patterns.
-- Inspect exemplars as concrete anchors for what good looks like.
-- Use inventory and implementation vocabulary only when they support the selected product memory.
+- Preserve applicable principles, experience contracts, and composition patterns.
+- Inspect inventory exemplars as concrete anchors for what good looks like.
+- Use inventory building blocks only when they support the selected prose and composition.
 - Treat checks as validation; only active checks are blocking.
-- When fingerprint memory is silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
-- Label silent-memory reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
-- Treat memory changes as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
+- After generating, run or request Ghost review/check when available so output is validated against the same fingerprint layers.
+- When fingerprint layers are silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
+- Label silent-layer reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+- Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
 
   return `${parts.join("\n\n")}\n`;
 }
 
-function buildPackageReadmeMd(context: PackageMemory): string {
+function buildPackageReadmeMd(context: PackageContext): string {
   return `# ${context.name} context bundle
 
 Generated by \`ghost emit context-bundle\` from a root Ghost fingerprint
 package.
 
+This is an upstream agent handoff. Give it to Codex, Cursor, Claude, or another
+host agent before asking for UI work, then validate the resulting diff with
+Ghost checks or review when available.
+
 ## Files
 
 - \`SKILL.md\` - agent skill manifest.
-- \`prompt.md\` - portable generation packet: product prose, inventory, exemplars, and checks.
-- \`fingerprint.yml\` - canonical product prose and exemplar anchors.
+- \`prompt.md\` - portable generation packet: prose, inventory, composition, and checks.
+- \`fingerprint.yml\` - canonical prose, inventory, and composition.
 ${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
 Regenerate this bundle when \`fingerprint.yml\`, active checks, or optional
 rationale files change.
 `;
 }
 
-function formatInventory(context: PackageMemory): string {
+function formatTopology(context: PackageContext): string {
+  const { topology } = context.fingerprint.inventory;
+  const lines = ["## Topology"];
+  pushJoined(lines, "Surface types", topology.surface_types, { code: true });
+  if (topology.scopes?.length) {
+    for (const scope of topology.scopes.slice(0, 16)) {
+      const details = [
+        scope.paths.length
+          ? `paths: ${scope.paths.map((path) => `\`${path}\``).join(", ")}`
+          : undefined,
+        scope.surface_types?.length
+          ? `surface types: ${scope.surface_types.map((surfaceType) => `\`${surfaceType}\``).join(", ")}`
+          : undefined,
+      ].filter(Boolean);
+      lines.push(
+        `- \`${scope.id}\`${details.length ? ` - ${details.join("; ")}` : ""}`,
+      );
+    }
+    if (topology.scopes.length > 16) {
+      lines.push(
+        `- ${topology.scopes.length - 16} more scope(s); read \`fingerprint.yml\` before generating.`,
+      );
+    }
+  }
+  if (lines.length === 1) {
+    lines.push("- No inventory topology recorded yet.");
+  }
+  return lines.join("\n");
+}
+
+function formatGeneratedCache(context: PackageContext): string {
   const { inventory } = context;
   if (inventory.state === "missing") {
-    return `No generated inventory cache is present. Inventory is optional; generate it when useful with \`mkdir -p .ghost/cache && ghost inventory > .ghost/cache/inventory.json\`.`;
+    return `## Generated Cache
+
+No generated cache is present. Generated cache is optional source material; create it when useful with \`mkdir -p .ghost/cache && ghost inventory > .ghost/cache/inventory.json\`.`;
   }
   if (inventory.state === "unreadable") {
-    return `Inventory cache exists at \`${inventory.path}\`, but it could not be read: ${inventory.error}. Treat inventory as unavailable until the cache is regenerated.`;
+    return `## Generated Cache
+
+Generated cache exists at \`${inventory.path}\`, but it could not be read: ${inventory.error}. Treat generated cache as unavailable until it is regenerated.`;
   }
 
   const { summary } = inventory;
   const lines = [
-    `Inventory cache: \`${inventory.path}\``,
-    "- Inventory is generated source material, not canonical product memory.",
+    "## Generated Cache",
+    `- Cache path: \`${inventory.path}\``,
+    "- Generated cache is optional source material, not canonical inventory.",
   ];
   pushJoined(lines, "Platform hints", summary.platform_hints, { code: true });
   pushJoined(lines, "Build hints", summary.build_system_hints, { code: true });
@@ -252,12 +309,54 @@ function formatInventory(context: PackageMemory): string {
   return lines.join("\n");
 }
 
-function formatExemplars(context: PackageMemory): string {
-  const { exemplars } = context.fingerprint;
-  if (exemplars.length === 0) {
-    return "No curated exemplars are recorded yet. Use nearby product surfaces as provisional anchors and label that reasoning as non-Ghost-backed.";
+function formatBuildingBlocks(context: PackageContext): string {
+  const { building_blocks: blocks } = context.fingerprint.inventory;
+  const lines = [
+    "## Building Blocks",
+    "- Use these as available material, not product-experience authority.",
+  ];
+  pushJoined(lines, "Tokens", blocks.tokens, { code: true });
+  pushJoined(lines, "Components", blocks.components, { code: true });
+  pushJoined(lines, "Libraries", blocks.libraries, { code: true });
+  pushJoined(lines, "Assets", blocks.assets, { code: true });
+  pushJoined(lines, "Routes", blocks.routes, { code: true });
+  pushJoined(lines, "Files", blocks.files, { code: true });
+  pushJoined(lines, "Notes", blocks.notes);
+  if (lines.length === 2) {
+    lines.push("- No curated inventory building blocks recorded yet.");
+  }
+  return lines.join("\n");
+}
+
+function formatComposition(context: PackageContext): string {
+  const { patterns } = context.fingerprint.composition;
+  if (patterns.length === 0) {
+    return "No composition patterns are recorded yet. Use nearby product surfaces as provisional anchors and label that reasoning as non-Ghost-backed.";
   }
   const lines: string[] = [];
+  for (const pattern of patterns.slice(0, 16)) {
+    lines.push(`- \`${pattern.id}\` (${pattern.kind}) - ${pattern.pattern}`);
+    for (const guidance of pattern.guidance ?? []) {
+      lines.push(`  - ${guidance}`);
+    }
+    if (pattern.anti_patterns?.length) {
+      lines.push(`  - Avoid: ${pattern.anti_patterns.join("; ")}`);
+    }
+  }
+  if (patterns.length > 16) {
+    lines.push(
+      `- ${patterns.length - 16} more composition pattern(s); read \`fingerprint.yml\` before generating.`,
+    );
+  }
+  return lines.join("\n");
+}
+
+function formatExemplars(context: PackageContext): string {
+  const { exemplars } = context.fingerprint.inventory;
+  if (exemplars.length === 0) {
+    return "## Exemplars\n\nNo curated exemplars are recorded yet. Use nearby product surfaces as provisional anchors and label that reasoning as non-Ghost-backed.";
+  }
+  const lines: string[] = ["## Exemplars"];
   for (const exemplar of exemplars.slice(0, 16)) {
     const detail = [
       exemplar.title ?? exemplar.note,
@@ -270,7 +369,7 @@ function formatExemplars(context: PackageMemory): string {
     if (exemplar.why) lines.push(`  - Why: ${exemplar.why}`);
     if (exemplar.refs?.length) {
       lines.push(
-        `  - Memory refs: ${exemplar.refs.map((ref) => `\`${ref}\``).join(", ")}`,
+        `  - Fingerprint refs: ${exemplar.refs.map((ref) => `\`${ref}\``).join(", ")}`,
       );
     }
   }

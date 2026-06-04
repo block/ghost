@@ -71,7 +71,7 @@ async function verifyFingerprintExemplars(
   issues: VerifyFingerprintIssue[],
 ): Promise<void> {
   await Promise.all(
-    fingerprint.exemplars.map(async (entry, index) => {
+    fingerprint.inventory.exemplars.map(async (entry, index) => {
       const exemplarPath = isAbsolute(entry.path)
         ? entry.path
         : resolve(root, entry.path);
@@ -80,7 +80,7 @@ async function verifyFingerprintExemplars(
         severity: "warning",
         rule: "fingerprint-exemplar-unreachable",
         message: `fingerprint exemplar path '${entry.path}' could not be resolved from ${root}.`,
-        path: `fingerprint.yml.exemplars[${index}].path`,
+        path: `fingerprint.yml.inventory.exemplars[${index}].path`,
       });
     }),
   );
@@ -238,33 +238,33 @@ async function verifyFingerprintEvidence(
 ): Promise<void> {
   const evidenceLists: Array<[string, GhostFingerprintEvidence[] | undefined]> =
     [
-      ...fingerprint.situations.map(
-        (entry, index) =>
-          [`fingerprint.yml.situations[${index}].evidence`, entry.evidence] as [
-            string,
-            GhostFingerprintEvidence[] | undefined,
-          ],
-      ),
-      ...fingerprint.principles.map(
-        (entry, index) =>
-          [`fingerprint.yml.principles[${index}].evidence`, entry.evidence] as [
-            string,
-            GhostFingerprintEvidence[] | undefined,
-          ],
-      ),
-      ...fingerprint.experience_contracts.map(
+      ...fingerprint.prose.situations.map(
         (entry, index) =>
           [
-            `fingerprint.yml.experience_contracts[${index}].evidence`,
+            `fingerprint.yml.prose.situations[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
-      ...fingerprint.patterns.map(
+      ...fingerprint.prose.principles.map(
         (entry, index) =>
-          [`fingerprint.yml.patterns[${index}].evidence`, entry.evidence] as [
-            string,
-            GhostFingerprintEvidence[] | undefined,
-          ],
+          [
+            `fingerprint.yml.prose.principles[${index}].evidence`,
+            entry.evidence,
+          ] as [string, GhostFingerprintEvidence[] | undefined],
+      ),
+      ...fingerprint.prose.experience_contracts.map(
+        (entry, index) =>
+          [
+            `fingerprint.yml.prose.experience_contracts[${index}].evidence`,
+            entry.evidence,
+          ] as [string, GhostFingerprintEvidence[] | undefined],
+      ),
+      ...fingerprint.composition.patterns.map(
+        (entry, index) =>
+          [
+            `fingerprint.yml.composition.patterns[${index}].evidence`,
+            entry.evidence,
+          ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
     ];
 
@@ -295,26 +295,26 @@ function verifyFingerprintCheckRefs(
 ): void {
   const checkIds = new Set(checks.map((check) => check.id));
   const checkRefLists: Array<[string, string[] | undefined]> = [
-    ...fingerprint.principles.map(
+    ...fingerprint.prose.principles.map(
       (entry, index) =>
         [
-          `fingerprint.yml.principles[${index}].check_refs`,
+          `fingerprint.yml.prose.principles[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
-    ...fingerprint.experience_contracts.map(
+    ...fingerprint.prose.experience_contracts.map(
       (entry, index) =>
         [
-          `fingerprint.yml.experience_contracts[${index}].check_refs`,
+          `fingerprint.yml.prose.experience_contracts[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
-    ...fingerprint.patterns.map(
+    ...fingerprint.composition.patterns.map(
       (entry, index) =>
-        [`fingerprint.yml.patterns[${index}].check_refs`, entry.check_refs] as [
-          string,
-          string[] | undefined,
-        ],
+        [
+          `fingerprint.yml.composition.patterns[${index}].check_refs`,
+          entry.check_refs,
+        ] as [string, string[] | undefined],
     ),
   ];
 

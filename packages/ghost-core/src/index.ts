@@ -3,13 +3,17 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
+  GhostCheckDerivation,
+  GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationInventoryRef,
+  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
   GhostCheckSeverity,
   GhostCheckStatus,
   GhostChecksDocument,
-  GhostChecksFingerprintMemory,
+  GhostChecksFingerprintContext,
   GhostChecksLintIssue,
   GhostChecksLintOptions,
   GhostChecksLintReport,
@@ -20,6 +24,7 @@ export type {
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
+  GhostCheckDerivationSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,
@@ -54,7 +59,7 @@ export {
   parseColorToOklch,
   saturationScore,
 } from "./embedding/index.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
@@ -67,7 +72,7 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   type GitInfo,
   getEffectiveMapScopes,
@@ -87,12 +92,12 @@ export {
 // --- Memory (ghost.decision/v1) ---
 export type {
   GhostDecisionDocument,
+  GhostDecisionLintIssue,
+  GhostDecisionLintReport,
+  GhostDecisionLintSeverity,
   GhostDecisionStatus,
   GhostExperienceEvidence,
   GhostExperienceScope,
-  GhostMemoryLintIssue,
-  GhostMemoryLintReport,
-  GhostMemoryLintSeverity,
 } from "./memory/index.js";
 export {
   GHOST_DECISION_SCHEMA,
@@ -157,7 +162,7 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Survey (ghost.survey/v2) ---
+// --- Survey (ghost.survey/v1) ---
 export {
   type BreakpointSpec,
   type ColorSpec,

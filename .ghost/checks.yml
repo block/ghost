@@ -5,7 +5,9 @@ checks:
     title: Prefer semantic color tokens over inline hex in UI surfaces
     status: proposed
     severity: serious
-    derives_from: pattern:token-first-interface
+    derivation:
+      composition:
+        - composition.pattern:token-first-interface
     applies_to:
       scopes:
         - ghost-ui-components
@@ -28,7 +30,9 @@ checks:
     title: Component catalogue pages keep the editorial display scale
     status: proposed
     severity: nit
-    derives_from: pattern:editorial-workbench-docs
+    derivation:
+      composition:
+        - composition.pattern:editorial-workbench-docs
     applies_to:
       scopes:
         - docs-site

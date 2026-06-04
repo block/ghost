@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: ghost-ui
 repo: example/ghost-ui
 mapped_at: 2026-04-25

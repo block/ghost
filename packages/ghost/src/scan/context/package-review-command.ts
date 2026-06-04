@@ -6,10 +6,10 @@ import type {
   GhostFingerprintPrinciple,
   GhostFingerprintSituation,
 } from "#ghost-core";
-import type { PackageMemory } from "./package-memory.js";
+import type { PackageContext } from "./package-context.js";
 
 export interface EmitPackageReviewInput {
-  memory: PackageMemory;
+  context: PackageContext;
 }
 
 const REVIEW_FINDING_CATEGORIES = [
@@ -21,39 +21,39 @@ const REVIEW_FINDING_CATEGORIES = [
 ] as const;
 
 /**
- * Emit a repo-local slash command from fingerprint.yml memory.
+ * Emit a repo-local slash command from fingerprint.yml prose/inventory/composition.
  *
  * The command stays intentionally light: it tells the host agent which Ghost
- * files and CLI packets to use, then includes a compact memory index.
+ * files and CLI packets to use, then includes a compact fingerprint index.
  * Full canonical truth remains in fingerprint.yml and checks.yml.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
 ): string {
-  const { memory } = input;
-  const product = memory.fingerprint.summary.product ?? memory.name;
+  const { context } = input;
+  const product = context.fingerprint.prose.summary.product ?? context.name;
   const heading =
     product.toLowerCase() === "ghost"
       ? "# Ghost review"
       : `# ${product} Ghost review`;
   const activeChecks =
-    memory.checks?.checks.filter((check) => check.status === "active") ?? [];
+    context.checks?.checks.filter((check) => check.status === "active") ?? [];
   const parts = [
     packageFrontmatter(product),
     heading,
     packageModeSection(),
-    packageWorkflowSection(memory),
+    packageWorkflowSection(context),
     packageFindingPolicySection(),
-    packageMemoryIndex(memory),
+    packageFingerprintIndex(context),
     packageChecksSection(activeChecks),
-    packageReviewFooter(memory),
+    packageReviewFooter(context),
   ];
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
 }
 
 function packageFrontmatter(product: string): string {
   return `---
-description: Ghost product-experience review for ${product} - grounded in fingerprint.yml memory
+description: Ghost product-experience review for ${product} - grounded in fingerprint.yml prose/inventory/composition
 ---`;
 }
 
@@ -63,19 +63,19 @@ function packageModeSection(): string {
 If \`$ARGUMENTS\` is provided, review that file, path, or diff range. If it is empty, inspect the current working-tree or PR diff first, then choose the relevant changed surfaces.`;
 }
 
-function packageWorkflowSection(memory: PackageMemory): string {
-  const memoryDir = memory.memoryDir ?? ".ghost";
-  const memoryDirFlag = stackMemoryDirFlag(memory);
+function packageWorkflowSection(context: PackageContext): string {
+  const fingerprintDir = context.fingerprintDir ?? ".ghost";
+  const memoryDirFlag = stackFingerprintDirFlag(context);
   return `## Review Workflow
 
-1. Read \`${memoryDir}/fingerprint.yml\` as the canonical product-experience memory.
-2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in resolved Ghost memory or active checks; do not expand the review into unrelated audit categories.
-3. Apply principles, experience contracts, and patterns before choosing implementation details.
-4. Inspect relevant exemplars as concrete anchors for what good looks like.
-5. Use implementation vocabulary only as replaceable material that may help satisfy the selected product memory.
+1. Read \`${fingerprintDir}/fingerprint.yml\` as the canonical prose, inventory, and composition.
+2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
+3. Apply prose principles, experience contracts, and composition patterns before choosing implementation details.
+4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
+5. Use inventory building blocks only as replaceable material that may help satisfy the selected prose and composition.
 6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and memory excerpts; add \`--include-memory\` only when optional decisions matter.
-8. Cite the diff location, fingerprint.yml memory, relevant exemplars when useful, and any active check when a finding blocks.`;
+7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts; add \`--include-memory\` only when accepted decisions matter.
+8. Cite the diff location, fingerprint.yml prose/inventory/composition, relevant exemplars when useful, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -85,24 +85,26 @@ Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${categor
 
 Only findings backed by an active check should be treated as blocking. Everything else is advisory product-experience critique.
 
-Review only what Ghost memory or active checks make relevant to the product experience.
+Review only what fingerprint layers or active checks make relevant to the product experience.
 
-When fingerprint memory is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
 
-If the diff reveals missing or contradictory memory, report \`missing-memory\` or \`experience-gap\` as a review finding. Do not silently rewrite memory during review; memory changes are ordinary edits that go through normal Git review.`;
+If the diff reveals missing fingerprint grounding or layer coverage, report \`missing-memory\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
 }
 
-function packageMemoryIndex(memory: PackageMemory): string {
-  const { fingerprint } = memory;
-  const summary = formatSummary(memory);
-  const situations = formatSituations(fingerprint.situations);
-  const principles = formatPrinciples(fingerprint.principles);
-  const contracts = formatExperienceContracts(fingerprint.experience_contracts);
-  const patterns = formatPatterns(fingerprint.patterns);
-  const exemplars = formatExemplars(fingerprint.exemplars);
-  const implementationVocabulary = formatImplementationVocabulary(memory);
+function packageFingerprintIndex(context: PackageContext): string {
+  const { fingerprint } = context;
+  const summary = formatSummary(context);
+  const situations = formatSituations(fingerprint.prose.situations);
+  const principles = formatPrinciples(fingerprint.prose.principles);
+  const contracts = formatExperienceContracts(
+    fingerprint.prose.experience_contracts,
+  );
+  const exemplars = formatExemplars(fingerprint.inventory.exemplars);
+  const buildingBlocks = formatBuildingBlocks(context);
+  const patterns = formatPatterns(fingerprint.composition.patterns);
 
-  return `## Fingerprint Memory Index
+  return `## Fingerprint Index
 
 ${summary}
 
@@ -112,17 +114,18 @@ ${principles}
 
 ${contracts}
 
-${patterns}
-
 ${exemplars}
 
-${implementationVocabulary}`;
+${buildingBlocks}
+
+${patterns}`;
 }
 
-function formatSummary(memory: PackageMemory): string {
-  const { summary, topology } = memory.fingerprint;
+function formatSummary(context: PackageContext): string {
+  const { summary } = context.fingerprint.prose;
+  const { topology } = context.fingerprint.inventory;
   const lines = ["### Summary"];
-  lines.push(`- Product: ${summary.product ?? memory.name}`);
+  lines.push(`- Product: ${summary.product ?? context.name}`);
   pushJoined(lines, "Audience", summary.audience);
   pushJoined(lines, "Goals", summary.goals);
   pushJoined(lines, "Anti-goals", summary.anti_goals);
@@ -194,9 +197,9 @@ function formatExperienceContracts(
 
 function formatPatterns(patterns: GhostFingerprintPattern[]): string {
   if (patterns.length === 0) {
-    return "### Patterns\n- No patterns recorded yet.";
+    return "### Composition Patterns\n- No composition patterns recorded yet.";
   }
-  const lines = ["### Patterns"];
+  const lines = ["### Composition Patterns"];
   for (const pattern of patterns.slice(0, 12)) {
     lines.push(`- \`${pattern.id}\` (${pattern.kind}) - ${pattern.pattern}`);
     for (const guidance of pattern.guidance ?? []) {
@@ -206,19 +209,21 @@ function formatPatterns(patterns: GhostFingerprintPattern[]): string {
   return lines.join("\n");
 }
 
-function formatImplementationVocabulary(memory: PackageMemory): string {
-  const { implementation_vocabulary: vocabulary } = memory.fingerprint;
-  const lines = ["### Implementation Vocabulary"];
+function formatBuildingBlocks(context: PackageContext): string {
+  const { building_blocks: blocks } = context.fingerprint.inventory;
+  const lines = ["### Inventory Building Blocks"];
   lines.push(
-    "- Use this as replaceable implementation material, not product-experience authority.",
+    "- Use these as replaceable implementation material, not product-experience authority.",
   );
-  pushJoined(lines, "Tokens", vocabulary.tokens, { code: true });
-  pushJoined(lines, "Components", vocabulary.components, { code: true });
-  pushJoined(lines, "Libraries", vocabulary.libraries, { code: true });
-  pushJoined(lines, "Assets", vocabulary.assets, { code: true });
-  pushJoined(lines, "Notes", vocabulary.notes);
+  pushJoined(lines, "Tokens", blocks.tokens, { code: true });
+  pushJoined(lines, "Components", blocks.components, { code: true });
+  pushJoined(lines, "Libraries", blocks.libraries, { code: true });
+  pushJoined(lines, "Assets", blocks.assets, { code: true });
+  pushJoined(lines, "Routes", blocks.routes, { code: true });
+  pushJoined(lines, "Files", blocks.files, { code: true });
+  pushJoined(lines, "Notes", blocks.notes);
   if (lines.length === 2) {
-    lines.push("- No implementation vocabulary recorded yet.");
+    lines.push("- No inventory building blocks recorded yet.");
   }
   return lines.join("\n");
 }
@@ -251,7 +256,14 @@ No active checks are recorded. Review remains advisory unless \`checks.yml\` add
   }
   const lines = ["## Active Checks", ""];
   for (const check of activeChecks.slice(0, 12)) {
-    const derives = check.derives_from ? ` from \`${check.derives_from}\`` : "";
+    const refs = [
+      ...(check.derivation?.prose ?? []),
+      ...(check.derivation?.composition ?? []),
+      ...(check.derivation?.inventory ?? []),
+    ];
+    const derives = refs.length
+      ? ` from ${refs.map((ref) => `\`${ref}\``).join(", ")}`
+      : "";
     lines.push(
       `- \`${check.id}\` (${check.severity})${derives}: ${check.title}`,
     );
@@ -265,16 +277,16 @@ No active checks are recorded. Review remains advisory unless \`checks.yml\` add
   return lines.join("\n");
 }
 
-function packageReviewFooter(memory: PackageMemory): string {
-  const memoryDir = memory.memoryDir ?? ".ghost";
+function packageReviewFooter(context: PackageContext): string {
+  const fingerprintDir = context.fingerprintDir ?? ".ghost";
   return `---
 
-Generated from \`${memoryDir}/fingerprint.yml\` for ${memory.name}. Re-run \`ghost emit review-command${stackMemoryDirFlag(memory)}\` after updating fingerprint.yml, checks.yml, or optional rationale files.`;
+Generated from \`${fingerprintDir}/fingerprint.yml\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint.yml, checks.yml, or optional rationale files.`;
 }
 
-function stackMemoryDirFlag(memory: PackageMemory): string {
-  return memory.memoryDir && memory.memoryDir !== ".ghost"
-    ? ` --memory-dir ${memory.memoryDir}`
+function stackFingerprintDirFlag(context: PackageContext): string {
+  return context.fingerprintDir && context.fingerprintDir !== ".ghost"
+    ? ` --memory-dir ${context.fingerprintDir}`
     : "";
 }
 

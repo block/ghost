@@ -5,21 +5,36 @@ export const GHOST_CHECKS_FILENAME = "checks.yml" as const;
 
 export type GhostCheckStatus = "active" | "proposed" | "disabled";
 export type GhostCheckSeverity = "critical" | "serious" | "nit";
-export type GhostCheckDerivesFrom =
-  | `principle:${string}`
-  | `situation:${string}`
-  | `experience_contract:${string}`
-  | `pattern:${string}`;
+export type GhostCheckDerivationProseRef =
+  | `prose.principle:${string}`
+  | `prose.situation:${string}`
+  | `prose.experience_contract:${string}`;
+export type GhostCheckDerivationInventoryRef = `inventory.exemplar:${string}`;
+export type GhostCheckDerivationCompositionRef =
+  `composition.pattern:${string}`;
 
-export interface GhostChecksFingerprintMemory {
-  topology?: {
-    scopes?: { id: string; surface_types?: string[] }[];
-    surface_types?: string[];
+export interface GhostCheckDerivation {
+  prose?: GhostCheckDerivationProseRef[];
+  inventory?: GhostCheckDerivationInventoryRef[];
+  composition?: GhostCheckDerivationCompositionRef[];
+}
+
+export interface GhostChecksFingerprintContext {
+  prose?: {
+    principles?: { id: string }[];
+    situations?: { id: string }[];
+    experience_contracts?: { id: string }[];
   };
-  principles?: { id: string }[];
-  situations?: { id: string }[];
-  experience_contracts?: { id: string }[];
-  patterns?: { id: string }[];
+  inventory?: {
+    topology?: {
+      scopes?: { id: string; surface_types?: string[] }[];
+      surface_types?: string[];
+    };
+    exemplars?: { id: string }[];
+  };
+  composition?: {
+    patterns?: { id: string }[];
+  };
 }
 
 export type GhostCheckDetectorType =
@@ -54,7 +69,7 @@ export interface GhostCheck {
   title: string;
   status: GhostCheckStatus;
   severity: GhostCheckSeverity;
-  derives_from?: GhostCheckDerivesFrom;
+  derivation?: GhostCheckDerivation;
   applies_to?: GhostCheckAppliesTo;
   detector: GhostCheckDetector;
   evidence?: GhostCheckEvidence;
@@ -85,7 +100,7 @@ export interface GhostChecksLintReport {
 
 export interface GhostChecksLintOptions {
   map?: Pick<MapFrontmatter, "scopes" | "feature_areas">;
-  fingerprint?: GhostChecksFingerprintMemory;
+  fingerprint?: GhostChecksFingerprintContext;
 }
 
 export interface RoutedGhostCheck {

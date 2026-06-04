@@ -3,14 +3,14 @@ import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
   emitPackageReviewCommand,
-  loadMemoryStackForPath,
-  loadPackageMemory,
-  memoryStackToPackageMemory,
+  fingerprintStackToPackageContext,
+  loadFingerprintStackForPath,
+  loadPackageContext,
   normalizeMemoryDir,
-  type PackageMemory,
+  type PackageContext,
   resolveFingerprintPackage,
   writePackageContextBundle,
-  writePackageContextBundleFromMemory,
+  writePackageContextBundleFromContext,
 } from "./scan/index.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
@@ -43,14 +43,17 @@ export function registerEmitCommand(cli: CAC): void {
       "emit <kind>",
       `Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)`,
     )
-    .option("--path <path>", "Resolve a nested memory stack for this repo path")
+    .option(
+      "--path <path>",
+      "Resolve a nested fingerprint stack for this repo path",
+    )
     .option(
       "--package <dir>",
-      "Use exactly this memory package directory instead of resolving a stack",
+      "Use exactly this fingerprint package directory instead of resolving a stack",
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for --path stack resolution (default: .ghost)",
+      "Relative fingerprint package directory for --path stack resolution (flag name retained; default: .ghost)",
     )
     .option(
       "-o, --out <path>",
@@ -91,9 +94,9 @@ export function registerEmitCommand(cli: CAC): void {
         }
 
         if (parsed.kind === "review-command") {
-          const memory = await loadEmitPackageMemory(opts);
+          const context = await loadEmitPackageContext(opts);
           const content = emitPackageReviewCommand({
-            memory,
+            context,
           });
 
           if (opts.stdout) {
@@ -119,7 +122,7 @@ export function registerEmitCommand(cli: CAC): void {
           (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
         );
 
-        const memory = await loadEmitPackageMemory(opts);
+        const context = await loadEmitPackageContext(opts);
         const result = explicitPackage
           ? await writePackageContextBundle(
               resolveFingerprintPackage(opts.package, process.cwd()),
@@ -130,7 +133,7 @@ export function registerEmitCommand(cli: CAC): void {
                 name: opts.name as string | undefined,
               },
             )
-          : await writePackageContextBundleFromMemory(memory, {
+          : await writePackageContextBundleFromContext(context, {
               outDir,
               readme: Boolean(opts.readme),
               promptOnly: Boolean(opts.promptOnly),
@@ -156,20 +159,20 @@ export function registerEmitCommand(cli: CAC): void {
     });
 }
 
-async function loadEmitPackageMemory(opts: {
+async function loadEmitPackageContext(opts: {
   path?: unknown;
   package?: unknown;
   name?: unknown;
   memoryDir?: unknown;
-}): Promise<PackageMemory> {
+}): Promise<PackageContext> {
   if (typeof opts.package === "string") {
-    return loadPackageMemory(
+    return loadPackageContext(
       resolveFingerprintPackage(opts.package, process.cwd()),
       typeof opts.name === "string" ? opts.name : undefined,
     );
   }
 
-  const stack = await loadMemoryStackForPath(
+  const stack = await loadFingerprintStackForPath(
     typeof opts.path === "string" ? opts.path : ".",
     process.cwd(),
     {
@@ -178,7 +181,7 @@ async function loadEmitPackageMemory(opts: {
       ),
     },
   );
-  return memoryStackToPackageMemory(
+  return fingerprintStackToPackageContext(
     stack,
     typeof opts.name === "string" ? opts.name : undefined,
   );
