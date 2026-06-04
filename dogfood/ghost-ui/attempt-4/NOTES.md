@@ -6,7 +6,7 @@ Dogfood scan after adding source graph provenance, check curation guidance, and 
 
 | Artifact | Result |
 |---|---:|
-| `map.md` | `ghost.map/v2` with `subject`, `sources[]`, and `surface_sources` |
+| `map.md` | `ghost.map/v1` with `subject`, `sources[]`, and `surface_sources` |
 | `survey.json` | 101 values, 169 tokens, 97 components, 1 UI surface |
 | `fingerprint.md` | 7 promoted checks with `support`, `enforce_at`, and `observed_count` |
 

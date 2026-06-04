@@ -107,7 +107,7 @@ function uiSurfaceRow(index: number): UiSurfaceRow {
 
 function survey(): Survey {
   return {
-    schema: "ghost.survey/v2",
+    schema: "ghost.survey/v1",
     sources: [SOURCE],
     values: [
       valueRow("color", "#222222", "#222222", 30, {

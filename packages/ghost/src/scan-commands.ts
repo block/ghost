@@ -6,7 +6,10 @@ import {
   catalogSurveyValues,
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
+  type GhostFingerprintDocument,
+  GhostFingerprintSchema,
   type GhostPatternsDocument,
+  lintGhostFingerprint,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
@@ -18,64 +21,60 @@ import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   diffFingerprints,
   discoverGhostPackages,
+  fingerprintPackageDisplayPath,
   formatLayout,
   formatSemanticDiff,
   formatVerifyFingerprintReport,
   initFingerprintPackage,
-  initScopedMemoryPackage,
+  initScopedFingerprintPackage,
   inventory,
   layoutFingerprint,
-  lintAllMemoryStacks,
+  lintAllFingerprintStacks,
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
-  memoryPackageDisplayPath,
   normalizeMemoryDir,
   resolveFingerprintPackage,
   scanStatus,
-  verifyAllMemoryStacks,
+  verifyAllFingerprintStacks,
   verifyFingerprintPackage,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
 import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
- * Register fingerprint-bundle commands on the unified Ghost CLI.
+ * Register fingerprint package commands on the unified Ghost CLI.
  *
- * Verbs author and validate the root `.ghost/` fingerprint bundle:
+ * Verbs author and validate the root `.ghost/` fingerprint package:
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
  * fidelity), `describe` (section ranges + token estimates for intent or direct
  * fingerprint markdown), `diff` (structural prose-level diff between direct
  * fingerprint files), `emit` (derive review-command, context-bundle, or skill
- * artifacts), and `survey` operations for deterministic `ghost.survey/v2`
+ * artifacts), and `survey` operations for deterministic `ghost.survey/v1`
  * merge, ID repair, bounded summary output, derived value catalogs, and
  * operational pattern synthesis.
- *
- * Embedding-based comparison lives in `ghost compare`. `diff` here is
- * text/structural — what decisions and palette roles changed — not
- * vector distance.
  */
 export function registerScanCommands(cli: CAC): void {
   // --- lint ---
   cli
     .command(
       "lint [file]",
-      "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
+      "Validate a root Ghost fingerprint package, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
       "--all",
-      "Validate every nested memory bundle and its resolved memory stack",
+      "Validate every nested fingerprint package and its resolved fingerprint stack",
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+      "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
     )
     .action(async (path: string | undefined, opts) => {
       try {
         const memoryDir = memoryDirFromOpts(opts);
         if (opts.all) {
-          const report = await lintAllMemoryStacks(
+          const report = await lintAllFingerprintStacks(
             resolve(process.cwd(), path ?? "."),
             { memoryDir },
           );
@@ -100,8 +99,12 @@ export function registerScanCommands(cli: CAC): void {
         const fileTarget = resolve(process.cwd(), path ?? target);
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
+        const fingerprint =
+          kind === "checks"
+            ? await loadSiblingFingerprintForChecksLint(fileTarget)
+            : undefined;
 
-        report = lintDetectedFileKind(kind, raw);
+        report = lintDetectedFileKind(kind, raw, { fingerprint });
 
         if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
@@ -131,15 +134,15 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "init [dir]",
-      "Create a root .ghost memory skeleton (fingerprint.yml and checks.yml)",
+      "Create a root .ghost fingerprint package (fingerprint.yml and checks.yml)",
     )
     .option(
       "--scope <path>",
-      "Create a scoped <path>/<memory-dir> memory skeleton",
+      "Create a scoped <path>/<memory-dir> fingerprint package",
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for init --scope or default root init (default: .ghost)",
+      "Relative fingerprint package directory for init --scope or default root init (flag name retained; default: .ghost)",
     )
     .option(
       "--with-intent",
@@ -151,7 +154,7 @@ export function registerScanCommands(cli: CAC): void {
     )
     .option(
       "--reference <path-or-registry>",
-      "Reference UI registry, library path, or fingerprint to record in config.yml and implementation vocabulary",
+      "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
@@ -176,7 +179,7 @@ export function registerScanCommands(cli: CAC): void {
         };
         const paths =
           typeof opts.scope === "string"
-            ? await initScopedMemoryPackage(
+            ? await initScopedFingerprintPackage(
                 opts.scope,
                 process.cwd(),
                 initOptions,
@@ -199,7 +202,7 @@ export function registerScanCommands(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            `Initialized Ghost memory skeleton: ${paths.dir}\n`,
+            `Initialized Ghost fingerprint package: ${paths.dir}\n`,
           );
           process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
           process.stdout.write(`  checks.yml: ${paths.checks}\n`);
@@ -223,7 +226,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root Ghost memory bundle: fingerprint evidence, exemplars, and checks are grounded.",
+      "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
     )
     .option(
       "--root <dir>",
@@ -232,11 +235,11 @@ export function registerScanCommands(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
       "--all",
-      "Verify every nested memory bundle and its resolved memory stack",
+      "Verify every nested fingerprint package and its resolved fingerprint stack",
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+      "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
     )
     .action(async (dirArg: string | undefined, opts) => {
       try {
@@ -248,9 +251,12 @@ export function registerScanCommands(cli: CAC): void {
 
         const memoryDir = memoryDirFromOpts(opts);
         const report = opts.all
-          ? await verifyAllMemoryStacks(resolve(process.cwd(), dirArg ?? "."), {
-              memoryDir,
-            })
+          ? await verifyAllFingerprintStacks(
+              resolve(process.cwd(), dirArg ?? "."),
+              {
+                memoryDir,
+              },
+            )
           : await verifyFingerprintPackage(dirArg ?? memoryDir, process.cwd(), {
               root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
             });
@@ -274,16 +280,19 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report fingerprint memory/readiness state: produced artifacts, review readiness, and the next BYOA step.",
+      "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
       "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
     )
-    .option("--include-nested", "Also list nested memory bundles and readiness")
+    .option(
+      "--include-nested",
+      "Also list nested fingerprint packages and readiness",
+    )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for nested discovery and default scan (default: .ghost)",
+      "Relative fingerprint package directory for nested discovery and default scan (flag name retained; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
@@ -297,8 +306,8 @@ export function registerScanCommands(cli: CAC): void {
           includeScopes: Boolean(opts.includeScopes),
         });
         const nested = opts.includeNested
-          ? await nestedBundleStatus(
-              dirnameForMemoryPackageDir(dir, memoryDir),
+          ? await nestedPackageStatus(
+              dirnameForFingerprintPackageDir(dir, memoryDir),
               memoryDir,
             )
           : undefined;
@@ -313,7 +322,7 @@ export function registerScanCommands(cli: CAC): void {
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
-          process.stdout.write(`memory dir: ${status.dir}\n\n`);
+          process.stdout.write(`fingerprint dir: ${status.dir}\n\n`);
           process.stdout.write(
             `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
           );
@@ -335,10 +344,18 @@ export function registerScanCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: edit fingerprint.yml, then run ghost verify/check/review\n",
+              "next: edit fingerprint.yml layers, then run ghost verify/check/review\n",
             );
           }
           process.stdout.write(`readiness: ${status.readiness.state}\n`);
+          process.stdout.write(
+            `  layers: prose ${status.readiness.layer_counts.prose}, inventory ${status.readiness.layer_counts.inventory}, composition ${status.readiness.layer_counts.composition}\n`,
+          );
+          if (status.readiness.missing_layers.length > 0) {
+            process.stdout.write(
+              `  missing layers: ${status.readiness.missing_layers.join(", ")}\n`,
+            );
+          }
           if (status.readiness.can_review.length > 0) {
             process.stdout.write(
               `  can review: ${status.readiness.can_review.join(", ")}\n`,
@@ -352,17 +369,18 @@ export function registerScanCommands(cli: CAC): void {
           if (status.readiness.reasons[0]) {
             process.stdout.write(`  reason: ${status.readiness.reasons[0]}\n`);
           }
-          const vocabularyRows =
-            status.readiness.implementation_vocabulary_rows;
-          const vocabularyCount =
-            vocabularyRows.tokens +
-            vocabularyRows.components +
-            vocabularyRows.libraries +
-            vocabularyRows.assets +
-            vocabularyRows.notes;
-          if (vocabularyCount > 0) {
+          const buildingBlockRows = status.readiness.building_block_rows;
+          const buildingBlockCount =
+            buildingBlockRows.tokens +
+            buildingBlockRows.components +
+            buildingBlockRows.libraries +
+            buildingBlockRows.assets +
+            buildingBlockRows.routes +
+            buildingBlockRows.files +
+            buildingBlockRows.notes;
+          if (buildingBlockCount > 0) {
             process.stdout.write(
-              `  implementation vocabulary: ${vocabularyRows.tokens} token(s), ${vocabularyRows.components} component(s), ${vocabularyRows.libraries} libraries, ${vocabularyRows.assets} asset(s), ${vocabularyRows.notes} note(s)\n`,
+              `  inventory building blocks: ${buildingBlockRows.tokens} token(s), ${buildingBlockRows.components} component(s), ${buildingBlockRows.libraries} libraries, ${buildingBlockRows.assets} asset(s), ${buildingBlockRows.routes} route(s), ${buildingBlockRows.files} file(s), ${buildingBlockRows.notes} note(s)\n`,
             );
           }
           if (status.scope_error) {
@@ -386,7 +404,7 @@ export function registerScanCommands(cli: CAC): void {
             } else {
               for (const bundle of nested) {
                 process.stdout.write(
-                  `  ${memoryPackageDisplayPath(bundle.relative_root, bundle.memory_dir)}: ${bundle.readiness.state}\n`,
+                  `  ${fingerprintPackageDisplayPath(bundle.relative_root, bundle.fingerprint_dir)}: ${bundle.readiness.state}\n`,
                 );
               }
             }
@@ -490,7 +508,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Legacy/cache helpers for ghost.survey/v2 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+      "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",
@@ -666,10 +684,10 @@ export function registerScanCommands(cli: CAC): void {
   registerEmitCommand(cli);
 }
 
-async function nestedBundleStatus(
+async function nestedPackageStatus(
   root: string,
   memoryDir: string,
-): Promise<NestedBundleStatus[]> {
+): Promise<NestedPackageStatus[]> {
   const packages = await discoverGhostPackages(root, { memoryDir });
   return Promise.all(
     packages.map(async (pkg) => {
@@ -685,18 +703,21 @@ async function nestedBundleStatus(
   );
 }
 
-interface NestedBundleStatus {
+interface NestedPackageStatus {
   dir: string;
   root: string;
   relative_root: string;
-  memory_dir: string;
+  fingerprint_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
   checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
   intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
   readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
 }
 
-function dirnameForMemoryPackageDir(dir: string, memoryDir: string): string {
+function dirnameForFingerprintPackageDir(
+  dir: string,
+  memoryDir: string,
+): string {
   let root = dir;
   for (const _segment of normalizeMemoryDir(memoryDir).split("/")) {
     root = dirname(root);
@@ -721,6 +742,21 @@ function initCommandOutput(
     checks: paths.checks,
     ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
+}
+
+async function loadSiblingFingerprintForChecksLint(
+  fileTarget: string,
+): Promise<GhostFingerprintDocument | undefined> {
+  const siblingPath = resolve(dirname(fileTarget), "fingerprint.yml");
+  try {
+    const raw = await readFile(siblingPath, "utf-8");
+    const parsed = parseYaml(raw);
+    const report = lintGhostFingerprint(parsed);
+    if (report.errors > 0) return undefined;
+    return GhostFingerprintSchema.parse(parsed) as GhostFingerprintDocument;
+  } catch {
+    return undefined;
+  }
 }
 
 function writeLintReport(

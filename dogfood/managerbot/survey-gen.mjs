@@ -23,7 +23,7 @@ const SOURCE = {
   target: "squareup/square-web/apps/managerbot",
   commit: COMMIT,
   scanned_at: SCANNED_AT,
-  scanner_version: "dogfood-managerbot-v2",
+  scanner_version: "dogfood-managerbot",
 };
 
 const themeRaw = readFileSync(THEME_CSS, "utf8");
@@ -521,7 +521,7 @@ const components = compFiles.map(({ file, slug, group }) => {
 });
 
 const survey = {
-  schema: "ghost.survey/v2",
+  schema: "ghost.survey/v1",
   sources: [SOURCE],
   values,
   tokens,

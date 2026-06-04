@@ -11,7 +11,7 @@ const SOURCE: SurveySource = {
 
 function survey(): Survey {
   return {
-    schema: "ghost.survey/v2",
+    schema: "ghost.survey/v1",
     sources: [SOURCE],
     values: [
       {

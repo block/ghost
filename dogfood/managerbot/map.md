@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: managerbot
 repo: squareup/square-web
 subject:

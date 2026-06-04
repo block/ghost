@@ -917,7 +917,7 @@ for (const path of walk(join(TARGET_ROOT, "src/components/theme")).filter(
 }
 
 const survey = {
-  schema: "ghost.survey/v2",
+  schema: "ghost.survey/v1",
   sources: [SOURCE],
   values: [...values.values()]
     .map((row) => {

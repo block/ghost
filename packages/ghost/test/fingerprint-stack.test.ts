@@ -3,11 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  groupMemoryStacksForPaths,
-  loadMemoryStackForPath,
+  groupFingerprintStacksForPaths,
+  loadFingerprintStackForPath,
 } from "../src/scan/index.js";
 
-describe("nested Ghost memory stacks", () => {
+describe("nested Ghost fingerprint stacks", () => {
   let dir: string;
 
   beforeEach(async () => {
@@ -25,7 +25,7 @@ describe("nested Ghost memory stacks", () => {
   it("discovers root-to-leaf layers and merges child entries by id", async () => {
     await writeStackFixture(dir);
 
-    const stack = await loadMemoryStackForPath(
+    const stack = await loadFingerprintStackForPath(
       "apps/checkout/review/page.tsx",
       dir,
     );
@@ -35,25 +35,25 @@ describe("nested Ghost memory stacks", () => {
       "apps/checkout",
     ]);
     expect(stack.provenance.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.summary.product).toBe("Checkout");
-    expect(stack.merged.fingerprint.summary.audience).toEqual([
+    expect(stack.merged.fingerprint.prose.summary.product).toBe("Checkout");
+    expect(stack.merged.fingerprint.prose.summary.audience).toEqual([
       "operators",
       "buyers",
     ]);
-    expect(stack.merged.fingerprint.topology.surface_types).toEqual(
+    expect(stack.merged.fingerprint.inventory.topology.surface_types).toEqual(
       expect.arrayContaining(["app-shell", "payment-review"]),
     );
     expect(
-      stack.merged.fingerprint.principles.find(
+      stack.merged.fingerprint.prose.principles.find(
         (principle) => principle.id === "shared-principle",
       )?.principle,
     ).toBe("Checkout review must make reversal obvious.");
     expect(
-      stack.merged.fingerprint.situations.find(
+      stack.merged.fingerprint.prose.situations.find(
         (situation) => situation.id === "shared-situation",
       )?.user_intent,
     ).toBe("review checkout before committing payment");
-    expect(stack.merged.fingerprint.topology.scopes).toEqual(
+    expect(stack.merged.fingerprint.inventory.topology.scopes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "checkout",
@@ -62,12 +62,12 @@ describe("nested Ghost memory stacks", () => {
       ]),
     );
     expect(
-      stack.merged.fingerprint.patterns.find(
+      stack.merged.fingerprint.composition.patterns.find(
         (pattern) => pattern.id === "child-pattern",
       )?.evidence?.[0],
     ).toMatchObject({ path: "apps/checkout/review/page.tsx" });
     expect(
-      stack.merged.fingerprint.exemplars.find(
+      stack.merged.fingerprint.inventory.exemplars.find(
         (exemplar) => exemplar.id === "shared-exemplar",
       ),
     ).toMatchObject({
@@ -88,10 +88,10 @@ describe("nested Ghost memory stacks", () => {
     ).toBe("rejected");
   });
 
-  it("groups changed files by resolved memory stack", async () => {
+  it("groups changed files by resolved fingerprint stack", async () => {
     await writeStackFixture(dir);
 
-    const groups = await groupMemoryStacksForPaths(
+    const groups = await groupFingerprintStacksForPaths(
       ["apps/checkout/review/page.tsx", "shared/home.tsx"],
       dir,
     );
@@ -112,59 +112,62 @@ describe("nested Ghost memory stacks", () => {
     await writeFile(
       join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
       `schema: ghost.fingerprint/v1
-summary:
-  product: Checkout
-principles:
-  - id: checkout-review-stays-reversible
-    principle: Checkout review keeps reversal visible before payment.
+prose:
+  summary:
+    product: Checkout
+  principles:
+    - id: checkout-review-stays-reversible
+      principle: Checkout review keeps reversal visible before payment.
 `,
     );
 
-    const stack = await loadMemoryStackForPath(
+    const stack = await loadFingerprintStackForPath(
       "apps/checkout/review/page.tsx",
       dir,
     );
 
     expect(stack.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.summary.product).toBe("Checkout");
-    expect(stack.merged.fingerprint.topology).toEqual({
+    expect(stack.merged.fingerprint.prose.summary.product).toBe("Checkout");
+    expect(stack.merged.fingerprint.inventory.topology).toEqual({
       scopes: [],
       surface_types: undefined,
     });
-    expect(stack.merged.fingerprint.situations).toEqual([]);
-    expect(stack.merged.fingerprint.principles).toHaveLength(1);
-    expect(stack.merged.fingerprint.experience_contracts).toEqual([]);
-    expect(stack.merged.fingerprint.patterns).toEqual([]);
-    expect(stack.merged.fingerprint.exemplars).toEqual([]);
-    expect(stack.merged.fingerprint.implementation_vocabulary).toEqual({
+    expect(stack.merged.fingerprint.prose.situations).toEqual([]);
+    expect(stack.merged.fingerprint.prose.principles).toHaveLength(1);
+    expect(stack.merged.fingerprint.prose.experience_contracts).toEqual([]);
+    expect(stack.merged.fingerprint.composition.patterns).toEqual([]);
+    expect(stack.merged.fingerprint.inventory.exemplars).toEqual([]);
+    expect(stack.merged.fingerprint.inventory.building_blocks).toEqual({
       tokens: undefined,
       components: undefined,
       libraries: undefined,
       assets: undefined,
+      routes: undefined,
+      files: undefined,
       notes: undefined,
     });
   });
 
-  it("resolves root-to-leaf layers from a custom memory directory", async () => {
+  it("resolves root-to-leaf layers from a custom fingerprint directory", async () => {
     await writeStackFixture(dir, ".design/memory");
 
-    const stack = await loadMemoryStackForPath(
+    const stack = await loadFingerprintStackForPath(
       "apps/checkout/review/page.tsx",
       dir,
       { memoryDir: ".design/memory" },
     );
-    const groups = await groupMemoryStacksForPaths(
+    const groups = await groupFingerprintStacksForPaths(
       ["apps/checkout/review/page.tsx", "shared/home.tsx"],
       dir,
       { memoryDir: ".design/memory" },
     );
 
-    expect(stack.memory_dir).toBe(".design/memory");
+    expect(stack.fingerprint_dir).toBe(".design/memory");
     expect(stack.layers.map((layer) => layer.relative_root)).toEqual([
       ".",
       "apps/checkout",
     ]);
-    expect(stack.layers.map((layer) => layer.memory_dir)).toEqual([
+    expect(stack.layers.map((layer) => layer.fingerprint_dir)).toEqual([
       ".design/memory",
       ".design/memory",
     ]);
@@ -192,38 +195,41 @@ async function writeRootBundle(
   await writeFile(
     join(ghost, "fingerprint.yml"),
     `schema: ghost.fingerprint/v1
-summary:
-  product: Root Product
-  audience: [operators]
-topology:
-  scopes:
-    - id: app
-      paths: [apps]
-  surface_types: [app-shell]
-situations:
-  - id: shared-situation
-    user_intent: use the broad product
-    product_obligation: preserve broad product continuity
-principles:
-  - id: shared-principle
-    principle: Parent product memory.
-experience_contracts: []
-patterns:
-  - id: root-pattern
-    kind: visual
-    pattern: Root pattern.
-  - id: child-pattern
-    kind: visual
-    pattern: Parent version of child pattern.
-exemplars:
-  - id: shared-exemplar
-    path: apps/root.tsx
-    title: Parent exemplar
-    surface_type: app-shell
-    scope: app
-    refs: [pattern:root-pattern]
-implementation_vocabulary:
-  tokens: [RootTheme.color]
+prose:
+  summary:
+    product: Root Product
+    audience: [operators]
+  situations:
+    - id: shared-situation
+      user_intent: use the broad product
+      product_obligation: preserve broad product continuity
+  principles:
+    - id: shared-principle
+      principle: Parent product layer.
+  experience_contracts: []
+inventory:
+  topology:
+    scopes:
+      - id: app
+        paths: [apps]
+    surface_types: [app-shell]
+  exemplars:
+    - id: shared-exemplar
+      path: apps/root.tsx
+      title: Parent exemplar
+      surface_type: app-shell
+      scope: app
+      refs: [composition.pattern:root-pattern]
+  building_blocks:
+    tokens: [RootTheme.color]
+composition:
+  patterns:
+    - id: root-pattern
+      kind: visual
+      pattern: Root pattern.
+    - id: child-pattern
+      kind: visual
+      pattern: Parent version of child pattern.
 `,
   );
   await writeFile(
@@ -235,7 +241,8 @@ checks:
     title: No hardcoded colors
     status: active
     severity: serious
-    derives_from: pattern:root-pattern
+    derivation:
+      composition: [composition.pattern:root-pattern]
     applies_to:
       paths: [apps]
     detector:
@@ -274,42 +281,45 @@ async function writeChildBundle(
   await writeFile(
     join(ghost, "fingerprint.yml"),
     `schema: ghost.fingerprint/v1
-summary:
-  product: Checkout
-  audience: [buyers]
-topology:
-  scopes:
-    - id: checkout
-      paths: [review]
-      surface_types: [payment-review]
-situations:
-  - id: shared-situation
-    user_intent: review checkout before committing payment
-    product_obligation: make edit and reversal paths visible
-    surface_type: payment-review
-principles:
-  - id: shared-principle
-    principle: Checkout review must make reversal obvious.
-    applies_to:
-      paths: [review]
-experience_contracts: []
-patterns:
-  - id: child-pattern
-    kind: behavioral
-    pattern: Checkout keeps review controls visible.
-    applies_to:
-      paths: [review]
-    evidence:
-      - path: review/page.tsx
-exemplars:
-  - id: shared-exemplar
-    path: review/page.tsx
-    title: Child review exemplar
-    surface_type: payment-review
-    scope: checkout
-    refs: [pattern:child-pattern]
-implementation_vocabulary:
-  tokens: [CheckoutTheme.action]
+prose:
+  summary:
+    product: Checkout
+    audience: [buyers]
+  situations:
+    - id: shared-situation
+      user_intent: review checkout before committing payment
+      product_obligation: make edit and reversal paths visible
+      surface_type: payment-review
+  principles:
+    - id: shared-principle
+      principle: Checkout review must make reversal obvious.
+      applies_to:
+        paths: [review]
+  experience_contracts: []
+inventory:
+  topology:
+    scopes:
+      - id: checkout
+        paths: [review]
+        surface_types: [payment-review]
+  exemplars:
+    - id: shared-exemplar
+      path: review/page.tsx
+      title: Child review exemplar
+      surface_type: payment-review
+      scope: checkout
+      refs: [composition.pattern:child-pattern]
+  building_blocks:
+    tokens: [CheckoutTheme.action]
+composition:
+  patterns:
+    - id: child-pattern
+      kind: behavior
+      pattern: Checkout keeps review controls visible.
+      applies_to:
+        paths: [review]
+      evidence:
+        - path: review/page.tsx
 `,
   );
   await writeFile(
@@ -328,7 +338,8 @@ checks:
     title: Use checkout theme
     status: active
     severity: nit
-    derives_from: pattern:child-pattern
+    derivation:
+      composition: [composition.pattern:child-pattern]
     applies_to:
       paths: [review]
     detector:

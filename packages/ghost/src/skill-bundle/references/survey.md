@@ -5,18 +5,18 @@ handoffs:
   - label: Author fingerprint patterns
     skill: patterns
     prompt: Interpret observed facts into .ghost/fingerprint.yml patterns
-  - label: Update fingerprint memory
+  - label: Update fingerprint layers
     skill: capture
     prompt: Use observed facts to update .ghost/fingerprint.yml
 ---
 
 # Recipe: Survey As Optional Inventory
 
-`survey.json` is no longer canonical Ghost memory. Use it only when an existing
+`survey.json` is no longer canonical Ghost input. Use it only when an existing
 workflow or helper command needs a structured inventory of observed values,
 tokens, components, or surfaces.
 
-Canonical memory lives in `.ghost/fingerprint.yml`. A survey can suggest what
+Canonical prose, inventory, and composition live in `.ghost/fingerprint.yml`. A survey can suggest what
 to inspect, but it does not decide what matters.
 
 ## When To Use This
@@ -26,7 +26,7 @@ Use an inventory pass when:
 - the repo is large and you need a factual starting point
 - token/component usage is scattered
 - you are migrating an old Ghost bundle
-- you need a temporary cache before writing durable memory
+- you need temporary source material before writing durable fingerprint layers
 
 Skip it when:
 
@@ -41,7 +41,7 @@ Skip it when:
   `.ghost/survey.json`.
 - Promote only useful, durable conclusions into `fingerprint.yml`.
 - If observation is incomplete, say so and leave the gap as local uncertainty
-  until the user asks to edit memory.
+  until the user asks to edit the Ghost package.
 
 ## Optional Legacy Helpers
 
@@ -54,6 +54,7 @@ ghost survey patterns .ghost/survey.json
 ```
 
 Treat their output as draft material. Curate durable judgment into
-`principles`, `experience_contracts`, or `patterns`; put current tokens,
-components, libraries, or assets into `implementation_vocabulary` only when
-they help agents implement the product memory.
+`prose.principles`, `prose.experience_contracts`, or `composition.patterns`;
+put current tokens, components, libraries, assets, routes, files, or notes into
+`inventory.building_blocks` only when they help agents implement the product
+prose and composition.

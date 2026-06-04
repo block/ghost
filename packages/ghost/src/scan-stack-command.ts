@@ -1,8 +1,8 @@
 import type { CAC } from "cac";
 import {
-  type GhostMemoryStack,
-  loadMemoryStackForPath,
-  memoryPackageDisplayPath,
+  fingerprintPackageDisplayPath,
+  type GhostFingerprintStack,
+  loadFingerprintStackForPath,
   normalizeMemoryDir,
 } from "./scan/index.js";
 
@@ -10,11 +10,11 @@ export function registerStackCommand(cli: CAC): void {
   cli
     .command(
       "stack [paths...]",
-      "Inspect the nested Ghost memory stack for one or more repo paths.",
+      "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for stack discovery (default: .ghost)",
+      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (paths: string[] | string | undefined, opts) => {
@@ -30,7 +30,7 @@ export function registerStackCommand(cli: CAC): void {
         const targets = requestedPaths.length > 0 ? requestedPaths : ["."];
         const stacks = await Promise.all(
           targets.map((path) =>
-            loadMemoryStackForPath(path, process.cwd(), { memoryDir }),
+            loadFingerprintStackForPath(path, process.cwd(), { memoryDir }),
           ),
         );
         if (opts.format === "json") {
@@ -52,17 +52,19 @@ export function registerStackCommand(cli: CAC): void {
     });
 }
 
-function formatStackJson(stack: GhostMemoryStack): Record<string, unknown> {
+function formatStackJson(
+  stack: GhostFingerprintStack,
+): Record<string, unknown> {
   return {
     target_path: stack.target_path,
     repo_root: stack.repo_root,
-    memory_dir: stack.memory_dir,
+    fingerprint_dir: stack.fingerprint_dir,
     layers: stack.layers.map((layer) => ({
       dir: layer.dir,
       root: layer.root,
       relative_root: layer.relative_root,
-      memory_dir: layer.memory_dir,
-      fingerprint_id: layer.fingerprint.summary.product ?? null,
+      fingerprint_dir: layer.fingerprint_dir,
+      fingerprint_id: layer.fingerprint.prose.summary.product ?? null,
       checks: layer.checks?.checks.length ?? 0,
     })),
     merged: {
@@ -75,20 +77,20 @@ function formatStackJson(stack: GhostMemoryStack): Record<string, unknown> {
   };
 }
 
-function formatStackCli(stack: GhostMemoryStack): string {
+function formatStackCli(stack: GhostFingerprintStack): string {
   const lines = [
     `target: ${stack.target_path}`,
     `repo root: ${stack.repo_root}`,
     "layers:",
     ...stack.layers.map(
       (layer) =>
-        `  - ${memoryPackageDisplayPath(layer.relative_root, layer.memory_dir)} (${layer.fingerprint.summary.product ?? "unnamed"})`,
+        `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)} (${layer.fingerprint.prose.summary.product ?? "unnamed"})`,
     ),
     "merged:",
-    `  situations: ${stack.merged.fingerprint.situations.length}`,
-    `  principles: ${stack.merged.fingerprint.principles.length}`,
-    `  contracts: ${stack.merged.fingerprint.experience_contracts.length}`,
-    `  patterns: ${stack.merged.fingerprint.patterns.length}`,
+    `  situations: ${stack.merged.fingerprint.prose.situations.length}`,
+    `  principles: ${stack.merged.fingerprint.prose.principles.length}`,
+    `  contracts: ${stack.merged.fingerprint.prose.experience_contracts.length}`,
+    `  patterns: ${stack.merged.fingerprint.composition.patterns.length}`,
     `  active checks: ${
       stack.merged.checks.checks.filter((check) => check.status === "active")
         .length

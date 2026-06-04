@@ -4,7 +4,7 @@ export type MapFeatureArea = MapFrontmatter["feature_areas"][number];
 
 /**
  * Slugify a human feature-area name into the scope id shape accepted by
- * `ghost.map/v2`. Existing slug ids stay unchanged.
+ * `ghost.map/v1`. Existing slug ids stay unchanged.
  */
 export function slugifyScopeId(name: string): string {
   const slug = name

@@ -299,7 +299,7 @@ console.error(`values: ${valueRows.length}`);
 // ---- 5. Write ----
 
 const survey = {
-  schema: "ghost.survey/v2",
+  schema: "ghost.survey/v1",
   sources: [SOURCE],
   values: valueRows,
   tokens: tokenRows,

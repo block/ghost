@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import {
+  type GhostFingerprintDocument,
   lintGhostChecks,
   lintGhostFingerprint,
   lintGhostPatterns,
@@ -21,9 +22,13 @@ export type DetectedFileKind =
   | "resources"
   | "patterns";
 
+export interface LintDetectedFileKindOptions {
+  fingerprint?: GhostFingerprintDocument;
+}
+
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v2` in frontmatter
+ * the survey linter; markdown with `schema: ghost.map/v1` in frontmatter
  * routes to the map linter; YAML schemas route to fingerprint.yml,
  * config/resources/patterns/checks; everything else stays on the direct
  * fingerprint markdown path.
@@ -43,19 +48,19 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (path.toLowerCase().endsWith("config.yml")) return "config";
   if (path.toLowerCase().endsWith("config.yaml")) return "config";
   if (raw.trimStart().startsWith("{")) return "survey";
-  if (/^\s*schema:\s*ghost\.fingerprint\/v1\b/m.test(raw)) {
+  if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
     return "fingerprint-yml";
   }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.config\/v1\b/m.test(raw)) return "config";
-  if (/^\s*schema:\s*ghost\.checks\/v1\b/m.test(raw)) return "checks";
+  if (/^\s*schema:\s*ghost\.checks\/v[12]\b/m.test(raw)) return "checks";
   if (path.toLowerCase().endsWith(".yml")) return "checks";
   if (path.toLowerCase().endsWith(".yaml")) return "checks";
   const fmEnd = raw.indexOf("\n---", 3);
   if (raw.startsWith("---") && fmEnd > 0) {
     const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v2\b/.test(fm)) return "map";
+    if (/\bschema:\s*ghost\.map\/v1\b/.test(fm)) return "map";
   }
   if (path.toLowerCase().endsWith("map.md")) return "map";
   return "fingerprint";
@@ -64,6 +69,7 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
 export function lintDetectedFileKind(
   kind: DetectedFileKind,
   raw: string,
+  options: LintDetectedFileKindOptions = {},
 ): ReturnType<typeof lintFingerprint> {
   return kind === "survey"
     ? lintSurveyFile(raw)
@@ -78,7 +84,7 @@ export function lintDetectedFileKind(
             : kind === "config"
               ? lintConfigFile(raw)
               : kind === "checks"
-                ? lintChecksFile(raw)
+                ? lintChecksFile(raw, options.fingerprint)
                 : lintFingerprint(raw);
 }
 
@@ -103,9 +109,12 @@ function lintSurveyFile(raw: string): SurveyLintReport {
   return lintSurvey(json);
 }
 
-function lintChecksFile(raw: string): ReturnType<typeof lintFingerprint> {
+function lintChecksFile(
+  raw: string,
+  fingerprint?: GhostFingerprintDocument,
+): ReturnType<typeof lintFingerprint> {
   try {
-    return lintGhostChecks(parseYaml(raw));
+    return lintGhostChecks(parseYaml(raw), fingerprint ? { fingerprint } : {});
   } catch (err) {
     return yamlErrorReport("checks-not-yaml", "checks file", err);
   }

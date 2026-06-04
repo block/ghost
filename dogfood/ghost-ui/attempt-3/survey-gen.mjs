@@ -441,7 +441,7 @@ for (const c of components) {
 // ---------- 9. Emit.
 const values = Array.from(valueAcc.values());
 const survey = {
-  schema: "ghost.survey/v2",
+  schema: "ghost.survey/v1",
   sources: [SOURCE],
   values,
   tokens,

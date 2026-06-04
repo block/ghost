@@ -1,11 +1,11 @@
-export type { PackageMemory } from "./package-memory.js";
-export { loadPackageMemory } from "./package-memory.js";
+export type { PackageContext } from "./package-context.js";
+export { loadPackageContext } from "./package-context.js";
 export type { EmitPackageReviewInput } from "./package-review-command.js";
 export { emitPackageReviewCommand } from "./package-review-command.js";
 export type { WritePackageContextOptions } from "./package-writer.js";
 export {
   writePackageContextBundle,
-  writePackageContextBundleFromMemory,
+  writePackageContextBundleFromContext,
 } from "./package-writer.js";
 export { buildTokensCss } from "./tokens-css.js";
 export type {

@@ -191,7 +191,7 @@ After studying `~/Development/ghost-fleet`, here's what the prior art confirmed 
 
 1. Spec the `ghost.fleet/v1` schema in detail (pairwise array format, tracks edge type, groupings shape — clusters live in body, not frontmatter).
 2. Spec `profiling_mode` + `modules` in map.md frontmatter so fleet can deterministically distinguish leaves from rollups.
-3. Decide member directory convention. Existing prior art uses `fleet/v2/fingerprints/<id>/` for monolithic and `fleet/v2/fingerprints/<id>_<module>/` for module passes. Worth keeping or formalizing as `members/<id>/modules/<module>/`?
+3. Decide member directory convention. Existing prior art uses `fleet/fingerprints/<id>/` for monolithic and `fleet/fingerprints/<id>_<module>/` for module passes. Worth keeping or formalizing as `members/<id>/modules/<module>/`?
 4. Draft the world-model skill as **three layered fragments** (target / module / rollup guidance) plus shared preamble + output-format. Mirror the prior art's fragment architecture.
 5. Map the existing `~/Development/ghost-fleet/scripts/fleet-compare.sh` workflow onto the new verb surface to confirm nothing load-bearing is lost.
 6. Spec temporal — how per-member history is persisted and aggregated into `fleet.history.json`.

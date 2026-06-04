@@ -1,14 +1,17 @@
 import type { ZodIssue } from "zod";
 import { GhostDecisionSchema } from "./schema.js";
-import type { GhostMemoryLintIssue, GhostMemoryLintReport } from "./types.js";
+import type {
+  GhostDecisionLintIssue,
+  GhostDecisionLintReport,
+} from "./types.js";
 
-export function lintGhostDecision(input: unknown): GhostMemoryLintReport {
+export function lintGhostDecision(input: unknown): GhostDecisionLintReport {
   const result = GhostDecisionSchema.safeParse(input);
   if (!result.success) return finalize(zodIssues(result.error.issues));
   return finalize([]);
 }
 
-function zodIssues(issues: ZodIssue[]): GhostMemoryLintIssue[] {
+function zodIssues(issues: ZodIssue[]): GhostDecisionLintIssue[] {
   return issues.map((issue) => ({
     severity: "error" as const,
     rule: `schema/${issue.code}`,
@@ -26,7 +29,7 @@ function formatZodPath(path: ZodIssue["path"]): string | undefined {
   }, "");
 }
 
-function finalize(issues: GhostMemoryLintIssue[]): GhostMemoryLintReport {
+function finalize(issues: GhostDecisionLintIssue[]): GhostDecisionLintReport {
   return {
     issues,
     errors: issues.filter((issue) => issue.severity === "error").length,
