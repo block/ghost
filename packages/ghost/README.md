@@ -11,25 +11,28 @@ records intentional drift. It ships one CLI: `ghost`.
 ```bash
 npm install -D @anarchitecture/ghost
 npx ghost --help
+npx ghost --help --all
 ```
+
+`ghost --help` shows the core workflow. `ghost --help --all` shows the full
+advanced and legacy command index.
 
 ## Use
 
 ```bash
 ghost init --with-intent
 ghost scan --format json
-ghost inventory
 ghost lint .ghost
 ghost verify .ghost --root .
 ghost check --base main
 ghost review --base main --include-memory
-ghost compare a/.ghost b/.ghost
-ghost ack
-ghost diverge typography --reason "Product deliberately uses an editorial scale"
 ghost emit review-command
 ghost emit context-bundle
 ghost skill install
 ```
+
+Advanced commands such as `inventory`, `compare`, `ack`, and `diverge` remain
+available and appear in the full help index.
 
 Zero config for every verb. No API key is required. `OPENAI_API_KEY` /
 `VOYAGE_API_KEY` are optional and only used by semantic embedding helpers when a

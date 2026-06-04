@@ -35,23 +35,44 @@ for (const tool of TOOLS) {
     );
     process.exit(1);
   }
-  const { buildCli } = await import(pathToFileURL(cliDist).href);
+  const cliModule = await import(pathToFileURL(cliDist).href);
+  const { buildCli } = cliModule;
   const cli = buildCli();
+  const discoveryMetadata =
+    tool.name === "ghost" &&
+    typeof cliModule.getCommandDiscoveryMetadata === "function"
+      ? new Map(
+          cliModule
+            .getCommandDiscoveryMetadata()
+            .map((entry) => [entry.name, entry]),
+        )
+      : new Map();
 
-  const commands = cli.commands.map((cmd) => ({
-    tool: tool.name,
-    name: cmd.name,
-    rawName: cmd.rawName,
-    description: cmd.description,
-    options: cmd.options.map((o) => ({
-      rawName: o.rawName,
-      name: o.name,
-      description: o.description,
-      default: o.config?.default ?? null,
-      takesValue: /<[^>]+>/.test(o.rawName),
-      negated: Boolean(o.negated),
-    })),
-  }));
+  const commands = cli.commands.map((cmd) => {
+    const discovery = discoveryMetadata.get(cmd.name);
+    return {
+      tool: tool.name,
+      name: cmd.name,
+      rawName: cmd.rawName,
+      description: cmd.description,
+      ...(discovery
+        ? {
+            group: discovery.group,
+            defaultHelp: discovery.defaultHelp,
+            compactName: discovery.compactName,
+            summary: discovery.summary,
+          }
+        : {}),
+      options: cmd.options.map((o) => ({
+        rawName: o.rawName,
+        name: o.name,
+        description: o.description,
+        default: o.config?.default ?? null,
+        takesValue: /<[^>]+>/.test(o.rawName),
+        negated: Boolean(o.negated),
+      })),
+    };
+  });
 
   const globalOptions = cli.globalCommand.options.map((o) => ({
     rawName: o.rawName,
