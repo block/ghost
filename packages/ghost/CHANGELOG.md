@@ -1,5 +1,15 @@
 # @anarchitecture/ghost
 
+## 0.4.0
+
+### Minor Changes
+
+- [#112](https://github.com/block/ghost/pull/112) [`19be5b5`](https://github.com/block/ghost/commit/19be5b500b6e5165bb8dc24b009f9074d31567cc) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make checked-in fingerprint.yml entries canonical, remove fingerprint entry lifecycle fields and proposals, add first-class exemplars, and emit context bundles as prose + inventory + exemplars generation packets.
+
+### Patch Changes
+
+- [`dc84d66`](https://github.com/block/ghost/commit/dc84d66a6dbb560b6b2bcff5b01bdac7aabfaa13) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify current docs for skill recipes and supported environment variables.
+
 ## 0.3.0
 
 ### Minor Changes
