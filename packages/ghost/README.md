@@ -1,6 +1,6 @@
 # @anarchitecture/ghost
 
-**Unified Ghost CLI for repo-local product-experience memory.**
+**Unified Ghost CLI for repo-local product-experience world models.**
 
 Ghost initializes root `.ghost/fingerprint.yml` memory, checks diffs against
 deterministic gates, emits advisory review packets, compares bundles, and

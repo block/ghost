@@ -36,7 +36,7 @@ export {
 export type {
   ContextFormat,
   EmitPackageReviewInput,
-  PackageMemory,
+  PackageContext,
   WriteContextOptions,
   WriteContextResult,
   WritePackageContextOptions,
@@ -45,10 +45,10 @@ export {
   buildSkillMd,
   buildTokensCss,
   emitPackageReviewCommand,
-  loadPackageMemory,
+  loadPackageContext,
   writeContextBundle,
   writePackageContextBundle,
-  writePackageContextBundleFromMemory,
+  writePackageContextBundleFromContext,
 } from "./context/index.js";
 export type {
   ColorChange,
@@ -69,6 +69,29 @@ export type {
   LoadFingerprintSetOptions,
 } from "./fingerprint-set.js";
 export { loadFingerprintSet } from "./fingerprint-set.js";
+export type {
+  DiscoveredGhostPackage,
+  FingerprintDirectoryOptions,
+  GhostFingerprintStack,
+  GhostFingerprintStackGroup,
+  GhostFingerprintStackLayer,
+  GhostFingerprintStackLayerRef,
+} from "./fingerprint-stack.js";
+export {
+  buildFingerprintStack,
+  discoverFingerprintStack,
+  discoverGhostPackages,
+  fingerprintPackageDisplayPath,
+  fingerprintStackToPackageContext,
+  groupFingerprintStacksForPaths,
+  initScopedFingerprintPackage,
+  lintAllFingerprintStacks,
+  loadFingerprintStackForPath,
+  mapFromFingerprint,
+  normalizeMemoryDir,
+  resolveGitRoot,
+  verifyAllFingerprintStacks,
+} from "./fingerprint-stack.js";
 export type { FingerprintMeta, FrontmatterData } from "./frontmatter.js";
 export { inventory } from "./inventory.js";
 export type {
@@ -89,29 +112,6 @@ export type {
   MapLintSeverity,
 } from "./lint-map.js";
 export { lintMap } from "./lint-map.js";
-export type {
-  DiscoveredGhostPackage,
-  GhostMemoryStack,
-  GhostMemoryStackGroup,
-  GhostMemoryStackLayer,
-  GhostMemoryStackLayerRef,
-  MemoryDirectoryOptions,
-} from "./memory-stack.js";
-export {
-  buildMemoryStack,
-  discoverGhostPackages,
-  discoverMemoryStack,
-  groupMemoryStacksForPaths,
-  initScopedMemoryPackage,
-  lintAllMemoryStacks,
-  loadMemoryStackForPath,
-  mapFromFingerprint,
-  memoryPackageDisplayPath,
-  memoryStackToPackageMemory,
-  normalizeMemoryDir,
-  resolveGitRoot,
-  verifyAllMemoryStacks,
-} from "./memory-stack.js";
 export type {
   GhostPackageConfig,
   GhostPackageConfigLibrary,

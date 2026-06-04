@@ -89,7 +89,7 @@ function makeSurvey(
   uiSurfaces: UiSurfaceRow[] = [],
 ): Survey {
   return {
-    schema: "ghost.survey/v2",
+    schema: "ghost.survey/v1",
     sources: [source],
     values,
     tokens,
@@ -194,9 +194,9 @@ describe("mergeSurveys", () => {
     expect(() => mergeSurveys()).toThrow(/at least one/);
   });
 
-  it("schema field on the merged survey is ghost.survey/v2", () => {
+  it("schema field on the merged survey is ghost.survey/v1", () => {
     const a = makeSurvey(SOURCE_A);
     const merged = mergeSurveys(a);
-    expect(merged.schema).toBe("ghost.survey/v2");
+    expect(merged.schema).toBe("ghost.survey/v1");
   });
 });

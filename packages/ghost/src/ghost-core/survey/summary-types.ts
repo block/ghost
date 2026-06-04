@@ -15,7 +15,7 @@ export interface SurveySummaryOptions {
 
 export interface SurveySummary {
   schema: "ghost.survey.summary/v1";
-  source_schema: "ghost.survey/v2";
+  source_schema: "ghost.survey/v1";
   budget: SurveySummaryBudget;
   counts: SurveySummaryCounts;
   sources: SurveySourceSummary[];

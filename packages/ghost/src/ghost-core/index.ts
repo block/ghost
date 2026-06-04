@@ -3,7 +3,10 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
-  GhostCheckDerivesFrom,
+  GhostCheckDerivation,
+  GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationInventoryRef,
+  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
@@ -20,7 +23,7 @@ export type {
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
-  GhostCheckDerivesFromSchema,
+  GhostCheckDerivationSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,
@@ -57,17 +60,20 @@ export {
 } from "./embedding/index.js";
 // --- Fingerprint.yml (ghost.fingerprint/v1) ---
 export type {
+  GhostFingerprintComposition,
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
   GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
-  GhostFingerprintImplementationVocabulary,
+  GhostFingerprintInventory,
+  GhostFingerprintInventoryBuildingBlocks,
   GhostFingerprintLintIssue,
   GhostFingerprintLintReport,
   GhostFingerprintLintSeverity,
   GhostFingerprintPattern,
   GhostFingerprintPatternKind,
   GhostFingerprintPrinciple,
+  GhostFingerprintProse,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
   GhostFingerprintScope,
@@ -79,14 +85,17 @@ export type {
 export {
   GHOST_FINGERPRINT_SCHEMA,
   GHOST_FINGERPRINT_YML_FILENAME,
+  GhostFingerprintCompositionSchema,
   GhostFingerprintEvidenceSchema,
   GhostFingerprintExemplarSchema,
   GhostFingerprintExperienceContractSchema,
-  GhostFingerprintImplementationVocabularySchema,
-  GhostFingerprintMemoryRefSchema,
+  GhostFingerprintInventoryBuildingBlocksSchema,
+  GhostFingerprintInventorySchema,
+  GhostFingerprintLayerRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
+  GhostFingerprintProseSchema,
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
   GhostFingerprintSchema,
@@ -97,7 +106,7 @@ export {
   GhostFingerprintTopologyScopeSchema,
   lintGhostFingerprint,
 } from "./fingerprint/index.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
@@ -110,7 +119,7 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
-// --- Map (ghost.map/v2) ---
+// --- Map (ghost.map/v1) ---
 export {
   type GitInfo,
   getEffectiveMapScopes,
@@ -131,12 +140,12 @@ export {
 // --- Memory (ghost.decision/v1) ---
 export type {
   GhostDecisionDocument,
+  GhostDecisionLintIssue,
+  GhostDecisionLintReport,
+  GhostDecisionLintSeverity,
   GhostDecisionStatus,
   GhostExperienceEvidence,
   GhostExperienceScope,
-  GhostMemoryLintIssue,
-  GhostMemoryLintReport,
-  GhostMemoryLintSeverity,
 } from "./memory/index.js";
 export {
   GHOST_DECISION_SCHEMA,
@@ -201,7 +210,7 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Survey (ghost.survey/v2) ---
+// --- Survey (ghost.survey/v1) ---
 export {
   type BreakpointSpec,
   type ColorSpec,

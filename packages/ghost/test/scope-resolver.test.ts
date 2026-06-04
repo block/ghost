@@ -65,7 +65,7 @@ describe("resolveFingerprintsForPaths", () => {
 
 function mapWithScopes(): string {
   return `---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: fixture
 repo: example/fixture
 mapped_at: 2026-04-27

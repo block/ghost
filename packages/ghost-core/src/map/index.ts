@@ -1,5 +1,5 @@
 /**
- * Public surface for `ghost.map/v2` schema and types.
+ * Public surface for `ghost.map/v1` schema and types.
  *
  * `map.md` is retained for legacy/cache workflows. The schema/types live here
  * so any ghost tool that reads a legacy map can do so via `@ghost/core`.

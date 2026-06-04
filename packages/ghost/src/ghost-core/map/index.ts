@@ -1,5 +1,5 @@
 /**
- * Public surface for `ghost.map/v2` schema and types.
+ * Public surface for `ghost.map/v1` schema and types.
  *
  * Map authoring (`inventory`, `lint`) lives in `ghost` (the tool
  * that owns the recipe). The schema/types live here so any ghost tool that

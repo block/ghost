@@ -1,5 +1,5 @@
 /**
- * Shared types for `ghost.map/v2`.
+ * Shared types for `ghost.map/v1`.
  *
  * The inventory shape is the deterministic facts the CLI emits; the recipe
  * synthesizes the final `map.md` from these signals plus its own reads.

@@ -2,7 +2,7 @@
 name: map
 description: Use repo topology as optional source material for fingerprint.yml.
 handoffs:
-  - label: Update fingerprint memory
+  - label: Update fingerprint layers
     skill: capture
     prompt: Use topology observations to update .ghost/fingerprint.yml
 ---
@@ -10,7 +10,7 @@ handoffs:
 # Recipe: Read Topology For Ghost
 
 `map.md` is no longer the canonical fingerprint stage. Topology belongs in
-`.ghost/fingerprint.yml` under `topology`.
+`.ghost/fingerprint.yml` under `inventory.topology`.
 
 Use this recipe when an older workflow, existing repo, or migration still has a
 `.ghost/map.md`, or when you need to orient before writing `fingerprint.yml`.
@@ -29,18 +29,19 @@ Look for facts that help agents route product-experience judgment:
 Promote only durable routing facts into `fingerprint.yml`:
 
 ```yaml
-topology:
-  scopes:
-    - id: checkout
-      paths: [src/checkout]
-      surface_types: [payment-review]
-  surface_types: [payment-review, empty-state]
-exemplars:
-  - id: checkout-review
-    path: src/checkout/review.tsx
-    surface_type: payment-review
-    scope: checkout
-    why: Shows the payment-review surface worth preserving.
+inventory:
+  topology:
+    scopes:
+      - id: checkout
+        paths: [src/checkout]
+        surface_types: [payment-review]
+    surface_types: [payment-review, empty-state]
+  exemplars:
+    - id: checkout-review
+      path: src/checkout/review.tsx
+      surface_type: payment-review
+      scope: checkout
+      why: Shows the payment-review surface worth preserving.
 ```
 
 ## Optional Inventory
@@ -50,9 +51,9 @@ mkdir -p .ghost/cache
 ghost inventory . > .ghost/cache/inventory.json
 ```
 
-Inventory is cache. Read it for hints, then author `fingerprint.yml` by
-judgment. Do not treat file counts, manifests, or candidate config files as
-product-experience memory by themselves.
+Generated cache is scratch material. Read it for hints, then author
+`fingerprint.yml` by judgment. Do not treat file counts, manifests, or
+candidate config files as product-experience authority by themselves.
 
 ## Legacy Maps
 

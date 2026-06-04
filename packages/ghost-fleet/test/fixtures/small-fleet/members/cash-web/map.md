@@ -1,5 +1,5 @@
 ---
-schema: ghost.map/v2
+schema: ghost.map/v1
 id: cash-web
 repo: example/cash-web
 mapped_at: 2026-04-26

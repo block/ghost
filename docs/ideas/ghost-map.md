@@ -29,12 +29,12 @@ The verb is LLM-driven; the CLI is deterministic scaffolding.
 |---|---|---|
 | `ghost map` (skill) | LLM-driven recipe the host agent runs to produce map.md | `packages/ghost-map/src/skill-bundle/` |
 | `ghost map inventory` (CLI) | Deterministic facts: manifest files, language histogram, registry presence, top-level dir tree, candidate config files | CLI |
-| `ghost map lint` (CLI) | Validate map.md against `ghost.map/v2`, flag missing sections | CLI |
+| `ghost map lint` (CLI) | Validate map.md against `ghost.map/v1`, flag missing sections | CLI |
 | `ghost map describe` (CLI) | Print sections + token estimates for selective loading | CLI |
 
 Same shape as `ghost fingerprint` (profile drives, lint/describe support). The BYOA boundary holds at the CLI line.
 
-## Schema — `ghost.map/v2`
+## Schema — `ghost.map/v1`
 
 Frontmatter is the machine layer (consumed by other Ghost tools). Body is three sections in fixed order.
 
@@ -42,7 +42,7 @@ Frontmatter is the machine layer (consumed by other Ghost tools). Body is three 
 
 | Field | Type | Notes |
 |---|---|---|
-| `schema` | `ghost.map/v2` | required |
+| `schema` | `ghost.map/v1` | required |
 | `id` | slug | filesystem key; matches fleet target IDs |
 | `repo` | `org/repo` or path | source of truth for the map |
 | `mapped_at` | ISO date | absolute, not relative |
@@ -99,7 +99,7 @@ Heuristics worth codifying in the preamble:
 
 ```bash
 ghost map inventory [path]        # deterministic raw signals (JSON)
-ghost map lint map.md           # validate against ghost.map/v2
+ghost map lint map.md           # validate against ghost.map/v1
 ghost map describe map.md       # section ranges + token estimates
 ghost map emit skill              # install the skill into the host agent
 ```
