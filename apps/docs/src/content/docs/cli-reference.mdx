@@ -159,7 +159,7 @@ ghost verify --all --memory-dir .design/memory
 
 ### Legacy survey ops - `survey <op>`
 
-Operate on `ghost.survey/v2` files as legacy/cache source material.
+Operate on `ghost.survey/v1` files as legacy/cache source material.
 
 - `merge` combines surveys with id-based dedup.
 - `fix-ids` recomputes every row's `id` from its content.
@@ -233,7 +233,7 @@ ghost emit context-bundle --out dist/context
 
 ### Deterministic gates - `check`
 
-Run active `ghost.checks/v2` gates against a git diff. Without `--package`,
+Run active `ghost.checks/v1` gates against a git diff. Without `--package`,
 Ghost groups changed files by resolved fingerprint stack and runs merged checks per
 group. `--package <dir>` keeps exact single-bundle behavior. `--format json`
 emits the adapter contract `ghost.check-report/v1`; wrappers should map Ghost

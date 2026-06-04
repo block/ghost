@@ -29,7 +29,7 @@ function checks(
   overrides: Partial<GhostChecksDocument["checks"][number]> = {},
 ): GhostChecksDocument {
   return {
-    schema: "ghost.checks/v2",
+    schema: "ghost.checks/v1",
     id: "cash-ios",
     checks: [
       {
@@ -62,7 +62,7 @@ function checks(
   };
 }
 
-describe("ghost.checks/v2", () => {
+describe("ghost.checks/v1", () => {
   it("validates an active human-promoted check", () => {
     const report = lintGhostChecks(checks(), { map: MAP });
 

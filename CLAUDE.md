@@ -78,8 +78,8 @@ fingerprint input for new Ghost work.
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
 | `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
-| `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v2` workflows. |
-| `ghost check` | Run active `ghost.checks/v2` deterministic gates against a diff. |
+| `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v1` workflows. |
+| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint layers, inventory exemplars, checks, and the diff. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |

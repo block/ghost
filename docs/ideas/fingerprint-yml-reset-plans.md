@@ -1,6 +1,6 @@
 # Fingerprint YAML Reset Plans
 
-This planning note is superseded by the `ghost.fingerprint/v2` model described
+This planning note is superseded by the `ghost.fingerprint/v1` model described
 in [docs/fingerprint-format.md](../fingerprint-format.md).
 
 The current model is intentionally three-layered:
@@ -12,7 +12,7 @@ The current model is intentionally three-layered:
   rules, layouts, structures, flows, states, content, behavior, and visual
   arrangements.
 
-Checks now use `ghost.checks/v2` and cite fingerprint refs through
+Checks now use `ghost.checks/v1` and cite fingerprint refs through
 `derivation` groups. Active checks require at least one prose or composition
 grounding; inventory can support a check but cannot be the only active
 grounding.

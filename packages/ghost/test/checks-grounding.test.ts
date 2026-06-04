@@ -7,7 +7,7 @@ import {
   lintGhostChecks,
 } from "../src/ghost-core/index.js";
 
-describe("ghost.checks/v2 grounding", () => {
+describe("ghost.checks/v1 grounding", () => {
   it("requires active checks to declare derivation", () => {
     const doc = checksDocument({
       derivation: undefined,

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Platform values accepted by `ghost.map/v2`. Real repos may straddle
+ * Platform values accepted by `ghost.map/v1`. Real repos may straddle
  * multiple platforms — `platform:` accepts either a single value or an
  * array (see `PlatformValueSchema`). The legacy `mixed` enum value stays
  * for backcompat but the array form is preferred for clarity.
@@ -22,7 +22,7 @@ const PlatformValueSchema = z.union([
 ]);
 
 /**
- * Build-system values accepted by `ghost.map/v2`. As with `platform`, the
+ * Build-system values accepted by `ghost.map/v1`. As with `platform`, the
  * field accepts either a single value or an array — real repos run mixes
  * like Yarn + SPM + Gradle + Style Dictionary at once.
  *
@@ -112,13 +112,13 @@ export const MapScopeSchema = z.object({
 });
 
 /**
- * Zod schema for `ghost.map/v2` frontmatter.
+ * Zod schema for `ghost.map/v1` frontmatter.
  *
  * The body section (Identity / Topology / Conventions) is checked separately
  * by the linter — this schema only covers the YAML machine layer.
  */
 export const MapFrontmatterSchema = z.object({
-  schema: z.literal("ghost.map/v2"),
+  schema: z.literal("ghost.map/v1"),
   id: SlugIdSchema,
   repo: z.string().min(1),
   /**

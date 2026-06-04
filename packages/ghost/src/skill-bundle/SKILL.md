@@ -32,7 +32,7 @@ Generation uses **prose + inventory + composition**:
 
 Checks and review validate output; they are not generation input.
 
-`fingerprint.yml` may start with only `schema: ghost.fingerprint/v2`. Add only
+`fingerprint.yml` may start with only `schema: ghost.fingerprint/v1`. Add only
 sections that contain real layer content; Ghost normalizes omitted layer sections
 internally for checks, review, emit, and stack resolution.
 

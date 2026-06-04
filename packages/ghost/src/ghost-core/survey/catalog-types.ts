@@ -6,7 +6,7 @@ export interface SurveyCatalogOptions {
 
 export interface SurveyValueCatalog {
   schema: "ghost.survey.catalog/v1";
-  source_schema: "ghost.survey/v2";
+  source_schema: "ghost.survey/v1";
   filter?: {
     kind?: string;
   };

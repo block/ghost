@@ -28,7 +28,7 @@ export interface SurveyLintReport {
 export const SURVEY_FILENAME = "survey.json";
 
 /**
- * Lint a parsed survey object against `ghost.survey/v2`.
+ * Lint a parsed survey object against `ghost.survey/v1`.
  *
  * Errors: schema violations (missing fields, wrong types, bad enum values).
  * Warnings: unknown value kinds (open-enum policy), ID mismatches (a row's

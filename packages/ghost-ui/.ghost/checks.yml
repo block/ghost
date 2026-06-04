@@ -1,3 +1,3 @@
-schema: ghost.checks/v2
+schema: ghost.checks/v1
 id: ghost-ui
 checks: []

@@ -51,6 +51,18 @@ const FORBIDDEN_PHRASES = [
   "generated inventory",
 ];
 
+const DISALLOWED_VERSION_MARKER = `${"v"}${"2"}`;
+
+const FORBIDDEN_PATTERNS = [
+  {
+    phrase: "future version marker",
+    pattern: new RegExp(
+      `(^|[^A-Za-z0-9])${DISALLOWED_VERSION_MARKER}([^A-Za-z0-9]|$)|/${DISALLOWED_VERSION_MARKER}\\b`,
+      "i",
+    ),
+  },
+];
+
 const ALLOWED_MEMORY_TERMS = [
   "--memory-dir",
   "--include-memory",
@@ -64,7 +76,7 @@ const ALLOWED_MEMORY_TERMS = [
 const forbiddenPatterns = FORBIDDEN_PHRASES.map((phrase) => ({
   phrase,
   pattern: new RegExp(escapeRegExp(phrase), "i"),
-}));
+})).concat(FORBIDDEN_PATTERNS);
 
 const violations = [];
 
