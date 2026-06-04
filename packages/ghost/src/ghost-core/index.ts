@@ -91,7 +91,7 @@ export {
   GhostFingerprintExperienceContractSchema,
   GhostFingerprintInventoryBuildingBlocksSchema,
   GhostFingerprintInventorySchema,
-  GhostFingerprintMemoryRefSchema,
+  GhostFingerprintLayerRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
@@ -140,12 +140,12 @@ export {
 // --- Memory (ghost.decision/v1) ---
 export type {
   GhostDecisionDocument,
+  GhostDecisionLintIssue,
+  GhostDecisionLintReport,
+  GhostDecisionLintSeverity,
   GhostDecisionStatus,
   GhostExperienceEvidence,
   GhostExperienceScope,
-  GhostMemoryLintIssue,
-  GhostMemoryLintReport,
-  GhostMemoryLintSeverity,
 } from "./memory/index.js";
 export {
   GHOST_DECISION_SCHEMA,

@@ -93,7 +93,7 @@ export interface ScanStatus {
 /**
  * Inspect a Ghost fingerprint directory and report whether the canonical
  * `fingerprint.yml` exists with useful prose, inventory, and composition.
- * Generated inventory is cache/source material, not readiness for the curated
+ * Generated cache is source material, not readiness for the curated
  * inventory layer. Optional checks and rationale files are supplemental when
  * present.
  */

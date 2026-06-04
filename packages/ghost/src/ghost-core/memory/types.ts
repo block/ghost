@@ -31,17 +31,17 @@ export interface GhostDecisionDocument {
   decided_at: string;
 }
 
-export type GhostMemoryLintSeverity = "error" | "warning" | "info";
+export type GhostDecisionLintSeverity = "error" | "warning" | "info";
 
-export interface GhostMemoryLintIssue {
-  severity: GhostMemoryLintSeverity;
+export interface GhostDecisionLintIssue {
+  severity: GhostDecisionLintSeverity;
   rule: string;
   message: string;
   path?: string;
 }
 
-export interface GhostMemoryLintReport {
-  issues: GhostMemoryLintIssue[];
+export interface GhostDecisionLintReport {
+  issues: GhostDecisionLintIssue[];
   errors: number;
   warnings: number;
   info: number;

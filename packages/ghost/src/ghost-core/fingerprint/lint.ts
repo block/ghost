@@ -220,7 +220,7 @@ function checkRefs(
     );
   });
   doc.inventory.exemplars.forEach((exemplar, index) => {
-    checkMemoryRefs(
+    checkLayerRefs(
       exemplar.refs,
       `inventory.exemplars[${index}].refs`,
       targets,
@@ -391,7 +391,7 @@ function checkCheckRefs(
   });
 }
 
-function checkMemoryRefs(
+function checkLayerRefs(
   refs: GhostFingerprintRef[] | undefined,
   path: string,
   targets: Record<RefTargetPrefix, Set<string>>,

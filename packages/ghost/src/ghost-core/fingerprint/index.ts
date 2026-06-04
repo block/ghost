@@ -6,7 +6,7 @@ export {
   GhostFingerprintExperienceContractSchema,
   GhostFingerprintInventoryBuildingBlocksSchema,
   GhostFingerprintInventorySchema,
-  GhostFingerprintMemoryRefSchema,
+  GhostFingerprintLayerRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,

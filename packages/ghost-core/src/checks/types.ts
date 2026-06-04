@@ -19,7 +19,7 @@ export interface GhostCheckDerivation {
   composition?: GhostCheckDerivationCompositionRef[];
 }
 
-export interface GhostChecksFingerprintMemory {
+export interface GhostChecksFingerprintContext {
   prose?: {
     principles?: { id: string }[];
     situations?: { id: string }[];
@@ -100,7 +100,7 @@ export interface GhostChecksLintReport {
 
 export interface GhostChecksLintOptions {
   map?: Pick<MapFrontmatter, "scopes" | "feature_areas">;
-  fingerprint?: GhostChecksFingerprintMemory;
+  fingerprint?: GhostChecksFingerprintContext;
 }
 
 export interface RoutedGhostCheck {
