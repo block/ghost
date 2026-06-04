@@ -23,7 +23,7 @@ handoffs:
 
     ghost compare a/.ghost b/.ghost
 
-Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Bundle inputs use canonical Ghost memory when available; direct fingerprint markdown files still use their embedded frontmatter as legacy inputs.
+Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Package inputs use canonical `fingerprint.yml` when available; direct fingerprint markdown files still use their embedded frontmatter as legacy inputs.
 
 Flags:
 - `--semantic` — add qualitative diff for direct fingerprint markdown comparisons

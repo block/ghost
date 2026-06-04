@@ -8,16 +8,18 @@ import type {
 } from "./types.js";
 
 type RefTargetPrefix =
-  | "principle"
-  | "situation"
-  | "experience_contract"
-  | "pattern";
+  | "prose.principle"
+  | "prose.situation"
+  | "prose.experience_contract"
+  | "inventory.exemplar"
+  | "composition.pattern";
 
 const REF_TARGET_PREFIXES = [
-  "principle",
-  "situation",
-  "experience_contract",
-  "pattern",
+  "prose.principle",
+  "prose.situation",
+  "prose.experience_contract",
+  "inventory.exemplar",
+  "composition.pattern",
 ] as const satisfies readonly RefTargetPrefix[];
 
 export function lintGhostFingerprint(
@@ -28,17 +30,25 @@ export function lintGhostFingerprint(
   if (!result.success) return finalize(zodIssues(result.error.issues));
 
   const doc = result.data as GhostFingerprintDocument;
-  checkDuplicateIds("topology.scopes", doc.topology.scopes ?? [], issues);
-  checkDuplicateStrings(
-    "topology.surface_types",
-    doc.topology.surface_types ?? [],
+  checkDuplicateIds(
+    "inventory.topology.scopes",
+    doc.inventory.topology.scopes ?? [],
     issues,
   );
-  checkDuplicateIds("situations", doc.situations, issues);
-  checkDuplicateIds("principles", doc.principles, issues);
-  checkDuplicateIds("experience_contracts", doc.experience_contracts, issues);
-  checkDuplicateIds("patterns", doc.patterns, issues);
-  checkDuplicateIds("exemplars", doc.exemplars, issues);
+  checkDuplicateStrings(
+    "inventory.topology.surface_types",
+    doc.inventory.topology.surface_types ?? [],
+    issues,
+  );
+  checkDuplicateIds("prose.situations", doc.prose.situations, issues);
+  checkDuplicateIds("prose.principles", doc.prose.principles, issues);
+  checkDuplicateIds(
+    "prose.experience_contracts",
+    doc.prose.experience_contracts,
+    issues,
+  );
+  checkDuplicateIds("composition.patterns", doc.composition.patterns, issues);
+  checkDuplicateIds("inventory.exemplars", doc.inventory.exemplars, issues);
   checkTopologyRefs(doc, issues);
   checkRefs(doc, issues);
 
@@ -93,7 +103,7 @@ function checkTopologyRefs(
 ): void {
   const topology = collectTopology(doc);
 
-  doc.topology.scopes?.forEach((scope, scopeIndex) => {
+  doc.inventory.topology.scopes?.forEach((scope, scopeIndex) => {
     scope.surface_types?.forEach((surfaceType, surfaceIndex) => {
       if (
         topology.explicitSurfaceTypes.size === 0 ||
@@ -104,55 +114,55 @@ function checkTopologyRefs(
       issues.push({
         severity: "error",
         rule: "fingerprint-surface-type-unknown",
-        message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
-        path: `topology.scopes[${scopeIndex}].surface_types[${surfaceIndex}]`,
+        message: `Surface type '${surfaceType}' is not declared in inventory.topology.surface_types.`,
+        path: `inventory.topology.scopes[${scopeIndex}].surface_types[${surfaceIndex}]`,
       });
     });
   });
 
-  doc.situations.forEach((situation, situationIndex) => {
+  doc.prose.situations.forEach((situation, situationIndex) => {
     checkSurfaceTypeRef(
       situation.surface_type,
-      `situations[${situationIndex}].surface_type`,
+      `prose.situations[${situationIndex}].surface_type`,
       topology,
       issues,
     );
   });
 
-  doc.principles.forEach((principle, index) => {
+  doc.prose.principles.forEach((principle, index) => {
     checkScopeRefs(
       principle.applies_to,
-      `principles[${index}].applies_to`,
+      `prose.principles[${index}].applies_to`,
       topology,
       issues,
     );
   });
-  doc.experience_contracts.forEach((contract, index) => {
+  doc.prose.experience_contracts.forEach((contract, index) => {
     checkScopeRefs(
       contract.applies_to,
-      `experience_contracts[${index}].applies_to`,
+      `prose.experience_contracts[${index}].applies_to`,
       topology,
       issues,
     );
   });
-  doc.patterns.forEach((pattern, index) => {
+  doc.composition.patterns.forEach((pattern, index) => {
     checkScopeRefs(
       pattern.applies_to,
-      `patterns[${index}].applies_to`,
+      `composition.patterns[${index}].applies_to`,
       topology,
       issues,
     );
   });
-  doc.exemplars.forEach((exemplar, index) => {
+  doc.inventory.exemplars.forEach((exemplar, index) => {
     checkScopeIdRef(
       exemplar.scope,
-      `exemplars[${index}].scope`,
+      `inventory.exemplars[${index}].scope`,
       topology,
       issues,
     );
     checkSurfaceTypeRef(
       exemplar.surface_type,
-      `exemplars[${index}].surface_type`,
+      `inventory.exemplars[${index}].surface_type`,
       topology,
       issues,
     );
@@ -164,49 +174,58 @@ function checkRefs(
   issues: GhostFingerprintLintIssue[],
 ): void {
   const targets = collectTargets(doc);
-  doc.situations.forEach((situation, index) => {
+  doc.prose.situations.forEach((situation, index) => {
     checkRefList(
       situation.principles,
-      "principle",
-      `situations[${index}].principles`,
+      "prose.principle",
+      `prose.situations[${index}].principles`,
       targets,
       issues,
     );
     checkRefList(
       situation.experience_contracts,
-      "experience_contract",
-      `situations[${index}].experience_contracts`,
+      "prose.experience_contract",
+      `prose.situations[${index}].experience_contracts`,
       targets,
       issues,
     );
     checkRefList(
       situation.patterns,
-      "pattern",
-      `situations[${index}].patterns`,
+      "composition.pattern",
+      `prose.situations[${index}].patterns`,
       targets,
       issues,
     );
   });
 
-  doc.principles.forEach((principle, index) => {
+  doc.prose.principles.forEach((principle, index) => {
     checkCheckRefs(
       principle.check_refs,
-      `principles[${index}].check_refs`,
+      `prose.principles[${index}].check_refs`,
       issues,
     );
   });
-  doc.experience_contracts.forEach((contract, index) => {
+  doc.prose.experience_contracts.forEach((contract, index) => {
     checkCheckRefs(
       contract.check_refs,
-      `experience_contracts[${index}].check_refs`,
+      `prose.experience_contracts[${index}].check_refs`,
       issues,
     );
   });
-  doc.patterns.forEach((pattern, index) => {
-    checkCheckRefs(pattern.check_refs, `patterns[${index}].check_refs`, issues);
+  doc.composition.patterns.forEach((pattern, index) => {
+    checkCheckRefs(
+      pattern.check_refs,
+      `composition.patterns[${index}].check_refs`,
+      issues,
+    );
   });
-  doc.exemplars.forEach((exemplar, index) => {
-    checkMemoryRefs(exemplar.refs, `exemplars[${index}].refs`, targets, issues);
+  doc.inventory.exemplars.forEach((exemplar, index) => {
+    checkMemoryRefs(
+      exemplar.refs,
+      `inventory.exemplars[${index}].refs`,
+      targets,
+      issues,
+    );
   });
 }
 
@@ -216,18 +235,22 @@ function collectTopology(doc: GhostFingerprintDocument): {
   surfaceTypes: Set<string>;
   situations: Set<string>;
 } {
-  const explicitSurfaceTypes = new Set(doc.topology.surface_types ?? []);
+  const explicitSurfaceTypes = new Set(
+    doc.inventory.topology.surface_types ?? [],
+  );
   const surfaceTypes = new Set(explicitSurfaceTypes);
-  for (const scope of doc.topology.scopes ?? []) {
+  for (const scope of doc.inventory.topology.scopes ?? []) {
     for (const surfaceType of scope.surface_types ?? []) {
       surfaceTypes.add(surfaceType);
     }
   }
   return {
-    scopes: new Set(doc.topology.scopes?.map((entry) => entry.id) ?? []),
+    scopes: new Set(
+      doc.inventory.topology.scopes?.map((entry) => entry.id) ?? [],
+    ),
     explicitSurfaceTypes,
     surfaceTypes,
-    situations: new Set(doc.situations.map((entry) => entry.id)),
+    situations: new Set(doc.prose.situations.map((entry) => entry.id)),
   };
 }
 
@@ -242,7 +265,7 @@ function checkSurfaceTypeRef(
   issues.push({
     severity: "error",
     rule: "fingerprint-surface-type-unknown",
-    message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
+    message: `Surface type '${surfaceType}' is not declared in inventory.topology.surface_types.`,
     path,
   });
 }
@@ -308,12 +331,17 @@ function collectTargets(
   doc: GhostFingerprintDocument,
 ): Record<RefTargetPrefix, Set<string>> {
   return {
-    principle: new Set(doc.principles.map((entry) => entry.id)),
-    situation: new Set(doc.situations.map((entry) => entry.id)),
-    experience_contract: new Set(
-      doc.experience_contracts.map((entry) => entry.id),
+    "prose.principle": new Set(doc.prose.principles.map((entry) => entry.id)),
+    "prose.situation": new Set(doc.prose.situations.map((entry) => entry.id)),
+    "prose.experience_contract": new Set(
+      doc.prose.experience_contracts.map((entry) => entry.id),
     ),
-    pattern: new Set(doc.patterns.map((entry) => entry.id)),
+    "inventory.exemplar": new Set(
+      doc.inventory.exemplars.map((entry) => entry.id),
+    ),
+    "composition.pattern": new Set(
+      doc.composition.patterns.map((entry) => entry.id),
+    ),
   };
 }
 
@@ -376,7 +404,7 @@ function checkMemoryRefs(
         severity: "error",
         rule: "fingerprint-ref-prefix",
         message:
-          "Expected principle:*, situation:*, experience_contract:*, or pattern:* reference.",
+          "Expected prose.*, inventory.exemplar:*, or composition.pattern:* reference.",
         path: `${path}[${index}]`,
       });
       return;

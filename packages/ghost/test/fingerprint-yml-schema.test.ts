@@ -5,7 +5,7 @@ import {
   lintGhostFingerprint,
 } from "../src/ghost-core/fingerprint/index.js";
 
-describe("ghost.fingerprint/v1", () => {
+describe("ghost.fingerprint/v2", () => {
   it("accepts a minimal fingerprint.yml document", () => {
     const result = GhostFingerprintSchema.safeParse(minimalFingerprint());
 
@@ -13,14 +13,20 @@ describe("ghost.fingerprint/v1", () => {
     if (!result.success) throw new Error("minimal fingerprint should parse");
     expect(result.data).toEqual({
       schema: GHOST_FINGERPRINT_SCHEMA,
-      summary: {},
-      topology: {},
-      situations: [],
-      principles: [],
-      experience_contracts: [],
-      patterns: [],
-      exemplars: [],
-      implementation_vocabulary: {},
+      prose: {
+        summary: {},
+        situations: [],
+        principles: [],
+        experience_contracts: [],
+      },
+      inventory: {
+        topology: {},
+        building_blocks: {},
+        exemplars: [],
+      },
+      composition: {
+        patterns: [],
+      },
     });
   });
 
@@ -31,10 +37,11 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.issues).toEqual([]);
   });
 
-  it("rejects old substrate top-level fields", () => {
+  it("rejects v1 flat top-level fields", () => {
     const result = GhostFingerprintSchema.safeParse({
       ...minimalFingerprint(),
-      substrate: {},
+      principles: [],
+      implementation_vocabulary: {},
     });
 
     expect(result.success).toBe(false);
@@ -42,7 +49,7 @@ describe("ghost.fingerprint/v1", () => {
 
   it("rejects old topology examples", () => {
     const input = fullFingerprint();
-    (input.topology as Record<string, unknown>).examples = [
+    (input.inventory.topology as Record<string, unknown>).examples = [
       {
         path: "apps/dashboard/src/routes/orders/page.tsx",
         surface_type: "dense-dashboard",
@@ -56,7 +63,7 @@ describe("ghost.fingerprint/v1", () => {
 
   it("rejects implementation vocabulary as a typed ref target", () => {
     const input = fullFingerprint();
-    input.situations[0].patterns = [
+    input.prose.situations[0].patterns = [
       "implementation_vocabulary:semantic-tokens",
     ];
 
@@ -67,35 +74,37 @@ describe("ghost.fingerprint/v1", () => {
 
   it("rejects legacy status fields in canonical fingerprint.yml entries", () => {
     const principle = fullFingerprint();
-    principle.principles[0].status = "accepted" as never;
+    principle.prose.principles[0].status = "accepted" as never;
     expect(GhostFingerprintSchema.safeParse(principle).success).toBe(false);
 
     const contract = fullFingerprint();
-    contract.experience_contracts[0].status = "accepted" as never;
+    contract.prose.experience_contracts[0].status = "accepted" as never;
     expect(GhostFingerprintSchema.safeParse(contract).success).toBe(false);
 
     const pattern = fullFingerprint();
-    pattern.patterns[0].status = "accepted" as never;
+    pattern.composition.patterns[0].status = "accepted" as never;
     expect(GhostFingerprintSchema.safeParse(pattern).success).toBe(false);
   });
 
   it("reports unknown typed refs inside the fingerprint", () => {
     const input = fullFingerprint();
-    input.situations[0].principles = ["principle:missing-principle"];
+    input.prose.situations[0].principles = [
+      "prose.principle:missing-principle",
+    ];
 
     const report = lintGhostFingerprint(input);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-ref-unknown",
-      path: "situations[0].principles[0]",
+      path: "prose.situations[0].principles[0]",
     });
   });
 
   it("reports mismatched typed ref prefixes", () => {
     const input = fullFingerprint();
-    input.situations[0].patterns = [
-      "principle:dense-workflows-prioritize-scanning",
+    input.prose.situations[0].patterns = [
+      "prose.principle:dense-workflows-prioritize-scanning",
     ];
 
     const report = lintGhostFingerprint(input);
@@ -103,42 +112,42 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-ref-prefix",
-      path: "situations[0].patterns[0]",
+      path: "prose.situations[0].patterns[0]",
     });
   });
 
   it("reports duplicate ids by collection", () => {
     const input = fullFingerprint();
-    input.patterns.push({ ...input.patterns[0] });
+    input.composition.patterns.push({ ...input.composition.patterns[0] });
 
     const report = lintGhostFingerprint(input);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "duplicate-id",
-      path: "patterns[1].id",
+      path: "composition.patterns[1].id",
     });
   });
 
   it("reports duplicate topology surface types", () => {
     const input = fullFingerprint();
-    input.topology.surface_types.push("dense-dashboard");
+    input.inventory.topology.surface_types?.push("dense-dashboard");
 
     const report = lintGhostFingerprint(input);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "duplicate-id",
-      path: "topology.surface_types[2]",
+      path: "inventory.topology.surface_types[2]",
     });
   });
 
   it("reports unknown topology scope and surface type references", () => {
     const input = fullFingerprint();
-    input.situations[0].surface_type = "unknown-surface";
-    input.exemplars[0].scope = "unknown-scope";
-    input.exemplars[0].surface_type = "unknown-surface";
-    input.principles[0].applies_to = {
+    input.prose.situations[0].surface_type = "unknown-surface";
+    input.inventory.exemplars[0].scope = "unknown-scope";
+    input.inventory.exemplars[0].surface_type = "unknown-surface";
+    input.prose.principles[0].applies_to = {
       scopes: ["unknown-scope"],
       surface_types: ["unknown-surface"],
       situations: ["unknown-situation"],
@@ -151,27 +160,27 @@ describe("ghost.fingerprint/v1", () => {
       expect.arrayContaining([
         expect.objectContaining({
           rule: "fingerprint-surface-type-unknown",
-          path: "situations[0].surface_type",
+          path: "prose.situations[0].surface_type",
         }),
         expect.objectContaining({
           rule: "fingerprint-scope-unknown",
-          path: "principles[0].applies_to.scopes[0]",
+          path: "prose.principles[0].applies_to.scopes[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-surface-type-unknown",
-          path: "principles[0].applies_to.surface_types[0]",
+          path: "prose.principles[0].applies_to.surface_types[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-situation-unknown",
-          path: "principles[0].applies_to.situations[0]",
+          path: "prose.principles[0].applies_to.situations[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-scope-unknown",
-          path: "exemplars[0].scope",
+          path: "inventory.exemplars[0].scope",
         }),
         expect.objectContaining({
           rule: "fingerprint-surface-type-unknown",
-          path: "exemplars[0].surface_type",
+          path: "inventory.exemplars[0].surface_type",
         }),
       ]),
     );
@@ -179,27 +188,29 @@ describe("ghost.fingerprint/v1", () => {
 
   it("reports unknown exemplar refs", () => {
     const input = fullFingerprint();
-    input.exemplars[0].refs = ["pattern:missing-pattern"];
+    input.inventory.exemplars[0].refs = ["composition.pattern:missing-pattern"];
 
     const report = lintGhostFingerprint(input);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-ref-unknown",
-      path: "exemplars[0].refs[0]",
+      path: "inventory.exemplars[0].refs[0]",
     });
   });
 
   it("requires check refs to use check:*", () => {
     const input = fullFingerprint();
-    input.principles[0].check_refs = ["pattern:compact-filter-toolbar"];
+    input.prose.principles[0].check_refs = [
+      "composition.pattern:compact-filter-toolbar",
+    ];
 
     const report = lintGhostFingerprint(input);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-check-ref-prefix",
-      path: "principles[0].check_refs[0]",
+      path: "prose.principles[0].check_refs[0]",
     });
   });
 });
@@ -213,100 +224,109 @@ function minimalFingerprint() {
 function fullFingerprint() {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    summary: {
-      product: "Example dashboard",
-      audience: ["operators"],
-      goals: ["preserve scan speed"],
-      anti_goals: ["turn dense workflows into marketing pages"],
-      tradeoffs: ["density versus explanation"],
-      tone: ["plain", "task-fit"],
-    },
-    topology: {
-      scopes: [
+    prose: {
+      summary: {
+        product: "Example dashboard",
+        audience: ["operators"],
+        goals: ["preserve scan speed"],
+        anti_goals: ["turn dense workflows into marketing pages"],
+        tradeoffs: ["density versus explanation"],
+        tone: ["plain", "task-fit"],
+      },
+      situations: [
         {
-          id: "dashboard",
-          paths: ["apps/dashboard/**"],
-          surface_types: ["dense-dashboard"],
+          id: "user-is-filtering-an-operations-table",
+          user_intent: "find and compare records quickly",
+          product_obligation:
+            "preserve scan speed and reduce accidental changes",
+          surface_type: "dense-dashboard",
+          hierarchy: {
+            primary: "table readability and filtering",
+            secondary: "bulk actions and record detail",
+          },
+          refuses: ["oversized marketing hero"],
+          principles: ["prose.principle:dense-workflows-prioritize-scanning"],
+          experience_contracts: [
+            "prose.experience_contract:destructive-actions-require-clear-confirmation",
+          ],
+          patterns: ["composition.pattern:compact-filter-toolbar"],
         },
       ],
-      surface_types: ["dense-dashboard", "docs"],
+      principles: [
+        {
+          id: "dense-workflows-prioritize-scanning",
+          principle:
+            "Dense operational workflows should optimize for comparison, speed, and recovery before visual novelty.",
+          applies_to: {
+            scopes: ["dashboard"],
+            surface_types: ["dense-dashboard"],
+          },
+          guidance: ["keep controls close to the table or list they affect"],
+          evidence: [
+            {
+              path: "apps/dashboard/src/routes/orders/page.tsx",
+            },
+          ],
+          counterexamples: [
+            "marketing pages may use larger narrative composition",
+          ],
+          check_refs: ["check:no-decorative-card-grid-for-dense-table"],
+        },
+      ],
+      experience_contracts: [
+        {
+          id: "destructive-actions-require-clear-confirmation",
+          contract:
+            "Destructive actions need explicit confirmation and a clear recovery path.",
+          obligations: ["confirm intent", "explain consequence"],
+        },
+      ],
     },
-    exemplars: [
-      {
-        id: "orders-table",
-        path: "apps/dashboard/src/routes/orders/page.tsx",
-        title: "Order review table",
-        surface_type: "dense-dashboard",
-        scope: "dashboard",
-        note: "Dense filtering and comparison surface.",
-        why: "Shows the compact hierarchy future dashboard work should preserve.",
-        refs: [
-          "principle:dense-workflows-prioritize-scanning",
-          "pattern:compact-filter-toolbar",
-        ],
-      },
-    ],
-    situations: [
-      {
-        id: "user-is-filtering-an-operations-table",
-        user_intent: "find and compare records quickly",
-        product_obligation: "preserve scan speed and reduce accidental changes",
-        surface_type: "dense-dashboard",
-        hierarchy: {
-          primary: "table readability and filtering",
-          secondary: "bulk actions and record detail",
-        },
-        refuses: ["oversized marketing hero"],
-        principles: ["principle:dense-workflows-prioritize-scanning"],
-        experience_contracts: [
-          "experience_contract:destructive-actions-require-clear-confirmation",
-        ],
-        patterns: ["pattern:compact-filter-toolbar"],
-      },
-    ],
-    principles: [
-      {
-        id: "dense-workflows-prioritize-scanning",
-        principle:
-          "Dense operational workflows should optimize for comparison, speed, and recovery before visual novelty.",
-        applies_to: {
-          scopes: ["dashboard"],
-          surface_types: ["dense-dashboard"],
-        },
-        guidance: ["keep controls close to the table or list they affect"],
-        evidence: [
+    inventory: {
+      topology: {
+        scopes: [
           {
-            path: "apps/dashboard/src/routes/orders/page.tsx",
+            id: "dashboard",
+            paths: ["apps/dashboard/**"],
+            surface_types: ["dense-dashboard"],
           },
         ],
-        counterexamples: [
-          "marketing pages may use larger narrative composition",
-        ],
-        check_refs: ["check:no-decorative-card-grid-for-dense-table"],
+        surface_types: ["dense-dashboard", "docs"],
       },
-    ],
-    experience_contracts: [
-      {
-        id: "destructive-actions-require-clear-confirmation",
-        contract:
-          "Destructive actions need explicit confirmation and a clear recovery path.",
-        obligations: ["confirm intent", "explain consequence"],
+      building_blocks: {
+        tokens: ["use semantic color tokens"],
+        components: ["prefer shared table primitives"],
+        libraries: ["local dashboard primitives"],
+        assets: ["status icons"],
+        routes: ["/orders"],
+        files: ["apps/dashboard/src/routes/orders/page.tsx"],
+        notes: ["current vocabulary is replaceable implementation material"],
       },
-    ],
-    patterns: [
-      {
-        id: "compact-filter-toolbar",
-        kind: "composition",
-        pattern: "Filters stay visually attached to the table they affect.",
-        guidance: ["keep primary filters before secondary actions"],
-      },
-    ],
-    implementation_vocabulary: {
-      tokens: ["use semantic color tokens"],
-      components: ["prefer shared table primitives"],
-      libraries: ["local dashboard primitives"],
-      assets: ["status icons"],
-      notes: ["current vocabulary is replaceable implementation material"],
+      exemplars: [
+        {
+          id: "orders-table",
+          path: "apps/dashboard/src/routes/orders/page.tsx",
+          title: "Order review table",
+          surface_type: "dense-dashboard",
+          scope: "dashboard",
+          note: "Dense filtering and comparison surface.",
+          why: "Shows the compact hierarchy future dashboard work should preserve.",
+          refs: [
+            "prose.principle:dense-workflows-prioritize-scanning",
+            "composition.pattern:compact-filter-toolbar",
+          ],
+        },
+      ],
+    },
+    composition: {
+      patterns: [
+        {
+          id: "compact-filter-toolbar",
+          kind: "layout",
+          pattern: "Filters stay visually attached to the table they affect.",
+          guidance: ["keep primary filters before secondary actions"],
+        },
+      ],
     },
   };
 }

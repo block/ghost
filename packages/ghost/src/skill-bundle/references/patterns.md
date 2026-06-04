@@ -2,18 +2,18 @@
 name: patterns
 description: Author product-experience patterns inside .ghost/fingerprint.yml.
 handoffs:
-  - label: Verify bundle
+  - label: Verify fingerprint package
     command: ghost verify .ghost --root .
-    prompt: Verify the root fingerprint bundle
+    prompt: Verify the root fingerprint package
 ---
 
 # Recipe: Author Fingerprint Patterns
 
-**Goal:** write useful `patterns[]` entries in `.ghost/fingerprint.yml`.
+**Goal:** write useful `composition.patterns[]` entries in `.ghost/fingerprint.yml`.
 
-Patterns are durable product-experience memory. They may describe visual,
-behavioral, content, or composition choices. They are not a raw inventory of
-everything the repo does.
+Patterns are durable product-experience memory. They may describe rules,
+layouts, structures, flows, states, content, behavior, or visual arrangements.
+They are not a raw inventory of everything the repo does.
 
 ## When To Add A Pattern
 
@@ -31,26 +31,31 @@ observations in `.ghost/cache/` or keep them in scratch notes.
 ## Shape
 
 ```yaml
-patterns:
-  - id: resource-index-stays-tabular
-    kind: composition
-    pattern: Resource index views stay tabular when comparison is the task.
-    applies_to:
-      surface_types: [resource-index]
-      paths: [src/orders]
-    guidance:
-      - Preserve row density and sortable columns.
-      - Avoid decorative card grids for primary comparison views.
-    evidence:
-      - path: src/orders/index.tsx
+composition:
+  patterns:
+    - id: resource-index-stays-tabular
+      kind: structure
+      pattern: Resource index views stay tabular when comparison is the task.
+      applies_to:
+        surface_types: [resource-index]
+        paths: [src/orders]
+      guidance:
+        - Preserve row density and sortable columns.
+        - Avoid decorative card grids for primary comparison views.
+      evidence:
+        - path: src/orders/index.tsx
 ```
 
 Allowed `kind` values:
 
 - `visual`
-- `behavioral`
+- `behavior`
 - `content`
-- `composition`
+- `rule`
+- `layout`
+- `structure`
+- `flow`
+- `state`
 
 ## Authoring Rules
 
@@ -58,8 +63,8 @@ Allowed `kind` values:
 - Keep the pattern actionable for generation and review.
 - Cite paths, locators, or notes as evidence.
 - Put obligations that affect failure, disclosure, recovery, or trust in
-  `experience_contracts`, not only `patterns`.
-- Put broad product judgment in `principles`.
+  `prose.experience_contracts`, not only `composition.patterns`.
+- Put broad product judgment in `prose.principles`.
 - Add `check_refs` only when a deterministic check exists in `checks.yml`.
 
 ## Validate
@@ -69,5 +74,5 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-If a pattern is speculative, do not add it as canonical memory. Leave it in
+If a pattern is speculative, do not add it as canonical composition. Leave it in
 scratch notes or ask the user whether to edit `fingerprint.yml`.

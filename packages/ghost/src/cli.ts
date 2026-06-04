@@ -155,7 +155,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "check",
-      "Run active ghost.checks/v1 gates from the resolved memory stack against a git diff.",
+      "Run active ghost.checks/v2 gates from the resolved fingerprint stack against a git diff.",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(
@@ -168,7 +168,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for stack discovery (default: .ghost)",
+      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -224,11 +224,11 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative memory package directory for stack discovery (default: .ghost)",
+      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
     )
     .option(
       "--include-memory",
-      "Include accepted product-experience decisions from decisions/ in the advisory packet.",
+      "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -251,7 +251,7 @@ export function buildCli(): ReturnType<typeof cac> {
           memoryDir:
             typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           diffText,
-          includeMemory: Boolean(opts.includeMemory),
+          includeAcceptedDecisions: Boolean(opts.includeMemory),
         });
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);

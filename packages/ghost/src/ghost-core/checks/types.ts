@@ -4,18 +4,31 @@ import type {
 } from "../fingerprint/index.js";
 import type { MapFrontmatter, MapScope } from "../map/index.js";
 
-export const GHOST_CHECKS_SCHEMA = "ghost.checks/v1" as const;
+export const GHOST_CHECKS_SCHEMA = "ghost.checks/v2" as const;
 export const GHOST_CHECKS_FILENAME = "checks.yml" as const;
 
 export type GhostCheckStatus = "active" | "proposed" | "disabled";
 export type GhostCheckSeverity = "critical" | "serious" | "nit";
-export type GhostCheckDerivesFrom = Extract<
+export type GhostCheckDerivationProseRef = Extract<
   GhostFingerprintRef,
-  | `principle:${string}`
-  | `situation:${string}`
-  | `experience_contract:${string}`
-  | `pattern:${string}`
+  | `prose.principle:${string}`
+  | `prose.situation:${string}`
+  | `prose.experience_contract:${string}`
 >;
+export type GhostCheckDerivationInventoryRef = Extract<
+  GhostFingerprintRef,
+  `inventory.exemplar:${string}`
+>;
+export type GhostCheckDerivationCompositionRef = Extract<
+  GhostFingerprintRef,
+  `composition.pattern:${string}`
+>;
+
+export interface GhostCheckDerivation {
+  prose?: GhostCheckDerivationProseRef[];
+  inventory?: GhostCheckDerivationInventoryRef[];
+  composition?: GhostCheckDerivationCompositionRef[];
+}
 
 export type GhostCheckDetectorType =
   | "forbidden-regex"
@@ -49,7 +62,7 @@ export interface GhostCheck {
   title: string;
   status: GhostCheckStatus;
   severity: GhostCheckSeverity;
-  derives_from?: GhostCheckDerivesFrom;
+  derivation?: GhostCheckDerivation;
   applies_to?: GhostCheckAppliesTo;
   detector: GhostCheckDetector;
   evidence?: GhostCheckEvidence;

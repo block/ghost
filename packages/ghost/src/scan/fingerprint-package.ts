@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   GHOST_CHECKS_FILENAME,
+  GHOST_CHECKS_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
   type GhostFingerprintDocument,
   GhostFingerprintSchema,
@@ -304,9 +305,10 @@ function templateFingerprintYml(reference?: string): string {
     : undefined;
   if (referenceInput) {
     return `schema: ${GHOST_FINGERPRINT_SCHEMA}
-implementation_vocabulary:
-  libraries:
-    - ${referenceInput.id}
+inventory:
+  building_blocks:
+    libraries:
+      - ${referenceInput.id}
 `;
   }
 
@@ -315,7 +317,7 @@ implementation_vocabulary:
 }
 
 function templateChecks(): string {
-  return `schema: ghost.checks/v1
+  return `schema: ${GHOST_CHECKS_SCHEMA}
 id: local
 checks: []
 `;

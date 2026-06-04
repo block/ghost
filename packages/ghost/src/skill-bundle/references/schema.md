@@ -1,11 +1,11 @@
-# Root Fingerprint Bundle Schema Reference
+# Root Fingerprint Package Schema Reference
 
 Core package:
 
 ```text
 .ghost/
-  fingerprint.yml ghost.fingerprint/v1
-  checks.yml      optional ghost.checks/v1 gates
+  fingerprint.yml ghost.fingerprint/v2
+  checks.yml      optional ghost.checks/v2 gates
 ```
 
 Optional files:
@@ -17,20 +17,19 @@ Optional files:
   cache/          optional generated caches
 ```
 
-Git is the approval boundary: checked-in `fingerprint.yml` is canonical memory,
-and uncommitted or unmerged edits are draft work. Ghost validates memory and
+Git is the approval boundary: checked-in `fingerprint.yml` is canonical,
+and uncommitted or unmerged edits are draft work. Ghost validates fingerprint layers and
 runs gates; it is not a lifecycle manager, proposal system, or design-system
 registry.
 
 `fingerprint.yml` may start sparse:
 
 ```yaml
-schema: ghost.fingerprint/v1
+schema: ghost.fingerprint/v2
 ```
 
-Top-level sections are optional on disk and default internally to empty
-`summary`, `topology`, memory arrays, `exemplars`, and
-`implementation_vocabulary`.
+Layer sections are optional on disk and default internally to empty `prose`,
+`inventory`, and `composition` buckets.
 
 Advanced nested packages use the same shape at any product-area root, for example
 `apps/checkout/.ghost/`. Resolve the stack with `ghost stack <path>`; child
@@ -39,60 +38,80 @@ entries with the same `id` override parent entries.
 ## `fingerprint.yml`
 
 ```yaml
-schema: ghost.fingerprint/v1
-summary:
-  product: Example dashboard
-  goals:
-    - Preserve dense comparison workflows.
-  anti_goals:
-    - Do not turn operational screens into marketing pages.
-topology:
-  scopes:
-    - id: orders
-      paths: [src/orders]
-      surface_types: [resource-index]
-situations:
-  - id: triaging-orders
-    title: Triaging orders
-    product_obligation: Keep status, owner, and recovery actions visible.
-principles:
-  - id: density-supports-comparison
-    principle: Dense work surfaces prioritize scanning and comparison.
-experience_contracts:
-  - id: destructive-actions-disclose-consequence
-    contract: Destructive actions disclose consequence and recovery path.
-patterns:
-  - id: resource-index-stays-tabular
-    kind: composition
-    pattern: Resource index views stay tabular when comparison is the task.
-    evidence:
-      - path: src/orders/index.tsx
-exemplars:
-  - id: orders-index
-    path: src/orders/index.tsx
-    title: Orders index
-    surface_type: resource-index
-    scope: orders
-    why: Shows the dense tabular precedent for order triage.
-    refs: [pattern:resource-index-stays-tabular]
-implementation_vocabulary:
-  tokens: [color.background, color.text]
-  components: [DataTable]
-  notes:
-    - Current vocabulary is replaceable implementation material.
+schema: ghost.fingerprint/v2
+prose:
+  summary:
+    product: Example dashboard
+    goals:
+      - Preserve dense comparison workflows.
+    anti_goals:
+      - Do not turn operational screens into marketing pages.
+  situations:
+    - id: triaging-orders
+      title: Triaging orders
+      product_obligation: Keep status, owner, and recovery actions visible.
+  principles:
+    - id: density-supports-comparison
+      principle: Dense work surfaces prioritize scanning and comparison.
+  experience_contracts:
+    - id: destructive-actions-disclose-consequence
+      contract: Destructive actions disclose consequence and recovery path.
+inventory:
+  topology:
+    scopes:
+      - id: orders
+        paths: [src/orders]
+        surface_types: [resource-index]
+  building_blocks:
+    tokens: [color.background, color.text]
+    components: [DataTable]
+    libraries: []
+    assets: []
+    routes: [src/orders/routes.tsx]
+    files: [src/orders/index.tsx]
+    notes:
+      - Current inventory is replaceable implementation material.
+  exemplars:
+    - id: orders-index
+      path: src/orders/index.tsx
+      title: Orders index
+      surface_type: resource-index
+      scope: orders
+      why: Shows the dense tabular precedent for order triage.
+      refs: [composition.pattern:resource-index-stays-tabular]
+composition:
+  patterns:
+    - id: resource-index-stays-tabular
+      kind: structure
+      pattern: Resource index views stay tabular when comparison is the task.
+      evidence:
+        - path: src/orders/index.tsx
 ```
+
+Use these typed refs:
+
+- `prose.situation:<id>`
+- `prose.principle:<id>`
+- `prose.experience_contract:<id>`
+- `inventory.exemplar:<id>`
+- `composition.pattern:<id>`
+- `check:<id>`
 
 ## `checks.yml`
 
 ```yaml
-schema: ghost.checks/v1
+schema: ghost.checks/v2
 id: my-project
 checks:
   - id: no-hardcoded-ui-color
     title: Use design tokens for UI color
     status: active
     severity: serious
-    derives_from: pattern:tokenized-ui-color
+    derivation:
+      composition:
+        - composition.pattern:tokenized-ui-color
+      inventory:
+        - inventory.exemplar:checkout-review
     applies_to:
       scopes: [checkout]
       paths: [src/checkout]
@@ -117,7 +136,10 @@ Detector types remain deterministic only:
 - `required-token`
 
 Checks keep `status: active | proposed | disabled` because enforcement still
-needs lifecycle state. Fingerprint entries do not have status fields.
+needs lifecycle state. Active checks need at least one prose or composition
+derivation ref. Inventory refs can support a check, but inventory-only
+grounding is not enough for an active gate. Fingerprint entries do not have
+status fields.
 
 ## `decisions/*.yml`
 
@@ -150,7 +172,6 @@ ghost check --base main
 ```
 
 `lint` validates artifact shape. `verify` validates cross-artifact fidelity:
-fingerprint evidence paths resolve and checks reference known fingerprint
-memory. Exemplar paths are verified as generation anchors. Optional decisions
-are linted when present. `ghost check` is the
-deterministic pass/fail gate.
+fingerprint evidence paths resolve and checks reference known fingerprint refs.
+Exemplar paths are verified as inventory anchors. Optional decisions
+are linted when present. `ghost check` is the deterministic pass/fail gate.

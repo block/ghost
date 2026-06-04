@@ -3,6 +3,10 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
+  GhostCheckDerivation,
+  GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationInventoryRef,
+  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
@@ -16,10 +20,11 @@ export type {
   GhostChecksLintSeverity,
   RoutedGhostCheck,
 } from "./checks/index.js";
-// --- Checks (ghost.checks/v1) ---
+// --- Checks (ghost.checks/v2) ---
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
+  GhostCheckDerivationSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,

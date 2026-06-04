@@ -3,7 +3,10 @@
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
-  GhostCheckDerivesFrom,
+  GhostCheckDerivation,
+  GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationInventoryRef,
+  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
@@ -16,11 +19,11 @@ export type {
   GhostChecksLintSeverity,
   RoutedGhostCheck,
 } from "./checks/index.js";
-// --- Checks (ghost.checks/v1) ---
+// --- Checks (ghost.checks/v2) ---
 export {
   GHOST_CHECKS_FILENAME,
   GHOST_CHECKS_SCHEMA,
-  GhostCheckDerivesFromSchema,
+  GhostCheckDerivationSchema,
   GhostCheckSchema,
   GhostChecksSchema,
   lintGhostChecks,
@@ -55,19 +58,22 @@ export {
   parseColorToOklch,
   saturationScore,
 } from "./embedding/index.js";
-// --- Fingerprint.yml (ghost.fingerprint/v1) ---
+// --- Fingerprint.yml (ghost.fingerprint/v2) ---
 export type {
+  GhostFingerprintComposition,
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
   GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
-  GhostFingerprintImplementationVocabulary,
+  GhostFingerprintInventory,
+  GhostFingerprintInventoryBuildingBlocks,
   GhostFingerprintLintIssue,
   GhostFingerprintLintReport,
   GhostFingerprintLintSeverity,
   GhostFingerprintPattern,
   GhostFingerprintPatternKind,
   GhostFingerprintPrinciple,
+  GhostFingerprintProse,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
   GhostFingerprintScope,
@@ -79,14 +85,17 @@ export type {
 export {
   GHOST_FINGERPRINT_SCHEMA,
   GHOST_FINGERPRINT_YML_FILENAME,
+  GhostFingerprintCompositionSchema,
   GhostFingerprintEvidenceSchema,
   GhostFingerprintExemplarSchema,
   GhostFingerprintExperienceContractSchema,
-  GhostFingerprintImplementationVocabularySchema,
+  GhostFingerprintInventoryBuildingBlocksSchema,
+  GhostFingerprintInventorySchema,
   GhostFingerprintMemoryRefSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
+  GhostFingerprintProseSchema,
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
   GhostFingerprintSchema,

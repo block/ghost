@@ -1,16 +1,21 @@
-export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v1" as const;
+export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v2" as const;
 export const GHOST_FINGERPRINT_YML_FILENAME = "fingerprint.yml" as const;
 
 export type GhostFingerprintPatternKind =
+  | "rule"
+  | "layout"
+  | "structure"
+  | "flow"
+  | "state"
   | "visual"
-  | "behavioral"
-  | "content"
-  | "composition";
+  | "behavior"
+  | "content";
 export type GhostFingerprintRefPrefix =
-  | "principle"
-  | "situation"
-  | "experience_contract"
-  | "pattern"
+  | "prose.principle"
+  | "prose.situation"
+  | "prose.experience_contract"
+  | "inventory.exemplar"
+  | "composition.pattern"
   | "check";
 
 export type GhostFingerprintRef = `${GhostFingerprintRefPrefix}:${string}`;
@@ -59,6 +64,33 @@ export interface GhostFingerprintTopology {
   surface_types?: string[];
 }
 
+export interface GhostFingerprintInventoryBuildingBlocks {
+  tokens?: string[];
+  components?: string[];
+  libraries?: string[];
+  assets?: string[];
+  routes?: string[];
+  files?: string[];
+  notes?: string[];
+}
+
+export interface GhostFingerprintProse {
+  summary: GhostFingerprintSummary;
+  situations: GhostFingerprintSituation[];
+  principles: GhostFingerprintPrinciple[];
+  experience_contracts: GhostFingerprintExperienceContract[];
+}
+
+export interface GhostFingerprintInventory {
+  topology: GhostFingerprintTopology;
+  building_blocks: GhostFingerprintInventoryBuildingBlocks;
+  exemplars: GhostFingerprintExemplar[];
+}
+
+export interface GhostFingerprintComposition {
+  patterns: GhostFingerprintPattern[];
+}
+
 export interface GhostFingerprintSituation {
   id: string;
   title?: string;
@@ -103,24 +135,11 @@ export interface GhostFingerprintPattern {
   check_refs?: GhostFingerprintRef[];
 }
 
-export interface GhostFingerprintImplementationVocabulary {
-  tokens?: string[];
-  components?: string[];
-  libraries?: string[];
-  assets?: string[];
-  notes?: string[];
-}
-
 export interface GhostFingerprintDocument {
   schema: typeof GHOST_FINGERPRINT_SCHEMA;
-  summary: GhostFingerprintSummary;
-  topology: GhostFingerprintTopology;
-  situations: GhostFingerprintSituation[];
-  principles: GhostFingerprintPrinciple[];
-  experience_contracts: GhostFingerprintExperienceContract[];
-  patterns: GhostFingerprintPattern[];
-  exemplars: GhostFingerprintExemplar[];
-  implementation_vocabulary: GhostFingerprintImplementationVocabulary;
+  prose: GhostFingerprintProse;
+  inventory: GhostFingerprintInventory;
+  composition: GhostFingerprintComposition;
 }
 
 export type GhostFingerprintLintSeverity = "error" | "warning" | "info";

@@ -4,16 +4,38 @@ import { GHOST_CHECKS_SCHEMA } from "./types.js";
 const GhostCheckStatusSchema = z.enum(["active", "proposed", "disabled"]);
 const GhostCheckSeveritySchema = z.enum(["critical", "serious", "nit"]);
 
-export const GhostCheckDerivesFromSchema = z
+const GhostCheckDerivationProseRefSchema = z
   .string()
   .min(1)
   .regex(
-    /^(principle|situation|experience_contract|pattern):[a-z0-9][a-z0-9._-]*$/,
+    /^(prose\.principle|prose\.situation|prose\.experience_contract):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "derives_from must use a typed fingerprint ref, e.g. principle:dense-workflows",
+        "prose derivation refs must use prose.<kind>:slug, e.g. prose.principle:dense-workflows",
     },
   );
+
+const GhostCheckDerivationInventoryRefSchema = z
+  .string()
+  .min(1)
+  .regex(/^inventory\.exemplar:[a-z0-9][a-z0-9._-]*$/, {
+    message: "inventory derivation refs must use inventory.exemplar:slug",
+  });
+
+const GhostCheckDerivationCompositionRefSchema = z
+  .string()
+  .min(1)
+  .regex(/^composition\.pattern:[a-z0-9][a-z0-9._-]*$/, {
+    message: "composition derivation refs must use composition.pattern:slug",
+  });
+
+export const GhostCheckDerivationSchema = z
+  .object({
+    prose: z.array(GhostCheckDerivationProseRefSchema).optional(),
+    inventory: z.array(GhostCheckDerivationInventoryRefSchema).optional(),
+    composition: z.array(GhostCheckDerivationCompositionRefSchema).optional(),
+  })
+  .strict();
 
 const GhostCheckAppliesToSchema = z
   .object({
@@ -69,7 +91,7 @@ export const GhostCheckSchema = z
     title: z.string().min(1),
     status: GhostCheckStatusSchema,
     severity: GhostCheckSeveritySchema,
-    derives_from: GhostCheckDerivesFromSchema.optional(),
+    derivation: GhostCheckDerivationSchema.optional(),
     applies_to: GhostCheckAppliesToSchema.optional(),
     detector: GhostCheckDetectorSchema,
     evidence: GhostCheckEvidenceSchema.optional(),

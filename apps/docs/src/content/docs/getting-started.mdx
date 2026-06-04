@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, author repo-local product experience memory, and review generated UI against it.
+description: Install Ghost, author a repo-local product-experience world model, and review generated UI against it.
 kicker: Docs
 section: guide
 order: 10
@@ -9,36 +9,42 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost keeps a project's product experience memory in the repo, where your agent
-can use it. The public package is `@anarchitecture/ghost`, and it installs one
-CLI: `ghost`.
+Ghost keeps a project's product-experience world model in the repo, where your
+agent can use it. The public package is `@anarchitecture/ghost`, and it installs
+one CLI: `ghost`.
+
+Design-system inventory remains implementation material: tokens, components,
+examples, and libraries. Ghost stores the product judgment and composition rules
+agents need before using that material.
 
 The canonical fingerprint is small:
 
 ```text
 .ghost/fingerprint.yml -> .ghost/checks.yml
-memory and why            deterministic gates
+prose + inventory + composition
+                          deterministic gates
 ```
 
-Nested product areas can add child bundles such as
-`apps/checkout/.ghost/fingerprint.yml`. Ghost resolves memory root-to-leaf for
+Nested product areas can add child fingerprint packages such as
+`apps/checkout/.ghost/fingerprint.yml`. Ghost resolves fingerprint stacks root-to-leaf for
 the file or diff being reviewed.
 
-Host adapters can use a different safe relative memory directory with
+Host adapters can use a different safe relative fingerprint package directory with
 `--memory-dir`, such as `.design/memory`. Ghost still emits adapter-neutral JSON;
 the wrapper maps findings into its own review or check format.
 
 `intent.md` and `decisions/*.yml` are optional human-authored context. `cache/`
-can hold generated inventory, but it is not canonical memory. Ordinary Git
-workflow is the staging layer: uncommitted or unmerged memory edits are drafts,
-and checked-in `fingerprint.yml` is truth for Ghost.
+can hold generated cache, but generated cache is optional source material,
+not canonical inventory. Ordinary Git workflow is the staging layer:
+uncommitted or unmerged fingerprint edits are drafts, and checked-in
+`fingerprint.yml` is truth for Ghost.
 
-Generation starts from product prose, optional generated inventory, and curated
-exemplars. Checks validate the result afterward; they are not generation memory.
+Generation starts from prose, inventory, and composition. Checks validate the
+result afterward; they are not generation input.
 
 | Surface | Job | Verbs |
 | --- | --- | --- |
-| `ghost` | Create and check root or nested `.ghost/` memory bundles, review diffs, compare bundles, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
+| `ghost` | Create and check root or nested `.ghost/` fingerprint packages, review diffs, compare packages, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
 | `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
 | `ghost-ui` | Reference design system Ghost uses to test itself. | - |
 
@@ -52,8 +58,8 @@ npx ghost --help
 npx ghost skill install
 ```
 
-Once the skill is installed, ask your agent in plain English: "Set up Ghost
-memory for this repo" or "review this PR for drift". The recipe tells the
+Once the skill is installed, ask your agent in plain English: "Set up the Ghost
+fingerprint for this repo" or "review this PR for drift". The recipe tells the
 agent what to read, what to write, and which CLI checks to run.
 
 </DocSection>
@@ -61,20 +67,17 @@ agent what to read, what to write, and which CLI checks to run.
 <DocSection title="Author Your First Fingerprint">
 
 ```text
-Set up Ghost memory for this repo.
+Set up the Ghost fingerprint for this repo.
 ```
 
-Fingerprint memory records durable product-experience guidance:
+The fingerprint records durable product-experience guidance:
 
-1. **Summary and topology** - what product this is, who it serves, and where UI
-   surfaces live.
-2. **Situations** - user, task, and state moments that change obligations.
-3. **Principles and contracts** - durable product judgment plus behavior,
-   disclosure, failure, and recovery rules.
-4. **Patterns and exemplars** - visual, content, behavior, and composition
-   memory plus concrete surfaces that show what good looks like.
-5. **Implementation vocabulary** - current tokens and components agents may use
-   to implement the memory.
+1. **Prose** - what product this is, who it serves, which situations matter,
+   and which principles or contracts govern the experience.
+2. **Inventory** - topology, building blocks, files, routes, assets, libraries,
+   and exemplars agents may inspect or use.
+3. **Composition** - patterns, rules, layouts, structures, flows, states,
+   content, behavior, and visual arrangements.
 
 ```bash
 ghost init --with-intent
@@ -89,10 +92,17 @@ ghost lint --all
 ghost verify --all
 ```
 
-Inventory is optional source material. Curate durable conclusions into
-`fingerprint.yml`, then use normal Git review for approval.
+`ghost scan` speaks in these layer terms. It reports `layer_counts`,
+`missing_layers`, and a readiness state such as `prose-only`,
+`fingerprint-partial`, or `fingerprint-ready`.
 
-For generation, emit a packet that keeps these inputs separate:
+Generated cache is optional source material. Curate durable prose,
+inventory, and composition into `fingerprint.yml`, then use normal Git review
+for approval.
+
+For generation, emit the upstream handoff packet that keeps these inputs
+separate. Give it to the host agent before asking for UI work, then validate the
+resulting diff with Ghost review/check when available:
 
 ```bash
 ghost emit context-bundle
@@ -107,7 +117,7 @@ ghost compare market/.ghost dashboard/.ghost
 ghost compare */.ghost
 ```
 
-Bundle comparison uses canonical Ghost memory when available. Direct
+Package comparison uses canonical `fingerprint.yml` when available. Direct
 fingerprint markdown files still work for legacy semantic comparison:
 
 ```bash
@@ -122,9 +132,10 @@ ghost compare a.fingerprint.md b.fingerprint.md --semantic
 Review this PR for design drift
 ```
 
-`ghost check` applies active deterministic gates from the resolved memory stack
+`ghost check` applies active deterministic gates from the resolved fingerprint stack
 for each changed file. `ghost review` emits advisory context grounded in merged
-`fingerprint.yml` memory, exemplars, optional `intent.md`, checks, and the diff.
+`fingerprint.yml` prose, inventory, composition, optional `intent.md`, checks,
+and the diff.
 Add `--include-memory` to include accepted decisions in the advisory packet. Use
 `--package <dir>` when you need exact single-bundle behavior.
 
@@ -133,19 +144,19 @@ outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
 
 </DocSection>
 
-<DocSection title="Update Fingerprint Memory">
+<DocSection title="Update Fingerprint Layers">
 
-Use the installed `ghost` skill when work reveals durable memory Ghost should
-add to the fingerprint:
+Use the installed `ghost` skill when work reveals durable product-experience
+judgment Ghost should add to the fingerprint:
 
 ```text
 Brief this work from the Ghost fingerprint
 Update the fingerprint with this product-experience decision
 ```
 
-Memory updates are ordinary edits to `fingerprint.yml`, `checks.yml`,
+Fingerprint edits are ordinary edits to `fingerprint.yml`, `checks.yml`,
 `intent.md`, or `decisions/*.yml`. Uncommitted or unmerged edits are drafts;
-checked-in memory is canonical.
+checked-in `fingerprint.yml` is canonical.
 
 </DocSection>
 
