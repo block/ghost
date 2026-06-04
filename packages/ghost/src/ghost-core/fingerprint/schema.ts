@@ -40,7 +40,7 @@ export const GhostFingerprintRefSchema = z
     },
   );
 
-export const GhostFingerprintMemoryRefSchema = z
+export const GhostFingerprintLayerRefSchema = z
   .string()
   .min(1)
   .regex(
@@ -103,7 +103,7 @@ export const GhostFingerprintExemplarSchema = z
     scope: SlugIdSchema.optional(),
     note: z.string().min(1).optional(),
     why: z.string().min(1).optional(),
-    refs: z.array(GhostFingerprintMemoryRefSchema).optional(),
+    refs: z.array(GhostFingerprintLayerRefSchema).optional(),
   })
   .strict();
 

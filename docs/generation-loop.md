@@ -42,7 +42,7 @@ Build a brief from the generation packet:
 7. Use optional `intent.md`, accepted decisions, and nested stacks only when
    the project has opted into those advanced inputs.
 
-Generated inventory can help orient an agent, but it is cache:
+Generated cache can help orient an agent:
 
 ```bash
 mkdir -p .ghost/cache

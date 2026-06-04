@@ -166,7 +166,7 @@ Use layer-qualified refs:
 - `check:<id>`
 
 Exemplars are inventory. Entry-level `evidence` remains proof or citation for a
-memory claim; exemplars are the concrete surfaces an agent should inspect.
+fingerprint claim; exemplars are the concrete surfaces an agent should inspect.
 
 ## `checks.yml`
 
@@ -258,7 +258,7 @@ canonical inventory readiness. A bundle is `fingerprint-ready` only when all
 three layers have useful content; otherwise scan reports the single-layer,
 partial, empty, missing, or invalid state directly.
 
-Advanced scoped-memory and wrapper commands remain available:
+Advanced scoped fingerprint-package and wrapper commands remain available:
 
 ```bash
 ghost init --with-intent

@@ -13,7 +13,7 @@ export type {
   GhostCheckSeverity,
   GhostCheckStatus,
   GhostChecksDocument,
-  GhostChecksFingerprintMemory,
+  GhostChecksFingerprintContext,
   GhostChecksLintIssue,
   GhostChecksLintOptions,
   GhostChecksLintReport,
@@ -92,12 +92,12 @@ export {
 // --- Memory (ghost.decision/v1) ---
 export type {
   GhostDecisionDocument,
+  GhostDecisionLintIssue,
+  GhostDecisionLintReport,
+  GhostDecisionLintSeverity,
   GhostDecisionStatus,
   GhostExperienceEvidence,
   GhostExperienceScope,
-  GhostMemoryLintIssue,
-  GhostMemoryLintReport,
-  GhostMemoryLintSeverity,
 } from "./memory/index.js";
 export {
   GHOST_DECISION_SCHEMA,

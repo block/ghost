@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   type GhostChecksDocument,
-  type GhostChecksFingerprintMemory,
+  type GhostChecksFingerprintContext,
   lintGhostChecks,
   type MapFrontmatter,
   routeGhostChecksForPath,
@@ -91,16 +91,16 @@ describe("ghost.checks/v2", () => {
     });
   });
 
-  it("accepts active checks grounded in fingerprint memory", () => {
+  it("accepts active checks grounded in fingerprint refs", () => {
     const report = lintGhostChecks(checks(), {
-      fingerprint: fingerprintMemory(),
+      fingerprint: fingerprintContext(),
     });
 
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
   });
 
-  it("reports active checks grounded in missing fingerprint memory", () => {
+  it("reports active checks grounded in missing fingerprint refs", () => {
     const report = lintGhostChecks(
       checks({
         derivation: {
@@ -108,7 +108,7 @@ describe("ghost.checks/v2", () => {
         },
       }),
       {
-        fingerprint: fingerprintMemory(),
+        fingerprint: fingerprintContext(),
       },
     );
 
@@ -139,7 +139,7 @@ describe("ghost.checks/v2", () => {
           inventory: ["inventory.exemplar:lending-tokenized-screen"],
         },
       }),
-      { fingerprint: fingerprintMemory() },
+      { fingerprint: fingerprintContext() },
     );
 
     expect(report.errors).toBe(1);
@@ -171,7 +171,7 @@ describe("ghost.checks/v2", () => {
           pattern_ids: ["unknown-pattern"],
         },
       }),
-      { fingerprint: fingerprintMemory() },
+      { fingerprint: fingerprintContext() },
     );
 
     expect(report.errors).toBe(3);
@@ -231,7 +231,7 @@ describe("ghost.checks/v2", () => {
   });
 });
 
-function fingerprintMemory(): GhostChecksFingerprintMemory {
+function fingerprintContext(): GhostChecksFingerprintContext {
   return {
     prose: {
       principles: [{ id: "tokenized-ui-color" }],

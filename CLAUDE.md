@@ -4,7 +4,7 @@ Agents can write UI. What they cannot reliably preserve is the product
 experience identity behind that UI: hierarchy, density, restraint, repetition,
 trust, flow, and the decisions that make a surface feel intentional.
 
-Ghost keeps that memory in a repo-local `.ghost/` bundle. The public npm shape
+Ghost keeps that product-experience memory in a repo-local `.ghost/` fingerprint package. The public npm shape
 is one package, `@anarchitecture/ghost`, with one user-facing bin, `ghost`.
 The CLI validates, computes, compares, and emits deterministic packets. The
 host agent does the interpretive BYOA work through the installed `ghost` skill.
@@ -33,35 +33,35 @@ another host agent reads, decides, and writes. Ghost is the deterministic
 calculator the agent reaches for: schema validation, inventory/cache helpers,
 structural diffs, drift checks, comparison math, and handoff packets.
 
-The canonical root `.ghost/` bundle follows:
+The canonical root `.ghost/` package follows:
 
 ```text
-fingerprint.yml -> checks.yml
-memory and why     deterministic gates
+fingerprint.yml                 -> checks.yml
+prose + inventory + composition    deterministic gates
 ```
 
-Optional memory lives beside it:
+Optional context lives beside it:
 
 - `intent.md` for human-authored or human-approved product intent.
 - `decisions/*.yml` for accepted/rejected product-experience rationale.
 - `cache/` for generated cache. Cache answers what exists; fingerprint
-  memory answers what matters and why.
+  prose answers what matters and why.
 
 Generation starts from `fingerprint.yml` prose, inventory, and composition.
 Generated cache in `cache/` is optional source material; curated inventory in
 `fingerprint.yml` includes building blocks and exemplars. Checks remain
-validation and enforcement, not generation memory. Ordinary Git review is the
-approval boundary for memory edits.
+validation and enforcement, not generation input. Ordinary Git review is the
+approval boundary for fingerprint edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
 appear in older repos or as migration source material. They are not canonical
-memory for new Ghost work.
+fingerprint input for new Ghost work.
 
 ## Packages
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, scan/memory authoring, checks, advisory review packets, comparison, drift stance verbs, and the unified skill bundle. |
+| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, fingerprint package authoring, checks, advisory review packets, comparison, drift stance verbs, and the unified skill bundle. |
 | `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
 | `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
 | `packages/ghost-ui` | no | Reference design system: shadcn registry plus `ghost-mcp` MCP server. |
@@ -74,14 +74,14 @@ memory for new Ghost work.
 | `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml}`. |
 | `ghost scan` | Report fingerprint layer readiness and BYOA next-step guidance. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/source material. |
-| `ghost lint` | Validate a bundle or single artifact. |
-| `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional memory. |
+| `ghost lint` | Validate a fingerprint package or single artifact. |
+| `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
 | `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
 | `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v2` workflows. |
 | `ghost check` | Run active `ghost.checks/v2` deterministic gates against a diff. |
-| `ghost review` | Emit an evidence-routed advisory review packet grounded in memory, inventory exemplars, checks, and the diff. |
-| `ghost compare` | Pairwise or composite comparison over bundles or direct fingerprints. |
+| `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint layers, inventory exemplars, checks, and the diff. |
+| `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
 | `ghost diverge` | Declare intentional divergence on a dimension. |

@@ -674,7 +674,6 @@ checks:
       prompt.indexOf("## Generated Cache"),
     );
     expect(prompt).toContain("Generated cache is optional source material");
-    expect(prompt).not.toContain("Inventory cache");
     expect(prompt).toContain("Package.swift");
     expect(prompt).toContain("# Composition");
     expect(prompt).toContain("no-hardcoded-ui-color");

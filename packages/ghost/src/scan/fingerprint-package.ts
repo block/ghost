@@ -120,7 +120,7 @@ export async function lintFingerprintPackage(
   const configRaw = await readOptional(paths.config);
   const checksRaw = await readOptional(paths.checks);
   const intentRaw = await readOptional(paths.intent);
-  await lintMemoryDirectory(
+  await lintDecisionDirectory(
     paths.decisions,
     "decisions",
     "decision",
@@ -170,7 +170,7 @@ export async function lintFingerprintPackage(
   return finalize(issues);
 }
 
-async function lintMemoryDirectory(
+async function lintDecisionDirectory(
   dirPath: string,
   label: "decisions",
   itemLabel: "decision",

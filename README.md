@@ -229,7 +229,7 @@ optional and only used by semantic embedding helpers when a host opts in.
 
 | Resource | Description |
 | --- | --- |
-| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` memory format |
+| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Root `.ghost/` fingerprint package format |
 | [docs/generation-loop.md](./docs/generation-loop.md) | Brief, generate, check, review, and remediate loop |
 | [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, and custom fingerprint directories |
 | [GOVERNANCE.md](./GOVERNANCE.md) | Project governance |

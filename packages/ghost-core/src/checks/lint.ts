@@ -269,7 +269,7 @@ function checkDerivationRefs(
     issues.push({
       severity: check.status === "active" ? "error" : "warning",
       rule: "check-grounding-unknown",
-      message: `Check derivation references unknown fingerprint memory '${ref}'.`,
+      message: `Check derivation references unknown fingerprint ref '${ref}'.`,
       path: `${path}.derivation.${group}[${index}]`,
     });
   });
