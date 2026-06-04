@@ -16,7 +16,7 @@ import {
   routeGhostChecksForPath,
 } from "#ghost-core";
 import {
-  groupMemoryStacksForPaths,
+  groupFingerprintStacksForPaths,
   mapFromFingerprint,
   resolveFingerprintPackage,
 } from "../scan/index.js";
@@ -64,7 +64,7 @@ export interface GhostDriftCheckReport {
   schema: "ghost.check-report/v1";
   result: "pass" | "fail";
   package_dir: string;
-  memory_dir?: string;
+  fingerprint_dir?: string;
   base?: string;
   changed_files: string[];
   routed_files: GhostDriftRoutedFile[];
@@ -75,7 +75,7 @@ export interface GhostDriftCheckReport {
 export interface GhostDriftCheckStack {
   target_path: string;
   package_dir: string;
-  memory_dir: string;
+  fingerprint_dir: string;
   changed_files: string[];
   layer_dirs: string[];
   provenance: {
@@ -117,7 +117,7 @@ export async function runGhostDriftCheck(
     };
   }
 
-  const groups = await groupMemoryStacksForPaths(
+  const groups = await groupFingerprintStacksForPaths(
     changedFiles.map((file) => file.path),
     cwd,
     { memoryDir: options.memoryDir },
@@ -142,7 +142,7 @@ export async function runGhostDriftCheck(
     stacks.push({
       target_path: group.stack.target_path,
       package_dir: pkg.dir,
-      memory_dir: group.stack.memory_dir,
+      fingerprint_dir: group.stack.fingerprint_dir,
       changed_files: group.changed_files,
       layer_dirs: group.stack.layers.map((layer) => layer.dir),
       provenance: group.stack.provenance,
@@ -153,8 +153,10 @@ export async function runGhostDriftCheck(
     schema: "ghost.check-report/v1",
     result: findings.length > 0 ? "fail" : "pass",
     package_dir:
-      stacks.length === 1 ? stacks[0].package_dir : "memory-stack/multiple",
-    memory_dir: stacks[0]?.memory_dir ?? options.memoryDir,
+      stacks.length === 1
+        ? stacks[0].package_dir
+        : "fingerprint-stack/multiple",
+    fingerprint_dir: stacks[0]?.fingerprint_dir ?? options.memoryDir,
     ...(options.base ? { base: options.base } : {}),
     changed_files: changedFiles.map((file) => file.path),
     routed_files: routedFiles,

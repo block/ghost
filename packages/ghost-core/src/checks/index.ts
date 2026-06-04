@@ -6,14 +6,17 @@ export {
   routeGhostPathToScopes,
 } from "./routing.js";
 export {
-  GhostCheckDerivesFromSchema,
+  GhostCheckDerivationSchema,
   GhostCheckSchema,
   GhostChecksSchema,
 } from "./schema.js";
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
-  GhostCheckDerivesFrom,
+  GhostCheckDerivation,
+  GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationInventoryRef,
+  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,

@@ -7,10 +7,10 @@ import {
   lintGhostChecks,
 } from "../src/ghost-core/index.js";
 
-describe("ghost.checks/v1 grounding", () => {
-  it("requires active checks to declare derives_from", () => {
+describe("ghost.checks/v2 grounding", () => {
+  it("requires active checks to declare derivation", () => {
     const doc = checksDocument({
-      derives_from: undefined,
+      derivation: undefined,
     });
 
     const report = lintGhostChecks(doc);
@@ -18,17 +18,75 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "check-grounding-missing",
-      path: "checks[0].derives_from",
+      path: "checks[0].derivation",
     });
   });
 
-  it("accepts active checks grounded in fingerprint.yml memory", () => {
+  it("accepts active checks grounded in prose memory", () => {
     const report = lintGhostChecks(checksDocument(), {
       fingerprint: fingerprintDocument(),
     });
 
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
+  });
+
+  it("marks derivation refs unverified without fingerprint context", () => {
+    const report = lintGhostChecks(checksDocument());
+
+    expect(report.errors).toBe(0);
+    expect(report.info).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      severity: "info",
+      rule: "check-grounding-unverified",
+      path: "checks[0].derivation",
+    });
+  });
+
+  it("accepts active checks grounded in composition memory", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        derivation: {
+          composition: ["composition.pattern:tokenized-ui-color"],
+        },
+      }),
+      { fingerprint: fingerprintDocument() },
+    );
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("accepts active checks with inventory as supporting derivation", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        derivation: {
+          prose: ["prose.principle:dense-workflows-prioritize-scanning"],
+          inventory: ["inventory.exemplar:orders-table"],
+        },
+      }),
+      { fingerprint: fingerprintDocument() },
+    );
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+  });
+
+  it("rejects inventory-only derivation for active checks", () => {
+    const report = lintGhostChecks(
+      checksDocument({
+        derivation: {
+          inventory: ["inventory.exemplar:orders-table"],
+        },
+      }),
+      { fingerprint: fingerprintDocument() },
+    );
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-grounding-inventory-only",
+      path: "checks[0].derivation",
+    });
   });
 
   it("accepts active checks scoped to known fingerprint topology", () => {
@@ -42,24 +100,20 @@ describe("ghost.checks/v1 grounding", () => {
       }),
       {
         fingerprint: fingerprintDocument({
-          topology: {
-            scopes: [
-              {
-                id: "lending",
-                paths: ["Code/Features/Lending"],
-                surface_types: ["native-feature"],
-              },
-            ],
-            surface_types: ["native-feature"],
-          },
-          patterns: [
-            {
-              id: "tokenized-ui-color",
-              status: "accepted",
-              kind: "visual",
-              pattern: "Use semantic colors.",
+          inventory: {
+            topology: {
+              scopes: [
+                {
+                  id: "lending",
+                  paths: ["Code/Features/Lending"],
+                  surface_types: ["native-feature"],
+                },
+              ],
+              surface_types: ["native-feature"],
             },
-          ],
+            building_blocks: {},
+            exemplars: [],
+          },
         }),
       },
     );
@@ -68,9 +122,11 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("reports active checks grounded in missing fingerprint.yml memory", () => {
+  it("reports active checks grounded in missing fingerprint.yml prose/inventory/composition", () => {
     const doc = checksDocument({
-      derives_from: "principle:missing-principle",
+      derivation: {
+        prose: ["prose.principle:missing-principle"],
+      },
     });
 
     const report = lintGhostChecks(doc, {
@@ -80,7 +136,7 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "check-grounding-unknown",
-      path: "checks[0].derives_from",
+      path: "checks[0].derivation.prose[0]",
     });
   });
 
@@ -93,28 +149,7 @@ describe("ghost.checks/v1 grounding", () => {
           pattern_ids: ["unknown-pattern"],
         },
       }),
-      {
-        fingerprint: fingerprintDocument({
-          topology: {
-            scopes: [
-              {
-                id: "lending",
-                paths: ["Code/Features/Lending"],
-                surface_types: ["native-feature"],
-              },
-            ],
-            surface_types: ["native-feature"],
-          },
-          patterns: [
-            {
-              id: "tokenized-ui-color",
-              status: "accepted",
-              kind: "visual",
-              pattern: "Use semantic colors.",
-            },
-          ],
-        }),
-      },
+      { fingerprint: fingerprintDocument() },
     );
 
     expect(report.errors).toBe(3);
@@ -144,9 +179,7 @@ describe("ghost.checks/v1 grounding", () => {
           scopes: ["unknown-scope"],
         },
       }),
-      {
-        fingerprint: fingerprintDocument(),
-      },
+      { fingerprint: fingerprintDocument() },
     );
 
     expect(report.errors).toBe(0);
@@ -159,7 +192,9 @@ describe("ghost.checks/v1 grounding", () => {
   it("downgrades proposed check grounding misses to warnings", () => {
     const doc = checksDocument({
       status: "proposed",
-      derives_from: "principle:missing-principle",
+      derivation: {
+        prose: ["prose.principle:missing-principle"],
+      },
     });
 
     const report = lintGhostChecks(doc, {
@@ -173,9 +208,26 @@ describe("ghost.checks/v1 grounding", () => {
     });
   });
 
-  it("rejects untyped derives_from references at schema level", () => {
+  it("downgrades missing proposed derivation to a warning", () => {
     const doc = checksDocument({
-      derives_from: "dense-workflows-prioritize-scanning",
+      status: "proposed",
+      derivation: undefined,
+    });
+
+    const report = lintGhostChecks(doc);
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "check-grounding-missing",
+    });
+  });
+
+  it("rejects untyped derivation references at schema level", () => {
+    const doc = checksDocument({
+      derivation: {
+        prose: ["dense-workflows-prioritize-scanning"] as never,
+      },
     });
 
     const report = lintGhostChecks(doc);
@@ -184,9 +236,11 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.issues[0]?.rule).toBe("schema/invalid_format");
   });
 
-  it("rejects implementation-only derives_from references at schema level", () => {
+  it("rejects mismatched derivation references at schema level", () => {
     const doc = checksDocument({
-      derives_from: "substrate:tokens" as never,
+      derivation: {
+        inventory: ["composition.pattern:tokenized-ui-color"] as never,
+      },
     });
 
     const report = lintGhostChecks(doc);
@@ -208,7 +262,9 @@ function checksDocument(
         title: "Do not replace dense tables with decorative cards",
         status: "active",
         severity: "serious",
-        derives_from: "principle:dense-workflows-prioritize-scanning",
+        derivation: {
+          prose: ["prose.principle:dense-workflows-prioritize-scanning"],
+        },
         applies_to: {
           paths: ["apps/dashboard/**"],
         },
@@ -232,20 +288,46 @@ function fingerprintDocument(
 ): GhostFingerprintDocument {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    summary: {},
-    topology: {},
-    situations: [],
-    principles: [
-      {
-        id: "dense-workflows-prioritize-scanning",
-        principle:
-          "Dense workflows optimize for comparison, speed, and recovery.",
+    prose: {
+      summary: {},
+      situations: [],
+      principles: [
+        {
+          id: "dense-workflows-prioritize-scanning",
+          principle:
+            "Dense workflows optimize for comparison, speed, and recovery.",
+        },
+      ],
+      experience_contracts: [],
+    },
+    inventory: {
+      topology: {
+        scopes: [
+          {
+            id: "lending",
+            paths: ["Code/Features/Lending"],
+            surface_types: ["native-feature"],
+          },
+        ],
+        surface_types: ["native-feature"],
       },
-    ],
-    experience_contracts: [],
-    patterns: [],
-    exemplars: [],
-    implementation_vocabulary: {},
+      building_blocks: {},
+      exemplars: [
+        {
+          id: "orders-table",
+          path: "apps/dashboard/src/routes/orders/page.tsx",
+        },
+      ],
+    },
+    composition: {
+      patterns: [
+        {
+          id: "tokenized-ui-color",
+          kind: "visual",
+          pattern: "Use semantic colors.",
+        },
+      ],
+    },
     ...overrides,
   };
 }

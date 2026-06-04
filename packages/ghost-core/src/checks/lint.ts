@@ -10,12 +10,14 @@ import type {
 
 const SUPPORT_FLOOR = 0.85;
 const GROUNDING_PREFIXES = [
-  "principle",
-  "situation",
-  "experience_contract",
-  "pattern",
+  "prose.principle",
+  "prose.situation",
+  "prose.experience_contract",
+  "inventory.exemplar",
+  "composition.pattern",
 ] as const;
 type GroundingPrefix = (typeof GROUNDING_PREFIXES)[number];
+type DerivationGroup = "prose" | "inventory" | "composition";
 
 export function lintGhostChecks(
   input: unknown,
@@ -73,7 +75,7 @@ function checkOne(
   const path = `checks[${index}]`;
   checkDetector(check, path, issues);
   checkGrounding(check, path, options, issues);
-  checkAppliesToFingerprintTargets(check, path, options, issues);
+  checkAppliesToTargets(check, path, options, issues);
 
   if (check.status === "disabled") return;
 
@@ -87,7 +89,7 @@ function checkOne(
     });
   }
 
-  if (!options.fingerprint && options.map && check.applies_to?.scopes?.length) {
+  if (options.map && check.applies_to?.scopes?.length) {
     const scopeIds = new Set(
       getEffectiveMapScopes(options.map).map((scope) => scope.id),
     );
@@ -148,7 +150,7 @@ function checkOne(
   }
 }
 
-function checkAppliesToFingerprintTargets(
+function checkAppliesToTargets(
   check: GhostCheck,
   path: string,
   options: GhostChecksLintOptions,
@@ -196,30 +198,80 @@ function checkGrounding(
   options: GhostChecksLintOptions,
   issues: GhostChecksLintIssue[],
 ): void {
-  if (check.status === "active" && !check.derives_from) {
+  const derivation = check.derivation;
+  const proseRefs = derivation?.prose ?? [];
+  const compositionRefs = derivation?.composition ?? [];
+  const inventoryRefs = derivation?.inventory ?? [];
+  const hasAuthoritativeGrounding =
+    proseRefs.length > 0 || compositionRefs.length > 0;
+  const hasAnyDerivation =
+    hasAuthoritativeGrounding || inventoryRefs.length > 0;
+
+  if (check.status === "disabled") return;
+
+  if (!hasAnyDerivation) {
     issues.push({
-      severity: "error",
+      severity: check.status === "active" ? "error" : "warning",
       rule: "check-grounding-missing",
       message:
-        "Active checks must declare derives_from with a typed fingerprint.yml reference.",
-      path: `${path}.derives_from`,
+        "Checks must declare derivation with at least one prose or composition fingerprint ref before they can be trusted.",
+      path: `${path}.derivation`,
     });
     return;
   }
 
-  if (!check.derives_from || !options.fingerprint) return;
+  if (!hasAuthoritativeGrounding) {
+    issues.push({
+      severity: check.status === "active" ? "error" : "warning",
+      rule: "check-grounding-inventory-only",
+      message:
+        "Inventory refs can support a check, but active checks must derive from prose or composition memory.",
+      path: `${path}.derivation`,
+    });
+  }
 
-  const parsed = parseGroundingRef(check.derives_from);
-  if (!parsed) return;
+  if (!options.fingerprint) {
+    issues.push({
+      severity: "info",
+      rule: "check-grounding-unverified",
+      message:
+        "Check derivation refs were not verified because no fingerprint.yml context was provided; run ghost lint on the bundle or place fingerprint.yml beside checks.yml.",
+      path: `${path}.derivation`,
+    });
+    return;
+  }
 
   const targets = collectFingerprintTargets(options.fingerprint);
-  if (targets[parsed.prefix].has(parsed.id)) return;
+  checkDerivationRefs(proseRefs, "prose", path, check, targets, issues);
+  checkDerivationRefs(
+    compositionRefs,
+    "composition",
+    path,
+    check,
+    targets,
+    issues,
+  );
+  checkDerivationRefs(inventoryRefs, "inventory", path, check, targets, issues);
+}
 
-  issues.push({
-    severity: check.status === "active" ? "error" : "warning",
-    rule: "check-grounding-unknown",
-    message: `Check derives_from references unknown fingerprint memory '${check.derives_from}'.`,
-    path: `${path}.derives_from`,
+function checkDerivationRefs(
+  refs: string[],
+  group: DerivationGroup,
+  path: string,
+  check: GhostCheck,
+  targets: Record<GroundingPrefix, Set<string>>,
+  issues: GhostChecksLintIssue[],
+): void {
+  refs.forEach((ref, index) => {
+    const parsed = parseGroundingRef(ref);
+    if (!parsed) return;
+    if (targets[parsed.prefix].has(parsed.id)) return;
+    issues.push({
+      severity: check.status === "active" ? "error" : "warning",
+      rule: "check-grounding-unknown",
+      message: `Check derivation references unknown fingerprint memory '${ref}'.`,
+      path: `${path}.derivation.${group}[${index}]`,
+    });
   });
 }
 
@@ -230,18 +282,19 @@ function collectFingerprintRoutingTargets(
   surfaceTypes: Set<string>;
   patterns: Set<string>;
 } {
-  const surfaceTypes = new Set(fingerprint.topology?.surface_types ?? []);
-  for (const scope of fingerprint.topology?.scopes ?? []) {
+  const topology = fingerprint.inventory?.topology;
+  const surfaceTypes = new Set(topology?.surface_types ?? []);
+  for (const scope of topology?.scopes ?? []) {
     for (const surfaceType of scope.surface_types ?? []) {
       surfaceTypes.add(surfaceType);
     }
   }
   return {
-    scopes: new Set(
-      fingerprint.topology?.scopes?.map((entry) => entry.id) ?? [],
-    ),
+    scopes: new Set(topology?.scopes?.map((entry) => entry.id) ?? []),
     surfaceTypes,
-    patterns: new Set(fingerprint.patterns?.map((entry) => entry.id) ?? []),
+    patterns: new Set(
+      fingerprint.composition?.patterns?.map((entry) => entry.id) ?? [],
+    ),
   };
 }
 
@@ -258,12 +311,21 @@ function collectFingerprintTargets(
   fingerprint: NonNullable<GhostChecksLintOptions["fingerprint"]>,
 ): Record<GroundingPrefix, Set<string>> {
   return {
-    principle: new Set(fingerprint.principles?.map((entry) => entry.id) ?? []),
-    situation: new Set(fingerprint.situations?.map((entry) => entry.id) ?? []),
-    experience_contract: new Set(
-      fingerprint.experience_contracts?.map((entry) => entry.id) ?? [],
+    "prose.principle": new Set(
+      fingerprint.prose?.principles?.map((entry) => entry.id) ?? [],
     ),
-    pattern: new Set(fingerprint.patterns?.map((entry) => entry.id) ?? []),
+    "prose.situation": new Set(
+      fingerprint.prose?.situations?.map((entry) => entry.id) ?? [],
+    ),
+    "prose.experience_contract": new Set(
+      fingerprint.prose?.experience_contracts?.map((entry) => entry.id) ?? [],
+    ),
+    "inventory.exemplar": new Set(
+      fingerprint.inventory?.exemplars?.map((entry) => entry.id) ?? [],
+    ),
+    "composition.pattern": new Set(
+      fingerprint.composition?.patterns?.map((entry) => entry.id) ?? [],
+    ),
   };
 }
 

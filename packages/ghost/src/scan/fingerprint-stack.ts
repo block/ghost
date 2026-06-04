@@ -14,8 +14,12 @@ import {
   GhostDecisionSchema,
   type GhostExperienceEvidence,
   type GhostExperienceScope,
+  type GhostFingerprintComposition,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
+  type GhostFingerprintInventory,
+  type GhostFingerprintInventoryBuildingBlocks,
+  type GhostFingerprintProse,
   GhostFingerprintSchema,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
@@ -31,9 +35,9 @@ import {
 } from "./constants.js";
 import {
   loadPackageInventory,
+  type PackageContext,
   type PackageInventory,
-  type PackageMemory,
-} from "./context/package-memory.js";
+} from "./context/package-context.js";
 import type { FingerprintPackagePaths } from "./fingerprint-package.js";
 import {
   lintFingerprintPackage,
@@ -60,18 +64,19 @@ const BASE_SKIP_DISCOVERY_DIRS = new Set([
   "coverage",
 ]);
 
-export interface MemoryDirectoryOptions {
+export interface FingerprintDirectoryOptions {
   memoryDir?: string;
 }
 
-export interface GhostMemoryStackLayerRef {
+export interface GhostFingerprintStackLayerRef {
   dir: string;
   root: string;
   relative_root: string;
-  memory_dir: string;
+  fingerprint_dir: string;
 }
 
-export interface GhostMemoryStackLayer extends GhostMemoryStackLayerRef {
+export interface GhostFingerprintStackLayer
+  extends GhostFingerprintStackLayerRef {
   fingerprint: GhostFingerprintDocument;
   fingerprint_raw: string;
   checks?: GhostChecksDocument;
@@ -81,11 +86,11 @@ export interface GhostMemoryStackLayer extends GhostMemoryStackLayerRef {
   decisions: GhostDecisionDocument[];
 }
 
-export interface GhostMemoryStack {
+export interface GhostFingerprintStack {
   target_path: string;
   repo_root: string;
-  memory_dir: string;
-  layers: GhostMemoryStackLayer[];
+  fingerprint_dir: string;
+  layers: GhostFingerprintStackLayer[];
   merged: {
     fingerprint: GhostFingerprintDocument;
     checks: GhostChecksDocument;
@@ -94,21 +99,21 @@ export interface GhostMemoryStack {
   };
   provenance: {
     merge: "child-wins-by-id";
-    layers: GhostMemoryStackLayerRef[];
+    layers: GhostFingerprintStackLayerRef[];
   };
 }
 
-export interface GhostMemoryStackGroup {
+export interface GhostFingerprintStackGroup {
   key: string;
   changed_files: string[];
-  stack: GhostMemoryStack;
+  stack: GhostFingerprintStack;
 }
 
 export interface DiscoveredGhostPackage {
   dir: string;
   root: string;
   relative_root: string;
-  memory_dir: string;
+  fingerprint_dir: string;
 }
 
 export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
@@ -128,7 +133,7 @@ export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
 
 export async function discoverGhostPackages(
   root = process.cwd(),
-  options: MemoryDirectoryOptions = {},
+  options: FingerprintDirectoryOptions = {},
 ): Promise<DiscoveredGhostPackage[]> {
   const repoRoot = await resolveGitRoot(root);
   const memoryDir = normalizeMemoryDir(options.memoryDir);
@@ -161,10 +166,10 @@ export async function discoverGhostPackages(
   return packages.sort((a, b) => a.dir.localeCompare(b.dir));
 }
 
-export async function discoverMemoryStack(
+export async function discoverFingerprintStack(
   targetPath = ".",
   cwd = process.cwd(),
-  options: MemoryDirectoryOptions = {},
+  options: FingerprintDirectoryOptions = {},
 ): Promise<{ target_path: string; repo_root: string; packages: string[] }> {
   const repoRoot = await resolveGitRoot(cwd);
   const memoryDir = normalizeMemoryDir(options.memoryDir);
@@ -188,13 +193,13 @@ export async function discoverMemoryStack(
   };
 }
 
-export async function loadMemoryStackForPath(
+export async function loadFingerprintStackForPath(
   targetPath = ".",
   cwd = process.cwd(),
-  options: MemoryDirectoryOptions = {},
-): Promise<GhostMemoryStack> {
+  options: FingerprintDirectoryOptions = {},
+): Promise<GhostFingerprintStack> {
   const memoryDir = normalizeMemoryDir(options.memoryDir);
-  const discovered = await discoverMemoryStack(targetPath, cwd, {
+  const discovered = await discoverFingerprintStack(targetPath, cwd, {
     memoryDir,
   });
   if (discovered.packages.length === 0) {
@@ -205,10 +210,10 @@ export async function loadMemoryStackForPath(
 
   const layers = await Promise.all(
     discovered.packages.map((dir) =>
-      loadMemoryStackLayer(dir, discovered.repo_root, memoryDir),
+      loadFingerprintStackLayer(dir, discovered.repo_root, memoryDir),
     ),
   );
-  return buildMemoryStack(
+  return buildFingerprintStack(
     discovered.target_path,
     discovered.repo_root,
     layers,
@@ -216,17 +221,17 @@ export async function loadMemoryStackForPath(
   );
 }
 
-export async function groupMemoryStacksForPaths(
+export async function groupFingerprintStacksForPaths(
   paths: string[],
   cwd = process.cwd(),
-  options: MemoryDirectoryOptions = {},
-): Promise<GhostMemoryStackGroup[]> {
+  options: FingerprintDirectoryOptions = {},
+): Promise<GhostFingerprintStackGroup[]> {
   const targets = paths.length > 0 ? paths : ["."];
   const memoryDir = normalizeMemoryDir(options.memoryDir);
-  const groups = new Map<string, GhostMemoryStackGroup>();
+  const groups = new Map<string, GhostFingerprintStackGroup>();
 
   for (const path of targets) {
-    const stack = await loadMemoryStackForPath(path, cwd, { memoryDir });
+    const stack = await loadFingerprintStackForPath(path, cwd, { memoryDir });
     const key = stack.layers.map((layer) => layer.dir).join("|");
     const existing = groups.get(key);
     if (existing) {
@@ -243,15 +248,15 @@ export async function groupMemoryStacksForPaths(
   return [...groups.values()];
 }
 
-export function buildMemoryStack(
+export function buildFingerprintStack(
   targetPath: string,
   repoRoot: string,
-  layers: GhostMemoryStackLayer[],
+  layers: GhostFingerprintStackLayer[],
   memoryDir = FINGERPRINT_PACKAGE_DIR,
-): GhostMemoryStack {
+): GhostFingerprintStack {
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   if (layers.length === 0) {
-    throw new Error("Cannot build a Ghost memory stack without layers.");
+    throw new Error("Cannot build a Ghost fingerprint stack without layers.");
   }
 
   const fingerprint = mergeFingerprints(
@@ -275,7 +280,7 @@ export function buildMemoryStack(
   return {
     target_path: targetPath,
     repo_root: repoRoot,
-    memory_dir: normalizedMemoryDir,
+    fingerprint_dir: normalizedMemoryDir,
     layers,
     merged: {
       fingerprint,
@@ -290,14 +295,14 @@ export function buildMemoryStack(
   };
 }
 
-export async function loadMemoryStackLayer(
+export async function loadFingerprintStackLayer(
   packageDir: string,
   repoRoot: string,
   memoryDir = FINGERPRINT_PACKAGE_DIR,
-): Promise<GhostMemoryStackLayer> {
+): Promise<GhostFingerprintStackLayer> {
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
-  const root = rootForMemoryPackageDir(paths.dir, normalizedMemoryDir);
+  const root = rootForFingerprintPackageDir(paths.dir, normalizedMemoryDir);
   const [fingerprintRaw, checksRaw, intent, inventory, decisions] =
     await Promise.all([
       readFile(paths.fingerprintYml, "utf-8"),
@@ -343,19 +348,19 @@ export async function loadMemoryStackLayer(
   };
 }
 
-export function memoryStackToPackageMemory(
-  stack: GhostMemoryStack,
+export function fingerprintStackToPackageContext(
+  stack: GhostFingerprintStack,
   nameOverride?: string,
-): PackageMemory {
+): PackageContext {
   const name = sanitizeName(
     nameOverride ??
-      stack.merged.fingerprint.summary.product ??
+      stack.merged.fingerprint.prose.summary.product ??
       stack.layers.at(-1)?.relative_root ??
       "ghost-package",
   );
   return {
     name,
-    memoryDir: stack.memory_dir,
+    fingerprintDir: stack.fingerprint_dir,
     fingerprint: stack.merged.fingerprint,
     fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
     checks: stack.merged.checks,
@@ -363,7 +368,7 @@ export function memoryStackToPackageMemory(
     intent: stack.merged.intent ?? undefined,
     inventory: stack.layers.at(-1)?.inventory ?? {
       state: "missing",
-      path: `${stack.memory_dir}/cache/inventory.json`,
+      path: `${stack.fingerprint_dir}/cache/inventory.json`,
     },
   };
 }
@@ -372,7 +377,7 @@ export function mapFromFingerprint(
   fingerprint: GhostFingerprintDocument,
 ): Pick<MapFrontmatter, "scopes" | "feature_areas"> {
   return {
-    scopes: fingerprint.topology.scopes?.map((scope) => ({
+    scopes: fingerprint.inventory.topology.scopes?.map((scope) => ({
       id: scope.id,
       name: scope.id,
       kind: "fingerprint-topology",
@@ -382,9 +387,9 @@ export function mapFromFingerprint(
   };
 }
 
-export async function lintAllMemoryStacks(
+export async function lintAllFingerprintStacks(
   root = process.cwd(),
-  options: MemoryDirectoryOptions = {},
+  options: FingerprintDirectoryOptions = {},
 ): Promise<LintReport> {
   const memoryDir = normalizeMemoryDir(options.memoryDir);
   const packages = await discoverGhostPackages(root, { memoryDir });
@@ -394,28 +399,28 @@ export async function lintAllMemoryStacks(
     const rawReport = await lintFingerprintPackage(pkg.dir, root);
     issues.push(
       ...prefixIssues(
-        memoryPackageDisplayPath(pkg.relative_root, memoryDir),
+        fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
         rawReport.issues,
       ),
     );
     if (rawReport.errors > 0) continue;
 
-    let stack: GhostMemoryStack;
+    let stack: GhostFingerprintStack;
     try {
-      stack = await loadMemoryStackForPath(pkg.root, root, { memoryDir });
+      stack = await loadFingerprintStackForPath(pkg.root, root, { memoryDir });
     } catch (err) {
       issues.push({
         severity: "error",
         rule: "stack-merge-invalid",
         message: err instanceof Error ? err.message : String(err),
-        path: memoryPackageDisplayPath(pkg.relative_root, memoryDir),
+        path: fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
       });
       continue;
     }
     const fingerprintReport = lintGhostFingerprint(stack.merged.fingerprint);
     issues.push(
       ...prefixIssues(
-        `${memoryPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.fingerprint.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.fingerprint.yml`,
         fingerprintReport.issues,
       ),
     );
@@ -425,7 +430,7 @@ export async function lintAllMemoryStacks(
     });
     issues.push(
       ...prefixIssues(
-        `${memoryPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.checks.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.checks.yml`,
         checksReport.issues,
       ),
     );
@@ -434,9 +439,9 @@ export async function lintAllMemoryStacks(
   return finalizeLint(issues);
 }
 
-export async function verifyAllMemoryStacks(
+export async function verifyAllFingerprintStacks(
   root = process.cwd(),
-  options: MemoryDirectoryOptions = {},
+  options: FingerprintDirectoryOptions = {},
 ): Promise<VerifyFingerprintReport> {
   const memoryDir = normalizeMemoryDir(options.memoryDir);
   const packages = await discoverGhostPackages(root, { memoryDir });
@@ -450,18 +455,18 @@ export async function verifyAllMemoryStacks(
       ...report.issues.map((issue) => ({
         ...issue,
         path: issue.path
-          ? `${memoryPackageDisplayPath(pkg.relative_root, memoryDir)}.${issue.path}`
-          : memoryPackageDisplayPath(pkg.relative_root, memoryDir),
+          ? `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}.${issue.path}`
+          : fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
       })),
     );
     try {
-      await loadMemoryStackForPath(pkg.root, root, { memoryDir });
+      await loadFingerprintStackForPath(pkg.root, root, { memoryDir });
     } catch (err) {
       issues.push({
         severity: "error",
         rule: "stack-merge-invalid",
         message: err instanceof Error ? err.message : String(err),
-        path: memoryPackageDisplayPath(pkg.relative_root, memoryDir),
+        path: fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
       });
     }
   }
@@ -474,7 +479,7 @@ export async function verifyAllMemoryStacks(
   };
 }
 
-export async function initScopedMemoryPackage(
+export async function initScopedFingerprintPackage(
   scopePath: string,
   cwd = process.cwd(),
   options: {
@@ -532,7 +537,7 @@ async function readDecisionDirectory(
   const docs: GhostDecisionDocument[] = [];
   for (const { path, value } of parsed) {
     const report = lintGhostDecision(value);
-    if (report.errors > 0) throwMemoryLintError(path, report.issues);
+    if (report.errors > 0) throwFingerprintLintError(path, report.issues);
     docs.push(GhostDecisionSchema.parse(value) as GhostDecisionDocument);
   }
   return docs;
@@ -562,14 +567,14 @@ async function readYamlFiles(
   return docs;
 }
 
-function throwMemoryLintError(
+function throwFingerprintLintError(
   path: string,
   issues: Array<{ severity: string; message: string; path?: string }>,
 ): never {
   const first = issues.find((issue) => issue.severity === "error");
   const suffix = first?.path ? ` @ ${first.path}` : "";
   throw new Error(
-    `${path} failed lint: ${first?.message ?? "invalid memory"}${suffix}`,
+    `${path} failed lint: ${first?.message ?? "invalid fingerprint package"}${suffix}`,
   );
 }
 
@@ -578,58 +583,29 @@ function mergeFingerprints(
 ): GhostFingerprintDocument {
   const merged: GhostFingerprintDocument = {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    summary: {},
-    topology: {},
-    situations: [],
-    principles: [],
-    experience_contracts: [],
-    patterns: [],
-    exemplars: [],
-    implementation_vocabulary: {},
+    prose: {
+      summary: {},
+      situations: [],
+      principles: [],
+      experience_contracts: [],
+    },
+    inventory: {
+      topology: {},
+      building_blocks: {},
+      exemplars: [],
+    },
+    composition: {
+      patterns: [],
+    },
   };
 
   for (const fingerprint of fingerprints) {
-    merged.summary = mergeSummary(merged.summary, fingerprint.summary);
-    merged.topology = mergeTopology(merged.topology, fingerprint.topology);
-    merged.situations = mergeById([
-      ...merged.situations,
-      ...fingerprint.situations,
-    ]);
-    merged.principles = mergeById([
-      ...merged.principles,
-      ...fingerprint.principles,
-    ]);
-    merged.experience_contracts = mergeById([
-      ...merged.experience_contracts,
-      ...fingerprint.experience_contracts,
-    ]);
-    merged.patterns = mergeById([...merged.patterns, ...fingerprint.patterns]);
-    merged.exemplars = mergeById([
-      ...merged.exemplars,
-      ...fingerprint.exemplars,
-    ]);
-    merged.implementation_vocabulary = {
-      tokens: mergeStrings(
-        merged.implementation_vocabulary.tokens,
-        fingerprint.implementation_vocabulary.tokens,
-      ),
-      components: mergeStrings(
-        merged.implementation_vocabulary.components,
-        fingerprint.implementation_vocabulary.components,
-      ),
-      libraries: mergeStrings(
-        merged.implementation_vocabulary.libraries,
-        fingerprint.implementation_vocabulary.libraries,
-      ),
-      assets: mergeStrings(
-        merged.implementation_vocabulary.assets,
-        fingerprint.implementation_vocabulary.assets,
-      ),
-      notes: mergeStrings(
-        merged.implementation_vocabulary.notes,
-        fingerprint.implementation_vocabulary.notes,
-      ),
-    };
+    merged.prose = mergeProse(merged.prose, fingerprint.prose);
+    merged.inventory = mergeInventory(merged.inventory, fingerprint.inventory);
+    merged.composition = mergeComposition(
+      merged.composition,
+      fingerprint.composition,
+    );
   }
 
   const report = lintGhostFingerprint(merged);
@@ -641,6 +617,59 @@ function mergeFingerprints(
     );
   }
   return merged;
+}
+
+function mergeProse(
+  parent: GhostFingerprintProse,
+  child: GhostFingerprintProse,
+): GhostFingerprintProse {
+  return {
+    summary: mergeSummary(parent.summary, child.summary),
+    situations: mergeById([...parent.situations, ...child.situations]),
+    principles: mergeById([...parent.principles, ...child.principles]),
+    experience_contracts: mergeById([
+      ...parent.experience_contracts,
+      ...child.experience_contracts,
+    ]),
+  };
+}
+
+function mergeInventory(
+  parent: GhostFingerprintInventory,
+  child: GhostFingerprintInventory,
+): GhostFingerprintInventory {
+  return {
+    topology: mergeTopology(parent.topology, child.topology),
+    building_blocks: mergeBuildingBlocks(
+      parent.building_blocks,
+      child.building_blocks,
+    ),
+    exemplars: mergeById([...parent.exemplars, ...child.exemplars]),
+  };
+}
+
+function mergeComposition(
+  parent: GhostFingerprintComposition,
+  child: GhostFingerprintComposition,
+): GhostFingerprintComposition {
+  return {
+    patterns: mergeById([...parent.patterns, ...child.patterns]),
+  };
+}
+
+function mergeBuildingBlocks(
+  parent: GhostFingerprintInventoryBuildingBlocks,
+  child: GhostFingerprintInventoryBuildingBlocks,
+): GhostFingerprintInventoryBuildingBlocks {
+  return {
+    tokens: mergeStrings(parent.tokens, child.tokens),
+    components: mergeStrings(parent.components, child.components),
+    libraries: mergeStrings(parent.libraries, child.libraries),
+    assets: mergeStrings(parent.assets, child.assets),
+    routes: mergeStrings(parent.routes, child.routes),
+    files: mergeStrings(parent.files, child.files),
+    notes: mergeStrings(parent.notes, child.notes),
+  };
 }
 
 function mergeSummary(
@@ -687,7 +716,7 @@ function mergeChecks(
   const checks = mergeById(checksDocs.flatMap((doc) => doc?.checks ?? []));
   return {
     schema: GHOST_CHECKS_SCHEMA,
-    id: "memory-stack",
+    id: "fingerprint-stack",
     checks: checks as GhostCheck[],
   };
 }
@@ -709,12 +738,12 @@ function mergeStrings(a?: string[], b?: string[]): string[] | undefined {
   return out.length ? out : undefined;
 }
 
-function mergeIntent(layers: GhostMemoryStackLayer[]): string | null {
+function mergeIntent(layers: GhostFingerprintStackLayer[]): string | null {
   const chunks = layers
     .filter((layer) => layer.intent?.trim())
     .map(
       (layer) =>
-        `# ${memoryPackageDisplayPath(layer.relative_root, layer.memory_dir)}/intent.md\n\n${layer.intent?.trim()}`,
+        `# ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)}/intent.md\n\n${layer.intent?.trim()}`,
     );
   return chunks.length ? `${chunks.join("\n\n")}\n` : null;
 }
@@ -725,24 +754,37 @@ function normalizeFingerprintPaths(
   repoRoot: string,
 ): GhostFingerprintDocument {
   const fingerprint = clone(input);
-  fingerprint.topology.scopes = fingerprint.topology.scopes?.map((scope) => ({
-    ...scope,
-    paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
-  }));
-  fingerprint.exemplars = fingerprint.exemplars.map((exemplar) => ({
-    ...exemplar,
-    path: normalizePath(exemplar.path, baseRoot, repoRoot),
-  }));
-  fingerprint.situations = fingerprint.situations.map((entry) => ({
+  fingerprint.inventory.topology.scopes =
+    fingerprint.inventory.topology.scopes?.map((scope) => ({
+      ...scope,
+      paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
+    }));
+  fingerprint.inventory.exemplars = fingerprint.inventory.exemplars.map(
+    (exemplar) => ({
+      ...exemplar,
+      path: normalizePath(exemplar.path, baseRoot, repoRoot),
+    }),
+  );
+  fingerprint.prose.situations = fingerprint.prose.situations.map((entry) => ({
     ...entry,
     evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
   }));
-  fingerprint.principles = fingerprint.principles.map((entry) => ({
+  fingerprint.prose.principles = fingerprint.prose.principles.map((entry) => ({
     ...entry,
     applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
     evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
   }));
-  fingerprint.experience_contracts = fingerprint.experience_contracts.map(
+  fingerprint.prose.experience_contracts =
+    fingerprint.prose.experience_contracts.map((entry) => ({
+      ...entry,
+      applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
+      evidence: normalizeFingerprintEvidence(
+        entry.evidence,
+        baseRoot,
+        repoRoot,
+      ),
+    }));
+  fingerprint.composition.patterns = fingerprint.composition.patterns.map(
     (entry) => ({
       ...entry,
       applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
@@ -753,11 +795,6 @@ function normalizeFingerprintPaths(
       ),
     }),
   );
-  fingerprint.patterns = fingerprint.patterns.map((entry) => ({
-    ...entry,
-    applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
-    evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
-  }));
   return fingerprint;
 }
 
@@ -898,21 +935,23 @@ function packageRef(
   repoRoot: string,
   memoryDir: string,
 ): DiscoveredGhostPackage {
-  const root = rootForMemoryPackageDir(dir, memoryDir);
+  const root = rootForFingerprintPackageDir(dir, memoryDir);
   return {
     dir,
     root,
     relative_root: normalizeRelative(repoRoot, root),
-    memory_dir: memoryDir,
+    fingerprint_dir: memoryDir,
   };
 }
 
-function layerRef(layer: GhostMemoryStackLayer): GhostMemoryStackLayerRef {
+function layerRef(
+  layer: GhostFingerprintStackLayer,
+): GhostFingerprintStackLayerRef {
   return {
     dir: layer.dir,
     root: layer.root,
     relative_root: layer.relative_root,
-    memory_dir: layer.memory_dir,
+    fingerprint_dir: layer.fingerprint_dir,
   };
 }
 
@@ -947,7 +986,7 @@ export function normalizeMemoryDir(
   return normalized;
 }
 
-export function memoryPackageDisplayPath(
+export function fingerprintPackageDisplayPath(
   relativeRoot: string,
   memoryDir = FINGERPRINT_PACKAGE_DIR,
 ): string {
@@ -964,7 +1003,7 @@ function skipDiscoveryDirs(memoryDir: string): Set<string> {
   ]);
 }
 
-function rootForMemoryPackageDir(
+function rootForFingerprintPackageDir(
   packageDir: string,
   memoryDir: string,
 ): string {

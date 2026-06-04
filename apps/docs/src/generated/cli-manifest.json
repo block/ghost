@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-03T03:48:35.268Z",
+  "generatedAt": "2026-06-04T14:32:47.285Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate a root Ghost memory bundle, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
+          "description": "Validate a root Ghost fingerprint package, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -21,7 +21,7 @@
             {
               "rawName": "--all",
               "name": "all",
-              "description": "Validate every nested memory bundle and its resolved memory stack",
+              "description": "Validate every nested fingerprint package and its resolved fingerprint stack",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -29,7 +29,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+              "description": "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -40,12 +40,12 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init [dir]",
-          "description": "Create a root .ghost memory skeleton (fingerprint.yml and checks.yml)",
+          "description": "Create a root .ghost fingerprint package (fingerprint.yml and checks.yml)",
           "options": [
             {
               "rawName": "--scope <path>",
               "name": "scope",
-              "description": "Create a scoped <path>/<memory-dir> memory skeleton",
+              "description": "Create a scoped <path>/<memory-dir> fingerprint package",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -53,7 +53,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for init --scope or default root init (default: .ghost)",
+              "description": "Relative fingerprint package directory for init --scope or default root init (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -77,7 +77,7 @@
             {
               "rawName": "--reference <path-or-registry>",
               "name": "reference",
-              "description": "Reference UI registry, library path, or fingerprint to record in config.yml and implementation vocabulary",
+              "description": "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -96,7 +96,7 @@
           "tool": "ghost",
           "name": "verify",
           "rawName": "verify [dir]",
-          "description": "Verify a root Ghost memory bundle: fingerprint evidence, exemplars, and checks are grounded.",
+          "description": "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
           "options": [
             {
               "rawName": "--root <dir>",
@@ -117,7 +117,7 @@
             {
               "rawName": "--all",
               "name": "all",
-              "description": "Verify every nested memory bundle and its resolved memory stack",
+              "description": "Verify every nested fingerprint package and its resolved fingerprint stack",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -125,7 +125,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for --all and default bundle lookup (default: .ghost)",
+              "description": "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -136,7 +136,7 @@
           "tool": "ghost",
           "name": "scan",
           "rawName": "scan [dir]",
-          "description": "Report fingerprint memory/readiness state: produced artifacts, review readiness, and the next BYOA step.",
+          "description": "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
           "options": [
             {
               "rawName": "--include-scopes",
@@ -149,7 +149,7 @@
             {
               "rawName": "--include-nested",
               "name": "includeNested",
-              "description": "Also list nested memory bundles and readiness",
+              "description": "Also list nested fingerprint packages and readiness",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -157,7 +157,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for nested discovery and default scan (default: .ghost)",
+              "description": "Relative fingerprint package directory for nested discovery and default scan (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -176,12 +176,12 @@
           "tool": "ghost",
           "name": "stack",
           "rawName": "stack [paths...]",
-          "description": "Inspect the nested Ghost memory stack for one or more repo paths.",
+          "description": "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
           "options": [
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for stack discovery (default: .ghost)",
+              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -284,7 +284,7 @@
             {
               "rawName": "--path <path>",
               "name": "path",
-              "description": "Resolve a nested memory stack for this repo path",
+              "description": "Resolve a nested fingerprint stack for this repo path",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -292,7 +292,7 @@
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use exactly this memory package directory instead of resolving a stack",
+              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -300,7 +300,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for --path stack resolution (default: .ghost)",
+              "description": "Relative fingerprint package directory for --path stack resolution (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -551,7 +551,7 @@
           "tool": "ghost",
           "name": "check",
           "rawName": "check",
-          "description": "Run active ghost.checks/v1 gates from the resolved memory stack against a git diff.",
+          "description": "Run active ghost.checks/v2 gates from the resolved fingerprint stack against a git diff.",
           "options": [
             {
               "rawName": "--base <ref>",
@@ -580,7 +580,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for stack discovery (default: .ghost)",
+              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -628,7 +628,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative memory package directory for stack discovery (default: .ghost)",
+              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -636,7 +636,7 @@
             {
               "rawName": "--include-memory",
               "name": "includeMemory",
-              "description": "Include accepted product-experience decisions from decisions/ in the advisory packet.",
+              "description": "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
               "default": null,
               "takesValue": false,
               "negated": false

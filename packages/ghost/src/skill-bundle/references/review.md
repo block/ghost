@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review PR or working-tree changes against checked-in Ghost memory.
+description: Review PR or working-tree changes against checked-in Ghost fingerprints.
 handoffs:
   - label: Suggest minimal fixes
     skill: remediate
@@ -20,7 +20,7 @@ ghost check --base <ref>
 ```
 
 Fix deterministic failures first. These come from active `checks.yml` rules in
-checked-in memory and are the only blocking findings in v1. Use
+checked-in fingerprint refs and are the only blocking findings. Use
 `--package <dir>` or stack-aware options only when the user asks for advanced
 routing.
 
@@ -32,8 +32,8 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- `fingerprint.yml` memory
-- curated exemplars from `fingerprint.yml`
+- `fingerprint.yml` prose, inventory, and composition
+- curated inventory exemplars from `fingerprint.yml`
 - active checks from `checks.yml`
 - optional stack, config, intent, or accepted decision context when present or
   requested
@@ -53,8 +53,8 @@ Classify each finding as one of:
 Each finding must cite:
 
 - diff location
-- `fingerprint.yml` memory
-- relevant exemplars when useful
+- `fingerprint.yml` prose/inventory/composition
+- relevant inventory exemplars when useful
 - active check when blocking
 - repair or intentional-divergence rationale
 
@@ -66,7 +66,7 @@ Good advisory topics:
 - generic composition
 - awkward action placement
 - copy or trust-contract mismatch
-- obligations grounded in fingerprint memory, human intent, accepted decisions,
+- obligations grounded in fingerprint refs, human intent, accepted decisions,
   or active checks
 
 Bad advisory topics:
@@ -74,14 +74,14 @@ Bad advisory topics:
 - vague taste objections with no diff location
 - restating fingerprint prose without applying it to the change
 - enforcing a rule that is not in `checks.yml`
-- unrelated audit categories not grounded in Ghost memory
+- unrelated audit categories not grounded in Ghost fingerprint refs
 
-When fingerprint memory is silent, local evidence can still support advisory
+When fingerprint layers are silent, local evidence can still support advisory
 critique. Label those findings as provisional and non-Ghost-backed, and ground
 them in nearby product surfaces, local components, token or copy conventions,
 accepted decisions, or human intent. Ask the human before judging high-risk,
 irreversible, privacy/security/legal, or product-identity-defining choices.
 
-Memory changes are ordinary Git-reviewed edits to `fingerprint.yml`,
+Fingerprint edits are ordinary Git-reviewed edits to `fingerprint.yml`,
 `checks.yml`, and optional rationale files when present. Do not silently rewrite
-memory during a review unless the user asks to update memory.
+the Ghost package during a review unless the user asks for fingerprint edits.
