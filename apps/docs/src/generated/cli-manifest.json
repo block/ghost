@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T15:42:44.164Z",
+  "generatedAt": "2026-06-04T20:36:11.697Z",
   "tools": [
     {
       "tool": "ghost",
@@ -9,6 +9,10 @@
           "name": "lint",
           "rawName": "lint [file]",
           "description": "Validate a root Ghost fingerprint package, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "lint",
+          "summary": "Validate a fingerprint package or artifact.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -41,6 +45,10 @@
           "name": "init",
           "rawName": "init [dir]",
           "description": "Create a root .ghost fingerprint package (fingerprint.yml and checks.yml)",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "init",
+          "summary": "Create .ghost/fingerprint.yml and checks.yml.",
           "options": [
             {
               "rawName": "--scope <path>",
@@ -97,6 +105,10 @@
           "name": "verify",
           "rawName": "verify [dir]",
           "description": "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "verify",
+          "summary": "Verify evidence, exemplar paths, and typed refs.",
           "options": [
             {
               "rawName": "--root <dir>",
@@ -137,6 +149,10 @@
           "name": "scan",
           "rawName": "scan [dir]",
           "description": "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "scan",
+          "summary": "Report fingerprint layer readiness.",
           "options": [
             {
               "rawName": "--include-scopes",
@@ -177,6 +193,10 @@
           "name": "stack",
           "rawName": "stack [paths...]",
           "description": "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
+          "group": "advanced",
+          "defaultHelp": false,
+          "compactName": "stack",
+          "summary": "Inspect a nested fingerprint stack for repo paths.",
           "options": [
             {
               "rawName": "--memory-dir <relative-dir>",
@@ -201,6 +221,10 @@
           "name": "inventory",
           "rawName": "inventory [path]",
           "description": "Emit deterministic raw signals about a frontend repo as JSON for optional cache/source material: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
+          "group": "advanced",
+          "defaultHelp": false,
+          "compactName": "inventory",
+          "summary": "Emit raw repo signals for optional cache material.",
           "options": []
         },
         {
@@ -208,6 +232,10 @@
           "name": "describe",
           "rawName": "describe [fingerprint]",
           "description": "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
+          "group": "advanced",
+          "defaultHelp": false,
+          "compactName": "describe",
+          "summary": "Print intent or direct markdown section ranges.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -224,6 +252,10 @@
           "name": "diff",
           "rawName": "diff <a> <b>",
           "description": "Legacy direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
+          "group": "legacy",
+          "defaultHelp": false,
+          "compactName": "diff",
+          "summary": "Diff two legacy direct markdown fingerprints.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -240,6 +272,10 @@
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
           "description": "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+          "group": "legacy",
+          "defaultHelp": false,
+          "compactName": "survey",
+          "summary": "Run legacy/cache survey helpers.",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -280,6 +316,10 @@
           "name": "emit",
           "rawName": "emit <kind>",
           "description": "Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "emit",
+          "summary": "Emit review-command or context-bundle artifacts.",
           "options": [
             {
               "rawName": "--path <path>",
@@ -352,6 +392,10 @@
           "name": "compare",
           "rawName": "compare [...fingerprints]",
           "description": "Compare two or more fingerprints or root .ghost bundles. N=2 returns a pairwise delta; N≥3 returns a composite fingerprint.",
+          "group": "compare",
+          "defaultHelp": false,
+          "compactName": "compare",
+          "summary": "Compare packages or direct fingerprints.",
           "options": [
             {
               "rawName": "--semantic",
@@ -416,6 +460,10 @@
           "name": "ack",
           "rawName": "ack",
           "description": "Acknowledge current drift — record intentional stance toward the tracked fingerprint",
+          "group": "compare",
+          "defaultHelp": false,
+          "compactName": "ack",
+          "summary": "Record stance toward tracked drift.",
           "options": [
             {
               "rawName": "-c, --config <path>",
@@ -464,6 +512,10 @@
           "name": "track",
           "rawName": "track <fingerprint>",
           "description": "Track another fingerprint as this repo's reference",
+          "group": "compare",
+          "defaultHelp": false,
+          "compactName": "track",
+          "summary": "Shift the tracked reference fingerprint.",
           "options": [
             {
               "rawName": "-d, --dimension <name>",
@@ -488,6 +540,10 @@
           "name": "diverge",
           "rawName": "diverge <dimension>",
           "description": "Declare intentional divergence on a dimension",
+          "group": "compare",
+          "defaultHelp": false,
+          "compactName": "diverge",
+          "summary": "Declare intentional divergence on a dimension.",
           "options": [
             {
               "rawName": "-c, --config <path>",
@@ -520,6 +576,10 @@
           "name": "skill",
           "rawName": "skill <action>",
           "description": "Install the unified Ghost skill bundle.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "skill install",
+          "summary": "Install the Ghost skill bundle.",
           "options": [
             {
               "rawName": "--dest <path>",
@@ -552,6 +612,10 @@
           "name": "check",
           "rawName": "check",
           "description": "Run active ghost.checks/v1 gates from the resolved fingerprint stack against a git diff.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "check",
+          "summary": "Run active deterministic gates against a diff.",
           "options": [
             {
               "rawName": "--base <ref>",
@@ -600,6 +664,10 @@
           "name": "review",
           "rawName": "review",
           "description": "Emit an evidence-routed advisory review prompt from the fingerprint package and a git diff.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "review",
+          "summary": "Emit an advisory packet from fingerprint layers and a diff.",
           "options": [
             {
               "rawName": "--base <ref>",

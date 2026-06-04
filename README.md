@@ -65,7 +65,12 @@ The public npm package is **`@anarchitecture/ghost`**. It installs one CLI:
 ```bash
 npm install -D @anarchitecture/ghost
 npx ghost --help
+npx ghost --help --all
 ```
+
+Default help is intentionally small and shows the core workflow for new
+adopters. Use `ghost --help --all` for the complete advanced and legacy command
+index; every listed command still supports `ghost <command> --help`.
 
 Install the unified BYOA skill bundle:
 
