@@ -146,7 +146,7 @@ export function buildSkillMd(
       : []),
   ].join("\n");
 
-  const body = `This skill grounds UI generation in the **${name}** design language from a legacy direct-markdown Ghost context. Prefer a canonical \`.ghost/fingerprint.yml\` package when one is available.
+  const body = `This skill grounds UI generation in the **${name}** design language from a legacy direct-markdown Ghost context. Prefer a canonical \`.ghost/fingerprint/\` package when one is available.
 
 Read \`fingerprint.md\` as source context for this legacy bundle. It has these layered sections:
 
@@ -247,7 +247,7 @@ Generated from deprecated direct-markdown input. Grounding material for AI UI ge
 
 **As context for any LLM:** use \`prompt.md\` as the portable prompt, and add \`fingerprint.md\` or \`tokens.css\` only when the host supports extra context files.
 
-**Canonical path:** prefer a \`.ghost/fingerprint.yml\` package and emit a package context bundle when one is available.
+**Canonical path:** prefer a \`.ghost/fingerprint/\` package and emit a package context bundle when one is available.
 
 **Feedback loop:** ask your host agent to review the generated output against this context and run \`ghost check\` in the source repo when a full package is available.
 `;

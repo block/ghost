@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-04T15:42:44.164Z",
+  "generatedAt": "2026-06-05T02:03:51.269Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate a root Ghost fingerprint package, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
+          "description": "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or legacy markdown — defaults to .ghost",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -40,7 +40,7 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init [dir]",
-          "description": "Create a root .ghost fingerprint package (fingerprint.yml and checks.yml)",
+          "description": "Create a root .ghost split fingerprint package",
           "options": [
             {
               "rawName": "--scope <path>",
@@ -61,7 +61,7 @@
             {
               "rawName": "--with-intent",
               "name": "withIntent",
-              "description": "Also create optional intent.md for human-authored or human-approved intent",
+              "description": "Also create optional fingerprint/memory/intent.md for human-authored or human-approved intent",
               "default": null,
               "takesValue": false,
               "negated": false
@@ -101,7 +101,7 @@
             {
               "rawName": "--root <dir>",
               "name": "root",
-              "description": "Optional target root used to resolve fingerprint.yml evidence and exemplar paths (default: cwd)",
+              "description": "Optional target root used to resolve fingerprint evidence and exemplar paths (default: cwd)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -207,7 +207,7 @@
           "tool": "ghost",
           "name": "describe",
           "rawName": "describe [fingerprint]",
-          "description": "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
+          "description": "Print a section map of fingerprint/memory/intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -340,7 +340,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",
+              "description": "Override the skill name (default: prose.yml product or first scope) (context-bundle)",
               "default": null,
               "takesValue": true,
               "negated": false

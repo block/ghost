@@ -21,11 +21,11 @@ const REVIEW_FINDING_CATEGORIES = [
 ] as const;
 
 /**
- * Emit a repo-local slash command from fingerprint.yml prose/inventory/composition.
+ * Emit a repo-local slash command from split fingerprint prose/inventory/composition.
  *
  * The command stays intentionally light: it tells the host agent which Ghost
  * files and CLI packets to use, then includes a compact fingerprint index.
- * Full canonical truth remains in fingerprint.yml and checks.yml.
+ * Full canonical truth remains in fingerprint/ core files and enforcement checks.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
@@ -53,7 +53,7 @@ export function emitPackageReviewCommand(
 
 function packageFrontmatter(product: string): string {
   return `---
-description: Ghost product-experience review for ${product} - grounded in fingerprint.yml prose/inventory/composition
+description: Ghost product-experience review for ${product} - grounded in fingerprint core layers
 ---`;
 }
 
@@ -68,14 +68,14 @@ function packageWorkflowSection(context: PackageContext): string {
   const memoryDirFlag = stackFingerprintDirFlag(context);
   return `## Review Workflow
 
-1. Read \`${fingerprintDir}/fingerprint.yml\` as the canonical prose, inventory, and composition.
+1. Read \`${fingerprintDir}/fingerprint/prose.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\` as the canonical core layers.
 2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
 3. Apply prose principles, experience contracts, and composition patterns before choosing implementation details.
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Use inventory building blocks only as replaceable material that may help satisfy the selected prose and composition.
 6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
 7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts; add \`--include-memory\` only when accepted decisions matter.
-8. Cite the diff location, fingerprint.yml prose/inventory/composition, relevant exemplars when useful, and any active check when a finding blocks.`;
+8. Cite the diff location, fingerprint core layer refs, relevant exemplars when useful, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -242,7 +242,7 @@ function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
   }
   if (exemplars.length > 12) {
     lines.push(
-      `- ${exemplars.length - 12} more exemplar(s); inspect \`fingerprint.yml\` before deciding.`,
+      `- ${exemplars.length - 12} more exemplar(s); inspect \`fingerprint/inventory.yml\` before deciding.`,
     );
   }
   return lines.join("\n");
@@ -252,7 +252,7 @@ function packageChecksSection(activeChecks: GhostCheck[]): string {
   if (activeChecks.length === 0) {
     return `## Active Checks
 
-No active checks are recorded. Review remains advisory unless \`checks.yml\` adds deterministic active checks.`;
+No active checks are recorded. Review remains advisory unless \`fingerprint/enforcement/checks.yml\` adds deterministic active checks.`;
   }
   const lines = ["## Active Checks", ""];
   for (const check of activeChecks.slice(0, 12)) {
@@ -271,7 +271,7 @@ No active checks are recorded. Review remains advisory unless \`checks.yml\` add
   }
   if (activeChecks.length > 12) {
     lines.push(
-      `- ${activeChecks.length - 12} more active check(s); read \`checks.yml\` before deciding whether a finding blocks.`,
+      `- ${activeChecks.length - 12} more active check(s); read \`fingerprint/enforcement/checks.yml\` before deciding whether a finding blocks.`,
     );
   }
   return lines.join("\n");
@@ -281,7 +281,7 @@ function packageReviewFooter(context: PackageContext): string {
   const fingerprintDir = context.fingerprintDir ?? ".ghost";
   return `---
 
-Generated from \`${fingerprintDir}/fingerprint.yml\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint.yml, checks.yml, or optional rationale files.`;
+Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint core layers, enforcement checks, or optional rationale files.`;
 }
 
 function stackFingerprintDirFlag(context: PackageContext): string {

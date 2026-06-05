@@ -23,8 +23,16 @@ export {
   CACHE_DIRNAME,
   CHECKS_FILENAME,
   CONFIG_FILENAME,
+  FINGERPRINT_COMPOSITION_FILENAME,
+  FINGERPRINT_DIRNAME,
+  FINGERPRINT_ENFORCEMENT_DIRNAME,
   FINGERPRINT_FILENAME,
+  FINGERPRINT_INVENTORY_FILENAME,
+  FINGERPRINT_MANIFEST_FILENAME,
+  FINGERPRINT_MEMORY_DIRNAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_PROSE_FILENAME,
+  FINGERPRINT_SOURCES_DIRNAME,
   FINGERPRINT_YML_FILENAME,
   FINGERPRINTS_DIRNAME,
   INTENT_FILENAME,
@@ -57,10 +65,14 @@ export type {
   TokenChange,
 } from "./diff.js";
 export { diffFingerprints, formatSemanticDiff } from "./diff.js";
-export type { FingerprintPackagePaths } from "./fingerprint-package.js";
+export type {
+  FingerprintPackagePaths,
+  LoadedFingerprintPackage,
+} from "./fingerprint-package.js";
 export {
   initFingerprintPackage,
   lintFingerprintPackage,
+  loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
 export type {

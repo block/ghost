@@ -11,25 +11,29 @@ before generation and validate after changes.
 
 The MVP rule is intentionally small:
 
-- **`.ghost/fingerprint.yml`** is checked-in prose, inventory, and composition.
+- **`.ghost/fingerprint/`** is the checked-in portable fingerprint package.
+- **`fingerprint/manifest.yml`** anchors the package (`ghost.fingerprint-package/v1`).
+- **`fingerprint/prose.yml`, `fingerprint/inventory.yml`, and
+  `fingerprint/composition.yml`** are the three core model files.
 - **Generation uses prose + inventory + composition.** Prose explains what
   matters and why, inventory points to the building blocks and precedents an
   agent can inspect or use, and composition explains how those blocks become
   experience.
-- **`.ghost/checks.yml`** is optional deterministic enforcement grounded in
-  fingerprint refs.
+- **`fingerprint/enforcement/checks.yml`** is optional deterministic
+  enforcement grounded in fingerprint refs.
 - **Git is the approval boundary.** Uncommitted or unmerged edits are draft
-  work; checked-in `fingerprint.yml` is canonical truth for Ghost.
+  work; checked-in `fingerprint/` core files are canonical truth for Ghost.
 
-`fingerprint.yml` can start sparse:
+`fingerprint/` starts with a tiny manifest and sparse raw layer files:
 
 ```yaml
-schema: ghost.fingerprint/v1
+schema: ghost.fingerprint-package/v1
+id: local
 ```
 
 Add only the sections that contain real layer content. Ghost normalizes omitted
-layer sections internally, so agents and checks still receive the full shape
-they expect.
+layer files or sections internally, so agents and checks still receive the full
+assembled `ghost.fingerprint/v1` shape they expect.
 
 Ghost is not a design-system generator, design-system registry, fingerprint lifecycle
 manager, proposal system, or screenshot archive. It is a small repo-local
@@ -39,15 +43,14 @@ after work.
 Optional material can sit beside the core files:
 
 - **`.ghost/config.yml`** routes implementation roots and reference
-  registries/libraries without making them product intent.
-- **`.ghost/intent.md`** records human-authored or human-approved product
-  intent when useful.
-- **`.ghost/decisions/*.yml`** records accepted/rejected product-experience
+  registries/libraries without becoming portable product memory.
+- **`.ghost/fingerprint/memory/intent.md`** records human-authored or
+  human-approved product intent when useful.
+- **`.ghost/fingerprint/memory/decisions/*.yml`** records accepted/rejected product-experience
   rationale when history matters.
-- **`.ghost/cache/`** holds generated cache only after you explicitly
-  create it. Generated cache is optional source material: it answers what
-  exists; curated `inventory.*` in `fingerprint.yml` is the canonical inventory
-  layer.
+- **`.ghost/fingerprint/sources/cache/`** holds generated cache only after you
+  explicitly create it. Generated cache is optional source material: it answers
+  what exists; curated `inventory.yml` is the canonical inventory layer.
 
 Older `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` artifacts are
 legacy/cache material. They are not canonical Ghost input.
@@ -55,7 +58,7 @@ legacy/cache material. They are not canonical Ghost input.
 Advanced workflows can add nested fingerprint packages for product areas, custom
 `--memory-dir` locations for host wrappers, optional cache inventory, and fleet
 comparison. Those features stay available, but the core loop is just
-`fingerprint.yml`, optional active checks, and Git review.
+`fingerprint/`, optional active checks, and Git review.
 
 ## Install
 
@@ -118,13 +121,13 @@ package.
 Generated cache is optional source material:
 
 ```bash
-mkdir -p .ghost/cache
-ghost inventory > .ghost/cache/inventory.json
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
-Durable conclusions belong in `.ghost/fingerprint.yml`; executable gates belong
-in `.ghost/checks.yml`; implementation routing belongs in optional
-`.ghost/config.yml`.
+Durable conclusions belong in `.ghost/fingerprint/{prose.yml,inventory.yml,composition.yml}`;
+executable gates belong in `.ghost/fingerprint/enforcement/checks.yml`;
+implementation routing belongs in optional `.ghost/config.yml`.
 
 ## Generation Packet
 
@@ -133,11 +136,13 @@ they generate or revise UI. Give it to Codex, Cursor, Claude, or another host
 agent so work starts from prose, inventory, and composition instead of relying on
 post-hoc checks. Its `prompt.md` is organized around:
 
-- **Prose** from checked-in `fingerprint.yml`.
+- **Prose** from checked-in `fingerprint/prose.yml`.
 - **Inventory** from curated building blocks and exemplars in
-  `fingerprint.yml`, plus `.ghost/cache/inventory.json` when present.
-- **Composition** from selected `composition.patterns`.
-- **Active Checks** from `checks.yml` for validation, not generation input.
+  `fingerprint/inventory.yml`, plus
+  `.ghost/fingerprint/sources/cache/inventory.json` when present.
+- **Composition** from selected `fingerprint/composition.yml` patterns.
+- **Active Checks** from `fingerprint/enforcement/checks.yml` for validation,
+  not generation input.
 
 Checks and review validate output after generation. They do not replace the
 prose, inventory, and composition inputs that help agents produce the right thing.
@@ -166,8 +171,8 @@ ghost diverge typography --reason "Editorial product uses a different type scale
 ```
 
 `ghost scan --format json` emits deterministic fingerprint layer state: whether
-`fingerprint.yml` is present, counts for useful `prose`, `inventory`, and
-`composition`, missing layers, optional files, and the next BYOA step. A
+`fingerprint/manifest.yml` is present, counts for useful `prose`, `inventory`,
+and `composition`, missing layers, optional files, and the next BYOA step. A
 fingerprint is `fingerprint-ready` only when all three layers have useful
 content. It does not call an LLM.
 
@@ -175,7 +180,7 @@ content. It does not call an LLM.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml}`; use options only when optional files or scoped fingerprint packages are needed. |
+| `ghost init` | Create `.ghost/fingerprint/{manifest.yml,prose.yml,inventory.yml,composition.yml,enforcement/checks.yml}`; use options only when optional files or scoped fingerprint packages are needed. |
 | `ghost scan` | Report canonical fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
@@ -190,7 +195,7 @@ content. It does not call an LLM.
 | --- | --- |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/material gathering. |
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stack and merged output for one or more paths. Supports `--memory-dir`. |
-| `ghost describe` | Print optional `intent.md` or legacy direct markdown section ranges. |
+| `ghost describe` | Print optional `fingerprint/memory/intent.md` or legacy direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between legacy direct fingerprints. |
 | `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v1` files. Not canonical fingerprint input. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |

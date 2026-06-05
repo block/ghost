@@ -1,13 +1,13 @@
 ---
 name: survey
-description: Use observed repo facts as optional cache material for fingerprint.yml.
+description: Use observed repo facts as optional cache material for inventory.yml.
 handoffs:
   - label: Author fingerprint patterns
     skill: patterns
-    prompt: Interpret observed facts into .ghost/fingerprint.yml patterns
+    prompt: Interpret observed facts into .ghost/fingerprint/composition.yml patterns
   - label: Update fingerprint layers
     skill: capture
-    prompt: Use observed facts to update .ghost/fingerprint.yml
+    prompt: Use observed facts to update .ghost/fingerprint/ core layers
 ---
 
 # Recipe: Survey As Optional Inventory
@@ -16,8 +16,9 @@ handoffs:
 workflow or helper command needs a structured inventory of observed values,
 tokens, components, or surfaces.
 
-Canonical prose, inventory, and composition live in `.ghost/fingerprint.yml`. A survey can suggest what
-to inspect, but it does not decide what matters.
+Canonical prose, inventory, and composition live in
+`.ghost/fingerprint/{prose.yml,inventory.yml,composition.yml}`. A survey can
+suggest what to inspect, but it does not decide what matters.
 
 ## When To Use This
 
@@ -37,9 +38,9 @@ Skip it when:
 ## Rules
 
 - Record observed facts, not interpretation.
-- Keep generated output under `.ghost/cache/` unless a legacy command requires
+- Keep generated output under `.ghost/fingerprint/sources/cache/` unless a legacy command requires
   `.ghost/survey.json`.
-- Promote only useful, durable conclusions into `fingerprint.yml`.
+- Promote only useful, durable conclusions into the relevant core layer file.
 - If observation is incomplete, say so and leave the gap as local uncertainty
   until the user asks to edit the Ghost package.
 
