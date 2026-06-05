@@ -1,6 +1,6 @@
 ---
 name: patterns
-description: Author product-experience patterns inside .ghost/fingerprint.yml.
+description: Author product-experience patterns inside .ghost/fingerprint/composition.yml.
 handoffs:
   - label: Verify fingerprint package
     command: ghost verify .ghost --root .
@@ -9,7 +9,7 @@ handoffs:
 
 # Recipe: Author Fingerprint Patterns
 
-**Goal:** write useful `composition.patterns[]` entries in `.ghost/fingerprint.yml`.
+**Goal:** write useful `patterns[]` entries in `.ghost/fingerprint/composition.yml`.
 
 Patterns are durable product-experience memory. They may describe rules,
 layouts, structures, flows, states, content, behavior, or visual arrangements.
@@ -26,24 +26,23 @@ Add a pattern when it helps a future agent choose or review:
 - a restraint rule that preserves hierarchy, density, trust, or pacing
 
 Do not add a pattern just because a value or component exists. Put raw
-observations in `.ghost/cache/` or keep them in scratch notes.
+observations in `.ghost/fingerprint/sources/cache/` or keep them in scratch notes.
 
 ## Shape
 
 ```yaml
-composition:
-  patterns:
-    - id: resource-index-stays-tabular
-      kind: structure
-      pattern: Resource index views stay tabular when comparison is the task.
-      applies_to:
-        surface_types: [resource-index]
-        paths: [src/orders]
-      guidance:
-        - Preserve row density and sortable columns.
-        - Avoid decorative card grids for primary comparison views.
-      evidence:
-        - path: src/orders/index.tsx
+patterns:
+  - id: resource-index-stays-tabular
+    kind: structure
+    pattern: Resource index views stay tabular when comparison is the task.
+    applies_to:
+      surface_types: [resource-index]
+      paths: [src/orders]
+    guidance:
+      - Preserve row density and sortable columns.
+      - Avoid decorative card grids for primary comparison views.
+    evidence:
+      - path: src/orders/index.tsx
 ```
 
 Allowed `kind` values:
@@ -65,7 +64,7 @@ Allowed `kind` values:
 - Put obligations that affect failure, disclosure, recovery, or trust in
   `prose.experience_contracts`, not only `composition.patterns`.
 - Put broad product judgment in `prose.principles`.
-- Add `check_refs` only when a deterministic check exists in `checks.yml`.
+- Add `check_refs` only when a deterministic check exists in `fingerprint/enforcement/checks.yml`.
 
 ## Validate
 
@@ -75,4 +74,4 @@ ghost verify .ghost --root .
 ```
 
 If a pattern is speculative, do not add it as canonical composition. Leave it in
-scratch notes or ask the user whether to edit `fingerprint.yml`.
+scratch notes or ask the user whether to edit `composition.yml`.

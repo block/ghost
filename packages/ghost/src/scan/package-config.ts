@@ -57,10 +57,16 @@ export function normalizeReferenceInput(
 ): ReferenceConfigInput {
   const normalized = reference.replace(/\\/g, "/").replace(/\/+$/, "");
   const explicitRegistry = normalized.startsWith("registry:");
-  const isFingerprint = /(^|\/)fingerprint\.ya?ml$/i.test(normalized);
-  const baseReference = isFingerprint
-    ? normalized.replace(/\/fingerprint\.ya?ml$/i, "")
-    : normalized;
+  const isLegacyFingerprint = /(^|\/)fingerprint\.ya?ml$/i.test(normalized);
+  const isPackageManifest = /(^|\/)fingerprint\/manifest\.ya?ml$/i.test(
+    normalized,
+  );
+  const isFingerprint = isLegacyFingerprint || isPackageManifest;
+  const baseReference = isPackageManifest
+    ? normalized.replace(/\/fingerprint\/manifest\.ya?ml$/i, "")
+    : isLegacyFingerprint
+      ? normalized.replace(/\/fingerprint\.ya?ml$/i, "")
+      : normalized;
   const ghostIndex = baseReference.lastIndexOf("/.ghost");
   const sourcePath =
     ghostIndex >= 0
@@ -82,7 +88,7 @@ export function normalizeReferenceInput(
   const fingerprint = isFingerprint
     ? fingerprintBase
     : ghostIndex >= 0
-      ? `${fingerprintBase}/fingerprint.yml`
+      ? `${fingerprintBase}/fingerprint/manifest.yml`
       : undefined;
   const referenceIdSource =
     source.startsWith("registry:") &&

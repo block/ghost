@@ -20,7 +20,6 @@ import {
   type GhostFingerprintInventory,
   type GhostFingerprintInventoryBuildingBlocks,
   type GhostFingerprintProse,
-  GhostFingerprintSchema,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
   type GhostFingerprintTopologyScope,
@@ -30,8 +29,9 @@ import {
   type MapFrontmatter,
 } from "#ghost-core";
 import {
+  FINGERPRINT_DIRNAME,
+  FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
-  FINGERPRINT_YML_FILENAME,
 } from "./constants.js";
 import {
   loadPackageInventory,
@@ -41,6 +41,7 @@ import {
 import type { FingerprintPackagePaths } from "./fingerprint-package.js";
 import {
   lintFingerprintPackage,
+  loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue, LintReport } from "./lint.js";
@@ -142,7 +143,7 @@ export async function discoverGhostPackages(
 
   async function walk(dir: string): Promise<void> {
     const packageDir = resolve(dir, memoryDir);
-    if (await pathExists(resolve(packageDir, FINGERPRINT_YML_FILENAME))) {
+    if (await hasSplitFingerprintPackage(packageDir)) {
       packages.push(packageRef(packageDir, repoRoot, memoryDir));
     }
 
@@ -179,7 +180,7 @@ export async function discoverFingerprintStack(
 
   while (isWithinOrEqual(repoRoot, current)) {
     const packageDir = resolve(current, memoryDir);
-    if (await pathExists(resolve(packageDir, FINGERPRINT_YML_FILENAME))) {
+    if (await hasSplitFingerprintPackage(packageDir)) {
       packages.push(packageDir);
     }
     if (current === repoRoot) break;
@@ -204,7 +205,7 @@ export async function loadFingerprintStackForPath(
   });
   if (discovered.packages.length === 0) {
     throw new Error(
-      `No ${memoryDir}/${FINGERPRINT_YML_FILENAME} found for ${targetPath}.`,
+      `No ${memoryDir}/${FINGERPRINT_DIRNAME}/${FINGERPRINT_MANIFEST_FILENAME} found for ${targetPath}.`,
     );
   }
 
@@ -303,17 +304,16 @@ export async function loadFingerprintStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   const root = rootForFingerprintPackageDir(paths.dir, normalizedMemoryDir);
-  const [fingerprintRaw, checksRaw, intent, inventory, decisions] =
-    await Promise.all([
-      readFile(paths.fingerprintYml, "utf-8"),
-      readOptional(paths.checks),
-      readOptional(paths.intent),
-      loadPackageInventory(paths),
-      readDecisionDirectory(paths.decisions),
-    ]);
+  const [loaded, checksRaw, intent, inventory, decisions] = await Promise.all([
+    loadFingerprintPackage(paths),
+    readOptional(paths.checks),
+    readOptional(paths.intent),
+    loadPackageInventory(paths),
+    readDecisionDirectory(paths.decisions),
+  ]);
 
   const fingerprint = normalizeFingerprintPaths(
-    parseFingerprint(fingerprintRaw),
+    loaded.fingerprint,
     root,
     repoRoot,
   );
@@ -337,7 +337,7 @@ export async function loadFingerprintStackLayer(
   return {
     ...packageRef(paths.dir, repoRoot, normalizedMemoryDir),
     fingerprint,
-    fingerprint_raw: fingerprintRaw,
+    fingerprint_raw: stringifyYaml(fingerprint, { lineWidth: 0 }),
     ...(checks ? { checks } : {}),
     ...(checksRaw ? { checks_raw: checksRaw } : {}),
     ...(intent ? { intent } : {}),
@@ -368,7 +368,7 @@ export function fingerprintStackToPackageContext(
     intent: stack.merged.intent ?? undefined,
     inventory: stack.layers.at(-1)?.inventory ?? {
       state: "missing",
-      path: `${stack.fingerprint_dir}/cache/inventory.json`,
+      path: `${stack.fingerprint_dir}/fingerprint/sources/cache/inventory.json`,
     },
   };
 }
@@ -420,7 +420,7 @@ export async function lintAllFingerprintStacks(
     const fingerprintReport = lintGhostFingerprint(stack.merged.fingerprint);
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.fingerprint.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.fingerprint`,
         fingerprintReport.issues,
       ),
     );
@@ -430,7 +430,7 @@ export async function lintAllFingerprintStacks(
     });
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.checks.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.enforcement.checks.yml`,
         checksReport.issues,
       ),
     );
@@ -512,21 +512,8 @@ async function resolveAndInit(
   );
 }
 
-function parseFingerprint(raw: string): GhostFingerprintDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint.yml");
-  const report = lintGhostFingerprint(parsed);
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.path ? ` @ ${first.path}` : "";
-    throw new Error(
-      `fingerprint.yml failed lint: ${first?.message ?? "invalid fingerprint"}${suffix}`,
-    );
-  }
-  return GhostFingerprintSchema.parse(parsed) as GhostFingerprintDocument;
-}
-
 function parseChecks(raw: string): GhostChecksDocument {
-  const parsed = parseYamlSafe(raw, "checks.yml");
+  const parsed = parseYamlSafe(raw, "fingerprint/enforcement/checks.yml");
   return GhostChecksSchema.parse(parsed) as GhostChecksDocument;
 }
 
@@ -593,6 +580,7 @@ function mergeFingerprints(
       topology: {},
       building_blocks: {},
       exemplars: [],
+      sources: [],
     },
     composition: {
       patterns: [],
@@ -645,6 +633,7 @@ function mergeInventory(
       child.building_blocks,
     ),
     exemplars: mergeById([...parent.exemplars, ...child.exemplars]),
+    sources: mergeById([...parent.sources, ...child.sources]),
   };
 }
 
@@ -743,7 +732,7 @@ function mergeIntent(layers: GhostFingerprintStackLayer[]): string | null {
     .filter((layer) => layer.intent?.trim())
     .map(
       (layer) =>
-        `# ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)}/intent.md\n\n${layer.intent?.trim()}`,
+        `# ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)}/fingerprint/memory/intent.md\n\n${layer.intent?.trim()}`,
     );
   return chunks.length ? `${chunks.join("\n\n")}\n` : null;
 }
@@ -928,6 +917,14 @@ async function pathExists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function hasSplitFingerprintPackage(
+  packageDir: string,
+): Promise<boolean> {
+  return pathExists(
+    resolve(packageDir, FINGERPRINT_DIRNAME, FINGERPRINT_MANIFEST_FILENAME),
+  );
 }
 
 function packageRef(

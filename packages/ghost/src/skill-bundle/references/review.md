@@ -9,22 +9,16 @@ handoffs:
 
 # Recipe: Review Code Changes For Experience Drift
 
-**Goal:** combine deterministic gates with advisory product-experience critique.
-
-## Steps
-
-### 1. Run The Gate
+## 1. Run The Gate
 
 ```bash
 ghost check --base <ref>
 ```
 
-Fix deterministic failures first. These come from active `checks.yml` rules in
-checked-in fingerprint refs and are the only blocking findings. Use
-`--package <dir>` or stack-aware options only when the user asks for advanced
-routing.
+Fix deterministic failures first. These come from active
+`fingerprint/enforcement/checks.yml` rules and are the only blocking findings.
 
-### 2. Build Advisory Context
+## 2. Build Advisory Context
 
 ```bash
 ghost review --base <ref>
@@ -32,56 +26,25 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- `fingerprint.yml` prose, inventory, and composition
-- curated inventory exemplars from `fingerprint.yml`
-- active checks from `checks.yml`
-- optional stack, config, intent, or accepted decision context when present or
-  requested
+- `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and `fingerprint/composition.yml`
+- curated inventory exemplars
+- active checks from `fingerprint/enforcement/checks.yml`
+- optional stack, config, intent, or accepted decision context when present or requested
 - the diff
 
-### 3. Write Advisory Findings
+## 3. Write Advisory Findings
 
 Advisory findings are non-blocking unless tied to an active deterministic check.
-Classify each finding as one of:
+Classify each finding as `fix`, `intentional-divergence`, `missing-memory`,
+`experience-gap`, or `eval-uncertainty`.
 
-- `fix`
-- `intentional-divergence`
-- `missing-memory`
-- `experience-gap`
-- `eval-uncertainty`
-
-Each finding must cite:
-
-- diff location
-- `fingerprint.yml` prose/inventory/composition
-- relevant inventory exemplars when useful
-- active check when blocking
-- repair or intentional-divergence rationale
-
-Good advisory topics:
-
-- hierarchy mismatch
-- density drift
-- disclosure or recovery gap
-- generic composition
-- awkward action placement
-- copy or trust-contract mismatch
-- obligations grounded in fingerprint refs, human intent, accepted decisions,
-  or active checks
-
-Bad advisory topics:
-
-- vague taste objections with no diff location
-- restating fingerprint prose without applying it to the change
-- enforcing a rule that is not in `checks.yml`
-- unrelated audit categories not grounded in Ghost fingerprint refs
+Each finding must cite the diff location, relevant fingerprint core layer refs,
+exemplars when useful, active check when blocking, and repair or
+intentional-divergence rationale.
 
 When fingerprint layers are silent, local evidence can still support advisory
-critique. Label those findings as provisional and non-Ghost-backed, and ground
-them in nearby product surfaces, local components, token or copy conventions,
-accepted decisions, or human intent. Ask the human before judging high-risk,
-irreversible, privacy/security/legal, or product-identity-defining choices.
+critique. Label those findings as provisional and non-Ghost-backed.
 
-Fingerprint edits are ordinary Git-reviewed edits to `fingerprint.yml`,
-`checks.yml`, and optional rationale files when present. Do not silently rewrite
-the Ghost package during a review unless the user asks for fingerprint edits.
+Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint
+package and optional rationale files. Do not silently rewrite the Ghost package
+during review unless the user asks for fingerprint edits.

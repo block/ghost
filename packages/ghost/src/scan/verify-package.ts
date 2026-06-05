@@ -7,9 +7,11 @@ import type {
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
 } from "#ghost-core";
-import { GhostChecksSchema, GhostFingerprintSchema } from "#ghost-core";
+import { GhostChecksSchema } from "#ghost-core";
 import {
+  type LoadedFingerprintPackage,
   lintFingerprintPackage,
+  loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { GhostPackageConfig } from "./package-config.js";
@@ -43,10 +45,11 @@ export async function verifyFingerprintPackage(
   );
   if (packageLint.errors > 0) return finalize(issues);
 
-  const [fingerprint, checks] = await Promise.all([
-    readFingerprint(paths.fingerprintYml, issues),
+  const [loaded, checks] = await Promise.all([
+    readFingerprintPackage(paths, issues),
     readOptionalChecks(paths.checks, issues),
   ]);
+  const fingerprint = loaded?.fingerprint;
   const config = await readOptionalConfig(paths.config, issues);
 
   if (fingerprint) {
@@ -80,35 +83,26 @@ async function verifyFingerprintExemplars(
         severity: "warning",
         rule: "fingerprint-exemplar-unreachable",
         message: `fingerprint exemplar path '${entry.path}' could not be resolved from ${root}.`,
-        path: `fingerprint.yml.inventory.exemplars[${index}].path`,
+        path: `fingerprint/inventory.yml.exemplars[${index}].path`,
       });
     }),
   );
 }
 
-async function readFingerprint(
-  path: string,
+async function readFingerprintPackage(
+  paths: ReturnType<typeof resolveFingerprintPackage>,
   issues: VerifyFingerprintIssue[],
-): Promise<GhostFingerprintDocument | undefined> {
+): Promise<LoadedFingerprintPackage | undefined> {
   try {
-    const parsed = parseYaml(await readFile(path, "utf-8"));
-    const result = GhostFingerprintSchema.safeParse(parsed);
-    if (result.success) return result.data as GhostFingerprintDocument;
-    issues.push({
-      severity: "error",
-      rule: "verify-fingerprint-read-failed",
-      message: "fingerprint.yml failed schema validation after package lint.",
-      path: "fingerprint.yml",
-    });
-    return undefined;
+    return await loadFingerprintPackage(paths);
   } catch (err) {
     issues.push({
       severity: "error",
       rule: "verify-fingerprint-read-failed",
-      message: `fingerprint.yml could not be read as YAML: ${
+      message: `fingerprint package could not be read: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: "fingerprint.yml",
+      path: "fingerprint",
     });
     return undefined;
   }
@@ -125,8 +119,9 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message: "checks.yml failed schema validation after package lint.",
-      path: "checks.yml",
+      message:
+        "fingerprint/enforcement/checks.yml failed schema validation after package lint.",
+      path: "fingerprint/enforcement/checks.yml",
     });
     return undefined;
   } catch (err) {
@@ -134,10 +129,10 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message: `checks.yml could not be read as YAML: ${
+      message: `fingerprint/enforcement/checks.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: "checks.yml",
+      path: "fingerprint/enforcement/checks.yml",
     });
     return undefined;
   }
@@ -241,28 +236,28 @@ async function verifyFingerprintEvidence(
       ...fingerprint.prose.situations.map(
         (entry, index) =>
           [
-            `fingerprint.yml.prose.situations[${index}].evidence`,
+            `fingerprint/prose.yml.situations[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
       ...fingerprint.prose.principles.map(
         (entry, index) =>
           [
-            `fingerprint.yml.prose.principles[${index}].evidence`,
+            `fingerprint/prose.yml.principles[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
       ...fingerprint.prose.experience_contracts.map(
         (entry, index) =>
           [
-            `fingerprint.yml.prose.experience_contracts[${index}].evidence`,
+            `fingerprint/prose.yml.experience_contracts[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
       ...fingerprint.composition.patterns.map(
         (entry, index) =>
           [
-            `fingerprint.yml.composition.patterns[${index}].evidence`,
+            `fingerprint/composition.yml.patterns[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
@@ -298,21 +293,21 @@ function verifyFingerprintCheckRefs(
     ...fingerprint.prose.principles.map(
       (entry, index) =>
         [
-          `fingerprint.yml.prose.principles[${index}].check_refs`,
+          `fingerprint/prose.yml.principles[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
     ...fingerprint.prose.experience_contracts.map(
       (entry, index) =>
         [
-          `fingerprint.yml.prose.experience_contracts[${index}].check_refs`,
+          `fingerprint/prose.yml.experience_contracts[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
     ...fingerprint.composition.patterns.map(
       (entry, index) =>
         [
-          `fingerprint.yml.composition.patterns[${index}].check_refs`,
+          `fingerprint/composition.yml.patterns[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
@@ -325,7 +320,7 @@ function verifyFingerprintCheckRefs(
       issues.push({
         severity: "error",
         rule: "fingerprint-check-unknown",
-        message: `fingerprint.yml references unknown check '${ref}'.`,
+        message: `fingerprint layer references unknown check '${ref}'.`,
         path: `${path}[${index}]`,
       });
     });

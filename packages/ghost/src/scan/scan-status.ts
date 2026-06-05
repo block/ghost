@@ -2,24 +2,23 @@ import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
-  GHOST_CHECKS_FILENAME,
-  GHOST_FINGERPRINT_YML_FILENAME,
   type GhostFingerprintDocument,
-  GhostFingerprintSchema,
   getEffectiveMapScopes,
-  lintGhostFingerprint,
   MAP_FILENAME,
   type MapFrontmatter,
   MapFrontmatterSchema,
   SURVEY_FILENAME,
 } from "#ghost-core";
 import {
-  CACHE_DIRNAME,
   CONFIG_FILENAME,
   FINGERPRINTS_DIRNAME,
-  INTENT_FILENAME,
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
+import {
+  type FingerprintPackagePaths,
+  loadFingerprintPackage,
+  resolveFingerprintPackage,
+} from "./fingerprint-package.js";
 
 export type ScanStageState = "missing" | "present";
 
@@ -92,7 +91,8 @@ export interface ScanStatus {
 
 /**
  * Inspect a Ghost fingerprint directory and report whether the canonical
- * `fingerprint.yml` exists with useful prose, inventory, and composition.
+ * `fingerprint/manifest.yml` exists with useful prose, inventory, and
+ * composition layers.
  * Generated cache is source material, not readiness for the curated
  * inventory layer. Optional checks and rationale files are supplemental when
  * present.
@@ -102,11 +102,12 @@ export async function scanStatus(
   options: ScanStatusOptions = {},
 ): Promise<ScanStatus> {
   const dir = resolve(dirPath);
-  const fingerprintPath = resolve(dir, GHOST_FINGERPRINT_YML_FILENAME);
+  const paths = resolveFingerprintPackage(dir, process.cwd());
+  const fingerprintPath = paths.fingerprintDir;
   const configPath = resolve(dir, CONFIG_FILENAME);
-  const checksPath = resolve(dir, GHOST_CHECKS_FILENAME);
-  const intentPath = resolve(dir, INTENT_FILENAME);
-  const cachePath = resolve(dir, CACHE_DIRNAME);
+  const checksPath = paths.checks;
+  const intentPath = paths.intent;
+  const cachePath = paths.cache;
 
   const [
     fingerprintPresent,
@@ -115,7 +116,7 @@ export async function scanStatus(
     intentPresent,
     cachePresent,
   ] = await Promise.all([
-    pathExists(fingerprintPath, "file"),
+    pathExists(paths.manifest, "file"),
     pathExists(configPath, "file"),
     pathExists(checksPath, "file"),
     pathExists(intentPath, "file"),
@@ -150,7 +151,7 @@ export async function scanStatus(
     checks,
     intent,
     cache,
-    readiness: await scanReadiness(fingerprintPath, fingerprintPresent),
+    readiness: await scanReadiness(paths, fingerprintPresent),
     recommended_next: fingerprintPresent ? null : "fingerprint",
   };
 
@@ -168,44 +169,30 @@ export async function scanStatus(
 }
 
 async function scanReadiness(
-  fingerprintPath: string,
+  paths: FingerprintPackagePaths,
   fingerprintPresent: boolean,
 ): Promise<ScanReadinessReport> {
   if (!fingerprintPresent) {
     return readinessReport("fingerprint-missing", {
       reasons: [
-        "fingerprint.yml is missing, so no canonical fingerprint layers are available.",
+        "fingerprint/manifest.yml is missing, so no canonical fingerprint layers are available.",
       ],
       cannot_review: ["prose", "inventory", "composition"],
     });
   }
 
-  let doc: unknown;
+  let fingerprint: GhostFingerprintDocument;
   try {
-    doc = parseYaml(await readFile(fingerprintPath, "utf-8"));
+    fingerprint = (await loadFingerprintPackage(paths)).fingerprint;
   } catch (err) {
     return readinessReport("fingerprint-invalid", {
       reasons: [
-        `fingerprint.yml could not be read: ${
+        `fingerprint package could not be read: ${
           err instanceof Error ? err.message : String(err)
         }`,
       ],
     });
   }
-
-  const lint = lintGhostFingerprint(doc);
-  if (lint.errors > 0) {
-    return readinessReport("fingerprint-invalid", {
-      reasons: [
-        `fingerprint.yml has ${lint.errors} lint error(s); run ghost lint for details.`,
-      ],
-      cannot_review: ["prose", "inventory", "composition"],
-    });
-  }
-
-  const fingerprint = GhostFingerprintSchema.parse(
-    doc,
-  ) as GhostFingerprintDocument;
   const buildingBlocks = fingerprint.inventory.building_blocks;
   const buildingBlockRows = {
     tokens: buildingBlocks?.tokens?.length ?? 0,
@@ -250,7 +237,7 @@ async function scanReadiness(
       layer_counts: layerCounts,
       missing_layers: missingLayers,
       reasons: [
-        "fingerprint.yml is valid but has no useful prose, inventory, or composition entries yet.",
+        "fingerprint/ is valid but has no useful prose, inventory, or composition entries yet.",
       ],
       cannot_review: ["prose", "inventory", "composition"],
     });
@@ -264,7 +251,7 @@ async function scanReadiness(
       product_surface_count: fingerprint.inventory.exemplars.length,
       building_block_rows: buildingBlockRows,
       reasons: [
-        `fingerprint.yml only has useful ${layer}; add ${missingLayers.join(" and ")} for a ready fingerprint.`,
+        `fingerprint/ only has useful ${layer}; add ${missingLayers.join(" and ")} for a ready fingerprint.`,
       ],
       can_review: canReviewForLayers(presentLayers),
       cannot_review: missingLayers,
@@ -278,7 +265,7 @@ async function scanReadiness(
       product_surface_count: fingerprint.inventory.exemplars.length,
       building_block_rows: buildingBlockRows,
       reasons: [
-        `fingerprint.yml has ${presentLayers.join(" and ")} but is missing ${missingLayers.join(" and ")}.`,
+        `fingerprint/ has ${presentLayers.join(" and ")} but is missing ${missingLayers.join(" and ")}.`,
       ],
       can_review: canReviewForLayers(presentLayers),
       cannot_review: missingLayers,
@@ -291,7 +278,7 @@ async function scanReadiness(
     product_surface_count: fingerprint.inventory.exemplars.length,
     building_block_rows: buildingBlockRows,
     reasons: [
-      "fingerprint.yml has useful prose, inventory, and composition layers.",
+      "fingerprint/ has useful prose, inventory, and composition layers.",
     ],
     can_review: ["prose", "inventory", "composition"],
   });

@@ -2,8 +2,8 @@
 
 **Unified Ghost CLI for repo-local product-experience world models.**
 
-Ghost initializes root `.ghost/fingerprint.yml` memory, checks diffs against
-deterministic gates, emits advisory review packets, compares bundles, and
+Ghost initializes root `.ghost/fingerprint/` memory, checks diffs against
+deterministic gates, emits advisory review packets, compares packages, and
 records intentional drift. It ships one CLI: `ghost`.
 
 ## Install
@@ -52,7 +52,7 @@ import { compareFingerprints } from "@anarchitecture/ghost/core";
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
 lint, verify, compare, check, and handoff packet generation. The installed
 `ghost` skill teaches your host agent how to capture canonical
-`.ghost/fingerprint.yml` memory, brief work from it, review drift, verify
+`.ghost/fingerprint/` memory, brief work from it, review drift, verify
 generated UI, remediate issues, and suggest memory edits when the user asks.
 
 ```bash

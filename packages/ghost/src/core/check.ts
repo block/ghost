@@ -7,8 +7,6 @@ import {
   type GhostCheck,
   type GhostChecksDocument,
   GhostChecksSchema,
-  type GhostFingerprintDocument,
-  GhostFingerprintSchema,
   lintGhostChecks,
   type MapFrontmatter,
   MapFrontmatterSchema,
@@ -17,6 +15,7 @@ import {
 } from "#ghost-core";
 import {
   groupFingerprintStacksForPaths,
+  loadFingerprintPackage,
   mapFromFingerprint,
   resolveFingerprintPackage,
 } from "../scan/index.js";
@@ -254,22 +253,12 @@ async function loadCheckPackage(
   cwd: string,
 ): Promise<LoadedCheckPackage> {
   const paths = resolveFingerprintPackage(packageDir, cwd);
-  const [fingerprintRaw, mapRaw, checksRaw] = await Promise.all([
-    readFile(paths.fingerprintYml, "utf-8"),
+  const [loaded, mapRaw, checksRaw] = await Promise.all([
+    loadFingerprintPackage(paths),
     readOptional(paths.map),
     readOptional(paths.checks),
   ]);
-  const fingerprintResult = GhostFingerprintSchema.safeParse(
-    parseYaml(fingerprintRaw),
-  );
-  if (!fingerprintResult.success) {
-    throw new Error(
-      `fingerprint.yml failed validation: ${fingerprintResult.error.issues
-        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
-  const fingerprint = fingerprintResult.data as GhostFingerprintDocument;
+  const fingerprint = loaded.fingerprint;
   const map = mapRaw ? parseMap(mapRaw) : mapFromFingerprint(fingerprint);
   if (checksRaw === undefined) {
     return {

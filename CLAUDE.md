@@ -36,22 +36,31 @@ structural diffs, drift checks, comparison math, and handoff packets.
 The canonical root `.ghost/` package follows:
 
 ```text
-fingerprint.yml                 -> checks.yml
-prose + inventory + composition    deterministic gates
+config.yml
+fingerprint/
+  manifest.yml
+  prose.yml
+  inventory.yml
+  composition.yml
+  enforcement/checks.yml
+  memory/intent.md
+  memory/decisions/
+  sources/cache/
 ```
 
-Optional context lives beside it:
+The three root layer files under `fingerprint/` are the core model:
 
-- `intent.md` for human-authored or human-approved product intent.
-- `decisions/*.yml` for accepted/rejected product-experience rationale.
-- `cache/` for generated cache. Cache answers what exists; fingerprint
-  prose answers what matters and why.
+- `prose.yml` for product judgment.
+- `inventory.yml` for curated material, exemplars, and source links.
+- `composition.yml` for experience patterns.
 
-Generation starts from `fingerprint.yml` prose, inventory, and composition.
-Generated cache in `cache/` is optional source material; curated inventory in
-`fingerprint.yml` includes building blocks and exemplars. Checks remain
-validation and enforcement, not generation input. Ordinary Git review is the
-approval boundary for fingerprint edits.
+Supporting files live under purpose folders. `enforcement/checks.yml` is
+validation and enforcement, not generation input. `memory/intent.md` and
+`memory/decisions/` hold optional human context and rationale. Generated cache
+in `sources/cache/` is optional source material; it answers what exists, while
+core fingerprint layers answer what matters and why. `.ghost/config.yml`
+remains local adapter/routing config outside portable memory. Ordinary Git
+review is the approval boundary for fingerprint edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
 appear in older repos or as migration source material. They are not canonical
@@ -71,12 +80,12 @@ fingerprint input for new Ghost work.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/{fingerprint.yml,checks.yml}`. |
+| `ghost init` | Create `.ghost/fingerprint/` with manifest, core layers, and enforcement checks. |
 | `ghost scan` | Report fingerprint layer readiness and BYOA next-step guidance. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/source material. |
 | `ghost lint` | Validate a fingerprint package or single artifact. |
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
-| `ghost describe` | Print optional `intent.md` or direct markdown section ranges. |
+| `ghost describe` | Print optional `fingerprint/memory/intent.md` or direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
 | `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v1` workflows. |
 | `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
@@ -133,9 +142,8 @@ first publish becomes `0.1.0`.
 
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
-- The canonical on-disk form is `.ghost/fingerprint.yml` plus optional
-  `.ghost/checks.yml`, `.ghost/decisions/`, `.ghost/intent.md`, and
-  `.ghost/cache/`.
+- The canonical on-disk form is `.ghost/fingerprint/` plus optional
+  `.ghost/config.yml`.
 - Direct `fingerprint.md` remains only for legacy/direct compare workflows.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.

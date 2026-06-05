@@ -7,9 +7,7 @@ import {
   formatSurveyCatalogMarkdown,
   formatSurveySummaryMarkdown,
   type GhostFingerprintDocument,
-  GhostFingerprintSchema,
   type GhostPatternsDocument,
-  lintGhostFingerprint,
   lintSurvey,
   mergeSurveys,
   recomputeSurveyIds,
@@ -33,6 +31,7 @@ import {
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
+  loadFingerprintPackage,
   normalizeMemoryDir,
   resolveFingerprintPackage,
   scanStatus,
@@ -59,7 +58,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "lint [file]",
-      "Validate a root Ghost fingerprint package, fingerprint.yml, checks.yml, or legacy markdown — defaults to .ghost",
+      "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or legacy markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
@@ -132,10 +131,7 @@ export function registerScanCommands(cli: CAC): void {
 
   // --- init ---
   cli
-    .command(
-      "init [dir]",
-      "Create a root .ghost fingerprint package (fingerprint.yml and checks.yml)",
-    )
+    .command("init [dir]", "Create a root .ghost split fingerprint package")
     .option(
       "--scope <path>",
       "Create a scoped <path>/<memory-dir> fingerprint package",
@@ -146,7 +142,7 @@ export function registerScanCommands(cli: CAC): void {
     )
     .option(
       "--with-intent",
-      "Also create optional intent.md for human-authored or human-approved intent",
+      "Also create optional fingerprint/memory/intent.md for human-authored or human-approved intent",
     )
     .option(
       "--with-config",
@@ -204,13 +200,16 @@ export function registerScanCommands(cli: CAC): void {
           process.stdout.write(
             `Initialized Ghost fingerprint package: ${paths.dir}\n`,
           );
-          process.stdout.write(`  fingerprint.yml: ${paths.fingerprintYml}\n`);
-          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          process.stdout.write(`  manifest.yml: ${paths.manifest}\n`);
+          process.stdout.write(`  prose.yml: ${paths.prose}\n`);
+          process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
+          process.stdout.write(`  composition.yml: ${paths.composition}\n`);
+          process.stdout.write(`  enforcement/checks.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
           }
           if (opts.withIntent) {
-            process.stdout.write(`  intent.md: ${paths.intent}\n`);
+            process.stdout.write(`  memory/intent.md: ${paths.intent}\n`);
           }
         }
         process.exit(0);
@@ -230,7 +229,7 @@ export function registerScanCommands(cli: CAC): void {
     )
     .option(
       "--root <dir>",
-      "Optional target root used to resolve fingerprint.yml evidence and exemplar paths (default: cwd)",
+      "Optional target root used to resolve fingerprint evidence and exemplar paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
@@ -324,19 +323,19 @@ export function registerScanCommands(cli: CAC): void {
             state === "present" ? "present" : "missing";
           process.stdout.write(`fingerprint dir: ${status.dir}\n\n`);
           process.stdout.write(
-            `  fingerprint (fingerprint.yml): ${fmt(status.fingerprint.state)}\n`,
+            `  fingerprint (fingerprint/): ${fmt(status.fingerprint.state)}\n`,
           );
           process.stdout.write(
             `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
-            `  checks      (checks.yml):      ${fmt(status.checks.state)}\n`,
+            `  checks      (fingerprint/enforcement/checks.yml): ${fmt(status.checks.state)}\n`,
           );
           process.stdout.write(
-            `  cache       (cache/):          ${fmt(status.cache.state)}\n`,
+            `  cache       (fingerprint/sources/cache/):          ${fmt(status.cache.state)}\n`,
           );
           process.stdout.write(
-            `  intent     (intent.md):     ${fmt(status.intent.state)}\n\n`,
+            `  intent     (fingerprint/memory/intent.md):     ${fmt(status.intent.state)}\n\n`,
           );
           if (status.recommended_next) {
             process.stdout.write(
@@ -344,7 +343,7 @@ export function registerScanCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: edit fingerprint.yml layers, then run ghost verify/check/review\n",
+              "next: edit fingerprint/ layers, then run ghost verify/check/review\n",
             );
           }
           process.stdout.write(`readiness: ${status.readiness.state}\n`);
@@ -445,7 +444,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "describe [fingerprint]",
-      "Print a section map of intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
+      "Print a section map of fingerprint/memory/intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -737,7 +736,11 @@ function initCommandOutput(
 ): Record<string, string> {
   return {
     dir: paths.dir,
-    fingerprintYml: paths.fingerprintYml,
+    fingerprintDir: paths.fingerprintDir,
+    manifest: paths.manifest,
+    prose: paths.prose,
+    inventory: paths.inventory,
+    composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
     ...(options.includeIntent ? { intent: paths.intent } : {}),
@@ -747,13 +750,12 @@ function initCommandOutput(
 async function loadSiblingFingerprintForChecksLint(
   fileTarget: string,
 ): Promise<GhostFingerprintDocument | undefined> {
-  const siblingPath = resolve(dirname(fileTarget), "fingerprint.yml");
+  const checksDir = dirname(fileTarget);
+  const packageRoot = resolve(checksDir, "..", "..");
   try {
-    const raw = await readFile(siblingPath, "utf-8");
-    const parsed = parseYaml(raw);
-    const report = lintGhostFingerprint(parsed);
-    if (report.errors > 0) return undefined;
-    return GhostFingerprintSchema.parse(parsed) as GhostFingerprintDocument;
+    return (
+      await loadFingerprintPackage(resolveFingerprintPackage(packageRoot))
+    ).fingerprint;
   } catch {
     return undefined;
   }
@@ -899,7 +901,7 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       traits: traitsForPattern(entry.value, survey),
       evidence: entry.evidence,
       advisory: [
-        "Use as advisory composition evidence; deterministic enforcement belongs in checks.yml.",
+        "Use as advisory composition evidence; deterministic enforcement belongs in fingerprint/enforcement/checks.yml.",
       ],
     })),
     advisory: {
@@ -913,7 +915,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
       "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
-      "Treat intent.md as human authority when present.",
+      "Treat fingerprint/memory/intent.md as human authority when present.",
     ];
   }
 
@@ -924,14 +926,14 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
       "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-      "Treat intent.md as human authority when present.",
+      "Treat fingerprint/memory/intent.md as human authority when present.",
     ];
   }
 
   return [
     "Identify the surface type before judging composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-    "Treat intent.md as human authority when present.",
+    "Treat fingerprint/memory/intent.md as human authority when present.",
   ];
 }
 
