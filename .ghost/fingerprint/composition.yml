@@ -1,0 +1,60 @@
+patterns:
+  - id: core-layers-stay-prominent
+    kind: structure
+    pattern: Portable Ghost packages keep prose.yml, inventory.yml, and composition.yml at the root of fingerprint/ while enforcement, memory, and source material sit in purpose folders.
+    guidance:
+      - Do not require generated cache for a valid new project.
+      - Do not create cache during initialization; cache appears only after explicit inventory work.
+      - Allow sparse layer authoring; omitted layer files normalize to empty layers internally.
+      - Keep generated cache outside canonical inventory while allowing inventory.yml to cite it as a source.
+      - Use Git review for fingerprint approval instead of Ghost-specific draft files.
+    evidence:
+      - path: README.md
+      - path: docs/fingerprint-format.md
+  - id: compact-agent-handoff
+    kind: content
+    pattern: CLI and emitted prompts should tell the host agent exactly which fingerprint layers to read and which findings can block.
+    guidance:
+      - Prefer short ordered workflows over broad conceptual lectures.
+      - Name missing fingerprint grounding or layer coverage plainly without creating a separate fingerprint-change workflow.
+    evidence:
+      - path: packages/ghost/src/scan/context/package-review-command.ts
+  - id: editorial-workbench-docs
+    kind: visual
+    pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.
+    applies_to:
+      scopes:
+        - docs-site
+      surface_types:
+        - docs-home
+        - docs-foundation
+        - tool-doc
+    guidance:
+      - Keep concepts plain and examples inspectable.
+      - Avoid oversized marketing composition for reference pages.
+    check_refs:
+      - check:component-pages-use-display-scale
+    evidence:
+      - path: apps/docs/src/components/docs/page-header.tsx
+      - path: apps/docs/src/components/docs/component-page-shell.tsx
+  - id: token-first-interface
+    kind: visual
+    pattern: Ghost UI surfaces use semantic tokens for repeatable color and avoid ad hoc surface hex values.
+    applies_to:
+      scopes:
+        - docs-site
+        - ghost-ui-components
+      surface_types:
+        - component-catalogue
+        - docs-foundation
+        - docs-home
+        - primitive-demo
+        - theme-control
+    guidance:
+      - Define color meaning in the token layer before repeating values in components.
+      - Treat one-off literal colors in UI surfaces as review-worthy drift.
+      - Using the right token is not enough if hierarchy, disclosure, or operability regresses.
+    check_refs:
+      - check:no-hardcoded-surface-hex
+    evidence:
+      - path: packages/ghost-ui/src/styles/main.css

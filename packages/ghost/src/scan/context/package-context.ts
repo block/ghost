@@ -5,11 +5,12 @@ import {
   type GhostChecksDocument,
   GhostChecksSchema,
   type GhostFingerprintDocument,
-  GhostFingerprintSchema,
   lintGhostChecks,
-  lintGhostFingerprint,
 } from "#ghost-core";
-import type { FingerprintPackagePaths } from "../fingerprint-package.js";
+import {
+  type FingerprintPackagePaths,
+  loadFingerprintPackage,
+} from "../fingerprint-package.js";
 
 export interface PackageInventorySummary {
   root?: string;
@@ -36,6 +37,12 @@ export interface PackageContext {
   fingerprintDir?: string;
   fingerprint: GhostFingerprintDocument;
   fingerprintRaw: string;
+  fingerprintLayers?: {
+    manifest: string;
+    prose?: string;
+    inventory?: string;
+    composition?: string;
+  };
   checks?: GhostChecksDocument;
   checksRaw?: string;
   intent?: string;
@@ -46,19 +53,24 @@ export async function loadPackageContext(
   paths: FingerprintPackagePaths,
   nameOverride?: string,
 ): Promise<PackageContext> {
-  const [fingerprintRaw, checksRaw, intent, inventory] = await Promise.all([
-    readFile(paths.fingerprintYml, "utf-8"),
+  const [loaded, checksRaw, intent, inventory] = await Promise.all([
+    loadFingerprintPackage(paths),
     readOptional(paths.checks),
     readOptional(paths.intent),
     loadPackageInventory(paths),
   ]);
 
-  const fingerprint = parseFingerprint(fingerprintRaw);
+  const fingerprint = loaded.fingerprint;
   const checks = checksRaw ? parseChecks(checksRaw, fingerprint) : undefined;
   return {
     name: sanitizeName(nameOverride ?? inferPackageName(fingerprint)),
+    fingerprintDir: paths.dir,
     fingerprint,
-    fingerprintRaw,
+    fingerprintRaw: JSON.stringify(fingerprint, null, 2),
+    fingerprintLayers: {
+      manifest: loaded.manifestRaw,
+      ...loaded.layerRaw,
+    },
     checks,
     checksRaw,
     intent,
@@ -83,37 +95,17 @@ export async function loadPackageInventory(
   }
 }
 
-function parseFingerprint(raw: string): GhostFingerprintDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint.yml");
-  const report = lintGhostFingerprint(parsed);
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.path ? ` @ ${first.path}` : "";
-    throw new Error(
-      `fingerprint.yml failed lint with ${report.errors} error(s): ${
-        first?.message ?? "invalid fingerprint"
-      }${suffix}`,
-    );
-  }
-
-  const result = GhostFingerprintSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error("fingerprint.yml failed schema validation.");
-  }
-  return result.data as GhostFingerprintDocument;
-}
-
 function parseChecks(
   raw: string,
   fingerprint: GhostFingerprintDocument,
 ): GhostChecksDocument {
-  const parsed = parseYamlSafe(raw, "checks.yml");
+  const parsed = parseYamlSafe(raw, "fingerprint/enforcement/checks.yml");
   const report = lintGhostChecks(parsed, { fingerprint });
   if (report.errors > 0) {
     const first = report.issues.find((issue) => issue.severity === "error");
     const suffix = first?.path ? ` @ ${first.path}` : "";
     throw new Error(
-      `checks.yml failed lint with ${report.errors} error(s): ${
+      `fingerprint/enforcement/checks.yml failed lint with ${report.errors} error(s): ${
         first?.message ?? "invalid checks"
       }${suffix}`,
     );
@@ -121,7 +113,9 @@ function parseChecks(
 
   const result = GhostChecksSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error("checks.yml failed schema validation.");
+    throw new Error(
+      "fingerprint/enforcement/checks.yml failed schema validation.",
+    );
   }
   return result.data as GhostChecksDocument;
 }

@@ -4,13 +4,10 @@ import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   GHOST_CHECKS_FILENAME,
-  GHOST_CHECKS_SCHEMA,
-  GHOST_FINGERPRINT_SCHEMA,
   type GhostFingerprintDocument,
-  GhostFingerprintSchema,
+  type GhostFingerprintPackageManifest,
   lintGhostChecks,
   lintGhostDecision,
-  lintGhostFingerprint,
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -18,22 +15,47 @@ import {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
   DECISIONS_DIRNAME,
+  FINGERPRINT_COMPOSITION_FILENAME,
+  FINGERPRINT_DIRNAME,
+  FINGERPRINT_ENFORCEMENT_DIRNAME,
   FINGERPRINT_FILENAME,
+  FINGERPRINT_INVENTORY_FILENAME,
+  FINGERPRINT_MANIFEST_FILENAME,
+  FINGERPRINT_MEMORY_DIRNAME,
   FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_PROSE_FILENAME,
+  FINGERPRINT_SOURCES_DIRNAME,
   FINGERPRINT_YML_FILENAME,
   INTENT_FILENAME,
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./constants.js";
+import {
+  lintFingerprintPackageManifest,
+  parseSplitFingerprintForLint,
+  templateChecks,
+  templateComposition,
+  templateIntent,
+  templateInventory,
+  templateManifest,
+  templateProse,
+} from "./fingerprint-package-layers.js";
 import type { LintIssue, LintReport } from "./lint.js";
 import {
   lintGhostPackageConfig,
-  normalizeReferenceInput,
   templatePackageConfig,
 } from "./package-config.js";
 
+export { loadFingerprintPackage } from "./fingerprint-package-layers.js";
+
 export interface FingerprintPackagePaths {
   dir: string;
+  fingerprintDir: string;
+  manifest: string;
+  prose: string;
+  inventory: string;
+  composition: string;
+  enforcement: string;
   fingerprintYml: string;
   config: string;
   resources: string;
@@ -43,9 +65,22 @@ export interface FingerprintPackagePaths {
   /** Legacy direct markdown path; not part of the canonical root bundle. */
   fingerprint: string;
   checks: string;
+  memory: string;
   intent: string;
   decisions: string;
+  sources: string;
   cache: string;
+}
+
+export interface LoadedFingerprintPackage {
+  manifest: GhostFingerprintPackageManifest;
+  manifestRaw: string;
+  fingerprint: GhostFingerprintDocument;
+  layerRaw: {
+    prose?: string;
+    inventory?: string;
+    composition?: string;
+  };
 }
 
 export interface InitFingerprintPackageOptions {
@@ -59,8 +94,18 @@ export function resolveFingerprintPackage(
   cwd = process.cwd(),
 ): FingerprintPackagePaths {
   const dir = resolve(cwd, dirArg ?? FINGERPRINT_PACKAGE_DIR);
+  const fingerprintDir = join(dir, FINGERPRINT_DIRNAME);
+  const enforcement = join(fingerprintDir, FINGERPRINT_ENFORCEMENT_DIRNAME);
+  const memory = join(fingerprintDir, FINGERPRINT_MEMORY_DIRNAME);
+  const sources = join(fingerprintDir, FINGERPRINT_SOURCES_DIRNAME);
   return {
     dir,
+    fingerprintDir,
+    manifest: join(fingerprintDir, FINGERPRINT_MANIFEST_FILENAME),
+    prose: join(fingerprintDir, FINGERPRINT_PROSE_FILENAME),
+    inventory: join(fingerprintDir, FINGERPRINT_INVENTORY_FILENAME),
+    composition: join(fingerprintDir, FINGERPRINT_COMPOSITION_FILENAME),
+    enforcement,
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
     config: join(dir, CONFIG_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
@@ -68,10 +113,12 @@ export function resolveFingerprintPackage(
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),
-    checks: join(dir, GHOST_CHECKS_FILENAME),
-    intent: join(dir, INTENT_FILENAME),
-    decisions: join(dir, DECISIONS_DIRNAME),
-    cache: join(dir, CACHE_DIRNAME),
+    checks: join(enforcement, GHOST_CHECKS_FILENAME),
+    memory,
+    intent: join(memory, INTENT_FILENAME),
+    decisions: join(memory, DECISIONS_DIRNAME),
+    sources,
+    cache: join(sources, CACHE_DIRNAME),
   };
 }
 
@@ -81,13 +128,17 @@ export async function initFingerprintPackage(
   options: InitFingerprintPackageOptions = {},
 ): Promise<FingerprintPackagePaths> {
   const paths = resolveFingerprintPackage(dirArg, cwd);
-  await mkdir(paths.dir, { recursive: true });
   await Promise.all([
-    writeFile(
-      paths.fingerprintYml,
-      templateFingerprintYml(options.reference),
-      "utf-8",
-    ),
+    mkdir(paths.fingerprintDir, { recursive: true }),
+    mkdir(paths.enforcement, { recursive: true }),
+    ...(options.withIntent ? [mkdir(paths.memory, { recursive: true })] : []),
+    ...(options.withConfig ? [mkdir(paths.dir, { recursive: true })] : []),
+  ]);
+  await Promise.all([
+    writeFile(paths.manifest, templateManifest(), "utf-8"),
+    writeFile(paths.prose, templateProse(), "utf-8"),
+    writeFile(paths.inventory, templateInventory(options.reference), "utf-8"),
+    writeFile(paths.composition, templateComposition(), "utf-8"),
     writeFile(paths.checks, templateChecks(), "utf-8"),
     ...(options.withConfig
       ? [
@@ -112,33 +163,32 @@ export async function lintFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   const issues: LintIssue[] = [];
 
-  const fingerprintRaw = await readRequired(
-    paths.fingerprintYml,
-    "fingerprint.yml",
+  const manifestRaw = await readRequired(
+    paths.manifest,
+    "fingerprint/manifest.yml",
     issues,
   );
+  const proseRaw = await readOptional(paths.prose);
+  const inventoryRaw = await readOptional(paths.inventory);
+  const compositionRaw = await readOptional(paths.composition);
   const configRaw = await readOptional(paths.config);
   const checksRaw = await readOptional(paths.checks);
   const intentRaw = await readOptional(paths.intent);
   await lintDecisionDirectory(
     paths.decisions,
-    "decisions",
+    "fingerprint/memory/decisions",
     "decision",
     lintGhostDecision,
     issues,
   );
 
   let fingerprint: GhostFingerprintDocument | undefined;
-  if (fingerprintRaw !== undefined) {
-    const parsed = parseYamlSafe(fingerprintRaw, "fingerprint.yml", issues);
-    if (parsed !== undefined) {
-      const fingerprintReport = lintGhostFingerprint(parsed);
-      issues.push(...prefixIssues("fingerprint.yml", fingerprintReport.issues));
-      const result = GhostFingerprintSchema.safeParse(parsed);
-      fingerprint = result.success
-        ? (result.data as GhostFingerprintDocument)
-        : undefined;
-    }
+  if (manifestRaw !== undefined) {
+    lintFingerprintPackageManifest(manifestRaw, issues);
+    fingerprint = parseSplitFingerprintForLint(
+      { proseRaw, inventoryRaw, compositionRaw },
+      issues,
+    );
   }
 
   if (configRaw !== undefined) {
@@ -150,10 +200,19 @@ export async function lintFingerprintPackage(
   }
 
   if (checksRaw !== undefined) {
-    const checks = parseYamlSafe(checksRaw, "checks.yml", issues);
+    const checks = parseYamlSafe(
+      checksRaw,
+      "fingerprint/enforcement/checks.yml",
+      issues,
+    );
     if (checks !== undefined) {
       const checksReport = lintGhostChecks(checks, { fingerprint });
-      issues.push(...prefixIssues("checks.yml", checksReport.issues));
+      issues.push(
+        ...prefixIssues(
+          "fingerprint/enforcement/checks.yml",
+          checksReport.issues,
+        ),
+      );
     }
   }
 
@@ -163,7 +222,7 @@ export async function lintFingerprintPackage(
       rule: "intent-empty",
       message:
         "intent.md is optional, but when present it should contain human-authored or human-approved intent.",
-      path: "intent.md",
+      path: "fingerprint/memory/intent.md",
     });
   }
 
@@ -172,7 +231,7 @@ export async function lintFingerprintPackage(
 
 async function lintDecisionDirectory(
   dirPath: string,
-  label: "decisions",
+  label: "fingerprint/memory/decisions",
   itemLabel: "decision",
   lint: (input: unknown) => ReturnType<typeof lintGhostDecision>,
   issues: LintIssue[],
@@ -297,35 +356,4 @@ function finalize(issues: LintIssue[]): LintReport {
     warnings: issues.filter((issue) => issue.severity === "warning").length,
     info: issues.filter((issue) => issue.severity === "info").length,
   };
-}
-
-function templateFingerprintYml(reference?: string): string {
-  const referenceInput = reference
-    ? normalizeReferenceInput(reference)
-    : undefined;
-  if (referenceInput) {
-    return `schema: ${GHOST_FINGERPRINT_SCHEMA}
-inventory:
-  building_blocks:
-    libraries:
-      - ${referenceInput.id}
-`;
-  }
-
-  return `schema: ${GHOST_FINGERPRINT_SCHEMA}
-`;
-}
-
-function templateChecks(): string {
-  return `schema: ${GHOST_CHECKS_SCHEMA}
-id: local
-checks: []
-`;
-}
-
-function templateIntent(): string {
-  return `# Intent
-
-This optional file is reserved for human-authored or human-approved product intent.
-`;
 }

@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { scanStatus } from "../src/scan/scan-status.js";
 
 describe("scanStatus readiness", () => {
@@ -19,7 +20,7 @@ describe("scanStatus readiness", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("reports fingerprint-missing before fingerprint.yml exists", async () => {
+  it("reports fingerprint-missing before manifest.yml exists", async () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("missing");
@@ -31,12 +32,12 @@ describe("scanStatus readiness", () => {
       "composition",
     ]);
     expect(status.readiness.reasons.join(" ")).toContain(
-      "fingerprint.yml is missing",
+      "fingerprint/manifest.yml is missing",
     );
   });
 
   it("reports fingerprint-empty when no layer has useful content", async () => {
-    await writeFile(join(dir, "fingerprint.yml"), fingerprintFile());
+    await writeFingerprint(dir);
 
     const status = await scanStatus(dir);
 
@@ -57,9 +58,14 @@ describe("scanStatus readiness", () => {
   });
 
   it("does not count generated cache as canonical inventory readiness", async () => {
-    await mkdir(join(dir, "cache"), { recursive: true });
-    await writeFile(join(dir, "cache", "inventory.json"), "{}\n");
-    await writeFile(join(dir, "fingerprint.yml"), fingerprintFile());
+    await mkdir(join(dir, "fingerprint", "sources", "cache"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "fingerprint", "sources", "cache", "inventory.json"),
+      "{}\n",
+    );
+    await writeFingerprint(dir);
 
     const status = await scanStatus(dir);
 
@@ -69,13 +75,13 @@ describe("scanStatus readiness", () => {
   });
 
   it("reports prose-only when only summary prose is recorded", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      fingerprintFile(`
+    await writeFingerprint(
+      dir,
+      `
 prose:
   summary:
     product: Cash iOS
-`),
+`,
     );
 
     const status = await scanStatus(dir);
@@ -93,16 +99,16 @@ prose:
   });
 
   it("reports inventory-only when only curated inventory is recorded", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      fingerprintFile(`
+    await writeFingerprint(
+      dir,
+      `
 inventory:
   building_blocks:
     tokens:
       - color.background
     components:
       - DataTable
-`),
+`,
     );
 
     const status = await scanStatus(dir);
@@ -119,15 +125,15 @@ inventory:
   });
 
   it("reports composition-only when only patterns are recorded", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      fingerprintFile(`
+    await writeFingerprint(
+      dir,
+      `
 composition:
   patterns:
     - id: preserve-table-density
       kind: layout
       pattern: Keep dense operational tables scannable.
-`),
+`,
     );
 
     const status = await scanStatus(dir);
@@ -142,9 +148,9 @@ composition:
   });
 
   it("reports fingerprint-partial when exactly one useful layer is missing", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      fingerprintFile(`
+    await writeFingerprint(
+      dir,
+      `
 prose:
   principles:
     - id: dense-workflows-prioritize-scanning
@@ -156,7 +162,7 @@ inventory:
         paths: [apps/dashboard]
         surface_types: [dense-dashboard]
     surface_types: [dense-dashboard]
-`),
+`,
     );
 
     const status = await scanStatus(dir);
@@ -171,9 +177,9 @@ inventory:
   });
 
   it("reports fingerprint-ready only when prose, inventory, and composition are useful", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      fingerprintFile(`
+    await writeFingerprint(
+      dir,
+      `
 prose:
   principles:
     - id: dense-workflows-prioritize-scanning
@@ -202,7 +208,7 @@ composition:
     - id: preserve-table-density
       kind: layout
       pattern: Keep dense operational tables scannable.
-`),
+`,
     );
 
     const status = await scanStatus(dir);
@@ -226,10 +232,45 @@ composition:
   });
 });
 
-function fingerprintFile(overrides = ""): string {
-  if (overrides.trim()) {
-    return `schema: ghost.fingerprint/v1
-${overrides}`;
-  }
-  return "schema: ghost.fingerprint/v1\n";
+async function writeFingerprint(dir: string, overrides = ""): Promise<void> {
+  const fingerprintDir = join(dir, "fingerprint");
+  await mkdir(fingerprintDir, { recursive: true });
+  await writeFile(
+    join(fingerprintDir, "manifest.yml"),
+    "schema: ghost.fingerprint-package/v1\nid: test\n",
+  );
+  const doc = overrides.trim()
+    ? (parseYaml(`schema: ghost.fingerprint/v1\n${overrides}`) as Record<
+        string,
+        unknown
+      >)
+    : {};
+  await Promise.all([
+    writeFile(
+      join(fingerprintDir, "prose.yml"),
+      stringifyYaml(
+        doc.prose ?? {
+          summary: {},
+          situations: [],
+          principles: [],
+          experience_contracts: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "inventory.yml"),
+      stringifyYaml(
+        doc.inventory ?? {
+          topology: {},
+          building_blocks: {},
+          exemplars: [],
+          sources: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "composition.yml"),
+      stringifyYaml(doc.composition ?? { patterns: [] }),
+    ),
+  ]);
 }

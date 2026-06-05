@@ -1,0 +1,11 @@
+summary:
+  product: Ghost UI
+  audience:
+    - Agents and engineers composing AI/product interfaces from the Ghost UI registry.
+  goals:
+    - Provide reusable building blocks of tokens, primitives, AI elements, and interaction conventions.
+  anti_goals:
+    - Define product-specific flows, copy, trust obligations, or business intent for consuming apps.
+situations: []
+principles: []
+experience_contracts: []
