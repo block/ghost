@@ -1,0 +1,63 @@
+---
+title: Host Adapters
+description: Integrate Ghost with agents, CI, and review surfaces without changing the portable fingerprint contract.
+kicker: Docs
+section: reference
+order: 70
+slug: adapters
+---
+
+<DocSection title="BYOA">
+
+Ghost is bring-your-own-agent. Ghost owns the portable fingerprint package,
+deterministic validation, stack resolution, and machine-readable packets. Host
+tools own display, severity mapping, review comments, and repo-specific
+workflow.
+
+</DocSection>
+
+<DocSection title="Ghost Provides">
+
+Ghost provides:
+
+- `.ghost/fingerprint/` loading and stack merging
+- core layers as generation context
+- optional checks, intent, decisions, and source cache
+- `ghost check --format json` for `ghost.check-report/v1`
+- `ghost review --format json` for advisory governance packets
+- `ghost emit context-bundle` for generation handoff
+- `--memory-dir <relative-dir>` for custom package roots
+
+</DocSection>
+
+<DocSection title="Hosts Provide">
+
+Host adapters provide:
+
+- repo-specific installation and invocation
+- native review/check file formats
+- severity mapping from `critical | serious | nit`
+- policy for blocking, commenting, or staying advisory
+- normal Git review for fingerprint edits
+
+Adapters should not treat generated cache as canonical inventory. Checked-in
+core layer files remain the authority.
+
+</DocSection>
+
+<DocSection title="Custom Roots">
+
+Wrappers can use a safe relative package root when `.ghost` is not the right
+location:
+
+```bash
+ghost init --scope apps/checkout --memory-dir .design/memory
+ghost stack apps/checkout/review/page.tsx --memory-dir .design/memory --format json
+ghost check --base main --memory-dir .design/memory --format json
+ghost review --base main --memory-dir .design/memory --format json
+```
+
+Use `--package <dir>` when the caller already knows the exact package root and
+wants to bypass stack discovery.
+
+</DocSection>

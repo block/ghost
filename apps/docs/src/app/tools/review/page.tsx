@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Orbit, Rocket } from "lucide-react";
+import { BookOpen, ShieldCheck, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -14,29 +14,29 @@ const cards: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Ghost loop",
-    href: "/docs/getting-started#the-simple-model",
+    name: "Governance workflow",
+    href: "/docs/governance",
     description:
-      "See how memory, checks, review, comparison, and intent fit together.",
-    icon: <Orbit className="size-8" strokeWidth={1.5} />,
+      "See how checks, advisory review, divergence, and fingerprint updates fit together.",
+    icon: <ShieldCheck className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Get started",
-    href: "/docs/getting-started",
+    name: "Generation workflow",
+    href: "/docs/generation",
     description:
-      "Install the skill bundle and review changed UI against the .ghost bundle.",
-    icon: <Rocket className="size-8" strokeWidth={1.5} />,
+      "Start changed UI from the fingerprint before governance catches issues afterward.",
+    icon: <Sparkles className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--review-and-compare",
+    href: "/docs/cli#ghost---govern",
     description:
-      "Run checks, emit exemplar-guided advisory review, compare fingerprints, and record intent.",
+      "Run deterministic checks, advisory review packets, and stance commands.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
 
-export default function GhostDriftLanding() {
+export default function GhostReviewLanding() {
   const ref = useStaggerReveal<HTMLDivElement>(".tool-card", {
     stagger: 0.06,
     y: 30,
@@ -47,8 +47,8 @@ export default function GhostDriftLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost review"
-        title="Drift"
-        description="Check whether changed or generated UI still matches the .ghost bundle. ghost runs deterministic checks, emits exemplar-guided advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        title="Review And Checks"
+        description="Govern generated or changed UI against the checked-in fingerprint. Ghost runs active deterministic checks and emits advisory review packets grounded in fingerprint layers, exemplars, optional memory, and the diff."
       />
 
       <div
