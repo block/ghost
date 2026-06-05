@@ -4,6 +4,10 @@ status: exploring
 
 # Guided migration: drifting a fingerprint toward another
 
+> Fingerprint-first context: migration treats distance as a governance signal
+> between two fingerprints. The migration target is another approved contract,
+> not drift for its own sake.
+
 An agentic loop where repo A consciously migrates toward repo B's visual direction, driven by fingerprint distance + vector as the signal.
 
 ## The observation

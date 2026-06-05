@@ -1,7 +1,8 @@
 # The Portable Fingerprint Package Format
 
-A Ghost fingerprint is the checked-in, repo-local product-experience world
-model. The canonical portable package lives under `.ghost/fingerprint/`:
+A Ghost fingerprint is the checked-in, repo-local product-experience contract
+that humans can approve and agents can act from. The canonical portable package
+lives under `.ghost/fingerprint/`:
 
 ```text
 .ghost/
