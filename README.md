@@ -60,6 +60,17 @@ Advanced workflows can add nested fingerprint packages for product areas, custom
 comparison. Those features stay available, but the core loop is just
 `fingerprint/`, optional active checks, and Git review.
 
+## Project Status: Beta
+
+Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+change in breaking ways before a stable 1.0 release.
+
+Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
+versions are reserved for fixes that should not require migration. If you adopt
+Ghost today, expect some churn, pin the version you depend on, and review
+release notes before upgrading.
+
 ## Install
 
 The public npm package is **`@anarchitecture/ghost`**. It installs one CLI:
