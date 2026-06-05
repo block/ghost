@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   groupFingerprintStacksForPaths,
   loadFingerprintStackForPath,
@@ -104,13 +105,13 @@ describe("nested Ghost fingerprint stacks", () => {
 
   it("merges sparse parent and child fingerprints with normalized defaults", async () => {
     await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.yml"),
+    await writeSplitFingerprintPackage(
+      join(dir, ".ghost"),
       "schema: ghost.fingerprint/v1\n",
     );
     await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
+    await writeSplitFingerprintPackage(
+      join(dir, "apps", "checkout", ".ghost"),
       `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -191,9 +192,11 @@ async function writeRootBundle(
   memoryDir = ".ghost",
 ): Promise<void> {
   const ghost = memoryPackagePath(dir, memoryDir);
-  await mkdir(join(ghost, "decisions"), { recursive: true });
-  await writeFile(
-    join(ghost, "fingerprint.yml"),
+  await mkdir(join(ghost, "fingerprint", "memory", "decisions"), {
+    recursive: true,
+  });
+  await writeSplitFingerprintPackage(
+    ghost,
     `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -231,9 +234,6 @@ composition:
       kind: visual
       pattern: Parent version of child pattern.
 `,
-  );
-  await writeFile(
-    join(ghost, "checks.yml"),
     `schema: ghost.checks/v1
 id: root
 checks:
@@ -257,7 +257,7 @@ checks:
 `,
   );
   await writeFile(
-    join(ghost, "decisions", "shared-decision.yml"),
+    join(ghost, "fingerprint", "memory", "decisions", "shared-decision.yml"),
     `schema: ghost.decision/v1
 id: shared-decision
 status: accepted
@@ -276,10 +276,12 @@ async function writeChildBundle(
   memoryDir = ".ghost",
 ): Promise<void> {
   const ghost = memoryPackagePath(root, memoryDir);
-  await mkdir(join(ghost, "decisions"), { recursive: true });
+  await mkdir(join(ghost, "fingerprint", "memory", "decisions"), {
+    recursive: true,
+  });
   await mkdir(join(root, "review"), { recursive: true });
-  await writeFile(
-    join(ghost, "fingerprint.yml"),
+  await writeSplitFingerprintPackage(
+    ghost,
     `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -321,9 +323,6 @@ composition:
       evidence:
         - path: review/page.tsx
 `,
-  );
-  await writeFile(
-    join(ghost, "checks.yml"),
     `schema: ghost.checks/v1
 id: checkout
 checks:
@@ -354,7 +353,7 @@ checks:
 `,
   );
   await writeFile(
-    join(ghost, "decisions", "shared-decision.yml"),
+    join(ghost, "fingerprint", "memory", "decisions", "shared-decision.yml"),
     `schema: ghost.decision/v1
 id: shared-decision
 status: rejected
@@ -370,4 +369,54 @@ decided_at: "2026-05-18T00:00:00.000Z"
 
 function memoryPackagePath(root: string, memoryDir: string): string {
   return join(root, ...memoryDir.split("/"));
+}
+
+async function writeSplitFingerprintPackage(
+  pkg: string,
+  fingerprintRaw: string,
+  checksRaw?: string,
+): Promise<void> {
+  const fingerprintDir = join(pkg, "fingerprint");
+  const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
+  await mkdir(join(fingerprintDir, "enforcement"), { recursive: true });
+  await Promise.all([
+    writeFile(
+      join(fingerprintDir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\n",
+    ),
+    writeFile(
+      join(fingerprintDir, "prose.yml"),
+      stringifyYaml(
+        doc.prose ?? {
+          summary: {},
+          situations: [],
+          principles: [],
+          experience_contracts: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "inventory.yml"),
+      stringifyYaml(
+        doc.inventory ?? {
+          topology: {},
+          building_blocks: {},
+          exemplars: [],
+          sources: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "composition.yml"),
+      stringifyYaml(doc.composition ?? { patterns: [] }),
+    ),
+    ...(checksRaw
+      ? [
+          writeFile(
+            join(fingerprintDir, "enforcement", "checks.yml"),
+            checksRaw,
+          ),
+        ]
+      : []),
+  ]);
 }

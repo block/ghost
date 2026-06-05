@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -307,14 +307,21 @@ describe("ghost CLI", () => {
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual([
       "checks",
+      "composition",
       "dir",
-      "fingerprintYml",
+      "fingerprintDir",
+      "inventory",
+      "manifest",
+      "prose",
     ]);
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
-    ).resolves.toBe("schema: ghost.fingerprint/v1\n");
+      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(join(dir, ".ghost", "checks.yml"), "utf-8"),
+      readFile(
+        join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
+        "utf-8",
+      ),
     ).resolves.toContain("schema: ghost.checks/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache.state).toBe("missing");
@@ -335,10 +342,10 @@ describe("ghost CLI", () => {
     expect(contextBundle.code).toBe(0);
   });
 
-  it("rejects checks grounded in omitted sparse fingerprint refs", async () => {
+  it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
       `schema: ghost.checks/v1
 id: local
 checks:
@@ -348,37 +355,46 @@ checks:
     severity: serious
     derivation:
       prose: [prose.principle:not-recorded]
+    applies_to:
+      paths: [Code/Features/Lending]
     detector:
       type: forbidden-regex
       pattern: '#[0-9a-fA-F]{3,8}'
+    evidence:
+      support: 0.94
+      observed_count: 47
+      examples:
+        - Code/Features/Lending/LendingUI
 `,
     );
 
     const lint = await runCli(["lint", ".ghost", "--format", "json"], dir);
 
-    expect(lint.code).toBe(1);
+    expect(lint.code).toBe(0);
     const report = JSON.parse(lint.stdout);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-unknown",
-      path: "checks.yml.checks[0].derivation.prose[0]",
+      path: "fingerprint/enforcement/checks.yml.checks[0].derivation.prose[0]",
     });
   });
 
   it("validates standalone checks.yml derivation refs with a valid sibling fingerprint", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeFile(
-      join(dir, ".ghost", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
       checksFileWithDerivation("prose.principle:not-recorded"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/enforcement/checks.yml", "--format", "json"],
       dir,
     );
 
-    expect(lint.code).toBe(1);
+    expect(lint.code).toBe(0);
     const report = JSON.parse(lint.stdout);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-unknown",
       path: "checks[0].derivation.prose[0]",
     });
@@ -408,15 +424,20 @@ checks:
   });
 
   it("keeps standalone checks.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(join(dir, ".ghost", "fingerprint.yml"), "not: draft\n");
+    await mkdir(join(dir, ".ghost", "fingerprint", "enforcement"), {
+      recursive: true,
+    });
     await writeFile(
-      join(dir, ".ghost", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "manifest.yml"),
+      "not: draft\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
       checksFileWithDerivation("prose.principle:tokenized-ui-color"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/enforcement/checks.yml", "--format", "json"],
       dir,
     );
 
@@ -435,15 +456,24 @@ checks:
     const scanHuman = await runCli(["scan"], dir);
 
     expect(init.code).toBe(0);
-    expect(init.stdout).toContain("fingerprint.yml:");
+    expect(init.stdout).toContain("manifest.yml:");
+    expect(init.stdout).toContain("prose.yml:");
+    expect(init.stdout).toContain("inventory.yml:");
+    expect(init.stdout).toContain("composition.yml:");
     expect(init.stdout).toContain("checks.yml:");
     expect(init.stdout).not.toContain("cache/:");
     expect(
-      await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
-    ).toContain("schema: ghost.fingerprint/v1");
-    expect(await readFile(join(dir, ".ghost", "intent.md"), "utf-8")).toContain(
-      "# Intent",
-    );
+      await readFile(
+        join(dir, ".ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).toContain("schema: ghost.fingerprint-package/v1");
+    expect(
+      await readFile(
+        join(dir, ".ghost", "fingerprint", "memory", "intent.md"),
+        "utf-8",
+      ),
+    ).toContain("# Intent");
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
@@ -488,12 +518,22 @@ checks:
     await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
       recursive: true,
     });
+    await mkdir(join(dir, "packages", "ghost-ui", ".ghost", "fingerprint"), {
+      recursive: true,
+    });
     await mkdir(join(dir, "packages", "ghost-ui", "public", "r"), {
       recursive: true,
     });
     await writeFile(
-      join(dir, "packages", "ghost-ui", ".ghost", "fingerprint.yml"),
-      "placeholder\n",
+      join(
+        dir,
+        "packages",
+        "ghost-ui",
+        ".ghost",
+        "fingerprint",
+        "manifest.yml",
+      ),
+      "schema: ghost.fingerprint-package/v1\nid: ghost-ui\n",
     );
     await writeFile(
       join(dir, "packages", "ghost-ui", "public", "r", "registry.json"),
@@ -509,14 +549,24 @@ checks:
     );
 
     const fingerprint = parseYaml(
-      await readFile(join(dir, ".ghost", "fingerprint.yml"), "utf-8"),
+      await readFile(
+        join(dir, ".ghost", "fingerprint", "inventory.yml"),
+        "utf-8",
+      ),
     ) as Record<string, unknown>;
     expect(fingerprint).not.toHaveProperty("implementation_vocabulary");
     expect(fingerprint).not.toHaveProperty("patterns");
-    expect(fingerprint.inventory).toEqual({
+    expect(fingerprint).toMatchObject({
       building_blocks: {
         libraries: ["ghost-ui"],
       },
+      sources: [
+        {
+          id: "ghost-ui",
+          kind: "registry",
+          ref: "registry:packages/ghost-ui/public/r/registry.json",
+        },
+      ],
     });
 
     const config = parseYaml(
@@ -530,7 +580,7 @@ checks:
           id: "ghost-ui",
           role: "primary-ui-registry",
           source: "registry:packages/ghost-ui/public/r/registry.json",
-          fingerprint: "packages/ghost-ui/.ghost/fingerprint.yml",
+          fingerprint: "packages/ghost-ui/.ghost/fingerprint/manifest.yml",
         },
       ],
     });
@@ -671,9 +721,11 @@ checks:
 
   it("emits review commands and context bundles from the unified cli", async () => {
     await writeCheckPackage(dir);
-    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
+    await mkdir(join(dir, ".ghost", "fingerprint", "sources", "cache"), {
+      recursive: true,
+    });
     await writeFile(
-      join(dir, ".ghost", "cache", "inventory.json"),
+      join(dir, ".ghost", "fingerprint", "sources", "cache", "inventory.json"),
       JSON.stringify(
         {
           root: dir,
@@ -704,7 +756,7 @@ checks:
       "utf-8",
     );
     expect(emittedReviewCommand).toContain(
-      "fingerprint.yml prose/inventory/composition",
+      ".ghost/fingerprint/prose.yml`, `.ghost/fingerprint/inventory.yml`, and `.ghost/fingerprint/composition.yml",
     );
     expect(emittedReviewCommand).toContain("Exemplars");
     expect(emittedReviewCommand).toContain("lending-tokenized-screen");
@@ -718,11 +770,23 @@ checks:
     );
     expect(contextBundle.code).toBe(0);
     expect(contextBundle.stdout).toContain("prompt.md");
-    expect(contextBundle.stdout).toContain("fingerprint.yml");
+    expect(contextBundle.stdout).toContain("fingerprint/prose.yml");
+    expect(contextBundle.stdout).toContain("fingerprint/inventory.yml");
+    expect(contextBundle.stdout).toContain("fingerprint/composition.yml");
+    expect(contextBundle.stdout).not.toContain("fingerprint.yml");
     expect(contextBundle.stdout).not.toContain("survey-summary.md");
     await expect(
+      readFile(
+        join(dir, "ghost-context", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    await expect(
+      readFile(join(dir, "ghost-context", "fingerprint", "prose.yml"), "utf-8"),
+    ).resolves.toContain("summary:");
+    await expect(
       readFile(join(dir, "ghost-context", "fingerprint.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.fingerprint/v1");
+    ).rejects.toThrow();
     const prompt = await readFile(
       join(dir, "ghost-context", "prompt.md"),
       "utf-8",
@@ -758,8 +822,13 @@ checks:
 
   it("emits context bundles when generated cache is malformed", async () => {
     await writeCheckPackage(dir);
-    await mkdir(join(dir, ".ghost", "cache"), { recursive: true });
-    await writeFile(join(dir, ".ghost", "cache", "inventory.json"), "{nope");
+    await mkdir(join(dir, ".ghost", "fingerprint", "sources", "cache"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, ".ghost", "fingerprint", "sources", "cache", "inventory.json"),
+      "{nope",
+    );
 
     const contextBundle = await runCli(["emit", "context-bundle"], dir);
 
@@ -783,7 +852,7 @@ checks:
       expect.arrayContaining([
         expect.objectContaining({
           rule: "fingerprint-exemplar-unreachable",
-          path: "fingerprint.yml.inventory.exemplars[0].path",
+          path: "fingerprint/inventory.yml.exemplars[0].path",
         }),
       ]),
     );
@@ -908,7 +977,7 @@ checks:
     expect(result.stdout).toContain("# Ghost Advisory Review");
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain(
-      "fingerprint.yml prose/inventory/composition",
+      "fingerprint/prose.yml, fingerprint/inventory.yml, fingerprint/composition.yml",
     );
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
@@ -932,7 +1001,7 @@ libraries:
   - id: ghost-ui
     role: primary-ui-registry
     source: registry:packages/ghost-ui/public/r/registry.json
-    fingerprint: packages/ghost-ui/.ghost/fingerprint.yml
+    fingerprint: packages/ghost-ui/.ghost/fingerprint/manifest.yml
 `,
     );
     await writeFile(
@@ -1191,13 +1260,17 @@ libraries:
     expect(await realpath(out.dir)).toBe(
       await realpath(join(dir, "apps", "checkout", ".ghost")),
     );
-    const fingerprint = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "fingerprint.yml"),
+    const manifest = await readFile(
+      join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
       "utf-8",
     );
-    expect(fingerprint).toContain("ghost.fingerprint/v1");
-    expect(fingerprint).not.toContain("review_policy");
-    expect(fingerprint).not.toContain("proposal");
+    expect(manifest).toContain("ghost.fingerprint-package/v1");
+    const prose = await readFile(
+      join(dir, "apps", "checkout", ".ghost", "fingerprint", "prose.yml"),
+      "utf-8",
+    );
+    expect(prose).not.toContain("review_policy");
+    expect(prose).not.toContain("proposal");
   });
 
   it("init --scope creates a nested package under a custom fingerprint directory", async () => {
@@ -1221,10 +1294,18 @@ libraries:
     );
     expect(
       await readFile(
-        join(dir, "apps", "checkout", ".design", "memory", "fingerprint.yml"),
+        join(
+          dir,
+          "apps",
+          "checkout",
+          ".design",
+          "memory",
+          "fingerprint",
+          "manifest.yml",
+        ),
         "utf-8",
       ),
-    ).toContain("ghost.fingerprint/v1");
+    ).toContain("ghost.fingerprint-package/v1");
   });
 
   it("lint --all and verify --all include nested bundles", async () => {
@@ -1277,8 +1358,8 @@ async function writeCheckPackage(
 ): Promise<void> {
   const pkg = join(dir, ".ghost");
   await mkdir(pkg, { recursive: true });
-  await writeFile(
-    join(pkg, "fingerprint.yml"),
+  await writeSplitFingerprintPackage(
+    pkg,
     `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -1316,40 +1397,9 @@ composition:
       pattern: Product UI color uses semantic tokens instead of literals.
       check_refs: [check:no-hardcoded-ui-color]
 `,
-  );
-  await writeFile(
-    join(pkg, "resources.yml"),
-    `schema: ghost.resources/v1
-id: cash-ios
-primary:
-  target: .
-`,
-  );
-  await writeFile(join(pkg, "map.md"), mapWithScopes());
-  await writeFile(
-    join(pkg, "survey.json"),
-    JSON.stringify({
-      schema: "ghost.survey/v1",
-      sources: [{ target: ".", scanned_at: "2026-05-06T00:00:00.000Z" }],
-      values: [],
-      tokens: [],
-      components: [],
-      ui_surfaces: [],
-    }),
-  );
-  await writeFile(
-    join(pkg, "patterns.yml"),
-    `schema: ghost.patterns/v1
-id: cash-ios
-surface_types: []
-composition_patterns: []
-`,
-  );
-  if (options.checks === false) return;
-
-  await writeFile(
-    join(pkg, "checks.yml"),
-    `schema: ghost.checks/v1
+    options.checks === false
+      ? undefined
+      : `schema: ghost.checks/v1
 id: cash-ios
 checks:
   - id: no-hardcoded-ui-color
@@ -1392,6 +1442,84 @@ checks:
         - Code/Features/Lending/LendingUI
 `,
   );
+  await writeFile(
+    join(pkg, "resources.yml"),
+    `schema: ghost.resources/v1
+id: cash-ios
+primary:
+  target: .
+`,
+  );
+  await writeFile(join(pkg, "map.md"), mapWithScopes());
+  await writeFile(
+    join(pkg, "survey.json"),
+    JSON.stringify({
+      schema: "ghost.survey/v1",
+      sources: [{ target: ".", scanned_at: "2026-05-06T00:00:00.000Z" }],
+      values: [],
+      tokens: [],
+      components: [],
+      ui_surfaces: [],
+    }),
+  );
+  await writeFile(
+    join(pkg, "patterns.yml"),
+    `schema: ghost.patterns/v1
+id: cash-ios
+surface_types: []
+composition_patterns: []
+`,
+  );
+}
+
+async function writeSplitFingerprintPackage(
+  pkg: string,
+  fingerprintRaw: string,
+  checksRaw?: string,
+): Promise<void> {
+  const fingerprintDir = join(pkg, "fingerprint");
+  const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
+  await mkdir(join(fingerprintDir, "enforcement"), { recursive: true });
+  await Promise.all([
+    writeFile(
+      join(fingerprintDir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\n",
+    ),
+    writeFile(
+      join(fingerprintDir, "prose.yml"),
+      stringifyYaml(
+        doc.prose ?? {
+          summary: {},
+          situations: [],
+          principles: [],
+          experience_contracts: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "inventory.yml"),
+      stringifyYaml(
+        doc.inventory ?? {
+          topology: {},
+          building_blocks: {},
+          exemplars: [],
+          sources: [],
+        },
+      ),
+    ),
+    writeFile(
+      join(fingerprintDir, "composition.yml"),
+      stringifyYaml(doc.composition ?? { patterns: [] }),
+    ),
+    ...(checksRaw
+      ? [
+          writeFile(
+            join(fingerprintDir, "enforcement", "checks.yml"),
+            checksRaw,
+          ),
+        ]
+      : []),
+  ]);
 }
 
 function checksFileWithDerivation(proseRef: string): string {
@@ -1419,7 +1547,7 @@ checks:
 }
 
 async function writeMemoryFiles(dir: string): Promise<void> {
-  const pkg = join(dir, ".ghost");
+  const pkg = join(dir, ".ghost", "fingerprint", "memory");
   await mkdir(join(pkg, "decisions"), { recursive: true });
   await writeFile(
     join(pkg, "decisions", "checkout-reversibility.yml"),
@@ -1464,8 +1592,10 @@ async function writeNestedCheckPackage(
     join(dir, "apps", "checkout"),
     memoryDir,
   );
-  await mkdir(join(rootMemory, "cache"), { recursive: true });
-  await mkdir(join(checkoutMemory, "cache"), {
+  await mkdir(join(rootMemory, "fingerprint", "sources", "cache"), {
+    recursive: true,
+  });
+  await mkdir(join(checkoutMemory, "fingerprint", "sources", "cache"), {
     recursive: true,
   });
   await mkdir(join(dir, "apps", "checkout", "review"), { recursive: true });
@@ -1473,8 +1603,8 @@ async function writeNestedCheckPackage(
   await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");
   await writeFile(join(dir, "shared", "home.tsx"), "");
 
-  await writeFile(
-    join(rootMemory, "fingerprint.yml"),
+  await writeSplitFingerprintPackage(
+    rootMemory,
     `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -1496,9 +1626,6 @@ composition:
       kind: visual
       pattern: Web UI color uses semantic product tokens.
 `,
-  );
-  await writeFile(
-    join(rootMemory, "checks.yml"),
     `schema: ghost.checks/v1
 id: root
 checks:
@@ -1522,8 +1649,8 @@ checks:
 `,
   );
 
-  await writeFile(
-    join(checkoutMemory, "fingerprint.yml"),
+  await writeSplitFingerprintPackage(
+    checkoutMemory,
     `schema: ghost.fingerprint/v1
 prose:
   summary:
@@ -1548,9 +1675,6 @@ composition:
       applies_to:
         paths: [review]
 `,
-  );
-  await writeFile(
-    join(checkoutMemory, "checks.yml"),
     `schema: ghost.checks/v1
 id: checkout
 checks:
@@ -1585,6 +1709,24 @@ async function writeComparableBundle(
   patternId: string,
 ): Promise<void> {
   await mkdir(pkg, { recursive: true });
+  await writeSplitFingerprintPackage(
+    pkg,
+    `schema: ghost.fingerprint/v1
+prose:
+  summary:
+    product: ${patternId}
+inventory:
+  topology:
+    surface_types: [settings]
+  building_blocks:
+    tokens: [${patternId}-token]
+composition:
+  patterns:
+    - id: ${patternId}
+      kind: layout
+      pattern: ${patternId} uses a settings-oriented layout.
+`,
+  );
   await writeFile(
     join(pkg, "survey.json"),
     JSON.stringify({

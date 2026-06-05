@@ -1,6 +1,10 @@
 import { parse as parseYaml } from "yaml";
 import {
+  GhostFingerprintCompositionSchema,
   type GhostFingerprintDocument,
+  GhostFingerprintInventorySchema,
+  GhostFingerprintPackageManifestSchema,
+  GhostFingerprintProseSchema,
   lintGhostChecks,
   lintGhostFingerprint,
   lintGhostPatterns,
@@ -17,6 +21,10 @@ export type DetectedFileKind =
   | "map"
   | "fingerprint"
   | "fingerprint-yml"
+  | "fingerprint-manifest"
+  | "fingerprint-prose"
+  | "fingerprint-inventory"
+  | "fingerprint-composition"
   | "checks"
   | "config"
   | "resources"
@@ -40,6 +48,30 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   }
   if (path.toLowerCase().endsWith("fingerprint.yaml")) {
     return "fingerprint-yml";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/manifest.yml")) {
+    return "fingerprint-manifest";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/manifest.yaml")) {
+    return "fingerprint-manifest";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/prose.yml")) {
+    return "fingerprint-prose";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/prose.yaml")) {
+    return "fingerprint-prose";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/inventory.yml")) {
+    return "fingerprint-inventory";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/inventory.yaml")) {
+    return "fingerprint-inventory";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/composition.yml")) {
+    return "fingerprint-composition";
+  }
+  if (path.toLowerCase().endsWith("fingerprint/composition.yaml")) {
+    return "fingerprint-composition";
   }
   if (path.toLowerCase().endsWith("resources.yml")) return "resources";
   if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
@@ -75,17 +107,25 @@ export function lintDetectedFileKind(
     ? lintSurveyFile(raw)
     : kind === "fingerprint-yml"
       ? lintFingerprintYmlFile(raw)
-      : kind === "map"
-        ? lintMap(raw)
-        : kind === "resources"
-          ? lintResourcesFile(raw)
-          : kind === "patterns"
-            ? lintPatternsFile(raw)
-            : kind === "config"
-              ? lintConfigFile(raw)
-              : kind === "checks"
-                ? lintChecksFile(raw, options.fingerprint)
-                : lintFingerprint(raw);
+      : kind === "fingerprint-manifest"
+        ? lintFingerprintManifestFile(raw)
+        : kind === "fingerprint-prose"
+          ? lintFingerprintLayerFile(raw, "prose")
+          : kind === "fingerprint-inventory"
+            ? lintFingerprintLayerFile(raw, "inventory")
+            : kind === "fingerprint-composition"
+              ? lintFingerprintLayerFile(raw, "composition")
+              : kind === "map"
+                ? lintMap(raw)
+                : kind === "resources"
+                  ? lintResourcesFile(raw)
+                  : kind === "patterns"
+                    ? lintPatternsFile(raw)
+                    : kind === "config"
+                      ? lintConfigFile(raw)
+                      : kind === "checks"
+                        ? lintChecksFile(raw, options.fingerprint)
+                        : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -138,6 +178,66 @@ function lintFingerprintYmlFile(
   }
 }
 
+function lintFingerprintManifestFile(
+  raw: string,
+): ReturnType<typeof lintFingerprint> {
+  try {
+    return zodLintReport(
+      GhostFingerprintPackageManifestSchema.safeParse(parseYaml(raw)),
+    );
+  } catch (err) {
+    return yamlErrorReport(
+      "fingerprint-manifest-not-yaml",
+      "fingerprint/manifest.yml",
+      err,
+    );
+  }
+}
+
+function lintFingerprintLayerFile(
+  raw: string,
+  layer: "prose" | "inventory" | "composition",
+): ReturnType<typeof lintFingerprint> {
+  try {
+    const parsed = parseYaml(raw);
+    const result =
+      layer === "prose"
+        ? GhostFingerprintProseSchema.safeParse(parsed)
+        : layer === "inventory"
+          ? GhostFingerprintInventorySchema.safeParse(parsed)
+          : GhostFingerprintCompositionSchema.safeParse(parsed);
+    return zodLintReport(result);
+  } catch (err) {
+    return yamlErrorReport(
+      `fingerprint-${layer}-not-yaml`,
+      `fingerprint/${layer}.yml`,
+      err,
+    );
+  }
+}
+
+function zodLintReport(result: {
+  success: boolean;
+  error?: { issues: Array<{ code: string; message: string; path: unknown[] }> };
+}): ReturnType<typeof lintFingerprint> {
+  if (result.success) {
+    return { issues: [], errors: 0, warnings: 0, info: 0 };
+  }
+  const issues =
+    result.error?.issues.map((issue) => ({
+      severity: "error" as const,
+      rule: `schema/${issue.code}`,
+      message: issue.message,
+      path: formatZodPath(issue.path),
+    })) ?? [];
+  return {
+    issues,
+    errors: issues.length,
+    warnings: 0,
+    info: 0,
+  };
+}
+
 function lintResourcesFile(raw: string): ReturnType<typeof lintFingerprint> {
   try {
     return lintGhostResources(parseYaml(raw));
@@ -173,4 +273,13 @@ function yamlErrorReport(
     warnings: 0,
     info: 0,
   };
+}
+
+function formatZodPath(path: unknown[]): string | undefined {
+  if (path.length === 0) return undefined;
+  return path.reduce<string>((formatted, segment) => {
+    if (typeof segment === "number") return `${formatted}[${segment}]`;
+    const key = String(segment);
+    return formatted ? `${formatted}.${key}` : key;
+  }, "");
 }

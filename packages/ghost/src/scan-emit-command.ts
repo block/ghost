@@ -71,7 +71,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "--name <name>",
-      "Override the skill name (default: fingerprint.yml product or first scope) (context-bundle)",
+      "Override the skill name (default: prose.yml product or first scope) (context-bundle)",
     )
     .action(async (kind: string, opts) => {
       try {

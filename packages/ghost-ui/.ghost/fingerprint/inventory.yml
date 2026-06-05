@@ -1,0 +1,37 @@
+topology:
+  scopes:
+    - id: ui-primitives
+      paths: [src/components/ui]
+      surface_types: [component-library]
+    - id: ai-elements
+      paths: [src/components/ai-elements]
+      surface_types: [component-library]
+    - id: tokens
+      paths: [src/styles]
+      surface_types: [token-system]
+    - id: registry
+      paths: [registry.json, public/r/registry.json]
+      surface_types: [shadcn-registry]
+building_blocks:
+  tokens:
+    - src/styles/main.css
+  components:
+    - src/components/ui
+    - src/components/ai-elements
+    - public/r/registry.json
+    - registry.json
+  libraries:
+    - shadcn-registry
+    - radix-ui
+    - lucide-react
+    - tailwindcss
+  assets:
+    - src/fonts
+  notes:
+    - Ghost UI is registry-distributed implementation inventory, not an installable npm package or consuming-product experience memory.
+exemplars: []
+sources:
+  - id: generated-inventory
+    kind: cache
+    ref: sources/cache/inventory.json
+    note: Optional refreshable registry observations.

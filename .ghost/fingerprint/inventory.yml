@@ -1,0 +1,92 @@
+topology:
+  scopes:
+    - id: public-cli
+      paths:
+        - packages/ghost/src
+      surface_types:
+        - cli-command
+        - emitted-agent-prompt
+    - id: skill-bundle
+      paths:
+        - packages/ghost/src/skill-bundle
+      surface_types:
+        - agent-recipe
+    - id: docs-site
+      paths:
+        - docs
+        - README.md
+        - apps/docs
+      surface_types:
+        - docs-home
+        - docs-foundation
+        - tool-doc
+    - id: ghost-ui-components
+      paths:
+        - packages/ghost-ui
+      surface_types:
+        - component-catalogue
+        - primitive-demo
+        - theme-control
+  surface_types:
+    - agent-recipe
+    - cli-command
+    - component-catalogue
+    - docs-foundation
+    - docs-home
+    - emitted-agent-prompt
+    - primitive-demo
+    - theme-control
+    - tool-doc
+building_blocks:
+  tokens:
+    - semantic color CSS variables
+    - font-display
+    - spacing and radius scales
+  components:
+    - Button
+    - CodeBlock
+    - ComponentPageShell
+    - PageHeader
+  libraries:
+    - shadcn-style registry primitives
+    - lucide icons
+  assets:
+    - CLI manifest JSON
+    - docs code examples
+  routes:
+    - apps/docs/src/app
+  files:
+    - README.md
+    - docs/fingerprint-format.md
+    - docs/generation-loop.md
+    - packages/ghost/src/scan/context/package-writer.ts
+    - packages/ghost/src/scan/context/package-review-command.ts
+  notes:
+    - Inventory is replaceable material; prose owns the judgment and composition owns how material is assembled.
+    - Correct components or tokens do not prove an experience is on-brand.
+exemplars:
+  - id: public-readme-fingerprint-model
+    path: README.md
+    title: Public README fingerprint model
+    surface_type: docs-home
+    scope: docs-site
+    note: Public entry point describes the split fingerprint folder as canonical prose, inventory, and composition.
+    why: Shows how Ghost explains repo-local fingerprint layers, curated inventory, generated cache, and Git-reviewed approval.
+    refs:
+      - prose.principle:fingerprint-folder-is-canonical
+      - prose.principle:generated-cache-is-source-material
+  - id: review-command-fingerprint-packet
+    path: packages/ghost/src/scan/context/package-review-command.ts
+    title: Generated review command
+    surface_type: emitted-agent-prompt
+    scope: public-cli
+    note: Review command is generated from split fingerprint prose/inventory/composition.
+    why: Shows how Ghost turns fingerprint layers into an agent-facing review instruction.
+    refs:
+      - prose.experience_contract:review-cites-fingerprint-and-diff
+      - composition.pattern:compact-agent-handoff
+sources:
+  - id: generated-inventory
+    kind: cache
+    ref: sources/cache/inventory.json
+    note: Optional refreshable repo facts produced by ghost inventory.

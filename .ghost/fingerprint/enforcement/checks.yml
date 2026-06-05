@@ -38,7 +38,7 @@ checks:
         - docs-site
     detector:
       type: required-regex
-      pattern: 'font-display'
+      pattern: font-display
     evidence:
       support: 0.88
       observed_count: 4

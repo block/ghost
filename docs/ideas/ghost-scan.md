@@ -6,7 +6,7 @@ status: exploring
 
 > Historical design note: the separate `packages/ghost-scan` package described
 > here was removed. The public Ghost CLI and current fingerprint capture
-> workflow live in `packages/ghost` and canonical `.ghost/fingerprint.yml`
+> workflow live in `packages/ghost` and canonical `.ghost/fingerprint/`
 > memory.
 
 ## Why it's interesting

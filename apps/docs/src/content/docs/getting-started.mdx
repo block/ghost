@@ -13,40 +13,29 @@ Ghost keeps a project's product-experience world model in the repo, where your
 agent can use it. The public package is `@anarchitecture/ghost`, and it installs
 one CLI: `ghost`.
 
-Design-system inventory remains implementation material: tokens, components,
-examples, and libraries. Ghost stores the product judgment and composition rules
-agents need before using that material.
-
-The canonical fingerprint is small:
+The canonical portable fingerprint is a folder:
 
 ```text
-.ghost/fingerprint.yml -> .ghost/checks.yml
-prose + inventory + composition
-                          deterministic gates
+.ghost/
+  config.yml
+  fingerprint/
+    manifest.yml
+    prose.yml
+    inventory.yml
+    composition.yml
+    enforcement/checks.yml
+    memory/intent.md
+    memory/decisions/
+    sources/cache/
 ```
 
-Nested product areas can add child fingerprint packages such as
-`apps/checkout/.ghost/fingerprint.yml`. Ghost resolves fingerprint stacks root-to-leaf for
-the file or diff being reviewed.
-
-Host adapters can use a different safe relative fingerprint package directory with
-`--memory-dir`, such as `.design/memory`. Ghost still emits adapter-neutral JSON;
-the wrapper maps findings into its own review or check format.
-
-`intent.md` and `decisions/*.yml` are optional human-authored context. `cache/`
-can hold generated cache, but generated cache is optional source material,
-not canonical inventory. Ordinary Git workflow is the staging layer:
-uncommitted or unmerged fingerprint edits are drafts, and checked-in
-`fingerprint.yml` is truth for Ghost.
-
 Generation starts from prose, inventory, and composition. Checks validate the
-result afterward; they are not generation input.
+result afterward; they are not generation input. `.ghost/config.yml` stays
+outside the portable package because it is local routing config.
 
-| Surface | Job | Verbs |
-| --- | --- | --- |
-| `ghost` | Create and check root or nested `.ghost/` fingerprint packages, review diffs, compare packages, and record drift intent. | `init`, `scan`, `stack`, `inventory`, `lint`, `verify`, `describe`, `diff`, `survey <op>`, `check`, `review`, `compare`, `ack`, `track`, `diverge`, `emit`, `skill install` |
-| `ghost-fleet` | See how many project fingerprints relate. | `members`, `view`, `emit skill` |
-| `ghost-ui` | Reference design system Ghost uses to test itself. | - |
+Nested product areas can add child package roots such as
+`apps/checkout/.ghost/fingerprint/`. Ghost resolves fingerprint stacks
+root-to-leaf for the file or diff being reviewed.
 
 </DocSection>
 
@@ -79,7 +68,7 @@ The fingerprint records durable product-experience guidance:
 1. **Prose** - what product this is, who it serves, which situations matter,
    and which principles or contracts govern the experience.
 2. **Inventory** - topology, building blocks, files, routes, assets, libraries,
-   and exemplars agents may inspect or use.
+   exemplars, and source links agents may inspect or use.
 3. **Composition** - patterns, rules, layouts, structures, flows, states,
    content, behavior, and visual arrangements.
 
@@ -89,24 +78,19 @@ ghost init --scope apps/checkout --with-intent
 ghost init --scope apps/checkout --memory-dir .design/memory
 ghost scan --format json
 ghost scan --include-nested --format json
-ghost inventory > .ghost/cache/inventory.json
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
 ghost lint --all
 ghost verify --all
 ```
 
-`ghost scan` speaks in these layer terms. It reports `layer_counts`,
-`missing_layers`, and a readiness state such as `prose-only`,
-`fingerprint-partial`, or `fingerprint-ready`.
+Generated cache is optional source material. Curate durable prose, inventory,
+and composition into the core layer files, then use normal Git review for
+approval.
 
-Generated cache is optional source material. Curate durable prose,
-inventory, and composition into `fingerprint.yml`, then use normal Git review
-for approval.
-
-For generation, emit the upstream handoff packet that keeps these inputs
-separate. Give it to the host agent before asking for UI work, then validate the
-resulting diff with Ghost review/check when available:
+For generation, emit the upstream handoff packet:
 
 ```bash
 ghost emit context-bundle
@@ -121,8 +105,9 @@ ghost compare market/.ghost dashboard/.ghost
 ghost compare */.ghost
 ```
 
-Package comparison uses canonical `fingerprint.yml` when available. Direct
-fingerprint markdown files still work for legacy semantic comparison:
+Package comparison uses canonical `.ghost/fingerprint/` packages when
+available. Direct fingerprint markdown files still work for legacy semantic
+comparison:
 
 ```bash
 ghost compare a.fingerprint.md b.fingerprint.md --semantic
@@ -136,12 +121,9 @@ ghost compare a.fingerprint.md b.fingerprint.md --semantic
 Review this PR for design drift
 ```
 
-`ghost check` applies active deterministic gates from the resolved fingerprint stack
-for each changed file. `ghost review` emits advisory context grounded in merged
-`fingerprint.yml` prose, inventory, composition, optional `intent.md`, checks,
-and the diff.
-Add `--include-memory` to include accepted decisions in the advisory packet. Use
-`--package <dir>` when you need exact single-bundle behavior.
+`ghost check` applies active deterministic gates from the resolved fingerprint
+stack for each changed file. `ghost review` emits advisory context grounded in
+merged split fingerprint layers, optional memory, checks, and the diff.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities
 outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
@@ -158,9 +140,9 @@ Brief this work from the Ghost fingerprint
 Update the fingerprint with this product-experience decision
 ```
 
-Fingerprint edits are ordinary edits to `fingerprint.yml`, `checks.yml`,
-`intent.md`, or `decisions/*.yml`. Uncommitted or unmerged edits are drafts;
-checked-in `fingerprint.yml` is canonical.
+Fingerprint edits are ordinary edits to the split fingerprint package and
+optional rationale files. Uncommitted or unmerged edits are drafts; checked-in
+`fingerprint/` core files are canonical.
 
 </DocSection>
 

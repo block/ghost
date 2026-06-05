@@ -62,24 +62,28 @@ export default function Home() {
             <p className="thesis-item">Ghost keeps that model compact:</p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
-                <code>.ghost/fingerprint.yml</code> stores canonical product
-                experience prose, inventory, composition, and curated exemplars
+                <code>.ghost/fingerprint/</code> is the portable fingerprint
+                package
               </li>
               <li>
-                <code>.ghost/checks.yml</code> stores optional deterministic
-                gates grounded in fingerprint refs
+                <code>prose.yml</code>, <code>inventory.yml</code>, and{" "}
+                <code>composition.yml</code> store the three core layers
+              </li>
+              <li>
+                <code>enforcement/checks.yml</code> stores optional
+                deterministic gates grounded in fingerprint refs
               </li>
               <li>
                 ordinary Git review separates draft fingerprint edits from
                 checked-in truth
               </li>
               <li>
-                <code>.ghost/intent.md</code> and <code>.ghost/decisions</code>{" "}
-                record optional human-approved context
+                <code>memory/intent.md</code> and <code>memory/decisions</code>{" "}
+                record optional human-approved context inside the package
               </li>
               <li>
-                <code>.ghost/cache</code> holds generated cache without becoming
-                canonical truth
+                <code>sources/cache</code> holds generated cache without
+                becoming canonical truth
               </li>
             </ul>
             <p className="thesis-item">

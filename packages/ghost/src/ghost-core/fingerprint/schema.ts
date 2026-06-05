@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { GHOST_FINGERPRINT_SCHEMA } from "./types.js";
+import {
+  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
+  GHOST_FINGERPRINT_SCHEMA,
+} from "./types.js";
 
 const SlugIdSchema = z
   .string()
@@ -171,6 +174,23 @@ export const GhostFingerprintInventoryBuildingBlocksSchema = z
   })
   .strict();
 
+export const GhostFingerprintInventorySourceKindSchema = z.enum([
+  "cache",
+  "registry",
+  "file",
+  "url",
+  "package",
+]);
+
+export const GhostFingerprintInventorySourceSchema = z
+  .object({
+    id: SlugIdSchema,
+    kind: GhostFingerprintInventorySourceKindSchema,
+    ref: z.string().min(1),
+    note: z.string().min(1).optional(),
+  })
+  .strict();
+
 export const GhostFingerprintProseSchema = z
   .object({
     summary: GhostFingerprintSummarySchema.optional().default({}),
@@ -189,6 +209,10 @@ export const GhostFingerprintInventorySchema = z
     building_blocks:
       GhostFingerprintInventoryBuildingBlocksSchema.optional().default({}),
     exemplars: z.array(GhostFingerprintExemplarSchema).optional().default([]),
+    sources: z
+      .array(GhostFingerprintInventorySourceSchema)
+      .optional()
+      .default([]),
   })
   .strict();
 
@@ -211,9 +235,17 @@ export const GhostFingerprintSchema = z
       topology: {},
       building_blocks: {},
       exemplars: [],
+      sources: [],
     }),
     composition: GhostFingerprintCompositionSchema.optional().default({
       patterns: [],
     }),
+  })
+  .strict();
+
+export const GhostFingerprintPackageManifestSchema = z
+  .object({
+    schema: z.literal(GHOST_FINGERPRINT_PACKAGE_SCHEMA),
+    id: SlugIdSchema,
   })
   .strict();
