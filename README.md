@@ -71,8 +71,8 @@ npx ghost --help
 npx ghost --help --all
 ```
 
-Default help is intentionally small and shows the core workflow for new
-adopters. Use `ghost --help --all` for the complete advanced and legacy command
+Default help is intentionally small and shows the grouped lifecycle workflow for
+new adopters. Use `ghost --help --all` for the complete lifecycle command
 index; every listed command still supports `ghost <command> --help`.
 
 Install the unified BYOA skill bundle:

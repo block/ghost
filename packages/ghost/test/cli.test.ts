@@ -45,6 +45,10 @@ function fingerprintWithId(id: string): string {
   return BASE_FINGERPRINT.replace("id: local", `id: ${id}`);
 }
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 async function runCli(
   argv: string[],
   cwd: string,
@@ -128,7 +132,11 @@ describe("ghost CLI", () => {
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("ghost");
-    expect(result.stdout).toContain("Core workflow");
+    expect(result.stdout).toContain("Author and validate");
+    expect(result.stdout).toContain("Generate");
+    expect(result.stdout).toContain("Govern");
+    expect(result.stdout).not.toContain("Compare and adapt");
+    expect(result.stdout).not.toContain("Legacy and source material");
     for (const command of [
       "init",
       "scan",
@@ -142,6 +150,9 @@ describe("ghost CLI", () => {
       expect(result.stdout).toContain(command);
     }
     expect(result.stdout).toContain("ghost --help --all");
+    expect(result.stdout).toContain(
+      "Show the complete lifecycle command index",
+    );
     expect(result.stdout).not.toContain("survey <op>");
     expect(result.stdout).not.toContain("diff <a> <b>");
     expect(result.stdout).not.toMatch(/\n {2}ack\s/);
@@ -156,10 +167,11 @@ describe("ghost CLI", () => {
     });
 
     expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Core workflow");
-    expect(result.stdout).toContain("Advanced/package inspection");
-    expect(result.stdout).toContain("Compare/stance");
-    expect(result.stdout).toContain("Legacy/cache");
+    expect(result.stdout).toContain("Author and validate");
+    expect(result.stdout).toContain("Generate");
+    expect(result.stdout).toContain("Govern");
+    expect(result.stdout).toContain("Compare and adapt");
+    expect(result.stdout).toContain("Legacy and source material");
     for (const command of [
       "lint [file]",
       "init [dir]",
@@ -180,6 +192,11 @@ describe("ghost CLI", () => {
       "review",
     ]) {
       expect(result.stdout).toContain(command);
+      const rowMatches =
+        result.stdout.match(
+          new RegExp(`^  ${escapeRegex(command)}\\s`, "gm"),
+        ) ?? [];
+      expect(rowMatches).toHaveLength(1);
     }
   });
 
@@ -192,11 +209,11 @@ describe("ghost CLI", () => {
     expect(lint.code).toBe(0);
     expect(lint.stdout).toContain("--all");
     expect(lint.stdout).toContain("Validate every nested fingerprint package");
-    expect(lint.stdout).not.toContain("Core workflow");
+    expect(lint.stdout).not.toContain("Author and validate");
     expect(verify.code).toBe(0);
     expect(verify.stdout).toContain("--all");
     expect(verify.stdout).toContain("Verify every nested fingerprint package");
-    expect(verify.stdout).not.toContain("Core workflow");
+    expect(verify.stdout).not.toContain("Author and validate");
   });
 
   it("compares explicitly supplied fingerprint files", async () => {
