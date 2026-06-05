@@ -16,8 +16,8 @@ npx ghost --help
 npx ghost --help --all
 ```
 
-`ghost --help` shows the core workflow. `ghost --help --all` shows the full
-advanced and legacy command index.
+`ghost --help` shows the grouped lifecycle workflow. `ghost --help --all`
+shows the complete lifecycle command index.
 
 ## Use
 

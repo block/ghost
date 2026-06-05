@@ -5,7 +5,12 @@ type HelpSection = {
   body: string;
 };
 
-export type CommandDiscoveryGroup = "core" | "advanced" | "compare" | "legacy";
+export type CommandDiscoveryGroup =
+  | "author"
+  | "generate"
+  | "govern"
+  | "adapt"
+  | "source";
 
 export type CommandDiscoveryMetadata = {
   name: string;
@@ -20,128 +25,131 @@ const GROUPS: ReadonlyArray<{
   group: CommandDiscoveryGroup;
   title: string;
 }> = [
-  { group: "core", title: "Core workflow" },
-  { group: "advanced", title: "Advanced/package inspection" },
-  { group: "compare", title: "Compare/stance" },
-  { group: "legacy", title: "Legacy/cache" },
+  { group: "author", title: "Author and validate" },
+  { group: "generate", title: "Generate" },
+  { group: "govern", title: "Govern" },
+  { group: "adapt", title: "Compare and adapt" },
+  { group: "source", title: "Legacy and source material" },
 ];
 
 const COMMAND_DISCOVERY = [
   {
     name: "init",
-    group: "core",
+    group: "author",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/fingerprint.yml and checks.yml.",
+    summary: "Create .ghost/fingerprint/ package files.",
   },
   {
     name: "scan",
-    group: "core",
+    group: "author",
     defaultHelp: true,
     compactName: "scan",
     summary: "Report fingerprint layer readiness.",
   },
   {
     name: "lint",
-    group: "core",
+    group: "author",
     defaultHelp: true,
     compactName: "lint",
     summary: "Validate a fingerprint package or artifact.",
   },
   {
     name: "verify",
-    group: "core",
+    group: "author",
     defaultHelp: true,
     compactName: "verify",
     summary: "Verify evidence, exemplar paths, and typed refs.",
   },
   {
     name: "check",
-    group: "core",
+    group: "govern",
     defaultHelp: true,
     compactName: "check",
     summary: "Run active deterministic gates against a diff.",
   },
   {
     name: "review",
-    group: "core",
+    group: "govern",
     defaultHelp: true,
     compactName: "review",
-    summary: "Emit an advisory packet from fingerprint layers and a diff.",
+    summary:
+      "Emit an advisory governance packet from fingerprint layers and a diff.",
   },
   {
     name: "emit",
-    group: "core",
+    group: "generate",
     defaultHelp: true,
     compactName: "emit",
-    summary: "Emit review-command or context-bundle artifacts.",
+    summary:
+      "Emit context-bundle generation packet or review-command artifact.",
   },
   {
     name: "skill",
-    group: "core",
+    group: "author",
     defaultHelp: true,
     compactName: "skill install",
     summary: "Install the Ghost skill bundle.",
   },
   {
     name: "stack",
-    group: "advanced",
+    group: "adapt",
     defaultHelp: false,
     compactName: "stack",
     summary: "Inspect a nested fingerprint stack for repo paths.",
   },
   {
     name: "inventory",
-    group: "advanced",
+    group: "source",
     defaultHelp: false,
     compactName: "inventory",
     summary: "Emit raw repo signals for optional cache material.",
   },
   {
     name: "describe",
-    group: "advanced",
+    group: "adapt",
     defaultHelp: false,
     compactName: "describe",
     summary: "Print intent or direct markdown section ranges.",
   },
   {
     name: "compare",
-    group: "compare",
+    group: "adapt",
     defaultHelp: false,
     compactName: "compare",
     summary: "Compare packages or direct fingerprints.",
   },
   {
     name: "ack",
-    group: "compare",
+    group: "govern",
     defaultHelp: false,
     compactName: "ack",
-    summary: "Record stance toward tracked drift.",
+    summary: "Record stance toward tracked fingerprint divergence.",
   },
   {
     name: "track",
-    group: "compare",
+    group: "govern",
     defaultHelp: false,
     compactName: "track",
     summary: "Shift the tracked reference fingerprint.",
   },
   {
     name: "diverge",
-    group: "compare",
+    group: "govern",
     defaultHelp: false,
     compactName: "diverge",
     summary: "Declare intentional divergence on a dimension.",
   },
   {
     name: "diff",
-    group: "legacy",
+    group: "source",
     defaultHelp: false,
     compactName: "diff",
     summary: "Diff two legacy direct markdown fingerprints.",
   },
   {
     name: "survey",
-    group: "legacy",
+    group: "source",
     defaultHelp: false,
     compactName: "survey",
     summary: "Run legacy/cache survey helpers.",
@@ -206,15 +214,16 @@ function pickBaseSections(sections: HelpSection[]): {
 }
 
 function formatDefaultCommandSections(commands: Command[]): HelpSection[] {
-  return [
-    {
-      title: "Core workflow",
-      body: formatCommandRows(
-        commands.filter((command) => metadataFor(command)?.defaultHelp),
-        "compact",
-      ),
-    },
-  ];
+  return GROUPS.map(({ group, title }) => ({
+    title,
+    body: formatCommandRows(
+      commands.filter((command) => {
+        const metadata = metadataFor(command);
+        return metadata?.defaultHelp && metadata.group === group;
+      }),
+      "compact",
+    ),
+  })).filter((section) => section.body.length > 0);
 }
 
 function formatAllCommandSections(commands: Command[]): HelpSection[] {
@@ -274,7 +283,7 @@ function formatMoreSection(): HelpSection {
   return {
     title: "More",
     body: [
-      "  $ ghost --help --all      Show all advanced and legacy commands",
+      "  $ ghost --help --all      Show the complete lifecycle command index",
       "  $ ghost <command> --help  Show command-specific options",
     ].join("\n"),
   };
