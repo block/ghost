@@ -53,7 +53,7 @@ Optional material can sit beside the core files:
   what exists; curated `inventory.yml` is the canonical inventory layer.
 
 Older `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` artifacts are
-legacy/cache material. They are not canonical Ghost input.
+migration/cache material. They are not canonical Ghost input.
 
 Advanced workflows can add nested fingerprint packages for product areas, custom
 `--memory-dir` locations for host wrappers, optional cache inventory, and fleet
@@ -84,7 +84,7 @@ npx ghost --help --all
 ```
 
 Default help is intentionally small and shows the core workflow for new
-adopters. Use `ghost --help --all` for the complete advanced and legacy command
+adopters. Use `ghost --help --all` for the complete advanced command
 index; every listed command still supports `ghost <command> --help`.
 
 Install the unified BYOA skill bundle:
@@ -176,13 +176,12 @@ ghost emit review-command --path apps/checkout/review/page.tsx
 ghost emit context-bundle
 ```
 
-Advanced commands remain available for scoped fingerprint packages, legacy migration, and
+Advanced commands remain available for scoped fingerprint packages, migration, and
 comparison:
 
 ```bash
 ghost stack apps/checkout/review/page.tsx
 ghost compare market/.ghost dashboard/.ghost
-ghost compare a.md b.md --semantic          # legacy direct markdown compare
 ghost ack --stance aligned --reason "Initial baseline"
 ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
@@ -206,16 +205,16 @@ content. It does not call an LLM.
 | `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet from checked-in fingerprint layers. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
-## Advanced And Legacy Commands
+## Advanced Commands
 
 | Command | Description |
 | --- | --- |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache/material gathering. |
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stack and merged output for one or more paths. Supports `--memory-dir`. |
-| `ghost describe` | Print optional `fingerprint/memory/intent.md` or legacy direct markdown section ranges. |
-| `ghost diff` | Structural prose-level diff between legacy direct fingerprints. |
-| `ghost survey <op>` | Legacy/cache helpers for `ghost.survey/v1` files. Not canonical fingerprint input. |
-| `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
+| `ghost describe` | Print optional `fingerprint/memory/intent.md` or markdown section ranges. |
+| `ghost diff` | Structural prose-level diff between markdown fingerprints. |
+| `ghost survey <op>` | Survey/cache helpers for `ghost.survey/v1` files. Not canonical fingerprint input. |
+| `ghost compare` | Pairwise or composite comparison over fingerprint packages. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
 | `ghost diverge` | Declare intentional divergence on a dimension. |
