@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { FileText, Network, Orbit, Palette } from "lucide-react";
+import { FileText, Network, Palette, Send, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -20,10 +20,16 @@ const tools: {
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
+    name: "ghost emit",
+    href: "/tools/emit",
+    blurb: "Create generation packets",
+    icon: <Send className="size-5" strokeWidth={1.5} />,
+  },
+  {
     name: "ghost review",
-    href: "/tools/drift",
-    blurb: "Review UI drift",
-    icon: <Orbit className="size-5" strokeWidth={1.5} />,
+    href: "/tools/review",
+    blurb: "Govern changed UI",
+    icon: <ShieldCheck className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost-fleet",
@@ -49,7 +55,7 @@ function ToolStrip() {
   return (
     <div
       ref={ref}
-      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 overflow-visible"
+      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 mb-4 overflow-visible"
     >
       {tools.map((tool) => (
         <Link
@@ -77,8 +83,8 @@ export default function ToolsIndex() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="Tools"
-        title="Tool Directory"
-        description="Pick the workflow you need: set up fingerprint layers, review drift, compare projects, or inspect the reference UI system."
+        title="Tool Reference"
+        description="Command-specific references for fingerprint readiness, generation packets, governance, fleet comparison, and the reference UI system."
       />
 
       <ToolStrip />

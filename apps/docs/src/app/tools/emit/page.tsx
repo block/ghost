@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, GitCompare, Network } from "lucide-react";
+import { BookOpen, Send, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -14,26 +14,28 @@ const cards: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Comparison workflow",
-    href: "/docs/comparison",
-    description: "Compare many projects after each has a fingerprint.",
-    icon: <GitCompare className="size-8" strokeWidth={1.5} />,
+    name: "Generation workflow",
+    href: "/docs/generation",
+    description:
+      "Use the context bundle before a host agent writes or revises UI.",
+    icon: <Sparkles className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost---compare-and-adapt",
-    description: "List members, compute a view, and emit fleet reports.",
+    href: "/docs/cli#ghost---generate",
+    description:
+      "See exact flags for `ghost emit review-command` and `ghost emit context-bundle`.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Skill bundle",
-    href: "https://github.com/block/ghost/tree/main/packages/ghost-fleet/src/skill-bundle",
-    description: "The recipe that turns fleet output into a readable summary.",
-    icon: <Network className="size-8" strokeWidth={1.5} />,
+    name: "Host adapters",
+    href: "/docs/adapters",
+    description: "Connect emitted packets to agents, CI, and review surfaces.",
+    icon: <Send className="size-8" strokeWidth={1.5} />,
   },
 ];
 
-export default function GhostFleetLanding() {
+export default function GhostEmitLanding() {
   const ref = useStaggerReveal<HTMLDivElement>(".tool-card", {
     stagger: 0.06,
     y: 30,
@@ -43,9 +45,9 @@ export default function GhostFleetLanding() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="ghost-fleet"
-        title="Fleet"
-        description="See how many project fingerprints relate. ghost-fleet lists members, compares design-language distance, groups projects by useful traits, and writes fleet.md plus fleet.json for review."
+        kicker="ghost emit"
+        title="Generation Packets"
+        description="Emit deterministic handoff packets from checked-in fingerprint layers so host agents can generate from product-experience context before code changes begin."
       />
 
       <div

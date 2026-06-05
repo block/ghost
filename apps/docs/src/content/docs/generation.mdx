@@ -1,0 +1,84 @@
+---
+title: Generation
+description: Use the fingerprint as upstream context before an agent writes or revises UI.
+kicker: Docs
+section: workflow
+order: 40
+slug: generation
+---
+
+<DocSection title="Before Code">
+
+Ghost is most useful before the diff exists. The fingerprint gives the host
+agent the product-experience contract it should extend:
+
+```text
+prose.yml + inventory.yml + composition.yml
+        |
+        v
+host agent or generator
+        |
+        v
+HTML / JSX / app code
+```
+
+Checks and review validate output afterward. They do not replace the upstream
+fingerprint inputs.
+
+</DocSection>
+
+<DocSection title="Context Bundle">
+
+Emit the generation packet before work begins:
+
+```bash
+ghost emit context-bundle
+```
+
+The packet organizes:
+
+- prose: product judgment and experience contracts
+- inventory: building blocks, exemplars, and optional source cache
+- composition: patterns for assembling product experience
+- active checks: validation expectations, not generation input
+
+Give the packet to Codex, Cursor, Claude, Goose, or another host agent so the
+work starts from the same portable contract.
+
+</DocSection>
+
+<DocSection title="Agent Brief">
+
+A good pre-generation brief asks the agent to:
+
+1. Read the relevant fingerprint layers.
+2. Select the matching situations, principles, contracts, and patterns.
+3. Inspect inventory exemplars as concrete anchors.
+4. Use building blocks and local implementation conventions.
+5. Keep active checks in view so avoidable failures do not land.
+
+If a layer is silent, the agent may use nearby product surfaces and ordinary UX
+judgment, but it should label that reasoning as provisional and not
+Ghost-backed.
+
+</DocSection>
+
+<DocSection title="Buildable Evidence">
+
+Inventory is strongest when it points to material an agent can inspect or use:
+component paths, token files, route examples, copy in context, motion specs,
+and shipped flows. Screenshots and PDFs can still help, but buildable evidence
+usually gives agents better leverage.
+
+</DocSection>
+
+<DocSection title="After Code">
+
+Once the surface exists, move to [Governance](/docs/governance):
+
+```bash
+ghost check --base main
+ghost review --base main --include-memory
+```
+
+</DocSection>

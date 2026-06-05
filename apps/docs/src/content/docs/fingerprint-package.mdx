@@ -1,0 +1,104 @@
+---
+title: Fingerprint Package
+description: The portable product-experience contract that Ghost tools and host agents read.
+kicker: Docs
+section: fingerprint
+order: 20
+slug: fingerprint-package
+---
+
+<DocSection title="Portable Contract">
+
+A Ghost fingerprint is the checked-in product-experience contract for a repo.
+It is portable because the package lives under `.ghost/fingerprint/`, separate
+from local adapter config.
+
+```text
+.ghost/
+  config.yml
+  fingerprint/
+    manifest.yml
+    prose.yml
+    inventory.yml
+    composition.yml
+    enforcement/checks.yml
+    memory/intent.md
+    memory/decisions/
+    sources/cache/
+```
+
+Git is the approval boundary. Uncommitted or unmerged edits are drafts;
+checked-in fingerprint files are the source of truth for Ghost.
+
+</DocSection>
+
+<DocSection title="Core Layers">
+
+Generation starts from three core files:
+
+- `prose.yml` explains what matters and why.
+- `inventory.yml` points to curated material, building blocks, source links,
+  and exemplars an agent can inspect.
+- `composition.yml` explains how those materials become product experience.
+
+The package manifest anchors the on-disk shape:
+
+```yaml
+schema: ghost.fingerprint-package/v1
+id: local
+```
+
+Raw layer files may be sparse. Ghost normalizes missing files or sections into
+the assembled shape used by checks, review packets, context bundles, compare,
+and stack resolution.
+
+</DocSection>
+
+<DocSection title="Support Material">
+
+Support files extend the contract without changing the core generation model:
+
+- `enforcement/checks.yml` stores deterministic gates grounded in fingerprint
+  refs.
+- `memory/intent.md` stores optional human-authored or human-approved intent.
+- `memory/decisions/` stores accepted or rejected rationale.
+- `sources/cache/` stores refreshable generated observations.
+
+Generated cache can help author `inventory.yml`, but cache never counts as
+fingerprint readiness by itself.
+
+</DocSection>
+
+<DocSection title="Refs">
+
+Use layer-qualified refs so checks and review can cite product memory:
+
+```text
+prose.situation:<id>
+prose.principle:<id>
+prose.experience_contract:<id>
+inventory.exemplar:<id>
+composition.pattern:<id>
+check:<id>
+```
+
+Ref-backed checks are preferred. Inventory refs can support checks, but
+inventory-only grounding does not establish product judgment on its own.
+
+</DocSection>
+
+<DocSection title="Nested Packages">
+
+Large repos can add scoped packages:
+
+```text
+.ghost/fingerprint/...
+apps/checkout/.ghost/fingerprint/...
+apps/checkout/review/page.tsx
+```
+
+For a changed path, Ghost resolves matching packages root-to-leaf. Child
+entries with the same id replace parent entries, arrays merge with de-dupe, and
+child-relative paths normalize to repo-root paths in reports.
+
+</DocSection>

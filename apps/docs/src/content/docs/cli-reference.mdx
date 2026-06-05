@@ -2,8 +2,8 @@
 title: CLI Reference
 description: Commands around the portable fingerprint lifecycle. Your agent handles the judgment work.
 kicker: Docs
-section: guide
-order: 30
+section: reference
+order: 90
 slug: cli
 ---
 
@@ -11,8 +11,8 @@ slug: cli
 
 The CLI does the repeatable parts around the fingerprint lifecycle: author
 packages, report readiness, validate files, emit handoff packets, govern diffs,
-compare and adapt packages, and gather optional source material. Your agent
-does the reading, writing, and reviewing.
+compare packages, inspect stacks, adapt host workflows, and gather optional
+source material. Your agent does the reading, writing, and reviewing.
 
 `ghost --help` intentionally shows the grouped lifecycle workflow for new
 adopters. Run `ghost --help --all` for the complete lifecycle command index;
@@ -30,8 +30,10 @@ product areas:
 apps/checkout/.ghost/fingerprint/manifest.yml
 ```
 
-The tables below are generated from the CLI source. Run `pnpm dump:cli-help`
-after command or flag changes.
+Start with [Authoring](/docs/authoring), [Generation](/docs/generation), and
+[Governance](/docs/governance) when you want the workflow. Use this page when
+you need exact command flags. The tables below are generated from the CLI
+source. Run `pnpm dump:cli-help` after command or flag changes.
 
 </DocSection>
 
