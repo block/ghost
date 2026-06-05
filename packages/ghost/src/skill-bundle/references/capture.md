@@ -1,6 +1,6 @@
 ---
 name: capture
-description: Author repo-local Ghost fingerprints.
+description: Author portable repo-local Ghost fingerprint contracts.
 handoffs:
   - label: Inspect fingerprint layers
     command: ghost scan
@@ -12,9 +12,11 @@ handoffs:
 
 # Recipe: Author Ghost Fingerprint
 
-**Goal:** record durable product-experience memory in `.ghost/fingerprint/`.
-If a change is uncommitted or unmerged, it is draft work. If it is checked in,
-Ghost treats the fingerprint package as canonical.
+**Goal:** author the durable product-experience contract in
+`.ghost/fingerprint/`. The package should be useful to humans approving the
+contract and agents applying it. If a change is uncommitted or unmerged, it is
+draft work. If it is checked in, Ghost treats the fingerprint package as
+canonical.
 
 ```text
 .ghost/

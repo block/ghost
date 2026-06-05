@@ -1,7 +1,7 @@
 {
   "$schema": "ghost.install-manifest/v1",
   "name": "ghost",
-  "description": "Ghost recipes — create, brief, review, and preserve the repo-local fingerprint bundle.",
+  "description": "Ghost recipes - capture, apply, validate, govern, and compare repo-local fingerprint contracts.",
   "version": "0.1.0",
   "source": {
     "package": "packages/ghost/src/skill-bundle"
@@ -12,6 +12,7 @@
     "references/capture.md",
     "references/compare.md",
     "references/critique.md",
+    "references/generate.md",
     "references/map.md",
     "references/patterns.md",
     "references/recall.md",
