@@ -103,7 +103,7 @@ packages exist.
 
 ## Never
 
-- Never describe root-level `fingerprint.md` or `.ghost/fingerprint.yml` as canonical package input.
+- Never describe any file outside `.ghost/fingerprint/` as canonical package input.
 - Never treat generated cache as canonical inventory.
 - Never invent product-experience obligations absent from evidence or human direction.
 - Never promote subjective judgment directly into checks; make it deterministic or keep it advisory.

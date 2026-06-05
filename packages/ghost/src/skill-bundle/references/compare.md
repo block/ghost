@@ -23,10 +23,9 @@ handoffs:
 
     ghost compare a/.ghost b/.ghost
 
-Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Package inputs use canonical `.ghost/fingerprint/` packages when available; direct fingerprint markdown files still use their embedded frontmatter as legacy inputs.
+Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Package inputs use canonical `.ghost/fingerprint/` packages.
 
 Flags:
-- `--semantic` — add qualitative diff for direct fingerprint markdown comparisons
 - `--temporal` — add drift velocity, trajectory, and ack bounds (reads `.ghost/history.jsonl`)
 
 ### Composite (N≥3)
@@ -43,4 +42,5 @@ Use for: comparing a collection of fingerprints at the same elevation: which are
 - **0.2 – 0.5**: recognizable drift; worth a qualitative review.
 - **> 0.5**: the two fingerprints represent meaningfully different systems. Either one has diverged intentionally, or they were never the same.
 
-If the user asks "why did it change", follow up with `--semantic`.
+If the user asks "why did it change", inspect the compared fingerprint layers
+and summarize the product-experience differences directly.
