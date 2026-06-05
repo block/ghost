@@ -80,6 +80,12 @@ Then ask your agent:
 Set up Ghost memory for this repo.
 ```
 
+## Maintainers
+
+npm renders this package-local `README.md`, not the monorepo root README. The
+npm package page updates only when a new package version is published, so
+README-only changes still need a patch changeset and release.
+
 ## License
 
 Apache-2.0
