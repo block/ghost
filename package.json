@@ -1,7 +1,7 @@
 {
   "name": "ghost",
   "private": true,
-  "description": "Product-experience world model tooling for AI agents",
+  "description": "Portable product-experience fingerprint tooling for AI agents",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.33.0",
   "engines": {
