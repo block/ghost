@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or use advanced comparison/drift stance workflows.
+description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or compare fingerprint packages.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -70,7 +70,7 @@ or check format.
 | `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet. |
 | `ghost skill install` | Install this unified skill bundle. |
 
-## Advanced And Legacy CLI Verbs
+## Advanced CLI Verbs
 
 | Verb | Purpose |
 |---|---|
@@ -78,8 +78,7 @@ or check format.
 | `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
 | `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
 | `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
-| `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
-| `ghost compare <a> <b> [...more]` | Compare root packages or direct fingerprints. |
+| `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 
 ## Workflows
