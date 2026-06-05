@@ -4,11 +4,20 @@ status: exploring
 
 # ghost fleet
 
+> Fingerprint-first context: fleet is a comparison and elevation view over many
+> fingerprints. It does not replace the repo-local fingerprint contract each
+> member owns.
+
 ## Why it's interesting
 
 Per-repo views answer "is *this* repo drifting?" Fleet answers "what does our design world look like?" The existing `~/Development/ghost-fleet` repo proves the value — 50+ Block frontends, distance matrices, cluster reports — but it's a Block-internal orchestration layer with hardcoded targets and bespoke scripts. The decomposition turns that into a generalized verb anyone can run over their own collection.
 
-The unlock is **two orthogonal axes**: design language (fingerprint) and implementation (map). Drift compare is single-axis (fingerprint). Fleet groups by map — "how do all the SwiftUI repos cluster in fingerprint-space?" "what does the design world look like for shadcn-based registries vs not?" — and that orthogonality is what makes a *world model* rather than a bigger compare.
+The unlock is **two orthogonal axes**: design language (fingerprint) and
+implementation (map). Drift compare is single-axis (fingerprint). Fleet groups
+by map — "how do all the SwiftUI repos cluster in fingerprint-space?" "what
+does the design world look like for shadcn-based registries vs not?" — and that
+orthogonality makes fleet a higher-level shape view rather than a bigger
+compare.
 
 ## What it is — and is not
 
@@ -23,7 +32,7 @@ A read-only **elevation view** over a directory of (map.md, fingerprint.md) memb
 
 | Layer | What it does | Where it lives |
 |---|---|---|
-| `ghost fleet` (skill) | LLM-driven recipe: synthesize the world-model narrative for fleet.md | `packages/ghost-fleet/src/skill-bundle/` |
+| `ghost fleet` (skill) | LLM-driven recipe: synthesize the fleet-shape narrative for fleet.md | `packages/ghost-fleet/src/skill-bundle/` |
 | `ghost fleet view` (CLI) | Deterministic composite, group-by, tracks-graph, output artifacts | CLI |
 
 The math is deterministic — composite distances, clustering, group-by. The narrative ("Cash family clusters tight; Tidal pulls away on warmth and density; Afterpay sits in its own region") is judgement and lives in the skill. Same split as map/fingerprint.

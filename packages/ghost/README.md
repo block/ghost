@@ -1,10 +1,12 @@
 # @anarchitecture/ghost
 
-**Unified Ghost CLI for repo-local product-experience world models.**
+**Unified Ghost CLI for portable product-experience fingerprints.**
 
-Ghost initializes root `.ghost/fingerprint/` memory, checks diffs against
-deterministic gates, emits advisory review packets, compares packages, and
-records intentional drift. It ships one CLI: `ghost`.
+Ghost captures a portable product-experience fingerprint that tools use to
+generate, validate, compare, and govern product surfaces. It initializes root
+`.ghost/fingerprint/` packages, validates deterministic gates, emits handoff
+and review packets, compares packages, and records intentional divergence. It
+ships one CLI: `ghost`.
 
 ## Install
 
@@ -55,8 +57,9 @@ import { compareFingerprints } from "@anarchitecture/ghost/core";
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
 lint, verify, compare, check, and handoff packet generation. The installed
 `ghost` skill teaches your host agent how to capture canonical
-`.ghost/fingerprint/` memory, brief work from it, review drift, verify
-generated UI, remediate issues, and suggest memory edits when the user asks.
+`.ghost/fingerprint/` memory, brief and generate work from it, review changes
+against it, verify generated UI, remediate issues, and suggest memory edits
+when the user asks.
 
 ```bash
 ghost skill install
@@ -65,7 +68,7 @@ ghost skill install
 Then ask your agent:
 
 ```text
-Set up Ghost memory for this repo.
+Set up the Ghost fingerprint for this repo.
 ```
 
 ## License

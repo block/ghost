@@ -1,7 +1,8 @@
 # Ghost Fingerprint Blueprint
 
-A Ghost fingerprint is checked-in product-experience memory for a repo. It is
-the material a host agent reads before generating UI and the deterministic
+A Ghost fingerprint is checked-in product-experience memory for a repo: a
+portable contract humans can approve and agents can act from. It is the
+material a host agent reads before generating UI and the deterministic
 grounding Ghost uses after changes for lint, verify, check, review, compare,
 and context-bundle flows.
 
@@ -274,7 +275,7 @@ Ghost uses typed refs to connect layers without guessing:
 
 Refs are lowercase slug ids after the colon. Use refs when a situation depends
 on a principle, an exemplar demonstrates a pattern, a check derives from prose,
-or a review finding needs to show why a change drifts.
+or a review finding needs to show why a change departs from the fingerprint.
 
 Layer refs without `check:` are used where only fingerprint layer material is
 valid, such as `inventory.exemplars[].refs`.
@@ -451,7 +452,7 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Use the fingerprint before and after generation:
+Use the fingerprint across the lifecycle:
 
 ```bash
 ghost emit context-bundle

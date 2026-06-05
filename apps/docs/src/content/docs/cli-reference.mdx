@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Commands for repeatable checks and comparison. Your agent handles the judgment work.
+description: Commands around the portable fingerprint lifecycle. Your agent handles the judgment work.
 kicker: Docs
 section: guide
 order: 30
@@ -9,10 +9,10 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts: initialize fingerprint packages, report
-fingerprint readiness, validate files, emit raw inventory, compare packages,
-check diffs, emit handoff packets, and record intent. Your agent does the
-reading, writing, and reviewing.
+The CLI does the repeatable parts around the fingerprint lifecycle: capture
+packages, report readiness, validate files, gather optional source material,
+emit handoff packets, govern diffs, compare packages, and record intent. Your
+agent does the reading, writing, and reviewing.
 
 `ghost --help` intentionally shows the short core workflow for new adopters.
 Run `ghost --help --all` for the complete advanced and legacy command index;
@@ -35,7 +35,7 @@ after command or flag changes.
 
 </DocSection>
 
-<DocSection title="ghost - fingerprint layers and package checks">
+<DocSection title="ghost - capture, validate, and generate">
 
 ### Initialize - `init`
 
@@ -77,7 +77,7 @@ Inspect the root-to-leaf fingerprint stack for one or more paths.
 ghost stack apps/checkout/review/page.tsx --format json
 ```
 
-### Generated cache - `inventory`
+### Capture source material - `inventory`
 
 Emit raw signals about a frontend repo as JSON. Use this as optional source
 material under `.ghost/fingerprint/sources/cache/`.
@@ -128,7 +128,7 @@ direct fingerprint markdown file.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
 
-### Derived outputs - `emit`
+### Generate handoff packets - `emit`
 
 Emit `review-command` or the `context-bundle` generation packet from split
 fingerprint layers. Context bundles emit split files, not an assembled
@@ -138,7 +138,7 @@ fingerprint layers. Context bundles emit split files, not an assembled
 
 </DocSection>
 
-<DocSection title="ghost - review and compare">
+<DocSection title="ghost - govern and compare">
 
 ### Deterministic gates - `check`
 
@@ -148,7 +148,7 @@ per group.
 
 <CliHelp tool="ghost" command="check" hideDescription />
 
-### Advisory packet - `review`
+### Advisory governance packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in split fingerprint
 layers, optional memory, checks, and the diff.
@@ -162,9 +162,9 @@ fingerprint markdown.
 
 <CliHelp tool="ghost" command="compare" hideDescription />
 
-### Intent - `ack` / `track` / `diverge`
+### Drift stance - `ack` / `track` / `diverge`
 
-Compatibility verbs for tracked direct fingerprint markdown files.
+Compatibility governance verbs for tracked direct fingerprint markdown files.
 
 <CliHelp tool="ghost" command="ack" hideDescription />
 <CliHelp tool="ghost" command="track" hideDescription />
