@@ -32,7 +32,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/fingerprint.yml and checks.yml.",
+    summary: "Create .ghost/fingerprint/ package layers.",
   },
   {
     name: "scan",

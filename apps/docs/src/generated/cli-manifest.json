@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T02:15:02.053Z",
+  "generatedAt": "2026-06-05T03:07:13.136Z",
   "tools": [
     {
       "tool": "ghost",
@@ -48,7 +48,7 @@
           "group": "core",
           "defaultHelp": true,
           "compactName": "init",
-          "summary": "Create .ghost/fingerprint.yml and checks.yml.",
+          "summary": "Create .ghost/fingerprint/ package layers.",
           "options": [
             {
               "rawName": "--scope <path>",
