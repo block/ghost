@@ -1,13 +1,14 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
+import { GHOST_FINGERPRINT_PACKAGE_SCHEMA } from "#ghost-core";
 import type { FingerprintPackagePaths } from "../fingerprint-package.js";
 import { loadPackageContext, type PackageContext } from "./package-context.js";
 import type { WriteContextResult } from "./writer.js";
 
 export interface WritePackageContextOptions {
   outDir: string;
-  /** Override the skill/package name. Default: fingerprint.yml summary product. */
+  /** Override the skill/package name. Default: prose.yml summary product. */
   name?: string;
   /** Emit only prompt.md. Default: false. */
   promptOnly?: boolean;
@@ -45,19 +46,46 @@ export async function writePackageContextBundleFromContext(
   await writeContextFile(
     options.outDir,
     files,
-    "fingerprint.yml",
-    context.fingerprintRaw,
+    "fingerprint/manifest.yml",
+    context.fingerprintLayers?.manifest ??
+      `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}\nid: ${context.name}\n`,
+  );
+  await writeContextFile(
+    options.outDir,
+    files,
+    "fingerprint/prose.yml",
+    context.fingerprintLayers?.prose ??
+      stringifyYaml(context.fingerprint.prose, { lineWidth: 0 }),
+  );
+  await writeContextFile(
+    options.outDir,
+    files,
+    "fingerprint/inventory.yml",
+    context.fingerprintLayers?.inventory ??
+      stringifyYaml(context.fingerprint.inventory, { lineWidth: 0 }),
+  );
+  await writeContextFile(
+    options.outDir,
+    files,
+    "fingerprint/composition.yml",
+    context.fingerprintLayers?.composition ??
+      stringifyYaml(context.fingerprint.composition, { lineWidth: 0 }),
   );
   if (context.checksRaw) {
     await writeContextFile(
       options.outDir,
       files,
-      "checks.yml",
+      "fingerprint/enforcement/checks.yml",
       context.checksRaw,
     );
   }
   if (context.intent) {
-    await writeContextFile(options.outDir, files, "intent.md", context.intent);
+    await writeContextFile(
+      options.outDir,
+      files,
+      "fingerprint/memory/intent.md",
+      context.intent,
+    );
   }
   if (options.readme) {
     await writeContextFile(
@@ -78,6 +106,7 @@ async function writeContextFile(
   content: string,
 ): Promise<void> {
   const outPath = join(outDir, name);
+  await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, ensureTrailingNewline(content), "utf-8");
   files.push(outPath);
 }
@@ -98,12 +127,12 @@ validate the resulting diff with Ghost checks or review when available.
 Read the files in this order:
 
 1. \`prompt.md\` - generation packet: prose, inventory, composition, and active checks.
-2. \`fingerprint.yml\` - canonical prose, inventory, and composition.
-3. \`checks.yml\` when present - deterministic gates; only \`active\` checks block.
-4. \`intent.md\` when present - supplemental human-authored context.
+2. \`fingerprint/prose.yml\`, \`fingerprint/inventory.yml\`, and \`fingerprint/composition.yml\` - canonical core layers.
+3. \`fingerprint/enforcement/checks.yml\` when present - deterministic gates; only \`active\` checks block.
+4. \`fingerprint/memory/intent.md\` when present - supplemental human-authored context.
 
 When generating UI, combine prose, inventory, and composition from
-\`fingerprint.yml\`. Use generated cache only as replaceable source material
+\`fingerprint/\`. Use generated cache only as replaceable source material
 that may help satisfy canonical prose, inventory, and composition.
 When reviewing, use active checks for blocking validation and keep other
 findings advisory.
@@ -113,8 +142,8 @@ components, token and copy conventions, optional rationale files when present,
 and ordinary UX judgment when safe. Label that reasoning as provisional and
 non-Ghost-backed. Ask a human before making high-risk, irreversible,
 privacy/security/legal, or product-identity-defining choices. Fingerprint edits
-are ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and
-optional rationale files when present.
+are ordinary Git-reviewed edits to \`fingerprint/\` files and optional local
+\`config.yml\` when present.
 `;
 }
 
@@ -131,7 +160,7 @@ After generating, validate the diff with Ghost checks or review when available, 
 
   parts.push(`# Prose
 
-Canonical product meaning lives in \`fingerprint.yml\`. Use situations, principles, and experience contracts as the source of product judgment.
+Canonical product meaning lives in \`fingerprint/prose.yml\`. Use situations, principles, and experience contracts as the source of product judgment.
 
 \`\`\`yaml
 ${stringifyYaml(context.fingerprint.prose, { lineWidth: 0 }).trim()}
@@ -194,7 +223,7 @@ ${context.intent.trim()}
 - After generating, run or request Ghost review/check when available so output is validated against the same fingerprint layers.
 - When fingerprint layers are silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
 - Label silent-layer reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
-- Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint.yml\`, \`checks.yml\`, and optional rationale files when present.`);
+- Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint/\` files and optional local \`config.yml\` when present.`);
 
   return `${parts.join("\n\n")}\n`;
 }
@@ -213,10 +242,13 @@ Ghost checks or review when available.
 
 - \`SKILL.md\` - agent skill manifest.
 - \`prompt.md\` - portable generation packet: prose, inventory, composition, and checks.
-- \`fingerprint.yml\` - canonical prose, inventory, and composition.
-${context.checksRaw ? "- `checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `intent.md` - supplemental human-authored context.\n" : ""}
-Regenerate this bundle when \`fingerprint.yml\`, active checks, or optional
-rationale files change.
+- \`fingerprint/manifest.yml\` - portable fingerprint package anchor.
+- \`fingerprint/prose.yml\` - canonical product judgment.
+- \`fingerprint/inventory.yml\` - canonical curated material and source links.
+- \`fingerprint/composition.yml\` - canonical experience patterns.
+${context.checksRaw ? "- `fingerprint/enforcement/checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `fingerprint/memory/intent.md` - supplemental human-authored context.\n" : ""}
+Regenerate this bundle when \`fingerprint/\` core layers, active checks, or
+optional rationale files change.
 `;
 }
 
@@ -240,7 +272,7 @@ function formatTopology(context: PackageContext): string {
     }
     if (topology.scopes.length > 16) {
       lines.push(
-        `- ${topology.scopes.length - 16} more scope(s); read \`fingerprint.yml\` before generating.`,
+        `- ${topology.scopes.length - 16} more scope(s); read \`fingerprint/inventory.yml\` before generating.`,
       );
     }
   }
@@ -255,7 +287,7 @@ function formatGeneratedCache(context: PackageContext): string {
   if (inventory.state === "missing") {
     return `## Generated Cache
 
-No generated cache is present. Generated cache is optional source material; create it when useful with \`mkdir -p .ghost/cache && ghost inventory > .ghost/cache/inventory.json\`.`;
+No generated cache is present. Generated cache is optional source material; create it when useful with \`mkdir -p .ghost/fingerprint/sources/cache && ghost inventory > .ghost/fingerprint/sources/cache/inventory.json\`.`;
   }
   if (inventory.state === "unreadable") {
     return `## Generated Cache
@@ -345,7 +377,7 @@ function formatComposition(context: PackageContext): string {
   }
   if (patterns.length > 16) {
     lines.push(
-      `- ${patterns.length - 16} more composition pattern(s); read \`fingerprint.yml\` before generating.`,
+      `- ${patterns.length - 16} more composition pattern(s); read \`fingerprint/composition.yml\` before generating.`,
     );
   }
   return lines.join("\n");
@@ -375,7 +407,7 @@ function formatExemplars(context: PackageContext): string {
   }
   if (exemplars.length > 16) {
     lines.push(
-      `- ${exemplars.length - 16} more exemplar(s); read \`fingerprint.yml\` before generating.`,
+      `- ${exemplars.length - 16} more exemplar(s); read \`fingerprint/inventory.yml\` before generating.`,
     );
   }
   return lines.join("\n");

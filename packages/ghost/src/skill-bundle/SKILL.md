@@ -13,11 +13,19 @@ Ghost captures product identity in a repo-local fingerprint package:
 
 ```text
 .ghost/
-  fingerprint.yml # canonical prose, inventory, and composition
-  checks.yml      # optional deterministic gates grounded in fingerprint refs
+  config.yml
+  fingerprint/
+    manifest.yml
+    prose.yml
+    inventory.yml
+    composition.yml
+    enforcement/checks.yml
+    memory/intent.md
+    memory/decisions/
+    sources/cache/
 ```
 
-`fingerprint.yml` is the source of truth when it is checked in. Ordinary Git
+`fingerprint/` is the source of truth when it is checked in. Ordinary Git
 workflow is the staging and approval boundary: uncommitted or unmerged changes
 are drafts, and committed fingerprint changes are canonical for Ghost. Checks are optional
 deterministic gates. Ghost is not a lifecycle manager, proposal system,
@@ -25,21 +33,24 @@ design-system registry, or screenshot archive.
 
 Generation uses **prose + inventory + composition**:
 
-- `prose` in `fingerprint.yml` explains what matters and why.
+- `fingerprint/prose.yml` explains what matters and why.
 - `inventory` points to building blocks and precedents the agent can inspect
   or use, including exemplars.
-- `composition` explains how those blocks become experience.
+- `fingerprint/composition.yml` explains how those blocks become experience.
 
 Checks and review validate output; they are not generation input.
 
-`fingerprint.yml` may start with only `schema: ghost.fingerprint/v1`. Add only
-sections that contain real layer content; Ghost normalizes omitted layer sections
-internally for checks, review, emit, and stack resolution.
+`fingerprint/manifest.yml` anchors the package with
+`schema: ghost.fingerprint-package/v1`. Add only sections that contain real
+layer content; Ghost normalizes omitted layer files or sections internally for
+checks, review, emit, and stack resolution.
 
-Optional material may sit beside the core files: `config.yml` for
-implementation routing, `intent.md` for human-authored intent, `decisions/` for
-historical rationale, and `cache/` for generated cache. Use these
-only when present or requested.
+Optional support material lives under purpose folders:
+`fingerprint/enforcement/checks.yml` for deterministic gates,
+`fingerprint/memory/intent.md` for human-approved intent,
+`fingerprint/memory/decisions/` for rationale history, and
+`fingerprint/sources/cache/` for generated observations. `.ghost/config.yml`
+stays outside the portable package as local routing config.
 
 Advanced repos may contain nested fingerprint packages such as `apps/checkout/.ghost/`, and
 host wrappers may use `--memory-dir <relative-dir>`. Ghost stays
@@ -50,7 +61,7 @@ or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir]` | Create `.ghost/fingerprint.yml` and `.ghost/checks.yml`. |
+| `ghost init [dir]` | Create `.ghost/fingerprint/` with manifest, core layers, and enforcement checks. |
 | `ghost scan [dir] [--format json]` | Report fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
@@ -85,9 +96,9 @@ or check format.
 
 ## Always
 
-- Treat checked-in `fingerprint.yml` as the source of truth.
+- Treat checked-in `fingerprint/` core files as the source of truth.
 - Generate from prose, inventory, and composition.
-- Run active checks from `checks.yml`; only active deterministic checks block.
+- Run active checks from `fingerprint/enforcement/checks.yml`; only active deterministic checks block.
 - Use local evidence as provisional when fingerprint layers are silent.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
@@ -111,5 +122,5 @@ product-identity-defining choices.
 - Never treat advisory composition judgment as a CI gate.
 - Never claim provisional judgment, local convention, or general UX reasoning as
   Ghost-backed.
-- Never treat `intent.md` as authoritative unless human-authored or human-approved.
+- Never treat `fingerprint/memory/intent.md` as authoritative unless human-authored or human-approved.
 - Never treat rejected decisions as canonical inputs.

@@ -5,7 +5,7 @@ description: Recall applicable Ghost fingerprint layers for a task or file path.
 
 # Recipe: Recall Ghost Fingerprint
 
-1. Read checked-in `fingerprint.yml` entries.
+1. Read checked-in `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and `fingerprint/composition.yml` entries.
 2. Select relevant prose, inventory exemplars, composition patterns, and active
    checks.
 3. Use `ghost stack <path>`, accepted decisions, and intent only when the repo

@@ -6,7 +6,10 @@ export {
   GhostFingerprintExperienceContractSchema,
   GhostFingerprintInventoryBuildingBlocksSchema,
   GhostFingerprintInventorySchema,
+  GhostFingerprintInventorySourceKindSchema,
+  GhostFingerprintInventorySourceSchema,
   GhostFingerprintLayerRefSchema,
+  GhostFingerprintPackageManifestSchema,
   GhostFingerprintPatternKindSchema,
   GhostFingerprintPatternSchema,
   GhostFingerprintPrincipleSchema,
@@ -28,9 +31,12 @@ export type {
   GhostFingerprintExperienceContract,
   GhostFingerprintInventory,
   GhostFingerprintInventoryBuildingBlocks,
+  GhostFingerprintInventorySource,
+  GhostFingerprintInventorySourceKind,
   GhostFingerprintLintIssue,
   GhostFingerprintLintReport,
   GhostFingerprintLintSeverity,
+  GhostFingerprintPackageManifest,
   GhostFingerprintPattern,
   GhostFingerprintPatternKind,
   GhostFingerprintPrinciple,
@@ -44,6 +50,7 @@ export type {
   GhostFingerprintTopologyScope,
 } from "./types.js";
 export {
+  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
   GHOST_FINGERPRINT_YML_FILENAME,
 } from "./types.js";

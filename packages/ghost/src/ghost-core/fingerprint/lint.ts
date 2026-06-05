@@ -49,6 +49,7 @@ export function lintGhostFingerprint(
   );
   checkDuplicateIds("composition.patterns", doc.composition.patterns, issues);
   checkDuplicateIds("inventory.exemplars", doc.inventory.exemplars, issues);
+  checkDuplicateIds("inventory.sources", doc.inventory.sources, issues);
   checkTopologyRefs(doc, issues);
   checkRefs(doc, issues);
 
@@ -367,7 +368,7 @@ function checkRefList(
       issues.push({
         severity: "error",
         rule: "fingerprint-ref-unknown",
-        message: `Reference '${ref}' does not exist in fingerprint.yml.`,
+        message: `Reference '${ref}' does not exist in the fingerprint package.`,
         path: `${path}[${index}]`,
       });
     }
@@ -413,7 +414,7 @@ function checkLayerRefs(
       issues.push({
         severity: "error",
         rule: "fingerprint-ref-unknown",
-        message: `Reference '${ref}' does not exist in fingerprint.yml.`,
+        message: `Reference '${ref}' does not exist in the fingerprint package.`,
         path: `${path}[${index}]`,
       });
     }

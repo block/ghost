@@ -8,15 +8,17 @@ import {
 } from "../src/ghost-core/index.js";
 
 describe("ghost.checks/v1 grounding", () => {
-  it("requires active checks to declare derivation", () => {
+  it("warns when active checks do not declare derivation", () => {
     const doc = checksDocument({
       derivation: undefined,
     });
 
     const report = lintGhostChecks(doc);
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-missing",
       path: "checks[0].derivation",
     });
@@ -72,7 +74,7 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("rejects inventory-only derivation for active checks", () => {
+  it("warns on inventory-only derivation for active checks", () => {
     const report = lintGhostChecks(
       checksDocument({
         derivation: {
@@ -82,8 +84,10 @@ describe("ghost.checks/v1 grounding", () => {
       { fingerprint: fingerprintDocument() },
     );
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-inventory-only",
       path: "checks[0].derivation",
     });
@@ -113,6 +117,7 @@ describe("ghost.checks/v1 grounding", () => {
             },
             building_blocks: {},
             exemplars: [],
+            sources: [],
           },
         }),
       },
@@ -122,7 +127,7 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("reports active checks grounded in missing fingerprint.yml prose/inventory/composition", () => {
+  it("warns for active checks grounded in missing fingerprint prose/inventory/composition", () => {
     const doc = checksDocument({
       derivation: {
         prose: ["prose.principle:missing-principle"],
@@ -133,8 +138,10 @@ describe("ghost.checks/v1 grounding", () => {
       fingerprint: fingerprintDocument(),
     });
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-unknown",
       path: "checks[0].derivation.prose[0]",
     });
@@ -318,6 +325,7 @@ function fingerprintDocument(
           path: "apps/dashboard/src/routes/orders/page.tsx",
         },
       ],
+      sources: [],
     },
     composition: {
       patterns: [

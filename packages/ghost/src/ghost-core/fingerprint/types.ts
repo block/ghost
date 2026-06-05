@@ -1,4 +1,6 @@
 export const GHOST_FINGERPRINT_SCHEMA = "ghost.fingerprint/v1" as const;
+export const GHOST_FINGERPRINT_PACKAGE_SCHEMA =
+  "ghost.fingerprint-package/v1" as const;
 export const GHOST_FINGERPRINT_YML_FILENAME = "fingerprint.yml" as const;
 
 export type GhostFingerprintPatternKind =
@@ -74,6 +76,20 @@ export interface GhostFingerprintInventoryBuildingBlocks {
   notes?: string[];
 }
 
+export type GhostFingerprintInventorySourceKind =
+  | "cache"
+  | "registry"
+  | "file"
+  | "url"
+  | "package";
+
+export interface GhostFingerprintInventorySource {
+  id: string;
+  kind: GhostFingerprintInventorySourceKind;
+  ref: string;
+  note?: string;
+}
+
 export interface GhostFingerprintProse {
   summary: GhostFingerprintSummary;
   situations: GhostFingerprintSituation[];
@@ -85,6 +101,7 @@ export interface GhostFingerprintInventory {
   topology: GhostFingerprintTopology;
   building_blocks: GhostFingerprintInventoryBuildingBlocks;
   exemplars: GhostFingerprintExemplar[];
+  sources: GhostFingerprintInventorySource[];
 }
 
 export interface GhostFingerprintComposition {
@@ -140,6 +157,11 @@ export interface GhostFingerprintDocument {
   prose: GhostFingerprintProse;
   inventory: GhostFingerprintInventory;
   composition: GhostFingerprintComposition;
+}
+
+export interface GhostFingerprintPackageManifest {
+  schema: typeof GHOST_FINGERPRINT_PACKAGE_SCHEMA;
+  id: string;
 }
 
 export type GhostFingerprintLintSeverity = "error" | "warning" | "info";

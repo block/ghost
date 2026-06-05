@@ -23,6 +23,7 @@ describe("ghost.fingerprint/v1", () => {
         topology: {},
         building_blocks: {},
         exemplars: [],
+        sources: [],
       },
       composition: {
         patterns: [],

@@ -12,6 +12,7 @@ import {
   type GhostFingerprintStack,
   type GhostPackageConfig,
   groupFingerprintStacksForPaths,
+  loadFingerprintPackage,
   readOptionalPackageConfig,
   resolveFingerprintPackage,
 } from "./scan/index.js";
@@ -33,9 +34,10 @@ async function buildSingleBundleReviewPacket(options: {
   includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
+  const loaded = await loadFingerprintPackage(paths);
   const packet: ReviewPacket = {
     ...baseReviewPacket(paths.dir, options.diffText),
-    fingerprint: parseYaml(await readFile(paths.fingerprintYml, "utf-8")),
+    fingerprint: loaded.fingerprint,
     intent: (await readOptional(paths.intent)) ?? null,
     checks: (await readOptional(paths.checks)) ?? null,
     config: (await readOptionalPackageConfig(paths.config)) ?? null,
@@ -104,7 +106,7 @@ function baseReviewPacket(
     ],
     required_finding_citations: [
       "diff location",
-      "fingerprint.yml prose/inventory/composition",
+      "fingerprint core layer refs",
       "active check when blocking",
       "repair or intentional-divergence rationale",
     ],
@@ -174,7 +176,7 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in checks.yml. Keep findings grounded in fingerprint.yml prose/inventory/composition, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/enforcement/checks.yml. Keep findings grounded in fingerprint/prose.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and optional rationale files when present; do not expand the review into unrelated audit categories.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
@@ -193,7 +195,7 @@ ${stringifyYaml(packet.fingerprint)}
 ## Human Intent
 
 \`\`\`markdown
-${packet.intent ?? "_No intent.md present. Treat fingerprint.yml as the canonical prose, inventory, and composition source._"}
+${packet.intent ?? "_No fingerprint/memory/intent.md present. Treat fingerprint core layers as the canonical prose, inventory, and composition source._"}
 \`\`\`
 
 ${formatAcceptedDecisionsSection(packet.accepted_decisions ?? null)}
@@ -327,7 +329,7 @@ function formatConfigSection(config: GhostPackageConfig | null): string {
   if (!config) {
     return `## Implementation Config
 
-_No config.yml present. Review uses canonical fingerprint.yml prose/inventory/composition and the provided diff only._
+_No config.yml present. Review uses canonical fingerprint core layers and the provided diff only._
 `;
   }
 

@@ -211,10 +211,10 @@ function checkGrounding(
 
   if (!hasAnyDerivation) {
     issues.push({
-      severity: check.status === "active" ? "error" : "warning",
+      severity: "warning",
       rule: "check-grounding-missing",
       message:
-        "Checks must declare derivation with at least one prose or composition fingerprint ref before they can be trusted.",
+        "Checks should declare derivation refs when they enforce product-experience memory.",
       path: `${path}.derivation`,
     });
     return;
@@ -222,10 +222,10 @@ function checkGrounding(
 
   if (!hasAuthoritativeGrounding) {
     issues.push({
-      severity: check.status === "active" ? "error" : "warning",
+      severity: "warning",
       rule: "check-grounding-inventory-only",
       message:
-        "Inventory refs can support a check, but active checks must derive from prose or composition refs.",
+        "Inventory refs can support a check, but prose or composition refs are preferred for product-experience enforcement.",
       path: `${path}.derivation`,
     });
   }
@@ -235,30 +235,22 @@ function checkGrounding(
       severity: "info",
       rule: "check-grounding-unverified",
       message:
-        "Check derivation refs were not verified because no fingerprint.yml context was provided; run ghost lint on the bundle or place fingerprint.yml beside checks.yml.",
+        "Check derivation refs were not verified because no fingerprint package context was provided; run ghost lint on the bundle.",
       path: `${path}.derivation`,
     });
     return;
   }
 
   const targets = collectFingerprintTargets(options.fingerprint);
-  checkDerivationRefs(proseRefs, "prose", path, check, targets, issues);
-  checkDerivationRefs(
-    compositionRefs,
-    "composition",
-    path,
-    check,
-    targets,
-    issues,
-  );
-  checkDerivationRefs(inventoryRefs, "inventory", path, check, targets, issues);
+  checkDerivationRefs(proseRefs, "prose", path, targets, issues);
+  checkDerivationRefs(compositionRefs, "composition", path, targets, issues);
+  checkDerivationRefs(inventoryRefs, "inventory", path, targets, issues);
 }
 
 function checkDerivationRefs(
   refs: string[],
   group: DerivationGroup,
   path: string,
-  check: GhostCheck,
   targets: Record<GroundingPrefix, Set<string>>,
   issues: GhostChecksLintIssue[],
 ): void {
@@ -267,7 +259,7 @@ function checkDerivationRefs(
     if (!parsed) return;
     if (targets[parsed.prefix].has(parsed.id)) return;
     issues.push({
-      severity: check.status === "active" ? "error" : "warning",
+      severity: "warning",
       rule: "check-grounding-unknown",
       message: `Check derivation references unknown fingerprint ref '${ref}'.`,
       path: `${path}.derivation.${group}[${index}]`,
