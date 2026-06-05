@@ -14,9 +14,9 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/brief.md, capture.md, compare.md, critique.md, map.md
+#     references/brief.md, capture.md, compare.md, critique.md
 #     references/patterns.md, recall.md, remediate.md, review.md
-#     references/schema.md, survey.md, verify.md
+#     references/schema.md, verify.md
 #
 # Exit codes:
 #   0  installed
