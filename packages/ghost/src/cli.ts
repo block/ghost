@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { cac } from "cac";
+import { formatGhostHelp } from "./command-discovery.js";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {
   compare,
@@ -34,6 +35,8 @@ import { registerScanCommands } from "./scan-commands.js";
 import { registerSkillCommand } from "./skill-command.js";
 
 const execFileAsync = promisify(execFile);
+
+export { getCommandDiscoveryMetadata } from "./command-discovery.js";
 
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");
@@ -267,7 +270,7 @@ export function buildCli(): ReturnType<typeof cac> {
       }
     });
 
-  cli.help();
+  cli.help((sections) => formatGhostHelp(cli, sections));
   cli.version(readPackageVersion());
 
   return cli;

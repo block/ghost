@@ -123,13 +123,80 @@ describe("ghost CLI", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("prints top-level help for the unified ghost bin", async () => {
+  it("prints compact top-level help for new adopters", async () => {
     const result = await runCli(["--help"], dir, { allowNoExit: true });
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("ghost");
-    expect(result.stdout).toContain("skill");
+    expect(result.stdout).toContain("Core workflow");
+    for (const command of [
+      "init",
+      "scan",
+      "lint",
+      "verify",
+      "check",
+      "review",
+      "emit",
+      "skill install",
+    ]) {
+      expect(result.stdout).toContain(command);
+    }
+    expect(result.stdout).toContain("ghost --help --all");
+    expect(result.stdout).not.toContain("survey <op>");
+    expect(result.stdout).not.toContain("diff <a> <b>");
+    expect(result.stdout).not.toMatch(/\n {2}ack\s/);
+    expect(result.stdout).not.toContain("track <fingerprint>");
+    expect(result.stdout).not.toContain("diverge <dimension>");
     expect(result.stdout).not.toContain("proposal <op>");
+  });
+
+  it("prints the complete grouped command index with --help --all", async () => {
+    const result = await runCli(["--help", "--all"], dir, {
+      allowNoExit: true,
+    });
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Core workflow");
+    expect(result.stdout).toContain("Advanced/package inspection");
+    expect(result.stdout).toContain("Compare/stance");
+    expect(result.stdout).toContain("Legacy/cache");
+    for (const command of [
+      "lint [file]",
+      "init [dir]",
+      "verify [dir]",
+      "scan [dir]",
+      "stack [paths...]",
+      "inventory [path]",
+      "describe [fingerprint]",
+      "diff <a> <b>",
+      "survey <op> [...surveys]",
+      "emit <kind>",
+      "compare [...fingerprints]",
+      "ack",
+      "track <fingerprint>",
+      "diverge <dimension>",
+      "skill <action>",
+      "check",
+      "review",
+    ]) {
+      expect(result.stdout).toContain(command);
+    }
+  });
+
+  it("keeps command-specific --all help local to lint and verify", async () => {
+    const lint = await runCli(["lint", "--help"], dir, { allowNoExit: true });
+    const verify = await runCli(["verify", "--help"], dir, {
+      allowNoExit: true,
+    });
+
+    expect(lint.code).toBe(0);
+    expect(lint.stdout).toContain("--all");
+    expect(lint.stdout).toContain("Validate every nested fingerprint package");
+    expect(lint.stdout).not.toContain("Core workflow");
+    expect(verify.code).toBe(0);
+    expect(verify.stdout).toContain("--all");
+    expect(verify.stdout).toContain("Verify every nested fingerprint package");
+    expect(verify.stdout).not.toContain("Core workflow");
   });
 
   it("compares explicitly supplied fingerprint files", async () => {
