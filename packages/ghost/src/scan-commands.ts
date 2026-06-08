@@ -58,7 +58,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "lint [file]",
-      "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or legacy markdown — defaults to .ghost",
+      "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or direct markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .option(
@@ -444,7 +444,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "describe [fingerprint]",
-      "Print a section map of fingerprint/memory/intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
+      "Print a section map of fingerprint/memory/intent.md or a markdown file (line ranges + token estimates).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -474,7 +474,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "diff <a> <b>",
-      "Legacy direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
+      "Direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (a: string, b: string, opts) => {
@@ -507,7 +507,7 @@ export function registerScanCommands(cli: CAC): void {
   cli
     .command(
       "survey <op> [...surveys]",
-      "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+      "Survey/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
     )
     .option(
       "-o, --out <path>",
