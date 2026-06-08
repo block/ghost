@@ -1,5 +1,19 @@
 # @anarchitecture/ghost
 
+## 0.5.0
+
+### Minor Changes
+
+- [#117](https://github.com/block/ghost/pull/117) [`a730785`](https://github.com/block/ghost/commit/a7307859fa0357deea397f80eed6f1811f19a8b2) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `.ghost/fingerprint/` the canonical portable fingerprint package with split prose, inventory, composition, enforcement, memory, and source files.
+
+- [#114](https://github.com/block/ghost/pull/114) [`ae5855a`](https://github.com/block/ghost/commit/ae5855a8fda4b04ef7b1e946ce418918249bc5b9) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Break fingerprint/check schemas around prose, inventory, and composition, rename JSON fields from memory_dir/memory to fingerprint_dir/accepted_decisions, and rename decision lint exports to GhostDecisionLint\*.
+
+### Patch Changes
+
+- [#116](https://github.com/block/ghost/pull/116) [`a375602`](https://github.com/block/ghost/commit/a37560206e46f16f5e7b0228d883cd670b0d372a) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Simplify default command discovery while keeping the full command index available.
+
+- [#114](https://github.com/block/ghost/pull/114) [`ae5855a`](https://github.com/block/ghost/commit/ae5855a8fda4b04ef7b1e946ce418918249bc5b9) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clarify Ghost as a product-experience world model and context bundles as upstream agent handoffs for UI generation.
+
 ## 0.4.0
 
 ### Minor Changes

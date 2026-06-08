@@ -159,7 +159,7 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Core workflow");
     expect(result.stdout).toContain("Advanced/package inspection");
     expect(result.stdout).toContain("Compare/stance");
-    expect(result.stdout).toContain("Legacy/cache");
+    expect(result.stdout).toContain("Maintenance/cache");
     for (const command of [
       "lint [file]",
       "init [dir]",

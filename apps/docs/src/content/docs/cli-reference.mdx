@@ -15,7 +15,7 @@ emit handoff packets, govern diffs, compare packages, and record intent. Your
 agent does the reading, writing, and reviewing.
 
 `ghost --help` intentionally shows the short core workflow for new adopters.
-Run `ghost --help --all` for the complete advanced and legacy command index;
+Run `ghost --help --all` for the complete advanced command index;
 command-specific help remains available with `ghost <command> --help`.
 
 Canonical Ghost fingerprints start here, with optional child packages for scoped
@@ -115,16 +115,15 @@ ghost verify .ghost --root .
 ghost verify --all --memory-dir .design/memory
 ```
 
-### Legacy survey ops - `survey <op>`
+### Survey/cache ops - `survey <op>`
 
-Operate on `ghost.survey/v1` files as legacy/cache source material.
+Operate on `ghost.survey/v1` files as cache source material.
 
 <CliHelp tool="ghost" command="survey" hideDescription />
 
 ### Inspection - `describe`
 
-Print optional `.ghost/fingerprint/memory/intent.md` or a section map of a
-direct fingerprint markdown file.
+Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
 
@@ -132,7 +131,7 @@ direct fingerprint markdown file.
 
 Emit `review-command` or the `context-bundle` generation packet from split
 fingerprint layers. Context bundles emit split files, not an assembled
-`fingerprint.yml`.
+single-file fingerprint.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
 
@@ -157,14 +156,14 @@ layers, optional memory, checks, and the diff.
 
 ### Comparison - `compare`
 
-Pairwise distance or composite analysis over root packages or legacy direct
-fingerprint markdown.
+Pairwise distance or composite analysis over root packages.
 
 <CliHelp tool="ghost" command="compare" hideDescription />
 
 ### Drift stance - `ack` / `track` / `diverge`
 
-Compatibility governance verbs for tracked direct fingerprint markdown files.
+Record how the repo should treat tracked fingerprint drift. These compatibility
+governance verbs still operate on tracked direct fingerprint markdown files.
 
 <CliHelp tool="ghost" command="ack" hideDescription />
 <CliHelp tool="ghost" command="track" hideDescription />
