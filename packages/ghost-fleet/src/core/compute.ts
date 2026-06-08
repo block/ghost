@@ -1,4 +1,4 @@
-import { compareFingerprints } from "@anarchitecture/ghost/core";
+import { compareFingerprints } from "@anarchitecture/ghost/compare";
 import type {
   FleetGroupingsComputed,
   FleetMember,

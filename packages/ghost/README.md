@@ -55,13 +55,13 @@ host opts in.
 ## Library
 
 ```ts
-import { compare, runGhostDriftCheck } from "@anarchitecture/ghost/drift";
+import { compare } from "@anarchitecture/ghost/compare";
+import { runGhostCheck } from "@anarchitecture/ghost/govern";
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
   verifyFingerprintPackage,
-} from "@anarchitecture/ghost/scan";
-import { compareFingerprints } from "@anarchitecture/ghost/core";
+} from "@anarchitecture/ghost/fingerprint";
 ```
 
 ## BYOA
