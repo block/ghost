@@ -37,7 +37,27 @@ generation; they are not generation input.
 
 ## Steps
 
-### 1. Initialize
+### 1. Classify The Authoring Scenario
+
+Before initialization or edits, decide which authoring posture fits this repo.
+Follow [authoring-scenarios.md](authoring-scenarios.md) when the user is setting
+up or substantially revising a fingerprint.
+
+Common starting points:
+
+- Net new repos are mostly human-led because the repo has little evidence.
+- Net new repos with a UI library combine human intent with library scans.
+- Existing repos combine human judgment with code, docs, route, story, and
+  exemplar scans.
+- Existing repos with mixed quality require curation before repeated patterns
+  become canonical.
+- Monorepos and product suites need a nested-package decision pass before local
+  surfaces inherit or add guidance.
+
+Human intent decides product identity. Scans provide evidence. Agent synthesis
+is draft work until a human curates it and ordinary Git review accepts it.
+
+### 2. Initialize
 
 ```bash
 ghost init
@@ -48,7 +68,7 @@ Use `--with-intent` only when you have human-authored or human-approved context
 to preserve. Use `--with-config --reference <path-or-registry>` when local
 routing or a reference UI registry/library should be recorded in `.ghost/config.yml`.
 
-### 2. Orient
+### 3. Orient
 
 Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal identity,
@@ -64,7 +84,7 @@ ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 Treat generated cache as scratch material. Do not copy raw inventory into
 `inventory.yml` without judgment.
 
-### 3. Write Core Layers
+### 4. Write Core Layers
 
 Edit the smallest useful durable layer content:
 
@@ -74,8 +94,10 @@ Edit the smallest useful durable layer content:
   behavior, and visual arrangements.
 
 Prefer a few high-confidence entries over a comprehensive but noisy catalog.
+Ask the human to keep, soften, reject, scope, or record important claims before
+treating draft content as durable fingerprint guidance.
 
-### 4. Add Checks Sparingly
+### 5. Add Checks Sparingly
 
 `fingerprint/enforcement/checks.yml` is the executable appendix. Add only
 deterministic checks with typed derivation refs:
@@ -90,7 +112,7 @@ Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
 warnings. Inventory can support a check, but inventory-only grounding is not
 product judgment by itself.
 
-### 5. Validate
+### 6. Validate
 
 ```bash
 ghost lint .ghost
