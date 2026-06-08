@@ -1,41 +1,40 @@
 ---
 title: Getting Started
-description: Install Ghost, author a portable product-experience fingerprint, and use it to generate, validate, compare, and govern product surfaces.
+description: Install Ghost, create a repo-local fingerprint package, and run the first lifecycle loop.
 kicker: Docs
-section: guide
+section: start
 order: 10
 slug: getting-started
 ---
 
-<DocSection title="The Simple Model">
+<DocSection title="The Loop">
 
-Ghost keeps a project's portable product-experience fingerprint in the repo,
-where your agent can use it. The public package is `@anarchitecture/ghost`,
-and it installs one CLI: `ghost`.
-
-The canonical portable fingerprint is a folder:
+Ghost keeps a portable product-experience fingerprint in the repo. Agents use
+that fingerprint before generation, and Ghost tooling validates or governs the
+result afterward.
 
 ```text
-.ghost/
-  config.yml
-  fingerprint/
-    manifest.yml
-    prose.yml
-    inventory.yml
-    composition.yml
-    enforcement/checks.yml
-    memory/intent.md
-    memory/decisions/
-    sources/cache/
+.ghost/fingerprint/
+  manifest.yml
+  prose.yml
+  inventory.yml
+  composition.yml
+  enforcement/checks.yml
+  memory/intent.md
+  memory/decisions/
+  sources/cache/
 ```
 
-Generation starts from prose, inventory, and composition. Checks validate the
-result afterward; they are not generation input. `.ghost/config.yml` stays
-outside the portable package because it is local routing config.
+The smallest useful loop is:
 
-Nested product areas can add child package roots such as
-`apps/checkout/.ghost/fingerprint/`. Ghost resolves fingerprint stacks
-root-to-leaf for the file or diff being reviewed.
+1. Author the fingerprint.
+2. Generate or revise from the fingerprint.
+3. Validate and govern the changed surface.
+4. Update code, explain divergence, or evolve the fingerprint through Git.
+
+Read [Fingerprint Package](/docs/fingerprint-package) when you need the file
+model, then move through [Authoring](/docs/authoring),
+[Generation](/docs/generation), and [Governance](/docs/governance).
 
 </DocSection>
 
@@ -56,7 +55,7 @@ release notes before upgrading.
 
 </DocSection>
 
-<DocSection title="Install Ghost">
+<DocSection title="Install">
 
 ```bash
 npm install -D @anarchitecture/ghost
@@ -65,110 +64,75 @@ npx ghost --help --all
 npx ghost skill install
 ```
 
-`ghost --help` shows the grouped lifecycle workflow for new adopters. Use
-`ghost --help --all` when you want the complete lifecycle command index.
+The public package is `@anarchitecture/ghost`; it installs one CLI, `ghost`.
+Default help shows the grouped lifecycle workflow; `--help --all` shows the
+complete lifecycle command index.
+The skill bundle teaches the host agent how to capture, apply, validate,
+govern, and compare fingerprints.
 
-Once the skill is installed, ask your agent in plain English: "Set up the Ghost
-fingerprint for this repo" or "review this PR against the Ghost fingerprint".
-The recipe tells the agent what to read, what to write, and which CLI checks to
-run.
-
-</DocSection>
-
-<DocSection title="Author Your First Fingerprint">
+Once installed, ask your agent:
 
 ```text
 Set up the Ghost fingerprint for this repo.
+Brief this work from the Ghost fingerprint.
+Review this PR against the Ghost fingerprint.
 ```
 
-The fingerprint records durable product-experience guidance:
+</DocSection>
 
-1. **Prose** - what product this is, who it serves, which situations matter,
-   and which principles or contracts govern the experience.
-2. **Inventory** - topology, building blocks, files, routes, assets, libraries,
-   exemplars, and source links agents may inspect or use.
-3. **Composition** - patterns, rules, layouts, structures, flows, states,
-   content, behavior, and visual arrangements.
+<DocSection title="First Package">
+
+Create the package, inspect readiness, and validate the result:
 
 ```bash
 ghost init --with-intent
-ghost init --scope apps/checkout --with-intent
-ghost init --scope apps/checkout --memory-dir .design/memory
 ghost scan --format json
-ghost scan --include-nested --format json
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
-ghost lint --all
-ghost verify --all
 ```
 
-Generated cache is optional source material. Curate durable prose, inventory,
-and composition into the core layer files, then use normal Git review for
-approval.
+Generated cache can help orient the first pass, but it is source material,
+not canonical product memory:
 
-For generation, emit the upstream handoff packet:
+```bash
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+```
+
+Curate durable conclusions into `prose.yml`, `inventory.yml`, and
+`composition.yml`.
+
+</DocSection>
+
+<DocSection title="First Generation">
+
+Before the agent writes UI, emit a context bundle:
 
 ```bash
 ghost emit context-bundle
 ```
 
+The packet is organized around the core fingerprint layers and active checks.
+It gives the host agent a compact handoff before code changes begin.
+
+See [Generation](/docs/generation) for the full pre-generation workflow.
+
 </DocSection>
 
-<DocSection title="Compare Two Systems">
+<DocSection title="First Governance Pass">
+
+After code changes, run deterministic checks and advisory review:
 
 ```bash
-ghost compare market/.ghost dashboard/.ghost
-ghost compare */.ghost
+ghost check --base main
+ghost review --base main --include-memory
 ```
 
-Package comparison uses canonical `.ghost/fingerprint/` packages.
+Checks can block when they are active deterministic gates. Review is advisory:
+it helps decide whether to fix code, record intentional divergence, or update
+the fingerprint.
 
-</DocSection>
-
-<DocSection title="Govern Changes in a PR">
-
-```text
-Review this PR against the Ghost fingerprint
-```
-
-`ghost check` applies active deterministic gates from the resolved fingerprint
-stack for each changed file. `ghost review` emits advisory context grounded in
-merged split fingerprint layers, optional memory, checks, and the diff.
-
-Wrappers should consume `ghost check --format json` and map Ghost severities
-outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
-
-</DocSection>
-
-<DocSection title="Update Fingerprint Layers">
-
-Use the installed `ghost` skill when work reveals durable product-experience
-judgment Ghost should add to the fingerprint:
-
-```text
-Brief this work from the Ghost fingerprint
-Update the fingerprint with this product-experience decision
-```
-
-Fingerprint edits are ordinary edits to the split fingerprint package and
-optional rationale files. Uncommitted or unmerged edits are drafts; checked-in
-`fingerprint/` core files are canonical.
-
-</DocSection>
-
-<DocSection title="Track Drift Intent">
-
-Drift is a governance signal over a fingerprint, not Ghost's center. With
-intent, it becomes a useful signal. `ack`, `track`, and `diverge` still operate
-on tracked direct fingerprint markdown files for compatibility with older
-workflows:
-
-```bash
-ghost ack --stance aligned --reason "Initial baseline"
-ghost track new-tracked.fingerprint.md
-ghost diverge typography --reason "Editorial product uses a different type scale"
-```
+See [Governance](/docs/governance) for the full post-generation workflow and
+[CLI Reference](/docs/cli) for exact flags.
 
 </DocSection>

@@ -16,11 +16,19 @@ import {
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
+  Boxes,
+  FileText,
+  GitCompare,
   Home,
   Monitor,
   Moon,
+  PenLine,
+  RadioTower,
   Rocket,
   Search,
+  Send,
+  ShieldCheck,
+  Sparkles,
   Sun,
   Wrench,
 } from "lucide-react";
@@ -36,10 +44,10 @@ const nav: {
 }[] = [
   { name: "Home", path: "/", icon: Home },
   {
-    name: "Start",
-    path: "/docs/getting-started",
+    name: "Docs",
+    path: "/docs",
     activePath: "/docs",
-    icon: Rocket,
+    icon: BookOpen,
   },
   { name: "Tools", path: "/tools", icon: Wrench },
 ];
@@ -196,12 +204,12 @@ export function Dock() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/docs/getting-started");
+                navigate("/docs");
                 setSearchOpen(false);
               }}
             >
-              <Rocket className="mr-2 size-4" />
-              Start
+              <BookOpen className="mr-2 size-4" />
+              Docs
             </CommandItem>
             <CommandItem
               onSelect={() => {
@@ -214,7 +222,70 @@ export function Dock() {
             </CommandItem>
           </CommandGroup>
 
-          <CommandGroup heading="Reference">
+          <CommandGroup heading="Lifecycle Docs">
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/getting-started");
+                setSearchOpen(false);
+              }}
+            >
+              <Rocket className="mr-2 size-4" />
+              Getting Started
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/fingerprint-package");
+                setSearchOpen(false);
+              }}
+            >
+              <Boxes className="mr-2 size-4" />
+              Fingerprint Package
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/authoring");
+                setSearchOpen(false);
+              }}
+            >
+              <PenLine className="mr-2 size-4" />
+              Authoring
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/generation");
+                setSearchOpen(false);
+              }}
+            >
+              <Sparkles className="mr-2 size-4" />
+              Generation
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/governance");
+                setSearchOpen(false);
+              }}
+            >
+              <ShieldCheck className="mr-2 size-4" />
+              Governance
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/comparison");
+                setSearchOpen(false);
+              }}
+            >
+              <GitCompare className="mr-2 size-4" />
+              Comparison
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/adapters");
+                setSearchOpen(false);
+              }}
+            >
+              <RadioTower className="mr-2 size-4" />
+              Host Adapters
+            </CommandItem>
             <CommandItem
               onSelect={() => {
                 navigate("/docs/cli");
@@ -233,16 +304,25 @@ export function Dock() {
                 setSearchOpen(false);
               }}
             >
-              <Wrench className="mr-2 size-4" />
+              <FileText className="mr-2 size-4" />
               ghost scan
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                navigate("/tools/drift");
+                navigate("/tools/emit");
                 setSearchOpen(false);
               }}
             >
-              <Wrench className="mr-2 size-4" />
+              <Send className="mr-2 size-4" />
+              ghost emit
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/tools/review");
+                setSearchOpen(false);
+              }}
+            >
+              <ShieldCheck className="mr-2 size-4" />
               ghost review
             </CommandItem>
             <CommandItem
@@ -251,7 +331,7 @@ export function Dock() {
                 setSearchOpen(false);
               }}
             >
-              <Wrench className="mr-2 size-4" />
+              <GitCompare className="mr-2 size-4" />
               ghost-fleet
             </CommandItem>
             <CommandItem

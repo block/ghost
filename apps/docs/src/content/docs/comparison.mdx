@@ -1,0 +1,51 @@
+---
+title: Comparison
+description: Compare fingerprint packages, inspect stacks, and reason across many systems.
+kicker: Docs
+section: workflow
+order: 60
+slug: comparison
+---
+
+<DocSection title="Compare Packages">
+
+Use comparison when you need to understand how two or more product-experience
+contracts relate:
+
+```bash
+ghost compare market/.ghost dashboard/.ghost
+ghost compare */.ghost
+```
+
+Package comparison uses canonical `.ghost/fingerprint/` packages when
+available. Direct fingerprint markdown files still work for legacy semantic
+comparison:
+
+```bash
+ghost compare a.fingerprint.md b.fingerprint.md --semantic
+```
+
+</DocSection>
+
+<DocSection title="Inspect Stacks">
+
+For scoped packages, inspect the resolved stack for a path:
+
+```bash
+ghost stack apps/checkout/review/page.tsx --format json
+```
+
+Stack output shows which broad and local fingerprint layers apply before
+generation, checks, review, or comparison.
+
+</DocSection>
+
+<DocSection title="Fleet View">
+
+`ghost-fleet` is the view across many fingerprint packages. It helps teams see
+clusters, reference relationships, and differences across a group of projects.
+
+Use the fleet tool when the question is about the shape of many systems, not
+whether one changed surface still follows its local contract.
+
+</DocSection>

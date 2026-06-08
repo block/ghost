@@ -22,14 +22,14 @@ const cards: {
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--fingerprint-layers-and-package-checks",
+    href: "/docs/cli#ghost---author-and-validate",
     description:
       "Check fingerprint layer readiness, validate packages, and emit context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Format spec",
-    href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
+    name: "Package format",
+    href: "/docs/fingerprint-package",
     description:
       "The full package format for fingerprint prose, inventory, composition, and checks.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
