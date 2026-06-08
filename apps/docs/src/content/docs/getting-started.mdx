@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, author a repo-local product-experience world model, and review generated UI against it.
+description: Install Ghost, author a portable product-experience fingerprint, and use it to generate, validate, compare, and govern product surfaces.
 kicker: Docs
 section: guide
 order: 10
@@ -9,9 +9,9 @@ slug: getting-started
 
 <DocSection title="The Simple Model">
 
-Ghost keeps a project's product-experience world model in the repo, where your
-agent can use it. The public package is `@anarchitecture/ghost`, and it installs
-one CLI: `ghost`.
+Ghost keeps a project's portable product-experience fingerprint in the repo,
+where your agent can use it. The public package is `@anarchitecture/ghost`,
+and it installs one CLI: `ghost`.
 
 The canonical portable fingerprint is a folder:
 
@@ -69,8 +69,9 @@ npx ghost skill install
 when you want the complete advanced command index.
 
 Once the skill is installed, ask your agent in plain English: "Set up the Ghost
-fingerprint for this repo" or "review this PR for drift". The recipe tells the
-agent what to read, what to write, and which CLI checks to run.
+fingerprint for this repo" or "review this PR against the Ghost fingerprint".
+The recipe tells the agent what to read, what to write, and which CLI checks to
+run.
 
 </DocSection>
 
@@ -126,10 +127,10 @@ Package comparison uses canonical `.ghost/fingerprint/` packages.
 
 </DocSection>
 
-<DocSection title="Review Drift in a PR">
+<DocSection title="Govern Changes in a PR">
 
 ```text
-Review this PR for design drift
+Review this PR against the Ghost fingerprint
 ```
 
 `ghost check` applies active deterministic gates from the resolved fingerprint
@@ -159,11 +160,14 @@ optional rationale files. Uncommitted or unmerged edits are drafts; checked-in
 
 <DocSection title="Track Drift Intent">
 
-Drift without intent is noise; drift with intent is signal. `ack`, `track`, and
-`diverge` record how the repo should treat tracked fingerprint drift:
+Drift is a governance signal over a fingerprint, not Ghost's center. With
+intent, it becomes a useful signal. `ack`, `track`, and `diverge` still operate
+on tracked direct fingerprint markdown files for compatibility with older
+workflows:
 
 ```bash
 ghost ack --stance aligned --reason "Initial baseline"
+ghost track new-tracked.fingerprint.md
 ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 

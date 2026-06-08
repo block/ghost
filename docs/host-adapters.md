@@ -2,7 +2,8 @@
 
 Ghost is adapter-neutral. It owns the portable fingerprint package,
 deterministic validation, stack resolution, and machine-readable packets. Host
-tools own display, severity mapping, and review/check file formats.
+tools consume that fingerprint contract and own display, severity mapping, and
+review/check file formats.
 
 ## Responsibilities
 
@@ -24,6 +25,8 @@ Ghost provides:
 Host adapters provide:
 
 - repo-specific installation workflows
+- policies for when to capture, validate, generate from, govern, or compare a
+  fingerprint
 - generated review/check files in the host's native format
 - severity mapping from Ghost's `critical | serious | nit`
 - policy for when a finding blocks, comments, or remains advisory

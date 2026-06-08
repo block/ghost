@@ -2,6 +2,11 @@
 
 Loose space for concepts that aren't ready to be docs or a changeset but shouldn't be lost to chat history.
 
+Read older decomposition and drift notes through
+`fingerprint-first-architecture.md`: Ghost's durable artifact is the portable
+fingerprint package, and map, drift, fleet, UI, adapters, and generation
+workflows are tools around that contract.
+
 Conventions:
 
 - One file per idea, kebab-case slug (`guided-migration.md`, not `migration-rewrite.md`).

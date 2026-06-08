@@ -6,7 +6,9 @@ status: settled
 
 > Historical design note: this decomposition plan predates the unified
 > `@anarchitecture/ghost` package. The separate `ghost-scan` package mentioned
-> below was removed; current runtime code lives in `packages/ghost`.
+> below was removed; current runtime code lives in `packages/ghost`. Treat the
+> package split vocabulary below as historical and subordinate to the
+> fingerprint-first architecture memo.
 
 Decisions that unblock the five-tool decomposition. Captured here so worktree agents reference one canonical source rather than scrolling open questions across five plan files.
 

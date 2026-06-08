@@ -13,7 +13,9 @@ branch: refactor/fingerprint (or a follow-up branch)
 > plus the private `ghost-fleet` CLI. Capture, map, survey, patterns, recall,
 > brief, critique, review, verify, compare, and remediate are host-agent skill
 > recipes installed by `ghost skill install`. Kept for history; don't treat the
-> exploratory verb list below as current. See the
+> exploratory verb list below as current. The current architecture is
+> fingerprint-first: the durable artifact is `.ghost/fingerprint/`, and drift
+> is one governance workflow over it. See the
 > [README](../README.md) and the
 > [CLI reference](../apps/docs/src/content/docs/cli-reference.mdx) for the
 > current surface.
@@ -30,7 +32,7 @@ ghost emit <kind>              # derive static artifacts from fingerprint.md
 ghost generate <prompt>        # LLM-produce UI artifact from fingerprint (unchanged)
 
 # Check
-ghost review [scope]           # unified drift detection
+ghost review [scope]           # governance review against the fingerprint
                                #   scopes: files (default), project, suite
 
 # Compare
