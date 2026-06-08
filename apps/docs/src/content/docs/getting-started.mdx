@@ -39,6 +39,23 @@ root-to-leaf for the file or diff being reviewed.
 
 </DocSection>
 
+<DocSection title="Project Status: Beta">
+
+<Callout variant="warning" title="Beta / pre-1.0">
+
+Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+change in breaking ways before a stable 1.0 release.
+
+Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
+versions are reserved for fixes that should not require migration. If you adopt
+Ghost today, expect some churn, pin the version you depend on, and review
+release notes before upgrading.
+
+</Callout>
+
+</DocSection>
+
 <DocSection title="Install Ghost">
 
 ```bash
@@ -106,13 +123,7 @@ ghost compare market/.ghost dashboard/.ghost
 ghost compare */.ghost
 ```
 
-Package comparison uses canonical `.ghost/fingerprint/` packages when
-available. Direct fingerprint markdown files still work for legacy semantic
-comparison:
-
-```bash
-ghost compare a.fingerprint.md b.fingerprint.md --semantic
-```
+Package comparison uses canonical `.ghost/fingerprint/` packages.
 
 </DocSection>
 
@@ -147,11 +158,12 @@ optional rationale files. Uncommitted or unmerged edits are drafts; checked-in
 
 </DocSection>
 
-<DocSection title="Track Intent Toward Legacy Direct Markdown">
+<DocSection title="Track Drift Intent">
 
-Drift is a governance signal over a fingerprint, not Ghost's center. `ack`,
-`track`, and `diverge` still operate on tracked direct fingerprint markdown
-files for compatibility with older workflows:
+Drift is a governance signal over a fingerprint, not Ghost's center. With
+intent, it becomes a useful signal. `ack`, `track`, and `diverge` still operate
+on tracked direct fingerprint markdown files for compatibility with older
+workflows:
 
 ```bash
 ghost ack --stance aligned --reason "Initial baseline"
