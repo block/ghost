@@ -4,11 +4,15 @@ status: exploring
 
 # ghost map
 
+> Fingerprint-first context: map is optional topology/source-material support.
+> It helps agents find the right product surfaces, but the fingerprint remains
+> the portable product-experience contract.
+
 ## Why it's interesting
 
 The cash-android profile pass is a forcing function. ~1,580 Gradle modules. No agent can discover topology from scratch in that repo — the existing fleet works around it with hand-authored YAML manifests at `ghost-fleet/manifests/cash-android.yaml` (27 feature areas, convention plugin IDs, include/exclude globs). Those manifests are accurate and load-bearing, but they're hardcoded — every new repo means a human pre-curates the navigation map before the profile recipe runs.
 
-`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Scan and fleet workflows read map.md as their topology cache, so they do not re-derive "where does the design system live" or "which folders are customer UI." Generation and drift use `fingerprint.md` as their action root. The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
+`ghost map` is the verb that generates that map automatically and writes it to disk as `map.md`. Scan and fleet workflows read map.md as their topology cache, so they do not re-derive "where does the design system live" or "which folders are customer UI." Generation and governance workflows use the fingerprint as their action root. The map becomes the narrow waist between any frontend repo (irrespective of language or stack) and the rest of Ghost.
 
 This is one of five decentralized tools (`map`, `fingerprint`, `drift`, `fleet`, `ui`). Map is upstream of the other four.
 

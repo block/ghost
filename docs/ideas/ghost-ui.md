@@ -4,6 +4,10 @@ status: exploring
 
 # ghost ui
 
+> Fingerprint-first context: ghost-ui is reference inventory and evidence for
+> fingerprints. It can improve generation and governance, but it is not the
+> portable product-experience contract itself.
+
 ## Why it's interesting
 
 ghost-ui is the canonical witness. The other four tools must remain stack-agnostic — they need to work on Cash iOS (Bazel, SwiftUI), Cash Android (Gradle, Compose), and arbitrary one-off web repos. ghost-ui's job is the opposite: lean *all the way in* on the convention, and prove the loop end-to-end. When the system works perfectly somewhere, it should work here.
