@@ -88,23 +88,22 @@ or check format.
 |---|---|
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory governance packet grounded in fingerprint layers, exemplars, checks, and diff evidence. |
-| `ghost ack` / `track` / `diverge` | Record stance toward tracked drift or intentional divergence. |
+| `ghost ack` / `track` / `diverge` | Record stance toward tracked fingerprint drift or intentional divergence. |
 
 ### Compare And Adapt
 
 | Verb | Purpose |
 |---|---|
 | `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
-| `ghost compare <a> <b> [...more]` | Compare root packages or direct fingerprints. |
+| `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
 | `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages. |
 | `ghost describe` | Print optional intent or markdown section ranges. |
 
-### Legacy And Source Material
+### Source Material
 
 | Verb | Purpose |
 |---|---|
 | `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
-| `ghost survey <op>` | Legacy/cache survey helpers for optional inventory workflows. |
 
 ## Workflows
 

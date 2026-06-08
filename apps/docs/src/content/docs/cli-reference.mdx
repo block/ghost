@@ -108,7 +108,7 @@ apply, validate, govern, and compare fingerprints.
 
 Emit `review-command` or the `context-bundle` generation packet from split
 fingerprint layers. Context bundles emit split files, not an assembled
-`fingerprint.yml`.
+single-file fingerprint.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
 
@@ -131,9 +131,10 @@ layers, optional memory, checks, and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
-### Divergence stance - `ack` / `track` / `diverge`
+### Drift stance - `ack` / `track` / `diverge`
 
-Compatibility governance verbs for tracked direct fingerprint markdown files.
+Record how the repo should treat tracked fingerprint drift. These compatibility
+governance verbs still operate on tracked direct fingerprint markdown files.
 
 <CliHelp tool="ghost" command="ack" hideDescription />
 <CliHelp tool="ghost" command="track" hideDescription />
@@ -155,21 +156,19 @@ ghost stack apps/checkout/review/page.tsx --format json
 
 ### Comparison - `compare`
 
-Pairwise distance or composite analysis over root packages or legacy direct
-fingerprint markdown.
+Pairwise distance or composite analysis over root packages.
 
 <CliHelp tool="ghost" command="compare" hideDescription />
 
 ### Inspection - `describe`
 
-Print optional `.ghost/fingerprint/memory/intent.md` or a section map of a
-direct fingerprint markdown file.
+Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
 
 </DocSection>
 
-<DocSection title="ghost - legacy and source material">
+<DocSection title="ghost - source material">
 
 ### Capture source material - `inventory`
 
@@ -183,15 +182,15 @@ mkdir -p .ghost/fingerprint/sources/cache
 ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
-### Legacy diff - `diff`
+### Direct markdown diff - `diff`
 
-Compare two legacy direct fingerprint markdown files at the text level.
+Compare two direct fingerprint markdown files at the text level.
 
 <CliHelp tool="ghost" command="diff" hideDescription />
 
-### Legacy survey ops - `survey <op>`
+### Survey/cache ops - `survey <op>`
 
-Operate on `ghost.survey/v1` files as legacy/cache source material.
+Operate on `ghost.survey/v1` files as cache source material.
 
 <CliHelp tool="ghost" command="survey" hideDescription />
 

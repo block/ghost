@@ -136,7 +136,7 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Generate");
     expect(result.stdout).toContain("Govern");
     expect(result.stdout).not.toContain("Compare and adapt");
-    expect(result.stdout).not.toContain("Legacy and source material");
+    expect(result.stdout).not.toContain("Source material");
     for (const command of [
       "init",
       "scan",
@@ -171,7 +171,7 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Generate");
     expect(result.stdout).toContain("Govern");
     expect(result.stdout).toContain("Compare and adapt");
-    expect(result.stdout).toContain("Legacy and source material");
+    expect(result.stdout).toContain("Source material");
     for (const command of [
       "lint [file]",
       "init [dir]",
