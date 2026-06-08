@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
-import GhostDriftLanding from "@/app/tools/drift/page";
+import GhostEmitLanding from "@/app/tools/emit/page";
 import GhostFleetLanding from "@/app/tools/fleet/page";
 import ToolsIndex from "@/app/tools/page";
+import GhostReviewLanding from "@/app/tools/review/page";
 import GhostScanLanding from "@/app/tools/scan/page";
 import GhostUiLanding from "@/app/tools/ui/page";
 import ComponentPage from "@/app/ui/components/[name]/page";
@@ -51,14 +52,19 @@ export function App() {
         <Routes>
           <Route index element={<HomePage />} />
 
-          {/* Tools — four-card index plus per-tool landings */}
+          {/* Tools - command-specific references */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route
             path="tools/map"
             element={<Navigate to="/tools/scan" replace />}
           />
           <Route path="tools/scan" element={<GhostScanLanding />} />
-          <Route path="tools/drift" element={<GhostDriftLanding />} />
+          <Route path="tools/emit" element={<GhostEmitLanding />} />
+          <Route path="tools/review" element={<GhostReviewLanding />} />
+          <Route
+            path="tools/drift"
+            element={<Navigate to="/tools/review" replace />}
+          />
           <Route path="tools/fleet" element={<GhostFleetLanding />} />
           <Route path="tools/ui" element={<GhostUiLanding />} />
 
@@ -66,9 +72,7 @@ export function App() {
           <Route path="docs" element={<DocsIndex />} />
           <Route
             path="docs/workflow"
-            element={
-              <Navigate to="/docs/getting-started#how-ghost-works" replace />
-            }
+            element={<Navigate to="/docs/generation" replace />}
           />
 
           {/* MDX-authored doc pages under /docs/* */}
@@ -96,15 +100,15 @@ export function App() {
           />
           <Route
             path="tools/drift/concepts"
-            element={
-              <Navigate to="/docs/getting-started#how-ghost-works" replace />
-            }
+            element={<Navigate to="/docs/governance" replace />}
           />
           <Route
             path="tools/drift/workflow"
-            element={
-              <Navigate to="/docs/getting-started#how-ghost-works" replace />
-            }
+            element={<Navigate to="/docs/governance" replace />}
+          />
+          <Route
+            path="tools/drift/*"
+            element={<Navigate to="/docs/governance" replace />}
           />
 
           {/* Redirects from legacy root /foundations and /components URLs */}

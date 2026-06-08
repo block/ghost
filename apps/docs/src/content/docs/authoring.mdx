@@ -1,0 +1,79 @@
+---
+title: Authoring
+description: Create, inspect, and validate fingerprint layers before agents depend on them.
+kicker: Docs
+section: workflow
+order: 30
+slug: authoring
+---
+
+<DocSection title="Create">
+
+Start with the smallest checked-in package:
+
+```bash
+ghost init
+ghost init --with-intent
+ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout --memory-dir .design/memory
+```
+
+Use scoped packages when a product area needs local product-experience memory.
+Use `--memory-dir` only when a host adapter stores Ghost package roots outside
+`.ghost`.
+
+</DocSection>
+
+<DocSection title="Inspect">
+
+`ghost scan` reports layer readiness without calling an LLM:
+
+```bash
+ghost scan
+ghost scan --format json
+ghost scan --include-nested --format json
+```
+
+A package is ready only when prose, inventory, and composition all contain
+useful content. Optional cache does not satisfy inventory readiness.
+
+</DocSection>
+
+<DocSection title="Gather Source">
+
+Generated cache is useful when an agent needs observed repo facts:
+
+```bash
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+```
+
+Treat generated cache as provisional source material. Promote durable
+conclusions into the core layer files through normal edits and review.
+
+</DocSection>
+
+<DocSection title="Validate">
+
+Validate syntax, refs, evidence paths, exemplars, decisions, and config
+references:
+
+```bash
+ghost lint .ghost
+ghost verify .ghost --root .
+ghost lint --all
+ghost verify --all
+```
+
+Run these before declaring a fingerprint complete. The checks keep the portable
+contract coherent before generation or governance workflows depend on it.
+
+</DocSection>
+
+<DocSection title="Approval">
+
+Ghost does not need a separate draft lifecycle. Fingerprint edits are ordinary
+repo edits. Uncommitted work is draft work; checked-in package files are
+canonical for Ghost.
+
+</DocSection>

@@ -1,0 +1,86 @@
+---
+title: Governance
+description: Validate generated or changed surfaces against the checked-in fingerprint.
+kicker: Docs
+section: workflow
+order: 50
+slug: governance
+---
+
+<DocSection title="Post-Generation">
+
+Governance starts after a surface changes. Ghost compares the diff against the
+resolved fingerprint stack for the files being touched.
+
+```text
+changed UI
+   |
+   v
+ghost check + ghost review
+   |
+   v
+deterministic gates + advisory findings
+```
+
+Drift is a governance signal inside this loop. It is not the center of Ghost.
+
+</DocSection>
+
+<DocSection title="Checks">
+
+`ghost check` runs active deterministic gates:
+
+```bash
+ghost check --base main
+ghost check --base main --format json
+```
+
+Without `--package`, Ghost groups changed files by resolved fingerprint stack
+and runs merged checks for each group. Only active checks can block.
+
+</DocSection>
+
+<DocSection title="Review">
+
+`ghost review` emits an advisory governance packet:
+
+```bash
+ghost review --base main --include-memory
+ghost review --base main --format markdown
+```
+
+Review packets include the diff, split fingerprint layers, relevant inventory
+exemplars, active checks, optional accepted decisions, and finding categories
+for fixes, intentional divergence, missing memory, experience gaps, and eval
+uncertainty.
+
+</DocSection>
+
+<DocSection title="Response">
+
+When review finds a mismatch, choose the smallest useful response:
+
+- fix the changed code
+- explain why the divergence is intentional
+- update the fingerprint when the product contract has changed
+- add missing rationale or intent when the fingerprint was under-specified
+
+Advisory review should not fail CI unless the finding is backed by an active
+deterministic check.
+
+</DocSection>
+
+<DocSection title="Stance">
+
+Compatibility verbs record stance toward tracked direct fingerprint workflows:
+
+```bash
+ghost ack --stance aligned --reason "Initial baseline"
+ghost track new-tracked.fingerprint.md
+ghost diverge typography --reason "Editorial product uses a different type scale"
+```
+
+Use them when a workflow needs explicit acknowledgement, tracking, or declared
+divergence.
+
+</DocSection>
