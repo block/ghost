@@ -1078,6 +1078,64 @@ libraries:
     );
   });
 
+  it("review --package includes only accepted decisions when requested", async () => {
+    await writeCheckPackage(dir);
+    await writeMemoryFiles(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      [
+        "review",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--include-memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.accepted_decisions).toHaveLength(1);
+    expect(packet.accepted_decisions[0].id).toBe("checkout-reversibility");
+    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
+      "rejected-decision",
+    );
+    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
+      "saved-payment-empty-state",
+    );
+  });
+
+  it("review --package points empty decision memory to the canonical path", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      [
+        "review",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--include-memory",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("fingerprint/memory/decisions");
+    expect(result.stdout).not.toContain(".ghost/decisions");
+  });
+
   it("check routes changed files through nested stacks by default", async () => {
     await writeNestedCheckPackage(dir);
     await writeFile(

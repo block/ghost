@@ -2,11 +2,7 @@ import type { Dirent } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import {
-  GHOST_DECISIONS_DIRNAME,
-  type GhostDecisionDocument,
-  lintGhostDecision,
-} from "#ghost-core";
+import { type GhostDecisionDocument, lintGhostDecision } from "#ghost-core";
 import { parseUnifiedDiff } from "./core/index.js";
 import {
   type GhostFingerprintStack,
@@ -43,9 +39,7 @@ async function buildSingleBundleReviewPacket(options: {
     config: (await readOptionalPackageConfig(paths.config)) ?? null,
   };
   if (options.includeAcceptedDecisions) {
-    packet.accepted_decisions = await readAcceptedDecisions(
-      resolve(paths.dir, GHOST_DECISIONS_DIRNAME),
-    );
+    packet.accepted_decisions = await readAcceptedDecisions(paths.decisions);
   }
   return packet;
 }
@@ -294,7 +288,7 @@ function formatAcceptedDecisionsSection(
   if (decisions.length === 0) {
     return `## Accepted Product-Experience Decisions
 
-_No accepted decisions found in .ghost/decisions._
+_No accepted decisions found in fingerprint/memory/decisions._
 `;
   }
 
