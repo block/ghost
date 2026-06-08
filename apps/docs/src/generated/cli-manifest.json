@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T04:24:33.903Z",
+  "generatedAt": "2026-06-08T13:46:07.806Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "lint",
           "rawName": "lint [file]",
-          "description": "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or legacy markdown — defaults to .ghost",
+          "description": "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or direct markdown — defaults to .ghost",
           "group": "author",
           "defaultHelp": true,
           "compactName": "lint",
@@ -48,7 +48,7 @@
           "group": "author",
           "defaultHelp": true,
           "compactName": "init",
-          "summary": "Create .ghost/fingerprint/ package files.",
+          "summary": "Create .ghost/fingerprint/ package layers.",
           "options": [
             {
               "rawName": "--scope <path>",
@@ -231,11 +231,11 @@
           "tool": "ghost",
           "name": "describe",
           "rawName": "describe [fingerprint]",
-          "description": "Print a section map of fingerprint/memory/intent.md or a direct fingerprint markdown file (line ranges + token estimates).",
+          "description": "Print a section map of fingerprint/memory/intent.md or a markdown file (line ranges + token estimates).",
           "group": "adapt",
           "defaultHelp": false,
           "compactName": "describe",
-          "summary": "Print intent or direct markdown section ranges.",
+          "summary": "Print intent or markdown section ranges.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -251,11 +251,11 @@
           "tool": "ghost",
           "name": "diff",
           "rawName": "diff <a> <b>",
-          "description": "Legacy direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
+          "description": "Direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
           "group": "source",
           "defaultHelp": false,
           "compactName": "diff",
-          "summary": "Diff two legacy direct markdown fingerprints.",
+          "summary": "Diff two direct markdown fingerprints.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -271,11 +271,11 @@
           "tool": "ghost",
           "name": "survey",
           "rawName": "survey <op> [...surveys]",
-          "description": "Legacy/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
+          "description": "Survey/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
           "group": "source",
           "defaultHelp": false,
           "compactName": "survey",
-          "summary": "Run legacy/cache survey helpers.",
+          "summary": "Run survey/cache helpers.",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -395,7 +395,7 @@
           "group": "adapt",
           "defaultHelp": false,
           "compactName": "compare",
-          "summary": "Compare packages or direct fingerprints.",
+          "summary": "Compare fingerprint packages.",
           "options": [
             {
               "rawName": "--semantic",

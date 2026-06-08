@@ -14,9 +14,9 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/brief.md, capture.md, compare.md, critique.md, map.md
+#     references/brief.md, capture.md, compare.md, critique.md
 #     references/patterns.md, recall.md, remediate.md, review.md
-#     references/schema.md, survey.md, verify.md
+#     references/schema.md, verify.md
 #
 # Exit codes:
 #   0  installed
@@ -194,6 +194,6 @@ printf 'Next:\n'
 printf '  cd <your-repo>\n'
 printf '  Tell your agent: "Set up Ghost memory for this repo"\n'
 printf '\n'
-printf 'The agent will use fingerprint.yml as checked-in product-experience memory,\n'
-printf 'curate exemplars, keep checks.yml as deterministic gates, optionally gather\n'
-printf 'inventory cache, and run ghost lint/verify/check/review.\n'
+printf 'The agent will use .ghost/fingerprint/ as checked-in product-experience memory,\n'
+printf 'generate from prose.yml, inventory.yml, and composition.yml, keep optional\n'
+printf 'deterministic gates in enforcement/checks.yml, and run ghost lint/verify/check/review.\n'
