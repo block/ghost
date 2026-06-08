@@ -1,5 +1,21 @@
 # @anarchitecture/ghost
 
+## 0.6.0
+
+### Minor Changes
+
+- [#123](https://github.com/block/ghost/pull/123) [`d12634f`](https://github.com/block/ghost/commit/d12634f7d954dbaee8cf3846c3a80be66e1ece8d) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reframe public docs around Ghost's portable product-experience fingerprint.
+
+### Patch Changes
+
+- [#118](https://github.com/block/ghost/pull/118) [`5d452f6`](https://github.com/block/ghost/commit/5d452f6bad7474adb353d2ffe8bf149c6de36714) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document that Ghost is pre-1.0 beta software and may ship breaking changes during active development.
+
+- [#128](https://github.com/block/ghost/pull/128) [`3b7390b`](https://github.com/block/ghost/commit/3b7390b2ce52441c24d94cf7404c30f1ef0a195e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document collaborative human-agent fingerprint authoring scenarios in the installed Ghost skill and public docs.
+
+- [#127](https://github.com/block/ghost/pull/127) [`523a244`](https://github.com/block/ghost/commit/523a24421efd87acd5eac17b20258eacad04b29b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document how npm package README updates are published.
+
+- [#120](https://github.com/block/ghost/pull/120) [`8892b32`](https://github.com/block/ghost/commit/8892b321e1c79205964994c052ca203b748178e5) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Update Ghost install and help copy to describe only the current fingerprint package layout.
+
 ## 0.5.0
 
 ### Minor Changes
