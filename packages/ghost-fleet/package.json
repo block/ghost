@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@anarchitecture/ghost": "workspace:*",
-    "cac": "^6.7.14",
+    "cac": "^7.0.0",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }
