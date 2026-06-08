@@ -5,7 +5,11 @@ type HelpSection = {
   body: string;
 };
 
-export type CommandDiscoveryGroup = "core" | "advanced" | "compare" | "legacy";
+export type CommandDiscoveryGroup =
+  | "core"
+  | "advanced"
+  | "compare"
+  | "maintenance";
 
 export type CommandDiscoveryMetadata = {
   name: string;
@@ -23,7 +27,7 @@ const GROUPS: ReadonlyArray<{
   { group: "core", title: "Core workflow" },
   { group: "advanced", title: "Advanced/package inspection" },
   { group: "compare", title: "Compare/stance" },
-  { group: "legacy", title: "Legacy/cache" },
+  { group: "maintenance", title: "Maintenance/cache" },
 ];
 
 const COMMAND_DISCOVERY = [
@@ -32,7 +36,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/fingerprint.yml and checks.yml.",
+    summary: "Create .ghost/fingerprint/ package layers.",
   },
   {
     name: "scan",
@@ -102,14 +106,14 @@ const COMMAND_DISCOVERY = [
     group: "advanced",
     defaultHelp: false,
     compactName: "describe",
-    summary: "Print intent or direct markdown section ranges.",
+    summary: "Print intent or markdown section ranges.",
   },
   {
     name: "compare",
     group: "compare",
     defaultHelp: false,
     compactName: "compare",
-    summary: "Compare packages or direct fingerprints.",
+    summary: "Compare fingerprint packages.",
   },
   {
     name: "ack",
@@ -134,17 +138,17 @@ const COMMAND_DISCOVERY = [
   },
   {
     name: "diff",
-    group: "legacy",
+    group: "maintenance",
     defaultHelp: false,
     compactName: "diff",
-    summary: "Diff two legacy direct markdown fingerprints.",
+    summary: "Diff two direct markdown fingerprints.",
   },
   {
     name: "survey",
-    group: "legacy",
+    group: "maintenance",
     defaultHelp: false,
     compactName: "survey",
-    summary: "Run legacy/cache survey helpers.",
+    summary: "Run survey/cache helpers.",
   },
 ] satisfies ReadonlyArray<Omit<CommandDiscoveryMetadata, "order">>;
 
@@ -274,7 +278,7 @@ function formatMoreSection(): HelpSection {
   return {
     title: "More",
     body: [
-      "  $ ghost --help --all      Show all advanced and legacy commands",
+      "  $ ghost --help --all      Show all advanced and maintenance commands",
       "  $ ghost <command> --help  Show command-specific options",
     ].join("\n"),
   };
