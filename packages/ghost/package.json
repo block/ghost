@@ -79,7 +79,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --build --force && cp -r src/skill-bundle dist/skill-bundle",
+    "build": "rm -rf dist && tsc --build --force && chmod +x dist/bin.js && node ../../scripts/link-package-bin.mjs && cp -r src/skill-bundle dist/skill-bundle",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
