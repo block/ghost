@@ -9,13 +9,13 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts around the fingerprint lifecycle: capture
-packages, report readiness, validate files, gather optional source material,
-emit handoff packets, govern diffs, compare packages, and record intent. Your
-agent does the reading, writing, and reviewing.
+The CLI does the repeatable parts around the fingerprint lifecycle: author
+packages, report readiness, validate files, emit handoff packets, govern diffs,
+compare and adapt packages, and gather optional source material. Your agent
+does the reading, writing, and reviewing.
 
-`ghost --help` intentionally shows the short core workflow for new adopters.
-Run `ghost --help --all` for the complete advanced command index;
+`ghost --help` intentionally shows the grouped lifecycle workflow for new
+adopters. Run `ghost --help --all` for the complete lifecycle command index;
 command-specific help remains available with `ghost <command> --help`.
 
 Canonical Ghost fingerprints start here, with optional child packages for scoped
@@ -35,7 +35,7 @@ after command or flag changes.
 
 </DocSection>
 
-<DocSection title="ghost - capture, validate, and generate">
+<DocSection title="ghost - author and validate">
 
 ### Initialize - `init`
 
@@ -67,28 +67,6 @@ ghost scan --format json
 ghost scan --include-nested --memory-dir .design/memory --format json
 ```
 
-### Stack inspection - `stack`
-
-Inspect the root-to-leaf fingerprint stack for one or more paths.
-
-<CliHelp tool="ghost" command="stack" hideDescription />
-
-```bash
-ghost stack apps/checkout/review/page.tsx --format json
-```
-
-### Capture source material - `inventory`
-
-Emit raw signals about a frontend repo as JSON. Use this as optional source
-material under `.ghost/fingerprint/sources/cache/`.
-
-<CliHelp tool="ghost" command="inventory" hideDescription />
-
-```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
-```
-
 ### Validation - `lint`
 
 Validate a root `.ghost` fingerprint package or an individual split artifact.
@@ -115,17 +93,16 @@ ghost verify .ghost --root .
 ghost verify --all --memory-dir .design/memory
 ```
 
-### Survey/cache ops - `survey <op>`
+### Agent skill - `skill install`
 
-Operate on `ghost.survey/v1` files as cache source material.
+Install the unified Ghost skill bundle so the host agent knows how to capture,
+apply, validate, govern, and compare fingerprints.
 
-<CliHelp tool="ghost" command="survey" hideDescription />
+<CliHelp tool="ghost" command="skill" hideDescription />
 
-### Inspection - `describe`
+</DocSection>
 
-Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
-
-<CliHelp tool="ghost" command="describe" hideDescription />
+<DocSection title="ghost - generate">
 
 ### Generate handoff packets - `emit`
 
@@ -137,7 +114,7 @@ single-file fingerprint.
 
 </DocSection>
 
-<DocSection title="ghost - govern and compare">
+<DocSection title="ghost - govern">
 
 ### Deterministic gates - `check`
 
@@ -154,12 +131,6 @@ layers, optional memory, checks, and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
-### Comparison - `compare`
-
-Pairwise distance or composite analysis over root packages.
-
-<CliHelp tool="ghost" command="compare" hideDescription />
-
 ### Drift stance - `ack` / `track` / `diverge`
 
 Record how the repo should treat tracked fingerprint drift. These compatibility
@@ -168,5 +139,59 @@ governance verbs still operate on tracked direct fingerprint markdown files.
 <CliHelp tool="ghost" command="ack" hideDescription />
 <CliHelp tool="ghost" command="track" hideDescription />
 <CliHelp tool="ghost" command="diverge" hideDescription />
+
+</DocSection>
+
+<DocSection title="ghost - compare and adapt">
+
+### Stack inspection - `stack`
+
+Inspect the root-to-leaf fingerprint stack for one or more paths.
+
+<CliHelp tool="ghost" command="stack" hideDescription />
+
+```bash
+ghost stack apps/checkout/review/page.tsx --format json
+```
+
+### Comparison - `compare`
+
+Pairwise distance or composite analysis over root packages.
+
+<CliHelp tool="ghost" command="compare" hideDescription />
+
+### Inspection - `describe`
+
+Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
+
+<CliHelp tool="ghost" command="describe" hideDescription />
+
+</DocSection>
+
+<DocSection title="ghost - source material">
+
+### Capture source material - `inventory`
+
+Emit raw signals about a frontend repo as JSON. Use this as optional source
+material under `.ghost/fingerprint/sources/cache/`.
+
+<CliHelp tool="ghost" command="inventory" hideDescription />
+
+```bash
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+```
+
+### Direct markdown diff - `diff`
+
+Compare two direct fingerprint markdown files at the text level.
+
+<CliHelp tool="ghost" command="diff" hideDescription />
+
+### Survey/cache ops - `survey <op>`
+
+Operate on `ghost.survey/v1` files as cache source material.
+
+<CliHelp tool="ghost" command="survey" hideDescription />
 
 </DocSection>
