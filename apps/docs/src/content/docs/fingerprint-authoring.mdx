@@ -1,0 +1,100 @@
+---
+title: Fingerprint Authoring
+description: Co-author Ghost fingerprints with human intent, repo evidence, agent synthesis, and Git review.
+kicker: Docs
+section: guide
+order: 20
+slug: fingerprint-authoring
+---
+
+<DocSection title="The Authoring Model">
+
+A Ghost fingerprint is not a scan dump. It is durable product-experience memory
+that a human and agent shape together.
+
+The human decides identity: what the product should feel like, who it serves,
+which situations matter, and what should not drift. Repo scans provide evidence:
+components, routes, docs, stories, copy, screenshots, tokens, examples, and UI
+library references. The agent synthesizes drafts, but ordinary Git review is
+where fingerprint edits become canonical.
+
+</DocSection>
+
+<DocSection title="Scenario Matrix">
+
+Start by classifying the authoring scenario. The scenario determines how much
+weight to give human intent, existing code, and library evidence.
+
+| Scenario | Authoring posture |
+| --- | --- |
+| Net new repo | Human-led. Capture intent, audience, posture, and early anti-goals before inventory grows. |
+| Net new repo + UI library | Human-led with library evidence. Explain how this product uses the library. |
+| Existing repo | Human + scan. Find repeated patterns and exemplars, then ask which ones are canonical. |
+| Existing repo with mixed quality | Curated scan. Separate product memory from legacy debt and accidental repetition. |
+| Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
+| Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
+| Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
+| Fork, white label, or tenant variant | Shared base + local divergence. Keep common identity broad and local differences scoped. |
+| Monorepo or nested surfaces | Stack-aware. Use root guidance for broad identity and nested packages for surfaces judged differently. |
+
+</DocSection>
+
+<DocSection title="Guided Workflow">
+
+1. **Interview** - ask what the product should feel like, who it serves, which
+   surfaces show it at its best, and which existing patterns are accidental or
+   legacy.
+2. **Scan** - inspect routes, components, stories, tests, docs, screenshots,
+   copy, tokens, assets, and UI library references.
+3. **Draft** - write the smallest useful `prose.yml`, `inventory.yml`, and
+   `composition.yml` entries.
+4. **Curate** - have the human keep, soften, reject, scope, or record important
+   claims before treating them as durable memory.
+5. **Validate** - run Ghost validation and use Git review as the approval
+   boundary.
+
+```bash
+ghost scan --format json
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+ghost lint .ghost
+ghost verify .ghost --root .
+ghost check --base HEAD
+```
+
+Generated cache is source material only. It can support curated inventory, but
+it does not establish product judgment by itself.
+
+</DocSection>
+
+<DocSection title="Nested Packages">
+
+Nested fingerprints are opt-in. Create a local `.ghost/` only when a surface
+would be judged differently from the root product fingerprint.
+
+Use a nested package when a surface has distinct users, information density,
+trust or recovery posture, interaction rhythm, component grammar, UI library
+usage, or review criteria for the same UI decision.
+
+Keep broad product-family guidance at the root. Put local obligations in the
+nearest package that owns the surface.
+
+```bash
+ghost stack apps/checkout
+ghost lint --all
+ghost verify --all
+```
+
+</DocSection>
+
+<DocSection title="Ratification">
+
+Uncommitted or unmerged fingerprint edits are drafts. Checked-in
+`fingerprint/` core files are canonical.
+
+Use optional `fingerprint/memory/intent.md` only for human-authored or
+human-approved intent. Use `fingerprint/memory/decisions/` for rationale that
+explains why a product choice changed. Add deterministic checks sparingly, and
+only when a rule can be enforced without subjective judgment.
+
+</DocSection>
