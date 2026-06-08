@@ -29,7 +29,7 @@ const GROUPS: ReadonlyArray<{
   { group: "generate", title: "Generate" },
   { group: "govern", title: "Govern" },
   { group: "adapt", title: "Compare and adapt" },
-  { group: "source", title: "Legacy and source material" },
+  { group: "source", title: "Source material" },
 ];
 
 const COMMAND_DISCOVERY = [
@@ -38,7 +38,7 @@ const COMMAND_DISCOVERY = [
     group: "author",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/fingerprint/ package files.",
+    summary: "Create .ghost/fingerprint/ package layers.",
   },
   {
     name: "scan",
@@ -110,14 +110,14 @@ const COMMAND_DISCOVERY = [
     group: "adapt",
     defaultHelp: false,
     compactName: "describe",
-    summary: "Print intent or direct markdown section ranges.",
+    summary: "Print intent or markdown section ranges.",
   },
   {
     name: "compare",
     group: "adapt",
     defaultHelp: false,
     compactName: "compare",
-    summary: "Compare packages or direct fingerprints.",
+    summary: "Compare fingerprint packages.",
   },
   {
     name: "ack",
@@ -145,14 +145,14 @@ const COMMAND_DISCOVERY = [
     group: "source",
     defaultHelp: false,
     compactName: "diff",
-    summary: "Diff two legacy direct markdown fingerprints.",
+    summary: "Diff two direct markdown fingerprints.",
   },
   {
     name: "survey",
     group: "source",
     defaultHelp: false,
     compactName: "survey",
-    summary: "Run legacy/cache survey helpers.",
+    summary: "Run survey/cache helpers.",
   },
 ] satisfies ReadonlyArray<Omit<CommandDiscoveryMetadata, "order">>;
 

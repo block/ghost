@@ -38,15 +38,35 @@ model, then move through [Authoring](/docs/authoring),
 
 </DocSection>
 
+<DocSection title="Project Status: Beta">
+
+<Callout variant="warning" title="Beta / pre-1.0">
+
+Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+change in breaking ways before a stable 1.0 release.
+
+Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
+versions are reserved for fixes that should not require migration. If you adopt
+Ghost today, expect some churn, pin the version you depend on, and review
+release notes before upgrading.
+
+</Callout>
+
+</DocSection>
+
 <DocSection title="Install">
 
 ```bash
 npm install -D @anarchitecture/ghost
 npx ghost --help
+npx ghost --help --all
 npx ghost skill install
 ```
 
 The public package is `@anarchitecture/ghost`; it installs one CLI, `ghost`.
+Default help shows the grouped lifecycle workflow; `--help --all` shows the
+complete lifecycle command index.
 The skill bundle teaches the host agent how to capture, apply, validate,
 govern, and compare fingerprints.
 
