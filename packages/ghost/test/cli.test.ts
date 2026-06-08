@@ -889,6 +889,7 @@ checks:
       "references/review.md",
       "references/remediate.md",
       "references/brief.md",
+      "references/generate.md",
     ]) {
       await expect(
         readFile(join(dir, "skills", "ghost", path), "utf-8"),

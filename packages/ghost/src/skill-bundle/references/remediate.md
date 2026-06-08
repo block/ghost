@@ -1,9 +1,9 @@
 ---
 name: remediate
-description: Suggest minimal code or fingerprint edits after Ghost drift findings.
+description: Suggest minimal code or fingerprint edits after Ghost alignment findings.
 ---
 
-# Recipe: Remediate Ghost Drift
+# Recipe: Remediate Ghost Alignment Findings
 
 1. Read the review packet or check output.
 2. Separate active-check failures from advisory findings.

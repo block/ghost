@@ -5,19 +5,21 @@ description: Verify generated UI or fingerprint edits against Ghost.
 
 # Recipe: Verify Ghost Work
 
-1. Run `ghost lint .ghost` and `ghost verify .ghost --root <target>` after
-   fingerprint edits.
-2. Run `ghost check --base <ref>` after implementation changes.
-3. For advisory review, run `ghost review --base <ref> --include-memory`.
-4. For generation setup, run `ghost emit context-bundle` and inspect the
+Use the verification path that matches the work:
+
+1. For fingerprint edits, run `ghost lint .ghost` and
+   `ghost verify .ghost --root <target>`.
+2. For generated or changed implementation, run `ghost check --base <ref>`.
+3. For governance review, run `ghost review --base <ref> --include-memory`.
+4. For generation readiness, run `ghost emit context-bundle` and inspect the
    prose, inventory, composition, and active checks.
-5. Inspect generated UI manually or with screenshots when visual fidelity
-   matters.
+5. For visual or interactive changes, inspect generated UI manually or with
+   screenshots when fidelity matters.
 
 Report:
 
 - Active-check failures and repairs.
-- Advisory product-experience drift with citations.
+- Advisory product-experience alignment findings with citations.
 - Missing or unreachable evidence and exemplar paths.
 - Provisional local reasoning where fingerprint layers are silent.
 - Any fingerprint edits the user requested.

@@ -4,10 +4,10 @@ description: Review PR or working-tree changes against checked-in Ghost fingerpr
 handoffs:
   - label: Suggest minimal fixes
     skill: remediate
-    prompt: Given the drift findings, suggest the minimal code changes that bring the diff back inside the .ghost fingerprint
+    prompt: Given the alignment findings, suggest the minimal code changes that bring the diff back inside the .ghost fingerprint
 ---
 
-# Recipe: Review Code Changes For Experience Drift
+# Recipe: Govern Code Changes Against The Fingerprint
 
 ## 1. Run The Gate
 
