@@ -4,9 +4,18 @@ status: exploring
 
 # ghost drift
 
+> Fingerprint-first context: this note explores drift as a governance workflow
+> over the fingerprint. The durable Ghost artifact is still the portable
+> `.ghost/fingerprint/` package; drift consumes that contract under change.
+
 ## Why it's interesting
 
-Drift is where Ghost earns its keep. Authoring fingerprints is upstream work; comparing them under change is what ships. Drift is also the most CI-relevant tool — its dependency surface needs to stay lean (no map, no fingerprint authoring, no fleet) so a CI job can install just `ghost-drift` and get to a verdict fast.
+Drift is where the fingerprint gets governed under change. Authoring
+fingerprints is upstream work; comparing them under change is one way the
+contract keeps shipping surfaces honest. Drift is also the most CI-relevant
+tool — its dependency surface needs to stay lean (no map, no fingerprint
+authoring, no fleet) so a CI job can install just `ghost-drift` and get to a
+verdict fast.
 
 The user's emphasis on **remediation** and **targeting** sharpens the scope. Targeting is `track` — one repo declares another's fingerprint as its reference, and drift becomes "are we drifting from the system we said we follow?" Remediation is the next loop after review: given that drift exists, what's the minimal change that closes the gap?
 
@@ -106,7 +115,7 @@ After studying the existing implementation, here's what the audit confirmed and 
 ## Out of scope
 
 - Authoring fingerprints (that's fingerprint).
-- World model across many repos (that's fleet).
+- Fleet-level shape across many repos (that's fleet).
 - LLM in CLI.
 - Auto-update on drift; drift surfaces signals and humans/agents act on them.
 - Hardcoded thresholds — drift reports distance; the consumer picks a threshold.

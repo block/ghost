@@ -1,8 +1,8 @@
-# Product-Experience World Model Loop
+# Fingerprint Generation Loop
 
 Ghost gives UI generators and product-development agents a local, auditable
-product-experience world model. Generation starts from checked-in core layers;
-checks validate the result afterward.
+product-experience fingerprint. Generation starts from checked-in core layers;
+checks and review govern the result afterward.
 
 ```text
 fingerprint/prose.yml + fingerprint/inventory.yml + fingerprint/composition.yml
@@ -46,7 +46,7 @@ Cache answers what exists now and does not count toward scan readiness. Prose
 answers what matters and why. Curated inventory points to building blocks and
 exemplars. Composition explains how those blocks become experience.
 
-## Review
+## Govern
 
 `ghost check` is deterministic:
 
@@ -73,7 +73,8 @@ relevant exemplars when useful, and any active check when blocking.
 
 ## Remediation
 
-When review flags drift, the host agent chooses the smallest useful response:
+When review flags drift from the fingerprint, the host agent chooses the
+smallest useful response:
 
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.

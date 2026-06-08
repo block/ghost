@@ -1,13 +1,13 @@
 # Ghost
 
-**Ghost is a product-experience world model for AI agents.**
+**Ghost captures a portable product-experience fingerprint for AI agents.**
 
-Agents can write UI. What they cannot reliably preserve is the
-product-experience world that UI belongs to: hierarchy, density, restraint,
-behavior, copy, accessibility, trust, and flow. Traditional design systems give
-humans parts, rules, and examples. Ghost stores the upstream product judgment
-agents need around those parts in a versioned `.ghost/` bundle they can read
-before generation and validate after changes.
+Agents can write UI. What they cannot reliably preserve is the product
+experience that UI belongs to: hierarchy, density, restraint, behavior, copy,
+accessibility, trust, and flow. Traditional design systems give humans parts,
+rules, and examples. Ghost stores the upstream product judgment agents need
+around those parts in a versioned `.ghost/` bundle they can read before
+generation and validate after changes.
 
 The MVP rule is intentionally small:
 
@@ -35,10 +35,10 @@ Add only the sections that contain real layer content. Ghost normalizes omitted
 layer files or sections internally, so agents and checks still receive the full
 assembled `ghost.fingerprint/v1` shape they expect.
 
-Ghost is not a design-system generator, design-system registry, fingerprint lifecycle
-manager, proposal system, or screenshot archive. It is a small repo-local
-contract agents can read before work and deterministic tooling can validate
-after work.
+Ghost captures a portable product-experience fingerprint that tools use to
+generate, validate, compare, and govern product surfaces. It is not a
+design-system generator, design-system registry, fingerprint lifecycle manager,
+proposal system, or screenshot archive.
 
 Optional material can sit beside the core files:
 
@@ -100,7 +100,7 @@ Then ask your agent in plain English:
 ```text
 Set up the Ghost fingerprint for this repo.
 Brief this work from the Ghost fingerprint.
-Review this PR for Ghost drift.
+Review this PR against the Ghost fingerprint.
 Compare these two Ghost bundles.
 ```
 
