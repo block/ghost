@@ -83,6 +83,7 @@ or check format.
 
 ## Workflows
 
+- Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
 - Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
 - Recall product-experience context: follow [references/recall.md](references/recall.md).
