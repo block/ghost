@@ -1,7 +1,7 @@
 {
   "name": "@anarchitecture/ghost",
   "version": "0.6.0",
-  "description": "Unified Ghost CLI for repo-local product fingerprints, deterministic checks, advisory review, and drift tracking",
+  "description": "Unified Ghost CLI for portable product-experience fingerprints, deterministic checks, advisory review, and comparison",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -13,9 +13,9 @@
     "url": "https://github.com/block/ghost/issues"
   },
   "keywords": [
-    "design-system",
-    "drift-detection",
     "fingerprint",
+    "product-experience",
+    "design-system",
     "design-tokens",
     "shadcn",
     "design-language",
@@ -45,6 +45,18 @@
     "./core": {
       "types": "./dist/ghost-core/index.d.ts",
       "import": "./dist/ghost-core/index.js"
+    },
+    "./fingerprint": {
+      "types": "./dist/fingerprint.d.ts",
+      "import": "./dist/fingerprint.js"
+    },
+    "./govern": {
+      "types": "./dist/govern.d.ts",
+      "import": "./dist/govern.js"
+    },
+    "./compare": {
+      "types": "./dist/compare.d.ts",
+      "import": "./dist/compare.js"
     },
     "./drift": {
       "types": "./dist/core/index.d.ts",
