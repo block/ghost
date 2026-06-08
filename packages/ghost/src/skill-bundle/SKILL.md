@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or compare fingerprint packages.
+description: Capture, apply, validate, and govern repo-local Ghost fingerprints. Use when the user wants to set up or update a product-experience fingerprint, recall fingerprint context, brief or generate UI from Ghost, verify generated work, govern changes, review drift, or compare fingerprint packages.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -9,7 +9,12 @@ metadata:
 
 # Ghost - Product Fingerprints
 
-Ghost captures product identity in a repo-local fingerprint package:
+Ghost fingerprints are portable product-experience contracts for agentic work.
+They capture the judgment, evidence, and composition rules agents need before
+they generate or revise a product surface, and deterministic tooling uses the
+same package afterward to validate and govern the result.
+
+The canonical repo-local package is:
 
 ```text
 .ghost/
@@ -27,9 +32,9 @@ Ghost captures product identity in a repo-local fingerprint package:
 
 `fingerprint/` is the source of truth when it is checked in. Ordinary Git
 workflow is the staging and approval boundary: uncommitted or unmerged changes
-are drafts, and committed fingerprint changes are canonical for Ghost. Checks are optional
-deterministic gates. Ghost is not a lifecycle manager, proposal system,
-design-system registry, or screenshot archive.
+are drafts, and committed fingerprint changes are canonical for Ghost. Checks
+are optional deterministic gates. Ghost is not a lifecycle manager, proposal
+system, design-system registry, or screenshot archive.
 
 Generation uses **prose + inventory + composition**:
 
@@ -57,7 +62,9 @@ host wrappers may use `--memory-dir <relative-dir>`. Ghost stays
 adapter-neutral: wrappers consume JSON and map severities into their own review
 or check format.
 
-## Core CLI Verbs
+## Fingerprint Lifecycle CLI
+
+### Author And Validate
 
 | Verb | Purpose |
 |---|---|
@@ -65,33 +72,51 @@ or check format.
 | `ghost scan [dir] [--format json]` | Report fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
-| `ghost check --base <ref>` | Run active deterministic gates against a diff. |
-| `ghost review --base <ref>` | Emit an advisory review packet grounded in fingerprint layers, exemplars, checks, and diff evidence. |
-| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet. |
+| `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
 | `ghost skill install` | Install this unified skill bundle. |
 
-## Advanced CLI Verbs
+### Generate
 
 | Verb | Purpose |
 |---|---|
-| `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages. |
+| `ghost emit context-bundle` | Emit the generation packet from checked-in fingerprint layers. |
+| `ghost emit review-command` | Emit a review command grounded in the same fingerprint contract. |
+
+### Govern
+
+| Verb | Purpose |
+|---|---|
+| `ghost check --base <ref>` | Run active deterministic gates against a diff. |
+| `ghost review --base <ref>` | Emit an advisory governance packet grounded in fingerprint layers, exemplars, checks, and diff evidence. |
+| `ghost ack` / `track` / `diverge` | Record stance toward tracked fingerprint drift or intentional divergence. |
+
+### Compare And Adapt
+
+| Verb | Purpose |
+|---|---|
 | `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
-| `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
-| `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
 | `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
-| `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
+| `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages. |
+| `ghost describe` | Print optional intent or markdown section ranges. |
+
+### Source Material
+
+| Verb | Purpose |
+|---|---|
+| `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
 
 ## Workflows
 
-- Fingerprint capture: follow [references/capture.md](references/capture.md).
-- Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
-- Recall product-experience context: follow [references/recall.md](references/recall.md).
-- Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
-- Critique generated or changed work: follow [references/critique.md](references/critique.md).
-- Review drift: follow [references/review.md](references/review.md).
-- Verify generation: follow [references/verify.md](references/verify.md).
-- Remediate drift: follow [references/remediate.md](references/remediate.md).
-- Advanced compare bundles: follow [references/compare.md](references/compare.md).
+- Capture a fingerprint: follow [references/capture.md](references/capture.md).
+- Recall applicable fingerprint context: follow [references/recall.md](references/recall.md).
+- Shape a fingerprint application brief: follow [references/brief.md](references/brief.md).
+- Generate or revise UI from a fingerprint: follow [references/generate.md](references/generate.md).
+- Verify generated work or fingerprint edits: follow [references/verify.md](references/verify.md).
+- Govern changed work against the fingerprint: follow [references/review.md](references/review.md).
+- Critique generated or changed work directly: follow [references/critique.md](references/critique.md).
+- Remediate alignment findings: follow [references/remediate.md](references/remediate.md).
+- Compare fingerprint relationships: follow [references/compare.md](references/compare.md).
+- Author composition patterns: follow [references/patterns.md](references/patterns.md).
 
 ## Always
 

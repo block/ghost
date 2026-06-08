@@ -5,6 +5,9 @@ description: Recall applicable Ghost fingerprint layers for a task or file path.
 
 # Recipe: Recall Ghost Fingerprint
 
+Recall the applicable clauses of the checked-in product-experience contract for
+the task at hand.
+
 1. Read checked-in `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and `fingerprint/composition.yml` entries.
 2. Select relevant prose, inventory exemplars, composition patterns, and active
    checks.
@@ -14,7 +17,7 @@ description: Recall applicable Ghost fingerprint layers for a task or file path.
 
 Return:
 
-- Applicable fingerprint refs and short claims.
+- Applicable fingerprint refs and short contract claims.
 - Inventory exemplars to inspect when generation or review needs a concrete anchor.
 - Active checks that may affect the work.
 - Optional decisions or intent that explain why, when present.

@@ -1,6 +1,6 @@
 ---
 name: compare
-description: Interpret ghost compare output — pairwise distance or composite (N≥3) analysis.
+description: Interpret ghost compare output for fingerprint relationships, pairwise distance, temporal drift, or composite (N>=3) analysis.
 handoffs:
   - label: Accept the drift as aligned reality
     command: ghost ack
@@ -15,7 +15,9 @@ handoffs:
 
 # Recipe: Compare fingerprints
 
-**Goal:** answer "how different are these design languages?" or "how has ours drifted over time?"
+**Goal:** explain the relationship between product-experience fingerprints:
+which systems are close, which are far apart, where a fingerprint sits in a
+fleet, or how one has drifted over time.
 
 ## Steps
 
@@ -28,7 +30,7 @@ Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Packag
 Flags:
 - `--temporal` — add drift velocity, trajectory, and ack bounds (reads `.ghost/history.jsonl`)
 
-### Composite (N≥3)
+### Composite (N>=3)
 
     ghost compare a/.ghost b/.ghost c/.ghost d/.ghost
 
