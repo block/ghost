@@ -14,12 +14,11 @@ Everything else in Ghost is tooling for that contract or tooling around it.
 Drift remains important, but it is one governance workflow over the fingerprint,
 not the center of the architecture.
 
-This settles the mental model for follow-on work. Existing docs already describe
-`.ghost/fingerprint/` as the portable package and generation context. Older
-idea docs that center `ghost-drift`, package decomposition, or drift comparison
-should be read through this updated hierarchy: the fingerprint owns surface
-context; tools consume, validate, compare, generate from, or govern that
-context.
+This settles the mental model for follow-on work. Current docs describe
+`.ghost/fingerprint/` as the portable package and generation context.
+Superseded decomposition notes have been pruned; future idea docs should stay
+subordinate to this hierarchy. The fingerprint owns surface context. Tools
+consume, validate, compare, generate from, or govern that context.
 
 ## Decisions
 

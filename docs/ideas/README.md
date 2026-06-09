@@ -1,17 +1,32 @@
 # Ideas
 
-Loose space for concepts that aren't ready to be docs or a changeset but shouldn't be lost to chat history.
+This folder is for live, non-authoritative exploration that should not be lost
+to chat history but is not ready to become public docs or a changeset.
 
-Read older decomposition and drift notes through
-`fingerprint-first-architecture.md`: Ghost's durable artifact is the portable
-fingerprint package, and map, drift, fleet, UI, adapters, and generation
-workflows are tools around that contract.
+Current public docs live one level up:
+
+- [Portable fingerprint format](../fingerprint-format.md)
+- [Generation loop](../generation-loop.md)
+- [Host adapter integration](../host-adapters.md)
+- [Ghost Fleet](../ghost-fleet.md)
+
+Retained notes:
+
+- `fingerprint-first-architecture.md` records the settled product center:
+  Ghost is fingerprint-first, and drift is one governance workflow over the
+  portable `.ghost/fingerprint/` package.
+- `ghost-ui.md` explores additive registry metadata for the private Ghost UI
+  reference package.
+- `guided-migration.md` explores a future host-agent workflow for migrating one
+  fingerprint toward another.
 
 Conventions:
 
-- One file per idea, kebab-case slug (`guided-migration.md`, not `migration-rewrite.md`).
-- No obligation to ship. Most of these won't.
-- Optional frontmatter: `status: exploring | deferred | shipped | dropped`. Omit if it's too early to tell.
-- Capture *why* it's interesting, not a full spec. Open questions are fine — often the point.
-
-When an idea graduates, move it into `docs/` proper (or into a skill-bundle reference) and delete the stub here. When it's clearly dead, mark `status: dropped` and leave it — the dead branches are useful context later.
+- One file per idea, kebab-case slug.
+- Add frontmatter with `status: exploring`, `status: deferred`, or
+  `status: settled`.
+- Keep idea notes explicitly subordinate to the current fingerprint package
+  model.
+- Delete notes that only describe superseded package splits, removed commands,
+  or dead migration plans after their useful decisions are folded into current
+  docs.

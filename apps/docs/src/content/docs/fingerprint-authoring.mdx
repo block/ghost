@@ -74,12 +74,26 @@ mkdir -p .ghost/fingerprint/sources/cache
 ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
-ghost check --base HEAD
 ```
 
 Generated cache is source material only. It can support curated inventory, but
 it does not establish surface-composition guidance by itself. Scan frequency and
 raw cache may seed a draft, but they do not decide what the surface should do.
+
+</DocSection>
+
+<DocSection title="Layer Responsibilities">
+
+Keep each claim in the file that will make it useful later:
+
+| Layer | What belongs there |
+| --- | --- |
+| `prose.yml` | Audience, goals, anti-goals, situations, principles, and experience contracts. |
+| `inventory.yml` | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
+| `composition.yml` | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
+| `enforcement/checks.yml` | Deterministic gates that can be checked from a diff. |
+| `memory/` | Human-approved intent and accepted or rejected rationale. |
+| `sources/cache/` | Refreshable generated observations. |
 
 </DocSection>
 
@@ -96,6 +110,7 @@ Keep broad product-family guidance at the root. Put local obligations in the
 nearest package that owns the surface.
 
 ```bash
+ghost init --scope apps/checkout --with-intent
 ghost stack apps/checkout
 ghost lint --all
 ghost verify --all

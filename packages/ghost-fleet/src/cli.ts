@@ -26,9 +26,8 @@ const DEFAULT_SKILL_OUT = ".claude/skills/ghost-fleet";
  *   - `view <dir>` — emit fleet.md + fleet.json into `<dir>/reports/`
  *   - `emit skill` — install the fleet agentskills.io bundle into a host agent
  *
- * Tracks-graph extraction, temporal aggregation, and group-by axis stacking
- * are scoped out of this milestone — see the per-verb deferral notes in
- * `docs/ideas/ghost-fleet.md`.
+ * Temporal aggregation, refresh, and interactive browsing are scoped out of
+ * this milestone; see `docs/ghost-fleet.md`.
  */
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost-fleet");
