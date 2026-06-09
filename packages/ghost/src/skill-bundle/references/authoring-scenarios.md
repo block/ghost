@@ -19,6 +19,10 @@ Human intent decides identity. Code, docs, examples, screenshots, stories, and
 UI libraries provide evidence. Agent synthesis is draft work until the human
 curates it and ordinary Git review accepts it.
 
+`auto-draft` is an optional skill mode for reducing blank-page cost. It scans
+first and writes starter core layer edits, but those edits are still draft work
+until the human curates them and Git review accepts them.
+
 ## 1. Classify The Scenario
 
 Choose the nearest scenario before writing fingerprint layers:
@@ -38,6 +42,11 @@ Choose the nearest scenario before writing fingerprint layers:
 If more than one scenario applies, start with the broad repo scenario, then run
 the nested decision test for individual products, apps, or feature areas.
 
+Use auto-draft when an existing repo has enough product evidence to support a
+starter sketch. Avoid relying on auto-draft for net-new repos, thin prototypes,
+major redesigns, or mixed-quality surfaces where repeated code may mostly be
+legacy or accidental.
+
 ## 2. Interview The Human
 
 Ask only high-leverage questions that change the fingerprint:
@@ -51,6 +60,9 @@ Ask only high-leverage questions that change the fingerprint:
 
 Use human-authored or human-approved answers in `prose.yml` and optional
 `fingerprint/memory/intent.md`. Do not treat unapproved notes as canonical.
+
+When auto-draft is requested, move the interview after the starter draft and
+use it to curate claims instead of asking every question up front.
 
 ## 3. Scan For Evidence
 
@@ -69,6 +81,10 @@ ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 Treat generated cache as scratch evidence. It can support curated entries in
 `inventory.yml`, but it does not establish product judgment by itself.
 
+In auto-draft mode, always create or refresh this cache before drafting, then
+inspect the high-signal files it points to. Scan facts may seed `inventory.yml`;
+scan frequency and raw cache do not establish product judgment.
+
 ## 4. Draft The Core Layers
 
 Write the smallest useful durable content:
@@ -82,6 +98,10 @@ Write the smallest useful durable content:
 
 Label uncertain reasoning in the working notes as provisional. Prefer a few
 high-confidence claims with evidence over a broad catalog.
+
+In auto-draft mode, write directly to the core layer files rather than a
+separate proposal artifact. Keep entries sparse, cite concrete files or
+exemplars where possible, and leave ambiguous product meaning for curation.
 
 ## 5. Curate With The Human
 
