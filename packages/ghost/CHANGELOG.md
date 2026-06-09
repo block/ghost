@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.7.2
+
+### Patch Changes
+
+- [#134](https://github.com/block/ghost/pull/134) [`075f0f3`](https://github.com/block/ghost/commit/075f0f3d3fb7cadbb8837dda5e8f232ce63e775b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reframe public docs around product-surface composition and prune superseded planning notes.
+
 ## 0.7.1
 
 ### Patch Changes
