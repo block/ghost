@@ -63,7 +63,7 @@ export function computeNodeDistances(members: FleetMember[]): FleetPairwise[] {
 /**
  * Compute the five group-by axes from each member's map.md frontmatter.
  *
- * Axes per `docs/ideas/ghost-fleet.md`:
+ * Axes per `docs/ghost-fleet.md`:
  *   - by_platform           map.platform
  *   - by_build_system       map.build_system
  *   - by_registry           map.registry?.path ?? "none"

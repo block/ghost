@@ -10,8 +10,7 @@ slug: getting-started
 <DocSection title="The Simple Model">
 
 Ghost captures the composition of a product surface: the intent behind it, the
-materials it draws from, and the patterns that make it feel intentional. It
-stores that composition as a repo-local fingerprint your agent can use. The
+materials it draws from, and the patterns that make it feel intentional. The
 public package is `@anarchitecture/ghost`, and it installs one CLI: `ghost`.
 
 The canonical portable fingerprint is a folder:
@@ -30,9 +29,10 @@ The canonical portable fingerprint is a folder:
     sources/cache/
 ```
 
-Generation starts from prose, inventory, and composition. Checks validate the
-result afterward; they are not generation input. `.ghost/config.yml` stays
-outside the portable package because it is local routing config.
+Generation starts from `prose.yml`, `inventory.yml`, and `composition.yml`.
+Checks validate the result afterward; they are not generation input.
+`.ghost/config.yml` stays outside the portable package because it is local
+routing config.
 
 Nested product areas can add child package roots such as
 `apps/checkout/.ghost/fingerprint/`. Ghost resolves fingerprint stacks
@@ -67,25 +67,35 @@ npx ghost skill install
 ```
 
 `ghost --help` shows the core new-adopter workflow. Use `ghost --help --all`
-when you want the complete advanced command index.
+when you want the complete command index.
 
-Once the skill is installed, ask your agent in plain English: "Set up the Ghost
-fingerprint for this repo" or "review this PR against the Ghost fingerprint".
-The recipe tells the agent what to read, what to write, and which CLI checks to
+Once the skill is installed, ask your agent in plain English:
+
+```text
+Set up the Ghost fingerprint for this repo.
+Brief this work from the Ghost fingerprint.
+Review this PR against the Ghost fingerprint.
+```
+
+The skill tells the agent what to read, what to write, and which CLI checks to
 run.
 
 </DocSection>
 
 <DocSection title="Author Your First Fingerprint">
 
-```text
-Set up the Ghost fingerprint for this repo.
-Set up the Ghost fingerprint for this repo with auto-draft.
-```
+The CLI handles the deterministic package work. Your agent handles the
+composition work: interviewing, reading repo evidence, drafting layer edits, and
+asking you to curate the claims.
 
-The default workflow is interview-first. Auto-draft is an opt-in skill workflow
-where the agent scans first, writes a small starter draft into the core layer
-files, and then asks you to curate the claims. It is not a Ghost CLI command.
+```bash
+ghost init --with-intent
+ghost scan --format json
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost lint .ghost
+ghost verify .ghost --root .
+```
 
 The fingerprint records durable surface-composition guidance:
 
@@ -94,51 +104,37 @@ The fingerprint records durable surface-composition guidance:
 2. **Inventory** - the materials it draws from: topology, building blocks,
    files, routes, assets, libraries, exemplars, and source links agents may
    inspect or use.
-3. **Composition** - the patterns that make it feel intentional: rules, layouts,
+3. **Composition** - the patterns that make it intentional: rules, layouts,
    structures, flows, states, content, behavior, and visual arrangements.
-
-```bash
-ghost init --with-intent
-ghost init --scope apps/checkout --with-intent
-ghost init --scope apps/checkout --memory-dir .design/memory
-ghost scan --format json
-ghost scan --include-nested --format json
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
-ghost lint .ghost
-ghost verify .ghost --root .
-ghost lint --all
-ghost verify --all
-```
 
 Generated cache is optional source material. Curate durable prose, inventory,
 and composition into the core layer files, then use normal Git review for
 approval. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).
 
-For generation, emit the upstream handoff packet:
+</DocSection>
+
+<DocSection title="Generate From Ghost">
+
+Before generating or revising UI, emit the upstream handoff packet:
 
 ```bash
 ghost emit context-bundle
 ```
 
+Give the generated bundle to Codex, Claude, Cursor, Goose, or another host
+agent so the work starts from the approved product fingerprint rather than from
+post-hoc review feedback alone.
+
 </DocSection>
 
-<DocSection title="Compare Two Systems">
+<DocSection title="Govern Changes">
+
+After implementation, run Ghost against the same fingerprint:
 
 ```bash
-ghost compare market/.ghost dashboard/.ghost
-ghost compare */.ghost
-```
-
-Package comparison uses canonical `.ghost/fingerprint/` packages.
-
-</DocSection>
-
-<DocSection title="Govern Changes in a PR">
-
-```text
-Review this PR against the Ghost fingerprint
+ghost check --base main
+ghost review --base main --include-memory
 ```
 
 `ghost check` applies active deterministic gates from the resolved fingerprint
@@ -150,33 +146,18 @@ outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
 
 </DocSection>
 
-<DocSection title="Update Fingerprint Layers">
-
-Use the installed `ghost` skill when work reveals durable surface-composition
-guidance Ghost should add to the fingerprint:
-
-```text
-Brief this work from the Ghost fingerprint
-Update the fingerprint with this surface-composition decision
-```
-
-Fingerprint edits are ordinary edits to the split fingerprint package and
-optional rationale files. Uncommitted or unmerged edits are drafts; checked-in
-`fingerprint/` core files are canonical.
-
-</DocSection>
-
-<DocSection title="Track Drift Intent">
-
-Drift is a governance signal over a fingerprint, not Ghost's center. With
-intent, it becomes a useful signal. `ack`, `track`, and `diverge` still operate
-on tracked direct fingerprint markdown files for compatibility with older
-workflows:
+<DocSection title="Compare And Track Intent">
 
 ```bash
+ghost compare market/.ghost dashboard/.ghost
+ghost stack apps/checkout/review/page.tsx
 ghost ack --stance aligned --reason "Initial baseline"
 ghost track new-tracked.fingerprint.md
 ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
+
+Package comparison uses canonical `.ghost/fingerprint/` packages. `ack`,
+`track`, and `diverge` record stance for compatibility drift workflows that
+track direct fingerprint markdown references.
 
 </DocSection>

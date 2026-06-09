@@ -1,14 +1,13 @@
 # @anarchitecture/ghost
 
-**Unified Ghost CLI for product-surface composition fingerprints.**
+**A unified Ghost CLI for product-surface composition fingerprints.**
 
 Ghost captures the composition of a product surface: the intent behind it, the
 materials it draws from, and the patterns that make it feel intentional. It
-stores that composition as a repo-local fingerprint agents can build from,
-check against, and evolve through Git. It initializes root `.ghost/fingerprint/`
-packages, validates deterministic gates, emits handoff and review packets,
-compares packages, and records intentional divergence. It ships one CLI:
-`ghost`.
+stores that composition in a repo-local `.ghost/fingerprint/` package that host
+agents can read before generation and validate after changes.
+
+This package ships one CLI: `ghost`.
 
 ## Project Status: Beta
 
@@ -30,25 +29,37 @@ npx ghost --help
 npx ghost --help --all
 ```
 
-`ghost --help` shows the core workflow. `ghost --help --all` shows the full
-advanced and legacy command index.
+`ghost --help` shows the core workflow. `ghost --help --all` shows the complete
+command index.
 
 ## Use
+
+Create and validate the fingerprint package:
 
 ```bash
 ghost init --with-intent
 ghost scan --format json
 ghost lint .ghost
 ghost verify .ghost --root .
+```
+
+Emit the pre-generation packet and govern changes afterward:
+
+```bash
+ghost emit context-bundle
 ghost check --base main
 ghost review --base main --include-memory
-ghost emit review-command
-ghost emit context-bundle
+```
+
+Install the BYOA skill bundle so your host agent can author, brief, review,
+verify, remediate, and update fingerprints:
+
+```bash
 ghost skill install
 ```
 
-Advanced commands such as `inventory`, `compare`, `ack`, and `diverge` remain
-available and appear in the full help index.
+Advanced commands such as `inventory`, `stack`, `compare`, `ack`, `track`, and
+`diverge` remain available in the full command index.
 
 Zero config for every verb. No API key is required. `OPENAI_API_KEY` /
 `VOYAGE_API_KEY` are optional and only used by semantic embedding helpers when a
@@ -69,20 +80,16 @@ import {
 ## BYOA
 
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
-lint, verify, compare, check, and handoff packet generation. The installed
-`ghost` skill teaches your host agent how to capture canonical
-`.ghost/fingerprint/` surface-composition context, brief and generate work from
-it, review changes against it, verify generated UI, remediate issues, and
-suggest fingerprint edits when the user asks.
-
-```bash
-ghost skill install
-```
-
-Then ask your agent:
+readiness reporting, linting, verification, comparison, checks, and handoff
+packet generation. The installed `ghost` skill teaches a host agent how to
+capture canonical `.ghost/fingerprint/` surface-composition context, brief and
+generate work from it, review changes against it, verify generated UI,
+remediate issues, and suggest fingerprint edits when the user asks.
 
 ```text
 Set up the Ghost fingerprint for this repo.
+Brief this work from the Ghost fingerprint.
+Review this PR against the Ghost fingerprint.
 ```
 
 ## Maintainers
