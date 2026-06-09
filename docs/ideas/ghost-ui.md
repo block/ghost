@@ -6,7 +6,7 @@ status: exploring
 
 > Fingerprint-first context: ghost-ui is reference inventory and evidence for
 > fingerprints. It can improve generation and governance, but it is not the
-> portable product-experience contract itself.
+> portable surface-composition contract itself.
 
 ## Why it's interesting
 

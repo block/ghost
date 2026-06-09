@@ -12,7 +12,7 @@ An agentic loop where repo A consciously migrates toward repo B's visual directi
 
 ## The observation
 
-Embedding distance is a *tier selector*, not a progress bar. Closing 0.6 → 0.3 is usually easier than 0.3 → 0.05: the first half removes obviously wrong answers (different font family, different base unit, different radii language); the second half means reconciling deliberate choices that both sides consider correct. The last 0.05 is where local identity lives and often shouldn't go to zero at all.
+Embedding distance is a *tier selector*, not a progress bar. Closing 0.6 → 0.3 is usually easier than 0.3 → 0.05: the first half removes obviously wrong answers (different font family, different base unit, different radii language); the second half means reconciling deliberate choices that both sides consider correct. The last 0.05 is where local surface character lives and often shouldn't go to zero at all.
 
 ## Distance tiers
 
@@ -38,7 +38,7 @@ A `migrate.md` skill recipe alongside profile / review / verify / generate / dis
 4. Re-profile → `ack` → repeat.
 5. Stop when `d ≤ floor + ε`, or agent hits a dim the user marks `diverging`.
 
-No CLI primitive is missing. All the judgement work lives in the recipe.
+No CLI primitive is missing. All the interpretation work lives in the recipe.
 
 ## Open questions
 

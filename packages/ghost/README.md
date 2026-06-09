@@ -1,12 +1,14 @@
 # @anarchitecture/ghost
 
-**Unified Ghost CLI for portable product-experience fingerprints.**
+**Unified Ghost CLI for product-surface composition fingerprints.**
 
-Ghost captures a portable product-experience fingerprint that tools use to
-generate, validate, compare, and govern product surfaces. It initializes root
-`.ghost/fingerprint/` packages, validates deterministic gates, emits handoff
-and review packets, compares packages, and records intentional divergence. It
-ships one CLI: `ghost`.
+Ghost captures the composition of a product surface: the intent behind it, the
+materials it draws from, and the patterns that make it feel intentional. It
+stores that composition as a repo-local fingerprint agents can build from,
+check against, and evolve through Git. It initializes root `.ghost/fingerprint/`
+packages, validates deterministic gates, emits handoff and review packets,
+compares packages, and records intentional divergence. It ships one CLI:
+`ghost`.
 
 ## Project Status: Beta
 
@@ -69,9 +71,9 @@ import {
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
 lint, verify, compare, check, and handoff packet generation. The installed
 `ghost` skill teaches your host agent how to capture canonical
-`.ghost/fingerprint/` memory, brief and generate work from it, review changes
-against it, verify generated UI, remediate issues, and suggest memory edits
-when the user asks.
+`.ghost/fingerprint/` surface-composition context, brief and generate work from
+it, review changes against it, verify generated UI, remediate issues, and
+suggest fingerprint edits when the user asks.
 
 ```bash
 ghost skill install

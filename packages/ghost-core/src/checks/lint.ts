@@ -225,7 +225,7 @@ function checkGrounding(
       severity: check.status === "active" ? "error" : "warning",
       rule: "check-grounding-inventory-only",
       message:
-        "Inventory refs can support a check, but active checks must derive from prose or composition memory.",
+        "Inventory refs can support a check, but active checks must derive from prose or composition refs.",
       path: `${path}.derivation`,
     });
   }

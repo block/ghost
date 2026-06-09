@@ -4,12 +4,17 @@ import { join, relative } from "node:path";
 const ROOTS = [
   "README.md",
   "CLAUDE.md",
+  "package.json",
   "docs",
   "apps",
+  "install",
+  "packages/ghost/README.md",
+  "packages/ghost/package.json",
   "packages/ghost/src",
   "packages/ghost/test",
   "packages/ghost-core/src",
   "packages/ghost-core/test",
+  "packages/ghost-ui/README.md",
   ".ghost",
   ".changeset",
 ];
@@ -49,6 +54,19 @@ const FORBIDDEN_PHRASES = [
   "custom memory directories",
   "inventory cache",
   "generated inventory",
+  "product-experience",
+  "product experience",
+  "product judgment",
+  "product identity",
+  "experience identity",
+  "product memory",
+  "experience memory",
+  "world model",
+  "memory for agents",
+  "judgment",
+  "judgement",
+  "judging",
+  "judged",
 ];
 
 const DISALLOWED_VERSION_MARKER = `${"v"}${"2"}`;
@@ -67,10 +85,12 @@ const ALLOWED_MEMORY_TERMS = [
   "--memory-dir",
   "--include-memory",
   "missing-memory",
-  "product-experience memory",
-  "memory for agents",
   "muscle memory",
   "in-memory",
+  "fingerprint/memory/intent.md",
+  "fingerprint/memory/decisions",
+  "memory/intent.md",
+  "memory/decisions",
 ];
 
 const forbiddenPatterns = FORBIDDEN_PHRASES.map((phrase) => ({

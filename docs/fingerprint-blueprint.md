@@ -1,6 +1,6 @@
 # Ghost Fingerprint Blueprint
 
-A Ghost fingerprint is checked-in product-experience memory for a repo: a
+A Ghost fingerprint is checked-in product-surface composition for a repo: a
 portable contract humans can approve and agents can act from. It is the
 material a host agent reads before generating UI and the deterministic
 grounding Ghost uses after changes for lint, verify, check, review, compare,
@@ -8,8 +8,8 @@ and context-bundle flows.
 
 The fingerprint is not a single prompt, screenshot archive, or generated design
 system dump. It is a small portable package of curated YAML and optional human
-context. Its job is to preserve product judgment: hierarchy, density,
-restraint, trust, flow, accessibility, copy, repetition, and the decisions that
+context. Its job is to preserve surface composition: hierarchy, density,
+restraint, trust, flow, accessibility, copy, repetition, and the choices that
 make a surface feel intentional.
 
 ## The Portable Package
@@ -18,10 +18,10 @@ The canonical package lives at `.ghost/fingerprint/`:
 
 ```text
 .ghost/
-  config.yml                    # optional local routing; not portable memory
+  config.yml                    # optional local routing; not portable context
   fingerprint/
     manifest.yml                # package anchor
-    prose.yml                   # core: product judgment
+    prose.yml                   # core: surface intent
     inventory.yml               # core: curated material and source links
     composition.yml             # core: experience patterns
 
@@ -37,12 +37,12 @@ The canonical package lives at `.ghost/fingerprint/`:
 ```
 
 The portable boundary is `.ghost/fingerprint/`. That folder can move with the
-product memory to another host or repo. `.ghost/config.yml` stays outside the
+surface-composition context to another host or repo. `.ghost/config.yml` stays outside the
 package because it stores local adapter details such as implementation roots,
 reference registries, or host routing.
 
 Git is the approval boundary. Uncommitted edits are draft work; checked-in core
-layer files are the approved Ghost memory.
+layer files are the approved Ghost fingerprint.
 
 ## Package Anchor
 
@@ -64,9 +64,9 @@ agent needs before writing product UI:
 
 | File | Question | Role |
 | --- | --- | --- |
-| `prose.yml` | What matters, why, and for whom? | Product judgment. |
+| `prose.yml` | What intent shapes the surface, and for whom? | Surface intent. |
 | `inventory.yml` | What materials can an agent inspect or reuse? | Curated implementation material and source links. |
-| `composition.yml` | How do materials become a recognizable experience? | Patterns, flows, rules, states, and arrangements. |
+| `composition.yml` | Which patterns make the surface feel intentional? | Patterns, flows, rules, states, and arrangements. |
 
 The layer files are raw YAML. Ghost assembles them internally into a
 `ghost.fingerprint/v1` document:
@@ -84,8 +84,9 @@ consistent assembled shape.
 
 ## `prose.yml`
 
-`prose.yml` carries product judgment. It should be human-readable, sparse, and
-durable enough that a reviewer can see what has actually been approved.
+`prose.yml` captures the intent behind the surface. It should be
+human-readable, sparse, and durable enough that a reviewer can see what has
+actually been approved.
 
 ```yaml
 summary:
@@ -154,9 +155,9 @@ experience_contracts:
       - check:review-packet-citations
 ```
 
-Use prose for statements that require judgment: audience needs, product
-obligations, acceptable tradeoffs, what the experience refuses to become, and
-contracts that should shape agent behavior. Do not put generated source material,
+Use prose for statements about audience needs, product obligations, acceptable
+tradeoffs, what the surface refuses to become, and contracts that should shape
+agent behavior. Do not put generated source material,
 large file lists, or deterministic detector configuration here.
 
 ## `inventory.yml`
@@ -224,12 +225,12 @@ Supported `sources[].kind` values are `cache`, `registry`, `file`, `url`, and
 generated material canonical by themselves.
 
 Inventory-only evidence can support a check or review finding, but it does not
-establish product judgment alone. Durable judgment belongs in `prose.yml` or
-`composition.yml`.
+establish surface-composition guidance alone. Durable guidance belongs in
+`prose.yml` or `composition.yml`.
 
 ## `composition.yml`
 
-`composition.yml` describes how product material turns into experience. A
+`composition.yml` captures the patterns that make a surface feel intentional. A
 pattern is reusable guidance about structure, layout, flow, state, behavior,
 visual language, or content.
 
@@ -257,10 +258,9 @@ patterns:
 Pattern `kind` can be `rule`, `layout`, `structure`, `flow`, `state`,
 `visual`, `behavior`, or `content`.
 
-Use composition for repeatable experience logic: common arrangements, state
+Use composition for repeatable surface logic: common arrangements, state
 behavior, content sequencing, responsive expectations, density choices, and
-interaction flow. Keep one-off facts in inventory and broad value judgments in
-prose.
+interaction flow. Keep one-off facts in inventory and broad intent in prose.
 
 ## Typed References
 
@@ -333,8 +333,8 @@ Detector `type` can be:
 
 Ref-backed checks are preferred. Missing derivation refs lint as warnings, not
 errors, so teams can draft gates while curation catches up. Promote only rules
-that can be detected deterministically; subjective taste stays in prose or
-composition until there is a reliable detector.
+that can be detected deterministically; taste stays in prose or composition
+until there is a reliable detector.
 
 ## Memory
 
@@ -343,7 +343,7 @@ context. Use it for constraints, audience notes, strategic intent, exceptions,
 and tradeoffs that should not be inferred from code alone.
 
 `fingerprint/memory/decisions/*.yml` stores accepted, rejected, or superseded
-product-experience rationale:
+surface-composition rationale:
 
 ```yaml
 schema: ghost.decision/v1
@@ -367,7 +367,7 @@ or superseded decisions are history, not canonical instructions.
 ## Generated Sources
 
 `fingerprint/sources/cache/` is optional generated source material. Cache answers
-what exists; the core layers answer what matters.
+what exists; the core layers answer what the surface is trying to do.
 
 Use cache when observed repo facts are useful:
 
@@ -403,7 +403,7 @@ broad-to-local:
 - intent files concatenate with layer headings;
 - decisions merge by `id`, with child entries winning.
 
-Use nested packages when an area has a genuinely different product memory, not
+Use nested packages when an area has genuinely different surface composition, not
 just because it has different files.
 
 ## Readiness
@@ -439,7 +439,7 @@ ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 Curate the core layers:
 
 ```text
-fingerprint/prose.yml          product judgment
+fingerprint/prose.yml          surface intent
 fingerprint/inventory.yml      curated material and exemplars
 fingerprint/composition.yml    reusable experience patterns
 ```
@@ -463,7 +463,7 @@ ghost emit review-command
 
 ## Authoring Rules
 
-- Write durable product meaning in `prose.yml`.
+- Write durable surface intent in `prose.yml`.
 - Write curated repo material and exemplars in `inventory.yml`.
 - Write repeatable experience patterns in `composition.yml`.
 - Write deterministic gates in `enforcement/checks.yml`.
@@ -477,11 +477,11 @@ Do not:
 
 - describe root-level `fingerprint.md` or direct `fingerprint.yml` as the new
   canonical package input;
-- treat cache output as canonical product judgment;
+- treat cache output as canonical surface guidance;
 - promote subjective taste directly into a check without a deterministic
   detector;
 - put structural gate configuration in prose;
-- use `.ghost/config.yml` as portable product memory.
+- use `.ghost/config.yml` as portable surface context.
 
 ## Legacy Material
 
