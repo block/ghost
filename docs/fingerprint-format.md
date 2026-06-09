@@ -1,15 +1,15 @@
 # The Portable Fingerprint Package Format
 
-A Ghost fingerprint is the checked-in, repo-local product-experience contract
+A Ghost fingerprint is the checked-in, repo-local surface-composition contract
 that humans can approve and agents can act from. The canonical portable package
 lives under `.ghost/fingerprint/`:
 
 ```text
 .ghost/
-  config.yml                    # optional local routing; not portable memory
+  config.yml                    # optional local routing; not portable context
   fingerprint/
     manifest.yml                # ghost.fingerprint-package/v1 package anchor
-    prose.yml                   # core: product judgment
+    prose.yml                   # core: surface intent
     inventory.yml               # core: curated material and source links
     composition.yml             # core: experience patterns
 
@@ -27,7 +27,7 @@ lives under `.ghost/fingerprint/`:
 Git is the staging and approval boundary: uncommitted or unmerged edits are
 draft work, and checked-in `fingerprint/` core files are canonical for Ghost.
 `.ghost/config.yml` stays outside the portable package because it routes local
-implementation roots and reference libraries rather than product memory.
+implementation roots and reference libraries rather than surface context.
 
 `manifest.yml` is intentionally small:
 
@@ -42,7 +42,7 @@ by checks, review packets, context bundles, compare, and stack merges.
 
 ## Core Layers
 
-`prose.yml` explains what matters and why:
+`prose.yml` captures the intent behind the surface:
 
 ```yaml
 summary:
@@ -52,7 +52,7 @@ summary:
     - Preserve task-first documentation and product trust.
 principles:
   - id: prose-before-cache
-    principle: Prose explains what matters and why; generated cache only explains what exists.
+    principle: Prose captures the intent behind the surface; generated cache only explains what exists.
 experience_contracts:
   - id: review-cites-memory
     contract: Advisory review findings must cite the diff and relevant fingerprint refs.
@@ -89,7 +89,7 @@ Supported `inventory.sources[].kind` values are `cache`, `registry`, `file`,
 `url`, and `package`. Source links are provenance and orientation; they do not
 make generated source material canonical by themselves.
 
-`composition.yml` explains how product material becomes experience:
+`composition.yml` captures the patterns that make a surface feel intentional:
 
 ```yaml
 patterns:
@@ -142,7 +142,7 @@ checks:
 
 Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
 warnings, not errors. Inventory refs can support checks, but inventory-only
-grounding does not establish product judgment alone. Composition patterns can
+grounding does not establish surface-composition guidance alone. Composition patterns can
 cite related checks via `check_refs`.
 
 ## Memory And Sources
@@ -152,7 +152,7 @@ intent: constraints, tradeoffs, audience notes, and known exceptions that
 should not be inferred from code alone.
 
 `fingerprint/memory/decisions/*.yml` stores accepted or rejected
-product-experience rationale using `ghost.decision/v1`. `ghost review
+surface-composition rationale using `ghost.decision/v1`. `ghost review
 --include-memory` reads accepted decisions.
 
 `fingerprint/sources/cache/` is refreshable generated material. It can help an

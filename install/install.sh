@@ -1,5 +1,5 @@
 #!/bin/sh
-# Ghost — install the unified product-experience memory skill bundle.
+# Ghost — install the unified surface-composition skill bundle.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
@@ -192,8 +192,8 @@ printf '\nInstalled %d files to %s\n' "$count" "$GHOST_DEST"
 printf '\n'
 printf 'Next:\n'
 printf '  cd <your-repo>\n'
-printf '  Tell your agent: "Set up Ghost memory for this repo"\n'
+printf '  Tell your agent: "Set up the Ghost fingerprint for this repo"\n'
 printf '\n'
-printf 'The agent will use .ghost/fingerprint/ as checked-in product-experience memory,\n'
+printf 'The agent will use .ghost/fingerprint/ as checked-in surface-composition context,\n'
 printf 'generate from prose.yml, inventory.yml, and composition.yml, keep optional\n'
 printf 'deterministic gates in enforcement/checks.yml, and run ghost lint/verify/check/review.\n'

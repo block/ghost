@@ -7,7 +7,7 @@ status: exploring
 > Historical design note: the separate `packages/ghost-scan` package described
 > here was removed. The public Ghost CLI and current fingerprint capture
 > workflow live in `packages/ghost` and canonical `.ghost/fingerprint/`
-> memory. Read this through the fingerprint-first architecture: the artifact is
+> context. Read this through the fingerprint-first architecture: the artifact is
 > the portable package, while scan/fingerprint verbs are authoring and
 > validation tools around it.
 

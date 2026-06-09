@@ -23,7 +23,7 @@ const VALID_DECISION = {
   decided_at: "2026-05-17T00:00:00.000Z",
 };
 
-describe("Ghost product-experience memory schemas", () => {
+describe("Ghost decision rationale schemas", () => {
   it("accepts a valid ghost.decision/v1 document", () => {
     const report = core.lintGhostDecision(VALID_DECISION);
 
