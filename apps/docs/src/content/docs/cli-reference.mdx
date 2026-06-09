@@ -9,14 +9,14 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts around the fingerprint lifecycle: capture
+The CLI does the repeatable parts around the fingerprint lifecycle: create
 packages, report readiness, validate files, gather optional source material,
 emit handoff packets, govern diffs, compare packages, and record intent. Your
 agent does the reading, writing, and reviewing.
 
 `ghost --help` intentionally shows the short core workflow for new adopters.
-Run `ghost --help --all` for the complete advanced command index;
-command-specific help remains available with `ghost <command> --help`.
+Run `ghost --help --all` for the complete command index; command-specific help
+remains available with `ghost <command> --help`.
 
 Canonical Ghost fingerprints start here, with optional child packages for scoped
 product areas:
@@ -30,12 +30,12 @@ product areas:
 apps/checkout/.ghost/fingerprint/manifest.yml
 ```
 
-The tables below are generated from the CLI source. Run `pnpm dump:cli-help`
-after command or flag changes.
+The command tables below are generated from the CLI source. Run
+`pnpm dump:cli-help` after command or flag changes.
 
 </DocSection>
 
-<DocSection title="ghost - capture, validate, and generate">
+<DocSection title="Create And Inspect">
 
 ### Initialize - `init`
 
@@ -89,6 +89,10 @@ mkdir -p .ghost/fingerprint/sources/cache
 ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
+</DocSection>
+
+<DocSection title="Validate And Emit">
+
 ### Validation - `lint`
 
 Validate a root `.ghost` fingerprint package or an individual split artifact.
@@ -115,11 +119,13 @@ ghost verify .ghost --root .
 ghost verify --all --memory-dir .design/memory
 ```
 
-### Survey/cache ops - `survey <op>`
+### Generate handoff packets - `emit`
 
-Operate on `ghost.survey/v1` files as cache source material.
+Emit `review-command` or the `context-bundle` generation packet from split
+fingerprint layers. Use `context-bundle` before generation and
+`review-command` when a host wants a reusable review prompt.
 
-<CliHelp tool="ghost" command="survey" hideDescription />
+<CliHelp tool="ghost" command="emit" hideDescription />
 
 ### Inspection - `describe`
 
@@ -127,17 +133,15 @@ Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
 
-### Generate handoff packets - `emit`
+### Survey/cache ops - `survey <op>`
 
-Emit `review-command` or the `context-bundle` generation packet from split
-fingerprint layers. Context bundles emit split files, not an assembled
-single-file fingerprint.
+Operate on `ghost.survey/v1` files as compatibility cache source material.
 
-<CliHelp tool="ghost" command="emit" hideDescription />
+<CliHelp tool="ghost" command="survey" hideDescription />
 
 </DocSection>
 
-<DocSection title="ghost - govern and compare">
+<DocSection title="Govern And Compare">
 
 ### Deterministic gates - `check`
 
@@ -156,7 +160,7 @@ layers, optional memory, checks, and the diff.
 
 ### Comparison - `compare`
 
-Pairwise distance or composite analysis over root packages.
+Pairwise distance or composite analysis over fingerprint packages.
 
 <CliHelp tool="ghost" command="compare" hideDescription />
 

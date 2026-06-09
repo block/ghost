@@ -1,6 +1,6 @@
 # The Portable Fingerprint Package Format
 
-A Ghost fingerprint is the checked-in, repo-local surface-composition contract
+A Ghost fingerprint is a checked-in, repo-local surface-composition contract
 that humans can approve and agents can act from. The canonical portable package
 lives under `.ghost/fingerprint/`:
 
@@ -58,6 +58,10 @@ experience_contracts:
     contract: Advisory review findings must cite the diff and relevant fingerprint refs.
 ```
 
+Use prose for durable claims about audience needs, product obligations,
+acceptable tradeoffs, what the surface refuses to become, and contracts that
+should shape agent behavior.
+
 `inventory.yml` points to curated material and optional source links:
 
 ```yaml
@@ -70,6 +74,9 @@ topology:
 building_blocks:
   tokens: [--color-bg, --color-fg]
   components: [Button, CodeBlock]
+  libraries: [packages/ghost-ui]
+  assets: [apps/docs/public/placeholder.svg]
+  routes: [/docs, /docs/cli-reference]
   files: [apps/docs/src/content/docs/cli-reference.mdx]
 exemplars:
   - id: cli-reference-page
@@ -77,17 +84,21 @@ exemplars:
     title: CLI reference page
     surface_type: reference-page
     scope: docs-site
+    why: Shows command facts and examples kept visually adjacent.
     refs: [composition.pattern:reference-before-decoration]
 sources:
   - id: generated-inventory
     kind: cache
     ref: sources/cache/inventory.json
     note: Refreshable observed repo facts.
+  - id: ghost-ui-registry
+    kind: registry
+    ref: packages/ghost-ui/public/r/registry.json
 ```
 
 Supported `inventory.sources[].kind` values are `cache`, `registry`, `file`,
 `url`, and `package`. Source links are provenance and orientation; they do not
-make generated source material canonical by themselves.
+make generated material canonical by themselves.
 
 `composition.yml` captures the patterns that make a surface feel intentional:
 
@@ -96,10 +107,22 @@ patterns:
   - id: reference-before-decoration
     kind: structure
     pattern: Reference pages prioritize the working surface before visual flourish.
+    applies_to:
+      surface_types: [reference-page]
+    guidance:
+      - Keep command names, flags, and examples visually adjacent.
+      - Put caveats near the command they modify.
+    evidence:
+      - path: apps/docs/src/content/docs/cli-reference.mdx
     check_refs: [check:no-hardcoded-brand-color]
 ```
 
-Use layer-qualified refs:
+Pattern `kind` can be `rule`, `layout`, `structure`, `flow`, `state`,
+`visual`, `behavior`, or `content`.
+
+## References
+
+Use layer-qualified refs when one part of the fingerprint grounds another:
 
 - `prose.situation:<id>`
 - `prose.principle:<id>`
@@ -107,6 +130,9 @@ Use layer-qualified refs:
 - `inventory.exemplar:<id>`
 - `composition.pattern:<id>`
 - `check:<id>`
+
+Layer refs without `check:` are used where only fingerprint layer material is
+valid, such as `inventory.exemplars[].refs`.
 
 ## Enforcement
 
@@ -122,13 +148,16 @@ checks:
     status: active
     severity: serious
     derivation:
-      composition:
-        - composition.pattern:reference-before-decoration
+      prose:
+        - prose.principle:reference-before-decoration
       inventory:
         - inventory.exemplar:cli-reference-page
+      composition:
+        - composition.pattern:reference-before-decoration
     applies_to:
       scopes: [docs-site]
       paths: [apps/docs]
+      surface_types: [reference-page]
     detector:
       type: forbidden-regex
       pattern: '#[0-9a-fA-F]{3,8}'
@@ -140,10 +169,21 @@ checks:
     repair: Move repeatable colors into semantic tokens.
 ```
 
-Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
-warnings, not errors. Inventory refs can support checks, but inventory-only
-grounding does not establish surface-composition guidance alone. Composition patterns can
-cite related checks via `check_refs`.
+Check `status` can be `active`, `proposed`, or `disabled`. `severity` can be
+`critical`, `serious`, or `nit`.
+
+Detector `type` can be:
+
+- `forbidden-regex`
+- `required-regex`
+- `banned-import`
+- `banned-component`
+- `required-token`
+
+Ref-backed checks are preferred. Missing derivation refs lint as warnings, not
+errors, so teams can draft gates while curation catches up. Promote only rules
+that can be detected deterministically; taste stays in prose or composition
+until there is a reliable detector.
 
 ## Memory And Sources
 
@@ -151,17 +191,29 @@ cite related checks via `check_refs`.
 intent: constraints, tradeoffs, audience notes, and known exceptions that
 should not be inferred from code alone.
 
-`fingerprint/memory/decisions/*.yml` stores accepted or rejected
-surface-composition rationale using `ghost.decision/v1`. `ghost review
---include-memory` reads accepted decisions.
+`fingerprint/memory/decisions/*.yml` stores accepted, rejected, or superseded
+surface-composition rationale using `ghost.decision/v1`:
+
+```yaml
+schema: ghost.decision/v1
+id: keep-reference-dense
+status: accepted
+title: Keep CLI reference pages dense
+claim: CLI reference pages should remain compact and task-first.
+rationale: Users arrive with a command-shaped task and need fast comparison.
+scope:
+  surface_types: [reference-page]
+evidence:
+  - path: apps/docs/src/content/docs/cli-reference.mdx
+decided_at: '2026-06-04T00:00:00-04:00'
+```
+
+`ghost review --include-memory` reads accepted decisions. Rejected or
+superseded decisions are history, not canonical instructions.
 
 `fingerprint/sources/cache/` is refreshable generated material. It can help an
 agent update `inventory.yml`, but cache files never count as fingerprint
 readiness by themselves.
-
-Legacy `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, and direct
-`fingerprint.yml` files may appear in older repos or explicit legacy workflows.
-They are not canonical package input for new Ghost work.
 
 ## Nested Packages
 
@@ -175,13 +227,19 @@ apps/checkout/review/page.tsx
 
 For a path like `apps/checkout/review/page.tsx`, Ghost resolves each
 `<memory-dir>/fingerprint/manifest.yml` from root to leaf. The merged stack is
-broad-to-local: child entries with the same `id` replace parent entries, scalar
-summary fields use the nearest child value, arrays merge with de-dupe, and
-child-relative paths normalize to repo-root paths in reports.
+broad-to-local:
 
-Checks merge by `id`, so a child check with `status: disabled` suppresses an
-inherited active check. Intent files concatenate with layer headings. Decisions
-merge by `id` with child entries winning.
+- child entries with the same `id` replace parent entries;
+- scalar summary fields use the nearest child value;
+- arrays merge with de-dupe;
+- child-relative paths normalize to repo-root paths in reports;
+- checks merge by `id`, so a child check with `status: disabled` suppresses an
+  inherited active check;
+- intent files concatenate with layer headings;
+- decisions merge by `id`, with child entries winning.
+
+Use nested packages when an area has genuinely different surface composition,
+not just because it has different files.
 
 ## Core Commands
 
@@ -199,8 +257,7 @@ ghost emit context-bundle
 `ghost scan` reports readiness in the same three-layer vocabulary. Useful
 `prose` means any non-empty summary field, situation, principle, or experience
 contract. Useful `inventory` means topology scopes or surface types, curated
-building blocks, or exemplars. Useful `composition` means at least one
-composition pattern.
+building blocks, or exemplars. Useful `composition` means at least one pattern.
 
 Use generated cache when observed repo facts are useful source material:
 
@@ -211,3 +268,30 @@ ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 
 Curate durable conclusions into `prose.yml`, `inventory.yml`, or
 `composition.yml`.
+
+## Authoring Rules
+
+- Write durable surface intent in `prose.yml`.
+- Write curated repo material and exemplars in `inventory.yml`.
+- Write repeatable experience patterns in `composition.yml`.
+- Write deterministic gates in `enforcement/checks.yml`.
+- Write human-approved intent and rationale in `memory/`.
+- Keep generated observations in `sources/cache/`.
+- Prefer typed refs over prose-only cross-links.
+- Keep ids stable after review because refs and checks depend on them.
+- Let Git review approve changes to canonical fingerprint layers.
+
+Do not:
+
+- describe root-level `fingerprint.md` or direct `fingerprint.yml` as the new
+  canonical package input;
+- treat cache output as canonical surface guidance;
+- promote subjective taste directly into a check without a deterministic
+  detector;
+- put structural gate configuration in prose;
+- use `.ghost/config.yml` as portable surface context.
+
+Legacy `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, direct
+`fingerprint.md`, and direct `fingerprint.yml` files may appear in older repos
+or explicit compatibility workflows. New Ghost work should target the split
+portable package under `.ghost/fingerprint/`.

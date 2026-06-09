@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": patch
 ---
 
-Reframe public and agent-facing copy around product-surface composition.
+Reframe public docs around product-surface composition and prune superseded planning notes.
