@@ -6,9 +6,9 @@ import { z } from "zod";
  * The body sections (World shape / Cohorts / Tracks) are checked separately
  * — this schema only covers the YAML machine layer.
  *
- * Per `docs/ideas/ghost-fleet.md`, clusters are deliberately *not* in the
- * frontmatter. They're a body-narrative projection the skill recipe writes
- * over the pairwise distances + groupings the CLI emits.
+ * Per `docs/ghost-fleet.md`, clusters are deliberately *not* in the
+ * frontmatter. They're a body-narrative projection the skill recipe writes over
+ * the pairwise distances + groupings the CLI emits.
  */
 
 const ISO_DATE_OR_DATETIME = z.iso.datetime({ offset: true }).or(
