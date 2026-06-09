@@ -94,12 +94,19 @@ or check format.
 - Remediate drift: follow [references/remediate.md](references/remediate.md).
 - Advanced compare bundles: follow [references/compare.md](references/compare.md).
 
+When the user asks to set up a fingerprint with `auto-draft`, treat that as an
+agent authoring mode, not a Ghost CLI command. Follow the auto-draft branch in
+the capture and authoring-scenarios recipes: scan first, draft the smallest
+evidence-backed core layer entries, then ask the human to curate the claims.
+
 ## Always
 
 - Treat checked-in `fingerprint/` core files as the source of truth.
 - Generate from prose, inventory, and composition.
 - Run active checks from `fingerprint/enforcement/checks.yml`; only active deterministic checks block.
 - Use local evidence as provisional when fingerprint layers are silent.
+- Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
+  the human curates them and Git review accepts them.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
   fingerprint layers complete.
