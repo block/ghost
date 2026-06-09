@@ -1,15 +1,16 @@
 ---
 name: ghost
-description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product fingerprint, update .ghost, brief work from product-experience context, review drift, verify generated UI, or compare fingerprint packages.
+description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product-surface fingerprint, update .ghost, brief work from surface-composition context, review drift, verify generated UI, or compare fingerprint packages.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
   cli: ghost
 ---
 
-# Ghost - Product Fingerprints
+# Ghost - Product-Surface Fingerprints
 
-Ghost captures product identity in a repo-local fingerprint package:
+Ghost captures the composition of a product surface: the intent behind it, the
+materials it draws from, and the patterns that make it feel intentional.
 
 ```text
 .ghost/
@@ -33,10 +34,11 @@ design-system registry, or screenshot archive.
 
 Generation uses **prose + inventory + composition**:
 
-- `fingerprint/prose.yml` explains what matters and why.
+- `fingerprint/prose.yml` captures the intent behind the surface.
 - `inventory` points to building blocks and precedents the agent can inspect
   or use, including exemplars.
-- `fingerprint/composition.yml` explains how those blocks become experience.
+- `fingerprint/composition.yml` captures the patterns that make the surface feel
+  intentional.
 
 Checks and review validate output; they are not generation input.
 
@@ -86,7 +88,7 @@ or check format.
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
 - Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
-- Recall product-experience context: follow [references/recall.md](references/recall.md).
+- Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
 - Review drift: follow [references/review.md](references/review.md).
@@ -119,15 +121,15 @@ evidence-backed core layer entries, then ask the human to curate the claims.
 Silent fingerprint layers do not require stopping by default. When the fingerprint does
 not cover the task, proceed from nearby product surfaces, local components,
 token and copy conventions, optional rationale files when present, and ordinary
-UX judgment when safe. Label that reasoning as provisional and
+UX reasoning when safe. Label that reasoning as provisional and
 non-Ghost-backed.
 Ask a human before making high-risk, irreversible, privacy/security/legal, or
-product-identity-defining choices.
+product-surface-defining choices.
 
 ## Never
 
-- Never treat advisory composition judgment as a CI gate.
-- Never claim provisional judgment, local convention, or general UX reasoning as
+- Never treat advisory composition critique as a CI gate.
+- Never claim provisional reasoning, local convention, or general UX reasoning as
   Ghost-backed.
 - Never treat `fingerprint/memory/intent.md` as authoritative unless human-authored or human-approved.
 - Never treat rejected decisions as canonical inputs.

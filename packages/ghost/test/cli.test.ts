@@ -900,7 +900,7 @@ checks:
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
-      "Never claim provisional judgment, local convention, or general UX reasoning",
+      "Never claim provisional reasoning, local convention, or general UX reasoning",
     );
     await expect(
       readFile(

@@ -1,10 +1,10 @@
 # Ghost
 
-Agents can write UI. What they cannot reliably preserve is the product
-experience identity behind that UI: hierarchy, density, restraint, repetition,
-trust, flow, and the decisions that make a surface feel intentional.
+Agents can assemble UI. What they cannot reliably preserve is the product
+surface composition behind that UI: hierarchy, density, restraint, repetition,
+trust, flow, and the choices that make a surface feel intentional.
 
-Ghost keeps that product-experience memory in a repo-local `.ghost/` fingerprint package. The public npm shape
+Ghost keeps that surface composition in a repo-local `.ghost/` fingerprint package. The public npm shape
 is one package, `@anarchitecture/ghost`, with one user-facing bin, `ghost`.
 The CLI validates, computes, compares, and emits deterministic packets. The
 host agent does the interpretive BYOA work through the installed `ghost` skill.
@@ -50,7 +50,7 @@ fingerprint/
 
 The three root layer files under `fingerprint/` are the core model:
 
-- `prose.yml` for product judgment.
+- `prose.yml` for surface intent.
 - `inventory.yml` for curated material, exemplars, and source links.
 - `composition.yml` for experience patterns.
 
@@ -58,8 +58,8 @@ Supporting files live under purpose folders. `enforcement/checks.yml` is
 validation and enforcement, not generation input. `memory/intent.md` and
 `memory/decisions/` hold optional human context and rationale. Generated cache
 in `sources/cache/` is optional source material; it answers what exists, while
-core fingerprint layers answer what matters and why. `.ghost/config.yml`
-remains local adapter/routing config outside portable memory. Ordinary Git
+core fingerprint layers answer what the surface is trying to do. `.ghost/config.yml`
+remains local adapter/routing config outside portable context. Ordinary Git
 review is the approval boundary for fingerprint edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still

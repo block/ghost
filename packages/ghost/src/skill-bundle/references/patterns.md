@@ -1,6 +1,6 @@
 ---
 name: patterns
-description: Author product-experience patterns inside .ghost/fingerprint/composition.yml.
+description: Author surface-composition patterns inside .ghost/fingerprint/composition.yml.
 handoffs:
   - label: Verify fingerprint package
     command: ghost verify .ghost --root .
@@ -11,7 +11,7 @@ handoffs:
 
 **Goal:** write useful `patterns[]` entries in `.ghost/fingerprint/composition.yml`.
 
-Patterns are durable product-experience memory. They may describe rules,
+Patterns are durable surface-composition guidance. They may describe rules,
 layouts, structures, flows, states, content, behavior, or visual arrangements.
 They are not a raw inventory of everything the repo does.
 
@@ -63,7 +63,7 @@ Allowed `kind` values:
 - Cite paths, locators, or notes as evidence.
 - Put obligations that affect failure, disclosure, recovery, or trust in
   `prose.experience_contracts`, not only `composition.patterns`.
-- Put broad product judgment in `prose.principles`.
+- Put broad surface intent in `prose.principles`.
 - Add `check_refs` only when a deterministic check exists in `fingerprint/enforcement/checks.yml`.
 
 ## Validate

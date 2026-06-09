@@ -7,7 +7,7 @@ export const RESOURCES_FILENAME = "resources.yml";
 /** Canonical filename for operational composition grammar. */
 export const PATTERNS_FILENAME = "patterns.yml";
 
-/** Canonical product experience memory artifact. */
+/** Canonical product-surface composition artifact. */
 export const FINGERPRINT_YML_FILENAME = "fingerprint.yml";
 
 /** Portable fingerprint bundle directory under the package root. */
@@ -44,7 +44,7 @@ export const SCOPE_SURVEYS_DIRNAME = "modules";
 /** Canonical filename for human-promoted deterministic gates. */
 export const CHECKS_FILENAME = "checks.yml";
 
-/** Optional directory containing accepted/rejected product-experience decisions. */
+/** Optional directory containing accepted/rejected surface-composition decisions. */
 export const DECISIONS_DIRNAME = "decisions";
 
 /** Optional directory containing generated, non-canonical caches. */

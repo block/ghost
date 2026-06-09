@@ -12,7 +12,7 @@ handoffs:
 
 # Recipe: Author Ghost Fingerprint
 
-**Goal:** record durable product-experience memory in `.ghost/fingerprint/`.
+**Goal:** record durable product-surface composition in `.ghost/fingerprint/`.
 If a change is uncommitted or unmerged, it is draft work. If it is checked in,
 Ghost treats the fingerprint package as canonical.
 
@@ -30,9 +30,9 @@ Ghost treats the fingerprint package as canonical.
     sources/cache/
 ```
 
-`prose.yml` answers what matters and why. `inventory.yml` records curated
-materials, exemplars, and source links. `composition.yml` records how those
-materials become recognizable experience. Checks validate output after
+`prose.yml` captures the intent behind the surface. `inventory.yml` records
+curated materials, exemplars, and source links. `composition.yml` records the
+patterns that make the surface feel intentional. Checks validate output after
 generation; they are not generation input.
 
 ## Steps
@@ -47,15 +47,16 @@ Common starting points:
 
 - Net new repos are mostly human-led because the repo has little evidence.
 - Net new repos with a UI library combine human intent with library scans.
-- Existing repos combine human judgment with code, docs, route, story, and
+- Existing repos combine human intent with code, docs, route, story, and
   exemplar scans.
 - Existing repos with mixed quality require curation before repeated patterns
   become canonical.
 - Monorepos and product suites need a nested-package decision pass before local
   surfaces inherit or add guidance.
 
-Human intent decides product identity. Scans provide evidence. Agent synthesis
-is draft work until a human curates it and ordinary Git review accepts it.
+Human intent anchors surface composition. Scans provide evidence. Agent
+synthesis is draft work until a human curates it and ordinary Git review
+accepts it.
 
 If the user asks for `auto-draft`, keep this same boundary: the mode may create
 starter edits, but it does not make scan output canonical.
@@ -103,8 +104,8 @@ less and ask more. Do not fill core layers with speculative product claims.
 ### 4. Orient
 
 Read the product, not just the component library. Look for surfaces, docs,
-tests, stories, routes, screenshots, or examples that reveal identity,
-hierarchy, behavior, copy, accessibility, and trust.
+tests, stories, routes, screenshots, or examples that reveal hierarchy,
+behavior, copy, accessibility, trust, and flow.
 
 Optional helper:
 
@@ -114,7 +115,7 @@ ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
 Treat generated cache as scratch material. Do not copy raw inventory into
-`inventory.yml` without judgment.
+`inventory.yml` without curation.
 
 ### 5. Write Core Layers
 
@@ -142,7 +143,7 @@ derivation:
 
 Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
 warnings. Inventory can support a check, but inventory-only grounding is not
-product judgment by itself.
+surface-composition guidance by itself.
 
 ### 7. Validate
 
@@ -160,5 +161,5 @@ packages exist.
 - Never describe any file outside `.ghost/fingerprint/` as canonical package input.
 - Never treat generated cache as canonical inventory.
 - Never treat auto-draft as a CLI feature or a replacement for human curation.
-- Never invent product-experience obligations absent from evidence or human direction.
-- Never promote subjective judgment directly into checks; make it deterministic or keep it advisory.
+- Never invent surface-composition obligations absent from evidence or human direction.
+- Never promote subjective taste directly into checks; make it deterministic or keep it advisory.

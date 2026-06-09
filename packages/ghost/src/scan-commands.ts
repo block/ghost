@@ -931,7 +931,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
   }
 
   return [
-    "Identify the surface type before judging composition.",
+    "Identify the surface type before assessing composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
     "Treat fingerprint/memory/intent.md as human authority when present.",
   ];

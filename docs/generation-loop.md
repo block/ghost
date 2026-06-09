@@ -1,8 +1,8 @@
 # Fingerprint Generation Loop
 
 Ghost gives UI generators and product-development agents a local, auditable
-product-experience fingerprint. Generation starts from checked-in core layers;
-checks and review govern the result afterward.
+product-surface composition fingerprint. Generation starts from checked-in core
+layers; checks and review govern the result afterward.
 
 ```text
 fingerprint/prose.yml + fingerprint/inventory.yml + fingerprint/composition.yml
@@ -17,7 +17,7 @@ HTML / JSX / app code
 ghost check + ghost review
         |
         v
-deterministic gates + advisory product-experience findings
+deterministic gates + advisory surface-composition findings
 ```
 
 ## Before Generation
@@ -42,9 +42,10 @@ mkdir -p .ghost/fingerprint/sources/cache
 ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
-Cache answers what exists now and does not count toward scan readiness. Prose
-answers what matters and why. Curated inventory points to building blocks and
-exemplars. Composition explains how those blocks become experience.
+Cache answers what exists now and does not count toward scan readiness.
+`prose.yml` captures the intent behind the surface. Curated inventory points to
+building blocks and exemplars. `composition.yml` captures the patterns that make
+the surface feel intentional.
 
 ## Govern
 
@@ -66,7 +67,7 @@ ghost review --base main --include-memory
 Advisory review packets include the current diff, the split fingerprint core
 layers, relevant inventory exemplars, active checks, optional accepted
 decisions, and finding categories for fixes, intentional divergence, missing
-memory, experience gaps, and eval uncertainty.
+missing grounding, experience gaps, and eval uncertainty.
 
 Review findings should cite the diff location, relevant fingerprint refs,
 relevant exemplars when useful, and any active check when blocking.
@@ -79,7 +80,7 @@ smallest useful response:
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.
 - Update the split fingerprint package or optional rationale files when the
-  user asks to change Ghost memory.
+  user asks to change the Ghost fingerprint.
 
 ## CI
 
@@ -92,7 +93,7 @@ ghost check --base main
 ghost review --base main --format markdown
 ```
 
-Advanced wrappers that store memory outside `.ghost` can pass
+Advanced wrappers that store fingerprint packages outside `.ghost` can pass
 `--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
 exact single-bundle mode and bypasses stack discovery.
 
