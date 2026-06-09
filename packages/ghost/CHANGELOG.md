@@ -1,5 +1,19 @@
 # @anarchitecture/ghost
 
+## 0.7.0
+
+### Minor Changes
+
+- [#129](https://github.com/block/ghost/pull/129) [`d4ad85c`](https://github.com/block/ghost/commit/d4ad85c3970acf98148f1e4ed946729724760343) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add fingerprint-first public export aliases for fingerprint, governance, and comparison APIs.
+
+### Patch Changes
+
+- [#133](https://github.com/block/ghost/pull/133) [`d365819`](https://github.com/block/ghost/commit/d3658196e1693e69a0ec2d1f3dd9302dd666a1bf) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document auto-draft as an opt-in skill workflow for starter fingerprint authoring.
+
+- [#131](https://github.com/block/ghost/pull/131) [`1ae59e3`](https://github.com/block/ghost/commit/1ae59e3e91d75bfd49a4cd49f2f24b799eb58942) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make the Ghost CLI bin executable after package builds.
+
+- [#132](https://github.com/block/ghost/pull/132) [`584bb8b`](https://github.com/block/ghost/commit/584bb8bdf70260bc8574a63206ee60244f78ba07) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Read accepted decisions from the canonical rationale directory during single-package review.
+
 ## 0.6.0
 
 ### Minor Changes
