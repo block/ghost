@@ -53,7 +53,7 @@ export function emitPackageReviewCommand(
 
 function packageFrontmatter(product: string): string {
   return `---
-description: Ghost product-experience review for ${product} - grounded in fingerprint core layers
+description: Ghost surface-composition review for ${product} - grounded in fingerprint core layers
 ---`;
 }
 
@@ -69,7 +69,7 @@ function packageWorkflowSection(context: PackageContext): string {
   return `## Review Workflow
 
 1. Read \`${fingerprintDir}/fingerprint/prose.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\` as the canonical core layers.
-2. Select the relevant situation before judging UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
+2. Select the relevant situation before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
 3. Apply prose principles, experience contracts, and composition patterns before choosing implementation details.
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Use inventory building blocks only as replaceable material that may help satisfy the selected prose and composition.
@@ -83,11 +83,11 @@ function packageFindingPolicySection(): string {
 
 Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${category}\``).join(", ")}.
 
-Only findings backed by an active check should be treated as blocking. Everything else is advisory product-experience critique.
+Only findings backed by an active check should be treated as blocking. Everything else is advisory surface-composition critique.
 
-Review only what fingerprint layers or active checks make relevant to the product experience.
+Review only what fingerprint layers or active checks make relevant to the product surface.
 
-When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
 If the diff reveals missing fingerprint grounding or layer coverage, report \`missing-memory\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
 }
@@ -213,7 +213,7 @@ function formatBuildingBlocks(context: PackageContext): string {
   const { building_blocks: blocks } = context.fingerprint.inventory;
   const lines = ["### Inventory Building Blocks"];
   lines.push(
-    "- Use these as replaceable implementation material, not product-experience authority.",
+    "- Use these as replaceable implementation material, not surface-composition authority.",
   );
   pushJoined(lines, "Tokens", blocks.tokens, { code: true });
   pushJoined(lines, "Components", blocks.components, { code: true });

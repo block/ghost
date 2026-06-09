@@ -1,7 +1,7 @@
 {
   "name": "@anarchitecture/ghost",
   "version": "0.7.0",
-  "description": "Unified Ghost CLI for portable product-experience fingerprints, deterministic checks, advisory review, and comparison",
+  "description": "Unified Ghost CLI for product-surface composition fingerprints, deterministic checks, advisory review, and comparison",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
   "repository": {
@@ -14,7 +14,8 @@
   },
   "keywords": [
     "fingerprint",
-    "product-experience",
+    "product-surface",
+    "surface-composition",
     "design-system",
     "design-tokens",
     "shadcn",

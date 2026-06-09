@@ -174,7 +174,7 @@ Review this diff as a non-blocking design-language critic. Advisory findings mus
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
-When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before judging high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
 If the diff exposes missing fingerprint grounding or layer coverage, report it as missing-memory or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
 
@@ -286,13 +286,13 @@ function formatAcceptedDecisionsSection(
 ): string {
   if (!decisions) return "";
   if (decisions.length === 0) {
-    return `## Accepted Product-Experience Decisions
+    return `## Accepted Surface-Composition Decisions
 
 _No accepted decisions found in fingerprint/memory/decisions._
 `;
   }
 
-  const lines = ["## Accepted Product-Experience Decisions", ""];
+  const lines = ["## Accepted Surface-Composition Decisions", ""];
   for (const decision of decisions) {
     lines.push(`### ${decision.title}`);
     lines.push("");

@@ -214,7 +214,7 @@ function checkGrounding(
       severity: "warning",
       rule: "check-grounding-missing",
       message:
-        "Checks should declare derivation refs when they enforce product-experience memory.",
+        "Checks should declare derivation refs when they enforce surface-composition rules.",
       path: `${path}.derivation`,
     });
     return;
@@ -225,7 +225,7 @@ function checkGrounding(
       severity: "warning",
       rule: "check-grounding-inventory-only",
       message:
-        "Inventory refs can support a check, but prose or composition refs are preferred for product-experience enforcement.",
+        "Inventory refs can support a check, but prose or composition refs are preferred for surface-composition enforcement.",
       path: `${path}.derivation`,
     });
   }
