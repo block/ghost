@@ -9,7 +9,7 @@ status: settled
 Ghost is fingerprint-first.
 
 The durable Ghost artifact is the checked-in fingerprint package: a portable
-product-experience contract that humans can approve and agents can act from.
+surface-composition contract that humans can approve and agents can act from.
 Everything else in Ghost is tooling for that contract or tooling around it.
 Drift remains important, but it is one governance workflow over the fingerprint,
 not the center of the architecture.
@@ -17,17 +17,18 @@ not the center of the architecture.
 This settles the mental model for follow-on work. Existing docs already describe
 `.ghost/fingerprint/` as the portable package and generation context. Older
 idea docs that center `ghost-drift`, package decomposition, or drift comparison
-should be read through this updated hierarchy: the fingerprint owns product
-memory; tools consume, validate, compare, generate from, or govern that memory.
+should be read through this updated hierarchy: the fingerprint owns surface
+context; tools consume, validate, compare, generate from, or govern that
+context.
 
 ## Decisions
 
 - The fingerprint package is the durable artifact. `.ghost/fingerprint/`
   remains the portable boundary, anchored by `fingerprint/manifest.yml`.
 - Core generation input is `prose.yml`, `inventory.yml`, and
-  `composition.yml`. Prose explains what matters and why, inventory points to
-  curated material and exemplars, and composition explains how those materials
-  become experience.
+  `composition.yml`. `prose.yml` captures the intent behind the surface,
+  `inventory.yml` points to curated material and exemplars, and
+  `composition.yml` captures the patterns that make it feel intentional.
 - Supporting material stays subordinate to the core layers:
   `enforcement/checks.yml` validates deterministic obligations,
   `memory/intent.md` and `memory/decisions/` preserve optional human-approved
@@ -38,11 +39,11 @@ memory; tools consume, validate, compare, generate from, or govern that memory.
   whether a change remains faithful to the fingerprint, how intentional
   divergence is recorded, and how references shift over time.
 - Git remains the approval boundary. Uncommitted or unmerged fingerprint edits
-  are draft work; checked-in fingerprint files are canonical Ghost memory.
+  are draft work; checked-in fingerprint files are canonical Ghost context.
 
 ## Rationale
 
-Agents need product-experience memory before they generate, not only after a
+Agents need surface-composition context before they generate, not only after a
 diff exists. Post-hoc drift review can catch violations, but it cannot be the
 only way Ghost participates in the work. The highest-leverage artifact is the
 structured input that lets a host agent build, revise, or explain a product
@@ -52,12 +53,12 @@ and flow.
 That makes the fingerprint more like an upstream contract than a static
 guideline or a downstream inspection report. Review, linting, comparison,
 generation packets, authoring tools, marketing workflows, and vibe-coding
-workflows can all use the same checked-in product memory. Their outputs differ,
+workflows can all use the same checked-in surface context. Their outputs differ,
 but their source of truth is the fingerprint.
 
 This also keeps Ghost adapter-neutral. Codex, Claude, Cursor, Goose, CI
 wrappers, docs tools, and design-system integrations can bring their own
-display, policy, and execution format. Ghost owns the portable memory, stable
+display, policy, and execution format. Ghost owns the portable context, stable
 packets, deterministic validation, and stack resolution.
 
 ## Lifecycle taxonomy
@@ -69,7 +70,7 @@ fingerprint lifecycle:
 | --- | --- | --- |
 | Capture | `init`, `inventory`, `scan` | Create the package, gather optional source material, and report layer readiness. |
 | Validate | `lint`, `verify` | Check schema shape, refs, evidence, exemplars, and deterministic package quality. |
-| Generate / apply | `emit context-bundle`, host agents, future generation consumers | Give agents the upstream product-experience contract before they build or revise. |
+| Generate / apply | `emit context-bundle`, host agents, future generation consumers | Give agents the upstream surface-composition contract before they build or revise. |
 | Govern | `check`, `review`, `ack`, `track`, `diverge` | Validate changed surfaces, produce advisory findings, and record stance toward divergence. |
 | Compare | `compare`, fleet-style analysis | Understand distance, cohorts, reference relationships, and change across packages. |
 
@@ -78,10 +79,10 @@ or create public API guarantees. It gives follow-on work a shared hierarchy.
 
 ## Consequences
 
-- Positioning should lead with the portable product-experience fingerprint, not
-  drift detection. A good default sentence is: Ghost captures a portable
-  product-experience fingerprint that tools use to generate, validate, compare,
-  and govern product surfaces.
+- Positioning should lead with the portable surface-composition fingerprint, not
+  drift detection. A good default sentence is: Ghost captures the composition of
+  a product surface: the intent behind it, the materials it draws from, and the
+  patterns that make it feel intentional.
 - Docs IA should make the lifecycle visible. Drift/review docs remain useful,
   but they should live under governance rather than define the product.
 - CLI help should group commands by fingerprint lifecycle where practical.
@@ -94,7 +95,7 @@ or create public API guarantees. It gives follow-on work a shared hierarchy.
   inventory evidence. Those ideas are follow-on design work, not new schema in
   this memo.
 - Dogfooding should update Ghost's own fingerprint and examples to express this
-  identity. The repo should be able to describe itself as fingerprint-first
+  framing. The repo should be able to describe itself as fingerprint-first
   before it asks other repos to do the same.
 
 ## Follow-on tracks

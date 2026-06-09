@@ -114,14 +114,14 @@ async function writeContextFile(
 function buildPackageSkillMd(context: PackageContext): string {
   return `---
 name: ${context.name}
-description: Use this Ghost product-experience world model to preserve coherent UI generation and review.
+description: Use this Ghost surface-composition fingerprint to preserve coherent UI generation and review.
 user-invocable: true
 ---
 
 This skill grounds work in the **${context.name}** Ghost fingerprint.
 
 Treat this bundle as the upstream handoff for agentic UI work. Use it before
-generation so the output extends the product-experience world model, then
+generation so the output extends the same product-surface composition, then
 validate the resulting diff with Ghost checks or review when available.
 
 Read the files in this order:
@@ -139,9 +139,9 @@ findings advisory.
 
 When fingerprint layers are silent, proceed from nearby product surfaces, local
 components, token and copy conventions, optional rationale files when present,
-and ordinary UX judgment when safe. Label that reasoning as provisional and
+and ordinary UX reasoning when safe. Label that reasoning as provisional and
 non-Ghost-backed. Ask a human before making high-risk, irreversible,
-privacy/security/legal, or product-identity-defining choices. Fingerprint edits
+privacy/security/legal, or product-surface-defining choices. Fingerprint edits
 are ordinary Git-reviewed edits to \`fingerprint/\` files and optional local
 \`config.yml\` when present.
 `;
@@ -149,18 +149,18 @@ are ordinary Git-reviewed edits to \`fingerprint/\` files and optional local
 
 function buildPackagePromptMd(context: PackageContext): string {
   const parts = [
-    `You are working inside the **${context.name}** product experience as captured by Ghost.`,
+    `You are working inside the **${context.name}** product-surface composition as captured by Ghost.`,
   ];
 
   parts.push(`# Agent Handoff
 
-This packet is upstream input for agentic UI work, not post-hoc commentary. Use it before writing or revising product surfaces so the output extends the same product-experience world model instead of merely passing local checks.
+This packet is upstream input for agentic UI work, not post-hoc commentary. Use it before writing or revising product surfaces so the output extends the same surface composition instead of merely passing local checks.
 
 After generating, validate the diff with Ghost checks or review when available, and keep Ghost package edits as ordinary Git-reviewed edits to the source \`.ghost\` package.`);
 
   parts.push(`# Prose
 
-Canonical product meaning lives in \`fingerprint/prose.yml\`. Use situations, principles, and experience contracts as the source of product judgment.
+Surface intent lives in \`fingerprint/prose.yml\`. Use situations, principles, and experience contracts as the source of intent for the work.
 
 \`\`\`yaml
 ${stringifyYaml(context.fingerprint.prose, { lineWidth: 0 }).trim()}
@@ -221,8 +221,8 @@ ${context.intent.trim()}
 - Use inventory building blocks only when they support the selected prose and composition.
 - Treat checks as validation; only active checks are blocking.
 - After generating, run or request Ghost review/check when available so output is validated against the same fingerprint layers.
-- When fingerprint layers are silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX judgment when safe.
-- Label silent-layer reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-identity-defining choices.
+- When fingerprint layers are silent, proceed from nearby product surfaces, local components, token and copy conventions, optional rationale files when present, and ordinary UX reasoning when safe.
+- Label silent-layer reasoning as provisional and non-Ghost-backed; ask the human before high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 - Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint/\` files and optional local \`config.yml\` when present.`);
 
   return `${parts.join("\n\n")}\n`;
@@ -243,7 +243,7 @@ Ghost checks or review when available.
 - \`SKILL.md\` - agent skill manifest.
 - \`prompt.md\` - portable generation packet: prose, inventory, composition, and checks.
 - \`fingerprint/manifest.yml\` - portable fingerprint package anchor.
-- \`fingerprint/prose.yml\` - canonical product judgment.
+- \`fingerprint/prose.yml\` - surface intent.
 - \`fingerprint/inventory.yml\` - canonical curated material and source links.
 - \`fingerprint/composition.yml\` - canonical experience patterns.
 ${context.checksRaw ? "- `fingerprint/enforcement/checks.yml` - deterministic gates.\n" : ""}${context.intent ? "- `fingerprint/memory/intent.md` - supplemental human-authored context.\n" : ""}
@@ -345,7 +345,7 @@ function formatBuildingBlocks(context: PackageContext): string {
   const { building_blocks: blocks } = context.fingerprint.inventory;
   const lines = [
     "## Building Blocks",
-    "- Use these as available material, not product-experience authority.",
+    "- Use these as available material, not surface-composition authority.",
   ];
   pushJoined(lines, "Tokens", blocks.tokens, { code: true });
   pushJoined(lines, "Components", blocks.components, { code: true });

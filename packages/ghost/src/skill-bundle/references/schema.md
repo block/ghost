@@ -7,7 +7,7 @@ Canonical package:
   config.yml                    optional local routing
   fingerprint/
     manifest.yml                ghost.fingerprint-package/v1
-    prose.yml                   core product judgment
+    prose.yml                   core surface intent
     inventory.yml               core material and source links
     composition.yml             core patterns
     enforcement/checks.yml      optional ghost.checks/v1 gates
@@ -43,4 +43,4 @@ Use these typed refs:
 
 `fingerprint/enforcement/checks.yml` remains deterministic only. Ref-backed
 checks are preferred; missing or unresolved derivation refs lint as warnings.
-Inventory refs can support a check but do not establish product judgment alone.
+Inventory refs can support a check but do not establish surface guidance alone.

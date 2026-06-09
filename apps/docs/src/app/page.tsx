@@ -29,8 +29,8 @@ export default function Home() {
           </p>
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
-              Agents can write UI. What they cannot reliably preserve is the
-              product-experience world that UI belongs to.
+              Agents can assemble UI. What they cannot reliably preserve is the
+              surface composition that UI belongs to.
             </p>
             <p className="thesis-item">
               For years, design systems solved a human assembly problem. They
@@ -40,23 +40,25 @@ export default function Home() {
             <p className="thesis-item">
               That layer still matters, but agents change the scarce layer.
               Models can copy local patterns and recombine components. They do
-              not consistently preserve the decisions that make a product feel
-              intentional: hierarchy, density, restraint, behavior, copy,
-              accessibility, trust, and flow.
+              not consistently preserve the composition that makes a product
+              surface feel intentional: hierarchy, density, restraint, behavior,
+              copy, accessibility, trust, and flow.
             </p>
             <p className="thesis-item">
-              Ghost is a repo-local product-experience world model for agents.
+              Ghost captures the composition of a product surface: the intent
+              behind it, the materials it draws from, and the patterns that make
+              it feel intentional.
             </p>
             <p className="thesis-item">
-              It turns upstream product judgment into checked-in fingerprint
-              layers: what matters, why it matters, which situations change the
-              obligation, which patterns hold the experience together, and which
-              examples show the product at its best.
+              It stores that composition as checked-in fingerprint layers: which
+              intent shapes the surface, which materials agents can draw from,
+              which situations change the obligation, which patterns hold the
+              surface together, and which examples show it at its best.
             </p>
             <p className="thesis-item">
               Components, tokens, libraries, and generated cache become
               implementation material. Ghost does not replace them. It gives
-              agents the product model that tells them when and how those
+              agents the surface context that tells them when and how those
               materials belong.
             </p>
             <p className="thesis-item">Ghost keeps that model compact:</p>
@@ -87,10 +89,11 @@ export default function Home() {
               </li>
             </ul>
             <p className="thesis-item">
-              The split is deliberate. Fingerprint prose answers what matters
-              and why. Cache answers what exists. Exemplars show concrete
-              surfaces worth inspecting before generation or review. Checks
-              validate output; they are not generation input.
+              The split is deliberate. <code>prose.yml</code> captures the
+              intent behind the surface. <code>inventory.yml</code> captures the
+              materials it draws from. <code>composition.yml</code> captures the
+              patterns that make it feel intentional. Cache answers what exists.
+              Checks validate output; they are not generation input.
             </p>
             <p className="thesis-item">A typical loop becomes:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
@@ -112,10 +115,10 @@ export default function Home() {
               review packets, comparison, and upstream handoff packets.
             </p>
             <p className="thesis-item">
-              This is critical because product judgment that cannot be recalled
-              or evaluated cannot be delegated. A product experience that only
-              its original author can judge is not transferable: to agents, to
-              new engineers, or to forks of the product.
+              This is critical because surface composition that cannot be
+              recalled or evaluated cannot be delegated. A product surface that
+              only its original author can assess is not transferable: to
+              agents, to new engineers, or to forks of the product.
             </p>
             <p className="thesis-item">
               Drift becomes measurable within this system. When generated or
@@ -124,7 +127,7 @@ export default function Home() {
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>incorrect generation: agent failure</li>
-              <li>missing memory: under-specified product judgment</li>
+              <li>missing-memory: under-specified surface context</li>
               <li>intentional product evolution</li>
             </ul>
             <p className="thesis-item">
@@ -139,20 +142,21 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               This leads to a practical governance model. Each repository owns
-              its product experience fingerprint. Advanced workflows can add
-              nested packages for product areas, custom fingerprint directories
-              for host wrappers, comparison across systems, and declared drift
+              its product-surface fingerprint. Advanced workflows can add nested
+              packages for product areas, custom fingerprint directories for
+              host wrappers, comparison across systems, and declared drift
               stances.
             </p>
             <p className="thesis-item">
               Across an organization, the collection of Ghost packages forms a
-              higher-order map: a distributed model of product experience as it
-              is actually practiced, not as it is only described.
+              higher-order map: a distributed model of product-surface
+              composition as it is actually practiced, not as it is only
+              described.
             </p>
             <p className="thesis-item">
-              Design systems were libraries for humans. Ghost is memory for
-              agents: every surface can carry the product model it extends, and
-              every deviation can carry evidence.
+              Design systems were libraries for humans. Ghost is composition
+              context for agents: every surface can carry the fingerprint it
+              extends, and every deviation can carry evidence.
             </p>
           </div>
         </section>

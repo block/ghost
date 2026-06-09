@@ -12,12 +12,12 @@ handoffs:
 
 # Recipe: Collaborative Fingerprint Authoring
 
-**Goal:** help a human and agent co-author durable product-experience memory
+**Goal:** help a human and agent co-author durable product-surface composition
 without turning raw repo scans into product truth.
 
-Human intent decides identity. Code, docs, examples, screenshots, stories, and
-UI libraries provide evidence. Agent synthesis is draft work until the human
-curates it and ordinary Git review accepts it.
+Human intent anchors surface composition. Code, docs, examples, screenshots,
+stories, and UI libraries provide evidence. Agent synthesis is draft work until
+the human curates it and ordinary Git review accepts it.
 
 `auto-draft` is an optional skill mode for reducing blank-page cost. It scans
 first and writes starter core layer edits, but those edits are still draft work
@@ -36,8 +36,8 @@ Choose the nearest scenario before writing fingerprint layers:
 | Design system or UI library | Grammar-led. Describe primitives, component behavior, token posture, accessibility, and composition constraints. |
 | Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions; use decisions for rationale. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns a human wants to keep. |
-| Fork, white label, or tenant variant | Shared base + local divergence. Keep common identity broad and local differences scoped. |
-| Monorepo or nested surfaces | Stack-aware. Use root guidance for product-family identity and nested packages for surfaces judged differently. |
+| Fork, white label, or tenant variant | Shared base + local divergence. Keep common surface composition broad and local differences scoped. |
+| Monorepo or nested surfaces | Stack-aware. Use root guidance for product-family composition and nested packages for surfaces assessed differently. |
 
 If more than one scenario applies, start with the broad repo scenario, then run
 the nested decision test for individual products, apps, or feature areas.
@@ -56,7 +56,7 @@ Ask only high-leverage questions that change the fingerprint:
 - Which screens, flows, stories, or examples show the product at its best?
 - Which current patterns are legacy, accidental, experimental, or low quality?
 - Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
-- Are there surfaces where the same UI decision should be judged differently?
+- Are there surfaces where the same UI decision should be assessed differently?
 
 Use human-authored or human-approved answers in `prose.yml` and optional
 `fingerprint/memory/intent.md`. Do not treat unapproved notes as canonical.
@@ -68,8 +68,8 @@ use it to curate claims instead of asking every question up front.
 
 Read the product, not just the component library. Inspect routes, components,
 stories, tests, docs, screenshots, examples, copy, tokens, assets, and UI
-library references that reveal identity, hierarchy, behavior, accessibility,
-trust, and flow.
+library references that reveal hierarchy, behavior, accessibility, trust, and
+flow.
 
 Optional cache:
 
@@ -79,11 +79,12 @@ ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
 Treat generated cache as scratch evidence. It can support curated entries in
-`inventory.yml`, but it does not establish product judgment by itself.
+`inventory.yml`, but it does not establish surface-composition guidance by
+itself.
 
 In auto-draft mode, always create or refresh this cache before drafting, then
 inspect the high-signal files it points to. Scan facts may seed `inventory.yml`;
-scan frequency and raw cache do not establish product judgment.
+scan frequency and raw cache do not establish surface-composition guidance.
 
 ## 4. Draft The Core Layers
 
@@ -105,7 +106,7 @@ exemplars where possible, and leave ambiguous product meaning for curation.
 
 ## 5. Curate With The Human
 
-Before treating draft content as durable memory, ask the human to classify
+Before treating draft content as durable surface context, ask the human to classify
 important claims:
 
 - keep as canonical
@@ -117,12 +118,12 @@ important claims:
 - convert into a deterministic check
 
 Only add checks when the rule can be enforced deterministically. Subjective
-composition judgment belongs in `composition.yml` or advisory review, not in a
+composition critique belongs in `composition.yml` or advisory review, not in a
 blocking gate.
 
 ## 6. Decide Nested Packages
 
-Create or update a local `.ghost/` only when a surface would be judged
+Create or update a local `.ghost/` only when a surface should be assessed
 differently from the root package.
 
 Use a nested package when the local surface has distinct:
@@ -165,4 +166,4 @@ canonical package.
 - Never make `fingerprint/memory/intent.md` authoritative unless human-authored
   or human-approved.
 - Never create nested packages just to mirror directory structure.
-- Never turn advisory composition judgment into a deterministic gate.
+- Never turn advisory composition critique into a deterministic gate.

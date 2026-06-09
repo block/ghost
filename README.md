@@ -1,13 +1,14 @@
 # Ghost
 
-**Ghost captures a portable product-experience fingerprint for AI agents.**
+**Ghost captures the composition of a product surface: the intent behind it,
+the materials it draws from, and the patterns that make it feel intentional.**
 
-Agents can write UI. What they cannot reliably preserve is the product
-experience that UI belongs to: hierarchy, density, restraint, behavior, copy,
+Agents can assemble UI. What they cannot reliably preserve is the surface
+composition behind that UI: hierarchy, density, restraint, behavior, copy,
 accessibility, trust, and flow. Traditional design systems give humans parts,
-rules, and examples. Ghost stores the upstream product judgment agents need
-around those parts in a versioned `.ghost/` bundle they can read before
-generation and validate after changes.
+rules, and examples. Ghost stores the upstream composition agents need around
+those parts in a versioned `.ghost/` bundle they can read before generation and
+validate after changes.
 
 The MVP rule is intentionally small:
 
@@ -15,10 +16,9 @@ The MVP rule is intentionally small:
 - **`fingerprint/manifest.yml`** anchors the package (`ghost.fingerprint-package/v1`).
 - **`fingerprint/prose.yml`, `fingerprint/inventory.yml`, and
   `fingerprint/composition.yml`** are the three core model files.
-- **Generation uses prose + inventory + composition.** Prose explains what
-  matters and why, inventory points to the building blocks and precedents an
-  agent can inspect or use, and composition explains how those blocks become
-  experience.
+- **Generation uses prose + inventory + composition.** `prose.yml` captures the
+  intent behind the surface. `inventory.yml` captures the materials it draws
+  from. `composition.yml` captures the patterns that make it feel intentional.
 - **`fingerprint/enforcement/checks.yml`** is optional deterministic
   enforcement grounded in fingerprint refs.
 - **Git is the approval boundary.** Uncommitted or unmerged edits are draft
@@ -35,19 +35,19 @@ Add only the sections that contain real layer content. Ghost normalizes omitted
 layer files or sections internally, so agents and checks still receive the full
 assembled `ghost.fingerprint/v1` shape they expect.
 
-Ghost captures a portable product-experience fingerprint that tools use to
-generate, validate, compare, and govern product surfaces. It is not a
-design-system generator, design-system registry, fingerprint lifecycle manager,
-proposal system, or screenshot archive.
+Ghost stores that composition as a repo-local fingerprint agents can build from,
+check against, and evolve through Git. It is not a design-system generator,
+design-system registry, fingerprint lifecycle manager, proposal system, or
+screenshot archive.
 
 Optional material can sit beside the core files:
 
 - **`.ghost/config.yml`** routes implementation roots and reference
-  registries/libraries without becoming portable product memory.
+  registries/libraries without becoming portable composition context.
 - **`.ghost/fingerprint/memory/intent.md`** records human-authored or
   human-approved product intent when useful.
-- **`.ghost/fingerprint/memory/decisions/*.yml`** records accepted/rejected product-experience
-  rationale when history matters.
+- **`.ghost/fingerprint/memory/decisions/*.yml`** records accepted/rejected
+  surface-composition rationale when history matters.
 - **`.ghost/fingerprint/sources/cache/`** holds generated cache only after you
   explicitly create it. Generated cache is optional source material: it answers
   what exists; curated `inventory.yml` is the canonical inventory layer.
@@ -118,11 +118,11 @@ Set up the Ghost fingerprint for this repo.
 Set up the Ghost fingerprint for this repo with auto-draft.
 ```
 
-Default authoring is interview-first: the agent asks what matters, scans as
-needed, drafts core layer edits, and validates them. Auto-draft is scan-first:
-the agent gathers generated cache, inspects high-signal repo evidence, writes a
-small starter draft into the core layer files, then asks you to keep, soften,
-reject, scope, record, or convert important claims.
+Default authoring is interview-first: the agent asks about the surface intent,
+scans as needed, drafts core layer edits, and validates them. Auto-draft is
+scan-first: the agent gathers generated cache, inspects high-signal repo
+evidence, writes a small starter draft into the core layer files, then asks you
+to keep, soften, reject, scope, record, or convert important claims.
 
 During setup or fingerprint edits, the agent checkpoints with commands like:
 
@@ -151,7 +151,8 @@ mkdir -p .ghost/fingerprint/sources/cache
 ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ```
 
-Durable conclusions belong in `.ghost/fingerprint/{prose.yml,inventory.yml,composition.yml}`;
+Durable surface-composition claims belong in
+`.ghost/fingerprint/{prose.yml,inventory.yml,composition.yml}`;
 executable gates belong in `.ghost/fingerprint/enforcement/checks.yml`;
 implementation routing belongs in optional `.ghost/config.yml`.
 Auto-drafted edits to core layers are still ordinary draft work until curated
@@ -164,7 +165,8 @@ they generate or revise UI. Give it to Codex, Cursor, Claude, or another host
 agent so work starts from prose, inventory, and composition instead of relying on
 post-hoc checks. Its `prompt.md` is organized around:
 
-- **Prose** from checked-in `fingerprint/prose.yml`.
+- **Prose** from checked-in `fingerprint/prose.yml`, which captures surface
+  intent.
 - **Inventory** from curated building blocks and exemplars in
   `fingerprint/inventory.yml`, plus
   `.ghost/fingerprint/sources/cache/inventory.json` when present.
@@ -173,7 +175,7 @@ post-hoc checks. Its `prompt.md` is organized around:
   not generation input.
 
 Checks and review validate output after generation. They do not replace the
-prose, inventory, and composition inputs that help agents produce the right thing.
+prose, inventory, and composition inputs that help agents compose the surface.
 After implementation, run Ghost review/check against the same fingerprint layers when the
 repo workflow supports it.
 
