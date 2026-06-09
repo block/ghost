@@ -57,6 +57,9 @@ Common starting points:
 Human intent decides product identity. Scans provide evidence. Agent synthesis
 is draft work until a human curates it and ordinary Git review accepts it.
 
+If the user asks for `auto-draft`, keep this same boundary: the mode may create
+starter edits, but it does not make scan output canonical.
+
 ### 2. Initialize
 
 ```bash
@@ -68,7 +71,36 @@ Use `--with-intent` only when you have human-authored or human-approved context
 to preserve. Use `--with-config --reference <path-or-registry>` when local
 routing or a reference UI registry/library should be recorded in `.ghost/config.yml`.
 
-### 3. Orient
+### 3. Auto-Draft Mode
+
+Use this branch only when the user explicitly asks for auto-draft, such as:
+
+```text
+Set up the Ghost fingerprint for this repo with auto-draft.
+```
+
+Auto-draft is a skill workflow, not a Ghost CLI action or flag.
+
+1. If `.ghost/fingerprint/manifest.yml` is missing, run `ghost init`.
+2. Run `ghost scan --format json`.
+3. Create generated cache:
+
+   ```bash
+   mkdir -p .ghost/fingerprint/sources/cache
+   ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+   ```
+
+4. Inspect high-signal files from the inventory, plus routes, docs, stories,
+   tests, tokens, registries, assets, screenshots, and exemplars.
+5. Write only the smallest evidence-backed starter entries into
+   `prose.yml`, `inventory.yml`, and `composition.yml`.
+6. Ask the human to keep, soften, reject, scope, record, or convert important
+   claims before treating them as durable fingerprint guidance.
+
+If evidence is thin, contradictory, or mostly implementation plumbing, write
+less and ask more. Do not fill core layers with speculative product claims.
+
+### 4. Orient
 
 Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal identity,
@@ -84,7 +116,7 @@ ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
 Treat generated cache as scratch material. Do not copy raw inventory into
 `inventory.yml` without judgment.
 
-### 4. Write Core Layers
+### 5. Write Core Layers
 
 Edit the smallest useful durable layer content:
 
@@ -97,7 +129,7 @@ Prefer a few high-confidence entries over a comprehensive but noisy catalog.
 Ask the human to keep, soften, reject, scope, or record important claims before
 treating draft content as durable fingerprint guidance.
 
-### 5. Add Checks Sparingly
+### 6. Add Checks Sparingly
 
 `fingerprint/enforcement/checks.yml` is the executable appendix. Add only
 deterministic checks with typed derivation refs:
@@ -112,7 +144,7 @@ Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
 warnings. Inventory can support a check, but inventory-only grounding is not
 product judgment by itself.
 
-### 6. Validate
+### 7. Validate
 
 ```bash
 ghost lint .ghost
@@ -127,5 +159,6 @@ packages exist.
 
 - Never describe any file outside `.ghost/fingerprint/` as canonical package input.
 - Never treat generated cache as canonical inventory.
+- Never treat auto-draft as a CLI feature or a replacement for human curation.
 - Never invent product-experience obligations absent from evidence or human direction.
 - Never promote subjective judgment directly into checks; make it deterministic or keep it advisory.

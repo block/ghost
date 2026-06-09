@@ -115,13 +115,22 @@ Ask your agent:
 
 ```text
 Set up the Ghost fingerprint for this repo.
+Set up the Ghost fingerprint for this repo with auto-draft.
 ```
+
+Default authoring is interview-first: the agent asks what matters, scans as
+needed, drafts core layer edits, and validates them. Auto-draft is scan-first:
+the agent gathers generated cache, inspects high-signal repo evidence, writes a
+small starter draft into the core layer files, then asks you to keep, soften,
+reject, scope, record, or convert important claims.
 
 During setup or fingerprint edits, the agent checkpoints with commands like:
 
 ```bash
 ghost init
 ghost scan --format json
+mkdir -p .ghost/fingerprint/sources/cache
+ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 ghost lint .ghost
 ghost verify .ghost --root .
 ```
@@ -145,6 +154,8 @@ ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
 Durable conclusions belong in `.ghost/fingerprint/{prose.yml,inventory.yml,composition.yml}`;
 executable gates belong in `.ghost/fingerprint/enforcement/checks.yml`;
 implementation routing belongs in optional `.ghost/config.yml`.
+Auto-drafted edits to core layers are still ordinary draft work until curated
+and accepted through Git review.
 
 ## Generation Packet
 
