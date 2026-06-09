@@ -17,7 +17,7 @@ description: Verify generated UI or fingerprint edits against Ghost.
 Report:
 
 - Active-check failures and repairs.
-- Advisory product-experience drift with citations.
+- Advisory surface-composition drift with citations.
 - Missing or unreachable evidence and exemplar paths.
 - Provisional local reasoning where fingerprint layers are silent.
 - Any fingerprint edits the user requested.

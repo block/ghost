@@ -62,8 +62,8 @@ building_blocks:
     - packages/ghost/src/scan/context/package-writer.ts
     - packages/ghost/src/scan/context/package-review-command.ts
   notes:
-    - Inventory is replaceable material; prose owns the judgment and composition owns how material is assembled.
-    - Correct components or tokens do not prove an experience is on-brand.
+    - Inventory is replaceable material; prose captures intent and composition captures how material is assembled.
+    - Correct components or tokens do not prove a surface is aligned.
 exemplars:
   - id: public-readme-fingerprint-model
     path: README.md

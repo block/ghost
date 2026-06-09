@@ -6,7 +6,7 @@ status: exploring
 
 > Fingerprint-first context: map is optional topology/source-material support.
 > It helps agents find the right product surfaces, but the fingerprint remains
-> the portable product-experience contract.
+> the portable surface-composition contract.
 
 ## Why it's interesting
 
@@ -20,7 +20,7 @@ This is one of five decentralized tools (`map`, `fingerprint`, `drift`, `fleet`,
 
 A **navigation card**, not an extraction. It answers *where* and *what kind*, never *how it feels*.
 
-- Not a profile (no design-language judgement — that's fingerprint).
+- Not a profile (no design-language interpretation — that's fingerprint).
 - Not exhaustive (six feature areas beat thirty if six are the ones a sampling agent should actually visit).
 - Not aspirational (records what the repo is, not what it should be).
 - Language-agnostic by design (web, iOS, Android, Flutter, desktop, mixed).
@@ -112,7 +112,7 @@ The skill itself isn't invoked from the Ghost CLI — it's installed into the ho
 
 ## Inventory output (sketch)
 
-The deterministic step the recipe leans on. JSON, machine-shape, no judgement.
+The deterministic step the recipe leans on. JSON, machine-shape, no interpretation.
 
 ```json
 {

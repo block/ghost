@@ -5,12 +5,12 @@ summary:
     - agents generating or reviewing product UI
     - Ghost contributors
   goals:
-    - Keep product-experience fingerprints repo-local, portable, and easy for agents to read.
-    - Preserve product identity across generation, review, and remediation.
+    - Keep product-surface composition fingerprints repo-local, portable, and easy for agents to read.
+    - Preserve surface composition across generation, review, and remediation.
     - Make prose, inventory, and composition feel like the three core model layers.
     - Use Git as the staging and approval boundary for fingerprint edits.
   anti_goals:
-    - Treat raw inventory as canonical product truth.
+    - Treat raw inventory as canonical surface guidance.
     - Turn support files into peers of prose, inventory, and composition.
     - Turn Ghost into a design-system snapshot or screenshot archive.
     - Become a fingerprint lifecycle manager or proposal system.
@@ -28,7 +28,7 @@ situations:
   - id: capturing-fingerprint
     title: Capturing fingerprint layers
     user_intent: Create or update the Ghost fingerprint for a project.
-    product_obligation: Help the agent distinguish canonical prose/inventory/composition from generated cache, enforcement, and rationale memory.
+    product_obligation: Help the agent distinguish canonical prose/inventory/composition from generated cache, enforcement, and rationale history.
     principles:
       - prose.principle:fingerprint-folder-is-canonical
       - prose.principle:generated-cache-is-source-material
@@ -38,7 +38,7 @@ situations:
       - composition.pattern:core-layers-stay-prominent
   - id: reviewing-generated-ui
     title: Reviewing generated or changed UI
-    user_intent: Know whether a change preserves the product experience.
+    user_intent: Know whether a change preserves the product surface.
     product_obligation: Separate deterministic blocking checks from advisory critique.
     principles:
       - prose.principle:checks-are-enforcement
@@ -56,10 +56,10 @@ situations:
       - composition.pattern:editorial-workbench-docs
 principles:
   - id: fingerprint-folder-is-canonical
-    principle: fingerprint/ is the portable product-experience package; prose.yml, inventory.yml, and composition.yml are its core model layers.
+    principle: fingerprint/ is the portable surface-composition package; prose.yml, inventory.yml, and composition.yml are its core model layers.
     guidance:
-      - Describe the fingerprint as product-experience memory only as a high-level metaphor, not as an operational layer.
-      - Keep durable identity, hierarchy, behavior, copy, accessibility, trust, and flow in the core layer files.
+      - Describe the fingerprint as product-surface composition, not as an operational archive.
+      - Keep durable surface intent, hierarchy, behavior, copy, accessibility, trust, and flow in the core layer files.
       - Treat uncommitted or unmerged fingerprint edits as drafts handled by Git, not by a Ghost-specific lifecycle.
     evidence:
       - path: docs/fingerprint-format.md
@@ -71,12 +71,12 @@ principles:
     guidance:
       - Store generated cache under fingerprint/sources/cache/ when useful.
       - Curate durable building blocks, files, routes, libraries, assets, source links, notes, and exemplars into inventory.yml.
-      - Do not let cache or building blocks become product authority without prose and composition.
+      - Do not let cache or building blocks become surface authority without prose and composition.
     evidence:
       - path: README.md
         note: README frames generated cache as optional source material.
   - id: checks-are-enforcement
-    principle: Deterministic checks live under fingerprint/enforcement/ and should cite typed fingerprint refs when they enforce product-experience memory.
+    principle: Deterministic checks live under fingerprint/enforcement/ and should cite typed fingerprint refs when they enforce surface-composition rules.
     guidance:
       - Active checks can block; advisory findings cannot block unless check-backed.
       - Prefer typed refs such as composition.pattern:token-first-interface.
@@ -98,7 +98,7 @@ experience_contracts:
     contract: Advisory review findings must cite the diff location and the relevant fingerprint refs.
     obligations:
       - Use active checks only when a finding should block.
-      - Use missing-memory or experience-gap when the fingerprint cannot support a confident judgment.
+      - Use missing-memory or experience-gap when the fingerprint cannot support a confident finding.
     evidence:
       - path: packages/ghost/src/scan/context/package-review-command.ts
         note: Emitted review command tells agents what to cite.
@@ -107,7 +107,7 @@ experience_contracts:
     obligations:
       - Do not rewrite canonical fingerprint layers silently during generation or review.
       - Treat uncommitted or unmerged fingerprint edits as draft work.
-      - Record durable product judgment in prose.yml, inventory.yml, and composition.yml; deterministic gates belong in enforcement/checks.yml.
+      - Record durable surface-composition guidance in prose.yml, inventory.yml, and composition.yml; deterministic gates belong in enforcement/checks.yml.
     evidence:
       - path: packages/ghost/src/skill-bundle/references/capture.md
   - id: emitted-context-prefers-fingerprint-layers

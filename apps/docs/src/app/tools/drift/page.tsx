@@ -17,7 +17,7 @@ const cards: {
     name: "Ghost loop",
     href: "/docs/getting-started#the-simple-model",
     description:
-      "See how memory, checks, review, comparison, and intent fit together.",
+      "See how context, checks, review, comparison, and intent fit together.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {

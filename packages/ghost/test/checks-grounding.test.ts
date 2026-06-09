@@ -24,7 +24,7 @@ describe("ghost.checks/v1 grounding", () => {
     });
   });
 
-  it("accepts active checks grounded in prose memory", () => {
+  it("accepts active checks grounded in prose refs", () => {
     const report = lintGhostChecks(checksDocument(), {
       fingerprint: fingerprintDocument(),
     });
@@ -45,7 +45,7 @@ describe("ghost.checks/v1 grounding", () => {
     });
   });
 
-  it("accepts active checks grounded in composition memory", () => {
+  it("accepts active checks grounded in composition refs", () => {
     const report = lintGhostChecks(
       checksDocument({
         derivation: {

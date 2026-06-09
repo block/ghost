@@ -35,7 +35,7 @@ A read-only **elevation view** over a directory of (map.md, fingerprint.md) memb
 | `ghost fleet` (skill) | LLM-driven recipe: synthesize the fleet-shape narrative for fleet.md | `packages/ghost-fleet/src/skill-bundle/` |
 | `ghost fleet view` (CLI) | Deterministic composite, group-by, tracks-graph, output artifacts | CLI |
 
-The math is deterministic — composite distances, clustering, group-by. The narrative ("Cash family clusters tight; Tidal pulls away on warmth and density; Afterpay sits in its own region") is judgement and lives in the skill. Same split as map/fingerprint.
+The math is deterministic — composite distances, clustering, group-by. The narrative ("Cash family clusters tight; Tidal pulls away on warmth and density; Afterpay sits in its own region") is interpretation and lives in the skill. Same split as map/fingerprint.
 
 ## CLI surface
 
