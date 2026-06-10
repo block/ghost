@@ -88,6 +88,7 @@ or check format.
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
 - Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
+- Capture voice and language: follow [references/voice.md](references/voice.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
