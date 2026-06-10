@@ -41,7 +41,7 @@ export function registerEmitCommand(cli: CAC): void {
   cli
     .command(
       "emit <kind>",
-      `Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)`,
+      `Emit a derived artifact from the fingerprint package (review command or compact context entrypoint)`,
     )
     .option(
       "--path <path>",
@@ -67,7 +67,7 @@ export function registerEmitCommand(cli: CAC): void {
     .option("--readme", "Include README.md (context-bundle)")
     .option(
       "--prompt-only",
-      "Emit only prompt.md (context-bundle generation packet)",
+      "Emit only prompt.md (context-bundle compact entrypoint)",
     )
     .option(
       "--name <name>",
