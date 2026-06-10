@@ -351,6 +351,7 @@ export async function loadFingerprintStackLayer(
 export function fingerprintStackToPackageContext(
   stack: GhostFingerprintStack,
   nameOverride?: string,
+  targetPaths: string[] = [stack.target_path],
 ): PackageContext {
   const name = sanitizeName(
     nameOverride ??
@@ -361,6 +362,8 @@ export function fingerprintStackToPackageContext(
   return {
     name,
     fingerprintDir: stack.fingerprint_dir,
+    targetPaths,
+    layerDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.merged.fingerprint,
     fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
     checks: stack.merged.checks,
