@@ -33,6 +33,13 @@ summary:
 principles:
   - id: action-first-copy
     principle: Copy leads with what the reader can do next, not with what the system did.
+    applies_to:
+      paths:
+        - src/i18n/**
+        - src/components/**
+      surface_types:
+        - error-state
+        - empty-state
     guidance:
       - Prefer "Try again" over "The operation failed."
       - Keep apology framing out of routine errors.
@@ -42,12 +49,24 @@ principles:
 experience_contracts:
   - id: exact-wording-surfaces
     contract: Designated surfaces (legal text, consent prompts, destructive confirmations) use approved exact wording and are never paraphrased.
+    applies_to:
+      surface_types:
+        - legal-text
+        - consent-prompt
+        - destructive-confirmation
     obligations:
       - Treat the approved string as the source of truth, not a style suggestion.
       - Route wording changes through ordinary Git review.
     check_refs:
       - check:no-banned-phrases
 ```
+
+Scope every voice entry with `applies_to`. Selective context assembly uses
+`applies_to` paths, scopes, and surface types to decide which fingerprint
+entries reach an agent for a given piece of work. Scoped voice entries are
+selected when copy work touches their surfaces and stay out of the way when
+it does not; unscoped entries only surface through ref edges or the global
+fallback.
 
 ## Copy Material Lives In Inventory
 
@@ -87,6 +106,9 @@ patterns:
   - id: error-message-shape
     kind: content
     pattern: Error copy states what happened, then the next step the reader can take.
+    applies_to:
+      surface_types:
+        - error-state
     guidance:
       - Two sentences maximum for inline errors.
       - Name the recovery action in the same breath as the failure.
