@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.7.3
+
+### Patch Changes
+
+- [#139](https://github.com/block/ghost/pull/139) [`5e3d603`](https://github.com/block/ghost/commit/5e3d6032897cad5d39eb7149d11dc131f4878de3) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Emit compact, path-aware Ghost context entrypoints for generation and review.
+
 ## 0.7.2
 
 ### Patch Changes
