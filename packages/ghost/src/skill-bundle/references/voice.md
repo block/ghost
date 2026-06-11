@@ -21,6 +21,10 @@ Language maps onto the existing layers; do not invent new schema. See
      `prose.experience_contracts`.
    - Copy shapes into `composition.patterns` with `kind: content`, including
      `anti_patterns` observed in the repo.
+   - Scope each entry with `applies_to` (paths, scopes, surface types) so
+     selective context assembly surfaces it for copy work on those surfaces
+     and omits it elsewhere. Unscoped entries reach agents only through ref
+     edges or the global fallback.
 4. Promote only the mechanically detectable subset into
    `fingerprint/enforcement/checks.yml`:
    - Absolute rules (banned phrases, required boilerplate) become
