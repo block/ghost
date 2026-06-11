@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-05T03:15:06.380Z",
+  "generatedAt": "2026-06-10T17:47:36.455Z",
   "tools": [
     {
       "tool": "ghost",
@@ -315,7 +315,7 @@
           "tool": "ghost",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package (review command or context-bundle generation packet)",
+          "description": "Emit a derived artifact from the fingerprint package (review command or compact context entrypoint)",
           "group": "core",
           "defaultHelp": true,
           "compactName": "emit",
@@ -372,7 +372,7 @@
             {
               "rawName": "--prompt-only",
               "name": "promptOnly",
-              "description": "Emit only prompt.md (context-bundle generation packet)",
+              "description": "Emit only prompt.md (context-bundle compact entrypoint)",
               "default": null,
               "takesValue": false,
               "negated": false

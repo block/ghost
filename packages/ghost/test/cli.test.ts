@@ -337,7 +337,7 @@ describe("ghost CLI", () => {
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("schema: ghost.fingerprint/v1");
+    expect(review.stdout).toContain("## Selected Fingerprint Context");
     expect(reviewCommand.code).toBe(0);
     expect(contextBundle.code).toBe(0);
   });
@@ -791,27 +791,46 @@ checks:
       join(dir, "ghost-context", "prompt.md"),
       "utf-8",
     );
-    expect(prompt).toContain("# Prose");
+    expect(prompt).toContain("# Agent Handoff");
+    expect(prompt).toContain("compact entrypoint into the fingerprint");
     expect(prompt).toContain("Agent Handoff");
-    expect(prompt).toContain("upstream handoff before generating");
-    expect(prompt).toContain("# Inventory");
-    expect(prompt.indexOf("## Topology")).toBeLessThan(
-      prompt.indexOf("## Building Blocks"),
-    );
-    expect(prompt.indexOf("## Building Blocks")).toBeLessThan(
-      prompt.indexOf("## Exemplars"),
-    );
-    expect(prompt.indexOf("## Exemplars")).toBeLessThan(
-      prompt.indexOf("## Generated Cache"),
-    );
+    expect(prompt).toContain("## Identity Capsule");
+    expect(prompt).toContain("## Context Match");
+    expect(prompt).toContain("## Read First");
+    expect(prompt).toContain("## Suggested Reads");
+    expect(prompt).toContain("## Omissions");
+    expect(prompt).not.toContain("```yaml");
+    expect(prompt).not.toMatch(/^# Prose$/m);
+    expect(prompt).not.toMatch(/^# Inventory$/m);
+    expect(prompt).not.toMatch(/^# Composition$/m);
     expect(prompt).toContain("Generated cache is optional source material");
     expect(prompt).toContain("Package.swift");
-    expect(prompt).toContain("# Composition");
     expect(prompt).toContain("no-hardcoded-ui-color");
     expect(prompt).not.toContain("candidate-density-check");
     expect(prompt).not.toContain("status: proposed");
     expect(prompt).not.toContain("Proposal Threshold");
-    expect(prompt).toContain("Label silent-layer reasoning as provisional");
+    expect(prompt).toContain("provisional and non-Ghost-backed");
+    const scopedContextBundle = await runCli(
+      [
+        "emit",
+        "context-bundle",
+        "--path",
+        "Code/Features/Lending/LendingUI",
+        "-o",
+        "ghost-context-scoped",
+      ],
+      dir,
+    );
+    expect(scopedContextBundle.code).toBe(0);
+    const scopedPrompt = await readFile(
+      join(dir, "ghost-context-scoped", "prompt.md"),
+      "utf-8",
+    );
+    expect(scopedPrompt).toContain("Status: path matched");
+    expect(scopedPrompt).toContain("Matched scopes: `lending`");
+    expect(scopedPrompt).toContain(
+      "inventory.exemplar:lending-tokenized-screen",
+    );
     await expect(
       readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
     ).resolves.toContain("provisional and\nnon-Ghost-backed");
@@ -975,6 +994,11 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
+    expect(result.stdout).toContain("## Selected Fingerprint Context");
+    expect(result.stdout).toContain("## Identity Capsule");
+    expect(result.stdout).toContain("## Context Match");
+    expect(result.stdout).toContain("Status: path matched");
+    expect(result.stdout).toContain("Matched scopes: `lending`");
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain(
       "fingerprint/prose.yml, fingerprint/inventory.yml, fingerprint/composition.yml",
@@ -986,6 +1010,7 @@ checks:
     expect(result.stdout).toContain("missing-memory");
     expect(result.stdout).toContain("experience-gap");
     expect(result.stdout).toContain("repair or intentional-divergence");
+    expect(result.stdout).not.toContain("schema: ghost.fingerprint/v1");
   });
 
   it("review includes config reference registries when config.yml is present", async () => {
