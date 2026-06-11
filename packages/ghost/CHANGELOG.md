@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.8.0
+
+### Minor Changes
+
+- [#138](https://github.com/block/ghost/pull/138) [`dd0f10b`](https://github.com/block/ghost/commit/dd0f10b9bc8d2902dc93a8236b3fdc620d05b51c) Thanks [@daveh-beep](https://github.com/daveh-beep)! - Adds the voice recipe to the skill bundle and documents how voice and language map onto existing fingerprint layers without schema changes.
+
 ## 0.7.4
 
 ### Patch Changes
