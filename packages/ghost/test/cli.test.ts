@@ -957,6 +957,26 @@ checks:
     });
   });
 
+  it("check treats inline color detectors as literal patterns, not exact values", async () => {
+    await writeCheckPackage(dir, { detectorPattern: "#000000" });
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let colors = [Color(#000), Color.black]"),
+    );
+
+    const result = await runCli(
+      ["check", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code, result.stderr).toBe(1);
+    const report = JSON.parse(result.stdout);
+    expect(report.result).toBe("fail");
+    expect(
+      report.findings.map((finding: { match: string }) => finding.match),
+    ).toEqual(["#000", "Color.black"]);
+  });
+
   it("check passes when active scoped checks do not match", async () => {
     await writeCheckPackage(dir);
     await writeFile(
@@ -1437,9 +1457,11 @@ libraries:
 
 async function writeCheckPackage(
   dir: string,
-  options: { checks?: boolean } = {},
+  options: { checks?: boolean; detectorPattern?: string } = {},
 ): Promise<void> {
   const pkg = join(dir, ".ghost");
+  const detectorPattern =
+    options.detectorPattern ?? "#[0-9a-fA-F]{3,8}|UIColor\\(";
   await mkdir(pkg, { recursive: true });
   await writeSplitFingerprintPackage(
     pkg,
@@ -1498,7 +1520,7 @@ checks:
       paths: [Code/Features/Lending]
     detector:
       type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}|UIColor\\('
+      pattern: '${detectorPattern}'
       contexts: [swift]
     evidence:
       support: 0.94
