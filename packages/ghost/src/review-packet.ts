@@ -4,11 +4,14 @@ import { resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { type GhostDecisionDocument, lintGhostDecision } from "#ghost-core";
 import { parseUnifiedDiff } from "./core/index.js";
+import { buildContextEntrypoint } from "./scan/context/entrypoint.js";
+import { formatContextEntrypointMarkdown } from "./scan/context/entrypoint-markdown.js";
 import {
+  fingerprintStackToPackageContext,
   type GhostFingerprintStack,
   type GhostPackageConfig,
   groupFingerprintStacksForPaths,
-  loadFingerprintPackage,
+  loadPackageContext,
   readOptionalPackageConfig,
   resolveFingerprintPackage,
 } from "./scan/index.js";
@@ -30,12 +33,28 @@ async function buildSingleBundleReviewPacket(options: {
   includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
-  const loaded = await loadFingerprintPackage(paths);
+  const changedFiles = parseUnifiedDiff(options.diffText).map(
+    (file) => file.path,
+  );
+  const context = await loadPackageContext(paths);
+  context.targetPaths = changedFiles;
   const packet: ReviewPacket = {
     ...baseReviewPacket(paths.dir, options.diffText),
-    fingerprint: loaded.fingerprint,
+    fingerprint: context.fingerprint,
+    context_markdown: formatReviewContextMarkdown([
+      {
+        title: paths.dir,
+        markdown: formatContextEntrypointMarkdown(
+          buildContextEntrypoint(context, { targetPaths: changedFiles }),
+          {
+            heading: "### Selected Fingerprint Context",
+            includeIntro: false,
+          },
+        ),
+      },
+    ]),
     intent: (await readOptional(paths.intent)) ?? null,
-    checks: (await readOptional(paths.checks)) ?? null,
+    checks: context.checksRaw ?? null,
     config: (await readOptionalPackageConfig(paths.config)) ?? null,
   };
   if (options.includeAcceptedDecisions) {
@@ -60,6 +79,25 @@ async function buildStackReviewPacket(options: {
   const stacks = groups.map((group) =>
     reviewStackFromFingerprintStack(group.stack, group.changed_files),
   );
+  const contextSections = groups.map((group) => {
+    const context = fingerprintStackToPackageContext(
+      group.stack,
+      undefined,
+      group.changed_files,
+    );
+    return {
+      title: group.stack.layers.at(-1)?.dir ?? group.stack.fingerprint_dir,
+      markdown: formatContextEntrypointMarkdown(
+        buildContextEntrypoint(context, {
+          targetPaths: group.changed_files,
+        }),
+        {
+          heading: "### Selected Fingerprint Context",
+          includeIntro: false,
+        },
+      ),
+    };
+  });
   const first = stacks[0];
   const config = await readOptionalPackageConfig(
     resolve(first.package_dir, "config.yml"),
@@ -70,6 +108,7 @@ async function buildStackReviewPacket(options: {
       options.diffText,
     ),
     fingerprint: first.merged.fingerprint,
+    context_markdown: formatReviewContextMarkdown(contextSections),
     intent: first.merged.intent,
     checks: stringifyYaml(first.merged.checks, { lineWidth: 0 }),
     config: config ?? null,
@@ -140,6 +179,7 @@ interface ReviewPacket {
   schema: "ghost.advisory-review/v1";
   package_dir: string;
   fingerprint: unknown;
+  context_markdown: string;
   intent: string | null;
   checks: string | null;
   config: GhostPackageConfig | null;
@@ -180,11 +220,7 @@ If the diff exposes missing fingerprint grounding or layer coverage, report it a
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 
-## Fingerprint Layers
-
-\`\`\`yaml
-${stringifyYaml(packet.fingerprint)}
-\`\`\`
+${packet.context_markdown}
 
 ## Human Intent
 
@@ -195,12 +231,6 @@ ${packet.intent ?? "_No fingerprint/memory/intent.md present. Treat fingerprint 
 ${formatAcceptedDecisionsSection(packet.accepted_decisions ?? null)}
 
 ${formatConfigSection(packet.config)}
-
-## Active Checks
-
-\`\`\`yaml
-${packet.checks ?? "schema: ghost.checks/v1\nid: none\nchecks: []\n"}
-\`\`\`
 
 ## Diff
 
@@ -219,25 +249,29 @@ function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
     lines.push("");
     lines.push(`Changed files: ${stack.changed_files.join(", ") || "none"}`);
     lines.push(`Layers: ${stack.layer_dirs.join(" -> ")}`);
+    lines.push(`Merge: ${stack.provenance.merge}`);
     lines.push("");
-    lines.push("```yaml");
-    lines.push(
-      stringifyYaml(
-        {
-          fingerprint: stack.merged.fingerprint,
-          checks: stack.merged.checks,
-          provenance: stack.provenance,
-        },
-        { lineWidth: 0 },
-      ).trim(),
-    );
-    lines.push("```", "");
     if (stack.merged.intent?.trim()) {
       lines.push("```markdown", stack.merged.intent.trim(), "```", "");
     }
   }
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatReviewContextMarkdown(
+  sections: Array<{ title: string; markdown: string }>,
+): string {
+  const lines = ["## Selected Fingerprint Context", ""];
+  for (const [index, section] of sections.entries()) {
+    if (sections.length > 1) {
+      lines.push(`### Context ${index + 1}: ${section.title}`, "");
+    }
+    lines.push(
+      section.markdown.replace(/^### Selected Fingerprint Context\n\n?/, ""),
+    );
+  }
+  return lines.join("\n").trim();
 }
 
 async function readOptional(path: string): Promise<string | undefined> {
