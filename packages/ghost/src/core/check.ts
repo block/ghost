@@ -19,6 +19,10 @@ import {
   mapFromFingerprint,
   resolveFingerprintPackage,
 } from "../scan/index.js";
+import {
+  INLINE_COLOR_LITERAL_PATTERN,
+  isInlineColorDetector,
+} from "./inline-color-literals.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -363,14 +367,16 @@ function evaluateCheck(
   check: GhostCheck,
   file: GhostDriftChangedFile,
 ): GhostDriftCheckFinding[] {
-  const regex = detectorRegex(check);
-  if (!regex) return [];
+  const regexes = detectorRegexes(check);
+  if (regexes.length === 0) return [];
 
   if (isRequiredDetector(check)) {
     if (file.added_lines.length === 0) return [];
     const hasMatch = file.added_lines.some((line) => {
-      regex.lastIndex = 0;
-      return regex.test(line.text);
+      return regexes.some((regex) => {
+        regex.lastIndex = 0;
+        return regex.test(line.text);
+      });
     });
     if (hasMatch) return [];
     const firstLine = file.added_lines[0];
@@ -389,34 +395,46 @@ function evaluateCheck(
   }
 
   const findings: GhostDriftCheckFinding[] = [];
+  const seen = new Set<string>();
   for (const line of file.added_lines) {
-    regex.lastIndex = 0;
-    let match = regex.exec(line.text);
-    while (match !== null) {
-      findings.push({
-        check_id: check.id,
-        title: check.title,
-        severity: check.severity,
-        path: file.path,
-        line: line.line,
-        detector: check.detector.type,
-        message: forbiddenMessage(check),
-        match: match[0],
-        ...(check.repair ? { repair: check.repair } : {}),
-      });
-      if (match[0] === "") regex.lastIndex += 1;
-      match = regex.exec(line.text);
+    for (const regex of regexes) {
+      regex.lastIndex = 0;
+      let match = regex.exec(line.text);
+      while (match !== null) {
+        const key = `${line.line}:${match.index}:${match[0]}`;
+        if (!seen.has(key)) {
+          findings.push({
+            check_id: check.id,
+            title: check.title,
+            severity: check.severity,
+            path: file.path,
+            line: line.line,
+            detector: check.detector.type,
+            message: forbiddenMessage(check),
+            match: match[0],
+            ...(check.repair ? { repair: check.repair } : {}),
+          });
+          seen.add(key);
+        }
+        if (match[0] === "") regex.lastIndex += 1;
+        match = regex.exec(line.text);
+      }
     }
   }
   return findings;
 }
 
-function detectorRegex(check: GhostCheck): RegExp | null {
+function detectorRegexes(check: GhostCheck): RegExp[] {
   const source =
     check.detector.pattern ??
     (check.detector.value ? escapeRegExp(check.detector.value) : undefined);
-  if (!source) return null;
-  return new RegExp(source, "g");
+  if (!source) return [];
+
+  const regexes = [new RegExp(source, "g")];
+  if (isInlineColorDetector(check, source)) {
+    regexes.push(new RegExp(INLINE_COLOR_LITERAL_PATTERN, "gi"));
+  }
+  return regexes;
 }
 
 function detectorAppliesToPath(check: GhostCheck, path: string): boolean {
