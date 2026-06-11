@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.7.4
+
+### Patch Changes
+
+- [#141](https://github.com/block/ghost/pull/141) [`34c5726`](https://github.com/block/ghost/commit/34c57269f472c1cd8f9c7503036184e0c71bff19) Thanks [@chailandau](https://github.com/chailandau)! - Catch shorthand hex and named color literals in color-oriented design checks.
+
 ## 0.7.3
 
 ### Patch Changes
