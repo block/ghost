@@ -1,9 +1,16 @@
-import { access } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createWorkbenchServer } from "../src/server";
+import { runAILoop } from "../src/server/ai-loop";
+import {
+  generateText,
+  type WorkbenchAIProviderOptions,
+} from "../src/server/ai-provider";
 import { reviewDriftWithAI } from "../src/server/ai-reviewer";
+import { readAISettings, saveAISettings } from "../src/server/ai-settings";
 import { runDriftDesk } from "../src/server/drift-desk";
 import { runFingerprintStudio } from "../src/server/fingerprint-studio";
 import { inspectScenario } from "../src/server/inspect";
@@ -12,9 +19,32 @@ import { scenarios } from "../src/server/scenarios";
 
 let server: ReturnType<typeof createWorkbenchServer>;
 let baseUrl: string;
+let settingsRoot: string;
+let fetchImpl: typeof fetch;
+let fetchCalls: Array<{
+  url: string;
+  body: string;
+  headers: HeadersInit | undefined;
+}> = [];
 
 beforeEach(async () => {
-  server = createWorkbenchServer();
+  settingsRoot = await mkdtemp(join(tmpdir(), "ghost-workbench-test-"));
+  fetchCalls = [];
+  fetchImpl = async (input, init) => {
+    fetchCalls.push({
+      url: String(input),
+      body: typeof init?.body === "string" ? init.body : "",
+      headers: init?.headers,
+    });
+    return openAIResponse("Ghost Workbench AI connection ok.");
+  };
+  server = createWorkbenchServer({
+    settingsRoot,
+    ai: {
+      env: {},
+      fetchImpl: (...args) => fetchImpl(...args),
+    },
+  });
   await new Promise<void>((resolve) => {
     server.listen(0, "127.0.0.1", resolve);
   });
@@ -26,7 +56,78 @@ afterEach(async () => {
   await new Promise<void>((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()));
   });
+  await rm(settingsRoot, { force: true, recursive: true });
 });
+
+function openAIResponse(content: string, status = 200): Response {
+  return new Response(
+    JSON.stringify({
+      choices: [{ message: { content } }],
+      usage: {
+        prompt_tokens: 11,
+        completion_tokens: 7,
+        total_tokens: 18,
+      },
+      ...(status >= 400 ? { error: { message: content } } : {}),
+    }),
+    { status, headers: { "content-type": "application/json" } },
+  );
+}
+
+function anthropicResponse(content: string, status = 200): Response {
+  return new Response(
+    JSON.stringify({
+      content: [{ type: "text", text: content }],
+      usage: { input_tokens: 9, output_tokens: 5 },
+      ...(status >= 400 ? { error: { message: content } } : {}),
+    }),
+    { status, headers: { "content-type": "application/json" } },
+  );
+}
+
+function googleResponse(content: string, status = 200): Response {
+  return new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts: [{ text: content }] } }],
+      usageMetadata: {
+        promptTokenCount: 8,
+        candidatesTokenCount: 6,
+        totalTokenCount: 14,
+      },
+      ...(status >= 400 ? { error: { message: content } } : {}),
+    }),
+    { status, headers: { "content-type": "application/json" } },
+  );
+}
+
+function queuedOpenAIFetch(contents: string[]): typeof fetch {
+  const queue = [...contents];
+  return async (input, init) => {
+    fetchCalls.push({
+      url: String(input),
+      body: typeof init?.body === "string" ? init.body : "",
+      headers: init?.headers,
+    });
+    return openAIResponse(queue.shift() ?? "ok");
+  };
+}
+
+function configuredAIOptions(
+  contents: string[] = ["Generated Workbench output."],
+): WorkbenchAIProviderOptions {
+  return {
+    config: {
+      provider: "openai-compatible",
+      model: "ghost-workbench-test",
+      baseUrl: "https://example.test/v1",
+      apiKey: "test-key",
+      apiKeyConfigured: true,
+      timeoutMs: 5_000,
+    },
+    env: {},
+    fetchImpl: queuedOpenAIFetch(contents),
+  };
+}
 
 describe("workbench API", () => {
   it("lists scenarios", async () => {
@@ -101,8 +202,9 @@ describe("workbench API", () => {
         "# Ghost Prompt Lab Handoff",
       );
       expect(body.result.runner, scenario.id).toMatchObject({
-        mode: "none",
-        state: "not_configured",
+        mode: "ai",
+        state: "not_requested",
+        provider: "none",
         generatedOutput: null,
       });
     }
@@ -271,6 +373,286 @@ describe("workbench API", () => {
 
     expect(response.status).toBe(404);
     expect(body.error.message).toContain("Unknown scenario");
+  });
+
+  it("reads unset AI settings as not configured", async () => {
+    const response = await fetch(`${baseUrl}/api/ai/settings`);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.settings).toMatchObject({
+      state: "not_configured",
+      provider: "openai-compatible",
+      apiKeyConfigured: false,
+    });
+  });
+
+  it("writes AI settings to env local without exposing secrets", async () => {
+    const response = await fetch(`${baseUrl}/api/ai/settings`, {
+      body: JSON.stringify({
+        provider: "openai-compatible",
+        model: "ghost-test-model",
+        baseUrl: "https://example.test/v1",
+        apiKey: "secret-workbench-key",
+        timeoutMs: 15_000,
+      }),
+      headers: { "content-type": "application/json" },
+      method: "PUT",
+    });
+    const body = await response.json();
+    const envLocal = await readFile(join(settingsRoot, ".env.local"), "utf-8");
+
+    expect(response.status).toBe(200);
+    expect(body.settings).toMatchObject({
+      state: "configured",
+      model: "ghost-test-model",
+      apiKeyConfigured: true,
+    });
+    expect(JSON.stringify(body)).not.toContain("secret-workbench-key");
+    expect(envLocal).toContain(
+      "GHOST_WORKBENCH_AI_API_KEY=secret-workbench-key",
+    );
+  });
+
+  it("preserves an existing AI key when saving model settings", async () => {
+    await saveAISettings(
+      {
+        provider: "openai-compatible",
+        model: "first-model",
+        baseUrl: "https://example.test/v1",
+        apiKey: "secret-workbench-key",
+      },
+      { root: settingsRoot, env: {} },
+    );
+
+    await saveAISettings(
+      {
+        provider: "openai-compatible",
+        model: "second-model",
+        baseUrl: "https://example.test/v1",
+      },
+      { root: settingsRoot, env: {} },
+    );
+    const envLocal = await readFile(join(settingsRoot, ".env.local"), "utf-8");
+
+    expect(envLocal).toContain(
+      "GHOST_WORKBENCH_AI_API_KEY=secret-workbench-key",
+    );
+    expect((await readAISettings({ root: settingsRoot, env: {} })).model).toBe(
+      "second-model",
+    );
+  });
+
+  it("rejects invalid AI settings", async () => {
+    for (const update of [
+      { provider: "missing" },
+      { model: "" },
+      { baseUrl: "file:///tmp/key" },
+      { apiKey: "x".repeat(4_001) },
+      { timeoutMs: 999 },
+    ]) {
+      const response = await fetch(`${baseUrl}/api/ai/settings`, {
+        body: JSON.stringify(update),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      });
+      const body = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(body.error.message).toBeTruthy();
+    }
+  });
+
+  it("tests AI connection with mocked adapters", async () => {
+    await saveAISettings(
+      {
+        provider: "openai-compatible",
+        model: "ghost-test-model",
+        baseUrl: "https://example.test/v1",
+        apiKey: "secret-workbench-key",
+      },
+      { root: settingsRoot, env: {} },
+    );
+
+    const response = await fetch(`${baseUrl}/api/ai/test`, {
+      body: "{}",
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.result).toMatchObject({
+      state: "ok",
+      provider: "openai-compatible",
+      model: "ghost-test-model",
+    });
+    expect(fetchCalls[0].url).toBe("https://example.test/v1/chat/completions");
+    expect(JSON.stringify(body)).not.toContain("secret-workbench-key");
+  });
+
+  it("returns AI connection errors without breaking settings", async () => {
+    fetchImpl = async () => openAIResponse("provider unavailable", 500);
+    const response = await fetch(`${baseUrl}/api/ai/test`, {
+      body: JSON.stringify({
+        provider: "openai-compatible",
+        model: "ghost-test-model",
+        baseUrl: "https://example.test/v1",
+        apiKey: "secret-workbench-key",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.result).toMatchObject({
+      state: "error",
+      provider: "openai-compatible",
+    });
+  });
+
+  it("runs AI loop API for drift-backed virtual patches", async () => {
+    const response = await fetch(
+      `${baseUrl}/api/scenarios/path-matched-single-surface/ai-loop`,
+      {
+        body: JSON.stringify({
+          promptSampleId: "refund-consequence-copy",
+          driftSampleId: "refund-hardcoded-color",
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.result.virtualPatch.source).toBe("drift-sample");
+    expect(body.result.checkReport.result).toBe("fail");
+  });
+});
+
+describe("AI adapters", () => {
+  it("calls OpenAI-compatible chat completions and parses text", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const result = await generateText(
+      { system: "System", user: "User", jsonMode: true },
+      {
+        config: {
+          provider: "openai-compatible",
+          model: "ghost-openai",
+          baseUrl: "https://example.test/v1",
+          apiKey: "key",
+          apiKeyConfigured: true,
+          timeoutMs: 5_000,
+        },
+        fetchImpl: async (input, init) => {
+          calls.push({
+            url: String(input),
+            body: JSON.parse(String(init?.body)),
+          });
+          return openAIResponse('{"ok":true}');
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      state: "ok",
+      provider: "openai-compatible",
+      rawText: '{"ok":true}',
+    });
+    expect(calls[0].url).toBe("https://example.test/v1/chat/completions");
+    expect(calls[0].body.response_format).toEqual({ type: "json_object" });
+  });
+
+  it("calls Anthropic messages and parses text", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const result = await generateText(
+      { system: "System", user: "User", jsonMode: true },
+      {
+        config: {
+          provider: "anthropic",
+          model: "ghost-anthropic",
+          baseUrl: "https://api.anthropic.test/v1",
+          apiKey: "key",
+          apiKeyConfigured: true,
+          timeoutMs: 5_000,
+        },
+        fetchImpl: async (input, init) => {
+          calls.push({
+            url: String(input),
+            body: JSON.parse(String(init?.body)),
+          });
+          return anthropicResponse('{"ok":true}');
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      state: "ok",
+      provider: "anthropic",
+      rawText: '{"ok":true}',
+    });
+    expect(calls[0].url).toBe("https://api.anthropic.test/v1/messages");
+    expect(String(calls[0].body.system)).toContain("Return valid JSON only");
+  });
+
+  it("calls Gemini generateContent and parses text", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const result = await generateText(
+      { system: "System", user: "User", jsonMode: true },
+      {
+        config: {
+          provider: "google",
+          model: "gemini-test",
+          baseUrl: "https://generativelanguage.googleapis.test/v1beta",
+          apiKey: "key",
+          apiKeyConfigured: true,
+          timeoutMs: 5_000,
+        },
+        fetchImpl: async (input, init) => {
+          calls.push({
+            url: String(input),
+            body: JSON.parse(String(init?.body)),
+          });
+          return googleResponse('{"ok":true}');
+        },
+      },
+    );
+
+    expect(result).toMatchObject({
+      state: "ok",
+      provider: "google",
+      rawText: '{"ok":true}',
+    });
+    expect(calls[0].url).toBe(
+      "https://generativelanguage.googleapis.test/v1beta/models/gemini-test:generateContent?key=key",
+    );
+    expect(calls[0].body.generationConfig).toMatchObject({
+      responseMimeType: "application/json",
+    });
+  });
+
+  it("calls local OpenAI-compatible servers without requiring a key", async () => {
+    const result = await generateText(
+      { system: "System", user: "User" },
+      {
+        config: {
+          provider: "local-openai-compatible",
+          model: "local-model",
+          baseUrl: "http://127.0.0.1:1234/v1",
+          apiKeyConfigured: false,
+          timeoutMs: 5_000,
+        },
+        fetchImpl: async () => openAIResponse("local ok"),
+      },
+    );
+
+    expect(result).toMatchObject({
+      state: "ok",
+      provider: "local-openai-compatible",
+      generatedOutput: "local ok",
+    });
   });
 });
 
@@ -448,17 +830,224 @@ describe("scenario assertions", () => {
     });
   });
 
-  it("prompt lab runner is not configured", async () => {
+  it("prompt lab runner is not requested by default", async () => {
     const result = await runPromptLab("path-matched-single-surface", {
       promptSampleId: "refund-consequence-copy",
     });
 
     expect(result.runner).toEqual({
-      mode: "none",
-      state: "not_configured",
+      mode: "ai",
+      state: "not_requested",
+      provider: "none",
       message: expect.stringContaining("deterministic handoff preview"),
       generatedOutput: null,
     });
+  });
+
+  it("prompt lab generation returns output for every prompt sample with a mocked provider", async () => {
+    for (const scenario of scenarios) {
+      for (const sample of scenario.promptSamples) {
+        const result = await runPromptLab(
+          scenario.id,
+          { promptSampleId: sample.id, runAI: true },
+          {
+            aiOptions: configuredAIOptions([
+              `Generated implementation for ${sample.id}.`,
+            ]),
+          },
+        );
+
+        expect(result.runner).toMatchObject({
+          state: "ok",
+          provider: "openai-compatible",
+          generatedOutput: `Generated implementation for ${sample.id}.`,
+        });
+      }
+    }
+  });
+
+  it("AI loop returns patch, checks, packet, AI findings, and stance", async () => {
+    const result = await runAILoop(
+      "path-matched-single-surface",
+      {
+        promptSampleId: "refund-consequence-copy",
+        driftSampleId: "refund-hardcoded-color",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated refund implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.virtualPatch).toMatchObject({ source: "drift-sample" });
+    expect(result.checkReport?.result).toBe("fail");
+    expect(result.reviewPacketMarkdown).toContain("# Ghost Advisory Review");
+    expect(result.aiReview?.state).toBe("ok");
+    expect(result.stance?.state).toBe("preview-only");
+  });
+
+  it("AI loop parses AI virtual patch JSON when no drift sample is supplied", async () => {
+    const result = await runAILoop(
+      "path-matched-single-surface",
+      { promptSampleId: "refund-consequence-copy" },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated refund implementation.",
+          JSON.stringify({
+            files: [
+              {
+                path: "apps/refunds/settings/page.tsx",
+                content:
+                  "export function RefundSettings(){ return <div style={{ color: 'color.intent.warning' }}>Safe</div>; }",
+                summary: "Uses semantic warning token.",
+              },
+            ],
+            notes: ["Virtual patch only."],
+          }),
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.virtualPatch).toMatchObject({ source: "ai" });
+    expect(result.virtualPatch?.diffText).toContain(
+      "apps/refunds/settings/page.tsx",
+    );
+    expect(result.checkReport?.result).toBe("pass");
+  });
+
+  it("AI loop hardcoded refund color virtual patch fails deterministic checks", async () => {
+    const result = await runAILoop(
+      "path-matched-single-surface",
+      {
+        promptSampleId: "refund-consequence-copy",
+        driftSampleId: "refund-hardcoded-color",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated refund implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.checkReport?.result).toBe("fail");
+    expect(
+      result.checkReport?.findings.map((finding) => finding.check_id),
+    ).toContain("no-hardcoded-ui-color");
+  });
+
+  it("AI loop semantic-token virtual patch passes active checks", async () => {
+    const result = await runAILoop(
+      "path-matched-single-surface",
+      {
+        promptSampleId: "refund-consequence-copy",
+        driftSampleId: "refund-semantic-token-pass",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated refund implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.checkReport?.result).toBe("pass");
+    expect(result.checkReport?.findings).toEqual([]);
+  });
+
+  it("AI loop multi-stack sample returns multiple contexts", async () => {
+    const result = await runAILoop(
+      "multi-stack-diff",
+      {
+        promptSampleId: "two-surface-review",
+        driftSampleId: "two-stack-advisory-review",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated multi-stack implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.contexts).toHaveLength(2);
+    expect((result.reviewPacket as { stacks?: unknown[] }).stacks).toHaveLength(
+      2,
+    );
+  });
+
+  it("AI loop malformed cache stays visible and non-canonical", async () => {
+    const result = await runAILoop(
+      "malformed-cache",
+      {
+        promptSampleId: "cache-resistant-refund-work",
+        driftSampleId: "cache-caveat-refund-review",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated cache-safe implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+      },
+    );
+
+    expect(result.contexts[0].entrypoint.generatedCache.state).toBe(
+      "unreadable",
+    );
+    expect(result.reviewPacketMarkdown).toContain(
+      "Generated cache is optional source material",
+    );
+  });
+
+  it("removes temporary sandboxes after AI loop success", async () => {
+    let sandboxRoot = "";
+    await runAILoop(
+      "path-matched-single-surface",
+      {
+        promptSampleId: "refund-consequence-copy",
+        driftSampleId: "refund-hardcoded-color",
+      },
+      {
+        aiOptions: configuredAIOptions([
+          "Generated refund implementation.",
+          JSON.stringify({ findings: [] }),
+        ]),
+        onSandboxCreated: (root) => {
+          sandboxRoot = root;
+        },
+      },
+    );
+
+    await expect(access(sandboxRoot)).rejects.toThrow();
+  });
+
+  it("removes temporary sandboxes after AI loop failure", async () => {
+    let sandboxRoot = "";
+
+    await expect(
+      runAILoop(
+        "path-matched-single-surface",
+        {
+          promptSampleId: "refund-consequence-copy",
+          driftSampleId: "refund-hardcoded-color",
+        },
+        {
+          aiOptions: configuredAIOptions([
+            "Generated refund implementation.",
+            JSON.stringify({ findings: [] }),
+          ]),
+          onSandboxCreated: (root) => {
+            sandboxRoot = root;
+            throw new Error("boom");
+          },
+        },
+      ),
+    ).rejects.toThrow("boom");
+
+    await expect(access(sandboxRoot)).rejects.toThrow();
   });
 
   it("removes temporary sandboxes after prompt lab success", async () => {
@@ -553,7 +1142,7 @@ describe("scenario assertions", () => {
     const result = await runDriftDesk(
       "path-matched-single-surface",
       { driftSampleId: "refund-hardcoded-color" },
-      { aiReviewOptions: { env: {} } },
+      { aiReviewOptions: { root: settingsRoot, env: {} } },
     );
 
     expect(result.aiReview).toMatchObject({

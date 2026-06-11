@@ -27,11 +27,18 @@ import {
   Play,
   RefreshCw,
   Search,
+  Settings,
+  Sparkles,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import type {
+  WorkbenchAIConnectionTestResult,
+  WorkbenchAILoopResult,
+  WorkbenchAIProvider,
   WorkbenchAIReviewState,
+  WorkbenchAISettings,
+  WorkbenchAISettingsUpdate,
   WorkbenchContextSection,
   WorkbenchDriftDeskResult,
   WorkbenchDriftSample,
@@ -52,12 +59,16 @@ import type {
   WorkbenchTreeNode,
 } from "../shared";
 import {
+  fetchAISettings,
   fetchFingerprintStudio,
   fetchScenario,
   fetchScenarios,
   inspectScenario,
+  runAILoop,
   runDriftDesk,
   runPromptLab,
+  saveAISettings,
+  testAIConnection,
 } from "./api";
 
 const FILTERS: Array<{ label: string; value: "all" | WorkbenchScenarioKind }> =
@@ -92,6 +103,16 @@ export function App() {
     useState<WorkbenchDriftDeskResult | null>(null);
   const [fingerprintResult, setFingerprintResult] =
     useState<WorkbenchFingerprintStudioResult | null>(null);
+  const [aiSettings, setAISettings] = useState<WorkbenchAISettings | null>(
+    null,
+  );
+  const [aiSettingsDraft, setAISettingsDraft] =
+    useState<WorkbenchAISettingsUpdate>({});
+  const [aiSettingsOpen, setAISettingsOpen] = useState(false);
+  const [aiTestResult, setAITestResult] =
+    useState<WorkbenchAIConnectionTestResult | null>(null);
+  const [aiLoopResult, setAILoopResult] =
+    useState<WorkbenchAILoopResult | null>(null);
   const [filter, setFilter] = useState<"all" | WorkbenchScenarioKind>("all");
   const [query, setQuery] = useState("");
   const [promptSampleId, setPromptSampleId] = useState("");
@@ -102,6 +123,7 @@ export function App() {
   const [targetPathsDirty, setTargetPathsDirty] = useState(false);
   const [diffTextDirty, setDiffTextDirty] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [aiBusy, setAIBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -122,6 +144,20 @@ export function App() {
 
   useEffect(() => {
     let cancelled = false;
+    fetchAISettings()
+      .then((settings) => {
+        if (cancelled) return;
+        setAISettings(settings);
+        setAISettingsDraft(settingsDraftFrom(settings));
+      })
+      .catch((err) => setError(messageFromError(err)));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
     fetchScenario(selectedId)
@@ -133,6 +169,7 @@ export function App() {
         setPromptSampleId(defaultSample?.id ?? "");
         setDriftSampleId(defaultDriftSample?.id ?? "");
         setPromptText(defaultSample?.prompt ?? "");
+        setAILoopResult(null);
         setTargetPathsDirty(false);
         setDiffTextDirty(false);
         const [inspection, promptLab, driftDesk, fingerprintStudio] =
@@ -234,6 +271,108 @@ export function App() {
       setError(messageFromError(err));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function runPromptAI() {
+    setAIBusy(true);
+    setError(null);
+    try {
+      const promptLab = await runPromptLab(selectedId, {
+        ...(promptSampleId ? { promptSampleId } : {}),
+        ...(!promptSampleId && promptText.trim() ? { promptText } : {}),
+        ...(targetPathsDirty
+          ? { targetPaths: parsePathLines(targetPaths) }
+          : {}),
+        ...(diffTextDirty ? { diffText } : {}),
+        runAI: true,
+      });
+      setPromptResult(promptLab);
+      setResult(promptLab.inspection);
+      if (!targetPathsDirty) {
+        setTargetPaths(promptLab.interpretation.targetPaths.join("\n"));
+      }
+      if (!diffTextDirty) {
+        setDiffText(promptLab.interpretation.diffText ?? "");
+      }
+    } catch (err) {
+      setError(messageFromError(err));
+    } finally {
+      setAIBusy(false);
+    }
+  }
+
+  async function runFullLoop() {
+    setAIBusy(true);
+    setError(null);
+    try {
+      const loop = await runAILoop(selectedId, {
+        ...(promptSampleId ? { promptSampleId } : {}),
+        ...(!promptSampleId && promptText.trim() ? { promptText } : {}),
+        ...(targetPathsDirty
+          ? { targetPaths: parsePathLines(targetPaths) }
+          : {}),
+        ...(diffTextDirty ? { diffText } : {}),
+      });
+      setAILoopResult(loop);
+      setPromptResult(loop.promptLab);
+      setResult(loop.promptLab.inspection);
+      if (loop.checkReport) {
+        setDriftResult({
+          scenario: loop.scenario,
+          diffText: loop.virtualPatch?.diffText ?? "",
+          contexts: loop.contexts,
+          checkReport: loop.checkReport,
+          reviewPacket: loop.reviewPacket,
+          reviewPacketMarkdown: loop.reviewPacketMarkdown ?? "",
+          aiReview: loop.aiReview ?? {
+            state: "not_configured",
+            provider: "none",
+            message: "AI review was not run.",
+            findings: [],
+          },
+          stance: loop.stance ?? {
+            state: "preview-only",
+            recommendation: "needs-human-stance",
+            summary: "AI loop did not produce a stance preview.",
+            blockingSignals: 0,
+            advisorySignals: 0,
+            disabledActions: ["ack", "track", "diverge"],
+            writes: [],
+          },
+        });
+      }
+    } catch (err) {
+      setError(messageFromError(err));
+    } finally {
+      setAIBusy(false);
+    }
+  }
+
+  async function saveAISettingsFromDraft() {
+    setAIBusy(true);
+    setError(null);
+    try {
+      const settings = await saveAISettings(aiSettingsDraft);
+      setAISettings(settings);
+      setAISettingsDraft(settingsDraftFrom(settings));
+      setAITestResult(null);
+    } catch (err) {
+      setError(messageFromError(err));
+    } finally {
+      setAIBusy(false);
+    }
+  }
+
+  async function testAISettingsFromDraft() {
+    setAIBusy(true);
+    setError(null);
+    try {
+      setAITestResult(await testAIConnection(aiSettingsDraft));
+    } catch (err) {
+      setError(messageFromError(err));
+    } finally {
+      setAIBusy(false);
     }
   }
 
@@ -346,6 +485,15 @@ export function App() {
               loading={loading}
               unit={mode === "fingerprint" ? "package" : "context"}
             />
+            <AIStatusBadge busy={aiBusy} settings={aiSettings} />
+            <Button
+              className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
+              onClick={() => setAISettingsOpen((open) => !open)}
+              type="button"
+            >
+              <Settings className="size-4" />
+              AI settings
+            </Button>
             <Button
               className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
               disabled={loading || !detail}
@@ -365,9 +513,51 @@ export function App() {
                     ? "Load studio"
                     : "Inspect"}
             </Button>
+            {mode === "prompt" ? (
+              <>
+                <Button
+                  className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
+                  disabled={aiBusy || loading || !detail}
+                  onClick={runPromptAI}
+                  type="button"
+                >
+                  {aiBusy ? (
+                    <RefreshCw className="size-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-4" />
+                  )}
+                  Run AI
+                </Button>
+                <Button
+                  className="h-9 gap-2 rounded-md bg-[#24231f] px-3 text-[#faf9f6] shadow-none hover:bg-[#3a3832]"
+                  disabled={aiBusy || loading || !detail}
+                  onClick={runFullLoop}
+                  type="button"
+                >
+                  {aiBusy ? (
+                    <RefreshCw className="size-4 animate-spin" />
+                  ) : (
+                    <GitCompare className="size-4" />
+                  )}
+                  Run full loop
+                </Button>
+              </>
+            ) : null}
           </div>
         </div>
       </header>
+
+      {aiSettingsOpen ? (
+        <AISettingsPanel
+          busy={aiBusy}
+          draft={aiSettingsDraft}
+          onDraftChange={setAISettingsDraft}
+          onSave={saveAISettingsFromDraft}
+          onTest={testAISettingsFromDraft}
+          settings={aiSettings}
+          testResult={aiTestResult}
+        />
+      ) : null}
 
       {error ? (
         <div className="mx-6 mt-4 flex items-start gap-2 rounded-md border border-[#d9a091] bg-[#fff7f4] p-3 text-sm">
@@ -421,6 +611,7 @@ export function App() {
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={33} minSize={25}>
           <RightRail
+            aiLoopResult={aiLoopResult}
             context={activeContext}
             driftResult={driftResult}
             fingerprintResult={fingerprintResult}
@@ -431,6 +622,208 @@ export function App() {
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
+  );
+}
+
+function AISettingsPanel({
+  settings,
+  draft,
+  testResult,
+  busy,
+  onDraftChange,
+  onSave,
+  onTest,
+}: {
+  settings: WorkbenchAISettings | null;
+  draft: WorkbenchAISettingsUpdate;
+  testResult: WorkbenchAIConnectionTestResult | null;
+  busy: boolean;
+  onDraftChange: (value: WorkbenchAISettingsUpdate) => void;
+  onSave: () => void;
+  onTest: () => void;
+}) {
+  if (!settings) {
+    return (
+      <section className="shrink-0 border-b border-[#e5ded2] bg-white px-6 py-4 text-sm text-[#746f66]">
+        Loading AI settings...
+      </section>
+    );
+  }
+
+  const provider = draft.provider ?? settings.provider;
+  const providerDefault =
+    settings.defaults.find((item) => item.provider === provider) ??
+    settings.defaults[0];
+
+  return (
+    <section className="shrink-0 border-b border-[#e5ded2] bg-white px-6 py-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <label className="block">
+            <span
+              className={cx(
+                fonts.mono,
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
+              )}
+            >
+              Provider
+            </span>
+            <select
+              className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+              onChange={(event) => {
+                const nextProvider = event.target.value as WorkbenchAIProvider;
+                const nextDefault =
+                  settings.defaults.find(
+                    (item) => item.provider === nextProvider,
+                  ) ?? providerDefault;
+                onDraftChange({
+                  ...draft,
+                  provider: nextProvider,
+                  model: nextDefault.model,
+                  baseUrl: nextDefault.baseUrl,
+                });
+              }}
+              value={provider}
+            >
+              {settings.defaults.map((item) => (
+                <option key={item.provider} value={item.provider}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span
+              className={cx(
+                fonts.mono,
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
+              )}
+            >
+              Model
+            </span>
+            <input
+              className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+              onChange={(event) =>
+                onDraftChange({ ...draft, model: event.target.value })
+              }
+              value={draft.model ?? settings.model}
+            />
+          </label>
+          <label className="block xl:col-span-2">
+            <span
+              className={cx(
+                fonts.mono,
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
+              )}
+            >
+              Base URL
+            </span>
+            <input
+              className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+              onChange={(event) =>
+                onDraftChange({ ...draft, baseUrl: event.target.value })
+              }
+              value={draft.baseUrl ?? settings.baseUrl}
+            />
+          </label>
+          <label className="block">
+            <span
+              className={cx(
+                fonts.mono,
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
+              )}
+            >
+              Timeout ms
+            </span>
+            <input
+              className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+              max={120_000}
+              min={1_000}
+              onChange={(event) =>
+                onDraftChange({
+                  ...draft,
+                  timeoutMs: Number(event.target.value),
+                })
+              }
+              type="number"
+              value={draft.timeoutMs ?? settings.timeoutMs}
+            />
+          </label>
+          <label className="block md:col-span-2 xl:col-span-5">
+            <span
+              className={cx(
+                fonts.mono,
+                "mb-2 block text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
+              )}
+            >
+              API key
+            </span>
+            <input
+              className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+              onChange={(event) =>
+                onDraftChange({
+                  ...draft,
+                  apiKey: event.target.value || undefined,
+                })
+              }
+              placeholder={
+                settings.apiKeyConfigured
+                  ? `Configured from ${settings.apiKeySource ?? "workbench"}; leave blank to preserve`
+                  : providerDefault.requiresApiKey
+                    ? "Paste a provider key; it stays server-side in .env.local"
+                    : "Optional for local provider"
+              }
+              type="password"
+              value={draft.apiKey ?? ""}
+            />
+          </label>
+        </div>
+        <div className="flex min-w-[220px] flex-col justify-between gap-3 rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4">
+          <div>
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                className="rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
+                variant="secondary"
+              >
+                {settings.state}
+              </Badge>
+              <Badge
+                className="rounded-md border-[#e5ded2] bg-transparent font-mono text-[10px] uppercase text-[#746f66]"
+                variant="outline"
+              >
+                key {settings.apiKeyConfigured ? "set" : "missing"}
+              </Badge>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-[#5e584f]">
+              {testResult?.message ?? settings.message}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              className="h-9 flex-1 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
+              disabled={busy}
+              onClick={onTest}
+              type="button"
+            >
+              {busy ? (
+                <RefreshCw className="size-4 animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
+              Test
+            </Button>
+            <Button
+              className="h-9 flex-1 rounded-md bg-[#24231f] px-3 text-[#faf9f6] shadow-none hover:bg-[#3a3832]"
+              disabled={busy}
+              onClick={onSave}
+              type="button"
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1240,6 +1633,7 @@ function ContextCard({ context }: { context: WorkbenchContextSection }) {
 }
 
 function RightRail({
+  aiLoopResult,
   context,
   driftResult,
   fingerprintResult,
@@ -1247,6 +1641,7 @@ function RightRail({
   promptResult,
   result,
 }: {
+  aiLoopResult: WorkbenchAILoopResult | null;
   context: WorkbenchContextSection | null;
   driftResult: WorkbenchDriftDeskResult | null;
   fingerprintResult: WorkbenchFingerprintStudioResult | null;
@@ -1266,11 +1661,19 @@ function RightRail({
     <aside className="flex h-full min-w-0 flex-col overflow-hidden bg-[#f7f4ee]">
       <Tabs className="min-h-0 flex-1 gap-0" defaultValue="handoff">
         <div className="border-b border-[#e5ded2] p-4">
-          <TabsList className="grid w-full grid-cols-4 rounded-md border border-[#ded6c9] bg-white p-1">
+          <TabsList
+            className={cx(
+              "grid w-full rounded-md border border-[#ded6c9] bg-white p-1",
+              mode === "prompt" ? "grid-cols-5" : "grid-cols-4",
+            )}
+          >
             <TabsTrigger value="handoff">Handoff</TabsTrigger>
             <TabsTrigger value="narrowing">Narrowing</TabsTrigger>
             <TabsTrigger value="omissions">Omissions</TabsTrigger>
             <TabsTrigger value="runner">Runner</TabsTrigger>
+            {mode === "prompt" ? (
+              <TabsTrigger value="loop">Loop</TabsTrigger>
+            ) : null}
           </TabsList>
         </div>
         <TabsContent className="min-h-0 overflow-y-auto p-4" value="handoff">
@@ -1299,6 +1702,15 @@ function RightRail({
             <EmptyRail />
           )}
         </TabsContent>
+        {mode === "prompt" ? (
+          <TabsContent className="min-h-0 overflow-y-auto p-5" value="loop">
+            {aiLoopResult ? (
+              <AILoopPanel result={aiLoopResult} />
+            ) : (
+              <EmptyRail />
+            )}
+          </TabsContent>
+        ) : null}
       </Tabs>
     </aside>
   );
@@ -1801,19 +2213,200 @@ function PromptNarrowingPanel({
 function RunnerPanel({ runner }: { runner: WorkbenchPromptRunnerState }) {
   return (
     <div className="space-y-4">
-      <PanelTitle
-        icon={<ClipboardList className="size-4" />}
-        title="AI runner"
-      />
+      <PanelTitle icon={<Sparkles className="size-4" />} title="AI runner" />
       <div className="rounded-md border border-[#e5ded2] bg-white p-5">
-        <div className="grid gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <PromptNote label="Mode" value={runner.mode} />
           <PromptNote label="State" value={runner.state} />
-          <PromptNote label="Generated output" value="None" />
+          <PromptNote label="Provider" value={runner.provider ?? "none"} />
+          <PromptNote label="Model" value={runner.model ?? "none"} />
+          <PromptNote
+            label="Latency"
+            value={
+              runner.latencyMs === undefined
+                ? "not run"
+                : `${runner.latencyMs} ms`
+            }
+          />
+          <PromptNote
+            label="Usage"
+            value={
+              runner.usage
+                ? `${runner.usage.totalTokens ?? "?"} tokens`
+                : "not reported"
+            }
+          />
         </div>
         <p className="mt-4 text-sm leading-relaxed text-[#5e584f]">
           {runner.message}
         </p>
+      </div>
+      {runner.generatedOutput ? (
+        <div>
+          <PanelTitle
+            icon={<FileText className="size-4" />}
+            title="Generated output"
+          />
+          <pre className="mt-3 max-h-96 overflow-auto rounded-md border border-[#e5ded2] bg-white p-5 font-mono text-xs leading-relaxed text-[#24231f]">
+            <code>{runner.generatedOutput}</code>
+          </pre>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AILoopPanel({ result }: { result: WorkbenchAILoopResult }) {
+  return (
+    <div className="space-y-5">
+      <PanelTitle icon={<GitCompare className="size-4" />} title="Loop" />
+      <div className="space-y-2">
+        {result.timeline.map((item) => (
+          <div
+            className="rounded-md border border-[#e5ded2] bg-white p-4"
+            key={`${item.label}:${item.state}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-[#24231f]">
+                {item.label}
+              </span>
+              <Badge
+                className="rounded-md font-mono text-[10px] uppercase"
+                variant={item.state === "error" ? "destructive" : "secondary"}
+              >
+                {item.state}
+              </Badge>
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-[#746f66]">
+              {item.detail}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {result.generation.generatedOutput ? (
+        <div>
+          <PanelTitle
+            icon={<Sparkles className="size-4" />}
+            title="Generated output"
+          />
+          <pre className="mt-3 max-h-80 overflow-auto rounded-md border border-[#e5ded2] bg-white p-5 font-mono text-xs leading-relaxed text-[#24231f]">
+            <code>{result.generation.generatedOutput}</code>
+          </pre>
+        </div>
+      ) : null}
+
+      <div>
+        <PanelTitle
+          icon={<FileText className="size-4" />}
+          title="Virtual patch"
+        />
+        {result.virtualPatch ? (
+          <div className="mt-3 space-y-3">
+            <div className="rounded-md border border-[#e5ded2] bg-white p-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  className="rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
+                  variant="secondary"
+                >
+                  {result.virtualPatch.source}
+                </Badge>
+                <Badge
+                  className="rounded-md border-[#e5ded2] bg-transparent font-mono text-[10px] uppercase text-[#746f66]"
+                  variant="outline"
+                >
+                  {result.virtualPatch.files.length} virtual file
+                  {result.virtualPatch.files.length === 1 ? "" : "s"}
+                </Badge>
+              </div>
+              {result.virtualPatch.notes.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-xs leading-relaxed text-[#746f66]">
+                  {result.virtualPatch.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <CodePreview code={result.virtualPatch.diffText} />
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md border border-[#e5ded2] bg-white p-4 text-sm text-[#746f66]">
+            No virtual patch was produced.
+          </p>
+        )}
+      </div>
+
+      {result.checkReport ? (
+        <div>
+          <PanelTitle
+            icon={<ClipboardList className="size-4" />}
+            title="Deterministic review"
+          />
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <PromptNote label="Result" value={result.checkReport.result} />
+            <PromptNote
+              label="Routed files"
+              value={String(result.checkReport.routed_files.length)}
+            />
+            <PromptNote
+              label="Findings"
+              value={String(result.checkReport.findings.length)}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {result.aiReview ? <AIReviewPanel review={result.aiReview} /> : null}
+
+      {result.stance ? (
+        <div>
+          <PanelTitle icon={<GitCompare className="size-4" />} title="Stance" />
+          <div className="mt-3 grid gap-3">
+            <PromptNote label="State" value={result.stance.state} />
+            <PromptNote
+              label="Recommendation"
+              value={result.stance.recommendation}
+            />
+            <PromptNote label="Summary" value={result.stance.summary} />
+            <PromptNote label="Writes" value="none" />
+          </div>
+        </div>
+      ) : null}
+
+      <div>
+        <PanelTitle
+          icon={<Braces className="size-4" />}
+          title="Provider trace"
+        />
+        <div className="mt-3 space-y-2">
+          {result.providerTrace.map((trace) => (
+            <div
+              className="rounded-md border border-[#e5ded2] bg-white p-4"
+              key={`${trace.label}:${trace.provider}:${trace.state}`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  className="rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
+                  variant="secondary"
+                >
+                  {trace.state}
+                </Badge>
+                <Badge
+                  className="rounded-md border-[#e5ded2] bg-transparent font-mono text-[10px] uppercase text-[#746f66]"
+                  variant="outline"
+                >
+                  {trace.provider}
+                </Badge>
+              </div>
+              <div className="mt-3 text-sm font-medium text-[#24231f]">
+                {trace.label}
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-[#746f66]">
+                {trace.message}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -2130,6 +2723,45 @@ function StatusBadge({
   );
 }
 
+function AIStatusBadge({
+  busy,
+  settings,
+}: {
+  busy: boolean;
+  settings: WorkbenchAISettings | null;
+}) {
+  if (busy) {
+    return (
+      <Badge
+        className="gap-1.5 rounded-md border-[#e5ded2] bg-white font-mono text-[10px] uppercase text-[#746f66]"
+        variant="outline"
+      >
+        <RefreshCw className="size-3.5 animate-spin" />
+        AI running
+      </Badge>
+    );
+  }
+  if (!settings) {
+    return (
+      <Badge
+        className="rounded-md border-[#e5ded2] bg-white font-mono text-[10px] uppercase text-[#746f66]"
+        variant="outline"
+      >
+        AI loading
+      </Badge>
+    );
+  }
+  return (
+    <Badge
+      className="gap-1.5 rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
+      variant={settings.state === "configured" ? "secondary" : "outline"}
+    >
+      <Sparkles className="size-3.5" />
+      AI {settings.state === "configured" ? "configured" : "not configured"}
+    </Badge>
+  );
+}
+
 function EmptyRail() {
   return (
     <div className="rounded-md border border-[#e5ded2] bg-white p-5 text-sm text-[#746f66]">
@@ -2163,6 +2795,17 @@ function packageCacheSummary(pkg: WorkbenchFingerprintPackageSummary): string {
     return `Generated cache is present but non-canonical and unreadable: ${cache.error}`;
   }
   return `Generated cache is present with ${cache.summary.package_manifests.length} package manifest hint(s); it remains optional source material.`;
+}
+
+function settingsDraftFrom(
+  settings: WorkbenchAISettings,
+): WorkbenchAISettingsUpdate {
+  return {
+    provider: settings.provider,
+    model: settings.model,
+    baseUrl: settings.baseUrl,
+    timeoutMs: settings.timeoutMs,
+  };
 }
 
 function parsePathLines(value: string): string[] {

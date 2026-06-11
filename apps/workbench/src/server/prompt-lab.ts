@@ -4,16 +4,21 @@ import type {
   WorkbenchPromptLabResult,
   WorkbenchPromptSample,
 } from "../shared";
+import type { WorkbenchAIProviderOptions } from "./ai-provider";
 import {
   type InspectScenarioHooks,
   inspectScenario,
   statusError,
 } from "./inspect";
-import { runPromptRunner } from "./prompt-runner";
+import { runPromptRunner, skippedPromptRunner } from "./prompt-runner";
 import { diffFor } from "./sandbox";
 import { getScenario, type ScenarioDefinition, toDetail } from "./scenarios";
 
 const MAX_PROMPT_TEXT = 8_000;
+
+export interface PromptLabHooks extends InspectScenarioHooks {
+  aiOptions?: WorkbenchAIProviderOptions & { root?: string };
+}
 
 interface PromptInterpretationWithSample {
   interpretation: WorkbenchPromptInterpretation;
@@ -23,7 +28,7 @@ interface PromptInterpretationWithSample {
 export async function runPromptLab(
   id: string,
   request: WorkbenchPromptLabRequest = {},
-  hooks: InspectScenarioHooks = {},
+  hooks: PromptLabHooks = {},
 ): Promise<WorkbenchPromptLabResult> {
   const scenario = getScenario(id);
   if (!scenario) throw statusError(404, `Unknown scenario: ${id}`);
@@ -46,10 +51,15 @@ export async function runPromptLab(
     })),
     inspection.checkReport?.result,
   );
-  const runner = await runPromptRunner({
-    promptText: interpretation.promptText,
-    handoffMarkdown,
-  });
+  const runner = request.runAI
+    ? await runPromptRunner(
+        {
+          promptText: interpretation.promptText,
+          handoffMarkdown,
+        },
+        hooks.aiOptions,
+      )
+    : skippedPromptRunner();
 
   return {
     scenario: toDetail(scenario),
@@ -334,6 +344,9 @@ function assertPromptLabRequest(request: WorkbenchPromptLabRequest): void {
       400,
       "diffText must be a string shorter than 100000 characters.",
     );
+  }
+  if (request.runAI !== undefined && typeof request.runAI !== "boolean") {
+    throw statusError(400, "runAI must be a boolean.");
   }
 }
 

@@ -1,4 +1,9 @@
 import type {
+  WorkbenchAIConnectionTestResult,
+  WorkbenchAILoopRequest,
+  WorkbenchAILoopResult,
+  WorkbenchAISettings,
+  WorkbenchAISettingsUpdate,
   WorkbenchDriftDeskRequest,
   WorkbenchDriftDeskResult,
   WorkbenchFingerprintStudioResult,
@@ -62,6 +67,39 @@ export async function runPromptLab(
   return body.result;
 }
 
+export async function fetchAISettings(): Promise<WorkbenchAISettings> {
+  const body = await readJson<{ settings: WorkbenchAISettings }>(
+    await fetch("/api/ai/settings"),
+  );
+  return body.settings;
+}
+
+export async function saveAISettings(
+  request: WorkbenchAISettingsUpdate,
+): Promise<WorkbenchAISettings> {
+  const body = await readJson<{ settings: WorkbenchAISettings }>(
+    await fetch("/api/ai/settings", {
+      body: JSON.stringify(request),
+      headers: { "content-type": "application/json" },
+      method: "PUT",
+    }),
+  );
+  return body.settings;
+}
+
+export async function testAIConnection(
+  request: WorkbenchAISettingsUpdate,
+): Promise<WorkbenchAIConnectionTestResult> {
+  const body = await readJson<{ result: WorkbenchAIConnectionTestResult }>(
+    await fetch("/api/ai/test", {
+      body: JSON.stringify(request),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    }),
+  );
+  return body.result;
+}
+
 export async function runDriftDesk(
   id: string,
   request: WorkbenchDriftDeskRequest = {},
@@ -81,6 +119,20 @@ export async function fetchFingerprintStudio(
 ): Promise<WorkbenchFingerprintStudioResult> {
   const body = await readJson<{ result: WorkbenchFingerprintStudioResult }>(
     await fetch(`/api/scenarios/${encodeURIComponent(id)}/fingerprint-studio`),
+  );
+  return body.result;
+}
+
+export async function runAILoop(
+  id: string,
+  request: WorkbenchAILoopRequest = {},
+): Promise<WorkbenchAILoopResult> {
+  const body = await readJson<{ result: WorkbenchAILoopResult }>(
+    await fetch(`/api/scenarios/${encodeURIComponent(id)}/ai-loop`, {
+      body: JSON.stringify(request),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    }),
   );
   return body.result;
 }
