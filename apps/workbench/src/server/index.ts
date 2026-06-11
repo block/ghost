@@ -6,11 +6,20 @@ import {
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
+  WorkbenchAILoopRequest,
+  WorkbenchAISettingsUpdate,
   WorkbenchDriftDeskRequest,
   WorkbenchErrorResponse,
   WorkbenchInspectionRequest,
   WorkbenchPromptLabRequest,
 } from "../shared";
+import { runAILoop } from "./ai-loop";
+import type { WorkbenchAIProviderOptions } from "./ai-provider";
+import {
+  readAISettings,
+  saveAISettings,
+  testAIConnection,
+} from "./ai-settings";
 import { runDriftDesk } from "./drift-desk";
 import { runFingerprintStudio } from "./fingerprint-studio";
 import { inspectScenario } from "./inspect";
@@ -20,10 +29,15 @@ import { getScenarioDetail, listScenarioSummaries } from "./scenarios";
 const DEFAULT_PORT = 8787;
 const MAX_BODY_BYTES = 1024 * 128;
 
-export function createWorkbenchServer() {
+export interface WorkbenchServerOptions {
+  ai?: WorkbenchAIProviderOptions;
+  settingsRoot?: string;
+}
+
+export function createWorkbenchServer(options: WorkbenchServerOptions = {}) {
   return createServer(async (request, response) => {
     try {
-      await handleRequest(request, response);
+      await handleRequest(request, response, options);
     } catch (error) {
       const status = statusFromError(error);
       writeJson(response, status, {
@@ -38,6 +52,7 @@ export function createWorkbenchServer() {
 async function handleRequest(
   request: IncomingMessage,
   response: ServerResponse,
+  options: WorkbenchServerOptions,
 ): Promise<void> {
   const url = new URL(request.url ?? "/", "http://127.0.0.1");
   const segments = url.pathname.split("/").filter(Boolean);
@@ -50,6 +65,35 @@ async function handleRequest(
 
   if (request.method === "GET" && url.pathname === "/api/health") {
     writeJson(response, 200, { ok: true });
+    return;
+  }
+
+  if (request.method === "GET" && url.pathname === "/api/ai/settings") {
+    writeJson(response, 200, {
+      settings: await readAISettings(aiOptions(options)),
+    });
+    return;
+  }
+
+  if (request.method === "PUT" && url.pathname === "/api/ai/settings") {
+    const body = await readJsonBody(request);
+    writeJson(response, 200, {
+      settings: await saveAISettings(
+        body as WorkbenchAISettingsUpdate,
+        aiOptions(options),
+      ),
+    });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/ai/test") {
+    const body = await readJsonBody(request);
+    writeJson(response, 200, {
+      result: await testAIConnection(
+        body as WorkbenchAISettingsUpdate,
+        aiOptions(options),
+      ),
+    });
     return;
   }
 
@@ -102,6 +146,7 @@ async function handleRequest(
     const result = await runPromptLab(
       decodeURIComponent(segments[2]),
       body as WorkbenchPromptLabRequest,
+      { aiOptions: aiOptions(options) },
     );
     writeJson(response, 200, { result });
     return;
@@ -118,6 +163,24 @@ async function handleRequest(
     const result = await runDriftDesk(
       decodeURIComponent(segments[2]),
       body as WorkbenchDriftDeskRequest,
+      { aiReviewOptions: aiOptions(options) },
+    );
+    writeJson(response, 200, { result });
+    return;
+  }
+
+  if (
+    request.method === "POST" &&
+    segments.length === 4 &&
+    segments[0] === "api" &&
+    segments[1] === "scenarios" &&
+    segments[3] === "ai-loop"
+  ) {
+    const body = await readJsonBody(request);
+    const result = await runAILoop(
+      decodeURIComponent(segments[2]),
+      body as WorkbenchAILoopRequest,
+      { aiOptions: aiOptions(options) },
     );
     writeJson(response, 200, { result });
     return;
@@ -136,6 +199,15 @@ async function handleRequest(
   }
 
   throw statusError(404, "Endpoint not found.");
+}
+
+function aiOptions(
+  options: WorkbenchServerOptions,
+): WorkbenchAIProviderOptions & { root?: string } {
+  return {
+    ...(options.ai ?? {}),
+    ...(options.settingsRoot ? { root: options.settingsRoot } : {}),
+  };
 }
 
 async function readJsonBody(request: IncomingMessage): Promise<unknown> {
@@ -173,7 +245,7 @@ function writeJson(
 
 function writeCors(response: ServerResponse): void {
   response.setHeader("access-control-allow-origin", "*");
-  response.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
+  response.setHeader("access-control-allow-methods", "GET,POST,PUT,OPTIONS");
   response.setHeader("access-control-allow-headers", "content-type");
 }
 

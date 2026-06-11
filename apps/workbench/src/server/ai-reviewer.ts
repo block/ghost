@@ -3,6 +3,8 @@ import type {
   WorkbenchAIReviewState,
   WorkbenchCheckReport,
 } from "../shared";
+import { generateText, type WorkbenchAIProviderOptions } from "./ai-provider";
+import { resolveAIConfig } from "./ai-settings";
 
 export interface WorkbenchAIReviewInput {
   scenarioTitle: string;
@@ -11,12 +13,10 @@ export interface WorkbenchAIReviewInput {
   checkReport: WorkbenchCheckReport;
 }
 
-export interface WorkbenchAIReviewOptions {
-  env?: Record<string, string | undefined>;
-  fetchImpl?: typeof fetch;
+export interface WorkbenchAIReviewOptions extends WorkbenchAIProviderOptions {
+  root?: string;
 }
 
-const DEFAULT_TIMEOUT_MS = 20_000;
 const CATEGORIES = new Set<WorkbenchAdvisoryFinding["category"]>([
   "fix",
   "intentional-divergence",
@@ -35,110 +35,85 @@ export async function reviewDriftWithAI(
   input: WorkbenchAIReviewInput,
   options: WorkbenchAIReviewOptions = {},
 ): Promise<WorkbenchAIReviewState> {
-  const env = options.env ?? process.env;
-  const provider = env.GHOST_WORKBENCH_AI_PROVIDER;
-  const baseUrl = env.GHOST_WORKBENCH_AI_BASE_URL;
-  const apiKey = env.GHOST_WORKBENCH_AI_API_KEY;
-  const model = env.GHOST_WORKBENCH_AI_MODEL;
-
-  if (provider !== "openai-compatible" || !baseUrl || !apiKey || !model) {
+  const config = options.config ?? (await resolveAIConfig(options));
+  if (
+    !config.apiKeyConfigured &&
+    config.provider !== "local-openai-compatible"
+  ) {
     return {
       state: "not_configured",
       provider: "none",
       message:
-        "AI review is not configured. Set GHOST_WORKBENCH_AI_PROVIDER=openai-compatible plus base URL, API key, and model to run advisory review.",
+        "AI review is not configured. Open AI Settings to set provider, model, base URL, and API key.",
       findings: [],
     };
   }
 
-  const timeoutMs = Number(
-    env.GHOST_WORKBENCH_AI_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS,
+  const generation = await generateText(
+    {
+      system:
+        "You are Ghost Workbench's advisory drift reviewer. Return JSON only. Advisory findings never override deterministic active checks.",
+      user: buildReviewPrompt(input),
+      jsonMode: true,
+    },
+    { ...options, config },
   );
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await (options.fetchImpl ?? fetch)(
-      `${baseUrl.replace(/\/+$/, "")}/chat/completions`,
-      {
-        body: JSON.stringify({
-          model,
-          temperature: 0,
-          response_format: { type: "json_object" },
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are Ghost Workbench's advisory drift reviewer. Return JSON only. Advisory findings never override deterministic active checks.",
-            },
-            {
-              role: "user",
-              content: buildReviewPrompt(input),
-            },
-          ],
-        }),
-        headers: {
-          authorization: `Bearer ${apiKey}`,
-          "content-type": "application/json",
-        },
-        method: "POST",
-        signal: controller.signal,
-      },
-    );
-    const body = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-      error?: { message?: string };
-    };
-    if (!response.ok) {
+  if (generation.state !== "ok") {
+    if (generation.state === "not_configured") {
       return {
-        state: "error",
-        provider: "openai-compatible",
-        model,
-        message:
-          body.error?.message ?? `AI review failed with ${response.status}.`,
+        state: "not_configured",
+        provider: "none",
+        ...(generation.model ? { model: generation.model } : {}),
+        message: generation.message,
         findings: [],
-      };
-    }
-
-    const rawText = body.choices?.[0]?.message?.content ?? "";
-    let findings: WorkbenchAdvisoryFinding[];
-    try {
-      findings = parseFindings(rawText);
-    } catch (error) {
-      return {
-        state: "error",
-        provider: "openai-compatible",
-        model,
-        message:
-          error instanceof Error
-            ? error.message
-            : "AI review returned invalid JSON.",
-        findings: [],
-        rawText,
+        ...(generation.rawText ? { rawText: generation.rawText } : {}),
       };
     }
     return {
-      state: "ok",
-      provider: "openai-compatible",
-      model,
-      message: `AI review returned ${findings.length} advisory finding(s).`,
-      findings,
-      rawText,
+      state: "error",
+      provider: generation.provider,
+      ...(generation.model ? { model: generation.model } : {}),
+      message: generation.message,
+      findings: [],
+      ...(generation.rawText ? { rawText: generation.rawText } : {}),
     };
+  }
+  if (generation.provider === "none") {
+    return {
+      state: "error",
+      provider: "none",
+      message: "AI review completed without a configured provider.",
+      findings: [],
+      ...(generation.rawText ? { rawText: generation.rawText } : {}),
+    };
+  }
+
+  let findings: WorkbenchAdvisoryFinding[];
+  try {
+    findings = parseFindings(
+      generation.rawText ?? generation.generatedOutput ?? "",
+    );
   } catch (error) {
     return {
       state: "error",
-      provider: "openai-compatible",
-      model,
+      provider: generation.provider,
+      model: generation.model,
       message:
         error instanceof Error
-          ? `AI review failed: ${error.message}`
-          : "AI review failed.",
+          ? error.message
+          : "AI review returned invalid JSON.",
       findings: [],
+      rawText: generation.rawText ?? undefined,
     };
-  } finally {
-    clearTimeout(timeout);
   }
+  return {
+    state: "ok",
+    provider: generation.provider,
+    model: generation.model ?? config.model,
+    message: `AI review returned ${findings.length} advisory finding(s).`,
+    findings,
+    rawText: generation.rawText,
+  };
 }
 
 function buildReviewPrompt(input: WorkbenchAIReviewInput): string {

@@ -46,7 +46,9 @@ export async function runDriftDesk(
 
   const selectedSample = request.driftSampleId
     ? findDriftSample(scenario, request.driftSampleId)
-    : scenario.driftSamples[0];
+    : request.diffText
+      ? undefined
+      : scenario.driftSamples[0];
   if (request.driftSampleId && !selectedSample) {
     throw statusError(400, `Unknown drift sample: ${request.driftSampleId}`);
   }

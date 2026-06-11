@@ -56,6 +56,7 @@ export interface WorkbenchPromptLabRequest {
   promptText?: string;
   targetPaths?: string[];
   diffText?: string;
+  runAI?: boolean;
 }
 
 export interface WorkbenchPromptLabResult {
@@ -85,11 +86,18 @@ export interface WorkbenchPromptInterpretation {
 }
 
 export interface WorkbenchPromptRunnerState {
-  mode: "none";
-  state: "not_configured";
+  mode: "ai";
+  state: "not_requested" | "not_configured" | "ok" | "error";
+  provider?: WorkbenchAIProvider | "none";
+  model?: string;
   message: string;
-  generatedOutput: null;
+  generatedOutput: string | null;
+  rawText?: string;
+  latencyMs?: number;
+  usage?: WorkbenchAIUsage;
 }
+
+export type WorkbenchAIRunState = WorkbenchPromptRunnerState;
 
 export interface WorkbenchDriftSample {
   id: string;
@@ -211,6 +219,111 @@ export interface WorkbenchFingerprintStackPreview {
   };
 }
 
+export type WorkbenchAIProvider =
+  | "openai-compatible"
+  | "anthropic"
+  | "google"
+  | "local-openai-compatible";
+
+export interface WorkbenchAISettings {
+  state: "configured" | "not_configured";
+  provider: WorkbenchAIProvider;
+  model: string;
+  baseUrl: string;
+  timeoutMs: number;
+  apiKeyConfigured: boolean;
+  apiKeySource?: "workbench" | "alias" | "process";
+  message: string;
+  defaults: Array<{
+    provider: WorkbenchAIProvider;
+    label: string;
+    model: string;
+    baseUrl: string;
+    requiresApiKey: boolean;
+  }>;
+}
+
+export interface WorkbenchAISettingsUpdate {
+  provider?: WorkbenchAIProvider;
+  model?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  timeoutMs?: number;
+}
+
+export interface WorkbenchAIConnectionTestResult {
+  state: "ok" | "not_configured" | "error";
+  provider: WorkbenchAIProvider | "none";
+  model?: string;
+  latencyMs?: number;
+  message: string;
+  rawText?: string;
+}
+
+export interface WorkbenchAIUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+}
+
+export interface WorkbenchAIGenerationResult {
+  mode: "ai";
+  state: "not_configured" | "ok" | "error";
+  provider: WorkbenchAIProvider | "none";
+  model?: string;
+  message: string;
+  generatedOutput: string | null;
+  rawText?: string;
+  latencyMs?: number;
+  usage?: WorkbenchAIUsage;
+}
+
+export interface WorkbenchVirtualPatch {
+  source: "ai" | "drift-sample" | "diff-override";
+  diffText: string;
+  files: Array<{
+    path: string;
+    content: string;
+    summary?: string;
+  }>;
+  notes: string[];
+}
+
+export interface WorkbenchAIProviderTrace {
+  label: string;
+  provider: WorkbenchAIProvider | "none";
+  model?: string;
+  state: "not_configured" | "ok" | "error";
+  latencyMs?: number;
+  message: string;
+  jsonMode: boolean;
+  usage?: WorkbenchAIUsage;
+}
+
+export interface WorkbenchAILoopRequest extends WorkbenchPromptLabRequest {
+  driftSampleId?: string;
+  includeAcceptedDecisions?: boolean;
+}
+
+export interface WorkbenchAILoopResult {
+  scenario: WorkbenchScenarioDetail;
+  promptLab: WorkbenchPromptLabResult;
+  generation: WorkbenchAIGenerationResult;
+  virtualPatch?: WorkbenchVirtualPatch;
+  contexts: WorkbenchContextSection[];
+  checkReport?: WorkbenchCheckReport;
+  reviewPacket?: unknown;
+  reviewPacketMarkdown?: string;
+  aiReview?: WorkbenchAIReviewState;
+  stance?: WorkbenchStancePreview;
+  timeline: Array<{
+    label: string;
+    state: "ok" | "skipped" | "error";
+    detail: string;
+  }>;
+  providerTrace: WorkbenchAIProviderTrace[];
+}
+
 export interface WorkbenchAdvisoryFinding {
   category:
     | "fix"
@@ -238,7 +351,7 @@ export type WorkbenchAIReviewState =
     }
   | {
       state: "ok";
-      provider: "openai-compatible";
+      provider: WorkbenchAIProvider;
       model: string;
       message: string;
       findings: WorkbenchAdvisoryFinding[];
@@ -246,7 +359,7 @@ export type WorkbenchAIReviewState =
     }
   | {
       state: "error";
-      provider: "openai-compatible";
+      provider: WorkbenchAIProvider | "none";
       model?: string;
       message: string;
       findings: [];

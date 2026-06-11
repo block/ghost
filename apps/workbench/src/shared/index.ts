@@ -1,6 +1,16 @@
 export type {
   WorkbenchAdvisoryFinding,
+  WorkbenchAIConnectionTestResult,
+  WorkbenchAIGenerationResult,
+  WorkbenchAILoopRequest,
+  WorkbenchAILoopResult,
+  WorkbenchAIProvider,
+  WorkbenchAIProviderTrace,
   WorkbenchAIReviewState,
+  WorkbenchAIRunState,
+  WorkbenchAISettings,
+  WorkbenchAISettingsUpdate,
+  WorkbenchAIUsage,
   WorkbenchCheckReport,
   WorkbenchContextSection,
   WorkbenchDriftDeskRequest,
@@ -28,4 +38,5 @@ export type {
   WorkbenchScenarioSummary,
   WorkbenchStancePreview,
   WorkbenchTreeNode,
+  WorkbenchVirtualPatch,
 } from "./types";
