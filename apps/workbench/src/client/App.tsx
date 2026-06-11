@@ -4,9 +4,11 @@ import {
   FileTree,
   FileTreeFile,
   FileTreeFolder,
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
   Tabs,
   TabsContent,
   TabsList,
@@ -24,6 +26,8 @@ import {
   Filter,
   GitCompare,
   Layers3,
+  Menu,
+  PanelRightOpen,
   Play,
   RefreshCw,
   Search,
@@ -86,6 +90,14 @@ const fonts = {
 };
 
 type WorkbenchMode = "prompt" | "context" | "drift" | "fingerprint";
+type WorkbenchOutputView = "handoff" | "narrowing" | "omissions";
+
+const WORKFLOWS: Array<{ label: string; value: WorkbenchMode }> = [
+  { label: "Context Inspector", value: "context" },
+  { label: "Prompt Lab", value: "prompt" },
+  { label: "Drift Review", value: "drift" },
+  { label: "Fingerprint Studio", value: "fingerprint" },
+];
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -94,7 +106,7 @@ function cx(...classes: Array<string | false | null | undefined>) {
 export function App() {
   const [scenarios, setScenarios] = useState<WorkbenchScenarioSummary[]>([]);
   const [selectedId, setSelectedId] = useState("path-matched-single-surface");
-  const [mode, setMode] = useState<WorkbenchMode>("prompt");
+  const [mode, setMode] = useState<WorkbenchMode>("context");
   const [detail, setDetail] = useState<WorkbenchScenarioDetail | null>(null);
   const [result, setResult] = useState<WorkbenchInspectionResult | null>(null);
   const [promptResult, setPromptResult] =
@@ -108,13 +120,16 @@ export function App() {
   );
   const [aiSettingsDraft, setAISettingsDraft] =
     useState<WorkbenchAISettingsUpdate>({});
-  const [aiSettingsOpen, setAISettingsOpen] = useState(false);
   const [aiTestResult, setAITestResult] =
     useState<WorkbenchAIConnectionTestResult | null>(null);
   const [aiLoopResult, setAILoopResult] =
     useState<WorkbenchAILoopResult | null>(null);
   const [filter, setFilter] = useState<"all" | WorkbenchScenarioKind>("all");
   const [query, setQuery] = useState("");
+  const [scenarioRailOpen, setScenarioRailOpen] = useState(false);
+  const [outputOpen, setOutputOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [outputView, setOutputView] = useState<WorkbenchOutputView>("handoff");
   const [promptSampleId, setPromptSampleId] = useState("");
   const [driftSampleId, setDriftSampleId] = useState("");
   const [promptText, setPromptText] = useState("");
@@ -413,215 +428,370 @@ export function App() {
     setDiffTextDirty(false);
   }
 
-  return (
-    <div
-      className={cx(
-        fonts.sans,
-        "flex h-screen min-h-screen flex-col bg-[#faf9f6] text-[#24231f] antialiased selection:bg-[#24231f] selection:text-[#faf9f6]",
-      )}
-    >
-      <header className="shrink-0 border-b border-[#e5ded2] bg-[#faf9f6]">
-        <div className="flex min-h-[84px] items-center justify-between gap-6 px-6 py-4">
-          <div className="min-w-0">
-            <div
-              className={cx(
-                fonts.mono,
-                "flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-              )}
-            >
-              <span
-                className="inline-block size-1.5 rounded-full bg-[#b84a32] shadow-[0_0_0_3px_rgb(184_74_50_/_10%)]"
-                aria-hidden="true"
-              />
-              Ghost Workbench
-            </div>
-            <h1
-              className={cx(
-                fonts.sans,
-                "mt-1 text-2xl font-semibold leading-none text-[#24231f]",
-              )}
-            >
-              {mode === "prompt"
-                ? "Prompt Lab"
-                : mode === "drift"
-                  ? "Drift Desk"
-                  : mode === "fingerprint"
-                    ? "Fingerprint Studio"
-                    : "Context inspector"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="mr-2 flex rounded-md border border-[#d8cfbf] bg-white p-0.5">
-              {(["prompt", "drift", "fingerprint", "context"] as const).map(
-                (item) => (
-                  <button
-                    className={cx(
-                      fonts.mono,
-                      "rounded-[4px] px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] transition-colors",
-                      mode === item
-                        ? "bg-[#24231f] text-[#faf9f6]"
-                        : "text-[#746f66] hover:text-[#24231f]",
-                    )}
-                    key={item}
-                    onClick={() => setMode(item)}
-                    type="button"
-                  >
-                    {item === "prompt"
-                      ? "Prompt Lab"
-                      : item === "drift"
-                        ? "Drift Desk"
-                        : item === "fingerprint"
-                          ? "Studio"
-                          : "Inspector"}
-                  </button>
-                ),
-              )}
-            </div>
-            <StatusBadge
-              checkResult={
-                mode === "drift" ? driftResult?.checkReport.result : undefined
-              }
-              count={statusCount}
-              loading={loading}
-              unit={mode === "fingerprint" ? "package" : "context"}
-            />
-            <AIStatusBadge busy={aiBusy} settings={aiSettings} />
-            <Button
-              className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
-              onClick={() => setAISettingsOpen((open) => !open)}
-              type="button"
-            >
-              <Settings className="size-4" />
-              AI settings
-            </Button>
-            <Button
-              className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
-              disabled={loading || !detail}
-              onClick={runInspection}
-              type="button"
-            >
-              {loading ? (
-                <RefreshCw className="size-4 animate-spin" />
-              ) : (
-                <Play className="size-4" />
-              )}
-              {mode === "prompt"
-                ? "Run prompt"
-                : mode === "drift"
-                  ? "Review drift"
-                  : mode === "fingerprint"
-                    ? "Load studio"
-                    : "Inspect"}
-            </Button>
-            {mode === "prompt" ? (
-              <>
-                <Button
-                  className="h-9 gap-2 rounded-md border border-[#d8cfbf] bg-white px-3 text-[#24231f] shadow-none hover:border-[#cbbfaf] hover:bg-[#f7f4ee]"
-                  disabled={aiBusy || loading || !detail}
-                  onClick={runPromptAI}
-                  type="button"
-                >
-                  {aiBusy ? (
-                    <RefreshCw className="size-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="size-4" />
-                  )}
-                  Run AI
-                </Button>
-                <Button
-                  className="h-9 gap-2 rounded-md bg-[#24231f] px-3 text-[#faf9f6] shadow-none hover:bg-[#3a3832]"
-                  disabled={aiBusy || loading || !detail}
-                  onClick={runFullLoop}
-                  type="button"
-                >
-                  {aiBusy ? (
-                    <RefreshCw className="size-4 animate-spin" />
-                  ) : (
-                    <GitCompare className="size-4" />
-                  )}
-                  Run full loop
-                </Button>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </header>
+  const selectScenario = (id: string) => {
+    setSelectedId(id);
+    setScenarioRailOpen(false);
+  };
 
-      {aiSettingsOpen ? (
-        <AISettingsPanel
-          busy={aiBusy}
-          draft={aiSettingsDraft}
-          onDraftChange={setAISettingsDraft}
-          onSave={saveAISettingsFromDraft}
-          onTest={testAISettingsFromDraft}
-          settings={aiSettings}
-          testResult={aiTestResult}
-        />
-      ) : null}
+  return (
+    <div className={cx(fonts.sans, "workbench-root")}>
+      <WorkbenchHeader
+        checkResult={
+          mode === "drift" ? driftResult?.checkReport.result : undefined
+        }
+        count={statusCount}
+        loading={loading}
+        mode={mode}
+        onAdvancedOpen={() => setAdvancedOpen(true)}
+        onOutputOpen={() => setOutputOpen(true)}
+        onPrimaryAction={runInspection}
+        onScenarioOpen={() => setScenarioRailOpen(true)}
+        primaryDisabled={loading || !detail}
+        unit={mode === "fingerprint" ? "package" : "context"}
+      />
 
       {error ? (
-        <div className="mx-6 mt-4 flex items-start gap-2 rounded-md border border-[#d9a091] bg-[#fff7f4] p-3 text-sm">
-          <AlertCircle className="mt-0.5 size-4 shrink-0 text-[#b84a32]" />
+        <div className="workbench-error" role="alert">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <p>{error}</p>
         </div>
       ) : null}
 
-      <ResizablePanelGroup className="min-h-0 flex-1">
-        <ResizablePanel defaultSize={24} minSize={18}>
+      <div className="workbench-body">
+        <div className="workbench-rail workbench-rail-desktop">
           <ScenarioSidebar
             filter={filter}
             onFilterChange={setFilter}
             onQueryChange={setQuery}
-            onSelect={setSelectedId}
+            onSelect={selectScenario}
             query={query}
             scenarios={filteredScenarios}
             selectedId={selectedId}
           />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={43} minSize={30}>
-          <InspectorCenter
-            detail={detail}
-            diffText={diffText}
-            loading={loading}
-            mode={mode}
-            onDiffTextChange={(value) => {
-              setDiffText(value);
-              setDiffTextDirty(true);
-            }}
-            onPromptSampleChange={handlePromptSampleChange}
-            onPromptTextChange={handlePromptTextChange}
-            onDriftSampleChange={handleDriftSampleChange}
-            onTargetPathsChange={(value) => {
-              setTargetPaths(value);
-              setTargetPathsDirty(true);
-            }}
-            driftResult={driftResult}
-            driftSampleId={driftSampleId}
-            fingerprintResult={fingerprintResult}
-            promptResult={promptResult}
-            promptSampleId={promptSampleId}
-            promptText={promptText}
-            result={activeResult}
-            selectedDriftSample={selectedDriftSample}
-            selectedPromptSample={selectedPromptSample}
-            targetPaths={targetPaths}
+        </div>
+
+        <InspectorCenter
+          detail={detail}
+          diffText={diffText}
+          driftResult={driftResult}
+          driftSampleId={driftSampleId}
+          fingerprintResult={fingerprintResult}
+          loading={loading}
+          mode={mode}
+          onDiffTextChange={(value) => {
+            setDiffText(value);
+            setDiffTextDirty(true);
+          }}
+          onDriftSampleChange={handleDriftSampleChange}
+          onModeChange={setMode}
+          onOpenOutput={(view) => {
+            setOutputView(view);
+            setOutputOpen(true);
+          }}
+          onPromptSampleChange={handlePromptSampleChange}
+          onPromptTextChange={handlePromptTextChange}
+          onTargetPathsChange={(value) => {
+            setTargetPaths(value);
+            setTargetPathsDirty(true);
+          }}
+          promptResult={promptResult}
+          promptSampleId={promptSampleId}
+          promptText={promptText}
+          result={activeResult}
+          selectedDriftSample={selectedDriftSample}
+          selectedPromptSample={selectedPromptSample}
+          targetPaths={targetPaths}
+        />
+      </div>
+
+      <Sheet open={scenarioRailOpen} onOpenChange={setScenarioRailOpen}>
+        <SheetContent className="workbench-scenario-sheet" side="left">
+          <SheetHeader className="workbench-sheet-header">
+            <SheetTitle>Scenarios</SheetTitle>
+            <SheetDescription>
+              Choose a canned scenario to inspect the Ghost handoff.
+            </SheetDescription>
+          </SheetHeader>
+          <ScenarioSidebar
+            filter={filter}
+            onFilterChange={setFilter}
+            onQueryChange={setQuery}
+            onSelect={selectScenario}
+            query={query}
+            scenarios={filteredScenarios}
+            selectedId={selectedId}
           />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={33} minSize={25}>
+        </SheetContent>
+      </Sheet>
+
+      <OutputDrawer
+        aiLoopResult={aiLoopResult}
+        context={activeContext}
+        driftResult={driftResult}
+        fingerprintResult={fingerprintResult}
+        mode={mode}
+        onOpenChange={setOutputOpen}
+        open={outputOpen}
+        promptResult={promptResult}
+        result={activeResult}
+        view={outputView}
+      />
+
+      <AdvancedDrawer
+        aiBusy={aiBusy}
+        aiSettings={aiSettings}
+        aiSettingsDraft={aiSettingsDraft}
+        aiTestResult={aiTestResult}
+        detail={detail}
+        loading={loading}
+        onDraftChange={setAISettingsDraft}
+        onOpenChange={setAdvancedOpen}
+        onRunFullLoop={runFullLoop}
+        onRunPromptAI={runPromptAI}
+        onSaveSettings={saveAISettingsFromDraft}
+        onTestSettings={testAISettingsFromDraft}
+        open={advancedOpen}
+      />
+    </div>
+  );
+}
+
+function WorkbenchHeader({
+  checkResult,
+  count,
+  loading,
+  mode,
+  onAdvancedOpen,
+  onOutputOpen,
+  onPrimaryAction,
+  onScenarioOpen,
+  primaryDisabled,
+  unit,
+}: {
+  checkResult?: "pass" | "fail";
+  count: number;
+  loading: boolean;
+  mode: WorkbenchMode;
+  onAdvancedOpen: () => void;
+  onOutputOpen: () => void;
+  onPrimaryAction: () => void;
+  onScenarioOpen: () => void;
+  primaryDisabled: boolean;
+  unit: "context" | "package";
+}) {
+  return (
+    <header className="workbench-header">
+      <div className="workbench-brand">
+        <Button
+          className="workbench-icon-button workbench-mobile-only"
+          onClick={onScenarioOpen}
+          type="button"
+        >
+          <Menu className="size-4" />
+          <span className="sr-only">Open scenarios</span>
+        </Button>
+        <span className="workbench-brand-dot" aria-hidden="true" />
+        <div className="min-w-0">
+          <div className={cx(fonts.mono, "workbench-eyebrow")}>
+            Ghost Workbench
+          </div>
+          <h1 className="workbench-title">{modeTitle(mode)}</h1>
+        </div>
+      </div>
+
+      <div className="workbench-header-meta">
+        <StatusBadge
+          checkResult={checkResult}
+          count={count}
+          loading={loading}
+          unit={unit}
+        />
+      </div>
+
+      <div className="workbench-header-actions">
+        <Button
+          className="workbench-secondary-button"
+          onClick={onOutputOpen}
+          type="button"
+        >
+          <PanelRightOpen className="size-4" />
+          <span className="workbench-button-label">Output</span>
+        </Button>
+        <Button
+          className="workbench-secondary-button"
+          onClick={onAdvancedOpen}
+          type="button"
+        >
+          <Settings className="size-4" />
+          <span className="workbench-button-label">Advanced</span>
+        </Button>
+        <Button
+          className="workbench-primary-button"
+          disabled={primaryDisabled}
+          onClick={onPrimaryAction}
+          type="button"
+        >
+          {loading ? (
+            <RefreshCw className="size-4 animate-spin" />
+          ) : (
+            <Play className="size-4" />
+          )}
+          {primaryActionLabel(mode)}
+        </Button>
+      </div>
+    </header>
+  );
+}
+
+function OutputDrawer({
+  aiLoopResult,
+  context,
+  driftResult,
+  fingerprintResult,
+  mode,
+  onOpenChange,
+  open,
+  promptResult,
+  result,
+  view,
+}: {
+  aiLoopResult: WorkbenchAILoopResult | null;
+  context: WorkbenchContextSection | null;
+  driftResult: WorkbenchDriftDeskResult | null;
+  fingerprintResult: WorkbenchFingerprintStudioResult | null;
+  mode: WorkbenchMode;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  promptResult: WorkbenchPromptLabResult | null;
+  result: WorkbenchInspectionResult | null;
+  view: WorkbenchOutputView;
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="workbench-output-sheet" side="right">
+        <SheetHeader className="workbench-sheet-header">
+          <SheetTitle>Output</SheetTitle>
+          <SheetDescription>
+            Handoff markdown, omitted context, reviews, and package detail.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="workbench-drawer-body">
           <RightRail
             aiLoopResult={aiLoopResult}
-            context={activeContext}
+            context={context}
+            defaultView={view}
             driftResult={driftResult}
             fingerprintResult={fingerprintResult}
             mode={mode}
             promptResult={promptResult}
-            result={activeResult}
+            result={result}
           />
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function AdvancedDrawer({
+  aiBusy,
+  aiSettings,
+  aiSettingsDraft,
+  aiTestResult,
+  detail,
+  loading,
+  onDraftChange,
+  onOpenChange,
+  onRunFullLoop,
+  onRunPromptAI,
+  onSaveSettings,
+  onTestSettings,
+  open,
+}: {
+  aiBusy: boolean;
+  aiSettings: WorkbenchAISettings | null;
+  aiSettingsDraft: WorkbenchAISettingsUpdate;
+  aiTestResult: WorkbenchAIConnectionTestResult | null;
+  detail: WorkbenchScenarioDetail | null;
+  loading: boolean;
+  onDraftChange: (value: WorkbenchAISettingsUpdate) => void;
+  onOpenChange: (open: boolean) => void;
+  onRunFullLoop: () => void;
+  onRunPromptAI: () => void;
+  onSaveSettings: () => void;
+  onTestSettings: () => void;
+  open: boolean;
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="workbench-advanced-sheet" side="right">
+        <SheetHeader className="workbench-sheet-header">
+          <SheetTitle>Advanced</SheetTitle>
+          <SheetDescription>
+            Optional AI configuration and execution for the prompt loop.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="workbench-drawer-body workbench-advanced-body">
+          <div className="workbench-drawer-card">
+            <div className="workbench-drawer-card-header">
+              <PanelTitle
+                icon={<Sparkles className="size-4" />}
+                title="AI state"
+              />
+              <AIStatusBadge busy={aiBusy} settings={aiSettings} />
+            </div>
+            <p className="workbench-muted-copy">
+              AI runs are optional. The default workbench surface stays focused
+              on deterministic context inspection.
+            </p>
+          </div>
+
+          <AISettingsPanel
+            busy={aiBusy}
+            draft={aiSettingsDraft}
+            onDraftChange={onDraftChange}
+            onSave={onSaveSettings}
+            onTest={onTestSettings}
+            settings={aiSettings}
+            testResult={aiTestResult}
+          />
+
+          <div className="workbench-drawer-card">
+            <PanelTitle
+              icon={<GitCompare className="size-4" />}
+              title="AI runs"
+            />
+            <div className="workbench-advanced-actions">
+              <Button
+                className="workbench-secondary-button"
+                disabled={aiBusy || loading || !detail}
+                onClick={onRunPromptAI}
+                type="button"
+              >
+                {aiBusy ? (
+                  <RefreshCw className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                Run AI
+              </Button>
+              <Button
+                className="workbench-primary-button"
+                disabled={aiBusy || loading || !detail}
+                onClick={onRunFullLoop}
+                type="button"
+              >
+                {aiBusy ? (
+                  <RefreshCw className="size-4 animate-spin" />
+                ) : (
+                  <GitCompare className="size-4" />
+                )}
+                Run full loop
+              </Button>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -845,27 +1015,24 @@ function ScenarioSidebar({
   onSelect: (value: string) => void;
 }) {
   return (
-    <aside className="flex h-full flex-col border-r border-[#e5ded2] bg-[#faf9f6]">
-      <div className="space-y-4 border-b border-[#e5ded2] p-5">
-        <label className="flex h-10 items-center gap-2 rounded-md border border-[#ded6c9] bg-white px-3 text-sm">
-          <Search className="size-4 text-[#8a8378]" />
+    <aside className="workbench-scenario-rail">
+      <div className="workbench-rail-controls">
+        <label className="workbench-search">
+          <Search className="size-4" />
           <input
-            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-[#9b9489]"
+            className="workbench-search-input"
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search scenarios"
             value={query}
           />
         </label>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="workbench-filter-row">
           {FILTERS.map((item) => (
             <button
               className={cx(
                 fonts.mono,
-                `rounded-md border px-2.5 py-1.5 text-[11px] font-medium uppercase transition-colors ${
-                  filter === item.value
-                    ? "border-[#d8cfbf] bg-white text-[#24231f]"
-                    : "border-transparent bg-transparent text-[#746f66] hover:border-[#e5ded2] hover:bg-white hover:text-[#24231f]"
-                }`,
+                "workbench-filter",
+                filter === item.value && "is-active",
               )}
               key={item.value}
               onClick={() => onFilterChange(item.value)}
@@ -876,35 +1043,24 @@ function ScenarioSidebar({
           ))}
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <div
-          className={cx(
-            fonts.mono,
-            "mb-3 flex items-center gap-2 px-1 text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-          )}
-        >
+      <div className="workbench-scenario-list">
+        <div className={cx(fonts.mono, "workbench-rail-label")}>
           <Filter className="size-3.5" />
           Scenarios
         </div>
-        <div className="space-y-2">
+        <div className="workbench-scenario-items">
           {scenarios.map((scenario) => (
             <button
-              className={`w-full rounded-md border p-4 text-left transition-colors ${
-                selectedId === scenario.id
-                  ? "border-[#d8cfbf] bg-white shadow-[inset_2px_0_0_#d88f7b]"
-                  : "border-transparent bg-transparent hover:border-[#e5ded2] hover:bg-white"
-              }`}
+              className={cx(
+                "workbench-scenario-row",
+                selectedId === scenario.id && "is-active",
+              )}
               key={scenario.id}
               onClick={() => onSelect(scenario.id)}
               type="button"
             >
-              <div className="flex items-center justify-between gap-2">
-                <span
-                  className={cx(
-                    fonts.mono,
-                    "text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-                  )}
-                >
+              <div className="workbench-scenario-row-top">
+                <span className={cx(fonts.mono, "workbench-scenario-kicker")}>
                   {scenario.kicker}
                 </span>
                 <Badge
@@ -914,23 +1070,8 @@ function ScenarioSidebar({
                   {scenario.kind}
                 </Badge>
               </div>
-              <div
-                className={cx(
-                  fonts.sans,
-                  "mt-2 text-sm font-semibold leading-tight text-[#24231f]",
-                )}
-              >
-                {scenario.title}
-              </div>
-              <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-[#746f66]">
-                {scenario.lesson}
-              </p>
-              <div
-                className={cx(
-                  fonts.mono,
-                  "mt-3 text-[10px] font-medium uppercase tracking-[0.08em] text-[#8c857a]",
-                )}
-              >
+              <div className="workbench-scenario-title">{scenario.title}</div>
+              <div className={cx(fonts.mono, "workbench-scenario-counts")}>
                 {scenario.promptSampleCount} prompt
                 {scenario.promptSampleCount === 1 ? "" : "s"}
                 {" / "}
@@ -962,6 +1103,8 @@ function InspectorCenter({
   targetPaths,
   diffText,
   onDriftSampleChange,
+  onModeChange,
+  onOpenOutput,
   onPromptSampleChange,
   onPromptTextChange,
   onTargetPathsChange,
@@ -982,6 +1125,8 @@ function InspectorCenter({
   targetPaths: string;
   diffText: string;
   onDriftSampleChange: (value: string) => void;
+  onModeChange: (value: WorkbenchMode) => void;
+  onOpenOutput: (view: WorkbenchOutputView) => void;
   onPromptSampleChange: (value: string) => void;
   onPromptTextChange: (value: string) => void;
   onTargetPathsChange: (value: string) => void;
@@ -989,45 +1134,75 @@ function InspectorCenter({
 }) {
   const contexts =
     mode === "drift" ? (driftResult?.contexts ?? []) : (result?.contexts ?? []);
+  const activeContext = contexts[0] ?? null;
 
   return (
-    <main className="flex h-full min-w-0 flex-col overflow-hidden bg-[#fbfaf7]">
-      <div className="border-b border-[#e5ded2] p-6">
-        <div className="flex items-start justify-between gap-4">
+    <main className="workbench-workspace">
+      <div className="workbench-workspace-header">
+        <div className="workbench-scenario-heading">
           <div className="min-w-0">
-            <div
-              className={cx(
-                fonts.mono,
-                "text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-              )}
-            >
+            <div className={cx(fonts.mono, "workbench-eyebrow")}>
               {detail?.kicker ?? "Scenario"}
             </div>
-            <h2
-              className={cx(
-                fonts.sans,
-                "mt-2 text-2xl font-semibold leading-tight text-[#24231f]",
-              )}
-            >
+            <h2 className="workbench-scenario-name">
               {detail?.title ?? "Loading scenario"}
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#746f66]">
+            <p className="workbench-scenario-description">
               {detail?.description}
             </p>
           </div>
-          {result?.deterministic ? (
-            <Badge
-              className="mt-1 gap-1.5 rounded-md border-[#d8cfbf] bg-white text-[#24231f]"
-              variant={result.deterministic.equal ? "default" : "destructive"}
+          <div className="workbench-scenario-actions">
+            {result?.deterministic ? (
+              <Badge
+                className="gap-1.5 rounded-md"
+                variant={result.deterministic.equal ? "default" : "destructive"}
+              >
+                <CheckCircle2 className="size-3.5" />
+                Deterministic
+              </Badge>
+            ) : null}
+            <Button
+              className="workbench-secondary-button"
+              onClick={() => onOpenOutput("handoff")}
+              type="button"
             >
-              <CheckCircle2 className="size-3.5" />
-              Deterministic
-            </Badge>
-          ) : null}
+              <PanelRightOpen className="size-4" />
+              View handoff
+            </Button>
+            <Button
+              className="workbench-secondary-button"
+              onClick={() => onOpenOutput("omissions")}
+              type="button"
+            >
+              <ChevronsUpDown className="size-4" />
+              View omissions
+            </Button>
+          </div>
+        </div>
+        <div className="workbench-workflow-tabs" role="tablist">
+          {WORKFLOWS.map((workflow) => (
+            <button
+              className={cx(
+                fonts.mono,
+                "workbench-workflow-tab",
+                mode === workflow.value && "is-active",
+              )}
+              key={workflow.value}
+              onClick={() => onModeChange(workflow.value)}
+              type="button"
+            >
+              {workflow.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="workbench-workspace-scroll">
+        <CausalChain
+          context={activeContext}
+          detail={detail}
+          result={mode === "drift" ? null : result}
+        />
         <section className="grid gap-6 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
           <div className="space-y-4">
             <PanelTitle icon={<FileSearch className="size-4" />} title="Repo" />
@@ -1153,6 +1328,76 @@ function InspectorCenter({
         </section>
       </div>
     </main>
+  );
+}
+
+function CausalChain({
+  context,
+  detail,
+  result,
+}: {
+  context: WorkbenchContextSection | null;
+  detail: WorkbenchScenarioDetail | null;
+  result: WorkbenchInspectionResult | null;
+}) {
+  const entrypoint = context?.entrypoint;
+  const selectedRefs = entrypoint
+    ? entrypoint.selected.prose.length +
+      entrypoint.selected.composition.length +
+      entrypoint.selected.exemplars.length +
+      entrypoint.selected.checks.length
+    : 0;
+  const omitted = entrypoint
+    ? entrypoint.omissions.reduce((sum, item) => sum + item.omitted, 0)
+    : 0;
+  const targetCount =
+    result?.targetPaths.length ??
+    context?.changedFiles.length ??
+    detail?.defaultTargetPaths.length ??
+    0;
+
+  const steps = [
+    {
+      label: "Scenario",
+      value: detail?.title ?? "Loading",
+      detail: detail?.kind ?? "pending",
+    },
+    {
+      label: "Target",
+      value: `${targetCount} path${targetCount === 1 ? "" : "s"}`,
+      detail: entrypoint?.match.status ?? "unresolved",
+    },
+    {
+      label: "Scopes",
+      value: String(entrypoint?.match.matchedScopes.length ?? 0),
+      detail: "matched",
+    },
+    {
+      label: "Refs",
+      value: String(selectedRefs),
+      detail: "selected",
+    },
+    {
+      label: "Omitted",
+      value: String(omitted),
+      detail: "not sent",
+    },
+  ];
+
+  return (
+    <section className="workbench-chain" aria-label="Ghost handoff chain">
+      {steps.map((step) => (
+        <div className="workbench-chain-step" key={step.label}>
+          <div className={cx(fonts.mono, "workbench-chain-label")}>
+            {step.label}
+          </div>
+          <div className="workbench-chain-value">{step.value}</div>
+          <div className={cx(fonts.mono, "workbench-chain-detail")}>
+            {step.detail}
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -1635,6 +1880,7 @@ function ContextCard({ context }: { context: WorkbenchContextSection }) {
 function RightRail({
   aiLoopResult,
   context,
+  defaultView = "handoff",
   driftResult,
   fingerprintResult,
   mode,
@@ -1643,6 +1889,7 @@ function RightRail({
 }: {
   aiLoopResult: WorkbenchAILoopResult | null;
   context: WorkbenchContextSection | null;
+  defaultView?: WorkbenchOutputView;
   driftResult: WorkbenchDriftDeskResult | null;
   fingerprintResult: WorkbenchFingerprintStudioResult | null;
   mode: WorkbenchMode;
@@ -1659,7 +1906,7 @@ function RightRail({
     mode === "prompt" ? promptResult?.handoffMarkdown : context?.markdown;
   return (
     <aside className="flex h-full min-w-0 flex-col overflow-hidden bg-[#f7f4ee]">
-      <Tabs className="min-h-0 flex-1 gap-0" defaultValue="handoff">
+      <Tabs className="min-h-0 flex-1 gap-0" defaultValue={defaultView}>
         <div className="border-b border-[#e5ded2] p-4">
           <TabsList
             className={cx(
@@ -2776,6 +3023,20 @@ function CodePreview({ code }: { code: string }) {
       <code>{code}</code>
     </pre>
   );
+}
+
+function modeTitle(mode: WorkbenchMode): string {
+  if (mode === "prompt") return "Prompt Lab";
+  if (mode === "drift") return "Drift Review";
+  if (mode === "fingerprint") return "Fingerprint Studio";
+  return "Context Inspector";
+}
+
+function primaryActionLabel(mode: WorkbenchMode): string {
+  if (mode === "prompt") return "Run prompt";
+  if (mode === "drift") return "Review drift";
+  if (mode === "fingerprint") return "Load studio";
+  return "Inspect";
 }
 
 function cacheSummary(entrypoint: WorkbenchEntrypoint | undefined): string {
