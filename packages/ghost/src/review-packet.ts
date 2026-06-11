@@ -17,6 +17,7 @@ import {
 } from "./scan/index.js";
 
 export async function buildReviewPacket(options: {
+  cwd?: string;
   packageDir?: string;
   memoryDir?: string;
   diffText: string;
@@ -28,11 +29,15 @@ export async function buildReviewPacket(options: {
 }
 
 async function buildSingleBundleReviewPacket(options: {
+  cwd?: string;
   packageDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
-  const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
+  const paths = resolveFingerprintPackage(
+    options.packageDir,
+    options.cwd ?? process.cwd(),
+  );
   const changedFiles = parseUnifiedDiff(options.diffText).map(
     (file) => file.path,
   );
@@ -64,6 +69,7 @@ async function buildSingleBundleReviewPacket(options: {
 }
 
 async function buildStackReviewPacket(options: {
+  cwd?: string;
   memoryDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;
@@ -73,7 +79,7 @@ async function buildStackReviewPacket(options: {
   );
   const groups = await groupFingerprintStacksForPaths(
     changedFiles,
-    process.cwd(),
+    options.cwd ?? process.cwd(),
     { memoryDir: options.memoryDir },
   );
   const stacks = groups.map((group) =>
