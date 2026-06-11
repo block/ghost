@@ -1,0 +1,31 @@
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #faf9f6;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+* {
+  scrollbar-color: #d8cfbf transparent;
+}
+
+::selection {
+  background: #24231f;
+  color: #faf9f6;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
