@@ -51,7 +51,7 @@ and flow.
 
 That makes the fingerprint more like an upstream contract than a static
 guideline or a downstream inspection report. Review, linting, comparison,
-generation packets, authoring tools, marketing workflows, and vibe-coding
+Relay briefs, authoring tools, marketing workflows, and vibe-coding
 workflows can all use the same checked-in surface context. Their outputs differ,
 but their source of truth is the fingerprint.
 
@@ -69,7 +69,7 @@ fingerprint lifecycle:
 | --- | --- | --- |
 | Capture | `init`, `inventory`, `scan` | Create the package, gather optional source material, and report layer readiness. |
 | Validate | `lint`, `verify` | Check schema shape, refs, evidence, exemplars, and deterministic package quality. |
-| Generate / apply | `emit context-bundle`, host agents, future generation consumers | Give agents the upstream surface-composition contract before they build or revise. |
+| Generate / apply | `relay gather`, host agents, future generation consumers | Give agents the upstream surface-composition contract before they build or revise. |
 | Govern | `check`, `review`, `ack`, `track`, `diverge` | Validate changed surfaces, produce advisory findings, and record stance toward divergence. |
 | Compare | `compare`, fleet-style analysis | Understand distance, cohorts, reference relationships, and change across packages. |
 
