@@ -1,6 +1,6 @@
 {
   "name": "@anarchitecture/ghost",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "Unified Ghost CLI for product-surface composition fingerprints, deterministic checks, advisory review, and comparison",
   "license": "Apache-2.0",
   "author": "Block, Inc.",
