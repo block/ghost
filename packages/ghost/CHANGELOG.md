@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.9.1
+
+### Patch Changes
+
+- [#147](https://github.com/block/ghost/pull/147) [`5acba39`](https://github.com/block/ghost/commit/5acba397f9fbe3a325481035c1de51d12df2c9b9) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Update documentation to point generation-context workflows at `ghost relay gather`.
+
 ## 0.9.0
 
 ### Minor Changes
