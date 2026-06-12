@@ -136,6 +136,7 @@ describe("ghost CLI", () => {
       "verify",
       "check",
       "review",
+      "relay gather",
       "emit",
       "skill install",
     ]) {
@@ -170,6 +171,7 @@ describe("ghost CLI", () => {
       "describe [fingerprint]",
       "diff <a> <b>",
       "survey <op> [...surveys]",
+      "relay <action> [target]",
       "emit <kind>",
       "compare [...fingerprints]",
       "ack",
@@ -776,6 +778,82 @@ checks:
     expect(contextBundle.stderr).toContain(
       "unknown emit kind 'context-bundle'",
     );
+  });
+
+  it("gathers a Relay brief from the resolved fingerprint stack", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      ["relay", "gather", "Code/Features/Lending/LendingUI"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Ghost Relay Brief");
+    expect(result.stdout).toContain("Status: path matched");
+    expect(result.stdout).toContain("Matched scopes: `lending`");
+    expect(result.stdout).toContain("prose.principle:tokenized-ui-color");
+    expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
+    expect(result.stdout).toContain(
+      "inventory.exemplar:lending-tokenized-screen",
+    );
+    expect(result.stdout).toContain("no-hardcoded-ui-color");
+    expect(result.stdout).not.toContain("candidate-density-check");
+  });
+
+  it("gathers Relay context as json from an exact package", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "Code/Features/Lending/LendingUI",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.schema).toBe("ghost.relay.gather/v1");
+    expect(json.source.kind).toBe("package");
+    expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
+    expect(json.entrypoint.match.status).toBe("path-match");
+    expect(json.brief).toContain("# Ghost Relay Brief");
+  });
+
+  it("ignores memory-dir when gathering Relay context from an exact package", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "--package",
+        ".ghost",
+        "--memory-dir",
+        "../not-used",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).source.kind).toBe("package");
+  });
+
+  it("rejects invalid Relay output formats", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(["relay", "gather", "--format", "yaml"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--format must be 'markdown' or 'json'");
   });
 
   it("warns when fingerprint exemplar paths are unreachable", async () => {
