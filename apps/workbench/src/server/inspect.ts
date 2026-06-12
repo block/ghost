@@ -22,6 +22,7 @@ import type {
 } from "../shared";
 import { createSandbox, diffFor, removeSandbox } from "./sandbox";
 import { getScenario, toDetail } from "./scenarios";
+import { buildContextTraceGraph } from "./trace";
 
 export interface InspectScenarioHooks {
   onSandboxCreated?: (root: string) => void;
@@ -173,15 +174,20 @@ function sectionFromEntrypoint(
     targetPaths: changedFiles.length > 0 ? changedFiles : context.targetPaths,
   });
   const normalized = normalizeEntrypoint(root, entrypoint);
-  return {
+  const markdown = formatContextEntrypointMarkdown(
+    normalized as unknown as ContextEntrypoint,
+  );
+  const section = {
     id,
     title,
     packageDir: displayPath(root, packageDir ?? context.fingerprintDir),
     changedFiles,
     entrypoint: normalized,
-    markdown: formatContextEntrypointMarkdown(
-      normalized as unknown as ContextEntrypoint,
-    ),
+    markdown,
+  };
+  return {
+    ...section,
+    trace: buildContextTraceGraph(section),
   };
 }
 

@@ -380,6 +380,73 @@ export interface WorkbenchStancePreview {
   writes: [];
 }
 
+export type WorkbenchTraceNodeKind =
+  | "input"
+  | "changed-file"
+  | "package"
+  | "scope"
+  | "prose"
+  | "composition"
+  | "exemplar"
+  | "check"
+  | "handoff"
+  | "review-signal"
+  | "omission";
+
+export type WorkbenchTraceEdgeState =
+  | "matched"
+  | "selected"
+  | "suggested"
+  | "omitted"
+  | "blocking"
+  | "advisory";
+
+export interface WorkbenchTraceLane {
+  id: string;
+  title: string;
+  summary: string;
+}
+
+export interface WorkbenchTraceNode {
+  id: string;
+  kind: WorkbenchTraceNodeKind;
+  lane: string;
+  order: number;
+  title: string;
+  summary: string;
+  detail: string;
+  state:
+    | "default"
+    | "selected"
+    | "omitted"
+    | "fallback"
+    | "blocking"
+    | "advisory";
+  ref?: string;
+  path?: string;
+  source?: string;
+  meta: Array<{ label: string; value: string }>;
+}
+
+export interface WorkbenchTraceEdge {
+  id: string;
+  from: string;
+  to: string;
+  state: WorkbenchTraceEdgeState;
+  label: string;
+}
+
+export interface WorkbenchTraceGraph {
+  id: string;
+  title: string;
+  summary: string;
+  defaultSelectedNodeId: string;
+  lanes: WorkbenchTraceLane[];
+  nodes: WorkbenchTraceNode[];
+  edges: WorkbenchTraceEdge[];
+  annotations: Array<{ nodeId: string; text: string }>;
+}
+
 export interface WorkbenchContextSection {
   id: string;
   title: string;
@@ -387,6 +454,7 @@ export interface WorkbenchContextSection {
   changedFiles: string[];
   entrypoint: WorkbenchEntrypoint;
   markdown: string;
+  trace: WorkbenchTraceGraph;
 }
 
 export interface WorkbenchEntrypoint {

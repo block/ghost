@@ -3,6 +3,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { buildTraceLayout } from "../src/client/trace-layout";
 import { createWorkbenchServer } from "../src/server";
 import { runAILoop } from "../src/server/ai-loop";
 import {
@@ -736,6 +737,71 @@ describe("scenario assertions", () => {
     expect(result.deterministic).toEqual({ repeated: true, equal: true });
   });
 
+  it("builds a path-matched trace from target to handoff", async () => {
+    const result = await inspectScenario("path-matched-single-surface");
+    const trace = result.contexts[0].trace;
+
+    expect(trace.nodes.map((node) => node.kind)).toEqual(
+      expect.arrayContaining([
+        "input",
+        "changed-file",
+        "package",
+        "scope",
+        "prose",
+        "composition",
+        "exemplar",
+        "check",
+        "handoff",
+        "omission",
+      ]),
+    );
+    expect(trace.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "scope",
+          title: "refund-settings",
+          state: "selected",
+        }),
+        expect.objectContaining({
+          kind: "prose",
+          ref: "prose.principle:refund-trust",
+          state: "selected",
+        }),
+      ]),
+    );
+    expect(trace.edges.map((edge) => edge.state)).toEqual(
+      expect.arrayContaining(["matched", "selected", "omitted"]),
+    );
+  });
+
+  it("marks global fallback traces as provisional", async () => {
+    const result = await inspectScenario("global-fallback");
+    const trace = result.contexts[0].trace;
+    const fallbackNode = trace.nodes.find((node) => node.state === "fallback");
+
+    expect(fallbackNode).toMatchObject({
+      kind: "scope",
+      title: "Global fallback",
+    });
+    expect(trace.defaultSelectedNodeId).toBe(fallbackNode?.id);
+    expect(trace.summary).toContain("broader fallback");
+  });
+
+  it("returns one trace per routed multi-stack context", async () => {
+    const result = await inspectScenario("multi-stack-diff");
+
+    expect(result.contexts).toHaveLength(2);
+    expect(result.contexts.map((context) => context.trace.id)).toEqual([
+      "context-1",
+      "context-2",
+    ]);
+    expect(
+      result.contexts.every((context) =>
+        context.trace.nodes.some((node) => node.kind === "handoff"),
+      ),
+    ).toBe(true);
+  });
+
   it("removes temporary sandboxes after inspection", async () => {
     let sandboxRoot = "";
     await inspectScenario(
@@ -766,6 +832,24 @@ describe("scenario assertions", () => {
     expect(entrypoint.selected.prose.map((node) => node.ref)).toContain(
       "prose.principle:refund-trust",
     );
+  });
+
+  it("prompt lab prepends prompt interpretation to the trace", async () => {
+    const result = await runPromptLab("path-matched-single-surface", {
+      promptSampleId: "refund-consequence-copy",
+    });
+    const trace = result.inspection.contexts[0].trace;
+
+    expect(trace.nodes[0]).toMatchObject({
+      kind: "input",
+      title: "Prompt interpretation",
+      state: "selected",
+    });
+    expect(trace.edges[0]).toMatchObject({
+      from: trace.nodes[0].id,
+      state: "matched",
+      label: "interpreted target",
+    });
   });
 
   it("prompt lab keeps shared component prompts broad", async () => {
@@ -842,6 +926,59 @@ describe("scenario assertions", () => {
       message: expect.stringContaining("deterministic handoff preview"),
       generatedOutput: null,
     });
+  });
+
+  it("drift review appends review signals and blocking check nodes", async () => {
+    const result = await runDriftDesk("path-matched-single-surface", {
+      driftSampleId: "refund-hardcoded-color",
+    });
+    const trace = result.contexts[0].trace;
+
+    expect(trace.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "review-signal",
+          state: "blocking",
+        }),
+        expect.objectContaining({
+          kind: "check",
+          ref: "check:no-hardcoded-ui-color",
+          state: "blocking",
+        }),
+      ]),
+    );
+    expect(trace.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          state: "blocking",
+          label: "failed check",
+        }),
+      ]),
+    );
+  });
+
+  it("trace layout preserves stable lane and node ordering", async () => {
+    const result = await inspectScenario("path-matched-single-surface");
+    const trace = result.contexts[0].trace;
+    const layout = buildTraceLayout(trace);
+
+    expect(layout.lanes.map((lane) => lane.id)).toEqual([
+      "input",
+      "files",
+      "package",
+      "scope",
+      "refs",
+      "omissions",
+      "handoff",
+    ]);
+    expect(layout.positions.get(trace.defaultSelectedNodeId)?.x).toBe(
+      layout.lanePositions.get("scope")?.x,
+    );
+    expect(
+      trace.nodes
+        .filter((node) => node.kind === "omission")
+        .every((node) => node.state === "omitted"),
+    ).toBe(true);
   });
 
   it("prompt lab generation returns output for every prompt sample with a mocked provider", async () => {
