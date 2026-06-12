@@ -18,7 +18,8 @@ Ghost provides:
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved
   fingerprint stack.
-- `ghost emit context-bundle` for a split generation packet.
+- `ghost relay gather [target] --format json` as the `ghost.relay.gather/v1`
+  contract for generation context.
 - `--memory-dir <relative-dir>` for wrappers that store Ghost package roots
   somewhere other than `.ghost`.
 
@@ -62,6 +63,7 @@ at `fingerprint/`. Wrappers can use any safe relative package root:
 ```bash
 ghost init --scope apps/checkout --memory-dir .design/memory
 ghost stack apps/checkout/review/page.tsx --memory-dir .design/memory --format json
+ghost relay gather apps/checkout/review/page.tsx --memory-dir .design/memory --format json
 ghost check --base main --memory-dir .design/memory --format json
 ghost review --base main --memory-dir .design/memory --format json
 ```

@@ -38,7 +38,7 @@ id: local
 
 The raw layer files can be sparse. Missing files or sections normalize to empty
 layers when Ghost assembles the internal `ghost.fingerprint/v1` document used
-by checks, review packets, context bundles, compare, and stack merges.
+by checks, review packets, Relay briefs, compare, and stack merges.
 
 ## Core Layers
 
@@ -251,7 +251,7 @@ ghost verify .ghost --root .
 ghost check --base main --format json
 ghost review --base main --include-memory
 ghost emit review-command --path apps/checkout/review/page.tsx
-ghost emit context-bundle
+ghost relay gather apps/checkout/review/page.tsx
 ```
 
 `ghost scan` reports readiness in the same three-layer vocabulary. Useful
