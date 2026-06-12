@@ -112,14 +112,10 @@ truth.
 
 ## Generate From Ghost
 
-Before generating or revising UI, emit the context bundle:
-
-```bash
-ghost emit context-bundle
-```
-
-The bundle gives a host agent the selected prose, inventory, composition,
-optional memory, and active checks. The important shift is timing: Ghost gives
+Before generating or revising UI, have the host agent read the checked-in
+fingerprint package: `fingerprint/prose.yml`, `fingerprint/inventory.yml`,
+`fingerprint/composition.yml`, optional `fingerprint/memory/intent.md`, and
+active checks when they exist. The important shift is timing: Ghost gives
 agents surface-composition context before they build, not only after a review
 finds drift.
 
@@ -162,7 +158,7 @@ useful layer content. It does not call an LLM.
 | `ghost verify` | Validate evidence paths, exemplar paths, typed check refs, and optional rationale files. |
 | `ghost check` | Run active deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory packet from fingerprint layers and a diff. |
-| `ghost emit <kind>` | Emit `review-command` or `context-bundle` artifacts. |
+| `ghost emit <kind>` | Emit `review-command` artifacts. |
 | `ghost skill install` | Install the unified Ghost skill bundle. |
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stacks. |
 | `ghost inventory` | Emit raw repo signals as JSON for optional cache material. |

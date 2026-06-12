@@ -2,21 +2,20 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import {
-  emitPackageReviewCommand,
+  loadPackageContext,
+  type PackageContext,
+} from "./context/package-context.js";
+import { emitPackageReviewCommand } from "./context/package-review-command.js";
+import { resolveFingerprintPackage } from "./fingerprint.js";
+import {
   fingerprintStackToPackageContext,
   loadFingerprintStackForPath,
-  loadPackageContext,
   normalizeMemoryDir,
-  type PackageContext,
-  resolveFingerprintPackage,
-  writePackageContextBundle,
-  writePackageContextBundleFromContext,
-} from "./scan/index.js";
+} from "./scan/fingerprint-stack.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
-const DEFAULT_CONTEXT_OUT = "ghost-context";
 
-export const SUPPORTED_KINDS = ["review-command", "context-bundle"] as const;
+export const SUPPORTED_KINDS = ["review-command"] as const;
 export type EmitKind = (typeof SUPPORTED_KINDS)[number];
 
 export type ParseEmitKindResult =
@@ -41,7 +40,7 @@ export function registerEmitCommand(cli: CAC): void {
   cli
     .command(
       "emit <kind>",
-      `Emit a derived artifact from the fingerprint package (review command or compact context entrypoint)`,
+      "Emit a derived artifact from the fingerprint package (review-command).",
     )
     .option(
       "--path <path>",
@@ -57,22 +56,9 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "-o, --out <path>",
-      `Output path (review-command → ${DEFAULT_REVIEW_OUT}; context-bundle → ${DEFAULT_CONTEXT_OUT}/)`,
+      `Output path (review-command → ${DEFAULT_REVIEW_OUT})`,
     )
-    .option(
-      "--stdout",
-      "Write to stdout instead of a file (review-command only)",
-    )
-    // context-bundle flags:
-    .option("--readme", "Include README.md (context-bundle)")
-    .option(
-      "--prompt-only",
-      "Emit only prompt.md (context-bundle compact entrypoint)",
-    )
-    .option(
-      "--name <name>",
-      "Override the skill name (default: prose.yml product or first scope) (context-bundle)",
-    )
+    .option("--stdout", "Write to stdout instead of a file")
     .action(async (kind: string, opts) => {
       try {
         const parsed = parseEmitKind(kind);
@@ -93,61 +79,21 @@ export function registerEmitCommand(cli: CAC): void {
           return;
         }
 
-        if (parsed.kind === "review-command") {
-          const context = await loadEmitPackageContext(opts);
-          const content = emitPackageReviewCommand({
-            context,
-          });
+        const context = await loadEmitPackageContext(opts);
+        const content = emitPackageReviewCommand({
+          context,
+        });
 
-          if (opts.stdout) {
-            process.stdout.write(content);
-            process.exit(0);
-            return;
-          }
-
-          const outPath = resolve(
-            process.cwd(),
-            opts.out ?? DEFAULT_REVIEW_OUT,
-          );
-          await mkdir(dirname(outPath), { recursive: true });
-          await writeFile(outPath, content, "utf-8");
-          console.log(`Wrote ${outPath}`);
+        if (opts.stdout) {
+          process.stdout.write(content);
           process.exit(0);
           return;
         }
 
-        // kind === "context-bundle"
-        const outDir = resolve(
-          process.cwd(),
-          (opts.out as string | undefined) ?? DEFAULT_CONTEXT_OUT,
-        );
-
-        const context = await loadEmitPackageContext(opts);
-        const result = explicitPackage
-          ? await writePackageContextBundle(
-              resolveFingerprintPackage(opts.package, process.cwd()),
-              {
-                outDir,
-                readme: Boolean(opts.readme),
-                promptOnly: Boolean(opts.promptOnly),
-                name: opts.name as string | undefined,
-              },
-            )
-          : await writePackageContextBundleFromContext(context, {
-              outDir,
-              readme: Boolean(opts.readme),
-              promptOnly: Boolean(opts.promptOnly),
-              name: opts.name as string | undefined,
-            });
-
-        process.stdout.write(
-          `Wrote ${result.files.length} file${
-            result.files.length === 1 ? "" : "s"
-          } to ${result.outDir}:\n`,
-        );
-        for (const f of result.files) {
-          process.stdout.write(`  ${f}\n`);
-        }
+        const outPath = resolve(process.cwd(), opts.out ?? DEFAULT_REVIEW_OUT);
+        await mkdir(dirname(outPath), { recursive: true });
+        await writeFile(outPath, content, "utf-8");
+        console.log(`Wrote ${outPath}`);
         process.exit(0);
         return;
       } catch (err) {
@@ -162,13 +108,11 @@ export function registerEmitCommand(cli: CAC): void {
 async function loadEmitPackageContext(opts: {
   path?: unknown;
   package?: unknown;
-  name?: unknown;
   memoryDir?: unknown;
 }): Promise<PackageContext> {
   if (typeof opts.package === "string") {
     return loadPackageContext(
       resolveFingerprintPackage(opts.package, process.cwd()),
-      typeof opts.name === "string" ? opts.name : undefined,
     );
   }
 
@@ -181,8 +125,5 @@ async function loadEmitPackageContext(opts: {
       ),
     },
   );
-  return fingerprintStackToPackageContext(
-    stack,
-    typeof opts.name === "string" ? opts.name : undefined,
-  );
+  return fingerprintStackToPackageContext(stack);
 }

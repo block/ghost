@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildContextEntrypoint,
   buildFingerprintGraph,
-} from "../src/scan/context/entrypoint.js";
-import type { PackageContext } from "../src/scan/context/package-context.js";
+} from "../src/context/entrypoint.js";
+import type { PackageContext } from "../src/context/package-context.js";
 
 describe("context entrypoint", () => {
   it("builds graph nodes and explicit edges from fingerprint refs", () => {

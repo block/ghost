@@ -114,17 +114,13 @@ approval. For a fuller human-agent workflow, read
 
 </DocSection>
 
-<DocSection title="Generate From Ghost">
+<DocSection title="Brief From Ghost">
 
-Before generating or revising UI, emit the upstream compact entrypoint:
-
-```bash
-ghost emit context-bundle
-```
-
-Give the generated bundle to Codex, Claude, Cursor, Goose, or another host
-agent so the work starts from the approved product fingerprint rather than from
-post-hoc review feedback alone.
+Before generating or revising UI, have the host agent read the checked-in
+fingerprint package: `fingerprint/prose.yml`, `fingerprint/inventory.yml`,
+`fingerprint/composition.yml`, optional `fingerprint/memory/intent.md`, and
+active checks when they exist. The package is the approved product-surface
+context; review and check commands apply it after implementation.
 
 </DocSection>
 

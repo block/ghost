@@ -43,10 +43,9 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Emit the pre-generation packet and govern changes afterward:
+Govern changes afterward:
 
 ```bash
-ghost emit context-bundle
 ghost check --base main
 ghost review --base main --include-memory
 ```
@@ -80,8 +79,8 @@ import {
 ## BYOA
 
 Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
-readiness reporting, linting, verification, comparison, checks, and handoff
-packet generation. The installed `ghost` skill teaches a host agent how to
+readiness reporting, linting, verification, comparison, checks, and advisory
+review packet generation. The installed `ghost` skill teaches a host agent how to
 capture canonical `.ghost/fingerprint/` surface-composition context, brief and
 generate work from it, review changes against it, verify generated UI,
 remediate issues, and suggest fingerprint edits when the user asks.
