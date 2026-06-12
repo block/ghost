@@ -26,12 +26,12 @@ import {
   registerDivergeCommand,
   registerTrackCommand,
 } from "./evolution-commands.js";
+import { formatSemanticDiff } from "./fingerprint.js";
+import { registerFingerprintCommands } from "./fingerprint-commands.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
 } from "./review-packet.js";
-import { formatSemanticDiff } from "./scan/index.js";
-import { registerScanCommands } from "./scan-commands.js";
 import { registerSkillCommand } from "./skill-command.js";
 
 const execFileAsync = promisify(execFile);
@@ -41,7 +41,7 @@ export { getCommandDiscoveryMetadata } from "./command-discovery.js";
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");
 
-  registerScanCommands(cli);
+  registerFingerprintCommands(cli);
 
   // --- compare ---
   cli

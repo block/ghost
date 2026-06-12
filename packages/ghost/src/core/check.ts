@@ -14,11 +14,13 @@ import {
   routeGhostChecksForPath,
 } from "#ghost-core";
 import {
-  groupFingerprintStacksForPaths,
   loadFingerprintPackage,
-  mapFromFingerprint,
   resolveFingerprintPackage,
-} from "../scan/index.js";
+} from "../scan/fingerprint-package.js";
+import {
+  groupFingerprintStacksForPaths,
+  mapFromFingerprint,
+} from "../scan/fingerprint-stack.js";
 import {
   INLINE_COLOR_LITERAL_PATTERN,
   isInlineColorDetector,

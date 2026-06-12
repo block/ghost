@@ -78,7 +78,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "emit",
-    summary: "Emit review-command or context-bundle artifacts.",
+    summary: "Emit review-command artifacts.",
   },
   {
     name: "skill",
