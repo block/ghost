@@ -6,7 +6,7 @@ import {
   lintFingerprintPackage,
   loadFingerprintPackage,
   resolveFingerprintPackage,
-} from "../src/scan/index.js";
+} from "../src/fingerprint.js";
 
 describe("split fingerprint package", () => {
   let dir: string;

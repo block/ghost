@@ -29,15 +29,15 @@ import {
   type MapFrontmatter,
 } from "#ghost-core";
 import {
+  loadPackageInventory,
+  type PackageContext,
+  type PackageInventory,
+} from "../context/package-context.js";
+import {
   FINGERPRINT_DIRNAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
 } from "./constants.js";
-import {
-  loadPackageInventory,
-  type PackageContext,
-  type PackageInventory,
-} from "./context/package-context.js";
 import type { FingerprintPackagePaths } from "./fingerprint-package.js";
 import {
   lintFingerprintPackage,

@@ -9,9 +9,8 @@ description: Verify generated UI or fingerprint edits against Ghost.
    fingerprint edits.
 2. Run `ghost check --base <ref>` after implementation changes.
 3. For advisory review, run `ghost review --base <ref> --include-memory`.
-4. For generation setup, run `ghost emit context-bundle` and inspect the
-   compact entrypoint first, then follow suggested reads into prose, inventory,
-   composition, and active checks when the task widens.
+4. For generation setup, run `ghost relay gather <target>` and read suggested
+   fingerprint files when the task widens.
 5. Inspect generated UI manually or with screenshots when visual fidelity
    matters.
 

@@ -114,17 +114,17 @@ approval. For a fuller human-agent workflow, read
 
 </DocSection>
 
-<DocSection title="Generate From Ghost">
+<DocSection title="Brief From Ghost">
 
-Before generating or revising UI, emit the upstream compact entrypoint:
+Before generating or revising UI, gather a Relay brief for the target path:
 
 ```bash
-ghost emit context-bundle
+ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Give the generated bundle to Codex, Claude, Cursor, Goose, or another host
-agent so the work starts from the approved product fingerprint rather than from
-post-hoc review feedback alone.
+Relay points the host agent at selected fingerprint refs, suggested reads,
+active checks, and provenance. The package remains the approved product-surface
+context; review and check commands apply it after implementation.
 
 </DocSection>
 

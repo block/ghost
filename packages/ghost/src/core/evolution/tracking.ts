@@ -6,7 +6,7 @@ import {
   loadFingerprint,
   parseFingerprint,
   resolveFingerprintPackage,
-} from "#scan";
+} from "../../fingerprint.js";
 
 /**
  * Resolve a Target to a Fingerprint.

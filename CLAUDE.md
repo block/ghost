@@ -94,16 +94,17 @@ fingerprint input for new Ghost work.
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
 | `ghost diverge` | Declare intentional divergence on a dimension. |
-| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` generation packet. |
+| `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
-`ghost scan --format json` is deterministic handoff state for the host agent.
+`ghost scan --format json` is deterministic readiness and source-signal state.
 It does not run an LLM.
 
 ## Public Exports
 
 - `@anarchitecture/ghost` for the combined surface.
-- `@anarchitecture/ghost/scan` for scan and bundle helpers.
+- `@anarchitecture/ghost/scan` for scan readiness, source signals, and stack discovery.
+- `@anarchitecture/ghost/fingerprint` for fingerprint package authoring, linting, verification, parsing, and serialization.
 - `@anarchitecture/ghost/drift` for check/review/compare/stance helpers.
 - `@anarchitecture/ghost/core` for shared schemas, types, and loaders.
 - `@anarchitecture/ghost/cli` for `buildCli()`.

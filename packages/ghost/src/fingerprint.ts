@@ -1,1 +1,112 @@
-export * from "./scan/index.js";
+export type { LoadOptions } from "./fingerprint-load.js";
+export { loadFingerprint } from "./fingerprint-load.js";
+export type { BodyData } from "./scan/body.js";
+export { parseBody } from "./scan/body.js";
+export type { DesignDecision } from "./scan/compose.js";
+export { mergeFingerprint } from "./scan/compose.js";
+export {
+  CACHE_DIRNAME,
+  CHECKS_FILENAME,
+  CONFIG_FILENAME,
+  FINGERPRINT_COMPOSITION_FILENAME,
+  FINGERPRINT_DIRNAME,
+  FINGERPRINT_ENFORCEMENT_DIRNAME,
+  FINGERPRINT_FILENAME,
+  FINGERPRINT_INVENTORY_FILENAME,
+  FINGERPRINT_MANIFEST_FILENAME,
+  FINGERPRINT_MEMORY_DIRNAME,
+  FINGERPRINT_PACKAGE_DIR,
+  FINGERPRINT_PROSE_FILENAME,
+  FINGERPRINT_SOURCES_DIRNAME,
+  FINGERPRINT_YML_FILENAME,
+  FINGERPRINTS_DIRNAME,
+  INTENT_FILENAME,
+  PATTERNS_FILENAME,
+  RESOURCES_FILENAME,
+  SCOPE_SURVEYS_DIRNAME,
+} from "./scan/constants.js";
+export type {
+  ColorChange,
+  DecisionChange,
+  SemanticDiff,
+  TokenChange,
+} from "./scan/diff.js";
+export { diffFingerprints, formatSemanticDiff } from "./scan/diff.js";
+export type {
+  FingerprintPackagePaths,
+  LoadedFingerprintPackage,
+} from "./scan/fingerprint-package.js";
+export {
+  initFingerprintPackage,
+  lintFingerprintPackage,
+  loadFingerprintPackage,
+  resolveFingerprintPackage,
+} from "./scan/fingerprint-package.js";
+export type {
+  LoadedFingerprintNode,
+  LoadedFingerprintSet,
+  LoadFingerprintSetOptions,
+} from "./scan/fingerprint-set.js";
+export { loadFingerprintSet } from "./scan/fingerprint-set.js";
+export {
+  initScopedFingerprintPackage,
+  lintAllFingerprintStacks,
+  verifyAllFingerprintStacks,
+} from "./scan/fingerprint-stack.js";
+export type { FingerprintMeta, FrontmatterData } from "./scan/frontmatter.js";
+export type {
+  FingerprintLayout,
+  FingerprintLayoutSection,
+} from "./scan/layout.js";
+export { formatLayout, layoutFingerprint } from "./scan/layout.js";
+export type {
+  LintIssue,
+  LintOptions,
+  LintReport,
+  LintSeverity,
+} from "./scan/lint.js";
+export { lintFingerprint } from "./scan/lint.js";
+export type {
+  MapLintIssue,
+  MapLintReport,
+  MapLintSeverity,
+} from "./scan/lint-map.js";
+export { lintMap } from "./scan/lint-map.js";
+export type {
+  GhostPackageConfig,
+  GhostPackageConfigLibrary,
+  GhostPackageConfigTarget,
+} from "./scan/package-config.js";
+export {
+  GHOST_PACKAGE_CONFIG_SCHEMA,
+  GhostPackageConfigSchema,
+  lintGhostPackageConfig,
+  normalizeReferenceInput,
+  parsePackageConfig,
+  readOptionalPackageConfig,
+  readOptionalPackageConfigSync,
+  templatePackageConfig,
+} from "./scan/package-config.js";
+export type { ParsedFingerprint, ParseOptions } from "./scan/parser.js";
+export { parseFingerprint, splitRaw } from "./scan/parser.js";
+export type { FrontmatterShape } from "./scan/schema.js";
+export {
+  FrontmatterSchema,
+  PartialFrontmatterSchema,
+  toJsonSchema,
+  validateFrontmatter,
+} from "./scan/schema.js";
+export type {
+  VerifyFingerprintIssue,
+  VerifyFingerprintOptions,
+  VerifyFingerprintReport,
+  VerifyFingerprintSeverity,
+} from "./scan/verify-fingerprint.js";
+export {
+  formatVerifyFingerprintReport,
+  verifyFingerprint,
+} from "./scan/verify-fingerprint.js";
+export type { VerifyFingerprintPackageOptions } from "./scan/verify-package.js";
+export { verifyFingerprintPackage } from "./scan/verify-package.js";
+export type { SerializeOptions } from "./scan/writer.js";
+export { serializeFingerprint } from "./scan/writer.js";
