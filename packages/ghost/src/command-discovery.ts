@@ -74,6 +74,13 @@ const COMMAND_DISCOVERY = [
     summary: "Emit an advisory packet from fingerprint layers and a diff.",
   },
   {
+    name: "relay",
+    group: "core",
+    defaultHelp: true,
+    compactName: "relay gather",
+    summary: "Gather fingerprint context for an agent target.",
+  },
+  {
     name: "emit",
     group: "core",
     defaultHelp: true,

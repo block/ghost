@@ -28,6 +28,7 @@ import {
 } from "./evolution-commands.js";
 import { formatSemanticDiff } from "./fingerprint.js";
 import { registerFingerprintCommands } from "./fingerprint-commands.js";
+import { registerRelayCommand } from "./relay.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
@@ -152,6 +153,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerAckCommand(cli);
   registerTrackCommand(cli);
   registerDivergeCommand(cli);
+  registerRelayCommand(cli);
   registerSkillCommand(cli);
 
   // --- check ---

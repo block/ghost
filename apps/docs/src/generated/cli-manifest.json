@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T19:20:01.337Z",
+  "generatedAt": "2026-06-12T19:26:14.540Z",
   "tools": [
     {
       "tool": "ghost",
@@ -542,6 +542,50 @@
               "name": "format",
               "description": "Output format: cli or json",
               "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "relay",
+          "rawName": "relay <action> [target]",
+          "description": "Gather fingerprint-grounded context for an agent target.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "relay gather",
+          "summary": "Gather fingerprint context for an agent target.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative fingerprint package directory for stack resolution (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--name <name>",
+              "name": "name",
+              "description": "Override the gathered context name (default: prose.yml product or resolved scope)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
               "takesValue": true,
               "negated": false
             }

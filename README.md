@@ -112,12 +112,16 @@ truth.
 
 ## Generate From Ghost
 
-Before generating or revising UI, have the host agent read the checked-in
-fingerprint package: `fingerprint/prose.yml`, `fingerprint/inventory.yml`,
-`fingerprint/composition.yml`, optional `fingerprint/memory/intent.md`, and
-active checks when they exist. The important shift is timing: Ghost gives
-agents surface-composition context before they build, not only after a review
-finds drift.
+Before generating or revising UI, gather the Relay brief for the target path:
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx
+```
+
+Relay gives a host agent the selected prose, inventory, composition, optional
+memory, active checks, suggested reads, and provenance. The important shift is
+timing: Ghost gives agents surface-composition context before they build, not
+only after a review finds drift.
 
 After implementation, run the deterministic and advisory workflows against the
 same fingerprint:
@@ -158,6 +162,7 @@ useful layer content. It does not call an LLM.
 | `ghost verify` | Validate evidence paths, exemplar paths, typed check refs, and optional rationale files. |
 | `ghost check` | Run active deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory packet from fingerprint layers and a diff. |
+| `ghost relay gather` | Gather fingerprint-grounded context for an agent target. |
 | `ghost emit <kind>` | Emit `review-command` artifacts. |
 | `ghost skill install` | Install the unified Ghost skill bundle. |
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stacks. |
