@@ -13,6 +13,7 @@ import {
 import { runPromptRunner, skippedPromptRunner } from "./prompt-runner";
 import { diffFor } from "./sandbox";
 import { getScenario, type ScenarioDefinition, toDetail } from "./scenarios";
+import { prependPromptTrace, updateContextTrace } from "./trace";
 
 const MAX_PROMPT_TEXT = 8_000;
 
@@ -43,13 +44,22 @@ export async function runPromptLab(
     },
     hooks,
   );
+  const tracedInspection = {
+    ...inspection,
+    contexts: inspection.contexts.map((context) =>
+      updateContextTrace(
+        context,
+        prependPromptTrace(context.trace, interpretation),
+      ),
+    ),
+  };
   const handoffMarkdown = buildPromptLabHandoff(
     interpretation,
-    inspection.contexts.map((context) => ({
+    tracedInspection.contexts.map((context) => ({
       title: context.title,
       markdown: context.markdown,
     })),
-    inspection.checkReport?.result,
+    tracedInspection.checkReport?.result,
   );
   const runner = request.runAI
     ? await runPromptRunner(
@@ -65,7 +75,7 @@ export async function runPromptLab(
     scenario: toDetail(scenario),
     ...(selectedSample ? { selectedSample } : {}),
     interpretation,
-    inspection,
+    inspection: tracedInspection,
     handoffMarkdown,
     runner,
   };

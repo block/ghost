@@ -22,6 +22,7 @@ import {
 } from "./inspect";
 import { createSandbox, diffFor, removeSandbox } from "./sandbox";
 import { getScenario, type ScenarioDefinition, toDetail } from "./scenarios";
+import { appendDriftTrace, updateContextTrace } from "./trace";
 
 const MAX_DIFF_TEXT = 100_000;
 
@@ -70,6 +71,9 @@ export async function runDriftDesk(
         diffText,
       })) as WorkbenchCheckReport,
     );
+    const tracedContexts = contexts.map((context) =>
+      updateContextTrace(context, appendDriftTrace(context.trace, checkReport)),
+    );
     const reviewPacketRaw = await buildReviewPacket({
       cwd: root,
       diffText,
@@ -103,7 +107,7 @@ export async function runDriftDesk(
       scenario: toDetail(scenario),
       ...(selectedSample ? { selectedSample } : {}),
       diffText,
-      contexts,
+      contexts: tracedContexts,
       checkReport,
       reviewPacket,
       reviewPacketMarkdown,

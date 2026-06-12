@@ -37,6 +37,12 @@ export type {
   WorkbenchScenarioKind,
   WorkbenchScenarioSummary,
   WorkbenchStancePreview,
+  WorkbenchTraceEdge,
+  WorkbenchTraceEdgeState,
+  WorkbenchTraceGraph,
+  WorkbenchTraceLane,
+  WorkbenchTraceNode,
+  WorkbenchTraceNodeKind,
   WorkbenchTreeNode,
   WorkbenchVirtualPatch,
 } from "./types";

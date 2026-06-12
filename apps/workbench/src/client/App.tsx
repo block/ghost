@@ -51,7 +51,6 @@ import type {
   WorkbenchFingerprintRefSummary,
   WorkbenchFingerprintStackPreview,
   WorkbenchFingerprintStudioResult,
-  WorkbenchGraphNode,
   WorkbenchInspectionResult,
   WorkbenchPromptInterpretation,
   WorkbenchPromptLabResult,
@@ -60,6 +59,8 @@ import type {
   WorkbenchScenarioDetail,
   WorkbenchScenarioKind,
   WorkbenchScenarioSummary,
+  WorkbenchTraceGraph,
+  WorkbenchTraceNode,
   WorkbenchTreeNode,
 } from "../shared";
 import {
@@ -74,6 +75,7 @@ import {
   saveAISettings,
   testAIConnection,
 } from "./api";
+import { buildTraceLayout } from "./trace-layout";
 
 const FILTERS: Array<{ label: string; value: "all" | WorkbenchScenarioKind }> =
   [
@@ -175,6 +177,14 @@ export function App() {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setDetail(null);
+    setResult(null);
+    setPromptResult(null);
+    setDriftResult(null);
+    setFingerprintResult(null);
+    setAILoopResult(null);
+    setTargetPaths("");
+    setDiffText("");
     fetchScenario(selectedId)
       .then(async (scenario) => {
         if (cancelled) return;
@@ -443,7 +453,6 @@ export function App() {
         loading={loading}
         mode={mode}
         onAdvancedOpen={() => setAdvancedOpen(true)}
-        onOutputOpen={() => setOutputOpen(true)}
         onPrimaryAction={runInspection}
         onScenarioOpen={() => setScenarioRailOpen(true)}
         primaryDisabled={loading || !detail}
@@ -562,7 +571,6 @@ function WorkbenchHeader({
   loading,
   mode,
   onAdvancedOpen,
-  onOutputOpen,
   onPrimaryAction,
   onScenarioOpen,
   primaryDisabled,
@@ -573,7 +581,6 @@ function WorkbenchHeader({
   loading: boolean;
   mode: WorkbenchMode;
   onAdvancedOpen: () => void;
-  onOutputOpen: () => void;
   onPrimaryAction: () => void;
   onScenarioOpen: () => void;
   primaryDisabled: boolean;
@@ -609,14 +616,6 @@ function WorkbenchHeader({
       </div>
 
       <div className="workbench-header-actions">
-        <Button
-          className="workbench-secondary-button"
-          onClick={onOutputOpen}
-          type="button"
-        >
-          <PanelRightOpen className="size-4" />
-          <span className="workbench-button-label">Output</span>
-        </Button>
         <Button
           className="workbench-secondary-button"
           onClick={onAdvancedOpen}
@@ -1063,12 +1062,9 @@ function ScenarioSidebar({
                 <span className={cx(fonts.mono, "workbench-scenario-kicker")}>
                   {scenario.kicker}
                 </span>
-                <Badge
-                  className="rounded-md border-[#e5ded2] bg-transparent font-mono text-[10px] uppercase text-[#746f66]"
-                  variant="outline"
-                >
+                <span className={cx(fonts.mono, "workbench-scenario-kind")}>
                   {scenario.kind}
-                </Badge>
+                </span>
               </div>
               <div className="workbench-scenario-title">{scenario.title}</div>
               <div className={cx(fonts.mono, "workbench-scenario-counts")}>
@@ -1198,140 +1194,132 @@ function InspectorCenter({
       </div>
 
       <div className="workbench-workspace-scroll">
-        <CausalChain
+        <ContextPath
           context={activeContext}
           detail={detail}
           result={mode === "drift" ? null : result}
         />
-        <section className="grid gap-6 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
-          <div className="space-y-4">
-            <PanelTitle icon={<FileSearch className="size-4" />} title="Repo" />
-            {detail ? (
-              <TreeView tree={detail.repoTree} />
-            ) : (
-              <div className="h-56 rounded-md border border-[#e5ded2] bg-white" />
-            )}
-          </div>
-          <div className="space-y-4">
-            <PanelTitle icon={<Braces className="size-4" />} title="Inputs" />
-            {mode === "prompt" ? (
-              <PromptLabInputs
-                detail={detail}
-                interpretation={promptResult?.interpretation ?? null}
-                onPromptSampleChange={onPromptSampleChange}
-                onPromptTextChange={onPromptTextChange}
-                promptSampleId={promptSampleId}
-                promptText={promptText}
-                selectedPromptSample={selectedPromptSample}
-              />
-            ) : null}
-            {mode === "drift" ? (
-              <DriftDeskInputs
-                detail={detail}
-                driftSampleId={driftSampleId}
-                onDriftSampleChange={onDriftSampleChange}
-                selectedDriftSample={selectedDriftSample}
-              />
-            ) : null}
-            {mode === "fingerprint" ? (
-              <FingerprintStudioInputs result={fingerprintResult} />
-            ) : null}
-            {mode === "context" ? (
-              <label className="block">
-                <span
-                  className={cx(
-                    fonts.mono,
-                    "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-                  )}
-                >
-                  Target paths
-                </span>
-                <textarea
-                  className="h-24 w-full resize-none rounded-md border border-[#e5ded2] bg-white p-4 font-mono text-xs text-[#24231f] outline-none transition-colors placeholder:text-[#9b9489] focus:border-[#d88f7b]"
-                  onChange={(event) => onTargetPathsChange(event.target.value)}
-                  value={targetPaths}
+        {mode === "fingerprint" ? (
+          <section className="workbench-inspector-layout workbench-inspector-layout-single">
+            <div className="workbench-inspector-main">
+              <InspectorSection
+                eyebrow="Fingerprint Studio"
+                icon={<BookOpen className="size-4" />}
+                title="Package references"
+              >
+                <FingerprintRefIndex result={fingerprintResult} />
+              </InspectorSection>
+            </div>
+            <aside className="workbench-inspector-support">
+              <InspectorSection eyebrow="Scenario" title="Package input">
+                <FingerprintStudioInputs result={fingerprintResult} />
+              </InspectorSection>
+              <InspectorSection
+                eyebrow="Repo"
+                icon={<FileSearch className="size-4" />}
+                title="Repo shape"
+              >
+                {detail ? <TreeView tree={detail.repoTree} /> : <TreeGhost />}
+              </InspectorSection>
+            </aside>
+          </section>
+        ) : (
+          <section className="workbench-inspector-layout">
+            <div className="workbench-inspector-main">
+              {activeContext ? (
+                <TraceMapSection
+                  context={activeContext}
+                  contexts={contexts}
+                  loading={loading}
+                  mode={mode}
+                  onOpenOutput={onOpenOutput}
                 />
-              </label>
-            ) : null}
-            {mode === "prompt" ? (
-              <label className="block">
-                <span
-                  className={cx(
-                    fonts.mono,
-                    "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-                  )}
-                >
-                  Interpreted target paths
-                </span>
-                <textarea
-                  className="h-24 w-full resize-none rounded-md border border-[#e5ded2] bg-white p-4 font-mono text-xs text-[#24231f] outline-none transition-colors placeholder:text-[#9b9489] focus:border-[#d88f7b]"
-                  onChange={(event) => onTargetPathsChange(event.target.value)}
-                  value={targetPaths}
-                />
-              </label>
-            ) : null}
-            {mode !== "fingerprint" ? (
-              <label className="block">
-                <span
-                  className={cx(
-                    fonts.mono,
-                    "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-                  )}
-                >
-                  {mode === "prompt"
-                    ? "Interpreted diff text"
+              ) : (
+                <InspectorEmpty text="Resolving scenario context..." />
+              )}
+              {contexts.length > 1 ? (
+                <AdditionalContexts contexts={contexts.slice(1)} />
+              ) : null}
+            </div>
+            <aside className="workbench-inspector-support">
+              <InspectorSection
+                eyebrow="What changed"
+                icon={<Braces className="size-4" />}
+                title={
+                  mode === "prompt"
+                    ? "Prompt and target"
                     : mode === "drift"
                       ? "Review diff"
-                      : "Diff text"}
-                </span>
-                <textarea
-                  className="h-40 w-full resize-none rounded-md border border-[#e5ded2] bg-white p-4 font-mono text-xs text-[#24231f] outline-none transition-colors placeholder:text-[#9b9489] focus:border-[#d88f7b]"
-                  onChange={(event) => onDiffTextChange(event.target.value)}
-                  placeholder="Optional unified diff"
-                  value={diffText}
-                />
-              </label>
-            ) : null}
-          </div>
-        </section>
-
-        {mode === "drift" && driftResult ? (
-          <section className="mt-8 space-y-4">
-            <PanelTitle
-              icon={<ClipboardList className="size-4" />}
-              title="Deterministic check"
-            />
-            <DriftReportPanel result={driftResult} />
+                      : "Target and diff"
+                }
+              >
+                {mode === "prompt" ? (
+                  <PromptLabInputs
+                    detail={detail}
+                    interpretation={promptResult?.interpretation ?? null}
+                    onPromptSampleChange={onPromptSampleChange}
+                    onPromptTextChange={onPromptTextChange}
+                    promptSampleId={promptSampleId}
+                    promptText={promptText}
+                    selectedPromptSample={selectedPromptSample}
+                  />
+                ) : null}
+                {mode === "drift" ? (
+                  <DriftDeskInputs
+                    detail={detail}
+                    driftSampleId={driftSampleId}
+                    onDriftSampleChange={onDriftSampleChange}
+                    selectedDriftSample={selectedDriftSample}
+                  />
+                ) : null}
+                {mode === "context" || mode === "prompt" ? (
+                  <label className="workbench-field">
+                    <FieldLabel>
+                      {mode === "prompt"
+                        ? "Interpreted target paths"
+                        : "Target paths"}
+                    </FieldLabel>
+                    <textarea
+                      className="workbench-textarea workbench-textarea-compact"
+                      onChange={(event) =>
+                        onTargetPathsChange(event.target.value)
+                      }
+                      value={targetPaths}
+                    />
+                  </label>
+                ) : null}
+                <label className="workbench-field">
+                  <FieldLabel>
+                    {mode === "prompt"
+                      ? "Interpreted diff text"
+                      : mode === "drift"
+                        ? "Review diff"
+                        : "Diff text"}
+                  </FieldLabel>
+                  <textarea
+                    className="workbench-textarea"
+                    onChange={(event) => onDiffTextChange(event.target.value)}
+                    placeholder="Optional unified diff"
+                    value={diffText}
+                  />
+                </label>
+              </InspectorSection>
+              <InspectorSection
+                eyebrow="Repo"
+                icon={<FileSearch className="size-4" />}
+                title="Repo shape"
+              >
+                {detail ? <TreeView tree={detail.repoTree} /> : <TreeGhost />}
+              </InspectorSection>
+            </aside>
           </section>
-        ) : null}
-
-        <section className="mt-8 space-y-4">
-          {mode === "fingerprint" ? (
-            <FingerprintRefIndex result={fingerprintResult} />
-          ) : (
-            <>
-              <PanelTitle
-                icon={<Layers3 className="size-4" />}
-                title="Context"
-              />
-              {loading && !contexts.length ? (
-                <div className="rounded-md border border-[#e5ded2] bg-white p-5 text-sm text-[#746f66]">
-                  Resolving scenario...
-                </div>
-              ) : (
-                contexts.map((context) => (
-                  <ContextCard context={context} key={context.id} />
-                ))
-              )}
-            </>
-          )}
-        </section>
+        )}
       </div>
     </main>
   );
 }
 
-function CausalChain({
+function ContextPath({
   context,
   detail,
   result,
@@ -1385,20 +1373,70 @@ function CausalChain({
   ];
 
   return (
-    <section className="workbench-chain" aria-label="Ghost handoff chain">
+    <nav className="workbench-context-path" aria-label="Ghost handoff chain">
       {steps.map((step) => (
-        <div className="workbench-chain-step" key={step.label}>
-          <div className={cx(fonts.mono, "workbench-chain-label")}>
+        <div className="workbench-context-path-step" key={step.label}>
+          <span className={cx(fonts.mono, "workbench-context-path-label")}>
             {step.label}
-          </div>
-          <div className="workbench-chain-value">{step.value}</div>
-          <div className={cx(fonts.mono, "workbench-chain-detail")}>
+          </span>
+          <span className="workbench-context-path-value">{step.value}</span>
+          <span className={cx(fonts.mono, "workbench-context-path-detail")}>
             {step.detail}
-          </div>
+          </span>
         </div>
       ))}
+    </nav>
+  );
+}
+
+function InspectorSection({
+  action,
+  children,
+  eyebrow,
+  icon,
+  title,
+}: {
+  action?: ReactNode;
+  children: ReactNode;
+  eyebrow?: string;
+  icon?: ReactNode;
+  title: string;
+}) {
+  return (
+    <section className="workbench-inspector-section">
+      <div className="workbench-inspector-section-header">
+        <div>
+          {eyebrow ? (
+            <div className={cx(fonts.mono, "workbench-section-kicker")}>
+              {icon ? (
+                <span className="workbench-section-icon">{icon}</span>
+              ) : null}
+              {eyebrow}
+            </div>
+          ) : null}
+          <h3 className="workbench-section-title">{title}</h3>
+        </div>
+        {action ? (
+          <div className="workbench-section-action">{action}</div>
+        ) : null}
+      </div>
+      <div className="workbench-inspector-section-body">{children}</div>
     </section>
   );
+}
+
+function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className={cx(fonts.mono, "workbench-field-label")}>{children}</span>
+  );
+}
+
+function TreeGhost() {
+  return <div className="workbench-tree-ghost" />;
+}
+
+function InspectorEmpty({ text }: { text: string }) {
+  return <p className="workbench-empty-note">{text}</p>;
 }
 
 function DriftDeskInputs({
@@ -1413,18 +1451,11 @@ function DriftDeskInputs({
   onDriftSampleChange: (value: string) => void;
 }) {
   return (
-    <div className="space-y-3 rounded-md border border-[#e5ded2] bg-white p-4">
-      <label className="block">
-        <span
-          className={cx(
-            fonts.mono,
-            "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-          )}
-        >
-          Drift sample
-        </span>
+    <div className="workbench-control-stack">
+      <label className="workbench-field">
+        <FieldLabel>Drift sample</FieldLabel>
         <select
-          className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+          className="workbench-select"
           onChange={(event) => onDriftSampleChange(event.target.value)}
           value={driftSampleId}
         >
@@ -1436,7 +1467,7 @@ function DriftDeskInputs({
           ))}
         </select>
       </label>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="workbench-note-grid">
         <PromptNote
           label="Expected signal"
           value={selectedDriftSample?.expectedSignal ?? "custom"}
@@ -1460,8 +1491,8 @@ function FingerprintStudioInputs({
 }) {
   const packages = result?.packages ?? [];
   return (
-    <div className="space-y-3 rounded-md border border-[#e5ded2] bg-white p-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="workbench-control-stack">
+      <div className="workbench-control-summary">
         <div>
           <div
             className={cx(
@@ -1475,37 +1506,20 @@ function FingerprintStudioInputs({
             Read-only package inspection from the canned sandbox.
           </p>
         </div>
-        <Badge
-          className="rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
-          variant="secondary"
-        >
+        <span className={cx(fonts.mono, "workbench-inline-count")}>
           {packages.length} package{packages.length === 1 ? "" : "s"}
-        </Badge>
+        </span>
       </div>
-      <div className="grid gap-3">
+      <div className="workbench-evidence-list">
         {packages.map((pkg) => (
-          <div
-            className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4"
-            key={pkg.packageDir}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="break-all font-mono text-xs font-medium text-[#24231f]">
-                {pkg.packageDir}
-              </div>
-              <Badge
-                className="rounded-md font-mono text-[10px] uppercase"
-                variant={
-                  pkg.health.status === "error"
-                    ? "destructive"
-                    : pkg.health.status === "warning"
-                      ? "outline"
-                      : "secondary"
-                }
-              >
-                {pkg.health.status}
-              </Badge>
+          <div className="workbench-read-row" key={pkg.packageDir}>
+            <div className={cx(fonts.mono, "workbench-ref-code")}>
+              {pkg.packageDir}
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <span className={cx(fonts.mono, "workbench-inline-status")}>
+              {pkg.health.status}
+            </span>
+            <div className="workbench-note-grid">
               <PromptNote label="Product" value={pkg.product ?? "Unnamed"} />
               <PromptNote label="Refs" value={String(pkg.refs.length)} />
               <PromptNote
@@ -1614,83 +1628,6 @@ function FingerprintRefGroup({
   );
 }
 
-function DriftReportPanel({ result }: { result: WorkbenchDriftDeskResult }) {
-  return (
-    <div className="space-y-4 rounded-md border border-[#e5ded2] bg-white p-5">
-      <div className="grid gap-3 md:grid-cols-3">
-        <Metric
-          label="Check result"
-          value={result.checkReport.result === "fail" ? 1 : 0}
-        />
-        <Metric
-          label="Routed files"
-          value={result.checkReport.routed_files.length}
-        />
-        <Metric label="Findings" value={result.checkReport.findings.length} />
-      </div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        <div>
-          <h4
-            className={cx(
-              fonts.mono,
-              "text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-            )}
-          >
-            Routed files
-          </h4>
-          <div className="mt-3 space-y-2">
-            {result.checkReport.routed_files.map((file) => (
-              <div
-                className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-3 text-sm"
-                key={file.path}
-              >
-                <div className="break-all font-mono text-xs text-[#5e584f]">
-                  {file.path}
-                </div>
-                <p className="mt-1 text-xs text-[#746f66]">
-                  scopes {file.scopes.join(", ") || "none"} / checks{" "}
-                  {file.checks.join(", ") || "none"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h4
-            className={cx(
-              fonts.mono,
-              "text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-            )}
-          >
-            Active findings
-          </h4>
-          <div className="mt-3 space-y-2">
-            {result.checkReport.findings.length > 0 ? (
-              result.checkReport.findings.map((finding) => (
-                <div
-                  className="rounded-md border border-[#e5ded2] bg-[#fff7f4] p-3 text-sm"
-                  key={`${finding.check_id}-${finding.path}-${finding.line}`}
-                >
-                  <div className="font-medium text-[#24231f]">
-                    {finding.title}
-                  </div>
-                  <p className="mt-1 text-xs leading-relaxed text-[#746f66]">
-                    {finding.path}:{finding.line} — {finding.message}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-3 text-sm text-[#746f66]">
-                No active deterministic check failures.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function PromptLabInputs({
   detail,
   promptSampleId,
@@ -1709,19 +1646,12 @@ function PromptLabInputs({
   onPromptTextChange: (value: string) => void;
 }) {
   return (
-    <div className="space-y-3 rounded-md border border-[#e5ded2] bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <label className="min-w-[220px] flex-1">
-          <span
-            className={cx(
-              fonts.mono,
-              "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-            )}
-          >
-            Sample prompt
-          </span>
+    <div className="workbench-control-stack">
+      <div className="workbench-control-summary">
+        <label className="workbench-field">
+          <FieldLabel>Sample prompt</FieldLabel>
           <select
-            className="h-10 w-full rounded-md border border-[#ded6c9] bg-[#fbfaf7] px-3 text-sm text-[#24231f] outline-none focus:border-[#d88f7b]"
+            className="workbench-select"
             onChange={(event) => onPromptSampleChange(event.target.value)}
             value={promptSampleId}
           >
@@ -1734,31 +1664,21 @@ function PromptLabInputs({
           </select>
         </label>
         {interpretation ? (
-          <Badge
-            className="mt-6 rounded-md bg-[#f4eee6] font-mono text-[10px] uppercase text-[#5e584f]"
-            variant="secondary"
-          >
+          <span className={cx(fonts.mono, "workbench-inline-status")}>
             {interpretation.status}
-          </Badge>
+          </span>
         ) : null}
       </div>
-      <label className="block">
-        <span
-          className={cx(
-            fonts.mono,
-            "mb-2 block text-[11px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-          )}
-        >
-          Prompt text
-        </span>
+      <label className="workbench-field">
+        <FieldLabel>Prompt text</FieldLabel>
         <textarea
-          className="h-28 w-full resize-none rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4 text-sm leading-relaxed text-[#24231f] outline-none transition-colors placeholder:text-[#9b9489] focus:border-[#d88f7b]"
+          className="workbench-textarea workbench-textarea-compact"
           onChange={(event) => onPromptTextChange(event.target.value)}
           placeholder="Try a sample prompt or write a scenario-local prompt"
           value={promptText}
         />
       </label>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="workbench-note-grid">
         <PromptNote
           label="Sample lesson"
           value={
@@ -1779,101 +1699,380 @@ function PromptLabInputs({
 
 function PromptNote({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-3">
-      <div
-        className={cx(
-          fonts.mono,
-          "text-[10px] font-medium uppercase tracking-[0.1em] text-[#746f66]",
-        )}
-      >
-        {label}
-      </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-[#5e584f]">{value}</p>
+    <div className="workbench-note">
+      <div className={cx(fonts.mono, "workbench-note-label")}>{label}</div>
+      <p>{value}</p>
     </div>
   );
 }
 
-function ContextCard({ context }: { context: WorkbenchContextSection }) {
-  const entrypoint = context.entrypoint;
+function TraceMapSection({
+  context,
+  contexts,
+  loading,
+  mode,
+  onOpenOutput,
+}: {
+  context: WorkbenchContextSection;
+  contexts: WorkbenchContextSection[];
+  loading: boolean;
+  mode: WorkbenchMode;
+  onOpenOutput: (view: WorkbenchOutputView) => void;
+}) {
+  const trace = context.trace;
+  const [selectedNodeId, setSelectedNodeId] = useState(
+    trace.defaultSelectedNodeId,
+  );
+
+  useEffect(() => {
+    setSelectedNodeId(trace.defaultSelectedNodeId);
+  }, [trace.defaultSelectedNodeId]);
+
+  const selectedNode =
+    trace.nodes.find((node) => node.id === selectedNodeId) ??
+    trace.nodes.find((node) => node.id === trace.defaultSelectedNodeId) ??
+    trace.nodes[0] ??
+    null;
+
+  const label =
+    mode === "drift"
+      ? "Review trace"
+      : mode === "prompt"
+        ? "Prompt trace"
+        : "Context trace";
+
   return (
-    <article className="rounded-md border border-[#e5ded2] bg-white p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3
-            className={cx(fonts.sans, "text-lg font-semibold text-[#24231f]")}
+    <InspectorSection
+      action={
+        <div className="workbench-trace-actions">
+          <Button
+            className="workbench-secondary-button"
+            onClick={() => onOpenOutput("handoff")}
+            type="button"
           >
-            {context.title}
-          </h3>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            <Badge
-              className="rounded-md border-[#e5ded2] bg-[#fbfaf7] font-mono text-[10px] uppercase text-[#746f66]"
-              variant="outline"
-            >
-              {entrypoint.match.status === "path-match"
-                ? "path matched"
-                : "global fallback"}
-            </Badge>
-            {context.packageDir ? (
-              <Badge
-                className="rounded-md bg-[#f4eee6] font-mono text-[10px] text-[#5e584f]"
-                variant="secondary"
-              >
-                {context.packageDir}
-              </Badge>
-            ) : null}
-          </div>
+            <PanelRightOpen className="size-4" />
+            Handoff
+          </Button>
+          <Button
+            className="workbench-secondary-button"
+            onClick={() => onOpenOutput("omissions")}
+            type="button"
+          >
+            <ChevronsUpDown className="size-4" />
+            Omissions
+          </Button>
         </div>
-        <div
-          className={cx(
-            fonts.mono,
-            "text-right text-[11px] font-medium uppercase tracking-[0.08em] text-[#746f66]",
-          )}
+      }
+      eyebrow="Routing trace"
+      icon={<Layers3 className="size-4" />}
+      title={label}
+    >
+      <TraceMiniSummary
+        context={context}
+        contextCount={contexts.length}
+        loading={loading}
+        trace={trace}
+      />
+      <div className="workbench-trace-shell">
+        <TraceCanvas
+          onSelect={setSelectedNodeId}
+          selectedNodeId={selectedNode?.id ?? ""}
+          trace={trace}
+        />
+        <TraceNodeDetail node={selectedNode} onOpenOutput={onOpenOutput} />
+      </div>
+      <TraceAnnotations trace={trace} />
+      <TraceLegend />
+    </InspectorSection>
+  );
+}
+
+function TraceMiniSummary({
+  context,
+  contextCount,
+  loading,
+  trace,
+}: {
+  context: WorkbenchContextSection;
+  contextCount: number;
+  loading: boolean;
+  trace: WorkbenchTraceGraph;
+}) {
+  const selected = trace.nodes.filter((node) =>
+    ["prose", "composition", "exemplar", "check"].includes(node.kind),
+  ).length;
+  const omitted = trace.nodes.filter((node) => node.kind === "omission").length;
+  const blocking = trace.nodes.filter(
+    (node) => node.state === "blocking",
+  ).length;
+
+  return (
+    <div className="workbench-trace-summary">
+      <span className={cx(fonts.mono, "workbench-inline-status")}>
+        {loading ? "resolving" : context.entrypoint.match.status}
+      </span>
+      <span className={cx(fonts.mono, "workbench-inline-count")}>
+        {contextCount} routed context{contextCount === 1 ? "" : "s"}
+      </span>
+      <span className={cx(fonts.mono, "workbench-inline-count")}>
+        {selected} selected ref{selected === 1 ? "" : "s"}
+      </span>
+      <span className={cx(fonts.mono, "workbench-inline-count")}>
+        {omitted} omission node{omitted === 1 ? "" : "s"}
+      </span>
+      {blocking > 0 ? (
+        <span className={cx(fonts.mono, "workbench-inline-status")}>
+          {blocking} blocking
+        </span>
+      ) : null}
+      <p>{trace.summary}</p>
+    </div>
+  );
+}
+
+function TraceCanvas({
+  onSelect,
+  selectedNodeId,
+  trace,
+}: {
+  onSelect: (nodeId: string) => void;
+  selectedNodeId: string;
+  trace: WorkbenchTraceGraph;
+}) {
+  const layout = useMemo(() => buildTraceLayout(trace), [trace]);
+  const connectedNodeIds = new Set(
+    trace.edges
+      .filter(
+        (edge) => edge.from === selectedNodeId || edge.to === selectedNodeId,
+      )
+      .flatMap((edge) => [edge.from, edge.to]),
+  );
+  connectedNodeIds.add(selectedNodeId);
+
+  return (
+    <div className="workbench-trace-frame">
+      <div
+        className="workbench-trace-canvas"
+        style={{
+          ["--trace-height" as string]: `${layout.height}px`,
+          ["--trace-width" as string]: `${layout.width}px`,
+        }}
+      >
+        <svg
+          aria-hidden="true"
+          className="workbench-trace-svg"
+          viewBox={`0 0 ${layout.width} ${layout.height}`}
         >
-          {context.changedFiles.length} changed path
-          {context.changedFiles.length === 1 ? "" : "s"}
-        </div>
+          {trace.edges.map((edge) => {
+            const from = layout.positions.get(edge.from);
+            const to = layout.positions.get(edge.to);
+            if (!from || !to) return null;
+            const mid = from.x + (to.x - from.x) * 0.55;
+            const active =
+              edge.from === selectedNodeId ||
+              edge.to === selectedNodeId ||
+              edge.state === "blocking";
+            return (
+              <path
+                className={cx(
+                  "workbench-trace-edge",
+                  `is-${edge.state}`,
+                  active && "is-active",
+                )}
+                d={`M ${from.x} ${from.y} C ${mid} ${from.y}, ${mid} ${to.y}, ${to.x} ${to.y}`}
+                key={edge.id}
+              />
+            );
+          })}
+        </svg>
+        {layout.lanes.map((lane) => {
+          const position = layout.lanePositions.get(lane.id);
+          if (!position) return null;
+          return (
+            <div
+              className="workbench-trace-lane-label"
+              key={lane.id}
+              style={{ left: position.x }}
+            >
+              <span className={cx(fonts.mono, "workbench-note-label")}>
+                {lane.title}
+              </span>
+              <p>{lane.summary}</p>
+            </div>
+          );
+        })}
+        {trace.nodes.map((node) => {
+          const position = layout.positions.get(node.id);
+          if (!position) return null;
+          const active = connectedNodeIds.has(node.id);
+          return (
+            <button
+              aria-pressed={node.id === selectedNodeId}
+              className={cx(
+                "workbench-trace-node",
+                `is-${node.kind}`,
+                `is-${node.state}`,
+                active && "is-active",
+                node.id === selectedNodeId && "is-selected",
+              )}
+              key={node.id}
+              onClick={() => onSelect(node.id)}
+              style={{ left: position.x, top: position.y }}
+              type="button"
+            >
+              <span className="workbench-trace-node-marker" />
+              <span className="workbench-trace-node-title">{node.title}</span>
+              <span className="workbench-trace-node-summary">
+                {node.summary}
+              </span>
+            </button>
+          );
+        })}
       </div>
+      <div className="workbench-trace-mobile-list">
+        {trace.nodes
+          .slice()
+          .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
+          .map((node) => (
+            <button
+              aria-pressed={node.id === selectedNodeId}
+              className={cx(
+                "workbench-trace-mobile-node",
+                `is-${node.kind}`,
+                `is-${node.state}`,
+                node.id === selectedNodeId && "is-selected",
+              )}
+              key={node.id}
+              onClick={() => onSelect(node.id)}
+              type="button"
+            >
+              <span className={cx(fonts.mono, "workbench-note-label")}>
+                {node.kind}
+              </span>
+              <span>{node.title}</span>
+              <small>{node.summary}</small>
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
 
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
-        <Metric
-          label="Matched scopes"
-          value={entrypoint.match.matchedScopes.length}
-        />
-        <Metric
-          label="Selected refs"
-          value={
-            entrypoint.selected.prose.length +
-            entrypoint.selected.composition.length +
-            entrypoint.selected.exemplars.length +
-            entrypoint.selected.checks.length
-          }
-        />
-        <Metric
-          label="Suggested reads"
-          value={entrypoint.suggestedReads.length}
-        />
-      </div>
+function TraceNodeDetail({
+  node,
+  onOpenOutput,
+}: {
+  node: WorkbenchTraceNode | null;
+  onOpenOutput: (view: WorkbenchOutputView) => void;
+}) {
+  if (!node) {
+    return (
+      <aside className="workbench-trace-detail">
+        <InspectorEmpty text="No trace node is selected." />
+      </aside>
+    );
+  }
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        <div className="space-y-4">
-          <SectionList
-            nodes={entrypoint.selected.prose}
-            title="Prose anchors"
-          />
-          <SectionList
-            nodes={entrypoint.selected.composition}
-            title="Composition"
-          />
-        </div>
-        <div className="space-y-4">
-          <SectionList
-            nodes={entrypoint.selected.exemplars}
-            title="Exemplars"
-          />
-          <SectionList nodes={entrypoint.selected.checks} title="Checks" />
-        </div>
+  return (
+    <aside className="workbench-trace-detail">
+      <div className={cx(fonts.mono, "workbench-section-kicker")}>
+        {node.kind} / {node.state}
       </div>
-    </article>
+      <h4>{node.title}</h4>
+      <p className="workbench-trace-detail-summary">{node.summary}</p>
+      <p className="workbench-trace-detail-body">{node.detail}</p>
+      {node.meta.length > 0 ? (
+        <div className="workbench-trace-meta">
+          {node.meta.map((item) => (
+            <PromptNote
+              key={`${node.id}:${item.label}:${item.value}`}
+              label={item.label}
+              value={item.value}
+            />
+          ))}
+        </div>
+      ) : null}
+      {node.kind === "handoff" ? (
+        <Button
+          className="workbench-secondary-button"
+          onClick={() => onOpenOutput("handoff")}
+          type="button"
+        >
+          <PanelRightOpen className="size-4" />
+          View handoff
+        </Button>
+      ) : null}
+      {node.kind === "omission" ? (
+        <Button
+          className="workbench-secondary-button"
+          onClick={() => onOpenOutput("omissions")}
+          type="button"
+        >
+          <ChevronsUpDown className="size-4" />
+          View omissions
+        </Button>
+      ) : null}
+    </aside>
+  );
+}
+
+function TraceAnnotations({ trace }: { trace: WorkbenchTraceGraph }) {
+  if (trace.annotations.length === 0) return null;
+  const nodesById = new Map(trace.nodes.map((node) => [node.id, node]));
+  return (
+    <div className="workbench-trace-annotations">
+      {trace.annotations.map((annotation) => {
+        const node = nodesById.get(annotation.nodeId);
+        return (
+          <div className="workbench-trace-annotation" key={annotation.nodeId}>
+            <span className={cx(fonts.mono, "workbench-note-label")}>
+              {node?.title ?? "Trace note"}
+            </span>
+            <p>{annotation.text}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TraceLegend() {
+  const items: Array<{ label: string; className: string }> = [
+    { label: "Matched", className: "is-selected" },
+    { label: "Fallback", className: "is-fallback" },
+    { label: "Omitted", className: "is-omitted" },
+    { label: "Blocking", className: "is-blocking" },
+  ];
+  return (
+    <div className="workbench-trace-legend">
+      {items.map((item) => (
+        <span className={cx(fonts.mono, item.className)} key={item.label}>
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function AdditionalContexts({
+  contexts,
+}: {
+  contexts: WorkbenchContextSection[];
+}) {
+  return (
+    <InspectorSection eyebrow="Additional context" title="Other routed packets">
+      <div className="workbench-evidence-list">
+        {contexts.map((context) => (
+          <div className="workbench-read-row" key={context.id}>
+            <span className="font-medium text-[#24231f]">{context.title}</span>
+            <span className={cx(fonts.mono, "workbench-inline-count")}>
+              {selectedRefCount(context.entrypoint)} refs /{" "}
+              {omittedCount(context.entrypoint)} omitted
+            </span>
+          </div>
+        ))}
+      </div>
+    </InspectorSection>
   );
 }
 
@@ -2846,71 +3045,6 @@ function TreeNode({ node }: { node: WorkbenchTreeNode }) {
   return <FileTreeFile name={node.name} path={node.path} />;
 }
 
-function SectionList({
-  title,
-  nodes,
-}: {
-  title: string;
-  nodes: WorkbenchGraphNode[];
-}) {
-  return (
-    <div>
-      <h4
-        className={cx(
-          fonts.mono,
-          "text-[11px] font-medium uppercase tracking-[0.12em] text-[#746f66]",
-        )}
-      >
-        {title}
-      </h4>
-      <div className="mt-3 space-y-2.5">
-        {nodes.length === 0 ? (
-          <p className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4 text-sm text-[#746f66]">
-            None selected.
-          </p>
-        ) : (
-          nodes.map((node) => (
-            <div
-              className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4"
-              key={node.ref}
-            >
-              <div className="break-all font-mono text-xs text-[#746f66]">
-                {node.ref}
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-[#24231f]">
-                {node.summary}
-              </p>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-md border border-[#e5ded2] bg-[#fbfaf7] p-4">
-      <div
-        className={cx(
-          fonts.sans,
-          "text-2xl font-semibold leading-none text-[#24231f] tabular-nums",
-        )}
-      >
-        {value}
-      </div>
-      <div
-        className={cx(
-          fonts.mono,
-          "mt-2 text-[11px] font-medium uppercase tracking-[0.08em] text-[#746f66]",
-        )}
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
-
 function PanelTitle({ icon, title }: { icon: ReactNode; title: string }) {
   return (
     <div
@@ -3047,6 +3181,19 @@ function cacheSummary(entrypoint: WorkbenchEntrypoint | undefined): string {
     return `Generated cache is present but unreadable: ${cache.error}`;
   }
   return `Generated cache is present with ${cache.summary.package_manifests.length} package manifest hint(s).`;
+}
+
+function selectedRefCount(entrypoint: WorkbenchEntrypoint): number {
+  return (
+    entrypoint.selected.prose.length +
+    entrypoint.selected.composition.length +
+    entrypoint.selected.exemplars.length +
+    entrypoint.selected.checks.length
+  );
+}
+
+function omittedCount(entrypoint: WorkbenchEntrypoint): number {
+  return entrypoint.omissions.reduce((sum, item) => sum + item.omitted, 0);
 }
 
 function packageCacheSummary(pkg: WorkbenchFingerprintPackageSummary): string {
