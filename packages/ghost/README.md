@@ -43,6 +43,12 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
+Gather context before generation:
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx
+```
+
 Govern changes afterward:
 
 ```bash
@@ -69,6 +75,7 @@ host opts in.
 ```ts
 import { compare } from "@anarchitecture/ghost/compare";
 import { runGhostCheck } from "@anarchitecture/ghost/govern";
+import { gatherRelayContext } from "@anarchitecture/ghost/relay";
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
