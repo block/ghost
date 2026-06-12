@@ -16,9 +16,14 @@ function fail(message) {
 
 const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
 const binPath = pkg?.bin?.ghost;
+const packageVersion = pkg?.version;
 
 if (typeof binPath !== "string" || binPath.length === 0) {
   fail("packages/ghost/package.json must define bin.ghost");
+}
+
+if (typeof packageVersion !== "string" || packageVersion.length === 0) {
+  fail("packages/ghost/package.json must define version");
 }
 
 const binAbsolutePath = resolve(dirname(PACKAGE_JSON_PATH), binPath);
@@ -78,6 +83,35 @@ if (pnpmResult.status !== 0) {
     `pnpm exec ghost --help exited with ${pnpmResult.status}\n${
       pnpmResult.stderr || pnpmResult.stdout
     }`,
+  );
+}
+
+const rootPnpmVersionResult = spawnSync(
+  "pnpm",
+  ["exec", "ghost", "--version"],
+  {
+    cwd: ROOT,
+    encoding: "utf8",
+  },
+);
+
+if (rootPnpmVersionResult.error) {
+  fail(`root pnpm exec ghost failed: ${rootPnpmVersionResult.error.message}`);
+}
+
+if (rootPnpmVersionResult.status !== 0) {
+  fail(
+    `root pnpm exec ghost --version exited with ${rootPnpmVersionResult.status}\n${
+      rootPnpmVersionResult.stderr || rootPnpmVersionResult.stdout
+    }`,
+  );
+}
+
+const rootVersion = rootPnpmVersionResult.stdout.trim();
+const expectedRootVersion = `ghost/${packageVersion}`;
+if (!rootVersion.startsWith(expectedRootVersion)) {
+  fail(
+    `root pnpm exec ghost resolved '${rootVersion}', expected '${expectedRootVersion}'`,
   );
 }
 

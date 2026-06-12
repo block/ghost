@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@anarchitecture/ghost':
+        specifier: workspace:*
+        version: link:packages/ghost
       '@anthropic-ai/sdk':
         specifier: ^0.90.0
         version: 0.90.0(zod@4.3.6)
