@@ -22,7 +22,11 @@ deterministic gates + advisory surface-composition findings
 
 ## Before Generation
 
-Build a brief from the generation packet:
+Build a brief from the resolved fingerprint stack:
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx
+```
 
 1. Read `.ghost/fingerprint/prose.yml`, `.ghost/fingerprint/inventory.yml`, and
    `.ghost/fingerprint/composition.yml`.
