@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T17:47:36.455Z",
+  "generatedAt": "2026-06-12T19:26:14.540Z",
   "tools": [
     {
       "tool": "ghost",
@@ -315,11 +315,11 @@
           "tool": "ghost",
           "name": "emit",
           "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package (review command or compact context entrypoint)",
+          "description": "Emit a derived artifact from the fingerprint package (review-command).",
           "group": "core",
           "defaultHelp": true,
           "compactName": "emit",
-          "summary": "Emit review-command or context-bundle artifacts.",
+          "summary": "Emit review-command artifacts.",
           "options": [
             {
               "rawName": "--path <path>",
@@ -348,7 +348,7 @@
             {
               "rawName": "-o, --out <path>",
               "name": "out",
-              "description": "Output path (review-command → .claude/commands/design-review.md; context-bundle → ghost-context/)",
+              "description": "Output path (review-command → .claude/commands/design-review.md)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -356,33 +356,9 @@
             {
               "rawName": "--stdout",
               "name": "stdout",
-              "description": "Write to stdout instead of a file (review-command only)",
+              "description": "Write to stdout instead of a file",
               "default": null,
               "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--readme",
-              "name": "readme",
-              "description": "Include README.md (context-bundle)",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--prompt-only",
-              "name": "promptOnly",
-              "description": "Emit only prompt.md (context-bundle compact entrypoint)",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--name <name>",
-              "name": "name",
-              "description": "Override the skill name (default: prose.yml product or first scope) (context-bundle)",
-              "default": null,
-              "takesValue": true,
               "negated": false
             }
           ]
@@ -566,6 +542,50 @@
               "name": "format",
               "description": "Output format: cli or json",
               "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "relay",
+          "rawName": "relay <action> [target]",
+          "description": "Gather fingerprint-grounded context for an agent target.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "relay gather",
+          "summary": "Gather fingerprint context for an agent target.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--memory-dir <relative-dir>",
+              "name": "memoryDir",
+              "description": "Relative fingerprint package directory for stack resolution (default: .ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--name <name>",
+              "name": "name",
+              "description": "Override the gathered context name (default: prose.yml product or resolved scope)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
               "takesValue": true,
               "negated": false
             }

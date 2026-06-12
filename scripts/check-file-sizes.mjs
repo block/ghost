@@ -15,10 +15,10 @@ const EXCEPTIONS = {
     justification:
       "Unified CLI command registry — review/check/compare plus drift stance verbs live together for one public bin",
   },
-  "packages/ghost/src/scan-commands.ts": {
-    limit: 1130,
+  "packages/ghost/src/fingerprint-commands.ts": {
+    limit: 1135,
     justification:
-      "Scan and fingerprint package command registry — temporarily holds legacy markdown, fingerprint.yml package verbs, and adapter-neutral memory-dir routing until the command registry is split",
+      "Fingerprint package command registry — temporarily holds package lifecycle, legacy markdown, survey/cache, scan readiness, and adapter-neutral memory-dir routing until command groups are split further",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,

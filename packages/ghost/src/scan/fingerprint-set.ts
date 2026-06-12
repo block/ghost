@@ -1,8 +1,8 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Fingerprint, MapScope } from "#ghost-core";
+import { loadFingerprint } from "../fingerprint-load.js";
 import { FINGERPRINT_FILENAME, FINGERPRINTS_DIRNAME } from "./constants.js";
-import { loadFingerprint } from "./index.js";
 
 export interface LoadedFingerprintNode {
   id: string;

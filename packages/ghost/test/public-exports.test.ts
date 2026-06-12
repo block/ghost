@@ -10,15 +10,33 @@ const hasBuiltExports = existsSync(
 
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
-    const [fingerprint, govern, compareApi] = await Promise.all([
+    const [fingerprint, scan, relay, govern, compareApi] = await Promise.all([
       import("@anarchitecture/ghost/fingerprint"),
+      import("@anarchitecture/ghost/scan"),
+      import("@anarchitecture/ghost/relay"),
       import("@anarchitecture/ghost/govern"),
       import("@anarchitecture/ghost/compare"),
     ]);
 
-    expect(fingerprint.initFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprint.lintFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprint.scanStatus).toBeTypeOf("function");
+    const fingerprintApi = fingerprint as Record<string, unknown>;
+    const scanApi = scan as Record<string, unknown>;
+
+    expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
+    expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
+    expect(fingerprintApi.verifyFingerprintPackage).toBeTypeOf("function");
+    expect(fingerprintApi.loadFingerprint).toBeTypeOf("function");
+    expect(fingerprintApi.writePackageContextBundle).toBeUndefined();
+    expect(fingerprintApi.writeContextBundle).toBeUndefined();
+
+    expect(scanApi.scanStatus).toBeTypeOf("function");
+    expect(scanApi.inventory).toBeTypeOf("function");
+    expect(scanApi.loadFingerprintStackForPath).toBeTypeOf("function");
+    expect(scanApi.initFingerprintPackage).toBeUndefined();
+    expect(scanApi.lintFingerprintPackage).toBeUndefined();
+    expect(scanApi.writePackageContextBundle).toBeUndefined();
+
+    expect(relay.gatherRelayContext).toBeTypeOf("function");
+    expect(relay.formatRelayBrief).toBeTypeOf("function");
 
     expect(govern.runGhostCheck).toBeTypeOf("function");
     expect(govern.runGhostCheck).toBe(govern.runGhostDriftCheck);

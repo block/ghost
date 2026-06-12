@@ -136,6 +136,7 @@ describe("ghost CLI", () => {
       "verify",
       "check",
       "review",
+      "relay gather",
       "emit",
       "skill install",
     ]) {
@@ -170,6 +171,7 @@ describe("ghost CLI", () => {
       "describe [fingerprint]",
       "diff <a> <b>",
       "survey <op> [...surveys]",
+      "relay <action> [target]",
       "emit <kind>",
       "compare [...fingerprints]",
       "ack",
@@ -331,7 +333,6 @@ describe("ghost CLI", () => {
     const check = await runCli(["check", "--diff", "change.patch"], dir);
     const review = await runCli(["review", "--diff", "change.patch"], dir);
     const reviewCommand = await runCli(["emit", "review-command"], dir);
-    const contextBundle = await runCli(["emit", "context-bundle"], dir);
 
     expect(lint.code).toBe(0);
     expect(verify.code).toBe(0);
@@ -339,7 +340,6 @@ describe("ghost CLI", () => {
     expect(review.code).toBe(0);
     expect(review.stdout).toContain("## Selected Fingerprint Context");
     expect(reviewCommand.code).toBe(0);
-    expect(contextBundle.code).toBe(0);
   });
 
   it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
@@ -719,7 +719,7 @@ checks:
     expect(fixed.values[0].id).toBeTruthy();
   });
 
-  it("emits review commands and context bundles from the unified cli", async () => {
+  it("emits review commands from the unified cli", async () => {
     await writeCheckPackage(dir);
     await mkdir(join(dir, ".ghost", "fingerprint", "sources", "cache"), {
       recursive: true,
@@ -747,7 +747,6 @@ checks:
     );
 
     const reviewCommand = await runCli(["emit", "review-command"], dir);
-    const contextBundle = await runCli(["emit", "context-bundle"], dir);
 
     expect(reviewCommand.code).toBe(0);
     expect(reviewCommand.stdout).toContain("design-review.md");
@@ -768,93 +767,93 @@ checks:
     expect(emittedReviewCommand).not.toContain(
       "deprecated legacy direct-markdown",
     );
-    expect(contextBundle.code).toBe(0);
-    expect(contextBundle.stdout).toContain("prompt.md");
-    expect(contextBundle.stdout).toContain("fingerprint/prose.yml");
-    expect(contextBundle.stdout).toContain("fingerprint/inventory.yml");
-    expect(contextBundle.stdout).toContain("fingerprint/composition.yml");
-    expect(contextBundle.stdout).not.toContain("fingerprint.yml");
-    expect(contextBundle.stdout).not.toContain("survey-summary.md");
-    await expect(
-      readFile(
-        join(dir, "ghost-context", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
-    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
-    await expect(
-      readFile(join(dir, "ghost-context", "fingerprint", "prose.yml"), "utf-8"),
-    ).resolves.toContain("summary:");
-    await expect(
-      readFile(join(dir, "ghost-context", "fingerprint.yml"), "utf-8"),
-    ).rejects.toThrow();
-    const prompt = await readFile(
-      join(dir, "ghost-context", "prompt.md"),
-      "utf-8",
-    );
-    expect(prompt).toContain("# Agent Handoff");
-    expect(prompt).toContain("compact entrypoint into the fingerprint");
-    expect(prompt).toContain("Agent Handoff");
-    expect(prompt).toContain("## Identity Capsule");
-    expect(prompt).toContain("## Context Match");
-    expect(prompt).toContain("## Read First");
-    expect(prompt).toContain("## Suggested Reads");
-    expect(prompt).toContain("## Omissions");
-    expect(prompt).not.toContain("```yaml");
-    expect(prompt).not.toMatch(/^# Prose$/m);
-    expect(prompt).not.toMatch(/^# Inventory$/m);
-    expect(prompt).not.toMatch(/^# Composition$/m);
-    expect(prompt).toContain("Generated cache is optional source material");
-    expect(prompt).toContain("Package.swift");
-    expect(prompt).toContain("no-hardcoded-ui-color");
-    expect(prompt).not.toContain("candidate-density-check");
-    expect(prompt).not.toContain("status: proposed");
-    expect(prompt).not.toContain("Proposal Threshold");
-    expect(prompt).toContain("provisional and non-Ghost-backed");
-    const scopedContextBundle = await runCli(
-      [
-        "emit",
-        "context-bundle",
-        "--path",
-        "Code/Features/Lending/LendingUI",
-        "-o",
-        "ghost-context-scoped",
-      ],
-      dir,
-    );
-    expect(scopedContextBundle.code).toBe(0);
-    const scopedPrompt = await readFile(
-      join(dir, "ghost-context-scoped", "prompt.md"),
-      "utf-8",
-    );
-    expect(scopedPrompt).toContain("Status: path matched");
-    expect(scopedPrompt).toContain("Matched scopes: `lending`");
-    expect(scopedPrompt).toContain(
-      "inventory.exemplar:lending-tokenized-screen",
-    );
-    await expect(
-      readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("provisional and\nnon-Ghost-backed");
-    await expect(
-      readFile(join(dir, "ghost-context", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("upstream handoff for agentic UI work");
   });
 
-  it("emits context bundles when generated cache is malformed", async () => {
+  it("rejects removed context-bundle emit kind", async () => {
     await writeCheckPackage(dir);
-    await mkdir(join(dir, ".ghost", "fingerprint", "sources", "cache"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint", "sources", "cache", "inventory.json"),
-      "{nope",
-    );
 
     const contextBundle = await runCli(["emit", "context-bundle"], dir);
 
-    expect(contextBundle.code).toBe(0);
-    await expect(
-      readFile(join(dir, "ghost-context", "prompt.md"), "utf-8"),
-    ).resolves.toContain("could not be read");
+    expect(contextBundle.code).toBe(2);
+    expect(contextBundle.stderr).toContain(
+      "unknown emit kind 'context-bundle'",
+    );
+  });
+
+  it("gathers a Relay brief from the resolved fingerprint stack", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      ["relay", "gather", "Code/Features/Lending/LendingUI"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("# Ghost Relay Brief");
+    expect(result.stdout).toContain("Status: path matched");
+    expect(result.stdout).toContain("Matched scopes: `lending`");
+    expect(result.stdout).toContain("prose.principle:tokenized-ui-color");
+    expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
+    expect(result.stdout).toContain(
+      "inventory.exemplar:lending-tokenized-screen",
+    );
+    expect(result.stdout).toContain("no-hardcoded-ui-color");
+    expect(result.stdout).not.toContain("candidate-density-check");
+  });
+
+  it("gathers Relay context as json from an exact package", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "Code/Features/Lending/LendingUI",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.schema).toBe("ghost.relay.gather/v1");
+    expect(json.source.kind).toBe("package");
+    expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
+    expect(json.entrypoint.match.status).toBe("path-match");
+    expect(json.brief).toContain("# Ghost Relay Brief");
+  });
+
+  it("ignores memory-dir when gathering Relay context from an exact package", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "--package",
+        ".ghost",
+        "--memory-dir",
+        "../not-used",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).source.kind).toBe("package");
+  });
+
+  it("rejects invalid Relay output formats", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(["relay", "gather", "--format", "yaml"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--format must be 'markdown' or 'json'");
   });
 
   it("warns when fingerprint exemplar paths are unreachable", async () => {
@@ -1411,7 +1410,7 @@ libraries:
     ).toContain("ghost.fingerprint-package/v1");
   });
 
-  it("lint --all and verify --all include nested bundles", async () => {
+  it("lint --all and verify --all include nested packages", async () => {
     await writeNestedCheckPackage(dir);
 
     const lint = await runCli(["lint", "--all", "--format", "json"], dir);
@@ -1423,7 +1422,7 @@ libraries:
 
     expect(lint.code).toBe(0);
     expect(verify.code).toBe(0);
-    expect(JSON.parse(scan.stdout).nested_bundles).toHaveLength(2);
+    expect(JSON.parse(scan.stdout).nested_packages).toHaveLength(2);
   });
 
   it("lint, verify, and scan discover nested custom fingerprint directories", async () => {
@@ -1451,7 +1450,7 @@ libraries:
 
     expect(lint.code).toBe(0);
     expect(verify.code).toBe(0);
-    expect(JSON.parse(scan.stdout).nested_bundles).toHaveLength(2);
+    expect(JSON.parse(scan.stdout).nested_packages).toHaveLength(2);
   });
 });
 

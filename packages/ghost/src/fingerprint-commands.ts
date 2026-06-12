@@ -15,28 +15,30 @@ import {
   type SurveySummaryBudget,
   summarizeSurvey,
 } from "#ghost-core";
-import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   diffFingerprints,
-  discoverGhostPackages,
-  fingerprintPackageDisplayPath,
   formatLayout,
   formatSemanticDiff,
   formatVerifyFingerprintReport,
   initFingerprintPackage,
   initScopedFingerprintPackage,
-  inventory,
   layoutFingerprint,
   lintAllFingerprintStacks,
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
   loadFingerprintPackage,
-  normalizeMemoryDir,
   resolveFingerprintPackage,
-  scanStatus,
   verifyAllFingerprintStacks,
   verifyFingerprintPackage,
+} from "./fingerprint.js";
+import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
+import {
+  discoverGhostPackages,
+  fingerprintPackageDisplayPath,
+  inventory,
+  normalizeMemoryDir,
+  scanStatus,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
 import { registerStackCommand } from "./scan-stack-command.js";
@@ -48,12 +50,12 @@ import { registerStackCommand } from "./scan-stack-command.js";
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
  * fidelity), `describe` (section ranges + token estimates for intent or direct
  * fingerprint markdown), `diff` (structural prose-level diff between direct
- * fingerprint files), `emit` (derive review-command, context-bundle, or skill
- * artifacts), and `survey` operations for deterministic `ghost.survey/v1`
+ * fingerprint files), `emit` (derive review-command artifacts), and `survey`
+ * operations for deterministic `ghost.survey/v1`
  * merge, ID repair, bounded summary output, derived value catalogs, and
  * operational pattern synthesis.
  */
-export function registerScanCommands(cli: CAC): void {
+export function registerFingerprintCommands(cli: CAC): void {
   // --- lint ---
   cli
     .command(
@@ -313,7 +315,7 @@ export function registerScanCommands(cli: CAC): void {
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
-              nested ? { ...status, nested_bundles: nested } : status,
+              nested ? { ...status, nested_packages: nested } : status,
               null,
               2,
             )}\n`,
@@ -397,13 +399,13 @@ export function registerScanCommands(cli: CAC): void {
             }
           }
           if (nested) {
-            process.stdout.write("\nnested bundles:\n");
+            process.stdout.write("\nnested packages:\n");
             if (nested.length === 0) {
               process.stdout.write("  none\n");
             } else {
-              for (const bundle of nested) {
+              for (const pkg of nested) {
                 process.stdout.write(
-                  `  ${fingerprintPackageDisplayPath(bundle.relative_root, bundle.fingerprint_dir)}: ${bundle.readiness.state}\n`,
+                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.fingerprint_dir)}: ${pkg.readiness.state}\n`,
                 );
               }
             }
