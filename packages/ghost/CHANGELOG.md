@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 1.0.0
+
+### Major Changes
+
+- [#144](https://github.com/block/ghost/pull/144) [`383d7b4`](https://github.com/block/ghost/commit/383d7b4b5976fe6645871740d3d8665abca9d1e3) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Restore scan to readiness and source-signal APIs, move fingerprint package operations to the fingerprint export, remove context-bundle emission, and add Relay gather for agent context.
+
 ## 0.8.0
 
 ### Minor Changes
