@@ -10,7 +10,7 @@ import {
 import {
   type FingerprintPackagePaths,
   loadFingerprintPackage,
-} from "../fingerprint-package.js";
+} from "../scan/fingerprint-package.js";
 
 export interface PackageInventorySummary {
   root?: string;

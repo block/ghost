@@ -59,6 +59,10 @@
       "types": "./dist/compare.d.ts",
       "import": "./dist/compare.js"
     },
+    "./relay": {
+      "types": "./dist/relay.d.ts",
+      "import": "./dist/relay.js"
+    },
     "./drift": {
       "types": "./dist/core/index.d.ts",
       "import": "./dist/core/index.js"

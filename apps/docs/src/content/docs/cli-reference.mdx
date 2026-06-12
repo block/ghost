@@ -119,13 +119,20 @@ ghost verify .ghost --root .
 ghost verify --all --memory-dir .design/memory
 ```
 
-### Generate handoff packets - `emit`
+### Reusable Review Command - `emit`
 
-Emit `review-command` or the `context-bundle` compact entrypoint from split
-fingerprint layers. Use `context-bundle` before generation and
-`review-command` when a host wants a reusable review prompt.
+Emit `review-command` from split fingerprint layers when a host wants a
+reusable review prompt.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
+
+### Agent Context - `relay gather`
+
+Gather a compact Relay brief from the resolved fingerprint stack for a target
+path. Use this before generation so the host agent starts with selected refs,
+suggested reads, active checks, and provenance.
+
+<CliHelp tool="ghost" command="relay" hideDescription />
 
 ### Inspection - `describe`
 

@@ -9,7 +9,7 @@ import {
   MapFrontmatterSchema,
   type MapScope,
 } from "#ghost-core";
-import { FINGERPRINT_FILENAME } from "#scan";
+import { FINGERPRINT_FILENAME } from "../scan/constants.js";
 
 const FINGERPRINTS_DIRNAME = "fingerprints";
 

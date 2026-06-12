@@ -8,5 +8,6 @@ export const compare = Object.assign(compareFunction, compareApi);
 export * as fingerprint from "./fingerprint.js";
 export * as core from "./ghost-core/index.js";
 export * as govern from "./govern.js";
+export * as relay from "./relay.js";
 /** @deprecated Use `fingerprint` or `@anarchitecture/ghost/fingerprint`. */
 export * as scan from "./scan/index.js";
