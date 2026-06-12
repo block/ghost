@@ -69,7 +69,7 @@ or check format.
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory review packet grounded in fingerprint layers, exemplars, checks, and diff evidence. |
-| `ghost emit <kind>` | Emit `review-command` or the `context-bundle` compact entrypoint. |
+| `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs

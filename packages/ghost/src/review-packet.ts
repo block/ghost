@@ -3,18 +3,20 @@ import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { type GhostDecisionDocument, lintGhostDecision } from "#ghost-core";
+import { buildContextEntrypoint } from "./context/entrypoint.js";
+import { formatContextEntrypointMarkdown } from "./context/entrypoint-markdown.js";
+import { loadPackageContext } from "./context/package-context.js";
 import { parseUnifiedDiff } from "./core/index.js";
-import { buildContextEntrypoint } from "./scan/context/entrypoint.js";
-import { formatContextEntrypointMarkdown } from "./scan/context/entrypoint-markdown.js";
+import { resolveFingerprintPackage } from "./scan/fingerprint-package.js";
 import {
   fingerprintStackToPackageContext,
   type GhostFingerprintStack,
-  type GhostPackageConfig,
   groupFingerprintStacksForPaths,
-  loadPackageContext,
+} from "./scan/fingerprint-stack.js";
+import {
+  type GhostPackageConfig,
   readOptionalPackageConfig,
-  resolveFingerprintPackage,
-} from "./scan/index.js";
+} from "./scan/package-config.js";
 
 export async function buildReviewPacket(options: {
   packageDir?: string;
@@ -23,11 +25,11 @@ export async function buildReviewPacket(options: {
   includeAcceptedDecisions: boolean;
 }): Promise<ReviewPacket> {
   return options.packageDir
-    ? buildSingleBundleReviewPacket(options)
+    ? buildSinglePackageReviewPacket(options)
     : buildStackReviewPacket(options);
 }
 
-async function buildSingleBundleReviewPacket(options: {
+async function buildSinglePackageReviewPacket(options: {
   packageDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;

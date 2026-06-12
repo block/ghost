@@ -8,8 +8,8 @@ import type {
   TemporalComparison,
 } from "#ghost-core";
 import { compareFingerprints } from "#ghost-core";
-import type { SemanticDiff } from "#scan";
-import { diffFingerprints } from "#scan";
+import type { SemanticDiff } from "../scan/diff.js";
+import { diffFingerprints } from "../scan/diff.js";
 import { compareComposite } from "./evolution/composite.js";
 import { computeTemporalComparison } from "./evolution/temporal.js";
 

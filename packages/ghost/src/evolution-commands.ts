@@ -1,11 +1,11 @@
 import type { CAC } from "cac";
-import { loadFingerprint, resolveFingerprintPackage } from "#scan";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,
   loadConfig,
   resolveTrackedFingerprint,
 } from "./core/index.js";
+import { loadFingerprint, resolveFingerprintPackage } from "./fingerprint.js";
 
 async function loadLocalFingerprint() {
   const path = resolveFingerprintPackage(undefined, process.cwd()).fingerprint;

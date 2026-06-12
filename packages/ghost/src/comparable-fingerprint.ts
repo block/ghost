@@ -7,7 +7,7 @@ import {
   type GhostPatternsDocument,
   type Survey,
 } from "#ghost-core";
-import { loadFingerprint, resolveFingerprintPackage } from "#scan";
+import { loadFingerprint, resolveFingerprintPackage } from "./fingerprint.js";
 
 export async function loadComparableFingerprint(
   path: string,
