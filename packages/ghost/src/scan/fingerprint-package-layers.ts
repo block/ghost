@@ -14,6 +14,7 @@ import {
   GhostFingerprintSchema,
   lintGhostFingerprint,
 } from "#ghost-core";
+import { readOptionalUtf8 } from "../internal/fs.js";
 import type {
   FingerprintPackagePaths,
   LoadedFingerprintPackage,
@@ -189,13 +190,7 @@ This optional file is reserved for human-authored or human-approved product inte
 `;
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 function parseManifest(
   raw: string,

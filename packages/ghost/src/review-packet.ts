@@ -7,6 +7,7 @@ import { buildContextEntrypoint } from "./context/entrypoint.js";
 import { formatContextEntrypointMarkdown } from "./context/entrypoint-markdown.js";
 import { loadPackageContext } from "./context/package-context.js";
 import { parseUnifiedDiff } from "./core/index.js";
+import { readOptionalUtf8 } from "./internal/fs.js";
 import { resolveFingerprintPackage } from "./scan/fingerprint-package.js";
 import {
   fingerprintStackToPackageContext,
@@ -276,13 +277,7 @@ function formatReviewContextMarkdown(
   return lines.join("\n").trim();
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 async function readAcceptedDecisions(
   dirPath: string,
