@@ -88,7 +88,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "cac": "^6.7.14",
+    "cac": "^7.0.0",
     "jiti": "^2.4.0",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
