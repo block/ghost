@@ -11,7 +11,11 @@ import {
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
-import { isMissingPathError, readOptionalUtf8 } from "../internal/fs.js";
+import {
+  isExistingPathError,
+  isMissingPathError,
+  readOptionalUtf8,
+} from "../internal/fs.js";
 import {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
@@ -158,9 +162,29 @@ export async function initFingerprintPackage(
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
   }
   await Promise.all(
-    files.map((file) => writeFile(file.path, file.content, "utf-8")),
+    files.map((file) => writeInitFile(file.path, file.content, options.force)),
   );
   return paths;
+}
+
+async function writeInitFile(
+  path: string,
+  content: string,
+  force = false,
+): Promise<void> {
+  try {
+    await writeFile(path, content, {
+      encoding: "utf-8",
+      flag: force ? "w" : "wx",
+    });
+  } catch (err) {
+    if (!force && isExistingPathError(err)) {
+      throw new Error(
+        `Refusing to overwrite existing Ghost fingerprint file:\n  ${path}\nPass --force to overwrite.`,
+      );
+    }
+    throw err;
+  }
 }
 
 async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {

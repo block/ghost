@@ -181,26 +181,40 @@ function budgetDiff(
     };
   }
   const truncatedDiff = truncateUtf8(diffText, maxDiffBytes);
+  const includedBytes = Buffer.byteLength(truncatedDiff, "utf-8");
   return {
-    diff: `${truncatedDiff}\n\n[Ghost truncated diff: included ${Buffer.byteLength(
-      truncatedDiff,
-      "utf-8",
-    )} of ${bytes} byte(s). Re-run with --max-diff-bytes ${bytes} to include the full diff.]`,
+    diff: `${truncatedDiff}\n\n[Ghost truncated diff: included ${includedBytes} of ${bytes} byte(s). Re-run with --max-diff-bytes ${bytes} to include the full diff.]`,
     budgets: {
       diff_bytes: bytes,
       max_diff_bytes: maxDiffBytes,
-      included_diff_bytes: Buffer.byteLength(truncatedDiff, "utf-8"),
+      included_diff_bytes: includedBytes,
     },
     truncated: true,
   };
 }
 
 function truncateUtf8(value: string, maxBytes: number): string {
-  let out = value;
-  while (Buffer.byteLength(out, "utf-8") > maxBytes) {
+  let low = 0;
+  let high = value.length;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (Buffer.byteLength(value.slice(0, mid), "utf-8") <= maxBytes) {
+      low = mid;
+    } else {
+      high = mid - 1;
+    }
+  }
+  let out = value.slice(0, low);
+  if (endsWithHighSurrogate(out)) {
     out = out.slice(0, -1);
   }
   return out;
+}
+
+function endsWithHighSurrogate(value: string): boolean {
+  if (value.length === 0) return false;
+  const code = value.charCodeAt(value.length - 1);
+  return code >= 0xd800 && code <= 0xdbff;
 }
 
 function reviewStackFromFingerprintStack(

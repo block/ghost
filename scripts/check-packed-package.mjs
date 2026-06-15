@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -57,9 +58,20 @@ function runNode(source, cwd) {
 const tmpRoot = mkdtempSync(join(tmpdir(), "ghost-packed-package-"));
 const packDir = join(tmpRoot, "pack");
 const consumerDir = join(tmpRoot, "consumer");
+const REQUIRED_DIST_FILES = [
+  "bin.js",
+  "cli.js",
+  "index.js",
+  join("ghost-core", "index.js"),
+].map((path) => join(ROOT, "packages", "ghost", "dist", path));
 
 try {
-  run("pnpm", ["--filter", PACKAGE_NAME, "build"]);
+  const missingDistFile = REQUIRED_DIST_FILES.find((path) => !existsSync(path));
+  if (missingDistFile) {
+    fail(
+      `missing built package output at ${missingDistFile}; run pnpm --filter ${PACKAGE_NAME} build first`,
+    );
+  }
   mkdirSync(packDir, { recursive: true });
   mkdirSync(consumerDir, { recursive: true });
   run("pnpm", [
@@ -80,9 +92,13 @@ try {
     join(consumerDir, "package.json"),
     JSON.stringify({ type: "module", private: true }, null, 2),
   );
-  run("pnpm", ["install", "--offline", "--ignore-scripts", tarballPath], {
-    cwd: consumerDir,
-  });
+  run(
+    "pnpm",
+    ["install", "--prefer-offline", "--ignore-scripts", tarballPath],
+    {
+      cwd: consumerDir,
+    },
+  );
 
   const help = run("pnpm", ["exec", "ghost", "--help"], {
     cwd: consumerDir,
