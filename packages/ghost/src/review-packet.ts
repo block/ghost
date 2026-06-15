@@ -19,11 +19,14 @@ import {
   readOptionalPackageConfig,
 } from "./scan/package-config.js";
 
+const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
+
 export async function buildReviewPacket(options: {
   packageDir?: string;
   memoryDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;
+  maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
   return options.packageDir
     ? buildSinglePackageReviewPacket(options)
@@ -34,6 +37,7 @@ async function buildSinglePackageReviewPacket(options: {
   packageDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;
+  maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
   const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
   const changedFiles = parseUnifiedDiff(options.diffText).map(
@@ -42,7 +46,9 @@ async function buildSinglePackageReviewPacket(options: {
   const context = await loadPackageContext(paths);
   context.targetPaths = changedFiles;
   const packet: ReviewPacket = {
-    ...baseReviewPacket(paths.dir, options.diffText),
+    ...baseReviewPacket(paths.dir, options.diffText, {
+      maxDiffBytes: options.maxDiffBytes,
+    }),
     fingerprint: context.fingerprint,
     context_markdown: formatReviewContextMarkdown([
       {
@@ -70,6 +76,7 @@ async function buildStackReviewPacket(options: {
   memoryDir?: string;
   diffText: string;
   includeAcceptedDecisions: boolean;
+  maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
   const changedFiles = parseUnifiedDiff(options.diffText).map(
     (file) => file.path,
@@ -109,6 +116,7 @@ async function buildStackReviewPacket(options: {
     ...baseReviewPacket(
       stacks.length === 1 ? first.package_dir : "fingerprint-stack/multiple",
       options.diffText,
+      { maxDiffBytes: options.maxDiffBytes },
     ),
     fingerprint: first.merged.fingerprint,
     context_markdown: formatReviewContextMarkdown(contextSections),
@@ -128,11 +136,15 @@ async function buildStackReviewPacket(options: {
 function baseReviewPacket(
   packageDir: string,
   diffText: string,
+  options: { maxDiffBytes?: number } = {},
 ): ReviewPacketBase {
+  const budget = budgetDiff(diffText, options.maxDiffBytes);
   return {
     schema: "ghost.advisory-review/v1",
     package_dir: packageDir,
-    diff: diffText,
+    diff: budget.diff,
+    budgets: budget.budgets,
+    truncated: budget.truncated,
     finding_categories: [
       "fix",
       "intentional-divergence",
@@ -147,6 +159,48 @@ function baseReviewPacket(
       "repair or intentional-divergence rationale",
     ],
   };
+}
+
+function budgetDiff(
+  diffText: string,
+  maxDiffBytes = DEFAULT_REVIEW_MAX_DIFF_BYTES,
+): { diff: string; budgets: ReviewPacketBudgets; truncated: boolean } {
+  if (!Number.isSafeInteger(maxDiffBytes) || maxDiffBytes < 1) {
+    throw new Error("--max-diff-bytes must be a positive integer");
+  }
+  const bytes = Buffer.byteLength(diffText, "utf-8");
+  if (bytes <= maxDiffBytes) {
+    return {
+      diff: diffText,
+      budgets: {
+        diff_bytes: bytes,
+        max_diff_bytes: maxDiffBytes,
+        included_diff_bytes: bytes,
+      },
+      truncated: false,
+    };
+  }
+  const truncatedDiff = truncateUtf8(diffText, maxDiffBytes);
+  return {
+    diff: `${truncatedDiff}\n\n[Ghost truncated diff: included ${Buffer.byteLength(
+      truncatedDiff,
+      "utf-8",
+    )} of ${bytes} byte(s). Re-run with --max-diff-bytes ${bytes} to include the full diff.]`,
+    budgets: {
+      diff_bytes: bytes,
+      max_diff_bytes: maxDiffBytes,
+      included_diff_bytes: Buffer.byteLength(truncatedDiff, "utf-8"),
+    },
+    truncated: true,
+  };
+}
+
+function truncateUtf8(value: string, maxBytes: number): string {
+  let out = value;
+  while (Buffer.byteLength(out, "utf-8") > maxBytes) {
+    out = out.slice(0, -1);
+  }
+  return out;
 }
 
 function reviewStackFromFingerprintStack(
@@ -170,10 +224,18 @@ function reviewStackFromFingerprintStack(
   };
 }
 
+interface ReviewPacketBudgets {
+  diff_bytes: number;
+  max_diff_bytes: number;
+  included_diff_bytes: number;
+}
+
 interface ReviewPacketBase {
   schema: "ghost.advisory-review/v1";
   package_dir: string;
   diff: string;
+  budgets: ReviewPacketBudgets;
+  truncated: boolean;
   finding_categories: string[];
   required_finding_citations: string[];
 }
@@ -189,6 +251,8 @@ interface ReviewPacket {
   accepted_decisions?: GhostDecisionDocument[];
   stacks?: ReviewStackPacket[];
   diff: string;
+  budgets: ReviewPacketBudgets;
+  truncated: boolean;
   finding_categories: string[];
   required_finding_citations: string[];
 }
@@ -217,6 +281,8 @@ Review this diff as a non-blocking design-language critic. Advisory findings mus
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
+${formatReviewBudgetSection(packet)}
+
 When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
 If the diff exposes missing fingerprint grounding or layer coverage, report it as missing-memory or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
@@ -241,6 +307,23 @@ ${formatConfigSection(packet.config)}
 ${packet.diff}
 \`\`\`
 `;
+}
+
+function formatReviewBudgetSection(packet: ReviewPacket): string {
+  const lines = [
+    "## Review Packet Budget",
+    "",
+    `- Diff bytes: ${packet.budgets.diff_bytes}`,
+    `- Included diff bytes: ${packet.budgets.included_diff_bytes}`,
+    `- Max diff bytes: ${packet.budgets.max_diff_bytes}`,
+    `- Truncated: ${packet.truncated ? "yes" : "no"}`,
+  ];
+  if (packet.truncated) {
+    lines.push(
+      "- Note: The diff below is truncated. Re-run with a larger `--max-diff-bytes` value for the full diff.",
+    );
+  }
+  return lines.join("\n");
 }
 
 function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {

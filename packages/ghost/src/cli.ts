@@ -235,6 +235,10 @@ export function buildCli(): ReturnType<typeof cac> {
       "--include-memory",
       "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
     )
+    .option(
+      "--max-diff-bytes <n>",
+      "Maximum diff bytes to include in the review packet (default: 200000)",
+    )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -247,6 +251,10 @@ export function buildCli(): ReturnType<typeof cac> {
         }
         const packageDir =
           typeof opts.package === "string" ? opts.package : undefined;
+        const maxDiffBytes = parsePositiveIntegerOption(
+          opts.maxDiffBytes,
+          "--max-diff-bytes",
+        );
         const diffText =
           typeof opts.diff === "string"
             ? await readDiffInput(opts.diff)
@@ -257,6 +265,7 @@ export function buildCli(): ReturnType<typeof cac> {
             typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           diffText,
           includeAcceptedDecisions: Boolean(opts.includeMemory),
+          maxDiffBytes,
         });
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
@@ -284,6 +293,24 @@ function readPackageVersion(): string {
     readFileSync(resolve(here, "../package.json"), "utf8"),
   );
   return pkg.version as string;
+}
+
+function parsePositiveIntegerOption(
+  value: unknown,
+  flagName: string,
+): number | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" && typeof value !== "number") {
+    throw new Error(`${flagName} must be a positive integer`);
+  }
+  if (typeof value === "string" && value.trim() === "") {
+    throw new Error(`${flagName} must be a positive integer`);
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error(`${flagName} must be a positive integer`);
+  }
+  return parsed;
 }
 
 async function readDiffInput(input: string): Promise<string> {
