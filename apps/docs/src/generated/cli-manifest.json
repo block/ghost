@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T19:26:14.540Z",
+  "generatedAt": "2026-06-15T13:20:23.174Z",
   "tools": [
     {
       "tool": "ghost",
@@ -88,6 +88,14 @@
               "description": "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
               "default": null,
               "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--force",
+              "name": "force",
+              "description": "Overwrite existing Ghost fingerprint files",
+              "default": null,
+              "takesValue": false,
               "negated": false
             },
             {
@@ -727,6 +735,14 @@
               "description": "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
               "default": null,
               "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--max-diff-bytes <n>",
+              "name": "maxDiffBytes",
+              "description": "Maximum diff bytes to include in the review packet (default: 200000)",
+              "default": null,
+              "takesValue": true,
               "negated": false
             },
             {

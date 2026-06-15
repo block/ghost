@@ -33,6 +33,7 @@ import {
   type PackageContext,
   type PackageInventory,
 } from "../context/package-context.js";
+import { readOptionalUtf8 } from "../internal/fs.js";
 import {
   FINGERPRINT_DIRNAME,
   FINGERPRINT_MANIFEST_FILENAME,
@@ -489,6 +490,7 @@ export async function initScopedFingerprintPackage(
     withIntent?: boolean;
     withConfig?: boolean;
     reference?: string;
+    force?: boolean;
     memoryDir?: string;
   } = {},
 ): Promise<FingerprintPackagePaths> {
@@ -503,6 +505,7 @@ async function resolveAndInit(
     withIntent?: boolean;
     withConfig?: boolean;
     reference?: string;
+    force?: boolean;
     memoryDir?: string;
   },
 ): Promise<FingerprintPackagePaths> {
@@ -1014,13 +1017,7 @@ function rootForFingerprintPackageDir(
   return root;
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 function parseYamlSafe(raw: string, label: string): unknown {
   try {
