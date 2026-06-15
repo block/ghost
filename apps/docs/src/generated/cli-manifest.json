@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T13:47:21.307Z",
+  "generatedAt": "2026-06-15T13:20:23.174Z",
   "tools": [
     {
       "tool": "ghost",
@@ -735,6 +735,14 @@
               "description": "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
               "default": null,
               "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--max-diff-bytes <n>",
+              "name": "maxDiffBytes",
+              "description": "Maximum diff bytes to include in the review packet (default: 200000)",
+              "default": null,
+              "takesValue": true,
               "negated": false
             },
             {

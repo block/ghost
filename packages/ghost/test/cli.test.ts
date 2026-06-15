@@ -1057,6 +1057,73 @@ checks:
     expect(result.stdout).not.toContain("schema: ghost.fingerprint/v1");
   });
 
+  it("review reports and truncates oversized diffs by byte budget", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch(`const copy = "${"x".repeat(160)}";`),
+    );
+
+    const result = await runCli(
+      [
+        "review",
+        "--diff",
+        "change.patch",
+        "--max-diff-bytes",
+        "80",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.truncated).toBe(true);
+    expect(packet.budgets.max_diff_bytes).toBe(80);
+    expect(packet.budgets.diff_bytes).toBeGreaterThan(80);
+    expect(packet.budgets.included_diff_bytes).toBeLessThanOrEqual(80);
+    expect(packet.diff).toContain("Ghost truncated diff");
+    expect(packet.diff).not.toContain("x".repeat(120));
+  });
+
+  it("review markdown includes packet budget metadata", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch(`const copy = "${"x".repeat(160)}";`),
+    );
+
+    const result = await runCli(
+      ["review", "--diff", "change.patch", "--max-diff-bytes", "80"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("## Review Packet Budget");
+    expect(result.stdout).toContain("- Max diff bytes: 80");
+    expect(result.stdout).toContain("- Truncated: yes");
+    expect(result.stdout).toContain("Ghost truncated diff");
+  });
+
+  it("review rejects invalid max diff byte budgets", async () => {
+    await writeCheckPackage(dir);
+    await writeFile(
+      join(dir, "change.patch"),
+      lendingPatch("let color = CashTheme.primary"),
+    );
+
+    const result = await runCli(
+      ["review", "--diff", "change.patch", "--max-diff-bytes", "0"],
+      dir,
+    );
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain(
+      "--max-diff-bytes must be a positive integer",
+    );
+  });
+
   it("review includes config reference registries when config.yml is present", async () => {
     await writeCheckPackage(dir);
     await writeFile(
