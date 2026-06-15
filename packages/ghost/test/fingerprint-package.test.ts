@@ -115,6 +115,13 @@ sources:
     });
   });
 
+  it("does not silently treat unreadable optional layer paths as missing", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "fingerprint", "prose.yml"));
+
+    await expect(lintFingerprintPackage(dir)).rejects.toThrow();
+  });
+
   it("does not discover old .ghost/fingerprint.yml alone as a package", async () => {
     await writeFile(
       join(dir, "fingerprint.yml"),

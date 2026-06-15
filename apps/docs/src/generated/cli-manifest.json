@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-12T19:26:14.540Z",
+  "generatedAt": "2026-06-14T13:47:21.307Z",
   "tools": [
     {
       "tool": "ghost",
@@ -88,6 +88,14 @@
               "description": "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
               "default": null,
               "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--force",
+              "name": "force",
+              "description": "Overwrite existing Ghost fingerprint files",
+              "default": null,
+              "takesValue": false,
               "negated": false
             },
             {

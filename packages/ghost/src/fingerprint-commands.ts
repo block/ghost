@@ -154,6 +154,7 @@ export function registerFingerprintCommands(cli: CAC): void {
       "--reference <path-or-registry>",
       "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
     )
+    .option("--force", "Overwrite existing Ghost fingerprint files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
@@ -173,6 +174,7 @@ export function registerFingerprintCommands(cli: CAC): void {
           withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
+          force: Boolean(opts.force),
           memoryDir,
         };
         const paths =

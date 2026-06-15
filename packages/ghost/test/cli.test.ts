@@ -342,6 +342,31 @@ describe("ghost CLI", () => {
     expect(reviewCommand.code).toBe(0);
   });
 
+  it("refuses to overwrite existing fingerprint files unless forced", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "fingerprint", "prose.yml"),
+      "summary:\n  product: Curated Surface\n",
+    );
+
+    const refused = await runCli(["init"], dir);
+
+    expect(refused.code).toBe(2);
+    expect(refused.stderr).toContain(
+      "Refusing to overwrite existing Ghost fingerprint file(s)",
+    );
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint", "prose.yml"), "utf-8"),
+    ).resolves.toContain("Curated Surface");
+
+    const forced = await runCli(["init", "--force"], dir);
+
+    expect(forced.code).toBe(0);
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint", "prose.yml"), "utf-8"),
+    ).resolves.toContain("summary: {}");
+  });
+
   it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
     await runCli(["init"], dir);
     await writeFile(

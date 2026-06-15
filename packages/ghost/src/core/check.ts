@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { parse as parseYaml } from "yaml";
 import {
@@ -13,6 +12,7 @@ import {
   type MapScope,
   routeGhostChecksForPath,
 } from "#ghost-core";
+import { readOptionalUtf8 } from "../internal/fs.js";
 import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
@@ -330,13 +330,7 @@ function evaluateChangedFiles(
   return { routedFiles, findings };
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 function parseMap(raw: string): MapFrontmatter {
   const block = raw.match(/^---\n([\s\S]*?)\n---/)?.[1];

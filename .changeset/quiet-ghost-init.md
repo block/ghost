@@ -1,0 +1,5 @@
+---
+"@anarchitecture/ghost": patch
+---
+
+Make `ghost init` refuse to overwrite existing fingerprint files unless `--force` is passed.
