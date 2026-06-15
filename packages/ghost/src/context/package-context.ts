@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
@@ -7,6 +6,7 @@ import {
   type GhostFingerprintDocument,
   lintGhostChecks,
 } from "#ghost-core";
+import { readOptionalUtf8 } from "../internal/fs.js";
 import {
   type FingerprintPackagePaths,
   loadFingerprintPackage,
@@ -209,13 +209,7 @@ function recordArray(value: unknown): Array<Record<string, unknown>> {
     : [];
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 function inferPackageName(fingerprint: GhostFingerprintDocument): string {
   if (fingerprint.prose.summary.product)

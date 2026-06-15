@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
@@ -11,6 +11,11 @@ import {
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
+import {
+  isExistingPathError,
+  isMissingPathError,
+  readOptionalUtf8,
+} from "../internal/fs.js";
 import {
   CACHE_DIRNAME,
   CONFIG_FILENAME,
@@ -87,6 +92,7 @@ export interface InitFingerprintPackageOptions {
   withIntent?: boolean;
   withConfig?: boolean;
   reference?: string;
+  force?: boolean;
 }
 
 export function resolveFingerprintPackage(
@@ -134,26 +140,70 @@ export async function initFingerprintPackage(
     ...(options.withIntent ? [mkdir(paths.memory, { recursive: true })] : []),
     ...(options.withConfig ? [mkdir(paths.dir, { recursive: true })] : []),
   ]);
-  await Promise.all([
-    writeFile(paths.manifest, templateManifest(), "utf-8"),
-    writeFile(paths.prose, templateProse(), "utf-8"),
-    writeFile(paths.inventory, templateInventory(options.reference), "utf-8"),
-    writeFile(paths.composition, templateComposition(), "utf-8"),
-    writeFile(paths.checks, templateChecks(), "utf-8"),
+  const files = [
+    { path: paths.manifest, content: templateManifest() },
+    { path: paths.prose, content: templateProse() },
+    { path: paths.inventory, content: templateInventory(options.reference) },
+    { path: paths.composition, content: templateComposition() },
+    { path: paths.checks, content: templateChecks() },
     ...(options.withConfig
       ? [
-          writeFile(
-            paths.config,
-            templatePackageConfig(options.reference),
-            "utf-8",
-          ),
+          {
+            path: paths.config,
+            content: templatePackageConfig(options.reference),
+          },
         ]
       : []),
     ...(options.withIntent
-      ? [writeFile(paths.intent, templateIntent(), "utf-8")]
+      ? [{ path: paths.intent, content: templateIntent() }]
       : []),
-  ]);
+  ];
+  if (!options.force) {
+    await assertInitDoesNotOverwrite(files.map((file) => file.path));
+  }
+  await Promise.all(
+    files.map((file) => writeInitFile(file.path, file.content, options.force)),
+  );
   return paths;
+}
+
+async function writeInitFile(
+  path: string,
+  content: string,
+  force = false,
+): Promise<void> {
+  try {
+    await writeFile(path, content, {
+      encoding: "utf-8",
+      flag: force ? "w" : "wx",
+    });
+  } catch (err) {
+    if (!force && isExistingPathError(err)) {
+      throw new Error(
+        `Refusing to overwrite existing Ghost fingerprint file:\n  ${path}\nPass --force to overwrite.`,
+      );
+    }
+    throw err;
+  }
+}
+
+async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
+  const existing = [];
+  for (const path of paths) {
+    try {
+      await access(path);
+      existing.push(path);
+    } catch (err) {
+      if (isMissingPathError(err)) continue;
+      throw err;
+    }
+  }
+  if (existing.length > 0) {
+    const formatted = existing.map((path) => `  ${path}`).join("\n");
+    throw new Error(
+      `Refusing to overwrite existing Ghost fingerprint file(s):\n${formatted}\nPass --force to overwrite.`,
+    );
+  }
 }
 
 export async function lintFingerprintPackage(
@@ -304,13 +354,7 @@ async function readRequired(
   }
 }
 
-async function readOptional(path: string): Promise<string | undefined> {
-  try {
-    return await readFile(path, "utf-8");
-  } catch {
-    return undefined;
-  }
-}
+const readOptional = readOptionalUtf8;
 
 function parseYamlSafe(
   raw: string,
