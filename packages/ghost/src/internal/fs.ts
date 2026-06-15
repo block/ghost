@@ -12,10 +12,18 @@ export async function readOptionalUtf8(
 }
 
 export function isMissingPathError(err: unknown): boolean {
+  return hasErrnoCode(err, "ENOENT");
+}
+
+export function isExistingPathError(err: unknown): boolean {
+  return hasErrnoCode(err, "EEXIST");
+}
+
+function hasErrnoCode(err: unknown, code: string): boolean {
   return (
     typeof err === "object" &&
     err !== null &&
     "code" in err &&
-    (err as NodeJS.ErrnoException).code === "ENOENT"
+    (err as NodeJS.ErrnoException).code === code
   );
 }
