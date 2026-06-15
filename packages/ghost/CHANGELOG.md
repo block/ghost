@@ -1,5 +1,17 @@
 # @anarchitecture/ghost
 
+## 0.10.0
+
+### Minor Changes
+
+- [#149](https://github.com/block/ghost/pull/149) [`cba98ad`](https://github.com/block/ghost/commit/cba98ad7f235ccd4f7d44fbcf98fae00c396e55b) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Bound advisory review packets with diff byte budgets and truncation metadata.
+
+- [#149](https://github.com/block/ghost/pull/149) [`4e5dd47`](https://github.com/block/ghost/commit/4e5dd47a49e12ec7f69c2f6743907fa0366b2469) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `ghost init` refuse to overwrite existing fingerprint files unless `--force` is passed.
+
+### Patch Changes
+
+- [#147](https://github.com/block/ghost/pull/147) [`5acba39`](https://github.com/block/ghost/commit/5acba397f9fbe3a325481035c1de51d12df2c9b9) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Update documentation to point generation-context workflows at `ghost relay gather`.
+
 ## 0.9.0
 
 ### Minor Changes
