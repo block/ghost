@@ -21,6 +21,7 @@ import {
   runGateCli,
   runGhostDriftCheck,
 } from "./core/index.js";
+import { registerDriftCommand } from "./drift-command.js";
 import {
   registerAckCommand,
   registerDivergeCommand,
@@ -153,6 +154,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerAckCommand(cli);
   registerTrackCommand(cli);
   registerDivergeCommand(cli);
+  registerDriftCommand(cli);
   registerRelayCommand(cli);
   registerSkillCommand(cli);
 

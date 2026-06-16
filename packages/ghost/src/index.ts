@@ -5,6 +5,7 @@ import { compare as compareFunction } from "./core/index.js";
 export * as drift from "./core/index.js";
 export * from "./core/index.js";
 export const compare = Object.assign(compareFunction, compareApi);
+export * as driftCommand from "./drift-command.js";
 export * as fingerprint from "./fingerprint.js";
 export * as core from "./ghost-core/index.js";
 export * as govern from "./govern.js";

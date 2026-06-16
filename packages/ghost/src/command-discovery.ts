@@ -123,6 +123,13 @@ const COMMAND_DISCOVERY = [
     summary: "Compare fingerprint packages.",
   },
   {
+    name: "drift",
+    group: "compare",
+    defaultHelp: false,
+    compactName: "drift check",
+    summary: "Run the continuous design-loop drift check.",
+  },
+  {
     name: "ack",
     group: "compare",
     defaultHelp: false,
