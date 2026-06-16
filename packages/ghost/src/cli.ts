@@ -173,7 +173,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -229,7 +229,7 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
       "--include-memory",
