@@ -1,16 +1,33 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import type { CAC } from "cac";
+import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import type { DimensionStance, Target } from "./core/index.js";
 import {
   acknowledge,
   loadConfig,
   resolveTrackedFingerprint,
 } from "./core/index.js";
-import { loadFingerprint, resolveFingerprintPackage } from "./fingerprint.js";
 
 async function loadLocalFingerprint() {
-  const path = resolveFingerprintPackage(undefined, process.cwd()).fingerprint;
-  const { fingerprint } = await loadFingerprint(path);
-  return fingerprint;
+  return loadComparableFingerprint(".ghost");
+}
+
+async function loadTrackedComparableFingerprint(
+  target: Target,
+): Promise<Awaited<ReturnType<typeof loadComparableFingerprint>>> {
+  if (target.type === "path") return loadComparableFingerprint(target.value);
+  if (target.type === "npm") {
+    const packageGhostDir = resolve("node_modules", target.value, ".ghost");
+    if (
+      existsSync(resolve(packageGhostDir, "fingerprint", "manifest.yml")) ||
+      existsSync(resolve(packageGhostDir, "fingerprint.md"))
+    ) {
+      return loadComparableFingerprint(packageGhostDir);
+    }
+    return resolveTrackedFingerprint(target);
+  }
+  return resolveTrackedFingerprint(target);
 }
 
 export function registerAckCommand(cli: CAC): void {
@@ -37,7 +54,7 @@ export function registerAckCommand(cli: CAC): void {
           process.exit(2);
         }
 
-        const trackedFingerprint = await resolveTrackedFingerprint(
+        const trackedFingerprint = await loadTrackedComparableFingerprint(
           config.tracks,
         );
         const localFingerprint = await loadLocalFingerprint();
@@ -95,8 +112,7 @@ export function registerTrackCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (source: string, opts) => {
       try {
-        const { fingerprint: trackedFingerprint } =
-          await loadFingerprint(source);
+        const trackedFingerprint = await loadComparableFingerprint(source);
         const localFingerprint = await loadLocalFingerprint();
 
         const tracks: Target = { type: "path", value: source };
@@ -155,7 +171,7 @@ export function registerDivergeCommand(cli: CAC): void {
           process.exit(2);
         }
 
-        const trackedFingerprint = await resolveTrackedFingerprint(
+        const trackedFingerprint = await loadTrackedComparableFingerprint(
           config.tracks,
         );
         const localFingerprint = await loadLocalFingerprint();

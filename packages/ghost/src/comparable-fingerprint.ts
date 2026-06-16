@@ -1,13 +1,23 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   computeEmbedding,
+  type DesignDecision,
   type Fingerprint,
+  type GhostFingerprintDocument,
+  type GhostFingerprintPackageManifest,
   type GhostPatternsDocument,
   type Survey,
 } from "#ghost-core";
-import { loadFingerprint, resolveFingerprintPackage } from "./fingerprint.js";
+import {
+  loadFingerprint,
+  loadFingerprintPackage,
+  resolveFingerprintPackage,
+} from "./fingerprint.js";
+
+const PACKAGE_DECISION_EMBEDDING_SIZE = 64;
 
 export async function loadComparableFingerprint(
   path: string,
@@ -17,7 +27,19 @@ export async function loadComparableFingerprint(
     return (await loadFingerprint(target)).fingerprint;
   }
 
-  const paths = resolveFingerprintPackage(path, process.cwd());
+  const paths = resolveFingerprintPackage(
+    normalizeFingerprintPackageInput(path),
+    process.cwd(),
+  );
+  if (existsSync(paths.manifest)) {
+    const { manifest, fingerprint } = await loadFingerprintPackage(paths);
+    return synthesizeFingerprintFromPackage(paths.dir, manifest, fingerprint);
+  }
+
+  if (target === paths.dir && existsSync(paths.fingerprint)) {
+    return (await loadFingerprint(paths.fingerprint)).fingerprint;
+  }
+
   try {
     const [surveyRaw, patternsRaw] = await Promise.all([
       readFile(paths.survey, "utf-8"),
@@ -31,6 +53,204 @@ export async function loadComparableFingerprint(
   } catch {
     return (await loadFingerprint(target)).fingerprint;
   }
+}
+
+function normalizeFingerprintPackageInput(path: string): string {
+  const normalized = path.replace(/\\/g, "/");
+  return /(^|\/)fingerprint\/manifest\.ya?ml$/i.test(normalized)
+    ? dirname(dirname(normalized))
+    : path;
+}
+
+function synthesizeFingerprintFromPackage(
+  path: string,
+  manifest: GhostFingerprintPackageManifest,
+  document: GhostFingerprintDocument,
+): Fingerprint {
+  const decisions: DesignDecision[] = [
+    ...packageDigestDecisions(document),
+    {
+      dimension: "summary",
+      dimension_kind: "experience-summary",
+      decision: compactJoin([
+        document.prose.summary.product,
+        ...(document.prose.summary.audience ?? []),
+        ...(document.prose.summary.goals ?? []),
+        ...(document.prose.summary.anti_goals ?? []),
+        ...(document.prose.summary.tradeoffs ?? []),
+        ...(document.prose.summary.tone ?? []),
+      ]),
+      evidence: [],
+    },
+    ...document.prose.situations.map((situation) => ({
+      dimension: situation.id,
+      dimension_kind: "experience-situation",
+      decision: compactJoin([
+        situation.title,
+        situation.user_intent,
+        situation.product_obligation,
+      ]),
+      evidence: evidenceStrings(situation.evidence),
+    })),
+    ...document.prose.principles.map((principle) => ({
+      dimension: principle.id,
+      dimension_kind: "experience-principle",
+      decision: principle.principle,
+      evidence: evidenceStrings(principle.evidence),
+    })),
+    ...document.prose.experience_contracts.map((contract) => ({
+      dimension: contract.id,
+      dimension_kind: "experience-contract",
+      decision: contract.contract,
+      evidence: evidenceStrings(contract.evidence),
+    })),
+    ...document.composition.patterns.map((pattern) => ({
+      dimension: pattern.id,
+      dimension_kind: `composition-${pattern.kind}`,
+      decision: pattern.pattern,
+      evidence: evidenceStrings(pattern.evidence),
+    })),
+    ...buildingBlockDecisions(document),
+    ...document.inventory.exemplars.map((exemplar) => ({
+      dimension: exemplar.id,
+      dimension_kind: "inventory-exemplar",
+      decision: compactJoin([
+        exemplar.title,
+        exemplar.surface_type,
+        exemplar.scope,
+        exemplar.note,
+        exemplar.why,
+        exemplar.path,
+      ]),
+      evidence: [exemplar.path],
+    })),
+  ].map((decision) => ({
+    ...decision,
+    embedding: deterministicTextEmbedding(
+      `${decision.dimension} ${decision.dimension_kind ?? ""} ${decision.decision}`,
+    ),
+  }));
+
+  const fingerprint: Fingerprint = {
+    id: manifest.id,
+    source: "extraction",
+    timestamp: new Date(0).toISOString(),
+    sources: [path],
+    observation: {
+      summary: document.prose.summary.product ?? manifest.id,
+      personality: document.prose.summary.tone ?? [],
+      resembles: document.inventory.building_blocks.libraries ?? [],
+    },
+    decisions,
+    palette: {
+      dominant: [],
+      neutrals: { steps: [], count: 0 },
+      semantic: [],
+      saturationProfile: "mixed",
+      contrast: "moderate",
+    },
+    spacing: {
+      scale: [],
+      regularity: 0,
+      baseUnit: null,
+    },
+    typography: {
+      families: [],
+      sizeRamp: [],
+      weightDistribution: {},
+      lineHeightPattern: "normal",
+    },
+    surfaces: {
+      borderRadii: [],
+      shadowComplexity: "deliberate-none",
+      borderUsage: "minimal",
+    },
+    embedding: [],
+  };
+  fingerprint.embedding = computeEmbedding(fingerprint);
+  return fingerprint;
+}
+
+function compactJoin(values: Array<string | undefined>): string {
+  const joined = values
+    .filter((value): value is string => Boolean(value))
+    .join(" — ");
+  return joined || "No situation decision recorded.";
+}
+
+function evidenceStrings(
+  evidence: GhostFingerprintDocument["prose"]["principles"][number]["evidence"],
+): string[] {
+  return (
+    evidence?.map((entry) => entry.locator ?? entry.path ?? entry.note ?? "") ??
+    []
+  ).filter(Boolean);
+}
+
+function packageDigestDecisions(
+  document: GhostFingerprintDocument,
+): DesignDecision[] {
+  const digest = stableHash(
+    JSON.stringify({
+      prose: document.prose,
+      inventory: document.inventory,
+      composition: document.composition,
+    }),
+  ).toString(16);
+  return Array.from({ length: 16 }, (_, index) => {
+    const token = `pkgdigest-${index + 1}-${digest}`;
+    return {
+      dimension: token,
+      dimension_kind: "package-digest",
+      decision: `${token} ${token} ${token} ${token}`,
+      evidence: [],
+    };
+  });
+}
+
+function buildingBlockDecisions(
+  document: GhostFingerprintDocument,
+): DesignDecision[] {
+  const blocks = document.inventory.building_blocks;
+  return [
+    ["tokens", blocks.tokens],
+    ["components", blocks.components],
+    ["libraries", blocks.libraries],
+    ["assets", blocks.assets],
+    ["routes", blocks.routes],
+    ["files", blocks.files],
+    ["notes", blocks.notes],
+  ].flatMap(([dimension, values]) => {
+    if (!Array.isArray(values) || values.length === 0) return [];
+    return [
+      {
+        dimension: `building-blocks-${dimension}`,
+        dimension_kind: "inventory-building-blocks",
+        decision: values.join(", "),
+        evidence: [],
+      },
+    ];
+  });
+}
+
+function deterministicTextEmbedding(text: string): number[] {
+  const vector = new Array(PACKAGE_DECISION_EMBEDDING_SIZE).fill(0);
+  const tokens = text.toLowerCase().match(/[a-z0-9_-]+/g) ?? [];
+  for (const token of tokens) {
+    vector[stableHash(token) % PACKAGE_DECISION_EMBEDDING_SIZE] += 1;
+  }
+  const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  if (norm === 0) return vector;
+  return vector.map((value) => value / norm);
+}
+
+function stableHash(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function synthesizeFingerprintFromBundle(

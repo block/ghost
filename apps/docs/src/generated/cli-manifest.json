@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T13:20:23.174Z",
+  "generatedAt": "2026-06-16T20:04:07.390Z",
   "tools": [
     {
       "tool": "ghost",
@@ -550,6 +550,74 @@
               "name": "format",
               "description": "Output format: cli or json",
               "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "drift",
+          "rawName": "drift <action>",
+          "description": "Inspect continuous design-loop drift status or run the stance-ledger check.",
+          "group": "compare",
+          "defaultHelp": false,
+          "compactName": "drift check",
+          "summary": "Run the continuous design-loop drift check.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Exact fingerprint package directory",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--config <path>",
+              "name": "config",
+              "description": "Path to ghost config file for tracked source",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--local <path>",
+              "name": "local",
+              "description": "Local fingerprint or bundle to check",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--tracked <path>",
+              "name": "tracked",
+              "description": "Tracked/reference fingerprint or bundle",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--sync <path>",
+              "name": "sync",
+              "description": "Sync manifest path (default: ./.ghost-sync.json)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--max-divergence-days <n>",
+              "name": "maxDivergenceDays",
+              "description": "Flag diverging dimensions older than this many days as uncovered",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
               "takesValue": true,
               "negated": false
             }
