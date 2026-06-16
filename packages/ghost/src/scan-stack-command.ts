@@ -3,7 +3,7 @@ import {
   fingerprintPackageDisplayPath,
   type GhostFingerprintStack,
   loadFingerprintStackForPath,
-  normalizeMemoryDir,
+  resolveMemoryDirDefault,
 } from "./scan/index.js";
 
 export function registerStackCommand(cli: CAC): void {
@@ -14,14 +14,12 @@ export function registerStackCommand(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (paths: string[] | string | undefined, opts) => {
       try {
-        const memoryDir = normalizeMemoryDir(
-          typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
-        );
+        const memoryDir = resolveMemoryDirDefault(opts.memoryDir);
         const requestedPaths = Array.isArray(paths)
           ? paths
           : typeof paths === "string"

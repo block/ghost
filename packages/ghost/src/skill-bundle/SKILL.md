@@ -54,10 +54,12 @@ Optional support material lives under purpose folders:
 `fingerprint/sources/cache/` for generated observations. `.ghost/config.yml`
 stays outside the portable package as local routing config.
 
-Advanced repos may contain nested fingerprint packages such as `apps/checkout/.ghost/`, and
-host wrappers may use `--memory-dir <relative-dir>`. Ghost stays
-adapter-neutral: wrappers consume JSON and map severities into their own review
-or check format.
+Advanced repos may contain nested fingerprint packages such as
+`apps/checkout/.ghost/`. Host wrappers may set
+`GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process, or pass
+`--memory-dir <relative-dir>` explicitly, when they need repo-local Ghost files
+outside raw `ghost`'s `.ghost` default. Ghost stays adapter-neutral: wrappers
+consume JSON and map severities into their own review or check format.
 
 ## Core CLI Verbs
 
@@ -77,7 +79,7 @@ or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages. |
+| `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages for nested packages or host wrappers. |
 | `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
 | `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
 | `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |

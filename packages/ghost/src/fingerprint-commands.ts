@@ -38,6 +38,7 @@ import {
   fingerprintPackageDisplayPath,
   inventory,
   normalizeMemoryDir,
+  resolveMemoryDirDefault,
   scanStatus,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
@@ -69,7 +70,7 @@ export function registerFingerprintCommands(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .action(async (path: string | undefined, opts) => {
       try {
@@ -140,7 +141,7 @@ export function registerFingerprintCommands(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for init --scope or default root init (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
       "--with-intent",
@@ -168,22 +169,23 @@ export function registerFingerprintCommands(cli: CAC): void {
           process.exit(2);
           return;
         }
-        const memoryDir = memoryDirFromOpts(opts);
+        const memoryDir =
+          typeof opts.scope === "string" || dirArg === undefined
+            ? memoryDirFromOpts(opts)
+            : undefined;
         const initOptions = {
           withIntent: Boolean(opts.withIntent),
           withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
           force: Boolean(opts.force),
-          memoryDir,
         };
         const paths =
           typeof opts.scope === "string"
-            ? await initScopedFingerprintPackage(
-                opts.scope,
-                process.cwd(),
-                initOptions,
-              )
+            ? await initScopedFingerprintPackage(opts.scope, process.cwd(), {
+                ...initOptions,
+                memoryDir,
+              })
             : await initFingerprintPackage(
                 dirArg ?? memoryDir,
                 process.cwd(),
@@ -242,7 +244,7 @@ export function registerFingerprintCommands(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .action(async (dirArg: string | undefined, opts) => {
       try {
@@ -295,7 +297,7 @@ export function registerFingerprintCommands(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for nested discovery and default scan (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers, nested discovery, and default scan (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
@@ -729,9 +731,7 @@ function dirnameForFingerprintPackageDir(
 }
 
 function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
-  return normalizeMemoryDir(
-    typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
-  );
+  return resolveMemoryDirDefault(opts.memoryDir);
 }
 
 function initCommandOutput(

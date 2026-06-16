@@ -41,8 +41,10 @@ The command tables below are generated from the CLI source. Run
 
 Create a `.ghost/fingerprint/` package with a manifest, raw core layer files,
 and enforcement checks. Use `--scope <path>` for nested package roots. Use
-`--memory-dir <relative-dir>` when a host adapter stores Ghost package roots
-under a different safe relative directory.
+`GHOST_MEMORY_DIR=<relative-dir>` only when a host wrapper stores Ghost package
+roots under a different safe relative directory; raw `ghost` defaults to
+`.ghost`. Explicit `init [dir]` and `--memory-dir <relative-dir>` values win
+over the environment default.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
@@ -50,6 +52,7 @@ under a different safe relative directory.
 ghost init
 ghost init --with-intent
 ghost init --scope apps/checkout --with-intent
+GHOST_MEMORY_DIR=.agents/ghost ghost init
 ghost init --scope apps/checkout --memory-dir .design/memory
 ```
 
@@ -64,6 +67,7 @@ toward inventory readiness.
 ```bash
 ghost scan
 ghost scan --format json
+GHOST_MEMORY_DIR=.agents/ghost ghost scan --format json
 ghost scan --include-nested --memory-dir .design/memory --format json
 ```
 
