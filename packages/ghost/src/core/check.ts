@@ -20,6 +20,7 @@ import {
 import {
   groupFingerprintStacksForPaths,
   mapFromFingerprint,
+  resolveMemoryDirDefault,
 } from "../scan/fingerprint-stack.js";
 import {
   INLINE_COLOR_LITERAL_PATTERN,
@@ -125,7 +126,7 @@ export async function runGhostDriftCheck(
   const groups = await groupFingerprintStacksForPaths(
     changedFiles.map((file) => file.path),
     cwd,
-    { memoryDir: options.memoryDir },
+    { memoryDir: resolveMemoryDirDefault(options.memoryDir) },
   );
   const routedFiles: GhostDriftRoutedFile[] = [];
   const findings: GhostDriftCheckFinding[] = [];

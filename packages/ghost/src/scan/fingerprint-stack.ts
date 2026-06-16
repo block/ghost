@@ -989,6 +989,19 @@ export function normalizeMemoryDir(
   return normalized;
 }
 
+export const GHOST_MEMORY_DIR_ENV = "GHOST_MEMORY_DIR";
+
+export function resolveMemoryDirDefault(
+  explicitMemoryDir?: unknown,
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  return normalizeMemoryDir(
+    typeof explicitMemoryDir === "string"
+      ? explicitMemoryDir
+      : env[GHOST_MEMORY_DIR_ENV],
+  );
+}
+
 export function fingerprintPackageDisplayPath(
   relativeRoot: string,
   memoryDir = FINGERPRINT_PACKAGE_DIR,

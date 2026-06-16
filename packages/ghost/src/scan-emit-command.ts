@@ -10,7 +10,7 @@ import { resolveFingerprintPackage } from "./fingerprint.js";
 import {
   fingerprintStackToPackageContext,
   loadFingerprintStackForPath,
-  normalizeMemoryDir,
+  resolveMemoryDirDefault,
 } from "./scan/fingerprint-stack.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
@@ -52,7 +52,7 @@ export function registerEmitCommand(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for --path stack resolution (flag name retained; default: .ghost)",
+      "Relative fingerprint package directory for host wrappers and --path stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
       "-o, --out <path>",
@@ -120,9 +120,7 @@ async function loadEmitPackageContext(opts: {
     typeof opts.path === "string" ? opts.path : ".",
     process.cwd(),
     {
-      memoryDir: normalizeMemoryDir(
-        typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
-      ),
+      memoryDir: resolveMemoryDirDefault(opts.memoryDir),
     },
   );
   return fingerprintStackToPackageContext(stack);
