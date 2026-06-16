@@ -19,7 +19,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 concurrency:
   group: tarball-release-${{ github.ref }}
@@ -30,10 +29,6 @@ jobs:
     name: Pack and release
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      # `secrets` context can't be used in step-level `if:`, so surface a
-      # presence flag here. Skips the tap bump on forks / unconfigured repos.
-      HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -60,10 +55,6 @@ jobs:
           pnpm --filter @anarchitecture/ghost pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
 
-      # Resolve the release tag. Inputs from workflow_dispatch are attacker-
-      # controlled (anyone with Actions write can trigger). Pass them in via
-      # `env:` and reference as shell variables so they can't be interpolated
-      # as shell syntax — that's what the semgrep shell-injection rule wants.
       # Inputs from workflow_dispatch are attacker-controlled (anyone with
       # Actions write can trigger). Pass them in via `env:` and reference as
       # shell variables so they can't be interpolated as shell syntax — that's
@@ -85,52 +76,3 @@ jobs:
             --title "$TAG" \
             --generate-notes \
             dist-tarball/*.tgz
-
-      # Collect the artifact URL + sha256 so the Homebrew tap can pin the
-      # exact release tarball. The packed filename is dynamic
-      # (anarchitecture-ghost-X.Y.Z.tgz), so resolve it from the staging dir.
-      - name: Collect release metadata
-        id: release
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
-        run: |
-          set -euo pipefail
-          archive="$(ls dist-tarball/*.tgz | head -n 1)"
-          filename="$(basename "$archive")"
-          sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
-          artifact_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$filename"
-          {
-            echo "sha256=$sha256"
-            echo "artifact_url=$artifact_url"
-          } >> "$GITHUB_OUTPUT"
-
-      # Mirror block/sessh: mint a scoped token for the OSS Homebrew tap and
-      # trigger its bump-formula workflow. block -> block, no Square refs.
-      # Requires the BLOCK_HOMEBREW_TAP_* secrets (GitHub App installed on
-      # this repo). The step is skipped if the secret is absent so forks and
-      # unconfigured environments don't fail the release.
-      - name: Generate token for tap release
-        id: generate_token
-        if: ${{ env.HAS_TAP_APP == 'true' }}
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
-        with:
-          app-id: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID }}
-          private-key: ${{ secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY }}
-          owner: block
-          repositories: homebrew-tap
-
-      - name: Trigger Homebrew formula bump
-        if: ${{ env.HAS_TAP_APP == 'true' }}
-        env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-          TAG: ${{ steps.tag.outputs.tag }}
-          ARTIFACT_URL: ${{ steps.release.outputs.artifact_url }}
-          SHA256: ${{ steps.release.outputs.sha256 }}
-        run: |
-          gh workflow run bump-formula.yaml \
-            --repo block/homebrew-tap \
-            -f repo=block/ghost \
-            -f formula=ghost \
-            -f "tag=$TAG" \
-            -f "artifact_url=$ARTIFACT_URL" \
-            -f "sha256=$SHA256"
