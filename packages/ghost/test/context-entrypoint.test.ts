@@ -3,6 +3,7 @@ import {
   buildContextEntrypoint,
   buildFingerprintGraph,
 } from "../src/context/entrypoint.js";
+import { formatContextEntrypointMarkdown } from "../src/context/entrypoint-markdown.js";
 import type { PackageContext } from "../src/context/package-context.js";
 
 describe("context entrypoint", () => {
@@ -101,6 +102,20 @@ describe("context entrypoint", () => {
     ]);
   });
 
+  it("formats multi-sentence identity fields as readable bullets", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ multiSentenceIdentity: true }),
+    );
+
+    const markdown = formatContextEntrypointMarkdown(entrypoint);
+
+    expect(markdown).toContain(
+      "- Goals:\n  - Keep product-surface composition fingerprints easy for agents to read.\n  - Preserve surface composition across generation and review.",
+    );
+    expect(markdown).toContain("- Tone: plain, precise");
+    expect(markdown).not.toContain("read., Preserve");
+  });
+
   it("keeps selected matching refs stable when unrelated entries reorder", () => {
     const normal = buildContextEntrypoint(context());
     const reordered = buildContextEntrypoint(
@@ -116,7 +131,9 @@ describe("context entrypoint", () => {
   });
 });
 
-function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
+function context(
+  options: { reorderUnrelated?: boolean; multiSentenceIdentity?: boolean } = {},
+): PackageContext {
   const unrelated = {
     id: "unrelated",
     path: "apps/onboarding/page.tsx",
@@ -148,11 +165,30 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
       prose: {
         summary: {
           product: "Cash Dashboard",
-          audience: ["operators"],
-          goals: ["make refund decisions feel reversible"],
-          anti_goals: ["hide money movement risk"],
-          tradeoffs: ["trust over throughput"],
-          tone: ["direct"],
+          audience: options.multiSentenceIdentity
+            ? ["operators", "agents generating product UI"]
+            : ["operators"],
+          goals: options.multiSentenceIdentity
+            ? [
+                "Keep product-surface composition fingerprints easy for agents to read.",
+                "Preserve surface composition across generation and review.",
+              ]
+            : ["make refund decisions feel reversible"],
+          anti_goals: options.multiSentenceIdentity
+            ? [
+                "Treat raw inventory as canonical surface guidance.",
+                "Let advisory review block work without deterministic checks.",
+              ]
+            : ["hide money movement risk"],
+          tradeoffs: options.multiSentenceIdentity
+            ? [
+                "Prefer compact durable prose over exhaustive surveys.",
+                "Preserve portable language over company-specific strategy.",
+              ]
+            : ["trust over throughput"],
+          tone: options.multiSentenceIdentity
+            ? ["plain", "precise"]
+            : ["direct"],
         },
         situations: [
           {
