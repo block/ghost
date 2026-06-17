@@ -26,10 +26,10 @@ export function formatContextEntrypointMarkdown(
 function formatIdentity(entrypoint: ContextEntrypoint): string {
   const lines = ["## Identity Capsule"];
   lines.push(`- Product: ${entrypoint.identity.product}`);
-  pushJoined(lines, "Audience", entrypoint.identity.audience);
-  pushJoined(lines, "Goals", entrypoint.identity.goals);
-  pushJoined(lines, "Anti-goals", entrypoint.identity.antiGoals);
-  pushJoined(lines, "Tradeoffs", entrypoint.identity.tradeoffs);
+  pushIdentityValues(lines, "Audience", entrypoint.identity.audience);
+  pushIdentityValues(lines, "Goals", entrypoint.identity.goals);
+  pushIdentityValues(lines, "Anti-goals", entrypoint.identity.antiGoals);
+  pushIdentityValues(lines, "Tradeoffs", entrypoint.identity.tradeoffs);
   pushJoined(lines, "Tone", entrypoint.identity.tone);
   return lines.join("\n");
 }
@@ -193,4 +193,28 @@ function pushJoined(
     .map((value) => (options.code ? `\`${value}\`` : value))
     .join(", ");
   lines.push(`- ${label}: ${formatted}`);
+}
+
+function pushIdentityValues(
+  lines: string[],
+  label: string,
+  values: string[] | undefined,
+): void {
+  if (!values?.length) return;
+  if (!shouldUseMultilineIdentity(values)) {
+    pushJoined(lines, label, values);
+    return;
+  }
+  lines.push(`- ${label}:`);
+  for (const value of values) {
+    lines.push(`  - ${value}`);
+  }
+}
+
+function shouldUseMultilineIdentity(values: string[]): boolean {
+  if (values.length < 2) return false;
+  const joined = values.join(", ");
+  return (
+    values.some((value) => /[.!?]$/.test(value.trim())) || joined.length > 100
+  );
 }

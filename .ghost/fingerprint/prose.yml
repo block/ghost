@@ -100,7 +100,7 @@ experience_contracts:
       - Use active checks only when a finding should block.
       - Use missing-memory or experience-gap when the fingerprint cannot support a confident finding.
     evidence:
-      - path: packages/ghost/src/scan/context/package-review-command.ts
+      - path: packages/ghost/src/context/package-review-command.ts
         note: Emitted review command tells agents what to cite.
   - id: git-is-approval-boundary
     contract: Fingerprint edits use ordinary Git workflow; checked-in fingerprint/ files are truth.
@@ -116,7 +116,7 @@ experience_contracts:
       - Default emit paths load the resolved fingerprint package or stack.
       - Legacy direct markdown emit is unsupported for package context.
     evidence:
-      - path: packages/ghost/src/scan/context/package-writer.ts
+      - path: packages/ghost/src/context/entrypoint-markdown.ts
       - path: packages/ghost/src/scan-emit-command.ts
   - id: interfaces-preserve-operability
     contract: Ghost interfaces should preserve operability, readable examples, and responsive access before visual polish.
