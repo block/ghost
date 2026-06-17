@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.11.0
+
+### Minor Changes
+
+- [#151](https://github.com/block/ghost/pull/151) [`a620c0b`](https://github.com/block/ghost/commit/a620c0b1040e644ded0614f8c6b8249ed1668edc) Thanks [@chailandau](https://github.com/chailandau)! - Adds `GHOST_MEMORY_DIR` as a host-wrapper default for Ghost fingerprint package storage.
+
 ## 0.10.0
 
 ### Minor Changes
