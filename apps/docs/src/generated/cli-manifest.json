@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T13:20:23.174Z",
+  "generatedAt": "2026-06-16T20:57:35.926Z",
   "tools": [
     {
       "tool": "ghost",
@@ -33,7 +33,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -61,7 +61,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for init --scope or default root init (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -145,7 +145,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for --all and default package lookup (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -181,7 +181,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for nested discovery and default scan (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers, nested discovery, and default scan (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -209,7 +209,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -348,7 +348,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for --path stack resolution (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers and --path stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -576,7 +576,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for stack resolution (default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers and stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -672,7 +672,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -724,7 +724,7 @@
             {
               "rawName": "--memory-dir <relative-dir>",
               "name": "memoryDir",
-              "description": "Relative fingerprint package directory for stack discovery (flag name retained; default: .ghost)",
+              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false

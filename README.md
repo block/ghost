@@ -37,10 +37,10 @@ Generation uses the three core layers:
 - `composition.yml` captures the patterns that make those materials feel like
   one intentional product.
 
-Checks, memory, generated cache, nested packages, and custom `--memory-dir`
-locations are supporting features. They do not replace the core fingerprint
-layers. Generated cache answers what exists; curated fingerprint layers answer
-what the surface is trying to preserve.
+Checks, memory, generated cache, nested packages, and custom host-wrapper
+package locations are supporting features. They do not replace the core
+fingerprint layers. Generated cache answers what exists; curated fingerprint
+layers answer what the surface is trying to preserve.
 
 Older `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, and direct
 `fingerprint.yml` artifacts can still inform migration or cache workflows, but
@@ -102,9 +102,12 @@ ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Use `--with-intent`, `--with-config`, `--reference`, `--scope`, or
-`--memory-dir` only when the repo needs those optional files, reference
-libraries, nested product areas, or host-wrapper storage paths.
+Use `--with-intent`, `--with-config`, `--reference`, or `--scope` only when the
+repo needs those optional files, reference libraries, or nested product areas.
+Host wrappers that need Ghost files somewhere other than `.ghost` may set
+`GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process, or pass
+`--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
+`--memory-dir <relative-dir>` values win over the environment default.
 
 Drafted fingerprint edits are just ordinary file changes until Git review
 accepts them. Checked-in `fingerprint/` core files are the Ghost source of
