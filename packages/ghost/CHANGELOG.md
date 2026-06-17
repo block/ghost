@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.11.1
+
+### Patch Changes
+
+- [#155](https://github.com/block/ghost/pull/155) [`3dc468d`](https://github.com/block/ghost/commit/3dc468d27faea3e0453784ead1a912edf7aa7a42) Thanks [@chailandau](https://github.com/chailandau)! - Publish npm releases through Changesets so the matching GitHub Release tarball is created.
+
 ## 0.11.0
 
 ### Minor Changes

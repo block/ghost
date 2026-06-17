@@ -44,20 +44,20 @@ jobs:
         id: changesets
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
         with:
-          publish: npm publish ./packages/ghost --access public --provenance
+          publish: pnpm changeset publish
           version: pnpm changeset version
           commit: "chore: version packages"
           title: "chore: version packages"
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
 
-      # When a publish actually happened, Changesets has already created and
-      # tagged a GitHub Release (createGithubReleases defaults to true). Pack
-      # the public package and attach the .tgz to that same Release so the
-      # tarball distribution channel stays in sync with npm — no separate tag
-      # push required.
+      # Changesets publish emits the published package list and skips versions
+      # already present on npm. Keep GitHub Releases owned here so Homebrew has
+      # one stable, slash-free tag and a matching .tgz asset for each npm
+      # publish.
       - name: Attach tarball to GitHub Release
         id: tarball
         if: steps.changesets.outputs.published == 'true'
@@ -72,9 +72,6 @@ jobs:
           mkdir -p dist-tarball
           pnpm --filter @anarchitecture/ghost pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
-          # Changesets creates the GitHub Release (createGithubReleases default).
-          # If it ever isn't there yet, create it so the upload always has a
-          # target — keeps the release from failing on a tooling change.
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "$TAG" --generate-notes
           fi
