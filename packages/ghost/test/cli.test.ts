@@ -49,10 +49,14 @@ function fingerprintWithId(id: string): string {
 async function runCli(
   argv: string[],
   cwd: string,
-  options: { allowNoExit?: boolean } = {},
+  options: {
+    allowNoExit?: boolean;
+    env?: Record<string, string | undefined>;
+  } = {},
 ) {
   const cli = buildCli();
   const previousCwd = process.cwd();
+  const previousEnv = new Map<string, string | undefined>();
   let stdout = "";
   let stderr = "";
   let exitCode: number | undefined;
@@ -89,6 +93,16 @@ async function runCli(
 
   try {
     process.chdir(cwd);
+    if (options.env) {
+      for (const [key, value] of Object.entries(options.env)) {
+        previousEnv.set(key, process.env[key]);
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
     cli.parse(["node", "ghost", ...argv]);
     if (options.allowNoExit) {
       setTimeout(finish, 500);
@@ -101,6 +115,13 @@ async function runCli(
     ]);
   } finally {
     process.chdir(previousCwd);
+    for (const [key, value] of previousEnv) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
     stdoutSpy.mockRestore();
     stderrSpy.mockRestore();
     logSpy.mockRestore();
@@ -844,6 +865,72 @@ sources: []
     expect(review.code).toBe(0);
     expect(review.stdout).toContain("## Selected Fingerprint Context");
     expect(reviewCommand.code).toBe(0);
+  });
+
+  it("uses GHOST_MEMORY_DIR as the default fingerprint package directory for init", async () => {
+    const init = await runCli(["init", "--format", "json"], dir, {
+      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
+    });
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(await realpath(initOutput.dir)).toBe(
+      await realpath(join(dir, ".agents", "ghost")),
+    );
+    await expect(
+      readFile(
+        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+    ).rejects.toThrow();
+  });
+
+  it("keeps explicit init directory positional args ahead of GHOST_MEMORY_DIR", async () => {
+    const init = await runCli(["init", "custom-dir", "--format", "json"], dir, {
+      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
+    });
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(await realpath(initOutput.dir)).toBe(
+      await realpath(join(dir, "custom-dir")),
+    );
+    await expect(
+      readFile(join(dir, "custom-dir", "fingerprint", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.fingerprint-package/v1");
+    await expect(
+      readFile(
+        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("rejects invalid GHOST_MEMORY_DIR with memory-dir validation errors", async () => {
+    const init = await runCli(["init"], dir, {
+      env: { GHOST_MEMORY_DIR: "../outside" },
+    });
+
+    expect(init.code).toBe(2);
+    expect(init.stderr).toContain("--memory-dir must not contain");
+  });
+
+  it("uses GHOST_MEMORY_DIR as the default package lookup for scan", async () => {
+    await runCli(["init", ".agents/ghost"], dir);
+
+    const scan = await runCli(["scan", "--format", "json"], dir, {
+      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
+    });
+
+    expect(scan.code).toBe(0);
+    const status = JSON.parse(scan.stdout);
+    expect(await realpath(status.dir)).toBe(
+      await realpath(join(dir, ".agents", "ghost")),
+    );
+    expect(status.fingerprint.state).toBe("present");
   });
 
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
