@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.11.2
+
+### Patch Changes
+
+- [#150](https://github.com/block/ghost/pull/150) [`95e045e`](https://github.com/block/ghost/commit/95e045e8b331ea69a013b6d5384cbb3656818d68) Thanks [@chailandau](https://github.com/chailandau)! - Autobump the Homebrew tap on npm publish so `brew install block/tap/ghost` tracks releases automatically.
+
 ## 0.11.1
 
 ### Patch Changes
