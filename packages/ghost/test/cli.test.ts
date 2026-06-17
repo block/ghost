@@ -904,6 +904,8 @@ checks:
     expect(result.stdout).toContain("# Ghost Relay Brief");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
+    expect(result.stdout).toContain("## Task Contract");
+    expect(result.stdout).toContain("### Preserve");
     expect(result.stdout).toContain("prose.principle:tokenized-ui-color");
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
     expect(result.stdout).toContain(
@@ -935,7 +937,26 @@ checks:
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
     expect(json.entrypoint.match.status).toBe("path-match");
+    expect(json.entrypoint.actionContract.preserve).toContain(
+      "UI colors should come from the product token system.",
+    );
+    expect(json.entrypoint.actionContract.inspect).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: "Code/Features/Lending/LendingUI",
+          reason:
+            "source surface for inventory.exemplar:lending-tokenized-screen",
+        }),
+      ]),
+    );
+    expect(json.entrypoint.actionContract.validate).toContain(
+      "check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
+    );
+    expect(json.entrypoint.actionContract.validate.join("\n")).not.toContain(
+      "candidate-density-check",
+    );
     expect(json.brief).toContain("# Ghost Relay Brief");
+    expect(json.brief).toContain("## Task Contract");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
