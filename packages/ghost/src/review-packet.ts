@@ -13,6 +13,7 @@ import {
   fingerprintStackToPackageContext,
   type GhostFingerprintStack,
   groupFingerprintStacksForPaths,
+  resolveMemoryDirDefault,
 } from "./scan/fingerprint-stack.js";
 import {
   type GhostPackageConfig,
@@ -84,7 +85,7 @@ async function buildStackReviewPacket(options: {
   const groups = await groupFingerprintStacksForPaths(
     changedFiles,
     process.cwd(),
-    { memoryDir: options.memoryDir },
+    { memoryDir: resolveMemoryDirDefault(options.memoryDir) },
   );
   const stacks = groups.map((group) =>
     reviewStackFromFingerprintStack(group.stack, group.changed_files),
