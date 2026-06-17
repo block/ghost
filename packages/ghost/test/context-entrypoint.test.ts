@@ -75,6 +75,55 @@ describe("context entrypoint", () => {
     );
   });
 
+  it("builds an action contract from selected context", () => {
+    const entrypoint = buildContextEntrypoint(context(), {
+      targetPaths: ["apps/refunds/settings/page.tsx"],
+    });
+
+    expect(entrypoint.actionContract.preserve).toEqual([
+      "Make reversibility and consequences visible.",
+      "Trust cues should appear before irreversible actions.",
+      "Important actions expose a recovery path.",
+      "Reveal advanced refund details only after the summary.",
+      "User intent: Understand refund impact before submitting.",
+    ]);
+    expect(entrypoint.actionContract.inspect).toEqual([
+      {
+        path: "apps/refunds/settings/primary.tsx",
+        reason: "source surface for inventory.exemplar:refund-settings-primary",
+      },
+      {
+        path: "apps/refunds/settings/secondary.tsx",
+        reason:
+          "source surface for inventory.exemplar:refund-settings-secondary",
+      },
+      {
+        path: "apps/refunds/settings/tertiary.tsx",
+        reason:
+          "source surface for inventory.exemplar:refund-settings-tertiary",
+      },
+      {
+        path: "fingerprint/prose.yml",
+        reason: "selected prose anchors and full intent",
+      },
+      {
+        path: "fingerprint/composition.yml",
+        reason: "selected composition patterns and neighboring patterns",
+      },
+    ]);
+    expect(entrypoint.actionContract.avoid).toEqual([
+      "hide money movement risk",
+      "Counterexample: Hide consequence copy until after submission.",
+      "Avoid: Bury the refund summary behind advanced controls.",
+    ]);
+    expect(entrypoint.actionContract.validate).toEqual([
+      "check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
+    ]);
+    expect(entrypoint.actionContract.validate.join("\n")).not.toContain(
+      "proposed-density",
+    );
+  });
+
   it("falls back to a compact global entrypoint when no scope matches", () => {
     const entrypoint = buildContextEntrypoint(context(), {
       targetPaths: ["apps/payroll/page.tsx"],
@@ -114,6 +163,20 @@ describe("context entrypoint", () => {
     );
     expect(markdown).toContain("- Tone: plain, precise");
     expect(markdown).not.toContain("read., Preserve");
+  });
+
+  it("renders the task contract before detailed read-first refs", () => {
+    const markdown = formatContextEntrypointMarkdown(
+      buildContextEntrypoint(context(), {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      }),
+    );
+
+    expect(markdown).toContain("## Task Contract");
+    expect(markdown).toContain("### Preserve");
+    expect(markdown.indexOf("## Task Contract")).toBeLessThan(
+      markdown.indexOf("## Read First"),
+    );
   });
 
   it("keeps selected matching refs stable when unrelated entries reorder", () => {
@@ -212,6 +275,7 @@ function context(
               scopes: ["refund-settings"],
             },
             guidance: ["Put consequence copy near the submit affordance."],
+            counterexamples: ["Hide consequence copy until after submission."],
             check_refs: ["check:no-hardcoded-ui-color"],
           },
         ],
@@ -253,6 +317,9 @@ function context(
               scopes: ["refund-settings"],
             },
             guidance: ["Keep the default state scannable."],
+            anti_patterns: [
+              "Bury the refund summary behind advanced controls.",
+            ],
             check_refs: ["check:no-hardcoded-ui-color"],
           },
         ],
