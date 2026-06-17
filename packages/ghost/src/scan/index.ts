@@ -19,10 +19,12 @@ export {
   discoverFingerprintStack,
   discoverGhostPackages,
   fingerprintPackageDisplayPath,
+  GHOST_MEMORY_DIR_ENV,
   groupFingerprintStacksForPaths,
   loadFingerprintStackForPath,
   normalizeMemoryDir,
   resolveGitRoot,
+  resolveMemoryDirDefault,
 } from "./fingerprint-stack.js";
 export { inventory } from "./inventory.js";
 export type {

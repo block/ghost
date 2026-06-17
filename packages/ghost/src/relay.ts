@@ -13,7 +13,7 @@ import {
   fingerprintStackToPackageContext,
   type GhostFingerprintStack,
   loadFingerprintStackForPath,
-  normalizeMemoryDir,
+  resolveMemoryDirDefault,
 } from "./scan/fingerprint-stack.js";
 
 export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v1" as const;
@@ -75,7 +75,7 @@ export async function gatherRelayContext(
     });
   }
 
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
+  const memoryDir = resolveMemoryDirDefault(options.memoryDir);
   const stack = await loadFingerprintStackForPath(target, cwd, { memoryDir });
   const context = fingerprintStackToPackageContext(stack, options.name);
   return gatherFromContext(context, {
@@ -111,7 +111,7 @@ export function registerRelayCommand(cli: CAC): void {
     )
     .option(
       "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for stack resolution (default: .ghost)",
+      "Relative fingerprint package directory for host wrappers and stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
       "--name <name>",

@@ -1,17 +1,16 @@
 name: Publish tarball to GitHub Release
 
-# Temporary distribution channel while npm publish is blocked. Packs
+# Manual fallback for the tarball distribution channel. Packs
 # @anarchitecture/ghost and attaches the .tgz to a GitHub Release, so consumers can:
 #
 #   npm install https://github.com/block/ghost/releases/download/<tag>/<file>.tgz
 #
-# Triggered by pushing a tag of the form `anarchitecture-ghost@<version>` or by
-# manual workflow_dispatch.
+# The normal path is release.yml, which attaches the tarball automatically on
+# every Changesets publish. This workflow is dispatch-only so a Changesets-
+# created tag does not fire both workflows and race on the same Release. Use it
+# to (re)cut a tarball for an existing version without a fresh npm publish.
 
 on:
-  push:
-    tags:
-      - "anarchitecture-ghost@*"
   workflow_dispatch:
     inputs:
       version:
@@ -60,17 +59,16 @@ jobs:
       # controlled (anyone with Actions write can trigger). Pass them in via
       # `env:` and reference as shell variables so they can't be interpolated
       # as shell syntax — that's what the semgrep shell-injection rule wants.
+      # Inputs from workflow_dispatch are attacker-controlled (anyone with
+      # Actions write can trigger). Pass them in via `env:` and reference as
+      # shell variables so they can't be interpolated as shell syntax — that's
+      # what the semgrep shell-injection rule wants.
       - name: Resolve tag
         id: tag
         env:
-          EVENT_NAME: ${{ github.event_name }}
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "$EVENT_NAME" = "push" ]; then
-            TAG="$GITHUB_REF_NAME"
-          else
-            TAG="anarchitecture-ghost@$INPUT_VERSION"
-          fi
+          TAG="anarchitecture-ghost@$INPUT_VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
