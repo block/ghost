@@ -14,6 +14,7 @@ export function formatContextEntrypointMarkdown(
   }
   parts.push(formatIdentity(entrypoint));
   parts.push(formatMatch(entrypoint));
+  parts.push(formatActionContract(entrypoint));
   parts.push(formatReadFirst(entrypoint));
   parts.push(formatValidation(entrypoint));
   parts.push(formatGeneratedCache(entrypoint.generatedCache));
@@ -61,6 +62,15 @@ function formatMatch(entrypoint: ContextEntrypoint): string {
   for (const reason of entrypoint.match.reasons) {
     lines.push(`- Why: ${reason}`);
   }
+  return lines.join("\n");
+}
+
+function formatActionContract(entrypoint: ContextEntrypoint): string {
+  const lines = ["## Task Contract"];
+  appendStringGroup(lines, "Preserve", entrypoint.actionContract.preserve);
+  appendReadGroup(lines, "Inspect", entrypoint.actionContract.inspect);
+  appendStringGroup(lines, "Avoid", entrypoint.actionContract.avoid);
+  appendStringGroup(lines, "Validate", entrypoint.actionContract.validate);
   return lines.join("\n");
 }
 
@@ -179,6 +189,36 @@ function appendNodeGroup(
     for (const detail of node.details.slice(0, 2)) {
       lines.push(`  - ${detail}`);
     }
+  }
+}
+
+function appendStringGroup(
+  lines: string[],
+  title: string,
+  values: string[],
+): void {
+  lines.push(`### ${title}`);
+  if (values.length === 0) {
+    lines.push("- None selected.");
+    return;
+  }
+  for (const value of values) {
+    lines.push(`- ${value}`);
+  }
+}
+
+function appendReadGroup(
+  lines: string[],
+  title: string,
+  reads: Array<{ path: string; reason: string }>,
+): void {
+  lines.push(`### ${title}`);
+  if (reads.length === 0) {
+    lines.push("- None selected.");
+    return;
+  }
+  for (const read of reads) {
+    lines.push(`- \`${read.path}\` - ${read.reason}`);
   }
 }
 
