@@ -19,6 +19,10 @@ jobs:
     name: Version or publish
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # `secrets` context can't be used in step-level `if:`, so surface a
+      # presence flag here. Skips the tap bump on forks / unconfigured repos.
+      HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -55,11 +59,13 @@ jobs:
       # one stable, slash-free tag and a matching .tgz asset for each npm
       # publish.
       - name: Attach tarball to GitHub Release
+        id: tarball
         if: steps.changesets.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
+          set -euo pipefail
           VERSION="$(echo "$PUBLISHED_PACKAGES" \
             | python3 -c "import json,sys; pkgs=json.load(sys.stdin); print(next(p['version'] for p in pkgs if p['name']=='@anarchitecture/ghost'))")"
           TAG="anarchitecture-ghost@${VERSION}"
@@ -70,3 +76,47 @@ jobs:
             gh release create "$TAG" --title "$TAG" --generate-notes
           fi
           gh release upload "$TAG" dist-tarball/*.tgz --clobber
+          # Export the tag, sha256, and artifact URL so the Homebrew tap can
+          # pin the exact tarball. The packed filename is dynamic
+          # (anarchitecture-ghost-X.Y.Z.tgz), so resolve it from the staging dir.
+          archive="$(ls dist-tarball/*.tgz | head -n 1)"
+          filename="$(basename "$archive")"
+          sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
+          artifact_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$filename"
+          {
+            echo "tag=$TAG"
+            echo "sha256=$sha256"
+            echo "artifact_url=$artifact_url"
+          } >> "$GITHUB_OUTPUT"
+
+      # Mirror block/sessh: mint a scoped token for the OSS Homebrew tap and
+      # trigger its bump-formula workflow so `brew install block/tap/ghost`
+      # tracks releases automatically. block -> block, no Square refs. Gated on
+      # an actual publish and on the BLOCK_HOMEBREW_TAP_* secrets (GitHub App
+      # installed on this repo), so forks and unconfigured environments skip it
+      # cleanly instead of failing the release.
+      - name: Generate token for tap release
+        id: generate_token
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_TAP_APP == 'true' }}
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        with:
+          app-id: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID }}
+          private-key: ${{ secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY }}
+          owner: block
+          repositories: homebrew-tap
+
+      - name: Trigger Homebrew formula bump
+        if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_TAP_APP == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          TAG: ${{ steps.tarball.outputs.tag }}
+          ARTIFACT_URL: ${{ steps.tarball.outputs.artifact_url }}
+          SHA256: ${{ steps.tarball.outputs.sha256 }}
+        run: |
+          gh workflow run bump-formula.yaml \
+            --repo block/homebrew-tap \
+            -f repo=block/ghost \
+            -f formula=ghost \
+            -f "tag=$TAG" \
+            -f "artifact_url=$ARTIFACT_URL" \
+            -f "sha256=$SHA256"

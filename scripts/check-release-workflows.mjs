@@ -16,6 +16,9 @@ function readWorkflow(name) {
 const releaseWorkflow = readWorkflow("release.yml");
 const tarballWorkflow = readWorkflow("release-tarball.yml");
 const friendlyTagAssignment = 'TAG="anarchitecture-ghost@$' + '{VERSION}"';
+const tapAppSecretGate =
+  "HAS_TAP_APP: $" +
+  "{{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}";
 
 if (!releaseWorkflow.includes("publish: pnpm changeset publish")) {
   fail(
@@ -53,6 +56,12 @@ if (
   )
 ) {
   fail("release.yml must upload the packed .tgz asset to the GitHub Release");
+}
+
+if (!releaseWorkflow.includes(tapAppSecretGate)) {
+  fail(
+    "release.yml must gate the Homebrew tap bump on both GitHub App secrets",
+  );
 }
 
 if (/^\s*push:/m.test(tarballWorkflow)) {
