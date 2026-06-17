@@ -16,6 +16,10 @@ on:
       version:
         description: "Version to release (must match packages/ghost/package.json)"
         required: true
+      ref:
+        description: "Git ref to pack and attach to the release"
+        required: true
+        default: "main"
 
 permissions:
   contents: write
@@ -31,6 +35,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.ref }}
 
       # No setup-node and no pnpm/action-setup — both would trip zizmor's
       # cache-poisoning rule because any GitHub-official setup action is
@@ -40,6 +46,16 @@ jobs:
       # package.json to install the exact pinned pnpm version with no
       # cross-branch cache store.
       - run: node --version && corepack enable
+
+      - name: Validate requested version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          PACKAGE_VERSION="$(node -p "require('./packages/ghost/package.json').version")"
+          if [ "$PACKAGE_VERSION" != "$INPUT_VERSION" ]; then
+            echo "Requested version $INPUT_VERSION does not match packages/ghost/package.json version $PACKAGE_VERSION."
+            exit 1
+          fi
 
       - run: pnpm install --frozen-lockfile
 
@@ -59,10 +75,6 @@ jobs:
       # controlled (anyone with Actions write can trigger). Pass them in via
       # `env:` and reference as shell variables so they can't be interpolated
       # as shell syntax — that's what the semgrep shell-injection rule wants.
-      # Inputs from workflow_dispatch are attacker-controlled (anyone with
-      # Actions write can trigger). Pass them in via `env:` and reference as
-      # shell variables so they can't be interpolated as shell syntax — that's
-      # what the semgrep shell-injection rule wants.
       - name: Resolve tag
         id: tag
         env:
@@ -70,13 +82,28 @@ jobs:
         run: |
           TAG="anarchitecture-ghost@$INPUT_VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "target=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
+          TARGET_SHA: ${{ steps.tag.outputs.target }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes \
-            dist-tarball/*.tgz
+          ASSET="dist-tarball/anarchitecture-ghost-${INPUT_VERSION}.tgz"
+          if [ ! -f "$ASSET" ]; then
+            echo "Expected packed asset missing: $ASSET"
+            exit 1
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --target "$TARGET_SHA"
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --target "$TARGET_SHA" \
+              --generate-notes \
+              "$ASSET"
+          fi

@@ -8,6 +8,7 @@ dist-mcp
 packages/ghost-ui/public/r/
 .env
 .env.local
+.release-published.json
 packages/ghost-ui/.ghost/history.jsonl
 packages/ghost-ui/.ghost/cache/*
 !packages/ghost-ui/.ghost/cache/.gitkeep

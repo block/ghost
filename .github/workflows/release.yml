@@ -40,7 +40,7 @@ jobs:
         id: changesets
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
         with:
-          publish: npm publish ./packages/ghost --access public --provenance
+          publish: node scripts/publish-ghost-package.mjs
           version: pnpm changeset version
           commit: "chore: version packages"
           title: "chore: version packages"
@@ -49,27 +49,36 @@ jobs:
           NPM_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GHOST_NPM_PUBLISH_TOKEN }}
 
-      # When a publish actually happened, Changesets has already created and
-      # tagged a GitHub Release (createGithubReleases defaults to true). Pack
-      # the public package and attach the .tgz to that same Release so the
-      # tarball distribution channel stays in sync with npm — no separate tag
-      # push required.
-      - name: Attach tarball to GitHub Release
-        if: steps.changesets.outputs.published == 'true'
+      - name: Sync GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
         run: |
-          VERSION="$(echo "$PUBLISHED_PACKAGES" \
-            | python3 -c "import json,sys; pkgs=json.load(sys.stdin); print(next(p['version'] for p in pkgs if p['name']=='@anarchitecture/ghost'))")"
+          if [ ! -f .release-published.json ]; then
+            echo "No publish marker found; skipping GitHub Release sync."
+            exit 0
+          fi
+
+          PACKAGE_NAME="$(node -e "const fs=require('fs'); const marker=JSON.parse(fs.readFileSync('.release-published.json','utf8')); console.log(marker.name)")"
+          VERSION="$(node -e "const fs=require('fs'); const marker=JSON.parse(fs.readFileSync('.release-published.json','utf8')); console.log(marker.version)")"
+
+          if [ "$PACKAGE_NAME" != "@anarchitecture/ghost" ]; then
+            echo "Unexpected release marker package: $PACKAGE_NAME"
+            exit 1
+          fi
+
           TAG="anarchitecture-ghost@${VERSION}"
           mkdir -p dist-tarball
           pnpm --filter @anarchitecture/ghost pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
-          # Changesets creates the GitHub Release (createGithubReleases default).
-          # If it ever isn't there yet, create it so the upload always has a
-          # target — keeps the release from failing on a tooling change.
-          if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --title "$TAG" --generate-notes
+          ASSET="dist-tarball/anarchitecture-ghost-${VERSION}.tgz"
+          if [ ! -f "$ASSET" ]; then
+            echo "Expected packed asset missing: $ASSET"
+            exit 1
           fi
-          gh release upload "$TAG" dist-tarball/*.tgz --clobber
+
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TAG" --target "$GITHUB_SHA" --generate-notes "$ASSET"
+          else
+            gh release edit "$TAG" --title "$TAG" --target "$GITHUB_SHA"
+            gh release upload "$TAG" "$ASSET" --clobber
+          fi
