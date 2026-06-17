@@ -822,6 +822,58 @@ sources: []
     expect(report.dimensions.spacing.verdict).toBe("uncovered");
   });
 
+  it("keeps advisory design-loop drift non-blocking", async () => {
+    await mkdir(join(dir, ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "config.yml"),
+      `schema: ghost.config/v1
+targets: []
+libraries: []
+design_loop:
+  enabled: true
+  mode: advisory
+`,
+    );
+    await writeFile(
+      join(dir, ".ghost", "fingerprint.md"),
+      fingerprintWithId("local"),
+    );
+    await writeFile(
+      join(dir, "tracked.fingerprint.md"),
+      fingerprintWithId("tracked"),
+    );
+    await runCli(["track", "tracked.fingerprint.md"], dir);
+    await writeFile(
+      join(dir, ".ghost", "fingerprint.md"),
+      fingerprintWithId("local").replace(
+        "spacing: { scale: [4, 8, 16], baseUnit: 4, regularity: 1 }",
+        "spacing: { scale: [2, 3, 5, 7, 11, 13], baseUnit: 2, regularity: 0.1 }",
+      ),
+    );
+
+    const result = await runCli(
+      [
+        "drift",
+        "check",
+        "--tracked",
+        "tracked.fingerprint.md",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.designLoop).toEqual({
+      enabled: true,
+      mode: "advisory",
+      source: "config",
+    });
+    expect(report.overall.verdict).toBe("uncovered");
+    expect(report.dimensions.spacing.verdict).toBe("uncovered");
+  });
+
   it("initializes the default fingerprint package without cache", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
