@@ -59,8 +59,10 @@ building_blocks:
     - README.md
     - docs/fingerprint-format.md
     - docs/generation-loop.md
-    - packages/ghost/src/scan/context/package-writer.ts
-    - packages/ghost/src/scan/context/package-review-command.ts
+    - packages/ghost/src/relay.ts
+    - packages/ghost/src/context/entrypoint.ts
+    - packages/ghost/src/context/entrypoint-markdown.ts
+    - packages/ghost/src/context/package-review-command.ts
   notes:
     - Inventory is replaceable material; prose captures intent and composition captures how material is assembled.
     - Correct components or tokens do not prove a surface is aligned.
@@ -76,7 +78,7 @@ exemplars:
       - prose.principle:fingerprint-folder-is-canonical
       - prose.principle:generated-cache-is-source-material
   - id: review-command-fingerprint-packet
-    path: packages/ghost/src/scan/context/package-review-command.ts
+    path: packages/ghost/src/context/package-review-command.ts
     title: Generated review command
     surface_type: emitted-agent-prompt
     scope: public-cli
