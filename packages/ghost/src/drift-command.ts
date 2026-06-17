@@ -205,7 +205,7 @@ export function registerDriftCommand(cli: CAC): void {
             ? `${JSON.stringify(report, null, 2)}\n`
             : formatDriftCheckMarkdown(report),
         );
-        process.exit(gateExitCode(report.gate));
+        process.exit(driftCheckExitCode(report));
       } catch (err) {
         console.error(
           `Error: ${err instanceof Error ? err.message : String(err)}`,
@@ -213,6 +213,13 @@ export function registerDriftCommand(cli: CAC): void {
         process.exit(2);
       }
     });
+}
+
+function driftCheckExitCode(report: DriftCheckReport): number {
+  if (report.designLoop.enabled && report.designLoop.mode === "advisory") {
+    return 0;
+  }
+  return gateExitCode(report.gate);
 }
 
 async function readSyncManifest(
@@ -337,13 +344,7 @@ async function loadComparableFingerprintFrom(
   cwd: string,
   path: string,
 ): Promise<Fingerprint> {
-  const previousCwd = process.cwd();
-  try {
-    process.chdir(cwd);
-    return await loadComparableFingerprint(path);
-  } finally {
-    process.chdir(previousCwd);
-  }
+  return loadComparableFingerprint(resolve(cwd, path));
 }
 
 function parseMaxDivergenceDays(
