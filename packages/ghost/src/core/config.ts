@@ -50,19 +50,23 @@ async function resolveConfigFile(
 }
 
 function normalizeTracked(
+  cwd: string,
   value: Target | string | undefined,
 ): Target | undefined {
   if (!value) return undefined;
   if (typeof value === "string") {
+    if (existsSync(resolve(cwd, value))) {
+      return { type: "path", value };
+    }
     return resolveTarget(value);
   }
   return value;
 }
 
-function mergeDefaults(raw: GhostConfig): GhostConfig {
+function mergeDefaults(raw: GhostConfig, cwd: string): GhostConfig {
   return {
     targets: raw.targets,
-    tracks: normalizeTracked(raw.tracks as Target | string | undefined),
+    tracks: normalizeTracked(cwd, raw.tracks as Target | string | undefined),
     rules: { ...DEFAULT_CONFIG.rules, ...raw.rules },
     ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
     embedding: raw.embedding,
@@ -98,5 +102,5 @@ export async function loadConfig(
   const raw =
     (mod as { default?: GhostConfig }).default ?? (mod as GhostConfig);
 
-  return mergeDefaults(raw);
+  return mergeDefaults(raw, cwd);
 }

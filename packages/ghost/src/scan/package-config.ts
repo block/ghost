@@ -34,15 +34,33 @@ const GhostPackageConfigLibrarySchema = z
   })
   .strict();
 
+const GhostPackageDesignLoopModeSchema = z.enum([
+  "off",
+  "advisory",
+  "required",
+]);
+
+const GhostPackageDesignLoopSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    mode: GhostPackageDesignLoopModeSchema.default("off"),
+  })
+  .strict();
+
 export const GhostPackageConfigSchema = z
   .object({
     schema: z.literal(GHOST_PACKAGE_CONFIG_SCHEMA),
     targets: z.array(GhostPackageConfigTargetSchema).default([]),
     libraries: z.array(GhostPackageConfigLibrarySchema).default([]),
+    design_loop: GhostPackageDesignLoopSchema.default({
+      enabled: false,
+      mode: "off",
+    }),
   })
   .strict();
 
 export type GhostPackageConfig = z.infer<typeof GhostPackageConfigSchema>;
+export type GhostPackageDesignLoop = GhostPackageConfig["design_loop"];
 export type GhostPackageConfigTarget = GhostPackageConfig["targets"][number];
 export type GhostPackageConfigLibrary = GhostPackageConfig["libraries"][number];
 
@@ -114,6 +132,7 @@ export function templatePackageConfig(reference?: string): string {
     schema: GHOST_PACKAGE_CONFIG_SCHEMA,
     targets: [{ id: "product", platform: "web", roots: [] }],
     libraries,
+    design_loop: { enabled: false, mode: "off" },
   };
   return stringifyYaml(config, { lineWidth: 0 });
 }
