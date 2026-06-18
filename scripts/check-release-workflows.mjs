@@ -16,6 +16,8 @@ function readWorkflow(name) {
 const releaseWorkflow = readWorkflow("release.yml");
 const tarballWorkflow = readWorkflow("release-tarball.yml");
 const friendlyTagAssignment = 'TAG="anarchitecture-ghost@$' + '{VERSION}"';
+const releaseTarballPackCommand =
+  'node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"';
 const tapAppSecretGate =
   "HAS_TAP_APP: $" +
   "{{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}";
@@ -56,6 +58,18 @@ if (
   )
 ) {
   fail("release.yml must upload the packed .tgz asset to the GitHub Release");
+}
+
+if (!releaseWorkflow.includes(releaseTarballPackCommand)) {
+  fail(
+    "release.yml must publish the self-contained release tarball instead of the npm package tarball",
+  );
+}
+
+if (!tarballWorkflow.includes(releaseTarballPackCommand)) {
+  fail(
+    "release-tarball.yml must publish the self-contained release tarball instead of the npm package tarball",
+  );
 }
 
 if (!releaseWorkflow.includes(tapAppSecretGate)) {
