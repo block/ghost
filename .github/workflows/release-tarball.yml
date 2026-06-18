@@ -1,9 +1,8 @@
 name: Publish tarball to GitHub Release
 
-# Manual fallback for the tarball distribution channel. Packs
-# @anarchitecture/ghost and attaches the .tgz to a GitHub Release, so consumers can:
-#
-#   npm install https://github.com/block/ghost/releases/download/<tag>/<file>.tgz
+# Manual fallback for the tarball distribution channel. Builds a
+# package-manager-friendly @anarchitecture/ghost archive with runtime
+# dependencies included and attaches the .tgz to a GitHub Release.
 #
 # The normal path is release.yml, which attaches the tarball automatically on
 # every Changesets publish. This workflow is dispatch-only so a Changesets-
@@ -46,13 +45,13 @@ jobs:
       - name: Build
         run: pnpm --filter @anarchitecture/ghost build
 
-      # `pnpm --filter <pkg> pack` writes the tarball to the workspace root,
-      # not the package dir, in pnpm 10. Force it into a known staging dir so
-      # the release step can glob a single location deterministically.
+      # Keep this distribution archive separate from npm publishing: npm gets
+      # the normal package, while GitHub Releases get a self-contained archive
+      # for package-manager installs that should not run a registry install.
       - name: Pack
         run: |
           mkdir -p dist-tarball
-          pnpm --filter @anarchitecture/ghost pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
+          node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
 
       # Inputs from workflow_dispatch are attacker-controlled (anyone with
