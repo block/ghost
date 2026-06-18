@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.13.0
+
+### Minor Changes
+
+- [#153](https://github.com/block/ghost/pull/153) [`012140f`](https://github.com/block/ghost/commit/012140fec70b1a6f8c2a7f82e1ad29c7de37a5b6) Thanks [@gnahCnayR](https://github.com/gnahCnayR)! - Add a Ghost-owned drift check command and explicit design-loop opt-in config.
+
 ## 0.12.1
 
 ### Patch Changes
