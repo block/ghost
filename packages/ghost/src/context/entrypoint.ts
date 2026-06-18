@@ -98,7 +98,13 @@ export function buildContextEntrypoint(
       ? expandOneHop(directRefs, graph)
       : new Set<NodeRef>(graph.nodes.map((node) => node.ref));
   const status = directRefs.size > 0 ? "path-match" : "global-fallback";
-  const selected = selectNodes(graph, selectedRefs);
+  const selected = selectNodes(graph, selectedRefs, {
+    directRefs,
+    matchedScopeIds,
+    matchedSurfaceTypes,
+    requestedPaths,
+    useRelevance: status === "path-match",
+  });
   const identity = identityFromFingerprint(context.fingerprint, context.name);
   const suggestedReads = buildSuggestedReads(context, selected);
 
@@ -163,9 +169,12 @@ function identityFromFingerprint(
 function selectNodes(
   graph: FingerprintGraph,
   selectedRefs: Set<NodeRef>,
+  ranking: SelectionRanking,
 ): ContextEntrypoint["selected"] {
-  const selectedNodes = sortNodes(
+  const selectedNodes = sortSelectedNodes(
+    graph,
     graph.nodes.filter((node) => selectedRefs.has(node.ref)),
+    ranking,
   );
   return {
     prose: selectedNodes
@@ -183,6 +192,55 @@ function selectNodes(
       .filter((node) => node.kind === "check")
       .slice(0, CAPS.checks),
   };
+}
+
+interface SelectionRanking {
+  directRefs: Set<NodeRef>;
+  matchedScopeIds: string[];
+  matchedSurfaceTypes: string[];
+  requestedPaths: string[];
+  useRelevance: boolean;
+}
+
+function sortSelectedNodes(
+  graph: FingerprintGraph,
+  nodes: FingerprintGraphNode[],
+  ranking: SelectionRanking,
+): FingerprintGraphNode[] {
+  const sorted = sortNodes(nodes);
+  if (!ranking.useRelevance) return sorted;
+  return sorted.sort(
+    (a, b) =>
+      relevanceScore(b, graph, ranking) - relevanceScore(a, graph, ranking) ||
+      a.order - b.order,
+  );
+}
+
+function relevanceScore(
+  node: FingerprintGraphNode,
+  graph: FingerprintGraph,
+  ranking: SelectionRanking,
+): number {
+  let score = 0;
+  if (nodeMatchesTargets(node, ranking.requestedPaths)) score += 100;
+  if (intersects(node.appliesTo.scopes, ranking.matchedScopeIds)) score += 50;
+  if (intersects(node.appliesTo.surfaceTypes, ranking.matchedSurfaceTypes)) {
+    score += 20;
+  }
+  if (isConnectedToDirectRef(node.ref, graph, ranking.directRefs)) score += 10;
+  return score;
+}
+
+function isConnectedToDirectRef(
+  ref: NodeRef,
+  graph: FingerprintGraph,
+  directRefs: Set<NodeRef>,
+): boolean {
+  return graph.edges.some(
+    (edge) =>
+      (edge.from === ref && directRefs.has(edge.to)) ||
+      (edge.to === ref && directRefs.has(edge.from)),
+  );
 }
 
 function expandOneHop(
@@ -249,10 +307,12 @@ function buildActionContract(
   selected: ContextEntrypoint["selected"],
   suggestedReads: ContextEntrypoint["suggestedReads"],
 ): ContextEntrypoint["actionContract"] {
+  const prose = sortNodes(selected.prose);
+  const composition = sortNodes(selected.composition);
   const preserve = uniqueCapped([
-    ...selected.prose.map((node) => node.summary),
-    ...selected.composition.map((node) => node.summary),
-    ...selected.prose.flatMap((node) =>
+    ...prose.map((node) => node.summary),
+    ...composition.map((node) => node.summary),
+    ...prose.flatMap((node) =>
       node.details.filter((detail) => !isAvoidanceDetail(detail)),
     ),
   ]);
@@ -271,10 +331,8 @@ function buildActionContract(
   ]);
   const avoid = uniqueCapped([
     ...identity.antiGoals,
-    ...selected.prose.flatMap((node) => node.details.filter(isAvoidanceDetail)),
-    ...selected.composition.flatMap((node) =>
-      node.details.filter(isAvoidanceDetail),
-    ),
+    ...prose.flatMap((node) => node.details.filter(isAvoidanceDetail)),
+    ...composition.flatMap((node) => node.details.filter(isAvoidanceDetail)),
   ]);
   const validate =
     selected.checks.length > 0

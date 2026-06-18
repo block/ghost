@@ -75,6 +75,66 @@ describe("context entrypoint", () => {
     );
   });
 
+  it("ranks direct path exemplars ahead of same-scope exemplars", () => {
+    const entrypoint = buildContextEntrypoint(context(), {
+      targetPaths: ["apps/refunds/settings/quaternary.tsx"],
+    });
+
+    expect(entrypoint.selected.exemplars.map((node) => node.ref)).toEqual([
+      "inventory.exemplar:refund-settings-quaternary",
+      "inventory.exemplar:refund-settings-primary",
+      "inventory.exemplar:refund-settings-secondary",
+    ]);
+  });
+
+  it("ranks scope matches ahead of surface-only matches within a node kind", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(
+      entrypoint.selected.prose
+        .filter((node) => node.kind === "principle")
+        .map((node) => node.ref)
+        .slice(0, 2),
+    ).toEqual([
+      "prose.principle:trust-before-action",
+      "prose.principle:surface-only-guidance",
+    ]);
+  });
+
+  it("keeps one-hop refs below directly matched refs", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(entrypoint.selected.composition.map((node) => node.ref)).toEqual([
+      "composition.pattern:progressive-disclosure",
+      "composition.pattern:scope-density",
+      "composition.pattern:one-hop-recovery",
+    ]);
+  });
+
+  it("ranks checks connected to selected refs ahead of unrelated active checks", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(entrypoint.selected.checks.map((node) => node.ref)).toEqual([
+      "check:no-hardcoded-ui-color",
+      "check:unrelated-same-scope",
+    ]);
+  });
+
   it("builds an action contract from selected context", () => {
     const entrypoint = buildContextEntrypoint(context(), {
       targetPaths: ["apps/refunds/settings/page.tsx"],
@@ -195,7 +255,11 @@ describe("context entrypoint", () => {
 });
 
 function context(
-  options: { reorderUnrelated?: boolean; multiSentenceIdentity?: boolean } = {},
+  options: {
+    reorderUnrelated?: boolean;
+    multiSentenceIdentity?: boolean;
+    rankingPressure?: boolean;
+  } = {},
 ): PackageContext {
   const unrelated = {
     id: "unrelated",
@@ -204,11 +268,21 @@ function context(
     surface_type: "setup",
     why: "Unrelated onboarding surface.",
   };
+  const oneHopExemplar = {
+    id: "refund-settings-one-hop",
+    path: "apps/refunds/settings/one-hop.tsx",
+    title: "Refund settings one-hop",
+    scope: "refund-settings",
+    surface_type: "settings",
+    why: "Connects to the one-hop recovery pattern.",
+    refs: ["composition.pattern:one-hop-recovery"],
+  } as const;
   const refundExemplars = [
     exemplar("primary"),
     exemplar("secondary"),
     exemplar("tertiary"),
     exemplar("quaternary"),
+    ...(options.rankingPressure ? [oneHopExemplar] : []),
   ];
   return {
     name: "cash-dashboard",
@@ -268,6 +342,18 @@ function context(
           },
         ],
         principles: [
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "surface-only-guidance",
+                  principle: "Surface-only refund guidance.",
+                  applies_to: {
+                    surface_types: ["settings"],
+                  },
+                  guidance: ["Applies to settings surfaces broadly."],
+                },
+              ]
+            : []),
           {
             id: "trust-before-action",
             principle: "Trust cues should appear before irreversible actions.",
@@ -309,6 +395,17 @@ function context(
       },
       composition: {
         patterns: [
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "one-hop-recovery",
+                  kind: "flow",
+                  pattern:
+                    "Show recovery details when an exemplar calls for them.",
+                  guidance: ["This pattern is reached only through refs."],
+                },
+              ]
+            : []),
           {
             id: "progressive-disclosure",
             kind: "flow",
@@ -322,6 +419,19 @@ function context(
             ],
             check_refs: ["check:no-hardcoded-ui-color"],
           },
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "scope-density",
+                  kind: "layout",
+                  pattern: "Keep refund settings density consistent.",
+                  applies_to: {
+                    scopes: ["refund-settings"],
+                  },
+                  guidance: ["This pattern is directly scoped."],
+                },
+              ]
+            : []),
         ],
       },
     },
@@ -329,6 +439,24 @@ function context(
       schema: "ghost.checks/v1",
       id: "cash-dashboard",
       checks: [
+        ...(options.rankingPressure
+          ? [
+              {
+                id: "unrelated-same-scope",
+                title: "Unrelated same-scope check",
+                status: "active",
+                severity: "nit",
+                applies_to: {
+                  scopes: ["refund-settings"],
+                  paths: ["apps/refunds/settings"],
+                },
+                detector: {
+                  type: "required-regex",
+                  pattern: "Refund",
+                },
+              },
+            ]
+          : []),
         {
           id: "no-hardcoded-ui-color",
           title: "Use design tokens for UI color",
