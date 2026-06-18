@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.12.1
+
+### Patch Changes
+
+- [#160](https://github.com/block/ghost/pull/160) [`a43c99a`](https://github.com/block/ghost/commit/a43c99af82d6434b9bdc366a6b7b7b5556687b00) Thanks [@chailandau](https://github.com/chailandau)! - Publish GitHub Release archives with runtime dependencies included for package-manager installs.
+
 ## 0.12.0
 
 ### Minor Changes
