@@ -87,6 +87,12 @@ try {
     fail(`expected exactly one packed tarball, found ${tarballs.length}`);
   }
   const tarballPath = resolve(packDir, tarballs[0]);
+  const packedEntries = run("tar", ["-tzf", tarballPath]).split("\n");
+  if (
+    packedEntries.some((entry) => entry.startsWith("package/node_modules/"))
+  ) {
+    fail("npm package tarball must not include node_modules");
+  }
 
   writeFileSync(
     join(consumerDir, "package.json"),
