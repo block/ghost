@@ -18,7 +18,7 @@ patterns:
       - Prefer short ordered workflows over broad conceptual lectures.
       - Name missing fingerprint grounding or layer coverage plainly without creating a separate fingerprint-change workflow.
     evidence:
-      - path: packages/ghost/src/scan/context/package-review-command.ts
+      - path: packages/ghost/src/context/package-review-command.ts
   - id: editorial-workbench-docs
     kind: visual
     pattern: Ghost docs combine restrained editorial explanation with concrete command and schema work surfaces.

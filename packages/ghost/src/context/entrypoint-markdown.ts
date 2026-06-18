@@ -14,6 +14,7 @@ export function formatContextEntrypointMarkdown(
   }
   parts.push(formatIdentity(entrypoint));
   parts.push(formatMatch(entrypoint));
+  parts.push(formatActionContract(entrypoint));
   parts.push(formatReadFirst(entrypoint));
   parts.push(formatValidation(entrypoint));
   parts.push(formatGeneratedCache(entrypoint.generatedCache));
@@ -26,10 +27,10 @@ export function formatContextEntrypointMarkdown(
 function formatIdentity(entrypoint: ContextEntrypoint): string {
   const lines = ["## Identity Capsule"];
   lines.push(`- Product: ${entrypoint.identity.product}`);
-  pushJoined(lines, "Audience", entrypoint.identity.audience);
-  pushJoined(lines, "Goals", entrypoint.identity.goals);
-  pushJoined(lines, "Anti-goals", entrypoint.identity.antiGoals);
-  pushJoined(lines, "Tradeoffs", entrypoint.identity.tradeoffs);
+  pushIdentityValues(lines, "Audience", entrypoint.identity.audience);
+  pushIdentityValues(lines, "Goals", entrypoint.identity.goals);
+  pushIdentityValues(lines, "Anti-goals", entrypoint.identity.antiGoals);
+  pushIdentityValues(lines, "Tradeoffs", entrypoint.identity.tradeoffs);
   pushJoined(lines, "Tone", entrypoint.identity.tone);
   return lines.join("\n");
 }
@@ -61,6 +62,15 @@ function formatMatch(entrypoint: ContextEntrypoint): string {
   for (const reason of entrypoint.match.reasons) {
     lines.push(`- Why: ${reason}`);
   }
+  return lines.join("\n");
+}
+
+function formatActionContract(entrypoint: ContextEntrypoint): string {
+  const lines = ["## Task Contract"];
+  appendStringGroup(lines, "Preserve", entrypoint.actionContract.preserve);
+  appendReadGroup(lines, "Inspect", entrypoint.actionContract.inspect);
+  appendStringGroup(lines, "Avoid", entrypoint.actionContract.avoid);
+  appendStringGroup(lines, "Validate", entrypoint.actionContract.validate);
   return lines.join("\n");
 }
 
@@ -182,6 +192,36 @@ function appendNodeGroup(
   }
 }
 
+function appendStringGroup(
+  lines: string[],
+  title: string,
+  values: string[],
+): void {
+  lines.push(`### ${title}`);
+  if (values.length === 0) {
+    lines.push("- None selected.");
+    return;
+  }
+  for (const value of values) {
+    lines.push(`- ${value}`);
+  }
+}
+
+function appendReadGroup(
+  lines: string[],
+  title: string,
+  reads: Array<{ path: string; reason: string }>,
+): void {
+  lines.push(`### ${title}`);
+  if (reads.length === 0) {
+    lines.push("- None selected.");
+    return;
+  }
+  for (const read of reads) {
+    lines.push(`- \`${read.path}\` - ${read.reason}`);
+  }
+}
+
 function pushJoined(
   lines: string[],
   label: string,
@@ -193,4 +233,28 @@ function pushJoined(
     .map((value) => (options.code ? `\`${value}\`` : value))
     .join(", ");
   lines.push(`- ${label}: ${formatted}`);
+}
+
+function pushIdentityValues(
+  lines: string[],
+  label: string,
+  values: string[] | undefined,
+): void {
+  if (!values?.length) return;
+  if (!shouldUseMultilineIdentity(values)) {
+    pushJoined(lines, label, values);
+    return;
+  }
+  lines.push(`- ${label}:`);
+  for (const value of values) {
+    lines.push(`  - ${value}`);
+  }
+}
+
+function shouldUseMultilineIdentity(values: string[]): boolean {
+  if (values.length < 2) return false;
+  const joined = values.join(", ");
+  return (
+    values.some((value) => /[.!?]$/.test(value.trim())) || joined.length > 100
+  );
 }

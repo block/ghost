@@ -3,6 +3,7 @@ import {
   buildContextEntrypoint,
   buildFingerprintGraph,
 } from "../src/context/entrypoint.js";
+import { formatContextEntrypointMarkdown } from "../src/context/entrypoint-markdown.js";
 import type { PackageContext } from "../src/context/package-context.js";
 
 describe("context entrypoint", () => {
@@ -74,6 +75,115 @@ describe("context entrypoint", () => {
     );
   });
 
+  it("ranks direct path exemplars ahead of same-scope exemplars", () => {
+    const entrypoint = buildContextEntrypoint(context(), {
+      targetPaths: ["apps/refunds/settings/quaternary.tsx"],
+    });
+
+    expect(entrypoint.selected.exemplars.map((node) => node.ref)).toEqual([
+      "inventory.exemplar:refund-settings-quaternary",
+      "inventory.exemplar:refund-settings-primary",
+      "inventory.exemplar:refund-settings-secondary",
+    ]);
+  });
+
+  it("ranks scope matches ahead of surface-only matches within a node kind", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(
+      entrypoint.selected.prose
+        .filter((node) => node.kind === "principle")
+        .map((node) => node.ref)
+        .slice(0, 2),
+    ).toEqual([
+      "prose.principle:trust-before-action",
+      "prose.principle:surface-only-guidance",
+    ]);
+  });
+
+  it("keeps one-hop refs below directly matched refs", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(entrypoint.selected.composition.map((node) => node.ref)).toEqual([
+      "composition.pattern:progressive-disclosure",
+      "composition.pattern:scope-density",
+      "composition.pattern:one-hop-recovery",
+    ]);
+  });
+
+  it("ranks checks connected to selected refs ahead of unrelated active checks", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ rankingPressure: true }),
+      {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      },
+    );
+
+    expect(entrypoint.selected.checks.map((node) => node.ref)).toEqual([
+      "check:no-hardcoded-ui-color",
+      "check:unrelated-same-scope",
+    ]);
+  });
+
+  it("builds an action contract from selected context", () => {
+    const entrypoint = buildContextEntrypoint(context(), {
+      targetPaths: ["apps/refunds/settings/page.tsx"],
+    });
+
+    expect(entrypoint.actionContract.preserve).toEqual([
+      "Make reversibility and consequences visible.",
+      "Trust cues should appear before irreversible actions.",
+      "Important actions expose a recovery path.",
+      "Reveal advanced refund details only after the summary.",
+      "User intent: Understand refund impact before submitting.",
+    ]);
+    expect(entrypoint.actionContract.inspect).toEqual([
+      {
+        path: "apps/refunds/settings/primary.tsx",
+        reason: "source surface for inventory.exemplar:refund-settings-primary",
+      },
+      {
+        path: "apps/refunds/settings/secondary.tsx",
+        reason:
+          "source surface for inventory.exemplar:refund-settings-secondary",
+      },
+      {
+        path: "apps/refunds/settings/tertiary.tsx",
+        reason:
+          "source surface for inventory.exemplar:refund-settings-tertiary",
+      },
+      {
+        path: "fingerprint/prose.yml",
+        reason: "selected prose anchors and full intent",
+      },
+      {
+        path: "fingerprint/composition.yml",
+        reason: "selected composition patterns and neighboring patterns",
+      },
+    ]);
+    expect(entrypoint.actionContract.avoid).toEqual([
+      "hide money movement risk",
+      "Counterexample: Hide consequence copy until after submission.",
+      "Avoid: Bury the refund summary behind advanced controls.",
+    ]);
+    expect(entrypoint.actionContract.validate).toEqual([
+      "check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
+    ]);
+    expect(entrypoint.actionContract.validate.join("\n")).not.toContain(
+      "proposed-density",
+    );
+  });
+
   it("falls back to a compact global entrypoint when no scope matches", () => {
     const entrypoint = buildContextEntrypoint(context(), {
       targetPaths: ["apps/payroll/page.tsx"],
@@ -101,6 +211,34 @@ describe("context entrypoint", () => {
     ]);
   });
 
+  it("formats multi-sentence identity fields as readable bullets", () => {
+    const entrypoint = buildContextEntrypoint(
+      context({ multiSentenceIdentity: true }),
+    );
+
+    const markdown = formatContextEntrypointMarkdown(entrypoint);
+
+    expect(markdown).toContain(
+      "- Goals:\n  - Keep product-surface composition fingerprints easy for agents to read.\n  - Preserve surface composition across generation and review.",
+    );
+    expect(markdown).toContain("- Tone: plain, precise");
+    expect(markdown).not.toContain("read., Preserve");
+  });
+
+  it("renders the task contract before detailed read-first refs", () => {
+    const markdown = formatContextEntrypointMarkdown(
+      buildContextEntrypoint(context(), {
+        targetPaths: ["apps/refunds/settings/page.tsx"],
+      }),
+    );
+
+    expect(markdown).toContain("## Task Contract");
+    expect(markdown).toContain("### Preserve");
+    expect(markdown.indexOf("## Task Contract")).toBeLessThan(
+      markdown.indexOf("## Read First"),
+    );
+  });
+
   it("keeps selected matching refs stable when unrelated entries reorder", () => {
     const normal = buildContextEntrypoint(context());
     const reordered = buildContextEntrypoint(
@@ -116,7 +254,13 @@ describe("context entrypoint", () => {
   });
 });
 
-function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
+function context(
+  options: {
+    reorderUnrelated?: boolean;
+    multiSentenceIdentity?: boolean;
+    rankingPressure?: boolean;
+  } = {},
+): PackageContext {
   const unrelated = {
     id: "unrelated",
     path: "apps/onboarding/page.tsx",
@@ -124,11 +268,21 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
     surface_type: "setup",
     why: "Unrelated onboarding surface.",
   };
+  const oneHopExemplar = {
+    id: "refund-settings-one-hop",
+    path: "apps/refunds/settings/one-hop.tsx",
+    title: "Refund settings one-hop",
+    scope: "refund-settings",
+    surface_type: "settings",
+    why: "Connects to the one-hop recovery pattern.",
+    refs: ["composition.pattern:one-hop-recovery"],
+  } as const;
   const refundExemplars = [
     exemplar("primary"),
     exemplar("secondary"),
     exemplar("tertiary"),
     exemplar("quaternary"),
+    ...(options.rankingPressure ? [oneHopExemplar] : []),
   ];
   return {
     name: "cash-dashboard",
@@ -148,11 +302,30 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
       prose: {
         summary: {
           product: "Cash Dashboard",
-          audience: ["operators"],
-          goals: ["make refund decisions feel reversible"],
-          anti_goals: ["hide money movement risk"],
-          tradeoffs: ["trust over throughput"],
-          tone: ["direct"],
+          audience: options.multiSentenceIdentity
+            ? ["operators", "agents generating product UI"]
+            : ["operators"],
+          goals: options.multiSentenceIdentity
+            ? [
+                "Keep product-surface composition fingerprints easy for agents to read.",
+                "Preserve surface composition across generation and review.",
+              ]
+            : ["make refund decisions feel reversible"],
+          anti_goals: options.multiSentenceIdentity
+            ? [
+                "Treat raw inventory as canonical surface guidance.",
+                "Let advisory review block work without deterministic checks.",
+              ]
+            : ["hide money movement risk"],
+          tradeoffs: options.multiSentenceIdentity
+            ? [
+                "Prefer compact durable prose over exhaustive surveys.",
+                "Preserve portable language over company-specific strategy.",
+              ]
+            : ["trust over throughput"],
+          tone: options.multiSentenceIdentity
+            ? ["plain", "precise"]
+            : ["direct"],
         },
         situations: [
           {
@@ -169,6 +342,18 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
           },
         ],
         principles: [
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "surface-only-guidance",
+                  principle: "Surface-only refund guidance.",
+                  applies_to: {
+                    surface_types: ["settings"],
+                  },
+                  guidance: ["Applies to settings surfaces broadly."],
+                },
+              ]
+            : []),
           {
             id: "trust-before-action",
             principle: "Trust cues should appear before irreversible actions.",
@@ -176,6 +361,7 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
               scopes: ["refund-settings"],
             },
             guidance: ["Put consequence copy near the submit affordance."],
+            counterexamples: ["Hide consequence copy until after submission."],
             check_refs: ["check:no-hardcoded-ui-color"],
           },
         ],
@@ -209,6 +395,17 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
       },
       composition: {
         patterns: [
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "one-hop-recovery",
+                  kind: "flow",
+                  pattern:
+                    "Show recovery details when an exemplar calls for them.",
+                  guidance: ["This pattern is reached only through refs."],
+                },
+              ]
+            : []),
           {
             id: "progressive-disclosure",
             kind: "flow",
@@ -217,8 +414,24 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
               scopes: ["refund-settings"],
             },
             guidance: ["Keep the default state scannable."],
+            anti_patterns: [
+              "Bury the refund summary behind advanced controls.",
+            ],
             check_refs: ["check:no-hardcoded-ui-color"],
           },
+          ...(options.rankingPressure
+            ? [
+                {
+                  id: "scope-density",
+                  kind: "layout",
+                  pattern: "Keep refund settings density consistent.",
+                  applies_to: {
+                    scopes: ["refund-settings"],
+                  },
+                  guidance: ["This pattern is directly scoped."],
+                },
+              ]
+            : []),
         ],
       },
     },
@@ -226,6 +439,24 @@ function context(options: { reorderUnrelated?: boolean } = {}): PackageContext {
       schema: "ghost.checks/v1",
       id: "cash-dashboard",
       checks: [
+        ...(options.rankingPressure
+          ? [
+              {
+                id: "unrelated-same-scope",
+                title: "Unrelated same-scope check",
+                status: "active",
+                severity: "nit",
+                applies_to: {
+                  scopes: ["refund-settings"],
+                  paths: ["apps/refunds/settings"],
+                },
+                detector: {
+                  type: "required-regex",
+                  pattern: "Refund",
+                },
+              },
+            ]
+          : []),
         {
           id: "no-hardcoded-ui-color",
           title: "Use design tokens for UI color",
