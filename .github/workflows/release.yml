@@ -70,7 +70,7 @@ jobs:
             | python3 -c "import json,sys; pkgs=json.load(sys.stdin); print(next(p['version'] for p in pkgs if p['name']=='@anarchitecture/ghost'))")"
           TAG="anarchitecture-ghost@${VERSION}"
           mkdir -p dist-tarball
-          pnpm --filter @anarchitecture/ghost pack --pack-destination "$GITHUB_WORKSPACE/dist-tarball"
+          node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --title "$TAG" --generate-notes
