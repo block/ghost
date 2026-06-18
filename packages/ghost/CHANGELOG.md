@@ -1,5 +1,17 @@
 # @anarchitecture/ghost
 
+## 0.12.0
+
+### Minor Changes
+
+- [#157](https://github.com/block/ghost/pull/157) [`c07632e`](https://github.com/block/ghost/commit/c07632efadcdcafb8db17fc469c3752594c89899) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add a Task Contract to Relay gather output with preserve, inspect, avoid, and validate actions.
+
+### Patch Changes
+
+- [#157](https://github.com/block/ghost/pull/157) [`20b959f`](https://github.com/block/ghost/commit/20b959f6d2eb2bc067a632de8bad88700afcf849) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Improve Relay selected-ref shortlisting with relevance-aware ordering.
+
+- [#157](https://github.com/block/ghost/pull/157) [`62494fd`](https://github.com/block/ghost/commit/62494fda4470ae3576e5749fd6ec0ad3ffa6bbb5) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Improve Relay brief readability and refresh Ghost's own fingerprint anchors.
+
 ## 0.11.2
 
 ### Patch Changes
