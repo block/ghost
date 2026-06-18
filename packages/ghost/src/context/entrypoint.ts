@@ -39,6 +39,12 @@ export interface ContextEntrypoint {
     tradeoffs: string[];
     tone: string[];
   };
+  actionContract: {
+    preserve: string[];
+    inspect: Array<{ path: string; reason: string }>;
+    avoid: string[];
+    validate: string[];
+  };
   selected: {
     prose: FingerprintGraphNode[];
     composition: FingerprintGraphNode[];
@@ -60,6 +66,7 @@ const CAPS = {
   exemplars: 3,
   checks: 6,
 } as const;
+const ACTION_CONTRACT_CAP = 5;
 
 export function buildContextEntrypoint(
   context: PackageContext,
@@ -91,7 +98,15 @@ export function buildContextEntrypoint(
       ? expandOneHop(directRefs, graph)
       : new Set<NodeRef>(graph.nodes.map((node) => node.ref));
   const status = directRefs.size > 0 ? "path-match" : "global-fallback";
-  const selected = selectNodes(graph, selectedRefs);
+  const selected = selectNodes(graph, selectedRefs, {
+    directRefs,
+    matchedScopeIds,
+    matchedSurfaceTypes,
+    requestedPaths,
+    useRelevance: status === "path-match",
+  });
+  const identity = identityFromFingerprint(context.fingerprint, context.name);
+  const suggestedReads = buildSuggestedReads(context, selected);
 
   return {
     name: context.name,
@@ -103,9 +118,10 @@ export function buildContextEntrypoint(
       sourceLayers: context.layerDirs ?? [],
       reasons: matchReasons(status, requestedPaths, matchedScopeIds),
     },
-    identity: identityFromFingerprint(context.fingerprint, context.name),
+    identity,
+    actionContract: buildActionContract(identity, selected, suggestedReads),
     selected,
-    suggestedReads: buildSuggestedReads(context, selected),
+    suggestedReads,
     omissions: buildOmissions(graph, selected),
     generatedCache: context.inventory,
   };
@@ -153,9 +169,12 @@ function identityFromFingerprint(
 function selectNodes(
   graph: FingerprintGraph,
   selectedRefs: Set<NodeRef>,
+  ranking: SelectionRanking,
 ): ContextEntrypoint["selected"] {
-  const selectedNodes = sortNodes(
+  const selectedNodes = sortSelectedNodes(
+    graph,
     graph.nodes.filter((node) => selectedRefs.has(node.ref)),
+    ranking,
   );
   return {
     prose: selectedNodes
@@ -173,6 +192,55 @@ function selectNodes(
       .filter((node) => node.kind === "check")
       .slice(0, CAPS.checks),
   };
+}
+
+interface SelectionRanking {
+  directRefs: Set<NodeRef>;
+  matchedScopeIds: string[];
+  matchedSurfaceTypes: string[];
+  requestedPaths: string[];
+  useRelevance: boolean;
+}
+
+function sortSelectedNodes(
+  graph: FingerprintGraph,
+  nodes: FingerprintGraphNode[],
+  ranking: SelectionRanking,
+): FingerprintGraphNode[] {
+  const sorted = sortNodes(nodes);
+  if (!ranking.useRelevance) return sorted;
+  return sorted.sort(
+    (a, b) =>
+      relevanceScore(b, graph, ranking) - relevanceScore(a, graph, ranking) ||
+      a.order - b.order,
+  );
+}
+
+function relevanceScore(
+  node: FingerprintGraphNode,
+  graph: FingerprintGraph,
+  ranking: SelectionRanking,
+): number {
+  let score = 0;
+  if (nodeMatchesTargets(node, ranking.requestedPaths)) score += 100;
+  if (intersects(node.appliesTo.scopes, ranking.matchedScopeIds)) score += 50;
+  if (intersects(node.appliesTo.surfaceTypes, ranking.matchedSurfaceTypes)) {
+    score += 20;
+  }
+  if (isConnectedToDirectRef(node.ref, graph, ranking.directRefs)) score += 10;
+  return score;
+}
+
+function isConnectedToDirectRef(
+  ref: NodeRef,
+  graph: FingerprintGraph,
+  directRefs: Set<NodeRef>,
+): boolean {
+  return graph.edges.some(
+    (edge) =>
+      (edge.from === ref && directRefs.has(edge.to)) ||
+      (edge.to === ref && directRefs.has(edge.from)),
+  );
 }
 
 function expandOneHop(
@@ -234,6 +302,50 @@ function buildSuggestedReads(
   return [...reads.entries()].map(([path, reason]) => ({ path, reason }));
 }
 
+function buildActionContract(
+  identity: ContextEntrypoint["identity"],
+  selected: ContextEntrypoint["selected"],
+  suggestedReads: ContextEntrypoint["suggestedReads"],
+): ContextEntrypoint["actionContract"] {
+  const prose = sortNodes(selected.prose);
+  const composition = sortNodes(selected.composition);
+  const preserve = uniqueCapped([
+    ...prose.map((node) => node.summary),
+    ...composition.map((node) => node.summary),
+    ...prose.flatMap((node) =>
+      node.details.filter((detail) => !isAvoidanceDetail(detail)),
+    ),
+  ]);
+  const inspect = uniqueInspectReads([
+    ...selected.exemplars
+      .map((exemplar) => {
+        const path = exemplar.appliesTo.paths[0];
+        return path
+          ? { path, reason: `source surface for ${exemplar.ref}` }
+          : undefined;
+      })
+      .filter((read): read is { path: string; reason: string } =>
+        Boolean(read),
+      ),
+    ...suggestedReads,
+  ]);
+  const avoid = uniqueCapped([
+    ...identity.antiGoals,
+    ...prose.flatMap((node) => node.details.filter(isAvoidanceDetail)),
+    ...composition.flatMap((node) => node.details.filter(isAvoidanceDetail)),
+  ]);
+  const validate =
+    selected.checks.length > 0
+      ? uniqueCapped(
+          selected.checks.map((node) => `${node.ref} - ${node.summary}`),
+        )
+      : [
+          "No selected active checks. Proposed or disabled checks are not blocking validation.",
+        ];
+
+  return { preserve, inspect, avoid, validate };
+}
+
 function buildOmissions(
   graph: FingerprintGraph,
   selected: ContextEntrypoint["selected"],
@@ -268,4 +380,36 @@ function buildOmissions(
       source: "fingerprint/enforcement/checks.yml",
     },
   ];
+}
+
+function uniqueCapped(values: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const normalized = value.trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    out.push(normalized);
+    if (out.length >= ACTION_CONTRACT_CAP) break;
+  }
+  return out;
+}
+
+function uniqueInspectReads(
+  reads: Array<{ path: string; reason: string }>,
+): Array<{ path: string; reason: string }> {
+  const seen = new Set<string>();
+  const out: Array<{ path: string; reason: string }> = [];
+  for (const read of reads) {
+    const path = read.path.trim();
+    if (!path || seen.has(path)) continue;
+    seen.add(path);
+    out.push({ path, reason: read.reason });
+    if (out.length >= ACTION_CONTRACT_CAP) break;
+  }
+  return out;
+}
+
+function isAvoidanceDetail(detail: string): boolean {
+  return /^(Refuses|Counterexample|Avoid):/.test(detail);
 }
