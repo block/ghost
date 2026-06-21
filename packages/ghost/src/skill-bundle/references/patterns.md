@@ -26,7 +26,8 @@ Add a pattern when it helps a future agent choose or review:
 - a restraint rule that preserves hierarchy, density, trust, or pacing
 
 Do not add a pattern just because a value or component exists. Put raw
-observations in `.ghost/fingerprint/sources/cache/` or keep them in scratch notes.
+observations in scratch notes; use `ghost signals` when raw repo facts help
+find candidate evidence.
 
 ## Shape
 
@@ -64,7 +65,7 @@ Allowed `kind` values:
 - Put obligations that affect failure, disclosure, recovery, or trust in
   `prose.experience_contracts`, not only `composition.patterns`.
 - Put broad surface intent in `prose.principles`.
-- Add `check_refs` only when a deterministic check exists in `fingerprint/enforcement/checks.yml`.
+- Add `check_refs` only when a deterministic check exists in `fingerprint/checks.yml`.
 
 ## Validate
 

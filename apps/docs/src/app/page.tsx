@@ -56,10 +56,9 @@ export default function Home() {
               surface together, and which examples show it at its best.
             </p>
             <p className="thesis-item">
-              Components, tokens, libraries, and generated cache become
-              implementation material. Ghost does not replace them. It gives
-              agents the surface context that tells them when and how those
-              materials belong.
+              Components, tokens, and libraries become implementation material.
+              Ghost does not replace them. It gives agents the surface context
+              that tells them when and how those materials belong.
             </p>
             <p className="thesis-item">Ghost keeps that model compact:</p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
@@ -72,35 +71,24 @@ export default function Home() {
                 <code>composition.yml</code> store the three core layers
               </li>
               <li>
-                <code>enforcement/checks.yml</code> stores optional
-                deterministic gates grounded in fingerprint refs
+                <code>checks.yml</code> stores optional deterministic gates
+                grounded in fingerprint refs
               </li>
               <li>
                 ordinary Git review separates draft fingerprint edits from
                 checked-in truth
-              </li>
-              <li>
-                <code>memory/intent.md</code> and <code>memory/decisions</code>{" "}
-                record optional human-approved context inside the package
-              </li>
-              <li>
-                <code>sources/cache</code> holds generated cache without
-                becoming canonical truth
               </li>
             </ul>
             <p className="thesis-item">
               The split is deliberate. <code>prose.yml</code> captures the
               intent behind the surface. <code>inventory.yml</code> captures the
               materials it draws from. <code>composition.yml</code> captures the
-              patterns that make it feel intentional. Cache answers what exists.
-              Checks validate output; they are not generation input.
+              patterns that make it feel intentional. Checks validate output;
+              they are not generation input.
             </p>
             <p className="thesis-item">A typical loop becomes:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
-              <li>
-                Brief from the fingerprint layers, generated cache when useful,
-                and exemplars
-              </li>
+              <li>Brief from the fingerprint layers and exemplars</li>
               <li>Generate or edit with the host agent</li>
               <li>Run active deterministic checks and advisory review</li>
               <li>
@@ -127,7 +115,7 @@ export default function Home() {
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>incorrect generation: agent failure</li>
-              <li>missing-memory: under-specified surface context</li>
+              <li>missing-fingerprint: under-specified surface context</li>
               <li>intentional product evolution</li>
             </ul>
             <p className="thesis-item">

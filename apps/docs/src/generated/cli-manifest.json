@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-17T18:35:34.326Z",
+  "generatedAt": "2026-06-20T14:38:52.556Z",
   "tools": [
     {
       "tool": "ghost",
@@ -64,14 +64,6 @@
               "description": "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--with-intent",
-              "name": "withIntent",
-              "description": "Also create optional fingerprint/memory/intent.md for human-authored or human-approved intent",
-              "default": null,
-              "takesValue": false,
               "negated": false
             },
             {
@@ -226,24 +218,24 @@
         },
         {
           "tool": "ghost",
-          "name": "inventory",
-          "rawName": "inventory [path]",
-          "description": "Emit deterministic raw signals about a frontend repo as JSON for optional cache/source material: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
+          "name": "signals",
+          "rawName": "signals [path]",
+          "description": "Emit deterministic raw repo signals as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
           "group": "advanced",
           "defaultHelp": false,
-          "compactName": "inventory",
-          "summary": "Emit raw repo signals for optional cache material.",
+          "compactName": "signals",
+          "summary": "Emit raw repo signals for fingerprint authoring.",
           "options": []
         },
         {
           "tool": "ghost",
           "name": "describe",
-          "rawName": "describe [fingerprint]",
-          "description": "Print a section map of fingerprint/memory/intent.md or a markdown file (line ranges + token estimates).",
+          "rawName": "describe <fingerprint>",
+          "description": "Print a section map of a markdown file (line ranges + token estimates).",
           "group": "advanced",
           "defaultHelp": false,
           "compactName": "describe",
-          "summary": "Print intent or markdown section ranges.",
+          "summary": "Print markdown section ranges.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -283,7 +275,7 @@
           "group": "maintenance",
           "defaultHelp": false,
           "compactName": "survey",
-          "summary": "Run survey/cache helpers.",
+          "summary": "Run legacy survey helpers.",
           "options": [
             {
               "rawName": "-o, --out <path>",
@@ -795,14 +787,6 @@
               "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--include-memory",
-              "name": "includeMemory",
-              "description": "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
-              "default": null,
-              "takesValue": false,
               "negated": false
             },
             {

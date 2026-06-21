@@ -13,7 +13,7 @@ describe("relay", () => {
   });
 
   it("gathers structured fingerprint context for a target", async () => {
-    const root = await track(createSingleSurfaceSandbox({ cache: "present" }));
+    const root = await track(createSingleSurfaceSandbox());
 
     const result = await gatherRelayContext({
       cwd: root,

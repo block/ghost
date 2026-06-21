@@ -50,7 +50,7 @@ function copyIfPresent(from, to) {
 }
 
 function copyDependency(name, nodeModulesDir) {
-  const dependencyPath = join(PACKAGE_DIR, "node_modules", ...name.split("/"));
+  const dependencyPath = resolveDependencyPath(name);
   if (!existsSync(dependencyPath)) {
     fail(
       `missing installed dependency ${name}; run pnpm install --frozen-lockfile first`,
@@ -63,6 +63,13 @@ function copyDependency(name, nodeModulesDir) {
     recursive: true,
     dereference: true,
   });
+}
+
+function resolveDependencyPath(name) {
+  const parts = name.split("/");
+  const packageLocalPath = join(PACKAGE_DIR, "node_modules", ...parts);
+  if (existsSync(packageLocalPath)) return packageLocalPath;
+  return join(ROOT, "node_modules", ...parts);
 }
 
 if (!DESTINATION) {

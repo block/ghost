@@ -10,10 +10,8 @@ export const REPO_ROOT = resolve(
   "../../../../..",
 );
 
-export type CacheState = "missing" | "present" | "malformed";
-
 export async function createSingleSurfaceSandbox(
-  options: { cache?: CacheState; reorderUnrelated?: boolean } = {},
+  options: { reorderUnrelated?: boolean } = {},
 ): Promise<string> {
   const root = await createTempRoot("single");
   await writeFiles(root, [
@@ -29,7 +27,6 @@ export async function createSingleSurfaceSandbox(
     fingerprint: singleSurfaceFingerprint(options.reorderUnrelated ?? false),
     checks: refundChecks(),
   });
-  await writeCache(root, options.cache ?? "missing");
   return root;
 }
 
@@ -178,7 +175,7 @@ async function writePackage(
   options: { fingerprint: string; checks?: string },
 ): Promise<void> {
   const fingerprintDir = join(pkg, "fingerprint");
-  await mkdir(join(fingerprintDir, "enforcement"), { recursive: true });
+  await mkdir(fingerprintDir, { recursive: true });
   await writeFile(
     join(fingerprintDir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: local\n",
@@ -195,33 +192,11 @@ async function writePackage(
   );
   if (options.checks) {
     await writeFile(
-      join(fingerprintDir, "enforcement", "checks.yml"),
+      join(fingerprintDir, "checks.yml"),
       options.checks,
       "utf-8",
     );
   }
-}
-
-async function writeCache(root: string, state: CacheState): Promise<void> {
-  if (state === "missing") return;
-  const cacheDir = join(root, ".ghost", "fingerprint", "sources", "cache");
-  await mkdir(cacheDir, { recursive: true });
-  await writeFile(
-    join(cacheDir, "inventory.json"),
-    state === "malformed"
-      ? "{nope"
-      : JSON.stringify(
-          {
-            platform_hints: ["web"],
-            build_system_hints: ["vite"],
-            package_manifests: ["package.json"],
-            candidate_config_files: ["apps/refunds/theme.ts"],
-          },
-          null,
-          2,
-        ),
-    "utf-8",
-  );
 }
 
 function proseLayer(raw: string): string {

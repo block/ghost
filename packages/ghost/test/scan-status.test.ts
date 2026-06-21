@@ -42,7 +42,7 @@ describe("scanStatus readiness", () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("present");
-    expect(status.cache.state).toBe("missing");
+    expect("cache" in status).toBe(false);
     expect(status.recommended_next).toBeNull();
     expect(status.readiness.state).toBe("fingerprint-empty");
     expect(status.readiness.layer_counts).toEqual({
@@ -57,7 +57,7 @@ describe("scanStatus readiness", () => {
     ]);
   });
 
-  it("does not count generated cache as canonical inventory readiness", async () => {
+  it("does not report sources cache as package readiness", async () => {
     await mkdir(join(dir, "fingerprint", "sources", "cache"), {
       recursive: true,
     });
@@ -69,7 +69,7 @@ describe("scanStatus readiness", () => {
 
     const status = await scanStatus(dir);
 
-    expect(status.cache.state).toBe("present");
+    expect("cache" in status).toBe(false);
     expect(status.readiness.state).toBe("fingerprint-empty");
     expect(status.readiness.layer_counts.inventory).toBe(0);
   });
@@ -213,7 +213,7 @@ composition:
 
     const status = await scanStatus(dir);
 
-    expect(status.cache.state).toBe("missing");
+    expect("cache" in status).toBe(false);
     expect(status.readiness.state).toBe("fingerprint-ready");
     expect(status.readiness.layer_counts).toEqual({
       prose: 1,

@@ -1,5 +1,4 @@
 import type { ContextEntrypoint, FingerprintGraphNode } from "./entrypoint.js";
-import type { PackageInventory } from "./package-context.js";
 
 export function formatContextEntrypointMarkdown(
   entrypoint: ContextEntrypoint,
@@ -17,7 +16,6 @@ export function formatContextEntrypointMarkdown(
   parts.push(formatActionContract(entrypoint));
   parts.push(formatReadFirst(entrypoint));
   parts.push(formatValidation(entrypoint));
-  parts.push(formatGeneratedCache(entrypoint.generatedCache));
   parts.push(formatSuggestedReads(entrypoint));
   parts.push(formatOmissions(entrypoint));
   parts.push(formatUseThisContext());
@@ -100,42 +98,6 @@ function formatValidation(entrypoint: ContextEntrypoint): string {
       lines.push(`  - ${detail}`);
     }
   }
-  return lines.join("\n");
-}
-
-function formatGeneratedCache(inventory: PackageInventory): string {
-  const lines = ["## Generated Cache"];
-  lines.push(
-    "- Generated cache is optional source material, not canonical fingerprint context.",
-  );
-  if (inventory.state === "missing") {
-    lines.push("- State: missing.");
-    return lines.join("\n");
-  }
-  if (inventory.state === "unreadable") {
-    lines.push(
-      `- State: present at \`${inventory.path}\`, but it could not be read: ${inventory.error}.`,
-    );
-    return lines.join("\n");
-  }
-  lines.push(`- State: present at \`${inventory.path}\`.`);
-  pushJoined(lines, "Platform hints", inventory.summary.platform_hints, {
-    code: true,
-  });
-  pushJoined(lines, "Build hints", inventory.summary.build_system_hints, {
-    code: true,
-  });
-  pushJoined(lines, "Package manifests", inventory.summary.package_manifests, {
-    code: true,
-  });
-  pushJoined(
-    lines,
-    "Config candidates",
-    inventory.summary.candidate_config_files,
-    {
-      code: true,
-    },
-  );
   return lines.join("\n");
 }
 

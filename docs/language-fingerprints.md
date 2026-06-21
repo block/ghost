@@ -12,7 +12,7 @@ surface-composition concern:
 - `fingerprint/inventory.yml` points at copy material and external writing
   standards.
 - `fingerprint/composition.yml` carries copy patterns.
-- `fingerprint/enforcement/checks.yml` carries the deterministic subset.
+- `fingerprint/checks.yml` carries the deterministic subset.
 
 This document shows the mapping. Nothing here changes the
 `ghost.fingerprint/v1` schema.
@@ -143,7 +143,7 @@ Only the mechanically detectable subset belongs in `checks.yml`. The
 required boilerplate today:
 
 ```yaml
-# fingerprint/enforcement/checks.yml
+# fingerprint/checks.yml
 checks:
   - id: no-banned-phrases
     title: Banned phrases stay out of user-facing copy

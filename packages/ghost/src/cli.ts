@@ -234,10 +234,6 @@ export function buildCli(): ReturnType<typeof cac> {
       "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
-      "--include-memory",
-      "Include accepted decisions as accepted_decisions in the advisory packet (flag name retained).",
-    )
-    .option(
       "--max-diff-bytes <n>",
       "Maximum diff bytes to include in the review packet (default: 200000)",
     )
@@ -266,7 +262,6 @@ export function buildCli(): ReturnType<typeof cac> {
           memoryDir:
             typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           diffText,
-          includeAcceptedDecisions: Boolean(opts.includeMemory),
           maxDiffBytes,
         });
         if (opts.format === "json") {

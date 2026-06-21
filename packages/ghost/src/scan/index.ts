@@ -1,10 +1,7 @@
 export {
-  CACHE_DIRNAME,
   CONFIG_FILENAME,
   FINGERPRINT_DIRNAME,
-  FINGERPRINT_MEMORY_DIRNAME,
   FINGERPRINT_PACKAGE_DIR,
-  FINGERPRINT_SOURCES_DIRNAME,
 } from "./constants.js";
 export type {
   DiscoveredGhostPackage,
@@ -26,7 +23,7 @@ export {
   resolveGitRoot,
   resolveMemoryDirDefault,
 } from "./fingerprint-stack.js";
-export { inventory } from "./inventory.js";
+export { signals } from "./inventory.js";
 export type {
   ScanScopeReport,
   ScanStage,

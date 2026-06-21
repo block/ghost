@@ -12,9 +12,8 @@ Ghost provides:
 - `.ghost/fingerprint/` package loading and stack merging.
 - `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and
   `fingerprint/composition.yml` as generation context.
-- Optional `fingerprint/enforcement/checks.yml`,
-  `fingerprint/memory/intent.md`, `fingerprint/memory/decisions/`, and
-  `fingerprint/sources/cache/`.
+- Optional `fingerprint/checks.yml`.
+- `ghost signals` stdout output for raw repo observations.
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved
   fingerprint stack.
@@ -33,9 +32,8 @@ Host adapters provide:
 - policy for when a finding blocks, comments, or remains advisory
 - normal Git review for fingerprint edits
 
-Generated cache is optional source material. Adapters should not treat
-`.ghost/fingerprint/sources/cache/inventory.json` as canonical inventory; the
-checked-in core layer files remain the authority.
+Raw repo signals are authoring evidence, not canonical inventory. The checked-in
+core layer files remain the authority.
 
 ## Check Flow
 

@@ -10,10 +10,7 @@ Canonical package:
     prose.yml                   core surface intent
     inventory.yml               core material and source links
     composition.yml             core patterns
-    enforcement/checks.yml      optional ghost.checks/v1 gates
-    memory/intent.md            optional human-approved intent
-    memory/decisions/           optional ghost.decision/v1 rationale
-    sources/cache/              optional generated observations
+    checks.yml      optional ghost.checks/v1 gates
 ```
 
 Git is the approval boundary: checked-in `fingerprint/` core files are
@@ -38,9 +35,8 @@ Use these typed refs:
 - `composition.pattern:<id>`
 - `check:<id>`
 
-`inventory.sources[].kind` may be `cache`, `registry`, `file`, `url`, or
-`package`.
+`inventory.sources[].kind` may be `registry`, `file`, `url`, or `package`.
 
-`fingerprint/enforcement/checks.yml` remains deterministic only. Ref-backed
+`fingerprint/checks.yml` remains deterministic only. Ref-backed
 checks are preferred; missing or unresolved derivation refs lint as warnings.
 Inventory refs can support a check but do not establish surface guidance alone.
