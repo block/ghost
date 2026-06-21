@@ -70,15 +70,14 @@ Set up the Ghost fingerprint for this repo with auto-draft.
 
 ```bash
 ghost scan --format json
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Generated cache is source material only. It can support curated inventory, but
-it does not establish surface-composition guidance by itself. Scan frequency and
-raw cache may seed a draft, but they do not decide what the surface should do.
+Raw repo signals are source evidence only. They can support curated inventory,
+but they do not establish surface-composition guidance by themselves. Signal
+frequency may seed a draft, but it does not decide what the surface should do.
 
 </DocSection>
 
@@ -91,9 +90,7 @@ Keep each claim in the file that will make it useful later:
 | `prose.yml` | Audience, goals, anti-goals, situations, principles, and experience contracts. |
 | `inventory.yml` | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
 | `composition.yml` | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
-| `enforcement/checks.yml` | Deterministic gates that can be checked from a diff. |
-| `memory/` | Human-approved intent and accepted or rejected rationale. |
-| `sources/cache/` | Refreshable generated observations. |
+| `checks.yml` | Deterministic gates that can be checked from a diff. |
 
 </DocSection>
 
@@ -110,7 +107,7 @@ Keep broad product-family guidance at the root. Put local obligations in the
 nearest package that owns the surface.
 
 ```bash
-ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout
 ghost stack apps/checkout
 ghost lint --all
 ghost verify --all
@@ -123,9 +120,7 @@ ghost verify --all
 Uncommitted or unmerged fingerprint edits are drafts. Checked-in
 `fingerprint/` core files are canonical.
 
-Use optional `fingerprint/memory/intent.md` only for human-authored or
-human-approved intent. Use `fingerprint/memory/decisions/` for rationale that
-explains why a product choice changed. Add deterministic checks sparingly, and
-only when a rule can be enforced deterministically.
+Add deterministic checks sparingly, and only when a rule can be enforced
+deterministically.
 
 </DocSection>

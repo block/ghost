@@ -1,5 +1,5 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
@@ -35,11 +35,12 @@ import {
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   discoverGhostPackages,
+  FINGERPRINT_DIRNAME,
   fingerprintPackageDisplayPath,
-  inventory,
   normalizeMemoryDir,
   resolveMemoryDirDefault,
   scanStatus,
+  signals,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
 import { registerStackCommand } from "./scan-stack-command.js";
@@ -49,7 +50,7 @@ import { registerStackCommand } from "./scan-stack-command.js";
  *
  * Verbs author and validate the root `.ghost/` fingerprint package:
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
- * fidelity), `describe` (section ranges + token estimates for intent or direct
+ * fidelity), `describe` (section ranges + token estimates for direct
  * fingerprint markdown), `diff` (structural prose-level diff between direct
  * fingerprint files), `emit` (derive review-command artifacts), and `survey`
  * operations for deterministic `ghost.survey/v1`
@@ -144,10 +145,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
-      "--with-intent",
-      "Also create optional fingerprint/memory/intent.md for human-authored or human-approved intent",
-    )
-    .option(
       "--with-config",
       "Also create optional config.yml for implementation roots and reference registries/libraries",
     )
@@ -174,7 +171,6 @@ export function registerFingerprintCommands(cli: CAC): void {
             ? memoryDirFromOpts(opts)
             : undefined;
         const initOptions = {
-          withIntent: Boolean(opts.withIntent),
           withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
@@ -195,7 +191,6 @@ export function registerFingerprintCommands(cli: CAC): void {
           process.stdout.write(
             `${JSON.stringify(
               initCommandOutput(paths, {
-                includeIntent: Boolean(opts.withIntent),
                 includeConfig: Boolean(opts.withConfig || opts.reference),
               }),
               null,
@@ -210,12 +205,9 @@ export function registerFingerprintCommands(cli: CAC): void {
           process.stdout.write(`  prose.yml: ${paths.prose}\n`);
           process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
           process.stdout.write(`  composition.yml: ${paths.composition}\n`);
-          process.stdout.write(`  enforcement/checks.yml: ${paths.checks}\n`);
+          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
-          }
-          if (opts.withIntent) {
-            process.stdout.write(`  memory/intent.md: ${paths.intent}\n`);
           }
         }
         process.exit(0);
@@ -335,14 +327,9 @@ export function registerFingerprintCommands(cli: CAC): void {
             `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
-            `  checks      (fingerprint/enforcement/checks.yml): ${fmt(status.checks.state)}\n`,
+            `  checks      (fingerprint/checks.yml): ${fmt(status.checks.state)}\n`,
           );
-          process.stdout.write(
-            `  cache       (fingerprint/sources/cache/):          ${fmt(status.cache.state)}\n`,
-          );
-          process.stdout.write(
-            `  intent     (fingerprint/memory/intent.md):     ${fmt(status.intent.state)}\n\n`,
-          );
+          process.stdout.write("\n");
           if (status.recommended_next) {
             process.stdout.write(
               `next: run the ${status.recommended_next} stage\n`,
@@ -426,16 +413,16 @@ export function registerFingerprintCommands(cli: CAC): void {
 
   registerStackCommand(cli);
 
-  // --- inventory ---
+  // --- signals ---
   cli
     .command(
-      "inventory [path]",
-      "Emit deterministic raw signals about a frontend repo as JSON for optional cache/source material: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
+      "signals [path]",
+      "Emit deterministic raw repo signals as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
     )
     .action(async (path: string | undefined) => {
       try {
         const target = resolve(process.cwd(), path ?? ".");
-        const out = inventory(target);
+        const out = signals(target);
         process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
         process.exit(0);
       } catch (err) {
@@ -449,15 +436,13 @@ export function registerFingerprintCommands(cli: CAC): void {
   // --- describe ---
   cli
     .command(
-      "describe [fingerprint]",
-      "Print a section map of fingerprint/memory/intent.md or a markdown file (line ranges + token estimates).",
+      "describe <fingerprint>",
+      "Print a section map of a markdown file (line ranges + token estimates).",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (path: string | undefined, opts) => {
+    .action(async (path: string, opts) => {
       try {
-        const target = path
-          ? resolve(process.cwd(), path)
-          : resolveFingerprintPackage(undefined, process.cwd()).intent;
+        const target = resolve(process.cwd(), path);
         const raw = await readFile(target, "utf-8");
         const layout = layoutFingerprint(raw);
         if (opts.format === "json") {
@@ -701,7 +686,6 @@ async function nestedPackageStatus(
         ...pkg,
         fingerprint: status.fingerprint,
         checks: status.checks,
-        intent: status.intent,
         readiness: status.readiness,
       };
     }),
@@ -715,7 +699,6 @@ interface NestedPackageStatus {
   fingerprint_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
   checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
-  intent: Awaited<ReturnType<typeof scanStatus>>["intent"];
   readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
 }
 
@@ -736,7 +719,7 @@ function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
 
 function initCommandOutput(
   paths: ReturnType<typeof resolveFingerprintPackage>,
-  options: { includeIntent: boolean; includeConfig: boolean },
+  options: { includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
@@ -747,7 +730,6 @@ function initCommandOutput(
     composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
 }
 
@@ -755,7 +737,10 @@ async function loadSiblingFingerprintForChecksLint(
   fileTarget: string,
 ): Promise<GhostFingerprintDocument | undefined> {
   const checksDir = dirname(fileTarget);
-  const packageRoot = resolve(checksDir, "..", "..");
+  const packageRoot =
+    basename(checksDir) === FINGERPRINT_DIRNAME
+      ? resolve(checksDir, "..")
+      : resolve(checksDir, "..", "..");
   try {
     return (
       await loadFingerprintPackage(resolveFingerprintPackage(packageRoot))
@@ -905,7 +890,7 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       traits: traitsForPattern(entry.value, survey),
       evidence: entry.evidence,
       advisory: [
-        "Use as advisory composition evidence; deterministic enforcement belongs in fingerprint/enforcement/checks.yml.",
+        "Use as advisory composition evidence; deterministic checks belong in fingerprint/checks.yml.",
       ],
     })),
     advisory: {
@@ -919,7 +904,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
       "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
-      "Treat fingerprint/memory/intent.md as human authority when present.",
+      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
     ];
   }
 
@@ -930,14 +915,14 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
       "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-      "Treat fingerprint/memory/intent.md as human authority when present.",
+      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
     ];
   }
 
   return [
     "Identify the surface type before assessing composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-    "Treat fingerprint/memory/intent.md as human authority when present.",
+    "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
   ];
 }
 

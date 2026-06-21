@@ -30,7 +30,7 @@ pnpm --filter @anarchitecture/ghost exec ghost <command>
 
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. Ghost is the deterministic
-calculator the agent reaches for: schema validation, inventory/cache helpers,
+calculator the agent reaches for: schema validation, repo-signal helpers,
 structural diffs, drift checks, comparison math, and handoff packets.
 
 The canonical root `.ghost/` package follows:
@@ -42,10 +42,7 @@ fingerprint/
   prose.yml
   inventory.yml
   composition.yml
-  enforcement/checks.yml
-  memory/intent.md
-  memory/decisions/
-  sources/cache/
+  checks.yml
 ```
 
 The three root layer files under `fingerprint/` are the core model:
@@ -54,13 +51,10 @@ The three root layer files under `fingerprint/` are the core model:
 - `inventory.yml` for curated material, exemplars, and source links.
 - `composition.yml` for experience patterns.
 
-Supporting files live under purpose folders. `enforcement/checks.yml` is
-validation and enforcement, not generation input. `memory/intent.md` and
-`memory/decisions/` hold optional human context and rationale. Generated cache
-in `sources/cache/` is optional source material; it answers what exists, while
-core fingerprint layers answer what the surface is trying to do. `.ghost/config.yml`
-remains local adapter/routing config outside portable context. Ordinary Git
-review is the approval boundary for fingerprint edits.
+`checks.yml` validates output and can enforce deterministic gates; it is not
+generation input.
+`.ghost/config.yml` remains local adapter/routing config outside portable
+context. Ordinary Git review is the approval boundary for fingerprint edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
 appear in older repos or as migration source material. They are not canonical
@@ -80,14 +74,14 @@ fingerprint input for new Ghost work.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/fingerprint/` with manifest, core layers, and enforcement checks. |
+| `ghost init` | Create `.ghost/fingerprint/` with manifest, core layers, and deterministic checks. |
 | `ghost scan` | Report fingerprint layer readiness and BYOA next-step guidance. |
-| `ghost inventory` | Emit raw repo signals as JSON for optional cache/source material. |
+| `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
 | `ghost lint` | Validate a fingerprint package or single artifact. |
-| `ghost verify` | Validate fingerprint evidence and exemplar paths, typed check refs, and optional rationale files. |
-| `ghost describe` | Print optional `fingerprint/memory/intent.md` or direct markdown section ranges. |
+| `ghost verify` | Validate fingerprint evidence and exemplar paths, and typed check refs. |
+| `ghost describe` | Print direct markdown section ranges. |
 | `ghost diff` | Structural prose-level diff between direct fingerprints. |
-| `ghost survey <op>` | Legacy/cache helpers for optional `ghost.survey/v1` workflows. |
+| `ghost survey <op>` | Legacy survey helpers for optional `ghost.survey/v1` workflows. |
 | `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint layers, inventory exemplars, checks, and the diff. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |

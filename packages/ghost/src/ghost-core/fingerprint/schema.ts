@@ -175,7 +175,6 @@ export const GhostFingerprintInventoryBuildingBlocksSchema = z
   .strict();
 
 export const GhostFingerprintInventorySourceKindSchema = z.enum([
-  "cache",
   "registry",
   "file",
   "url",

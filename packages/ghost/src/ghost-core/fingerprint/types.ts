@@ -77,7 +77,6 @@ export interface GhostFingerprintInventoryBuildingBlocks {
 }
 
 export type GhostFingerprintInventorySourceKind =
-  | "cache"
   | "registry"
   | "file"
   | "url"

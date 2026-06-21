@@ -24,10 +24,7 @@ The canonical package is intentionally small:
     prose.yml                   # surface intent
     inventory.yml               # curated material and exemplars
     composition.yml             # patterns, flows, states, and arrangements
-    enforcement/checks.yml      # optional deterministic gates
-    memory/intent.md            # optional human-approved intent
-    memory/decisions/           # optional rationale history
-    sources/cache/              # optional generated observations
+    checks.yml                  # optional deterministic gates
 ```
 
 Generation uses the three core layers:
@@ -37,14 +34,14 @@ Generation uses the three core layers:
 - `composition.yml` captures the patterns that make those materials feel like
   one intentional product.
 
-Checks, memory, generated cache, nested packages, and custom host-wrapper
-package locations are supporting features. They do not replace the core
-fingerprint layers. Generated cache answers what exists; curated fingerprint
-layers answer what the surface is trying to preserve.
+Checks, nested packages, custom host-wrapper package locations, and raw repo
+signals are supporting features. They do not replace the core fingerprint
+layers. `ghost signals` answers what exists; curated fingerprint layers answer
+what the surface is trying to preserve.
 
 Older `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, and direct
-`fingerprint.yml` artifacts can still inform migration or cache workflows, but
-new Ghost work should target `.ghost/fingerprint/`.
+`fingerprint.yml` artifacts can still inform migration workflows, but new Ghost
+work should target `.ghost/fingerprint/`.
 
 ## Project Status: Beta
 
@@ -96,14 +93,13 @@ edits, and asks you to curate the claims.
 ```bash
 ghost init
 ghost scan --format json
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ghost lint .ghost
 ghost verify .ghost --root .
 ```
 
-Use `--with-intent`, `--with-config`, `--reference`, or `--scope` only when the
-repo needs those optional files, reference libraries, or nested product areas.
+Use `--with-config`, `--reference`, or `--scope` only when the repo needs local
+routing, reference libraries, or nested product areas.
 Host wrappers that need Ghost files somewhere other than `.ghost` may set
 `GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process, or pass
 `--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
@@ -131,7 +127,7 @@ same fingerprint:
 
 ```bash
 ghost check --base main
-ghost review --base main --include-memory
+ghost review --base main
 ```
 
 `ghost check` runs active `ghost.checks/v1` gates and can fail. `ghost review`
@@ -162,15 +158,15 @@ useful layer content. It does not call an LLM.
 | `ghost init` | Create `.ghost/fingerprint/` package layers. |
 | `ghost scan` | Report fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
-| `ghost verify` | Validate evidence paths, exemplar paths, typed check refs, and optional rationale files. |
+| `ghost verify` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check` | Run active deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory packet from fingerprint layers and a diff. |
 | `ghost relay gather` | Gather fingerprint-grounded context for an agent target. |
 | `ghost emit <kind>` | Emit `review-command` artifacts. |
 | `ghost skill install` | Install the unified Ghost skill bundle. |
 | `ghost stack` | Inspect resolved root-to-leaf fingerprint stacks. |
-| `ghost inventory` | Emit raw repo signals as JSON for optional cache material. |
-| `ghost describe` | Print optional intent or markdown section ranges. |
+| `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
+| `ghost describe` | Print markdown section ranges. |
 | `ghost compare` | Compare fingerprint packages. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 | `ghost diff` / `survey` | Maintain direct markdown fingerprints or survey/cache files for compatibility workflows. |

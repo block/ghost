@@ -16,7 +16,7 @@ ghost check --base <ref>
 ```
 
 Fix deterministic failures first. These come from active
-`fingerprint/enforcement/checks.yml` rules and are the only blocking findings.
+`fingerprint/checks.yml` rules and are the only blocking findings.
 
 ## 2. Build Advisory Context
 
@@ -28,14 +28,14 @@ Use the emitted packet as context. It includes:
 
 - `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and `fingerprint/composition.yml`
 - curated inventory exemplars
-- active checks from `fingerprint/enforcement/checks.yml`
-- optional stack, config, intent, or accepted decision context when present or requested
+- active checks from `fingerprint/checks.yml`
+- optional stack or config context when present or requested
 - the diff
 
 ## 3. Write Advisory Findings
 
 Advisory findings are non-blocking unless tied to an active deterministic check.
-Classify each finding as `fix`, `intentional-divergence`, `missing-memory`,
+Classify each finding as `fix`, `intentional-divergence`, `missing-fingerprint`,
 `experience-gap`, or `eval-uncertainty`.
 
 Each finding must cite the diff location, relevant fingerprint core layer refs,
@@ -46,5 +46,5 @@ When fingerprint layers are silent, local evidence can still support advisory
 critique. Label those findings as provisional and non-Ghost-backed.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint
-package and optional rationale files. Do not silently rewrite the Ghost package
-during review unless the user asks for fingerprint edits.
+package. Do not silently rewrite the Ghost package during review unless the user
+asks for fingerprint edits.

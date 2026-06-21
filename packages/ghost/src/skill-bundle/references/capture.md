@@ -24,10 +24,7 @@ Ghost treats the fingerprint package as canonical.
     prose.yml
     inventory.yml
     composition.yml
-    enforcement/checks.yml
-    memory/intent.md
-    memory/decisions/
-    sources/cache/
+    checks.yml
 ```
 
 `prose.yml` captures the intent behind the surface. `inventory.yml` records
@@ -68,9 +65,8 @@ ghost init
 ghost scan
 ```
 
-Use `--with-intent` only when you have human-authored or human-approved context
-to preserve. Use `--with-config --reference <path-or-registry>` when local
-routing or a reference UI registry/library should be recorded in `.ghost/config.yml`.
+Use `--with-config --reference <path-or-registry>` when local routing or a
+reference UI registry/library should be recorded in `.ghost/config.yml`.
 
 ### 3. Auto-Draft Mode
 
@@ -84,14 +80,13 @@ Auto-draft is a skill workflow, not a Ghost CLI action or flag.
 
 1. If `.ghost/fingerprint/manifest.yml` is missing, run `ghost init`.
 2. Run `ghost scan --format json`.
-3. Create generated cache:
+3. Gather raw repo signals:
 
    ```bash
-   mkdir -p .ghost/fingerprint/sources/cache
-   ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+   ghost signals .
    ```
 
-4. Inspect high-signal files from the inventory, plus routes, docs, stories,
+4. Inspect high-signal files from the signals, plus routes, docs, stories,
    tests, tokens, registries, assets, screenshots, and exemplars.
 5. Write only the smallest evidence-backed starter entries into
    `prose.yml`, `inventory.yml`, and `composition.yml`.
@@ -110,11 +105,10 @@ behavior, copy, accessibility, trust, and flow.
 Optional helper:
 
 ```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ```
 
-Treat generated cache as scratch material. Do not copy raw inventory into
+Treat signals as scratch observations. Do not copy raw signals into
 `inventory.yml` without curation.
 
 ### 5. Write Core Layers
@@ -132,7 +126,7 @@ treating draft content as durable fingerprint guidance.
 
 ### 6. Add Checks Sparingly
 
-`fingerprint/enforcement/checks.yml` is the executable appendix. Add only
+`fingerprint/checks.yml` is the executable appendix. Add only
 deterministic checks with typed derivation refs:
 
 ```yaml
@@ -159,7 +153,7 @@ packages exist.
 ## Never
 
 - Never describe any file outside `.ghost/fingerprint/` as canonical package input.
-- Never treat generated cache as canonical inventory.
+- Never treat raw `ghost signals` output as canonical inventory.
 - Never treat auto-draft as a CLI feature or a replacement for human curation.
 - Never invent surface-composition obligations absent from evidence or human direction.
 - Never promote subjective taste directly into checks; make it deterministic or keep it advisory.

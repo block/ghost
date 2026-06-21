@@ -81,8 +81,6 @@ export interface ScanStatus {
   fingerprint: ScanStageReport;
   config: ScanStageReport;
   checks: ScanStageReport;
-  intent: ScanStageReport;
-  cache: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
   readiness: ScanReadinessReport;
@@ -93,9 +91,7 @@ export interface ScanStatus {
  * Inspect a Ghost fingerprint directory and report whether the canonical
  * `fingerprint/manifest.yml` exists with useful prose, inventory, and
  * composition layers.
- * Generated cache is source material, not readiness for the curated
- * inventory layer. Optional checks and rationale files are supplemental when
- * present.
+ * Optional checks are supplemental when present.
  */
 export async function scanStatus(
   dirPath: string,
@@ -106,21 +102,11 @@ export async function scanStatus(
   const fingerprintPath = paths.fingerprintDir;
   const configPath = resolve(dir, CONFIG_FILENAME);
   const checksPath = paths.checks;
-  const intentPath = paths.intent;
-  const cachePath = paths.cache;
 
-  const [
-    fingerprintPresent,
-    configPresent,
-    checksPresent,
-    intentPresent,
-    cachePresent,
-  ] = await Promise.all([
+  const [fingerprintPresent, configPresent, checksPresent] = await Promise.all([
     pathExists(paths.manifest, "file"),
     pathExists(configPath, "file"),
     pathExists(checksPath, "file"),
-    pathExists(intentPath, "file"),
-    pathExists(cachePath, "directory"),
   ]);
 
   const fingerprint: ScanStageReport = {
@@ -135,22 +121,12 @@ export async function scanStatus(
     state: configPresent ? "present" : "missing",
     path: configPath,
   };
-  const intent: ScanStageReport = {
-    state: intentPresent ? "present" : "missing",
-    path: intentPath,
-  };
-  const cache: ScanStageReport = {
-    state: cachePresent ? "present" : "missing",
-    path: cachePath,
-  };
 
   const status: ScanStatus = {
     dir,
     fingerprint,
     config,
     checks,
-    intent,
-    cache,
     readiness: await scanReadiness(paths, fingerprintPresent),
     recommended_next: fingerprintPresent ? null : "fingerprint",
   };

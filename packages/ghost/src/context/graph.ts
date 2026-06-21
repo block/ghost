@@ -205,7 +205,7 @@ export function buildFingerprintGraph(
         check.repair ? `Repair: ${check.repair}` : "",
         detectorSummary(check),
       ].filter(Boolean),
-      sourceFile: "fingerprint/enforcement/checks.yml",
+      sourceFile: "fingerprint/checks.yml",
       appliesTo: applicabilityFromCheck(check),
     });
     addRefEdges(ref, check.derivation?.prose, "check prose derivation");

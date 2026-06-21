@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import type { Dirent } from "node:fs";
-import { access, mkdir, readdir, readFile, stat } from "node:fs/promises";
+import { access, mkdir, readdir, stat } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
@@ -10,10 +10,6 @@ import {
   type GhostCheck,
   type GhostChecksDocument,
   GhostChecksSchema,
-  type GhostDecisionDocument,
-  GhostDecisionSchema,
-  type GhostExperienceEvidence,
-  type GhostExperienceScope,
   type GhostFingerprintComposition,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
@@ -24,15 +20,10 @@ import {
   type GhostFingerprintTopology,
   type GhostFingerprintTopologyScope,
   lintGhostChecks,
-  lintGhostDecision,
   lintGhostFingerprint,
   type MapFrontmatter,
 } from "#ghost-core";
-import {
-  loadPackageInventory,
-  type PackageContext,
-  type PackageInventory,
-} from "../context/package-context.js";
+import type { PackageContext } from "../context/package-context.js";
 import { readOptionalUtf8 } from "../internal/fs.js";
 import {
   FINGERPRINT_DIRNAME,
@@ -83,9 +74,6 @@ export interface GhostFingerprintStackLayer
   fingerprint_raw: string;
   checks?: GhostChecksDocument;
   checks_raw?: string;
-  intent?: string;
-  inventory: PackageInventory;
-  decisions: GhostDecisionDocument[];
 }
 
 export interface GhostFingerprintStack {
@@ -96,8 +84,6 @@ export interface GhostFingerprintStack {
   merged: {
     fingerprint: GhostFingerprintDocument;
     checks: GhostChecksDocument;
-    intent: string | null;
-    decisions: GhostDecisionDocument[];
   };
   provenance: {
     merge: "child-wins-by-id";
@@ -265,7 +251,6 @@ export function buildFingerprintStack(
     layers.map((layer) => layer.fingerprint),
   );
   const checks = mergeChecks(layers.map((layer) => layer.checks));
-  const decisions = mergeById(layers.flatMap((layer) => layer.decisions));
   const checkLint = lintGhostChecks(checks, {
     fingerprint,
     map: mapFromFingerprint(fingerprint),
@@ -287,8 +272,6 @@ export function buildFingerprintStack(
     merged: {
       fingerprint,
       checks,
-      intent: mergeIntent(layers),
-      decisions,
     },
     provenance: {
       merge: "child-wins-by-id",
@@ -305,12 +288,9 @@ export async function loadFingerprintStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
   const root = rootForFingerprintPackageDir(paths.dir, normalizedMemoryDir);
-  const [loaded, checksRaw, intent, inventory, decisions] = await Promise.all([
+  const [loaded, checksRaw] = await Promise.all([
     loadFingerprintPackage(paths),
     readOptional(paths.checks),
-    readOptional(paths.intent),
-    loadPackageInventory(paths),
-    readDecisionDirectory(paths.decisions),
   ]);
 
   const fingerprint = normalizeFingerprintPaths(
@@ -341,11 +321,6 @@ export async function loadFingerprintStackLayer(
     fingerprint_raw: stringifyYaml(fingerprint, { lineWidth: 0 }),
     ...(checks ? { checks } : {}),
     ...(checksRaw ? { checks_raw: checksRaw } : {}),
-    ...(intent ? { intent } : {}),
-    inventory,
-    decisions: decisions.map((decision) =>
-      normalizeDecisionPaths(decision, root, repoRoot),
-    ),
   };
 }
 
@@ -369,11 +344,6 @@ export function fingerprintStackToPackageContext(
     fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
     checks: stack.merged.checks,
     checksRaw: stringifyYaml(stack.merged.checks, { lineWidth: 0 }),
-    intent: stack.merged.intent ?? undefined,
-    inventory: stack.layers.at(-1)?.inventory ?? {
-      state: "missing",
-      path: `${stack.fingerprint_dir}/fingerprint/sources/cache/inventory.json`,
-    },
   };
 }
 
@@ -434,7 +404,7 @@ export async function lintAllFingerprintStacks(
     });
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.enforcement.checks.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.checks.yml`,
         checksReport.issues,
       ),
     );
@@ -487,7 +457,6 @@ export async function initScopedFingerprintPackage(
   scopePath: string,
   cwd = process.cwd(),
   options: {
-    withIntent?: boolean;
     withConfig?: boolean;
     reference?: string;
     force?: boolean;
@@ -502,7 +471,6 @@ export async function initScopedFingerprintPackage(
 async function resolveAndInit(
   root: string,
   options: {
-    withIntent?: boolean;
     withConfig?: boolean;
     reference?: string;
     force?: boolean;
@@ -519,56 +487,8 @@ async function resolveAndInit(
 }
 
 function parseChecks(raw: string): GhostChecksDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint/enforcement/checks.yml");
+  const parsed = parseYamlSafe(raw, "fingerprint/checks.yml");
   return GhostChecksSchema.parse(parsed) as GhostChecksDocument;
-}
-
-async function readDecisionDirectory(
-  dirPath: string,
-): Promise<GhostDecisionDocument[]> {
-  const parsed = await readYamlFiles(dirPath);
-  const docs: GhostDecisionDocument[] = [];
-  for (const { path, value } of parsed) {
-    const report = lintGhostDecision(value);
-    if (report.errors > 0) throwFingerprintLintError(path, report.issues);
-    docs.push(GhostDecisionSchema.parse(value) as GhostDecisionDocument);
-  }
-  return docs;
-}
-
-async function readYamlFiles(
-  dirPath: string,
-): Promise<Array<{ path: string; value: unknown }>> {
-  let entries: Dirent<string>[];
-  try {
-    entries = await readdir(dirPath, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-
-  const docs: Array<{ path: string; value: unknown }> = [];
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
-    if (!entry.isFile()) continue;
-    if (entry.name.startsWith(".")) continue;
-    if (!/\.ya?ml$/i.test(entry.name)) continue;
-    const path = resolve(dirPath, entry.name);
-    docs.push({
-      path,
-      value: parseYamlSafe(await readFile(path, "utf-8"), path),
-    });
-  }
-  return docs;
-}
-
-function throwFingerprintLintError(
-  path: string,
-  issues: Array<{ severity: string; message: string; path?: string }>,
-): never {
-  const first = issues.find((issue) => issue.severity === "error");
-  const suffix = first?.path ? ` @ ${first.path}` : "";
-  throw new Error(
-    `${path} failed lint: ${first?.message ?? "invalid fingerprint package"}${suffix}`,
-  );
 }
 
 function mergeFingerprints(
@@ -733,16 +653,6 @@ function mergeStrings(a?: string[], b?: string[]): string[] | undefined {
   return out.length ? out : undefined;
 }
 
-function mergeIntent(layers: GhostFingerprintStackLayer[]): string | null {
-  const chunks = layers
-    .filter((layer) => layer.intent?.trim())
-    .map(
-      (layer) =>
-        `# ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)}/fingerprint/memory/intent.md\n\n${layer.intent?.trim()}`,
-    );
-  return chunks.length ? `${chunks.join("\n\n")}\n` : null;
-}
-
 function normalizeFingerprintPaths(
   input: GhostFingerprintDocument,
   baseRoot: string,
@@ -826,23 +736,6 @@ function normalizeChecksPaths(
   return checks;
 }
 
-function normalizeDecisionPaths(
-  input: GhostDecisionDocument,
-  baseRoot: string,
-  repoRoot: string,
-): GhostDecisionDocument {
-  const decision = clone(input);
-  return {
-    ...decision,
-    scope: normalizeExperienceScopePaths(decision.scope, baseRoot, repoRoot),
-    evidence: normalizeExperienceEvidence(
-      decision.evidence,
-      baseRoot,
-      repoRoot,
-    ),
-  };
-}
-
 function normalizeScopePaths<T extends { paths?: string[] }>(
   scope: T | undefined,
   baseRoot: string,
@@ -855,32 +748,12 @@ function normalizeScopePaths<T extends { paths?: string[] }>(
   };
 }
 
-function normalizeExperienceScopePaths(
-  scope: GhostExperienceScope | undefined,
-  baseRoot: string,
-  repoRoot: string,
-): GhostExperienceScope | undefined {
-  return normalizeScopePaths(scope, baseRoot, repoRoot);
-}
-
 function normalizeFingerprintEvidence(
   evidence: GhostFingerprintEvidence[] | undefined,
   baseRoot: string,
   repoRoot: string,
 ): GhostFingerprintEvidence[] | undefined {
   return evidence?.map((entry) =>
-    entry.path
-      ? { ...entry, path: normalizePath(entry.path, baseRoot, repoRoot) }
-      : entry,
-  );
-}
-
-function normalizeExperienceEvidence(
-  evidence: GhostExperienceEvidence[],
-  baseRoot: string,
-  repoRoot: string,
-): GhostExperienceEvidence[] {
-  return evidence.map((entry) =>
     entry.path
       ? { ...entry, path: normalizePath(entry.path, baseRoot, repoRoot) }
       : entry,

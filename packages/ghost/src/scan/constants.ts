@@ -21,16 +21,8 @@ export const FINGERPRINT_PROSE_FILENAME = "prose.yml";
 export const FINGERPRINT_INVENTORY_FILENAME = "inventory.yml";
 export const FINGERPRINT_COMPOSITION_FILENAME = "composition.yml";
 
-/** Purpose folders inside the portable fingerprint bundle. */
-export const FINGERPRINT_ENFORCEMENT_DIRNAME = "enforcement";
-export const FINGERPRINT_MEMORY_DIRNAME = "memory";
-export const FINGERPRINT_SOURCES_DIRNAME = "sources";
-
 /** Optional data-only package configuration artifact. */
 export const CONFIG_FILENAME = "config.yml";
-
-/** Optional filename for human-authored or human-approved intent. */
-export const INTENT_FILENAME = "intent.md";
 
 /** Legacy direct fingerprint filename. Not part of the root package shape. */
 export const FINGERPRINT_FILENAME = "fingerprint.md";
@@ -43,9 +35,3 @@ export const SCOPE_SURVEYS_DIRNAME = "modules";
 
 /** Canonical filename for human-promoted deterministic gates. */
 export const CHECKS_FILENAME = "checks.yml";
-
-/** Optional directory containing accepted/rejected surface-composition decisions. */
-export const DECISIONS_DIRNAME = "decisions";
-
-/** Optional directory containing generated, non-canonical caches. */
-export const CACHE_DIRNAME = "cache";

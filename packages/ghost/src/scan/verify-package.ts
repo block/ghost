@@ -120,8 +120,8 @@ async function readOptionalChecks(
       severity: "error",
       rule: "verify-checks-read-failed",
       message:
-        "fingerprint/enforcement/checks.yml failed schema validation after package lint.",
-      path: "fingerprint/enforcement/checks.yml",
+        "fingerprint/checks.yml failed schema validation after package lint.",
+      path: "fingerprint/checks.yml",
     });
     return undefined;
   } catch (err) {
@@ -129,10 +129,10 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message: `fingerprint/enforcement/checks.yml could not be read as YAML: ${
+      message: `fingerprint/checks.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: "fingerprint/enforcement/checks.yml",
+      path: "fingerprint/checks.yml",
     });
     return undefined;
   }
