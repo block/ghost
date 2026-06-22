@@ -241,6 +241,21 @@ broad-to-local:
 Use nested packages when an area has genuinely different surface composition,
 not just because it has different files.
 
+For workspace monorepos, start with a safe plan:
+
+```bash
+ghost init --monorepo
+```
+
+This creates or preserves the root `.ghost/` package, detects child package
+roots from workspace metadata, and prints proposed `ghost init --scope ...`
+commands. Add `--apply` when you want Ghost to create the detected child
+packages:
+
+```bash
+ghost init --monorepo --apply
+```
+
 ## Core Commands
 
 ```bash

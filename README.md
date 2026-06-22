@@ -104,9 +104,12 @@ ghost verify .ghost --root .
 
 Use `--with-intent`, `--with-config`, `--reference`, or `--scope` only when the
 repo needs those optional files, reference libraries, or nested product areas.
-Host wrappers that need Ghost files somewhere other than `.ghost` may set
-`GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process, or pass
-`--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
+For monorepos, `ghost init --monorepo` creates or preserves the root package,
+detects workspace child roots, and prints proposed `ghost init --scope ...`
+commands by default. Run `ghost init --monorepo --apply` to create the detected
+child packages. Host wrappers that need Ghost files somewhere other than
+`.ghost` may set `GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process,
+or pass `--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
 `--memory-dir <relative-dir>` values win over the environment default.
 
 Drafted fingerprint edits are just ordinary file changes until Git review

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-17T18:35:34.326Z",
+  "generatedAt": "2026-06-22T15:49:43.175Z",
   "tools": [
     {
       "tool": "ghost",
@@ -88,6 +88,22 @@
               "description": "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
               "default": null,
               "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--monorepo",
+              "name": "monorepo",
+              "description": "Detect monorepo child package roots and propose scoped Ghost packages",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--apply",
+              "name": "apply",
+              "description": "With --monorepo, create detected child scoped packages",
+              "default": null,
+              "takesValue": false,
               "negated": false
             },
             {
