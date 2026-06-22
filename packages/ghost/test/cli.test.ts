@@ -919,6 +919,352 @@ design_loop:
     expect(reviewCommand.code).toBe(0);
   });
 
+  it("init --monorepo detects package.json array workspaces without creating children by default", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.mode).toBe("plan");
+    expect(out.candidates).toEqual([
+      {
+        path: "apps/checkout",
+        source: "package-json",
+        packageJson: "apps/checkout/package.json",
+        state: "candidate",
+      },
+    ]);
+    expect(out.commands).toEqual(["ghost init --scope apps/checkout"]);
+    await expect(
+      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+    await expect(
+      readFile(
+        join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("init --monorepo detects pnpm workspace packages", async () => {
+    await mkdir(join(dir, "packages", "admin"), { recursive: true });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/*\n",
+    );
+    await writeFile(
+      join(dir, "packages", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "packages/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo expands recursive workspace globs", async () => {
+    await mkdir(join(dir, "packages", "group", "admin"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/**\n",
+    );
+    await writeFile(
+      join(dir, "packages", "group", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "packages/group/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/group/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo expands brace workspace globs", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await mkdir(join(dir, "packages", "admin"), { recursive: true });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - '{apps,packages}/*'\n",
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+    await writeFile(
+      join(dir, "packages", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "apps/checkout",
+        source: "pnpm-workspace",
+        packageJson: "apps/checkout/package.json",
+        state: "candidate",
+      },
+      {
+        path: "packages/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo honors negated workspace globs", async () => {
+    await mkdir(join(dir, "packages", "admin"), { recursive: true });
+    await mkdir(join(dir, "packages", "fixtures", "example"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/**\n  - '!packages/fixtures/**'\n",
+    );
+    await writeFile(
+      join(dir, "packages", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+    await writeFile(
+      join(dir, "packages", "fixtures", "example", "package.json"),
+      JSON.stringify({ name: "example" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "packages/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo --apply creates detected child packages", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: { packages: ["apps/*"] } }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--apply", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.mode).toBe("apply");
+    expect(out.created.map((entry: { path: string }) => entry.path)).toEqual([
+      "apps/checkout",
+    ]);
+    await expect(
+      readFile(
+        join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+  });
+
+  it("init --monorepo --apply skips existing child packages without force", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+    await runCli(["init", "--scope", "apps/checkout"], dir);
+
+    const result = await runCli(
+      ["init", "--monorepo", "--apply", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.created).toEqual([]);
+    expect(out.skipped).toEqual([
+      {
+        path: "apps/checkout",
+        source: "package-json",
+        packageJson: "apps/checkout/package.json",
+        state: "exists",
+      },
+    ]);
+  });
+
+  it("init --monorepo applies --memory-dir to root and child packages", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+
+    const result = await runCli(
+      [
+        "init",
+        "--monorepo",
+        "--apply",
+        "--memory-dir",
+        ".design/memory",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.memoryDir).toBe(".design/memory");
+    expect(out.commands).toEqual([
+      "ghost init --scope apps/checkout --memory-dir .design/memory",
+    ]);
+    await expect(
+      readFile(
+        join(dir, ".design", "memory", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+    await expect(
+      readFile(
+        join(
+          dir,
+          "apps",
+          "checkout",
+          ".design",
+          "memory",
+          "fingerprint",
+          "manifest.yml",
+        ),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+  });
+
+  it("init --monorepo uses GHOST_MEMORY_DIR for root and child packages", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--apply", "--format", "json"],
+      dir,
+      { env: { GHOST_MEMORY_DIR: ".agents/ghost" } },
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.memoryDir).toBe(".agents/ghost");
+    expect(out.commands).toEqual([
+      "ghost init --scope apps/checkout --memory-dir .agents/ghost",
+    ]);
+    await expect(
+      readFile(
+        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+    await expect(
+      readFile(
+        join(
+          dir,
+          "apps",
+          "checkout",
+          ".agents",
+          "ghost",
+          "fingerprint",
+          "manifest.yml",
+        ),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+  });
+
+  it("init --monorepo rejects exact scope and dir combinations", async () => {
+    const withDir = await runCli(["init", "custom-dir", "--monorepo"], dir);
+    const withScope = await runCli(
+      ["init", "--scope", "apps/checkout", "--monorepo"],
+      dir,
+    );
+    const withApplyOnly = await runCli(["init", "--apply"], dir);
+
+    expect(withDir.code).toBe(2);
+    expect(withDir.stderr).toContain(
+      "use either init [dir] or init --monorepo",
+    );
+    expect(withScope.code).toBe(2);
+    expect(withScope.stderr).toContain(
+      "use either init --scope <path> or init --monorepo",
+    );
+    expect(withApplyOnly.code).toBe(2);
+    expect(withApplyOnly.stderr).toContain(
+      "--apply can only be used with --monorepo",
+    );
+  });
+
   it("uses GHOST_MEMORY_DIR as the default fingerprint package directory for init", async () => {
     const init = await runCli(["init", "--format", "json"], dir, {
       env: { GHOST_MEMORY_DIR: ".agents/ghost" },
