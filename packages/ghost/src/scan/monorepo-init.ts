@@ -1,6 +1,6 @@
-import type { Dirent } from "node:fs";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
+import { glob } from "tinyglobby";
 import { parse as parseYaml } from "yaml";
 
 const PACKAGE_JSON = "package.json";
@@ -41,15 +41,13 @@ async function addCandidates(
   patterns: string[],
   source: MonorepoInitCandidateSource,
 ): Promise<void> {
-  for (const pattern of patterns) {
-    for (const path of await expandWorkspacePattern(root, pattern)) {
-      if (candidates.has(path)) continue;
-      candidates.set(path, {
-        path,
-        source,
-        packageJson: `${path}/${PACKAGE_JSON}`,
-      });
-    }
+  for (const path of await expandWorkspacePatterns(root, patterns)) {
+    if (candidates.has(path)) continue;
+    candidates.set(path, {
+      path,
+      source,
+      packageJson: `${path}/${PACKAGE_JSON}`,
+    });
   }
 }
 
@@ -111,40 +109,47 @@ function normalizeWorkspacePatterns(value: unknown): string[] {
   return [];
 }
 
-async function expandWorkspacePattern(
+async function expandWorkspacePatterns(
   root: string,
-  pattern: string,
+  patterns: string[],
 ): Promise<string[]> {
-  const cleaned = cleanWorkspacePattern(pattern);
-  if (!cleaned) return [];
-  if (!cleaned.includes("*")) {
-    return (await isPackageRoot(root, cleaned)) ? [cleaned] : [];
-  }
+  const packageJsonPatterns = patterns
+    .map(workspacePatternToPackageJsonPattern)
+    .filter((pattern): pattern is string => Boolean(pattern));
+  if (packageJsonPatterns.length === 0) return [];
 
-  const lastSlash = cleaned.lastIndexOf("/");
-  if (lastSlash === -1) return [];
-  const parent = cleaned.slice(0, lastSlash);
-  const tail = cleaned.slice(lastSlash + 1);
-  if (tail !== "*") return [];
-
-  const parentAbs = resolve(root, parent);
-  if (!isInsideRoot(root, parentAbs)) return [];
-
-  let entries: Dirent[];
+  let packageJsonPaths: string[];
   try {
-    entries = await readdir(parentAbs, { withFileTypes: true });
+    packageJsonPaths = await glob(packageJsonPatterns, {
+      absolute: false,
+      cwd: root,
+      dot: false,
+      ignore: ["**/node_modules/**", "**/.*/**"],
+      onlyFiles: true,
+    });
   } catch {
     return [];
   }
 
   const out: string[] = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    if (shouldSkipDir(entry.name)) continue;
-    const candidate = `${parent}/${entry.name}`;
-    if (await isPackageRoot(root, candidate)) out.push(candidate);
+  for (const packageJsonPath of packageJsonPaths) {
+    const path = packageRootFromPackageJson(root, packageJsonPath);
+    if (path) out.push(path);
   }
-  return out.sort();
+  return [...new Set(out)].sort();
+}
+
+function workspacePatternToPackageJsonPattern(
+  pattern: string,
+): string | undefined {
+  const trimmed = pattern.trim();
+  const negated = trimmed.startsWith("!");
+  const cleaned = cleanWorkspacePattern(negated ? trimmed.slice(1) : trimmed);
+  if (!cleaned) return undefined;
+  const packageJsonPattern = cleaned.endsWith(`/${PACKAGE_JSON}`)
+    ? cleaned
+    : `${cleaned}/${PACKAGE_JSON}`;
+  return negated ? `!${packageJsonPattern}` : packageJsonPattern;
 }
 
 function cleanWorkspacePattern(pattern: string): string | undefined {
@@ -154,21 +159,26 @@ function cleanWorkspacePattern(pattern: string): string | undefined {
     .replace(/\/+/g, "/")
     .replace(/\/$/g, "")
     .replace(/^\.\//, "");
-  if (!cleaned || cleaned.startsWith("!")) return undefined;
+  if (!cleaned) return undefined;
   if (cleaned.split("/").some(shouldSkipDir)) return undefined;
   return cleaned;
 }
 
-async function isPackageRoot(root: string, path: string): Promise<boolean> {
-  const abs = resolve(root, path);
-  if (!isInsideRoot(root, abs)) return false;
-  if (path.split("/").some(shouldSkipDir)) return false;
-  try {
-    const s = await stat(join(abs, PACKAGE_JSON));
-    return s.isFile();
-  } catch {
-    return false;
-  }
+function packageRootFromPackageJson(
+  root: string,
+  packageJsonPath: string,
+): string | undefined {
+  const normalized = packageJsonPath
+    .replaceAll("\\", "/")
+    .replace(/\/+/g, "/")
+    .replace(/^\.\//, "");
+  if (normalized === PACKAGE_JSON) return undefined;
+  if (!normalized.endsWith(`/${PACKAGE_JSON}`)) return undefined;
+
+  const path = normalized.slice(0, -`/${PACKAGE_JSON}`.length);
+  if (!path || path.split("/").some(shouldSkipDir)) return undefined;
+  if (!isInsideRoot(root, resolve(root, path))) return undefined;
+  return path;
 }
 
 function shouldSkipDir(name: string): boolean {
