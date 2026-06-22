@@ -985,6 +985,107 @@ design_loop:
     ]);
   });
 
+  it("init --monorepo expands recursive workspace globs", async () => {
+    await mkdir(join(dir, "packages", "group", "admin"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/**\n",
+    );
+    await writeFile(
+      join(dir, "packages", "group", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "packages/group/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/group/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo expands brace workspace globs", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await mkdir(join(dir, "packages", "admin"), { recursive: true });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - '{apps,packages}/*'\n",
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+    await writeFile(
+      join(dir, "packages", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "apps/checkout",
+        source: "pnpm-workspace",
+        packageJson: "apps/checkout/package.json",
+        state: "candidate",
+      },
+      {
+        path: "packages/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
+  it("init --monorepo honors negated workspace globs", async () => {
+    await mkdir(join(dir, "packages", "admin"), { recursive: true });
+    await mkdir(join(dir, "packages", "fixtures", "example"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(dir, "pnpm-workspace.yaml"),
+      "packages:\n  - packages/**\n  - '!packages/fixtures/**'\n",
+    );
+    await writeFile(
+      join(dir, "packages", "admin", "package.json"),
+      JSON.stringify({ name: "admin" }, null, 2),
+    );
+    await writeFile(
+      join(dir, "packages", "fixtures", "example", "package.json"),
+      JSON.stringify({ name: "example" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout).candidates).toEqual([
+      {
+        path: "packages/admin",
+        source: "pnpm-workspace",
+        packageJson: "packages/admin/package.json",
+        state: "candidate",
+      },
+    ]);
+  });
+
   it("init --monorepo --apply creates detected child packages", async () => {
     await mkdir(join(dir, "apps", "checkout"), { recursive: true });
     await writeFile(
@@ -1117,6 +1218,9 @@ design_loop:
     expect(result.code).toBe(0);
     const out = JSON.parse(result.stdout);
     expect(out.memoryDir).toBe(".agents/ghost");
+    expect(out.commands).toEqual([
+      "ghost init --scope apps/checkout --memory-dir .agents/ghost",
+    ]);
     await expect(
       readFile(
         join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
