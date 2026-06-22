@@ -21,3 +21,7 @@ packages/ghost-ui/.ghost/cache/*
 
 # Scratch dir for dogfood scans and ad-hoc experiments
 .scratch/
+
+# Local Superpowers planning artifacts
+docs/superpowers/plans/
+docs/superpowers/specs/
