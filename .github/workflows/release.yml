@@ -24,7 +24,7 @@ jobs:
       # presence flag here. Skips the tap bump on forks / unconfigured repos.
       HAS_TAP_APP: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID != '' && secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY != '' }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Create Release PR or publish
         id: changesets
-        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1.7.0
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           publish: pnpm changeset publish
           version: pnpm changeset version
@@ -98,7 +98,7 @@ jobs:
       - name: Generate token for tap release
         id: generate_token
         if: ${{ steps.changesets.outputs.published == 'true' && env.HAS_TAP_APP == 'true' }}
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
         with:
           app-id: ${{ secrets.BLOCK_HOMEBREW_TAP_APP_ID }}
           private-key: ${{ secrets.BLOCK_HOMEBREW_TAP_PRIVATE_KEY }}
