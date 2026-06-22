@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.14.0
+
+### Minor Changes
+
+- [#165](https://github.com/block/ghost/pull/165) [`e540dad`](https://github.com/block/ghost/commit/e540dad3e51ef596cfe3c9e21d7fbfbf1fcbb137) Thanks [@chailandau](https://github.com/chailandau)! - Add an opt-in monorepo initializer that detects workspace child package roots and can create scoped Ghost packages.
+
 ## 0.13.0
 
 ### Minor Changes
