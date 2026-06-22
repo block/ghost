@@ -25,6 +25,13 @@ Add a pattern when it helps a future agent choose or review:
 - a visual treatment tied to product meaning
 - a restraint rule that preserves hierarchy, density, trust, or pacing
 
+A strong pattern usually does one of three jobs:
+
+- selection: it tells the agent what structure, flow, state, content, behavior,
+  or visual treatment to choose
+- restraint: it tells the agent which tempting default to avoid
+- review: it gives a future reviewer something observable to check
+
 Do not add a pattern just because a value or component exists. Put raw
 observations in `.ghost/fingerprint/sources/cache/` or keep them in scratch notes.
 
