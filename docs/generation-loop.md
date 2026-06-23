@@ -28,15 +28,21 @@ Build a brief from the resolved fingerprint stack:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-1. Read `.ghost/fingerprint/intent.yml`, `.ghost/fingerprint/inventory.yml`, and
-   `.ghost/fingerprint/composition.yml`.
-2. Select relevant situations, principles, experience contracts, and patterns.
+Relay compiles the resolved cascade into package chain, intent cascade, active
+obligations, composition guidance, inventory to inspect, validation checks, and
+gaps.
+
+Use the brief in this order:
+
+1. Start from the selected intent cascade and active obligations.
+2. Express that intent through the selected composition guidance.
 3. Inspect matching inventory exemplars as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
 5. Run `ghost signals` when raw repo observations would help find evidence.
-6. Skim active checks in `.ghost/fingerprint/validate.yml` so
-   generation avoids deterministic failures.
-7. Use nested stacks only when the project has opted into them.
+6. Skim active checks in `.ghost/fingerprint/validate.yml` so generation avoids
+   deterministic failures.
+7. Treat gaps as a signal to use local evidence provisionally or inspect the
+   full facet files.
 
 Raw repo signals can help orient an agent:
 

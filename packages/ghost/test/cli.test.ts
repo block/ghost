@@ -1799,10 +1799,16 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Relay Brief");
+    expect(result.stdout).toContain("## Package Chain");
+    expect(result.stdout).toContain("## Match");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
-    expect(result.stdout).toContain("## Task Contract");
-    expect(result.stdout).toContain("### Preserve");
+    expect(result.stdout).toContain("## Intent Cascade");
+    expect(result.stdout).toContain("## Active Obligations");
+    expect(result.stdout).toContain("## Composition Guidance");
+    expect(result.stdout).toContain("## Inventory To Inspect");
+    expect(result.stdout).toContain("## Validate");
+    expect(result.stdout).toContain("## Gaps");
     expect(result.stdout).toContain("intent.principle:tokenized-ui-color");
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
     expect(result.stdout).toContain(
@@ -1852,8 +1858,17 @@ checks:
     expect(json.entrypoint.actionContract.validate.join("\n")).not.toContain(
       "candidate-density-check",
     );
+    expect(json.cascade_brief.intent_cascade[0].ref).toBe(
+      "intent.principle:tokenized-ui-color",
+    );
+    expect(json.cascade_brief.composition_guidance[0].ref).toBe(
+      "composition.pattern:tokenized-ui-color",
+    );
+    expect(json.cascade_brief.validate[0].ref).toBe(
+      "validate.check:no-hardcoded-ui-color",
+    );
     expect(json.brief).toContain("# Ghost Relay Brief");
-    expect(json.brief).toContain("## Task Contract");
+    expect(json.brief).toContain("## Intent Cascade");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
