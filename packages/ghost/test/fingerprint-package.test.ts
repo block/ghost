@@ -23,7 +23,7 @@ describe("split fingerprint package", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("loads manifest and normalizes missing raw layer files", async () => {
+  it("loads manifest and normalizes missing raw facet files", async () => {
     await writeManifest(dir);
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));

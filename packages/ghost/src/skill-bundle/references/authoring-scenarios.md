@@ -2,9 +2,9 @@
 name: authoring-scenarios
 description: Choose the right human-agent workflow for authoring Ghost fingerprints.
 handoffs:
-  - label: Inspect fingerprint readiness
+  - label: Inspect fingerprint contribution
     command: ghost scan --format json
-    prompt: Classify this repo's fingerprint authoring scenario and summarize missing layers.
+    prompt: Classify this repo's fingerprint authoring scenario and summarize absent facets.
   - label: Inspect nested stacks
     command: ghost stack <path>
     prompt: Decide whether this path needs local fingerprint guidance or can inherit the root package.
@@ -20,12 +20,12 @@ stories, and UI libraries provide evidence. Agent synthesis is draft work until
 the human curates it and ordinary Git review accepts it.
 
 `auto-draft` is an optional skill mode for reducing blank-page cost. It scans
-first and writes starter core layer edits, but those edits are still draft work
+first and writes starter facet edits, but those edits are still draft work
 until the human curates them and Git review accepts them.
 
 ## 1. Classify The Scenario
 
-Choose the nearest scenario before writing fingerprint layers:
+Choose the nearest scenario before writing fingerprint facets:
 
 | Scenario | Default authoring posture |
 | --- | --- |
@@ -99,7 +99,7 @@ Write the smallest useful durable content:
 Label uncertain reasoning in the working notes as provisional. Prefer a few
 high-confidence claims with evidence over a broad catalog.
 
-In auto-draft mode, write directly to the core layer files rather than a
+In auto-draft mode, write directly to the facet files rather than a
 separate proposal artifact. Keep entries sparse, cite concrete files or
 exemplars where possible, and leave ambiguous product meaning for curation.
 
@@ -145,7 +145,7 @@ ghost verify --all
 
 ## 7. Validate And Ratify
 
-Validate before calling layers complete:
+Validate before calling facets useful:
 
 ```bash
 ghost lint .ghost

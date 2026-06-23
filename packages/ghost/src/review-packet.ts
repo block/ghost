@@ -138,7 +138,7 @@ function baseReviewPacket(
     ],
     required_finding_citations: [
       "diff location",
-      "fingerprint core layer refs",
+      "fingerprint facet refs",
       "active check when blocking",
       "repair or intentional-divergence rationale",
     ],
@@ -275,9 +275,9 @@ Use these finding categories: ${packet.finding_categories.join(", ")}.
 
 ${formatReviewBudgetSection(packet)}
 
-When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
+When fingerprint facets are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
-If the diff exposes missing fingerprint grounding or layer coverage, report it as missing-fingerprint or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
+If the diff exposes missing fingerprint grounding or facet coverage, report it as missing-fingerprint or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
 
 ${formatReviewStacksSection(packet.stacks ?? null)}
 
@@ -345,7 +345,7 @@ function formatConfigSection(config: GhostPackageConfig | null): string {
   if (!config) {
     return `## Implementation Config
 
-_No config.yml present. Review uses canonical fingerprint core layers and the provided diff only._
+_No config.yml present. Review uses canonical fingerprint facets and the provided diff only._
 `;
   }
 

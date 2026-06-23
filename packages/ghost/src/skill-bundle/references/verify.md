@@ -19,7 +19,7 @@ Report:
 - Active-check failures and repairs.
 - Advisory surface-composition drift with citations.
 - Missing or unreachable evidence and exemplar paths.
-- Provisional local reasoning where fingerprint layers are silent.
+- Provisional local reasoning where fingerprint facets are silent.
 - Any fingerprint edits the user requested.
 
 Fingerprint edits should be validated before handoff. Implementation-only work

@@ -1487,25 +1487,23 @@ checks:
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
     expect(status.intent).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-empty");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 0,
-      inventory: 0,
-      composition: 0,
-    });
-    expect(status.readiness.missing_layers).toEqual([
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.validate.state).toBe("present");
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
       "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
     expect(scanHuman.stdout).toContain("fingerprint dir:");
-    expect(scanHuman.stdout).toContain("readiness: fingerprint-empty");
-    expect(scanHuman.stdout).toContain(
-      "layers: intent 0, inventory 0, composition 0",
-    );
-    expect(scanHuman.stdout).toContain(
-      "missing layers: intent, inventory, composition",
-    );
+    expect(scanHuman.stdout).toContain("contribution: empty");
+    expect(scanHuman.stdout).toContain("intent: empty (0)");
+    expect(scanHuman.stdout).toContain("validate: empty (0)");
+    expect(scanHuman.stdout).not.toContain("readiness:");
+    expect(scanHuman.stdout).not.toContain("missing layers:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -1602,8 +1600,14 @@ checks:
 
     const status = JSON.parse(scan.stdout);
     expect(status.config.state).toBe("present");
-    expect(status.readiness.state).toBe("inventory-only");
-    expect(status.readiness.missing_layers).toEqual(["intent", "composition"]);
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
+    expect(status.contribution.absent_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
+      "intent",
+      "composition",
+      "validate",
+    ]);
 
     const signalsOutput = JSON.parse(signals.stdout);
     expect(signalsOutput.config.libraries[0].id).toBe("ghost-ui");
@@ -1642,13 +1646,23 @@ checks:
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
-    expect(status.checks.state).toBe("present");
+    expect(status.validate.state).toBe("missing");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-partial");
-    expect(status.readiness.missing_layers).toEqual(["composition"]);
-    expect(status.readiness.reasons[0]).toContain(
-      "intent and inventory but is missing composition",
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual([
+      "intent",
+      "inventory",
+    ]);
+    expect(status.contribution.empty_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
+      "composition",
+      "validate",
+    ]);
+    expect(status.contribution.reasons[0]).toContain(
+      "Absent facets may be inherited",
     );
   });
 
@@ -1930,7 +1944,7 @@ checks:
     }
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("When Fingerprint Layers Are Silent");
+    ).resolves.toContain("When Fingerprint Facets Are Silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
@@ -1941,7 +1955,7 @@ checks:
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain("fingerprint layers are silent");
+    ).resolves.toContain("fingerprint facets are silent");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),

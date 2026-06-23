@@ -1,6 +1,6 @@
 ---
 name: brief
-description: Build a concise pre-generation brief from Ghost fingerprint layers.
+description: Build a concise pre-generation brief from Ghost fingerprint facets.
 ---
 
 # Recipe: Brief Work From Ghost Fingerprint
@@ -14,7 +14,7 @@ description: Build a concise pre-generation brief from Ghost fingerprint layers.
 
 Return a short brief with relevant fingerprint refs, product obligations,
 inventory exemplars and building blocks to inspect, active checks to avoid,
-local evidence, and provisional assumptions when layers
+local evidence, and provisional assumptions when facets
 are silent.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint

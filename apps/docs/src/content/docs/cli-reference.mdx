@@ -10,7 +10,7 @@ slug: cli
 <DocSection title="Overview">
 
 The CLI does the repeatable parts around the fingerprint lifecycle: create
-packages, report readiness, validate files, gather optional source material,
+packages, report contribution state, validate files, gather optional source material,
 emit handoff packets, govern diffs, compare packages, and record intent. Your
 agent does the reading, writing, and reviewing.
 
@@ -39,7 +39,7 @@ The command tables below are generated from the CLI source. Run
 
 ### Initialize - `init`
 
-Create a `.ghost/fingerprint/` package with a manifest, raw core layer files,
+Create a `.ghost/fingerprint/` package with a manifest, raw facet files,
 and deterministic checks. Use `--scope <path>` for nested package roots. Use
 `--monorepo` to create or preserve the root package, detect workspace child
 roots, and print scoped init commands; add `--apply` to create the detected
@@ -60,11 +60,11 @@ GHOST_MEMORY_DIR=.agents/ghost ghost init
 ghost init --scope apps/checkout --memory-dir .design/memory
 ```
 
-### Layer readiness - `scan`
+### Contribution facets - `scan`
 
-Report whether `fingerprint/manifest.yml` is present and which useful layers it
-has: `intent`, `inventory`, and `composition`. Raw repo signals do not count
-toward inventory readiness.
+Report whether `fingerprint/manifest.yml` is present and which sparse facets
+this package contributes: `intent`, `inventory`, `composition`, and `validate`.
+Raw repo signals do not count toward inventory contribution.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
 
@@ -88,7 +88,7 @@ ghost stack apps/checkout/review/page.tsx --format json
 ### Inspect repo signals - `signals`
 
 Emit raw signals about a frontend repo as JSON. Use this as scratch evidence
-while authoring curated fingerprint layers.
+while authoring curated fingerprint facets.
 
 <CliHelp tool="ghost" command="signals" hideDescription />
 
@@ -128,7 +128,7 @@ ghost verify --all --memory-dir .design/memory
 
 ### Reusable Review Command - `emit`
 
-Emit `review-command` from split fingerprint layers when a host wants a
+Emit `review-command` from split fingerprint facets when a host wants a
 reusable review prompt.
 
 <CliHelp tool="ghost" command="emit" hideDescription />
@@ -168,7 +168,7 @@ per group.
 ### Advisory governance packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in split fingerprint
-layers, selected validation checks, and the diff.
+facets, selected validation checks, and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
