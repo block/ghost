@@ -8,23 +8,23 @@ Ghost does not need a new domain, schema, or dimension set to capture this.
 Language flows through the same three core layers as every other
 surface-composition concern:
 
-- `fingerprint/prose.yml` carries voice intent.
+- `fingerprint/intent.yml` carries voice intent.
 - `fingerprint/inventory.yml` points at copy material and external writing
   standards.
 - `fingerprint/composition.yml` carries copy patterns.
-- `fingerprint/checks.yml` carries the deterministic subset.
+- `fingerprint/validate.yml` carries the deterministic subset.
 
 This document shows the mapping. Nothing here changes the
 `ghost.fingerprint/v1` schema.
 
-## Voice Intent Lives In Prose
+## Voice Intent Lives In Intent
 
-`prose.summary.tone` already exists for tone words. Voice rules that need
+`intent.summary.tone` already exists for tone words. Voice rules that need
 rationale become principles. Surfaces with non-negotiable wording become
 experience contracts.
 
 ```yaml
-# fingerprint/prose.yml
+# fingerprint/intent.yml
 summary:
   tone:
     - plain
@@ -58,7 +58,7 @@ experience_contracts:
       - Treat the approved string as the source of truth, not a style suggestion.
       - Route wording changes through ordinary Git review.
     check_refs:
-      - check:no-banned-phrases
+      - validate.check:no-banned-phrases
 ```
 
 Scope every voice entry with `applies_to`. Selective context assembly uses
@@ -116,7 +116,7 @@ patterns:
       - Passive apology framing ("we're sorry to inform you").
       - Blaming the reader ("you entered an invalid value").
     check_refs:
-      - check:no-banned-phrases
+      - validate.check:no-banned-phrases
     evidence:
       - path: src/components/error-banner.tsx
   - id: button-labels-are-verbs
@@ -134,24 +134,24 @@ Map them onto the existing check lifecycle instead of inventing a new one:
 
 | Standard's level | Ghost expression | Effect |
 | --- | --- | --- |
-| must (legal wording, banned phrases) | `checks.yml` entry with `status: active` | `ghost check` can fail the diff |
-| should (strong recommendation) | `checks.yml` entry with `status: proposed` | Surfaces in `ghost review` as advisory |
+| must (legal wording, banned phrases) | `validate.yml` entry with `status: active` | `ghost check` can fail the diff |
+| should (strong recommendation) | `validate.yml` entry with `status: proposed` | Surfaces in `ghost review` as advisory |
 | may / contextual | `composition.yml` guidance only | Generation input, never a gate |
 
-Only the mechanically detectable subset belongs in `checks.yml`. The
+Only the mechanically detectable subset belongs in `validate.yml`. The
 `forbidden-regex` and `required-regex` detectors cover banned phrases and
 required boilerplate today:
 
 ```yaml
-# fingerprint/checks.yml
+# fingerprint/validate.yml
 checks:
   - id: no-banned-phrases
     title: Banned phrases stay out of user-facing copy
     status: active
     severity: serious
     derivation:
-      prose:
-        - prose.experience_contract:exact-wording-surfaces
+      intent:
+        - intent.experience_contract:exact-wording-surfaces
       composition:
         - composition.pattern:error-message-shape
     applies_to:
@@ -166,12 +166,12 @@ checks:
 
 Everything that needs reading comprehension - tone, register, audience fit -
 stays advisory. `ghost review` routes it to the host agent with the relevant
-prose and composition refs; it never blocks on its own.
+intent and composition refs; it never blocks on its own.
 
 ## What Ghost Deliberately Does Not Do
 
 - Ghost does not ship a voice ontology, tone scales, or scored language
-  dimensions. Voice rules are curated prose, owned by the team that writes
+  dimensions. Voice rules are curated intent, owned by the team that writes
   them, approved through Git review like every other fingerprint edit.
 - Ghost does not embed any organization's style guide. The fingerprint points
   at one through `inventory.sources`.

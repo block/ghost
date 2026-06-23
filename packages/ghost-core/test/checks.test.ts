@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  type GhostChecksDocument,
-  type GhostChecksFingerprintContext,
-  lintGhostChecks,
+  type GhostValidateDocument,
+  type GhostValidateFingerprintContext,
+  lintGhostValidate,
   type MapFrontmatter,
-  routeGhostChecksForPath,
+  routeGhostValidateForPath,
 } from "../src/index.js";
 
 const MAP: Pick<MapFrontmatter, "scopes" | "feature_areas"> = {
@@ -26,10 +26,10 @@ const MAP: Pick<MapFrontmatter, "scopes" | "feature_areas"> = {
 };
 
 function checks(
-  overrides: Partial<GhostChecksDocument["checks"][number]> = {},
-): GhostChecksDocument {
+  overrides: Partial<GhostValidateDocument["checks"][number]> = {},
+): GhostValidateDocument {
   return {
-    schema: "ghost.checks/v1",
+    schema: "ghost.validate/v1",
     id: "cash-ios",
     checks: [
       {
@@ -38,7 +38,7 @@ function checks(
         status: "active",
         severity: "serious",
         derivation: {
-          prose: ["prose.principle:tokenized-ui-color"],
+          intent: ["intent.principle:tokenized-ui-color"],
           composition: ["composition.pattern:tokenized-ui-color"],
         },
         applies_to: {
@@ -62,15 +62,15 @@ function checks(
   };
 }
 
-describe("ghost.checks/v1", () => {
+describe("ghost.validate/v1", () => {
   it("validates an active human-promoted check", () => {
-    const report = lintGhostChecks(checks(), { map: MAP });
+    const report = lintGhostValidate(checks(), { map: MAP });
 
     expect(report.errors).toBe(0);
   });
 
   it("marks derivation refs unverified without fingerprint context", () => {
-    const report = lintGhostChecks(checks());
+    const report = lintGhostValidate(checks());
 
     expect(report.errors).toBe(0);
     expect(report.info).toBe(1);
@@ -82,7 +82,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("requires active checks to declare derivation", () => {
-    const report = lintGhostChecks(checks({ derivation: undefined }));
+    const report = lintGhostValidate(checks({ derivation: undefined }));
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -92,7 +92,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("accepts active checks grounded in fingerprint refs", () => {
-    const report = lintGhostChecks(checks(), {
+    const report = lintGhostValidate(checks(), {
       fingerprint: fingerprintContext(),
     });
 
@@ -101,10 +101,10 @@ describe("ghost.checks/v1", () => {
   });
 
   it("reports active checks grounded in missing fingerprint refs", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({
         derivation: {
-          prose: ["prose.principle:not-recorded"],
+          intent: ["intent.principle:not-recorded"],
         },
       }),
       {
@@ -115,15 +115,15 @@ describe("ghost.checks/v1", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "check-grounding-unknown",
-      path: "checks[0].derivation.prose[0]",
+      path: "checks[0].derivation.intent[0]",
     });
   });
 
   it("rejects untyped derivation references at schema level", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({
         derivation: {
-          prose: ["tokenized-ui-color" as never],
+          intent: ["tokenized-ui-color" as never],
         },
       }),
     );
@@ -133,7 +133,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("rejects inventory-only active checks", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({
         derivation: {
           inventory: ["inventory.exemplar:lending-tokenized-screen"],
@@ -150,7 +150,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("warns for proposed checks with incomplete derivation", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({ status: "proposed", derivation: undefined }),
     );
 
@@ -163,7 +163,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("fails active checks that reference unknown fingerprint targets", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({
         applies_to: {
           scopes: ["unknown-scope"],
@@ -185,7 +185,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("fails invalid detector regex", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({ detector: { type: "forbidden-regex", pattern: "[" } }),
       { map: MAP },
     );
@@ -195,7 +195,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("fails active checks that reference unknown scopes", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checks({ applies_to: { scopes: ["banking"] } }),
       { map: MAP },
     );
@@ -209,7 +209,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("routes path-scoped checks through map scopes", () => {
-    const routed = routeGhostChecksForPath(
+    const routed = routeGhostValidateForPath(
       checks().checks,
       MAP,
       "Code/Features/Lending/Sources/View.swift",
@@ -221,7 +221,7 @@ describe("ghost.checks/v1", () => {
   });
 
   it("does not route checks outside their declared scope", () => {
-    const routed = routeGhostChecksForPath(
+    const routed = routeGhostValidateForPath(
       checks().checks,
       MAP,
       "Code/Features/Investing/Sources/View.swift",
@@ -231,9 +231,9 @@ describe("ghost.checks/v1", () => {
   });
 });
 
-function fingerprintContext(): GhostChecksFingerprintContext {
+function fingerprintContext(): GhostValidateFingerprintContext {
   return {
-    prose: {
+    intent: {
       principles: [{ id: "tokenized-ui-color" }],
       situations: [],
       experience_contracts: [],

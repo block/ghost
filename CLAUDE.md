@@ -39,19 +39,19 @@ The canonical root `.ghost/` package follows:
 config.yml
 fingerprint/
   manifest.yml
-  prose.yml
+  intent.yml
   inventory.yml
   composition.yml
-  checks.yml
+  validate.yml
 ```
 
 The three root layer files under `fingerprint/` are the core model:
 
-- `prose.yml` for surface intent.
+- `intent.yml` for surface intent.
 - `inventory.yml` for curated material, exemplars, and source links.
 - `composition.yml` for experience patterns.
 
-`checks.yml` validates output and can enforce deterministic gates; it is not
+`validate.yml` validates output through deterministic checks; it is not
 generation input.
 `.ghost/config.yml` remains local adapter/routing config outside portable
 context. Ordinary Git review is the approval boundary for fingerprint edits.
@@ -80,9 +80,9 @@ fingerprint input for new Ghost work.
 | `ghost lint` | Validate a fingerprint package or single artifact. |
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, and typed check refs. |
 | `ghost describe` | Print direct markdown section ranges. |
-| `ghost diff` | Structural prose-level diff between direct fingerprints. |
+| `ghost diff` | Structural direct-fingerprint prose diff between direct fingerprints. |
 | `ghost survey <op>` | Legacy survey helpers for optional `ghost.survey/v1` workflows. |
-| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
+| `ghost check` | Run active `ghost.validate/v1` deterministic gates against a diff. |
 | `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint layers, inventory exemplars, checks, and the diff. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |

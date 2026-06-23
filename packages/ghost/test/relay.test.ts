@@ -26,7 +26,7 @@ describe("relay", () => {
     expect(result.entrypoint.match.status).toBe("path-match");
     expect(result.entrypoint.match.matchedScopes).toEqual(["refund-settings"]);
     expect(result.brief).toContain("# Ghost Relay Brief");
-    expect(result.brief).toContain("prose.principle:refund-trust");
+    expect(result.brief).toContain("intent.principle:refund-trust");
   });
 
   async function track(rootPromise: Promise<string>): Promise<string> {

@@ -1,4 +1,4 @@
-schema: ghost.checks/v1
+schema: ghost.validate/v1
 id: ghost
 checks:
   - id: no-hardcoded-surface-hex

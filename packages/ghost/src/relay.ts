@@ -115,7 +115,7 @@ export function registerRelayCommand(cli: CAC): void {
     )
     .option(
       "--name <name>",
-      "Override the gathered context name (default: prose.yml product or resolved scope)",
+      "Override the gathered context name (default: intent.yml product or resolved scope)",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",

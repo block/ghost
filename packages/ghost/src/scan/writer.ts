@@ -18,7 +18,7 @@ export interface SerializeOptions {
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter carries the machine-layer (id, tokens, dimension slugs,
  *     personality/resembles tags, references, checks, compact values).
- *   • Body carries prose (# Character, # Signature, # Decisions rationale).
+ *   • Body carries intent (# Character, # Signature, # Decisions rationale).
  *
  * Each field has exactly one home — so there is no precedence rule and no
  * way for the two sides to drift.
@@ -66,18 +66,18 @@ function buildBody(
 }
 
 /**
- * Body carries the full per-dimension story: rationale prose followed by an
+ * Body carries the full per-dimension story: rationale intent followed by an
  * `**Evidence:**` bullet list (schema 5). Each evidence string becomes one
  * bullet, wrapped in backticks so token-name citations render as code.
  * Evidence is skipped entirely when empty.
  */
 function formatDecision(d: DesignDecision): string {
   const title = unslug(d.dimension);
-  const prose = d.decision.trim();
+  const intent = d.decision.trim();
   const evidence = d.evidence?.filter((e) => e?.trim()) ?? [];
-  if (!evidence.length) return `### ${title}\n${prose}`;
+  if (!evidence.length) return `### ${title}\n${intent}`;
   const bullets = evidence.map((e) => `- ${fenceEvidence(e)}`).join("\n");
-  return `### ${title}\n${prose}\n\n**Evidence:**\n${bullets}`;
+  return `### ${title}\n${intent}\n\n**Evidence:**\n${bullets}`;
 }
 
 /** Wrap evidence strings in backticks when they aren't already fenced. */

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-23T04:21:38.371Z",
+  "generatedAt": "2026-06-23T15:25:45.220Z",
   "tools": [
     {
       "tool": "ghost",
@@ -120,7 +120,7 @@
           "tool": "ghost",
           "name": "verify",
           "rawName": "verify [dir]",
-          "description": "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
+          "description": "Verify a root Ghost fingerprint package: intent/composition evidence, inventory exemplars, and checks are grounded.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "verify",
@@ -164,7 +164,7 @@
           "tool": "ghost",
           "name": "scan",
           "rawName": "scan [dir]",
-          "description": "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
+          "description": "Report fingerprint layer readiness: produced artifacts, useful intent/inventory/composition, and the next BYOA step.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "scan",
@@ -660,7 +660,7 @@
             {
               "rawName": "--name <name>",
               "name": "name",
-              "description": "Override the gathered context name (default: prose.yml product or resolved scope)",
+              "description": "Override the gathered context name (default: intent.yml product or resolved scope)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -715,7 +715,7 @@
           "tool": "ghost",
           "name": "check",
           "rawName": "check",
-          "description": "Run active ghost.checks/v1 gates from the resolved fingerprint stack against a git diff.",
+          "description": "Run active ghost.validate/v1 gates from the resolved fingerprint stack against a git diff.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "check",

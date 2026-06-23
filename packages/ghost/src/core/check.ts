@@ -2,15 +2,15 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { parse as parseYaml } from "yaml";
 import {
-  GHOST_CHECKS_SCHEMA,
+  GHOST_VALIDATE_SCHEMA,
   type GhostCheck,
-  type GhostChecksDocument,
-  GhostChecksSchema,
-  lintGhostChecks,
+  type GhostValidateDocument,
+  GhostValidateSchema,
+  lintGhostValidate,
   type MapFrontmatter,
   MapFrontmatterSchema,
   type MapScope,
-  routeGhostChecksForPath,
+  routeGhostValidateForPath,
 } from "#ghost-core";
 import { readOptionalUtf8 } from "../internal/fs.js";
 import {
@@ -97,7 +97,7 @@ export interface GhostDriftCheckStack {
 interface LoadedCheckPackage {
   dir: string;
   map: Pick<MapFrontmatter, "scopes" | "feature_areas">;
-  checks: GhostChecksDocument;
+  checks: GhostValidateDocument;
 }
 
 export async function runGhostDriftCheck(
@@ -272,26 +272,26 @@ async function loadCheckPackage(
       dir: paths.dir,
       map,
       checks: {
-        schema: GHOST_CHECKS_SCHEMA,
+        schema: GHOST_VALIDATE_SCHEMA,
         id: "none",
         checks: [],
       },
     };
   }
   const checksInput = parseYaml(checksRaw);
-  const checksResult = GhostChecksSchema.safeParse(checksInput);
+  const checksResult = GhostValidateSchema.safeParse(checksInput);
   if (!checksResult.success) {
     throw new Error(
-      `checks.yml failed schema validation: ${checksResult.error.issues
+      `validate.yml failed schema validation: ${checksResult.error.issues
         .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
         .join("; ")}`,
     );
   }
-  const checks = checksResult.data as GhostChecksDocument;
-  const checkLint = lintGhostChecks(checks, { fingerprint, map });
+  const checks = checksResult.data as GhostValidateDocument;
+  const checkLint = lintGhostValidate(checks, { fingerprint, map });
   if (checkLint.errors > 0) {
     throw new Error(
-      `checks.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
+      `validate.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
         .filter((issue) => issue.severity === "error")
         .map((issue) => `[${issue.rule}] ${issue.message}`)
         .join("; ")}`,
@@ -311,7 +311,7 @@ function evaluateChangedFiles(
   const findings: GhostDriftCheckFinding[] = [];
 
   for (const file of changedFiles) {
-    const routed = routeGhostChecksForPath(
+    const routed = routeGhostValidateForPath(
       pkg.checks.checks,
       pkg.map,
       file.path,

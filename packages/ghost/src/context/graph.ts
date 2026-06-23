@@ -81,8 +81,8 @@ export function buildFingerprintGraph(
   };
 
   const fingerprint = context.fingerprint;
-  for (const situation of fingerprint.prose.situations) {
-    const ref = refFor("prose.situation", situation.id);
+  for (const situation of fingerprint.intent.situations) {
+    const ref = refFor("intent.situation", situation.id);
     addNode({
       ref,
       id: situation.id,
@@ -100,7 +100,7 @@ export function buildFingerprintGraph(
           : "",
         ...(situation.refuses ?? []).map((entry) => `Refuses: ${entry}`),
       ].filter(Boolean),
-      sourceFile: "fingerprint/prose.yml",
+      sourceFile: "fingerprint/intent.yml",
       appliesTo: {
         surfaceTypes: situation.surface_type ? [situation.surface_type] : [],
         paths: evidencePaths(situation.evidence),
@@ -115,8 +115,8 @@ export function buildFingerprintGraph(
     addRefEdges(ref, situation.patterns, "situation composition pattern");
   }
 
-  for (const principle of fingerprint.prose.principles) {
-    const ref = refFor("prose.principle", principle.id);
+  for (const principle of fingerprint.intent.principles) {
+    const ref = refFor("intent.principle", principle.id);
     addNode({
       ref,
       id: principle.id,
@@ -129,14 +129,14 @@ export function buildFingerprintGraph(
           (entry) => `Counterexample: ${entry}`,
         ),
       ],
-      sourceFile: "fingerprint/prose.yml",
+      sourceFile: "fingerprint/intent.yml",
       appliesTo: applicabilityFromScope(principle.applies_to),
     });
     addRefEdges(ref, principle.check_refs, "principle check");
   }
 
-  for (const contract of fingerprint.prose.experience_contracts) {
-    const ref = refFor("prose.experience_contract", contract.id);
+  for (const contract of fingerprint.intent.experience_contracts) {
+    const ref = refFor("intent.experience_contract", contract.id);
     addNode({
       ref,
       id: contract.id,
@@ -144,7 +144,7 @@ export function buildFingerprintGraph(
       label: contract.id,
       summary: contract.contract,
       details: contract.obligations ?? [],
-      sourceFile: "fingerprint/prose.yml",
+      sourceFile: "fingerprint/intent.yml",
       appliesTo: applicabilityFromScope(contract.applies_to),
     });
     addRefEdges(ref, contract.check_refs, "experience contract check");
@@ -194,7 +194,7 @@ export function buildFingerprintGraph(
   }
 
   for (const check of activeChecks(context)) {
-    const ref = refFor("check", check.id);
+    const ref = refFor("validate.check", check.id);
     addNode({
       ref,
       id: check.id,
@@ -205,10 +205,10 @@ export function buildFingerprintGraph(
         check.repair ? `Repair: ${check.repair}` : "",
         detectorSummary(check),
       ].filter(Boolean),
-      sourceFile: "fingerprint/checks.yml",
+      sourceFile: "fingerprint/validate.yml",
       appliesTo: applicabilityFromCheck(check),
     });
-    addRefEdges(ref, check.derivation?.prose, "check prose derivation");
+    addRefEdges(ref, check.derivation?.intent, "check intent derivation");
     addRefEdges(ref, check.derivation?.inventory, "check inventory derivation");
     addRefEdges(
       ref,

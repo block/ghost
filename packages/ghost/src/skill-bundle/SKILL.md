@@ -17,10 +17,10 @@ materials it draws from, and the patterns that make it feel intentional.
   config.yml
   fingerprint/
     manifest.yml
-    prose.yml
+    intent.yml
     inventory.yml
     composition.yml
-    checks.yml
+    validate.yml
 ```
 
 `fingerprint/` is the source of truth when it is checked in. Ordinary Git
@@ -29,9 +29,9 @@ are drafts, and committed fingerprint changes are canonical for Ghost. Checks ar
 deterministic gates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
-Generation uses **prose + inventory + composition**:
+Generation uses **intent + inventory + composition**:
 
-- `fingerprint/prose.yml` captures the intent behind the surface.
+- `fingerprint/intent.yml` captures the intent behind the surface.
 - `inventory` points to building blocks and precedents the agent can inspect
   or use, including exemplars.
 - `fingerprint/composition.yml` captures the patterns that make the surface feel
@@ -44,7 +44,7 @@ Checks and review validate output; they are not generation input.
 layer content; Ghost normalizes omitted layer files or sections internally for
 checks, review, emit, and stack resolution.
 
-Optional deterministic gates live in `fingerprint/checks.yml`.
+Optional deterministic gates live in `fingerprint/validate.yml`.
 `.ghost/config.yml` stays outside the portable package as local routing config.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
 raw repo observations while authoring curated fingerprint layers.
@@ -61,7 +61,7 @@ consume JSON and map severities into their own review or check format.
 | Verb | Purpose |
 |---|---|
 | `ghost init [dir]` | Create `.ghost/fingerprint/` with manifest, core layers, and deterministic checks. |
-| `ghost scan [dir] [--format json]` | Report fingerprint layer readiness for prose, inventory, and composition. |
+| `ghost scan [dir] [--format json]` | Report fingerprint layer readiness for intent, inventory, and composition. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
@@ -103,8 +103,8 @@ evidence-backed core layer entries, then ask the human to curate the claims.
 ## Always
 
 - Treat checked-in `fingerprint/` core files as the source of truth.
-- Generate from prose, inventory, and composition.
-- Run active checks from `fingerprint/checks.yml`; only active deterministic checks block.
+- Generate from intent, inventory, and composition.
+- Run active checks from `fingerprint/validate.yml`; only active deterministic checks block.
 - Use local evidence as provisional when fingerprint layers are silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.

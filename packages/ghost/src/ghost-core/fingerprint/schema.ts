@@ -24,22 +24,22 @@ export const GhostFingerprintPatternKindSchema = z.enum([
 ]);
 
 export const GhostFingerprintRefPrefixSchema = z.enum([
-  "prose.principle",
-  "prose.situation",
-  "prose.experience_contract",
+  "intent.principle",
+  "intent.situation",
+  "intent.experience_contract",
   "inventory.exemplar",
   "composition.pattern",
-  "check",
+  "validate.check",
 ]);
 
 export const GhostFingerprintRefSchema = z
   .string()
   .min(1)
   .regex(
-    /^(prose\.principle|prose\.situation|prose\.experience_contract|inventory\.exemplar|composition\.pattern|check):[a-z0-9][a-z0-9._-]*$/,
+    /^(intent\.principle|intent\.situation|intent\.experience_contract|inventory\.exemplar|composition\.pattern|validate\.check):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "ref must be typed as layer.kind:slug, e.g. prose.principle:dense-workflows",
+        "ref must be typed as layer.kind:slug, e.g. intent.principle:dense-workflows",
     },
   );
 
@@ -47,10 +47,10 @@ export const GhostFingerprintLayerRefSchema = z
   .string()
   .min(1)
   .regex(
-    /^(prose\.principle|prose\.situation|prose\.experience_contract|inventory\.exemplar|composition\.pattern):[a-z0-9][a-z0-9._-]*$/,
+    /^(intent\.principle|intent\.situation|intent\.experience_contract|inventory\.exemplar|composition\.pattern):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "ref must be typed as layer.kind:slug, e.g. prose.principle:dense-workflows",
+        "ref must be typed as layer.kind:slug, e.g. intent.principle:dense-workflows",
     },
   );
 
@@ -190,7 +190,7 @@ export const GhostFingerprintInventorySourceSchema = z
   })
   .strict();
 
-export const GhostFingerprintProseSchema = z
+export const GhostFingerprintIntentSchema = z
   .object({
     summary: GhostFingerprintSummarySchema.optional().default({}),
     situations: z.array(GhostFingerprintSituationSchema).optional().default([]),
@@ -224,7 +224,7 @@ export const GhostFingerprintCompositionSchema = z
 export const GhostFingerprintSchema = z
   .object({
     schema: z.literal(GHOST_FINGERPRINT_SCHEMA),
-    prose: GhostFingerprintProseSchema.optional().default({
+    intent: GhostFingerprintIntentSchema.optional().default({
       summary: {},
       situations: [],
       principles: [],

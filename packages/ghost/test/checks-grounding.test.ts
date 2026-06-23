@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
-  GHOST_CHECKS_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
-  type GhostChecksDocument,
+  GHOST_VALIDATE_SCHEMA,
   type GhostFingerprintDocument,
-  lintGhostChecks,
+  type GhostValidateDocument,
+  lintGhostValidate,
 } from "../src/ghost-core/index.js";
 
-describe("ghost.checks/v1 grounding", () => {
+describe("ghost.validate/v1 grounding", () => {
   it("warns when active checks do not declare derivation", () => {
     const doc = checksDocument({
       derivation: undefined,
     });
 
-    const report = lintGhostChecks(doc);
+    const report = lintGhostValidate(doc);
 
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(1);
@@ -24,8 +24,8 @@ describe("ghost.checks/v1 grounding", () => {
     });
   });
 
-  it("accepts active checks grounded in prose refs", () => {
-    const report = lintGhostChecks(checksDocument(), {
+  it("accepts active checks grounded in intent refs", () => {
+    const report = lintGhostValidate(checksDocument(), {
       fingerprint: fingerprintDocument(),
     });
 
@@ -34,7 +34,7 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("marks derivation refs unverified without fingerprint context", () => {
-    const report = lintGhostChecks(checksDocument());
+    const report = lintGhostValidate(checksDocument());
 
     expect(report.errors).toBe(0);
     expect(report.info).toBe(1);
@@ -46,7 +46,7 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("accepts active checks grounded in composition refs", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         derivation: {
           composition: ["composition.pattern:tokenized-ui-color"],
@@ -60,10 +60,10 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("accepts active checks with inventory as supporting derivation", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         derivation: {
-          prose: ["prose.principle:dense-workflows-prioritize-scanning"],
+          intent: ["intent.principle:dense-workflows-prioritize-scanning"],
           inventory: ["inventory.exemplar:orders-table"],
         },
       }),
@@ -75,7 +75,7 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("warns on inventory-only derivation for active checks", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         derivation: {
           inventory: ["inventory.exemplar:orders-table"],
@@ -94,7 +94,7 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("accepts active checks scoped to known fingerprint topology", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         applies_to: {
           scopes: ["lending"],
@@ -127,14 +127,14 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("warns for active checks grounded in missing fingerprint prose/inventory/composition", () => {
+  it("warns for active checks grounded in missing fingerprint intent/inventory/composition", () => {
     const doc = checksDocument({
       derivation: {
-        prose: ["prose.principle:missing-principle"],
+        intent: ["intent.principle:missing-principle"],
       },
     });
 
-    const report = lintGhostChecks(doc, {
+    const report = lintGhostValidate(doc, {
       fingerprint: fingerprintDocument(),
     });
 
@@ -143,12 +143,12 @@ describe("ghost.checks/v1 grounding", () => {
     expect(report.issues[0]).toMatchObject({
       severity: "warning",
       rule: "check-grounding-unknown",
-      path: "checks[0].derivation.prose[0]",
+      path: "checks[0].derivation.intent[0]",
     });
   });
 
   it("reports active checks scoped to unknown fingerprint targets", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         applies_to: {
           scopes: ["unknown-scope"],
@@ -179,7 +179,7 @@ describe("ghost.checks/v1 grounding", () => {
   });
 
   it("downgrades proposed check target misses to warnings", () => {
-    const report = lintGhostChecks(
+    const report = lintGhostValidate(
       checksDocument({
         status: "proposed",
         applies_to: {
@@ -200,11 +200,11 @@ describe("ghost.checks/v1 grounding", () => {
     const doc = checksDocument({
       status: "proposed",
       derivation: {
-        prose: ["prose.principle:missing-principle"],
+        intent: ["intent.principle:missing-principle"],
       },
     });
 
-    const report = lintGhostChecks(doc, {
+    const report = lintGhostValidate(doc, {
       fingerprint: fingerprintDocument(),
     });
 
@@ -221,7 +221,7 @@ describe("ghost.checks/v1 grounding", () => {
       derivation: undefined,
     });
 
-    const report = lintGhostChecks(doc);
+    const report = lintGhostValidate(doc);
 
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(1);
@@ -233,11 +233,11 @@ describe("ghost.checks/v1 grounding", () => {
   it("rejects untyped derivation references at schema level", () => {
     const doc = checksDocument({
       derivation: {
-        prose: ["dense-workflows-prioritize-scanning"] as never,
+        intent: ["dense-workflows-prioritize-scanning"] as never,
       },
     });
 
-    const report = lintGhostChecks(doc);
+    const report = lintGhostValidate(doc);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]?.rule).toBe("schema/invalid_format");
@@ -250,7 +250,7 @@ describe("ghost.checks/v1 grounding", () => {
       },
     });
 
-    const report = lintGhostChecks(doc);
+    const report = lintGhostValidate(doc);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]?.rule).toBe("schema/invalid_format");
@@ -258,10 +258,10 @@ describe("ghost.checks/v1 grounding", () => {
 });
 
 function checksDocument(
-  overrides: Partial<GhostChecksDocument["checks"][number]> = {},
-): GhostChecksDocument {
+  overrides: Partial<GhostValidateDocument["checks"][number]> = {},
+): GhostValidateDocument {
   return {
-    schema: GHOST_CHECKS_SCHEMA,
+    schema: GHOST_VALIDATE_SCHEMA,
     id: "example",
     checks: [
       {
@@ -270,7 +270,7 @@ function checksDocument(
         status: "active",
         severity: "serious",
         derivation: {
-          prose: ["prose.principle:dense-workflows-prioritize-scanning"],
+          intent: ["intent.principle:dense-workflows-prioritize-scanning"],
         },
         applies_to: {
           paths: ["apps/dashboard/**"],
@@ -295,7 +295,7 @@ function fingerprintDocument(
 ): GhostFingerprintDocument {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    prose: {
+    intent: {
       summary: {},
       situations: [],
       principles: [

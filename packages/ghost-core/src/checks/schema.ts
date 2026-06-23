@@ -1,17 +1,17 @@
 import { z } from "zod";
-import { GHOST_CHECKS_SCHEMA } from "./types.js";
+import { GHOST_VALIDATE_SCHEMA } from "./types.js";
 
 const GhostCheckStatusSchema = z.enum(["active", "proposed", "disabled"]);
 const GhostCheckSeveritySchema = z.enum(["critical", "serious", "nit"]);
 
-const GhostCheckDerivationProseRefSchema = z
+const GhostCheckDerivationIntentRefSchema = z
   .string()
   .min(1)
   .regex(
-    /^(prose\.principle|prose\.situation|prose\.experience_contract):[a-z0-9][a-z0-9._-]*$/,
+    /^(intent\.principle|intent\.situation|intent\.experience_contract):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "prose derivation refs must use prose.<kind>:slug, e.g. prose.principle:dense-workflows",
+        "intent derivation refs must use intent.<kind>:slug, e.g. intent.principle:dense-workflows",
     },
   );
 
@@ -31,7 +31,7 @@ const GhostCheckDerivationCompositionRefSchema = z
 
 export const GhostCheckDerivationSchema = z
   .object({
-    prose: z.array(GhostCheckDerivationProseRefSchema).optional(),
+    intent: z.array(GhostCheckDerivationIntentRefSchema).optional(),
     inventory: z.array(GhostCheckDerivationInventoryRefSchema).optional(),
     composition: z.array(GhostCheckDerivationCompositionRefSchema).optional(),
   })
@@ -99,9 +99,9 @@ export const GhostCheckSchema = z
   })
   .strict();
 
-export const GhostChecksSchema = z
+export const GhostValidateSchema = z
   .object({
-    schema: z.literal(GHOST_CHECKS_SCHEMA),
+    schema: z.literal(GHOST_VALIDATE_SCHEMA),
     id: z
       .string()
       .min(1)

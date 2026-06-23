@@ -67,11 +67,11 @@ export default function Home() {
                 package
               </li>
               <li>
-                <code>prose.yml</code>, <code>inventory.yml</code>, and{" "}
+                <code>intent.yml</code>, <code>inventory.yml</code>, and{" "}
                 <code>composition.yml</code> store the three core layers
               </li>
               <li>
-                <code>checks.yml</code> stores optional deterministic gates
+                <code>validate.yml</code> stores optional deterministic gates
                 grounded in fingerprint refs
               </li>
               <li>
@@ -80,7 +80,7 @@ export default function Home() {
               </li>
             </ul>
             <p className="thesis-item">
-              The split is deliberate. <code>prose.yml</code> captures the
+              The split is deliberate. <code>intent.yml</code> captures the
               intent behind the surface. <code>inventory.yml</code> captures the
               materials it draws from. <code>composition.yml</code> captures the
               patterns that make it feel intentional. Checks validate output;

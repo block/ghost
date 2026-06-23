@@ -21,15 +21,15 @@ The canonical package is intentionally small:
   config.yml                    # optional local routing, not portable context
   fingerprint/
     manifest.yml                # ghost.fingerprint-package/v1 anchor
-    prose.yml                   # surface intent
+    intent.yml                   # surface intent
     inventory.yml               # curated material and exemplars
     composition.yml             # patterns, flows, states, and arrangements
-    checks.yml                  # optional deterministic gates
+    validate.yml                  # optional deterministic gates
 ```
 
 Generation uses the three core layers:
 
-- `prose.yml` says what the surface is trying to do and for whom.
+- `intent.yml` says what the surface is trying to do and for whom.
 - `inventory.yml` points agents at materials they can inspect or reuse.
 - `composition.yml` captures the patterns that make those materials feel like
   one intentional product.
@@ -120,7 +120,7 @@ Before generating or revising UI, gather the Relay brief for the target path:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Relay gives a host agent the selected prose, inventory, composition, optional
+Relay gives a host agent the selected intent, inventory, composition, optional
 memory, active checks, suggested reads, and provenance. The important shift is
 timing: Ghost gives agents surface-composition context before they build, not
 only after a review finds drift.
@@ -133,7 +133,7 @@ ghost check --base main
 ghost review --base main
 ```
 
-`ghost check` runs active `ghost.checks/v1` gates and can fail. `ghost review`
+`ghost check` runs active `ghost.validate/v1` gates and can fail. `ghost review`
 emits an evidence-routed advisory packet for a human or host adapter to use.
 
 ## Compare And Govern
@@ -151,7 +151,7 @@ ghost emit review-command --path apps/checkout/review/page.tsx
 ```
 
 `ghost scan --format json` emits deterministic readiness state. A fingerprint is
-`fingerprint-ready` only when prose, inventory, and composition all contain
+`fingerprint-ready` only when intent, inventory, and composition all contain
 useful layer content. It does not call an LLM.
 
 ## CLI Commands
@@ -159,7 +159,7 @@ useful layer content. It does not call an LLM.
 | Command | Description |
 | --- | --- |
 | `ghost init` | Create `.ghost/fingerprint/` package layers. |
-| `ghost scan` | Report fingerprint layer readiness for prose, inventory, and composition. |
+| `ghost scan` | Report fingerprint layer readiness for intent, inventory, and composition. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
 | `ghost verify` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check` | Run active deterministic gates against a diff. |
