@@ -1803,12 +1803,7 @@ checks:
     expect(result.stdout).toContain("## Match");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
-    expect(result.stdout).toContain("## Intent");
-    expect(result.stdout).toContain("## Active Obligations");
-    expect(result.stdout).toContain("## Composition");
-    expect(result.stdout).toContain("## Inventory");
-    expect(result.stdout).toContain("## Validation");
-    expect(result.stdout).toContain("## Guidance");
+    expect(result.stdout).toContain("## Context Hits");
     expect(result.stdout).toContain("## Suggested Reads");
     expect(result.stdout).toContain("## Omissions");
     expect(result.stdout).toContain("## Gaps");
@@ -1816,6 +1811,9 @@ checks:
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
     expect(result.stdout).toContain(
       "inventory.exemplar:lending-tokenized-screen",
+    );
+    expect(result.stdout).toContain(
+      "why: path=Code/Features/Lending/LendingUI",
     );
     expect(result.stdout).toContain("no-hardcoded-ui-color");
     expect(result.stdout).not.toContain("candidate-density-check");
@@ -1839,16 +1837,54 @@ checks:
 
     expect(result.code).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.schema).toBe("ghost.relay.gather/v1");
+    expect(json.schema).toBe("ghost.relay.gather/v2");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
     expect(json.entrypoint).toBeUndefined();
     expect(json.cascade_brief).toBeUndefined();
     expect(json.selected_context.match.status).toBe("path-match");
-    expect(json.selected_context.guidance.preserve).toContain(
-      "UI colors should come from the product token system.",
+    expect(json.selected_context).not.toHaveProperty("intent");
+    expect(json.selected_context).not.toHaveProperty("composition");
+    expect(json.selected_context).not.toHaveProperty("inventory");
+    expect(json.selected_context).not.toHaveProperty("validation");
+    expect(json.selected_context).not.toHaveProperty("guidance");
+    expect(json.selected_context).not.toHaveProperty("active_obligations");
+    expect(json.selected_context.context_hits).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "intent.principle:tokenized-ui-color",
+          kind: "intent",
+          why_selected: expect.arrayContaining([
+            {
+              kind: "linked_ref",
+              value: "inventory.exemplar:lending-tokenized-screen",
+            },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "composition.pattern:tokenized-ui-color",
+          kind: "composition",
+        }),
+        expect.objectContaining({
+          ref: "inventory.exemplar:lending-tokenized-screen",
+          kind: "inventory",
+          path: "Code/Features/Lending/LendingUI",
+          why_selected: expect.arrayContaining([
+            { kind: "path", value: "Code/Features/Lending/LendingUI" },
+            { kind: "scope", value: "lending" },
+            { kind: "surface_type", value: "native-feature" },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "validate.check:no-hardcoded-ui-color",
+          kind: "validation",
+        }),
+      ]),
     );
-    expect(json.selected_context.guidance.inspect).toEqual(
+    expect(
+      json.selected_context.context_hits.map((hit: { ref: string }) => hit.ref),
+    ).not.toContain("validate.check:candidate-density-check");
+    expect(json.selected_context.suggested_reads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           path: "Code/Features/Lending/LendingUI",
@@ -1857,23 +1893,8 @@ checks:
         }),
       ]),
     );
-    expect(json.selected_context.guidance.validate).toContain(
-      "validate.check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
-    );
-    expect(json.selected_context.guidance.validate.join("\n")).not.toContain(
-      "candidate-density-check",
-    );
-    expect(json.selected_context.intent[0].ref).toBe(
-      "intent.principle:tokenized-ui-color",
-    );
-    expect(json.selected_context.composition[0].ref).toBe(
-      "composition.pattern:tokenized-ui-color",
-    );
-    expect(json.selected_context.validation[0].ref).toBe(
-      "validate.check:no-hardcoded-ui-color",
-    );
     expect(json.brief).toContain("# Ghost Relay Brief");
-    expect(json.brief).toContain("## Intent");
+    expect(json.brief).toContain("## Context Hits");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
@@ -2067,12 +2088,7 @@ checks:
     expect(result.stdout).toContain("### Selected Context");
     expect(result.stdout).toContain("#### Stack");
     expect(result.stdout).toContain("#### Match");
-    expect(result.stdout).toContain("#### Intent");
-    expect(result.stdout).toContain("#### Active Obligations");
-    expect(result.stdout).toContain("#### Composition");
-    expect(result.stdout).toContain("#### Inventory");
-    expect(result.stdout).toContain("#### Validation");
-    expect(result.stdout).toContain("#### Guidance");
+    expect(result.stdout).toContain("#### Context Hits");
     expect(result.stdout).toContain("#### Suggested Reads");
     expect(result.stdout).toContain("#### Omissions");
     expect(result.stdout).toContain("#### Gaps");
