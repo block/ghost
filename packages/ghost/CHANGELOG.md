@@ -1,5 +1,15 @@
 # @anarchitecture/ghost
 
+## 1.0.0
+
+### Major Changes
+
+- [#168](https://github.com/block/ghost/pull/168) [`0a977f4`](https://github.com/block/ghost/commit/0a977f4ca344c141cd666e22995576b1c37c810e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove optional memory and cache fingerprint package support, flatten checks to `fingerprint/checks.yml`, and rename `ghost inventory` to `ghost signals`.
+
+### Patch Changes
+
+- [#169](https://github.com/block/ghost/pull/169) [`dcc603a`](https://github.com/block/ghost/commit/dcc603abdf1b8345ead3fb9428ee52cd85f9fceb) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Document how to author fingerprints as steering guidance for generation.
+
 ## 0.14.0
 
 ### Minor Changes
