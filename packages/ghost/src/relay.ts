@@ -1,18 +1,14 @@
 import type { CAC } from "cac";
-import {
-  buildCascadeBrief,
-  type CascadeBrief,
-  formatCascadeBriefMarkdown,
-} from "./context/cascade-brief.js";
-import {
-  buildContextEntrypoint,
-  type ContextEntrypoint,
-} from "./context/entrypoint.js";
-import { formatContextEntrypointMarkdown } from "./context/entrypoint-markdown.js";
+import { buildContextEntrypoint } from "./context/entrypoint.js";
 import {
   loadPackageContext,
   type PackageContext,
 } from "./context/package-context.js";
+import {
+  buildSelectedContext,
+  formatSelectedContextMarkdown,
+  type SelectedContext,
+} from "./context/selected-context.js";
 import { resolveFingerprintPackage } from "./fingerprint.js";
 import {
   fingerprintStackToPackageContext,
@@ -22,14 +18,17 @@ import {
 } from "./scan/fingerprint-stack.js";
 
 export type {
-  CascadeBrief,
-  CascadeGap,
-  CascadeInventoryItem,
-  CascadeNodeSummary,
-  CascadeObligation,
-  CascadePackage,
-  CascadePosture,
-} from "./context/cascade-brief.js";
+  SelectedContext,
+  SelectedContextGap,
+  SelectedContextGuidance,
+  SelectedContextInventoryItem,
+  SelectedContextNodeSummary,
+  SelectedContextObligation,
+  SelectedContextOmission,
+  SelectedContextPackage,
+  SelectedContextPosture,
+  SelectedContextRead,
+} from "./context/selected-context.js";
 
 export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v1" as const;
 
@@ -47,8 +46,11 @@ export type RelayGatherSource =
       repoRoot: string;
       targetPath: string;
       fingerprintDir: string;
-      layers: string[];
-      provenance: GhostFingerprintStack["provenance"];
+      stackDirs: string[];
+      provenance: {
+        merge: "child-wins-by-id";
+        stack: GhostFingerprintStack["provenance"]["layers"];
+      };
     }
   | {
       kind: "package";
@@ -62,9 +64,8 @@ export interface RelayGatherResult {
   source: RelayGatherSource;
   targetPaths: string[];
   fingerprintDir?: string;
-  layerDirs: string[];
-  entrypoint: ContextEntrypoint;
-  cascade_brief: CascadeBrief;
+  stackDirs: string[];
+  selected_context: SelectedContext;
   brief: string;
 }
 
@@ -100,32 +101,20 @@ export async function gatherRelayContext(
       repoRoot: stack.repo_root,
       targetPath: stack.target_path,
       fingerprintDir: stack.fingerprint_dir,
-      layers: stack.layers.map((layer) => layer.dir),
-      provenance: stack.provenance,
+      stackDirs: stack.layers.map((layer) => layer.dir),
+      provenance: {
+        merge: stack.provenance.merge,
+        stack: stack.provenance.layers,
+      },
     },
     targetPaths: context.targetPaths ?? [stack.target_path],
   });
 }
 
 export function formatRelayBrief(
-  result:
-    | Pick<RelayGatherResult, "cascade_brief">
-    | Pick<RelayGatherResult, "entrypoint">,
+  result: Pick<RelayGatherResult, "selected_context">,
 ): string {
-  if ("cascade_brief" in result) {
-    return formatCascadeBriefMarkdown(result.cascade_brief);
-  }
-  return formatContextEntrypointMarkdown(result.entrypoint, {
-    heading: "# Ghost Relay Brief",
-  });
-}
-
-export function formatLegacyRelayBrief(
-  result: Pick<RelayGatherResult, "entrypoint">,
-): string {
-  return formatContextEntrypointMarkdown(result.entrypoint, {
-    heading: "# Ghost Relay Brief",
-  });
+  return formatSelectedContextMarkdown(result.selected_context);
 }
 
 export function registerRelayCommand(cli: CAC): void {
@@ -193,17 +182,16 @@ function gatherFromContext(
   const entrypoint = buildContextEntrypoint(context, {
     targetPaths: options.targetPaths,
   });
-  const cascadeBrief = buildCascadeBrief(context, entrypoint);
-  const partial = { cascade_brief: cascadeBrief };
+  const selectedContext = buildSelectedContext(context, entrypoint);
+  const partial = { selected_context: selectedContext };
   return {
     schema: RELAY_GATHER_SCHEMA,
     name: context.name,
     source: options.source,
     targetPaths: entrypoint.match.requestedPaths,
     fingerprintDir: context.fingerprintDir,
-    layerDirs: context.layerDirs ?? [],
-    entrypoint,
-    cascade_brief: cascadeBrief,
+    stackDirs: context.stackDirs ?? [],
+    selected_context: selectedContext,
     brief: formatRelayBrief(partial),
   };
 }

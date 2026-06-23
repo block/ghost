@@ -120,10 +120,10 @@ Before generating or revising UI, gather the Relay brief for the target path:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Relay compiles the resolved cascade into package chain, intent cascade, active
-obligations, composition guidance, inventory to inspect, validation checks, and
-gaps. The important shift is timing: Ghost gives agents surface-composition
-context before they build, not only after a review finds drift.
+Relay compiles selected context from the resolved stack: matched packages,
+intent, active obligations, composition, inventory, validation checks, and gaps.
+The important shift is timing: Ghost gives agents surface-composition context
+before they build, not only after a review finds drift.
 
 After implementation, run the deterministic and advisory workflows against the
 same fingerprint:

@@ -6,8 +6,8 @@ description: Build a concise pre-generation brief from Ghost fingerprint facets.
 # Recipe: Brief Work From Ghost Fingerprint
 
 1. Run `ghost relay gather <target>` when a target path is known.
-2. Start from the Relay package chain, intent cascade, and active obligations.
-3. Express that intent through selected composition guidance.
+2. Start from the Relay stack, selected intent, and active obligations.
+3. Express that intent through selected composition.
 4. Inspect matching `inventory.exemplars` as concrete generation anchors.
 5. Run `ghost signals <path>` when raw repo observations would help you find evidence.
 6. Skim active checks so generation avoids deterministic failures.

@@ -912,7 +912,7 @@ design_loop:
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Selected Fingerprint Context");
+    expect(review.stdout).toContain("## Selected Context");
     expect(reviewCommand.code).toBe(0);
   });
 
@@ -1503,7 +1503,7 @@ checks:
     expect(scanHuman.stdout).toContain("intent: empty (0)");
     expect(scanHuman.stdout).toContain("validate: empty (0)");
     expect(scanHuman.stdout).not.toContain("readiness:");
-    expect(scanHuman.stdout).not.toContain("missing layers:");
+    expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -1799,15 +1799,18 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Relay Brief");
-    expect(result.stdout).toContain("## Package Chain");
+    expect(result.stdout).toContain("## Stack");
     expect(result.stdout).toContain("## Match");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
-    expect(result.stdout).toContain("## Intent Cascade");
+    expect(result.stdout).toContain("## Intent");
     expect(result.stdout).toContain("## Active Obligations");
-    expect(result.stdout).toContain("## Composition Guidance");
-    expect(result.stdout).toContain("## Inventory To Inspect");
-    expect(result.stdout).toContain("## Validate");
+    expect(result.stdout).toContain("## Composition");
+    expect(result.stdout).toContain("## Inventory");
+    expect(result.stdout).toContain("## Validation");
+    expect(result.stdout).toContain("## Guidance");
+    expect(result.stdout).toContain("## Suggested Reads");
+    expect(result.stdout).toContain("## Omissions");
     expect(result.stdout).toContain("## Gaps");
     expect(result.stdout).toContain("intent.principle:tokenized-ui-color");
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
@@ -1839,11 +1842,13 @@ checks:
     expect(json.schema).toBe("ghost.relay.gather/v1");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
-    expect(json.entrypoint.match.status).toBe("path-match");
-    expect(json.entrypoint.actionContract.preserve).toContain(
+    expect(json.entrypoint).toBeUndefined();
+    expect(json.cascade_brief).toBeUndefined();
+    expect(json.selected_context.match.status).toBe("path-match");
+    expect(json.selected_context.guidance.preserve).toContain(
       "UI colors should come from the product token system.",
     );
-    expect(json.entrypoint.actionContract.inspect).toEqual(
+    expect(json.selected_context.guidance.inspect).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           path: "Code/Features/Lending/LendingUI",
@@ -1852,23 +1857,23 @@ checks:
         }),
       ]),
     );
-    expect(json.entrypoint.actionContract.validate).toContain(
+    expect(json.selected_context.guidance.validate).toContain(
       "validate.check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
     );
-    expect(json.entrypoint.actionContract.validate.join("\n")).not.toContain(
+    expect(json.selected_context.guidance.validate.join("\n")).not.toContain(
       "candidate-density-check",
     );
-    expect(json.cascade_brief.intent_cascade[0].ref).toBe(
+    expect(json.selected_context.intent[0].ref).toBe(
       "intent.principle:tokenized-ui-color",
     );
-    expect(json.cascade_brief.composition_guidance[0].ref).toBe(
+    expect(json.selected_context.composition[0].ref).toBe(
       "composition.pattern:tokenized-ui-color",
     );
-    expect(json.cascade_brief.validate[0].ref).toBe(
+    expect(json.selected_context.validation[0].ref).toBe(
       "validate.check:no-hardcoded-ui-color",
     );
     expect(json.brief).toContain("# Ghost Relay Brief");
-    expect(json.brief).toContain("## Intent Cascade");
+    expect(json.brief).toContain("## Intent");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
@@ -2058,24 +2063,27 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Selected Fingerprint Context");
-    expect(result.stdout).toContain("### Selected Fingerprint Cascade");
-    expect(result.stdout).toContain("#### Package Chain");
+    expect(result.stdout).toContain("## Selected Context");
+    expect(result.stdout).toContain("### Selected Context");
+    expect(result.stdout).toContain("#### Stack");
     expect(result.stdout).toContain("#### Match");
-    expect(result.stdout).toContain("#### Intent Cascade");
+    expect(result.stdout).toContain("#### Intent");
     expect(result.stdout).toContain("#### Active Obligations");
-    expect(result.stdout).toContain("#### Composition Guidance");
-    expect(result.stdout).toContain("#### Inventory To Inspect");
-    expect(result.stdout).toContain("#### Validate");
+    expect(result.stdout).toContain("#### Composition");
+    expect(result.stdout).toContain("#### Inventory");
+    expect(result.stdout).toContain("#### Validation");
+    expect(result.stdout).toContain("#### Guidance");
+    expect(result.stdout).toContain("#### Suggested Reads");
+    expect(result.stdout).toContain("#### Omissions");
     expect(result.stdout).toContain("#### Gaps");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain("fingerprint facet refs");
     expect(result.stdout).toContain(
-      "cascade gap or local-evidence rationale when context is silent",
+      "selected-context gap or local-evidence rationale when context is silent",
     );
-    expect(result.stdout).toContain("Use the selected cascade first");
+    expect(result.stdout).toContain("Use the selected context first");
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
@@ -2251,7 +2259,7 @@ libraries:
     expect(report.fingerprint_dir).toBe(".ghost");
     expect(report.memory_dir).toBeUndefined();
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toHaveLength(2);
+    expect(report.stacks[0].stack_dirs).toHaveLength(2);
     expect(report.routed_files[0]).toMatchObject({
       path: "apps/checkout/review/page.tsx",
       checks: [],
@@ -2323,7 +2331,7 @@ libraries:
       changed_files: ["apps/checkout/review/page.tsx"],
     });
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toEqual([
+    expect(report.stacks[0].stack_dirs).toEqual([
       await realpath(join(dir, ".design", "memory")),
       await realpath(join(dir, "apps", "checkout", ".design", "memory")),
     ]);
@@ -2352,11 +2360,11 @@ libraries:
     expect(packet.stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
     );
-    expect(packet.stacks[0].layer_dirs).toHaveLength(2);
-    expect(packet.stacks[1].layer_dirs).toHaveLength(1);
+    expect(packet.stacks[0].stack_dirs).toHaveLength(2);
+    expect(packet.stacks[1].stack_dirs).toHaveLength(1);
   });
 
-  it("stack inspects resolved nested layers", async () => {
+  it("stack inspects resolved nested packages", async () => {
     await writeNestedCheckPackage(dir);
 
     const result = await runCli(
@@ -2366,10 +2374,10 @@ libraries:
 
     expect(result.code).toBe(0);
     const stacks = JSON.parse(result.stdout);
-    expect(stacks[0].layers).toHaveLength(2);
+    expect(stacks[0].stack).toHaveLength(2);
     expect(stacks[0].fingerprint_dir).toBe(".ghost");
     expect(stacks[0].memory_dir).toBeUndefined();
-    expect(stacks[0].layers[0].memory_dir).toBeUndefined();
+    expect(stacks[0].stack[0].memory_dir).toBeUndefined();
     expect(stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
     );

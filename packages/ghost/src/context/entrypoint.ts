@@ -28,7 +28,7 @@ export interface ContextEntrypoint {
     requestedPaths: string[];
     matchedScopes: string[];
     matchedSurfaceTypes: string[];
-    sourceLayers: string[];
+    sourceStack: string[];
     reasons: string[];
   };
   identity: {
@@ -114,7 +114,7 @@ export function buildContextEntrypoint(
       requestedPaths,
       matchedScopes: matchedScopeIds,
       matchedSurfaceTypes,
-      sourceLayers: context.layerDirs ?? [],
+      sourceStack: context.stackDirs ?? [],
       reasons: matchReasons(status, requestedPaths, matchedScopeIds),
     },
     identity,
@@ -145,7 +145,7 @@ function matchReasons(
     requestedPaths.length
       ? `No fingerprint scope matched: ${requestedPaths.join(", ")}.`
       : "No target path was supplied.",
-    "Using compact global entrypoint; inspect full fingerprint files when the task is broad.",
+    "Using compact global context; inspect full fingerprint files when the task is broad.",
   ];
 }
 

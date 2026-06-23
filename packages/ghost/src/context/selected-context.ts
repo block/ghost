@@ -1,31 +1,34 @@
 import type { ContextEntrypoint, FingerprintGraphNode } from "./entrypoint.js";
 import type { PackageContext } from "./package-context.js";
 
-export interface CascadeBrief {
+export interface SelectedContext {
   title: string;
   target_paths: string[];
-  package_chain: CascadePackage[];
+  stack: SelectedContextPackage[];
   match: {
     status: ContextEntrypoint["match"]["status"];
     matched_scopes: string[];
     matched_surface_types: string[];
     reasons: string[];
   };
-  posture: CascadePosture;
-  intent_cascade: CascadeNodeSummary[];
-  active_obligations: CascadeObligation[];
-  composition_guidance: CascadeNodeSummary[];
-  inventory_to_inspect: CascadeInventoryItem[];
-  validate: CascadeNodeSummary[];
-  gaps: CascadeGap[];
+  posture: SelectedContextPosture;
+  intent: SelectedContextNodeSummary[];
+  active_obligations: SelectedContextObligation[];
+  composition: SelectedContextNodeSummary[];
+  inventory: SelectedContextInventoryItem[];
+  validation: SelectedContextNodeSummary[];
+  guidance: SelectedContextGuidance;
+  suggested_reads: SelectedContextRead[];
+  omissions: SelectedContextOmission[];
+  gaps: SelectedContextGap[];
 }
 
-export interface CascadePackage {
+export interface SelectedContextPackage {
   dir: string;
   label: string;
 }
 
-export interface CascadePosture {
+export interface SelectedContextPosture {
   product: string;
   audience: string[];
   goals: string[];
@@ -34,7 +37,7 @@ export interface CascadePosture {
   tone: string[];
 }
 
-export interface CascadeNodeSummary {
+export interface SelectedContextNodeSummary {
   ref: string;
   label: string;
   summary: string;
@@ -42,17 +45,36 @@ export interface CascadeNodeSummary {
   source_file: string;
 }
 
-export interface CascadeInventoryItem extends CascadeNodeSummary {
+export interface SelectedContextInventoryItem
+  extends SelectedContextNodeSummary {
   path?: string;
 }
 
-export interface CascadeObligation {
+export interface SelectedContextObligation {
   ref: string;
   text: string;
   source: string;
 }
 
-export interface CascadeGap {
+export interface SelectedContextGuidance {
+  preserve: string[];
+  inspect: SelectedContextRead[];
+  avoid: string[];
+  validate: string[];
+}
+
+export interface SelectedContextRead {
+  path: string;
+  reason: string;
+}
+
+export interface SelectedContextOmission {
+  label: string;
+  omitted: number;
+  source: string;
+}
+
+export interface SelectedContextGap {
   kind:
     | "no-intent"
     | "no-composition"
@@ -63,31 +85,31 @@ export interface CascadeGap {
   message: string;
 }
 
-export function buildCascadeBrief(
+export function buildSelectedContext(
   context: PackageContext,
   entrypoint: ContextEntrypoint,
-): CascadeBrief {
-  const packageDirs = context.layerDirs?.length
-    ? context.layerDirs
+): SelectedContext {
+  const packageDirs = context.stackDirs?.length
+    ? context.stackDirs
     : context.fingerprintDir
       ? [context.fingerprintDir]
       : [];
-  const packageChain = packageDirs.map((dir, index) => ({
+  const stack = packageDirs.map((dir, index) => ({
     dir,
     label: packageLabel(dir, index, packageDirs.length),
   }));
-  const intentCascade = entrypoint.selected.intent.map(nodeSummary);
-  const compositionGuidance = entrypoint.selected.composition.map(nodeSummary);
-  const inventoryToInspect = entrypoint.selected.exemplars.map((node) => ({
+  const intent = entrypoint.selected.intent.map(nodeSummary);
+  const composition = entrypoint.selected.composition.map(nodeSummary);
+  const inventory = entrypoint.selected.exemplars.map((node) => ({
     ...nodeSummary(node),
     ...(pathForNode(node) ? { path: pathForNode(node) } : {}),
   }));
-  const validate = entrypoint.selected.checks.map(nodeSummary);
+  const validation = entrypoint.selected.checks.map(nodeSummary);
 
   return {
     title: `${entrypoint.name} Relay Brief`,
     target_paths: entrypoint.match.requestedPaths,
-    package_chain: packageChain,
+    stack,
     match: {
       status: entrypoint.match.status,
       matched_scopes: entrypoint.match.matchedScopes,
@@ -95,49 +117,51 @@ export function buildCascadeBrief(
       reasons: entrypoint.match.reasons,
     },
     posture: postureFromEntrypoint(entrypoint),
-    intent_cascade: intentCascade,
+    intent,
     active_obligations: obligationsFromIntent(entrypoint.selected.intent),
-    composition_guidance: compositionGuidance,
-    inventory_to_inspect: inventoryToInspect,
-    validate,
+    composition,
+    inventory,
+    validation,
+    guidance: {
+      preserve: entrypoint.actionContract.preserve,
+      inspect: entrypoint.actionContract.inspect,
+      avoid: entrypoint.actionContract.avoid,
+      validate: entrypoint.actionContract.validate,
+    },
+    suggested_reads: entrypoint.suggestedReads,
+    omissions: entrypoint.omissions,
     gaps: gapsFromEntrypoint(entrypoint),
   };
 }
 
-export interface FormatCascadeBriefMarkdownOptions {
-  heading?: string;
-  includeIntro?: boolean;
-}
-
-export function formatCascadeBriefMarkdown(
-  brief: CascadeBrief,
-  options: FormatCascadeBriefMarkdownOptions = {},
+export function formatSelectedContextMarkdown(
+  context: SelectedContext,
+  options: { heading?: string; includeIntro?: boolean } = {},
 ): string {
   const heading = options.heading ?? "# Ghost Relay Brief";
   const sectionHeading = childHeading(heading);
   const parts = [heading];
   if (options.includeIntro ?? true) {
     parts.push(
-      `Product context: **${brief.title.replace(/ Relay Brief$/, "")}**. Use this as a compact, target-specific view of the resolved fingerprint cascade. It does not replace the checked-in \`fingerprint/\` files.`,
+      `Product context: **${context.title.replace(/ Relay Brief$/, "")}**. Use this as compact, target-specific selected context from the resolved fingerprint stack. It does not replace the checked-in \`fingerprint/\` files.`,
     );
   }
   parts.push(
-    formatPackageChain(brief, sectionHeading),
-    formatMatch(brief, sectionHeading),
-    formatPosture(brief, sectionHeading),
-    formatNodeSection("Intent Cascade", brief.intent_cascade, sectionHeading),
-    formatObligations(brief, sectionHeading),
-    formatNodeSection(
-      "Composition Guidance",
-      brief.composition_guidance,
-      sectionHeading,
-    ),
-    formatInventory(brief, sectionHeading),
-    formatNodeSection("Validate", brief.validate, sectionHeading, {
+    formatStack(context, sectionHeading),
+    formatMatch(context, sectionHeading),
+    formatPosture(context, sectionHeading),
+    formatNodeSection("Intent", context.intent, sectionHeading),
+    formatObligations(context, sectionHeading),
+    formatNodeSection("Composition", context.composition, sectionHeading),
+    formatInventory(context, sectionHeading),
+    formatNodeSection("Validation", context.validation, sectionHeading, {
       empty:
         "No selected active checks. Proposed or disabled checks are not blocking validation.",
     }),
-    formatGaps(brief, sectionHeading),
+    formatGuidance(context, sectionHeading),
+    formatSuggestedReads(context, sectionHeading),
+    formatOmissions(context, sectionHeading),
+    formatGaps(context, sectionHeading),
     formatUseThisContext(sectionHeading),
   );
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
@@ -148,7 +172,9 @@ function childHeading(heading: string): string {
   return `${hashes}#`;
 }
 
-function postureFromEntrypoint(entrypoint: ContextEntrypoint): CascadePosture {
+function postureFromEntrypoint(
+  entrypoint: ContextEntrypoint,
+): SelectedContextPosture {
   return {
     product: entrypoint.identity.product,
     audience: entrypoint.identity.audience,
@@ -163,10 +189,10 @@ function packageLabel(_dir: string, index: number, count: number): string {
   if (count === 1) return "package";
   if (index === 0) return "root";
   if (index === count - 1) return "leaf";
-  return `layer ${index + 1}`;
+  return `package ${index + 1}`;
 }
 
-function nodeSummary(node: FingerprintGraphNode): CascadeNodeSummary {
+function nodeSummary(node: FingerprintGraphNode): SelectedContextNodeSummary {
   return {
     ref: node.ref,
     label: node.label,
@@ -185,8 +211,8 @@ function pathForNode(node: FingerprintGraphNode): string | undefined {
 
 function obligationsFromIntent(
   nodes: FingerprintGraphNode[],
-): CascadeObligation[] {
-  const out: CascadeObligation[] = [];
+): SelectedContextObligation[] {
+  const out: SelectedContextObligation[] = [];
   const seen = new Set<string>();
   for (const node of nodes) {
     for (const text of obligationTexts(node)) {
@@ -209,8 +235,10 @@ function obligationTexts(node: FingerprintGraphNode): string[] {
   return [node.summary, ...details];
 }
 
-function gapsFromEntrypoint(entrypoint: ContextEntrypoint): CascadeGap[] {
-  const gaps: CascadeGap[] = [];
+function gapsFromEntrypoint(
+  entrypoint: ContextEntrypoint,
+): SelectedContextGap[] {
+  const gaps: SelectedContextGap[] = [];
   if (entrypoint.match.status === "global-fallback") {
     gaps.push({
       kind: "low-specificity",
@@ -255,54 +283,55 @@ function gapsFromEntrypoint(entrypoint: ContextEntrypoint): CascadeGap[] {
   return gaps;
 }
 
-function formatPackageChain(brief: CascadeBrief, heading: string): string {
-  const lines = [`${heading} Package Chain`];
-  if (brief.package_chain.length === 0) {
-    lines.push("- No package chain recorded.");
+function formatStack(context: SelectedContext, heading: string): string {
+  const lines = [`${heading} Stack`];
+  if (context.stack.length === 0) {
+    lines.push("- No stack recorded.");
     return lines.join("\n");
   }
-  for (const pkg of brief.package_chain) {
+  for (const pkg of context.stack) {
     lines.push(`- ${pkg.label}: \`${pkg.dir}\``);
   }
   return lines.join("\n");
 }
 
-function formatMatch(brief: CascadeBrief, heading: string): string {
+function formatMatch(context: SelectedContext, heading: string): string {
   const lines = [`${heading} Match`];
   lines.push(
-    `- Status: ${brief.match.status === "path-match" ? "path matched" : "global fallback"}`,
+    `- Status: ${context.match.status === "path-match" ? "path matched" : "global fallback"}`,
   );
-  pushJoined(lines, "Requested paths", brief.target_paths, { code: true });
-  pushJoined(lines, "Matched scopes", brief.match.matched_scopes, {
+  pushJoined(lines, "Requested paths", context.target_paths, { code: true });
+  pushJoined(lines, "Matched scopes", context.match.matched_scopes, {
     code: true,
   });
   pushJoined(
     lines,
     "Matched surface types",
-    brief.match.matched_surface_types,
+    context.match.matched_surface_types,
     { code: true },
   );
-  for (const reason of brief.match.reasons) {
+  for (const reason of context.match.reasons) {
     lines.push(`- Why: ${reason}`);
   }
   return lines.join("\n");
 }
 
-function formatPosture(brief: CascadeBrief, heading: string): string {
+function formatPosture(context: SelectedContext, heading: string): string {
   const lines = [`${heading} Posture`];
-  if (brief.posture.product) lines.push(`- Product: ${brief.posture.product}`);
-  pushPostureValues(lines, "Audience", brief.posture.audience);
-  pushPostureValues(lines, "Goals", brief.posture.goals);
-  pushPostureValues(lines, "Anti-goals", brief.posture.anti_goals);
-  pushPostureValues(lines, "Tradeoffs", brief.posture.tradeoffs);
-  pushPostureValues(lines, "Tone", brief.posture.tone);
+  if (context.posture.product)
+    lines.push(`- Product: ${context.posture.product}`);
+  pushPostureValues(lines, "Audience", context.posture.audience);
+  pushPostureValues(lines, "Goals", context.posture.goals);
+  pushPostureValues(lines, "Anti-goals", context.posture.anti_goals);
+  pushPostureValues(lines, "Tradeoffs", context.posture.tradeoffs);
+  pushPostureValues(lines, "Tone", context.posture.tone);
   if (lines.length === 1) lines.push("- No posture summary recorded.");
   return lines.join("\n");
 }
 
 function formatNodeSection(
   title: string,
-  nodes: CascadeNodeSummary[],
+  nodes: SelectedContextNodeSummary[],
   heading: string,
   options: { empty?: string } = {},
 ): string {
@@ -320,25 +349,25 @@ function formatNodeSection(
   return lines.join("\n");
 }
 
-function formatObligations(brief: CascadeBrief, heading: string): string {
+function formatObligations(context: SelectedContext, heading: string): string {
   const lines = [`${heading} Active Obligations`];
-  if (brief.active_obligations.length === 0) {
+  if (context.active_obligations.length === 0) {
     lines.push("- None selected.");
     return lines.join("\n");
   }
-  for (const obligation of brief.active_obligations) {
+  for (const obligation of context.active_obligations) {
     lines.push(`- ${obligation.text} (from \`${obligation.ref}\`)`);
   }
   return lines.join("\n");
 }
 
-function formatInventory(brief: CascadeBrief, heading: string): string {
-  const lines = [`${heading} Inventory To Inspect`];
-  if (brief.inventory_to_inspect.length === 0) {
+function formatInventory(context: SelectedContext, heading: string): string {
+  const lines = [`${heading} Inventory`];
+  if (context.inventory.length === 0) {
     lines.push("- None selected.");
     return lines.join("\n");
   }
-  for (const item of brief.inventory_to_inspect) {
+  for (const item of context.inventory) {
     const path = item.path ? ` — \`${item.path}\`` : "";
     lines.push(`- \`${item.ref}\`${path} — ${item.summary}`);
     for (const detail of item.details
@@ -350,13 +379,51 @@ function formatInventory(brief: CascadeBrief, heading: string): string {
   return lines.join("\n");
 }
 
-function formatGaps(brief: CascadeBrief, heading: string): string {
+function formatGuidance(context: SelectedContext, heading: string): string {
+  const lines = [`${heading} Guidance`];
+  appendStringGroup(lines, "Preserve", context.guidance.preserve);
+  appendReadGroup(lines, "Inspect", context.guidance.inspect);
+  appendStringGroup(lines, "Avoid", context.guidance.avoid);
+  appendStringGroup(lines, "Validate", context.guidance.validate);
+  return lines.join("\n");
+}
+
+function formatSuggestedReads(
+  context: SelectedContext,
+  heading: string,
+): string {
+  const lines = [`${heading} Suggested Reads`];
+  if (context.suggested_reads.length === 0) {
+    lines.push("- None selected.");
+    return lines.join("\n");
+  }
+  for (const read of context.suggested_reads) {
+    lines.push(`- \`${read.path}\` - ${read.reason}`);
+  }
+  return lines.join("\n");
+}
+
+function formatOmissions(context: SelectedContext, heading: string): string {
+  const lines = [`${heading} Omissions`];
+  for (const omission of context.omissions) {
+    if (omission.omitted === 0) {
+      lines.push(`- ${omission.label}: none omitted.`);
+    } else {
+      lines.push(
+        `- ${omission.label}: ${omission.omitted} omitted; inspect \`${omission.source}\` if the task widens.`,
+      );
+    }
+  }
+  return lines.join("\n");
+}
+
+function formatGaps(context: SelectedContext, heading: string): string {
   const lines = [`${heading} Gaps`];
-  if (brief.gaps.length === 0) {
+  if (context.gaps.length === 0) {
     lines.push("- No immediate gaps detected in selected context.");
     return lines.join("\n");
   }
-  for (const gap of brief.gaps) {
+  for (const gap of context.gaps) {
     lines.push(`- ${gap.kind}: ${gap.message}`);
   }
   return lines.join("\n");
@@ -367,8 +434,38 @@ function formatUseThisContext(heading: string): string {
 - Start from posture, then preserve the selected situations, principles, contracts, and obligations.
 - Express intent through composition: use selected patterns to shape hierarchy, flow, state, behavior, and content.
 - Inspect inventory as evidence and material; do not let available components override intent.
-- Treat validate as deterministic enforcement; only active checks can block.
+- Treat validation as deterministic enforcement; only active checks can block.
 - When gaps are present, label local reasoning as provisional and non-Ghost-backed.`;
+}
+
+function appendStringGroup(
+  lines: string[],
+  title: string,
+  values: string[],
+): void {
+  lines.push(`- ${title}:`);
+  if (values.length === 0) {
+    lines.push("  - None selected.");
+    return;
+  }
+  for (const value of values) {
+    lines.push(`  - ${value}`);
+  }
+}
+
+function appendReadGroup(
+  lines: string[],
+  title: string,
+  reads: SelectedContextRead[],
+): void {
+  lines.push(`- ${title}:`);
+  if (reads.length === 0) {
+    lines.push("  - None selected.");
+    return;
+  }
+  for (const read of reads) {
+    lines.push(`  - \`${read.path}\` - ${read.reason}`);
+  }
 }
 
 function pushPostureValues(

@@ -204,10 +204,10 @@ describe("context entrypoint", () => {
     );
   });
 
-  it("carries source layer provenance from resolved stacks", () => {
+  it("carries source stack provenance from resolved stacks", () => {
     const entrypoint = buildContextEntrypoint(context());
 
-    expect(entrypoint.match.sourceLayers).toEqual([
+    expect(entrypoint.match.sourceStack).toEqual([
       "/repo/.ghost",
       "/repo/apps/refunds/.ghost",
     ]);
@@ -290,7 +290,7 @@ function context(
     name: "cash-dashboard",
     fingerprintDir: ".ghost",
     targetPaths: ["apps/refunds/settings/page.tsx"],
-    layerDirs: ["/repo/.ghost", "/repo/apps/refunds/.ghost"],
+    stackDirs: ["/repo/.ghost", "/repo/apps/refunds/.ghost"],
     fingerprintRaw: "",
     fingerprintLayers: {
       manifest: "schema: ghost.fingerprint-package/v1\nid: local\n",

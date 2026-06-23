@@ -27,24 +27,28 @@ describe("relay", () => {
     expect(result.schema).toBe("ghost.relay.gather/v1");
     expect(result.source.kind).toBe("stack");
     expect(result.targetPaths).toEqual(["apps/refunds/settings/page.tsx"]);
-    expect(result.entrypoint.match.status).toBe("path-match");
-    expect(result.entrypoint.match.matchedScopes).toEqual(["refund-settings"]);
-    expect(result.cascade_brief.package_chain).toHaveLength(1);
-    expect(
-      result.cascade_brief.intent_cascade.map((node) => node.ref),
-    ).toContain("intent.principle:refund-trust");
-    expect(
-      result.cascade_brief.composition_guidance.map((node) => node.ref),
-    ).toContain("composition.pattern:refund-disclosure");
-    expect(result.cascade_brief.validate.map((node) => node.ref)).toContain(
-      "validate.check:no-hardcoded-ui-color",
+    expect(result.selected_context.match.status).toBe("path-match");
+    expect(result.selected_context.match.matched_scopes).toEqual([
+      "refund-settings",
+    ]);
+    expect(result.selected_context.stack).toHaveLength(1);
+    expect(result.selected_context.intent.map((node) => node.ref)).toContain(
+      "intent.principle:refund-trust",
     );
+    expect(
+      result.selected_context.composition.map((node) => node.ref),
+    ).toContain("composition.pattern:refund-disclosure");
+    expect(
+      result.selected_context.validation.map((node) => node.ref),
+    ).toContain("validate.check:no-hardcoded-ui-color");
     expect(result.brief).toContain("# Ghost Relay Brief");
-    expect(result.brief).toContain("## Intent Cascade");
+    expect(result.brief).toContain("## Intent");
     expect(result.brief).toContain("intent.principle:refund-trust");
+    expect(result).not.toHaveProperty("entrypoint");
+    expect(result).not.toHaveProperty("cascade_brief");
   });
 
-  it("renders a three-layer sparse posture cascade in root-to-leaf order", async () => {
+  it("renders a three-package sparse posture stack in root-to-leaf order", async () => {
     const root = await track(createThreeLayerPostureSandbox());
 
     const result = await gatherRelayContext({
@@ -53,15 +57,15 @@ describe("relay", () => {
     });
 
     expect(result.source.kind).toBe("stack");
-    expect(result.layerDirs.map((dir) => relativeToSandbox(root, dir))).toEqual(
+    expect(result.stackDirs.map((dir) => relativeToSandbox(root, dir))).toEqual(
       [".ghost", "products/seller/.ghost", "products/seller/payments/.ghost"],
     );
-    expect(result.cascade_brief.package_chain.map((pkg) => pkg.label)).toEqual([
+    expect(result.selected_context.stack.map((pkg) => pkg.label)).toEqual([
       "root",
-      "layer 2",
+      "package 2",
       "leaf",
     ]);
-    expect(result.cascade_brief.posture).toMatchObject({
+    expect(result.selected_context.posture).toMatchObject({
       product: "Block",
       audience: ["people moving money", "sellers"],
       goals: [
@@ -72,12 +76,12 @@ describe("relay", () => {
       anti_goals: ["Hide payout timing until after action."],
     });
     expect(result.brief.indexOf("root: `")).toBeLessThan(
-      result.brief.indexOf("layer 2: `"),
+      result.brief.indexOf("package 2: `"),
     );
-    expect(result.brief.indexOf("layer 2: `")).toBeLessThan(
+    expect(result.brief.indexOf("package 2: `")).toBeLessThan(
       result.brief.indexOf("leaf: `"),
     );
-    expect(result.cascade_brief.intent_cascade.map((node) => node.ref)).toEqual(
+    expect(result.selected_context.intent.map((node) => node.ref)).toEqual(
       expect.arrayContaining([
         "intent.principle:protect-money-movement",
         "intent.principle:seller-operational-confidence",
@@ -110,8 +114,8 @@ describe("relay", () => {
       target: "app/settings/page.tsx",
     });
 
-    expect(result.entrypoint.selected.intent).toEqual([]);
-    expect(result.cascade_brief.posture).toMatchObject({
+    expect(result.selected_context.intent).toEqual([]);
+    expect(result.selected_context.posture).toMatchObject({
       product: "Settings Console",
       audience: ["operators"],
       goals: [
@@ -120,7 +124,7 @@ describe("relay", () => {
       ],
       anti_goals: ["Turn settings into a marketing page."],
     });
-    expect(result.cascade_brief.gaps).toContainEqual(
+    expect(result.selected_context.gaps).toContainEqual(
       expect.objectContaining({
         kind: "no-intent",
         message: expect.stringContaining(

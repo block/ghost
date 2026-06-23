@@ -85,7 +85,7 @@ In auto-draft mode, always gather signals before drafting, then inspect the
 high-signal files they point to. Signal facts may seed `inventory.yml`; scan
 frequency and raw signals do not establish surface-composition guidance.
 
-## 4. Draft The Core Layers
+## 4. Draft The Core Facets
 
 Write the smallest useful durable content:
 
@@ -159,7 +159,7 @@ canonical package.
 
 ## Never
 
-- Never copy raw inventory into canonical layers without curation.
+- Never copy raw inventory into canonical facets without curation.
 - Never claim scan frequency is product authority.
 - Never create nested packages just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.
