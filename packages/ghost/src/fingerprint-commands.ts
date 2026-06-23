@@ -20,8 +20,6 @@ import {
   formatLayout,
   formatSemanticDiff,
   formatVerifyFingerprintReport,
-  initFingerprintPackage,
-  initScopedFingerprintPackage,
   layoutFingerprint,
   lintAllFingerprintStacks,
   type lintFingerprint,
@@ -32,6 +30,7 @@ import {
   verifyAllFingerprintStacks,
   verifyFingerprintPackage,
 } from "./fingerprint.js";
+import { registerInitCommand } from "./init-command.js";
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   discoverGhostPackages,
@@ -133,91 +132,7 @@ export function registerFingerprintCommands(cli: CAC): void {
       }
     });
 
-  // --- init ---
-  cli
-    .command("init [dir]", "Create a root .ghost split fingerprint package")
-    .option(
-      "--scope <path>",
-      "Create a scoped <path>/<memory-dir> fingerprint package",
-    )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
-    .option(
-      "--with-config",
-      "Also create optional config.yml for implementation roots and reference registries/libraries",
-    )
-    .option(
-      "--reference <path-or-registry>",
-      "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
-    )
-    .option("--force", "Overwrite existing Ghost fingerprint files")
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (dirArg: string | undefined, opts) => {
-      try {
-        if (dirArg && typeof opts.scope === "string") {
-          console.error("Error: use either init [dir] or init --scope <path>");
-          process.exit(2);
-          return;
-        }
-        if (dirArg && typeof opts.memoryDir === "string") {
-          console.error("Error: use either init [dir] or --memory-dir");
-          process.exit(2);
-          return;
-        }
-        const memoryDir =
-          typeof opts.scope === "string" || dirArg === undefined
-            ? memoryDirFromOpts(opts)
-            : undefined;
-        const initOptions = {
-          withConfig: Boolean(opts.withConfig || opts.reference),
-          reference:
-            typeof opts.reference === "string" ? opts.reference : undefined,
-          force: Boolean(opts.force),
-        };
-        const paths =
-          typeof opts.scope === "string"
-            ? await initScopedFingerprintPackage(opts.scope, process.cwd(), {
-                ...initOptions,
-                memoryDir,
-              })
-            : await initFingerprintPackage(
-                dirArg ?? memoryDir,
-                process.cwd(),
-                initOptions,
-              );
-        if (opts.format === "json") {
-          process.stdout.write(
-            `${JSON.stringify(
-              initCommandOutput(paths, {
-                includeConfig: Boolean(opts.withConfig || opts.reference),
-              }),
-              null,
-              2,
-            )}\n`,
-          );
-        } else {
-          process.stdout.write(
-            `Initialized Ghost fingerprint package: ${paths.dir}\n`,
-          );
-          process.stdout.write(`  manifest.yml: ${paths.manifest}\n`);
-          process.stdout.write(`  prose.yml: ${paths.prose}\n`);
-          process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
-          process.stdout.write(`  composition.yml: ${paths.composition}\n`);
-          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
-          if (opts.withConfig || opts.reference) {
-            process.stdout.write(`  config.yml: ${paths.config}\n`);
-          }
-        }
-        process.exit(0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
+  registerInitCommand(cli);
 
   // --- verify ---
   cli
@@ -715,22 +630,6 @@ function dirnameForFingerprintPackageDir(
 
 function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
   return resolveMemoryDirDefault(opts.memoryDir);
-}
-
-function initCommandOutput(
-  paths: ReturnType<typeof resolveFingerprintPackage>,
-  options: { includeConfig: boolean },
-): Record<string, string> {
-  return {
-    dir: paths.dir,
-    fingerprintDir: paths.fingerprintDir,
-    manifest: paths.manifest,
-    prose: paths.prose,
-    inventory: paths.inventory,
-    composition: paths.composition,
-    ...(options.includeConfig ? { config: paths.config } : {}),
-    checks: paths.checks,
-  };
 }
 
 async function loadSiblingFingerprintForChecksLint(

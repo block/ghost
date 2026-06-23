@@ -41,6 +41,9 @@ The command tables below are generated from the CLI source. Run
 
 Create a `.ghost/fingerprint/` package with a manifest, raw core layer files,
 and deterministic checks. Use `--scope <path>` for nested package roots. Use
+`--monorepo` to create or preserve the root package, detect workspace child
+roots, and print scoped init commands; add `--apply` to create the detected
+child packages. Use
 `GHOST_MEMORY_DIR=<relative-dir>` only when a host wrapper stores Ghost package
 roots under a different safe relative directory; raw `ghost` defaults to
 `.ghost`. Explicit `init [dir]` and `--memory-dir <relative-dir>` values win
@@ -50,6 +53,8 @@ over the environment default.
 
 ```bash
 ghost init
+ghost init --monorepo
+ghost init --monorepo --apply
 ghost init --scope apps/checkout
 GHOST_MEMORY_DIR=.agents/ghost ghost init
 ghost init --scope apps/checkout --memory-dir .design/memory
