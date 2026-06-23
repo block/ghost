@@ -1,5 +1,17 @@
 # @anarchitecture/ghost
 
+## 0.14.0
+
+### Minor Changes
+
+- [#165](https://github.com/block/ghost/pull/165) [`e540dad`](https://github.com/block/ghost/commit/e540dad3e51ef596cfe3c9e21d7fbfbf1fcbb137) Thanks [@chailandau](https://github.com/chailandau)! - Add an opt-in monorepo initializer that detects workspace child package roots and can create scoped Ghost packages.
+
+## 0.13.0
+
+### Minor Changes
+
+- [#153](https://github.com/block/ghost/pull/153) [`012140f`](https://github.com/block/ghost/commit/012140fec70b1a6f8c2a7f82e1ad29c7de37a5b6) Thanks [@gnahCnayR](https://github.com/gnahCnayR)! - Add a Ghost-owned drift check command and explicit design-loop opt-in config.
+
 ## 0.12.1
 
 ### Patch Changes

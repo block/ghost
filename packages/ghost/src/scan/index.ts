@@ -24,6 +24,8 @@ export {
   resolveMemoryDirDefault,
 } from "./fingerprint-stack.js";
 export { signals } from "./inventory.js";
+export type { MonorepoInitCandidate } from "./monorepo-init.js";
+export { detectMonorepoInitCandidates } from "./monorepo-init.js";
 export type {
   ScanScopeReport,
   ScanStage,

@@ -10,6 +10,7 @@ import {
   realpathSync,
   rmSync,
 } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
@@ -18,6 +19,8 @@ const PACKAGE_DIR = join(ROOT, "packages", "ghost");
 const PACKAGE_JSON_PATH = join(PACKAGE_DIR, "package.json");
 const PACKAGE_JSON = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
 const DESTINATION = process.argv[2];
+const require = createRequire(import.meta.url);
+const copiedDependencies = new Set();
 
 function fail(message) {
   console.error(`pack-release-tarball failed: ${message}`);
@@ -49,9 +52,26 @@ function copyIfPresent(from, to) {
   }
 }
 
-function copyDependency(name, nodeModulesDir) {
-  const dependencyPath = resolveDependencyPath(name);
-  if (!existsSync(dependencyPath)) {
+function resolveDependencyPath(name, fromDir) {
+  const dependencyPath = join(fromDir, "node_modules", ...name.split("/"));
+  if (existsSync(dependencyPath)) {
+    return realpathSync(dependencyPath);
+  }
+
+  try {
+    return dirname(
+      require.resolve(`${name}/package.json`, { paths: [fromDir] }),
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+function copyDependency(name, nodeModulesDir, fromDir = PACKAGE_DIR) {
+  if (copiedDependencies.has(name)) return;
+
+  const dependencyPath = resolveDependencyPath(name, fromDir);
+  if (!dependencyPath) {
     fail(
       `missing installed dependency ${name}; run pnpm install --frozen-lockfile first`,
     );
@@ -59,17 +79,20 @@ function copyDependency(name, nodeModulesDir) {
 
   const destinationPath = join(nodeModulesDir, ...name.split("/"));
   mkdirSync(dirname(destinationPath), { recursive: true });
-  cpSync(realpathSync(dependencyPath), destinationPath, {
+  cpSync(dependencyPath, destinationPath, {
     recursive: true,
     dereference: true,
   });
-}
+  copiedDependencies.add(name);
 
-function resolveDependencyPath(name) {
-  const parts = name.split("/");
-  const packageLocalPath = join(PACKAGE_DIR, "node_modules", ...parts);
-  if (existsSync(packageLocalPath)) return packageLocalPath;
-  return join(ROOT, "node_modules", ...parts);
+  const dependencyPackageJson = JSON.parse(
+    readFileSync(join(dependencyPath, "package.json"), "utf8"),
+  );
+  for (const transitiveName of Object.keys(
+    dependencyPackageJson.dependencies ?? {},
+  )) {
+    copyDependency(transitiveName, nodeModulesDir, dependencyPath);
+  }
 }
 
 if (!DESTINATION) {
