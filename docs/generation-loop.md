@@ -28,14 +28,14 @@ Build a brief from the resolved fingerprint stack:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Relay compiles selected context from the resolved stack: matched packages,
-intent, active obligations, composition, inventory, validation checks, and gaps.
+Relay compiles selected context from the resolved stack as context hits:
+fingerprint refs, why they matched, suggested reads, omissions, and gaps.
 
 Use the brief in this order:
 
-1. Start from the selected intent and active obligations.
-2. Express that intent through the selected composition.
-3. Inspect matching inventory exemplars as concrete anchors.
+1. Start from the selected context hits and their match reasons.
+2. Apply intent and composition hits before choosing implementation details.
+3. Inspect inventory hits as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
 5. Run `ghost signals` when raw repo observations would help find evidence.
 6. Skim active checks in `.ghost/fingerprint/validate.yml` so generation avoids
@@ -71,7 +71,7 @@ stack and runs merged checks for each group. Only active checks can block.
 ghost review --base main
 ```
 
-Advisory review packets include the current diff, the same selected context as
+Advisory review packets include the current diff, the same context-hit model as
 Relay, active checks, and finding categories for fixes, intentional
 divergence, missing fingerprint grounding, experience gaps, and eval
 uncertainty.
