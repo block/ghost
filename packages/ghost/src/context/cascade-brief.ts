@@ -177,13 +177,9 @@ function obligationsFromIntent(
 }
 
 function obligationTexts(node: FingerprintGraphNode): string[] {
-  const details = node.details
-    .filter((detail) => !/^(Refuses|Counterexample|Avoid):/.test(detail))
-    .map((detail) =>
-      detail
-        .replace(/^Product obligation:\s*/, "")
-        .replace(/^User intent:\s*/, "User needs to "),
-    );
+  const details = node.details.filter(
+    (detail) => !/^(Refuses|Counterexample|Avoid):/.test(detail),
+  );
   if (node.kind === "situation") return [...details, node.summary];
   if (node.kind === "experience_contract") return [node.summary, ...details];
   if (node.kind === "principle") return [node.summary, ...details];

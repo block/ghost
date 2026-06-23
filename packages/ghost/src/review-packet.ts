@@ -348,9 +348,7 @@ function formatReviewContextMarkdown(
     if (sections.length > 1) {
       lines.push(`### Context ${index + 1}: ${section.title}`, "");
     }
-    lines.push(
-      section.markdown.replace(/^### Selected Fingerprint Context\n\n?/, ""),
-    );
+    lines.push(section.markdown);
   }
   return lines.join("\n").trim();
 }
