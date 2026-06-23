@@ -53,6 +53,10 @@ Use prose for durable claims about audience needs, product obligations,
 acceptable tradeoffs, what the surface refuses to become, and contracts that
 should shape agent behavior.
 
+High-quality layer content makes generation choices explicit: what to preserve,
+what to avoid, which tradeoffs win, which situations route guidance, and which
+exemplars ground the claim.
+
 `inventory.yml` points to curated material and optional source links:
 
 ```yaml

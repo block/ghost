@@ -115,6 +115,10 @@ Treat signals as scratch observations. Do not copy raw signals into
 
 Edit the smallest useful durable layer content:
 
+- Before writing, ask whether the draft will help future agents choose what
+  matters most, avoid plausible-but-wrong defaults, resolve competing
+  priorities, route guidance by situation, inspect concrete exemplars, and
+  review whether generated work preserved the intended experience.
 - `prose.yml`: summary, situations, principles, and experience contracts.
 - `inventory.yml`: topology, building blocks, exemplars, and `sources[]` links.
 - `composition.yml`: rules, layouts, structures, flows, states, content,
