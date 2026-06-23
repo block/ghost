@@ -61,6 +61,16 @@ describe("relay", () => {
       "layer 2",
       "leaf",
     ]);
+    expect(result.cascade_brief.posture).toMatchObject({
+      product: "Block",
+      audience: ["people moving money", "sellers"],
+      goals: [
+        "Protect money movement across perspectives.",
+        "Help sellers understand operational state.",
+        "Make payout review reversible before commitment.",
+      ],
+      anti_goals: ["Hide payout timing until after action."],
+    });
     expect(result.brief.indexOf("root: `")).toBeLessThan(
       result.brief.indexOf("layer 2: `"),
     );
@@ -77,6 +87,12 @@ describe("relay", () => {
     expect(result.brief).toContain(
       "Money movement surfaces preserve confidence before commitment.",
     );
+    expect(result.brief).toContain("## Posture");
+    expect(result.brief).toContain("Product: Block");
+    expect(result.brief).toContain("people moving money");
+    expect(result.brief).toContain(
+      "Help sellers understand operational state.",
+    );
     expect(result.brief).toContain(
       "Seller payment review keeps reversal and timing understandable.",
     );
@@ -84,6 +100,41 @@ describe("relay", () => {
       "User intent: Confirm payout timing before taking action.",
     );
     expect(result.brief).not.toContain("User needs to Confirm");
+  });
+
+  it("renders summary posture when no ref-backed intent anchors match", async () => {
+    const root = await track(createSummaryOnlyPostureSandbox());
+
+    const result = await gatherRelayContext({
+      cwd: root,
+      target: "app/settings/page.tsx",
+    });
+
+    expect(result.entrypoint.selected.intent).toEqual([]);
+    expect(result.cascade_brief.posture).toMatchObject({
+      product: "Settings Console",
+      audience: ["operators"],
+      goals: [
+        "Preserve platform trust.",
+        "Make settings changes feel deliberate.",
+      ],
+      anti_goals: ["Turn settings into a marketing page."],
+    });
+    expect(result.cascade_brief.gaps).toContainEqual(
+      expect.objectContaining({
+        kind: "no-intent",
+        message: expect.stringContaining(
+          "No ref-backed intent anchors were selected",
+        ),
+      }),
+    );
+    expect(result.brief).toContain("## Posture");
+    expect(result.brief).toContain("Product: Settings Console");
+    expect(result.brief).toContain("Preserve platform trust.");
+    expect(result.brief).toContain(
+      "No ref-backed intent anchors were selected",
+    );
+    expect(result.brief).toContain("Start from posture");
   });
 
   async function track(rootPromise: Promise<string>): Promise<string> {
@@ -112,6 +163,10 @@ async function createThreeLayerPostureSandbox(): Promise<string> {
 intent:
   summary:
     product: Block
+    audience:
+      - people moving money
+    goals:
+      - Protect money movement across perspectives.
   principles:
     - id: protect-money-movement
       principle: Money movement surfaces preserve confidence before commitment.
@@ -132,6 +187,11 @@ composition:
     join(root, "products", "seller", ".ghost"),
     `schema: ghost.fingerprint/v1
 intent:
+  summary:
+    audience:
+      - sellers
+    goals:
+      - Help sellers understand operational state.
   principles:
     - id: seller-operational-confidence
       principle: Seller workflows make operational state and next action legible.
@@ -152,6 +212,11 @@ composition:
     join(root, "products", "seller", "payments", ".ghost"),
     `schema: ghost.fingerprint/v1
 intent:
+  summary:
+    goals:
+      - Make payout review reversible before commitment.
+    anti_goals:
+      - Hide payout timing until after action.
   situations:
     - id: payment-review
       user_intent: Confirm payout timing before taking action.
@@ -192,6 +257,67 @@ checks:
       observed_count: 2
       examples:
         - review.tsx
+`,
+  );
+
+  return root;
+}
+
+async function createSummaryOnlyPostureSandbox(): Promise<string> {
+  const root = join(
+    tmpdir(),
+    `ghost-relay-summary-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
+  await mkdir(join(root, "app", "settings"), { recursive: true });
+  await writeFile(join(root, "app", "settings", "page.tsx"), "");
+
+  await writeSplitFingerprintPackage(
+    join(root, ".ghost"),
+    `schema: ghost.fingerprint/v1
+intent:
+  summary:
+    product: Platform
+    goals:
+      - Preserve platform trust.
+inventory:
+  topology:
+    scopes:
+      - id: app
+        paths: [app]
+        surface_types: [settings]
+composition:
+  patterns: []
+`,
+  );
+
+  await writeSplitFingerprintPackage(
+    join(root, "app", ".ghost"),
+    `schema: ghost.fingerprint/v1
+intent:
+  summary:
+    product: Settings Console
+    audience:
+      - operators
+    goals:
+      - Make settings changes feel deliberate.
+    anti_goals:
+      - Turn settings into a marketing page.
+  situations: []
+  principles: []
+  experience_contracts: []
+inventory:
+  topology:
+    scopes:
+      - id: settings
+        paths: [settings]
+        surface_types: [settings]
+composition:
+  patterns:
+    - id: deliberate-settings-flow
+      kind: flow
+      pattern: Settings changes expose consequence before commitment.
+      applies_to:
+        surface_types: [settings]
 `,
   );
 

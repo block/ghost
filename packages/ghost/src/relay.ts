@@ -28,6 +28,7 @@ export type {
   CascadeNodeSummary,
   CascadeObligation,
   CascadePackage,
+  CascadePosture,
 } from "./context/cascade-brief.js";
 
 export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v1" as const;

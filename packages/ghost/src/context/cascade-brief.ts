@@ -11,6 +11,7 @@ export interface CascadeBrief {
     matched_surface_types: string[];
     reasons: string[];
   };
+  posture: CascadePosture;
   intent_cascade: CascadeNodeSummary[];
   active_obligations: CascadeObligation[];
   composition_guidance: CascadeNodeSummary[];
@@ -22,6 +23,15 @@ export interface CascadeBrief {
 export interface CascadePackage {
   dir: string;
   label: string;
+}
+
+export interface CascadePosture {
+  product: string;
+  audience: string[];
+  goals: string[];
+  anti_goals: string[];
+  tradeoffs: string[];
+  tone: string[];
 }
 
 export interface CascadeNodeSummary {
@@ -84,6 +94,7 @@ export function buildCascadeBrief(
       matched_surface_types: entrypoint.match.matchedSurfaceTypes,
       reasons: entrypoint.match.reasons,
     },
+    posture: postureFromEntrypoint(entrypoint),
     intent_cascade: intentCascade,
     active_obligations: obligationsFromIntent(entrypoint.selected.intent),
     composition_guidance: compositionGuidance,
@@ -113,6 +124,7 @@ export function formatCascadeBriefMarkdown(
   parts.push(
     formatPackageChain(brief, sectionHeading),
     formatMatch(brief, sectionHeading),
+    formatPosture(brief, sectionHeading),
     formatNodeSection("Intent Cascade", brief.intent_cascade, sectionHeading),
     formatObligations(brief, sectionHeading),
     formatNodeSection(
@@ -134,6 +146,17 @@ export function formatCascadeBriefMarkdown(
 function childHeading(heading: string): string {
   const hashes = heading.match(/^#+/)?.[0] ?? "#";
   return `${hashes}#`;
+}
+
+function postureFromEntrypoint(entrypoint: ContextEntrypoint): CascadePosture {
+  return {
+    product: entrypoint.identity.product,
+    audience: entrypoint.identity.audience,
+    goals: entrypoint.identity.goals,
+    anti_goals: entrypoint.identity.antiGoals,
+    tradeoffs: entrypoint.identity.tradeoffs,
+    tone: entrypoint.identity.tone,
+  };
 }
 
 function packageLabel(_dir: string, index: number, count: number): string {
@@ -206,7 +229,7 @@ function gapsFromEntrypoint(entrypoint: ContextEntrypoint): CascadeGap[] {
     gaps.push({
       kind: "no-intent",
       message:
-        "No intent anchors were selected; use local evidence provisionally before making product-surface-defining decisions.",
+        "No ref-backed intent anchors were selected; use posture as broad context and label product-surface-defining reasoning provisional.",
     });
   }
   if (entrypoint.selected.composition.length === 0) {
@@ -262,6 +285,18 @@ function formatMatch(brief: CascadeBrief, heading: string): string {
   for (const reason of brief.match.reasons) {
     lines.push(`- Why: ${reason}`);
   }
+  return lines.join("\n");
+}
+
+function formatPosture(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Posture`];
+  if (brief.posture.product) lines.push(`- Product: ${brief.posture.product}`);
+  pushPostureValues(lines, "Audience", brief.posture.audience);
+  pushPostureValues(lines, "Goals", brief.posture.goals);
+  pushPostureValues(lines, "Anti-goals", brief.posture.anti_goals);
+  pushPostureValues(lines, "Tradeoffs", brief.posture.tradeoffs);
+  pushPostureValues(lines, "Tone", brief.posture.tone);
+  if (lines.length === 1) lines.push("- No posture summary recorded.");
   return lines.join("\n");
 }
 
@@ -329,11 +364,27 @@ function formatGaps(brief: CascadeBrief, heading: string): string {
 
 function formatUseThisContext(heading: string): string {
   return `${heading} Use This Context
-- Start from intent: preserve the selected situations, principles, contracts, and obligations.
+- Start from posture, then preserve the selected situations, principles, contracts, and obligations.
 - Express intent through composition: use selected patterns to shape hierarchy, flow, state, behavior, and content.
 - Inspect inventory as evidence and material; do not let available components override intent.
 - Treat validate as deterministic enforcement; only active checks can block.
 - When gaps are present, label local reasoning as provisional and non-Ghost-backed.`;
+}
+
+function pushPostureValues(
+  lines: string[],
+  label: string,
+  values: string[] | undefined,
+): void {
+  if (!values?.length) return;
+  if (values.length === 1) {
+    lines.push(`- ${label}: ${values[0]}`);
+    return;
+  }
+  lines.push(`- ${label}:`);
+  for (const value of values) {
+    lines.push(`  - ${value}`);
+  }
 }
 
 function pushJoined(
