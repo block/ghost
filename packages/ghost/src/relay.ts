@@ -1,5 +1,10 @@
 import type { CAC } from "cac";
 import {
+  buildCascadeBrief,
+  type CascadeBrief,
+  formatCascadeBriefMarkdown,
+} from "./context/cascade-brief.js";
+import {
   buildContextEntrypoint,
   type ContextEntrypoint,
 } from "./context/entrypoint.js";
@@ -15,6 +20,15 @@ import {
   loadFingerprintStackForPath,
   resolveMemoryDirDefault,
 } from "./scan/fingerprint-stack.js";
+
+export type {
+  CascadeBrief,
+  CascadeGap,
+  CascadeInventoryItem,
+  CascadeNodeSummary,
+  CascadeObligation,
+  CascadePackage,
+} from "./context/cascade-brief.js";
 
 export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v1" as const;
 
@@ -49,6 +63,7 @@ export interface RelayGatherResult {
   fingerprintDir?: string;
   layerDirs: string[];
   entrypoint: ContextEntrypoint;
+  cascade_brief: CascadeBrief;
   brief: string;
 }
 
@@ -92,6 +107,19 @@ export async function gatherRelayContext(
 }
 
 export function formatRelayBrief(
+  result:
+    | Pick<RelayGatherResult, "cascade_brief">
+    | Pick<RelayGatherResult, "entrypoint">,
+): string {
+  if ("cascade_brief" in result) {
+    return formatCascadeBriefMarkdown(result.cascade_brief);
+  }
+  return formatContextEntrypointMarkdown(result.entrypoint, {
+    heading: "# Ghost Relay Brief",
+  });
+}
+
+export function formatLegacyRelayBrief(
   result: Pick<RelayGatherResult, "entrypoint">,
 ): string {
   return formatContextEntrypointMarkdown(result.entrypoint, {
@@ -164,7 +192,8 @@ function gatherFromContext(
   const entrypoint = buildContextEntrypoint(context, {
     targetPaths: options.targetPaths,
   });
-  const partial = { entrypoint };
+  const cascadeBrief = buildCascadeBrief(context, entrypoint);
+  const partial = { cascade_brief: cascadeBrief };
   return {
     schema: RELAY_GATHER_SCHEMA,
     name: context.name,
@@ -173,6 +202,7 @@ function gatherFromContext(
     fingerprintDir: context.fingerprintDir,
     layerDirs: context.layerDirs ?? [],
     entrypoint,
+    cascade_brief: cascadeBrief,
     brief: formatRelayBrief(partial),
   };
 }

@@ -18,7 +18,9 @@ Ghost provides:
 - `ghost review --format json` for advisory packets grounded in the resolved
   fingerprint stack.
 - `ghost relay gather [target] --format json` as the `ghost.relay.gather/v1`
-  contract for generation context.
+  contract for generation context, including an additive `cascade_brief` grouped
+  by package chain, intent cascade, obligations, composition, inventory,
+  validation, and gaps.
 - `--memory-dir <relative-dir>` for wrappers that store Ghost package roots
   somewhere other than `.ghost`.
 
