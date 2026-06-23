@@ -1,8 +1,8 @@
 # Fingerprint Generation Loop
 
 Ghost gives UI generators and product-development agents a local, auditable
-product-surface composition fingerprint. Generation starts from checked-in core
-layers; checks and review govern the result afterward.
+product-surface composition fingerprint. Generation starts from checked-in
+facets; checks and review govern the result afterward.
 
 ```text
 fingerprint/intent.yml + fingerprint/inventory.yml + fingerprint/composition.yml
@@ -44,7 +44,7 @@ Raw repo signals can help orient an agent:
 ghost signals .
 ```
 
-Signals answer what exists now and do not count toward scan readiness.
+Signals answer what exists now and do not count as fingerprint contribution.
 `intent.yml` captures the intent behind the surface. Curated inventory points to
 building blocks and exemplars. `composition.yml` captures the patterns that make
 the surface feel intentional.
@@ -66,8 +66,8 @@ stack and runs merged checks for each group. Only active checks can block.
 ghost review --base main
 ```
 
-Advisory review packets include the current diff, the split fingerprint core
-layers, relevant inventory exemplars, active checks, and finding categories for
+Advisory review packets include the current diff, the split fingerprint
+facets, relevant inventory exemplars, active checks, and finding categories for
 fixes, intentional divergence, missing fingerprint grounding, experience gaps,
 and eval uncertainty.
 

@@ -82,7 +82,7 @@ run.
 <DocSection title="Author Your First Fingerprint">
 
 The CLI handles the deterministic package work. Your agent handles the
-composition work: interviewing, reading repo evidence, drafting layer edits, and
+composition work: interviewing, reading repo evidence, drafting facet edits, and
 asking you to curate the claims.
 
 ```bash
@@ -104,7 +104,7 @@ The fingerprint records durable surface-composition guidance:
    structures, flows, states, content, behavior, and visual arrangements.
 
 Raw repo signals are optional authoring evidence. Curate durable intent,
-inventory, and composition into the core layer files, then use normal Git
+inventory, and composition into the facet files, then use normal Git
 review for approval. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).
 
@@ -135,7 +135,7 @@ ghost review --base main
 
 `ghost check` applies active deterministic gates from the resolved fingerprint
 stack for each changed file. `ghost review` emits advisory context grounded in
-merged split fingerprint layers, optional memory, checks, and the diff.
+merged split fingerprint facets, selected validation checks, and the diff.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities
 outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.

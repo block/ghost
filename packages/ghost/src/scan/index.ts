@@ -4,6 +4,15 @@ export {
   FINGERPRINT_PACKAGE_DIR,
 } from "./constants.js";
 export type {
+  ScanBuildingBlockRows,
+  ScanContributionReport,
+  ScanContributionState,
+  ScanFacet,
+  ScanFacetReport,
+  ScanFacetState,
+  ScanValidateCounts,
+} from "./fingerprint-contribution.js";
+export type {
   DiscoveredGhostPackage,
   FingerprintDirectoryOptions,
   GhostFingerprintStack,

@@ -27,11 +27,13 @@ schema: ghost.fingerprint-package/v1
 id: local
 ```
 
-The raw layer files can be sparse. Missing files or sections normalize to empty
-layers when Ghost assembles the internal `ghost.fingerprint/v1` document used
-by checks, review packets, Relay briefs, compare, and stack merges.
+The raw facet files can be sparse. Missing files or sections mean this package
+contributes no local guidance for that facet; broader stack context may still
+supply it. Ghost normalizes absent facets to empty values when it assembles the
+internal `ghost.fingerprint/v1` document used by validation checks, review
+packets, Relay briefs, compare, and stack merges.
 
-## Core Layers
+## Core Facets
 
 `intent.yml` captures the intent behind the surface:
 
@@ -53,7 +55,7 @@ Use intent for durable claims about audience needs, product obligations,
 acceptable tradeoffs, what the surface refuses to become, and contracts that
 should shape agent behavior.
 
-High-quality layer content makes generation choices explicit: what to preserve,
+High-quality facet content makes generation choices explicit: what to preserve,
 what to avoid, which tradeoffs win, which situations route guidance, and which
 exemplars ground the claim.
 
@@ -113,7 +115,7 @@ Pattern `kind` can be `rule`, `layout`, `structure`, `flow`, `state`,
 
 ## References
 
-Use layer-qualified refs when one part of the fingerprint grounds another:
+Use facet-qualified refs when one part of the fingerprint grounds another:
 
 - `intent.situation:<id>`
 - `intent.principle:<id>`
@@ -122,7 +124,7 @@ Use layer-qualified refs when one part of the fingerprint grounds another:
 - `composition.pattern:<id>`
 - `validate.check:<id>`
 
-Layer refs without `validate.check:` are used where only fingerprint layer material is
+Facet refs without `validate.check:` are used where only fingerprint facet material is
 valid, such as `inventory.exemplars[].refs`.
 
 ## Enforcement
@@ -187,8 +189,9 @@ apps/checkout/review/page.tsx
 ```
 
 For a path like `apps/checkout/review/page.tsx`, Ghost resolves each
-`<memory-dir>/fingerprint/manifest.yml` from root to leaf. The merged stack is
-broad-to-local:
+`<memory-dir>/fingerprint/manifest.yml` from root to leaf. Each package is a
+sparse patch: it contributes only the facets it knows, and the resolved stack
+supplies the working context. The merged stack is broad-to-local:
 
 - child entries with the same `id` replace parent entries;
 - scalar summary fields use the nearest child value;
@@ -200,7 +203,8 @@ broad-to-local:
 - decisions merge by `id`, with child entries winning.
 
 Use nested packages when an area has genuinely different surface composition,
-not just because it has different files.
+not just because it has different files. A nested package does not need to
+restate inherited intent, inventory, composition, or validation checks.
 
 For workspace monorepos, start with a safe plan:
 
@@ -230,10 +234,12 @@ ghost emit review-command --path apps/checkout/review/page.tsx
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-`ghost scan` reports readiness in the same three-layer vocabulary. Useful
-`intent` means any non-empty summary field, situation, principle, or experience
-contract. Useful `inventory` means topology scopes or surface types, curated
-building blocks, or exemplars. Useful `composition` means at least one pattern.
+`ghost scan` reports package contribution facets. Useful `intent` means any
+non-empty summary field, situation, principle, or experience contract. Useful
+`inventory` means topology scopes or surface types, curated building blocks,
+exemplars, or source links. Useful `composition` means at least one pattern.
+Useful `validate` means at least one deterministic check. Absent facets are
+reported as absent contributions, not incomplete packages.
 
 Use raw repo signals when observed repo facts are useful authoring evidence:
 
@@ -250,9 +256,9 @@ Curate durable conclusions into `intent.yml`, `inventory.yml`, or
 - Write curated repo material and exemplars in `inventory.yml`.
 - Write repeatable experience patterns in `composition.yml`.
 - Write deterministic gates in `validate.yml`.
-- Prefer typed refs over intent-only cross-links.
+- Prefer typed refs over prose-only cross-links.
 - Keep ids stable after review because refs and checks depend on them.
-- Let Git review approve changes to canonical fingerprint layers.
+- Let Git review approve changes to canonical fingerprint facets.
 
 Do not:
 

@@ -33,7 +33,7 @@ Host adapters provide:
 - normal Git review for fingerprint edits
 
 Raw repo signals are authoring evidence, not canonical inventory. The checked-in
-core layer files remain the authority.
+facet files remain the authority.
 
 ## Check Flow
 

@@ -24,7 +24,7 @@ const cards: {
     name: "CLI reference",
     href: "/docs/cli#ghost--fingerprint-layers-and-package-checks",
     description:
-      "Check fingerprint layer readiness, validate packages, and emit context.",
+      "Check fingerprint contribution facets, validate packages, and emit context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -48,7 +48,7 @@ export default function GhostScanLanding() {
       <AnimatedPageHeader
         kicker="ghost scan"
         title="Fingerprint Readiness"
-        description="The deterministic handoff that shows whether repo-local Ghost fingerprint layers are ready to guide generation and review."
+        description="The deterministic handoff that shows whether repo-local Ghost fingerprint facets are ready to guide generation and review."
       />
 
       <div

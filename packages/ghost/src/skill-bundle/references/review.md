@@ -38,11 +38,11 @@ Advisory findings are non-blocking unless tied to an active deterministic check.
 Classify each finding as `fix`, `intentional-divergence`, `missing-fingerprint`,
 `experience-gap`, or `eval-uncertainty`.
 
-Each finding must cite the diff location, relevant fingerprint core layer refs,
+Each finding must cite the diff location, relevant fingerprint facet refs,
 exemplars when useful, active check when blocking, and repair or
 intentional-divergence rationale.
 
-When fingerprint layers are silent, local evidence can still support advisory
+When fingerprint facets are silent, local evidence can still support advisory
 critique. Label those findings as provisional and non-Ghost-backed.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint

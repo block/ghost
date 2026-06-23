@@ -64,7 +64,7 @@ building_blocks:
     - packages/ghost/src/context/entrypoint-markdown.ts
     - packages/ghost/src/context/package-review-command.ts
   notes:
-    - Inventory is replaceable material; intent captures intent and composition captures how material is assembled.
+    - Inventory is replaceable material; intent captures what must remain true and composition captures how material is assembled.
     - Correct components or tokens do not prove a surface is aligned.
 exemplars:
   - id: public-readme-fingerprint-model
@@ -72,8 +72,8 @@ exemplars:
     title: Public README fingerprint model
     surface_type: docs-home
     scope: docs-site
-    note: Public entry point describes the split fingerprint folder as canonical intent, inventory, and composition.
-    why: Shows how Ghost explains repo-local fingerprint layers, curated inventory, raw signals, and Git-reviewed approval.
+    note: Public entry point describes split fingerprint facets and sparse contribution state.
+    why: Shows how Ghost explains repo-local sparse fingerprint facets, curated inventory, raw signals, and Git-reviewed approval.
     refs:
       - intent.principle:fingerprint-folder-is-canonical
       - intent.principle:signals-are-authoring-evidence
@@ -83,7 +83,7 @@ exemplars:
     surface_type: emitted-agent-prompt
     scope: public-cli
     note: Review command is generated from split fingerprint intent/inventory/composition.
-    why: Shows how Ghost turns fingerprint layers into an agent-facing review instruction.
+    why: Shows how Ghost turns fingerprint facets into an agent-facing review instruction.
     refs:
       - intent.experience_contract:review-cites-fingerprint-and-diff
       - composition.pattern:compact-agent-handoff

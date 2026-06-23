@@ -50,7 +50,7 @@ export default function Home() {
               it feel intentional.
             </p>
             <p className="thesis-item">
-              It stores that composition as checked-in fingerprint layers: which
+              It stores that composition as checked-in fingerprint facets: which
               intent shapes the surface, which materials agents can draw from,
               which situations change the obligation, which patterns hold the
               surface together, and which examples show it at its best.
@@ -68,7 +68,7 @@ export default function Home() {
               </li>
               <li>
                 <code>intent.yml</code>, <code>inventory.yml</code>, and{" "}
-                <code>composition.yml</code> store the three core layers
+                <code>composition.yml</code> store the three facets
               </li>
               <li>
                 <code>validate.yml</code> stores optional deterministic gates
@@ -88,7 +88,7 @@ export default function Home() {
             </p>
             <p className="thesis-item">A typical loop becomes:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
-              <li>Brief from the fingerprint layers and exemplars</li>
+              <li>Brief from the fingerprint facets and exemplars</li>
               <li>Generate or edit with the host agent</li>
               <li>Run active deterministic checks and advisory review</li>
               <li>
@@ -110,7 +110,7 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               Drift becomes measurable within this system. When generated or
-              modified UI diverges from checked-in fingerprint layers, the
+              modified UI diverges from checked-in fingerprint facets, the
               failure is not just error; it is signal. Drift can originate from:
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
