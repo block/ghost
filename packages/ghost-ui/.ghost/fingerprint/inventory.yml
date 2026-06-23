@@ -30,8 +30,4 @@ building_blocks:
   notes:
     - Ghost UI is registry-distributed implementation inventory, not an installable npm package or consuming-product experience memory.
 exemplars: []
-sources:
-  - id: generated-inventory
-    kind: cache
-    ref: sources/cache/inventory.json
-    note: Optional refreshable registry observations.
+sources: []

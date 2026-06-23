@@ -82,11 +82,6 @@ describe("nested Ghost fingerprint stacks", () => {
         (check) => check.id === "no-hardcoded-color",
       )?.status,
     ).toBe("disabled");
-    expect(
-      stack.merged.decisions.find(
-        (decision) => decision.id === "shared-decision",
-      )?.status,
-    ).toBe("rejected");
   });
 
   it("groups changed files by resolved fingerprint stack", async () => {
@@ -192,9 +187,6 @@ async function writeRootBundle(
   memoryDir = ".ghost",
 ): Promise<void> {
   const ghost = memoryPackagePath(dir, memoryDir);
-  await mkdir(join(ghost, "fingerprint", "memory", "decisions"), {
-    recursive: true,
-  });
   await writeSplitFingerprintPackage(
     ghost,
     `schema: ghost.fingerprint/v1
@@ -256,19 +248,6 @@ checks:
         - apps/example.tsx
 `,
   );
-  await writeFile(
-    join(ghost, "fingerprint", "memory", "decisions", "shared-decision.yml"),
-    `schema: ghost.decision/v1
-id: shared-decision
-status: accepted
-title: Parent decision
-claim: Parent claim.
-rationale: Parent rationale.
-evidence:
-  - note: Parent evidence.
-decided_at: "2026-05-17T00:00:00.000Z"
-`,
-  );
 }
 
 async function writeChildBundle(
@@ -276,9 +255,6 @@ async function writeChildBundle(
   memoryDir = ".ghost",
 ): Promise<void> {
   const ghost = memoryPackagePath(root, memoryDir);
-  await mkdir(join(ghost, "fingerprint", "memory", "decisions"), {
-    recursive: true,
-  });
   await mkdir(join(root, "review"), { recursive: true });
   await writeSplitFingerprintPackage(
     ghost,
@@ -352,19 +328,6 @@ checks:
         - review/page.tsx
 `,
   );
-  await writeFile(
-    join(ghost, "fingerprint", "memory", "decisions", "shared-decision.yml"),
-    `schema: ghost.decision/v1
-id: shared-decision
-status: rejected
-title: Child decision
-claim: Child claim.
-rationale: Child rationale.
-evidence:
-  - path: review/page.tsx
-decided_at: "2026-05-18T00:00:00.000Z"
-`,
-  );
 }
 
 function memoryPackagePath(root: string, memoryDir: string): string {
@@ -378,7 +341,7 @@ async function writeSplitFingerprintPackage(
 ): Promise<void> {
   const fingerprintDir = join(pkg, "fingerprint");
   const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(join(fingerprintDir, "enforcement"), { recursive: true });
+  await mkdir(fingerprintDir, { recursive: true });
   await Promise.all([
     writeFile(
       join(fingerprintDir, "manifest.yml"),
@@ -411,12 +374,7 @@ async function writeSplitFingerprintPackage(
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [
-          writeFile(
-            join(fingerprintDir, "enforcement", "checks.yml"),
-            checksRaw,
-          ),
-        ]
+      ? [writeFile(join(fingerprintDir, "checks.yml"), checksRaw)]
       : []),
   ]);
 }

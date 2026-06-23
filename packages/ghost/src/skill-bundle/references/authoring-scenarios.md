@@ -58,8 +58,8 @@ Ask only high-leverage questions that change the fingerprint:
 - Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
 - Are there surfaces where the same UI decision should be assessed differently?
 
-Use human-authored or human-approved answers in `prose.yml` and optional
-`fingerprint/memory/intent.md`. Do not treat unapproved notes as canonical.
+Use human-authored or human-approved answers in `prose.yml`. Do not treat
+unapproved notes as canonical.
 
 When auto-draft is requested, move the interview after the starter draft and
 use it to curate claims instead of asking every question up front.
@@ -71,20 +71,19 @@ stories, tests, docs, screenshots, examples, copy, tokens, assets, and UI
 library references that reveal hierarchy, behavior, accessibility, trust, and
 flow.
 
-Optional cache:
+Optional signals:
 
 ```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory . > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ```
 
-Treat generated cache as scratch evidence. It can support curated entries in
+Treat signals as scratch evidence. They can support curated entries in
 `inventory.yml`, but it does not establish surface-composition guidance by
 itself.
 
-In auto-draft mode, always create or refresh this cache before drafting, then
-inspect the high-signal files it points to. Scan facts may seed `inventory.yml`;
-scan frequency and raw cache do not establish surface-composition guidance.
+In auto-draft mode, always gather signals before drafting, then inspect the
+high-signal files they point to. Signal facts may seed `inventory.yml`; scan
+frequency and raw signals do not establish surface-composition guidance.
 
 ## 4. Draft The Core Layers
 
@@ -112,9 +111,8 @@ important claims:
 - keep as canonical
 - soften into guidance
 - reject as accidental or legacy
-- move to generated cache or scratch notes
+- move to scratch notes
 - scope to a nested package
-- record as a decision
 - convert into a deterministic check
 
 Only add checks when the rule can be enforced deterministically. Subjective
@@ -163,7 +161,5 @@ canonical package.
 
 - Never copy raw inventory into canonical layers without curation.
 - Never claim scan frequency is product authority.
-- Never make `fingerprint/memory/intent.md` authoritative unless human-authored
-  or human-approved.
 - Never create nested packages just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.

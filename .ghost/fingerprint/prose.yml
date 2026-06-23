@@ -17,7 +17,7 @@ summary:
     - Let advisory review block work without deterministic checks.
   tradeoffs:
     - Prefer compact durable prose over exhaustive surveys.
-    - Keep enforcement, memory, and sources organized around the core layer files.
+    - Keep optional checks in the fingerprint package without treating them as core generation layers.
     - Preserve OSS-friendly language over company-specific strategy.
   tone:
     - plain
@@ -28,10 +28,10 @@ situations:
   - id: capturing-fingerprint
     title: Capturing fingerprint layers
     user_intent: Create or update the Ghost fingerprint for a project.
-    product_obligation: Help the agent distinguish canonical prose/inventory/composition from generated cache, enforcement, and rationale history.
+    product_obligation: Help the agent distinguish canonical prose/inventory/composition from optional checks and raw repo signals.
     principles:
       - prose.principle:fingerprint-folder-is-canonical
-      - prose.principle:generated-cache-is-source-material
+      - prose.principle:signals-are-authoring-evidence
     experience_contracts:
       - prose.experience_contract:git-is-approval-boundary
     patterns:
@@ -66,22 +66,22 @@ principles:
         note: Public format docs define the split fingerprint folder as the source of truth.
       - path: packages/ghost/src/scan/fingerprint-package.ts
         note: init writes manifest.yml and the three core layer files under fingerprint/.
-  - id: generated-cache-is-source-material
-    principle: Generated cache answers what exists; curated inventory points to the building blocks, sources, and precedents an agent can inspect or use.
+  - id: signals-are-authoring-evidence
+    principle: Raw repo signals answer what exists; curated inventory points to the building blocks, sources, and precedents an agent can inspect or use.
     guidance:
-      - Store generated cache under fingerprint/sources/cache/ when useful.
+      - Use ghost signals as scratch evidence while authoring or refreshing fingerprint layers.
       - Curate durable building blocks, files, routes, libraries, assets, source links, notes, and exemplars into inventory.yml.
-      - Do not let cache or building blocks become surface authority without prose and composition.
+      - Do not let signals or building blocks become surface authority without prose and composition.
     evidence:
       - path: README.md
-        note: README frames generated cache as optional source material.
+        note: README frames ghost signals as authoring evidence.
   - id: checks-are-enforcement
-    principle: Deterministic checks live under fingerprint/enforcement/ and should cite typed fingerprint refs when they enforce surface-composition rules.
+    principle: Deterministic checks live in fingerprint/checks.yml and should cite typed fingerprint refs when they enforce surface-composition rules.
     guidance:
       - Active checks can block; advisory findings cannot block unless check-backed.
       - Prefer typed refs such as composition.pattern:token-first-interface.
       - Ungrounded checks may exist, but lint should make their missing grounding visible.
-      - Checks keep enforcement status because gates need lifecycle state.
+      - Checks keep explicit status because gates need lifecycle state.
     evidence:
       - path: packages/ghost/src/ghost-core/checks/lint.ts
         note: Check grounding is validated and missing derivation is reported as a warning.
@@ -98,7 +98,7 @@ experience_contracts:
     contract: Advisory review findings must cite the diff location and the relevant fingerprint refs.
     obligations:
       - Use active checks only when a finding should block.
-      - Use missing-memory or experience-gap when the fingerprint cannot support a confident finding.
+      - Use missing-fingerprint or experience-gap when the fingerprint cannot support a confident finding.
     evidence:
       - path: packages/ghost/src/context/package-review-command.ts
         note: Emitted review command tells agents what to cite.
@@ -107,7 +107,7 @@ experience_contracts:
     obligations:
       - Do not rewrite canonical fingerprint layers silently during generation or review.
       - Treat uncommitted or unmerged fingerprint edits as draft work.
-      - Record durable surface-composition guidance in prose.yml, inventory.yml, and composition.yml; deterministic gates belong in enforcement/checks.yml.
+      - Record durable surface-composition guidance in prose.yml, inventory.yml, and composition.yml; deterministic gates belong in checks.yml.
     evidence:
       - path: packages/ghost/src/skill-bundle/references/capture.md
   - id: emitted-context-prefers-fingerprint-layers

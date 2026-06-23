@@ -1,12 +1,12 @@
 patterns:
   - id: core-layers-stay-prominent
     kind: structure
-    pattern: Portable Ghost packages keep prose.yml, inventory.yml, and composition.yml at the root of fingerprint/ while enforcement, memory, and source material sit in purpose folders.
+    pattern: Portable Ghost packages keep prose.yml, inventory.yml, and composition.yml prominent in fingerprint/ while checks.yml remains optional validation support.
     guidance:
-      - Do not require generated cache for a valid new project.
-      - Do not create cache during initialization; cache appears only after explicit inventory work.
+      - Do not require generated signal files for a valid new project.
+      - Keep ghost signals as stdout-only reconnaissance for agents, not package material.
       - Allow sparse layer authoring; omitted layer files normalize to empty layers internally.
-      - Keep generated cache outside canonical inventory while allowing inventory.yml to cite it as a source.
+      - Curate durable building blocks and exemplars into inventory.yml instead of treating raw signals as inventory authorship.
       - Use Git review for fingerprint approval instead of Ghost-specific draft files.
     evidence:
       - path: README.md

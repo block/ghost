@@ -68,8 +68,6 @@ function formatStackJson(
     merged: {
       fingerprint: stack.merged.fingerprint,
       checks: stack.merged.checks,
-      intent: stack.merged.intent,
-      decisions: stack.merged.decisions,
     },
     provenance: stack.provenance,
   };

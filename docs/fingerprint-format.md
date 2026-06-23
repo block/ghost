@@ -12,16 +12,7 @@ lives under `.ghost/fingerprint/`:
     prose.yml                   # core: surface intent
     inventory.yml               # core: curated material and source links
     composition.yml             # core: experience patterns
-
-    enforcement/
-      checks.yml                # optional deterministic gates
-
-    memory/
-      intent.md                 # optional human-approved intent
-      decisions/                # optional accepted/rejected rationale
-
-    sources/
-      cache/                    # optional refreshable generated observations
+    checks.yml                  # optional deterministic gates
 ```
 
 Git is the staging and approval boundary: uncommitted or unmerged edits are
@@ -51,8 +42,8 @@ summary:
   goals:
     - Preserve task-first documentation and product trust.
 principles:
-  - id: prose-before-cache
-    principle: Prose captures the intent behind the surface; generated cache only explains what exists.
+  - id: prose-before-material
+    principle: Prose captures the intent behind the surface; inventory points to replaceable material.
 experience_contracts:
   - id: review-cites-memory
     contract: Advisory review findings must cite the diff and relevant fingerprint refs.
@@ -87,17 +78,13 @@ exemplars:
     why: Shows command facts and examples kept visually adjacent.
     refs: [composition.pattern:reference-before-decoration]
 sources:
-  - id: generated-inventory
-    kind: cache
-    ref: sources/cache/inventory.json
-    note: Refreshable observed repo facts.
   - id: ghost-ui-registry
     kind: registry
     ref: packages/ghost-ui/public/r/registry.json
 ```
 
-Supported `inventory.sources[].kind` values are `cache`, `registry`, `file`,
-`url`, and `package`. Source links are provenance and orientation; they do not
+Supported `inventory.sources[].kind` values are `registry`, `file`, `url`, and
+`package`. Source links are provenance and orientation; they do not
 make generated material canonical by themselves.
 
 `composition.yml` captures the patterns that make a surface feel intentional:
@@ -136,7 +123,7 @@ valid, such as `inventory.exemplars[].refs`.
 
 ## Enforcement
 
-`fingerprint/enforcement/checks.yml` uses `ghost.checks/v1`. Checks are
+`fingerprint/checks.yml` uses `ghost.checks/v1`. Checks are
 deterministic validation, not generation input.
 
 ```yaml
@@ -184,36 +171,6 @@ Ref-backed checks are preferred. Missing derivation refs lint as warnings, not
 errors, so teams can draft gates while curation catches up. Promote only rules
 that can be detected deterministically; taste stays in prose or composition
 until there is a reliable detector.
-
-## Memory And Sources
-
-`fingerprint/memory/intent.md` is optional human-authored or human-approved
-intent: constraints, tradeoffs, audience notes, and known exceptions that
-should not be inferred from code alone.
-
-`fingerprint/memory/decisions/*.yml` stores accepted, rejected, or superseded
-surface-composition rationale using `ghost.decision/v1`:
-
-```yaml
-schema: ghost.decision/v1
-id: keep-reference-dense
-status: accepted
-title: Keep CLI reference pages dense
-claim: CLI reference pages should remain compact and task-first.
-rationale: Users arrive with a command-shaped task and need fast comparison.
-scope:
-  surface_types: [reference-page]
-evidence:
-  - path: apps/docs/src/content/docs/cli-reference.mdx
-decided_at: '2026-06-04T00:00:00-04:00'
-```
-
-`ghost review --include-memory` reads accepted decisions. Rejected or
-superseded decisions are history, not canonical instructions.
-
-`fingerprint/sources/cache/` is refreshable generated material. It can help an
-agent update `inventory.yml`, but cache files never count as fingerprint
-readiness by themselves.
 
 ## Nested Packages
 
@@ -264,7 +221,7 @@ ghost scan --format json
 ghost lint .ghost
 ghost verify .ghost --root .
 ghost check --base main --format json
-ghost review --base main --include-memory
+ghost review --base main
 ghost emit review-command --path apps/checkout/review/page.tsx
 ghost relay gather apps/checkout/review/page.tsx
 ```
@@ -274,11 +231,10 @@ ghost relay gather apps/checkout/review/page.tsx
 contract. Useful `inventory` means topology scopes or surface types, curated
 building blocks, or exemplars. Useful `composition` means at least one pattern.
 
-Use generated cache when observed repo facts are useful source material:
+Use raw repo signals when observed repo facts are useful authoring evidence:
 
 ```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ```
 
 Curate durable conclusions into `prose.yml`, `inventory.yml`, or
@@ -289,9 +245,7 @@ Curate durable conclusions into `prose.yml`, `inventory.yml`, or
 - Write durable surface intent in `prose.yml`.
 - Write curated repo material and exemplars in `inventory.yml`.
 - Write repeatable experience patterns in `composition.yml`.
-- Write deterministic gates in `enforcement/checks.yml`.
-- Write human-approved intent and rationale in `memory/`.
-- Keep generated observations in `sources/cache/`.
+- Write deterministic gates in `checks.yml`.
 - Prefer typed refs over prose-only cross-links.
 - Keep ids stable after review because refs and checks depend on them.
 - Let Git review approve changes to canonical fingerprint layers.

@@ -290,10 +290,6 @@ function context(
     targetPaths: ["apps/refunds/settings/page.tsx"],
     layerDirs: ["/repo/.ghost", "/repo/apps/refunds/.ghost"],
     fingerprintRaw: "",
-    inventory: {
-      state: "missing",
-      path: ".ghost/fingerprint/sources/cache/inventory.json",
-    },
     fingerprintLayers: {
       manifest: "schema: ghost.fingerprint-package/v1\nid: local\n",
     },

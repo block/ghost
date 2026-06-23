@@ -23,10 +23,7 @@ The canonical portable fingerprint is a folder:
     prose.yml
     inventory.yml
     composition.yml
-    enforcement/checks.yml
-    memory/intent.md
-    memory/decisions/
-    sources/cache/
+    checks.yml
 ```
 
 Generation starts from `prose.yml`, `inventory.yml`, and `composition.yml`.
@@ -89,10 +86,9 @@ composition work: interviewing, reading repo evidence, drafting layer edits, and
 asking you to curate the claims.
 
 ```bash
-ghost init --with-intent
+ghost init
 ghost scan --format json
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ghost lint .ghost
 ghost verify .ghost --root .
 ```
@@ -107,9 +103,9 @@ The fingerprint records durable surface-composition guidance:
 3. **Composition** - the patterns that make it intentional: rules, layouts,
    structures, flows, states, content, behavior, and visual arrangements.
 
-Generated cache is optional source material. Curate durable prose, inventory,
-and composition into the core layer files, then use normal Git review for
-approval. For a fuller human-agent workflow, read
+Raw repo signals are optional authoring evidence. Curate durable prose,
+inventory, and composition into the core layer files, then use normal Git
+review for approval. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).
 
 </DocSection>
@@ -134,7 +130,7 @@ After implementation, run Ghost against the same fingerprint:
 
 ```bash
 ghost check --base main
-ghost review --base main --include-memory
+ghost review --base main
 ```
 
 `ghost check` applies active deterministic gates from the resolved fingerprint

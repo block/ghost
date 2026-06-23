@@ -302,7 +302,7 @@ const HISTOGRAM_TOP_N = 20;
  * No LLM calls, no network, no filesystem mutations. Pure reads plus a
  * best-effort git invocation.
  */
-export function inventory(path: string): InventoryOutput {
+export function signals(path: string): InventoryOutput {
   const root = resolve(path);
 
   const packageManifests = collectAllManifests(root);

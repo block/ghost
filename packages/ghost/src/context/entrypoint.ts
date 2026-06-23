@@ -11,7 +11,7 @@ import {
   sortNodes,
   unique,
 } from "./graph.js";
-import type { PackageContext, PackageInventory } from "./package-context.js";
+import type { PackageContext } from "./package-context.js";
 
 export type {
   FingerprintGraph,
@@ -53,7 +53,6 @@ export interface ContextEntrypoint {
   };
   suggestedReads: Array<{ path: string; reason: string }>;
   omissions: Array<{ label: string; omitted: number; source: string }>;
-  generatedCache: PackageInventory;
 }
 
 export interface BuildContextEntrypointOptions {
@@ -123,7 +122,6 @@ export function buildContextEntrypoint(
     selected,
     suggestedReads,
     omissions: buildOmissions(graph, selected),
-    generatedCache: context.inventory,
   };
 }
 
@@ -256,7 +254,7 @@ function expandOneHop(
 }
 
 function buildSuggestedReads(
-  context: PackageContext,
+  _context: PackageContext,
   selected: ContextEntrypoint["selected"],
 ): ContextEntrypoint["suggestedReads"] {
   const reads = new Map<string, string>();
@@ -280,19 +278,13 @@ function buildSuggestedReads(
   }
   if (selected.checks.length > 0) {
     reads.set(
-      "fingerprint/enforcement/checks.yml",
+      "fingerprint/checks.yml",
       "active deterministic validation rules",
     );
   }
   for (const exemplar of selected.exemplars) {
     const path = exemplar.appliesTo.paths[0];
     if (path) reads.set(path, `source surface for ${exemplar.ref}`);
-  }
-  if (context.intent?.trim()) {
-    reads.set(
-      "fingerprint/memory/intent.md",
-      "supplemental human-authored intent",
-    );
   }
   if (reads.size === 0) {
     reads.set("fingerprint/prose.yml", "global fingerprint intent");
@@ -377,7 +369,7 @@ function buildOmissions(
     {
       label: "Active checks",
       omitted: Math.max(0, totals.checks - selected.checks.length),
-      source: "fingerprint/enforcement/checks.yml",
+      source: "fingerprint/checks.yml",
     },
   ];
 }

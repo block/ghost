@@ -33,20 +33,18 @@ ghost relay gather apps/checkout/review/page.tsx
 2. Select relevant situations, principles, experience contracts, and patterns.
 3. Inspect matching inventory exemplars as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
-5. Use optional `.ghost/fingerprint/sources/cache/` only as source material.
-6. Skim active checks in `.ghost/fingerprint/enforcement/checks.yml` so
+5. Run `ghost signals` when raw repo observations would help find evidence.
+6. Skim active checks in `.ghost/fingerprint/checks.yml` so
    generation avoids deterministic failures.
-7. Use optional `fingerprint/memory/intent.md`, accepted decisions, and nested
-   stacks only when the project has opted into them.
+7. Use nested stacks only when the project has opted into them.
 
-Generated cache can help orient an agent:
+Raw repo signals can help orient an agent:
 
 ```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ```
 
-Cache answers what exists now and does not count toward scan readiness.
+Signals answer what exists now and do not count toward scan readiness.
 `prose.yml` captures the intent behind the surface. Curated inventory points to
 building blocks and exemplars. `composition.yml` captures the patterns that make
 the surface feel intentional.
@@ -65,13 +63,13 @@ stack and runs merged checks for each group. Only active checks can block.
 `ghost review` is advisory:
 
 ```bash
-ghost review --base main --include-memory
+ghost review --base main
 ```
 
 Advisory review packets include the current diff, the split fingerprint core
-layers, relevant inventory exemplars, active checks, optional accepted
-decisions, and finding categories for fixes, intentional divergence, missing
-missing grounding, experience gaps, and eval uncertainty.
+layers, relevant inventory exemplars, active checks, and finding categories for
+fixes, intentional divergence, missing fingerprint grounding, experience gaps,
+and eval uncertainty.
 
 Review findings should cite the diff location, relevant fingerprint refs,
 relevant exemplars when useful, and any active check when blocking.
@@ -83,8 +81,8 @@ smallest useful response:
 
 - Fix the generated or changed code.
 - Explain why a divergence is intentional.
-- Update the split fingerprint package or optional rationale files when the
-  user asks to change the Ghost fingerprint.
+- Update the split fingerprint package when the user asks to change the Ghost
+  fingerprint.
 
 ## CI
 

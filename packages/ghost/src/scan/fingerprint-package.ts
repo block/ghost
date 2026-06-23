@@ -1,5 +1,4 @@
-import type { Dirent } from "node:fs";
-import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
@@ -7,7 +6,6 @@ import {
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
   lintGhostChecks,
-  lintGhostDecision,
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -17,21 +15,15 @@ import {
   readOptionalUtf8,
 } from "../internal/fs.js";
 import {
-  CACHE_DIRNAME,
   CONFIG_FILENAME,
-  DECISIONS_DIRNAME,
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_DIRNAME,
-  FINGERPRINT_ENFORCEMENT_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
-  FINGERPRINT_MEMORY_DIRNAME,
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_PROSE_FILENAME,
-  FINGERPRINT_SOURCES_DIRNAME,
   FINGERPRINT_YML_FILENAME,
-  INTENT_FILENAME,
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./constants.js";
@@ -40,7 +32,6 @@ import {
   parseSplitFingerprintForLint,
   templateChecks,
   templateComposition,
-  templateIntent,
   templateInventory,
   templateManifest,
   templateProse,
@@ -60,7 +51,6 @@ export interface FingerprintPackagePaths {
   prose: string;
   inventory: string;
   composition: string;
-  enforcement: string;
   fingerprintYml: string;
   config: string;
   resources: string;
@@ -70,11 +60,6 @@ export interface FingerprintPackagePaths {
   /** Legacy direct markdown path; not part of the canonical root bundle. */
   fingerprint: string;
   checks: string;
-  memory: string;
-  intent: string;
-  decisions: string;
-  sources: string;
-  cache: string;
 }
 
 export interface LoadedFingerprintPackage {
@@ -89,7 +74,6 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  withIntent?: boolean;
   withConfig?: boolean;
   reference?: string;
   force?: boolean;
@@ -101,9 +85,6 @@ export function resolveFingerprintPackage(
 ): FingerprintPackagePaths {
   const dir = resolve(cwd, dirArg ?? FINGERPRINT_PACKAGE_DIR);
   const fingerprintDir = join(dir, FINGERPRINT_DIRNAME);
-  const enforcement = join(fingerprintDir, FINGERPRINT_ENFORCEMENT_DIRNAME);
-  const memory = join(fingerprintDir, FINGERPRINT_MEMORY_DIRNAME);
-  const sources = join(fingerprintDir, FINGERPRINT_SOURCES_DIRNAME);
   return {
     dir,
     fingerprintDir,
@@ -111,7 +92,6 @@ export function resolveFingerprintPackage(
     prose: join(fingerprintDir, FINGERPRINT_PROSE_FILENAME),
     inventory: join(fingerprintDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(fingerprintDir, FINGERPRINT_COMPOSITION_FILENAME),
-    enforcement,
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
     config: join(dir, CONFIG_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
@@ -119,12 +99,7 @@ export function resolveFingerprintPackage(
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),
-    checks: join(enforcement, GHOST_CHECKS_FILENAME),
-    memory,
-    intent: join(memory, INTENT_FILENAME),
-    decisions: join(memory, DECISIONS_DIRNAME),
-    sources,
-    cache: join(sources, CACHE_DIRNAME),
+    checks: join(fingerprintDir, GHOST_CHECKS_FILENAME),
   };
 }
 
@@ -136,8 +111,6 @@ export async function initFingerprintPackage(
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await Promise.all([
     mkdir(paths.fingerprintDir, { recursive: true }),
-    mkdir(paths.enforcement, { recursive: true }),
-    ...(options.withIntent ? [mkdir(paths.memory, { recursive: true })] : []),
     ...(options.withConfig ? [mkdir(paths.dir, { recursive: true })] : []),
   ]);
   const files = [
@@ -153,9 +126,6 @@ export async function initFingerprintPackage(
             content: templatePackageConfig(options.reference),
           },
         ]
-      : []),
-    ...(options.withIntent
-      ? [{ path: paths.intent, content: templateIntent() }]
       : []),
   ];
   if (!options.force) {
@@ -223,14 +193,6 @@ export async function lintFingerprintPackage(
   const compositionRaw = await readOptional(paths.composition);
   const configRaw = await readOptional(paths.config);
   const checksRaw = await readOptional(paths.checks);
-  const intentRaw = await readOptional(paths.intent);
-  await lintDecisionDirectory(
-    paths.decisions,
-    "fingerprint/memory/decisions",
-    "decision",
-    lintGhostDecision,
-    issues,
-  );
 
   let fingerprint: GhostFingerprintDocument | undefined;
   if (manifestRaw !== undefined) {
@@ -250,90 +212,16 @@ export async function lintFingerprintPackage(
   }
 
   if (checksRaw !== undefined) {
-    const checks = parseYamlSafe(
-      checksRaw,
-      "fingerprint/enforcement/checks.yml",
-      issues,
-    );
+    const checks = parseYamlSafe(checksRaw, "fingerprint/checks.yml", issues);
     if (checks !== undefined) {
       const checksReport = lintGhostChecks(checks, { fingerprint });
       issues.push(
-        ...prefixIssues(
-          "fingerprint/enforcement/checks.yml",
-          checksReport.issues,
-        ),
+        ...prefixIssues("fingerprint/checks.yml", checksReport.issues),
       );
     }
   }
 
-  if (intentRaw !== undefined && intentRaw.trim().length === 0) {
-    issues.push({
-      severity: "warning",
-      rule: "intent-empty",
-      message:
-        "intent.md is optional, but when present it should contain human-authored or human-approved intent.",
-      path: "fingerprint/memory/intent.md",
-    });
-  }
-
   return finalize(issues);
-}
-
-async function lintDecisionDirectory(
-  dirPath: string,
-  label: "fingerprint/memory/decisions",
-  itemLabel: "decision",
-  lint: (input: unknown) => ReturnType<typeof lintGhostDecision>,
-  issues: LintIssue[],
-): Promise<void> {
-  let entries: Dirent[];
-  try {
-    entries = await readdir(dirPath, { withFileTypes: true });
-  } catch {
-    return;
-  }
-
-  const docs: Array<{ id: string; path: string }> = [];
-  for (const entry of entries) {
-    if (!entry.isFile()) continue;
-    if (entry.name.startsWith(".")) continue;
-    if (!/\.ya?ml$/i.test(entry.name)) continue;
-
-    const relPath = `${label}/${entry.name}`;
-    const raw = await readRequired(join(dirPath, entry.name), relPath, issues);
-    if (raw === undefined) continue;
-    const parsed = parseYamlSafe(raw, relPath, issues);
-    if (parsed === undefined) continue;
-
-    const report = lint(parsed);
-    issues.push(...prefixIssues(relPath, report.issues));
-    if (
-      report.errors === 0 &&
-      isRecord(parsed) &&
-      typeof parsed.id === "string"
-    ) {
-      docs.push({ id: parsed.id, path: `${relPath}.id` });
-    }
-  }
-
-  const seen = new Map<string, string>();
-  for (const doc of docs) {
-    const previous = seen.get(doc.id);
-    if (previous) {
-      issues.push({
-        severity: "error",
-        rule: `${itemLabel}-id-duplicate`,
-        message: `${itemLabel} id '${doc.id}' is duplicated (also at ${previous})`,
-        path: doc.path,
-      });
-    } else {
-      seen.set(doc.id, doc.path);
-    }
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 async function readRequired(
