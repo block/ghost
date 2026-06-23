@@ -46,7 +46,7 @@ export interface ContextEntrypoint {
     validate: string[];
   };
   selected: {
-    prose: FingerprintGraphNode[];
+    intent: FingerprintGraphNode[];
     composition: FingerprintGraphNode[];
     exemplars: FingerprintGraphNode[];
     checks: FingerprintGraphNode[];
@@ -60,7 +60,7 @@ export interface BuildContextEntrypointOptions {
 }
 
 const CAPS = {
-  prose: 6,
+  intent: 6,
   composition: 6,
   exemplars: 3,
   checks: 6,
@@ -153,7 +153,7 @@ function identityFromFingerprint(
   fingerprint: GhostFingerprintDocument,
   name: string,
 ): ContextEntrypoint["identity"] {
-  const summary = fingerprint.prose.summary;
+  const summary = fingerprint.intent.summary;
   return {
     product: summary.product ?? name,
     audience: summary.audience ?? [],
@@ -175,11 +175,11 @@ function selectNodes(
     ranking,
   );
   return {
-    prose: selectedNodes
+    intent: selectedNodes
       .filter((node) =>
         ["situation", "principle", "experience_contract"].includes(node.kind),
       )
-      .slice(0, CAPS.prose),
+      .slice(0, CAPS.intent),
     composition: selectedNodes
       .filter((node) => node.kind === "pattern")
       .slice(0, CAPS.composition),
@@ -258,10 +258,10 @@ function buildSuggestedReads(
   selected: ContextEntrypoint["selected"],
 ): ContextEntrypoint["suggestedReads"] {
   const reads = new Map<string, string>();
-  if (selected.prose.length > 0) {
+  if (selected.intent.length > 0) {
     reads.set(
-      "fingerprint/prose.yml",
-      "selected prose anchors and full intent",
+      "fingerprint/intent.yml",
+      "selected intent anchors and full intent",
     );
   }
   if (selected.composition.length > 0) {
@@ -278,7 +278,7 @@ function buildSuggestedReads(
   }
   if (selected.checks.length > 0) {
     reads.set(
-      "fingerprint/checks.yml",
+      "fingerprint/validate.yml",
       "active deterministic validation rules",
     );
   }
@@ -287,7 +287,7 @@ function buildSuggestedReads(
     if (path) reads.set(path, `source surface for ${exemplar.ref}`);
   }
   if (reads.size === 0) {
-    reads.set("fingerprint/prose.yml", "global fingerprint intent");
+    reads.set("fingerprint/intent.yml", "global fingerprint intent");
     reads.set("fingerprint/inventory.yml", "topology and exemplars");
     reads.set("fingerprint/composition.yml", "composition patterns");
   }
@@ -299,12 +299,12 @@ function buildActionContract(
   selected: ContextEntrypoint["selected"],
   suggestedReads: ContextEntrypoint["suggestedReads"],
 ): ContextEntrypoint["actionContract"] {
-  const prose = sortNodes(selected.prose);
+  const intent = sortNodes(selected.intent);
   const composition = sortNodes(selected.composition);
   const preserve = uniqueCapped([
-    ...prose.map((node) => node.summary),
+    ...intent.map((node) => node.summary),
     ...composition.map((node) => node.summary),
-    ...prose.flatMap((node) =>
+    ...intent.flatMap((node) =>
       node.details.filter((detail) => !isAvoidanceDetail(detail)),
     ),
   ]);
@@ -323,7 +323,7 @@ function buildActionContract(
   ]);
   const avoid = uniqueCapped([
     ...identity.antiGoals,
-    ...prose.flatMap((node) => node.details.filter(isAvoidanceDetail)),
+    ...intent.flatMap((node) => node.details.filter(isAvoidanceDetail)),
     ...composition.flatMap((node) => node.details.filter(isAvoidanceDetail)),
   ]);
   const validate =
@@ -343,7 +343,7 @@ function buildOmissions(
   selected: ContextEntrypoint["selected"],
 ): ContextEntrypoint["omissions"] {
   const totals = {
-    prose: graph.nodes.filter((node) =>
+    intent: graph.nodes.filter((node) =>
       ["situation", "principle", "experience_contract"].includes(node.kind),
     ).length,
     composition: graph.nodes.filter((node) => node.kind === "pattern").length,
@@ -352,9 +352,9 @@ function buildOmissions(
   };
   return [
     {
-      label: "Prose anchors",
-      omitted: Math.max(0, totals.prose - selected.prose.length),
-      source: "fingerprint/prose.yml",
+      label: "Intent anchors",
+      omitted: Math.max(0, totals.intent - selected.intent.length),
+      source: "fingerprint/intent.yml",
     },
     {
       label: "Composition patterns",
@@ -369,7 +369,7 @@ function buildOmissions(
     {
       label: "Active checks",
       omitted: Math.max(0, totals.checks - selected.checks.length),
-      source: "fingerprint/checks.yml",
+      source: "fingerprint/validate.yml",
     },
   ];
 }

@@ -13,7 +13,7 @@ export interface ParsedFingerprint {
   meta: FingerprintMeta;
   /**
    * Structured view of the body as it was read from disk. Kept for lint
-   * tooling that wants to check orphan prose or missing rationale against
+   * tooling that wants to check orphan intent or missing rationale against
    * the frontmatter machine-layer.
    */
   body: BodyData;
@@ -83,7 +83,7 @@ function isDelimiter(line: string): boolean {
  * Contract: frontmatter and body own disjoint fields.
  *   • Frontmatter owns machine-facts: id, tokens, dimension slugs,
  *     personality/resembles tags, references, checks, and compact values.
- *   • Body owns prose: `# Character` → summary, `# Signature` →
+ *   • Body owns intent: `# Character` → summary, `# Signature` →
  *     recognizable output posture, `### dimension` → decision rationale.
  *
  * The returned fingerprint unions both sources. Since the two sides never
@@ -114,10 +114,10 @@ export function parseFingerprint(
 }
 
 /**
- * Fold body-owned prose fields into the fingerprint. The body provides
- * Character prose for `observation`, Signature prose for `signature`, and
+ * Fold body-owned intent fields into the fingerprint. The body provides
+ * Character intent for `observation`, Signature intent for `signature`, and
  * rationale for `decisions` (keyed by dimension). Frontmatter-only
- * dimensions keep their evidence but get no body prose (decision text left
+ * dimensions keep their evidence but get no body intent (decision text left
  * empty).
  */
 export function applyBody(fp: Fingerprint, body: BodyData): Fingerprint {

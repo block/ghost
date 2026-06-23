@@ -58,7 +58,7 @@ Ask only high-leverage questions that change the fingerprint:
 - Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
 - Are there surfaces where the same UI decision should be assessed differently?
 
-Use human-authored or human-approved answers in `prose.yml`. Do not treat
+Use human-authored or human-approved answers in `intent.yml`. Do not treat
 unapproved notes as canonical.
 
 When auto-draft is requested, move the interview after the starter draft and
@@ -89,7 +89,7 @@ frequency and raw signals do not establish surface-composition guidance.
 
 Write the smallest useful durable content:
 
-- `prose.yml`: product summary, audience, situations, principles, contracts,
+- `intent.yml`: product summary, audience, situations, principles, contracts,
   anti-goals, and tradeoffs.
 - `inventory.yml`: topology, building blocks, source links, and curated
   exemplars the agent can inspect or use.

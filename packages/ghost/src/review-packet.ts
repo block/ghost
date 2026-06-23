@@ -269,7 +269,7 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/checks.yml. Keep findings grounded in fingerprint/prose.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/validate.yml. Keep findings grounded in fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 

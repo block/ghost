@@ -5,7 +5,7 @@ product-surface composition fingerprint. Generation starts from checked-in core
 layers; checks and review govern the result afterward.
 
 ```text
-fingerprint/prose.yml + fingerprint/inventory.yml + fingerprint/composition.yml
+fingerprint/intent.yml + fingerprint/inventory.yml + fingerprint/composition.yml
         |
         v
 host agent or generator
@@ -28,13 +28,13 @@ Build a brief from the resolved fingerprint stack:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-1. Read `.ghost/fingerprint/prose.yml`, `.ghost/fingerprint/inventory.yml`, and
+1. Read `.ghost/fingerprint/intent.yml`, `.ghost/fingerprint/inventory.yml`, and
    `.ghost/fingerprint/composition.yml`.
 2. Select relevant situations, principles, experience contracts, and patterns.
 3. Inspect matching inventory exemplars as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
 5. Run `ghost signals` when raw repo observations would help find evidence.
-6. Skim active checks in `.ghost/fingerprint/checks.yml` so
+6. Skim active checks in `.ghost/fingerprint/validate.yml` so
    generation avoids deterministic failures.
 7. Use nested stacks only when the project has opted into them.
 
@@ -45,7 +45,7 @@ ghost signals .
 ```
 
 Signals answer what exists now and do not count toward scan readiness.
-`prose.yml` captures the intent behind the surface. Curated inventory points to
+`intent.yml` captures the intent behind the surface. Curated inventory points to
 building blocks and exemplars. `composition.yml` captures the patterns that make
 the surface feel intentional.
 
@@ -104,4 +104,4 @@ exact single-bundle mode and bypasses stack discovery.
 Older Ghost bundles used `resources.yml`, `map.md`, `survey.json`,
 `patterns.yml`, and direct `.ghost/fingerprint.yml` as capture material. Those
 files are now legacy/cache source material. Promote durable conclusions into
-`prose.yml`, `inventory.yml`, and `composition.yml`.
+`intent.yml`, `inventory.yml`, and `composition.yml`.

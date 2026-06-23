@@ -8,16 +8,16 @@ import type {
 } from "./types.js";
 
 type RefTargetPrefix =
-  | "prose.principle"
-  | "prose.situation"
-  | "prose.experience_contract"
+  | "intent.principle"
+  | "intent.situation"
+  | "intent.experience_contract"
   | "inventory.exemplar"
   | "composition.pattern";
 
 const REF_TARGET_PREFIXES = [
-  "prose.principle",
-  "prose.situation",
-  "prose.experience_contract",
+  "intent.principle",
+  "intent.situation",
+  "intent.experience_contract",
   "inventory.exemplar",
   "composition.pattern",
 ] as const satisfies readonly RefTargetPrefix[];
@@ -40,11 +40,11 @@ export function lintGhostFingerprint(
     doc.inventory.topology.surface_types ?? [],
     issues,
   );
-  checkDuplicateIds("prose.situations", doc.prose.situations, issues);
-  checkDuplicateIds("prose.principles", doc.prose.principles, issues);
+  checkDuplicateIds("intent.situations", doc.intent.situations, issues);
+  checkDuplicateIds("intent.principles", doc.intent.principles, issues);
   checkDuplicateIds(
-    "prose.experience_contracts",
-    doc.prose.experience_contracts,
+    "intent.experience_contracts",
+    doc.intent.experience_contracts,
     issues,
   );
   checkDuplicateIds("composition.patterns", doc.composition.patterns, issues);
@@ -121,27 +121,27 @@ function checkTopologyRefs(
     });
   });
 
-  doc.prose.situations.forEach((situation, situationIndex) => {
+  doc.intent.situations.forEach((situation, situationIndex) => {
     checkSurfaceTypeRef(
       situation.surface_type,
-      `prose.situations[${situationIndex}].surface_type`,
+      `intent.situations[${situationIndex}].surface_type`,
       topology,
       issues,
     );
   });
 
-  doc.prose.principles.forEach((principle, index) => {
+  doc.intent.principles.forEach((principle, index) => {
     checkScopeRefs(
       principle.applies_to,
-      `prose.principles[${index}].applies_to`,
+      `intent.principles[${index}].applies_to`,
       topology,
       issues,
     );
   });
-  doc.prose.experience_contracts.forEach((contract, index) => {
+  doc.intent.experience_contracts.forEach((contract, index) => {
     checkScopeRefs(
       contract.applies_to,
-      `prose.experience_contracts[${index}].applies_to`,
+      `intent.experience_contracts[${index}].applies_to`,
       topology,
       issues,
     );
@@ -175,41 +175,41 @@ function checkRefs(
   issues: GhostFingerprintLintIssue[],
 ): void {
   const targets = collectTargets(doc);
-  doc.prose.situations.forEach((situation, index) => {
+  doc.intent.situations.forEach((situation, index) => {
     checkRefList(
       situation.principles,
-      "prose.principle",
-      `prose.situations[${index}].principles`,
+      "intent.principle",
+      `intent.situations[${index}].principles`,
       targets,
       issues,
     );
     checkRefList(
       situation.experience_contracts,
-      "prose.experience_contract",
-      `prose.situations[${index}].experience_contracts`,
+      "intent.experience_contract",
+      `intent.situations[${index}].experience_contracts`,
       targets,
       issues,
     );
     checkRefList(
       situation.patterns,
       "composition.pattern",
-      `prose.situations[${index}].patterns`,
+      `intent.situations[${index}].patterns`,
       targets,
       issues,
     );
   });
 
-  doc.prose.principles.forEach((principle, index) => {
+  doc.intent.principles.forEach((principle, index) => {
     checkCheckRefs(
       principle.check_refs,
-      `prose.principles[${index}].check_refs`,
+      `intent.principles[${index}].check_refs`,
       issues,
     );
   });
-  doc.prose.experience_contracts.forEach((contract, index) => {
+  doc.intent.experience_contracts.forEach((contract, index) => {
     checkCheckRefs(
       contract.check_refs,
-      `prose.experience_contracts[${index}].check_refs`,
+      `intent.experience_contracts[${index}].check_refs`,
       issues,
     );
   });
@@ -251,7 +251,7 @@ function collectTopology(doc: GhostFingerprintDocument): {
     ),
     explicitSurfaceTypes,
     surfaceTypes,
-    situations: new Set(doc.prose.situations.map((entry) => entry.id)),
+    situations: new Set(doc.intent.situations.map((entry) => entry.id)),
   };
 }
 
@@ -332,10 +332,10 @@ function collectTargets(
   doc: GhostFingerprintDocument,
 ): Record<RefTargetPrefix, Set<string>> {
   return {
-    "prose.principle": new Set(doc.prose.principles.map((entry) => entry.id)),
-    "prose.situation": new Set(doc.prose.situations.map((entry) => entry.id)),
-    "prose.experience_contract": new Set(
-      doc.prose.experience_contracts.map((entry) => entry.id),
+    "intent.principle": new Set(doc.intent.principles.map((entry) => entry.id)),
+    "intent.situation": new Set(doc.intent.situations.map((entry) => entry.id)),
+    "intent.experience_contract": new Set(
+      doc.intent.experience_contracts.map((entry) => entry.id),
     ),
     "inventory.exemplar": new Set(
       doc.inventory.exemplars.map((entry) => entry.id),
@@ -382,11 +382,11 @@ function checkCheckRefs(
 ): void {
   refs?.forEach((ref, index) => {
     const parsed = parseRef(ref);
-    if (parsed?.prefix === "check") return;
+    if (parsed?.prefix === "validate.check") return;
     issues.push({
       severity: "error",
       rule: "fingerprint-check-ref-prefix",
-      message: "check_refs entries must use check:* references.",
+      message: "check_refs entries must use validate.check:* references.",
       path: `${path}[${index}]`,
     });
   });
@@ -400,12 +400,12 @@ function checkLayerRefs(
 ): void {
   refs?.forEach((ref, index) => {
     const parsed = parseRef(ref);
-    if (!parsed || parsed.prefix === "check") {
+    if (!parsed || parsed.prefix === "validate.check") {
       issues.push({
         severity: "error",
         rule: "fingerprint-ref-prefix",
         message:
-          "Expected prose.*, inventory.exemplar:*, or composition.pattern:* reference.",
+          "Expected intent.*, inventory.exemplar:*, or composition.pattern:* reference.",
         path: `${path}[${index}]`,
       });
       return;
@@ -421,14 +421,15 @@ function checkLayerRefs(
   });
 }
 
-function parseRef(
-  ref: GhostFingerprintRef,
-):
-  | { prefix: (typeof REF_TARGET_PREFIXES)[number] | "check"; id: string }
+function parseRef(ref: GhostFingerprintRef):
+  | {
+      prefix: (typeof REF_TARGET_PREFIXES)[number] | "validate.check";
+      id: string;
+    }
   | undefined {
   const [prefix, id] = ref.split(":");
   if (!prefix || !id) return undefined;
-  if (prefix === "check") return { prefix, id };
+  if (prefix === "validate.check") return { prefix, id };
   if (REF_TARGET_PREFIXES.includes(prefix as RefTargetPrefix)) {
     return { prefix: prefix as RefTargetPrefix, id };
   }

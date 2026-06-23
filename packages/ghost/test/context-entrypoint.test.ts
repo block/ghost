@@ -12,28 +12,30 @@ describe("context entrypoint", () => {
 
     expect([...graph.nodeByRef.keys()]).toEqual(
       expect.arrayContaining([
-        "prose.situation:refund-review",
-        "prose.principle:trust-before-action",
-        "prose.experience_contract:reversible-action",
+        "intent.situation:refund-review",
+        "intent.principle:trust-before-action",
+        "intent.experience_contract:reversible-action",
         "composition.pattern:progressive-disclosure",
         "inventory.exemplar:refund-settings-primary",
-        "check:no-hardcoded-ui-color",
+        "validate.check:no-hardcoded-ui-color",
       ]),
     );
-    expect([...graph.nodeByRef.keys()]).not.toContain("check:proposed-density");
+    expect([...graph.nodeByRef.keys()]).not.toContain(
+      "validate.check:proposed-density",
+    );
     expect(graph.edges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          from: "prose.situation:refund-review",
-          to: "prose.principle:trust-before-action",
+          from: "intent.situation:refund-review",
+          to: "intent.principle:trust-before-action",
         }),
         expect.objectContaining({
           from: "inventory.exemplar:refund-settings-primary",
           to: "composition.pattern:progressive-disclosure",
         }),
         expect.objectContaining({
-          from: "check:no-hardcoded-ui-color",
-          to: "prose.principle:trust-before-action",
+          from: "validate.check:no-hardcoded-ui-color",
+          to: "intent.principle:trust-before-action",
         }),
       ]),
     );
@@ -46,11 +48,11 @@ describe("context entrypoint", () => {
 
     expect(entrypoint.match.status).toBe("path-match");
     expect(entrypoint.match.matchedScopes).toEqual(["refund-settings"]);
-    expect(entrypoint.selected.prose.map((node) => node.ref)).toEqual(
+    expect(entrypoint.selected.intent.map((node) => node.ref)).toEqual(
       expect.arrayContaining([
-        "prose.situation:refund-review",
-        "prose.principle:trust-before-action",
-        "prose.experience_contract:reversible-action",
+        "intent.situation:refund-review",
+        "intent.principle:trust-before-action",
+        "intent.experience_contract:reversible-action",
       ]),
     );
     expect(entrypoint.selected.composition.map((node) => node.ref)).toContain(
@@ -62,7 +64,7 @@ describe("context entrypoint", () => {
       "inventory.exemplar:refund-settings-tertiary",
     ]);
     expect(entrypoint.selected.checks.map((node) => node.ref)).toEqual([
-      "check:no-hardcoded-ui-color",
+      "validate.check:no-hardcoded-ui-color",
     ]);
     expect(entrypoint.omissions).toEqual(
       expect.arrayContaining([
@@ -96,13 +98,13 @@ describe("context entrypoint", () => {
     );
 
     expect(
-      entrypoint.selected.prose
+      entrypoint.selected.intent
         .filter((node) => node.kind === "principle")
         .map((node) => node.ref)
         .slice(0, 2),
     ).toEqual([
-      "prose.principle:trust-before-action",
-      "prose.principle:surface-only-guidance",
+      "intent.principle:trust-before-action",
+      "intent.principle:surface-only-guidance",
     ]);
   });
 
@@ -130,8 +132,8 @@ describe("context entrypoint", () => {
     );
 
     expect(entrypoint.selected.checks.map((node) => node.ref)).toEqual([
-      "check:no-hardcoded-ui-color",
-      "check:unrelated-same-scope",
+      "validate.check:no-hardcoded-ui-color",
+      "validate.check:unrelated-same-scope",
     ]);
   });
 
@@ -163,8 +165,8 @@ describe("context entrypoint", () => {
           "source surface for inventory.exemplar:refund-settings-tertiary",
       },
       {
-        path: "fingerprint/prose.yml",
-        reason: "selected prose anchors and full intent",
+        path: "fingerprint/intent.yml",
+        reason: "selected intent anchors and full intent",
       },
       {
         path: "fingerprint/composition.yml",
@@ -177,7 +179,7 @@ describe("context entrypoint", () => {
       "Avoid: Bury the refund summary behind advanced controls.",
     ]);
     expect(entrypoint.actionContract.validate).toEqual([
-      "check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
+      "validate.check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
     ]);
     expect(entrypoint.actionContract.validate.join("\n")).not.toContain(
       "proposed-density",
@@ -195,7 +197,7 @@ describe("context entrypoint", () => {
     );
     expect(entrypoint.suggestedReads.map((read) => read.path)).toEqual(
       expect.arrayContaining([
-        "fingerprint/prose.yml",
+        "fingerprint/intent.yml",
         "fingerprint/inventory.yml",
         "fingerprint/composition.yml",
       ]),
@@ -248,8 +250,8 @@ describe("context entrypoint", () => {
     expect(reordered.selected.exemplars.map((node) => node.ref)).toEqual(
       normal.selected.exemplars.map((node) => node.ref),
     );
-    expect(reordered.selected.prose.map((node) => node.ref)).toEqual(
-      normal.selected.prose.map((node) => node.ref),
+    expect(reordered.selected.intent.map((node) => node.ref)).toEqual(
+      normal.selected.intent.map((node) => node.ref),
     );
   });
 });
@@ -295,7 +297,7 @@ function context(
     },
     fingerprint: {
       schema: "ghost.fingerprint/v1",
-      prose: {
+      intent: {
         summary: {
           product: "Cash Dashboard",
           audience: options.multiSentenceIdentity
@@ -315,7 +317,7 @@ function context(
             : ["hide money movement risk"],
           tradeoffs: options.multiSentenceIdentity
             ? [
-                "Prefer compact durable prose over exhaustive surveys.",
+                "Prefer compact durable intent over exhaustive surveys.",
                 "Preserve portable language over company-specific strategy.",
               ]
             : ["trust over throughput"],
@@ -330,9 +332,9 @@ function context(
             user_intent: "Understand refund impact before submitting.",
             product_obligation: "Make reversibility and consequences visible.",
             surface_type: "settings",
-            principles: ["prose.principle:trust-before-action"],
+            principles: ["intent.principle:trust-before-action"],
             experience_contracts: [
-              "prose.experience_contract:reversible-action",
+              "intent.experience_contract:reversible-action",
             ],
             patterns: ["composition.pattern:progressive-disclosure"],
           },
@@ -358,7 +360,7 @@ function context(
             },
             guidance: ["Put consequence copy near the submit affordance."],
             counterexamples: ["Hide consequence copy until after submission."],
-            check_refs: ["check:no-hardcoded-ui-color"],
+            check_refs: ["validate.check:no-hardcoded-ui-color"],
           },
         ],
         experience_contracts: [
@@ -413,7 +415,7 @@ function context(
             anti_patterns: [
               "Bury the refund summary behind advanced controls.",
             ],
-            check_refs: ["check:no-hardcoded-ui-color"],
+            check_refs: ["validate.check:no-hardcoded-ui-color"],
           },
           ...(options.rankingPressure
             ? [
@@ -432,7 +434,7 @@ function context(
       },
     },
     checks: {
-      schema: "ghost.checks/v1",
+      schema: "ghost.validate/v1",
       id: "cash-dashboard",
       checks: [
         ...(options.rankingPressure
@@ -459,7 +461,7 @@ function context(
           status: "active",
           severity: "serious",
           derivation: {
-            prose: ["prose.principle:trust-before-action"],
+            intent: ["intent.principle:trust-before-action"],
             composition: ["composition.pattern:progressive-disclosure"],
             inventory: ["inventory.exemplar:refund-settings-primary"],
           },
@@ -497,7 +499,7 @@ function exemplar(id: string) {
     surface_type: "settings",
     why: `Shows refund settings ${id}.`,
     refs: [
-      "prose.principle:trust-before-action",
+      "intent.principle:trust-before-action",
       "composition.pattern:progressive-disclosure",
     ],
   } as const;

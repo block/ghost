@@ -2,15 +2,15 @@ import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import type { ZodIssue, ZodType } from "zod";
 import {
-  GHOST_CHECKS_SCHEMA,
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
+  GHOST_VALIDATE_SCHEMA,
   GhostFingerprintCompositionSchema,
   type GhostFingerprintDocument,
+  GhostFingerprintIntentSchema,
   GhostFingerprintInventorySchema,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
-  GhostFingerprintProseSchema,
   GhostFingerprintSchema,
   lintGhostFingerprint,
 } from "#ghost-core";
@@ -25,20 +25,20 @@ import { normalizeReferenceInput } from "./package-config.js";
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
 ): Promise<LoadedFingerprintPackage> {
-  const [manifestRaw, proseRaw, inventoryRaw, compositionRaw] =
+  const [manifestRaw, intentRaw, inventoryRaw, compositionRaw] =
     await Promise.all([
       readFile(paths.manifest, "utf-8"),
-      readOptional(paths.prose),
+      readOptional(paths.intent),
       readOptional(paths.inventory),
       readOptional(paths.composition),
     ]);
   const manifest = parseManifest(manifestRaw, "fingerprint/manifest.yml");
   const fingerprint = assembleFingerprint({
-    prose: parseLayer(
-      proseRaw,
-      "fingerprint/prose.yml",
-      GhostFingerprintProseSchema,
-      emptyProse(),
+    intent: parseLayer(
+      intentRaw,
+      "fingerprint/intent.yml",
+      GhostFingerprintIntentSchema,
+      emptyIntent(),
     ),
     inventory: parseLayer(
       inventoryRaw,
@@ -66,7 +66,7 @@ export async function loadFingerprintPackage(
     manifestRaw,
     fingerprint,
     layerRaw: {
-      ...(proseRaw !== undefined ? { prose: proseRaw } : {}),
+      ...(intentRaw !== undefined ? { intent: intentRaw } : {}),
       ...(inventoryRaw !== undefined ? { inventory: inventoryRaw } : {}),
       ...(compositionRaw !== undefined ? { composition: compositionRaw } : {}),
     },
@@ -93,17 +93,17 @@ export function lintFingerprintPackageManifest(
 
 export function parseSplitFingerprintForLint(
   input: {
-    proseRaw?: string;
+    intentRaw?: string;
     inventoryRaw?: string;
     compositionRaw?: string;
   },
   issues: LintIssue[],
 ): GhostFingerprintDocument | undefined {
-  const prose = parseLayerForLint(
-    input.proseRaw,
-    "fingerprint/prose.yml",
-    GhostFingerprintProseSchema,
-    emptyProse(),
+  const intent = parseLayerForLint(
+    input.intentRaw,
+    "fingerprint/intent.yml",
+    GhostFingerprintIntentSchema,
+    emptyIntent(),
     issues,
   );
   const inventory = parseLayerForLint(
@@ -120,9 +120,9 @@ export function parseSplitFingerprintForLint(
     emptyComposition(),
     issues,
   );
-  if (!prose || !inventory || !composition) return undefined;
+  if (!intent || !inventory || !composition) return undefined;
 
-  const fingerprint = assembleFingerprint({ prose, inventory, composition });
+  const fingerprint = assembleFingerprint({ intent, inventory, composition });
   const fingerprintReport = lintGhostFingerprint(fingerprint);
   issues.push(
     ...fingerprintReport.issues.map((issue) => ({
@@ -139,7 +139,7 @@ id: local
 `;
 }
 
-export function templateProse(): string {
+export function templateIntent(): string {
   return `summary: {}
 situations: []
 principles: []
@@ -177,7 +177,7 @@ export function templateComposition(): string {
 }
 
 export function templateChecks(): string {
-  return `schema: ${GHOST_CHECKS_SCHEMA}
+  return `schema: ${GHOST_VALIDATE_SCHEMA}
 id: local
 checks: []
 `;
@@ -225,19 +225,19 @@ function parseLayerForLint<T>(
 }
 
 function assembleFingerprint(input: {
-  prose: GhostFingerprintDocument["prose"];
+  intent: GhostFingerprintDocument["intent"];
   inventory: GhostFingerprintDocument["inventory"];
   composition: GhostFingerprintDocument["composition"];
 }): GhostFingerprintDocument {
   return GhostFingerprintSchema.parse({
     schema: GHOST_FINGERPRINT_SCHEMA,
-    prose: input.prose,
+    intent: input.intent,
     inventory: input.inventory,
     composition: input.composition,
   }) as GhostFingerprintDocument;
 }
 
-function emptyProse(): GhostFingerprintDocument["prose"] {
+function emptyIntent(): GhostFingerprintDocument["intent"] {
   return {
     summary: {},
     situations: [],
@@ -294,9 +294,9 @@ function parseYamlSafe(
 }
 
 function splitFingerprintPath(path: string): string {
-  if (path === "prose") return "fingerprint/prose.yml";
-  if (path.startsWith("prose.")) {
-    return `fingerprint/prose.yml.${path.slice("prose.".length)}`;
+  if (path === "intent") return "fingerprint/intent.yml";
+  if (path.startsWith("intent.")) {
+    return `fingerprint/intent.yml.${path.slice("intent.".length)}`;
   }
   if (path === "inventory") return "fingerprint/inventory.yml";
   if (path.startsWith("inventory.")) {

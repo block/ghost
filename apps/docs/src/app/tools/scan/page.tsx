@@ -31,7 +31,7 @@ const cards: {
     name: "Format spec",
     href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
     description:
-      "The full package format for fingerprint prose, inventory, composition, and checks.",
+      "The full package format for fingerprint intent, inventory, composition, and validation.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];

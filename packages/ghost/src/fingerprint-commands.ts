@@ -50,7 +50,7 @@ import { registerStackCommand } from "./scan-stack-command.js";
  * Verbs author and validate the root `.ghost/` fingerprint package:
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
  * fidelity), `describe` (section ranges + token estimates for direct
- * fingerprint markdown), `diff` (structural prose-level diff between direct
+ * fingerprint markdown), `diff` (structural intent-level diff between direct
  * fingerprint files), `emit` (derive review-command artifacts), and `survey`
  * operations for deterministic `ghost.survey/v1`
  * merge, ID repair, bounded summary output, derived value catalogs, and
@@ -102,8 +102,8 @@ export function registerFingerprintCommands(cli: CAC): void {
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
         const fingerprint =
-          kind === "checks"
-            ? await loadSiblingFingerprintForChecksLint(fileTarget)
+          kind === "validate"
+            ? await loadSiblingFingerprintForValidateLint(fileTarget)
             : undefined;
 
         report = lintDetectedFileKind(kind, raw, { fingerprint });
@@ -138,7 +138,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
+      "Verify a root Ghost fingerprint package: intent/composition evidence, inventory exemplars, and checks are grounded.",
     )
     .option(
       "--root <dir>",
@@ -192,7 +192,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
+      "Report fingerprint layer readiness: produced artifacts, useful intent/inventory/composition, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
@@ -242,7 +242,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
-            `  checks      (fingerprint/checks.yml): ${fmt(status.checks.state)}\n`,
+            `  checks      (fingerprint/validate.yml): ${fmt(status.checks.state)}\n`,
           );
           process.stdout.write("\n");
           if (status.recommended_next) {
@@ -256,7 +256,7 @@ export function registerFingerprintCommands(cli: CAC): void {
           }
           process.stdout.write(`readiness: ${status.readiness.state}\n`);
           process.stdout.write(
-            `  layers: prose ${status.readiness.layer_counts.prose}, inventory ${status.readiness.layer_counts.inventory}, composition ${status.readiness.layer_counts.composition}\n`,
+            `  layers: intent ${status.readiness.layer_counts.intent}, inventory ${status.readiness.layer_counts.inventory}, composition ${status.readiness.layer_counts.composition}\n`,
           );
           if (status.readiness.missing_layers.length > 0) {
             process.stdout.write(
@@ -632,14 +632,14 @@ function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
   return resolveMemoryDirDefault(opts.memoryDir);
 }
 
-async function loadSiblingFingerprintForChecksLint(
+async function loadSiblingFingerprintForValidateLint(
   fileTarget: string,
 ): Promise<GhostFingerprintDocument | undefined> {
-  const checksDir = dirname(fileTarget);
+  const validateDir = dirname(fileTarget);
   const packageRoot =
-    basename(checksDir) === FINGERPRINT_DIRNAME
-      ? resolve(checksDir, "..")
-      : resolve(checksDir, "..", "..");
+    basename(validateDir) === FINGERPRINT_DIRNAME
+      ? resolve(validateDir, "..")
+      : resolve(validateDir, "..", "..");
   try {
     return (
       await loadFingerprintPackage(resolveFingerprintPackage(packageRoot))
@@ -789,7 +789,7 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       traits: traitsForPattern(entry.value, survey),
       evidence: entry.evidence,
       advisory: [
-        "Use as advisory composition evidence; deterministic checks belong in fingerprint/checks.yml.",
+        "Use as advisory composition evidence; deterministic checks belong in fingerprint/validate.yml.",
       ],
     })),
     advisory: {
@@ -803,7 +803,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
       "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
-      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
     ];
   }
 
@@ -814,14 +814,14 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
       "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
     ];
   }
 
   return [
     "Identify the surface type before assessing composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-    "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+    "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
   ];
 }
 

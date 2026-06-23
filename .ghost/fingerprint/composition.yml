@@ -1,7 +1,7 @@
 patterns:
   - id: core-layers-stay-prominent
     kind: structure
-    pattern: Portable Ghost packages keep prose.yml, inventory.yml, and composition.yml prominent in fingerprint/ while checks.yml remains optional validation support.
+    pattern: Portable Ghost packages keep intent.yml, inventory.yml, and composition.yml prominent in fingerprint/ while validate.yml remains optional validation support.
     guidance:
       - Do not require generated signal files for a valid new project.
       - Keep ghost signals as stdout-only reconnaissance for agents, not package material.
@@ -33,7 +33,7 @@ patterns:
       - Keep concepts plain and examples inspectable.
       - Avoid oversized marketing composition for reference pages.
     check_refs:
-      - check:component-pages-use-display-scale
+      - validate.check:component-pages-use-display-scale
     evidence:
       - path: apps/docs/src/components/docs/page-header.tsx
       - path: apps/docs/src/components/docs/component-page-shell.tsx
@@ -55,6 +55,6 @@ patterns:
       - Treat one-off literal colors in UI surfaces as review-worthy drift.
       - Using the right token is not enough if hierarchy, disclosure, or operability regresses.
     check_refs:
-      - check:no-hardcoded-surface-hex
+      - validate.check:no-hardcoded-surface-hex
     evidence:
       - path: packages/ghost-ui/src/styles/main.css

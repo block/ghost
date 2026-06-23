@@ -10,9 +10,9 @@ review/check file formats.
 Ghost provides:
 
 - `.ghost/fingerprint/` package loading and stack merging.
-- `fingerprint/prose.yml`, `fingerprint/inventory.yml`, and
+- `fingerprint/intent.yml`, `fingerprint/inventory.yml`, and
   `fingerprint/composition.yml` as generation context.
-- Optional `fingerprint/checks.yml`.
+- Optional `fingerprint/validate.yml`.
 - `ghost signals` stdout output for raw repo observations.
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved

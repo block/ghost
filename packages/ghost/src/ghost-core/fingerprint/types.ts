@@ -13,12 +13,12 @@ export type GhostFingerprintPatternKind =
   | "behavior"
   | "content";
 export type GhostFingerprintRefPrefix =
-  | "prose.principle"
-  | "prose.situation"
-  | "prose.experience_contract"
+  | "intent.principle"
+  | "intent.situation"
+  | "intent.experience_contract"
   | "inventory.exemplar"
   | "composition.pattern"
-  | "check";
+  | "validate.check";
 
 export type GhostFingerprintRef = `${GhostFingerprintRefPrefix}:${string}`;
 
@@ -89,7 +89,7 @@ export interface GhostFingerprintInventorySource {
   note?: string;
 }
 
-export interface GhostFingerprintProse {
+export interface GhostFingerprintIntent {
   summary: GhostFingerprintSummary;
   situations: GhostFingerprintSituation[];
   principles: GhostFingerprintPrinciple[];
@@ -153,7 +153,7 @@ export interface GhostFingerprintPattern {
 
 export interface GhostFingerprintDocument {
   schema: typeof GHOST_FINGERPRINT_SCHEMA;
-  prose: GhostFingerprintProse;
+  intent: GhostFingerprintIntent;
   inventory: GhostFingerprintInventory;
   composition: GhostFingerprintComposition;
 }

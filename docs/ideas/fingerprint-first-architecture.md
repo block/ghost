@@ -24,12 +24,12 @@ consume, validate, compare, generate from, or govern that context.
 
 - The fingerprint package is the durable artifact. `.ghost/fingerprint/`
   remains the portable boundary, anchored by `fingerprint/manifest.yml`.
-- Core generation input is `prose.yml`, `inventory.yml`, and
-  `composition.yml`. `prose.yml` captures the intent behind the surface,
+- Core generation input is `intent.yml`, `inventory.yml`, and
+  `composition.yml`. `intent.yml` captures the intent behind the surface,
   `inventory.yml` points to curated material and exemplars, and
   `composition.yml` captures the patterns that make it feel intentional.
 - Supporting material stays subordinate to the core layers:
-  `checks.yml` validates deterministic obligations.
+  `validate.yml` validates deterministic obligations.
 - Tools are consumers or authors of the fingerprint. They may capture,
   validate, apply, govern, or compare the contract, but they do not replace it.
 - Drift is governance. `check`, `review`, `ack`, `track`, and `diverge` answer

@@ -23,10 +23,10 @@ product areas:
 
 ```text
 .ghost/fingerprint/manifest.yml
-.ghost/fingerprint/prose.yml
+.ghost/fingerprint/intent.yml
 .ghost/fingerprint/inventory.yml
 .ghost/fingerprint/composition.yml
-.ghost/fingerprint/checks.yml
+.ghost/fingerprint/validate.yml
 apps/checkout/.ghost/fingerprint/manifest.yml
 ```
 
@@ -63,7 +63,7 @@ ghost init --scope apps/checkout --memory-dir .design/memory
 ### Layer readiness - `scan`
 
 Report whether `fingerprint/manifest.yml` is present and which useful layers it
-has: `prose`, `inventory`, and `composition`. Raw repo signals do not count
+has: `intent`, `inventory`, and `composition`. Raw repo signals do not count
 toward inventory readiness.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
@@ -109,8 +109,8 @@ Validate a root `.ghost` fingerprint package or an individual split artifact.
 
 ```bash
 ghost lint
-ghost lint .ghost/fingerprint/prose.yml
-ghost lint .ghost/fingerprint/checks.yml --format json
+ghost lint .ghost/fingerprint/intent.yml
+ghost lint .ghost/fingerprint/validate.yml --format json
 ghost lint --all
 ```
 
@@ -159,7 +159,7 @@ Operate on `ghost.survey/v1` files as compatibility cache source material.
 
 ### Deterministic gates - `check`
 
-Run active `ghost.checks/v1` gates against a git diff. Without `--package`,
+Run active `ghost.validate/v1` gates against a git diff. Without `--package`,
 Ghost groups changed files by resolved fingerprint stack and runs merged checks
 per group.
 
@@ -168,7 +168,7 @@ per group.
 ### Advisory governance packet - `review`
 
 Emit an evidence-routed advisory review packet grounded in split fingerprint
-layers, optional memory, checks, and the diff.
+layers, selected validation checks, and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 

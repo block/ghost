@@ -43,13 +43,13 @@ export type ScanReadinessState =
   | "fingerprint-missing"
   | "fingerprint-invalid"
   | "fingerprint-empty"
-  | "prose-only"
+  | "intent-only"
   | "inventory-only"
   | "composition-only"
   | "fingerprint-partial"
   | "fingerprint-ready";
 
-export type ScanFingerprintLayer = "prose" | "inventory" | "composition";
+export type ScanFingerprintLayer = "intent" | "inventory" | "composition";
 
 export interface ScanReadinessReport {
   state: ScanReadinessState;
@@ -89,7 +89,7 @@ export interface ScanStatus {
 
 /**
  * Inspect a Ghost fingerprint directory and report whether the canonical
- * `fingerprint/manifest.yml` exists with useful prose, inventory, and
+ * `fingerprint/manifest.yml` exists with useful intent, inventory, and
  * composition layers.
  * Optional checks are supplemental when present.
  */
@@ -153,7 +153,7 @@ async function scanReadiness(
       reasons: [
         "fingerprint/manifest.yml is missing, so no canonical fingerprint layers are available.",
       ],
-      cannot_review: ["prose", "inventory", "composition"],
+      cannot_review: ["intent", "inventory", "composition"],
     });
   }
 
@@ -179,11 +179,11 @@ async function scanReadiness(
     files: buildingBlocks?.files?.length ?? 0,
     notes: buildingBlocks?.notes?.length ?? 0,
   };
-  const proseCount =
-    summaryFieldCount(fingerprint.prose.summary) +
-    fingerprint.prose.situations.length +
-    fingerprint.prose.principles.length +
-    fingerprint.prose.experience_contracts.length;
+  const intentCount =
+    summaryFieldCount(fingerprint.intent.summary) +
+    fingerprint.intent.situations.length +
+    fingerprint.intent.principles.length +
+    fingerprint.intent.experience_contracts.length;
   const inventoryCount =
     (fingerprint.inventory.topology.scopes?.length ?? 0) +
     (fingerprint.inventory.topology.surface_types?.length ?? 0) +
@@ -197,7 +197,7 @@ async function scanReadiness(
     buildingBlockRows.notes;
   const compositionCount = fingerprint.composition.patterns.length;
   const layerCounts: Record<ScanFingerprintLayer, number> = {
-    prose: proseCount,
+    intent: intentCount,
     inventory: inventoryCount,
     composition: compositionCount,
   };
@@ -213,9 +213,9 @@ async function scanReadiness(
       layer_counts: layerCounts,
       missing_layers: missingLayers,
       reasons: [
-        "fingerprint/ is valid but has no useful prose, inventory, or composition entries yet.",
+        "fingerprint/ is valid but has no useful intent, inventory, or composition entries yet.",
       ],
-      cannot_review: ["prose", "inventory", "composition"],
+      cannot_review: ["intent", "inventory", "composition"],
     });
   }
 
@@ -254,9 +254,9 @@ async function scanReadiness(
     product_surface_count: fingerprint.inventory.exemplars.length,
     building_block_rows: buildingBlockRows,
     reasons: [
-      "fingerprint/ has useful prose, inventory, and composition layers.",
+      "fingerprint/ has useful intent, inventory, and composition layers.",
     ],
-    can_review: ["prose", "inventory", "composition"],
+    can_review: ["intent", "inventory", "composition"],
   });
 }
 
@@ -267,11 +267,11 @@ function readinessReport(
   return {
     state,
     layer_counts: {
-      prose: 0,
+      intent: 0,
       inventory: 0,
       composition: 0,
     },
-    missing_layers: ["prose", "inventory", "composition"],
+    missing_layers: ["intent", "inventory", "composition"],
     product_surface_count: 0,
     demo_surface_count: 0,
     building_block_rows: {
@@ -291,19 +291,19 @@ function readinessReport(
 }
 
 const fingerprintLayers: ScanFingerprintLayer[] = [
-  "prose",
+  "intent",
   "inventory",
   "composition",
 ];
 
 const singleLayerStates: Record<ScanFingerprintLayer, ScanReadinessState> = {
-  prose: "prose-only",
+  intent: "intent-only",
   inventory: "inventory-only",
   composition: "composition-only",
 };
 
 function summaryFieldCount(
-  summary: GhostFingerprintDocument["prose"]["summary"],
+  summary: GhostFingerprintDocument["intent"]["summary"],
 ): number {
   let count = 0;
   if (summary.product?.trim()) count += 1;
@@ -321,7 +321,7 @@ function summaryFieldCount(
 
 function canReviewForLayers(layers: ScanFingerprintLayer[]): string[] {
   const canReview: string[] = [];
-  if (layers.includes("prose")) canReview.push("product prose");
+  if (layers.includes("intent")) canReview.push("product intent");
   if (layers.includes("inventory")) canReview.push("inventory anchors");
   if (layers.includes("composition")) canReview.push("composition patterns");
   return canReview;

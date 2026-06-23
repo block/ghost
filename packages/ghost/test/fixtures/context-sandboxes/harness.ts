@@ -181,7 +181,7 @@ async function writePackage(
     "schema: ghost.fingerprint-package/v1\nid: local\n",
     "utf-8",
   );
-  await writeFile(join(fingerprintDir, "prose.yml"), proseLayer(options.fingerprint));
+  await writeFile(join(fingerprintDir, "intent.yml"), intentLayer(options.fingerprint));
   await writeFile(
     join(fingerprintDir, "inventory.yml"),
     inventoryLayer(options.fingerprint),
@@ -192,15 +192,15 @@ async function writePackage(
   );
   if (options.checks) {
     await writeFile(
-      join(fingerprintDir, "checks.yml"),
+      join(fingerprintDir, "validate.yml"),
       options.checks,
       "utf-8",
     );
   }
 }
 
-function proseLayer(raw: string): string {
-  return raw.split("# inventory")[0].replace("# prose\n", "");
+function intentLayer(raw: string): string {
+  return raw.split("# inventory")[0].replace("# intent\n", "");
 }
 
 function inventoryLayer(raw: string): string {
@@ -225,14 +225,14 @@ function singleSurfaceFingerprint(reorderUnrelated: boolean): string {
       surface_type: settings
       scope: refund-settings
       why: Shows consequence copy beside refund controls.
-      refs: [prose.principle:refund-trust, composition.pattern:refund-disclosure]
+      refs: [intent.principle:refund-trust, composition.pattern:refund-disclosure]
     - id: refund-settings-secondary
       path: apps/refunds/settings/secondary.tsx
       title: Refund settings secondary
       surface_type: settings
       scope: refund-settings
       why: Shows recovery affordances.
-      refs: [prose.principle:refund-trust]
+      refs: [intent.principle:refund-trust]
     - id: refund-settings-tertiary
       path: apps/refunds/settings/tertiary.tsx
       title: Refund settings tertiary
@@ -247,7 +247,7 @@ function singleSurfaceFingerprint(reorderUnrelated: boolean): string {
       scope: refund-settings
       why: Extra exemplar used to prove omission caps.
 `;
-  return `# prose
+  return `# intent
 summary:
   product: Sandbox Pay
   goals: [make refund settings trustworthy]
@@ -257,15 +257,15 @@ situations:
     user_intent: Understand refund impact before saving.
     product_obligation: Keep consequences visible before action.
     surface_type: settings
-    principles: [prose.principle:refund-trust]
-    experience_contracts: [prose.experience_contract:refund-reversibility]
+    principles: [intent.principle:refund-trust]
+    experience_contracts: [intent.experience_contract:refund-reversibility]
     patterns: [composition.pattern:refund-disclosure]
 principles:
   - id: refund-trust
     principle: Refund controls must make consequence and recovery visible.
     applies_to:
       scopes: [refund-settings]
-    check_refs: [check:no-hardcoded-ui-color]
+    check_refs: [validate.check:no-hardcoded-ui-color]
 experience_contracts:
   - id: refund-reversibility
     contract: Destructive settings changes expose a recovery path.
@@ -294,12 +294,12 @@ patterns:
     applies_to:
       scopes: [refund-settings]
     guidance: [Keep recovery affordances next to confirmation copy.]
-    check_refs: [check:no-hardcoded-ui-color]
+    check_refs: [validate.check:no-hardcoded-ui-color]
 `;
 }
 
 function refundChecks(): string {
-  return `schema: ghost.checks/v1
+  return `schema: ghost.validate/v1
 id: sandbox-pay
 checks:
   - id: no-hardcoded-ui-color
@@ -307,7 +307,7 @@ checks:
     status: active
     severity: serious
     derivation:
-      prose: [prose.principle:refund-trust]
+      intent: [intent.principle:refund-trust]
       composition: [composition.pattern:refund-disclosure]
       inventory: [inventory.exemplar:refund-settings-primary]
     applies_to:
@@ -339,7 +339,7 @@ checks:
 }
 
 function rootProductFingerprint(): string {
-  return `# prose
+  return `# intent
 summary:
   product: Sandbox Suite
   goals: [keep administrative workflows calm]
@@ -364,14 +364,14 @@ patterns: []
 }
 
 function rootChecks(): string {
-  return `schema: ghost.checks/v1
+  return `schema: ghost.validate/v1
 id: suite
 checks: []
 `;
 }
 
 function dashboardFingerprint(): string {
-  return `# prose
+  return `# intent
 summary:
   product: Dashboard
 situations: []
@@ -395,7 +395,7 @@ exemplars:
     scope: dashboard-refunds
     surface_type: admin
     why: Shows local dashboard refund hierarchy.
-    refs: [prose.principle:dashboard-refund-focus]
+    refs: [intent.principle:dashboard-refund-focus]
 sources: []
 # composition
 patterns:
@@ -408,14 +408,14 @@ patterns:
 }
 
 function dashboardChecks(): string {
-  return `schema: ghost.checks/v1
+  return `schema: ghost.validate/v1
 id: dashboard
 checks: []
 `;
 }
 
 function portalFingerprint(): string {
-  return `# prose
+  return `# intent
 summary:
   product: Portal
 situations: []
@@ -439,7 +439,7 @@ exemplars:
     scope: portal-payments
     surface_type: admin
     why: Shows settlement-impact copy.
-    refs: [prose.principle:portal-payment-clarity]
+    refs: [intent.principle:portal-payment-clarity]
 sources: []
 # composition
 patterns: []
@@ -447,7 +447,7 @@ patterns: []
 }
 
 function portalChecks(): string {
-  return `schema: ghost.checks/v1
+  return `schema: ghost.validate/v1
 id: portal
 checks: []
 `;

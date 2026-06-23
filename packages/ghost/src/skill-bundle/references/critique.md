@@ -7,7 +7,7 @@ description: Critique generated or changed UI using Ghost fingerprint layers.
 
 1. Run `ghost review --base <ref>` or inspect the changed files directly.
 2. Read checked-in fingerprint core layers and active checks.
-3. Compare the work against the relevant prose and composition patterns.
+3. Compare the work against the relevant intent and composition patterns.
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Lead with actionable findings. Cite diff locations, fingerprint refs,
    inventory exemplars, active checks, and repairs where relevant.

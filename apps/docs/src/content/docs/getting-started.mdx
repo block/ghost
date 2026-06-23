@@ -20,14 +20,14 @@ The canonical portable fingerprint is a folder:
   config.yml
   fingerprint/
     manifest.yml
-    prose.yml
+    intent.yml
     inventory.yml
     composition.yml
-    checks.yml
+    validate.yml
 ```
 
-Generation starts from `prose.yml`, `inventory.yml`, and `composition.yml`.
-Checks validate the result afterward; they are not generation input.
+Generation starts from `intent.yml`, `inventory.yml`, and `composition.yml`.
+`validate.yml` checks validate the result afterward; they are not generation input.
 `.ghost/config.yml` stays outside the portable package because it is local
 routing config.
 
@@ -95,7 +95,7 @@ ghost verify .ghost --root .
 
 The fingerprint records durable surface-composition guidance:
 
-1. **Prose** - the intent behind the surface: what product this is, who it
+1. **Intent** - what must remain true: what product this is, who it
    serves, which situations matter, and which principles or contracts apply.
 2. **Inventory** - the materials it draws from: topology, building blocks,
    files, routes, assets, libraries, exemplars, and source links agents may
@@ -103,7 +103,7 @@ The fingerprint records durable surface-composition guidance:
 3. **Composition** - the patterns that make it intentional: rules, layouts,
    structures, flows, states, content, behavior, and visual arrangements.
 
-Raw repo signals are optional authoring evidence. Curate durable prose,
+Raw repo signals are optional authoring evidence. Curate durable intent,
 inventory, and composition into the core layer files, then use normal Git
 review for approval. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).

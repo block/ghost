@@ -27,7 +27,7 @@ describe("scanStatus readiness", () => {
     expect(status.recommended_next).toBe("fingerprint");
     expect(status.readiness.state).toBe("fingerprint-missing");
     expect(status.readiness.missing_layers).toEqual([
-      "prose",
+      "intent",
       "inventory",
       "composition",
     ]);
@@ -46,12 +46,12 @@ describe("scanStatus readiness", () => {
     expect(status.recommended_next).toBeNull();
     expect(status.readiness.state).toBe("fingerprint-empty");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 0,
+      intent: 0,
       inventory: 0,
       composition: 0,
     });
     expect(status.readiness.cannot_review).toEqual([
-      "prose",
+      "intent",
       "inventory",
       "composition",
     ]);
@@ -74,11 +74,11 @@ describe("scanStatus readiness", () => {
     expect(status.readiness.layer_counts.inventory).toBe(0);
   });
 
-  it("reports prose-only when only summary prose is recorded", async () => {
+  it("reports intent-only when only summary intent is recorded", async () => {
     await writeFingerprint(
       dir,
       `
-prose:
+intent:
   summary:
     product: Cash iOS
 `,
@@ -86,9 +86,9 @@ prose:
 
     const status = await scanStatus(dir);
 
-    expect(status.readiness.state).toBe("prose-only");
+    expect(status.readiness.state).toBe("intent-only");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 1,
+      intent: 1,
       inventory: 0,
       composition: 0,
     });
@@ -115,13 +115,13 @@ inventory:
 
     expect(status.readiness.state).toBe("inventory-only");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 0,
+      intent: 0,
       inventory: 2,
       composition: 0,
     });
     expect(status.readiness.building_block_rows.tokens).toBe(1);
     expect(status.readiness.building_block_rows.components).toBe(1);
-    expect(status.readiness.missing_layers).toEqual(["prose", "composition"]);
+    expect(status.readiness.missing_layers).toEqual(["intent", "composition"]);
   });
 
   it("reports composition-only when only patterns are recorded", async () => {
@@ -140,18 +140,18 @@ composition:
 
     expect(status.readiness.state).toBe("composition-only");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 0,
+      intent: 0,
       inventory: 0,
       composition: 1,
     });
-    expect(status.readiness.missing_layers).toEqual(["prose", "inventory"]);
+    expect(status.readiness.missing_layers).toEqual(["intent", "inventory"]);
   });
 
   it("reports fingerprint-partial when exactly one useful layer is missing", async () => {
     await writeFingerprint(
       dir,
       `
-prose:
+intent:
   principles:
     - id: dense-workflows-prioritize-scanning
       principle: Dense workflows optimize for comparison and recovery.
@@ -169,18 +169,18 @@ inventory:
 
     expect(status.readiness.state).toBe("fingerprint-partial");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 1,
+      intent: 1,
       inventory: 2,
       composition: 0,
     });
     expect(status.readiness.missing_layers).toEqual(["composition"]);
   });
 
-  it("reports fingerprint-ready only when prose, inventory, and composition are useful", async () => {
+  it("reports fingerprint-ready only when intent, inventory, and composition are useful", async () => {
     await writeFingerprint(
       dir,
       `
-prose:
+intent:
   principles:
     - id: dense-workflows-prioritize-scanning
       principle: Dense workflows optimize for comparison and recovery.
@@ -216,7 +216,7 @@ composition:
     expect("cache" in status).toBe(false);
     expect(status.readiness.state).toBe("fingerprint-ready");
     expect(status.readiness.layer_counts).toEqual({
-      prose: 1,
+      intent: 1,
       inventory: 5,
       composition: 1,
     });
@@ -225,7 +225,7 @@ composition:
     expect(status.readiness.building_block_rows.components).toBe(1);
     expect(status.readiness.product_surface_count).toBe(1);
     expect(status.readiness.can_review).toEqual([
-      "prose",
+      "intent",
       "inventory",
       "composition",
     ]);
@@ -247,9 +247,9 @@ async function writeFingerprint(dir: string, overrides = ""): Promise<void> {
     : {};
   await Promise.all([
     writeFile(
-      join(fingerprintDir, "prose.yml"),
+      join(fingerprintDir, "intent.yml"),
       stringifyYaml(
-        doc.prose ?? {
+        doc.intent ?? {
           summary: {},
           situations: [],
           principles: [],

@@ -45,7 +45,7 @@ const HIGH_SALIENCE_VALUE_THRESHOLD = 5;
  * Deterministically verify that a fingerprinted design language is faithful to the
  * survey that produced it. `lint` remains the shape/schema gate; this verifier
  * checks scan-stage provenance for the non-enforcing design-language prior.
- * Enforceable checks live in `checks.yml` and are validated separately.
+ * Enforceable checks live in `validate.yml` and are validated separately.
  */
 export function verifyFingerprint(
   fingerprintRaw: string,

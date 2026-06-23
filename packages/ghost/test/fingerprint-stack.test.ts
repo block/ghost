@@ -36,8 +36,8 @@ describe("nested Ghost fingerprint stacks", () => {
       "apps/checkout",
     ]);
     expect(stack.provenance.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.prose.summary.product).toBe("Checkout");
-    expect(stack.merged.fingerprint.prose.summary.audience).toEqual([
+    expect(stack.merged.fingerprint.intent.summary.product).toBe("Checkout");
+    expect(stack.merged.fingerprint.intent.summary.audience).toEqual([
       "operators",
       "buyers",
     ]);
@@ -45,12 +45,12 @@ describe("nested Ghost fingerprint stacks", () => {
       expect.arrayContaining(["app-shell", "payment-review"]),
     );
     expect(
-      stack.merged.fingerprint.prose.principles.find(
+      stack.merged.fingerprint.intent.principles.find(
         (principle) => principle.id === "shared-principle",
       )?.principle,
     ).toBe("Checkout review must make reversal obvious.");
     expect(
-      stack.merged.fingerprint.prose.situations.find(
+      stack.merged.fingerprint.intent.situations.find(
         (situation) => situation.id === "shared-situation",
       )?.user_intent,
     ).toBe("review checkout before committing payment");
@@ -108,7 +108,7 @@ describe("nested Ghost fingerprint stacks", () => {
     await writeSplitFingerprintPackage(
       join(dir, "apps", "checkout", ".ghost"),
       `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Checkout
   principles:
@@ -123,14 +123,14 @@ prose:
     );
 
     expect(stack.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.prose.summary.product).toBe("Checkout");
+    expect(stack.merged.fingerprint.intent.summary.product).toBe("Checkout");
     expect(stack.merged.fingerprint.inventory.topology).toEqual({
       scopes: [],
       surface_types: undefined,
     });
-    expect(stack.merged.fingerprint.prose.situations).toEqual([]);
-    expect(stack.merged.fingerprint.prose.principles).toHaveLength(1);
-    expect(stack.merged.fingerprint.prose.experience_contracts).toEqual([]);
+    expect(stack.merged.fingerprint.intent.situations).toEqual([]);
+    expect(stack.merged.fingerprint.intent.principles).toHaveLength(1);
+    expect(stack.merged.fingerprint.intent.experience_contracts).toEqual([]);
     expect(stack.merged.fingerprint.composition.patterns).toEqual([]);
     expect(stack.merged.fingerprint.inventory.exemplars).toEqual([]);
     expect(stack.merged.fingerprint.inventory.building_blocks).toEqual({
@@ -190,7 +190,7 @@ async function writeRootBundle(
   await writeSplitFingerprintPackage(
     ghost,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Root Product
     audience: [operators]
@@ -226,7 +226,7 @@ composition:
       kind: visual
       pattern: Parent version of child pattern.
 `,
-    `schema: ghost.checks/v1
+    `schema: ghost.validate/v1
 id: root
 checks:
   - id: no-hardcoded-color
@@ -259,7 +259,7 @@ async function writeChildBundle(
   await writeSplitFingerprintPackage(
     ghost,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Checkout
     audience: [buyers]
@@ -299,7 +299,7 @@ composition:
       evidence:
         - path: review/page.tsx
 `,
-    `schema: ghost.checks/v1
+    `schema: ghost.validate/v1
 id: checkout
 checks:
   - id: no-hardcoded-color
@@ -348,9 +348,9 @@ async function writeSplitFingerprintPackage(
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
     writeFile(
-      join(fingerprintDir, "prose.yml"),
+      join(fingerprintDir, "intent.yml"),
       stringifyYaml(
-        doc.prose ?? {
+        doc.intent ?? {
           summary: {},
           situations: [],
           principles: [],
@@ -374,7 +374,7 @@ async function writeSplitFingerprintPackage(
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [writeFile(join(fingerprintDir, "checks.yml"), checksRaw)]
+      ? [writeFile(join(fingerprintDir, "validate.yml"), checksRaw)]
       : []),
   ]);
 }
