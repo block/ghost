@@ -68,14 +68,14 @@ function packageWorkflowSection(context: PackageContext): string {
   const memoryDirFlag = stackFingerprintDirFlag(context);
   return `## Review Workflow
 
-1. Read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\` as canonical generation facets.
-2. Select the relevant situation before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
-3. Apply intent principles, experience contracts, and composition patterns before choosing implementation details.
-4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
-5. Use inventory building blocks only as replaceable material that may help satisfy the selected intent and composition.
-6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts.
-8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, and any active check when a finding blocks.`;
+1. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and selected cascade excerpts. If reviewing manually, read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\`.
+2. Start from the cascade intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
+3. Apply composition guidance before choosing implementation details.
+4. Inspect inventory exemplars and building blocks as evidence/material, not as authority over intent.
+5. Treat validate checks as deterministic enforcement; only active checks can block.
+6. Use cascade gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
+7. Run \`ghost check${memoryDirFlag}\` when a diff is available.
+8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, cascade gaps when context is silent, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {

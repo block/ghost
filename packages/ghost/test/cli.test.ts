@@ -2059,14 +2059,23 @@ checks:
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
     expect(result.stdout).toContain("## Selected Fingerprint Context");
-    expect(result.stdout).toContain("## Identity Capsule");
-    expect(result.stdout).toContain("## Context Match");
+    expect(result.stdout).toContain("### Selected Fingerprint Cascade");
+    expect(result.stdout).toContain("#### Package Chain");
+    expect(result.stdout).toContain("#### Match");
+    expect(result.stdout).toContain("#### Intent Cascade");
+    expect(result.stdout).toContain("#### Active Obligations");
+    expect(result.stdout).toContain("#### Composition Guidance");
+    expect(result.stdout).toContain("#### Inventory To Inspect");
+    expect(result.stdout).toContain("#### Validate");
+    expect(result.stdout).toContain("#### Gaps");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
     expect(result.stdout).toContain("diff location");
+    expect(result.stdout).toContain("fingerprint facet refs");
     expect(result.stdout).toContain(
-      "fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml",
+      "cascade gap or local-evidence rationale when context is silent",
     );
+    expect(result.stdout).toContain("Use the selected cascade first");
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");

@@ -136,7 +136,8 @@ ghost review --base main
 
 `ghost check` applies active deterministic gates from the resolved fingerprint
 stack for each changed file. `ghost review` emits advisory context grounded in
-merged split fingerprint facets, selected validation checks, and the diff.
+the same selected cascade shape as Relay, selected validation checks, and the
+diff.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities
 outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
