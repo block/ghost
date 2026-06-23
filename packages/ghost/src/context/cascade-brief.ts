@@ -93,24 +93,47 @@ export function buildCascadeBrief(
   };
 }
 
-export function formatCascadeBriefMarkdown(brief: CascadeBrief): string {
-  const parts = [
-    "# Ghost Relay Brief",
-    `Product context: **${brief.title.replace(/ Relay Brief$/, "")}**. Use this as a compact, target-specific view of the resolved fingerprint cascade. It does not replace the checked-in \`fingerprint/\` files.`,
-    formatPackageChain(brief),
-    formatMatch(brief),
-    formatNodeSection("Intent Cascade", brief.intent_cascade),
-    formatObligations(brief),
-    formatNodeSection("Composition Guidance", brief.composition_guidance),
-    formatInventory(brief),
-    formatNodeSection("Validate", brief.validate, {
+export interface FormatCascadeBriefMarkdownOptions {
+  heading?: string;
+  includeIntro?: boolean;
+}
+
+export function formatCascadeBriefMarkdown(
+  brief: CascadeBrief,
+  options: FormatCascadeBriefMarkdownOptions = {},
+): string {
+  const heading = options.heading ?? "# Ghost Relay Brief";
+  const sectionHeading = childHeading(heading);
+  const parts = [heading];
+  if (options.includeIntro ?? true) {
+    parts.push(
+      `Product context: **${brief.title.replace(/ Relay Brief$/, "")}**. Use this as a compact, target-specific view of the resolved fingerprint cascade. It does not replace the checked-in \`fingerprint/\` files.`,
+    );
+  }
+  parts.push(
+    formatPackageChain(brief, sectionHeading),
+    formatMatch(brief, sectionHeading),
+    formatNodeSection("Intent Cascade", brief.intent_cascade, sectionHeading),
+    formatObligations(brief, sectionHeading),
+    formatNodeSection(
+      "Composition Guidance",
+      brief.composition_guidance,
+      sectionHeading,
+    ),
+    formatInventory(brief, sectionHeading),
+    formatNodeSection("Validate", brief.validate, sectionHeading, {
       empty:
         "No selected active checks. Proposed or disabled checks are not blocking validation.",
     }),
-    formatGaps(brief),
-    formatUseThisContext(),
-  ];
+    formatGaps(brief, sectionHeading),
+    formatUseThisContext(sectionHeading),
+  );
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
+}
+
+function childHeading(heading: string): string {
+  const hashes = heading.match(/^#+/)?.[0] ?? "#";
+  return `${hashes}#`;
 }
 
 function packageLabel(_dir: string, index: number, count: number): string {
@@ -213,8 +236,8 @@ function gapsFromEntrypoint(entrypoint: ContextEntrypoint): CascadeGap[] {
   return gaps;
 }
 
-function formatPackageChain(brief: CascadeBrief): string {
-  const lines = ["## Package Chain"];
+function formatPackageChain(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Package Chain`];
   if (brief.package_chain.length === 0) {
     lines.push("- No package chain recorded.");
     return lines.join("\n");
@@ -225,8 +248,8 @@ function formatPackageChain(brief: CascadeBrief): string {
   return lines.join("\n");
 }
 
-function formatMatch(brief: CascadeBrief): string {
-  const lines = ["## Match"];
+function formatMatch(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Match`];
   lines.push(
     `- Status: ${brief.match.status === "path-match" ? "path matched" : "global fallback"}`,
   );
@@ -249,9 +272,10 @@ function formatMatch(brief: CascadeBrief): string {
 function formatNodeSection(
   title: string,
   nodes: CascadeNodeSummary[],
+  heading: string,
   options: { empty?: string } = {},
 ): string {
-  const lines = [`## ${title}`];
+  const lines = [`${heading} ${title}`];
   if (nodes.length === 0) {
     lines.push(`- ${options.empty ?? "None selected."}`);
     return lines.join("\n");
@@ -265,8 +289,8 @@ function formatNodeSection(
   return lines.join("\n");
 }
 
-function formatObligations(brief: CascadeBrief): string {
-  const lines = ["## Active Obligations"];
+function formatObligations(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Active Obligations`];
   if (brief.active_obligations.length === 0) {
     lines.push("- None selected.");
     return lines.join("\n");
@@ -277,8 +301,8 @@ function formatObligations(brief: CascadeBrief): string {
   return lines.join("\n");
 }
 
-function formatInventory(brief: CascadeBrief): string {
-  const lines = ["## Inventory To Inspect"];
+function formatInventory(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Inventory To Inspect`];
   if (brief.inventory_to_inspect.length === 0) {
     lines.push("- None selected.");
     return lines.join("\n");
@@ -295,8 +319,8 @@ function formatInventory(brief: CascadeBrief): string {
   return lines.join("\n");
 }
 
-function formatGaps(brief: CascadeBrief): string {
-  const lines = ["## Gaps"];
+function formatGaps(brief: CascadeBrief, heading: string): string {
+  const lines = [`${heading} Gaps`];
   if (brief.gaps.length === 0) {
     lines.push("- No immediate gaps detected in selected context.");
     return lines.join("\n");
@@ -307,8 +331,8 @@ function formatGaps(brief: CascadeBrief): string {
   return lines.join("\n");
 }
 
-function formatUseThisContext(): string {
-  return `## Use This Context
+function formatUseThisContext(heading: string): string {
+  return `${heading} Use This Context
 - Start from intent: preserve the selected situations, principles, contracts, and obligations.
 - Express intent through composition: use selected patterns to shape hierarchy, flow, state, behavior, and content.
 - Inspect inventory as evidence and material; do not let available components override intent.

@@ -72,13 +72,14 @@ stack and runs merged checks for each group. Only active checks can block.
 ghost review --base main
 ```
 
-Advisory review packets include the current diff, the split fingerprint
-facets, relevant inventory exemplars, active checks, and finding categories for
-fixes, intentional divergence, missing fingerprint grounding, experience gaps,
-and eval uncertainty.
+Advisory review packets include the current diff, the same selected cascade
+shape as Relay, active checks, and finding categories for fixes, intentional
+divergence, missing fingerprint grounding, experience gaps, and eval
+uncertainty.
 
-Review findings should cite the diff location, relevant fingerprint refs,
-relevant exemplars when useful, and any active check when blocking.
+Review findings should cite the diff location, relevant fingerprint facet refs,
+relevant exemplars when useful, any active check when blocking, and a cascade
+gap or local-evidence rationale when the fingerprint is silent.
 
 ## Remediation
 

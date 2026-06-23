@@ -1,8 +1,14 @@
 import { resolve } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
+import {
+  buildCascadeBrief,
+  formatCascadeBriefMarkdown,
+} from "./context/cascade-brief.js";
 import { buildContextEntrypoint } from "./context/entrypoint.js";
-import { formatContextEntrypointMarkdown } from "./context/entrypoint-markdown.js";
-import { loadPackageContext } from "./context/package-context.js";
+import {
+  loadPackageContext,
+  type PackageContext,
+} from "./context/package-context.js";
 import { parseUnifiedDiff } from "./core/index.js";
 import { resolveFingerprintPackage } from "./scan/fingerprint-package.js";
 import {
@@ -48,13 +54,7 @@ async function buildSinglePackageReviewPacket(options: {
     context_markdown: formatReviewContextMarkdown([
       {
         title: paths.dir,
-        markdown: formatContextEntrypointMarkdown(
-          buildContextEntrypoint(context, { targetPaths: changedFiles }),
-          {
-            heading: "### Selected Fingerprint Context",
-            includeIntro: false,
-          },
-        ),
+        markdown: formatReviewCascadeMarkdown(context, changedFiles),
       },
     ]),
     checks: context.checksRaw ?? null,
@@ -87,14 +87,12 @@ async function buildStackReviewPacket(options: {
     );
     return {
       title: group.stack.layers.at(-1)?.dir ?? group.stack.fingerprint_dir,
-      markdown: formatContextEntrypointMarkdown(
-        buildContextEntrypoint(context, {
-          targetPaths: group.changed_files,
-        }),
-        {
-          heading: "### Selected Fingerprint Context",
-          includeIntro: false,
-        },
+      markdown: formatReviewCascadeMarkdown(
+        context,
+        group.changed_files,
+        groups.length > 1
+          ? "#### Selected Fingerprint Cascade"
+          : "### Selected Fingerprint Cascade",
       ),
     };
   });
@@ -140,9 +138,23 @@ function baseReviewPacket(
       "diff location",
       "fingerprint facet refs",
       "active check when blocking",
+      "cascade gap or local-evidence rationale when context is silent",
       "repair or intentional-divergence rationale",
     ],
   };
+}
+
+function formatReviewCascadeMarkdown(
+  context: PackageContext,
+  targetPaths: string[],
+  heading = "### Selected Fingerprint Cascade",
+): string {
+  const entrypoint = buildContextEntrypoint(context, { targetPaths });
+  const cascade = buildCascadeBrief(context, entrypoint);
+  return formatCascadeBriefMarkdown(cascade, {
+    heading,
+    includeIntro: false,
+  });
 }
 
 function budgetDiff(
@@ -271,7 +283,9 @@ Package: ${packet.package_dir}
 
 Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/validate.yml. Keep findings grounded in fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
 
-Use these finding categories: ${packet.finding_categories.join(", ")}.
+Use the selected cascade first: intent → composition → inventory → validate. When the cascade exposes gaps, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
+
+Use these finding categories: ${packet.finding_categories.join(", ")}. 
 
 ${formatReviewBudgetSection(packet)}
 

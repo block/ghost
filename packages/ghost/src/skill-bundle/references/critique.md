@@ -6,11 +6,11 @@ description: Critique generated or changed UI using Ghost fingerprint facets.
 # Recipe: Critique Generated Work
 
 1. Run `ghost review --base <ref>` or inspect the changed files directly.
-2. Read checked-in fingerprint facets and active checks.
-3. Compare the work against the relevant intent and composition patterns.
+2. Read the selected cascade context from the review packet.
+3. Compare the work against relevant intent and composition guidance.
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Lead with actionable findings. Cite diff locations, fingerprint refs,
-   inventory exemplars, active checks, and repairs where relevant.
+   inventory exemplars, active checks, cascade gaps, and repairs where relevant.
 
 When fingerprint facets are silent, you may use nearby product surfaces, local
 components, token and copy conventions. Label that reasoning as provisional and
