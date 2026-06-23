@@ -26,7 +26,7 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- selected cascade context: package chain, match, intent, obligations, composition, inventory, validation, and gaps
+- selected context: stack, match, intent, obligations, composition, inventory, validation, and gaps
 - active checks from `fingerprint/validate.yml`
 - optional stack or config context when present or requested
 - the diff
@@ -38,12 +38,12 @@ Classify each finding as `fix`, `intentional-divergence`, `missing-fingerprint`,
 `experience-gap`, or `eval-uncertainty`.
 
 Each finding must cite the diff location, relevant fingerprint facet refs,
-exemplars when useful, active check when blocking, cascade gap or local-evidence
-rationale when context is silent, and repair or intentional-divergence
+exemplars when useful, active check when blocking, selected-context gap or
+local-evidence rationale when context is silent, and repair or intentional-divergence
 rationale.
 
-Use the selected cascade in order: intent → composition → inventory → validate.
-When fingerprint facets are silent or cascade gaps show the fingerprint is
+Use the selected context in order: intent → composition → inventory → validation.
+When fingerprint facets are silent or selected-context gaps show the fingerprint is
 silent, local evidence can still support advisory critique. Label those findings
 as provisional and non-Ghost-backed.
 

@@ -83,10 +83,10 @@ export interface GhostDriftCheckStack {
   package_dir: string;
   fingerprint_dir: string;
   changed_files: string[];
-  layer_dirs: string[];
+  stack_dirs: string[];
   provenance: {
     merge: "child-wins-by-id";
-    layers: Array<{
+    stack: Array<{
       dir: string;
       root: string;
       relative_root: string;
@@ -150,8 +150,11 @@ export async function runGhostDriftCheck(
       package_dir: pkg.dir,
       fingerprint_dir: group.stack.fingerprint_dir,
       changed_files: group.changed_files,
-      layer_dirs: group.stack.layers.map((layer) => layer.dir),
-      provenance: group.stack.provenance,
+      stack_dirs: group.stack.layers.map((layer) => layer.dir),
+      provenance: {
+        merge: group.stack.provenance.merge,
+        stack: group.stack.provenance.layers,
+      },
     });
   }
 

@@ -320,7 +320,7 @@ function verifyFingerprintCheckRefs(
       issues.push({
         severity: "error",
         rule: "fingerprint-check-unknown",
-        message: `fingerprint layer references unknown check '${ref}'.`,
+        message: `fingerprint facet references unknown check '${ref}'.`,
         path: `${path}[${index}]`,
       });
     });

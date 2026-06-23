@@ -57,7 +57,7 @@ function formatStackJson(
     target_path: stack.target_path,
     repo_root: stack.repo_root,
     fingerprint_dir: stack.fingerprint_dir,
-    layers: stack.layers.map((layer) => ({
+    stack: stack.layers.map((layer) => ({
       dir: layer.dir,
       root: layer.root,
       relative_root: layer.relative_root,
@@ -69,7 +69,10 @@ function formatStackJson(
       fingerprint: stack.merged.fingerprint,
       checks: stack.merged.checks,
     },
-    provenance: stack.provenance,
+    provenance: {
+      merge: stack.provenance.merge,
+      stack: stack.provenance.layers,
+    },
   };
 }
 
@@ -77,7 +80,7 @@ function formatStackCli(stack: GhostFingerprintStack): string {
   const lines = [
     `target: ${stack.target_path}`,
     `repo root: ${stack.repo_root}`,
-    "layers:",
+    "stack:",
     ...stack.layers.map(
       (layer) =>
         `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)} (${layer.fingerprint.intent.summary.product ?? "unnamed"})`,
