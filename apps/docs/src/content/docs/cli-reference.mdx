@@ -26,7 +26,7 @@ product areas:
 .ghost/fingerprint/prose.yml
 .ghost/fingerprint/inventory.yml
 .ghost/fingerprint/composition.yml
-.ghost/fingerprint/enforcement/checks.yml
+.ghost/fingerprint/checks.yml
 apps/checkout/.ghost/fingerprint/manifest.yml
 ```
 
@@ -40,7 +40,7 @@ The command tables below are generated from the CLI source. Run
 ### Initialize - `init`
 
 Create a `.ghost/fingerprint/` package with a manifest, raw core layer files,
-and enforcement checks. Use `--scope <path>` for nested package roots. Use
+and deterministic checks. Use `--scope <path>` for nested package roots. Use
 `--monorepo` to create or preserve the root package, detect workspace child
 roots, and print scoped init commands; add `--apply` to create the detected
 child packages. Use
@@ -53,10 +53,9 @@ over the environment default.
 
 ```bash
 ghost init
-ghost init --with-intent
 ghost init --monorepo
 ghost init --monorepo --apply
-ghost init --scope apps/checkout --with-intent
+ghost init --scope apps/checkout
 GHOST_MEMORY_DIR=.agents/ghost ghost init
 ghost init --scope apps/checkout --memory-dir .design/memory
 ```
@@ -64,7 +63,7 @@ ghost init --scope apps/checkout --memory-dir .design/memory
 ### Layer readiness - `scan`
 
 Report whether `fingerprint/manifest.yml` is present and which useful layers it
-has: `prose`, `inventory`, and `composition`. Generated cache does not count
+has: `prose`, `inventory`, and `composition`. Raw repo signals do not count
 toward inventory readiness.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
@@ -86,16 +85,15 @@ Inspect the root-to-leaf fingerprint stack for one or more paths.
 ghost stack apps/checkout/review/page.tsx --format json
 ```
 
-### Capture source material - `inventory`
+### Inspect repo signals - `signals`
 
-Emit raw signals about a frontend repo as JSON. Use this as optional source
-material under `.ghost/fingerprint/sources/cache/`.
+Emit raw signals about a frontend repo as JSON. Use this as scratch evidence
+while authoring curated fingerprint layers.
 
-<CliHelp tool="ghost" command="inventory" hideDescription />
+<CliHelp tool="ghost" command="signals" hideDescription />
 
 ```bash
-mkdir -p .ghost/fingerprint/sources/cache
-ghost inventory > .ghost/fingerprint/sources/cache/inventory.json
+ghost signals .
 ```
 
 </DocSection>
@@ -112,7 +110,7 @@ Validate a root `.ghost` fingerprint package or an individual split artifact.
 ```bash
 ghost lint
 ghost lint .ghost/fingerprint/prose.yml
-ghost lint .ghost/fingerprint/enforcement/checks.yml --format json
+ghost lint .ghost/fingerprint/checks.yml --format json
 ghost lint --all
 ```
 
@@ -145,7 +143,7 @@ suggested reads, active checks, and provenance.
 
 ### Inspection - `describe`
 
-Print optional `.ghost/fingerprint/memory/intent.md` or a markdown section map.
+Print a markdown section map.
 
 <CliHelp tool="ghost" command="describe" hideDescription />
 

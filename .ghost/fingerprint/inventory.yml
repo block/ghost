@@ -73,10 +73,10 @@ exemplars:
     surface_type: docs-home
     scope: docs-site
     note: Public entry point describes the split fingerprint folder as canonical prose, inventory, and composition.
-    why: Shows how Ghost explains repo-local fingerprint layers, curated inventory, generated cache, and Git-reviewed approval.
+    why: Shows how Ghost explains repo-local fingerprint layers, curated inventory, raw signals, and Git-reviewed approval.
     refs:
       - prose.principle:fingerprint-folder-is-canonical
-      - prose.principle:generated-cache-is-source-material
+      - prose.principle:signals-are-authoring-evidence
   - id: review-command-fingerprint-packet
     path: packages/ghost/src/context/package-review-command.ts
     title: Generated review command
@@ -87,8 +87,4 @@ exemplars:
     refs:
       - prose.experience_contract:review-cites-fingerprint-and-diff
       - composition.pattern:compact-agent-handoff
-sources:
-  - id: generated-inventory
-    kind: cache
-    ref: sources/cache/inventory.json
-    note: Optional refreshable repo facts produced by ghost inventory.
+sources: []

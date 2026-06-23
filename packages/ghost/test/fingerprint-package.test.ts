@@ -58,10 +58,10 @@ describe("split fingerprint package", () => {
 building_blocks: {}
 exemplars: []
 sources:
-  - id: generated-inventory
-    kind: cache
-    ref: sources/cache/inventory.json
-    note: Refreshable observed repo facts.
+  - id: repo-signals
+    kind: file
+    ref: docs/architecture.md
+    note: Human-curated source material.
 `,
     );
 
@@ -70,9 +70,9 @@ sources:
 
     expect(report.errors).toBe(0);
     expect(loaded.fingerprint.inventory.sources[0]).toMatchObject({
-      id: "generated-inventory",
-      kind: "cache",
-      ref: "sources/cache/inventory.json",
+      id: "repo-signals",
+      kind: "file",
+      ref: "docs/architecture.md",
     });
   });
 
@@ -84,10 +84,10 @@ sources:
 building_blocks: {}
 exemplars: []
 sources:
-  - id: generated-inventory
-    kind: cache
-    ref: sources/cache/inventory.json
-  - id: generated-inventory
+  - id: repo-signals
+    kind: file
+    ref: docs/architecture.md
+  - id: repo-signals
     kind: file
     ref: tmp/inventory.json
 `,

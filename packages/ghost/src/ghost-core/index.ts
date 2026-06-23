@@ -115,22 +115,16 @@ export {
 } from "./fingerprint/index.js";
 // --- Map (ghost.map/v1) ---
 export {
-  CACHE_DIRNAME,
   CONFIG_FILENAME,
-  DECISIONS_DIRNAME,
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_DIRNAME,
-  FINGERPRINT_ENFORCEMENT_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
-  FINGERPRINT_MEMORY_DIRNAME,
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_PROSE_FILENAME,
-  FINGERPRINT_SOURCES_DIRNAME,
   FINGERPRINT_YML_FILENAME,
   type FingerprintPackagePaths,
-  INTENT_FILENAME,
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
@@ -152,24 +146,6 @@ export {
   slugifyScopeId,
   type TopLevelEntry,
 } from "./map/index.js";
-// --- Memory (ghost.decision/v1) ---
-export type {
-  GhostDecisionDocument,
-  GhostDecisionLintIssue,
-  GhostDecisionLintReport,
-  GhostDecisionLintSeverity,
-  GhostDecisionStatus,
-  GhostExperienceEvidence,
-  GhostExperienceScope,
-} from "./memory/index.js";
-export {
-  GHOST_DECISION_SCHEMA,
-  GHOST_DECISIONS_DIRNAME,
-  GhostDecisionSchema,
-  GhostExperienceEvidenceSchema,
-  GhostExperienceScopeSchema,
-  lintGhostDecision,
-} from "./memory/index.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,

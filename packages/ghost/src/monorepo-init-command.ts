@@ -94,7 +94,6 @@ export async function initMonorepoFingerprintPackages(options: {
 
   return {
     root: initPackageOutput(root, {
-      includeIntent: Boolean(options.initOptions.withIntent),
       includeConfig: Boolean(options.initOptions.withConfig),
     }),
     rootState,
@@ -205,7 +204,7 @@ function formatCommandArg(value: string): string {
 
 function initPackageOutput(
   paths: FingerprintPackagePaths,
-  options: { includeIntent: boolean; includeConfig: boolean },
+  options: { includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
@@ -216,6 +215,5 @@ function initPackageOutput(
     composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
 }

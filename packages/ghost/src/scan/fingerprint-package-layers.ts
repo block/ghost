@@ -183,13 +183,6 @@ checks: []
 `;
 }
 
-export function templateIntent(): string {
-  return `# Intent
-
-This optional file is reserved for human-authored or human-approved product intent.
-`;
-}
-
 const readOptional = readOptionalUtf8;
 
 function parseManifest(

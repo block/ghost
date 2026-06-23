@@ -184,15 +184,15 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Core workflow");
     expect(result.stdout).toContain("Advanced/package inspection");
     expect(result.stdout).toContain("Compare/stance");
-    expect(result.stdout).toContain("Maintenance/cache");
+    expect(result.stdout).toContain("Maintenance/legacy");
     for (const command of [
       "lint [file]",
       "init [dir]",
       "verify [dir]",
       "scan [dir]",
       "stack [paths...]",
-      "inventory [path]",
-      "describe [fingerprint]",
+      "signals [path]",
+      "describe <fingerprint>",
       "diff <a> <b>",
       "survey <op> [...surveys]",
       "relay <action> [target]",
@@ -897,13 +897,10 @@ design_loop:
       readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(
-        join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
-        "utf-8",
-      ),
+      readFile(join(dir, ".ghost", "fingerprint", "checks.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.checks/v1");
     const status = JSON.parse(scan.stdout);
-    expect(status.cache.state).toBe("missing");
+    expect(status.cache).toBeUndefined();
 
     const lint = await runCli(["lint"], dir);
     const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
@@ -1359,12 +1356,12 @@ design_loop:
   it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "checks.yml"),
       `schema: ghost.checks/v1
 id: local
 checks:
-  - id: missing-memory-check
-    title: Missing memory check
+  - id: missing-fingerprint-check
+    title: Missing fingerprint check
     status: active
     severity: serious
     derivation:
@@ -1389,19 +1386,19 @@ checks:
     expect(report.issues[0]).toMatchObject({
       severity: "warning",
       rule: "check-grounding-unknown",
-      path: "fingerprint/enforcement/checks.yml.checks[0].derivation.prose[0]",
+      path: "fingerprint/checks.yml.checks[0].derivation.prose[0]",
     });
   });
 
   it("validates standalone checks.yml derivation refs with a valid sibling fingerprint", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "checks.yml"),
       checksFileWithDerivation("prose.principle:not-recorded"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/enforcement/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/checks.yml", "--format", "json"],
       dir,
     );
 
@@ -1438,20 +1435,18 @@ checks:
   });
 
   it("keeps standalone checks.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
-    await mkdir(join(dir, ".ghost", "fingerprint", "enforcement"), {
-      recursive: true,
-    });
+    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "fingerprint", "manifest.yml"),
       "not: draft\n",
     );
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "enforcement", "checks.yml"),
+      join(dir, ".ghost", "fingerprint", "checks.yml"),
       checksFileWithDerivation("prose.principle:tokenized-ui-color"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/enforcement/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/checks.yml", "--format", "json"],
       dir,
     );
 
@@ -1465,7 +1460,7 @@ checks:
   });
 
   it("initializes a bundle and reports fingerprint capture state as json", async () => {
-    const init = await runCli(["init", "--with-intent"], dir);
+    const init = await runCli(["init"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
     const scanHuman = await runCli(["scan"], dir);
 
@@ -1476,23 +1471,19 @@ checks:
     expect(init.stdout).toContain("composition.yml:");
     expect(init.stdout).toContain("checks.yml:");
     expect(init.stdout).not.toContain("cache/:");
+    expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
       await readFile(
         join(dir, ".ghost", "fingerprint", "manifest.yml"),
         "utf-8",
       ),
     ).toContain("schema: ghost.fingerprint-package/v1");
-    expect(
-      await readFile(
-        join(dir, ".ghost", "fingerprint", "memory", "intent.md"),
-        "utf-8",
-      ),
-    ).toContain("# Intent");
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
     expect(status.proposals).toBeUndefined();
-    expect(status.cache.state).toBe("missing");
+    expect(status.cache).toBeUndefined();
+    expect(status.intent).toBeUndefined();
     expect(status.readiness.state).toBe("fingerprint-empty");
     expect(status.readiness.layer_counts).toEqual({
       prose: 0,
@@ -1515,6 +1506,12 @@ checks:
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
+  it("rejects removed init intent flag", async () => {
+    await expect(runCli(["init", "--with-intent"], dir)).rejects.toThrow(
+      "Unknown option `--withIntent`",
+    );
+  });
+
   it("initializes a blank product scaffold with config and reference library wiring", async () => {
     const init = await runCli(
       [
@@ -1528,7 +1525,7 @@ checks:
       dir,
     );
     const scan = await runCli(["scan", "--format", "json"], dir);
-    const inventory = await runCli(["inventory"], dir);
+    const signals = await runCli(["signals"], dir);
     await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
       recursive: true,
     });
@@ -1605,19 +1602,19 @@ checks:
     expect(status.readiness.state).toBe("inventory-only");
     expect(status.readiness.missing_layers).toEqual(["prose", "composition"]);
 
-    const inventoryOutput = JSON.parse(inventory.stdout);
-    expect(inventoryOutput.config.libraries[0].id).toBe("ghost-ui");
+    const signalsOutput = JSON.parse(signals.stdout);
+    expect(signalsOutput.config.libraries[0].id).toBe("ghost-ui");
     expect(verify.code).toBe(0);
   });
 
-  it("runs inventory, lint, and verify from the unified cli", async () => {
+  it("runs signals, lint, and verify from the unified cli", async () => {
     await writeCheckPackage(dir);
-    const inventory = await runCli(["inventory"], dir);
+    const signals = await runCli(["signals"], dir);
     const lint = await runCli(["lint"], dir);
     const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
 
-    expect(inventory.code).toBe(0);
-    expect(await realpath(JSON.parse(inventory.stdout).root)).toBe(
+    expect(signals.code).toBe(0);
+    expect(await realpath(JSON.parse(signals.stdout).root)).toBe(
       await realpath(dir),
     );
     expect(lint.code).toBe(0);
@@ -1644,7 +1641,7 @@ checks:
     expect(status.fingerprint.state).toBe("present");
     expect(status.checks.state).toBe("present");
     expect(status.proposals).toBeUndefined();
-    expect(status.cache.state).toBe("present");
+    expect(status.cache).toBeUndefined();
     expect(status.readiness.state).toBe("fingerprint-partial");
     expect(status.readiness.missing_layers).toEqual(["composition"]);
     expect(status.readiness.reasons[0]).toContain(
@@ -1736,26 +1733,6 @@ checks:
 
   it("emits review commands from the unified cli", async () => {
     await writeCheckPackage(dir);
-    await mkdir(join(dir, ".ghost", "fingerprint", "sources", "cache"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint", "sources", "cache", "inventory.json"),
-      JSON.stringify(
-        {
-          root: dir,
-          platform_hints: ["ios"],
-          build_system_hints: ["spm"],
-          language_histogram: [{ name: "swift", files: 12 }],
-          package_manifests: ["Package.swift"],
-          candidate_config_files: ["Code/Theme.swift"],
-          registry_files: [],
-          top_level_tree: [{ path: "Code/", kind: "dir", child_count: 3 }],
-        },
-        null,
-        2,
-      ),
-    );
     await writeFile(
       join(dir, ".ghost", "fingerprint.md"),
       fingerprintWithId("local"),
@@ -2062,7 +2039,7 @@ checks:
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
     expect(result.stdout).not.toContain("recommend-proposal");
-    expect(result.stdout).toContain("missing-memory");
+    expect(result.stdout).toContain("missing-fingerprint");
     expect(result.stdout).toContain("experience-gap");
     expect(result.stdout).toContain("repair or intentional-divergence");
     expect(result.stdout).not.toContain("schema: ghost.fingerprint/v1");
@@ -2169,9 +2146,8 @@ libraries:
     });
   });
 
-  it("review omits accepted decisions by default", async () => {
+  it("review omits removed memory fields", async () => {
     await writeCheckPackage(dir);
-    await writeMemoryFiles(dir);
     await writeFile(
       join(dir, "change.patch"),
       lendingPatch("let color = CashTheme.primary"),
@@ -2189,98 +2165,30 @@ libraries:
     expect(packet.proposal_types).toBeUndefined();
     expect(packet.open_proposals).toBeUndefined();
     expect(packet.accepted_decisions).toBeUndefined();
+    expect(packet.intent).toBeUndefined();
     expect(packet.memory).toBeUndefined();
   });
 
-  it("review includes only accepted decisions when requested", async () => {
-    await writeCheckPackage(dir);
-    await writeMemoryFiles(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(
-      [
-        "review",
-        "--diff",
-        "change.patch",
-        "--include-memory",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    expect(packet.accepted_decisions).toHaveLength(1);
-    expect(packet.accepted_decisions[0].id).toBe("checkout-reversibility");
-    expect(packet.memory).toBeUndefined();
-    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
-      "rejected-decision",
-    );
-    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
-      "saved-payment-empty-state",
-    );
-  });
-
-  it("review --package includes only accepted decisions when requested", async () => {
-    await writeCheckPackage(dir);
-    await writeMemoryFiles(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(
-      [
-        "review",
-        "--diff",
-        "change.patch",
-        "--package",
-        ".ghost",
-        "--include-memory",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    expect(packet.accepted_decisions).toHaveLength(1);
-    expect(packet.accepted_decisions[0].id).toBe("checkout-reversibility");
-    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
-      "rejected-decision",
-    );
-    expect(JSON.stringify(packet.accepted_decisions)).not.toContain(
-      "saved-payment-empty-state",
-    );
-  });
-
-  it("review --package points empty decision memory to the canonical path", async () => {
+  it("rejects removed review memory flag", async () => {
     await writeCheckPackage(dir);
     await writeFile(
       join(dir, "change.patch"),
       lendingPatch("let color = CashTheme.primary"),
     );
 
-    const result = await runCli(
-      [
-        "review",
-        "--diff",
-        "change.patch",
-        "--package",
-        ".ghost",
-        "--include-memory",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("fingerprint/memory/decisions");
-    expect(result.stdout).not.toContain(".ghost/decisions");
+    await expect(
+      runCli(
+        [
+          "review",
+          "--diff",
+          "change.patch",
+          "--include-memory",
+          "--format",
+          "json",
+        ],
+        dir,
+      ),
+    ).rejects.toThrow("Unknown option `--includeMemory`");
   });
 
   it("check routes changed files through nested stacks by default", async () => {
@@ -2714,7 +2622,7 @@ async function writeSplitFingerprintPackage(
 ): Promise<void> {
   const fingerprintDir = join(pkg, "fingerprint");
   const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(join(fingerprintDir, "enforcement"), { recursive: true });
+  await mkdir(fingerprintDir, { recursive: true });
   await Promise.all([
     writeFile(
       join(fingerprintDir, "manifest.yml"),
@@ -2747,12 +2655,7 @@ async function writeSplitFingerprintPackage(
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [
-          writeFile(
-            join(fingerprintDir, "enforcement", "checks.yml"),
-            checksRaw,
-          ),
-        ]
+      ? [writeFile(join(fingerprintDir, "checks.yml"), checksRaw)]
       : []),
   ]);
 }
@@ -2781,43 +2684,6 @@ checks:
 `;
 }
 
-async function writeMemoryFiles(dir: string): Promise<void> {
-  const pkg = join(dir, ".ghost", "fingerprint", "memory");
-  await mkdir(join(pkg, "decisions"), { recursive: true });
-  await writeFile(
-    join(pkg, "decisions", "checkout-reversibility.yml"),
-    `schema: ghost.decision/v1
-id: checkout-reversibility
-status: accepted
-title: Reversibility before money movement
-claim: Payment review must make reversibility visible before final submission.
-rationale: Users need confidence before committing money movement.
-scope:
-  roles: [design, engineering, pm, qa]
-  scopes: [checkout]
-  surface_types: [payment-review]
-  pattern_ids: [confirmation-before-commit]
-evidence:
-  - path: apps/checkout/review.tsx
-    note: Review step exposes edit affordances before submit.
-decided_at: "2026-05-17T00:00:00.000Z"
-`,
-  );
-  await writeFile(
-    join(pkg, "decisions", "rejected-decision.yml"),
-    `schema: ghost.decision/v1
-id: rejected-decision
-status: rejected
-title: Rejected experience direction
-claim: This should not appear in drift packets.
-rationale: Rejected decisions are non-canonical rationale.
-evidence:
-  - note: Rejected in design review.
-decided_at: "2026-05-17T00:00:00.000Z"
-`,
-  );
-}
-
 async function writeNestedCheckPackage(
   dir: string,
   memoryDir = ".ghost",
@@ -2827,12 +2693,6 @@ async function writeNestedCheckPackage(
     join(dir, "apps", "checkout"),
     memoryDir,
   );
-  await mkdir(join(rootMemory, "fingerprint", "sources", "cache"), {
-    recursive: true,
-  });
-  await mkdir(join(checkoutMemory, "fingerprint", "sources", "cache"), {
-    recursive: true,
-  });
   await mkdir(join(dir, "apps", "checkout", "review"), { recursive: true });
   await mkdir(join(dir, "shared"), { recursive: true });
   await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");

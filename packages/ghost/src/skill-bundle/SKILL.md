@@ -20,10 +20,7 @@ materials it draws from, and the patterns that make it feel intentional.
     prose.yml
     inventory.yml
     composition.yml
-    enforcement/checks.yml
-    memory/intent.md
-    memory/decisions/
-    sources/cache/
+    checks.yml
 ```
 
 `fingerprint/` is the source of truth when it is checked in. Ordinary Git
@@ -47,12 +44,10 @@ Checks and review validate output; they are not generation input.
 layer content; Ghost normalizes omitted layer files or sections internally for
 checks, review, emit, and stack resolution.
 
-Optional support material lives under purpose folders:
-`fingerprint/enforcement/checks.yml` for deterministic gates,
-`fingerprint/memory/intent.md` for human-approved intent,
-`fingerprint/memory/decisions/` for rationale history, and
-`fingerprint/sources/cache/` for generated observations. `.ghost/config.yml`
-stays outside the portable package as local routing config.
+Optional deterministic gates live in `fingerprint/checks.yml`.
+`.ghost/config.yml` stays outside the portable package as local routing config.
+Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
+raw repo observations while authoring curated fingerprint layers.
 
 Advanced repos may contain nested fingerprint packages such as
 `apps/checkout/.ghost/`. Host wrappers may set
@@ -65,7 +60,7 @@ consume JSON and map severities into their own review or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [dir]` | Create `.ghost/fingerprint/` with manifest, core layers, and enforcement checks. |
+| `ghost init [dir]` | Create `.ghost/fingerprint/` with manifest, core layers, and deterministic checks. |
 | `ghost scan [dir] [--format json]` | Report fingerprint layer readiness for prose, inventory, and composition. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
@@ -81,7 +76,7 @@ consume JSON and map severities into their own review or check format.
 |---|---|
 | `ghost init --scope <path>` / `--memory-dir <relative-dir>` | Create or resolve scoped/custom fingerprint packages for nested packages or host wrappers. |
 | `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
-| `ghost inventory [path]` | Emit raw repo signals for optional generated cache/source material. |
+| `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
 | `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
 | `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
@@ -109,7 +104,7 @@ evidence-backed core layer entries, then ask the human to curate the claims.
 
 - Treat checked-in `fingerprint/` core files as the source of truth.
 - Generate from prose, inventory, and composition.
-- Run active checks from `fingerprint/enforcement/checks.yml`; only active deterministic checks block.
+- Run active checks from `fingerprint/checks.yml`; only active deterministic checks block.
 - Use local evidence as provisional when fingerprint layers are silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.
@@ -117,15 +112,14 @@ evidence-backed core layer entries, then ask the human to curate the claims.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
   fingerprint layers complete.
 - Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
-- Use optional config, intent, decisions, generated cache, nested stacks, and custom fingerprint
-  dirs only when present or requested.
+- Use optional config, nested stacks, and custom fingerprint dirs only when
+  present or requested.
 
 ## When Fingerprint Layers Are Silent
 
 Silent fingerprint layers do not require stopping by default. When the fingerprint does
 not cover the task, proceed from nearby product surfaces, local components,
-token and copy conventions, optional rationale files when present, and ordinary
-UX reasoning when safe. Label that reasoning as provisional and
+token and copy conventions, and ordinary UX reasoning when safe. Label that reasoning as provisional and
 non-Ghost-backed.
 Ask a human before making high-risk, irreversible, privacy/security/legal, or
 product-surface-defining choices.
@@ -135,5 +129,3 @@ product-surface-defining choices.
 - Never treat advisory composition critique as a CI gate.
 - Never claim provisional reasoning, local convention, or general UX reasoning as
   Ghost-backed.
-- Never treat `fingerprint/memory/intent.md` as authoritative unless human-authored or human-approved.
-- Never treat rejected decisions as canonical inputs.

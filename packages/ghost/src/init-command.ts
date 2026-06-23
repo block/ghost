@@ -22,10 +22,6 @@ export function registerInitCommand(cli: CAC): void {
       "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
     )
     .option(
-      "--with-intent",
-      "Also create optional fingerprint/memory/intent.md for human-authored or human-approved intent",
-    )
-    .option(
       "--with-config",
       "Also create optional config.yml for implementation roots and reference registries/libraries",
     )
@@ -74,7 +70,6 @@ export function registerInitCommand(cli: CAC): void {
             ? memoryDirFromOpts(opts)
             : undefined;
         const initOptions = {
-          withIntent: Boolean(opts.withIntent),
           withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
@@ -105,7 +100,6 @@ export function registerInitCommand(cli: CAC): void {
           process.stdout.write(
             `${JSON.stringify(
               initCommandOutput(paths, {
-                includeIntent: Boolean(opts.withIntent),
                 includeConfig: Boolean(opts.withConfig || opts.reference),
               }),
               null,
@@ -120,12 +114,9 @@ export function registerInitCommand(cli: CAC): void {
           process.stdout.write(`  prose.yml: ${paths.prose}\n`);
           process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
           process.stdout.write(`  composition.yml: ${paths.composition}\n`);
-          process.stdout.write(`  enforcement/checks.yml: ${paths.checks}\n`);
+          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
-          }
-          if (opts.withIntent) {
-            process.stdout.write(`  memory/intent.md: ${paths.intent}\n`);
           }
         }
         process.exit(0);
@@ -144,7 +135,7 @@ function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
 
 function initCommandOutput(
   paths: ReturnType<typeof resolveFingerprintPackage>,
-  options: { includeIntent: boolean; includeConfig: boolean },
+  options: { includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
@@ -155,6 +146,5 @@ function initCommandOutput(
     composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
-    ...(options.includeIntent ? { intent: paths.intent } : {}),
   };
 }

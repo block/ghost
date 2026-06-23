@@ -13,10 +13,10 @@ description: Critique generated or changed UI using Ghost fingerprint layers.
    inventory exemplars, active checks, and repairs where relevant.
 
 When fingerprint layers are silent, you may use nearby product surfaces, local
-components, token and copy conventions, accepted decisions, or human intent when
-present. Label that reasoning as provisional and non-Ghost-backed.
+components, token and copy conventions. Label that reasoning as provisional and
+non-Ghost-backed.
 
 Do not make advisory taste critique sound blocking unless an active check backs
 it. If fingerprint grounding or layer coverage is missing or contradictory,
-name that as `missing-memory` or `experience-gap`; edit the Ghost package only
-when the user asks you to.
+name that as `missing-fingerprint` or `experience-gap`; edit the Ghost package
+only when the user asks you to.

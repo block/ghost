@@ -27,7 +27,7 @@ const GROUPS: ReadonlyArray<{
   { group: "core", title: "Core workflow" },
   { group: "advanced", title: "Advanced/package inspection" },
   { group: "compare", title: "Compare/stance" },
-  { group: "maintenance", title: "Maintenance/cache" },
+  { group: "maintenance", title: "Maintenance/legacy" },
 ];
 
 const COMMAND_DISCOVERY = [
@@ -102,18 +102,18 @@ const COMMAND_DISCOVERY = [
     summary: "Inspect a nested fingerprint stack for repo paths.",
   },
   {
-    name: "inventory",
+    name: "signals",
     group: "advanced",
     defaultHelp: false,
-    compactName: "inventory",
-    summary: "Emit raw repo signals for optional cache material.",
+    compactName: "signals",
+    summary: "Emit raw repo signals for fingerprint authoring.",
   },
   {
     name: "describe",
     group: "advanced",
     defaultHelp: false,
     compactName: "describe",
-    summary: "Print intent or markdown section ranges.",
+    summary: "Print markdown section ranges.",
   },
   {
     name: "compare",
@@ -162,7 +162,7 @@ const COMMAND_DISCOVERY = [
     group: "maintenance",
     defaultHelp: false,
     compactName: "survey",
-    summary: "Run survey/cache helpers.",
+    summary: "Run legacy survey helpers.",
   },
 ] satisfies ReadonlyArray<Omit<CommandDiscoveryMetadata, "order">>;
 

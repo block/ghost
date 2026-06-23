@@ -15,7 +15,7 @@ export interface EmitPackageReviewInput {
 const REVIEW_FINDING_CATEGORIES = [
   "fix",
   "intentional-divergence",
-  "missing-memory",
+  "missing-fingerprint",
   "experience-gap",
   "eval-uncertainty",
 ] as const;
@@ -25,7 +25,7 @@ const REVIEW_FINDING_CATEGORIES = [
  *
  * The command stays intentionally light: it tells the host agent which Ghost
  * files and CLI packets to use, then includes a compact fingerprint index.
- * Full canonical truth remains in fingerprint/ core files and enforcement checks.
+ * Full canonical truth remains in fingerprint/ core files and deterministic checks.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
@@ -74,7 +74,7 @@ function packageWorkflowSection(context: PackageContext): string {
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Use inventory building blocks only as replaceable material that may help satisfy the selected prose and composition.
 6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts; add \`--include-memory\` only when accepted decisions matter.
+7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts.
 8. Cite the diff location, fingerprint core layer refs, relevant exemplars when useful, and any active check when a finding blocks.`;
 }
 
@@ -87,9 +87,9 @@ Only findings backed by an active check should be treated as blocking. Everythin
 
 Review only what fingerprint layers or active checks make relevant to the product surface.
 
-When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions, or optional rationale files when present. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
+When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, or token and copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
-If the diff reveals missing fingerprint grounding or layer coverage, report \`missing-memory\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
+If the diff reveals missing fingerprint grounding or layer coverage, report \`missing-fingerprint\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
 }
 
 function packageFingerprintIndex(context: PackageContext): string {
@@ -150,7 +150,7 @@ function formatSummary(context: PackageContext): string {
 
 function formatSituations(situations: GhostFingerprintSituation[]): string {
   if (situations.length === 0) {
-    return "### Situations\n- No situations recorded yet. Treat unclear obligations as `missing-memory`.";
+    return "### Situations\n- No situations recorded yet. Treat unclear obligations as `missing-fingerprint`.";
   }
   const lines = ["### Situations"];
   for (const situation of situations.slice(0, 8)) {
@@ -252,7 +252,7 @@ function packageChecksSection(activeChecks: GhostCheck[]): string {
   if (activeChecks.length === 0) {
     return `## Active Checks
 
-No active checks are recorded. Review remains advisory unless \`fingerprint/enforcement/checks.yml\` adds deterministic active checks.`;
+No active checks are recorded. Review remains advisory unless \`fingerprint/checks.yml\` adds deterministic active checks.`;
   }
   const lines = ["## Active Checks", ""];
   for (const check of activeChecks.slice(0, 12)) {
@@ -271,7 +271,7 @@ No active checks are recorded. Review remains advisory unless \`fingerprint/enfo
   }
   if (activeChecks.length > 12) {
     lines.push(
-      `- ${activeChecks.length - 12} more active check(s); read \`fingerprint/enforcement/checks.yml\` before deciding whether a finding blocks.`,
+      `- ${activeChecks.length - 12} more active check(s); read \`fingerprint/checks.yml\` before deciding whether a finding blocks.`,
     );
   }
   return lines.join("\n");
@@ -281,7 +281,7 @@ function packageReviewFooter(context: PackageContext): string {
   const fingerprintDir = context.fingerprintDir ?? ".ghost";
   return `---
 
-Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint core layers, enforcement checks, or optional rationale files.`;
+Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint core layers or deterministic checks.`;
 }
 
 function stackFingerprintDirFlag(context: PackageContext): string {

@@ -29,9 +29,7 @@ consume, validate, compare, generate from, or govern that context.
   `inventory.yml` points to curated material and exemplars, and
   `composition.yml` captures the patterns that make it feel intentional.
 - Supporting material stays subordinate to the core layers:
-  `enforcement/checks.yml` validates deterministic obligations,
-  `memory/intent.md` and `memory/decisions/` preserve optional human-approved
-  rationale, and `sources/cache/` stores refreshable observations.
+  `checks.yml` validates deterministic obligations.
 - Tools are consumers or authors of the fingerprint. They may capture,
   validate, apply, govern, or compare the contract, but they do not replace it.
 - Drift is governance. `check`, `review`, `ack`, `track`, and `diverge` answer
@@ -67,7 +65,7 @@ fingerprint lifecycle:
 
 | Lifecycle | Commands and consumers | Purpose |
 | --- | --- | --- |
-| Capture | `init`, `inventory`, `scan` | Create the package, gather optional source material, and report layer readiness. |
+| Capture | `init`, `signals`, `scan` | Create the package, inspect repo signals, and report layer readiness. |
 | Validate | `lint`, `verify` | Check schema shape, refs, evidence, exemplars, and deterministic package quality. |
 | Generate / apply | `relay gather`, host agents, future generation consumers | Give agents the upstream surface-composition contract before they build or revise. |
 | Govern | `check`, `review`, `ack`, `track`, `diverge` | Validate changed surfaces, produce advisory findings, and record stance toward divergence. |

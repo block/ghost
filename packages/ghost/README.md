@@ -37,7 +37,7 @@ command index.
 Create and validate the fingerprint package:
 
 ```bash
-ghost init --with-intent
+ghost init
 ghost scan --format json
 ghost lint .ghost
 ghost verify .ghost --root .
@@ -53,7 +53,7 @@ Govern changes afterward:
 
 ```bash
 ghost check --base main
-ghost review --base main --include-memory
+ghost review --base main
 ```
 
 Install the BYOA skill bundle so your host agent can author, brief, review,
@@ -63,7 +63,7 @@ verify, remediate, and update fingerprints:
 ghost skill install
 ```
 
-Advanced commands such as `inventory`, `stack`, `compare`, `ack`, `track`, and
+Advanced commands such as `signals`, `stack`, `compare`, `ack`, `track`, and
 `diverge` remain available in the full command index.
 
 Zero config for every verb. No API key is required. `OPENAI_API_KEY` /
@@ -85,12 +85,13 @@ import {
 
 ## BYOA
 
-Ghost is bring-your-own-agent. The CLI performs deterministic work: inventory,
-readiness reporting, linting, verification, comparison, checks, and advisory
-review packet generation. The installed `ghost` skill teaches a host agent how to
-capture canonical `.ghost/fingerprint/` surface-composition context, brief and
-generate work from it, review changes against it, verify generated UI,
-remediate issues, and suggest fingerprint edits when the user asks.
+Ghost is bring-your-own-agent. The CLI performs deterministic work: repo
+signals, readiness reporting, linting, verification, comparison, checks, and
+advisory review packet generation. The installed `ghost` skill teaches a host
+agent how to capture canonical `.ghost/fingerprint/` surface-composition
+context, brief and generate work from it, review changes against it, verify
+generated UI, remediate issues, and suggest fingerprint edits when the user
+asks.
 
 ```text
 Set up the Ghost fingerprint for this repo.
