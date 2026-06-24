@@ -25,14 +25,14 @@ Tools see registries and filesystems; ghost-ui makes the registry case sing.
 
 ## What ghost-ui adds on top of "shadcn registry library"
 
-A three-layer demonstration:
+A three-part demonstration:
 
 1. **Stays a shadcn registry package.** The registry extension is additive and
    does not change the public `.ghost/fingerprint/` package model.
 2. **Per-component dimension tags.** Each component in registry.json can carry optional `meta.fingerprint_dimensions: [palette, spacing, typography, surfaces]` declaring which design dimensions the component primarily expresses. Review and comparison workflows can use this for higher-confidence attribution.
 3. **Shape-aware exemplar tags.** Examples can distinguish atoms from composed response shapes with optional `meta.exemplar_kind: "atom" | "shape"` and `meta.response_shapes: ["article" | "tracker" | "comparison" | "card"]`. This gives generators a narrow reference set before they compose a freeform answer.
 
-All layers are optional from the tool side. Tools degrade gracefully when they're absent. ghost-ui is the place the registry case is maximally present.
+All parts are optional from the tool side. Tools degrade gracefully when they're absent. ghost-ui is the place the registry case is maximally present.
 
 ## Registry.json extension — opportunistic, not breaking
 
