@@ -12,8 +12,6 @@ const ROOTS = [
   "packages/ghost/package.json",
   "packages/ghost/src",
   "packages/ghost/test",
-  "packages/ghost-core/src",
-  "packages/ghost-core/test",
   "packages/ghost-ui/README.md",
   ".ghost",
   ".changeset",

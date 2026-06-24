@@ -4,7 +4,7 @@ import {
   closestCanonical,
   isCanonicalDimension,
   resolveDecisionKind,
-} from "../src/decision-vocabulary.js";
+} from "#ghost-core";
 
 describe("CANONICAL_DECISION_DIMENSIONS", () => {
   it("contains the documented 13 dimensions", () => {

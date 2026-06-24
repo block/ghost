@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   componentRowId,
+  type SurveySource,
   tokenRowId,
   uiSurfaceRowId,
   valueRowId,
-} from "../src/survey/id.js";
-import type { SurveySource } from "../src/survey/types.js";
+} from "#ghost-core";
 
 const SOURCE_A: SurveySource = {
   target: "github:block/ghost",

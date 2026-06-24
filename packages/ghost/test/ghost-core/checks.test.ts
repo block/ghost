@@ -5,7 +5,7 @@ import {
   lintGhostValidate,
   type MapFrontmatter,
   routeGhostValidateForPath,
-} from "../src/index.js";
+} from "#ghost-core";
 
 const MAP: Pick<MapFrontmatter, "scopes" | "feature_areas"> = {
   feature_areas: [],
@@ -81,11 +81,13 @@ describe("ghost.validate/v1", () => {
     });
   });
 
-  it("requires active checks to declare derivation", () => {
+  it("warns when active checks do not declare derivation", () => {
     const report = lintGhostValidate(checks({ derivation: undefined }));
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-missing",
       path: "checks[0].derivation",
     });
@@ -100,7 +102,7 @@ describe("ghost.validate/v1", () => {
     expect(report.warnings).toBe(0);
   });
 
-  it("reports active checks grounded in missing fingerprint refs", () => {
+  it("warns when active checks reference missing fingerprint refs", () => {
     const report = lintGhostValidate(
       checks({
         derivation: {
@@ -112,8 +114,10 @@ describe("ghost.validate/v1", () => {
       },
     );
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-unknown",
       path: "checks[0].derivation.intent[0]",
     });
@@ -132,7 +136,7 @@ describe("ghost.validate/v1", () => {
     expect(report.issues[0]?.rule).toBe("schema/invalid_format");
   });
 
-  it("rejects inventory-only active checks", () => {
+  it("warns on inventory-only active checks", () => {
     const report = lintGhostValidate(
       checks({
         derivation: {
@@ -142,8 +146,10 @@ describe("ghost.validate/v1", () => {
       { fingerprint: fingerprintContext() },
     );
 
-    expect(report.errors).toBe(1);
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(1);
     expect(report.issues[0]).toMatchObject({
+      severity: "warning",
       rule: "check-grounding-inventory-only",
       path: "checks[0].derivation",
     });
