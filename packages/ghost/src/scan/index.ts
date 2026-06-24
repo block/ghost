@@ -1,8 +1,4 @@
-export {
-  CONFIG_FILENAME,
-  FINGERPRINT_DIRNAME,
-  FINGERPRINT_PACKAGE_DIR,
-} from "./constants.js";
+export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
   ScanBuildingBlockRows,
   ScanContributionReport,
@@ -25,12 +21,12 @@ export {
   discoverFingerprintStack,
   discoverGhostPackages,
   fingerprintPackageDisplayPath,
-  GHOST_MEMORY_DIR_ENV,
+  GHOST_PACKAGE_DIR_ENV,
   groupFingerprintStacksForPaths,
   loadFingerprintStackForPath,
-  normalizeMemoryDir,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
   resolveGitRoot,
-  resolveMemoryDirDefault,
 } from "./fingerprint-stack.js";
 export { signals } from "./inventory.js";
 export type { MonorepoInitCandidate } from "./monorepo-init.js";

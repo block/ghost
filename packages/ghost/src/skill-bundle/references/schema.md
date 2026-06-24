@@ -4,16 +4,14 @@ Canonical package:
 
 ```text
 .ghost/
-  config.yml                    optional local routing
-  fingerprint/
-    manifest.yml                ghost.fingerprint-package/v1
-    intent.yml                   core surface intent
-    inventory.yml               core material and source links
-    composition.yml             core patterns
-    validate.yml      optional ghost.validate/v1 gates
+  manifest.yml                  ghost.fingerprint-package/v1
+  intent.yml                    core surface intent
+  inventory.yml                 core material and source links
+  composition.yml               core patterns
+  validate.yml                  optional ghost.validate/v1 gates
 ```
 
-Git is the approval boundary: checked-in `fingerprint/` core files are
+Git is the approval boundary: checked-in Ghost package facet files are
 canonical, and uncommitted or unmerged edits are draft work.
 
 `manifest.yml`:
@@ -37,6 +35,6 @@ Use these typed refs:
 
 `inventory.sources[].kind` may be `registry`, `file`, `url`, or `package`.
 
-`fingerprint/validate.yml` remains deterministic only. Ref-backed
+`validate.yml` remains deterministic only. Ref-backed
 checks are preferred; missing or unresolved derivation refs lint as warnings.
 Inventory refs can support a check but do not establish surface guidance alone.

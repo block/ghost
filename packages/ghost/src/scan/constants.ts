@@ -10,9 +10,6 @@ export const PATTERNS_FILENAME = "patterns.yml";
 /** Canonical product-surface composition artifact. */
 export const FINGERPRINT_YML_FILENAME = "fingerprint.yml";
 
-/** Portable fingerprint bundle directory under the package root. */
-export const FINGERPRINT_DIRNAME = "fingerprint";
-
 /** Portable fingerprint package manifest filename. */
 export const FINGERPRINT_MANIFEST_FILENAME = "manifest.yml";
 
@@ -20,9 +17,6 @@ export const FINGERPRINT_MANIFEST_FILENAME = "manifest.yml";
 export const FINGERPRINT_INTENT_FILENAME = "intent.yml";
 export const FINGERPRINT_INVENTORY_FILENAME = "inventory.yml";
 export const FINGERPRINT_COMPOSITION_FILENAME = "composition.yml";
-
-/** Optional data-only package configuration artifact. */
-export const CONFIG_FILENAME = "config.yml";
 
 /** Legacy direct fingerprint filename. Not part of the root package shape. */
 export const FINGERPRINT_FILENAME = "fingerprint.md";

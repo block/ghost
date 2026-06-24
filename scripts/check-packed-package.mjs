@@ -117,7 +117,7 @@ try {
     cwd: consumerDir,
   });
   const initOutput = JSON.parse(init);
-  if (!initOutput.manifest?.endsWith(".ghost/fingerprint/manifest.yml")) {
+  if (!initOutput.manifest?.endsWith(".ghost/manifest.yml")) {
     fail("packed ghost init did not emit the expected manifest path");
   }
   run("pnpm", ["exec", "ghost", "lint", ".ghost"], { cwd: consumerDir });

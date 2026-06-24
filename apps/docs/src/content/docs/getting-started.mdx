@@ -17,22 +17,18 @@ The canonical portable fingerprint is a folder:
 
 ```text
 .ghost/
-  config.yml
-  fingerprint/
-    manifest.yml
-    intent.yml
-    inventory.yml
-    composition.yml
-    validate.yml
+  manifest.yml
+  intent.yml
+  inventory.yml
+  composition.yml
+  validate.yml
 ```
 
 Generation starts from `intent.yml`, `inventory.yml`, and `composition.yml`.
 `validate.yml` checks validate the result afterward; they are not generation input.
-`.ghost/config.yml` stays outside the portable package because it is local
-routing config.
 
 Nested product areas can add child package roots such as
-`apps/checkout/.ghost/fingerprint/`. Ghost resolves fingerprint stacks
+`apps/checkout/.ghost/`. Ghost resolves fingerprint stacks
 root-to-leaf for the file or diff being reviewed.
 
 </DocSection>
@@ -42,7 +38,7 @@ root-to-leaf for the file or diff being reviewed.
 <Callout variant="warning" title="Beta / pre-1.0">
 
 Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
-on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+on-disk `.ghost/` package shape, and public JavaScript exports may
 change in breaking ways before a stable 1.0 release.
 
 Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
@@ -153,7 +149,7 @@ ghost track new-tracked.fingerprint.md
 ghost diverge typography --reason "Editorial product uses a different type scale"
 ```
 
-Package comparison uses canonical `.ghost/fingerprint/` packages. `ack`,
+Package comparison uses canonical `.ghost/` packages. `ack`,
 `track`, and `diverge` record stance for compatibility drift workflows that
 track direct fingerprint markdown references.
 

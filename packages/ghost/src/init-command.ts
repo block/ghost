@@ -8,26 +8,22 @@ import {
   initMonorepoFingerprintPackages,
   writeMonorepoInitOutput,
 } from "./monorepo-init-command.js";
-import { resolveMemoryDirDefault } from "./scan/index.js";
+import { resolveGhostDirDefault } from "./scan/index.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
-    .command("init [dir]", "Create a root .ghost split fingerprint package")
+    .command("init", "Create a root .ghost split fingerprint package")
     .option(
       "--scope <path>",
-      "Create a scoped <path>/<memory-dir> fingerprint package",
+      "Create a scoped <path>/.ghost fingerprint package",
     )
     .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
-    .option(
-      "--with-config",
-      "Also create optional config.yml for implementation roots and reference registries/libraries",
+      "--package <dir>",
+      "Exact fingerprint package directory to initialize",
     )
     .option(
       "--reference <path-or-registry>",
-      "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
+      "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
     )
     .option(
       "--monorepo",
@@ -36,10 +32,12 @@ export function registerInitCommand(cli: CAC): void {
     .option("--apply", "With --monorepo, create detected child scoped packages")
     .option("--force", "Overwrite existing Ghost fingerprint files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (dirArg: string | undefined, opts) => {
+    .action(async (opts) => {
       try {
-        if (opts.monorepo && dirArg) {
-          console.error("Error: use either init [dir] or init --monorepo");
+        if (cli.args.length > 0) {
+          console.error(
+            "Error: ghost init no longer accepts a positional directory. Use --package <dir> for an exact package directory.",
+          );
           process.exit(2);
           return;
         }
@@ -55,29 +53,35 @@ export function registerInitCommand(cli: CAC): void {
           process.exit(2);
           return;
         }
-        if (dirArg && typeof opts.scope === "string") {
-          console.error("Error: use either init [dir] or init --scope <path>");
+        if (opts.monorepo && typeof opts.package === "string") {
+          console.error(
+            "Error: use either init --package <dir> or init --monorepo",
+          );
           process.exit(2);
           return;
         }
-        if (dirArg && typeof opts.memoryDir === "string") {
-          console.error("Error: use either init [dir] or --memory-dir");
+        if (
+          typeof opts.scope === "string" &&
+          typeof opts.package === "string"
+        ) {
+          console.error(
+            "Error: use either init --package <dir> or init --scope <path>",
+          );
           process.exit(2);
           return;
         }
-        const memoryDir =
-          typeof opts.scope === "string" || dirArg === undefined
-            ? memoryDirFromOpts(opts)
-            : undefined;
+        const exactPackage =
+          typeof opts.package === "string" ? opts.package : undefined;
+        const ghostDir =
+          exactPackage === undefined ? ghostDirFromEnv() : undefined;
         const initOptions = {
-          withConfig: Boolean(opts.withConfig || opts.reference),
           reference:
             typeof opts.reference === "string" ? opts.reference : undefined,
           force: Boolean(opts.force),
         };
         if (opts.monorepo) {
           const output = await initMonorepoFingerprintPackages({
-            memoryDir: memoryDirFromOpts(opts),
+            ghostDir: ghostDir ?? ghostDirFromEnv(),
             apply: Boolean(opts.apply),
             initOptions,
           });
@@ -89,22 +93,16 @@ export function registerInitCommand(cli: CAC): void {
           typeof opts.scope === "string"
             ? await initScopedFingerprintPackage(opts.scope, process.cwd(), {
                 ...initOptions,
-                memoryDir,
+                ghostDir: ghostDir ?? ghostDirFromEnv(),
               })
             : await initFingerprintPackage(
-                dirArg ?? memoryDir,
+                exactPackage ?? ghostDir,
                 process.cwd(),
                 initOptions,
               );
         if (opts.format === "json") {
           process.stdout.write(
-            `${JSON.stringify(
-              initCommandOutput(paths, {
-                includeConfig: Boolean(opts.withConfig || opts.reference),
-              }),
-              null,
-              2,
-            )}\n`,
+            `${JSON.stringify(initCommandOutput(paths), null, 2)}\n`,
           );
         } else {
           process.stdout.write(
@@ -115,9 +113,6 @@ export function registerInitCommand(cli: CAC): void {
           process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
           process.stdout.write(`  composition.yml: ${paths.composition}\n`);
           process.stdout.write(`  validate.yml: ${paths.checks}\n`);
-          if (opts.withConfig || opts.reference) {
-            process.stdout.write(`  config.yml: ${paths.config}\n`);
-          }
         }
         process.exit(0);
       } catch (err) {
@@ -129,22 +124,19 @@ export function registerInitCommand(cli: CAC): void {
     });
 }
 
-function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
-  return resolveMemoryDirDefault(opts.memoryDir);
+function ghostDirFromEnv(): string {
+  return resolveGhostDirDefault();
 }
 
 function initCommandOutput(
   paths: ReturnType<typeof resolveFingerprintPackage>,
-  options: { includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
-    fingerprintDir: paths.fingerprintDir,
     manifest: paths.manifest,
     intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
-    ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
   };
 }

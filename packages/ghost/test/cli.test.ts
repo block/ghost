@@ -187,7 +187,7 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Maintenance/legacy");
     for (const command of [
       "lint [file]",
-      "init [dir]",
+      "init",
       "verify [dir]",
       "scan [dir]",
       "stack [paths...]",
@@ -286,7 +286,7 @@ describe("ghost CLI", () => {
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
 
@@ -348,7 +348,7 @@ describe("ghost CLI", () => {
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
@@ -404,15 +404,7 @@ describe("ghost CLI", () => {
       checks: false,
     });
     await writeFile(
-      join(
-        dir,
-        "node_modules",
-        "@scope",
-        "tracked",
-        ".ghost",
-        "fingerprint",
-        "manifest.yml",
-      ),
+      join(dir, "node_modules", "@scope", "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
@@ -431,17 +423,13 @@ describe("ghost CLI", () => {
     expect(report.overall.verdict).toBe("covered");
   });
 
-  it("reports design-loop status as disabled by default", async () => {
+  it("omits removed design-loop status by default", async () => {
     const result = await runCli(["drift", "status", "--format", "json"], dir);
 
     expect(result.code).toBe(0);
     const status = JSON.parse(result.stdout);
     expect(status.schema).toBe("ghost.drift.status/v1");
-    expect(status.designLoop).toEqual({
-      enabled: false,
-      mode: "off",
-      source: "default",
-    });
+    expect(status.designLoop).toBeUndefined();
   });
 
   it("runs the Ghost-owned drift check contract through the stance ledger", async () => {
@@ -465,11 +453,7 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     const report = JSON.parse(result.stdout);
     expect(report.schema).toBe("ghost.drift.check/v1");
-    expect(report.designLoop).toEqual({
-      enabled: false,
-      mode: "off",
-      source: "default",
-    });
+    expect(report.designLoop).toBeUndefined();
     expect(report.trackedFingerprintId).toBe("tracked");
     expect(report.localFingerprintId).toBe("local");
     expect(report.overall.verdict).toBe("covered");
@@ -531,7 +515,7 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
@@ -597,7 +581,7 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
@@ -614,7 +598,7 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
@@ -635,7 +619,7 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
@@ -655,7 +639,7 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
@@ -665,7 +649,7 @@ composition_patterns: []
         "drift",
         "check",
         "--tracked",
-        "tracked/.ghost/fingerprint/manifest.yml",
+        "tracked/.ghost/manifest.yml",
         "--format",
         "json",
       ],
@@ -683,11 +667,11 @@ composition_patterns: []
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeCheckPackage(join(dir, "other"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
-      join(dir, "other", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "other", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: other\n",
     );
     await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
@@ -707,11 +691,11 @@ composition_patterns: []
     await writeCheckPackage(dir, { checks: false });
     await writeCheckPackage(join(dir, "tracked"), { checks: false });
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "intent.yml"),
+      join(dir, ".ghost", "intent.yml"),
       `summary:
   product: Cash iOS
 situations: []
@@ -762,11 +746,11 @@ composition:
       fingerprintRaw,
     );
     await writeFile(
-      join(dir, "tracked", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "tracked", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "inventory.yml"),
+      join(dir, ".ghost", "inventory.yml"),
       `topology:
   surface_types: [native-feature, digest-only-change]
 building_blocks: {}
@@ -822,58 +806,6 @@ sources: []
     expect(report.dimensions.spacing.verdict).toBe("uncovered");
   });
 
-  it("keeps advisory design-loop drift non-blocking", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "config.yml"),
-      `schema: ghost.config/v1
-targets: []
-libraries: []
-design_loop:
-  enabled: true
-  mode: advisory
-`,
-    );
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await writeFile(
-      join(dir, "tracked.fingerprint.md"),
-      fingerprintWithId("tracked"),
-    );
-    await runCli(["track", "tracked.fingerprint.md"], dir);
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local").replace(
-        "spacing: { scale: [4, 8, 16], baseUnit: 4, regularity: 1 }",
-        "spacing: { scale: [2, 3, 5, 7, 11, 13], baseUnit: 2, regularity: 0.1 }",
-      ),
-    );
-
-    const result = await runCli(
-      [
-        "drift",
-        "check",
-        "--tracked",
-        "tracked.fingerprint.md",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.designLoop).toEqual({
-      enabled: true,
-      mode: "advisory",
-      source: "config",
-    });
-    expect(report.overall.verdict).toBe("uncovered");
-    expect(report.dimensions.spacing.verdict).toBe("uncovered");
-  });
-
   it("initializes the default fingerprint package without cache", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
@@ -888,16 +820,15 @@ design_loop:
       "checks",
       "composition",
       "dir",
-      "fingerprintDir",
       "intent",
       "inventory",
       "manifest",
     ]);
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "validate.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "validate.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.validate/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache).toBeUndefined();
@@ -945,11 +876,11 @@ design_loop:
     ]);
     expect(out.commands).toEqual(["ghost init --scope apps/checkout"]);
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("ghost.fingerprint-package/v1");
     await expect(
       readFile(
-        join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
+        join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
         "utf-8",
       ),
     ).rejects.toThrow();
@@ -1107,7 +1038,7 @@ design_loop:
     ]);
     await expect(
       readFile(
-        join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
+        join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
         "utf-8",
       ),
     ).resolves.toContain("ghost.fingerprint-package/v1");
@@ -1143,59 +1074,7 @@ design_loop:
     ]);
   });
 
-  it("init --monorepo applies --memory-dir to root and child packages", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-
-    const result = await runCli(
-      [
-        "init",
-        "--monorepo",
-        "--apply",
-        "--memory-dir",
-        ".design/memory",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.memoryDir).toBe(".design/memory");
-    expect(out.commands).toEqual([
-      "ghost init --scope apps/checkout --memory-dir .design/memory",
-    ]);
-    await expect(
-      readFile(
-        join(dir, ".design", "memory", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-    await expect(
-      readFile(
-        join(
-          dir,
-          "apps",
-          "checkout",
-          ".design",
-          "memory",
-          "fingerprint",
-          "manifest.yml",
-        ),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-  });
-
-  it("init --monorepo uses GHOST_MEMORY_DIR for root and child packages", async () => {
+  it("init --monorepo applies GHOST_PACKAGE_DIR to root and child packages", async () => {
     await mkdir(join(dir, "apps", "checkout"), { recursive: true });
     await writeFile(
       join(dir, "package.json"),
@@ -1209,48 +1088,74 @@ design_loop:
     const result = await runCli(
       ["init", "--monorepo", "--apply", "--format", "json"],
       dir,
-      { env: { GHOST_MEMORY_DIR: ".agents/ghost" } },
+      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
     );
 
     expect(result.code).toBe(0);
     const out = JSON.parse(result.stdout);
-    expect(out.memoryDir).toBe(".agents/ghost");
+    expect(out.ghostDir).toBe(".design/memory");
     expect(out.commands).toEqual([
-      "ghost init --scope apps/checkout --memory-dir .agents/ghost",
+      "GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout",
     ]);
     await expect(
-      readFile(
-        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
+      readFile(join(dir, ".design", "memory", "manifest.yml"), "utf-8"),
     ).resolves.toContain("ghost.fingerprint-package/v1");
     await expect(
       readFile(
-        join(
-          dir,
-          "apps",
-          "checkout",
-          ".agents",
-          "ghost",
-          "fingerprint",
-          "manifest.yml",
-        ),
+        join(dir, "apps", "checkout", ".design", "memory", "manifest.yml"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+  });
+
+  it("init --monorepo uses GHOST_PACKAGE_DIR for root and child packages", async () => {
+    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
+    );
+    await writeFile(
+      join(dir, "apps", "checkout", "package.json"),
+      JSON.stringify({ name: "checkout" }, null, 2),
+    );
+
+    const result = await runCli(
+      ["init", "--monorepo", "--apply", "--format", "json"],
+      dir,
+      { env: { GHOST_PACKAGE_DIR: ".agents/ghost" } },
+    );
+
+    expect(result.code).toBe(0);
+    const out = JSON.parse(result.stdout);
+    expect(out.ghostDir).toBe(".agents/ghost");
+    expect(out.commands).toEqual([
+      "GHOST_PACKAGE_DIR=.agents/ghost ghost init --scope apps/checkout",
+    ]);
+    await expect(
+      readFile(join(dir, ".agents", "ghost", "manifest.yml"), "utf-8"),
+    ).resolves.toContain("ghost.fingerprint-package/v1");
+    await expect(
+      readFile(
+        join(dir, "apps", "checkout", ".agents", "ghost", "manifest.yml"),
         "utf-8",
       ),
     ).resolves.toContain("ghost.fingerprint-package/v1");
   });
 
   it("init --monorepo rejects exact scope and dir combinations", async () => {
-    const withDir = await runCli(["init", "custom-dir", "--monorepo"], dir);
+    const withPackage = await runCli(
+      ["init", "--package", "custom-dir", "--monorepo"],
+      dir,
+    );
     const withScope = await runCli(
       ["init", "--scope", "apps/checkout", "--monorepo"],
       dir,
     );
     const withApplyOnly = await runCli(["init", "--apply"], dir);
 
-    expect(withDir.code).toBe(2);
-    expect(withDir.stderr).toContain(
-      "use either init [dir] or init --monorepo",
+    expect(withPackage.code).toBe(2);
+    expect(withPackage.stderr).toContain(
+      "use either init --package <dir> or init --monorepo",
     );
     expect(withScope.code).toBe(2);
     expect(withScope.stderr).toContain(
@@ -1262,9 +1167,9 @@ design_loop:
     );
   });
 
-  it("uses GHOST_MEMORY_DIR as the default fingerprint package directory for init", async () => {
+  it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
     const init = await runCli(["init", "--format", "json"], dir, {
-      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
+      env: { GHOST_PACKAGE_DIR: ".agents/ghost" },
     });
 
     expect(init.code).toBe(0);
@@ -1273,20 +1178,21 @@ design_loop:
       await realpath(join(dir, ".agents", "ghost")),
     );
     await expect(
-      readFile(
-        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
+      readFile(join(dir, ".agents", "ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).rejects.toThrow();
   });
 
-  it("keeps explicit init directory positional args ahead of GHOST_MEMORY_DIR", async () => {
-    const init = await runCli(["init", "custom-dir", "--format", "json"], dir, {
-      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
-    });
+  it("keeps exact init package args ahead of invalid GHOST_PACKAGE_DIR", async () => {
+    const init = await runCli(
+      ["init", "--package", "custom-dir", "--format", "json"],
+      dir,
+      {
+        env: { GHOST_PACKAGE_DIR: "../outside" },
+      },
+    );
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
@@ -1294,30 +1200,43 @@ design_loop:
       await realpath(join(dir, "custom-dir")),
     );
     await expect(
-      readFile(join(dir, "custom-dir", "fingerprint", "manifest.yml"), "utf-8"),
+      readFile(join(dir, "custom-dir", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(
-        join(dir, ".agents", "ghost", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).rejects.toThrow();
   });
 
-  it("rejects invalid GHOST_MEMORY_DIR with memory-dir validation errors", async () => {
+  it("rejects removed positional init package args with a migration hint", async () => {
+    const init = await runCli(["init", "custom-dir", "--format", "json"], dir);
+
+    expect(init.code).toBe(2);
+    expect(init.stderr).toContain(
+      "ghost init no longer accepts a positional directory",
+    );
+    expect(init.stderr).toContain("--package <dir>");
+    await expect(
+      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
+    ).rejects.toThrow();
+    await expect(
+      readFile(join(dir, "custom-dir", "manifest.yml"), "utf-8"),
+    ).rejects.toThrow();
+  });
+
+  it("rejects invalid GHOST_PACKAGE_DIR with env validation errors", async () => {
     const init = await runCli(["init"], dir, {
-      env: { GHOST_MEMORY_DIR: "../outside" },
+      env: { GHOST_PACKAGE_DIR: "../outside" },
     });
 
     expect(init.code).toBe(2);
-    expect(init.stderr).toContain("--memory-dir must not contain");
+    expect(init.stderr).toContain("GHOST_PACKAGE_DIR must not contain");
   });
 
-  it("uses GHOST_MEMORY_DIR as the default package lookup for scan", async () => {
-    await runCli(["init", ".agents/ghost"], dir);
+  it("uses GHOST_PACKAGE_DIR as the default package lookup for scan", async () => {
+    await runCli(["init", "--package", ".agents/ghost"], dir);
 
     const scan = await runCli(["scan", "--format", "json"], dir, {
-      env: { GHOST_MEMORY_DIR: ".agents/ghost" },
+      env: { GHOST_PACKAGE_DIR: ".agents/ghost" },
     });
 
     expect(scan.code).toBe(0);
@@ -1331,7 +1250,7 @@ design_loop:
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "intent.yml"),
+      join(dir, ".ghost", "intent.yml"),
       "summary:\n  product: Curated Surface\n",
     );
 
@@ -1342,21 +1261,21 @@ design_loop:
       "Refusing to overwrite existing Ghost fingerprint file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "intent.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "intent.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
     ).resolves.toContain("summary: {}");
   });
 
   it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      join(dir, ".ghost", "validate.yml"),
       `schema: ghost.validate/v1
 id: local
 checks:
@@ -1386,19 +1305,19 @@ checks:
     expect(report.issues[0]).toMatchObject({
       severity: "warning",
       rule: "check-grounding-unknown",
-      path: "fingerprint/validate.yml.checks[0].derivation.intent[0]",
+      path: "validate.yml.checks[0].derivation.intent[0]",
     });
   });
 
   it("validates standalone validate.yml derivation refs with a valid sibling fingerprint", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      join(dir, ".ghost", "validate.yml"),
       checksFileWithDerivation("intent.principle:not-recorded"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/validate.yml", "--format", "json"],
+      ["lint", ".ghost/validate.yml", "--format", "json"],
       dir,
     );
 
@@ -1438,18 +1357,15 @@ checks:
   });
 
   it("keeps standalone validate.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
-    await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
+    await mkdir(join(dir, ".ghost"), { recursive: true });
+    await writeFile(join(dir, ".ghost", "manifest.yml"), "not: draft\n");
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "manifest.yml"),
-      "not: draft\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      join(dir, ".ghost", "validate.yml"),
       checksFileWithDerivation("intent.principle:tokenized-ui-color"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/validate.yml", "--format", "json"],
+      ["lint", ".ghost/validate.yml", "--format", "json"],
       dir,
     );
 
@@ -1476,10 +1392,7 @@ checks:
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
-      await readFile(
-        join(dir, ".ghost", "fingerprint", "manifest.yml"),
-        "utf-8",
-      ),
+      await readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).toContain("schema: ghost.fingerprint-package/v1");
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
@@ -1498,7 +1411,7 @@ checks:
       "composition",
       "validate",
     ]);
-    expect(scanHuman.stdout).toContain("fingerprint dir:");
+    expect(scanHuman.stdout).toContain("package dir:");
     expect(scanHuman.stdout).toContain("contribution: empty");
     expect(scanHuman.stdout).toContain("intent: empty (0)");
     expect(scanHuman.stdout).toContain("validate: empty (0)");
@@ -1513,16 +1426,9 @@ checks:
     );
   });
 
-  it("initializes a blank product scaffold with config and reference library wiring", async () => {
+  it("initializes a blank product scaffold with reference inventory wiring", async () => {
     const init = await runCli(
-      [
-        "init",
-        "--with-config",
-        "--reference",
-        "packages/ghost-ui/.ghost",
-        "--format",
-        "json",
-      ],
+      ["init", "--reference", "packages/ghost-ui/.ghost", "--format", "json"],
       dir,
     );
     const scan = await runCli(["scan", "--format", "json"], dir);
@@ -1530,21 +1436,11 @@ checks:
     await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
       recursive: true,
     });
-    await mkdir(join(dir, "packages", "ghost-ui", ".ghost", "fingerprint"), {
-      recursive: true,
-    });
     await mkdir(join(dir, "packages", "ghost-ui", "public", "r"), {
       recursive: true,
     });
     await writeFile(
-      join(
-        dir,
-        "packages",
-        "ghost-ui",
-        ".ghost",
-        "fingerprint",
-        "manifest.yml",
-      ),
+      join(dir, "packages", "ghost-ui", ".ghost", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: ghost-ui\n",
     );
     await writeFile(
@@ -1556,15 +1452,9 @@ checks:
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(initOutput.cache).toBeUndefined();
-    expect(await realpath(initOutput.config)).toBe(
-      await realpath(join(dir, ".ghost", "config.yml")),
-    );
 
     const fingerprint = parseYaml(
-      await readFile(
-        join(dir, ".ghost", "fingerprint", "inventory.yml"),
-        "utf-8",
-      ),
+      await readFile(join(dir, ".ghost", "inventory.yml"), "utf-8"),
     ) as Record<string, unknown>;
     expect(fingerprint).not.toHaveProperty("implementation_vocabulary");
     expect(fingerprint).not.toHaveProperty("patterns");
@@ -1580,26 +1470,12 @@ checks:
         },
       ],
     });
-
-    const config = parseYaml(
-      await readFile(join(dir, ".ghost", "config.yml"), "utf-8"),
-    ) as Record<string, unknown>;
-    expect(config).toMatchObject({
-      schema: "ghost.config/v1",
-      design_loop: { enabled: false, mode: "off" },
-      targets: [{ id: "product", platform: "web", roots: [] }],
-      libraries: [
-        {
-          id: "ghost-ui",
-          role: "primary-ui-registry",
-          source: "registry:packages/ghost-ui/public/r/registry.json",
-          fingerprint: "packages/ghost-ui/.ghost/fingerprint/manifest.yml",
-        },
-      ],
-    });
+    await expect(
+      readFile(join(dir, ".ghost", "config.yml"), "utf-8"),
+    ).rejects.toThrow();
 
     const status = JSON.parse(scan.stdout);
-    expect(status.config.state).toBe("present");
+    expect(status.config).toBeUndefined();
     expect(status.contribution.state).toBe("contributing");
     expect(status.contribution.contributing_facets).toEqual(["inventory"]);
     expect(status.contribution.absent_facets).toEqual([]);
@@ -1610,7 +1486,7 @@ checks:
     ]);
 
     const signalsOutput = JSON.parse(signals.stdout);
-    expect(signalsOutput.config.libraries[0].id).toBe("ghost-ui");
+    expect(signalsOutput.config).toBeUndefined();
     expect(verify.code).toBe(0);
   });
 
@@ -1764,7 +1640,7 @@ checks:
       "utf-8",
     );
     expect(emittedReviewCommand).toContain(
-      ".ghost/fingerprint/intent.yml`, `.ghost/fingerprint/inventory.yml`, and `.ghost/fingerprint/composition.yml",
+      ".ghost/intent.yml`, `.ghost/inventory.yml`, and `.ghost/composition.yml",
     );
     expect(emittedReviewCommand).toContain("Exemplars");
     expect(emittedReviewCommand).toContain("lending-tokenized-screen");
@@ -1897,21 +1773,13 @@ checks:
     expect(json.brief).toContain("## Context Hits");
   });
 
-  it("ignores memory-dir when gathering Relay context from an exact package", async () => {
+  it("ignores GHOST_PACKAGE_DIR when gathering Relay context from an exact package", async () => {
     await writeCheckPackage(dir);
 
     const result = await runCli(
-      [
-        "relay",
-        "gather",
-        "--package",
-        ".ghost",
-        "--memory-dir",
-        "../not-used",
-        "--format",
-        "json",
-      ],
+      ["relay", "gather", "--package", ".ghost", "--format", "json"],
       dir,
+      { env: { GHOST_PACKAGE_DIR: "elsewhere" } },
     );
 
     expect(result.code).toBe(0);
@@ -1941,7 +1809,7 @@ checks:
       expect.arrayContaining([
         expect.objectContaining({
           rule: "fingerprint-exemplar-unreachable",
-          path: "fingerprint/inventory.yml.exemplars[0].path",
+          path: "inventory.yml.exemplars[0].path",
         }),
       ]),
     );
@@ -2177,40 +2045,6 @@ checks:
     );
   });
 
-  it("review includes config reference registries when config.yml is present", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "config.yml"),
-      `schema: ghost.config/v1
-targets:
-  - id: product
-    platform: web
-    roots: []
-libraries:
-  - id: ghost-ui
-    role: primary-ui-registry
-    source: registry:packages/ghost-ui/public/r/registry.json
-    fingerprint: packages/ghost-ui/.ghost/fingerprint/manifest.yml
-`,
-    );
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(
-      ["review", "--diff", "change.patch", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    expect(packet.config.libraries[0]).toMatchObject({
-      id: "ghost-ui",
-      role: "primary-ui-registry",
-    });
-  });
-
   it("review omits removed memory fields", async () => {
     await writeCheckPackage(dir);
     await writeFile(
@@ -2272,7 +2106,7 @@ libraries:
     const report = JSON.parse(result.stdout);
     expect(report.schema).toBe("ghost.check-report/v1");
     expect(report.result).toBe("pass");
-    expect(report.fingerprint_dir).toBe(".ghost");
+    expect(report.ghost_dir).toBe(".ghost");
     expect(report.memory_dir).toBeUndefined();
     expect(report.stacks[0].memory_dir).toBeUndefined();
     expect(report.stacks[0].stack_dirs).toHaveLength(2);
@@ -2318,7 +2152,7 @@ libraries:
     expect(report.stacks).toBeUndefined();
   });
 
-  it("resolves stack checks from a custom fingerprint directory", async () => {
+  it("resolves stack checks from a custom package directory", async () => {
     await writeNestedCheckPackage(dir, ".design/memory");
     await writeFile(
       join(dir, "change.patch"),
@@ -2326,24 +2160,17 @@ libraries:
     );
 
     const result = await runCli(
-      [
-        "check",
-        "--diff",
-        "change.patch",
-        "--memory-dir",
-        ".design/memory",
-        "--format",
-        "json",
-      ],
+      ["check", "--diff", "change.patch", "--format", "json"],
       dir,
+      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
     );
 
     expect(result.code).toBe(0);
     const report = JSON.parse(result.stdout);
-    expect(report.fingerprint_dir).toBe(".design/memory");
+    expect(report.ghost_dir).toBe(".design/memory");
     expect(report.memory_dir).toBeUndefined();
     expect(report.stacks[0]).toMatchObject({
-      fingerprint_dir: ".design/memory",
+      ghost_dir: ".design/memory",
       changed_files: ["apps/checkout/review/page.tsx"],
     });
     expect(report.stacks[0].memory_dir).toBeUndefined();
@@ -2371,7 +2198,7 @@ libraries:
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
     expect(packet.stacks).toHaveLength(2);
-    expect(packet.stacks[0].fingerprint_dir).toBe(".ghost");
+    expect(packet.stacks[0].ghost_dir).toBe(".ghost");
     expect(packet.stacks[0].memory_dir).toBeUndefined();
     expect(packet.stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
@@ -2391,7 +2218,7 @@ libraries:
     expect(result.code).toBe(0);
     const stacks = JSON.parse(result.stdout);
     expect(stacks[0].stack).toHaveLength(2);
-    expect(stacks[0].fingerprint_dir).toBe(".ghost");
+    expect(stacks[0].ghost_dir).toBe(".ghost");
     expect(stacks[0].memory_dir).toBeUndefined();
     expect(stacks[0].stack[0].memory_dir).toBeUndefined();
     expect(stacks[0].merged.fingerprint.intent.summary.product).toBe(
@@ -2399,14 +2226,13 @@ libraries:
     );
   });
 
-  it("rejects unsafe memory directory overrides", async () => {
-    const result = await runCli(
-      ["stack", ".", "--memory-dir", "../outside"],
-      dir,
-    );
+  it("rejects unsafe package directory env overrides", async () => {
+    const result = await runCli(["stack", "."], dir, {
+      env: { GHOST_PACKAGE_DIR: "../outside" },
+    });
 
     expect(result.code).toBe(2);
-    expect(result.stderr).toContain("--memory-dir must not contain");
+    expect(result.stderr).toContain("GHOST_PACKAGE_DIR must not contain");
   });
 
   it("emit review-command resolves merged fingerprint stack for --path", async () => {
@@ -2441,30 +2267,23 @@ libraries:
       await realpath(join(dir, "apps", "checkout", ".ghost")),
     );
     const manifest = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "fingerprint", "manifest.yml"),
+      join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
       "utf-8",
     );
     expect(manifest).toContain("ghost.fingerprint-package/v1");
     const intent = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "fingerprint", "intent.yml"),
+      join(dir, "apps", "checkout", ".ghost", "intent.yml"),
       "utf-8",
     );
     expect(intent).not.toContain("review_policy");
     expect(intent).not.toContain("proposal");
   });
 
-  it("init --scope creates a nested package under a custom fingerprint directory", async () => {
+  it("init --scope creates a nested package under a custom package directory", async () => {
     const result = await runCli(
-      [
-        "init",
-        "--scope",
-        "apps/checkout",
-        "--memory-dir",
-        ".design/memory",
-        "--format",
-        "json",
-      ],
+      ["init", "--scope", "apps/checkout", "--format", "json"],
       dir,
+      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
     );
 
     expect(result.code).toBe(0);
@@ -2474,15 +2293,7 @@ libraries:
     );
     expect(
       await readFile(
-        join(
-          dir,
-          "apps",
-          "checkout",
-          ".design",
-          "memory",
-          "fingerprint",
-          "manifest.yml",
-        ),
+        join(dir, "apps", "checkout", ".design", "memory", "manifest.yml"),
         "utf-8",
       ),
     ).toContain("ghost.fingerprint-package/v1");
@@ -2506,24 +2317,16 @@ libraries:
   it("lint, verify, and scan discover nested custom fingerprint directories", async () => {
     await writeNestedCheckPackage(dir, ".design/memory");
 
-    const lint = await runCli(
-      ["lint", "--all", "--memory-dir", ".design/memory", "--format", "json"],
-      dir,
-    );
-    const verify = await runCli(
-      ["verify", "--all", "--memory-dir", ".design/memory", "--format", "json"],
-      dir,
-    );
+    const lint = await runCli(["lint", "--all", "--format", "json"], dir, {
+      env: { GHOST_PACKAGE_DIR: ".design/memory" },
+    });
+    const verify = await runCli(["verify", "--all", "--format", "json"], dir, {
+      env: { GHOST_PACKAGE_DIR: ".design/memory" },
+    });
     const scan = await runCli(
-      [
-        "scan",
-        "--include-nested",
-        "--memory-dir",
-        ".design/memory",
-        "--format",
-        "json",
-      ],
+      ["scan", "--include-nested", "--format", "json"],
       dir,
+      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
     );
 
     expect(lint.code).toBe(0);
@@ -2687,16 +2490,16 @@ async function writeSplitFingerprintPackage(
   fingerprintRaw: string,
   checksRaw?: string,
 ): Promise<void> {
-  const fingerprintDir = join(pkg, "fingerprint");
+  const packageDir = pkg;
   const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(fingerprintDir, { recursive: true });
+  await mkdir(packageDir, { recursive: true });
   await Promise.all([
     writeFile(
-      join(fingerprintDir, "manifest.yml"),
+      join(packageDir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
     writeFile(
-      join(fingerprintDir, "intent.yml"),
+      join(packageDir, "intent.yml"),
       stringifyYaml(
         doc.intent ?? {
           summary: {},
@@ -2707,7 +2510,7 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "inventory.yml"),
+      join(packageDir, "inventory.yml"),
       stringifyYaml(
         doc.inventory ?? {
           topology: {},
@@ -2718,11 +2521,11 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "composition.yml"),
+      join(packageDir, "composition.yml"),
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [writeFile(join(fingerprintDir, "validate.yml"), checksRaw)]
+      ? [writeFile(join(packageDir, "validate.yml"), checksRaw)]
       : []),
   ]);
 }
@@ -2753,20 +2556,17 @@ checks:
 
 async function writeNestedCheckPackage(
   dir: string,
-  memoryDir = ".ghost",
+  ghostDir = ".ghost",
 ): Promise<void> {
-  const rootMemory = memoryPackagePath(dir, memoryDir);
-  const checkoutMemory = memoryPackagePath(
-    join(dir, "apps", "checkout"),
-    memoryDir,
-  );
+  const rootPackage = packagePath(dir, ghostDir);
+  const checkoutPackage = packagePath(join(dir, "apps", "checkout"), ghostDir);
   await mkdir(join(dir, "apps", "checkout", "review"), { recursive: true });
   await mkdir(join(dir, "shared"), { recursive: true });
   await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");
   await writeFile(join(dir, "shared", "home.tsx"), "");
 
   await writeSplitFingerprintPackage(
-    rootMemory,
+    rootPackage,
     `schema: ghost.fingerprint/v1
 intent:
   summary:
@@ -2812,7 +2612,7 @@ checks:
   );
 
   await writeSplitFingerprintPackage(
-    checkoutMemory,
+    checkoutPackage,
     `schema: ghost.fingerprint/v1
 intent:
   summary:
@@ -2852,8 +2652,8 @@ checks:
   );
 }
 
-function memoryPackagePath(root: string, memoryDir: string): string {
-  return join(root, ...memoryDir.split("/"));
+function packagePath(root: string, ghostDir: string): string {
+  return join(root, ...ghostDir.split("/"));
 }
 
 function webPatch(path: string, added: string): string {

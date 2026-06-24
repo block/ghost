@@ -150,20 +150,20 @@ intent:
     const stack = await loadFingerprintStackForPath(
       "apps/checkout/review/page.tsx",
       dir,
-      { memoryDir: ".design/memory" },
+      { ghostDir: ".design/memory" },
     );
     const groups = await groupFingerprintStacksForPaths(
       ["apps/checkout/review/page.tsx", "shared/home.tsx"],
       dir,
-      { memoryDir: ".design/memory" },
+      { ghostDir: ".design/memory" },
     );
 
-    expect(stack.fingerprint_dir).toBe(".design/memory");
+    expect(stack.ghost_dir).toBe(".design/memory");
     expect(stack.layers.map((layer) => layer.relative_root)).toEqual([
       ".",
       "apps/checkout",
     ]);
-    expect(stack.layers.map((layer) => layer.fingerprint_dir)).toEqual([
+    expect(stack.layers.map((layer) => layer.ghost_dir)).toEqual([
       ".design/memory",
       ".design/memory",
     ]);
@@ -173,10 +173,10 @@ intent:
 
 async function writeStackFixture(
   dir: string,
-  memoryDir = ".ghost",
+  ghostDir = ".ghost",
 ): Promise<void> {
-  await writeRootBundle(dir, memoryDir);
-  await writeChildBundle(join(dir, "apps", "checkout"), memoryDir);
+  await writeRootBundle(dir, ghostDir);
+  await writeChildBundle(join(dir, "apps", "checkout"), ghostDir);
   await mkdir(join(dir, "shared"), { recursive: true });
   await writeFile(join(dir, "shared", "home.tsx"), "");
   await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");
@@ -184,9 +184,9 @@ async function writeStackFixture(
 
 async function writeRootBundle(
   dir: string,
-  memoryDir = ".ghost",
+  ghostDir = ".ghost",
 ): Promise<void> {
-  const ghost = memoryPackagePath(dir, memoryDir);
+  const ghost = packagePath(dir, ghostDir);
   await writeSplitFingerprintPackage(
     ghost,
     `schema: ghost.fingerprint/v1
@@ -252,9 +252,9 @@ checks:
 
 async function writeChildBundle(
   root: string,
-  memoryDir = ".ghost",
+  ghostDir = ".ghost",
 ): Promise<void> {
-  const ghost = memoryPackagePath(root, memoryDir);
+  const ghost = packagePath(root, ghostDir);
   await mkdir(join(root, "review"), { recursive: true });
   await writeSplitFingerprintPackage(
     ghost,
@@ -330,8 +330,8 @@ checks:
   );
 }
 
-function memoryPackagePath(root: string, memoryDir: string): string {
-  return join(root, ...memoryDir.split("/"));
+function packagePath(root: string, ghostDir: string): string {
+  return join(root, ...ghostDir.split("/"));
 }
 
 async function writeSplitFingerprintPackage(
@@ -339,16 +339,16 @@ async function writeSplitFingerprintPackage(
   fingerprintRaw: string,
   checksRaw?: string,
 ): Promise<void> {
-  const fingerprintDir = join(pkg, "fingerprint");
+  const packageDir = pkg;
   const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(fingerprintDir, { recursive: true });
+  await mkdir(packageDir, { recursive: true });
   await Promise.all([
     writeFile(
-      join(fingerprintDir, "manifest.yml"),
+      join(packageDir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
     writeFile(
-      join(fingerprintDir, "intent.yml"),
+      join(packageDir, "intent.yml"),
       stringifyYaml(
         doc.intent ?? {
           summary: {},
@@ -359,7 +359,7 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "inventory.yml"),
+      join(packageDir, "inventory.yml"),
       stringifyYaml(
         doc.inventory ?? {
           topology: {},
@@ -370,11 +370,11 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "composition.yml"),
+      join(packageDir, "composition.yml"),
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [writeFile(join(fingerprintDir, "validate.yml"), checksRaw)]
+      ? [writeFile(join(packageDir, "validate.yml"), checksRaw)]
       : []),
   ]);
 }

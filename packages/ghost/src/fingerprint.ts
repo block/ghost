@@ -6,9 +6,7 @@ export type { DesignDecision } from "./scan/compose.js";
 export { mergeFingerprint } from "./scan/compose.js";
 export {
   CHECKS_FILENAME,
-  CONFIG_FILENAME,
   FINGERPRINT_COMPOSITION_FILENAME,
-  FINGERPRINT_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
@@ -67,21 +65,7 @@ export type {
   MapLintSeverity,
 } from "./scan/lint-map.js";
 export { lintMap } from "./scan/lint-map.js";
-export type {
-  GhostPackageConfig,
-  GhostPackageConfigLibrary,
-  GhostPackageConfigTarget,
-} from "./scan/package-config.js";
-export {
-  GHOST_PACKAGE_CONFIG_SCHEMA,
-  GhostPackageConfigSchema,
-  lintGhostPackageConfig,
-  normalizeReferenceInput,
-  parsePackageConfig,
-  readOptionalPackageConfig,
-  readOptionalPackageConfigSync,
-  templatePackageConfig,
-} from "./scan/package-config.js";
+export { normalizeReferenceInput } from "./scan/package-config.js";
 export type { ParsedFingerprint, ParseOptions } from "./scan/parser.js";
 export { parseFingerprint, splitRaw } from "./scan/parser.js";
 export type { FrontmatterShape } from "./scan/schema.js";

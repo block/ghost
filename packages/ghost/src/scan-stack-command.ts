@@ -3,7 +3,7 @@ import {
   fingerprintPackageDisplayPath,
   type GhostFingerprintStack,
   loadFingerprintStackForPath,
-  resolveMemoryDirDefault,
+  resolveGhostDirDefault,
 } from "./scan/index.js";
 
 export function registerStackCommand(cli: CAC): void {
@@ -12,14 +12,10 @@ export function registerStackCommand(cli: CAC): void {
       "stack [paths...]",
       "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
     )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (paths: string[] | string | undefined, opts) => {
       try {
-        const memoryDir = resolveMemoryDirDefault(opts.memoryDir);
+        const ghostDir = resolveGhostDirDefault();
         const requestedPaths = Array.isArray(paths)
           ? paths
           : typeof paths === "string"
@@ -28,7 +24,7 @@ export function registerStackCommand(cli: CAC): void {
         const targets = requestedPaths.length > 0 ? requestedPaths : ["."];
         const stacks = await Promise.all(
           targets.map((path) =>
-            loadFingerprintStackForPath(path, process.cwd(), { memoryDir }),
+            loadFingerprintStackForPath(path, process.cwd(), { ghostDir }),
           ),
         );
         if (opts.format === "json") {
@@ -56,12 +52,12 @@ function formatStackJson(
   return {
     target_path: stack.target_path,
     repo_root: stack.repo_root,
-    fingerprint_dir: stack.fingerprint_dir,
+    ghost_dir: stack.ghost_dir,
     stack: stack.layers.map((layer) => ({
       dir: layer.dir,
       root: layer.root,
       relative_root: layer.relative_root,
-      fingerprint_dir: layer.fingerprint_dir,
+      ghost_dir: layer.ghost_dir,
       fingerprint_id: layer.fingerprint.intent.summary.product ?? null,
       checks: layer.checks?.checks.length ?? 0,
     })),
@@ -83,7 +79,7 @@ function formatStackCli(stack: GhostFingerprintStack): string {
     "stack:",
     ...stack.layers.map(
       (layer) =>
-        `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)} (${layer.fingerprint.intent.summary.product ?? "unnamed"})`,
+        `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.ghost_dir)} (${layer.fingerprint.intent.summary.product ?? "unnamed"})`,
     ),
     "merged:",
     `  situations: ${stack.merged.fingerprint.intent.situations.length}`,

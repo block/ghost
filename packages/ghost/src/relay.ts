@@ -14,7 +14,7 @@ import {
   fingerprintStackToPackageContext,
   type GhostFingerprintStack,
   loadFingerprintStackForPath,
-  resolveMemoryDirDefault,
+  resolveGhostDirDefault,
 } from "./scan/fingerprint-stack.js";
 
 export type {
@@ -33,7 +33,7 @@ export interface GatherRelayContextOptions {
   cwd?: string;
   target?: string;
   packageDir?: string;
-  memoryDir?: string;
+  ghostDir?: string;
   name?: string;
 }
 
@@ -42,7 +42,7 @@ export type RelayGatherSource =
       kind: "stack";
       repoRoot: string;
       targetPath: string;
-      fingerprintDir: string;
+      ghostDir: string;
       stackDirs: string[];
       provenance: {
         merge: "child-wins-by-id";
@@ -60,7 +60,7 @@ export interface RelayGatherResult {
   name: string;
   source: RelayGatherSource;
   targetPaths: string[];
-  fingerprintDir?: string;
+  ghostDir?: string;
   stackDirs: string[];
   selected_context: SelectedContext;
   brief: string;
@@ -82,22 +82,22 @@ export async function gatherRelayContext(
     return gatherFromContext(context, {
       source: {
         kind: "package",
-        packageDir: context.fingerprintDir ?? options.packageDir,
+        packageDir: context.packageDir ?? options.packageDir,
         targetPath: targetPaths[0] ?? null,
       },
       targetPaths,
     });
   }
 
-  const memoryDir = resolveMemoryDirDefault(options.memoryDir);
-  const stack = await loadFingerprintStackForPath(target, cwd, { memoryDir });
+  const ghostDir = resolveGhostDirDefault(options.ghostDir);
+  const stack = await loadFingerprintStackForPath(target, cwd, { ghostDir });
   const context = fingerprintStackToPackageContext(stack, options.name);
   return gatherFromContext(context, {
     source: {
       kind: "stack",
       repoRoot: stack.repo_root,
       targetPath: stack.target_path,
-      fingerprintDir: stack.fingerprint_dir,
+      ghostDir: stack.ghost_dir,
       stackDirs: stack.layers.map((layer) => layer.dir),
       provenance: {
         merge: stack.provenance.merge,
@@ -125,10 +125,6 @@ export function registerRelayCommand(cli: CAC): void {
       "Use exactly this fingerprint package directory instead of resolving a stack",
     )
     .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers and stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
-    .option(
       "--name <name>",
       "Override the gathered context name (default: intent.yml product or resolved scope)",
     )
@@ -152,8 +148,6 @@ export function registerRelayCommand(cli: CAC): void {
           target: target ?? ".",
           packageDir:
             typeof opts.package === "string" ? opts.package : undefined,
-          memoryDir:
-            typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           name: typeof opts.name === "string" ? opts.name : undefined,
         });
 
@@ -186,7 +180,7 @@ function gatherFromContext(
     name: context.name,
     source: options.source,
     targetPaths: entrypoint.match.requestedPaths,
-    fingerprintDir: context.fingerprintDir,
+    ghostDir: context.packageDir,
     stackDirs: context.stackDirs ?? [],
     selected_context: selectedContext,
     brief: formatRelayBrief(partial),

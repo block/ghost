@@ -10,11 +10,7 @@ import {
   MapFrontmatterSchema,
   SURVEY_FILENAME,
 } from "#ghost-core";
-import {
-  CONFIG_FILENAME,
-  FINGERPRINTS_DIRNAME,
-  SCOPE_SURVEYS_DIRNAME,
-} from "./constants.js";
+import { FINGERPRINTS_DIRNAME, SCOPE_SURVEYS_DIRNAME } from "./constants.js";
 import {
   type ScanContributionReport,
   summarizeFingerprintContribution,
@@ -49,10 +45,9 @@ export interface ScanStatusOptions {
 }
 
 export interface ScanStatus {
-  /** Absolute path to the Ghost fingerprint directory. */
+  /** Absolute path to the Ghost package directory. */
   dir: string;
   fingerprint: ScanStageReport;
-  config: ScanStageReport;
   validate: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
@@ -61,7 +56,7 @@ export interface ScanStatus {
 }
 
 /**
- * Inspect a Ghost fingerprint directory and report what sparse facets this
+ * Inspect a Ghost package directory and report what sparse facets this
  * package contributes. A package can contribute only intent, inventory,
  * composition, validate, or any combination; absent facets may be inherited
  * from broader stack context.
@@ -72,19 +67,16 @@ export async function scanStatus(
 ): Promise<ScanStatus> {
   const dir = resolve(dirPath);
   const paths = resolveFingerprintPackage(dir, process.cwd());
-  const fingerprintPath = paths.fingerprintDir;
-  const configPath = resolve(dir, CONFIG_FILENAME);
+  const fingerprintPath = paths.packageDir;
 
   const [
     fingerprintPresent,
-    configPresent,
     intentPresent,
     inventoryPresent,
     compositionPresent,
     validatePresent,
   ] = await Promise.all([
     pathExists(paths.manifest, "file"),
-    pathExists(configPath, "file"),
     pathExists(paths.intent, "file"),
     pathExists(paths.inventory, "file"),
     pathExists(paths.composition, "file"),
@@ -99,11 +91,6 @@ export async function scanStatus(
     state: validatePresent ? "present" : "missing",
     path: paths.checks,
   };
-  const config: ScanStageReport = {
-    state: configPresent ? "present" : "missing",
-    path: configPath,
-  };
-
   const contribution = await scanContribution(paths, {
     fingerprintPresent,
     intentPresent,
@@ -115,7 +102,6 @@ export async function scanStatus(
   const status: ScanStatus = {
     dir,
     fingerprint,
-    config,
     validate,
     contribution,
     recommended_next: fingerprintPresent ? null : "fingerprint",
@@ -185,7 +171,7 @@ async function readOptionalValidate(
   const result = GhostValidateSchema.safeParse(parsed);
   if (!result.success) {
     throw new Error(
-      `fingerprint/validate.yml failed schema validation: ${result.error.issues
+      `validate.yml failed schema validation: ${result.error.issues
         .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
         .join("; ")}`,
     );

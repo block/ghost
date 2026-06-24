@@ -26,7 +26,7 @@ Language maps onto the existing facets; do not invent new schema. See
      and omits it elsewhere. Unscoped entries reach agents only through ref
      edges or the global fallback.
 4. Promote only the mechanically detectable subset into
-   `fingerprint/validate.yml`:
+   `validate.yml`:
    - Absolute rules (banned phrases, required boilerplate) become
      `forbidden-regex` or `required-regex` checks with `status: active`.
    - Recommendations become `status: proposed` so `ghost review` surfaces

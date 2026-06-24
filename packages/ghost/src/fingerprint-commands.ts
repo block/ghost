@@ -1,5 +1,5 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
-import { basename, dirname, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
@@ -34,10 +34,9 @@ import { registerInitCommand } from "./init-command.js";
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import {
   discoverGhostPackages,
-  FINGERPRINT_DIRNAME,
   fingerprintPackageDisplayPath,
-  normalizeMemoryDir,
-  resolveMemoryDirDefault,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
   scanStatus,
   signals,
 } from "./scan/index.js";
@@ -68,24 +67,20 @@ export function registerFingerprintCommands(cli: CAC): void {
       "--all",
       "Validate every nested fingerprint package and its resolved fingerprint stack",
     )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
     .action(async (path: string | undefined, opts) => {
       try {
-        const memoryDir = memoryDirFromOpts(opts);
+        const ghostDir = ghostDirFromEnv();
         if (opts.all) {
           const report = await lintAllFingerprintStacks(
             resolve(process.cwd(), path ?? "."),
-            { memoryDir },
+            { ghostDir },
           );
           writeLintReport(report, opts.format);
           process.exit(report.errors > 0 ? 1 : 0);
           return;
         }
 
-        const packagePath = path ?? memoryDir;
+        const packagePath = path ?? ghostDir;
         const target = resolveFingerprintPackage(
           packagePath,
           process.cwd(),
@@ -149,10 +144,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "--all",
       "Verify every nested fingerprint package and its resolved fingerprint stack",
     )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
     .action(async (dirArg: string | undefined, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
@@ -161,15 +152,15 @@ export function registerFingerprintCommands(cli: CAC): void {
           return;
         }
 
-        const memoryDir = memoryDirFromOpts(opts);
+        const ghostDir = ghostDirFromEnv();
         const report = opts.all
           ? await verifyAllFingerprintStacks(
               resolve(process.cwd(), dirArg ?? "."),
               {
-                memoryDir,
+                ghostDir,
               },
             )
-          : await verifyFingerprintPackage(dirArg ?? memoryDir, process.cwd(), {
+          : await verifyFingerprintPackage(dirArg ?? ghostDir, process.cwd(), {
               root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
             });
 
@@ -202,16 +193,12 @@ export function registerFingerprintCommands(cli: CAC): void {
       "--include-nested",
       "Also list nested fingerprint packages and contribution state",
     )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers, nested discovery, and default scan (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
-        const memoryDir = memoryDirFromOpts(opts);
+        const ghostDir = ghostDirFromEnv();
         const dir = resolveFingerprintPackage(
-          dirArg ?? memoryDir,
+          dirArg ?? ghostDir,
           process.cwd(),
         ).dir;
         const status = await scanStatus(dir, {
@@ -219,8 +206,8 @@ export function registerFingerprintCommands(cli: CAC): void {
         });
         const nested = opts.includeNested
           ? await nestedPackageStatus(
-              dirnameForFingerprintPackageDir(dir, memoryDir),
-              memoryDir,
+              dirnameForFingerprintPackageDir(dir, ghostDir),
+              ghostDir,
             )
           : undefined;
         if (opts.format === "json") {
@@ -234,15 +221,12 @@ export function registerFingerprintCommands(cli: CAC): void {
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
-          process.stdout.write(`fingerprint dir: ${status.dir}\n\n`);
+          process.stdout.write(`package dir: ${status.dir}\n\n`);
           process.stdout.write(
-            `  fingerprint (fingerprint/): ${fmt(status.fingerprint.state)}\n`,
+            `  package    (manifest.yml): ${fmt(status.fingerprint.state)}\n`,
           );
           process.stdout.write(
-            `  config      (config.yml):      ${fmt(status.config.state)}\n`,
-          );
-          process.stdout.write(
-            `  validate   (fingerprint/validate.yml): ${fmt(status.validate.state)}\n`,
+            `  validate   (validate.yml): ${fmt(status.validate.state)}\n`,
           );
           process.stdout.write("\n");
           if (status.recommended_next) {
@@ -321,7 +305,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             } else {
               for (const pkg of nested) {
                 process.stdout.write(
-                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.fingerprint_dir)}: ${pkg.contribution.state}\n`,
+                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.ghost_dir)}: ${pkg.contribution.state}\n`,
                 );
               }
             }
@@ -601,9 +585,9 @@ export function registerFingerprintCommands(cli: CAC): void {
 
 async function nestedPackageStatus(
   root: string,
-  memoryDir: string,
+  ghostDir: string,
 ): Promise<NestedPackageStatus[]> {
-  const packages = await discoverGhostPackages(root, { memoryDir });
+  const packages = await discoverGhostPackages(root, { ghostDir });
   return Promise.all(
     packages.map(async (pkg) => {
       const status = await scanStatus(pkg.dir);
@@ -621,7 +605,7 @@ interface NestedPackageStatus {
   dir: string;
   root: string;
   relative_root: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
   validate: Awaited<ReturnType<typeof scanStatus>>["validate"];
   contribution: Awaited<ReturnType<typeof scanStatus>>["contribution"];
@@ -629,30 +613,26 @@ interface NestedPackageStatus {
 
 function dirnameForFingerprintPackageDir(
   dir: string,
-  memoryDir: string,
+  ghostDir: string,
 ): string {
   let root = dir;
-  for (const _segment of normalizeMemoryDir(memoryDir).split("/")) {
+  for (const _segment of normalizeGhostDir(ghostDir).split("/")) {
     root = dirname(root);
   }
   return root;
 }
 
-function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
-  return resolveMemoryDirDefault(opts.memoryDir);
+function ghostDirFromEnv(): string {
+  return resolveGhostDirDefault();
 }
 
 async function loadSiblingFingerprintForValidateLint(
   fileTarget: string,
 ): Promise<GhostFingerprintDocument | undefined> {
   const validateDir = dirname(fileTarget);
-  const packageRoot =
-    basename(validateDir) === FINGERPRINT_DIRNAME
-      ? resolve(validateDir, "..")
-      : resolve(validateDir, "..", "..");
   try {
     return (
-      await loadFingerprintPackage(resolveFingerprintPackage(packageRoot))
+      await loadFingerprintPackage(resolveFingerprintPackage(validateDir))
     ).fingerprint;
   } catch {
     return undefined;
@@ -799,7 +779,7 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       traits: traitsForPattern(entry.value, survey),
       evidence: entry.evidence,
       advisory: [
-        "Use as advisory composition evidence; deterministic checks belong in fingerprint/validate.yml.",
+        "Use as advisory composition evidence; deterministic checks belong in validate.yml.",
       ],
     })),
     advisory: {
@@ -813,7 +793,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
       "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
-      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
+      "Treat intent.yml, inventory.yml, and composition.yml as canonical authoring facets.",
     ];
   }
 
@@ -824,14 +804,14 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
       "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
+      "Treat intent.yml, inventory.yml, and composition.yml as canonical authoring facets.",
     ];
   }
 
   return [
     "Identify the surface type before assessing composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-    "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
+    "Treat intent.yml, inventory.yml, and composition.yml as canonical authoring facets.",
   ];
 }
 

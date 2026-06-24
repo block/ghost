@@ -20,7 +20,7 @@ import {
 import {
   groupFingerprintStacksForPaths,
   mapFromFingerprint,
-  resolveMemoryDirDefault,
+  resolveGhostDirDefault,
 } from "../scan/fingerprint-stack.js";
 import {
   INLINE_COLOR_LITERAL_PATTERN,
@@ -32,7 +32,7 @@ const execFileAsync = promisify(execFile);
 export interface GhostDriftCheckOptions {
   cwd?: string;
   packageDir?: string;
-  memoryDir?: string;
+  ghostDir?: string;
   base?: string;
   diffText?: string;
 }
@@ -70,7 +70,7 @@ export interface GhostDriftCheckReport {
   schema: "ghost.check-report/v1";
   result: "pass" | "fail";
   package_dir: string;
-  fingerprint_dir?: string;
+  ghost_dir?: string;
   base?: string;
   changed_files: string[];
   routed_files: GhostDriftRoutedFile[];
@@ -81,7 +81,7 @@ export interface GhostDriftCheckReport {
 export interface GhostDriftCheckStack {
   target_path: string;
   package_dir: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
   changed_files: string[];
   stack_dirs: string[];
   provenance: {
@@ -126,7 +126,7 @@ export async function runGhostDriftCheck(
   const groups = await groupFingerprintStacksForPaths(
     changedFiles.map((file) => file.path),
     cwd,
-    { memoryDir: resolveMemoryDirDefault(options.memoryDir) },
+    { ghostDir: resolveGhostDirDefault(options.ghostDir) },
   );
   const routedFiles: GhostDriftRoutedFile[] = [];
   const findings: GhostDriftCheckFinding[] = [];
@@ -148,7 +148,7 @@ export async function runGhostDriftCheck(
     stacks.push({
       target_path: group.stack.target_path,
       package_dir: pkg.dir,
-      fingerprint_dir: group.stack.fingerprint_dir,
+      ghost_dir: group.stack.ghost_dir,
       changed_files: group.changed_files,
       stack_dirs: group.stack.layers.map((layer) => layer.dir),
       provenance: {
@@ -165,7 +165,7 @@ export async function runGhostDriftCheck(
       stacks.length === 1
         ? stacks[0].package_dir
         : "fingerprint-stack/multiple",
-    fingerprint_dir: stacks[0]?.fingerprint_dir ?? options.memoryDir,
+    ghost_dir: stacks[0]?.ghost_dir ?? options.ghostDir,
     ...(options.base ? { base: options.base } : {}),
     changed_files: changedFiles.map((file) => file.path),
     routed_files: routedFiles,

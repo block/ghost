@@ -1,4 +1,3 @@
-import { resolve } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import { buildContextEntrypoint } from "./context/entrypoint.js";
 import {
@@ -15,18 +14,14 @@ import {
   fingerprintStackToPackageContext,
   type GhostFingerprintStack,
   groupFingerprintStacksForPaths,
-  resolveMemoryDirDefault,
+  resolveGhostDirDefault,
 } from "./scan/fingerprint-stack.js";
-import {
-  type GhostPackageConfig,
-  readOptionalPackageConfig,
-} from "./scan/package-config.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 
 export async function buildReviewPacket(options: {
   packageDir?: string;
-  memoryDir?: string;
+  ghostDir?: string;
   diffText: string;
   maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
@@ -58,13 +53,12 @@ async function buildSinglePackageReviewPacket(options: {
       },
     ]),
     checks: context.checksRaw ?? null,
-    config: (await readOptionalPackageConfig(paths.config)) ?? null,
   };
   return packet;
 }
 
 async function buildStackReviewPacket(options: {
-  memoryDir?: string;
+  ghostDir?: string;
   diffText: string;
   maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
@@ -74,7 +68,7 @@ async function buildStackReviewPacket(options: {
   const groups = await groupFingerprintStacksForPaths(
     changedFiles,
     process.cwd(),
-    { memoryDir: resolveMemoryDirDefault(options.memoryDir) },
+    { ghostDir: resolveGhostDirDefault(options.ghostDir) },
   );
   const stacks = groups.map((group) =>
     reviewStackFromFingerprintStack(group.stack, group.changed_files),
@@ -86,7 +80,7 @@ async function buildStackReviewPacket(options: {
       group.changed_files,
     );
     return {
-      title: group.stack.layers.at(-1)?.dir ?? group.stack.fingerprint_dir,
+      title: group.stack.layers.at(-1)?.dir ?? group.stack.ghost_dir,
       markdown: formatReviewSelectedContextMarkdown(
         context,
         group.changed_files,
@@ -95,9 +89,6 @@ async function buildStackReviewPacket(options: {
     };
   });
   const first = stacks[0];
-  const config = await readOptionalPackageConfig(
-    resolve(first.package_dir, "config.yml"),
-  );
   const packet: ReviewPacket = {
     ...baseReviewPacket(
       stacks.length === 1 ? first.package_dir : "fingerprint-stack/multiple",
@@ -107,7 +98,6 @@ async function buildStackReviewPacket(options: {
     fingerprint: first.merged.fingerprint,
     context_markdown: formatReviewContextMarkdown(contextSections),
     checks: stringifyYaml(first.merged.checks, { lineWidth: 0 }),
-    config: config ?? null,
     stacks,
   };
   return packet;
@@ -219,7 +209,7 @@ function reviewStackFromFingerprintStack(
   return {
     target_path: stack.target_path,
     package_dir: leaf?.dir ?? stack.layers[0].dir,
-    fingerprint_dir: stack.fingerprint_dir,
+    ghost_dir: stack.ghost_dir,
     changed_files: changedFiles,
     stack_dirs: stack.layers.map((layer) => layer.dir),
     merged: {
@@ -255,7 +245,6 @@ interface ReviewPacket {
   fingerprint: unknown;
   context_markdown: string;
   checks: string | null;
-  config: GhostPackageConfig | null;
   stacks?: ReviewStackPacket[];
   diff: string;
   budgets: ReviewPacketBudgets;
@@ -267,7 +256,7 @@ interface ReviewPacket {
 interface ReviewStackPacket {
   target_path: string;
   package_dir: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
   changed_files: string[];
   stack_dirs: string[];
   merged: {
@@ -285,7 +274,7 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/validate.yml. Keep findings grounded in fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in validate.yml. Keep findings grounded in intent.yml, inventory.yml, composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
 
 Use the selected context first: intent → composition → inventory → validation. When selected context exposes gaps, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
 
@@ -300,8 +289,6 @@ If the diff exposes missing fingerprint grounding or facet coverage, report it a
 ${formatReviewStacksSection(packet.stacks ?? null)}
 
 ${packet.context_markdown}
-
-${formatConfigSection(packet.config)}
 
 ## Diff
 
@@ -355,20 +342,4 @@ function formatReviewContextMarkdown(
     lines.push(section.markdown);
   }
   return lines.join("\n").trim();
-}
-
-function formatConfigSection(config: GhostPackageConfig | null): string {
-  if (!config) {
-    return `## Implementation Config
-
-_No config.yml present. Review uses canonical fingerprint facets and the provided diff only._
-`;
-  }
-
-  return `## Implementation Config
-
-\`\`\`yaml
-${stringifyYaml(config)}
-\`\`\`
-`;
 }

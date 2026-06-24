@@ -57,8 +57,8 @@ export async function loadComparableFingerprint(
 
 function normalizeFingerprintPackageInput(path: string): string {
   const normalized = path.replace(/\\/g, "/");
-  return /(^|\/)fingerprint\/manifest\.ya?ml$/i.test(normalized)
-    ? dirname(dirname(normalized))
+  return /(^|\/)manifest\.ya?ml$/i.test(normalized)
+    ? dirname(normalized)
     : path;
 }
 

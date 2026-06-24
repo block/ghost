@@ -20,7 +20,7 @@ async function loadTrackedComparableFingerprint(
   if (target.type === "npm") {
     const packageGhostDir = resolve("node_modules", target.value, ".ghost");
     if (
-      existsSync(resolve(packageGhostDir, "fingerprint", "manifest.yml")) ||
+      existsSync(resolve(packageGhostDir, "manifest.yml")) ||
       existsSync(resolve(packageGhostDir, "fingerprint.md"))
     ) {
       return loadComparableFingerprint(packageGhostDir);

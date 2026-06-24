@@ -100,7 +100,7 @@ export function buildFingerprintGraph(
           : "",
         ...(situation.refuses ?? []).map((entry) => `Refuses: ${entry}`),
       ].filter(Boolean),
-      sourceFile: "fingerprint/intent.yml",
+      sourceFile: "intent.yml",
       appliesTo: {
         surfaceTypes: situation.surface_type ? [situation.surface_type] : [],
         paths: evidencePaths(situation.evidence),
@@ -129,7 +129,7 @@ export function buildFingerprintGraph(
           (entry) => `Counterexample: ${entry}`,
         ),
       ],
-      sourceFile: "fingerprint/intent.yml",
+      sourceFile: "intent.yml",
       appliesTo: applicabilityFromScope(principle.applies_to),
     });
     addRefEdges(ref, principle.check_refs, "principle check");
@@ -144,7 +144,7 @@ export function buildFingerprintGraph(
       label: contract.id,
       summary: contract.contract,
       details: contract.obligations ?? [],
-      sourceFile: "fingerprint/intent.yml",
+      sourceFile: "intent.yml",
       appliesTo: applicabilityFromScope(contract.applies_to),
     });
     addRefEdges(ref, contract.check_refs, "experience contract check");
@@ -164,7 +164,7 @@ export function buildFingerprintGraph(
           ? [`Avoid: ${pattern.anti_patterns.join("; ")}`]
           : []),
       ],
-      sourceFile: "fingerprint/composition.yml",
+      sourceFile: "composition.yml",
       appliesTo: applicabilityFromScope(pattern.applies_to),
     });
     addRefEdges(ref, pattern.check_refs, "composition check");
@@ -183,7 +183,7 @@ export function buildFingerprintGraph(
         exemplar.surface_type ? `Surface type: ${exemplar.surface_type}` : "",
         exemplar.scope ? `Scope: ${exemplar.scope}` : "",
       ].filter(Boolean),
-      sourceFile: "fingerprint/inventory.yml",
+      sourceFile: "inventory.yml",
       appliesTo: {
         paths: [exemplar.path],
         scopes: exemplar.scope ? [exemplar.scope] : [],
@@ -205,7 +205,7 @@ export function buildFingerprintGraph(
         check.repair ? `Repair: ${check.repair}` : "",
         detectorSummary(check),
       ].filter(Boolean),
-      sourceFile: "fingerprint/validate.yml",
+      sourceFile: "validate.yml",
       appliesTo: applicabilityFromCheck(check),
     });
     addRefEdges(ref, check.derivation?.intent, "check intent derivation");

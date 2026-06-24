@@ -14,7 +14,6 @@ import {
 } from "#ghost-core";
 import { lintFingerprint } from "./lint.js";
 import { lintMap } from "./lint-map.js";
-import { lintGhostPackageConfig } from "./package-config.js";
 
 export type DetectedFileKind =
   | "survey"
@@ -26,7 +25,6 @@ export type DetectedFileKind =
   | "fingerprint-inventory"
   | "fingerprint-composition"
   | "validate"
-  | "config"
   | "resources"
   | "patterns";
 
@@ -49,43 +47,64 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (path.toLowerCase().endsWith("fingerprint.yaml")) {
     return "fingerprint-yml";
   }
-  if (path.toLowerCase().endsWith("fingerprint/manifest.yml")) {
+  if (
+    path.toLowerCase().endsWith("/manifest.yml") ||
+    path.toLowerCase().endsWith("manifest.yml")
+  ) {
     return "fingerprint-manifest";
   }
-  if (path.toLowerCase().endsWith("fingerprint/manifest.yaml")) {
+  if (
+    path.toLowerCase().endsWith("/manifest.yaml") ||
+    path.toLowerCase().endsWith("manifest.yaml")
+  ) {
     return "fingerprint-manifest";
   }
-  if (path.toLowerCase().endsWith("fingerprint/intent.yml")) {
+  if (
+    path.toLowerCase().endsWith("/intent.yml") ||
+    path.toLowerCase().endsWith("intent.yml")
+  ) {
     return "fingerprint-intent";
   }
-  if (path.toLowerCase().endsWith("fingerprint/intent.yaml")) {
+  if (
+    path.toLowerCase().endsWith("/intent.yaml") ||
+    path.toLowerCase().endsWith("intent.yaml")
+  ) {
     return "fingerprint-intent";
   }
-  if (path.toLowerCase().endsWith("fingerprint/inventory.yml")) {
+  if (
+    path.toLowerCase().endsWith("/inventory.yml") ||
+    path.toLowerCase().endsWith("inventory.yml")
+  ) {
     return "fingerprint-inventory";
   }
-  if (path.toLowerCase().endsWith("fingerprint/inventory.yaml")) {
+  if (
+    path.toLowerCase().endsWith("/inventory.yaml") ||
+    path.toLowerCase().endsWith("inventory.yaml")
+  ) {
     return "fingerprint-inventory";
   }
-  if (path.toLowerCase().endsWith("fingerprint/composition.yml")) {
+  if (
+    path.toLowerCase().endsWith("/composition.yml") ||
+    path.toLowerCase().endsWith("composition.yml")
+  ) {
     return "fingerprint-composition";
   }
-  if (path.toLowerCase().endsWith("fingerprint/composition.yaml")) {
+  if (
+    path.toLowerCase().endsWith("/composition.yaml") ||
+    path.toLowerCase().endsWith("composition.yaml")
+  ) {
     return "fingerprint-composition";
   }
   if (path.toLowerCase().endsWith("resources.yml")) return "resources";
   if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
   if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
   if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
-  if (path.toLowerCase().endsWith("config.yml")) return "config";
-  if (path.toLowerCase().endsWith("config.yaml")) return "config";
   if (raw.trimStart().startsWith("{")) return "survey";
   if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
     return "fingerprint-yml";
   }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
-  if (/^\s*schema:\s*ghost\.config\/v1\b/m.test(raw)) return "config";
   if (/^\s*schema:\s*ghost\.validate\/v[12]\b/m.test(raw)) return "validate";
   if (path.toLowerCase().endsWith(".yml")) return "validate";
   if (path.toLowerCase().endsWith(".yaml")) return "validate";
@@ -121,11 +140,9 @@ export function lintDetectedFileKind(
                   ? lintResourcesFile(raw)
                   : kind === "patterns"
                     ? lintPatternsFile(raw)
-                    : kind === "config"
-                      ? lintConfigFile(raw)
-                      : kind === "validate"
-                        ? lintValidateFile(raw, options.fingerprint)
-                        : lintFingerprint(raw);
+                    : kind === "validate"
+                      ? lintValidateFile(raw, options.fingerprint)
+                      : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -163,14 +180,6 @@ function lintValidateFile(
   }
 }
 
-function lintConfigFile(raw: string): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostPackageConfig(parseYaml(raw));
-  } catch (err) {
-    return yamlErrorReport("config-not-yaml", "config.yml", err);
-  }
-}
-
 function lintFingerprintYmlFile(
   raw: string,
 ): ReturnType<typeof lintFingerprint> {
@@ -191,7 +200,7 @@ function lintFingerprintManifestFile(
   } catch (err) {
     return yamlErrorReport(
       "fingerprint-manifest-not-yaml",
-      "fingerprint/manifest.yml",
+      "manifest.yml",
       err,
     );
   }
@@ -213,7 +222,7 @@ function lintFingerprintLayerFile(
   } catch (err) {
     return yamlErrorReport(
       `fingerprint-${facet}-not-yaml`,
-      `fingerprint/${facet}.yml`,
+      `${facet}.yml`,
       err,
     );
   }

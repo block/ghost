@@ -18,7 +18,7 @@ const EXCEPTIONS = {
   "packages/ghost/src/fingerprint-commands.ts": {
     limit: 1135,
     justification:
-      "Fingerprint package command registry — temporarily holds package lifecycle, legacy markdown, survey/cache, scan readiness, and adapter-neutral memory-dir routing until command groups are split further",
+      "Fingerprint package command registry — temporarily holds package lifecycle, legacy markdown, survey/cache, scan readiness, and adapter-neutral package-dir routing until command groups are split further",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,
@@ -28,7 +28,7 @@ const EXCEPTIONS = {
   "packages/ghost/src/scan/fingerprint-stack.ts": {
     limit: 1120,
     justification:
-      "Canonical nested fingerprint stack loader — discovery, merge, path normalization, memory-dir validation, and stack validation stay together so CLI routing shares one provenance model",
+      "Canonical nested fingerprint stack loader — discovery, merge, path normalization, package-dir validation, and stack validation stay together so CLI routing shares one provenance model",
   },
   "packages/ghost/src/scan/verify-fingerprint.ts": {
     limit: 900,

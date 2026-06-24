@@ -71,7 +71,7 @@ describe("context entrypoint", () => {
         expect.objectContaining({
           label: "Exemplars",
           omitted: 2,
-          source: "fingerprint/inventory.yml",
+          source: "inventory.yml",
         }),
       ]),
     );
@@ -165,11 +165,11 @@ describe("context entrypoint", () => {
           "source surface for inventory.exemplar:refund-settings-tertiary",
       },
       {
-        path: "fingerprint/intent.yml",
+        path: "intent.yml",
         reason: "selected intent anchors and full intent",
       },
       {
-        path: "fingerprint/composition.yml",
+        path: "composition.yml",
         reason: "selected composition patterns and neighboring patterns",
       },
     ]);
@@ -197,9 +197,9 @@ describe("context entrypoint", () => {
     );
     expect(entrypoint.suggestedReads.map((read) => read.path)).toEqual(
       expect.arrayContaining([
-        "fingerprint/intent.yml",
-        "fingerprint/inventory.yml",
-        "fingerprint/composition.yml",
+        "intent.yml",
+        "inventory.yml",
+        "composition.yml",
       ]),
     );
   });
@@ -288,7 +288,7 @@ function context(
   ];
   return {
     name: "cash-dashboard",
-    fingerprintDir: ".ghost",
+    packageDir: ".ghost",
     targetPaths: ["apps/refunds/settings/page.tsx"],
     stackDirs: ["/repo/.ghost", "/repo/apps/refunds/.ghost"],
     fingerprintRaw: "",

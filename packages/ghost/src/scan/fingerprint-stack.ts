@@ -26,7 +26,6 @@ import {
 import type { PackageContext } from "../context/package-context.js";
 import { readOptionalUtf8 } from "../internal/fs.js";
 import {
-  FINGERPRINT_DIRNAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
 } from "./constants.js";
@@ -58,14 +57,14 @@ const BASE_SKIP_DISCOVERY_DIRS = new Set([
 ]);
 
 export interface FingerprintDirectoryOptions {
-  memoryDir?: string;
+  ghostDir?: string;
 }
 
 export interface GhostFingerprintStackLayerRef {
   dir: string;
   root: string;
   relative_root: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
 }
 
 export interface GhostFingerprintStackLayer
@@ -79,7 +78,7 @@ export interface GhostFingerprintStackLayer
 export interface GhostFingerprintStack {
   target_path: string;
   repo_root: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
   layers: GhostFingerprintStackLayer[];
   merged: {
     fingerprint: GhostFingerprintDocument;
@@ -101,7 +100,7 @@ export interface DiscoveredGhostPackage {
   dir: string;
   root: string;
   relative_root: string;
-  fingerprint_dir: string;
+  ghost_dir: string;
 }
 
 export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
@@ -124,14 +123,14 @@ export async function discoverGhostPackages(
   options: FingerprintDirectoryOptions = {},
 ): Promise<DiscoveredGhostPackage[]> {
   const repoRoot = await resolveGitRoot(root);
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
-  const skipDirs = skipDiscoveryDirs(memoryDir);
+  const ghostDir = normalizeGhostDir(options.ghostDir);
+  const skipDirs = skipDiscoveryDirs(ghostDir);
   const packages: DiscoveredGhostPackage[] = [];
 
   async function walk(dir: string): Promise<void> {
-    const packageDir = resolve(dir, memoryDir);
+    const packageDir = resolve(dir, ghostDir);
     if (await hasSplitFingerprintPackage(packageDir)) {
-      packages.push(packageRef(packageDir, repoRoot, memoryDir));
+      packages.push(packageRef(packageDir, repoRoot, ghostDir));
     }
 
     let entries: Dirent<string>[];
@@ -160,13 +159,13 @@ export async function discoverFingerprintStack(
   options: FingerprintDirectoryOptions = {},
 ): Promise<{ target_path: string; repo_root: string; packages: string[] }> {
   const repoRoot = await resolveGitRoot(cwd);
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
+  const ghostDir = normalizeGhostDir(options.ghostDir);
   const target = resolve(cwd, targetPath);
   let current = await startingDirectory(target);
   const packages: string[] = [];
 
   while (isWithinOrEqual(repoRoot, current)) {
-    const packageDir = resolve(current, memoryDir);
+    const packageDir = resolve(current, ghostDir);
     if (await hasSplitFingerprintPackage(packageDir)) {
       packages.push(packageDir);
     }
@@ -186,26 +185,26 @@ export async function loadFingerprintStackForPath(
   cwd = process.cwd(),
   options: FingerprintDirectoryOptions = {},
 ): Promise<GhostFingerprintStack> {
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
+  const ghostDir = normalizeGhostDir(options.ghostDir);
   const discovered = await discoverFingerprintStack(targetPath, cwd, {
-    memoryDir,
+    ghostDir,
   });
   if (discovered.packages.length === 0) {
     throw new Error(
-      `No ${memoryDir}/${FINGERPRINT_DIRNAME}/${FINGERPRINT_MANIFEST_FILENAME} found for ${targetPath}.`,
+      `No ${ghostDir}/${FINGERPRINT_MANIFEST_FILENAME} found for ${targetPath}.`,
     );
   }
 
   const layers = await Promise.all(
     discovered.packages.map((dir) =>
-      loadFingerprintStackLayer(dir, discovered.repo_root, memoryDir),
+      loadFingerprintStackLayer(dir, discovered.repo_root, ghostDir),
     ),
   );
   return buildFingerprintStack(
     discovered.target_path,
     discovered.repo_root,
     layers,
-    memoryDir,
+    ghostDir,
   );
 }
 
@@ -215,11 +214,11 @@ export async function groupFingerprintStacksForPaths(
   options: FingerprintDirectoryOptions = {},
 ): Promise<GhostFingerprintStackGroup[]> {
   const targets = paths.length > 0 ? paths : ["."];
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
+  const ghostDir = normalizeGhostDir(options.ghostDir);
   const groups = new Map<string, GhostFingerprintStackGroup>();
 
   for (const path of targets) {
-    const stack = await loadFingerprintStackForPath(path, cwd, { memoryDir });
+    const stack = await loadFingerprintStackForPath(path, cwd, { ghostDir });
     const key = stack.layers.map((layer) => layer.dir).join("|");
     const existing = groups.get(key);
     if (existing) {
@@ -240,9 +239,9 @@ export function buildFingerprintStack(
   targetPath: string,
   repoRoot: string,
   layers: GhostFingerprintStackLayer[],
-  memoryDir = FINGERPRINT_PACKAGE_DIR,
+  ghostDir = FINGERPRINT_PACKAGE_DIR,
 ): GhostFingerprintStack {
-  const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
+  const normalizedGhostDir = normalizeGhostDir(ghostDir);
   if (layers.length === 0) {
     throw new Error("Cannot build a Ghost fingerprint stack without layers.");
   }
@@ -267,7 +266,7 @@ export function buildFingerprintStack(
   return {
     target_path: targetPath,
     repo_root: repoRoot,
-    fingerprint_dir: normalizedMemoryDir,
+    ghost_dir: normalizedGhostDir,
     layers,
     merged: {
       fingerprint,
@@ -283,11 +282,11 @@ export function buildFingerprintStack(
 export async function loadFingerprintStackLayer(
   packageDir: string,
   repoRoot: string,
-  memoryDir = FINGERPRINT_PACKAGE_DIR,
+  ghostDir = FINGERPRINT_PACKAGE_DIR,
 ): Promise<GhostFingerprintStackLayer> {
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
-  const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
-  const root = rootForFingerprintPackageDir(paths.dir, normalizedMemoryDir);
+  const normalizedGhostDir = normalizeGhostDir(ghostDir);
+  const root = rootForFingerprintPackageDir(paths.dir, normalizedGhostDir);
   const [loaded, checksRaw] = await Promise.all([
     loadFingerprintPackage(paths),
     readOptional(paths.checks),
@@ -316,7 +315,7 @@ export async function loadFingerprintStackLayer(
   }
 
   return {
-    ...packageRef(paths.dir, repoRoot, normalizedMemoryDir),
+    ...packageRef(paths.dir, repoRoot, normalizedGhostDir),
     fingerprint,
     fingerprint_raw: stringifyYaml(fingerprint, { lineWidth: 0 }),
     ...(checks ? { checks } : {}),
@@ -337,7 +336,7 @@ export function fingerprintStackToPackageContext(
   );
   return {
     name,
-    fingerprintDir: stack.fingerprint_dir,
+    packageDir: stack.ghost_dir,
     targetPaths,
     stackDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.merged.fingerprint,
@@ -365,15 +364,15 @@ export async function lintAllFingerprintStacks(
   root = process.cwd(),
   options: FingerprintDirectoryOptions = {},
 ): Promise<LintReport> {
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
-  const packages = await discoverGhostPackages(root, { memoryDir });
+  const ghostDir = normalizeGhostDir(options.ghostDir);
+  const packages = await discoverGhostPackages(root, { ghostDir });
   const issues: LintIssue[] = [];
 
   for (const pkg of packages) {
     const rawReport = await lintFingerprintPackage(pkg.dir, root);
     issues.push(
       ...prefixIssues(
-        fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
+        fingerprintPackageDisplayPath(pkg.relative_root, ghostDir),
         rawReport.issues,
       ),
     );
@@ -381,20 +380,20 @@ export async function lintAllFingerprintStacks(
 
     let stack: GhostFingerprintStack;
     try {
-      stack = await loadFingerprintStackForPath(pkg.root, root, { memoryDir });
+      stack = await loadFingerprintStackForPath(pkg.root, root, { ghostDir });
     } catch (err) {
       issues.push({
         severity: "error",
         rule: "stack-merge-invalid",
         message: err instanceof Error ? err.message : String(err),
-        path: fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
+        path: fingerprintPackageDisplayPath(pkg.relative_root, ghostDir),
       });
       continue;
     }
     const fingerprintReport = lintGhostFingerprint(stack.merged.fingerprint);
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.fingerprint`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/merged.fingerprint`,
         fingerprintReport.issues,
       ),
     );
@@ -404,7 +403,7 @@ export async function lintAllFingerprintStacks(
     });
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.validate.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/merged.validate.yml`,
         checksReport.issues,
       ),
     );
@@ -417,8 +416,8 @@ export async function verifyAllFingerprintStacks(
   root = process.cwd(),
   options: FingerprintDirectoryOptions = {},
 ): Promise<VerifyFingerprintReport> {
-  const memoryDir = normalizeMemoryDir(options.memoryDir);
-  const packages = await discoverGhostPackages(root, { memoryDir });
+  const ghostDir = normalizeGhostDir(options.ghostDir);
+  const packages = await discoverGhostPackages(root, { ghostDir });
   const issues: VerifyFingerprintIssue[] = [];
 
   for (const pkg of packages) {
@@ -429,18 +428,18 @@ export async function verifyAllFingerprintStacks(
       ...report.issues.map((issue) => ({
         ...issue,
         path: issue.path
-          ? `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}.${issue.path}`
-          : fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
+          ? `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}.${issue.path}`
+          : fingerprintPackageDisplayPath(pkg.relative_root, ghostDir),
       })),
     );
     try {
-      await loadFingerprintStackForPath(pkg.root, root, { memoryDir });
+      await loadFingerprintStackForPath(pkg.root, root, { ghostDir });
     } catch (err) {
       issues.push({
         severity: "error",
         rule: "stack-merge-invalid",
         message: err instanceof Error ? err.message : String(err),
-        path: fingerprintPackageDisplayPath(pkg.relative_root, memoryDir),
+        path: fingerprintPackageDisplayPath(pkg.relative_root, ghostDir),
       });
     }
   }
@@ -457,10 +456,9 @@ export async function initScopedFingerprintPackage(
   scopePath: string,
   cwd = process.cwd(),
   options: {
-    withConfig?: boolean;
     reference?: string;
     force?: boolean;
-    memoryDir?: string;
+    ghostDir?: string;
   } = {},
 ): Promise<FingerprintPackagePaths> {
   const root = resolve(cwd, scopePath);
@@ -471,23 +469,18 @@ export async function initScopedFingerprintPackage(
 async function resolveAndInit(
   root: string,
   options: {
-    withConfig?: boolean;
     reference?: string;
     force?: boolean;
-    memoryDir?: string;
+    ghostDir?: string;
   },
 ): Promise<FingerprintPackagePaths> {
   const { initFingerprintPackage } = await import("./fingerprint-package.js");
-  const { memoryDir, ...initOptions } = options;
-  return initFingerprintPackage(
-    normalizeMemoryDir(memoryDir),
-    root,
-    initOptions,
-  );
+  const { ghostDir, ...initOptions } = options;
+  return initFingerprintPackage(normalizeGhostDir(ghostDir), root, initOptions);
 }
 
 function parseChecks(raw: string): GhostValidateDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint/validate.yml");
+  const parsed = parseYamlSafe(raw, "validate.yml");
   return GhostValidateSchema.parse(parsed) as GhostValidateDocument;
 }
 
@@ -813,22 +806,20 @@ async function pathExists(path: string): Promise<boolean> {
 async function hasSplitFingerprintPackage(
   packageDir: string,
 ): Promise<boolean> {
-  return pathExists(
-    resolve(packageDir, FINGERPRINT_DIRNAME, FINGERPRINT_MANIFEST_FILENAME),
-  );
+  return pathExists(resolve(packageDir, FINGERPRINT_MANIFEST_FILENAME));
 }
 
 function packageRef(
   dir: string,
   repoRoot: string,
-  memoryDir: string,
+  ghostDir: string,
 ): DiscoveredGhostPackage {
-  const root = rootForFingerprintPackageDir(dir, memoryDir);
+  const root = rootForFingerprintPackageDir(dir, ghostDir);
   return {
     dir,
     root,
     relative_root: normalizeRelative(repoRoot, root),
-    fingerprint_dir: memoryDir,
+    ghost_dir: ghostDir,
   };
 }
 
@@ -839,27 +830,25 @@ function layerRef(
     dir: layer.dir,
     root: layer.root,
     relative_root: layer.relative_root,
-    fingerprint_dir: layer.fingerprint_dir,
+    ghost_dir: layer.ghost_dir,
   };
 }
 
-export function normalizeMemoryDir(
-  memoryDir = FINGERPRINT_PACKAGE_DIR,
-): string {
-  const normalized = memoryDir
+export function normalizeGhostDir(ghostDir = FINGERPRINT_PACKAGE_DIR): string {
+  const normalized = ghostDir
     .trim()
     .replaceAll("\\", "/")
     .replace(/\/+/g, "/")
     .replace(/\/$/g, "");
   if (!normalized) {
-    throw new Error("--memory-dir must not be empty");
+    throw new Error("GHOST_PACKAGE_DIR must not be empty");
   }
   if (
-    isAbsolute(memoryDir) ||
+    isAbsolute(ghostDir) ||
     normalized.startsWith("/") ||
     /^[A-Za-z]:/.test(normalized)
   ) {
-    throw new Error("--memory-dir must be a relative directory path");
+    throw new Error("GHOST_PACKAGE_DIR must be a relative directory path");
   }
   const segments = normalized.split("/");
   if (
@@ -868,48 +857,48 @@ export function normalizeMemoryDir(
     )
   ) {
     throw new Error(
-      "--memory-dir must not contain '.', '..', or empty path segments",
+      "GHOST_PACKAGE_DIR must not contain '.', '..', or empty path segments",
     );
   }
   return normalized;
 }
 
-export const GHOST_MEMORY_DIR_ENV = "GHOST_MEMORY_DIR";
+export const GHOST_PACKAGE_DIR_ENV = "GHOST_PACKAGE_DIR";
 
-export function resolveMemoryDirDefault(
-  explicitMemoryDir?: unknown,
+export function resolveGhostDirDefault(
+  explicitGhostDir?: unknown,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return normalizeMemoryDir(
-    typeof explicitMemoryDir === "string"
-      ? explicitMemoryDir
-      : env[GHOST_MEMORY_DIR_ENV],
+  return normalizeGhostDir(
+    typeof explicitGhostDir === "string"
+      ? explicitGhostDir
+      : env[GHOST_PACKAGE_DIR_ENV],
   );
 }
 
 export function fingerprintPackageDisplayPath(
   relativeRoot: string,
-  memoryDir = FINGERPRINT_PACKAGE_DIR,
+  ghostDir = FINGERPRINT_PACKAGE_DIR,
 ): string {
-  const normalizedMemoryDir = normalizeMemoryDir(memoryDir);
+  const normalizedGhostDir = normalizeGhostDir(ghostDir);
   return relativeRoot === "."
-    ? normalizedMemoryDir
-    : `${relativeRoot}/${normalizedMemoryDir}`;
+    ? normalizedGhostDir
+    : `${relativeRoot}/${normalizedGhostDir}`;
 }
 
-function skipDiscoveryDirs(memoryDir: string): Set<string> {
+function skipDiscoveryDirs(ghostDir: string): Set<string> {
   return new Set([
     ...BASE_SKIP_DISCOVERY_DIRS,
-    normalizeMemoryDir(memoryDir).split("/")[0],
+    normalizeGhostDir(ghostDir).split("/")[0],
   ]);
 }
 
 function rootForFingerprintPackageDir(
   packageDir: string,
-  memoryDir: string,
+  ghostDir: string,
 ): string {
   let root = packageDir;
-  for (const _segment of normalizeMemoryDir(memoryDir).split("/")) {
+  for (const _segment of normalizeGhostDir(ghostDir).split("/")) {
     root = dirname(root);
   }
   return root;

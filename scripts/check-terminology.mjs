@@ -82,7 +82,6 @@ const FORBIDDEN_PATTERNS = [
 ];
 
 const ALLOWED_MEMORY_TERMS = [
-  "--memory-dir",
   "--include-memory",
   "missing-memory",
   "muscle memory",

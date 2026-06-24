@@ -23,7 +23,7 @@ handoffs:
 
     ghost compare a/.ghost b/.ghost
 
-Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Package inputs use canonical `.ghost/fingerprint/` packages.
+Output: distance (0 = identical, 1 = unrelated) and per-dimension deltas. Package inputs use canonical `.ghost/` packages.
 
 Flags:
 - `--temporal` — add drift velocity, trajectory, and ack bounds (reads `.ghost/history.jsonl`)

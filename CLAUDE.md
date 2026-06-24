@@ -36,16 +36,14 @@ structural diffs, drift checks, comparison math, and handoff packets.
 The canonical root `.ghost/` package follows:
 
 ```text
-config.yml
-fingerprint/
-  manifest.yml
-  intent.yml
-  inventory.yml
-  composition.yml
-  validate.yml
+manifest.yml
+intent.yml
+inventory.yml
+composition.yml
+validate.yml
 ```
 
-The three root facet files under `fingerprint/` are the core model:
+The three root facet files are the core model:
 
 - `intent.yml` for surface intent.
 - `inventory.yml` for curated material, exemplars, and source links.
@@ -53,8 +51,7 @@ The three root facet files under `fingerprint/` are the core model:
 
 `validate.yml` validates output through deterministic checks; it is not
 generation input.
-`.ghost/config.yml` remains local adapter/routing config outside portable
-context. Ordinary Git review is the approval boundary for fingerprint edits.
+Ordinary Git review is the approval boundary for fingerprint edits.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, and `patterns.yml` may still
 appear in older repos or as migration source material. They are not canonical
@@ -74,7 +71,7 @@ fingerprint input for new Ghost work.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/fingerprint/` with manifest, facets, and deterministic checks. |
+| `ghost init` | Create `.ghost/` with manifest, facets, and deterministic checks. |
 | `ghost scan` | Report fingerprint contribution facets and BYOA next-step guidance. |
 | `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
 | `ghost lint` | Validate a fingerprint package or single artifact. |
@@ -129,16 +126,13 @@ One sentence, user-facing, present tense.
 ```
 
 Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
-`major` for removed or renamed public behavior. For this PR 81 package-shape
-change, the source version stays `0.0.0` and the changeset is `minor` so the
-first publish becomes `0.1.0`.
+`major` for removed or renamed public behavior.
 
 ## Conventions
 
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
-- The canonical on-disk form is `.ghost/fingerprint/` plus optional
-  `.ghost/config.yml`.
+- The canonical on-disk form is a flat `.ghost/` package.
 - Direct `fingerprint.md` remains only for legacy/direct compare workflows.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.

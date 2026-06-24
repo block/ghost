@@ -12,19 +12,17 @@ handoffs:
 
 # Recipe: Author Ghost Fingerprint
 
-**Goal:** record durable product-surface composition in `.ghost/fingerprint/`.
+**Goal:** record durable product-surface composition in `.ghost/`.
 If a change is uncommitted or unmerged, it is draft work. If it is checked in,
 Ghost treats the fingerprint package as canonical.
 
 ```text
 .ghost/
-  config.yml
-  fingerprint/
-    manifest.yml
-    intent.yml
-    inventory.yml
-    composition.yml
-    validate.yml
+  manifest.yml
+  intent.yml
+  inventory.yml
+  composition.yml
+  validate.yml
 ```
 
 `intent.yml` captures the intent behind the surface. `inventory.yml` records
@@ -65,8 +63,8 @@ ghost init
 ghost scan
 ```
 
-Use `--with-config --reference <path-or-registry>` when local routing or a
-reference UI registry/library should be recorded in `.ghost/config.yml`.
+Use `--reference <path-or-registry>` when a reference UI registry or library
+should seed `inventory.yml`.
 
 ### 3. Auto-Draft Mode
 
@@ -78,7 +76,7 @@ Set up the Ghost fingerprint for this repo with auto-draft.
 
 Auto-draft is a skill workflow, not a Ghost CLI action or flag.
 
-1. If `.ghost/fingerprint/manifest.yml` is missing, run `ghost init`.
+1. If `.ghost/manifest.yml` is missing, run `ghost init`.
 2. Run `ghost scan --format json`.
 3. Gather raw repo signals:
 
@@ -130,7 +128,7 @@ treating draft content as durable fingerprint guidance.
 
 ### 6. Add Checks Sparingly
 
-`fingerprint/validate.yml` is the executable appendix. Add only
+`validate.yml` is the executable appendix. Add only
 deterministic checks with typed derivation refs:
 
 ```yaml
@@ -156,7 +154,7 @@ packages exist.
 
 ## Never
 
-- Never describe any file outside `.ghost/fingerprint/` as canonical package input.
+- Never describe any file outside `.ghost/` as canonical package input.
 - Never treat raw `ghost signals` output as canonical inventory.
 - Never treat auto-draft as a CLI feature or a replacement for human curation.
 - Never invent surface-composition obligations absent from evidence or human direction.

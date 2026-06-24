@@ -8,11 +8,11 @@ Ghost does not need a new domain, schema, or dimension set to capture this.
 Language flows through the same facets as every other
 surface-composition concern:
 
-- `fingerprint/intent.yml` carries voice intent.
-- `fingerprint/inventory.yml` points at copy material and external writing
+- `intent.yml` carries voice intent.
+- `inventory.yml` points at copy material and external writing
   standards.
-- `fingerprint/composition.yml` carries copy patterns.
-- `fingerprint/validate.yml` carries the deterministic subset.
+- `composition.yml` carries copy patterns.
+- `validate.yml` carries the deterministic subset.
 
 This document shows the mapping. Nothing here changes the
 `ghost.fingerprint/v1` schema.
@@ -24,7 +24,7 @@ rationale become principles. Surfaces with non-negotiable wording become
 experience contracts.
 
 ```yaml
-# fingerprint/intent.yml
+# intent.yml
 summary:
   tone:
     - plain
@@ -75,7 +75,7 @@ terminology list, a banned-phrase list. The fingerprint should point at that
 source, not fork it. `inventory.sources` already supports this.
 
 ```yaml
-# fingerprint/inventory.yml
+# inventory.yml
 building_blocks:
   files:
     - src/i18n/en.json
@@ -101,7 +101,7 @@ source applies and which surfaces it governs.
 `composition.yml` already has `kind: content` for exactly this.
 
 ```yaml
-# fingerprint/composition.yml
+# composition.yml
 patterns:
   - id: error-message-shape
     kind: content
@@ -143,7 +143,7 @@ Only the mechanically detectable subset belongs in `validate.yml`. The
 required boilerplate today:
 
 ```yaml
-# fingerprint/validate.yml
+# validate.yml
 checks:
   - id: no-banned-phrases
     title: Banned phrases stay out of user-facing copy

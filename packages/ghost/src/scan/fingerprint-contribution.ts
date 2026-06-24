@@ -161,7 +161,7 @@ function contributionReasons(
 ): string[] {
   if (state === "missing") {
     return [
-      "fingerprint/manifest.yml is missing, so no package contribution can be resolved.",
+      "manifest.yml is missing, so no package contribution can be resolved.",
     ];
   }
   if (state === "invalid") {
@@ -177,7 +177,7 @@ function contributionReasons(
       ? ` Absent facets may be inherited from broader stack context: ${input.absentFacets.join(", ")}.`
       : "";
     return [
-      `fingerprint/ is valid but this package contributes no useful facets yet.${detail}${absent}`,
+      `Ghost package is valid but this package contributes no useful facets yet.${detail}${absent}`,
     ];
   }
 
@@ -188,7 +188,7 @@ function contributionReasons(
     ? ` Empty facets: ${input.emptyFacets.join(", ")}.`
     : "";
   return [
-    `fingerprint/ contributes ${input.contributingFacets.join(", ")}.${empty}${absent}`,
+    `Ghost package contributes ${input.contributingFacets.join(", ")}.${empty}${absent}`,
   ];
 }
 

@@ -25,7 +25,7 @@ const REVIEW_FINDING_CATEGORIES = [
  *
  * The command stays intentionally light: it tells the host agent which Ghost
  * files and CLI packets to use, then includes a compact fingerprint index.
- * Full canonical truth remains in fingerprint/ facet files and deterministic checks.
+ * Full canonical truth remains in facet files and deterministic checks.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
@@ -64,17 +64,16 @@ If \`$ARGUMENTS\` is provided, review that file, path, or diff range. If it is e
 }
 
 function packageWorkflowSection(context: PackageContext): string {
-  const fingerprintDir = context.fingerprintDir ?? ".ghost";
-  const memoryDirFlag = stackFingerprintDirFlag(context);
+  const packageDir = context.packageDir ?? ".ghost";
   return `## Review Workflow
 
-1. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\`.
+1. Run \`ghost review\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${packageDir}/intent.yml\`, \`${packageDir}/inventory.yml\`, and \`${packageDir}/composition.yml\`.
 2. Start from selected intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
 3. Apply composition guidance before choosing implementation details.
 4. Inspect inventory exemplars and building blocks as evidence/material, not as authority over intent.
 5. Treat validate checks as deterministic enforcement; only active checks can block.
 6. Use selected-context gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
-7. Run \`ghost check${memoryDirFlag}\` when a diff is available.
+7. Run \`ghost check\` when a diff is available.
 8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, selected-context gaps when context is silent, and any active check when a finding blocks.`;
 }
 
@@ -242,7 +241,7 @@ function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
   }
   if (exemplars.length > 12) {
     lines.push(
-      `- ${exemplars.length - 12} more exemplar(s); inspect \`fingerprint/inventory.yml\` before deciding.`,
+      `- ${exemplars.length - 12} more exemplar(s); inspect \`inventory.yml\` before deciding.`,
     );
   }
   return lines.join("\n");
@@ -252,7 +251,7 @@ function packageChecksSection(activeChecks: GhostCheck[]): string {
   if (activeChecks.length === 0) {
     return `## Active Checks
 
-No active checks are recorded. Review remains advisory unless \`fingerprint/validate.yml\` adds deterministic active checks.`;
+No active checks are recorded. Review remains advisory unless \`validate.yml\` adds deterministic active checks.`;
   }
   const lines = ["## Active Checks", ""];
   for (const check of activeChecks.slice(0, 12)) {
@@ -271,23 +270,17 @@ No active checks are recorded. Review remains advisory unless \`fingerprint/vali
   }
   if (activeChecks.length > 12) {
     lines.push(
-      `- ${activeChecks.length - 12} more active check(s); read \`fingerprint/validate.yml\` before deciding whether a finding blocks.`,
+      `- ${activeChecks.length - 12} more active check(s); read \`validate.yml\` before deciding whether a finding blocks.`,
     );
   }
   return lines.join("\n");
 }
 
 function packageReviewFooter(context: PackageContext): string {
-  const fingerprintDir = context.fingerprintDir ?? ".ghost";
+  const packageDir = context.packageDir ?? ".ghost";
   return `---
 
-Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint facets or deterministic checks.`;
-}
-
-function stackFingerprintDirFlag(context: PackageContext): string {
-  return context.fingerprintDir && context.fingerprintDir !== ".ghost"
-    ? ` --memory-dir ${context.fingerprintDir}`
-    : "";
+Generated from \`${packageDir}/\` for ${context.name}. Re-run \`ghost emit review-command\` after updating fingerprint facets or deterministic checks.`;
 }
 
 function pushJoined(
