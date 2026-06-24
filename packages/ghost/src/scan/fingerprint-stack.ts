@@ -339,7 +339,7 @@ export function fingerprintStackToPackageContext(
     name,
     fingerprintDir: stack.fingerprint_dir,
     targetPaths,
-    layerDirs: stack.layers.map((layer) => layer.dir),
+    stackDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.merged.fingerprint,
     fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
     checks: stack.merged.checks,
