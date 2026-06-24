@@ -1,36 +1,36 @@
-export { lintGhostChecks } from "./lint.js";
+export { lintGhostValidate } from "./lint.js";
 export {
   matchesGhostPath,
   normalizeGhostPath,
-  routeGhostChecksForPath,
   routeGhostPathToScopes,
+  routeGhostValidateForPath,
 } from "./routing.js";
 export {
   GhostCheckDerivationSchema,
   GhostCheckSchema,
-  GhostChecksSchema,
+  GhostValidateSchema,
 } from "./schema.js";
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
   GhostCheckDerivation,
   GhostCheckDerivationCompositionRef,
+  GhostCheckDerivationIntentRef,
   GhostCheckDerivationInventoryRef,
-  GhostCheckDerivationProseRef,
   GhostCheckDetector,
   GhostCheckDetectorType,
   GhostCheckEvidence,
   GhostCheckSeverity,
   GhostCheckStatus,
-  GhostChecksDocument,
-  GhostChecksFingerprintContext,
-  GhostChecksLintIssue,
-  GhostChecksLintOptions,
-  GhostChecksLintReport,
-  GhostChecksLintSeverity,
-  RoutedGhostCheck,
+  GhostValidateDocument,
+  GhostValidateFingerprintContext,
+  GhostValidateLintIssue,
+  GhostValidateLintOptions,
+  GhostValidateLintReport,
+  GhostValidateLintSeverity,
+  RoutedGhostValidateCheck,
 } from "./types.js";
 export {
-  GHOST_CHECKS_FILENAME,
-  GHOST_CHECKS_SCHEMA,
+  GHOST_VALIDATE_FILENAME,
+  GHOST_VALIDATE_SCHEMA,
 } from "./types.js";

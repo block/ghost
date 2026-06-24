@@ -101,8 +101,6 @@ const SYNONYMS: Readonly<Record<string, CanonicalDecisionDimension>> = {
   "interaction-design": "interactive-patterns",
   // token-architecture
   "token-system": "token-architecture",
-  "token-cascade": "token-architecture",
-  "token-layering": "token-architecture",
   // font-sourcing
   "font-stack": "font-sourcing",
   "font-strategy": "font-sourcing",
@@ -170,7 +168,6 @@ const TOKEN_HINTS: ReadonlyArray<
   ["hover", "interactive-patterns"],
   ["token", "token-architecture"],
   ["alias", "token-architecture"],
-  ["cascade", "token-architecture"],
   ["font", "font-sourcing"],
   ["typeface", "font-sourcing"],
   ["composition", "composition-patterns"],

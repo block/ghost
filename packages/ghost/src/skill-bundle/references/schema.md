@@ -7,10 +7,10 @@ Canonical package:
   config.yml                    optional local routing
   fingerprint/
     manifest.yml                ghost.fingerprint-package/v1
-    prose.yml                   core surface intent
+    intent.yml                   core surface intent
     inventory.yml               core material and source links
     composition.yml             core patterns
-    checks.yml      optional ghost.checks/v1 gates
+    validate.yml      optional ghost.validate/v1 gates
 ```
 
 Git is the approval boundary: checked-in `fingerprint/` core files are
@@ -23,20 +23,20 @@ schema: ghost.fingerprint-package/v1
 id: local
 ```
 
-Layer files are raw YAML. Ghost assembles them into an internal
+Facet files are raw YAML. Ghost assembles them into an internal
 `ghost.fingerprint/v1` document.
 
 Use these typed refs:
 
-- `prose.situation:<id>`
-- `prose.principle:<id>`
-- `prose.experience_contract:<id>`
+- `intent.situation:<id>`
+- `intent.principle:<id>`
+- `intent.experience_contract:<id>`
 - `inventory.exemplar:<id>`
 - `composition.pattern:<id>`
-- `check:<id>`
+- `validate.check:<id>`
 
 `inventory.sources[].kind` may be `registry`, `file`, `url`, or `package`.
 
-`fingerprint/checks.yml` remains deterministic only. Ref-backed
+`fingerprint/validate.yml` remains deterministic only. Ref-backed
 checks are preferred; missing or unresolved derivation refs lint as warnings.
 Inventory refs can support a check but do not establish surface guidance alone.

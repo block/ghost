@@ -16,8 +16,8 @@ export const FINGERPRINT_DIRNAME = "fingerprint";
 /** Portable fingerprint package manifest filename. */
 export const FINGERPRINT_MANIFEST_FILENAME = "manifest.yml";
 
-/** Core portable fingerprint layer filenames. */
-export const FINGERPRINT_PROSE_FILENAME = "prose.yml";
+/** Core portable fingerprint facet filenames. */
+export const FINGERPRINT_INTENT_FILENAME = "intent.yml";
 export const FINGERPRINT_INVENTORY_FILENAME = "inventory.yml";
 export const FINGERPRINT_COMPOSITION_FILENAME = "composition.yml";
 
@@ -34,4 +34,4 @@ export const FINGERPRINTS_DIRNAME = "fingerprints";
 export const SCOPE_SURVEYS_DIRNAME = "modules";
 
 /** Canonical filename for human-promoted deterministic gates. */
-export const CHECKS_FILENAME = "checks.yml";
+export const CHECKS_FILENAME = "validate.yml";

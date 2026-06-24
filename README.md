@@ -21,22 +21,22 @@ The canonical package is intentionally small:
   config.yml                    # optional local routing, not portable context
   fingerprint/
     manifest.yml                # ghost.fingerprint-package/v1 anchor
-    prose.yml                   # surface intent
+    intent.yml                   # surface intent
     inventory.yml               # curated material and exemplars
     composition.yml             # patterns, flows, states, and arrangements
-    checks.yml                  # optional deterministic gates
+    validate.yml                  # optional deterministic gates
 ```
 
-Generation uses the three core layers:
+A package can be sparse: it contributes whichever facets are locally true. Generation usually uses intent + inventory + composition:
 
-- `prose.yml` says what the surface is trying to do and for whom.
+- `intent.yml` says what the surface is trying to do and for whom.
 - `inventory.yml` points agents at materials they can inspect or reuse.
 - `composition.yml` captures the patterns that make those materials feel like
   one intentional product.
 
-Checks, nested packages, custom host-wrapper package locations, and raw repo
-signals are supporting features. They do not replace the core fingerprint
-layers. `ghost signals` answers what exists; curated fingerprint layers answer
+`validate.yml`, nested packages, custom host-wrapper package locations, and raw repo
+signals are supporting features. They do not replace curated fingerprint
+facets. `ghost signals` answers what exists; curated fingerprint facets answer
 what the surface is trying to preserve.
 
 Older `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, and direct
@@ -87,7 +87,7 @@ Compare these two Ghost bundles.
 ## Author A Fingerprint
 
 Ghost authoring is a human-plus-agent workflow. The CLI creates, inspects, and
-validates the package; the host agent interviews, reads the repo, drafts layer
+validates the package; the host agent interviews, reads the repo, drafts facet
 edits, and asks you to curate the claims.
 
 ```bash
@@ -109,7 +109,7 @@ or pass `--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
 `--memory-dir <relative-dir>` values win over the environment default.
 
 Drafted fingerprint edits are just ordinary file changes until Git review
-accepts them. Checked-in `fingerprint/` core files are the Ghost source of
+accepts them. Checked-in `fingerprint/` facet files are the Ghost source of
 truth.
 
 ## Generate From Ghost
@@ -120,10 +120,10 @@ Before generating or revising UI, gather the Relay brief for the target path:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Relay gives a host agent the selected prose, inventory, composition, optional
-memory, active checks, suggested reads, and provenance. The important shift is
-timing: Ghost gives agents surface-composition context before they build, not
-only after a review finds drift.
+Relay compiles selected context from the resolved stack as context hits:
+fingerprint refs, why they matched, suggested reads, omissions, and gaps.
+The important shift is timing: Ghost gives agents surface-composition context
+before they build, not only after a review finds drift.
 
 After implementation, run the deterministic and advisory workflows against the
 same fingerprint:
@@ -133,7 +133,7 @@ ghost check --base main
 ghost review --base main
 ```
 
-`ghost check` runs active `ghost.checks/v1` gates and can fail. `ghost review`
+`ghost check` runs active `ghost.validate/v1` gates and can fail. `ghost review`
 emits an evidence-routed advisory packet for a human or host adapter to use.
 
 ## Compare And Govern
@@ -150,20 +150,21 @@ ghost diverge typography --reason "Editorial product uses a different type scale
 ghost emit review-command --path apps/checkout/review/page.tsx
 ```
 
-`ghost scan --format json` emits deterministic readiness state. A fingerprint is
-`fingerprint-ready` only when prose, inventory, and composition all contain
-useful layer content. It does not call an LLM.
+`ghost scan --format json` emits deterministic contribution state for `intent`,
+`inventory`, `composition`, and `validate`. A sparse package can be useful with
+only one contributing facet; absent facets may be inherited from broader stack
+context. It does not call an LLM.
 
 ## CLI Commands
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/fingerprint/` package layers. |
-| `ghost scan` | Report fingerprint layer readiness for prose, inventory, and composition. |
+| `ghost init` | Create `.ghost/fingerprint/` package facet files. |
+| `ghost scan` | Report sparse fingerprint contribution facets. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
 | `ghost verify` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check` | Run active deterministic gates against a diff. |
-| `ghost review` | Emit an evidence-routed advisory packet from fingerprint layers and a diff. |
+| `ghost review` | Emit an evidence-routed advisory packet from fingerprint facets and a diff. |
 | `ghost relay gather` | Gather fingerprint-grounded context for an agent target. |
 | `ghost emit <kind>` | Emit `review-command` artifacts. |
 | `ghost skill install` | Install the unified Ghost skill bundle. |
@@ -207,7 +208,7 @@ optional and only used by semantic embedding helpers when a host opts in.
 | --- | --- |
 | [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Portable `.ghost/fingerprint/` package format. |
 | [docs/generation-loop.md](./docs/generation-loop.md) | Brief, generate, check, review, and remediate loop. |
-| [docs/language-fingerprints.md](./docs/language-fingerprints.md) | Voice and language capture through existing fingerprint layers. |
+| [docs/language-fingerprints.md](./docs/language-fingerprints.md) | Voice and language capture through existing fingerprint facets. |
 | [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, and custom fingerprint directories. |
 | [docs/ghost-fleet.md](./docs/ghost-fleet.md) | Current private fleet package model. |
 | [GOVERNANCE.md](./GOVERNANCE.md) | Project governance. |

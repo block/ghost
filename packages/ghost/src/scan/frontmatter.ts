@@ -25,7 +25,7 @@ export interface FrontmatterData {
 }
 
 /**
- * Fingerprint fields that are populated from YAML frontmatter. Prose
+ * Fingerprint fields that are populated from YAML frontmatter. Intent
  * fields (observation.summary, decisions[].decision) are populated from
  * the markdown body by `applyBody` — they are deliberately NOT listed
  * here.
@@ -87,7 +87,7 @@ export function splitFrontmatter(
 
 /**
  * Build a plain object for YAML serialization from a fingerprint + meta.
- * Meta comes first for readability; then fingerprint fields, with prose
+ * Meta comes first for readability; then fingerprint fields, with intent
  * fields stripped — those belong in the markdown body.
  */
 export function mergeFrontmatter(
@@ -120,10 +120,10 @@ export function mergeFrontmatter(
     const v = fingerprint[key];
     if (v === undefined) continue;
     if (key === "observation") {
-      const stripped = stripObservationProse(v as Fingerprint["observation"]);
+      const stripped = stripObservationIntent(v as Fingerprint["observation"]);
       if (stripped) out.observation = stripped;
     } else if (key === "decisions") {
-      const stripped = stripDecisionProse(v as Fingerprint["decisions"]);
+      const stripped = stripDecisionIntent(v as Fingerprint["decisions"]);
       if (stripped?.length) out.decisions = stripped;
     } else {
       out[key] = v;
@@ -132,7 +132,7 @@ export function mergeFrontmatter(
   return out;
 }
 
-function stripObservationProse(
+function stripObservationIntent(
   obs: Fingerprint["observation"],
 ): Record<string, unknown> | undefined {
   if (!obs) return undefined;
@@ -142,7 +142,7 @@ function stripObservationProse(
   return Object.keys(out).length ? out : undefined;
 }
 
-function stripDecisionProse(
+function stripDecisionIntent(
   decisions: Fingerprint["decisions"],
 ): Array<Record<string, unknown>> | undefined {
   if (!decisions?.length) return undefined;

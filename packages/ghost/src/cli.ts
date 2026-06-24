@@ -162,7 +162,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "check",
-      "Run active ghost.checks/v1 gates from the resolved fingerprint stack against a git diff.",
+      "Run active ghost.validate/v1 gates from the resolved fingerprint stack against a git diff.",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(

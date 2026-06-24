@@ -39,19 +39,19 @@ The canonical root `.ghost/` package follows:
 config.yml
 fingerprint/
   manifest.yml
-  prose.yml
+  intent.yml
   inventory.yml
   composition.yml
-  checks.yml
+  validate.yml
 ```
 
-The three root layer files under `fingerprint/` are the core model:
+The three root facet files under `fingerprint/` are the core model:
 
-- `prose.yml` for surface intent.
+- `intent.yml` for surface intent.
 - `inventory.yml` for curated material, exemplars, and source links.
 - `composition.yml` for experience patterns.
 
-`checks.yml` validates output and can enforce deterministic gates; it is not
+`validate.yml` validates output through deterministic checks; it is not
 generation input.
 `.ghost/config.yml` remains local adapter/routing config outside portable
 context. Ordinary Git review is the approval boundary for fingerprint edits.
@@ -74,16 +74,16 @@ fingerprint input for new Ghost work.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/fingerprint/` with manifest, core layers, and deterministic checks. |
-| `ghost scan` | Report fingerprint layer readiness and BYOA next-step guidance. |
+| `ghost init` | Create `.ghost/fingerprint/` with manifest, facets, and deterministic checks. |
+| `ghost scan` | Report fingerprint contribution facets and BYOA next-step guidance. |
 | `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
 | `ghost lint` | Validate a fingerprint package or single artifact. |
 | `ghost verify` | Validate fingerprint evidence and exemplar paths, and typed check refs. |
 | `ghost describe` | Print direct markdown section ranges. |
-| `ghost diff` | Structural prose-level diff between direct fingerprints. |
+| `ghost diff` | Structural direct-fingerprint prose diff between direct fingerprints. |
 | `ghost survey <op>` | Legacy survey helpers for optional `ghost.survey/v1` workflows. |
-| `ghost check` | Run active `ghost.checks/v1` deterministic gates against a diff. |
-| `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint layers, inventory exemplars, checks, and the diff. |
+| `ghost check` | Run active `ghost.validate/v1` deterministic gates against a diff. |
+| `ghost review` | Emit an evidence-routed advisory review packet grounded in fingerprint facets, inventory exemplars, checks, and the diff. |
 | `ghost compare` | Pairwise or composite comparison over packages or direct fingerprints. |
 | `ghost ack` | Record stance toward the tracked fingerprint in `.ghost-sync.json`. |
 | `ghost track` | Shift the tracked fingerprint. |
@@ -91,13 +91,13 @@ fingerprint input for new Ghost work.
 | `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install the unified `ghost` agentskills.io bundle. |
 
-`ghost scan --format json` is deterministic readiness and source-signal state.
+`ghost scan --format json` is deterministic contribution and source-signal state.
 It does not run an LLM.
 
 ## Public Exports
 
 - `@anarchitecture/ghost` for the combined surface.
-- `@anarchitecture/ghost/scan` for scan readiness, source signals, and stack discovery.
+- `@anarchitecture/ghost/scan` for scan contribution, source signals, and stack discovery.
 - `@anarchitecture/ghost/fingerprint` for fingerprint package authoring, linting, verification, parsing, and serialization.
 - `@anarchitecture/ghost/drift` for check/review/compare/stance helpers.
 - `@anarchitecture/ghost/core` for shared schemas, types, and loaders.

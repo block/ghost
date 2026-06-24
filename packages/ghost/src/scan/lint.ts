@@ -38,7 +38,7 @@ export interface LintOptions {
  * surfaces as a structured issue.
  *
  * Under schema 3 the body/frontmatter partition is enforced by zod-strict.
- * Lint adds softer rules: orphan prose (body block with no frontmatter
+ * Lint adds softer rules: orphan intent (body block with no frontmatter
  * entry), missing rationale (frontmatter entry with no body block), malformed
  * Decisions sections, missing body evidence, and broken palette citations.
  */
@@ -134,7 +134,7 @@ function checkSchemaValidity(
 
 /**
  * Schema 5: each dimension lives in exactly one place — a `### Dimension`
- * body block carrying prose + optional `**Evidence:**` bullets. Frontmatter
+ * body block carrying intent + optional `**Evidence:**` bullets. Frontmatter
  * `decisions[]` only carries the dimension slug. Warn
  * when a dimension appears in frontmatter but not the body (orphan slug) or
  * when a body block has no rationale at all.
@@ -147,7 +147,7 @@ function checkDecisionPartition(
   const merged = fp.decisions ?? [];
   const bodyDims = new Set((body.decisions ?? []).map((d) => d.dimension));
   merged.forEach((d, idx) => {
-    const hasProse = Boolean(d.decision?.trim());
+    const hasIntent = Boolean(d.decision?.trim());
     const fromBody = bodyDims.has(d.dimension);
     if (!fromBody) {
       issues.push({
@@ -156,11 +156,11 @@ function checkDecisionPartition(
         message: `Decision \`${d.dimension}\` is declared in frontmatter but has no \`### ${d.dimension}\` block in the body.`,
         path: `decisions[${idx}]`,
       });
-    } else if (!hasProse) {
+    } else if (!hasIntent) {
       issues.push({
         severity: "warning",
         rule: "missing-rationale",
-        message: `Body has \`### ${d.dimension}\` but no rationale prose.`,
+        message: `Body has \`### ${d.dimension}\` but no rationale intent.`,
         path: `decisions[${idx}]`,
       });
     }
@@ -191,7 +191,7 @@ function checkDecisionBodyShape(
       severity: "warning",
       rule: "missing-decision-headings",
       message:
-        "`# Decisions` has prose but no `### <dimension>` blocks, so no decisions are parseable.",
+        "`# Decisions` has intent but no `### <dimension>` blocks, so no decisions are parseable.",
       path: "decisions",
     });
   }
@@ -254,7 +254,7 @@ function checkEvidenceHexes(fp: Fingerprint, issues: LintIssue[]): void {
 /**
  * Flag palette colors that don't appear anywhere a reader could justify
  * them — i.e. not cited as a hex literal in any decision's body Evidence
- * bullets or rationale prose. Severity is `info` (a soft hint, not an
+ * bullets or rationale intent. Severity is `info` (a soft hint, not an
  * error) because some palette entries are honestly load-bearing without
  * decision-level commentary (every neutral step in a wide ramp).
  */
@@ -283,7 +283,7 @@ function checkUnusedPalette(fp: Fingerprint, issues: LintIssue[]): void {
 }
 
 /**
- * Soft check: a `decisions[].dimension` slug should either be in the
+ * Soft validate.check: a `decisions[].dimension` slug should either be in the
  * canonical vocabulary or pair with a canonical `dimension_kind`. Anything
  * else lives in the long tail and won't roll up at fleet scale. This
  * never errors — it suggests, so authoring stays free-form by default.

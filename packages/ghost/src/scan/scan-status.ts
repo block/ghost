@@ -2,7 +2,8 @@ import { readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
-  type GhostFingerprintDocument,
+  type GhostValidateDocument,
+  GhostValidateSchema,
   getEffectiveMapScopes,
   MAP_FILENAME,
   type MapFrontmatter,
@@ -15,7 +16,11 @@ import {
   SCOPE_SURVEYS_DIRNAME,
 } from "./constants.js";
 import {
-  type FingerprintPackagePaths,
+  type ScanContributionReport,
+  summarizeFingerprintContribution,
+} from "./fingerprint-contribution.js";
+import type { FingerprintPackagePaths } from "./fingerprint-package.js";
+import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
@@ -39,38 +44,6 @@ export interface ScanScopeReport {
   fingerprint: ScanStageReport;
 }
 
-export type ScanReadinessState =
-  | "fingerprint-missing"
-  | "fingerprint-invalid"
-  | "fingerprint-empty"
-  | "prose-only"
-  | "inventory-only"
-  | "composition-only"
-  | "fingerprint-partial"
-  | "fingerprint-ready";
-
-export type ScanFingerprintLayer = "prose" | "inventory" | "composition";
-
-export interface ScanReadinessReport {
-  state: ScanReadinessState;
-  layer_counts: Record<ScanFingerprintLayer, number>;
-  missing_layers: ScanFingerprintLayer[];
-  product_surface_count: number;
-  demo_surface_count: number;
-  building_block_rows: {
-    tokens: number;
-    components: number;
-    libraries: number;
-    assets: number;
-    routes: number;
-    files: number;
-    notes: number;
-  };
-  can_review: string[];
-  cannot_review: string[];
-  reasons: string[];
-}
-
 export interface ScanStatusOptions {
   includeScopes?: boolean;
 }
@@ -80,18 +53,18 @@ export interface ScanStatus {
   dir: string;
   fingerprint: ScanStageReport;
   config: ScanStageReport;
-  checks: ScanStageReport;
+  validate: ScanStageReport;
   scopes?: ScanScopeReport[];
   scope_error?: string;
-  readiness: ScanReadinessReport;
+  contribution: ScanContributionReport;
   recommended_next: ScanStage | null;
 }
 
 /**
- * Inspect a Ghost fingerprint directory and report whether the canonical
- * `fingerprint/manifest.yml` exists with useful prose, inventory, and
- * composition layers.
- * Optional checks are supplemental when present.
+ * Inspect a Ghost fingerprint directory and report what sparse facets this
+ * package contributes. A package can contribute only intent, inventory,
+ * composition, validate, or any combination; absent facets may be inherited
+ * from broader stack context.
  */
 export async function scanStatus(
   dirPath: string,
@@ -101,33 +74,50 @@ export async function scanStatus(
   const paths = resolveFingerprintPackage(dir, process.cwd());
   const fingerprintPath = paths.fingerprintDir;
   const configPath = resolve(dir, CONFIG_FILENAME);
-  const checksPath = paths.checks;
 
-  const [fingerprintPresent, configPresent, checksPresent] = await Promise.all([
+  const [
+    fingerprintPresent,
+    configPresent,
+    intentPresent,
+    inventoryPresent,
+    compositionPresent,
+    validatePresent,
+  ] = await Promise.all([
     pathExists(paths.manifest, "file"),
     pathExists(configPath, "file"),
-    pathExists(checksPath, "file"),
+    pathExists(paths.intent, "file"),
+    pathExists(paths.inventory, "file"),
+    pathExists(paths.composition, "file"),
+    pathExists(paths.checks, "file"),
   ]);
 
   const fingerprint: ScanStageReport = {
     state: fingerprintPresent ? "present" : "missing",
     path: fingerprintPath,
   };
-  const checks: ScanStageReport = {
-    state: checksPresent ? "present" : "missing",
-    path: checksPath,
+  const validate: ScanStageReport = {
+    state: validatePresent ? "present" : "missing",
+    path: paths.checks,
   };
   const config: ScanStageReport = {
     state: configPresent ? "present" : "missing",
     path: configPath,
   };
 
+  const contribution = await scanContribution(paths, {
+    fingerprintPresent,
+    intentPresent,
+    inventoryPresent,
+    compositionPresent,
+    validatePresent,
+  });
+
   const status: ScanStatus = {
     dir,
     fingerprint,
     config,
-    checks,
-    readiness: await scanReadiness(paths, fingerprintPresent),
+    validate,
+    contribution,
     recommended_next: fingerprintPresent ? null : "fingerprint",
   };
 
@@ -144,187 +134,63 @@ export async function scanStatus(
   return status;
 }
 
-async function scanReadiness(
+async function scanContribution(
   paths: FingerprintPackagePaths,
-  fingerprintPresent: boolean,
-): Promise<ScanReadinessReport> {
-  if (!fingerprintPresent) {
-    return readinessReport("fingerprint-missing", {
-      reasons: [
-        "fingerprint/manifest.yml is missing, so no canonical fingerprint layers are available.",
-      ],
-      cannot_review: ["prose", "inventory", "composition"],
-    });
+  present: {
+    fingerprintPresent: boolean;
+    intentPresent: boolean;
+    inventoryPresent: boolean;
+    compositionPresent: boolean;
+    validatePresent: boolean;
+  },
+): Promise<ScanContributionReport> {
+  const files = {
+    intent: { path: paths.intent, present: present.intentPresent },
+    inventory: { path: paths.inventory, present: present.inventoryPresent },
+    composition: {
+      path: paths.composition,
+      present: present.compositionPresent,
+    },
+    validate: { path: paths.checks, present: present.validatePresent },
+  } as const;
+
+  if (!present.fingerprintPresent) {
+    return summarizeFingerprintContribution({ files, missing: true });
   }
 
-  let fingerprint: GhostFingerprintDocument;
   try {
-    fingerprint = (await loadFingerprintPackage(paths)).fingerprint;
+    const [loaded, validate] = await Promise.all([
+      loadFingerprintPackage(paths),
+      readOptionalValidate(paths.checks, present.validatePresent),
+    ]);
+    return summarizeFingerprintContribution({
+      fingerprint: loaded.fingerprint,
+      validate,
+      files,
+    });
   } catch (err) {
-    return readinessReport("fingerprint-invalid", {
-      reasons: [
-        `fingerprint package could not be read: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-      ],
+    return summarizeFingerprintContribution({
+      files,
+      invalidReason: err instanceof Error ? err.message : String(err),
     });
   }
-  const buildingBlocks = fingerprint.inventory.building_blocks;
-  const buildingBlockRows = {
-    tokens: buildingBlocks?.tokens?.length ?? 0,
-    components: buildingBlocks?.components?.length ?? 0,
-    libraries: buildingBlocks?.libraries?.length ?? 0,
-    assets: buildingBlocks?.assets?.length ?? 0,
-    routes: buildingBlocks?.routes?.length ?? 0,
-    files: buildingBlocks?.files?.length ?? 0,
-    notes: buildingBlocks?.notes?.length ?? 0,
-  };
-  const proseCount =
-    summaryFieldCount(fingerprint.prose.summary) +
-    fingerprint.prose.situations.length +
-    fingerprint.prose.principles.length +
-    fingerprint.prose.experience_contracts.length;
-  const inventoryCount =
-    (fingerprint.inventory.topology.scopes?.length ?? 0) +
-    (fingerprint.inventory.topology.surface_types?.length ?? 0) +
-    fingerprint.inventory.exemplars.length +
-    buildingBlockRows.tokens +
-    buildingBlockRows.components +
-    buildingBlockRows.libraries +
-    buildingBlockRows.assets +
-    buildingBlockRows.routes +
-    buildingBlockRows.files +
-    buildingBlockRows.notes;
-  const compositionCount = fingerprint.composition.patterns.length;
-  const layerCounts: Record<ScanFingerprintLayer, number> = {
-    prose: proseCount,
-    inventory: inventoryCount,
-    composition: compositionCount,
-  };
-  const presentLayers = fingerprintLayers.filter(
-    (layer) => layerCounts[layer] > 0,
-  );
-  const missingLayers = fingerprintLayers.filter(
-    (layer) => layerCounts[layer] === 0,
-  );
-
-  if (presentLayers.length === 0) {
-    return readinessReport("fingerprint-empty", {
-      layer_counts: layerCounts,
-      missing_layers: missingLayers,
-      reasons: [
-        "fingerprint/ is valid but has no useful prose, inventory, or composition entries yet.",
-      ],
-      cannot_review: ["prose", "inventory", "composition"],
-    });
-  }
-
-  if (presentLayers.length === 1) {
-    const [layer] = presentLayers;
-    return readinessReport(singleLayerStates[layer], {
-      layer_counts: layerCounts,
-      missing_layers: missingLayers,
-      product_surface_count: fingerprint.inventory.exemplars.length,
-      building_block_rows: buildingBlockRows,
-      reasons: [
-        `fingerprint/ only has useful ${layer}; add ${missingLayers.join(" and ")} for a ready fingerprint.`,
-      ],
-      can_review: canReviewForLayers(presentLayers),
-      cannot_review: missingLayers,
-    });
-  }
-
-  if (missingLayers.length > 0) {
-    return readinessReport("fingerprint-partial", {
-      layer_counts: layerCounts,
-      missing_layers: missingLayers,
-      product_surface_count: fingerprint.inventory.exemplars.length,
-      building_block_rows: buildingBlockRows,
-      reasons: [
-        `fingerprint/ has ${presentLayers.join(" and ")} but is missing ${missingLayers.join(" and ")}.`,
-      ],
-      can_review: canReviewForLayers(presentLayers),
-      cannot_review: missingLayers,
-    });
-  }
-
-  return readinessReport("fingerprint-ready", {
-    layer_counts: layerCounts,
-    missing_layers: [],
-    product_surface_count: fingerprint.inventory.exemplars.length,
-    building_block_rows: buildingBlockRows,
-    reasons: [
-      "fingerprint/ has useful prose, inventory, and composition layers.",
-    ],
-    can_review: ["prose", "inventory", "composition"],
-  });
 }
 
-function readinessReport(
-  state: ScanReadinessState,
-  overrides: Partial<Omit<ScanReadinessReport, "state">> = {},
-): ScanReadinessReport {
-  return {
-    state,
-    layer_counts: {
-      prose: 0,
-      inventory: 0,
-      composition: 0,
-    },
-    missing_layers: ["prose", "inventory", "composition"],
-    product_surface_count: 0,
-    demo_surface_count: 0,
-    building_block_rows: {
-      tokens: 0,
-      components: 0,
-      libraries: 0,
-      assets: 0,
-      routes: 0,
-      files: 0,
-      notes: 0,
-    },
-    can_review: [],
-    cannot_review: [],
-    reasons: [],
-    ...overrides,
-  };
-}
-
-const fingerprintLayers: ScanFingerprintLayer[] = [
-  "prose",
-  "inventory",
-  "composition",
-];
-
-const singleLayerStates: Record<ScanFingerprintLayer, ScanReadinessState> = {
-  prose: "prose-only",
-  inventory: "inventory-only",
-  composition: "composition-only",
-};
-
-function summaryFieldCount(
-  summary: GhostFingerprintDocument["prose"]["summary"],
-): number {
-  let count = 0;
-  if (summary.product?.trim()) count += 1;
-  for (const field of [
-    summary.audience,
-    summary.goals,
-    summary.anti_goals,
-    summary.tradeoffs,
-    summary.tone,
-  ]) {
-    count += field?.length ?? 0;
+async function readOptionalValidate(
+  path: string,
+  present: boolean,
+): Promise<GhostValidateDocument | undefined> {
+  if (!present) return undefined;
+  const parsed = parseYaml(await readFile(path, "utf-8"));
+  const result = GhostValidateSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(
+      `fingerprint/validate.yml failed schema validation: ${result.error.issues
+        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
+        .join("; ")}`,
+    );
   }
-  return count;
-}
-
-function canReviewForLayers(layers: ScanFingerprintLayer[]): string[] {
-  const canReview: string[] = [];
-  if (layers.includes("prose")) canReview.push("product prose");
-  if (layers.includes("inventory")) canReview.push("inventory anchors");
-  if (layers.includes("composition")) canReview.push("composition patterns");
-  return canReview;
+  return result.data as GhostValidateDocument;
 }
 
 async function pathExists(

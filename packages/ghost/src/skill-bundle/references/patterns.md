@@ -70,9 +70,9 @@ Allowed `kind` values:
 - Keep the pattern actionable for generation and review.
 - Cite paths, locators, or notes as evidence.
 - Put obligations that affect failure, disclosure, recovery, or trust in
-  `prose.experience_contracts`, not only `composition.patterns`.
-- Put broad surface intent in `prose.principles`.
-- Add `check_refs` only when a deterministic check exists in `fingerprint/checks.yml`.
+  `intent.experience_contracts`, not only `composition.patterns`.
+- Put broad surface intent in `intent.principles`.
+- Add `check_refs` only when a deterministic check exists in `fingerprint/validate.yml`.
 
 ## Validate
 

@@ -711,7 +711,7 @@ composition_patterns: []
       "schema: ghost.fingerprint-package/v1\nid: tracked\n",
     );
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "prose.yml"),
+      join(dir, ".ghost", "fingerprint", "intent.yml"),
       `summary:
   product: Cash iOS
 situations: []
@@ -739,7 +739,7 @@ experience_contracts: []
 `,
     ).join("");
     const fingerprintRaw = `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Cash iOS
   situations: []
@@ -889,16 +889,16 @@ design_loop:
       "composition",
       "dir",
       "fingerprintDir",
+      "intent",
       "inventory",
       "manifest",
-      "prose",
     ]);
     await expect(
       readFile(join(dir, ".ghost", "fingerprint", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "checks.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.checks/v1");
+      readFile(join(dir, ".ghost", "fingerprint", "validate.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.validate/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache).toBeUndefined();
 
@@ -912,7 +912,7 @@ design_loop:
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Selected Fingerprint Context");
+    expect(review.stdout).toContain("## Selected Context");
     expect(reviewCommand.code).toBe(0);
   });
 
@@ -1331,7 +1331,7 @@ design_loop:
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "prose.yml"),
+      join(dir, ".ghost", "fingerprint", "intent.yml"),
       "summary:\n  product: Curated Surface\n",
     );
 
@@ -1342,22 +1342,22 @@ design_loop:
       "Refusing to overwrite existing Ghost fingerprint file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "prose.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "fingerprint", "intent.yml"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "fingerprint", "prose.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "fingerprint", "intent.yml"), "utf-8"),
     ).resolves.toContain("summary: {}");
   });
 
   it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "checks.yml"),
-      `schema: ghost.checks/v1
+      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      `schema: ghost.validate/v1
 id: local
 checks:
   - id: missing-fingerprint-check
@@ -1365,7 +1365,7 @@ checks:
     status: active
     severity: serious
     derivation:
-      prose: [prose.principle:not-recorded]
+      intent: [intent.principle:not-recorded]
     applies_to:
       paths: [Code/Features/Lending]
     detector:
@@ -1386,19 +1386,19 @@ checks:
     expect(report.issues[0]).toMatchObject({
       severity: "warning",
       rule: "check-grounding-unknown",
-      path: "fingerprint/checks.yml.checks[0].derivation.prose[0]",
+      path: "fingerprint/validate.yml.checks[0].derivation.intent[0]",
     });
   });
 
-  it("validates standalone checks.yml derivation refs with a valid sibling fingerprint", async () => {
+  it("validates standalone validate.yml derivation refs with a valid sibling fingerprint", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "checks.yml"),
-      checksFileWithDerivation("prose.principle:not-recorded"),
+      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      checksFileWithDerivation("intent.principle:not-recorded"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/validate.yml", "--format", "json"],
       dir,
     );
 
@@ -1407,7 +1407,7 @@ checks:
     expect(report.issues[0]).toMatchObject({
       severity: "warning",
       rule: "check-grounding-unknown",
-      path: "checks[0].derivation.prose[0]",
+      path: "checks[0].derivation.intent[0]",
     });
     expect(report.issues).not.toEqual(
       expect.arrayContaining([
@@ -1416,13 +1416,16 @@ checks:
     );
   });
 
-  it("marks standalone checks.yml grounding unverified when no sibling fingerprint exists", async () => {
+  it("marks standalone validate.yml grounding unverified when no sibling fingerprint exists", async () => {
     await writeFile(
-      join(dir, "checks.yml"),
-      checksFileWithDerivation("prose.principle:tokenized-ui-color"),
+      join(dir, "validate.yml"),
+      checksFileWithDerivation("intent.principle:tokenized-ui-color"),
     );
 
-    const lint = await runCli(["lint", "checks.yml", "--format", "json"], dir);
+    const lint = await runCli(
+      ["lint", "validate.yml", "--format", "json"],
+      dir,
+    );
 
     expect(lint.code).toBe(0);
     const report = JSON.parse(lint.stdout);
@@ -1434,19 +1437,19 @@ checks:
     });
   });
 
-  it("keeps standalone checks.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
+  it("keeps standalone validate.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
     await mkdir(join(dir, ".ghost", "fingerprint"), { recursive: true });
     await writeFile(
       join(dir, ".ghost", "fingerprint", "manifest.yml"),
       "not: draft\n",
     );
     await writeFile(
-      join(dir, ".ghost", "fingerprint", "checks.yml"),
-      checksFileWithDerivation("prose.principle:tokenized-ui-color"),
+      join(dir, ".ghost", "fingerprint", "validate.yml"),
+      checksFileWithDerivation("intent.principle:tokenized-ui-color"),
     );
 
     const lint = await runCli(
-      ["lint", ".ghost/fingerprint/checks.yml", "--format", "json"],
+      ["lint", ".ghost/fingerprint/validate.yml", "--format", "json"],
       dir,
     );
 
@@ -1466,10 +1469,10 @@ checks:
 
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml:");
-    expect(init.stdout).toContain("prose.yml:");
+    expect(init.stdout).toContain("intent.yml:");
     expect(init.stdout).toContain("inventory.yml:");
     expect(init.stdout).toContain("composition.yml:");
-    expect(init.stdout).toContain("checks.yml:");
+    expect(init.stdout).toContain("validate.yml:");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -1484,25 +1487,23 @@ checks:
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
     expect(status.intent).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-empty");
-    expect(status.readiness.layer_counts).toEqual({
-      prose: 0,
-      inventory: 0,
-      composition: 0,
-    });
-    expect(status.readiness.missing_layers).toEqual([
-      "prose",
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.validate.state).toBe("present");
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
+      "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
     expect(scanHuman.stdout).toContain("fingerprint dir:");
-    expect(scanHuman.stdout).toContain("readiness: fingerprint-empty");
-    expect(scanHuman.stdout).toContain(
-      "layers: prose 0, inventory 0, composition 0",
-    );
-    expect(scanHuman.stdout).toContain(
-      "missing layers: prose, inventory, composition",
-    );
+    expect(scanHuman.stdout).toContain("contribution: empty");
+    expect(scanHuman.stdout).toContain("intent: empty (0)");
+    expect(scanHuman.stdout).toContain("validate: empty (0)");
+    expect(scanHuman.stdout).not.toContain("readiness:");
+    expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -1599,8 +1600,14 @@ checks:
 
     const status = JSON.parse(scan.stdout);
     expect(status.config.state).toBe("present");
-    expect(status.readiness.state).toBe("inventory-only");
-    expect(status.readiness.missing_layers).toEqual(["prose", "composition"]);
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
+    expect(status.contribution.absent_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
+      "intent",
+      "composition",
+      "validate",
+    ]);
 
     const signalsOutput = JSON.parse(signals.stdout);
     expect(signalsOutput.config.libraries[0].id).toBe("ghost-ui");
@@ -1639,13 +1646,23 @@ checks:
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
-    expect(status.checks.state).toBe("present");
+    expect(status.validate.state).toBe("missing");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-partial");
-    expect(status.readiness.missing_layers).toEqual(["composition"]);
-    expect(status.readiness.reasons[0]).toContain(
-      "prose and inventory but is missing composition",
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual([
+      "intent",
+      "inventory",
+    ]);
+    expect(status.contribution.empty_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
+      "composition",
+      "validate",
+    ]);
+    expect(status.contribution.reasons[0]).toContain(
+      "Absent facets may be inherited",
     );
   });
 
@@ -1747,7 +1764,7 @@ checks:
       "utf-8",
     );
     expect(emittedReviewCommand).toContain(
-      ".ghost/fingerprint/prose.yml`, `.ghost/fingerprint/inventory.yml`, and `.ghost/fingerprint/composition.yml",
+      ".ghost/fingerprint/intent.yml`, `.ghost/fingerprint/inventory.yml`, and `.ghost/fingerprint/composition.yml",
     );
     expect(emittedReviewCommand).toContain("Exemplars");
     expect(emittedReviewCommand).toContain("lending-tokenized-screen");
@@ -1782,14 +1799,21 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Relay Brief");
+    expect(result.stdout).toContain("## Stack");
+    expect(result.stdout).toContain("## Match");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
-    expect(result.stdout).toContain("## Task Contract");
-    expect(result.stdout).toContain("### Preserve");
-    expect(result.stdout).toContain("prose.principle:tokenized-ui-color");
+    expect(result.stdout).toContain("## Context Hits");
+    expect(result.stdout).toContain("## Suggested Reads");
+    expect(result.stdout).toContain("## Omissions");
+    expect(result.stdout).toContain("## Gaps");
+    expect(result.stdout).toContain("intent.principle:tokenized-ui-color");
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
     expect(result.stdout).toContain(
       "inventory.exemplar:lending-tokenized-screen",
+    );
+    expect(result.stdout).toContain(
+      "why: path=Code/Features/Lending/LendingUI",
     );
     expect(result.stdout).toContain("no-hardcoded-ui-color");
     expect(result.stdout).not.toContain("candidate-density-check");
@@ -1813,14 +1837,54 @@ checks:
 
     expect(result.code).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.schema).toBe("ghost.relay.gather/v1");
+    expect(json.schema).toBe("ghost.relay.gather/v2");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
-    expect(json.entrypoint.match.status).toBe("path-match");
-    expect(json.entrypoint.actionContract.preserve).toContain(
-      "UI colors should come from the product token system.",
+    expect(json.entrypoint).toBeUndefined();
+    expect(json.cascade_brief).toBeUndefined();
+    expect(json.selected_context.match.status).toBe("path-match");
+    expect(json.selected_context).not.toHaveProperty("intent");
+    expect(json.selected_context).not.toHaveProperty("composition");
+    expect(json.selected_context).not.toHaveProperty("inventory");
+    expect(json.selected_context).not.toHaveProperty("validation");
+    expect(json.selected_context).not.toHaveProperty("guidance");
+    expect(json.selected_context).not.toHaveProperty("active_obligations");
+    expect(json.selected_context.context_hits).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "intent.principle:tokenized-ui-color",
+          kind: "intent",
+          why_selected: expect.arrayContaining([
+            {
+              kind: "linked_ref",
+              value: "inventory.exemplar:lending-tokenized-screen",
+            },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "composition.pattern:tokenized-ui-color",
+          kind: "composition",
+        }),
+        expect.objectContaining({
+          ref: "inventory.exemplar:lending-tokenized-screen",
+          kind: "inventory",
+          path: "Code/Features/Lending/LendingUI",
+          why_selected: expect.arrayContaining([
+            { kind: "path", value: "Code/Features/Lending/LendingUI" },
+            { kind: "scope", value: "lending" },
+            { kind: "surface_type", value: "native-feature" },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "validate.check:no-hardcoded-ui-color",
+          kind: "validation",
+        }),
+      ]),
     );
-    expect(json.entrypoint.actionContract.inspect).toEqual(
+    expect(
+      json.selected_context.context_hits.map((hit: { ref: string }) => hit.ref),
+    ).not.toContain("validate.check:candidate-density-check");
+    expect(json.selected_context.suggested_reads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           path: "Code/Features/Lending/LendingUI",
@@ -1829,14 +1893,8 @@ checks:
         }),
       ]),
     );
-    expect(json.entrypoint.actionContract.validate).toContain(
-      "check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
-    );
-    expect(json.entrypoint.actionContract.validate.join("\n")).not.toContain(
-      "candidate-density-check",
-    );
     expect(json.brief).toContain("# Ghost Relay Brief");
-    expect(json.brief).toContain("## Task Contract");
+    expect(json.brief).toContain("## Context Hits");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
@@ -1927,7 +1985,7 @@ checks:
     }
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("When Fingerprint Layers Are Silent");
+    ).resolves.toContain("When Fingerprint Facets Are Silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
@@ -1938,7 +1996,7 @@ checks:
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain("fingerprint layers are silent");
+    ).resolves.toContain("fingerprint facets are silent");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),
@@ -2002,7 +2060,7 @@ checks:
     expect(result.stdout).toContain("Design Check: PASS");
   });
 
-  it("check passes when optional checks.yml is absent", async () => {
+  it("check passes when optional validate.yml is absent", async () => {
     await writeCheckPackage(dir, { checks: false });
     await writeFile(
       join(dir, "change.patch"),
@@ -2026,15 +2084,22 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Selected Fingerprint Context");
-    expect(result.stdout).toContain("## Identity Capsule");
-    expect(result.stdout).toContain("## Context Match");
+    expect(result.stdout).toContain("## Selected Context");
+    expect(result.stdout).toContain("### Selected Context");
+    expect(result.stdout).toContain("#### Stack");
+    expect(result.stdout).toContain("#### Match");
+    expect(result.stdout).toContain("#### Context Hits");
+    expect(result.stdout).toContain("#### Suggested Reads");
+    expect(result.stdout).toContain("#### Omissions");
+    expect(result.stdout).toContain("#### Gaps");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
     expect(result.stdout).toContain("diff location");
+    expect(result.stdout).toContain("fingerprint facet refs");
     expect(result.stdout).toContain(
-      "fingerprint/prose.yml, fingerprint/inventory.yml, fingerprint/composition.yml",
+      "selected-context gap or local-evidence rationale when context is silent",
     );
+    expect(result.stdout).toContain("Use the selected context first");
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
@@ -2210,7 +2275,7 @@ libraries:
     expect(report.fingerprint_dir).toBe(".ghost");
     expect(report.memory_dir).toBeUndefined();
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toHaveLength(2);
+    expect(report.stacks[0].stack_dirs).toHaveLength(2);
     expect(report.routed_files[0]).toMatchObject({
       path: "apps/checkout/review/page.tsx",
       checks: [],
@@ -2282,7 +2347,7 @@ libraries:
       changed_files: ["apps/checkout/review/page.tsx"],
     });
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toEqual([
+    expect(report.stacks[0].stack_dirs).toEqual([
       await realpath(join(dir, ".design", "memory")),
       await realpath(join(dir, "apps", "checkout", ".design", "memory")),
     ]);
@@ -2308,14 +2373,14 @@ libraries:
     expect(packet.stacks).toHaveLength(2);
     expect(packet.stacks[0].fingerprint_dir).toBe(".ghost");
     expect(packet.stacks[0].memory_dir).toBeUndefined();
-    expect(packet.stacks[0].merged.fingerprint.prose.summary.product).toBe(
+    expect(packet.stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
     );
-    expect(packet.stacks[0].layer_dirs).toHaveLength(2);
-    expect(packet.stacks[1].layer_dirs).toHaveLength(1);
+    expect(packet.stacks[0].stack_dirs).toHaveLength(2);
+    expect(packet.stacks[1].stack_dirs).toHaveLength(1);
   });
 
-  it("stack inspects resolved nested layers", async () => {
+  it("stack inspects resolved nested packages", async () => {
     await writeNestedCheckPackage(dir);
 
     const result = await runCli(
@@ -2325,11 +2390,13 @@ libraries:
 
     expect(result.code).toBe(0);
     const stacks = JSON.parse(result.stdout);
-    expect(stacks[0].layers).toHaveLength(2);
+    expect(stacks[0].stack).toHaveLength(2);
     expect(stacks[0].fingerprint_dir).toBe(".ghost");
     expect(stacks[0].memory_dir).toBeUndefined();
-    expect(stacks[0].layers[0].memory_dir).toBeUndefined();
-    expect(stacks[0].merged.fingerprint.prose.summary.product).toBe("Checkout");
+    expect(stacks[0].stack[0].memory_dir).toBeUndefined();
+    expect(stacks[0].merged.fingerprint.intent.summary.product).toBe(
+      "Checkout",
+    );
   });
 
   it("rejects unsafe memory directory overrides", async () => {
@@ -2378,12 +2445,12 @@ libraries:
       "utf-8",
     );
     expect(manifest).toContain("ghost.fingerprint-package/v1");
-    const prose = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "fingerprint", "prose.yml"),
+    const intent = await readFile(
+      join(dir, "apps", "checkout", ".ghost", "fingerprint", "intent.yml"),
       "utf-8",
     );
-    expect(prose).not.toContain("review_policy");
-    expect(prose).not.toContain("proposal");
+    expect(intent).not.toContain("review_policy");
+    expect(intent).not.toContain("proposal");
   });
 
   it("init --scope creates a nested package under a custom fingerprint directory", async () => {
@@ -2476,14 +2543,14 @@ async function writeCheckPackage(
   await writeSplitFingerprintPackage(
     pkg,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Cash iOS
   situations: []
   principles:
     - id: tokenized-ui-color
       principle: UI colors should come from the product token system.
-      check_refs: [check:no-hardcoded-ui-color]
+      check_refs: [validate.check:no-hardcoded-ui-color]
   experience_contracts: []
 inventory:
   topology:
@@ -2500,7 +2567,7 @@ inventory:
       scope: lending
       why: Shows semantic CashTheme color usage for native lending UI.
       refs:
-        - prose.principle:tokenized-ui-color
+        - intent.principle:tokenized-ui-color
         - composition.pattern:tokenized-ui-color
   building_blocks:
     tokens: [CashTheme.primary]
@@ -2510,11 +2577,11 @@ composition:
     - id: tokenized-ui-color
       kind: visual
       pattern: Product UI color uses semantic tokens instead of literals.
-      check_refs: [check:no-hardcoded-ui-color]
+      check_refs: [validate.check:no-hardcoded-ui-color]
 `,
     options.checks === false
       ? undefined
-      : `schema: ghost.checks/v1
+      : `schema: ghost.validate/v1
 id: cash-ios
 checks:
   - id: no-hardcoded-ui-color
@@ -2522,7 +2589,7 @@ checks:
     status: active
     severity: serious
     derivation:
-      prose: [prose.principle:tokenized-ui-color]
+      intent: [intent.principle:tokenized-ui-color]
       composition: [composition.pattern:tokenized-ui-color]
       inventory: [inventory.exemplar:lending-tokenized-screen]
     applies_to:
@@ -2543,7 +2610,7 @@ checks:
     status: proposed
     severity: nit
     derivation:
-      prose: [prose.principle:tokenized-ui-color]
+      intent: [intent.principle:tokenized-ui-color]
     applies_to:
       scopes: [lending]
       paths: [Code/Features/Lending]
@@ -2629,9 +2696,9 @@ async function writeSplitFingerprintPackage(
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
     writeFile(
-      join(fingerprintDir, "prose.yml"),
+      join(fingerprintDir, "intent.yml"),
       stringifyYaml(
-        doc.prose ?? {
+        doc.intent ?? {
           summary: {},
           situations: [],
           principles: [],
@@ -2655,13 +2722,13 @@ async function writeSplitFingerprintPackage(
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [writeFile(join(fingerprintDir, "checks.yml"), checksRaw)]
+      ? [writeFile(join(fingerprintDir, "validate.yml"), checksRaw)]
       : []),
   ]);
 }
 
-function checksFileWithDerivation(proseRef: string): string {
-  return `schema: ghost.checks/v1
+function checksFileWithDerivation(intentRef: string): string {
+  return `schema: ghost.validate/v1
 id: local
 checks:
   - id: no-hardcoded-ui-color
@@ -2669,7 +2736,7 @@ checks:
     status: active
     severity: serious
     derivation:
-      prose: [${proseRef}]
+      intent: [${intentRef}]
     applies_to:
       paths: [Code/Features/Lending]
     detector:
@@ -2701,7 +2768,7 @@ async function writeNestedCheckPackage(
   await writeSplitFingerprintPackage(
     rootMemory,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Root Product
   situations: []
@@ -2721,7 +2788,7 @@ composition:
       kind: visual
       pattern: Web UI color uses semantic product tokens.
 `,
-    `schema: ghost.checks/v1
+    `schema: ghost.validate/v1
 id: root
 checks:
   - id: no-hardcoded-color
@@ -2747,7 +2814,7 @@ checks:
   await writeSplitFingerprintPackage(
     checkoutMemory,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: Checkout
   situations: []
@@ -2770,7 +2837,7 @@ composition:
       applies_to:
         paths: [review]
 `,
-    `schema: ghost.checks/v1
+    `schema: ghost.validate/v1
 id: checkout
 checks:
   - id: no-hardcoded-color
@@ -2807,7 +2874,7 @@ async function writeComparableBundle(
   await writeSplitFingerprintPackage(
     pkg,
     `schema: ghost.fingerprint/v1
-prose:
+intent:
   summary:
     product: ${patternId}
 inventory:

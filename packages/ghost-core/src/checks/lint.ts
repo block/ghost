@@ -1,30 +1,30 @@
 import { getEffectiveMapScopes } from "../map/index.js";
-import { GhostChecksSchema } from "./schema.js";
+import { GhostValidateSchema } from "./schema.js";
 import type {
   GhostCheck,
-  GhostChecksDocument,
-  GhostChecksLintIssue,
-  GhostChecksLintOptions,
-  GhostChecksLintReport,
+  GhostValidateDocument,
+  GhostValidateLintIssue,
+  GhostValidateLintOptions,
+  GhostValidateLintReport,
 } from "./types.js";
 
 const SUPPORT_FLOOR = 0.85;
 const GROUNDING_PREFIXES = [
-  "prose.principle",
-  "prose.situation",
-  "prose.experience_contract",
+  "intent.principle",
+  "intent.situation",
+  "intent.experience_contract",
   "inventory.exemplar",
   "composition.pattern",
 ] as const;
 type GroundingPrefix = (typeof GROUNDING_PREFIXES)[number];
-type DerivationGroup = "prose" | "inventory" | "composition";
+type DerivationGroup = "intent" | "inventory" | "composition";
 
-export function lintGhostChecks(
+export function lintGhostValidate(
   input: unknown,
-  options: GhostChecksLintOptions = {},
-): GhostChecksLintReport {
-  const issues: GhostChecksLintIssue[] = [];
-  const result = GhostChecksSchema.safeParse(input);
+  options: GhostValidateLintOptions = {},
+): GhostValidateLintReport {
+  const issues: GhostValidateLintIssue[] = [];
+  const result = GhostValidateSchema.safeParse(input);
   if (!result.success) {
     for (const issue of result.error.issues) {
       issues.push({
@@ -37,7 +37,7 @@ export function lintGhostChecks(
     return finalize(issues);
   }
 
-  const doc = result.data as GhostChecksDocument;
+  const doc = result.data as GhostValidateDocument;
   checkDuplicateIds(doc.checks, issues);
   doc.checks.forEach((check, index) => {
     checkOne(check, index, options, issues);
@@ -48,7 +48,7 @@ export function lintGhostChecks(
 
 function checkDuplicateIds(
   checks: GhostCheck[],
-  issues: GhostChecksLintIssue[],
+  issues: GhostValidateLintIssue[],
 ): void {
   const seen = new Map<string, number>();
   checks.forEach((check, index) => {
@@ -69,8 +69,8 @@ function checkDuplicateIds(
 function checkOne(
   check: GhostCheck,
   index: number,
-  options: GhostChecksLintOptions,
-  issues: GhostChecksLintIssue[],
+  options: GhostValidateLintOptions,
+  issues: GhostValidateLintIssue[],
 ): void {
   const path = `checks[${index}]`;
   checkDetector(check, path, issues);
@@ -153,8 +153,8 @@ function checkOne(
 function checkAppliesToTargets(
   check: GhostCheck,
   path: string,
-  options: GhostChecksLintOptions,
-  issues: GhostChecksLintIssue[],
+  options: GhostValidateLintOptions,
+  issues: GhostValidateLintIssue[],
 ): void {
   if (!check.applies_to || !options.fingerprint) return;
 
@@ -195,15 +195,15 @@ function checkAppliesToTargets(
 function checkGrounding(
   check: GhostCheck,
   path: string,
-  options: GhostChecksLintOptions,
-  issues: GhostChecksLintIssue[],
+  options: GhostValidateLintOptions,
+  issues: GhostValidateLintIssue[],
 ): void {
   const derivation = check.derivation;
-  const proseRefs = derivation?.prose ?? [];
+  const intentRefs = derivation?.intent ?? [];
   const compositionRefs = derivation?.composition ?? [];
   const inventoryRefs = derivation?.inventory ?? [];
   const hasAuthoritativeGrounding =
-    proseRefs.length > 0 || compositionRefs.length > 0;
+    intentRefs.length > 0 || compositionRefs.length > 0;
   const hasAnyDerivation =
     hasAuthoritativeGrounding || inventoryRefs.length > 0;
 
@@ -214,7 +214,7 @@ function checkGrounding(
       severity: check.status === "active" ? "error" : "warning",
       rule: "check-grounding-missing",
       message:
-        "Checks must declare derivation with at least one prose or composition fingerprint ref before they can be trusted.",
+        "Checks must declare derivation with at least one intent or composition fingerprint ref before they can be trusted.",
       path: `${path}.derivation`,
     });
     return;
@@ -225,7 +225,7 @@ function checkGrounding(
       severity: check.status === "active" ? "error" : "warning",
       rule: "check-grounding-inventory-only",
       message:
-        "Inventory refs can support a check, but active checks must derive from prose or composition refs.",
+        "Inventory refs can support a check, but active checks must derive from intent or composition refs.",
       path: `${path}.derivation`,
     });
   }
@@ -235,14 +235,14 @@ function checkGrounding(
       severity: "info",
       rule: "check-grounding-unverified",
       message:
-        "Check derivation refs were not verified because no fingerprint.yml context was provided; run ghost lint on the bundle or place fingerprint.yml beside checks.yml.",
+        "Check derivation refs were not verified because no fingerprint.yml context was provided; run ghost lint on the bundle or place fingerprint.yml beside validate.yml.",
       path: `${path}.derivation`,
     });
     return;
   }
 
   const targets = collectFingerprintTargets(options.fingerprint);
-  checkDerivationRefs(proseRefs, "prose", path, check, targets, issues);
+  checkDerivationRefs(intentRefs, "intent", path, check, targets, issues);
   checkDerivationRefs(
     compositionRefs,
     "composition",
@@ -260,7 +260,7 @@ function checkDerivationRefs(
   path: string,
   check: GhostCheck,
   targets: Record<GroundingPrefix, Set<string>>,
-  issues: GhostChecksLintIssue[],
+  issues: GhostValidateLintIssue[],
 ): void {
   refs.forEach((ref, index) => {
     const parsed = parseGroundingRef(ref);
@@ -276,7 +276,7 @@ function checkDerivationRefs(
 }
 
 function collectFingerprintRoutingTargets(
-  fingerprint: NonNullable<GhostChecksLintOptions["fingerprint"]>,
+  fingerprint: NonNullable<GhostValidateLintOptions["fingerprint"]>,
 ): {
   scopes: Set<string>;
   surfaceTypes: Set<string>;
@@ -308,17 +308,17 @@ function parseGroundingRef(
 }
 
 function collectFingerprintTargets(
-  fingerprint: NonNullable<GhostChecksLintOptions["fingerprint"]>,
+  fingerprint: NonNullable<GhostValidateLintOptions["fingerprint"]>,
 ): Record<GroundingPrefix, Set<string>> {
   return {
-    "prose.principle": new Set(
-      fingerprint.prose?.principles?.map((entry) => entry.id) ?? [],
+    "intent.principle": new Set(
+      fingerprint.intent?.principles?.map((entry) => entry.id) ?? [],
     ),
-    "prose.situation": new Set(
-      fingerprint.prose?.situations?.map((entry) => entry.id) ?? [],
+    "intent.situation": new Set(
+      fingerprint.intent?.situations?.map((entry) => entry.id) ?? [],
     ),
-    "prose.experience_contract": new Set(
-      fingerprint.prose?.experience_contracts?.map((entry) => entry.id) ?? [],
+    "intent.experience_contract": new Set(
+      fingerprint.intent?.experience_contracts?.map((entry) => entry.id) ?? [],
     ),
     "inventory.exemplar": new Set(
       fingerprint.inventory?.exemplars?.map((entry) => entry.id) ?? [],
@@ -332,7 +332,7 @@ function collectFingerprintTargets(
 function checkDetector(
   check: GhostCheck,
   path: string,
-  issues: GhostChecksLintIssue[],
+  issues: GhostValidateLintIssue[],
 ): void {
   const { detector } = check;
   if (
@@ -369,7 +369,7 @@ function checkDetector(
 function compileRegex(
   pattern: string,
   path: string,
-  issues: GhostChecksLintIssue[],
+  issues: GhostValidateLintIssue[],
 ): void {
   try {
     new RegExp(pattern);
@@ -385,7 +385,7 @@ function compileRegex(
   }
 }
 
-function finalize(issues: GhostChecksLintIssue[]): GhostChecksLintReport {
+function finalize(issues: GhostValidateLintIssue[]): GhostValidateLintReport {
   return {
     issues,
     errors: issues.filter((issue) => issue.severity === "error").length,

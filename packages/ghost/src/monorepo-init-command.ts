@@ -210,7 +210,7 @@ function initPackageOutput(
     dir: paths.dir,
     fingerprintDir: paths.fingerprintDir,
     manifest: paths.manifest,
-    prose: paths.prose,
+    intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),

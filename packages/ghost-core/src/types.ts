@@ -347,7 +347,7 @@ export interface Fingerprint {
   /**
    * Human-promoted review checks — grep-friendly, severity computed
    * by the perceptual prior at emit time. Coexists with `decisions[]`
-   * while fingerprint prose remains the primary generation surface.
+   * while fingerprint intent remains the primary generation surface.
    */
   checks?: Check[];
 

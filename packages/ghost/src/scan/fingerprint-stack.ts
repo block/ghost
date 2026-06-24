@@ -5,22 +5,22 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
-  GHOST_CHECKS_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
+  GHOST_VALIDATE_SCHEMA,
   type GhostCheck,
-  type GhostChecksDocument,
-  GhostChecksSchema,
   type GhostFingerprintComposition,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
+  type GhostFingerprintIntent,
   type GhostFingerprintInventory,
   type GhostFingerprintInventoryBuildingBlocks,
-  type GhostFingerprintProse,
   type GhostFingerprintSummary,
   type GhostFingerprintTopology,
   type GhostFingerprintTopologyScope,
-  lintGhostChecks,
+  type GhostValidateDocument,
+  GhostValidateSchema,
   lintGhostFingerprint,
+  lintGhostValidate,
   type MapFrontmatter,
 } from "#ghost-core";
 import type { PackageContext } from "../context/package-context.js";
@@ -72,7 +72,7 @@ export interface GhostFingerprintStackLayer
   extends GhostFingerprintStackLayerRef {
   fingerprint: GhostFingerprintDocument;
   fingerprint_raw: string;
-  checks?: GhostChecksDocument;
+  checks?: GhostValidateDocument;
   checks_raw?: string;
 }
 
@@ -83,7 +83,7 @@ export interface GhostFingerprintStack {
   layers: GhostFingerprintStackLayer[];
   merged: {
     fingerprint: GhostFingerprintDocument;
-    checks: GhostChecksDocument;
+    checks: GhostValidateDocument;
   };
   provenance: {
     merge: "child-wins-by-id";
@@ -251,7 +251,7 @@ export function buildFingerprintStack(
     layers.map((layer) => layer.fingerprint),
   );
   const checks = mergeChecks(layers.map((layer) => layer.checks));
-  const checkLint = lintGhostChecks(checks, {
+  const checkLint = lintGhostValidate(checks, {
     fingerprint,
     map: mapFromFingerprint(fingerprint),
   });
@@ -303,7 +303,7 @@ export async function loadFingerprintStackLayer(
     : undefined;
 
   if (checks) {
-    const checksReport = lintGhostChecks(checks);
+    const checksReport = lintGhostValidate(checks);
     if (checksReport.errors > 0) {
       const first = checksReport.issues.find(
         (issue) => issue.severity === "error",
@@ -331,7 +331,7 @@ export function fingerprintStackToPackageContext(
 ): PackageContext {
   const name = sanitizeName(
     nameOverride ??
-      stack.merged.fingerprint.prose.summary.product ??
+      stack.merged.fingerprint.intent.summary.product ??
       stack.layers.at(-1)?.relative_root ??
       "ghost-package",
   );
@@ -339,7 +339,7 @@ export function fingerprintStackToPackageContext(
     name,
     fingerprintDir: stack.fingerprint_dir,
     targetPaths,
-    layerDirs: stack.layers.map((layer) => layer.dir),
+    stackDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.merged.fingerprint,
     fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
     checks: stack.merged.checks,
@@ -398,13 +398,13 @@ export async function lintAllFingerprintStacks(
         fingerprintReport.issues,
       ),
     );
-    const checksReport = lintGhostChecks(stack.merged.checks, {
+    const checksReport = lintGhostValidate(stack.merged.checks, {
       fingerprint: stack.merged.fingerprint,
       map: mapFromFingerprint(stack.merged.fingerprint),
     });
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.checks.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, memoryDir)}/merged.validate.yml`,
         checksReport.issues,
       ),
     );
@@ -486,9 +486,9 @@ async function resolveAndInit(
   );
 }
 
-function parseChecks(raw: string): GhostChecksDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint/checks.yml");
-  return GhostChecksSchema.parse(parsed) as GhostChecksDocument;
+function parseChecks(raw: string): GhostValidateDocument {
+  const parsed = parseYamlSafe(raw, "fingerprint/validate.yml");
+  return GhostValidateSchema.parse(parsed) as GhostValidateDocument;
 }
 
 function mergeFingerprints(
@@ -496,7 +496,7 @@ function mergeFingerprints(
 ): GhostFingerprintDocument {
   const merged: GhostFingerprintDocument = {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    prose: {
+    intent: {
       summary: {},
       situations: [],
       principles: [],
@@ -514,7 +514,7 @@ function mergeFingerprints(
   };
 
   for (const fingerprint of fingerprints) {
-    merged.prose = mergeProse(merged.prose, fingerprint.prose);
+    merged.intent = mergeIntent(merged.intent, fingerprint.intent);
     merged.inventory = mergeInventory(merged.inventory, fingerprint.inventory);
     merged.composition = mergeComposition(
       merged.composition,
@@ -533,10 +533,10 @@ function mergeFingerprints(
   return merged;
 }
 
-function mergeProse(
-  parent: GhostFingerprintProse,
-  child: GhostFingerprintProse,
-): GhostFingerprintProse {
+function mergeIntent(
+  parent: GhostFingerprintIntent,
+  child: GhostFingerprintIntent,
+): GhostFingerprintIntent {
   return {
     summary: mergeSummary(parent.summary, child.summary),
     situations: mergeById([...parent.situations, ...child.situations]),
@@ -626,11 +626,11 @@ function collectSurfaceTypes(
 }
 
 function mergeChecks(
-  checksDocs: Array<GhostChecksDocument | undefined>,
-): GhostChecksDocument {
+  checksDocs: Array<GhostValidateDocument | undefined>,
+): GhostValidateDocument {
   const checks = mergeById(checksDocs.flatMap((doc) => doc?.checks ?? []));
   return {
-    schema: GHOST_CHECKS_SCHEMA,
+    schema: GHOST_VALIDATE_SCHEMA,
     id: "fingerprint-stack",
     checks: checks as GhostCheck[],
   };
@@ -670,17 +670,29 @@ function normalizeFingerprintPaths(
       path: normalizePath(exemplar.path, baseRoot, repoRoot),
     }),
   );
-  fingerprint.prose.situations = fingerprint.prose.situations.map((entry) => ({
-    ...entry,
-    evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
-  }));
-  fingerprint.prose.principles = fingerprint.prose.principles.map((entry) => ({
-    ...entry,
-    applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
-    evidence: normalizeFingerprintEvidence(entry.evidence, baseRoot, repoRoot),
-  }));
-  fingerprint.prose.experience_contracts =
-    fingerprint.prose.experience_contracts.map((entry) => ({
+  fingerprint.intent.situations = fingerprint.intent.situations.map(
+    (entry) => ({
+      ...entry,
+      evidence: normalizeFingerprintEvidence(
+        entry.evidence,
+        baseRoot,
+        repoRoot,
+      ),
+    }),
+  );
+  fingerprint.intent.principles = fingerprint.intent.principles.map(
+    (entry) => ({
+      ...entry,
+      applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
+      evidence: normalizeFingerprintEvidence(
+        entry.evidence,
+        baseRoot,
+        repoRoot,
+      ),
+    }),
+  );
+  fingerprint.intent.experience_contracts =
+    fingerprint.intent.experience_contracts.map((entry) => ({
       ...entry,
       applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
       evidence: normalizeFingerprintEvidence(
@@ -704,10 +716,10 @@ function normalizeFingerprintPaths(
 }
 
 function normalizeChecksPaths(
-  input: GhostChecksDocument,
+  input: GhostValidateDocument,
   baseRoot: string,
   repoRoot: string,
-): GhostChecksDocument {
+): GhostValidateDocument {
   const checks = clone(input);
   checks.checks = checks.checks.map((check) => ({
     ...check,

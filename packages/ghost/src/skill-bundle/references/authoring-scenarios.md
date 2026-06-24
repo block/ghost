@@ -2,9 +2,9 @@
 name: authoring-scenarios
 description: Choose the right human-agent workflow for authoring Ghost fingerprints.
 handoffs:
-  - label: Inspect fingerprint readiness
+  - label: Inspect fingerprint contribution
     command: ghost scan --format json
-    prompt: Classify this repo's fingerprint authoring scenario and summarize missing layers.
+    prompt: Classify this repo's fingerprint authoring scenario and summarize absent facets.
   - label: Inspect nested stacks
     command: ghost stack <path>
     prompt: Decide whether this path needs local fingerprint guidance or can inherit the root package.
@@ -20,12 +20,12 @@ stories, and UI libraries provide evidence. Agent synthesis is draft work until
 the human curates it and ordinary Git review accepts it.
 
 `auto-draft` is an optional skill mode for reducing blank-page cost. It scans
-first and writes starter core layer edits, but those edits are still draft work
+first and writes starter facet edits, but those edits are still draft work
 until the human curates them and Git review accepts them.
 
 ## 1. Classify The Scenario
 
-Choose the nearest scenario before writing fingerprint layers:
+Choose the nearest scenario before writing fingerprint facets:
 
 | Scenario | Default authoring posture |
 | --- | --- |
@@ -58,7 +58,7 @@ Ask only high-leverage questions that change the fingerprint:
 - Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
 - Are there surfaces where the same UI decision should be assessed differently?
 
-Use human-authored or human-approved answers in `prose.yml`. Do not treat
+Use human-authored or human-approved answers in `intent.yml`. Do not treat
 unapproved notes as canonical.
 
 When auto-draft is requested, move the interview after the starter draft and
@@ -85,11 +85,11 @@ In auto-draft mode, always gather signals before drafting, then inspect the
 high-signal files they point to. Signal facts may seed `inventory.yml`; scan
 frequency and raw signals do not establish surface-composition guidance.
 
-## 4. Draft The Core Layers
+## 4. Draft The Core Facets
 
 Write the smallest useful durable content:
 
-- `prose.yml`: product summary, audience, situations, principles, contracts,
+- `intent.yml`: product summary, audience, situations, principles, contracts,
   anti-goals, and tradeoffs.
 - `inventory.yml`: topology, building blocks, source links, and curated
   exemplars the agent can inspect or use.
@@ -99,7 +99,7 @@ Write the smallest useful durable content:
 Label uncertain reasoning in the working notes as provisional. Prefer a few
 high-confidence claims with evidence over a broad catalog.
 
-In auto-draft mode, write directly to the core layer files rather than a
+In auto-draft mode, write directly to the facet files rather than a
 separate proposal artifact. Keep entries sparse, cite concrete files or
 exemplars where possible, and leave ambiguous product meaning for curation.
 
@@ -145,7 +145,7 @@ ghost verify --all
 
 ## 7. Validate And Ratify
 
-Validate before calling layers complete:
+Validate before calling facets useful:
 
 ```bash
 ghost lint .ghost
@@ -159,7 +159,7 @@ canonical package.
 
 ## Never
 
-- Never copy raw inventory into canonical layers without curation.
+- Never copy raw inventory into canonical facets without curation.
 - Never claim scan frequency is product authority.
 - Never create nested packages just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.

@@ -2,7 +2,7 @@ import type { DesignDecision } from "#ghost-core";
 
 /**
  * Structured read of a fingerprint.md body. The body is authoritative for
- * prose — # Character, # Signature, and per-dimension rationale under # Decisions.
+ * intent — # Character, # Signature, and per-dimension rationale under # Decisions.
  * Frontmatter carries the machine index and token digest; body evidence is
  * parsed from each `### dimension` block and joined in by `applyBody`.
  */
@@ -11,7 +11,7 @@ export interface BodyData {
   character?: string;
   /** From `# Signature` — recognizable output posture and dominant moves */
   signature?: string;
-  /** From `# Decisions` `### slug` blocks — dimension + prose rationale + evidence */
+  /** From `# Decisions` `### slug` blocks — dimension + intent rationale + evidence */
   decisions?: DesignDecision[];
 }
 
@@ -68,21 +68,21 @@ function slug(s: string): string {
 }
 
 /**
- * Parse a `### Dimension\nprose…\n**Evidence:**\n- …` block.
+ * Parse a `### Dimension\nintent…\n**Evidence:**\n- …` block.
  *
  * Schema 5: evidence lives in the body as a `**Evidence:**` bullet list
- * following the rationale prose. Backtick fencing used for citation
+ * following the rationale intent. Backtick fencing used for citation
  * formatting is stripped so the serialized value matches the in-memory
  * one (round-trip safe).
  */
 function parseDecision(sec: Section): DesignDecision {
   const evidenceRe = /\*\*Evidence:\*\*\s*([\s\S]*)$/i;
   const match = sec.body.match(evidenceRe);
-  const prose = sec.body.replace(evidenceRe, "").trim();
+  const intent = sec.body.replace(evidenceRe, "").trim();
   const evidence = match ? parseBullets(match[1]).map(unfence) : [];
   return {
     dimension: slug(sec.heading),
-    decision: prose,
+    decision: intent,
     evidence,
   };
 }

@@ -1,9 +1,9 @@
 import { parse as parseYaml } from "yaml";
 import {
-  type GhostChecksDocument,
-  GhostChecksSchema,
   type GhostFingerprintDocument,
-  lintGhostChecks,
+  type GhostValidateDocument,
+  GhostValidateSchema,
+  lintGhostValidate,
 } from "#ghost-core";
 import { readOptionalUtf8 } from "../internal/fs.js";
 import {
@@ -15,16 +15,16 @@ export interface PackageContext {
   name: string;
   fingerprintDir?: string;
   targetPaths?: string[];
-  layerDirs?: string[];
+  stackDirs?: string[];
   fingerprint: GhostFingerprintDocument;
   fingerprintRaw: string;
   fingerprintLayers?: {
     manifest: string;
-    prose?: string;
+    intent?: string;
     inventory?: string;
     composition?: string;
   };
-  checks?: GhostChecksDocument;
+  checks?: GhostValidateDocument;
   checksRaw?: string;
 }
 
@@ -56,24 +56,24 @@ export async function loadPackageContext(
 function parseChecks(
   raw: string,
   fingerprint: GhostFingerprintDocument,
-): GhostChecksDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint/checks.yml");
-  const report = lintGhostChecks(parsed, { fingerprint });
+): GhostValidateDocument {
+  const parsed = parseYamlSafe(raw, "fingerprint/validate.yml");
+  const report = lintGhostValidate(parsed, { fingerprint });
   if (report.errors > 0) {
     const first = report.issues.find((issue) => issue.severity === "error");
     const suffix = first?.path ? ` @ ${first.path}` : "";
     throw new Error(
-      `fingerprint/checks.yml failed lint with ${report.errors} error(s): ${
+      `fingerprint/validate.yml failed lint with ${report.errors} error(s): ${
         first?.message ?? "invalid checks"
       }${suffix}`,
     );
   }
 
-  const result = GhostChecksSchema.safeParse(parsed);
+  const result = GhostValidateSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error("fingerprint/checks.yml failed schema validation.");
+    throw new Error("fingerprint/validate.yml failed schema validation.");
   }
-  return result.data as GhostChecksDocument;
+  return result.data as GhostValidateDocument;
 }
 
 function parseYamlSafe(raw: string, label: string): unknown {
@@ -91,8 +91,8 @@ function parseYamlSafe(raw: string, label: string): unknown {
 const readOptional = readOptionalUtf8;
 
 function inferPackageName(fingerprint: GhostFingerprintDocument): string {
-  if (fingerprint.prose.summary.product)
-    return fingerprint.prose.summary.product;
+  if (fingerprint.intent.summary.product)
+    return fingerprint.intent.summary.product;
   const firstScope = fingerprint.inventory.topology.scopes?.[0]?.id;
   if (firstScope) return firstScope;
   return "ghost-package";

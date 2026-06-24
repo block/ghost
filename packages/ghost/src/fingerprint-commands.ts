@@ -50,7 +50,7 @@ import { registerStackCommand } from "./scan-stack-command.js";
  * Verbs author and validate the root `.ghost/` fingerprint package:
  * `lint` (schema check, auto-detects file kind), `verify` (cross-artifact
  * fidelity), `describe` (section ranges + token estimates for direct
- * fingerprint markdown), `diff` (structural prose-level diff between direct
+ * fingerprint markdown), `diff` (structural intent-level diff between direct
  * fingerprint files), `emit` (derive review-command artifacts), and `survey`
  * operations for deterministic `ghost.survey/v1`
  * merge, ID repair, bounded summary output, derived value catalogs, and
@@ -102,8 +102,8 @@ export function registerFingerprintCommands(cli: CAC): void {
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
         const fingerprint =
-          kind === "checks"
-            ? await loadSiblingFingerprintForChecksLint(fileTarget)
+          kind === "validate"
+            ? await loadSiblingFingerprintForValidateLint(fileTarget)
             : undefined;
 
         report = lintDetectedFileKind(kind, raw, { fingerprint });
@@ -138,7 +138,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   cli
     .command(
       "verify [dir]",
-      "Verify a root Ghost fingerprint package: prose/composition evidence, inventory exemplars, and checks are grounded.",
+      "Verify a root Ghost fingerprint package: intent/composition evidence, inventory exemplars, and checks are grounded.",
     )
     .option(
       "--root <dir>",
@@ -192,7 +192,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report fingerprint layer readiness: produced artifacts, useful prose/inventory/composition, and the next BYOA step.",
+      "Report sparse fingerprint package contribution facets: intent, inventory, composition, validate, and the next BYOA step.",
     )
     .option(
       "--include-scopes",
@@ -200,7 +200,7 @@ export function registerFingerprintCommands(cli: CAC): void {
     )
     .option(
       "--include-nested",
-      "Also list nested fingerprint packages and readiness",
+      "Also list nested fingerprint packages and contribution state",
     )
     .option(
       "--memory-dir <relative-dir>",
@@ -242,7 +242,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             `  config      (config.yml):      ${fmt(status.config.state)}\n`,
           );
           process.stdout.write(
-            `  checks      (fingerprint/checks.yml): ${fmt(status.checks.state)}\n`,
+            `  validate   (fingerprint/validate.yml): ${fmt(status.validate.state)}\n`,
           );
           process.stdout.write("\n");
           if (status.recommended_next) {
@@ -251,32 +251,42 @@ export function registerFingerprintCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: edit fingerprint/ layers, then run ghost verify/check/review\n",
+              "next: edit contributing fingerprint facets, then run ghost verify/check/review\n",
             );
           }
-          process.stdout.write(`readiness: ${status.readiness.state}\n`);
-          process.stdout.write(
-            `  layers: prose ${status.readiness.layer_counts.prose}, inventory ${status.readiness.layer_counts.inventory}, composition ${status.readiness.layer_counts.composition}\n`,
-          );
-          if (status.readiness.missing_layers.length > 0) {
+          process.stdout.write(`contribution: ${status.contribution.state}\n`);
+          for (const facet of [
+            "intent",
+            "inventory",
+            "composition",
+            "validate",
+          ] as const) {
+            const report = status.contribution.facets[facet];
             process.stdout.write(
-              `  missing layers: ${status.readiness.missing_layers.join(", ")}\n`,
+              `  ${facet}: ${report.state} (${report.count})\n`,
             );
           }
-          if (status.readiness.can_review.length > 0) {
+          if (status.contribution.contributing_facets.length > 0) {
             process.stdout.write(
-              `  can review: ${status.readiness.can_review.join(", ")}\n`,
+              `  contributing facets: ${status.contribution.contributing_facets.join(", ")}\n`,
             );
           }
-          if (status.readiness.cannot_review.length > 0) {
+          if (status.contribution.empty_facets.length > 0) {
             process.stdout.write(
-              `  cannot review: ${status.readiness.cannot_review.join(", ")}\n`,
+              `  empty facets: ${status.contribution.empty_facets.join(", ")}\n`,
             );
           }
-          if (status.readiness.reasons[0]) {
-            process.stdout.write(`  reason: ${status.readiness.reasons[0]}\n`);
+          if (status.contribution.absent_facets.length > 0) {
+            process.stdout.write(
+              `  absent facets: ${status.contribution.absent_facets.join(", ")}\n`,
+            );
           }
-          const buildingBlockRows = status.readiness.building_block_rows;
+          if (status.contribution.reasons[0]) {
+            process.stdout.write(
+              `  reason: ${status.contribution.reasons[0]}\n`,
+            );
+          }
+          const buildingBlockRows = status.contribution.building_block_rows;
           const buildingBlockCount =
             buildingBlockRows.tokens +
             buildingBlockRows.components +
@@ -311,7 +321,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             } else {
               for (const pkg of nested) {
                 process.stdout.write(
-                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.fingerprint_dir)}: ${pkg.readiness.state}\n`,
+                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.fingerprint_dir)}: ${pkg.contribution.state}\n`,
                 );
               }
             }
@@ -600,8 +610,8 @@ async function nestedPackageStatus(
       return {
         ...pkg,
         fingerprint: status.fingerprint,
-        checks: status.checks,
-        readiness: status.readiness,
+        validate: status.validate,
+        contribution: status.contribution,
       };
     }),
   );
@@ -613,8 +623,8 @@ interface NestedPackageStatus {
   relative_root: string;
   fingerprint_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
-  checks: Awaited<ReturnType<typeof scanStatus>>["checks"];
-  readiness: Awaited<ReturnType<typeof scanStatus>>["readiness"];
+  validate: Awaited<ReturnType<typeof scanStatus>>["validate"];
+  contribution: Awaited<ReturnType<typeof scanStatus>>["contribution"];
 }
 
 function dirnameForFingerprintPackageDir(
@@ -632,14 +642,14 @@ function memoryDirFromOpts(opts: { memoryDir?: unknown }): string {
   return resolveMemoryDirDefault(opts.memoryDir);
 }
 
-async function loadSiblingFingerprintForChecksLint(
+async function loadSiblingFingerprintForValidateLint(
   fileTarget: string,
 ): Promise<GhostFingerprintDocument | undefined> {
-  const checksDir = dirname(fileTarget);
+  const validateDir = dirname(fileTarget);
   const packageRoot =
-    basename(checksDir) === FINGERPRINT_DIRNAME
-      ? resolve(checksDir, "..")
-      : resolve(checksDir, "..", "..");
+    basename(validateDir) === FINGERPRINT_DIRNAME
+      ? resolve(validateDir, "..")
+      : resolve(validateDir, "..", "..");
   try {
     return (
       await loadFingerprintPackage(resolveFingerprintPackage(packageRoot))
@@ -789,7 +799,7 @@ function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
       traits: traitsForPattern(entry.value, survey),
       evidence: entry.evidence,
       advisory: [
-        "Use as advisory composition evidence; deterministic checks belong in fingerprint/checks.yml.",
+        "Use as advisory composition evidence; deterministic checks belong in fingerprint/validate.yml.",
       ],
     })),
     advisory: {
@@ -803,7 +813,7 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "No UI surface evidence is present; do not infer product composition patterns from values, tokens, or components alone.",
       "Use survey values, tokens, and components as implementation vocabulary until implemented product surfaces are observed.",
-      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
     ];
   }
 
@@ -814,14 +824,14 @@ function surveyPatternReviewExpectations(survey: Survey): string[] {
     return [
       "Treat story, fixture, and doc-example rows as component demonstration evidence, not product composition authority.",
       "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-      "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+      "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
     ];
   }
 
   return [
     "Identify the surface type before assessing composition.",
     "Cite matching composition_patterns[].evidence and survey.ui_surfaces evidence for advisory findings.",
-    "Treat fingerprint/prose.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as the canonical authoring layers.",
+    "Treat fingerprint/intent.yml, fingerprint/inventory.yml, and fingerprint/composition.yml as canonical authoring facets.",
   ];
 }
 
