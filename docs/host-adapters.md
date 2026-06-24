@@ -17,10 +17,19 @@ Ghost provides:
 - `ghost review --format json` for advisory packets grounded in the resolved
   fingerprint stack.
 - `ghost relay gather [target] --format json` as the `ghost.relay.gather/v2`
-  contract for generation context, including selected `context_hits`, match
-  reasons, suggested reads, omissions, and gaps.
+  contract for generation context. Host adapters should consume JSON fields
+  such as `context`, `selected_context`, `source`, `targetPaths`, `stackDirs`,
+  gaps, and trace data instead of scraping markdown.
+- `ghost relay gather --request <file> --format json` and
+  `ghost relay gather --request-stdin --format json` for prompt-shaped tasks
+  where the host adapter can provide a structured `ghost.relay-request/v1`.
+- Relay configs as the execution contract for context gathering. Omitted
+  `base` means `base.kind: fingerprint`; explicit `base.kind: none` lets a
+  framework repo gather declared request context without a `.ghost` package.
 - `GHOST_PACKAGE_DIR=<relative-dir>` for wrappers that store Ghost package
   roots somewhere other than `.ghost`.
+- `GHOST_RELAY_CONFIG=<relative-file>` for wrappers that store Relay config
+  somewhere other than `.ghost/relay.yml`.
 
 Host adapters provide:
 
@@ -68,6 +77,59 @@ GHOST_PACKAGE_DIR=.design/memory ghost review --base main --format json
 
 `--package <dir>` remains exact single-bundle mode. Use it when the caller
 already knows the package root and wants to bypass stack discovery.
+
+## Relay Context Flow
+
+Use JSON as the agent contract:
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx --format json
+```
+
+Relay first loads config by precedence: `--config`, `GHOST_RELAY_CONFIG`,
+discovered `.ghost/relay.yml`, then the built-in default config. Source paths
+inside a Relay config are resolved from the repo root/current working directory,
+not from the config file directory.
+
+When the user prompt is not naturally tied to one repo path, the host adapter
+should create a Relay request from the prompt and pass it to Ghost:
+
+```yaml
+schema: ghost.relay-request/v1
+task: generate-interface
+selectors:
+  customer: merchant
+  brand: square
+  system: managerbot
+  moment: cash-flow-gap
+  medium: push
+  capability: lending
+```
+
+```bash
+ghost relay gather --request-stdin --format json
+```
+
+Framework-owned contexts can keep the same command and provide their runtime
+config explicitly:
+
+```bash
+GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
+ghost relay gather stacks/managerbot.cash-flow-gap.push.yml --config .agents/ghost/relay.yml --format json
+```
+
+Use `base.kind: none` in that config when there is no base Ghost fingerprint
+package. Ghost will return deterministic gaps such as `no-base-fingerprint`
+instead of throwing a missing `.ghost/manifest.yml` error.
+
+The nested `context.schema` value is `ghost.relay-context/v1`. The top-level
+`brief` field is display text for humans and compatibility. Plain markdown
+output from `ghost relay gather <target>` is a compact human preview and may
+omit projected Relay config sources that are present in JSON.
+
+Ghost resolves request selectors deterministically against declared Relay
+config resolvers. Natural-language extraction belongs to the host adapter, not
+Ghost core.
 
 ## Fingerprint Edits
 

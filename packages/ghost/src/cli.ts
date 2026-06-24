@@ -29,7 +29,7 @@ import {
 } from "./evolution-commands.js";
 import { formatSemanticDiff } from "./fingerprint.js";
 import { registerFingerprintCommands } from "./fingerprint-commands.js";
-import { registerRelayCommand } from "./relay.js";
+import { registerRelayCommand } from "./relay-command.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,

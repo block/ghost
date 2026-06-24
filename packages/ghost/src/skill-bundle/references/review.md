@@ -22,14 +22,29 @@ Fix deterministic failures first. These come from active
 
 ```bash
 ghost review --base <ref>
+ghost relay gather <target> --format json
 ```
 
-Use the emitted packet as context. It includes:
+Use JSON as the agent context contract. `ghost review --format json` emits the
+review packet, and `ghost relay gather --format json` emits the
+`ghost.relay.gather/v2` context contract. Relay JSON includes:
 
-- selected context hits: fingerprint refs, why they matched, suggested reads, omissions, and gaps
+- selected context hits: fingerprint refs, why they matched, suggested reads, skipped context, and gaps
+- nested `context.schema: ghost.relay-context/v1` trace
 - active checks from `validate.yml`
 - optional stack or config context when present or requested
 - the diff
+
+When the review ask is prompt-shaped rather than path-shaped, create a
+`ghost.relay-request/v1` from the ask and run
+`ghost relay gather --request-stdin --format json`. The host extracts request
+selectors; Ghost resolves declared context deterministically.
+
+If the host framework stores Relay config outside `.ghost/relay.yml`, keep the
+same command and pass `ghost relay gather --config <file>` or set
+`GHOST_RELAY_CONFIG=<relative-file>`. When that config uses `base.kind: none`,
+Relay does not load a `.ghost` package; read request-selected context from
+`context.sections`, `context.extras`, source, gaps, and trace.
 
 ## 3. Write Advisory Findings
 
@@ -44,6 +59,8 @@ rationale.
 
 Use the selected context hits first, then follow suggested reads when the task
 needs deeper evidence.
+When Relay JSON is available, cite section refs, source paths, skipped context,
+and gaps from the trace.
 When fingerprint facets are silent or selected-context gaps show the fingerprint is
 silent, local evidence can still support advisory critique. Label those findings
 as provisional and non-Ghost-backed.

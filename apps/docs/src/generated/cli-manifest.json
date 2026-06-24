@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T04:21:56.789Z",
+  "generatedAt": "2026-06-24T16:55:39.949Z",
   "tools": [
     {
       "tool": "ghost",
@@ -587,7 +587,7 @@
           "tool": "ghost",
           "name": "relay",
           "rawName": "relay <action> [target]",
-          "description": "Gather fingerprint-grounded context for an agent target.",
+          "description": "Gather Relay context for an agent target.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "relay gather",
@@ -614,6 +614,38 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--config <file>",
+              "name": "config",
+              "description": "Load an explicit Ghost Relay config",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--request <file>",
+              "name": "request",
+              "description": "Load a structured Ghost Relay request",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--request-stdin",
+              "name": "requestStdin",
+              "description": "Read a structured Ghost Relay request from stdin",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--mode <mode>",
+              "name": "mode",
+              "description": "Relay mode: generation, review, or prompt",
+              "default": "generation",
               "takesValue": true,
               "negated": false
             }

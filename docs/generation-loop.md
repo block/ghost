@@ -22,16 +22,51 @@ deterministic gates + advisory surface-composition findings
 
 ## Before Generation
 
-Build a brief from the resolved fingerprint stack:
+Gather Relay JSON when a target path is known:
 
 ```bash
-ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --format json
 ```
 
-Relay compiles selected context from the resolved stack as context hits:
-fingerprint refs, why they matched, suggested reads, omissions, and gaps.
+By default, Relay uses the resolved `.ghost` fingerprint stack as its base
+runtime. A Relay config can add declared sources, request resolvers, or opt out
+of the fingerprint base entirely with `base.kind: none`.
 
-Use the brief in this order:
+For prompt-shaped work without a clear path, the host agent should first turn
+the ask into a structured Relay request, then pass it to Ghost:
+
+```yaml
+schema: ghost.relay-request/v1
+task: generate-interface
+selectors:
+  customer: merchant
+  brand: square
+  system: managerbot
+  moment: cash-flow-gap
+  medium: push
+  capability: lending
+```
+
+```bash
+ghost relay gather --request-stdin --format json
+```
+
+If the host framework stores Relay config outside `.ghost/relay.yml`, keep the
+same command and pass the config:
+
+```bash
+GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
+ghost relay gather stacks/managerbot.cash-flow-gap.push.yml --config .agents/ghost/relay.yml --format json
+```
+
+The second form works for `base.kind: none` configs by synthesizing a minimal
+`task: gather` Relay request from the target path.
+
+The full `ghost.relay.gather/v2` result is the agent contract. Agents should
+read `context`, `selected_context`, `targetPaths`, `source`, `stackDirs`, gaps,
+and trace fields from JSON rather than scraping the markdown preview.
+
+Use the JSON context in this order:
 
 1. Start from the selected context hits and their match reasons.
 2. Apply intent and composition hits before choosing implementation details.
@@ -42,6 +77,10 @@ Use the brief in this order:
    deterministic failures.
 7. Treat gaps as a signal to use local evidence provisionally or inspect the
    full facet files.
+
+For quick terminal inspection, `ghost relay gather <target>` still prints a
+compact human preview. The preview can omit projected Relay config sources that
+are present in JSON.
 
 Raw repo signals can help orient an agent:
 
@@ -103,7 +142,9 @@ ghost review --base main --format markdown
 
 Advanced wrappers that store fingerprint packages outside `.ghost` can set
 `GHOST_PACKAGE_DIR=<relative-dir>` on stack-aware commands. `--package <dir>`
-remains exact single-bundle mode and bypasses stack discovery.
+remains exact single-bundle mode and bypasses stack discovery. Wrappers that
+store Relay runtime config elsewhere should set `GHOST_RELAY_CONFIG` or pass
+`ghost relay gather --config <file>`.
 
 ## Legacy Cache Helpers
 

@@ -229,7 +229,8 @@ ghost verify .ghost --root .
 ghost check --base main --format json
 ghost review --base main
 ghost emit review-command --path apps/checkout/review/page.tsx
-ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --format json
+ghost relay gather --request request.yml --format json
 ```
 
 `ghost scan` reports package contribution facets. Useful `intent` means any
