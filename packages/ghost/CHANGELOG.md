@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.18.0
+
+### Minor Changes
+
+- [#184](https://github.com/block/ghost/pull/184) [`e79201c`](https://github.com/block/ghost/commit/e79201cceb8e4b1267c0a9fd32d4aea97d208603) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds Relay context JSON, structured Relay requests, and config-driven runtime selection for declared project context sources.
+
 ## 0.17.0
 
 ### Minor Changes
