@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": minor
 ---
 
-Expose Relay posture summaries in cascade briefs.
+Expose Relay posture summaries in selected context.
