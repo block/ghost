@@ -2069,7 +2069,7 @@ selectors:
         stdin: `schema: ghost.relay-request/v1
 task: answer
 selectors:
-  medium: email
+  medium: voice
 `,
       },
     );
@@ -2845,7 +2845,7 @@ composition_patterns: []
 
 async function writeRelayRequestStackScenario(dir: string): Promise<void> {
   await mkdir(join(dir, "stacks"), { recursive: true });
-  await mkdir(join(dir, "media", "push"), { recursive: true });
+  await mkdir(join(dir, "media", "email"), { recursive: true });
   await writeFile(
     join(dir, ".ghost", "relay.yml"),
     `schema: ghost.relay-config/v1
@@ -2881,7 +2881,7 @@ units:
 `,
   );
   await writeFile(
-    join(dir, "media", "push", "questions.yml"),
+    join(dir, "media", "email", "questions.yml"),
     `questions:
   - id: email-sensitive-detail
     question: What sensitive detail is safe in email?
@@ -2895,7 +2895,7 @@ async function writeRelayRequestOnlyScenario(
 ): Promise<void> {
   await mkdir(join(dir, ".agents", "ghost"), { recursive: true });
   await mkdir(join(dir, "stacks"), { recursive: true });
-  await mkdir(join(dir, "media", "push"), { recursive: true });
+  await mkdir(join(dir, "media", "email"), { recursive: true });
   await writeFile(
     join(dir, ".agents", "ghost", "relay.yml"),
     `schema: ghost.relay-config/v1
@@ -2929,7 +2929,7 @@ units:
 `,
   );
   await writeFile(
-    join(dir, "media", "push", "questions.yml"),
+    join(dir, "media", "email", "questions.yml"),
     `questions:
   - id: email-sensitive-detail
     question: What sensitive detail is safe in email?

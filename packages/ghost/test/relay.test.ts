@@ -769,9 +769,9 @@ async function createRelayRequestStackSandbox(): Promise<string> {
   const root = await createSingleSurfaceSandbox();
   await mkdir(join(root, "stacks"), { recursive: true });
   await mkdir(join(root, "systems", "portal"), { recursive: true });
-  await mkdir(join(root, "media", "push"), { recursive: true });
-  await mkdir(join(root, "media", "chat"), { recursive: true });
-  await mkdir(join(root, "capabilities", "lending"), { recursive: true });
+  await mkdir(join(root, "media", "email"), { recursive: true });
+  await mkdir(join(root, "media", "sms"), { recursive: true });
+  await mkdir(join(root, "capabilities", "billing"), { recursive: true });
   await writeFile(
     join(root, ".ghost", "relay.yml"),
     `schema: ghost.relay-config/v1
@@ -850,7 +850,7 @@ units:
 `,
   );
   await writeFile(
-    join(root, "media", "push", "questions.yml"),
+    join(root, "media", "email", "questions.yml"),
     `questions:
   - id: email-sensitive-detail
     question: What sensitive detail is safe in email?
@@ -858,17 +858,17 @@ units:
 `,
   );
   await writeFile(
-    join(root, "media", "push", "composition.yml"),
+    join(root, "media", "email", "composition.yml"),
     `patterns:
   - id: email-route-to-detail
     pattern: Email previews route to authenticated detail.
 `,
   );
   await writeFile(
-    join(root, "media", "chat", "questions.yml"),
+    join(root, "media", "sms", "questions.yml"),
     `questions:
-  - id: chat-explanation-depth
-    question: How much context should chat show inline?
+  - id: sms-explanation-depth
+    question: How much context should SMS show inline?
 `,
   );
   return root;
