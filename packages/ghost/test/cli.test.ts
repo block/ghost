@@ -912,7 +912,7 @@ design_loop:
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Selected Fingerprint Context");
+    expect(review.stdout).toContain("## Selected Context");
     expect(reviewCommand.code).toBe(0);
   });
 
@@ -1487,25 +1487,23 @@ checks:
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
     expect(status.intent).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-empty");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 0,
-      inventory: 0,
-      composition: 0,
-    });
-    expect(status.readiness.missing_layers).toEqual([
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.validate.state).toBe("present");
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
       "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
     expect(scanHuman.stdout).toContain("fingerprint dir:");
-    expect(scanHuman.stdout).toContain("readiness: fingerprint-empty");
-    expect(scanHuman.stdout).toContain(
-      "layers: intent 0, inventory 0, composition 0",
-    );
-    expect(scanHuman.stdout).toContain(
-      "missing layers: intent, inventory, composition",
-    );
+    expect(scanHuman.stdout).toContain("contribution: empty");
+    expect(scanHuman.stdout).toContain("intent: empty (0)");
+    expect(scanHuman.stdout).toContain("validate: empty (0)");
+    expect(scanHuman.stdout).not.toContain("readiness:");
+    expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -1602,8 +1600,14 @@ checks:
 
     const status = JSON.parse(scan.stdout);
     expect(status.config.state).toBe("present");
-    expect(status.readiness.state).toBe("inventory-only");
-    expect(status.readiness.missing_layers).toEqual(["intent", "composition"]);
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
+    expect(status.contribution.absent_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
+      "intent",
+      "composition",
+      "validate",
+    ]);
 
     const signalsOutput = JSON.parse(signals.stdout);
     expect(signalsOutput.config.libraries[0].id).toBe("ghost-ui");
@@ -1642,13 +1646,23 @@ checks:
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
-    expect(status.checks.state).toBe("present");
+    expect(status.validate.state).toBe("missing");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
-    expect(status.readiness.state).toBe("fingerprint-partial");
-    expect(status.readiness.missing_layers).toEqual(["composition"]);
-    expect(status.readiness.reasons[0]).toContain(
-      "intent and inventory but is missing composition",
+    expect(status.readiness).toBeUndefined();
+    expect(status.checks).toBeUndefined();
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual([
+      "intent",
+      "inventory",
+    ]);
+    expect(status.contribution.empty_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
+      "composition",
+      "validate",
+    ]);
+    expect(status.contribution.reasons[0]).toContain(
+      "Absent facets may be inherited",
     );
   });
 
@@ -1785,14 +1799,21 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Relay Brief");
+    expect(result.stdout).toContain("## Stack");
+    expect(result.stdout).toContain("## Match");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
-    expect(result.stdout).toContain("## Task Contract");
-    expect(result.stdout).toContain("### Preserve");
+    expect(result.stdout).toContain("## Context Hits");
+    expect(result.stdout).toContain("## Suggested Reads");
+    expect(result.stdout).toContain("## Omissions");
+    expect(result.stdout).toContain("## Gaps");
     expect(result.stdout).toContain("intent.principle:tokenized-ui-color");
     expect(result.stdout).toContain("composition.pattern:tokenized-ui-color");
     expect(result.stdout).toContain(
       "inventory.exemplar:lending-tokenized-screen",
+    );
+    expect(result.stdout).toContain(
+      "why: path=Code/Features/Lending/LendingUI",
     );
     expect(result.stdout).toContain("no-hardcoded-ui-color");
     expect(result.stdout).not.toContain("candidate-density-check");
@@ -1816,14 +1837,54 @@ checks:
 
     expect(result.code).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.schema).toBe("ghost.relay.gather/v1");
+    expect(json.schema).toBe("ghost.relay.gather/v2");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
-    expect(json.entrypoint.match.status).toBe("path-match");
-    expect(json.entrypoint.actionContract.preserve).toContain(
-      "UI colors should come from the product token system.",
+    expect(json.entrypoint).toBeUndefined();
+    expect(json.cascade_brief).toBeUndefined();
+    expect(json.selected_context.match.status).toBe("path-match");
+    expect(json.selected_context).not.toHaveProperty("intent");
+    expect(json.selected_context).not.toHaveProperty("composition");
+    expect(json.selected_context).not.toHaveProperty("inventory");
+    expect(json.selected_context).not.toHaveProperty("validation");
+    expect(json.selected_context).not.toHaveProperty("guidance");
+    expect(json.selected_context).not.toHaveProperty("active_obligations");
+    expect(json.selected_context.context_hits).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "intent.principle:tokenized-ui-color",
+          kind: "intent",
+          why_selected: expect.arrayContaining([
+            {
+              kind: "linked_ref",
+              value: "inventory.exemplar:lending-tokenized-screen",
+            },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "composition.pattern:tokenized-ui-color",
+          kind: "composition",
+        }),
+        expect.objectContaining({
+          ref: "inventory.exemplar:lending-tokenized-screen",
+          kind: "inventory",
+          path: "Code/Features/Lending/LendingUI",
+          why_selected: expect.arrayContaining([
+            { kind: "path", value: "Code/Features/Lending/LendingUI" },
+            { kind: "scope", value: "lending" },
+            { kind: "surface_type", value: "native-feature" },
+          ]),
+        }),
+        expect.objectContaining({
+          ref: "validate.check:no-hardcoded-ui-color",
+          kind: "validation",
+        }),
+      ]),
     );
-    expect(json.entrypoint.actionContract.inspect).toEqual(
+    expect(
+      json.selected_context.context_hits.map((hit: { ref: string }) => hit.ref),
+    ).not.toContain("validate.check:candidate-density-check");
+    expect(json.selected_context.suggested_reads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           path: "Code/Features/Lending/LendingUI",
@@ -1832,14 +1893,8 @@ checks:
         }),
       ]),
     );
-    expect(json.entrypoint.actionContract.validate).toContain(
-      "validate.check:no-hardcoded-ui-color - serious: Use design tokens for UI color",
-    );
-    expect(json.entrypoint.actionContract.validate.join("\n")).not.toContain(
-      "candidate-density-check",
-    );
     expect(json.brief).toContain("# Ghost Relay Brief");
-    expect(json.brief).toContain("## Task Contract");
+    expect(json.brief).toContain("## Context Hits");
   });
 
   it("ignores memory-dir when gathering Relay context from an exact package", async () => {
@@ -1930,7 +1985,7 @@ checks:
     }
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("When Fingerprint Layers Are Silent");
+    ).resolves.toContain("When Fingerprint Facets Are Silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
@@ -1941,7 +1996,7 @@ checks:
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain("fingerprint layers are silent");
+    ).resolves.toContain("fingerprint facets are silent");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),
@@ -2029,15 +2084,22 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Selected Fingerprint Context");
-    expect(result.stdout).toContain("## Identity Capsule");
-    expect(result.stdout).toContain("## Context Match");
+    expect(result.stdout).toContain("## Selected Context");
+    expect(result.stdout).toContain("### Selected Context");
+    expect(result.stdout).toContain("#### Stack");
+    expect(result.stdout).toContain("#### Match");
+    expect(result.stdout).toContain("#### Context Hits");
+    expect(result.stdout).toContain("#### Suggested Reads");
+    expect(result.stdout).toContain("#### Omissions");
+    expect(result.stdout).toContain("#### Gaps");
     expect(result.stdout).toContain("Status: path matched");
     expect(result.stdout).toContain("Matched scopes: `lending`");
     expect(result.stdout).toContain("diff location");
+    expect(result.stdout).toContain("fingerprint facet refs");
     expect(result.stdout).toContain(
-      "fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml",
+      "selected-context gap or local-evidence rationale when context is silent",
     );
+    expect(result.stdout).toContain("Use the selected context first");
     expect(result.stdout).toContain("active check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
@@ -2213,7 +2275,7 @@ libraries:
     expect(report.fingerprint_dir).toBe(".ghost");
     expect(report.memory_dir).toBeUndefined();
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toHaveLength(2);
+    expect(report.stacks[0].stack_dirs).toHaveLength(2);
     expect(report.routed_files[0]).toMatchObject({
       path: "apps/checkout/review/page.tsx",
       checks: [],
@@ -2285,7 +2347,7 @@ libraries:
       changed_files: ["apps/checkout/review/page.tsx"],
     });
     expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].layer_dirs).toEqual([
+    expect(report.stacks[0].stack_dirs).toEqual([
       await realpath(join(dir, ".design", "memory")),
       await realpath(join(dir, "apps", "checkout", ".design", "memory")),
     ]);
@@ -2314,11 +2376,11 @@ libraries:
     expect(packet.stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
     );
-    expect(packet.stacks[0].layer_dirs).toHaveLength(2);
-    expect(packet.stacks[1].layer_dirs).toHaveLength(1);
+    expect(packet.stacks[0].stack_dirs).toHaveLength(2);
+    expect(packet.stacks[1].stack_dirs).toHaveLength(1);
   });
 
-  it("stack inspects resolved nested layers", async () => {
+  it("stack inspects resolved nested packages", async () => {
     await writeNestedCheckPackage(dir);
 
     const result = await runCli(
@@ -2328,10 +2390,10 @@ libraries:
 
     expect(result.code).toBe(0);
     const stacks = JSON.parse(result.stdout);
-    expect(stacks[0].layers).toHaveLength(2);
+    expect(stacks[0].stack).toHaveLength(2);
     expect(stacks[0].fingerprint_dir).toBe(".ghost");
     expect(stacks[0].memory_dir).toBeUndefined();
-    expect(stacks[0].layers[0].memory_dir).toBeUndefined();
+    expect(stacks[0].stack[0].memory_dir).toBeUndefined();
     expect(stacks[0].merged.fingerprint.intent.summary.product).toBe(
       "Checkout",
     );

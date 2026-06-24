@@ -25,7 +25,7 @@ const REVIEW_FINDING_CATEGORIES = [
  *
  * The command stays intentionally light: it tells the host agent which Ghost
  * files and CLI packets to use, then includes a compact fingerprint index.
- * Full canonical truth remains in fingerprint/ core files and deterministic checks.
+ * Full canonical truth remains in fingerprint/ facet files and deterministic checks.
  */
 export function emitPackageReviewCommand(
   input: EmitPackageReviewInput,
@@ -53,7 +53,7 @@ export function emitPackageReviewCommand(
 
 function packageFrontmatter(product: string): string {
   return `---
-description: Ghost surface-composition review for ${product} - grounded in fingerprint core layers
+description: Ghost surface-composition review for ${product} - grounded in fingerprint facets
 ---`;
 }
 
@@ -68,14 +68,14 @@ function packageWorkflowSection(context: PackageContext): string {
   const memoryDirFlag = stackFingerprintDirFlag(context);
   return `## Review Workflow
 
-1. Read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\` as the canonical core layers.
-2. Select the relevant situation before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior. Keep findings grounded in the resolved fingerprint stack or active checks; do not expand the review into unrelated audit categories.
-3. Apply intent principles, experience contracts, and composition patterns before choosing implementation details.
-4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
-5. Use inventory building blocks only as replaceable material that may help satisfy the selected intent and composition.
-6. Run \`ghost check${memoryDirFlag}\` when a diff is available. Active checks are deterministic and can block.
-7. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and fingerprint excerpts.
-8. Cite the diff location, fingerprint core layer refs, relevant exemplars when useful, and any active check when a finding blocks.`;
+1. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\`.
+2. Start from selected intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
+3. Apply composition guidance before choosing implementation details.
+4. Inspect inventory exemplars and building blocks as evidence/material, not as authority over intent.
+5. Treat validate checks as deterministic enforcement; only active checks can block.
+6. Use selected-context gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
+7. Run \`ghost check${memoryDirFlag}\` when a diff is available.
+8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, selected-context gaps when context is silent, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -85,11 +85,11 @@ Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${categor
 
 Only findings backed by an active check should be treated as blocking. Everything else is advisory surface-composition critique.
 
-Review only what fingerprint layers or active checks make relevant to the product surface.
+Review only what fingerprint facets or active checks make relevant to the product surface.
 
-When fingerprint layers are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, or token and copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
+When fingerprint facets are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, or token and copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
-If the diff reveals missing fingerprint grounding or layer coverage, report \`missing-fingerprint\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
+If the diff reveals missing fingerprint grounding or facet coverage, report \`missing-fingerprint\` or \`experience-gap\` as a review finding. Do not silently rewrite the Ghost package during review; fingerprint edits are ordinary edits that go through normal Git review.`;
 }
 
 function packageFingerprintIndex(context: PackageContext): string {
@@ -281,7 +281,7 @@ function packageReviewFooter(context: PackageContext): string {
   const fingerprintDir = context.fingerprintDir ?? ".ghost";
   return `---
 
-Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint core layers or deterministic checks.`;
+Generated from \`${fingerprintDir}/fingerprint/\` for ${context.name}. Re-run \`ghost emit review-command${stackFingerprintDirFlag(context)}\` after updating fingerprint facets or deterministic checks.`;
 }
 
 function stackFingerprintDirFlag(context: PackageContext): string {

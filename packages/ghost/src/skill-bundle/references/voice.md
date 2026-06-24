@@ -1,11 +1,11 @@
 ---
 name: voice
-description: Capture voice and language guidance into existing Ghost fingerprint layers.
+description: Capture voice and language guidance into existing Ghost fingerprint facets.
 ---
 
 # Recipe: Capture Voice And Language
 
-Language maps onto the existing layers; do not invent new schema. See
+Language maps onto the existing facets; do not invent new schema. See
 `docs/language-fingerprints.md` in the Ghost repo for the full mapping.
 
 1. Inventory the user-facing strings: i18n catalogs, error components,
@@ -41,5 +41,5 @@ Language maps onto the existing layers; do not invent new schema. See
 When reviewing copy changes, cite the diff location and the relevant
 `intent.principle`, `intent.experience_contract`, or `composition.pattern` refs.
 Tone and register findings are advisory unless an active check backs them.
-When voice layers are silent, proceed from nearby copy in the repo and label
+When voice facets are silent, proceed from nearby copy in the repo and label
 that reasoning as provisional and non-Ghost-backed.

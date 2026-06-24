@@ -23,7 +23,7 @@ schema: ghost.fingerprint-package/v1
 id: local
 ```
 
-Layer files are raw YAML. Ghost assembles them into an internal
+Facet files are raw YAML. Ghost assembles them into an internal
 `ghost.fingerprint/v1` document.
 
 Use these typed refs:

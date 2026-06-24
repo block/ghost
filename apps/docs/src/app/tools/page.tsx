@@ -16,7 +16,7 @@ const tools: {
   {
     name: "ghost scan",
     href: "/tools/scan",
-    blurb: "Check fingerprint readiness",
+    blurb: "Check fingerprint contribution",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
@@ -78,7 +78,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Tools"
         title="Tool Directory"
-        description="Pick the workflow you need: set up fingerprint layers, review drift, compare projects, or inspect the reference UI system."
+        description="Pick the workflow you need: set up fingerprint facets, review drift, compare projects, or inspect the reference UI system."
       />
 
       <ToolStrip />

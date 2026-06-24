@@ -7,7 +7,7 @@ summary:
   goals:
     - Keep product-surface composition fingerprints repo-local, portable, and easy for agents to read.
     - Preserve surface composition across generation, review, and remediation.
-    - Make intent, inventory, and composition feel like the three core model layers.
+    - Treat intent, inventory, composition, and validate as sparse package facets.
     - Use Git as the staging and approval boundary for fingerprint edits.
   anti_goals:
     - Treat raw inventory as canonical surface guidance.
@@ -17,7 +17,7 @@ summary:
     - Let advisory review block work without deterministic checks.
   tradeoffs:
     - Prefer compact durable intent over exhaustive surveys.
-    - Keep optional checks in the fingerprint package without treating them as core generation layers.
+    - Keep validation checks in the fingerprint package without treating them as generation input.
     - Preserve OSS-friendly language over company-specific strategy.
   tone:
     - plain
@@ -26,16 +26,17 @@ summary:
     - product-minded
 situations:
   - id: capturing-fingerprint
-    title: Capturing fingerprint layers
+    title: Capturing fingerprint facets
     user_intent: Create or update the Ghost fingerprint for a project.
-    product_obligation: Help the agent distinguish canonical intent/inventory/composition from optional checks and raw repo signals.
+    product_obligation: Help the agent distinguish sparse fingerprint contributions from optional checks and raw repo signals.
     principles:
       - intent.principle:fingerprint-folder-is-canonical
       - intent.principle:signals-are-authoring-evidence
+      - intent.principle:sparse-packages-are-patches
     experience_contracts:
       - intent.experience_contract:git-is-approval-boundary
     patterns:
-      - composition.pattern:core-layers-stay-prominent
+      - composition.pattern:sparse-contribution-before-completeness
   - id: reviewing-generated-ui
     title: Reviewing generated or changed UI
     user_intent: Know whether a change preserves the product surface.
@@ -56,25 +57,34 @@ situations:
       - composition.pattern:editorial-workbench-docs
 principles:
   - id: fingerprint-folder-is-canonical
-    principle: fingerprint/ is the portable surface-composition package; intent.yml, inventory.yml, and composition.yml are its core model layers.
+    principle: fingerprint/ is the portable surface-composition package; intent, inventory, composition, and validate are sparse facets.
     guidance:
       - Describe the fingerprint as product-surface composition, not as an operational archive.
-      - Keep durable surface intent, hierarchy, behavior, copy, accessibility, trust, and flow in the core layer files.
+      - Keep durable surface intent, hierarchy, behavior, copy, accessibility, trust, and flow in the appropriate facet files.
       - Treat uncommitted or unmerged fingerprint edits as drafts handled by Git, not by a Ghost-specific lifecycle.
     evidence:
       - path: docs/fingerprint-format.md
         note: Public format docs define the split fingerprint folder as the source of truth.
       - path: packages/ghost/src/scan/fingerprint-package.ts
-        note: init writes manifest.yml and the three core layer files under fingerprint/.
+        note: init writes manifest.yml and starter facet files under fingerprint/.
   - id: signals-are-authoring-evidence
     principle: Raw repo signals answer what exists; curated inventory points to the building blocks, sources, and precedents an agent can inspect or use.
     guidance:
-      - Use ghost signals as scratch evidence while authoring or refreshing fingerprint layers.
+      - Use ghost signals as scratch evidence while authoring or refreshing fingerprint facets.
       - Curate durable building blocks, files, routes, libraries, assets, source links, notes, and exemplars into inventory.yml.
       - Do not let signals or building blocks become surface authority without intent and composition.
     evidence:
       - path: README.md
         note: README frames ghost signals as authoring evidence.
+  - id: sparse-packages-are-patches
+    principle: A fingerprint package contributes only the facets it knows; it does not need to restate inherited context.
+    guidance:
+      - Treat absent intent, inventory, composition, or validate files as absent local contributions, not automatic incompleteness.
+      - Use nested packages to add local patches to the broad-to-local stack.
+      - Let scan report contribution state instead of telling users every package must contain every facet.
+    evidence:
+      - path: packages/ghost/src/scan/fingerprint-contribution.ts
+      - path: docs/fingerprint-format.md
   - id: checks-are-enforcement
     principle: Deterministic checks live in fingerprint/validate.yml and should cite typed fingerprint refs when they enforce surface-composition rules.
     guidance:
@@ -105,13 +115,13 @@ experience_contracts:
   - id: git-is-approval-boundary
     contract: Fingerprint edits use ordinary Git workflow; checked-in fingerprint/ files are truth.
     obligations:
-      - Do not rewrite canonical fingerprint layers silently during generation or review.
+      - Do not rewrite canonical fingerprint facets silently during generation or review.
       - Treat uncommitted or unmerged fingerprint edits as draft work.
       - Record durable surface-composition guidance in intent.yml, inventory.yml, and composition.yml; deterministic gates belong in validate.yml.
     evidence:
       - path: packages/ghost/src/skill-bundle/references/capture.md
   - id: emitted-context-prefers-fingerprint-layers
-    contract: Emitted context bundles and review commands should prefer split fingerprint layers over legacy survey or markdown artifacts.
+    contract: Emitted context bundles and review commands should prefer split fingerprint facets over legacy survey or markdown artifacts.
     obligations:
       - Default emit paths load the resolved fingerprint package or stack.
       - Legacy direct markdown emit is unsupported for package context.

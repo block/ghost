@@ -5,7 +5,7 @@ layout drifts: generated notifications, error messages, empty states, and
 button labels slowly stop sounding like one product.
 
 Ghost does not need a new domain, schema, or dimension set to capture this.
-Language flows through the same three core layers as every other
+Language flows through the same facets as every other
 surface-composition concern:
 
 - `fingerprint/intent.yml` carries voice intent.
@@ -180,7 +180,7 @@ intent and composition refs; it never blocks on its own.
 
 ## Workflow
 
-Capturing language follows the same loop as any other layer content: inventory
+Capturing language follows the same loop as any other facet content: inventory
 the user-facing strings, read the standards source the inventory declares,
 draft the smallest evidence-backed entries, and ask a human to curate the
 claims. The `voice` recipe in the Ghost skill bundle walks an agent through it.

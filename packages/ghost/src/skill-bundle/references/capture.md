@@ -2,9 +2,9 @@
 name: capture
 description: Author repo-local Ghost fingerprints.
 handoffs:
-  - label: Inspect fingerprint layers
+  - label: Inspect fingerprint facets
     command: ghost scan
-    prompt: What fingerprint layers are present and what is missing?
+    prompt: What fingerprint facets does this package contribute, and which facets are absent?
   - label: Run deterministic checks
     command: ghost check
     prompt: Run ghost check against this bundle
@@ -94,7 +94,7 @@ Auto-draft is a skill workflow, not a Ghost CLI action or flag.
    claims before treating them as durable fingerprint guidance.
 
 If evidence is thin, contradictory, or mostly implementation plumbing, write
-less and ask more. Do not fill core layers with speculative product claims.
+less and ask more. Do not fill facets with speculative product claims.
 
 ### 4. Orient
 
@@ -111,9 +111,9 @@ ghost signals .
 Treat signals as scratch observations. Do not copy raw signals into
 `inventory.yml` without curation.
 
-### 5. Write Core Layers
+### 5. Write Sparse Facets
 
-Edit the smallest useful durable layer content:
+Edit the smallest useful durable facet content:
 
 - Before writing, ask whether the draft will help future agents choose what
   matters most, avoid plausible-but-wrong defaults, resolve competing

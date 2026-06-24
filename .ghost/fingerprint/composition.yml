@@ -1,22 +1,23 @@
 patterns:
-  - id: core-layers-stay-prominent
+  - id: sparse-contribution-before-completeness
     kind: structure
-    pattern: Portable Ghost packages keep intent.yml, inventory.yml, and composition.yml prominent in fingerprint/ while validate.yml remains optional validation support.
+    pattern: Ghost scan and docs describe what each package contributes instead of treating absent facets as incomplete packages.
     guidance:
-      - Do not require generated signal files for a valid new project.
+      - Do not require every package to contain intent, inventory, composition, and validate.
+      - Treat nested packages as patches in the broad-to-local fingerprint stack.
       - Keep ghost signals as stdout-only reconnaissance for agents, not package material.
-      - Allow sparse layer authoring; omitted layer files normalize to empty layers internally.
       - Curate durable building blocks and exemplars into inventory.yml instead of treating raw signals as inventory authorship.
       - Use Git review for fingerprint approval instead of Ghost-specific draft files.
     evidence:
       - path: README.md
       - path: docs/fingerprint-format.md
+      - path: packages/ghost/src/scan/fingerprint-contribution.ts
   - id: compact-agent-handoff
     kind: content
-    pattern: CLI and emitted prompts should tell the host agent exactly which fingerprint layers to read and which findings can block.
+    pattern: CLI and emitted prompts should tell the host agent exactly which fingerprint facets to read and which findings can block.
     guidance:
       - Prefer short ordered workflows over broad conceptual lectures.
-      - Name missing fingerprint grounding or layer coverage plainly without creating a separate fingerprint-change workflow.
+      - Name missing fingerprint grounding or facet coverage plainly without creating a separate fingerprint-change workflow.
     evidence:
       - path: packages/ghost/src/context/package-review-command.ts
   - id: editorial-workbench-docs
