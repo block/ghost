@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": minor
 ---
 
-Compile Relay gather output into a cascade brief grouped by intent, composition, inventory, validation, and gaps.
+Compile Relay gather output into selected context grouped by stack, intent, composition, inventory, validation, and gaps.
