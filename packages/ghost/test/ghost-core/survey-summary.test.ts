@@ -1,14 +1,4 @@
 import { describe, expect, it } from "vitest";
-import {
-  componentRowId,
-  tokenRowId,
-  uiSurfaceRowId,
-  valueRowId,
-} from "../src/survey/id.js";
-import {
-  formatSurveySummaryMarkdown,
-  summarizeSurvey,
-} from "../src/survey/summary.js";
 import type {
   ComponentRow,
   Survey,
@@ -16,7 +6,15 @@ import type {
   TokenRow,
   UiSurfaceRow,
   ValueRow,
-} from "../src/survey/types.js";
+} from "#ghost-core";
+import {
+  componentRowId,
+  formatSurveySummaryMarkdown,
+  summarizeSurvey,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "#ghost-core";
 
 const SOURCE: SurveySource = {
   id: "app",

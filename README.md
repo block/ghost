@@ -181,8 +181,7 @@ workspace packages remain development context.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | Public package. Ships the `ghost` CLI, fingerprint package helpers, deterministic checks, advisory review packets, comparison/stance helpers, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
-| [`packages/ghost-core`](./packages/ghost-core) | Private historical shared library. Runtime code needed for npm is folded into `packages/ghost`. | no |
+| [`packages/ghost`](./packages/ghost) | Public package. Ships the `ghost` CLI, folded core runtime, fingerprint package helpers, deterministic checks, advisory review packets, comparison/stance helpers, and the unified skill bundle. | yes: `@anarchitecture/ghost` |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many Ghost bundles. | no |
 | [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: shadcn registry plus `ghost-mcp` MCP server. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
