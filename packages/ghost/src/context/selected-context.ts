@@ -1,4 +1,8 @@
-import type { ContextEntrypoint, FingerprintGraphNode } from "./entrypoint.js";
+import type {
+  ContextEntrypoint,
+  FingerprintGraphNode,
+  SelectionReason,
+} from "./entrypoint.js";
 import type { PackageContext } from "./package-context.js";
 
 export interface SelectedContext {
@@ -12,12 +16,7 @@ export interface SelectedContext {
     reasons: string[];
   };
   posture: SelectedContextPosture;
-  intent: SelectedContextNodeSummary[];
-  active_obligations: SelectedContextObligation[];
-  composition: SelectedContextNodeSummary[];
-  inventory: SelectedContextInventoryItem[];
-  validation: SelectedContextNodeSummary[];
-  guidance: SelectedContextGuidance;
+  context_hits: SelectedContextHit[];
   suggested_reads: SelectedContextRead[];
   omissions: SelectedContextOmission[];
   gaps: SelectedContextGap[];
@@ -37,30 +36,14 @@ export interface SelectedContextPosture {
   tone: string[];
 }
 
-export interface SelectedContextNodeSummary {
+export interface SelectedContextHit {
   ref: string;
-  label: string;
+  kind: "intent" | "composition" | "inventory" | "validation";
   summary: string;
-  details: string[];
   source_file: string;
-}
-
-export interface SelectedContextInventoryItem
-  extends SelectedContextNodeSummary {
+  details: string[];
   path?: string;
-}
-
-export interface SelectedContextObligation {
-  ref: string;
-  text: string;
-  source: string;
-}
-
-export interface SelectedContextGuidance {
-  preserve: string[];
-  inspect: SelectedContextRead[];
-  avoid: string[];
-  validate: string[];
+  why_selected: SelectionReason[];
 }
 
 export interface SelectedContextRead {
@@ -98,13 +81,12 @@ export function buildSelectedContext(
     dir,
     label: packageLabel(dir, index, packageDirs.length),
   }));
-  const intent = entrypoint.selected.intent.map(nodeSummary);
-  const composition = entrypoint.selected.composition.map(nodeSummary);
-  const inventory = entrypoint.selected.exemplars.map((node) => ({
-    ...nodeSummary(node),
-    ...(pathForNode(node) ? { path: pathForNode(node) } : {}),
-  }));
-  const validation = entrypoint.selected.checks.map(nodeSummary);
+  const contextHits = [
+    ...entrypoint.selected.intent,
+    ...entrypoint.selected.composition,
+    ...entrypoint.selected.exemplars,
+    ...entrypoint.selected.checks,
+  ].map((node) => contextHit(node, entrypoint));
 
   return {
     title: `${entrypoint.name} Relay Brief`,
@@ -117,17 +99,7 @@ export function buildSelectedContext(
       reasons: entrypoint.match.reasons,
     },
     posture: postureFromEntrypoint(entrypoint),
-    intent,
-    active_obligations: obligationsFromIntent(entrypoint.selected.intent),
-    composition,
-    inventory,
-    validation,
-    guidance: {
-      preserve: entrypoint.actionContract.preserve,
-      inspect: entrypoint.actionContract.inspect,
-      avoid: entrypoint.actionContract.avoid,
-      validate: entrypoint.actionContract.validate,
-    },
+    context_hits: contextHits,
     suggested_reads: entrypoint.suggestedReads,
     omissions: entrypoint.omissions,
     gaps: gapsFromEntrypoint(entrypoint),
@@ -150,15 +122,7 @@ export function formatSelectedContextMarkdown(
     formatStack(context, sectionHeading),
     formatMatch(context, sectionHeading),
     formatPosture(context, sectionHeading),
-    formatNodeSection("Intent", context.intent, sectionHeading),
-    formatObligations(context, sectionHeading),
-    formatNodeSection("Composition", context.composition, sectionHeading),
-    formatInventory(context, sectionHeading),
-    formatNodeSection("Validation", context.validation, sectionHeading, {
-      empty:
-        "No selected active checks. Proposed or disabled checks are not blocking validation.",
-    }),
-    formatGuidance(context, sectionHeading),
+    formatContextHits(context, sectionHeading),
     formatSuggestedReads(context, sectionHeading),
     formatOmissions(context, sectionHeading),
     formatGaps(context, sectionHeading),
@@ -192,16 +156,6 @@ function packageLabel(_dir: string, index: number, count: number): string {
   return `package ${index + 1}`;
 }
 
-function nodeSummary(node: FingerprintGraphNode): SelectedContextNodeSummary {
-  return {
-    ref: node.ref,
-    label: node.label,
-    summary: node.summary,
-    details: node.details,
-    source_file: node.sourceFile,
-  };
-}
-
 function pathForNode(node: FingerprintGraphNode): string | undefined {
   const directPath = node.appliesTo.paths[0];
   if (directPath) return directPath;
@@ -209,30 +163,30 @@ function pathForNode(node: FingerprintGraphNode): string | undefined {
   return pathDetail?.slice("Path: ".length).trim();
 }
 
-function obligationsFromIntent(
-  nodes: FingerprintGraphNode[],
-): SelectedContextObligation[] {
-  const out: SelectedContextObligation[] = [];
-  const seen = new Set<string>();
-  for (const node of nodes) {
-    for (const text of obligationTexts(node)) {
-      const normalized = text.trim();
-      if (!normalized || seen.has(`${node.ref}\n${normalized}`)) continue;
-      seen.add(`${node.ref}\n${normalized}`);
-      out.push({ ref: node.ref, text: normalized, source: node.sourceFile });
-    }
-  }
-  return out.slice(0, 10);
+function contextHit(
+  node: FingerprintGraphNode,
+  entrypoint: ContextEntrypoint,
+): SelectedContextHit {
+  const hit: SelectedContextHit = {
+    ref: node.ref,
+    kind: contextHitKind(node),
+    summary: node.summary,
+    source_file: node.sourceFile,
+    details: node.details,
+    why_selected: entrypoint.selectionReasons[node.ref] ?? [],
+  };
+  const path = pathForNode(node);
+  if (path) hit.path = path;
+  return hit;
 }
 
-function obligationTexts(node: FingerprintGraphNode): string[] {
-  const details = node.details.filter(
-    (detail) => !/^(Refuses|Counterexample|Avoid):/.test(detail),
-  );
-  if (node.kind === "situation") return [...details, node.summary];
-  if (node.kind === "experience_contract") return [node.summary, ...details];
-  if (node.kind === "principle") return [node.summary, ...details];
-  return [node.summary, ...details];
+function contextHitKind(
+  node: FingerprintGraphNode,
+): SelectedContextHit["kind"] {
+  if (node.kind === "pattern") return "composition";
+  if (node.kind === "exemplar") return "inventory";
+  if (node.kind === "check") return "validation";
+  return "intent";
 }
 
 function gapsFromEntrypoint(
@@ -329,62 +283,24 @@ function formatPosture(context: SelectedContext, heading: string): string {
   return lines.join("\n");
 }
 
-function formatNodeSection(
-  title: string,
-  nodes: SelectedContextNodeSummary[],
-  heading: string,
-  options: { empty?: string } = {},
-): string {
-  const lines = [`${heading} ${title}`];
-  if (nodes.length === 0) {
-    lines.push(`- ${options.empty ?? "None selected."}`);
+function formatContextHits(context: SelectedContext, heading: string): string {
+  const lines = [`${heading} Context Hits`];
+  if (context.context_hits.length === 0) {
+    lines.push("- None selected.");
     return lines.join("\n");
   }
-  for (const node of nodes) {
-    lines.push(`- \`${node.ref}\` — ${node.summary}`);
-    for (const detail of node.details.slice(0, 3)) {
-      lines.push(`  - ${detail}`);
+  for (const hit of context.context_hits) {
+    const path = hit.path ? ` — \`${hit.path}\`` : "";
+    lines.push(`- \`${hit.ref}\` (${hit.kind})${path} — ${hit.summary}`);
+    for (const reason of hit.why_selected) {
+      lines.push(`  - why: ${reason.kind}=${reason.value}`);
     }
-  }
-  return lines.join("\n");
-}
-
-function formatObligations(context: SelectedContext, heading: string): string {
-  const lines = [`${heading} Active Obligations`];
-  if (context.active_obligations.length === 0) {
-    lines.push("- None selected.");
-    return lines.join("\n");
-  }
-  for (const obligation of context.active_obligations) {
-    lines.push(`- ${obligation.text} (from \`${obligation.ref}\`)`);
-  }
-  return lines.join("\n");
-}
-
-function formatInventory(context: SelectedContext, heading: string): string {
-  const lines = [`${heading} Inventory`];
-  if (context.inventory.length === 0) {
-    lines.push("- None selected.");
-    return lines.join("\n");
-  }
-  for (const item of context.inventory) {
-    const path = item.path ? ` — \`${item.path}\`` : "";
-    lines.push(`- \`${item.ref}\`${path} — ${item.summary}`);
-    for (const detail of item.details
+    for (const detail of hit.details
       .filter((entry) => !entry.startsWith("Path: "))
       .slice(0, 2)) {
       lines.push(`  - ${detail}`);
     }
   }
-  return lines.join("\n");
-}
-
-function formatGuidance(context: SelectedContext, heading: string): string {
-  const lines = [`${heading} Guidance`];
-  appendStringGroup(lines, "Preserve", context.guidance.preserve);
-  appendReadGroup(lines, "Inspect", context.guidance.inspect);
-  appendStringGroup(lines, "Avoid", context.guidance.avoid);
-  appendStringGroup(lines, "Validate", context.guidance.validate);
   return lines.join("\n");
 }
 
@@ -431,41 +347,11 @@ function formatGaps(context: SelectedContext, heading: string): string {
 
 function formatUseThisContext(heading: string): string {
   return `${heading} Use This Context
-- Start from posture, then preserve the selected situations, principles, contracts, and obligations.
-- Express intent through composition: use selected patterns to shape hierarchy, flow, state, behavior, and content.
-- Inspect inventory as evidence and material; do not let available components override intent.
-- Treat validation as deterministic enforcement; only active checks can block.
+- Start from posture, then use context hits as the compact routing set for this task.
+- Express intent through composition hits: shape hierarchy, flow, state, behavior, and content from the selected evidence.
+- Inspect inventory hits as evidence and material; do not let available components override intent.
+- Treat validation hits as deterministic enforcement; only active checks can block.
 - When gaps are present, label local reasoning as provisional and non-Ghost-backed.`;
-}
-
-function appendStringGroup(
-  lines: string[],
-  title: string,
-  values: string[],
-): void {
-  lines.push(`- ${title}:`);
-  if (values.length === 0) {
-    lines.push("  - None selected.");
-    return;
-  }
-  for (const value of values) {
-    lines.push(`  - ${value}`);
-  }
-}
-
-function appendReadGroup(
-  lines: string[],
-  title: string,
-  reads: SelectedContextRead[],
-): void {
-  lines.push(`- ${title}:`);
-  if (reads.length === 0) {
-    lines.push("  - None selected.");
-    return;
-  }
-  for (const read of reads) {
-    lines.push(`  - \`${read.path}\` - ${read.reason}`);
-  }
 }
 
 function pushPostureValues(

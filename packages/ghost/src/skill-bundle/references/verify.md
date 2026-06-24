@@ -10,8 +10,7 @@ description: Verify generated UI or fingerprint edits against Ghost.
 2. Run `ghost check --base <ref>` after implementation changes.
 3. For advisory review, run `ghost review --base <ref>`.
 4. For generation setup, run `ghost relay gather <target>` and read the brief:
-   stack, intent, active obligations, composition, inventory, validation, and
-   gaps.
+   context hits, why they matched, suggested reads, omissions, and gaps.
 5. Inspect generated UI manually or with screenshots when visual fidelity
    matters.
 
