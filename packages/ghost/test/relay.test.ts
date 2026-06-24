@@ -3,7 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { gatherRelayContext } from "../src/relay.js";
+import {
+  GHOST_RELAY_REQUEST_SCHEMA,
+  gatherRelayContext,
+  parseGhostRelayRequest,
+} from "../src/relay.js";
 import {
   createSingleSurfaceSandbox,
   removeSandbox,
@@ -388,6 +392,175 @@ sources:
     );
   });
 
+  it("accepts structured Relay requests", () => {
+    const request = parseGhostRelayRequest({
+      schema: GHOST_RELAY_REQUEST_SCHEMA,
+      task: "generate-interface",
+      prompt: "Generate a merchant push interface.",
+      target_paths: ["apps/managerbot/page.tsx"],
+      selectors: {
+        customer: "merchant",
+        system: "managerbot",
+        medium: "push",
+      },
+      constraints: {
+        output: "interface",
+      },
+    });
+
+    expect(request).toMatchObject({
+      schema: "ghost.relay-request/v1",
+      task: "generate-interface",
+      selectors: {
+        customer: "merchant",
+        system: "managerbot",
+        medium: "push",
+      },
+    });
+  });
+
+  it("resolves a Relay request to a declared stack and projects ordered unit sources", async () => {
+    const root = await track(createRelayRequestStackSandbox());
+
+    const result = await gatherRelayContext({
+      cwd: root,
+      request: {
+        schema: GHOST_RELAY_REQUEST_SCHEMA,
+        task: "generate-interface",
+        prompt:
+          "Generate the right interface for a merchant cash-flow gap in Managerbot push.",
+        selectors: {
+          customer: "merchant",
+          system: "managerbot",
+          moment: "cash-flow-gap",
+          medium: "push",
+          capability: "lending",
+        },
+      },
+    });
+
+    expect(result.schema).toBe("ghost.relay.gather/v2");
+    expect(result.source.kind).toBe("request-stack");
+    expect(result.source).toMatchObject({
+      stack: {
+        id: "managerbot.cash-flow-gap.push",
+        path: "stacks/managerbot.cash-flow-gap.push.yml",
+        units: ["systems/managerbot", "media/push", "capabilities/lending"],
+        matched_selectors: [
+          "customer",
+          "system",
+          "moment",
+          "medium",
+          "capability",
+        ],
+      },
+    });
+    expect(result.context.target.request).toMatchObject({
+      schema: "ghost.relay-request/v1",
+      task: "generate-interface",
+      selectors: {
+        customer: "merchant",
+        system: "managerbot",
+        moment: "cash-flow-gap",
+        medium: "push",
+        capability: "lending",
+      },
+    });
+    expect(result.context.extras.resolved_stack).toEqual([
+      expect.objectContaining({
+        id: "managerbot.cash-flow-gap.push",
+        source: "stacks/managerbot.cash-flow-gap.push.yml",
+      }),
+    ]);
+    expect(result.context.sections.questions).toEqual([
+      expect.objectContaining({
+        id: "push-sensitive-detail",
+        source: "media/push/questions.yml",
+        source_id: "block-stacks:media.push:unit-questions",
+        summary: "What sensitive detail is safe in push?",
+      }),
+    ]);
+    expect(result.context.sections.sources).toEqual([
+      expect.objectContaining({
+        id: "managerbot-principles",
+        source: "systems/managerbot/sources.yml",
+        summary: "Managerbot research principles.",
+      }),
+    ]);
+    expect(result.context.extras.composition).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "push-route-to-detail",
+          source: "media/push/composition.yml",
+          summary: "Push previews route to authenticated detail.",
+        }),
+      ]),
+    );
+    expect(result.context.trace.selected).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: "relay-request",
+          section: "extra:relay_request",
+          source_id: "relay-request",
+        }),
+        expect.objectContaining({
+          source: "stacks/managerbot.cash-flow-gap.push.yml",
+          section: "extra:resolved_stack",
+          source_id: "block-stacks",
+        }),
+        expect.objectContaining({
+          source: "media/push/questions.yml",
+          section: "questions",
+        }),
+      ]),
+    );
+    expect(result.context.trace.skipped).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: "capabilities/lending/questions.yml",
+          reason: ["source file not found"],
+        }),
+      ]),
+    );
+    expect(result).not.toHaveProperty("context_packet");
+  });
+
+  it("does not silently guess when Relay request selectors are ambiguous", async () => {
+    const root = await track(createRelayRequestStackSandbox());
+
+    const result = await gatherRelayContext({
+      cwd: root,
+      request: {
+        schema: GHOST_RELAY_REQUEST_SCHEMA,
+        task: "answer",
+        selectors: {
+          system: "managerbot",
+        },
+      },
+    });
+
+    expect(result.source.kind).toBe("request");
+    expect(result.source).toMatchObject({
+      reason: "ambiguous",
+    });
+    expect(result.context.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "request-ambiguous",
+        }),
+      ]),
+    );
+    expect(result.context.sections.questions).toEqual([]);
+    expect(result.context.trace.skipped).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          section: "extra:resolved_stack",
+          reason: ["ambiguous Relay request match"],
+        }),
+      ]),
+    );
+  });
+
   it("uses an explicit Relay config over the discovered config", async () => {
     const root = await track(createSingleSurfaceSandbox());
     await mkdir(join(root, "product"), { recursive: true });
@@ -589,6 +762,115 @@ checks:
 `,
   );
 
+  return root;
+}
+
+async function createRelayRequestStackSandbox(): Promise<string> {
+  const root = await createSingleSurfaceSandbox();
+  await mkdir(join(root, "stacks"), { recursive: true });
+  await mkdir(join(root, "systems", "managerbot"), { recursive: true });
+  await mkdir(join(root, "media", "push"), { recursive: true });
+  await mkdir(join(root, "media", "chat"), { recursive: true });
+  await mkdir(join(root, "capabilities", "lending"), { recursive: true });
+  await writeFile(
+    join(root, ".ghost", "relay.yml"),
+    `schema: ghost.relay-config/v1
+id: block.product-surface/v1
+profile: ghost.product-surface/v1
+sources: []
+request_resolvers:
+  - id: block-stacks
+    kind: stack
+    files:
+      - stacks/*.yml
+    schema: block.stack/v1
+    unit_sources:
+      - id: unit-questions
+        path: "{unit}/questions.yml"
+        section: questions
+        items: questions
+        summary: question
+        include:
+          - risk
+      - id: unit-sources
+        path: "{unit}/sources.yml"
+        section: sources
+        items: sources
+        summary: summary
+      - id: unit-composition
+        path: "{unit}/composition.yml"
+        section: extra:composition
+        items: patterns
+        summary: pattern
+`,
+  );
+  await writeFile(
+    join(root, "stacks", "managerbot.cash-flow-gap.push.yml"),
+    `schema: block.stack/v1
+id: managerbot.cash-flow-gap.push
+title: Managerbot cash-flow gap via push
+status: draft
+purpose: Resolve context for Managerbot push.
+task_context:
+  customer: merchant
+  system: systems.managerbot
+  moment: moments.merchant-cash-flow-gap
+  medium: media.push
+  capability: capabilities.lending
+units:
+  - systems/managerbot
+  - media/push
+  - capabilities/lending
+`,
+  );
+  await writeFile(
+    join(root, "stacks", "managerbot.cash-flow-gap.chat.yml"),
+    `schema: block.stack/v1
+id: managerbot.cash-flow-gap.chat
+title: Managerbot cash-flow gap via chat
+status: draft
+purpose: Resolve context for Managerbot chat.
+task_context:
+  customer: merchant
+  system: systems.managerbot
+  moment: moments.merchant-cash-flow-gap
+  medium: media.chat
+  capability: capabilities.lending
+units:
+  - systems/managerbot
+  - media/chat
+  - capabilities/lending
+`,
+  );
+  await writeFile(
+    join(root, "systems", "managerbot", "sources.yml"),
+    `sources:
+  - id: managerbot-principles
+    summary: Managerbot research principles.
+`,
+  );
+  await writeFile(
+    join(root, "media", "push", "questions.yml"),
+    `questions:
+  - id: push-sensitive-detail
+    question: What sensitive detail is safe in push?
+    risk: Push can overexpose private financial context.
+`,
+  );
+  await writeFile(
+    join(root, "media", "push", "composition.yml"),
+    `patterns:
+  - id: push-route-to-detail
+    pattern: Push previews route to authenticated detail.
+`,
+  );
+  await writeFile(
+    join(root, "media", "chat", "questions.yml"),
+    `questions:
+  - id: chat-explanation-depth
+    question: How much context should chat show inline?
+`,
+  );
   return root;
 }
 

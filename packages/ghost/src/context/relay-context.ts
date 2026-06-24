@@ -6,9 +6,15 @@ import type {
 import type {
   GhostContextSection,
   GhostCoreSection,
+  GhostRelayBaseDeclaration,
   ResolvedGhostRelayConfig,
 } from "./relay-config.js";
+import { relayConfigBase } from "./relay-config.js";
 import type { GhostRelayMode } from "./relay-modes.js";
+import type {
+  GhostRelayRequestSelectorValue,
+  GhostRelayRequestSummary,
+} from "./relay-request.js";
 import type {
   SelectedContext,
   SelectedContextGap,
@@ -25,10 +31,18 @@ export interface GhostRelayContext {
   target: {
     mode: GhostRelayMode;
     paths: string[];
+    request?: {
+      schema: GhostRelayRequestSummary["schema"];
+      task: string;
+      selectors: Record<string, GhostRelayRequestSelectorValue>;
+      target_paths: string[];
+      constraints?: Record<string, unknown>;
+    };
   };
   config: {
     id: string;
     profile?: string;
+    base: GhostRelayBaseDeclaration;
     source: "default" | "file";
     path?: string;
   };
@@ -78,6 +92,8 @@ export interface BuildGhostRelayContextOptions {
   mode: GhostRelayMode;
   config: ResolvedGhostRelayConfig;
   projections: ProjectRelaySourcesResult;
+  request?: GhostRelayRequestSummary;
+  extraGaps?: SelectedContextGap[];
 }
 
 export function buildGhostRelayContext(
@@ -112,6 +128,7 @@ export function buildGhostRelayContext(
   }
 
   selectedTrace.push(...traceFromProjection(options.projections.selected));
+  const gaps = [...selectedContext.gaps, ...(options.extraGaps ?? [])];
 
   const skippedTrace: GhostRelayContextTraceEntry[] = [
     ...selectedContext.omissions
@@ -129,10 +146,24 @@ export function buildGhostRelayContext(
     target: {
       mode: options.mode,
       paths: selectedContext.target_paths,
+      ...(options.request
+        ? {
+            request: {
+              schema: options.request.schema,
+              task: options.request.task,
+              selectors: options.request.selectors,
+              target_paths: options.request.target_paths,
+              ...(options.request.constraints
+                ? { constraints: options.request.constraints }
+                : {}),
+            },
+          }
+        : {}),
     },
     config: {
       id: options.config.config.id,
       profile: options.config.config.profile,
+      base: relayConfigBase(options.config.config),
       source: options.config.source,
       path: options.config.path,
     },
@@ -142,11 +173,11 @@ export function buildGhostRelayContext(
     extras,
     suggested_reads: selectedContext.suggested_reads,
     skipped: selectedContext.omissions,
-    gaps: selectedContext.gaps,
+    gaps,
     trace: {
       selected: selectedTrace,
       skipped: skippedTrace,
-      gaps: selectedContext.gaps,
+      gaps,
     },
   };
 }

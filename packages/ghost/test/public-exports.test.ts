@@ -40,6 +40,8 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(relay.formatRelayBrief).toBeTypeOf("function");
     expect(relay.GHOST_RELAY_CONTEXT_SCHEMA).toBe("ghost.relay-context/v1");
     expect(relay.GHOST_RELAY_CONFIG_SCHEMA).toBe("ghost.relay-config/v1");
+    expect(relay.GHOST_RELAY_REQUEST_SCHEMA).toBe("ghost.relay-request/v1");
+    expect(relay.parseGhostRelayRequest).toBeTypeOf("function");
     expect(relayApi.GHOST_CONTEXT_PACKET_SCHEMA).toBeUndefined();
 
     expect(govern.runGhostCheck).toBeTypeOf("function");

@@ -10,6 +10,7 @@ export function defaultGhostRelayConfig(): GhostRelayConfig {
     schema: GHOST_RELAY_CONFIG_SCHEMA,
     id: GHOST_DEFAULT_RELAY_CONFIG_ID,
     profile: GHOST_PRODUCT_SURFACE_PROFILE,
+    base: { kind: "fingerprint" },
     sources: [
       {
         id: "manifest",

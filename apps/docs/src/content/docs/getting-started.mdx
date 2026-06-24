@@ -106,16 +106,29 @@ review for approval. For a fuller human-agent workflow, read
 
 </DocSection>
 
-<DocSection title="Brief From Ghost">
+<DocSection title="Relay Context From Ghost">
 
-Before generating or revising UI, gather a Relay brief for the target path:
+Before generating or revising UI, gather Relay JSON for the target path:
 
 ```bash
-ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --format json
 ```
 
-Relay compiles selected context from the resolved stack: matched packages,
-intent, active obligations, composition, inventory, validation checks, and gaps.
+`ghost.relay.gather/v2` is the agent contract. Agents should read `context`,
+`selected_context`, `targetPaths`, `source`, `stackDirs`, gaps, and trace fields
+from JSON. Plain `ghost relay gather <target>` remains a compact human preview.
+For prompt-shaped work where there is no clear path, host agents can create a
+`ghost.relay-request/v1` and run
+`ghost relay gather --request-stdin --format json`.
+Relay config controls the runtime. Omitted `base` uses the resolved fingerprint
+stack; `base.kind: none` lets frameworks provide declared request context
+without a `.ghost` package:
+
+```bash
+GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
+ghost relay gather stacks/managerbot.cash-flow-gap.push.yml --config .agents/ghost/relay.yml --format json
+```
+
 The package remains the approved product-surface context; review and check
 commands apply it after implementation.
 

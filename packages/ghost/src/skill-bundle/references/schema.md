@@ -15,11 +15,19 @@ Git is the approval boundary: checked-in Ghost package facet files are
 canonical, and uncommitted or unmerged edits are draft work.
 
 The flat package is Ghost's default shape. Advanced repos may add
-`.ghost/relay.yml` or pass `ghost relay gather --config <file>` to declare
-extra Relay context sources. Extra project files are Ghost-readable only when
-they are listed as Relay config sources; a schema name alone is not enough. OSS
-Ghost does not infer proprietary ontology from arbitrary YAML, and authored
-stack files are not Ghost Relay source-of-truth.
+`.ghost/relay.yml`, pass `ghost relay gather --config <file>`, or set
+`GHOST_RELAY_CONFIG=<relative-file>` to declare extra Relay context sources.
+Extra project files are Ghost-readable only when they are listed as Relay
+config sources; a schema name alone is not enough. OSS Ghost does not infer
+proprietary ontology from arbitrary YAML, and authored stack files are not Ghost
+Relay source-of-truth.
+
+Relay configs choose the context-gathering base runtime. Omitted `base` means
+`base.kind: fingerprint`, which preserves the default `.ghost` fingerprint
+stack. Explicit `base.kind: none` lets a host framework gather declared request
+context without a `.ghost` package. In that mode, use `context.sections`,
+`context.extras`, source, gaps, and trace from `ghost.relay.gather/v2`; the
+top-level `selected_context` is intentionally sparse.
 
 `manifest.yml`:
 

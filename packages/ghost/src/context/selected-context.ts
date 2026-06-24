@@ -64,7 +64,11 @@ export interface SelectedContextGap {
     | "no-inventory"
     | "no-validate"
     | "unmatched-target"
-    | "low-specificity";
+    | "low-specificity"
+    | "no-base-fingerprint"
+    | "request-unmatched"
+    | "request-ambiguous"
+    | "request-selector-gap";
   message: string;
 }
 

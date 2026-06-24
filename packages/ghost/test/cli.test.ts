@@ -1,6 +1,7 @@
 import { mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
@@ -52,6 +53,7 @@ async function runCli(
   options: {
     allowNoExit?: boolean;
     env?: Record<string, string | undefined>;
+    stdin?: string;
   } = {},
 ) {
   const cli = buildCli();
@@ -90,9 +92,16 @@ async function runCli(
     finish();
     return undefined as never;
   });
+  const stdinDescriptor = Object.getOwnPropertyDescriptor(process, "stdin");
 
   try {
     process.chdir(cwd);
+    if (options.stdin !== undefined) {
+      Object.defineProperty(process, "stdin", {
+        configurable: true,
+        value: Readable.from([options.stdin]),
+      });
+    }
     if (options.env) {
       for (const [key, value] of Object.entries(options.env)) {
         previousEnv.set(key, process.env[key]);
@@ -127,6 +136,9 @@ async function runCli(
     logSpy.mockRestore();
     errorSpy.mockRestore();
     exitSpy.mockRestore();
+    if (options.stdin !== undefined && stdinDescriptor) {
+      Object.defineProperty(process, "stdin", stdinDescriptor);
+    }
   }
 
   return { stdout, stderr, code: exitCode ?? 0 };
@@ -1733,6 +1745,8 @@ checks:
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("--config <file>");
     expect(result.stdout).toContain("Load an explicit Ghost Relay config");
+    expect(result.stdout).toContain("--request <file>");
+    expect(result.stdout).toContain("--request-stdin");
     expect(result.stdout).not.toContain("--dialect");
     expect(result.stdout).not.toContain("dialect");
   });
@@ -1756,8 +1770,16 @@ checks:
     expect(result.code).toBe(0);
     const json = JSON.parse(result.stdout);
     expect(json.schema).toBe("ghost.relay.gather/v2");
+    expect(json).toHaveProperty("context");
+    expect(json).toHaveProperty("selected_context");
+    expect(json).toHaveProperty("source");
+    expect(json).toHaveProperty("targetPaths");
+    expect(json).toHaveProperty("stackDirs");
+    expect(json).toHaveProperty("brief");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
+    expect(json.stackDirs).toHaveLength(1);
+    expect(typeof json.brief).toBe("string");
     expect(json.context.schema).toBe("ghost.relay-context/v1");
     expect(json).not.toHaveProperty("context_packet");
     expect(json.context.target).toMatchObject({
@@ -1850,6 +1872,247 @@ checks:
     expect(json.context.target).toMatchObject({
       mode: "review",
     });
+  });
+
+  it("gathers Relay context from a structured request file", async () => {
+    await writeCheckPackage(dir);
+    await writeRelayRequestStackScenario(dir);
+    await writeFile(
+      join(dir, "request.yml"),
+      `schema: ghost.relay-request/v1
+task: generate-interface
+prompt: Generate a merchant cash-flow push surface.
+selectors:
+  customer: merchant
+  system: managerbot
+  moment: cash-flow-gap
+  medium: push
+  capability: lending
+`,
+    );
+
+    const result = await runCli(
+      ["relay", "gather", "--request", "request.yml", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.schema).toBe("ghost.relay.gather/v2");
+    expect(json.source.kind).toBe("request-stack");
+    expect(json.source.stack).toMatchObject({
+      id: "managerbot.cash-flow-gap.push",
+      path: "stacks/managerbot.cash-flow-gap.push.yml",
+    });
+    expect(json.context.schema).toBe("ghost.relay-context/v1");
+    expect(json.context.target.request).toMatchObject({
+      schema: "ghost.relay-request/v1",
+      task: "generate-interface",
+      selectors: {
+        customer: "merchant",
+        system: "managerbot",
+        moment: "cash-flow-gap",
+        medium: "push",
+        capability: "lending",
+      },
+    });
+    expect(json.context.sections.questions).toEqual([
+      expect.objectContaining({
+        id: "push-sensitive-detail",
+        source: "media/push/questions.yml",
+      }),
+    ]);
+    expect(json).toHaveProperty("selected_context");
+    expect(json).toHaveProperty("source");
+    expect(json).toHaveProperty("targetPaths");
+    expect(json).toHaveProperty("stackDirs");
+    expect(json).toHaveProperty("brief");
+    expect(json).not.toHaveProperty("context_packet");
+  });
+
+  it("gathers Relay context from a structured request on stdin", async () => {
+    await writeCheckPackage(dir);
+    await writeRelayRequestStackScenario(dir);
+
+    const result = await runCli(
+      ["relay", "gather", "--request-stdin", "--format", "json"],
+      dir,
+      {
+        stdin: `schema: ghost.relay-request/v1
+task: answer
+selectors:
+  medium: push
+`,
+      },
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.source.kind).toBe("request-stack");
+    expect(json.context.target.request).toMatchObject({
+      task: "answer",
+      selectors: {
+        medium: "push",
+      },
+    });
+  });
+
+  it("gathers request-only Relay context from an explicit config without .ghost", async () => {
+    await writeRelayRequestOnlyScenario(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "--request-stdin",
+        "--config",
+        ".agents/ghost/relay.yml",
+        "--format",
+        "json",
+      ],
+      dir,
+      {
+        stdin: `schema: ghost.relay-request/v1
+task: answer
+selectors:
+  medium: push
+`,
+      },
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.source.kind).toBe("request-stack");
+    expect(json.source.base).toEqual({ kind: "none" });
+    expect(json).not.toHaveProperty("ghostDir");
+    expect(json.stackDirs).toEqual([]);
+    expect(json.context.config.base).toEqual({ kind: "none" });
+    expect(json.context.sections.questions).toEqual([
+      expect.objectContaining({
+        id: "push-sensitive-detail",
+        source: "media/push/questions.yml",
+      }),
+    ]);
+    expect(json.context.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "no-base-fingerprint" }),
+      ]),
+    );
+  });
+
+  it("gathers request-only Relay context from GHOST_RELAY_CONFIG", async () => {
+    await writeRelayRequestOnlyScenario(dir);
+
+    const result = await runCli(
+      ["relay", "gather", "--request-stdin", "--format", "json"],
+      dir,
+      {
+        env: { GHOST_RELAY_CONFIG: ".agents/ghost/relay.yml" },
+        stdin: `schema: ghost.relay-request/v1
+task: answer
+selectors:
+  medium: push
+`,
+      },
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.source.kind).toBe("request-stack");
+    expect(json.source.base).toEqual({ kind: "none" });
+    expect(json.context.config.path).toContain(".agents/ghost/relay.yml");
+  });
+
+  it("synthesizes a request for target-only request-only Relay context", async () => {
+    await writeRelayRequestOnlyScenario(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "stacks/managerbot.cash-flow-gap.push.yml",
+        "--config",
+        ".agents/ghost/relay.yml",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.source.kind).toBe("request-stack");
+    expect(json.context.target.request).toMatchObject({
+      task: "gather",
+      target_paths: ["stacks/managerbot.cash-flow-gap.push.yml"],
+    });
+    expect(json.targetPaths).toEqual([
+      "stacks/managerbot.cash-flow-gap.push.yml",
+    ]);
+  });
+
+  it("returns request-only Relay gaps instead of requiring .ghost", async () => {
+    await writeRelayRequestOnlyScenario(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "--request-stdin",
+        "--config",
+        ".agents/ghost/relay.yml",
+        "--format",
+        "json",
+      ],
+      dir,
+      {
+        stdin: `schema: ghost.relay-request/v1
+task: answer
+selectors:
+  medium: email
+`,
+      },
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.source.kind).toBe("request");
+    expect(json.source.reason).toBe("unmatched");
+    expect(json.context.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "no-base-fingerprint" }),
+        expect.objectContaining({ kind: "request-unmatched" }),
+      ]),
+    );
+  });
+
+  it("rejects canonical unit source sections for request-only Relay config", async () => {
+    await writeRelayRequestOnlyScenario(dir, { invalidUnitSection: true });
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "--request-stdin",
+        "--config",
+        ".agents/ghost/relay.yml",
+        "--format",
+        "json",
+      ],
+      dir,
+      {
+        stdin: `schema: ghost.relay-request/v1
+task: answer
+selectors:
+  medium: push
+`,
+      },
+    );
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain(
+      "section must be questions, sources, or an extra section",
+    );
   });
 
   it("ignores GHOST_PACKAGE_DIR when gathering Relay context from an exact package", async () => {
@@ -1965,6 +2228,29 @@ composition:
         "utf-8",
       ),
     ).resolves.toContain("fingerprint facets are silent");
+    await expect(
+      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
+    ).resolves.toContain("ghost relay gather <target> --format json");
+    await expect(
+      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
+    ).resolves.toContain("ghost relay gather --request-stdin --format json");
+    await expect(
+      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
+    ).resolves.toContain(
+      "Do not scrape\nthat markdown as the primary agent interface",
+    );
+    await expect(
+      readFile(
+        join(dir, "skills", "ghost", "references", "verify.md"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost relay gather <target> --format json");
+    await expect(
+      readFile(
+        join(dir, "skills", "ghost", "references", "verify.md"),
+        "utf-8",
+      ),
+    ).resolves.toContain("ghost relay gather --request-stdin --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),
@@ -2553,6 +2839,100 @@ primary:
 id: cash-ios
 surface_types: []
 composition_patterns: []
+`,
+  );
+}
+
+async function writeRelayRequestStackScenario(dir: string): Promise<void> {
+  await mkdir(join(dir, "stacks"), { recursive: true });
+  await mkdir(join(dir, "media", "push"), { recursive: true });
+  await writeFile(
+    join(dir, ".ghost", "relay.yml"),
+    `schema: ghost.relay-config/v1
+id: block.product-surface/v1
+sources: []
+request_resolvers:
+  - id: block-stacks
+    kind: stack
+    files:
+      - stacks/*.yml
+    schema: block.stack/v1
+    unit_sources:
+      - id: unit-questions
+        path: "{unit}/questions.yml"
+        section: questions
+        items: questions
+        summary: question
+`,
+  );
+  await writeFile(
+    join(dir, "stacks", "managerbot.cash-flow-gap.push.yml"),
+    `schema: block.stack/v1
+id: managerbot.cash-flow-gap.push
+title: Managerbot cash-flow gap via push
+task_context:
+  customer: merchant
+  system: systems.managerbot
+  moment: moments.merchant-cash-flow-gap
+  medium: media.push
+  capability: capabilities.lending
+units:
+  - media/push
+`,
+  );
+  await writeFile(
+    join(dir, "media", "push", "questions.yml"),
+    `questions:
+  - id: push-sensitive-detail
+    question: What sensitive detail is safe in push?
+`,
+  );
+}
+
+async function writeRelayRequestOnlyScenario(
+  dir: string,
+  options: { invalidUnitSection?: boolean } = {},
+): Promise<void> {
+  await mkdir(join(dir, ".agents", "ghost"), { recursive: true });
+  await mkdir(join(dir, "stacks"), { recursive: true });
+  await mkdir(join(dir, "media", "push"), { recursive: true });
+  await writeFile(
+    join(dir, ".agents", "ghost", "relay.yml"),
+    `schema: ghost.relay-config/v1
+id: block.agent-context/v1
+base:
+  kind: none
+sources: []
+request_resolvers:
+  - id: block-stacks
+    kind: stack
+    files:
+      - stacks/*.yml
+    schema: block.stack/v1
+    unit_sources:
+      - id: unit-questions
+        path: "{unit}/questions.yml"
+        section: ${options.invalidUnitSection ? "composition" : "questions"}
+        items: questions
+        summary: question
+`,
+  );
+  await writeFile(
+    join(dir, "stacks", "managerbot.cash-flow-gap.push.yml"),
+    `schema: block.stack/v1
+id: managerbot.cash-flow-gap.push
+title: Managerbot cash-flow gap via push
+task_context:
+  medium: media.push
+units:
+  - media/push
+`,
+  );
+  await writeFile(
+    join(dir, "media", "push", "questions.yml"),
+    `questions:
+  - id: push-sensitive-detail
+    question: What sensitive detail is safe in push?
 `,
   );
 }

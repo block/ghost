@@ -23,11 +23,16 @@ export async function loadGhostRelayConfig(
   const explicit = options.explicitPath
     ? resolve(options.cwd, options.explicitPath)
     : undefined;
+  const envPath =
+    !explicit && process.env.GHOST_RELAY_CONFIG
+      ? resolve(options.cwd, process.env.GHOST_RELAY_CONFIG)
+      : undefined;
   const discovered =
     explicit ??
+    envPath ??
     (await firstExistingPath([
-      options.packageDir ? resolve(options.packageDir, "relay.yml") : "",
       resolve(options.root, options.ghostDir, "relay.yml"),
+      options.packageDir ? resolve(options.packageDir, "relay.yml") : "",
     ]));
 
   if (!discovered) {

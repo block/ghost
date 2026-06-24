@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": minor
 ---
 
-Adds Relay context JSON and Relay configs for declared project context sources.
+Adds Relay context JSON, structured Relay requests, and config-driven runtime selection for declared project context sources.

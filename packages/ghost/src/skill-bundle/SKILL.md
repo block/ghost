@@ -49,8 +49,11 @@ raw repo observations while authoring curated fingerprint facets.
 Advanced repos may contain nested fingerprint packages such as
 `apps/checkout/.ghost/`. Host wrappers may set
 `GHOST_PACKAGE_DIR=<relative-dir>` on the child `ghost` process when they need
-repo-local Ghost files outside raw `ghost`'s `.ghost` default. Ghost stays adapter-neutral: wrappers
-consume JSON and map severities into their own review or check format.
+repo-local Ghost files outside raw `ghost`'s `.ghost` default. Host wrappers
+may also set `GHOST_RELAY_CONFIG=<relative-file>` or pass
+`ghost relay gather --config <file>` when Relay runtime config lives elsewhere.
+Ghost stays adapter-neutral: wrappers consume JSON and map severities into their
+own review or check format.
 
 ## Core CLI Verbs
 
@@ -62,7 +65,7 @@ consume JSON and map severities into their own review or check format.
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory review packet grounded in fingerprint facets, exemplars, checks, and diff evidence. |
-| `ghost relay gather [target]` | Gather fingerprint-grounded context for an agent target. |
+| `ghost relay gather [target]` | Gather Relay context for an agent target or structured Relay request. |
 | `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install this unified skill bundle. |
 

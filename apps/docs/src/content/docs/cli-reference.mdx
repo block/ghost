@@ -136,19 +136,25 @@ reusable review prompt.
 
 ### Agent Context - `relay gather`
 
-Gather a compact Relay brief from the resolved fingerprint stack for a target
-path. Use this before generation so the host agent starts with the package
-stack, intent, active obligations, composition, inventory, validation checks,
-and gaps. JSON output also includes a normalized
-`ghost.relay-context/v1` for agents that need stable sections, source paths,
-skipped context, gaps, and trace metadata.
+Gather Relay context for a target path or structured Relay request. Relay loads
+config first; omitted `base` means `base.kind: fingerprint`, while
+`base.kind: none` lets agent-framework repos gather declared request context
+without a `.ghost` package. For agents and host adapters, use JSON: the full
+`ghost.relay.gather/v2` result is the stable contract, and its nested `context`
+is `ghost.relay-context/v1`. Plain markdown output remains a compact human
+preview.
 
 <CliHelp tool="ghost" command="relay" hideDescription />
 
 ```bash
-ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --format json
 ghost relay gather apps/checkout/review/page.tsx --package product-surface --format json
 ghost relay gather apps/checkout/review/page.tsx --config .ghost/relay.yml --format json
+GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
+ghost relay gather stacks/managerbot.cash-flow-gap.push.yml --config .agents/ghost/relay.yml --format json
+ghost relay gather --request request.yml --format json
+ghost relay gather --request-stdin --format json
+ghost relay gather apps/checkout/review/page.tsx # human preview
 ```
 
 ### Inspection - `describe`
