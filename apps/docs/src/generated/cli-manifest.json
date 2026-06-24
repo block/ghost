@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-23T20:06:18.125Z",
+  "generatedAt": "2026-06-24T04:21:56.789Z",
   "tools": [
     {
       "tool": "ghost",
@@ -29,55 +29,39 @@
               "default": null,
               "takesValue": false,
               "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
             }
           ]
         },
         {
           "tool": "ghost",
           "name": "init",
-          "rawName": "init [dir]",
+          "rawName": "init",
           "description": "Create a root .ghost split fingerprint package",
           "group": "core",
           "defaultHelp": true,
           "compactName": "init",
-          "summary": "Create .ghost/fingerprint/ package facets.",
+          "summary": "Create .ghost/ package facets.",
           "options": [
             {
               "rawName": "--scope <path>",
               "name": "scope",
-              "description": "Create a scoped <path>/<memory-dir> fingerprint package",
+              "description": "Create a scoped <path>/.ghost fingerprint package",
               "default": null,
               "takesValue": true,
               "negated": false
             },
             {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers, init --scope, and default root init (env: GHOST_MEMORY_DIR; default: .ghost)",
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Exact fingerprint package directory to initialize",
               "default": null,
               "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--with-config",
-              "name": "withConfig",
-              "description": "Also create optional config.yml for implementation roots and reference registries/libraries",
-              "default": null,
-              "takesValue": false,
               "negated": false
             },
             {
               "rawName": "--reference <path-or-registry>",
               "name": "reference",
-              "description": "Reference UI registry, library path, or fingerprint to record in config.yml and inventory building blocks",
+              "description": "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -149,14 +133,6 @@
               "default": null,
               "takesValue": false,
               "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers, --all, and default package lookup (env: GHOST_MEMORY_DIR; default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
             }
           ]
         },
@@ -187,14 +163,6 @@
               "negated": false
             },
             {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers, nested discovery, and default scan (env: GHOST_MEMORY_DIR; default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--format <fmt>",
               "name": "format",
               "description": "Output format: cli or json",
@@ -214,14 +182,6 @@
           "compactName": "stack",
           "summary": "Inspect a nested fingerprint stack for repo paths.",
           "options": [
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -349,14 +309,6 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Use exactly this fingerprint package directory instead of resolving a stack",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers and --path stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -567,7 +519,7 @@
           "tool": "ghost",
           "name": "drift",
           "rawName": "drift <action>",
-          "description": "Inspect continuous design-loop drift status or run the stance-ledger check.",
+          "description": "Inspect Ghost drift status or run the stance-ledger check.",
           "group": "compare",
           "defaultHelp": false,
           "compactName": "drift check",
@@ -645,14 +597,6 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Use exactly this fingerprint package directory instead of resolving a stack",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers and stack resolution (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -746,14 +690,6 @@
               "negated": false
             },
             {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--format <fmt>",
               "name": "format",
               "description": "Output format: markdown or json",
@@ -793,14 +729,6 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Exact fingerprint package directory; bypasses stack discovery",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--memory-dir <relative-dir>",
-              "name": "memoryDir",
-              "description": "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
               "default": null,
               "takesValue": true,
               "negated": false

@@ -441,16 +441,16 @@ async function writeSplitFingerprintPackage(
   fingerprintRaw: string,
   checksRaw?: string,
 ): Promise<void> {
-  const fingerprintDir = join(pkg, "fingerprint");
+  const packageDir = pkg;
   const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(fingerprintDir, { recursive: true });
+  await mkdir(packageDir, { recursive: true });
   await Promise.all([
     writeFile(
-      join(fingerprintDir, "manifest.yml"),
+      join(packageDir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
     writeFile(
-      join(fingerprintDir, "intent.yml"),
+      join(packageDir, "intent.yml"),
       stringifyYaml(
         doc.intent ?? {
           summary: {},
@@ -461,7 +461,7 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "inventory.yml"),
+      join(packageDir, "inventory.yml"),
       stringifyYaml(
         doc.inventory ?? {
           topology: {},
@@ -472,11 +472,11 @@ async function writeSplitFingerprintPackage(
       ),
     ),
     writeFile(
-      join(fingerprintDir, "composition.yml"),
+      join(packageDir, "composition.yml"),
       stringifyYaml(doc.composition ?? { patterns: [] }),
     ),
     ...(checksRaw
-      ? [writeFile(join(fingerprintDir, "validate.yml"), checksRaw)]
+      ? [writeFile(join(packageDir, "validate.yml"), checksRaw)]
       : []),
   ]);
 }

@@ -15,15 +15,15 @@ Drift remains important, but it is one governance workflow over the fingerprint,
 not the center of the architecture.
 
 This settles the mental model for follow-on work. Current docs describe
-`.ghost/fingerprint/` as the portable package and generation context.
+`.ghost/` as the portable package and generation context.
 Superseded decomposition notes have been pruned; future idea docs should stay
 subordinate to this hierarchy. The fingerprint owns surface context. Tools
 consume, validate, compare, generate from, or govern that context.
 
 ## Decisions
 
-- The fingerprint package is the durable artifact. `.ghost/fingerprint/`
-  remains the portable boundary, anchored by `fingerprint/manifest.yml`.
+- The fingerprint package is the durable artifact. `.ghost/` remains the
+  portable boundary, anchored by `manifest.yml`.
 - Core generation input is `intent.yml`, `inventory.yml`, and
   `composition.yml`. `intent.yml` captures the intent behind the surface,
   `inventory.yml` points to curated material and exemplars, and
@@ -107,7 +107,7 @@ or create public API guarantees. It gives follow-on work a shared hierarchy.
    generate from fingerprints before reviewing drift.
 5. Schema and model exploration: write separate design notes for signature
    moves and buildable inventory evidence before any schema change.
-6. Dogfood fingerprint: update `.ghost/fingerprint/` for this repo and validate
+6. Dogfood fingerprint: update `.ghost/` for this repo and validate
    it with `ghost scan`, `ghost lint`, and `ghost verify`.
 
 ## Interface stance
@@ -125,5 +125,4 @@ The memo is successful if:
 - A contributor can see why drift commands still matter.
 - A follow-on agent can split docs, CLI, skill, schema, and dogfood work without
   asking what the architectural center is.
-- Nothing here contradicts the current canonical package shape under
-  `.ghost/fingerprint/`.
+- Nothing here contradicts the current canonical package shape under `.ghost/`.

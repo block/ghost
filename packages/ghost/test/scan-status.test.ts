@@ -34,7 +34,7 @@ describe("scanStatus contribution", () => {
       "validate",
     ]);
     expect(status.contribution.reasons.join(" ")).toContain(
-      "fingerprint/manifest.yml is missing",
+      "manifest.yml is missing",
     );
   });
 
@@ -99,13 +99,10 @@ checks: []
   });
 
   it("does not report sources cache as package contribution", async () => {
-    await mkdir(join(dir, "fingerprint", "sources", "cache"), {
+    await mkdir(join(dir, "sources", "cache"), {
       recursive: true,
     });
-    await writeFile(
-      join(dir, "fingerprint", "sources", "cache", "inventory.json"),
-      "{}\n",
-    );
+    await writeFile(join(dir, "sources", "cache", "inventory.json"), "{}\n");
     await writePackage(dir, {});
 
     const status = await scanStatus(dir);
@@ -333,15 +330,15 @@ async function writePackage(
     validate?: string;
   },
 ): Promise<void> {
-  const fingerprintDir = join(dir, "fingerprint");
-  await mkdir(fingerprintDir, { recursive: true });
+  const packageDir = dir;
+  await mkdir(packageDir, { recursive: true });
   await writeFile(
-    join(fingerprintDir, "manifest.yml"),
+    join(packageDir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: test\n",
   );
   await Promise.all(
     Object.entries(facets).map(([facet, content]) =>
-      writeFile(join(fingerprintDir, `${facet}.yml`), content),
+      writeFile(join(packageDir, `${facet}.yml`), content),
     ),
   );
 }

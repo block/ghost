@@ -58,7 +58,7 @@ sections `World shape`, `Cohorts`, and `Tracks` from the deterministic output.
 
 - Fleet consumes direct `map.md` and `fingerprint.md` snapshots for the private
   fleet workflow. That compatibility shape does not change the public
-  `.ghost/fingerprint/` package model.
+  `.ghost/` package model.
 - Fleet may read scoped overlays from `fingerprints/<scope>.md`; those are
   member snapshots, not nested package roots.
 - Clusters are a narrative projection over distances and groupings. They are

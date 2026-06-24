@@ -22,12 +22,12 @@ Canonical Ghost fingerprints start here, with optional child packages for scoped
 product areas:
 
 ```text
-.ghost/fingerprint/manifest.yml
-.ghost/fingerprint/intent.yml
-.ghost/fingerprint/inventory.yml
-.ghost/fingerprint/composition.yml
-.ghost/fingerprint/validate.yml
-apps/checkout/.ghost/fingerprint/manifest.yml
+.ghost/manifest.yml
+.ghost/intent.yml
+.ghost/inventory.yml
+.ghost/composition.yml
+.ghost/validate.yml
+apps/checkout/.ghost/manifest.yml
 ```
 
 The command tables below are generated from the CLI source. Run
@@ -39,15 +39,14 @@ The command tables below are generated from the CLI source. Run
 
 ### Initialize - `init`
 
-Create a `.ghost/fingerprint/` package with a manifest, raw facet files,
+Create a `.ghost/` package with a manifest, raw facet files,
 and deterministic checks. Use `--scope <path>` for nested package roots. Use
 `--monorepo` to create or preserve the root package, detect workspace child
 roots, and print scoped init commands; add `--apply` to create the detected
 child packages. Use
-`GHOST_MEMORY_DIR=<relative-dir>` only when a host wrapper stores Ghost package
+`GHOST_PACKAGE_DIR=<relative-dir>` only when a host wrapper stores Ghost package
 roots under a different safe relative directory; raw `ghost` defaults to
-`.ghost`. Explicit `init [dir]` and `--memory-dir <relative-dir>` values win
-over the environment default.
+`.ghost`. Exact `--package <dir>` values win over the environment default.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
@@ -56,13 +55,15 @@ ghost init
 ghost init --monorepo
 ghost init --monorepo --apply
 ghost init --scope apps/checkout
-GHOST_MEMORY_DIR=.agents/ghost ghost init
-ghost init --scope apps/checkout --memory-dir .design/memory
+ghost init --package product-surface
+ghost init --package .design/custom-ghost
+GHOST_PACKAGE_DIR=.agents/ghost ghost init
+GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout
 ```
 
 ### Contribution facets - `scan`
 
-Report whether `fingerprint/manifest.yml` is present and which sparse facets
+Report whether `manifest.yml` is present and which sparse facets
 this package contributes: `intent`, `inventory`, `composition`, and `validate`.
 Raw repo signals do not count toward inventory contribution.
 
@@ -71,8 +72,8 @@ Raw repo signals do not count toward inventory contribution.
 ```bash
 ghost scan
 ghost scan --format json
-GHOST_MEMORY_DIR=.agents/ghost ghost scan --format json
-ghost scan --include-nested --memory-dir .design/memory --format json
+GHOST_PACKAGE_DIR=.agents/ghost ghost scan --format json
+GHOST_PACKAGE_DIR=.design/memory ghost scan --include-nested --format json
 ```
 
 ### Stack inspection - `stack`
@@ -109,21 +110,21 @@ Validate a root `.ghost` fingerprint package or an individual split artifact.
 
 ```bash
 ghost lint
-ghost lint .ghost/fingerprint/intent.yml
-ghost lint .ghost/fingerprint/validate.yml --format json
+ghost lint .ghost/intent.yml
+ghost lint .ghost/validate.yml --format json
 ghost lint --all
 ```
 
 ### Package fidelity - `verify`
 
-Validate fingerprint evidence and exemplar paths, typed check refs, optional
-rationale files, and config references.
+Validate fingerprint evidence and exemplar paths, typed check refs, and
+optional rationale files.
 
 <CliHelp tool="ghost" command="verify" hideDescription />
 
 ```bash
 ghost verify .ghost --root .
-ghost verify --all --memory-dir .design/memory
+GHOST_PACKAGE_DIR=.design/memory ghost verify --all
 ```
 
 ### Reusable Review Command - `emit`
@@ -141,6 +142,11 @@ stack, intent, active obligations, composition, inventory, validation checks,
 and gaps.
 
 <CliHelp tool="ghost" command="relay" hideDescription />
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --package product-surface --format json
+```
 
 ### Inspection - `describe`
 

@@ -263,37 +263,31 @@ function buildSuggestedReads(
 ): ContextEntrypoint["suggestedReads"] {
   const reads = new Map<string, string>();
   if (selected.intent.length > 0) {
-    reads.set(
-      "fingerprint/intent.yml",
-      "selected intent anchors and full intent",
-    );
+    reads.set("intent.yml", "selected intent anchors and full intent");
   }
   if (selected.composition.length > 0) {
     reads.set(
-      "fingerprint/composition.yml",
+      "composition.yml",
       "selected composition patterns and neighboring patterns",
     );
   }
   if (selected.exemplars.length > 0) {
     reads.set(
-      "fingerprint/inventory.yml",
+      "inventory.yml",
       "selected exemplars, topology, and building blocks",
     );
   }
   if (selected.checks.length > 0) {
-    reads.set(
-      "fingerprint/validate.yml",
-      "active deterministic validation rules",
-    );
+    reads.set("validate.yml", "active deterministic validation rules");
   }
   for (const exemplar of selected.exemplars) {
     const path = exemplar.appliesTo.paths[0];
     if (path) reads.set(path, `source surface for ${exemplar.ref}`);
   }
   if (reads.size === 0) {
-    reads.set("fingerprint/intent.yml", "global fingerprint intent");
-    reads.set("fingerprint/inventory.yml", "topology and exemplars");
-    reads.set("fingerprint/composition.yml", "composition patterns");
+    reads.set("intent.yml", "global fingerprint intent");
+    reads.set("inventory.yml", "topology and exemplars");
+    reads.set("composition.yml", "composition patterns");
   }
   return [...reads.entries()].map(([path, reason]) => ({ path, reason }));
 }
@@ -358,22 +352,22 @@ function buildOmissions(
     {
       label: "Intent anchors",
       omitted: Math.max(0, totals.intent - selected.intent.length),
-      source: "fingerprint/intent.yml",
+      source: "intent.yml",
     },
     {
       label: "Composition patterns",
       omitted: Math.max(0, totals.composition - selected.composition.length),
-      source: "fingerprint/composition.yml",
+      source: "composition.yml",
     },
     {
       label: "Exemplars",
       omitted: Math.max(0, totals.exemplars - selected.exemplars.length),
-      source: "fingerprint/inventory.yml",
+      source: "inventory.yml",
     },
     {
       label: "Active checks",
       omitted: Math.max(0, totals.checks - selected.checks.length),
-      source: "fingerprint/validate.yml",
+      source: "validate.yml",
     },
   ];
 }

@@ -11,14 +11,14 @@ looking for the fingerprint capture and drift-review tool, that's
 ## Registry convention
 
 This workspace carries a repo-local Ghost reference bundle in `.ghost/`.
-`fingerprint/intent.yml` and `fingerprint/inventory.yml` describe Ghost UI as implementation vocabulary: tokens,
+`.ghost/intent.yml` and `.ghost/inventory.yml` describe Ghost UI as implementation vocabulary: tokens,
 component families, registry shape, and reference-registry boundaries. It does
 not define product-specific flows, copy, trust obligations, or business intent
 for consuming apps. New products should reference this bundle and the generated
 `public/r/registry.json`, then fill their own surface-composition fingerprint
 separately.
 
-Agents should read this README, `.ghost/fingerprint/`,
+Agents should read this README, `.ghost/`,
 `public/r/registry.json`, `registry.json`, `.shadcn/skills.md`, and source files
 when integrating components.
 
@@ -38,7 +38,7 @@ That distinction helps generators pick relevant references instead of treating e
 - **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
 - **Registry** — `public/r/registry.json`, generated shadcn-compatible catalogue for consumption. Source entries live in `registry.json`; rebuilt by `just build-registry`.
-- **Ghost reference context** — `.ghost/fingerprint/`, used as reference-registry context by consuming products.
+- **Ghost reference context** — `.ghost/`, used as reference-registry context by consuming products.
 - **Agent context** — `.shadcn/skills.md`, generated from the registry and component sources for AI assistants.
 
 ## Use

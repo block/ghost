@@ -3,13 +3,10 @@ import { type Dirent, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import type {
   GitInfo,
-  InventoryConfigSummary,
   InventoryOutput,
   LanguageHistogramEntry,
   TopLevelEntry,
 } from "#ghost-core";
-import { CONFIG_FILENAME, FINGERPRINT_PACKAGE_DIR } from "./constants.js";
-import { readOptionalPackageConfigSync } from "./package-config.js";
 
 /**
  * Canonical package manifests we scan for at the inventoried root.
@@ -316,7 +313,6 @@ export function signals(path: string): InventoryOutput {
   const registryFiles = sortRelative(walkResult.registryFiles, root);
   const topLevelTree = readTopLevel(root);
   const git = readGit(root);
-  const config = readInventoryConfig(root);
 
   // Token directories surface as additional config candidates so the
   // recipe can find directory-shaped token graphs without a separate scan.
@@ -345,27 +341,6 @@ export function signals(path: string): InventoryOutput {
     top_level_tree: topLevelTree,
     git_remote: git.remote,
     git_default_branch: git.default_branch,
-    ...(config ? { config } : {}),
-  };
-}
-
-function readInventoryConfig(root: string): InventoryConfigSummary | undefined {
-  const path = join(root, FINGERPRINT_PACKAGE_DIR, CONFIG_FILENAME);
-  const config = readOptionalPackageConfigSync(path);
-  if (!config) return undefined;
-  return {
-    path,
-    targets: config.targets.map((target) => ({
-      id: target.id,
-      ...(target.platform ? { platform: target.platform } : {}),
-      roots: target.roots,
-    })),
-    libraries: config.libraries.map((library) => ({
-      id: library.id,
-      role: library.role,
-      source: library.source,
-      ...(library.fingerprint ? { fingerprint: library.fingerprint } : {}),
-    })),
   };
 }
 

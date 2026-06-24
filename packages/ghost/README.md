@@ -4,7 +4,7 @@
 
 Ghost captures the composition of a product surface: the intent behind it, the
 materials it draws from, and the patterns that make it feel intentional. It
-stores that composition in a repo-local `.ghost/fingerprint/` package that host
+stores that composition in a repo-local `.ghost/` package that host
 agents can read before generation and validate after changes.
 
 This package ships one CLI: `ghost`.
@@ -13,7 +13,7 @@ This package ships one CLI: `ghost`.
 
 > [!WARNING]
 > Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
-> on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+> on-disk `.ghost/` package shape, and public JavaScript exports may
 > change in breaking ways before a stable 1.0 release.
 >
 > Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
@@ -88,7 +88,7 @@ import {
 Ghost is bring-your-own-agent. The CLI performs deterministic work: repo
 signals, readiness reporting, linting, verification, comparison, checks, and
 advisory review packet generation. The installed `ghost` skill teaches a host
-agent how to capture canonical `.ghost/fingerprint/` surface-composition
+agent how to capture canonical `.ghost/` surface-composition
 context, brief and generate work from it, review changes against it, verify
 generated UI, remediate issues, and suggest fingerprint edits when the user
 asks.

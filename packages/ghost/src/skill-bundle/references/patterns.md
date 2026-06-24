@@ -1,6 +1,6 @@
 ---
 name: patterns
-description: Author surface-composition patterns inside .ghost/fingerprint/composition.yml.
+description: Author surface-composition patterns inside .ghost/composition.yml.
 handoffs:
   - label: Verify fingerprint package
     command: ghost verify .ghost --root .
@@ -9,7 +9,7 @@ handoffs:
 
 # Recipe: Author Fingerprint Patterns
 
-**Goal:** write useful `patterns[]` entries in `.ghost/fingerprint/composition.yml`.
+**Goal:** write useful `patterns[]` entries in `.ghost/composition.yml`.
 
 Patterns are durable surface-composition guidance. They may describe rules,
 layouts, structures, flows, states, content, behavior, or visual arrangements.
@@ -72,7 +72,7 @@ Allowed `kind` values:
 - Put obligations that affect failure, disclosure, recovery, or trust in
   `intent.experience_contracts`, not only `composition.patterns`.
 - Put broad surface intent in `intent.principles`.
-- Add `check_refs` only when a deterministic check exists in `fingerprint/validate.yml`.
+- Add `check_refs` only when a deterministic check exists in `validate.yml`.
 
 ## Validate
 

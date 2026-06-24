@@ -9,7 +9,7 @@ import {
 import {
   detectMonorepoInitCandidates,
   type MonorepoInitCandidate,
-  normalizeMemoryDir,
+  normalizeGhostDir,
 } from "./scan/index.js";
 
 type InitOptions = NonNullable<Parameters<typeof initFingerprintPackage>[2]>;
@@ -22,7 +22,7 @@ interface MonorepoInitOutput {
   root: Record<string, string>;
   rootState: "created" | "exists";
   mode: "plan" | "apply";
-  memoryDir: string;
+  ghostDir: string;
   candidates: MonorepoInitCandidateState[];
   created: Array<MonorepoInitCandidate & { state: "created" }>;
   skipped: MonorepoInitCandidateState[];
@@ -31,12 +31,12 @@ interface MonorepoInitOutput {
 }
 
 export async function initMonorepoFingerprintPackages(options: {
-  memoryDir: string;
+  ghostDir: string;
   apply: boolean;
   initOptions: InitOptions;
 }): Promise<MonorepoInitOutput> {
   const cwd = process.cwd();
-  const rootPaths = resolveFingerprintPackage(options.memoryDir, cwd);
+  const rootPaths = resolveFingerprintPackage(options.ghostDir, cwd);
   const rootExists = await hasFingerprintPackage(rootPaths);
   const rootState =
     rootExists && !options.initOptions.force ? "exists" : "created";
@@ -44,7 +44,7 @@ export async function initMonorepoFingerprintPackages(options: {
     rootState === "exists"
       ? rootPaths
       : await initFingerprintPackage(
-          options.memoryDir,
+          options.ghostDir,
           cwd,
           options.initOptions,
         );
@@ -55,7 +55,7 @@ export async function initMonorepoFingerprintPackages(options: {
         ...candidate,
         state: (await hasScopeFingerprintPackage(
           candidate,
-          options.memoryDir,
+          options.ghostDir,
           cwd,
         ))
           ? "exists"
@@ -66,7 +66,7 @@ export async function initMonorepoFingerprintPackages(options: {
   const commands = candidates
     .filter((candidate) => candidate.state === "candidate")
     .map((candidate) =>
-      formatScopedInitCommand(candidate.path, options.memoryDir),
+      formatScopedInitCommand(candidate.path, options.ghostDir),
     );
   const created: MonorepoInitOutput["created"] = [];
   const skipped: MonorepoInitOutput["skipped"] = candidates.filter(
@@ -80,7 +80,7 @@ export async function initMonorepoFingerprintPackages(options: {
       try {
         await initScopedFingerprintPackage(candidate.path, cwd, {
           ...options.initOptions,
-          memoryDir: options.memoryDir,
+          ghostDir: options.ghostDir,
         });
         created.push({ ...stripCandidateState(candidate), state: "created" });
       } catch (err) {
@@ -93,12 +93,10 @@ export async function initMonorepoFingerprintPackages(options: {
   }
 
   return {
-    root: initPackageOutput(root, {
-      includeConfig: Boolean(options.initOptions.withConfig),
-    }),
+    root: initPackageOutput(root),
     rootState,
     mode: options.apply ? "apply" : "plan",
-    memoryDir: options.memoryDir,
+    ghostDir: options.ghostDir,
     candidates,
     created,
     skipped,
@@ -163,11 +161,11 @@ export function writeMonorepoInitOutput(
 
 async function hasScopeFingerprintPackage(
   candidate: MonorepoInitCandidate,
-  memoryDir: string,
+  ghostDir: string,
   cwd: string,
 ): Promise<boolean> {
   return hasFingerprintPackage(
-    resolveFingerprintPackage(memoryDir, resolve(cwd, candidate.path)),
+    resolveFingerprintPackage(ghostDir, resolve(cwd, candidate.path)),
   );
 }
 
@@ -191,11 +189,11 @@ function stripCandidateState(
   };
 }
 
-function formatScopedInitCommand(path: string, memoryDir: string): string {
+function formatScopedInitCommand(path: string, ghostDir: string): string {
   const base = `ghost init --scope ${formatCommandArg(path)}`;
-  return memoryDir === normalizeMemoryDir()
+  return ghostDir === normalizeGhostDir()
     ? base
-    : `${base} --memory-dir ${formatCommandArg(memoryDir)}`;
+    : `GHOST_PACKAGE_DIR=${formatCommandArg(ghostDir)} ${base}`;
 }
 
 function formatCommandArg(value: string): string {
@@ -204,16 +202,13 @@ function formatCommandArg(value: string): string {
 
 function initPackageOutput(
   paths: FingerprintPackagePaths,
-  options: { includeConfig: boolean },
 ): Record<string, string> {
   return {
     dir: paths.dir,
-    fingerprintDir: paths.fingerprintDir,
     manifest: paths.manifest,
     intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
-    ...(options.includeConfig ? { config: paths.config } : {}),
     checks: paths.checks,
   };
 }

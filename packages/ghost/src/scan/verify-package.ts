@@ -14,8 +14,6 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
-import type { GhostPackageConfig } from "./package-config.js";
-import { readOptionalPackageConfig } from "./package-config.js";
 import type {
   VerifyFingerprintIssue,
   VerifyFingerprintReport,
@@ -50,8 +48,6 @@ export async function verifyFingerprintPackage(
     readOptionalChecks(paths.checks, issues),
   ]);
   const fingerprint = loaded?.fingerprint;
-  const config = await readOptionalConfig(paths.config, issues);
-
   if (fingerprint) {
     await verifyFingerprintEvidence(fingerprint, root, issues);
     await verifyFingerprintExemplars(fingerprint, root, issues);
@@ -59,10 +55,6 @@ export async function verifyFingerprintPackage(
 
   if (fingerprint && checks) {
     verifyFingerprintCheckRefs(fingerprint, checks.checks, issues);
-  }
-
-  if (config) {
-    await verifyPackageConfig(config, root, issues);
   }
 
   return finalize(issues);
@@ -83,7 +75,7 @@ async function verifyFingerprintExemplars(
         severity: "warning",
         rule: "fingerprint-exemplar-unreachable",
         message: `fingerprint exemplar path '${entry.path}' could not be resolved from ${root}.`,
-        path: `fingerprint/inventory.yml.exemplars[${index}].path`,
+        path: `inventory.yml.exemplars[${index}].path`,
       });
     }),
   );
@@ -119,9 +111,8 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message:
-        "fingerprint/validate.yml failed schema validation after package lint.",
-      path: "fingerprint/validate.yml",
+      message: "validate.yml failed schema validation after package lint.",
+      path: "validate.yml",
     });
     return undefined;
   } catch (err) {
@@ -129,101 +120,13 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message: `fingerprint/validate.yml could not be read as YAML: ${
+      message: `validate.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: "fingerprint/validate.yml",
+      path: "validate.yml",
     });
     return undefined;
   }
-}
-
-async function readOptionalConfig(
-  path: string,
-  issues: VerifyFingerprintIssue[],
-): Promise<GhostPackageConfig | undefined> {
-  try {
-    return await readOptionalPackageConfig(path);
-  } catch (err) {
-    issues.push({
-      severity: "error",
-      rule: "verify-config-read-failed",
-      message: `config.yml could not be read: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path: "config.yml",
-    });
-    return undefined;
-  }
-}
-
-async function verifyPackageConfig(
-  config: GhostPackageConfig,
-  root: string,
-  issues: VerifyFingerprintIssue[],
-): Promise<void> {
-  const pathChecks: Array<{ path: string; label: string }> = [];
-  config.targets.forEach((target, targetIndex) => {
-    target.roots.forEach((entry, entryIndex) => {
-      if (entry) {
-        pathChecks.push({
-          path: entry,
-          label: `config.yml.targets[${targetIndex}].roots[${entryIndex}]`,
-        });
-      }
-    });
-    target.components?.forEach((entry, entryIndex) => {
-      pathChecks.push({
-        path: entry,
-        label: `config.yml.targets[${targetIndex}].components[${entryIndex}]`,
-      });
-    });
-    target.tokens?.forEach((entry, entryIndex) => {
-      pathChecks.push({
-        path: entry,
-        label: `config.yml.targets[${targetIndex}].tokens[${entryIndex}]`,
-      });
-    });
-  });
-
-  config.libraries.forEach((library, libraryIndex) => {
-    if (library.source.startsWith("workspace:")) {
-      pathChecks.push({
-        path: library.source.slice("workspace:".length),
-        label: `config.yml.libraries[${libraryIndex}].source`,
-      });
-    }
-    if (library.source.startsWith("registry:")) {
-      const registryPath = library.source.slice("registry:".length);
-      if (!isRemoteReference(registryPath)) {
-        pathChecks.push({
-          path: registryPath,
-          label: `config.yml.libraries[${libraryIndex}].source`,
-        });
-      }
-    }
-    if (library.fingerprint) {
-      pathChecks.push({
-        path: library.fingerprint,
-        label: `config.yml.libraries[${libraryIndex}].fingerprint`,
-      });
-    }
-  });
-
-  await Promise.all(
-    pathChecks.map(async (entry) => {
-      const resolved = isAbsolute(entry.path)
-        ? entry.path
-        : resolve(root, entry.path);
-      if (await pathExists(resolved)) return;
-      issues.push({
-        severity: "error",
-        rule: "config-path-unreachable",
-        message: `config path '${entry.path}' could not be resolved from ${root}.`,
-        path: entry.label,
-      });
-    }),
-  );
 }
 
 async function verifyFingerprintEvidence(
@@ -235,31 +138,31 @@ async function verifyFingerprintEvidence(
     [
       ...fingerprint.intent.situations.map(
         (entry, index) =>
-          [
-            `fingerprint/intent.yml.situations[${index}].evidence`,
-            entry.evidence,
-          ] as [string, GhostFingerprintEvidence[] | undefined],
+          [`intent.yml.situations[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
       ),
       ...fingerprint.intent.principles.map(
         (entry, index) =>
-          [
-            `fingerprint/intent.yml.principles[${index}].evidence`,
-            entry.evidence,
-          ] as [string, GhostFingerprintEvidence[] | undefined],
+          [`intent.yml.principles[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
       ),
       ...fingerprint.intent.experience_contracts.map(
         (entry, index) =>
           [
-            `fingerprint/intent.yml.experience_contracts[${index}].evidence`,
+            `intent.yml.experience_contracts[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
       ...fingerprint.composition.patterns.map(
         (entry, index) =>
-          [
-            `fingerprint/composition.yml.patterns[${index}].evidence`,
-            entry.evidence,
-          ] as [string, GhostFingerprintEvidence[] | undefined],
+          [`composition.yml.patterns[${index}].evidence`, entry.evidence] as [
+            string,
+            GhostFingerprintEvidence[] | undefined,
+          ],
       ),
     ];
 
@@ -292,24 +195,24 @@ function verifyFingerprintCheckRefs(
   const checkRefLists: Array<[string, string[] | undefined]> = [
     ...fingerprint.intent.principles.map(
       (entry, index) =>
-        [
-          `fingerprint/intent.yml.principles[${index}].check_refs`,
-          entry.check_refs,
-        ] as [string, string[] | undefined],
+        [`intent.yml.principles[${index}].check_refs`, entry.check_refs] as [
+          string,
+          string[] | undefined,
+        ],
     ),
     ...fingerprint.intent.experience_contracts.map(
       (entry, index) =>
         [
-          `fingerprint/intent.yml.experience_contracts[${index}].check_refs`,
+          `intent.yml.experience_contracts[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
     ...fingerprint.composition.patterns.map(
       (entry, index) =>
-        [
-          `fingerprint/composition.yml.patterns[${index}].check_refs`,
-          entry.check_refs,
-        ] as [string, string[] | undefined],
+        [`composition.yml.patterns[${index}].check_refs`, entry.check_refs] as [
+          string,
+          string[] | undefined,
+        ],
     ),
   ];
 
@@ -343,10 +246,6 @@ function isMissingFileError(err: unknown): boolean {
     "code" in err &&
     (err as { code?: string }).code === "ENOENT"
   );
-}
-
-function isRemoteReference(reference: string): boolean {
-  return /^https?:\/\//i.test(reference);
 }
 
 function finalize(issues: VerifyFingerprintIssue[]): VerifyFingerprintReport {

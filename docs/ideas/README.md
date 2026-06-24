@@ -14,7 +14,7 @@ Retained notes:
 
 - `fingerprint-first-architecture.md` records the settled product center:
   Ghost is fingerprint-first, and drift is one governance workflow over the
-  portable `.ghost/fingerprint/` package.
+  portable `.ghost/` package.
 - `ghost-ui.md` explores additive registry metadata for the private Ghost UI
   reference package.
 - `guided-migration.md` explores a future host-agent workflow for migrating one

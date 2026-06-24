@@ -173,10 +173,6 @@ export function buildCli(): ReturnType<typeof cac> {
       "--package <dir>",
       "Exact fingerprint package directory; bypasses stack discovery",
     )
-    .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -195,8 +191,6 @@ export function buildCli(): ReturnType<typeof cac> {
           cwd: process.cwd(),
           packageDir:
             typeof opts.package === "string" ? opts.package : undefined,
-          memoryDir:
-            typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           base: typeof opts.base === "string" ? opts.base : undefined,
           diffText,
         });
@@ -230,10 +224,6 @@ export function buildCli(): ReturnType<typeof cac> {
       "Exact fingerprint package directory; bypasses stack discovery",
     )
     .option(
-      "--memory-dir <relative-dir>",
-      "Relative fingerprint package directory for host wrappers and stack discovery (env: GHOST_MEMORY_DIR; default: .ghost)",
-    )
-    .option(
       "--max-diff-bytes <n>",
       "Maximum diff bytes to include in the review packet (default: 200000)",
     )
@@ -259,8 +249,6 @@ export function buildCli(): ReturnType<typeof cac> {
             : await readGitDiff(process.cwd(), opts.base ?? "HEAD");
         const packet = await buildReviewPacket({
           packageDir,
-          memoryDir:
-            typeof opts.memoryDir === "string" ? opts.memoryDir : undefined,
           diffText,
           maxDiffBytes,
         });

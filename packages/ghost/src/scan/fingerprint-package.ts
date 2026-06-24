@@ -15,9 +15,7 @@ import {
   readOptionalUtf8,
 } from "../internal/fs.js";
 import {
-  CONFIG_FILENAME,
   FINGERPRINT_COMPOSITION_FILENAME,
-  FINGERPRINT_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
@@ -37,22 +35,17 @@ import {
   templateManifest,
 } from "./fingerprint-package-layers.js";
 import type { LintIssue, LintReport } from "./lint.js";
-import {
-  lintGhostPackageConfig,
-  templatePackageConfig,
-} from "./package-config.js";
 
 export { loadFingerprintPackage } from "./fingerprint-package-layers.js";
 
 export interface FingerprintPackagePaths {
   dir: string;
-  fingerprintDir: string;
+  packageDir: string;
   manifest: string;
   intent: string;
   inventory: string;
   composition: string;
   fingerprintYml: string;
-  config: string;
   resources: string;
   map: string;
   survey: string;
@@ -74,7 +67,6 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  withConfig?: boolean;
   reference?: string;
   force?: boolean;
 }
@@ -84,22 +76,21 @@ export function resolveFingerprintPackage(
   cwd = process.cwd(),
 ): FingerprintPackagePaths {
   const dir = resolve(cwd, dirArg ?? FINGERPRINT_PACKAGE_DIR);
-  const fingerprintDir = join(dir, FINGERPRINT_DIRNAME);
+  const packageDir = dir;
   return {
     dir,
-    fingerprintDir,
-    manifest: join(fingerprintDir, FINGERPRINT_MANIFEST_FILENAME),
-    intent: join(fingerprintDir, FINGERPRINT_INTENT_FILENAME),
-    inventory: join(fingerprintDir, FINGERPRINT_INVENTORY_FILENAME),
-    composition: join(fingerprintDir, FINGERPRINT_COMPOSITION_FILENAME),
+    packageDir,
+    manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
+    intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
+    inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
+    composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
-    config: join(dir, CONFIG_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
     map: join(dir, MAP_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),
-    checks: join(fingerprintDir, GHOST_VALIDATE_FILENAME),
+    checks: join(packageDir, GHOST_VALIDATE_FILENAME),
   };
 }
 
@@ -109,24 +100,13 @@ export async function initFingerprintPackage(
   options: InitFingerprintPackageOptions = {},
 ): Promise<FingerprintPackagePaths> {
   const paths = resolveFingerprintPackage(dirArg, cwd);
-  await Promise.all([
-    mkdir(paths.fingerprintDir, { recursive: true }),
-    ...(options.withConfig ? [mkdir(paths.dir, { recursive: true })] : []),
-  ]);
+  await mkdir(paths.packageDir, { recursive: true });
   const files = [
     { path: paths.manifest, content: templateManifest() },
     { path: paths.intent, content: templateIntent() },
     { path: paths.inventory, content: templateInventory(options.reference) },
     { path: paths.composition, content: templateComposition() },
     { path: paths.checks, content: templateChecks() },
-    ...(options.withConfig
-      ? [
-          {
-            path: paths.config,
-            content: templatePackageConfig(options.reference),
-          },
-        ]
-      : []),
   ];
   if (!options.force) {
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
@@ -185,13 +165,12 @@ export async function lintFingerprintPackage(
 
   const manifestRaw = await readRequired(
     paths.manifest,
-    "fingerprint/manifest.yml",
+    "manifest.yml",
     issues,
   );
   const intentRaw = await readOptional(paths.intent);
   const inventoryRaw = await readOptional(paths.inventory);
   const compositionRaw = await readOptional(paths.composition);
-  const configRaw = await readOptional(paths.config);
   const checksRaw = await readOptional(paths.checks);
 
   let fingerprint: GhostFingerprintDocument | undefined;
@@ -203,21 +182,11 @@ export async function lintFingerprintPackage(
     );
   }
 
-  if (configRaw !== undefined) {
-    const config = parseYamlSafe(configRaw, "config.yml", issues);
-    if (config !== undefined) {
-      const configReport = lintGhostPackageConfig(config);
-      issues.push(...prefixIssues("config.yml", configReport.issues));
-    }
-  }
-
   if (checksRaw !== undefined) {
-    const checks = parseYamlSafe(checksRaw, "fingerprint/validate.yml", issues);
+    const checks = parseYamlSafe(checksRaw, "validate.yml", issues);
     if (checks !== undefined) {
       const checksReport = lintGhostValidate(checks, { fingerprint });
-      issues.push(
-        ...prefixIssues("fingerprint/validate.yml", checksReport.issues),
-      );
+      issues.push(...prefixIssues("validate.yml", checksReport.issues));
     }
   }
 

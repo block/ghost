@@ -2,23 +2,19 @@
 
 A Ghost fingerprint is a checked-in, repo-local surface-composition contract
 that humans can approve and agents can act from. The canonical portable package
-lives under `.ghost/fingerprint/`:
+lives under `.ghost/`:
 
 ```text
 .ghost/
-  config.yml                    # optional local routing; not portable context
-  fingerprint/
-    manifest.yml                # ghost.fingerprint-package/v1 package anchor
-    intent.yml                   # core: surface intent
-    inventory.yml               # core: curated material and source links
-    composition.yml             # core: experience patterns
-    validate.yml                  # optional deterministic gates
+  manifest.yml                  # ghost.fingerprint-package/v1 package anchor
+  intent.yml                    # core: surface intent
+  inventory.yml                 # core: curated material and source links
+  composition.yml               # core: experience patterns
+  validate.yml                  # optional deterministic gates
 ```
 
 Git is the staging and approval boundary: uncommitted or unmerged edits are
-draft work, and checked-in `fingerprint/` core files are canonical for Ghost.
-`.ghost/config.yml` stays outside the portable package because it routes local
-implementation roots and reference libraries rather than surface context.
+draft work, and checked-in facet files are canonical for Ghost.
 
 `manifest.yml` is intentionally small:
 
@@ -129,7 +125,7 @@ valid, such as `inventory.exemplars[].refs`.
 
 ## Enforcement
 
-`fingerprint/validate.yml` uses `ghost.validate/v1`. Checks are
+`validate.yml` uses `ghost.validate/v1`. Checks are
 deterministic validation, not generation input.
 
 ```yaml
@@ -183,13 +179,13 @@ until there is a reliable detector.
 Large repos can add scoped packages below the root:
 
 ```text
-.ghost/fingerprint/...
-apps/checkout/.ghost/fingerprint/...
+.ghost/...
+apps/checkout/.ghost/...
 apps/checkout/review/page.tsx
 ```
 
 For a path like `apps/checkout/review/page.tsx`, Ghost resolves each
-`<memory-dir>/fingerprint/manifest.yml` from root to leaf. Each package is a
+`<ghost-dir>/manifest.yml` from root to leaf. Each package is a
 sparse patch: it contributes only the facets it knows, and the resolved stack
 supplies the working context. The merged stack is broad-to-local:
 
@@ -269,10 +265,9 @@ Do not:
 - treat cache output as canonical surface guidance;
 - promote subjective taste directly into a check without a deterministic
   detector;
-- put structural gate configuration in intent;
-- use `.ghost/config.yml` as portable surface context.
+- put structural gate configuration in intent.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, direct
 `fingerprint.md`, and direct `fingerprint.yml` files may appear in older repos
 or explicit compatibility workflows. New Ghost work should target the split
-portable package under `.ghost/fingerprint/`.
+portable package under `.ghost/`.

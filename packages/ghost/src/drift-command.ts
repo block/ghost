@@ -14,31 +14,19 @@ import {
   resolveTarget,
   resolveTrackedFingerprint,
 } from "./core/index.js";
-import {
-  readOptionalPackageConfig,
-  resolveFingerprintPackage,
-} from "./fingerprint.js";
+import { resolveFingerprintPackage } from "./fingerprint.js";
 
 const DEFAULT_SYNC_PATH = ".ghost-sync.json";
 const DRIFT_STATUS_SCHEMA = "ghost.drift.status/v1" as const;
 const DRIFT_CHECK_SCHEMA = "ghost.drift.check/v1" as const;
 
-export type DesignLoopMode = "off" | "advisory" | "required";
-
 export interface DriftStatusReport {
   schema: typeof DRIFT_STATUS_SCHEMA;
-  designLoop: {
-    enabled: boolean;
-    mode: DesignLoopMode;
-    source: "config" | "default";
-  };
-  fingerprintDir: string;
-  configPath: string;
+  packageDir: string;
 }
 
 export interface DriftCheckReport {
   schema: typeof DRIFT_CHECK_SCHEMA;
-  designLoop: DriftStatusReport["designLoop"];
   trackedFingerprintId: string;
   localFingerprintId: string;
   overall: GateReport["overall"];
@@ -64,18 +52,10 @@ export async function getDriftStatus(
 ): Promise<DriftStatusReport> {
   const cwd = options.cwd ?? process.cwd();
   const paths = resolveFingerprintPackage(options.packageDir, cwd);
-  const config = await readOptionalPackageConfig(paths.config);
-  const designLoop = config?.design_loop ?? { enabled: false, mode: "off" };
 
   return {
     schema: DRIFT_STATUS_SCHEMA,
-    designLoop: {
-      enabled: designLoop.enabled,
-      mode: designLoop.mode,
-      source: config ? "config" : "default",
-    },
-    fingerprintDir: paths.fingerprintDir,
-    configPath: paths.config,
+    packageDir: paths.dir,
   };
 }
 
@@ -83,7 +63,6 @@ export async function runDriftCheck(
   options: DriftCheckOptions = {},
 ): Promise<DriftCheckReport> {
   const cwd = options.cwd ?? process.cwd();
-  const status = await getDriftStatus(options);
   const manifest = await readSyncManifest(cwd, options.sync);
   const local = await loadLocalFingerprint(
     cwd,
@@ -110,7 +89,6 @@ export async function runDriftCheck(
 
   return {
     schema: DRIFT_CHECK_SCHEMA,
-    designLoop: status.designLoop,
     trackedFingerprintId: gate.trackedFingerprintId,
     localFingerprintId: gate.localFingerprintId,
     overall: gate.overall,
@@ -120,22 +98,14 @@ export async function runDriftCheck(
 }
 
 export function formatDriftStatusMarkdown(report: DriftStatusReport): string {
-  return [
-    "# Ghost drift status",
-    "",
-    `Design loop: ${report.designLoop.enabled ? "enabled" : "disabled"} (${report.designLoop.mode})`,
-    `Source: ${report.designLoop.source}`,
-    `Fingerprint dir: ${report.fingerprintDir}`,
-    `Config: ${report.configPath}`,
-    "",
-  ].join("\n");
+  return ["# Ghost drift status", "", `Package: ${report.packageDir}`, ""].join(
+    "\n",
+  );
 }
 
 export function formatDriftCheckMarkdown(report: DriftCheckReport): string {
   const lines = [
     "# Ghost drift check",
-    "",
-    `Design loop: ${report.designLoop.enabled ? "enabled" : "disabled"} (${report.designLoop.mode})`,
     "",
     formatGateReportCLI(report.gate).trimEnd(),
     "",
@@ -147,7 +117,7 @@ export function registerDriftCommand(cli: CAC): void {
   cli
     .command(
       "drift <action>",
-      "Inspect continuous design-loop drift status or run the stance-ledger check.",
+      "Inspect Ghost drift status or run the stance-ledger check.",
     )
     .option("--package <dir>", "Exact fingerprint package directory")
     .option("--config <path>", "Path to ghost config file for tracked source")
@@ -216,9 +186,6 @@ export function registerDriftCommand(cli: CAC): void {
 }
 
 function driftCheckExitCode(report: DriftCheckReport): number {
-  if (report.designLoop.enabled && report.designLoop.mode === "advisory") {
-    return 0;
-  }
   return gateExitCode(report.gate);
 }
 
@@ -281,7 +248,7 @@ async function loadLocalFingerprint(
     return await loadComparableFingerprintFrom(cwd, source);
   } catch (err) {
     const defaultPackage = !localPath && !packageDir;
-    const manifestPath = resolve(cwd, source, "fingerprint", "manifest.yml");
+    const manifestPath = resolve(cwd, source, "manifest.yml");
     if (!defaultPackage || existsSync(manifestPath)) throw err;
     return await loadComparableFingerprintFrom(cwd, ".ghost/fingerprint.md");
   }
@@ -331,7 +298,7 @@ async function loadTargetFingerprint(
       ".ghost",
     );
     if (
-      existsSync(resolve(packageGhostDir, "fingerprint", "manifest.yml")) ||
+      existsSync(resolve(packageGhostDir, "manifest.yml")) ||
       existsSync(resolve(packageGhostDir, "fingerprint.md"))
     ) {
       return loadComparableFingerprintFrom(cwd, packageGhostDir);

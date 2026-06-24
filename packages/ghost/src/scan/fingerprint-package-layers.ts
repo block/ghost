@@ -32,23 +32,23 @@ export async function loadFingerprintPackage(
       readOptional(paths.inventory),
       readOptional(paths.composition),
     ]);
-  const manifest = parseManifest(manifestRaw, "fingerprint/manifest.yml");
+  const manifest = parseManifest(manifestRaw, "manifest.yml");
   const fingerprint = assembleFingerprint({
     intent: parseLayer(
       intentRaw,
-      "fingerprint/intent.yml",
+      "intent.yml",
       GhostFingerprintIntentSchema,
       emptyIntent(),
     ),
     inventory: parseLayer(
       inventoryRaw,
-      "fingerprint/inventory.yml",
+      "inventory.yml",
       GhostFingerprintInventorySchema,
       emptyInventory(),
     ),
     composition: parseLayer(
       compositionRaw,
-      "fingerprint/composition.yml",
+      "composition.yml",
       GhostFingerprintCompositionSchema,
       emptyComposition(),
     ),
@@ -77,14 +77,14 @@ export function lintFingerprintPackageManifest(
   raw: string,
   issues: LintIssue[],
 ): void {
-  const manifest = parseYamlSafe(raw, "fingerprint/manifest.yml", issues);
+  const manifest = parseYamlSafe(raw, "manifest.yml", issues);
   if (manifest === undefined) return;
   const manifestResult =
     GhostFingerprintPackageManifestSchema.safeParse(manifest);
   if (!manifestResult.success) {
     issues.push(
       ...prefixIssues(
-        "fingerprint/manifest.yml",
+        "manifest.yml",
         zodLikeIssues(manifestResult.error.issues),
       ),
     );
@@ -101,21 +101,21 @@ export function parseSplitFingerprintForLint(
 ): GhostFingerprintDocument | undefined {
   const intent = parseLayerForLint(
     input.intentRaw,
-    "fingerprint/intent.yml",
+    "intent.yml",
     GhostFingerprintIntentSchema,
     emptyIntent(),
     issues,
   );
   const inventory = parseLayerForLint(
     input.inventoryRaw,
-    "fingerprint/inventory.yml",
+    "inventory.yml",
     GhostFingerprintInventorySchema,
     emptyInventory(),
     issues,
   );
   const composition = parseLayerForLint(
     input.compositionRaw,
-    "fingerprint/composition.yml",
+    "composition.yml",
     GhostFingerprintCompositionSchema,
     emptyComposition(),
     issues,
@@ -294,17 +294,17 @@ function parseYamlSafe(
 }
 
 function splitFingerprintPath(path: string): string {
-  if (path === "intent") return "fingerprint/intent.yml";
+  if (path === "intent") return "intent.yml";
   if (path.startsWith("intent.")) {
-    return `fingerprint/intent.yml.${path.slice("intent.".length)}`;
+    return `intent.yml.${path.slice("intent.".length)}`;
   }
-  if (path === "inventory") return "fingerprint/inventory.yml";
+  if (path === "inventory") return "inventory.yml";
   if (path.startsWith("inventory.")) {
-    return `fingerprint/inventory.yml.${path.slice("inventory.".length)}`;
+    return `inventory.yml.${path.slice("inventory.".length)}`;
   }
-  if (path === "composition") return "fingerprint/composition.yml";
+  if (path === "composition") return "composition.yml";
   if (path.startsWith("composition.")) {
-    return `fingerprint/composition.yml.${path.slice("composition.".length)}`;
+    return `composition.yml.${path.slice("composition.".length)}`;
   }
   return `fingerprint/${path}`;
 }

@@ -16,7 +16,7 @@ ghost check --base <ref>
 ```
 
 Fix deterministic failures first. These come from active
-`fingerprint/validate.yml` rules and are the only blocking findings.
+`validate.yml` rules and are the only blocking findings.
 
 ## 2. Build Advisory Context
 
@@ -27,7 +27,7 @@ ghost review --base <ref>
 Use the emitted packet as context. It includes:
 
 - selected context hits: fingerprint refs, why they matched, suggested reads, omissions, and gaps
-- active checks from `fingerprint/validate.yml`
+- active checks from `validate.yml`
 - optional stack or config context when present or requested
 - the diff
 

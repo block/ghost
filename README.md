@@ -10,7 +10,7 @@ they generate UI and validate after they change it. The public package is
 Agents can assemble components. What they need help preserving is the product
 surface behind those components: hierarchy, density, restraint, behavior, copy,
 accessibility, trust, and flow. Ghost keeps that surface composition in a
-portable `.ghost/fingerprint/` package that ordinary Git review can approve.
+portable `.ghost/` package that ordinary Git review can approve.
 
 ## The Shape
 
@@ -18,13 +18,11 @@ The canonical package is intentionally small:
 
 ```text
 .ghost/
-  config.yml                    # optional local routing, not portable context
-  fingerprint/
-    manifest.yml                # ghost.fingerprint-package/v1 anchor
-    intent.yml                   # surface intent
-    inventory.yml               # curated material and exemplars
-    composition.yml             # patterns, flows, states, and arrangements
-    validate.yml                  # optional deterministic gates
+  manifest.yml                  # ghost.fingerprint-package/v1 anchor
+  intent.yml                    # surface intent
+  inventory.yml                 # curated material and exemplars
+  composition.yml               # patterns, flows, states, and arrangements
+  validate.yml                  # optional deterministic gates
 ```
 
 A package can be sparse: it contributes whichever facets are locally true. Generation usually uses intent + inventory + composition:
@@ -41,13 +39,13 @@ what the surface is trying to preserve.
 
 Older `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, and direct
 `fingerprint.yml` artifacts can still inform migration workflows, but new Ghost
-work should target `.ghost/fingerprint/`.
+work should target `.ghost/`.
 
 ## Project Status: Beta
 
 > [!WARNING]
 > Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
-> on-disk `.ghost/fingerprint/` package shape, and public JavaScript exports may
+> on-disk `.ghost/` package shape, and public JavaScript exports may
 > change in breaking ways before a stable 1.0 release.
 >
 > Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
@@ -92,25 +90,26 @@ edits, and asks you to curate the claims.
 
 ```bash
 ghost init
+ghost init --package product-surface
 ghost scan --format json
 ghost signals .
 ghost lint .ghost
+ghost lint product-surface
 ghost verify .ghost --root .
 ```
 
-Use `--with-config`, `--reference`, or `--scope` only when the repo needs local
-routing, reference libraries, or nested product areas.
+Use `--reference` when a reference library should seed inventory, `--scope`
+for nested product areas, or `--package <dir>` when initializing an exact
+package directory such as `product-surface/`.
 For monorepos, `ghost init --monorepo` creates or preserves the root package,
 detects workspace child roots, and prints proposed `ghost init --scope ...`
 commands by default. Run `ghost init --monorepo --apply` to create the detected
 child packages. Host wrappers that need Ghost files somewhere other than
-`.ghost` may set `GHOST_MEMORY_DIR=<relative-dir>` on the child `ghost` process,
-or pass `--memory-dir <relative-dir>` explicitly. Explicit `init [dir]` and
-`--memory-dir <relative-dir>` values win over the environment default.
+`.ghost` may set `GHOST_PACKAGE_DIR=<relative-dir>` on the child `ghost`
+process. Exact `--package <dir>` values win over the environment default.
 
 Drafted fingerprint edits are just ordinary file changes until Git review
-accepts them. Checked-in `fingerprint/` facet files are the Ghost source of
-truth.
+accepts them. Checked-in Ghost facet files are the Ghost source of truth.
 
 ## Generate From Ghost
 
@@ -159,7 +158,7 @@ context. It does not call an LLM.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Create `.ghost/fingerprint/` package facet files. |
+| `ghost init` | Create `.ghost/` package facet files. |
 | `ghost scan` | Report sparse fingerprint contribution facets. |
 | `ghost lint` | Validate a fingerprint package or individual artifact. |
 | `ghost verify` | Validate evidence paths, exemplar paths, and typed check refs. |
@@ -206,7 +205,7 @@ optional and only used by semantic embedding helpers when a host opts in.
 
 | Resource | Description |
 | --- | --- |
-| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Portable `.ghost/fingerprint/` package format. |
+| [docs/fingerprint-format.md](./docs/fingerprint-format.md) | Portable `.ghost/` package format. |
 | [docs/generation-loop.md](./docs/generation-loop.md) | Brief, generate, check, review, and remediate loop. |
 | [docs/language-fingerprints.md](./docs/language-fingerprints.md) | Voice and language capture through existing fingerprint facets. |
 | [docs/host-adapters.md](./docs/host-adapters.md) | Adapter-neutral JSON, severity mapping, and custom fingerprint directories. |

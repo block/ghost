@@ -93,7 +93,7 @@ try {
     { cwd: tmpRoot },
   );
   const initOutput = JSON.parse(init);
-  if (!initOutput.manifest?.endsWith(".ghost/fingerprint/manifest.yml")) {
+  if (!initOutput.manifest?.endsWith(".ghost/manifest.yml")) {
     fail("release tarball ghost init did not emit the expected manifest path");
   }
 

@@ -115,9 +115,7 @@ export {
 } from "./fingerprint/index.js";
 // --- Map (ghost.map/v1) ---
 export {
-  CONFIG_FILENAME,
   FINGERPRINT_COMPOSITION_FILENAME,
-  FINGERPRINT_DIRNAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
@@ -132,7 +130,6 @@ export {
 export {
   type GitInfo,
   getEffectiveMapScopes,
-  type InventoryConfigSummary,
   type InventoryOutput,
   type LanguageHistogramEntry,
   MAP_FILENAME,

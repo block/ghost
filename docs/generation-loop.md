@@ -5,7 +5,7 @@ product-surface composition fingerprint. Generation starts from checked-in
 facets; checks and review govern the result afterward.
 
 ```text
-fingerprint/intent.yml + fingerprint/inventory.yml + fingerprint/composition.yml
+intent.yml + inventory.yml + composition.yml
         |
         v
 host agent or generator
@@ -38,7 +38,7 @@ Use the brief in this order:
 3. Inspect inventory hits as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
 5. Run `ghost signals` when raw repo observations would help find evidence.
-6. Skim active checks in `.ghost/fingerprint/validate.yml` so generation avoids
+6. Skim active checks in `.ghost/validate.yml` so generation avoids
    deterministic failures.
 7. Treat gaps as a signal to use local evidence provisionally or inspect the
    full facet files.
@@ -101,13 +101,13 @@ ghost check --base main
 ghost review --base main --format markdown
 ```
 
-Advanced wrappers that store fingerprint packages outside `.ghost` can pass
-`--memory-dir <relative-dir>` to stack-aware commands. `--package <dir>` remains
-exact single-bundle mode and bypasses stack discovery.
+Advanced wrappers that store fingerprint packages outside `.ghost` can set
+`GHOST_PACKAGE_DIR=<relative-dir>` on stack-aware commands. `--package <dir>`
+remains exact single-bundle mode and bypasses stack discovery.
 
 ## Legacy Cache Helpers
 
 Older Ghost bundles used `resources.yml`, `map.md`, `survey.json`,
-`patterns.yml`, and direct `.ghost/fingerprint.yml` as capture material. Those
-files are now legacy/cache source material. Promote durable conclusions into
-`intent.yml`, `inventory.yml`, and `composition.yml`.
+`patterns.yml`, and direct `fingerprint.yml` files under `.ghost/` as capture
+material. Those files are now legacy/cache source material. Promote durable
+conclusions into `intent.yml`, `inventory.yml`, and `composition.yml`.

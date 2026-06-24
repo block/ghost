@@ -129,7 +129,7 @@ function formatUseThisContext(): string {
 - Generate from intent + inventory + composition; use building blocks only when they support selected intent and patterns.
 - Treat checks as validation; only active checks are blocking.
 - When selected context is sparse or globally matched, label reasoning as provisional and non-Ghost-backed.
-- Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint/\` files and optional local \`config.yml\` when present.`;
+- Treat fingerprint edits as ordinary Git-reviewed edits to Ghost package facet files.`;
 }
 
 function appendNodeGroup(

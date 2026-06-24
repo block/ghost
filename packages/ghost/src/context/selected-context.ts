@@ -74,8 +74,8 @@ export function buildSelectedContext(
 ): SelectedContext {
   const packageDirs = context.stackDirs?.length
     ? context.stackDirs
-    : context.fingerprintDir
-      ? [context.fingerprintDir]
+    : context.packageDir
+      ? [context.packageDir]
       : [];
   const stack = packageDirs.map((dir, index) => ({
     dir,
@@ -115,7 +115,7 @@ export function formatSelectedContextMarkdown(
   const parts = [heading];
   if (options.includeIntro ?? true) {
     parts.push(
-      `Product context: **${context.title.replace(/ Relay Brief$/, "")}**. Use this as compact, target-specific selected context from the resolved fingerprint stack. It does not replace the checked-in \`fingerprint/\` files.`,
+      `Product context: **${context.title.replace(/ Relay Brief$/, "")}**. Use this as compact, target-specific selected context from the resolved fingerprint stack. It does not replace the checked-in Ghost package facets.`,
     );
   }
   parts.push(
@@ -218,7 +218,7 @@ function gapsFromEntrypoint(
     gaps.push({
       kind: "no-composition",
       message:
-        "No composition patterns were selected; inspect fingerprint/composition.yml or nearby product surfaces if structure matters.",
+        "No composition patterns were selected; inspect composition.yml or nearby product surfaces if structure matters.",
     });
   }
   if (entrypoint.selected.exemplars.length === 0) {

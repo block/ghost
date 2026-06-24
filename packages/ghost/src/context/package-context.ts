@@ -13,7 +13,7 @@ import {
 
 export interface PackageContext {
   name: string;
-  fingerprintDir?: string;
+  packageDir?: string;
   targetPaths?: string[];
   stackDirs?: string[];
   fingerprint: GhostFingerprintDocument;
@@ -41,7 +41,7 @@ export async function loadPackageContext(
   const checks = checksRaw ? parseChecks(checksRaw, fingerprint) : undefined;
   return {
     name: sanitizeName(nameOverride ?? inferPackageName(fingerprint)),
-    fingerprintDir: paths.dir,
+    packageDir: paths.dir,
     fingerprint,
     fingerprintRaw: JSON.stringify(fingerprint, null, 2),
     fingerprintLayers: {
@@ -57,13 +57,13 @@ function parseChecks(
   raw: string,
   fingerprint: GhostFingerprintDocument,
 ): GhostValidateDocument {
-  const parsed = parseYamlSafe(raw, "fingerprint/validate.yml");
+  const parsed = parseYamlSafe(raw, "validate.yml");
   const report = lintGhostValidate(parsed, { fingerprint });
   if (report.errors > 0) {
     const first = report.issues.find((issue) => issue.severity === "error");
     const suffix = first?.path ? ` @ ${first.path}` : "";
     throw new Error(
-      `fingerprint/validate.yml failed lint with ${report.errors} error(s): ${
+      `validate.yml failed lint with ${report.errors} error(s): ${
         first?.message ?? "invalid checks"
       }${suffix}`,
     );
@@ -71,7 +71,7 @@ function parseChecks(
 
   const result = GhostValidateSchema.safeParse(parsed);
   if (!result.success) {
-    throw new Error("fingerprint/validate.yml failed schema validation.");
+    throw new Error("validate.yml failed schema validation.");
   }
   return result.data as GhostValidateDocument;
 }

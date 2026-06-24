@@ -174,25 +174,25 @@ async function writePackage(
   pkg: string,
   options: { fingerprint: string; checks?: string },
 ): Promise<void> {
-  const fingerprintDir = join(pkg, "fingerprint");
-  await mkdir(fingerprintDir, { recursive: true });
+  const packageDir = pkg;
+  await mkdir(packageDir, { recursive: true });
   await writeFile(
-    join(fingerprintDir, "manifest.yml"),
+    join(packageDir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: local\n",
     "utf-8",
   );
-  await writeFile(join(fingerprintDir, "intent.yml"), intentLayer(options.fingerprint));
+  await writeFile(join(packageDir, "intent.yml"), intentLayer(options.fingerprint));
   await writeFile(
-    join(fingerprintDir, "inventory.yml"),
+    join(packageDir, "inventory.yml"),
     inventoryLayer(options.fingerprint),
   );
   await writeFile(
-    join(fingerprintDir, "composition.yml"),
+    join(packageDir, "composition.yml"),
     compositionLayer(options.fingerprint),
   );
   if (options.checks) {
     await writeFile(
-      join(fingerprintDir, "validate.yml"),
+      join(packageDir, "validate.yml"),
       options.checks,
       "utf-8",
     );

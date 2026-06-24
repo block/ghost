@@ -9,10 +9,9 @@ review/check file formats.
 
 Ghost provides:
 
-- `.ghost/fingerprint/` package loading and stack merging.
-- `fingerprint/intent.yml`, `fingerprint/inventory.yml`, and
-  `fingerprint/composition.yml` as generation context.
-- Optional `fingerprint/validate.yml`.
+- `.ghost/` package loading and stack merging.
+- `intent.yml`, `inventory.yml`, and `composition.yml` as generation context.
+- Optional `validate.yml`.
 - `ghost signals` stdout output for raw repo observations.
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved
@@ -20,8 +19,8 @@ Ghost provides:
 - `ghost relay gather [target] --format json` as the `ghost.relay.gather/v2`
   contract for generation context, including selected `context_hits`, match
   reasons, suggested reads, omissions, and gaps.
-- `--memory-dir <relative-dir>` for wrappers that store Ghost package roots
-  somewhere other than `.ghost`.
+- `GHOST_PACKAGE_DIR=<relative-dir>` for wrappers that store Ghost package
+  roots somewhere other than `.ghost`.
 
 Host adapters provide:
 
@@ -56,15 +55,15 @@ The exact labels belong to the host.
 
 ## Custom Fingerprint Directories
 
-The default package root is `.ghost`, and the portable package lives inside it
-at `fingerprint/`. Wrappers can use any safe relative package root:
+The default package root is `.ghost`. Wrappers can use any safe relative
+package root by setting `GHOST_PACKAGE_DIR` on the Ghost process:
 
 ```bash
-ghost init --scope apps/checkout --memory-dir .design/memory
-ghost stack apps/checkout/review/page.tsx --memory-dir .design/memory --format json
-ghost relay gather apps/checkout/review/page.tsx --memory-dir .design/memory --format json
-ghost check --base main --memory-dir .design/memory --format json
-ghost review --base main --memory-dir .design/memory --format json
+GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout
+GHOST_PACKAGE_DIR=.design/memory ghost stack apps/checkout/review/page.tsx --format json
+GHOST_PACKAGE_DIR=.design/memory ghost relay gather apps/checkout/review/page.tsx --format json
+GHOST_PACKAGE_DIR=.design/memory ghost check --base main --format json
+GHOST_PACKAGE_DIR=.design/memory ghost review --base main --format json
 ```
 
 `--package <dir>` remains exact single-bundle mode. Use it when the caller

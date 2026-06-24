@@ -53,7 +53,7 @@ describe("split fingerprint package", () => {
   it("accepts inventory source links without making source material canonical", async () => {
     await writeManifest(dir);
     await writeFile(
-      join(dir, "fingerprint", "inventory.yml"),
+      join(dir, "inventory.yml"),
       `topology: {}
 building_blocks: {}
 exemplars: []
@@ -79,7 +79,7 @@ sources:
   it("reports duplicate inventory source ids", async () => {
     await writeManifest(dir);
     await writeFile(
-      join(dir, "fingerprint", "inventory.yml"),
+      join(dir, "inventory.yml"),
       `topology: {}
 building_blocks: {}
 exemplars: []
@@ -98,31 +98,31 @@ sources:
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "duplicate-id",
-      path: "fingerprint/inventory.yml.sources[1].id",
+      path: "inventory.yml.sources[1].id",
     });
   });
 
   it("reports invalid raw layer YAML at the split path", async () => {
     await writeManifest(dir);
-    await writeFile(join(dir, "fingerprint", "intent.yml"), "{nope");
+    await writeFile(join(dir, "intent.yml"), "{nope");
 
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "package-yaml-invalid",
-      path: "fingerprint/intent.yml",
+      path: "intent.yml",
     });
   });
 
   it("does not silently treat unreadable optional layer paths as missing", async () => {
     await writeManifest(dir);
-    await mkdir(join(dir, "fingerprint", "intent.yml"));
+    await mkdir(join(dir, "intent.yml"));
 
     await expect(lintFingerprintPackage(dir)).rejects.toThrow();
   });
 
-  it("does not discover old .ghost/fingerprint.yml alone as a package", async () => {
+  it("does not discover old .ghost.yml alone as a package", async () => {
     await writeFile(
       join(dir, "fingerprint.yml"),
       "schema: ghost.fingerprint/v1\n",
@@ -133,15 +133,15 @@ sources:
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "package-artifact-missing",
-      path: "fingerprint/manifest.yml",
+      path: "manifest.yml",
     });
   });
 });
 
 async function writeManifest(dir: string): Promise<void> {
-  await mkdir(join(dir, "fingerprint"), { recursive: true });
+  await mkdir(dir, { recursive: true });
   await writeFile(
-    join(dir, "fingerprint", "manifest.yml"),
+    join(dir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: local\n",
   );
 }

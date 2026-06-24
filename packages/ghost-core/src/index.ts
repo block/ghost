@@ -61,7 +61,6 @@ export {
 } from "./embedding/index.js";
 // --- Map (ghost.map/v1) ---
 export {
-  CONFIG_FILENAME,
   FINGERPRINT_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   FINGERPRINT_YML_FILENAME,
