@@ -136,8 +136,9 @@ reusable review prompt.
 ### Agent Context - `relay gather`
 
 Gather a compact Relay brief from the resolved fingerprint stack for a target
-path. Use this before generation so the host agent starts with selected refs,
-suggested reads, active checks, and provenance.
+path. Use this before generation so the host agent starts with the package
+stack, intent, active obligations, composition, inventory, validation checks,
+and gaps.
 
 <CliHelp tool="ghost" command="relay" hideDescription />
 
@@ -167,8 +168,8 @@ per group.
 
 ### Advisory governance packet - `review`
 
-Emit an evidence-routed advisory review packet grounded in split fingerprint
-facets, selected validation checks, and the diff.
+Emit an evidence-routed advisory review packet grounded in selected context,
+validation checks, and the diff.
 
 <CliHelp tool="ghost" command="review" hideDescription />
 

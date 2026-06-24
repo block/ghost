@@ -28,15 +28,20 @@ Build a brief from the resolved fingerprint stack:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-1. Read `.ghost/fingerprint/intent.yml`, `.ghost/fingerprint/inventory.yml`, and
-   `.ghost/fingerprint/composition.yml`.
-2. Select relevant situations, principles, experience contracts, and patterns.
-3. Inspect matching inventory exemplars as concrete anchors.
+Relay compiles selected context from the resolved stack as context hits:
+fingerprint refs, why they matched, suggested reads, omissions, and gaps.
+
+Use the brief in this order:
+
+1. Start from the selected context hits and their match reasons.
+2. Apply intent and composition hits before choosing implementation details.
+3. Inspect inventory hits as concrete anchors.
 4. Use `inventory.building_blocks` as curated material.
 5. Run `ghost signals` when raw repo observations would help find evidence.
-6. Skim active checks in `.ghost/fingerprint/validate.yml` so
-   generation avoids deterministic failures.
-7. Use nested stacks only when the project has opted into them.
+6. Skim active checks in `.ghost/fingerprint/validate.yml` so generation avoids
+   deterministic failures.
+7. Treat gaps as a signal to use local evidence provisionally or inspect the
+   full facet files.
 
 Raw repo signals can help orient an agent:
 
@@ -66,13 +71,14 @@ stack and runs merged checks for each group. Only active checks can block.
 ghost review --base main
 ```
 
-Advisory review packets include the current diff, the split fingerprint
-facets, relevant inventory exemplars, active checks, and finding categories for
-fixes, intentional divergence, missing fingerprint grounding, experience gaps,
-and eval uncertainty.
+Advisory review packets include the current diff, the same context-hit model as
+Relay, active checks, and finding categories for fixes, intentional
+divergence, missing fingerprint grounding, experience gaps, and eval
+uncertainty.
 
-Review findings should cite the diff location, relevant fingerprint refs,
-relevant exemplars when useful, and any active check when blocking.
+Review findings should cite the diff location, relevant fingerprint facet refs,
+relevant exemplars when useful, any active check when blocking, and a
+selected-context gap or local-evidence rationale when the fingerprint is silent.
 
 ## Remediation
 

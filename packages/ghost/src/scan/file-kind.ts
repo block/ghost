@@ -199,21 +199,21 @@ function lintFingerprintManifestFile(
 
 function lintFingerprintLayerFile(
   raw: string,
-  layer: "intent" | "inventory" | "composition",
+  facet: "intent" | "inventory" | "composition",
 ): ReturnType<typeof lintFingerprint> {
   try {
     const parsed = parseYaml(raw);
     const result =
-      layer === "intent"
+      facet === "intent"
         ? GhostFingerprintIntentSchema.safeParse(parsed)
-        : layer === "inventory"
+        : facet === "inventory"
           ? GhostFingerprintInventorySchema.safeParse(parsed)
           : GhostFingerprintCompositionSchema.safeParse(parsed);
     return zodLintReport(result);
   } catch (err) {
     return yamlErrorReport(
-      `fingerprint-${layer}-not-yaml`,
-      `fingerprint/${layer}.yml`,
+      `fingerprint-${facet}-not-yaml`,
+      `fingerprint/${facet}.yml`,
       err,
     );
   }
