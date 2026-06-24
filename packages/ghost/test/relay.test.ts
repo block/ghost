@@ -25,20 +25,17 @@ describe("relay", () => {
     });
 
     expect(result.schema).toBe("ghost.relay.gather/v2");
-    expect(result.context_packet.schema).toBe("ghost.context-packet/v1");
-    expect(result.context_packet.target).toMatchObject({
+    expect(result.context.schema).toBe("ghost.relay-context/v1");
+    expect(result).not.toHaveProperty("context_packet");
+    expect(result.context.target).toMatchObject({
       mode: "generation",
       paths: ["apps/refunds/settings/page.tsx"],
-      requested_capabilities: expect.arrayContaining([
-        "product.posture",
-        "design.composition",
-      ]),
     });
-    expect(result.context_packet.dialect).toMatchObject({
+    expect(result.context.config).toMatchObject({
       id: "ghost.default/v1",
       source: "default",
     });
-    expect(result.context_packet.lanes.intent).toEqual(
+    expect(result.context.sections.intent).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           ref: "intent.principle:refund-trust",
@@ -46,7 +43,7 @@ describe("relay", () => {
         }),
       ]),
     );
-    expect(result.context_packet.lanes.composition).toEqual(
+    expect(result.context.sections.composition).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           ref: "composition.pattern:refund-disclosure",
@@ -54,7 +51,7 @@ describe("relay", () => {
         }),
       ]),
     );
-    expect(result.context_packet.lanes.checks).toEqual(
+    expect(result.context.sections.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           ref: "validate.check:no-hardcoded-ui-color",
@@ -62,11 +59,11 @@ describe("relay", () => {
         }),
       ]),
     );
-    expect(result.context_packet.trace.selected).toEqual(
+    expect(result.context.trace.selected).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           source: "composition.yml",
-          lane: "composition",
+          section: "composition",
           ref: "composition.pattern:refund-disclosure",
         }),
       ]),
@@ -250,60 +247,43 @@ describe("relay", () => {
     ]);
   });
 
-  it("projects declared custom questions, provenance, and extension lanes", async () => {
+  it("projects declared custom questions, sources, and extras", async () => {
     const root = await track(createSingleSurfaceSandbox());
     await mkdir(join(root, "product"), { recursive: true });
     await writeFile(
-      join(root, ".ghost", "dialect.yml"),
-      `schema: ghost.dialect/v1
+      join(root, ".ghost", "relay.yml"),
+      `schema: ghost.relay-config/v1
 id: acme.product-surface/v1
 profile: ghost.product-surface/v1
-facets:
+sources:
   - id: product-questions
     path: product/questions.yml
-    lane: questions
-    capabilities:
-      - prompt.disambiguation
-      - human.escalation
-    projection:
-      items_path: questions
-      id_path: id
-      summary_path: question
-      content_paths:
-        - blocks
-      max_chars: 4000
+    section: questions
+    items: questions
+    summary: question
+    include:
+      - blocks
+    max_chars: 4000
   - id: product-sources
     path: product/sources.yml
-    lane: provenance
-    capabilities:
-      - source.grounding
-    projection:
-      items_path: sources
-      id_path: id
-      summary_path: summary
+    section: sources
+    items: sources
+    summary: summary
   - id: brand-voice
     path: product/brand.yml
-    lane: extension:brand_voice
-    capabilities:
-      - agent.context
-    projection:
-      items_path: guidance
-      id_path: id
-      summary_path: summary
+    section: extra:brand_voice
+    items: guidance
+    summary: summary
   - id: internal-questions
     path: product/internal.yml
-    lane: questions
+    section: questions
     visibility: internal
-    capabilities:
-      - prompt.disambiguation
-    projection:
-      items_path: questions
-      summary_path: question
+    items: questions
+    summary: question
   - id: schema-only
     path: product/schema-only.yml
-    lane: questions
-    capabilities:
-      - prompt.disambiguation
+    section: questions
+    items: questions
 `,
     );
     await writeFile(
@@ -344,25 +324,16 @@ facets:
     const result = await gatherRelayContext({
       cwd: root,
       target: "apps/refunds/settings/page.tsx",
-      mode: "prompt",
     });
 
-    expect(result.context_packet.dialect).toMatchObject({
+    expect(result.context.config).toMatchObject({
       id: "acme.product-surface/v1",
       source: "file",
     });
-    expect(result.context_packet.target).toMatchObject({
-      mode: "prompt",
-      requested_capabilities: [
-        "product.posture",
-        "prompt.routing",
-        "prompt.disambiguation",
-        "relay.stack-resolution",
-        "agent.context",
-        "human.escalation",
-      ],
+    expect(result.context.target).toMatchObject({
+      mode: "generation",
     });
-    expect(result.context_packet.lanes.questions).toEqual([
+    expect(result.context.sections.questions).toEqual([
       expect.objectContaining({
         id: "refund-policy",
         source: "product/questions.yml",
@@ -370,67 +341,112 @@ facets:
         content: { blocks: ["final copy"] },
       }),
     ]);
-    expect(result.context_packet.lanes.provenance).toEqual([]);
-    expect(result.context_packet.extensions.brand_voice).toEqual([
+    expect(result.context.sections.sources).toEqual([
+      expect.objectContaining({
+        id: "design-registry",
+        source: "product/sources.yml",
+        summary: "Registry source for refund settings.",
+      }),
+    ]);
+    expect(result.context.extras.brand_voice).toEqual([
       expect.objectContaining({
         id: "plain-language",
         source: "product/brand.yml",
         summary: "Use plain operational language.",
       }),
     ]);
-    expect(result.context_packet.trace.selected).toEqual(
+    expect(result.context.trace.selected).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           source: "product/questions.yml",
-          lane: "questions",
-          facet: "product-questions",
+          section: "questions",
+          source_id: "product-questions",
+        }),
+        expect.objectContaining({
+          source: "product/sources.yml",
+          section: "sources",
+          source_id: "product-sources",
         }),
         expect.objectContaining({
           source: "product/brand.yml",
-          lane: "extension:brand_voice",
-          facet: "brand-voice",
+          section: "extra:brand_voice",
+          source_id: "brand-voice",
         }),
       ]),
     );
-    expect(result.context_packet.trace.omitted).toEqual(
+    expect(result.context.trace.skipped).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          facet: "internal-questions",
+          source_id: "internal-questions",
           reason: ["visibility is internal"],
         }),
         expect.objectContaining({
-          facet: "schema-only",
-          reason: ["facet has no projection declaration"],
-        }),
-        expect.objectContaining({
-          facet: "product-sources",
-          reason: ["does not provide requested capabilities"],
+          source_id: "schema-only",
+          reason: ["items 'questions' was not found"],
         }),
       ]),
     );
   });
 
-  it("rejects unnamespaced extension lanes and custom capabilities", async () => {
+  it("uses an explicit Relay config over the discovered config", async () => {
+    const root = await track(createSingleSurfaceSandbox());
+    await mkdir(join(root, "product"), { recursive: true });
+    await writeFile(
+      join(root, ".ghost", "relay.yml"),
+      `schema: ghost.relay-config/v1
+id: discovered/v1
+sources: []
+`,
+    );
+    await writeFile(
+      join(root, "product", "relay.yml"),
+      `schema: ghost.relay-config/v1
+id: explicit/v1
+sources:
+  - id: product-questions
+    path: product/questions.yml
+    section: questions
+    items: questions
+    summary: question
+`,
+    );
+    await writeFile(
+      join(root, "product", "questions.yml"),
+      `questions:
+  - id: refund-policy
+    question: Should refunds require manager approval?
+`,
+    );
+
+    const result = await gatherRelayContext({
+      cwd: root,
+      target: "apps/refunds/settings/page.tsx",
+      config: "product/relay.yml",
+    });
+
+    expect(result.context.config).toMatchObject({
+      id: "explicit/v1",
+      source: "file",
+    });
+    expect(result.context.sections.questions).toEqual([
+      expect.objectContaining({
+        id: "refund-policy",
+        summary: "Should refunds require manager approval?",
+      }),
+    ]);
+  });
+
+  it("rejects unnamespaced extra sections", async () => {
     const root = await track(createSingleSurfaceSandbox());
     await writeFile(
-      join(root, ".ghost", "dialect.yml"),
-      `schema: ghost.dialect/v1
+      join(root, ".ghost", "relay.yml"),
+      `schema: ghost.relay-config/v1
 id: acme.invalid/v1
-facets:
-  - id: invalid-extension
+sources:
+  - id: invalid-extra
     path: product/brand.yml
-    lane: brand_voice
-    capabilities:
-      - acme.brand-guidance
-    projection:
-      summary_path: summary
-  - id: invalid-capability
-    path: product/questions.yml
-    lane: questions
-    capabilities:
-      - brand-guidance
-    projection:
-      summary_path: summary
+    section: brand_voice
+    summary: summary
 `,
     );
 
@@ -439,7 +455,7 @@ facets:
         cwd: root,
         target: "apps/refunds/settings/page.tsx",
       }),
-    ).rejects.toThrow(/Invalid Ghost dialect/);
+    ).rejects.toThrow(/Invalid Ghost Relay config/);
   });
 
   async function track(rootPromise: Promise<string>): Promise<string> {

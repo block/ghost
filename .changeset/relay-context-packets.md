@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": minor
 ---
 
-Adds Relay context packets, dialect declarations, deterministic projection, and capability-aware gather modes.
+Adds Relay context JSON and Relay configs for declared project context sources.

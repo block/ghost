@@ -14,9 +14,9 @@ description: Build a concise pre-generation brief from Ghost fingerprint facets.
 7. Treat Relay gaps as prompts to inspect full facet files or label local reasoning provisional.
 
 When JSON is needed, `ghost relay gather <target> --format json` includes a
-`ghost.context-packet/v1` with lane items, provenance, omissions, gaps, and
-selection trace. Custom dialect facets only count as Ghost context when they
-declare a lane, capabilities, and deterministic projection.
+`ghost.relay-context/v1` with section items, source paths, skipped context,
+gaps, and selection trace. Extra project files only count as Ghost context when
+they are declared as Relay config sources.
 
 Return a short brief with relevant fingerprint refs, product obligations,
 inventory exemplars and building blocks to inspect, active checks to avoid,

@@ -20,6 +20,7 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
 
     const fingerprintApi = fingerprint as Record<string, unknown>;
     const scanApi = scan as Record<string, unknown>;
+    const relayApi = relay as Record<string, unknown>;
 
     expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
     expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
@@ -37,6 +38,9 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
 
     expect(relay.gatherRelayContext).toBeTypeOf("function");
     expect(relay.formatRelayBrief).toBeTypeOf("function");
+    expect(relay.GHOST_RELAY_CONTEXT_SCHEMA).toBe("ghost.relay-context/v1");
+    expect(relay.GHOST_RELAY_CONFIG_SCHEMA).toBe("ghost.relay-config/v1");
+    expect(relayApi.GHOST_CONTEXT_PACKET_SCHEMA).toBeUndefined();
 
     expect(govern.runGhostCheck).toBeTypeOf("function");
     expect(govern.runGhostCheck).toBe(govern.runGhostDriftCheck);

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T14:46:58.482Z",
+  "generatedAt": "2026-06-24T15:12:48.474Z",
   "tools": [
     {
       "tool": "ghost",
@@ -618,9 +618,9 @@
               "negated": false
             },
             {
-              "rawName": "--dialect <file>",
-              "name": "dialect",
-              "description": "Load an explicit Ghost dialect declaration",
+              "rawName": "--config <file>",
+              "name": "config",
+              "description": "Load an explicit Ghost Relay config",
               "default": null,
               "takesValue": true,
               "negated": false

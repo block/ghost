@@ -1725,6 +1725,18 @@ checks:
     expect(result.stdout).not.toContain("candidate-density-check");
   });
 
+  it("shows Relay config help without dialect terminology", async () => {
+    const result = await runCli(["relay", "--help"], dir, {
+      allowNoExit: true,
+    });
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("--config <file>");
+    expect(result.stdout).toContain("Load an explicit Ghost Relay config");
+    expect(result.stdout).not.toContain("--dialect");
+    expect(result.stdout).not.toContain("dialect");
+  });
+
   it("gathers Relay context as json from an exact package", async () => {
     await writeCheckPackage(dir);
 
@@ -1746,12 +1758,13 @@ checks:
     expect(json.schema).toBe("ghost.relay.gather/v2");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
-    expect(json.context_packet.schema).toBe("ghost.context-packet/v1");
-    expect(json.context_packet.target).toMatchObject({
+    expect(json.context.schema).toBe("ghost.relay-context/v1");
+    expect(json).not.toHaveProperty("context_packet");
+    expect(json.context.target).toMatchObject({
       mode: "generation",
       paths: ["Code/Features/Lending/LendingUI"],
     });
-    expect(json.context_packet.lanes.intent).toEqual(
+    expect(json.context.sections.intent).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           ref: "intent.principle:tokenized-ui-color",
@@ -1834,17 +1847,8 @@ checks:
 
     expect(result.code).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.context_packet.target).toMatchObject({
+    expect(json.context.target).toMatchObject({
       mode: "review",
-      requested_capabilities: [
-        "product.posture",
-        "review.grounding",
-        "review.fidelity",
-        "review.rubric",
-        "validation.check",
-        "material.evidence",
-        "source.grounding",
-      ],
     });
   });
 

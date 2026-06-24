@@ -2,18 +2,18 @@ import { access, readFile } from "node:fs/promises";
 import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
-  type GhostFacetDeclaration,
-  type GhostSemanticLane,
-  isExtensionGhostLane,
-  type ResolvedGhostDialect,
-} from "./dialect.js";
+  type GhostContextSection,
+  type GhostRelaySourceDeclaration,
+  isExtraGhostSection,
+  type ResolvedGhostRelayConfig,
+} from "./relay-config.js";
+import type { SharedGhostCapability } from "./relay-modes.js";
 
 export interface ProjectedContextContribution {
   id: string;
-  lane: GhostSemanticLane;
+  section: GhostContextSection;
   source: string;
-  facet: string;
-  capabilities: string[];
+  source_id: string;
   summary: string;
   content?: Record<string, unknown>;
   visibility: "public" | "internal";
@@ -22,132 +22,121 @@ export interface ProjectedContextContribution {
 
 export interface ProjectionTraceEntry {
   source: string;
-  facet: string;
-  lane: GhostSemanticLane;
+  source_id: string;
+  section: GhostContextSection;
   reason: string[];
 }
 
-export interface ProjectDialectFacetsOptions {
+export interface ProjectRelaySourcesOptions {
   requestedCapabilities: string[];
 }
 
-export interface ProjectDialectFacetsResult {
+export interface ProjectRelaySourcesResult {
   contributions: ProjectedContextContribution[];
   selected: ProjectionTraceEntry[];
-  omitted: ProjectionTraceEntry[];
+  skipped: ProjectionTraceEntry[];
 }
 
-const PROJECTABLE_CORE_LANES = new Set(["questions", "provenance"]);
+const PROJECTABLE_CORE_SECTIONS = new Set(["questions", "sources"]);
 
-export async function projectDialectFacets(
-  resolved: ResolvedGhostDialect,
-  options: ProjectDialectFacetsOptions,
-): Promise<ProjectDialectFacetsResult> {
+export async function projectRelaySources(
+  resolved: ResolvedGhostRelayConfig,
+  options: ProjectRelaySourcesOptions,
+): Promise<ProjectRelaySourcesResult> {
   const selected: ProjectionTraceEntry[] = [];
-  const omitted: ProjectionTraceEntry[] = [];
+  const skipped: ProjectionTraceEntry[] = [];
   const contributions: ProjectedContextContribution[] = [];
   const requested = new Set(options.requestedCapabilities);
 
-  for (const facet of resolved.dialect.facets) {
-    if (!shouldAttemptProjection(facet, resolved.source)) continue;
-    const laneProjectable = isProjectableLane(facet.lane);
-    if (!laneProjectable) {
-      omitted.push({
-        source: facet.path,
-        facet: facet.id,
-        lane: facet.lane,
+  for (const source of resolved.config.sources) {
+    if (!shouldAttemptProjection(source, resolved.source)) continue;
+    const sectionProjectable = isProjectableSection(source.section);
+    if (!sectionProjectable) {
+      skipped.push({
+        source: source.path,
+        source_id: source.id,
+        section: source.section,
         reason: [
-          "canonical lane projection is not supported in this MVP; use the built-in Ghost package parser",
+          "canonical section projection is not supported in this MVP; use the built-in Ghost package parser",
         ],
       });
       continue;
     }
-    if ((facet.visibility ?? "public") !== "public") {
-      omitted.push({
-        source: facet.path,
-        facet: facet.id,
-        lane: facet.lane,
+    if ((source.visibility ?? "public") !== "public") {
+      skipped.push({
+        source: source.path,
+        source_id: source.id,
+        section: source.section,
         reason: ["visibility is internal"],
       });
       continue;
     }
-    if (!intersects(facet.capabilities, requested)) {
-      omitted.push({
-        source: facet.path,
-        facet: facet.id,
-        lane: facet.lane,
-        reason: ["does not provide requested capabilities"],
-      });
-      continue;
-    }
-    if (!facet.projection) {
-      omitted.push({
-        source: facet.path,
-        facet: facet.id,
-        lane: facet.lane,
-        reason: ["facet has no projection declaration"],
+    const sourceCapabilities = capabilitiesForSection(source.section);
+    if (!intersects(sourceCapabilities, requested)) {
+      skipped.push({
+        source: source.path,
+        source_id: source.id,
+        section: source.section,
+        reason: ["not selected for this Relay mode"],
       });
       continue;
     }
 
-    const sources = await discoverFacetSources(resolved, facet);
-    if (sources.length === 0) {
-      omitted.push({
-        source: facet.path,
-        facet: facet.id,
-        lane: facet.lane,
+    const files = await discoverSourceFiles(resolved, source);
+    if (files.length === 0) {
+      skipped.push({
+        source: source.path,
+        source_id: source.id,
+        section: source.section,
         reason: ["source file not found"],
       });
       continue;
     }
 
-    for (const source of sources) {
-      const sourceLabel = normalizeRelative(resolved.root, source);
-      const projected = await projectSourceFile(source, sourceLabel, facet);
+    for (const file of files) {
+      const sourceLabel = normalizeRelative(resolved.root, file);
+      const projected = await projectSourceFile(file, sourceLabel, source);
       contributions.push(...projected.contributions);
       if (projected.contributions.length > 0) {
         selected.push({
           source: sourceLabel,
-          facet: facet.id,
-          lane: facet.lane,
-          reason: [
-            `provides ${facet.capabilities.join(", ")}`,
-            "matched declared projection",
-          ],
+          source_id: source.id,
+          section: source.section,
+          reason: ["matched declared source"],
         });
       } else {
-        omitted.push({
+        skipped.push({
           source: sourceLabel,
-          facet: facet.id,
-          lane: facet.lane,
+          source_id: source.id,
+          section: source.section,
           reason: projected.reason,
         });
       }
     }
   }
 
-  return { contributions, selected, omitted };
+  return { contributions, selected, skipped };
 }
 
 function shouldAttemptProjection(
-  facet: GhostFacetDeclaration,
-  source: ResolvedGhostDialect["source"],
+  source: GhostRelaySourceDeclaration,
+  configSource: ResolvedGhostRelayConfig["source"],
 ): boolean {
-  if (facet.projection) return true;
-  if (source === "default") return false;
-  return isProjectableLane(facet.lane);
+  if (source.items || source.summary || source.include) return true;
+  if (configSource === "default") return false;
+  return isProjectableSection(source.section);
 }
 
-function isProjectableLane(lane: GhostSemanticLane): boolean {
-  return PROJECTABLE_CORE_LANES.has(lane) || isExtensionGhostLane(lane);
+function isProjectableSection(section: GhostContextSection): boolean {
+  return PROJECTABLE_CORE_SECTIONS.has(section) || isExtraGhostSection(section);
 }
 
-async function discoverFacetSources(
-  resolved: ResolvedGhostDialect,
-  facet: GhostFacetDeclaration,
+async function discoverSourceFiles(
+  resolved: ResolvedGhostRelayConfig,
+  source: GhostRelaySourceDeclaration,
 ): Promise<string[]> {
   const sources = new Set<string>();
-  const direct = resolveFacetPath(resolved.root, facet.path);
+  const direct = resolveSourcePath(resolved.root, source.path);
   if (await readable(direct)) sources.add(direct);
 
   return [...sources].sort((a, b) => a.localeCompare(b));
@@ -156,7 +145,7 @@ async function discoverFacetSources(
 async function projectSourceFile(
   path: string,
   source: string,
-  facet: GhostFacetDeclaration,
+  declaration: GhostRelaySourceDeclaration,
 ): Promise<{
   contributions: ProjectedContextContribution[];
   reason: string[];
@@ -175,22 +164,13 @@ async function projectSourceFile(
     };
   }
 
-  const projection = facet.projection;
-  if (!projection) {
-    return {
-      contributions: [],
-      reason: ["facet has no projection declaration"],
-    };
-  }
-  const rawItems = projection.items_path
-    ? valueAtPath(data, projection.items_path)
+  const rawItems = declaration.items
+    ? valueAtPath(data, declaration.items)
     : data;
   if (rawItems === undefined) {
     return {
       contributions: [],
-      reason: [
-        `projection items_path '${projection.items_path}' was not found`,
-      ],
+      reason: [`items '${declaration.items}' was not found`],
     };
   }
   const items = Array.isArray(rawItems) ? rawItems : [rawItems];
@@ -199,7 +179,7 @@ async function projectSourceFile(
   }
 
   const contributions = items.map((item, index) =>
-    contributionFromItem(item, index, source, facet),
+    contributionFromItem(item, index, source, declaration),
   );
   return { contributions, reason: [] };
 }
@@ -214,40 +194,37 @@ function contributionFromItem(
   item: unknown,
   index: number,
   source: string,
-  facet: GhostFacetDeclaration,
+  declaration: GhostRelaySourceDeclaration,
 ): ProjectedContextContribution {
-  const projection = facet.projection;
-  const id =
-    scalarAtPath(item, projection?.id_path) ?? `${facet.id}-${index + 1}`;
+  const id = scalarAtPath(item, "id") ?? `${declaration.id}-${index + 1}`;
   const summary =
     truncate(
-      scalarAtPath(item, projection?.summary_path) ??
-        `Projected ${facet.lane} context from ${source}.`,
-      projection?.max_chars,
-    ) || `Projected ${facet.lane} context from ${source}.`;
-  const content = contentFromPaths(item, projection);
+      scalarAtPath(item, declaration.summary) ??
+        `Relay ${declaration.section} context from ${source}.`,
+      declaration.max_chars,
+    ) || `Relay ${declaration.section} context from ${source}.`;
+  const content = contentFromPaths(item, declaration);
   return {
     id,
-    lane: facet.lane,
+    section: declaration.section,
     source,
-    facet: facet.id,
-    capabilities: [...facet.capabilities],
+    source_id: declaration.id,
     summary,
     ...(Object.keys(content).length > 0 ? { content } : {}),
-    visibility: facet.visibility ?? "public",
-    priority: facet.priority ?? 0,
+    visibility: declaration.visibility ?? "public",
+    priority: declaration.priority ?? 0,
   };
 }
 
 function contentFromPaths(
   item: unknown,
-  projection: GhostFacetDeclaration["projection"],
+  declaration: GhostRelaySourceDeclaration,
 ): Record<string, unknown> {
   const content: Record<string, unknown> = {};
-  for (const path of projection?.content_paths ?? []) {
+  for (const path of declaration.include ?? []) {
     const value = valueAtPath(item, path);
     if (value === undefined) continue;
-    content[pathKey(path)] = truncateValue(value, projection?.max_chars);
+    content[pathKey(path)] = truncateValue(value, declaration.max_chars);
   }
   return content;
 }
@@ -289,7 +266,7 @@ function pathKey(path: string): string {
   return path.split(".").at(-1) ?? path;
 }
 
-function resolveFacetPath(root: string, path: string): string {
+function resolveSourcePath(root: string, path: string): string {
   return isAbsolute(path) ? path : resolve(root, path);
 }
 
@@ -309,4 +286,28 @@ function intersects(a: string[], b: Set<string>): boolean {
 function normalizeRelative(root: string, path: string): string {
   const rel = relative(root, path).replaceAll(sep, "/");
   return rel || ".";
+}
+
+function capabilitiesForSection(
+  section: GhostContextSection,
+): SharedGhostCapability[] {
+  if (section === "intent") {
+    return ["product.posture", "generation.context", "review.grounding"];
+  }
+  if (section === "inventory") {
+    return ["material.evidence", "material.exemplars"];
+  }
+  if (section === "composition") {
+    return ["design.composition", "review.fidelity"];
+  }
+  if (section === "checks") {
+    return ["validation.check", "review.rubric"];
+  }
+  if (section === "questions") {
+    return ["prompt.disambiguation", "human.escalation"];
+  }
+  if (section === "sources") {
+    return ["source.grounding", "material.evidence"];
+  }
+  return ["generation.context", "review.grounding", "agent.context"];
 }

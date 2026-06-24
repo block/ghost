@@ -1,58 +1,49 @@
 import {
-  GHOST_DEFAULT_DIALECT_ID,
-  GHOST_DIALECT_SCHEMA,
+  GHOST_DEFAULT_RELAY_CONFIG_ID,
   GHOST_PRODUCT_SURFACE_PROFILE,
-  type GhostDialect,
-} from "./dialect.js";
+  GHOST_RELAY_CONFIG_SCHEMA,
+  type GhostRelayConfig,
+} from "./relay-config.js";
 
-export function defaultGhostDialect(): GhostDialect {
+export function defaultGhostRelayConfig(): GhostRelayConfig {
   return {
-    schema: GHOST_DIALECT_SCHEMA,
-    id: GHOST_DEFAULT_DIALECT_ID,
+    schema: GHOST_RELAY_CONFIG_SCHEMA,
+    id: GHOST_DEFAULT_RELAY_CONFIG_ID,
     profile: GHOST_PRODUCT_SURFACE_PROFILE,
-    facets: [
+    sources: [
       {
         id: "manifest",
         path: "manifest.yml",
         schema: "ghost.fingerprint-package/v1",
-        lane: "provenance",
-        capabilities: ["source.grounding"],
+        section: "sources",
         visibility: "public",
       },
       {
         id: "intent",
         path: "intent.yml",
         schema: "ghost.intent/v1",
-        lane: "intent",
-        capabilities: [
-          "product.posture",
-          "generation.context",
-          "review.grounding",
-        ],
+        section: "intent",
         visibility: "public",
       },
       {
         id: "inventory",
         path: "inventory.yml",
         schema: "ghost.inventory/v1",
-        lane: "inventory",
-        capabilities: ["material.evidence", "material.exemplars"],
+        section: "inventory",
         visibility: "public",
       },
       {
         id: "composition",
         path: "composition.yml",
         schema: "ghost.composition/v1",
-        lane: "composition",
-        capabilities: ["design.composition", "review.fidelity"],
+        section: "composition",
         visibility: "public",
       },
       {
         id: "validate",
         path: "validate.yml",
         schema: "ghost.validate/v1",
-        lane: "checks",
-        capabilities: ["validation.check", "review.rubric"],
+        section: "checks",
         visibility: "public",
       },
     ],

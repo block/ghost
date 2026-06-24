@@ -1,15 +1,15 @@
 import { access, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
-import { defaultGhostDialect } from "./default-dialect.js";
+import { defaultGhostRelayConfig } from "./default-relay-config.js";
 import {
-  GHOST_DIALECT_SCHEMA,
-  type GhostDialect,
-  type ResolvedGhostDialect,
-  validateGhostDialect,
-} from "./dialect.js";
+  GHOST_RELAY_CONFIG_SCHEMA,
+  type GhostRelayConfig,
+  type ResolvedGhostRelayConfig,
+  validateGhostRelayConfig,
+} from "./relay-config.js";
 
-export interface LoadGhostDialectOptions {
+export interface LoadGhostRelayConfigOptions {
   cwd: string;
   root: string;
   explicitPath?: string;
@@ -17,40 +17,40 @@ export interface LoadGhostDialectOptions {
   packageDir?: string;
 }
 
-export async function loadGhostDialect(
-  options: LoadGhostDialectOptions,
-): Promise<ResolvedGhostDialect> {
+export async function loadGhostRelayConfig(
+  options: LoadGhostRelayConfigOptions,
+): Promise<ResolvedGhostRelayConfig> {
   const explicit = options.explicitPath
     ? resolve(options.cwd, options.explicitPath)
     : undefined;
   const discovered =
     explicit ??
     (await firstExistingPath([
-      options.packageDir ? resolve(options.packageDir, "dialect.yml") : "",
-      resolve(options.root, options.ghostDir, "dialect.yml"),
+      options.packageDir ? resolve(options.packageDir, "relay.yml") : "",
+      resolve(options.root, options.ghostDir, "relay.yml"),
     ]));
 
   if (!discovered) {
     return {
-      dialect: defaultGhostDialect(),
+      config: defaultGhostRelayConfig(),
       source: "default",
       root: options.root,
     };
   }
 
   const raw = await readFile(discovered, "utf-8");
-  const parsed = parseDialectYaml(raw, discovered);
-  const errors = validateGhostDialect(parsed);
+  const parsed = parseRelayConfigYaml(raw, discovered);
+  const errors = validateGhostRelayConfig(parsed);
   if (errors.length > 0) {
     throw new Error(
-      `Invalid Ghost dialect ${discovered}:\n${errors
+      `Invalid Ghost Relay config ${discovered}:\n${errors
         .map((error) => `  - ${error}`)
         .join("\n")}`,
     );
   }
 
   return {
-    dialect: parsed,
+    config: parsed,
     source: "file",
     path: discovered,
     root: options.root,
@@ -64,13 +64,13 @@ async function firstExistingPath(paths: string[]): Promise<string | undefined> {
       await access(path);
       return path;
     } catch {
-      // Keep discovery quiet; missing optional dialect files fall back.
+      // Keep discovery quiet; missing optional config files fall back.
     }
   }
   return undefined;
 }
 
-function parseDialectYaml(raw: string, path: string): GhostDialect {
+function parseRelayConfigYaml(raw: string, path: string): GhostRelayConfig {
   let parsed: unknown;
   try {
     parsed = parseYaml(raw);
@@ -82,7 +82,9 @@ function parseDialectYaml(raw: string, path: string): GhostDialect {
     );
   }
   if (!parsed || typeof parsed !== "object") {
-    throw new Error(`${path} must contain a ${GHOST_DIALECT_SCHEMA} object.`);
+    throw new Error(
+      `${path} must contain a ${GHOST_RELAY_CONFIG_SCHEMA} object.`,
+    );
   }
-  return parsed as GhostDialect;
+  return parsed as GhostRelayConfig;
 }

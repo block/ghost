@@ -26,8 +26,8 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- selected context hits: fingerprint refs, why they matched, suggested reads, omissions, and gaps
-- context packet trace when Relay JSON is used
+- selected context hits: fingerprint refs, why they matched, suggested reads, skipped context, and gaps
+- Relay context trace when JSON is used
 - active checks from `validate.yml`
 - optional stack or config context when present or requested
 - the diff
@@ -45,8 +45,8 @@ rationale.
 
 Use the selected context hits first, then follow suggested reads when the task
 needs deeper evidence.
-When a `ghost.context-packet/v1` is available, cite lane refs, source paths,
-omissions, and gaps from the packet trace.
+When a `ghost.relay-context/v1` is available, cite section refs, source paths,
+skipped context, and gaps from the trace.
 When fingerprint facets are silent or selected-context gaps show the fingerprint is
 silent, local evidence can still support advisory critique. Label those findings
 as provisional and non-Ghost-backed.
