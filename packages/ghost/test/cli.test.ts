@@ -1378,6 +1378,36 @@ checks:
     });
   });
 
+  it("does not guess arbitrary YAML files are validate.yml", async () => {
+    await writeFile(join(dir, "workflow.yml"), "name: ci\non: push\n");
+
+    const lint = await runCli(
+      ["lint", "workflow.yml", "--format", "json"],
+      dir,
+    );
+
+    expect(lint.code).toBe(1);
+    expect(JSON.parse(lint.stdout).issues[0]).toMatchObject({
+      severity: "error",
+      rule: "unsupported-yaml",
+    });
+  });
+
+  it("detects Ghost YAML artifacts by schema when the filename is arbitrary", async () => {
+    await writeFile(
+      join(dir, "package-anchor.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\n",
+    );
+
+    const lint = await runCli(
+      ["lint", "package-anchor.yml", "--format", "json"],
+      dir,
+    );
+
+    expect(lint.code).toBe(0);
+    expect(JSON.parse(lint.stdout).errors).toBe(0);
+  });
+
   it("initializes a bundle and reports fingerprint capture state as json", async () => {
     const init = await runCli(["init"], dir);
     const scan = await runCli(["scan", "--format", "json"], dir);
@@ -1774,16 +1804,37 @@ checks:
   });
 
   it("ignores GHOST_PACKAGE_DIR when gathering Relay context from an exact package", async () => {
-    await writeCheckPackage(dir);
+    await writeSplitFingerprintPackage(
+      join(dir, "product-surface"),
+      `schema: ghost.fingerprint/v1
+intent:
+  summary:
+    product: Product Surface
+  situations: []
+  principles: []
+  experience_contracts: []
+inventory:
+  topology: {}
+  exemplars: []
+  building_blocks: {}
+composition:
+  patterns: []
+`,
+    );
 
     const result = await runCli(
-      ["relay", "gather", "--package", ".ghost", "--format", "json"],
+      ["relay", "gather", "--package", "product-surface", "--format", "json"],
       dir,
       { env: { GHOST_PACKAGE_DIR: "elsewhere" } },
     );
 
     expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).source.kind).toBe("package");
+    const json = JSON.parse(result.stdout);
+    const expectedPackageDir = await realpath(join(dir, "product-surface"));
+    expect(json.source.kind).toBe("package");
+    expect(json.source.packageDir).toBe(expectedPackageDir);
+    expect(json).not.toHaveProperty("ghostDir");
+    expect(json.stackDirs).toEqual([expectedPackageDir]);
   });
 
   it("rejects invalid Relay output formats", async () => {

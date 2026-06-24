@@ -90,15 +90,17 @@ edits, and asks you to curate the claims.
 
 ```bash
 ghost init
+ghost init --package product-surface
 ghost scan --format json
 ghost signals .
 ghost lint .ghost
+ghost lint product-surface
 ghost verify .ghost --root .
 ```
 
 Use `--reference` when a reference library should seed inventory, `--scope`
 for nested product areas, or `--package <dir>` when initializing an exact
-package directory.
+package directory such as `product-surface/`.
 For monorepos, `ghost init --monorepo` creates or preserves the root package,
 detects workspace child roots, and prints proposed `ghost init --scope ...`
 commands by default. Run `ghost init --monorepo --apply` to create the detected

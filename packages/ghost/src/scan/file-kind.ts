@@ -26,7 +26,8 @@ export type DetectedFileKind =
   | "fingerprint-composition"
   | "validate"
   | "resources"
-  | "patterns";
+  | "patterns"
+  | "unsupported-yaml";
 
 export interface LintDetectedFileKindOptions {
   fingerprint?: GhostFingerprintDocument;
@@ -35,79 +36,64 @@ export interface LintDetectedFileKindOptions {
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
  * the survey linter; markdown with `schema: ghost.map/v1` in frontmatter
- * routes to the map linter; YAML schemas route to fingerprint.yml,
- * config/resources/patterns/validate; everything else stays on the direct
- * fingerprint markdown path.
+ * routes to the map linter; YAML schemas and canonical package filenames route
+ * to their artifact linters. Unknown YAML remains unsupported instead of being
+ * guessed as `validate.yml`.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
-  if (path.toLowerCase().endsWith(".json")) return "survey";
-  if (path.toLowerCase().endsWith("fingerprint.yml")) {
+  const lowerPath = path.toLowerCase();
+  const filename = lowerPath.split(/[\\/]/).pop() ?? lowerPath;
+  if (lowerPath.endsWith(".json")) return "survey";
+  if (filename === "fingerprint.yml") {
     return "fingerprint-yml";
   }
-  if (path.toLowerCase().endsWith("fingerprint.yaml")) {
+  if (filename === "fingerprint.yaml") {
     return "fingerprint-yml";
   }
-  if (
-    path.toLowerCase().endsWith("/manifest.yml") ||
-    path.toLowerCase().endsWith("manifest.yml")
-  ) {
+  if (filename === "manifest.yml") {
     return "fingerprint-manifest";
   }
-  if (
-    path.toLowerCase().endsWith("/manifest.yaml") ||
-    path.toLowerCase().endsWith("manifest.yaml")
-  ) {
+  if (filename === "manifest.yaml") {
     return "fingerprint-manifest";
   }
-  if (
-    path.toLowerCase().endsWith("/intent.yml") ||
-    path.toLowerCase().endsWith("intent.yml")
-  ) {
+  if (filename === "intent.yml") {
     return "fingerprint-intent";
   }
-  if (
-    path.toLowerCase().endsWith("/intent.yaml") ||
-    path.toLowerCase().endsWith("intent.yaml")
-  ) {
+  if (filename === "intent.yaml") {
     return "fingerprint-intent";
   }
-  if (
-    path.toLowerCase().endsWith("/inventory.yml") ||
-    path.toLowerCase().endsWith("inventory.yml")
-  ) {
+  if (filename === "inventory.yml") {
     return "fingerprint-inventory";
   }
-  if (
-    path.toLowerCase().endsWith("/inventory.yaml") ||
-    path.toLowerCase().endsWith("inventory.yaml")
-  ) {
+  if (filename === "inventory.yaml") {
     return "fingerprint-inventory";
   }
-  if (
-    path.toLowerCase().endsWith("/composition.yml") ||
-    path.toLowerCase().endsWith("composition.yml")
-  ) {
+  if (filename === "composition.yml") {
     return "fingerprint-composition";
   }
-  if (
-    path.toLowerCase().endsWith("/composition.yaml") ||
-    path.toLowerCase().endsWith("composition.yaml")
-  ) {
+  if (filename === "composition.yaml") {
     return "fingerprint-composition";
   }
-  if (path.toLowerCase().endsWith("resources.yml")) return "resources";
-  if (path.toLowerCase().endsWith("resources.yaml")) return "resources";
-  if (path.toLowerCase().endsWith("patterns.yml")) return "patterns";
-  if (path.toLowerCase().endsWith("patterns.yaml")) return "patterns";
+  if (filename === "validate.yml" || filename === "validate.yaml") {
+    return "validate";
+  }
+  if (filename === "resources.yml") return "resources";
+  if (filename === "resources.yaml") return "resources";
+  if (filename === "patterns.yml") return "patterns";
+  if (filename === "patterns.yaml") return "patterns";
   if (raw.trimStart().startsWith("{")) return "survey";
   if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
     return "fingerprint-yml";
   }
+  if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
+    return "fingerprint-manifest";
+  }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.validate\/v[12]\b/m.test(raw)) return "validate";
-  if (path.toLowerCase().endsWith(".yml")) return "validate";
-  if (path.toLowerCase().endsWith(".yaml")) return "validate";
+  if (lowerPath.endsWith(".yml") || lowerPath.endsWith(".yaml")) {
+    return "unsupported-yaml";
+  }
   const fmEnd = raw.indexOf("\n---", 3);
   if (raw.startsWith("---") && fmEnd > 0) {
     const fm = raw.slice(0, fmEnd);
@@ -142,7 +128,9 @@ export function lintDetectedFileKind(
                     ? lintPatternsFile(raw)
                     : kind === "validate"
                       ? lintValidateFile(raw, options.fingerprint)
-                      : lintFingerprint(raw);
+                      : kind === "unsupported-yaml"
+                        ? lintUnsupportedYamlFile()
+                        : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -264,6 +252,22 @@ function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
   } catch (err) {
     return yamlErrorReport("patterns-not-yaml", "patterns file", err);
   }
+}
+
+function lintUnsupportedYamlFile(): ReturnType<typeof lintFingerprint> {
+  return {
+    issues: [
+      {
+        severity: "error",
+        rule: "unsupported-yaml",
+        message:
+          "YAML file is not a recognized Ghost artifact. Use manifest.yml, intent.yml, inventory.yml, composition.yml, validate.yml, resources.yml, patterns.yml, fingerprint.yml, or include a supported ghost.* schema.",
+      },
+    ],
+    errors: 1,
+    warnings: 0,
+    info: 0,
+  };
 }
 
 function yamlErrorReport(

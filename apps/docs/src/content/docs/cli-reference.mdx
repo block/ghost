@@ -55,6 +55,7 @@ ghost init
 ghost init --monorepo
 ghost init --monorepo --apply
 ghost init --scope apps/checkout
+ghost init --package product-surface
 ghost init --package .design/custom-ghost
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
 GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout
@@ -141,6 +142,11 @@ stack, intent, active obligations, composition, inventory, validation checks,
 and gaps.
 
 <CliHelp tool="ghost" command="relay" hideDescription />
+
+```bash
+ghost relay gather apps/checkout/review/page.tsx
+ghost relay gather apps/checkout/review/page.tsx --package product-surface --format json
+```
 
 ### Inspection - `describe`
 

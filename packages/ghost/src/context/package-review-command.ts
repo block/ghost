@@ -1,3 +1,4 @@
+import { isAbsolute, relative } from "node:path";
 import type {
   GhostCheck,
   GhostFingerprintExemplar,
@@ -64,7 +65,7 @@ If \`$ARGUMENTS\` is provided, review that file, path, or diff range. If it is e
 }
 
 function packageWorkflowSection(context: PackageContext): string {
-  const packageDir = context.packageDir ?? ".ghost";
+  const packageDir = displayPackageDir(context);
   return `## Review Workflow
 
 1. Run \`ghost review\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${packageDir}/intent.yml\`, \`${packageDir}/inventory.yml\`, and \`${packageDir}/composition.yml\`.
@@ -277,10 +278,32 @@ No active checks are recorded. Review remains advisory unless \`validate.yml\` a
 }
 
 function packageReviewFooter(context: PackageContext): string {
-  const packageDir = context.packageDir ?? ".ghost";
+  const packageDir = displayPackageDir(context);
   return `---
 
 Generated from \`${packageDir}/\` for ${context.name}. Re-run \`ghost emit review-command\` after updating fingerprint facets or deterministic checks.`;
+}
+
+function displayPackageDir(context: PackageContext): string {
+  return displayPath(context.packageDir ?? ".ghost");
+}
+
+function displayPath(path: string): string {
+  if (!isAbsolute(path)) return path;
+  const relativePath = relative(process.cwd(), path);
+  if (!relativePath) return ".";
+  if (
+    relativePath === ".." ||
+    relativePath.startsWith("../") ||
+    relativePath.startsWith("..\\")
+  ) {
+    return normalizePath(path);
+  }
+  return normalizePath(relativePath);
+}
+
+function normalizePath(path: string): string {
+  return path.replace(/\\/g, "/");
 }
 
 function pushJoined(

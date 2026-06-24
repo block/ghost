@@ -175,13 +175,19 @@ function gatherFromContext(
   });
   const selectedContext = buildSelectedContext(context, entrypoint);
   const partial = { selected_context: selectedContext };
+  const stackDirs = context.stackDirs?.length
+    ? context.stackDirs
+    : context.packageDir
+      ? [context.packageDir]
+      : [];
   return {
     schema: RELAY_GATHER_SCHEMA,
     name: context.name,
     source: options.source,
     targetPaths: entrypoint.match.requestedPaths,
-    ghostDir: context.packageDir,
-    stackDirs: context.stackDirs ?? [],
+    ghostDir:
+      options.source.kind === "stack" ? options.source.ghostDir : undefined,
+    stackDirs,
     selected_context: selectedContext,
     brief: formatRelayBrief(partial),
   };

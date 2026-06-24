@@ -154,7 +154,7 @@ ghost check --base HEAD
 ```
 
 Use ordinary Git review as the approval boundary. Uncommitted or unmerged
-fingerprint edits are drafts; checked-in `fingerprint/` core files are the
+fingerprint edits are drafts; checked-in Ghost package facet files are the
 canonical package.
 
 ## Never

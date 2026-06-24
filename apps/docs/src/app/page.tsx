@@ -63,8 +63,7 @@ export default function Home() {
             <p className="thesis-item">Ghost keeps that model compact:</p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
-                <code>.ghost/fingerprint/</code> is the portable fingerprint
-                package
+                <code>.ghost/</code> is the default portable fingerprint package
               </li>
               <li>
                 <code>intent.yml</code>, <code>inventory.yml</code>, and{" "}

@@ -336,7 +336,7 @@ export function fingerprintStackToPackageContext(
   );
   return {
     name,
-    packageDir: stack.ghost_dir,
+    packageDir: stack.layers.at(-1)?.dir,
     targetPaths,
     stackDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.merged.fingerprint,
