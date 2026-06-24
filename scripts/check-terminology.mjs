@@ -93,6 +93,8 @@ const ALLOWED_MEMORY_TERMS = [
   "memory/decisions",
 ];
 
+const ALLOWED_VERSION_MARKERS = ["ghost.relay.gather/v2"];
+
 const forbiddenPatterns = FORBIDDEN_PHRASES.map((phrase) => ({
   phrase,
   pattern: new RegExp(escapeRegExp(phrase), "i"),
@@ -108,6 +110,7 @@ for (const root of ROOTS) {
     lines.forEach((line, index) => {
       for (const { phrase, pattern } of forbiddenPatterns) {
         if (!pattern.test(line)) continue;
+        if (isAllowedTerminologyUse(line, phrase)) continue;
         violations.push({
           file,
           line: index + 1,
@@ -133,6 +136,13 @@ if (violations.length > 0) {
 }
 
 console.log("Terminology check passed.");
+
+function isAllowedTerminologyUse(line, phrase) {
+  if (phrase === "future version marker") {
+    return ALLOWED_VERSION_MARKERS.some((marker) => line.includes(marker));
+  }
+  return false;
+}
 
 function collectFiles(path) {
   const results = [];

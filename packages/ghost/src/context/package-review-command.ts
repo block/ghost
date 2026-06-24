@@ -68,14 +68,14 @@ function packageWorkflowSection(context: PackageContext): string {
   const memoryDirFlag = stackFingerprintDirFlag(context);
   return `## Review Workflow
 
-1. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and selected cascade excerpts. If reviewing manually, read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\`.
-2. Start from the cascade intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
+1. Run \`ghost review${memoryDirFlag}\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${fingerprintDir}/fingerprint/intent.yml\`, \`${fingerprintDir}/fingerprint/inventory.yml\`, and \`${fingerprintDir}/fingerprint/composition.yml\`.
+2. Start from selected intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
 3. Apply composition guidance before choosing implementation details.
 4. Inspect inventory exemplars and building blocks as evidence/material, not as authority over intent.
 5. Treat validate checks as deterministic enforcement; only active checks can block.
-6. Use cascade gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
+6. Use selected-context gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
 7. Run \`ghost check${memoryDirFlag}\` when a diff is available.
-8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, cascade gaps when context is silent, and any active check when a finding blocks.`;
+8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, selected-context gaps when context is silent, and any active check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
