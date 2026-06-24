@@ -36,14 +36,14 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/fingerprint/ package layers.",
+    summary: "Create .ghost/fingerprint/ package facets.",
   },
   {
     name: "scan",
     group: "core",
     defaultHelp: true,
     compactName: "scan",
-    summary: "Report fingerprint layer readiness.",
+    summary: "Report fingerprint contribution facets.",
   },
   {
     name: "lint",
@@ -71,7 +71,7 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "review",
-    summary: "Emit an advisory packet from fingerprint layers and a diff.",
+    summary: "Emit an advisory packet from fingerprint facets and a diff.",
   },
   {
     name: "relay",

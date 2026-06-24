@@ -17,8 +17,9 @@ Ghost provides:
 - `ghost check --format json` as the stable `ghost.check-report/v1` contract.
 - `ghost review --format json` for advisory packets grounded in the resolved
   fingerprint stack.
-- `ghost relay gather [target] --format json` as the `ghost.relay.gather/v1`
-  contract for generation context.
+- `ghost relay gather [target] --format json` as the `ghost.relay.gather/v2`
+  contract for generation context, including selected `context_hits`, match
+  reasons, suggested reads, omissions, and gaps.
 - `--memory-dir <relative-dir>` for wrappers that store Ghost package roots
   somewhere other than `.ghost`.
 
@@ -33,7 +34,7 @@ Host adapters provide:
 - normal Git review for fingerprint edits
 
 Raw repo signals are authoring evidence, not canonical inventory. The checked-in
-core layer files remain the authority.
+facet files remain the authority.
 
 ## Check Flow
 
@@ -71,7 +72,7 @@ already knows the package root and wants to bypass stack discovery.
 
 ## Fingerprint Edits
 
-Adapters do not need a special Ghost draft layer. If fingerprint work is
+Adapters do not need a special Ghost draft state. If fingerprint work is
 uncommitted or unmerged, it is draft work. Once the split fingerprint package,
 checks, decisions, or intent are checked in, Ghost treats them as truth for
 deterministic tooling.

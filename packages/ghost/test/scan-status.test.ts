@@ -2,16 +2,15 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { scanStatus } from "../src/scan/scan-status.js";
 
-describe("scanStatus readiness", () => {
+describe("scanStatus contribution", () => {
   let dir: string;
 
   beforeEach(async () => {
     dir = join(
       tmpdir(),
-      `ghost-readiness-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `ghost-contribution-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     await mkdir(dir, { recursive: true });
   });
@@ -20,44 +19,86 @@ describe("scanStatus readiness", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("reports fingerprint-missing before manifest.yml exists", async () => {
+  it("reports missing before manifest.yml exists", async () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("missing");
+    expect(status.validate.state).toBe("missing");
     expect(status.recommended_next).toBe("fingerprint");
-    expect(status.readiness.state).toBe("fingerprint-missing");
-    expect(status.readiness.missing_layers).toEqual([
+    expect(status.contribution.state).toBe("missing");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
       "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
-    expect(status.readiness.reasons.join(" ")).toContain(
+    expect(status.contribution.reasons.join(" ")).toContain(
       "fingerprint/manifest.yml is missing",
     );
   });
 
-  it("reports fingerprint-empty when no layer has useful content", async () => {
-    await writeFingerprint(dir);
+  it("reports empty contribution for manifest-only packages", async () => {
+    await writePackage(dir, {});
 
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("present");
     expect("cache" in status).toBe(false);
+    expect("readiness" in status).toBe(false);
+    expect("checks" in status).toBe(false);
     expect(status.recommended_next).toBeNull();
-    expect(status.readiness.state).toBe("fingerprint-empty");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 0,
-      inventory: 0,
-      composition: 0,
-    });
-    expect(status.readiness.cannot_review).toEqual([
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
       "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
+    expect(status.contribution.facets.intent).toMatchObject({
+      state: "absent",
+      count: 0,
+      file_present: false,
+    });
   });
 
-  it("does not report sources cache as package readiness", async () => {
+  it("reports empty facets when starter facet files are present but blank", async () => {
+    await writePackage(dir, {
+      intent: `summary: {}
+situations: []
+principles: []
+experience_contracts: []
+`,
+      inventory: `topology: {}
+building_blocks: {}
+exemplars: []
+sources: []
+`,
+      composition: `patterns: []
+`,
+      validate: `schema: ghost.validate/v1
+id: test
+checks: []
+`,
+    });
+
+    const status = await scanStatus(dir);
+
+    expect(status.validate.state).toBe("present");
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.contributing_facets).toEqual([]);
+    expect(status.contribution.empty_facets).toEqual([
+      "intent",
+      "inventory",
+      "composition",
+      "validate",
+    ]);
+    expect(status.contribution.absent_facets).toEqual([]);
+  });
+
+  it("does not report sources cache as package contribution", async () => {
     await mkdir(join(dir, "fingerprint", "sources", "cache"), {
       recursive: true,
     });
@@ -65,212 +106,242 @@ describe("scanStatus readiness", () => {
       join(dir, "fingerprint", "sources", "cache", "inventory.json"),
       "{}\n",
     );
-    await writeFingerprint(dir);
+    await writePackage(dir, {});
 
     const status = await scanStatus(dir);
 
     expect("cache" in status).toBe(false);
-    expect(status.readiness.state).toBe("fingerprint-empty");
-    expect(status.readiness.layer_counts.inventory).toBe(0);
+    expect(status.contribution.state).toBe("empty");
+    expect(status.contribution.facets.inventory.count).toBe(0);
   });
 
-  it("reports intent-only when only summary intent is recorded", async () => {
-    await writeFingerprint(
-      dir,
-      `
-intent:
-  summary:
-    product: Cash iOS
+  it("reports intent contribution without requiring inventory or composition", async () => {
+    await writePackage(dir, {
+      intent: `summary:
+  product: Cash iOS
 `,
-    );
+    });
 
     const status = await scanStatus(dir);
 
-    expect(status.readiness.state).toBe("intent-only");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 1,
-      inventory: 0,
-      composition: 0,
-    });
-    expect(status.readiness.missing_layers).toEqual([
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["intent"]);
+    expect(status.contribution.absent_facets).toEqual([
       "inventory",
       "composition",
+      "validate",
+    ]);
+    expect(status.contribution.facets.intent).toMatchObject({
+      state: "useful",
+      count: 1,
+      file_present: true,
+    });
+  });
+
+  it("reports inventory contribution and counts curated sources", async () => {
+    await writePackage(dir, {
+      inventory: `topology: {}
+building_blocks:
+  tokens:
+    - color.background
+  components:
+    - DataTable
+exemplars: []
+sources:
+  - id: writing-guide
+    kind: file
+    ref: docs/writing.md
+`,
+    });
+
+    const status = await scanStatus(dir);
+
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
+    expect(status.contribution.facets.inventory).toMatchObject({
+      state: "useful",
+      count: 3,
+    });
+    expect(status.contribution.building_block_rows.tokens).toBe(1);
+    expect(status.contribution.building_block_rows.components).toBe(1);
+    expect(status.contribution.absent_facets).toEqual([
+      "intent",
+      "composition",
+      "validate",
     ]);
   });
 
-  it("reports inventory-only when only curated inventory is recorded", async () => {
-    await writeFingerprint(
-      dir,
-      `
-inventory:
-  building_blocks:
-    tokens:
-      - color.background
-    components:
-      - DataTable
+  it("reports composition contribution without requiring sibling facets", async () => {
+    await writePackage(dir, {
+      composition: `patterns:
+  - id: preserve-table-density
+    kind: layout
+    pattern: Keep dense operational tables scannable.
 `,
-    );
+    });
 
     const status = await scanStatus(dir);
 
-    expect(status.readiness.state).toBe("inventory-only");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 0,
-      inventory: 2,
-      composition: 0,
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["composition"]);
+    expect(status.contribution.facets.composition).toMatchObject({
+      state: "useful",
+      count: 1,
     });
-    expect(status.readiness.building_block_rows.tokens).toBe(1);
-    expect(status.readiness.building_block_rows.components).toBe(1);
-    expect(status.readiness.missing_layers).toEqual(["intent", "composition"]);
+    expect(status.contribution.absent_facets).toEqual([
+      "intent",
+      "inventory",
+      "validate",
+    ]);
   });
 
-  it("reports composition-only when only patterns are recorded", async () => {
-    await writeFingerprint(
-      dir,
-      `
-composition:
-  patterns:
-    - id: preserve-table-density
-      kind: layout
-      pattern: Keep dense operational tables scannable.
+  it("reports validate contribution from deterministic checks", async () => {
+    await writePackage(dir, {
+      validate: `schema: ghost.validate/v1
+id: test
+checks:
+  - id: no-hardcoded-color
+    title: Use semantic colors
+    status: active
+    severity: serious
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{6}'
 `,
-    );
+    });
 
     const status = await scanStatus(dir);
 
-    expect(status.readiness.state).toBe("composition-only");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 0,
-      inventory: 0,
-      composition: 1,
+    expect(status.validate.state).toBe("present");
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual(["validate"]);
+    expect(status.contribution.facets.validate).toMatchObject({
+      state: "useful",
+      count: 1,
     });
-    expect(status.readiness.missing_layers).toEqual(["intent", "inventory"]);
+    expect(status.contribution.validate_counts).toEqual({
+      active: 1,
+      proposed: 0,
+      disabled: 0,
+    });
   });
 
-  it("reports fingerprint-partial when exactly one useful layer is missing", async () => {
-    await writeFingerprint(
-      dir,
-      `
-intent:
-  principles:
-    - id: dense-workflows-prioritize-scanning
-      principle: Dense workflows optimize for comparison and recovery.
-inventory:
-  topology:
-    scopes:
-      - id: dashboard
-        paths: [apps/dashboard]
-        surface_types: [dense-dashboard]
-    surface_types: [dense-dashboard]
+  it("reports multiple sparse contributions without calling absent facets missing", async () => {
+    await writePackage(dir, {
+      intent: `principles:
+  - id: dense-workflows-prioritize-scanning
+    principle: Dense workflows optimize for comparison and recovery.
 `,
-    );
+      inventory: `topology:
+  scopes:
+    - id: dashboard
+      paths: [apps/dashboard]
+      surface_types: [dense-dashboard]
+  surface_types: [dense-dashboard]
+`,
+    });
 
     const status = await scanStatus(dir);
 
-    expect(status.readiness.state).toBe("fingerprint-partial");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 1,
-      inventory: 2,
-      composition: 0,
-    });
-    expect(status.readiness.missing_layers).toEqual(["composition"]);
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual([
+      "intent",
+      "inventory",
+    ]);
+    expect(status.contribution.absent_facets).toEqual([
+      "composition",
+      "validate",
+    ]);
+    expect(status.contribution.reasons[0]).toContain(
+      "Absent facets may be inherited",
+    );
   });
 
-  it("reports fingerprint-ready only when intent, inventory, and composition are useful", async () => {
-    await writeFingerprint(
-      dir,
-      `
-intent:
-  principles:
-    - id: dense-workflows-prioritize-scanning
-      principle: Dense workflows optimize for comparison and recovery.
-inventory:
-  topology:
-    scopes:
-      - id: dashboard
-        paths: [apps/dashboard]
-        surface_types: [dense-dashboard]
-    surface_types: [dense-dashboard]
-  exemplars:
-    - id: orders-table
-      path: apps/dashboard/orders.tsx
-      surface_type: dense-dashboard
-      scope: dashboard
-      refs:
-        - composition.pattern:preserve-table-density
-  building_blocks:
-    tokens:
-      - color.background
-    components:
-      - DataTable
-composition:
-  patterns:
-    - id: preserve-table-density
-      kind: layout
-      pattern: Keep dense operational tables scannable.
+  it("reports all useful facets when the package contributes the full local set", async () => {
+    await writePackage(dir, {
+      intent: `principles:
+  - id: dense-workflows-prioritize-scanning
+    principle: Dense workflows optimize for comparison and recovery.
 `,
-    );
+      inventory: `topology:
+  scopes:
+    - id: dashboard
+      paths: [apps/dashboard]
+      surface_types: [dense-dashboard]
+  surface_types: [dense-dashboard]
+exemplars:
+  - id: orders-table
+    path: apps/dashboard/orders.tsx
+    surface_type: dense-dashboard
+    scope: dashboard
+    refs:
+      - composition.pattern:preserve-table-density
+building_blocks:
+  tokens:
+    - color.background
+  components:
+    - DataTable
+sources: []
+`,
+      composition: `patterns:
+  - id: preserve-table-density
+    kind: layout
+    pattern: Keep dense operational tables scannable.
+`,
+      validate: `schema: ghost.validate/v1
+id: test
+checks:
+  - id: no-hardcoded-color
+    title: Use semantic colors
+    status: proposed
+    severity: serious
+    detector:
+      type: forbidden-regex
+      pattern: '#[0-9a-fA-F]{6}'
+`,
+    });
 
     const status = await scanStatus(dir);
 
     expect("cache" in status).toBe(false);
-    expect(status.readiness.state).toBe("fingerprint-ready");
-    expect(status.readiness.layer_counts).toEqual({
-      intent: 1,
-      inventory: 5,
-      composition: 1,
-    });
-    expect(status.readiness.missing_layers).toEqual([]);
-    expect(status.readiness.building_block_rows.tokens).toBe(1);
-    expect(status.readiness.building_block_rows.components).toBe(1);
-    expect(status.readiness.product_surface_count).toBe(1);
-    expect(status.readiness.can_review).toEqual([
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.contributing_facets).toEqual([
       "intent",
       "inventory",
       "composition",
+      "validate",
     ]);
+    expect(status.contribution.facets).toMatchObject({
+      intent: { state: "useful", count: 1 },
+      inventory: { state: "useful", count: 5 },
+      composition: { state: "useful", count: 1 },
+      validate: { state: "useful", count: 1 },
+    });
+    expect(status.contribution.building_block_rows.tokens).toBe(1);
+    expect(status.contribution.building_block_rows.components).toBe(1);
+    expect(status.contribution.product_surface_count).toBe(1);
+    expect(status.contribution.validate_counts.proposed).toBe(1);
   });
 });
 
-async function writeFingerprint(dir: string, overrides = ""): Promise<void> {
+async function writePackage(
+  dir: string,
+  facets: {
+    intent?: string;
+    inventory?: string;
+    composition?: string;
+    validate?: string;
+  },
+): Promise<void> {
   const fingerprintDir = join(dir, "fingerprint");
   await mkdir(fingerprintDir, { recursive: true });
   await writeFile(
     join(fingerprintDir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: test\n",
   );
-  const doc = overrides.trim()
-    ? (parseYaml(`schema: ghost.fingerprint/v1\n${overrides}`) as Record<
-        string,
-        unknown
-      >)
-    : {};
-  await Promise.all([
-    writeFile(
-      join(fingerprintDir, "intent.yml"),
-      stringifyYaml(
-        doc.intent ?? {
-          summary: {},
-          situations: [],
-          principles: [],
-          experience_contracts: [],
-        },
-      ),
+  await Promise.all(
+    Object.entries(facets).map(([facet, content]) =>
+      writeFile(join(fingerprintDir, `${facet}.yml`), content),
     ),
-    writeFile(
-      join(fingerprintDir, "inventory.yml"),
-      stringifyYaml(
-        doc.inventory ?? {
-          topology: {},
-          building_blocks: {},
-          exemplars: [],
-          sources: [],
-        },
-      ),
-    ),
-    writeFile(
-      join(fingerprintDir, "composition.yml"),
-      stringifyYaml(doc.composition ?? { patterns: [] }),
-    ),
-  ]);
+  );
 }

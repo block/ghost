@@ -42,5 +42,5 @@ Use for: comparing a collection of fingerprints at the same elevation: which are
 - **0.2 – 0.5**: recognizable drift; worth a qualitative review.
 - **> 0.5**: the two fingerprints represent meaningfully different systems. Either one has diverged intentionally, or they were never the same.
 
-If the user asks "why did it change", inspect the compared fingerprint layers
+If the user asks "why did it change", inspect the compared fingerprint facets
 and summarize the surface-composition differences directly.

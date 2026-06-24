@@ -9,8 +9,8 @@ description: Verify generated UI or fingerprint edits against Ghost.
    fingerprint edits.
 2. Run `ghost check --base <ref>` after implementation changes.
 3. For advisory review, run `ghost review --base <ref>`.
-4. For generation setup, run `ghost relay gather <target>` and read suggested
-   fingerprint files when the task widens.
+4. For generation setup, run `ghost relay gather <target>` and read the brief:
+   context hits, why they matched, suggested reads, omissions, and gaps.
 5. Inspect generated UI manually or with screenshots when visual fidelity
    matters.
 
@@ -19,7 +19,7 @@ Report:
 - Active-check failures and repairs.
 - Advisory surface-composition drift with citations.
 - Missing or unreachable evidence and exemplar paths.
-- Provisional local reasoning where fingerprint layers are silent.
+- Provisional local reasoning where fingerprint facets are silent.
 - Any fingerprint edits the user requested.
 
 Fingerprint edits should be validated before handoff. Implementation-only work

@@ -293,7 +293,7 @@ export function unique(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))];
 }
 
-function pathsOverlap(a: string, b: string): boolean {
+export function pathsOverlap(a: string, b: string): boolean {
   const left = normalizePath(a);
   const right = normalizePath(b);
   if (!left || !right) return false;

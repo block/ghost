@@ -1,6 +1,6 @@
 ---
 name: recall
-description: Recall applicable Ghost fingerprint layers for a task or file path.
+description: Recall applicable Ghost fingerprint facets for a task or file path.
 ---
 
 # Recipe: Recall Ghost Fingerprint

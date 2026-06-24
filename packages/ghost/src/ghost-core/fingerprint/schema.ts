@@ -39,7 +39,7 @@ export const GhostFingerprintRefSchema = z
     /^(intent\.principle|intent\.situation|intent\.experience_contract|inventory\.exemplar|composition\.pattern|validate\.check):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "ref must be typed as layer.kind:slug, e.g. intent.principle:dense-workflows",
+        "ref must be typed as facet.kind:slug, e.g. intent.principle:dense-workflows",
     },
   );
 
@@ -50,7 +50,7 @@ export const GhostFingerprintLayerRefSchema = z
     /^(intent\.principle|intent\.situation|intent\.experience_contract|inventory\.exemplar|composition\.pattern):[a-z0-9][a-z0-9._-]*$/,
     {
       message:
-        "ref must be typed as layer.kind:slug, e.g. intent.principle:dense-workflows",
+        "ref must be typed as facet.kind:slug, e.g. intent.principle:dense-workflows",
     },
   );
 
