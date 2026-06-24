@@ -13,7 +13,6 @@
   },
   "files": [],
   "references": [
-    { "path": "packages/ghost-core" },
     { "path": "packages/ghost" },
     { "path": "packages/ghost-fleet" },
     { "path": "packages/ghost-ui/tsconfig.mcp.json" }
