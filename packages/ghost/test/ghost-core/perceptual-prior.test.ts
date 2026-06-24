@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { CANONICAL_DECISION_DIMENSIONS } from "../src/decision-vocabulary.js";
 import {
+  CANONICAL_DECISION_DIMENSIONS,
   computeCheckSeverity,
   DEFAULT_MATCH,
   DEFAULT_TOLERANCE,
@@ -12,7 +12,7 @@ import {
   resolveTolerance,
   TIER_SEVERITY,
   tierForCanonical,
-} from "../src/perceptual-prior.js";
+} from "#ghost-core";
 
 describe("PERCEPTUAL_TIER", () => {
   it("covers every canonical dimension", () => {

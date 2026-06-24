@@ -1,13 +1,13 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   DimensionAck,
   Fingerprint,
   FingerprintComparison,
   SyncManifest,
-} from "@ghost/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+} from "#ghost-core";
 import { buildCli } from "../src/cli.js";
 import {
   buildGateReport,

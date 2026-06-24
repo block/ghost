@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { valueRowId } from "../src/survey/id.js";
 import {
   catalogSurveyValues,
   formatSurveyCatalogMarkdown,
-} from "../src/survey/index.js";
-import type { Survey, SurveySource, ValueRow } from "../src/survey/types.js";
+  type Survey,
+  type SurveySource,
+  type ValueRow,
+  valueRowId,
+} from "#ghost-core";
 
 const SOURCE: SurveySource = {
   id: "app",
