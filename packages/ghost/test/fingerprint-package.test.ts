@@ -23,7 +23,7 @@ describe("split fingerprint package", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("loads manifest and normalizes missing raw layer files", async () => {
+  it("loads manifest and normalizes missing raw facet files", async () => {
     await writeManifest(dir);
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
@@ -34,7 +34,7 @@ describe("split fingerprint package", () => {
     });
     expect(loaded.fingerprint).toMatchObject({
       schema: "ghost.fingerprint/v1",
-      prose: {
+      intent: {
         summary: {},
         situations: [],
         principles: [],
@@ -104,20 +104,20 @@ sources:
 
   it("reports invalid raw layer YAML at the split path", async () => {
     await writeManifest(dir);
-    await writeFile(join(dir, "fingerprint", "prose.yml"), "{nope");
+    await writeFile(join(dir, "fingerprint", "intent.yml"), "{nope");
 
     const report = await lintFingerprintPackage(dir);
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "package-yaml-invalid",
-      path: "fingerprint/prose.yml",
+      path: "fingerprint/intent.yml",
     });
   });
 
   it("does not silently treat unreadable optional layer paths as missing", async () => {
     await writeManifest(dir);
-    await mkdir(join(dir, "fingerprint", "prose.yml"));
+    await mkdir(join(dir, "fingerprint", "intent.yml"));
 
     await expect(lintFingerprintPackage(dir)).rejects.toThrow();
   });

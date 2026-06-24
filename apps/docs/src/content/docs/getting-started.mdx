@@ -20,14 +20,14 @@ The canonical portable fingerprint is a folder:
   config.yml
   fingerprint/
     manifest.yml
-    prose.yml
+    intent.yml
     inventory.yml
     composition.yml
-    checks.yml
+    validate.yml
 ```
 
-Generation starts from `prose.yml`, `inventory.yml`, and `composition.yml`.
-Checks validate the result afterward; they are not generation input.
+Generation starts from `intent.yml`, `inventory.yml`, and `composition.yml`.
+`validate.yml` checks validate the result afterward; they are not generation input.
 `.ghost/config.yml` stays outside the portable package because it is local
 routing config.
 
@@ -82,7 +82,7 @@ run.
 <DocSection title="Author Your First Fingerprint">
 
 The CLI handles the deterministic package work. Your agent handles the
-composition work: interviewing, reading repo evidence, drafting layer edits, and
+composition work: interviewing, reading repo evidence, drafting facet edits, and
 asking you to curate the claims.
 
 ```bash
@@ -95,7 +95,7 @@ ghost verify .ghost --root .
 
 The fingerprint records durable surface-composition guidance:
 
-1. **Prose** - the intent behind the surface: what product this is, who it
+1. **Intent** - what must remain true: what product this is, who it
    serves, which situations matter, and which principles or contracts apply.
 2. **Inventory** - the materials it draws from: topology, building blocks,
    files, routes, assets, libraries, exemplars, and source links agents may
@@ -103,8 +103,8 @@ The fingerprint records durable surface-composition guidance:
 3. **Composition** - the patterns that make it intentional: rules, layouts,
    structures, flows, states, content, behavior, and visual arrangements.
 
-Raw repo signals are optional authoring evidence. Curate durable prose,
-inventory, and composition into the core layer files, then use normal Git
+Raw repo signals are optional authoring evidence. Curate durable intent,
+inventory, and composition into the facet files, then use normal Git
 review for approval. For a fuller human-agent workflow, read
 [Fingerprint Authoring](/docs/fingerprint-authoring).
 
@@ -118,9 +118,10 @@ Before generating or revising UI, gather a Relay brief for the target path:
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-Relay points the host agent at selected fingerprint refs, suggested reads,
-active checks, and provenance. The package remains the approved product-surface
-context; review and check commands apply it after implementation.
+Relay compiles selected context from the resolved stack: matched packages,
+intent, active obligations, composition, inventory, validation checks, and gaps.
+The package remains the approved product-surface context; review and check
+commands apply it after implementation.
 
 </DocSection>
 
@@ -135,7 +136,7 @@ ghost review --base main
 
 `ghost check` applies active deterministic gates from the resolved fingerprint
 stack for each changed file. `ghost review` emits advisory context grounded in
-merged split fingerprint layers, optional memory, checks, and the diff.
+the same selected context as Relay, selected validation checks, and the diff.
 
 Wrappers should consume `ghost check --format json` and map Ghost severities
 outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.

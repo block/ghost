@@ -2,10 +2,10 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
-  GHOST_CHECKS_FILENAME,
+  GHOST_VALIDATE_FILENAME,
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
-  lintGhostChecks,
+  lintGhostValidate,
   MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -19,10 +19,10 @@ import {
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_DIRNAME,
   FINGERPRINT_FILENAME,
+  FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
-  FINGERPRINT_PROSE_FILENAME,
   FINGERPRINT_YML_FILENAME,
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
@@ -32,9 +32,9 @@ import {
   parseSplitFingerprintForLint,
   templateChecks,
   templateComposition,
+  templateIntent,
   templateInventory,
   templateManifest,
-  templateProse,
 } from "./fingerprint-package-layers.js";
 import type { LintIssue, LintReport } from "./lint.js";
 import {
@@ -48,7 +48,7 @@ export interface FingerprintPackagePaths {
   dir: string;
   fingerprintDir: string;
   manifest: string;
-  prose: string;
+  intent: string;
   inventory: string;
   composition: string;
   fingerprintYml: string;
@@ -67,7 +67,7 @@ export interface LoadedFingerprintPackage {
   manifestRaw: string;
   fingerprint: GhostFingerprintDocument;
   layerRaw: {
-    prose?: string;
+    intent?: string;
     inventory?: string;
     composition?: string;
   };
@@ -89,7 +89,7 @@ export function resolveFingerprintPackage(
     dir,
     fingerprintDir,
     manifest: join(fingerprintDir, FINGERPRINT_MANIFEST_FILENAME),
-    prose: join(fingerprintDir, FINGERPRINT_PROSE_FILENAME),
+    intent: join(fingerprintDir, FINGERPRINT_INTENT_FILENAME),
     inventory: join(fingerprintDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(fingerprintDir, FINGERPRINT_COMPOSITION_FILENAME),
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
@@ -99,7 +99,7 @@ export function resolveFingerprintPackage(
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),
-    checks: join(fingerprintDir, GHOST_CHECKS_FILENAME),
+    checks: join(fingerprintDir, GHOST_VALIDATE_FILENAME),
   };
 }
 
@@ -115,7 +115,7 @@ export async function initFingerprintPackage(
   ]);
   const files = [
     { path: paths.manifest, content: templateManifest() },
-    { path: paths.prose, content: templateProse() },
+    { path: paths.intent, content: templateIntent() },
     { path: paths.inventory, content: templateInventory(options.reference) },
     { path: paths.composition, content: templateComposition() },
     { path: paths.checks, content: templateChecks() },
@@ -188,7 +188,7 @@ export async function lintFingerprintPackage(
     "fingerprint/manifest.yml",
     issues,
   );
-  const proseRaw = await readOptional(paths.prose);
+  const intentRaw = await readOptional(paths.intent);
   const inventoryRaw = await readOptional(paths.inventory);
   const compositionRaw = await readOptional(paths.composition);
   const configRaw = await readOptional(paths.config);
@@ -198,7 +198,7 @@ export async function lintFingerprintPackage(
   if (manifestRaw !== undefined) {
     lintFingerprintPackageManifest(manifestRaw, issues);
     fingerprint = parseSplitFingerprintForLint(
-      { proseRaw, inventoryRaw, compositionRaw },
+      { intentRaw, inventoryRaw, compositionRaw },
       issues,
     );
   }
@@ -212,11 +212,11 @@ export async function lintFingerprintPackage(
   }
 
   if (checksRaw !== undefined) {
-    const checks = parseYamlSafe(checksRaw, "fingerprint/checks.yml", issues);
+    const checks = parseYamlSafe(checksRaw, "fingerprint/validate.yml", issues);
     if (checks !== undefined) {
-      const checksReport = lintGhostChecks(checks, { fingerprint });
+      const checksReport = lintGhostValidate(checks, { fingerprint });
       issues.push(
-        ...prefixIssues("fingerprint/checks.yml", checksReport.issues),
+        ...prefixIssues("fingerprint/validate.yml", checksReport.issues),
       );
     }
   }

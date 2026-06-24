@@ -3,7 +3,7 @@ import {
   type MapFrontmatter,
   type MapScope,
 } from "../map/index.js";
-import type { GhostCheck, RoutedGhostCheck } from "./types.js";
+import type { GhostCheck, RoutedGhostValidateCheck } from "./types.js";
 
 export function normalizeGhostPath(path: string): string {
   return path.replaceAll("\\", "/").replace(/^\.\//, "");
@@ -30,11 +30,11 @@ export function routeGhostPathToScopes(
   );
 }
 
-export function routeGhostChecksForPath(
+export function routeGhostValidateForPath(
   checks: GhostCheck[],
   map: Pick<MapFrontmatter, "scopes" | "feature_areas">,
   changedPath: string,
-): RoutedGhostCheck[] {
+): RoutedGhostValidateCheck[] {
   const matchedScopes = routeGhostPathToScopes(map, changedPath);
   return checks
     .filter((check) => check.status === "active")

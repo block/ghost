@@ -111,10 +111,10 @@ export function registerInitCommand(cli: CAC): void {
             `Initialized Ghost fingerprint package: ${paths.dir}\n`,
           );
           process.stdout.write(`  manifest.yml: ${paths.manifest}\n`);
-          process.stdout.write(`  prose.yml: ${paths.prose}\n`);
+          process.stdout.write(`  intent.yml: ${paths.intent}\n`);
           process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
           process.stdout.write(`  composition.yml: ${paths.composition}\n`);
-          process.stdout.write(`  checks.yml: ${paths.checks}\n`);
+          process.stdout.write(`  validate.yml: ${paths.checks}\n`);
           if (opts.withConfig || opts.reference) {
             process.stdout.write(`  config.yml: ${paths.config}\n`);
           }
@@ -141,7 +141,7 @@ function initCommandOutput(
     dir: paths.dir,
     fingerprintDir: paths.fingerprintDir,
     manifest: paths.manifest,
-    prose: paths.prose,
+    intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
     ...(options.includeConfig ? { config: paths.config } : {}),

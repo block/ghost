@@ -2,9 +2,9 @@
 name: capture
 description: Author repo-local Ghost fingerprints.
 handoffs:
-  - label: Inspect fingerprint layers
+  - label: Inspect fingerprint facets
     command: ghost scan
-    prompt: What fingerprint layers are present and what is missing?
+    prompt: What fingerprint facets does this package contribute, and which facets are absent?
   - label: Run deterministic checks
     command: ghost check
     prompt: Run ghost check against this bundle
@@ -21,13 +21,13 @@ Ghost treats the fingerprint package as canonical.
   config.yml
   fingerprint/
     manifest.yml
-    prose.yml
+    intent.yml
     inventory.yml
     composition.yml
-    checks.yml
+    validate.yml
 ```
 
-`prose.yml` captures the intent behind the surface. `inventory.yml` records
+`intent.yml` captures the intent behind the surface. `inventory.yml` records
 curated materials, exemplars, and source links. `composition.yml` records the
 patterns that make the surface feel intentional. Checks validate output after
 generation; they are not generation input.
@@ -89,12 +89,12 @@ Auto-draft is a skill workflow, not a Ghost CLI action or flag.
 4. Inspect high-signal files from the signals, plus routes, docs, stories,
    tests, tokens, registries, assets, screenshots, and exemplars.
 5. Write only the smallest evidence-backed starter entries into
-   `prose.yml`, `inventory.yml`, and `composition.yml`.
+   `intent.yml`, `inventory.yml`, and `composition.yml`.
 6. Ask the human to keep, soften, reject, scope, record, or convert important
    claims before treating them as durable fingerprint guidance.
 
 If evidence is thin, contradictory, or mostly implementation plumbing, write
-less and ask more. Do not fill core layers with speculative product claims.
+less and ask more. Do not fill facets with speculative product claims.
 
 ### 4. Orient
 
@@ -111,15 +111,15 @@ ghost signals .
 Treat signals as scratch observations. Do not copy raw signals into
 `inventory.yml` without curation.
 
-### 5. Write Core Layers
+### 5. Write Sparse Facets
 
-Edit the smallest useful durable layer content:
+Edit the smallest useful durable facet content:
 
 - Before writing, ask whether the draft will help future agents choose what
   matters most, avoid plausible-but-wrong defaults, resolve competing
   priorities, route guidance by situation, inspect concrete exemplars, and
   review whether generated work preserved the intended experience.
-- `prose.yml`: summary, situations, principles, and experience contracts.
+- `intent.yml`: summary, situations, principles, and experience contracts.
 - `inventory.yml`: topology, building blocks, exemplars, and `sources[]` links.
 - `composition.yml`: rules, layouts, structures, flows, states, content,
   behavior, and visual arrangements.
@@ -130,7 +130,7 @@ treating draft content as durable fingerprint guidance.
 
 ### 6. Add Checks Sparingly
 
-`fingerprint/checks.yml` is the executable appendix. Add only
+`fingerprint/validate.yml` is the executable appendix. Add only
 deterministic checks with typed derivation refs:
 
 ```yaml

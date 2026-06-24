@@ -8,7 +8,7 @@ export function formatContextEntrypointMarkdown(
   const parts = [heading];
   if (options.includeIntro ?? true) {
     parts.push(
-      `You are working inside the **${entrypoint.name}** product-surface composition as captured by Ghost. This is a compact entrypoint into the fingerprint, not a replacement for the full files beside it.`,
+      `You are working inside the **${entrypoint.name}** product-surface composition as captured by Ghost. This is compact selected context from the fingerprint, not a replacement for the full files beside it.`,
     );
   }
   parts.push(formatIdentity(entrypoint));
@@ -54,7 +54,7 @@ function formatMatch(entrypoint: ContextEntrypoint): string {
     entrypoint.match.matchedSurfaceTypes,
     { code: true },
   );
-  pushJoined(lines, "Fingerprint layers", entrypoint.match.sourceLayers, {
+  pushJoined(lines, "Fingerprint stack", entrypoint.match.sourceStack, {
     code: true,
   });
   for (const reason of entrypoint.match.reasons) {
@@ -74,7 +74,7 @@ function formatActionContract(entrypoint: ContextEntrypoint): string {
 
 function formatReadFirst(entrypoint: ContextEntrypoint): string {
   const lines = ["## Read First"];
-  appendNodeGroup(lines, "Prose Anchors", entrypoint.selected.prose);
+  appendNodeGroup(lines, "Intent Anchors", entrypoint.selected.intent);
   appendNodeGroup(
     lines,
     "Composition Anchors",
@@ -125,8 +125,8 @@ function formatOmissions(entrypoint: ContextEntrypoint): string {
 
 function formatUseThisContext(): string {
   return `## Use This Context
-- Start with the selected refs above, then read suggested files when the task is broader than this entrypoint.
-- Generate from prose + inventory + composition; use building blocks only when they support selected intent and patterns.
+- Start with the selected refs above, then read suggested files when the task is broader than this context.
+- Generate from intent + inventory + composition; use building blocks only when they support selected intent and patterns.
 - Treat checks as validation; only active checks are blocking.
 - When selected context is sparse or globally matched, label reasoning as provisional and non-Ghost-backed.
 - Treat fingerprint edits as ordinary Git-reviewed edits to \`fingerprint/\` files and optional local \`config.yml\` when present.`;

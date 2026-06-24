@@ -60,7 +60,7 @@ const DesignObservationSchema = z
   .strict();
 
 /**
- * Frontmatter decision: dimension slug + optional kind only. Both the prose
+ * Frontmatter decision: dimension slug + optional kind only. Both the intent
  * rationale AND the evidence bullets live in the body under `### dimension`
  * → `**Evidence:**`. Evidence in frontmatter is rejected by the strict schema.
  *
@@ -87,7 +87,7 @@ const FingerprintReferencesSchema = z
  * Schema for the YAML frontmatter in a fingerprint.md file. Covers the
  * machine-layer of Fingerprint plus fingerprint-level metadata.
  *
- * Note: narrative prose fields (observation.summary,
+ * Note: narrative intent fields (observation.summary,
  * decisions[].decision) are NOT allowed here — they belong in the body.
  * `.strict()` on nested schemas enforces this.
  *
@@ -115,7 +115,7 @@ export const FrontmatterSchema = z
     sources: z.array(z.string()).optional(),
     references: FingerprintReferencesSchema.optional(),
 
-    // fingerprint — narrative tags (optional; prose lives in body)
+    // fingerprint — narrative tags (optional; intent lives in body)
     observation: DesignObservationSchema.optional(),
     decisions: z.array(DesignDecisionSchema).optional(),
 

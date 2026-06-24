@@ -13,7 +13,7 @@ describe("ghost.fingerprint/v1", () => {
     if (!result.success) throw new Error("minimal fingerprint should parse");
     expect(result.data).toEqual({
       schema: GHOST_FINGERPRINT_SCHEMA,
-      prose: {
+      intent: {
         summary: {},
         situations: [],
         principles: [],
@@ -64,7 +64,7 @@ describe("ghost.fingerprint/v1", () => {
 
   it("rejects implementation vocabulary as a typed ref target", () => {
     const input = fullFingerprint();
-    input.prose.situations[0].patterns = [
+    input.intent.situations[0].patterns = [
       "implementation_vocabulary:semantic-tokens",
     ];
 
@@ -75,11 +75,11 @@ describe("ghost.fingerprint/v1", () => {
 
   it("rejects legacy status fields in canonical fingerprint.yml entries", () => {
     const principle = fullFingerprint();
-    principle.prose.principles[0].status = "accepted" as never;
+    principle.intent.principles[0].status = "accepted" as never;
     expect(GhostFingerprintSchema.safeParse(principle).success).toBe(false);
 
     const contract = fullFingerprint();
-    contract.prose.experience_contracts[0].status = "accepted" as never;
+    contract.intent.experience_contracts[0].status = "accepted" as never;
     expect(GhostFingerprintSchema.safeParse(contract).success).toBe(false);
 
     const pattern = fullFingerprint();
@@ -89,8 +89,8 @@ describe("ghost.fingerprint/v1", () => {
 
   it("reports unknown typed refs inside the fingerprint", () => {
     const input = fullFingerprint();
-    input.prose.situations[0].principles = [
-      "prose.principle:missing-principle",
+    input.intent.situations[0].principles = [
+      "intent.principle:missing-principle",
     ];
 
     const report = lintGhostFingerprint(input);
@@ -98,14 +98,14 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-ref-unknown",
-      path: "prose.situations[0].principles[0]",
+      path: "intent.situations[0].principles[0]",
     });
   });
 
   it("reports mismatched typed ref prefixes", () => {
     const input = fullFingerprint();
-    input.prose.situations[0].patterns = [
-      "prose.principle:dense-workflows-prioritize-scanning",
+    input.intent.situations[0].patterns = [
+      "intent.principle:dense-workflows-prioritize-scanning",
     ];
 
     const report = lintGhostFingerprint(input);
@@ -113,7 +113,7 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-ref-prefix",
-      path: "prose.situations[0].patterns[0]",
+      path: "intent.situations[0].patterns[0]",
     });
   });
 
@@ -145,10 +145,10 @@ describe("ghost.fingerprint/v1", () => {
 
   it("reports unknown topology scope and surface type references", () => {
     const input = fullFingerprint();
-    input.prose.situations[0].surface_type = "unknown-surface";
+    input.intent.situations[0].surface_type = "unknown-surface";
     input.inventory.exemplars[0].scope = "unknown-scope";
     input.inventory.exemplars[0].surface_type = "unknown-surface";
-    input.prose.principles[0].applies_to = {
+    input.intent.principles[0].applies_to = {
       scopes: ["unknown-scope"],
       surface_types: ["unknown-surface"],
       situations: ["unknown-situation"],
@@ -161,19 +161,19 @@ describe("ghost.fingerprint/v1", () => {
       expect.arrayContaining([
         expect.objectContaining({
           rule: "fingerprint-surface-type-unknown",
-          path: "prose.situations[0].surface_type",
+          path: "intent.situations[0].surface_type",
         }),
         expect.objectContaining({
           rule: "fingerprint-scope-unknown",
-          path: "prose.principles[0].applies_to.scopes[0]",
+          path: "intent.principles[0].applies_to.scopes[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-surface-type-unknown",
-          path: "prose.principles[0].applies_to.surface_types[0]",
+          path: "intent.principles[0].applies_to.surface_types[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-situation-unknown",
-          path: "prose.principles[0].applies_to.situations[0]",
+          path: "intent.principles[0].applies_to.situations[0]",
         }),
         expect.objectContaining({
           rule: "fingerprint-scope-unknown",
@@ -200,9 +200,9 @@ describe("ghost.fingerprint/v1", () => {
     });
   });
 
-  it("requires check refs to use check:*", () => {
+  it("requires check refs to use validate.check:*", () => {
     const input = fullFingerprint();
-    input.prose.principles[0].check_refs = [
+    input.intent.principles[0].check_refs = [
       "composition.pattern:compact-filter-toolbar",
     ];
 
@@ -211,7 +211,7 @@ describe("ghost.fingerprint/v1", () => {
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
       rule: "fingerprint-check-ref-prefix",
-      path: "prose.principles[0].check_refs[0]",
+      path: "intent.principles[0].check_refs[0]",
     });
   });
 });
@@ -225,7 +225,7 @@ function minimalFingerprint() {
 function fullFingerprint() {
   return {
     schema: GHOST_FINGERPRINT_SCHEMA,
-    prose: {
+    intent: {
       summary: {
         product: "Example dashboard",
         audience: ["operators"],
@@ -246,9 +246,9 @@ function fullFingerprint() {
             secondary: "bulk actions and record detail",
           },
           refuses: ["oversized marketing hero"],
-          principles: ["prose.principle:dense-workflows-prioritize-scanning"],
+          principles: ["intent.principle:dense-workflows-prioritize-scanning"],
           experience_contracts: [
-            "prose.experience_contract:destructive-actions-require-clear-confirmation",
+            "intent.experience_contract:destructive-actions-require-clear-confirmation",
           ],
           patterns: ["composition.pattern:compact-filter-toolbar"],
         },
@@ -271,7 +271,9 @@ function fullFingerprint() {
           counterexamples: [
             "marketing pages may use larger narrative composition",
           ],
-          check_refs: ["check:no-decorative-card-grid-for-dense-table"],
+          check_refs: [
+            "validate.check:no-decorative-card-grid-for-dense-table",
+          ],
         },
       ],
       experience_contracts: [
@@ -313,7 +315,7 @@ function fullFingerprint() {
           note: "Dense filtering and comparison surface.",
           why: "Shows the compact hierarchy future dashboard work should preserve.",
           refs: [
-            "prose.principle:dense-workflows-prioritize-scanning",
+            "intent.principle:dense-workflows-prioritize-scanning",
             "composition.pattern:compact-filter-toolbar",
           ],
         },

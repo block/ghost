@@ -73,16 +73,16 @@ function synthesizeFingerprintFromPackage(
       dimension: "summary",
       dimension_kind: "experience-summary",
       decision: compactJoin([
-        document.prose.summary.product,
-        ...(document.prose.summary.audience ?? []),
-        ...(document.prose.summary.goals ?? []),
-        ...(document.prose.summary.anti_goals ?? []),
-        ...(document.prose.summary.tradeoffs ?? []),
-        ...(document.prose.summary.tone ?? []),
+        document.intent.summary.product,
+        ...(document.intent.summary.audience ?? []),
+        ...(document.intent.summary.goals ?? []),
+        ...(document.intent.summary.anti_goals ?? []),
+        ...(document.intent.summary.tradeoffs ?? []),
+        ...(document.intent.summary.tone ?? []),
       ]),
       evidence: [],
     },
-    ...document.prose.situations.map((situation) => ({
+    ...document.intent.situations.map((situation) => ({
       dimension: situation.id,
       dimension_kind: "experience-situation",
       decision: compactJoin([
@@ -92,13 +92,13 @@ function synthesizeFingerprintFromPackage(
       ]),
       evidence: evidenceStrings(situation.evidence),
     })),
-    ...document.prose.principles.map((principle) => ({
+    ...document.intent.principles.map((principle) => ({
       dimension: principle.id,
       dimension_kind: "experience-principle",
       decision: principle.principle,
       evidence: evidenceStrings(principle.evidence),
     })),
-    ...document.prose.experience_contracts.map((contract) => ({
+    ...document.intent.experience_contracts.map((contract) => ({
       dimension: contract.id,
       dimension_kind: "experience-contract",
       decision: contract.contract,
@@ -137,8 +137,8 @@ function synthesizeFingerprintFromPackage(
     timestamp: new Date(0).toISOString(),
     sources: [path],
     observation: {
-      summary: document.prose.summary.product ?? manifest.id,
-      personality: document.prose.summary.tone ?? [],
+      summary: document.intent.summary.product ?? manifest.id,
+      personality: document.intent.summary.tone ?? [],
       resembles: document.inventory.building_blocks.libraries ?? [],
     },
     decisions,
@@ -179,7 +179,7 @@ function compactJoin(values: Array<string | undefined>): string {
 }
 
 function evidenceStrings(
-  evidence: GhostFingerprintDocument["prose"]["principles"][number]["evidence"],
+  evidence: GhostFingerprintDocument["intent"]["principles"][number]["evidence"],
 ): string[] {
   return (
     evidence?.map((entry) => entry.locator ?? entry.path ?? entry.note ?? "") ??
@@ -192,7 +192,7 @@ function packageDigestDecisions(
 ): DesignDecision[] {
   const digest = stableHash(
     JSON.stringify({
-      prose: document.prose,
+      intent: document.intent,
       inventory: document.inventory,
       composition: document.composition,
     }),

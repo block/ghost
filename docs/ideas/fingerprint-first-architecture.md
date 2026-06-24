@@ -24,12 +24,12 @@ consume, validate, compare, generate from, or govern that context.
 
 - The fingerprint package is the durable artifact. `.ghost/fingerprint/`
   remains the portable boundary, anchored by `fingerprint/manifest.yml`.
-- Core generation input is `prose.yml`, `inventory.yml`, and
-  `composition.yml`. `prose.yml` captures the intent behind the surface,
+- Core generation input is `intent.yml`, `inventory.yml`, and
+  `composition.yml`. `intent.yml` captures the intent behind the surface,
   `inventory.yml` points to curated material and exemplars, and
   `composition.yml` captures the patterns that make it feel intentional.
-- Supporting material stays subordinate to the core layers:
-  `checks.yml` validates deterministic obligations.
+- Supporting material stays subordinate to the facets:
+  `validate.yml` validates deterministic obligations.
 - Tools are consumers or authors of the fingerprint. They may capture,
   validate, apply, govern, or compare the contract, but they do not replace it.
 - Drift is governance. `check`, `review`, `ack`, `track`, and `diverge` answer
@@ -65,7 +65,7 @@ fingerprint lifecycle:
 
 | Lifecycle | Commands and consumers | Purpose |
 | --- | --- | --- |
-| Capture | `init`, `signals`, `scan` | Create the package, inspect repo signals, and report layer readiness. |
+| Capture | `init`, `signals`, `scan` | Create the package, inspect repo signals, and report contribution facets. |
 | Validate | `lint`, `verify` | Check schema shape, refs, evidence, exemplars, and deterministic package quality. |
 | Generate / apply | `relay gather`, host agents, future generation consumers | Give agents the upstream surface-composition contract before they build or revise. |
 | Govern | `check`, `review`, `ack`, `track`, `diverge` | Validate changed surfaces, produce advisory findings, and record stance toward divergence. |
@@ -86,7 +86,7 @@ or create public API guarantees. It gives follow-on work a shared hierarchy.
   Existing commands can stay stable while descriptions and ordering teach the
   new mental model.
 - Skill references should lead with recall, briefing, and generation from
-  fingerprint layers before review, verification, and remediation workflows.
+  fingerprint facets before review, verification, and remediation workflows.
 - Schema exploration may investigate richer fingerprint concepts such as
   signature moves, memorable product gestures, and executable or buildable
   inventory evidence. Those ideas are follow-on design work, not new schema in

@@ -34,7 +34,7 @@ const PlatformValueSchema = z.union([
  * Phase 5b adds JS bundlers and meta-build coordinators: real consumer
  * repos use `vite` as the build with `pnpm`/`yarn` for dependencies, and
  * monorepos increasingly run `nx` or `turbo` on top. Without these the
- * recipe was forced to drop signal into prose; an array like
+ * recipe was forced to drop signal into intent; an array like
  * `[pnpm, vite, nx, style-dictionary]` is now expressible.
  */
 const BuildSystemEnum = z.enum([
@@ -197,7 +197,7 @@ export const MapFrontmatterSchema = z.object({
      * consumers often pull from multiple upstream packages (a token
      * package + a component package + an icon package + a glue package);
      * the array form keeps the structured signal instead of forcing the
-     * recipe to pack them into prose.
+     * recipe to pack them into intent.
      */
     upstream: z
       .union([z.string().min(1), z.array(z.string().min(1)).min(1)])

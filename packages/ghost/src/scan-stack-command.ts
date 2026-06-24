@@ -57,19 +57,22 @@ function formatStackJson(
     target_path: stack.target_path,
     repo_root: stack.repo_root,
     fingerprint_dir: stack.fingerprint_dir,
-    layers: stack.layers.map((layer) => ({
+    stack: stack.layers.map((layer) => ({
       dir: layer.dir,
       root: layer.root,
       relative_root: layer.relative_root,
       fingerprint_dir: layer.fingerprint_dir,
-      fingerprint_id: layer.fingerprint.prose.summary.product ?? null,
+      fingerprint_id: layer.fingerprint.intent.summary.product ?? null,
       checks: layer.checks?.checks.length ?? 0,
     })),
     merged: {
       fingerprint: stack.merged.fingerprint,
       checks: stack.merged.checks,
     },
-    provenance: stack.provenance,
+    provenance: {
+      merge: stack.provenance.merge,
+      stack: stack.provenance.layers,
+    },
   };
 }
 
@@ -77,15 +80,15 @@ function formatStackCli(stack: GhostFingerprintStack): string {
   const lines = [
     `target: ${stack.target_path}`,
     `repo root: ${stack.repo_root}`,
-    "layers:",
+    "stack:",
     ...stack.layers.map(
       (layer) =>
-        `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)} (${layer.fingerprint.prose.summary.product ?? "unnamed"})`,
+        `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.fingerprint_dir)} (${layer.fingerprint.intent.summary.product ?? "unnamed"})`,
     ),
     "merged:",
-    `  situations: ${stack.merged.fingerprint.prose.situations.length}`,
-    `  principles: ${stack.merged.fingerprint.prose.principles.length}`,
-    `  contracts: ${stack.merged.fingerprint.prose.experience_contracts.length}`,
+    `  situations: ${stack.merged.fingerprint.intent.situations.length}`,
+    `  principles: ${stack.merged.fingerprint.intent.principles.length}`,
+    `  contracts: ${stack.merged.fingerprint.intent.experience_contracts.length}`,
     `  patterns: ${stack.merged.fingerprint.composition.patterns.length}`,
     `  active checks: ${
       stack.merged.checks.checks.filter((check) => check.status === "active")

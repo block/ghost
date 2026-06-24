@@ -9,10 +9,10 @@ lives under `.ghost/fingerprint/`:
   config.yml                    # optional local routing; not portable context
   fingerprint/
     manifest.yml                # ghost.fingerprint-package/v1 package anchor
-    prose.yml                   # core: surface intent
+    intent.yml                   # core: surface intent
     inventory.yml               # core: curated material and source links
     composition.yml             # core: experience patterns
-    checks.yml                  # optional deterministic gates
+    validate.yml                  # optional deterministic gates
 ```
 
 Git is the staging and approval boundary: uncommitted or unmerged edits are
@@ -27,13 +27,15 @@ schema: ghost.fingerprint-package/v1
 id: local
 ```
 
-The raw layer files can be sparse. Missing files or sections normalize to empty
-layers when Ghost assembles the internal `ghost.fingerprint/v1` document used
-by checks, review packets, Relay briefs, compare, and stack merges.
+The raw facet files can be sparse. Missing files or sections mean this package
+contributes no local guidance for that facet; broader stack context may still
+supply it. Ghost normalizes absent facets to empty values when it assembles the
+internal `ghost.fingerprint/v1` document used by validation checks, review
+packets, Relay briefs, compare, and stack merges.
 
-## Core Layers
+## Core Facets
 
-`prose.yml` captures the intent behind the surface:
+`intent.yml` captures the intent behind the surface:
 
 ```yaml
 summary:
@@ -42,18 +44,18 @@ summary:
   goals:
     - Preserve task-first documentation and product trust.
 principles:
-  - id: prose-before-material
-    principle: Prose captures the intent behind the surface; inventory points to replaceable material.
+  - id: intent-before-material
+    principle: Intent captures the intent behind the surface; inventory points to replaceable material.
 experience_contracts:
   - id: review-cites-memory
     contract: Advisory review findings must cite the diff and relevant fingerprint refs.
 ```
 
-Use prose for durable claims about audience needs, product obligations,
+Use intent for durable claims about audience needs, product obligations,
 acceptable tradeoffs, what the surface refuses to become, and contracts that
 should shape agent behavior.
 
-High-quality layer content makes generation choices explicit: what to preserve,
+High-quality facet content makes generation choices explicit: what to preserve,
 what to avoid, which tradeoffs win, which situations route guidance, and which
 exemplars ground the claim.
 
@@ -105,7 +107,7 @@ patterns:
       - Put caveats near the command they modify.
     evidence:
       - path: apps/docs/src/content/docs/cli-reference.mdx
-    check_refs: [check:no-hardcoded-brand-color]
+    check_refs: [validate.check:no-hardcoded-brand-color]
 ```
 
 Pattern `kind` can be `rule`, `layout`, `structure`, `flow`, `state`,
@@ -113,25 +115,25 @@ Pattern `kind` can be `rule`, `layout`, `structure`, `flow`, `state`,
 
 ## References
 
-Use layer-qualified refs when one part of the fingerprint grounds another:
+Use facet-qualified refs when one part of the fingerprint grounds another:
 
-- `prose.situation:<id>`
-- `prose.principle:<id>`
-- `prose.experience_contract:<id>`
+- `intent.situation:<id>`
+- `intent.principle:<id>`
+- `intent.experience_contract:<id>`
 - `inventory.exemplar:<id>`
 - `composition.pattern:<id>`
-- `check:<id>`
+- `validate.check:<id>`
 
-Layer refs without `check:` are used where only fingerprint layer material is
+Facet refs without `validate.check:` are used where only fingerprint facet material is
 valid, such as `inventory.exemplars[].refs`.
 
 ## Enforcement
 
-`fingerprint/checks.yml` uses `ghost.checks/v1`. Checks are
+`fingerprint/validate.yml` uses `ghost.validate/v1`. Checks are
 deterministic validation, not generation input.
 
 ```yaml
-schema: ghost.checks/v1
+schema: ghost.validate/v1
 id: example-docs
 checks:
   - id: no-hardcoded-brand-color
@@ -139,8 +141,8 @@ checks:
     status: active
     severity: serious
     derivation:
-      prose:
-        - prose.principle:reference-before-decoration
+      intent:
+        - intent.principle:reference-before-decoration
       inventory:
         - inventory.exemplar:cli-reference-page
       composition:
@@ -173,7 +175,7 @@ Detector `type` can be:
 
 Ref-backed checks are preferred. Missing derivation refs lint as warnings, not
 errors, so teams can draft gates while curation catches up. Promote only rules
-that can be detected deterministically; taste stays in prose or composition
+that can be detected deterministically; taste stays in intent or composition
 until there is a reliable detector.
 
 ## Nested Packages
@@ -187,8 +189,9 @@ apps/checkout/review/page.tsx
 ```
 
 For a path like `apps/checkout/review/page.tsx`, Ghost resolves each
-`<memory-dir>/fingerprint/manifest.yml` from root to leaf. The merged stack is
-broad-to-local:
+`<memory-dir>/fingerprint/manifest.yml` from root to leaf. Each package is a
+sparse patch: it contributes only the facets it knows, and the resolved stack
+supplies the working context. The merged stack is broad-to-local:
 
 - child entries with the same `id` replace parent entries;
 - scalar summary fields use the nearest child value;
@@ -196,11 +199,14 @@ broad-to-local:
 - child-relative paths normalize to repo-root paths in reports;
 - checks merge by `id`, so a child check with `status: disabled` suppresses an
   inherited active check;
-- intent files concatenate with layer headings;
-- decisions merge by `id`, with child entries winning.
+- intent situations, principles, and experience contracts merge by `id`, with
+  child entries winning;
+- composition patterns, inventory exemplars, and sources merge by `id`, with
+  child entries winning.
 
 Use nested packages when an area has genuinely different surface composition,
-not just because it has different files.
+not just because it has different files. A nested package does not need to
+restate inherited intent, inventory, composition, or validation checks.
 
 For workspace monorepos, start with a safe plan:
 
@@ -230,10 +236,12 @@ ghost emit review-command --path apps/checkout/review/page.tsx
 ghost relay gather apps/checkout/review/page.tsx
 ```
 
-`ghost scan` reports readiness in the same three-layer vocabulary. Useful
-`prose` means any non-empty summary field, situation, principle, or experience
-contract. Useful `inventory` means topology scopes or surface types, curated
-building blocks, or exemplars. Useful `composition` means at least one pattern.
+`ghost scan` reports package contribution facets. Useful `intent` means any
+non-empty summary field, situation, principle, or experience contract. Useful
+`inventory` means topology scopes or surface types, curated building blocks,
+exemplars, or source links. Useful `composition` means at least one pattern.
+Useful `validate` means at least one deterministic check. Absent facets are
+reported as absent contributions, not incomplete packages.
 
 Use raw repo signals when observed repo facts are useful authoring evidence:
 
@@ -241,18 +249,18 @@ Use raw repo signals when observed repo facts are useful authoring evidence:
 ghost signals .
 ```
 
-Curate durable conclusions into `prose.yml`, `inventory.yml`, or
+Curate durable conclusions into `intent.yml`, `inventory.yml`, or
 `composition.yml`.
 
 ## Authoring Rules
 
-- Write durable surface intent in `prose.yml`.
+- Write durable surface intent in `intent.yml`.
 - Write curated repo material and exemplars in `inventory.yml`.
 - Write repeatable experience patterns in `composition.yml`.
-- Write deterministic gates in `checks.yml`.
+- Write deterministic gates in `validate.yml`.
 - Prefer typed refs over prose-only cross-links.
 - Keep ids stable after review because refs and checks depend on them.
-- Let Git review approve changes to canonical fingerprint layers.
+- Let Git review approve changes to canonical fingerprint facets.
 
 Do not:
 
@@ -261,7 +269,7 @@ Do not:
 - treat cache output as canonical surface guidance;
 - promote subjective taste directly into a check without a deterministic
   detector;
-- put structural gate configuration in prose;
+- put structural gate configuration in intent;
 - use `.ghost/config.yml` as portable surface context.
 
 Legacy `resources.yml`, `map.md`, `survey.json`, `patterns.yml`, direct

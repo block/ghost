@@ -12,6 +12,13 @@ import {
   unique,
 } from "./graph.js";
 import type { PackageContext } from "./package-context.js";
+import {
+  addSelectionReason,
+  directSelectionReasons,
+  expandOneHopWithReasons,
+  globalFallbackRefs,
+  type SelectionReason,
+} from "./selection-reasons.js";
 
 export type {
   FingerprintGraph,
@@ -28,7 +35,7 @@ export interface ContextEntrypoint {
     requestedPaths: string[];
     matchedScopes: string[];
     matchedSurfaceTypes: string[];
-    sourceLayers: string[];
+    sourceStack: string[];
     reasons: string[];
   };
   identity: {
@@ -46,21 +53,24 @@ export interface ContextEntrypoint {
     validate: string[];
   };
   selected: {
-    prose: FingerprintGraphNode[];
+    intent: FingerprintGraphNode[];
     composition: FingerprintGraphNode[];
     exemplars: FingerprintGraphNode[];
     checks: FingerprintGraphNode[];
   };
+  selectionReasons: Record<string, SelectionReason[]>;
   suggestedReads: Array<{ path: string; reason: string }>;
   omissions: Array<{ label: string; omitted: number; source: string }>;
 }
+
+export type { SelectionReason } from "./selection-reasons.js";
 
 export interface BuildContextEntrypointOptions {
   targetPaths?: string[];
 }
 
 const CAPS = {
-  prose: 6,
+  intent: 6,
   composition: 6,
   exemplars: 3,
   checks: 6,
@@ -81,22 +91,27 @@ export function buildContextEntrypoint(
     matchedScopes.flatMap((scope) => scope.surfaceTypes),
   );
   const directRefs = new Set<NodeRef>();
+  const selectionReasons = new Map<NodeRef, SelectionReason[]>();
 
   for (const node of graph.nodes) {
-    if (
-      nodeMatchesTargets(node, requestedPaths) ||
-      intersects(node.appliesTo.scopes, matchedScopeIds) ||
-      intersects(node.appliesTo.surfaceTypes, matchedSurfaceTypes)
-    ) {
+    const reasons = directSelectionReasons(node, {
+      requestedPaths,
+      matchedScopeIds,
+      matchedSurfaceTypes,
+    });
+    if (reasons.length > 0) {
       directRefs.add(node.ref);
+      for (const reason of reasons) {
+        addSelectionReason(selectionReasons, node.ref, reason);
+      }
     }
   }
 
+  const status = directRefs.size > 0 ? "path-match" : "global-fallback";
   const selectedRefs =
     directRefs.size > 0
-      ? expandOneHop(directRefs, graph)
-      : new Set<NodeRef>(graph.nodes.map((node) => node.ref));
-  const status = directRefs.size > 0 ? "path-match" : "global-fallback";
+      ? expandOneHopWithReasons(directRefs, graph, selectionReasons)
+      : globalFallbackRefs(graph, requestedPaths, selectionReasons);
   const selected = selectNodes(graph, selectedRefs, {
     directRefs,
     matchedScopeIds,
@@ -114,12 +129,13 @@ export function buildContextEntrypoint(
       requestedPaths,
       matchedScopes: matchedScopeIds,
       matchedSurfaceTypes,
-      sourceLayers: context.layerDirs ?? [],
+      sourceStack: context.stackDirs ?? [],
       reasons: matchReasons(status, requestedPaths, matchedScopeIds),
     },
     identity,
     actionContract: buildActionContract(identity, selected, suggestedReads),
     selected,
+    selectionReasons: Object.fromEntries(selectionReasons),
     suggestedReads,
     omissions: buildOmissions(graph, selected),
   };
@@ -145,7 +161,7 @@ function matchReasons(
     requestedPaths.length
       ? `No fingerprint scope matched: ${requestedPaths.join(", ")}.`
       : "No target path was supplied.",
-    "Using compact global entrypoint; inspect full fingerprint files when the task is broad.",
+    "Using compact global context; inspect full fingerprint files when the task is broad.",
   ];
 }
 
@@ -153,7 +169,7 @@ function identityFromFingerprint(
   fingerprint: GhostFingerprintDocument,
   name: string,
 ): ContextEntrypoint["identity"] {
-  const summary = fingerprint.prose.summary;
+  const summary = fingerprint.intent.summary;
   return {
     product: summary.product ?? name,
     audience: summary.audience ?? [],
@@ -175,11 +191,11 @@ function selectNodes(
     ranking,
   );
   return {
-    prose: selectedNodes
+    intent: selectedNodes
       .filter((node) =>
         ["situation", "principle", "experience_contract"].includes(node.kind),
       )
-      .slice(0, CAPS.prose),
+      .slice(0, CAPS.intent),
     composition: selectedNodes
       .filter((node) => node.kind === "pattern")
       .slice(0, CAPS.composition),
@@ -241,27 +257,15 @@ function isConnectedToDirectRef(
   );
 }
 
-function expandOneHop(
-  refs: Set<NodeRef>,
-  graph: FingerprintGraph,
-): Set<NodeRef> {
-  const expanded = new Set(refs);
-  for (const edge of graph.edges) {
-    if (refs.has(edge.from)) expanded.add(edge.to);
-    if (refs.has(edge.to)) expanded.add(edge.from);
-  }
-  return expanded;
-}
-
 function buildSuggestedReads(
   _context: PackageContext,
   selected: ContextEntrypoint["selected"],
 ): ContextEntrypoint["suggestedReads"] {
   const reads = new Map<string, string>();
-  if (selected.prose.length > 0) {
+  if (selected.intent.length > 0) {
     reads.set(
-      "fingerprint/prose.yml",
-      "selected prose anchors and full intent",
+      "fingerprint/intent.yml",
+      "selected intent anchors and full intent",
     );
   }
   if (selected.composition.length > 0) {
@@ -278,7 +282,7 @@ function buildSuggestedReads(
   }
   if (selected.checks.length > 0) {
     reads.set(
-      "fingerprint/checks.yml",
+      "fingerprint/validate.yml",
       "active deterministic validation rules",
     );
   }
@@ -287,7 +291,7 @@ function buildSuggestedReads(
     if (path) reads.set(path, `source surface for ${exemplar.ref}`);
   }
   if (reads.size === 0) {
-    reads.set("fingerprint/prose.yml", "global fingerprint intent");
+    reads.set("fingerprint/intent.yml", "global fingerprint intent");
     reads.set("fingerprint/inventory.yml", "topology and exemplars");
     reads.set("fingerprint/composition.yml", "composition patterns");
   }
@@ -299,12 +303,12 @@ function buildActionContract(
   selected: ContextEntrypoint["selected"],
   suggestedReads: ContextEntrypoint["suggestedReads"],
 ): ContextEntrypoint["actionContract"] {
-  const prose = sortNodes(selected.prose);
+  const intent = sortNodes(selected.intent);
   const composition = sortNodes(selected.composition);
   const preserve = uniqueCapped([
-    ...prose.map((node) => node.summary),
+    ...intent.map((node) => node.summary),
     ...composition.map((node) => node.summary),
-    ...prose.flatMap((node) =>
+    ...intent.flatMap((node) =>
       node.details.filter((detail) => !isAvoidanceDetail(detail)),
     ),
   ]);
@@ -323,7 +327,7 @@ function buildActionContract(
   ]);
   const avoid = uniqueCapped([
     ...identity.antiGoals,
-    ...prose.flatMap((node) => node.details.filter(isAvoidanceDetail)),
+    ...intent.flatMap((node) => node.details.filter(isAvoidanceDetail)),
     ...composition.flatMap((node) => node.details.filter(isAvoidanceDetail)),
   ]);
   const validate =
@@ -343,7 +347,7 @@ function buildOmissions(
   selected: ContextEntrypoint["selected"],
 ): ContextEntrypoint["omissions"] {
   const totals = {
-    prose: graph.nodes.filter((node) =>
+    intent: graph.nodes.filter((node) =>
       ["situation", "principle", "experience_contract"].includes(node.kind),
     ).length,
     composition: graph.nodes.filter((node) => node.kind === "pattern").length,
@@ -352,9 +356,9 @@ function buildOmissions(
   };
   return [
     {
-      label: "Prose anchors",
-      omitted: Math.max(0, totals.prose - selected.prose.length),
-      source: "fingerprint/prose.yml",
+      label: "Intent anchors",
+      omitted: Math.max(0, totals.intent - selected.intent.length),
+      source: "fingerprint/intent.yml",
     },
     {
       label: "Composition patterns",
@@ -369,7 +373,7 @@ function buildOmissions(
     {
       label: "Active checks",
       omitted: Math.max(0, totals.checks - selected.checks.length),
-      source: "fingerprint/checks.yml",
+      source: "fingerprint/validate.yml",
     },
   ];
 }

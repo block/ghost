@@ -1,26 +1,26 @@
 import type { MapFrontmatter, MapScope } from "../map/index.js";
 
-export const GHOST_CHECKS_SCHEMA = "ghost.checks/v1" as const;
-export const GHOST_CHECKS_FILENAME = "checks.yml" as const;
+export const GHOST_VALIDATE_SCHEMA = "ghost.validate/v1" as const;
+export const GHOST_VALIDATE_FILENAME = "validate.yml" as const;
 
 export type GhostCheckStatus = "active" | "proposed" | "disabled";
 export type GhostCheckSeverity = "critical" | "serious" | "nit";
-export type GhostCheckDerivationProseRef =
-  | `prose.principle:${string}`
-  | `prose.situation:${string}`
-  | `prose.experience_contract:${string}`;
+export type GhostCheckDerivationIntentRef =
+  | `intent.principle:${string}`
+  | `intent.situation:${string}`
+  | `intent.experience_contract:${string}`;
 export type GhostCheckDerivationInventoryRef = `inventory.exemplar:${string}`;
 export type GhostCheckDerivationCompositionRef =
   `composition.pattern:${string}`;
 
 export interface GhostCheckDerivation {
-  prose?: GhostCheckDerivationProseRef[];
+  intent?: GhostCheckDerivationIntentRef[];
   inventory?: GhostCheckDerivationInventoryRef[];
   composition?: GhostCheckDerivationCompositionRef[];
 }
 
-export interface GhostChecksFingerprintContext {
-  prose?: {
+export interface GhostValidateFingerprintContext {
+  intent?: {
     principles?: { id: string }[];
     situations?: { id: string }[];
     experience_contracts?: { id: string }[];
@@ -76,34 +76,34 @@ export interface GhostCheck {
   repair?: string;
 }
 
-export interface GhostChecksDocument {
-  schema: typeof GHOST_CHECKS_SCHEMA;
+export interface GhostValidateDocument {
+  schema: typeof GHOST_VALIDATE_SCHEMA;
   id: string;
   checks: GhostCheck[];
 }
 
-export type GhostChecksLintSeverity = "error" | "warning" | "info";
+export type GhostValidateLintSeverity = "error" | "warning" | "info";
 
-export interface GhostChecksLintIssue {
-  severity: GhostChecksLintSeverity;
+export interface GhostValidateLintIssue {
+  severity: GhostValidateLintSeverity;
   rule: string;
   message: string;
   path?: string;
 }
 
-export interface GhostChecksLintReport {
-  issues: GhostChecksLintIssue[];
+export interface GhostValidateLintReport {
+  issues: GhostValidateLintIssue[];
   errors: number;
   warnings: number;
   info: number;
 }
 
-export interface GhostChecksLintOptions {
+export interface GhostValidateLintOptions {
   map?: Pick<MapFrontmatter, "scopes" | "feature_areas">;
-  fingerprint?: GhostChecksFingerprintContext;
+  fingerprint?: GhostValidateFingerprintContext;
 }
 
-export interface RoutedGhostCheck {
+export interface RoutedGhostValidateCheck {
   check: GhostCheck;
   matched_scopes: MapScope[];
 }

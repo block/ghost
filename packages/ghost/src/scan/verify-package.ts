@@ -3,11 +3,11 @@ import { isAbsolute, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type {
   GhostCheck,
-  GhostChecksDocument,
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
+  GhostValidateDocument,
 } from "#ghost-core";
-import { GhostChecksSchema } from "#ghost-core";
+import { GhostValidateSchema } from "#ghost-core";
 import {
   type LoadedFingerprintPackage,
   lintFingerprintPackage,
@@ -111,17 +111,17 @@ async function readFingerprintPackage(
 async function readOptionalChecks(
   path: string,
   issues: VerifyFingerprintIssue[],
-): Promise<GhostChecksDocument | undefined> {
+): Promise<GhostValidateDocument | undefined> {
   try {
     const parsed = parseYaml(await readFile(path, "utf-8"));
-    const result = GhostChecksSchema.safeParse(parsed);
-    if (result.success) return result.data as GhostChecksDocument;
+    const result = GhostValidateSchema.safeParse(parsed);
+    if (result.success) return result.data as GhostValidateDocument;
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
       message:
-        "fingerprint/checks.yml failed schema validation after package lint.",
-      path: "fingerprint/checks.yml",
+        "fingerprint/validate.yml failed schema validation after package lint.",
+      path: "fingerprint/validate.yml",
     });
     return undefined;
   } catch (err) {
@@ -129,10 +129,10 @@ async function readOptionalChecks(
     issues.push({
       severity: "error",
       rule: "verify-checks-read-failed",
-      message: `fingerprint/checks.yml could not be read as YAML: ${
+      message: `fingerprint/validate.yml could not be read as YAML: ${
         err instanceof Error ? err.message : String(err)
       }`,
-      path: "fingerprint/checks.yml",
+      path: "fingerprint/validate.yml",
     });
     return undefined;
   }
@@ -233,24 +233,24 @@ async function verifyFingerprintEvidence(
 ): Promise<void> {
   const evidenceLists: Array<[string, GhostFingerprintEvidence[] | undefined]> =
     [
-      ...fingerprint.prose.situations.map(
+      ...fingerprint.intent.situations.map(
         (entry, index) =>
           [
-            `fingerprint/prose.yml.situations[${index}].evidence`,
+            `fingerprint/intent.yml.situations[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
-      ...fingerprint.prose.principles.map(
+      ...fingerprint.intent.principles.map(
         (entry, index) =>
           [
-            `fingerprint/prose.yml.principles[${index}].evidence`,
+            `fingerprint/intent.yml.principles[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
-      ...fingerprint.prose.experience_contracts.map(
+      ...fingerprint.intent.experience_contracts.map(
         (entry, index) =>
           [
-            `fingerprint/prose.yml.experience_contracts[${index}].evidence`,
+            `fingerprint/intent.yml.experience_contracts[${index}].evidence`,
             entry.evidence,
           ] as [string, GhostFingerprintEvidence[] | undefined],
       ),
@@ -290,17 +290,17 @@ function verifyFingerprintCheckRefs(
 ): void {
   const checkIds = new Set(checks.map((check) => check.id));
   const checkRefLists: Array<[string, string[] | undefined]> = [
-    ...fingerprint.prose.principles.map(
+    ...fingerprint.intent.principles.map(
       (entry, index) =>
         [
-          `fingerprint/prose.yml.principles[${index}].check_refs`,
+          `fingerprint/intent.yml.principles[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
-    ...fingerprint.prose.experience_contracts.map(
+    ...fingerprint.intent.experience_contracts.map(
       (entry, index) =>
         [
-          `fingerprint/prose.yml.experience_contracts[${index}].check_refs`,
+          `fingerprint/intent.yml.experience_contracts[${index}].check_refs`,
           entry.check_refs,
         ] as [string, string[] | undefined],
     ),
@@ -320,7 +320,7 @@ function verifyFingerprintCheckRefs(
       issues.push({
         severity: "error",
         rule: "fingerprint-check-unknown",
-        message: `fingerprint layer references unknown check '${ref}'.`,
+        message: `fingerprint facet references unknown check '${ref}'.`,
         path: `${path}[${index}]`,
       });
     });
