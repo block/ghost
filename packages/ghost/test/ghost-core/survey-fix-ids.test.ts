@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { recomputeSurveyIds } from "../src/survey/fix-ids.js";
-import { tokenRowId, uiSurfaceRowId, valueRowId } from "../src/survey/id.js";
-import type { Survey, SurveySource } from "../src/survey/types.js";
+import {
+  recomputeSurveyIds,
+  type Survey,
+  type SurveySource,
+  tokenRowId,
+  uiSurfaceRowId,
+  valueRowId,
+} from "#ghost-core";
 
 const SOURCE: SurveySource = {
   target: "github:block/ghost",
