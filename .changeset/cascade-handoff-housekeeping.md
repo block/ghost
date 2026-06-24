@@ -2,4 +2,4 @@
 "@anarchitecture/ghost": patch
 ---
 
-Polish cascade handoff wording and review context formatting.
+Polish selected-context handoff wording and review context formatting.
