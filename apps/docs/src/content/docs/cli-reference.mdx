@@ -139,13 +139,17 @@ reusable review prompt.
 Gather a compact Relay brief from the resolved fingerprint stack for a target
 path. Use this before generation so the host agent starts with the package
 stack, intent, active obligations, composition, inventory, validation checks,
-and gaps.
+and gaps. JSON output also includes a normalized
+`ghost.context-packet/v1` for agents that need stable lane, provenance, trace,
+mode, and capability metadata.
 
 <CliHelp tool="ghost" command="relay" hideDescription />
 
 ```bash
 ghost relay gather apps/checkout/review/page.tsx
 ghost relay gather apps/checkout/review/page.tsx --package product-surface --format json
+ghost relay gather apps/checkout/review/page.tsx --mode review --format json
+ghost relay gather apps/checkout/review/page.tsx --dialect .ghost/dialect.yml --mode prompt
 ```
 
 ### Inspection - `describe`

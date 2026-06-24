@@ -1746,6 +1746,19 @@ checks:
     expect(json.schema).toBe("ghost.relay.gather/v2");
     expect(json.source.kind).toBe("package");
     expect(json.targetPaths).toEqual(["Code/Features/Lending/LendingUI"]);
+    expect(json.context_packet.schema).toBe("ghost.context-packet/v1");
+    expect(json.context_packet.target).toMatchObject({
+      mode: "generation",
+      paths: ["Code/Features/Lending/LendingUI"],
+    });
+    expect(json.context_packet.lanes.intent).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "intent.principle:tokenized-ui-color",
+          source: "intent.yml",
+        }),
+      ]),
+    );
     expect(json.entrypoint).toBeUndefined();
     expect(json.cascade_brief).toBeUndefined();
     expect(json.selected_context.match.status).toBe("path-match");
@@ -1801,6 +1814,38 @@ checks:
     );
     expect(json.brief).toContain("# Ghost Relay Brief");
     expect(json.brief).toContain("## Context Hits");
+  });
+
+  it("gathers Relay context with explicit mode", async () => {
+    await writeCheckPackage(dir);
+
+    const result = await runCli(
+      [
+        "relay",
+        "gather",
+        "Code/Features/Lending/LendingUI",
+        "--format",
+        "json",
+        "--mode",
+        "review",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.context_packet.target).toMatchObject({
+      mode: "review",
+      requested_capabilities: [
+        "product.posture",
+        "review.grounding",
+        "review.fidelity",
+        "review.rubric",
+        "validation.check",
+        "material.evidence",
+        "source.grounding",
+      ],
+    });
   });
 
   it("ignores GHOST_PACKAGE_DIR when gathering Relay context from an exact package", async () => {

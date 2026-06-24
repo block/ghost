@@ -14,6 +14,13 @@ Canonical package:
 Git is the approval boundary: checked-in Ghost package facet files are
 canonical, and uncommitted or unmerged edits are draft work.
 
+The flat package is Ghost's default shape. Advanced repos may add
+`.ghost/dialect.yml` or pass `ghost relay gather --dialect <file>` as a custom
+Relay config for explicit extra facets. Custom facets are Ghost-readable only
+when they declare a lane, capabilities, and deterministic projection; a schema
+name alone is not enough. OSS Ghost does not infer proprietary ontology from
+arbitrary YAML, and authored stack files are not Ghost Relay source-of-truth.
+
 `manifest.yml`:
 
 ```yaml

@@ -25,6 +25,52 @@ describe("relay", () => {
     });
 
     expect(result.schema).toBe("ghost.relay.gather/v2");
+    expect(result.context_packet.schema).toBe("ghost.context-packet/v1");
+    expect(result.context_packet.target).toMatchObject({
+      mode: "generation",
+      paths: ["apps/refunds/settings/page.tsx"],
+      requested_capabilities: expect.arrayContaining([
+        "product.posture",
+        "design.composition",
+      ]),
+    });
+    expect(result.context_packet.dialect).toMatchObject({
+      id: "ghost.default/v1",
+      source: "default",
+    });
+    expect(result.context_packet.lanes.intent).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "intent.principle:refund-trust",
+          source: "intent.yml",
+        }),
+      ]),
+    );
+    expect(result.context_packet.lanes.composition).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "composition.pattern:refund-disclosure",
+          source: "composition.yml",
+        }),
+      ]),
+    );
+    expect(result.context_packet.lanes.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          ref: "validate.check:no-hardcoded-ui-color",
+          source: "validate.yml",
+        }),
+      ]),
+    );
+    expect(result.context_packet.trace.selected).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: "composition.yml",
+          lane: "composition",
+          ref: "composition.pattern:refund-disclosure",
+        }),
+      ]),
+    );
     expect(result.source.kind).toBe("stack");
     expect(result.targetPaths).toEqual(["apps/refunds/settings/page.tsx"]);
     expect(result.selected_context.match.status).toBe("path-match");
@@ -202,6 +248,198 @@ describe("relay", () => {
     expect(fallback.selected_context.context_hits[0].why_selected).toEqual([
       { kind: "global_fallback", value: "apps/payroll/page.tsx" },
     ]);
+  });
+
+  it("projects declared custom questions, provenance, and extension lanes", async () => {
+    const root = await track(createSingleSurfaceSandbox());
+    await mkdir(join(root, "product"), { recursive: true });
+    await writeFile(
+      join(root, ".ghost", "dialect.yml"),
+      `schema: ghost.dialect/v1
+id: acme.product-surface/v1
+profile: ghost.product-surface/v1
+facets:
+  - id: product-questions
+    path: product/questions.yml
+    lane: questions
+    capabilities:
+      - prompt.disambiguation
+      - human.escalation
+    projection:
+      items_path: questions
+      id_path: id
+      summary_path: question
+      content_paths:
+        - blocks
+      max_chars: 4000
+  - id: product-sources
+    path: product/sources.yml
+    lane: provenance
+    capabilities:
+      - source.grounding
+    projection:
+      items_path: sources
+      id_path: id
+      summary_path: summary
+  - id: brand-voice
+    path: product/brand.yml
+    lane: extension:brand_voice
+    capabilities:
+      - agent.context
+    projection:
+      items_path: guidance
+      id_path: id
+      summary_path: summary
+  - id: internal-questions
+    path: product/internal.yml
+    lane: questions
+    visibility: internal
+    capabilities:
+      - prompt.disambiguation
+    projection:
+      items_path: questions
+      summary_path: question
+  - id: schema-only
+    path: product/schema-only.yml
+    lane: questions
+    capabilities:
+      - prompt.disambiguation
+`,
+    );
+    await writeFile(
+      join(root, "product", "questions.yml"),
+      `questions:
+  - id: refund-policy
+    question: Should refunds require manager approval?
+    blocks:
+      - final copy
+`,
+    );
+    await writeFile(
+      join(root, "product", "sources.yml"),
+      `sources:
+  - id: design-registry
+    summary: Registry source for refund settings.
+`,
+    );
+    await writeFile(
+      join(root, "product", "brand.yml"),
+      `guidance:
+  - id: plain-language
+    summary: Use plain operational language.
+`,
+    );
+    await writeFile(
+      join(root, "product", "internal.yml"),
+      `questions:
+  - id: internal-policy
+    question: Hidden internal question.
+`,
+    );
+    await writeFile(
+      join(root, "product", "schema-only.yml"),
+      "schema: acme/v1\n",
+    );
+
+    const result = await gatherRelayContext({
+      cwd: root,
+      target: "apps/refunds/settings/page.tsx",
+      mode: "prompt",
+    });
+
+    expect(result.context_packet.dialect).toMatchObject({
+      id: "acme.product-surface/v1",
+      source: "file",
+    });
+    expect(result.context_packet.target).toMatchObject({
+      mode: "prompt",
+      requested_capabilities: [
+        "product.posture",
+        "prompt.routing",
+        "prompt.disambiguation",
+        "relay.stack-resolution",
+        "agent.context",
+        "human.escalation",
+      ],
+    });
+    expect(result.context_packet.lanes.questions).toEqual([
+      expect.objectContaining({
+        id: "refund-policy",
+        source: "product/questions.yml",
+        summary: "Should refunds require manager approval?",
+        content: { blocks: ["final copy"] },
+      }),
+    ]);
+    expect(result.context_packet.lanes.provenance).toEqual([]);
+    expect(result.context_packet.extensions.brand_voice).toEqual([
+      expect.objectContaining({
+        id: "plain-language",
+        source: "product/brand.yml",
+        summary: "Use plain operational language.",
+      }),
+    ]);
+    expect(result.context_packet.trace.selected).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: "product/questions.yml",
+          lane: "questions",
+          facet: "product-questions",
+        }),
+        expect.objectContaining({
+          source: "product/brand.yml",
+          lane: "extension:brand_voice",
+          facet: "brand-voice",
+        }),
+      ]),
+    );
+    expect(result.context_packet.trace.omitted).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          facet: "internal-questions",
+          reason: ["visibility is internal"],
+        }),
+        expect.objectContaining({
+          facet: "schema-only",
+          reason: ["facet has no projection declaration"],
+        }),
+        expect.objectContaining({
+          facet: "product-sources",
+          reason: ["does not provide requested capabilities"],
+        }),
+      ]),
+    );
+  });
+
+  it("rejects unnamespaced extension lanes and custom capabilities", async () => {
+    const root = await track(createSingleSurfaceSandbox());
+    await writeFile(
+      join(root, ".ghost", "dialect.yml"),
+      `schema: ghost.dialect/v1
+id: acme.invalid/v1
+facets:
+  - id: invalid-extension
+    path: product/brand.yml
+    lane: brand_voice
+    capabilities:
+      - acme.brand-guidance
+    projection:
+      summary_path: summary
+  - id: invalid-capability
+    path: product/questions.yml
+    lane: questions
+    capabilities:
+      - brand-guidance
+    projection:
+      summary_path: summary
+`,
+    );
+
+    await expect(
+      gatherRelayContext({
+        cwd: root,
+        target: "apps/refunds/settings/page.tsx",
+      }),
+    ).rejects.toThrow(/Invalid Ghost dialect/);
   });
 
   async function track(rootPromise: Promise<string>): Promise<string> {

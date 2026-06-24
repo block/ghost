@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T04:21:56.789Z",
+  "generatedAt": "2026-06-24T14:46:58.482Z",
   "tools": [
     {
       "tool": "ghost",
@@ -614,6 +614,22 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--dialect <file>",
+              "name": "dialect",
+              "description": "Load an explicit Ghost dialect declaration",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--mode <mode>",
+              "name": "mode",
+              "description": "Relay mode: generation, review, or prompt",
+              "default": "generation",
               "takesValue": true,
               "negated": false
             }

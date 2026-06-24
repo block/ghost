@@ -1,9 +1,20 @@
 import type { CAC } from "cac";
+import {
+  type GhostRelayMode,
+  isRelayMode,
+  resolveRequestedCapabilities,
+} from "./context/capabilities.js";
+import {
+  buildGhostContextPacket,
+  type GhostContextPacket,
+} from "./context/context-packet.js";
+import { loadGhostDialect } from "./context/dialect-loader.js";
 import { buildContextEntrypoint } from "./context/entrypoint.js";
 import {
   loadPackageContext,
   type PackageContext,
 } from "./context/package-context.js";
+import { projectDialectFacets } from "./context/projection.js";
 import {
   buildSelectedContext,
   formatSelectedContextMarkdown,
@@ -17,6 +28,15 @@ import {
   resolveGhostDirDefault,
 } from "./scan/fingerprint-stack.js";
 
+export type { GhostRelayMode } from "./context/capabilities.js";
+export { RELAY_MODES } from "./context/capabilities.js";
+export type {
+  GhostContextPacket,
+  GhostContextPacketItem,
+  GhostContextPacketSource,
+  GhostContextPacketTraceEntry,
+} from "./context/context-packet.js";
+export { GHOST_CONTEXT_PACKET_SCHEMA } from "./context/context-packet.js";
 export type {
   SelectedContext,
   SelectedContextGap,
@@ -35,6 +55,8 @@ export interface GatherRelayContextOptions {
   packageDir?: string;
   ghostDir?: string;
   name?: string;
+  dialect?: string;
+  mode?: GhostRelayMode;
 }
 
 export type RelayGatherSource =
@@ -63,6 +85,7 @@ export interface RelayGatherResult {
   ghostDir?: string;
   stackDirs: string[];
   selected_context: SelectedContext;
+  context_packet: GhostContextPacket;
   brief: string;
 }
 
@@ -80,12 +103,17 @@ export async function gatherRelayContext(
     const targetPaths = target === "." ? [] : [target];
     context.targetPaths = targetPaths;
     return gatherFromContext(context, {
+      cwd,
       source: {
         kind: "package",
         packageDir: context.packageDir ?? options.packageDir,
         targetPath: targetPaths[0] ?? null,
       },
       targetPaths,
+      root: cwd,
+      ghostDir: resolveGhostDirDefault(options.ghostDir),
+      dialectPath: options.dialect,
+      mode: options.mode,
     });
   }
 
@@ -93,6 +121,7 @@ export async function gatherRelayContext(
   const stack = await loadFingerprintStackForPath(target, cwd, { ghostDir });
   const context = fingerprintStackToPackageContext(stack, options.name);
   return gatherFromContext(context, {
+    cwd,
     source: {
       kind: "stack",
       repoRoot: stack.repo_root,
@@ -105,6 +134,10 @@ export async function gatherRelayContext(
       },
     },
     targetPaths: context.targetPaths ?? [stack.target_path],
+    root: stack.repo_root,
+    ghostDir: stack.ghost_dir,
+    dialectPath: options.dialect,
+    mode: options.mode,
   });
 }
 
@@ -131,6 +164,10 @@ export function registerRelayCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
+    .option("--dialect <file>", "Load an explicit Ghost dialect declaration")
+    .option("--mode <mode>", "Relay mode: generation, review, or prompt", {
+      default: "generation",
+    })
     .action(async (action: string, target: string | undefined, opts) => {
       try {
         if (action !== "gather") {
@@ -143,12 +180,19 @@ export function registerRelayCommand(cli: CAC): void {
           process.exit(2);
           return;
         }
+        if (typeof opts.mode !== "string" || !isRelayMode(opts.mode)) {
+          console.error("Error: --mode must be generation, review, or prompt");
+          process.exit(2);
+          return;
+        }
 
         const result = await gatherRelayContext({
           target: target ?? ".",
           packageDir:
             typeof opts.package === "string" ? opts.package : undefined,
           name: typeof opts.name === "string" ? opts.name : undefined,
+          dialect: typeof opts.dialect === "string" ? opts.dialect : undefined,
+          mode: opts.mode,
         });
 
         if (opts.format === "json") {
@@ -166,14 +210,42 @@ export function registerRelayCommand(cli: CAC): void {
     });
 }
 
-function gatherFromContext(
+async function gatherFromContext(
   context: PackageContext,
-  options: { source: RelayGatherSource; targetPaths: string[] },
-): RelayGatherResult {
+  options: {
+    cwd: string;
+    source: RelayGatherSource;
+    targetPaths: string[];
+    root: string;
+    ghostDir: string;
+    dialectPath?: string;
+    mode?: GhostRelayMode;
+  },
+): Promise<RelayGatherResult> {
+  const mode = options.mode ?? "generation";
+  const requestedCapabilities = resolveRequestedCapabilities({
+    mode,
+  });
   const entrypoint = buildContextEntrypoint(context, {
     targetPaths: options.targetPaths,
   });
   const selectedContext = buildSelectedContext(context, entrypoint);
+  const dialect = await loadGhostDialect({
+    cwd: options.cwd,
+    root: options.root,
+    explicitPath: options.dialectPath,
+    ghostDir: options.ghostDir,
+    packageDir: context.packageDir,
+  });
+  const projections = await projectDialectFacets(dialect, {
+    requestedCapabilities,
+  });
+  const contextPacket = buildGhostContextPacket(selectedContext, {
+    mode,
+    requestedCapabilities,
+    dialect,
+    projections,
+  });
   const partial = { selected_context: selectedContext };
   const stackDirs = context.stackDirs?.length
     ? context.stackDirs
@@ -189,6 +261,7 @@ function gatherFromContext(
       options.source.kind === "stack" ? options.source.ghostDir : undefined,
     stackDirs,
     selected_context: selectedContext,
+    context_packet: contextPacket,
     brief: formatRelayBrief(partial),
   };
 }
