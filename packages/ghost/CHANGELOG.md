@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 1.0.0
+
+### Major Changes
+
+- [#181](https://github.com/block/ghost/pull/181) [`bc433fb`](https://github.com/block/ghost/commit/bc433fbac48edada4493a71f73816201f432a9b5) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Flatten Ghost packages so manifest, facets, and checks live directly in the package directory, remove config.yml behavior, and use GHOST_PACKAGE_DIR for host-wrapper package discovery.
+
 ## 0.16.0
 
 ### Minor Changes
