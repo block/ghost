@@ -199,8 +199,10 @@ supplies the working context. The merged stack is broad-to-local:
 - child-relative paths normalize to repo-root paths in reports;
 - checks merge by `id`, so a child check with `status: disabled` suppresses an
   inherited active check;
-- intent files concatenate with layer headings;
-- decisions merge by `id`, with child entries winning.
+- intent situations, principles, and experience contracts merge by `id`, with
+  child entries winning;
+- composition patterns, inventory exemplars, and sources merge by `id`, with
+  child entries winning.
 
 Use nested packages when an area has genuinely different surface composition,
 not just because it has different files. A nested package does not need to

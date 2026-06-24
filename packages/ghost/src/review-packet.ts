@@ -1,8 +1,14 @@
 import { resolve } from "node:path";
 import { stringify as stringifyYaml } from "yaml";
 import { buildContextEntrypoint } from "./context/entrypoint.js";
-import { formatContextEntrypointMarkdown } from "./context/entrypoint-markdown.js";
-import { loadPackageContext } from "./context/package-context.js";
+import {
+  loadPackageContext,
+  type PackageContext,
+} from "./context/package-context.js";
+import {
+  buildSelectedContext,
+  formatSelectedContextMarkdown,
+} from "./context/selected-context.js";
 import { parseUnifiedDiff } from "./core/index.js";
 import { resolveFingerprintPackage } from "./scan/fingerprint-package.js";
 import {
@@ -48,13 +54,7 @@ async function buildSinglePackageReviewPacket(options: {
     context_markdown: formatReviewContextMarkdown([
       {
         title: paths.dir,
-        markdown: formatContextEntrypointMarkdown(
-          buildContextEntrypoint(context, { targetPaths: changedFiles }),
-          {
-            heading: "### Selected Fingerprint Context",
-            includeIntro: false,
-          },
-        ),
+        markdown: formatReviewSelectedContextMarkdown(context, changedFiles),
       },
     ]),
     checks: context.checksRaw ?? null,
@@ -87,14 +87,10 @@ async function buildStackReviewPacket(options: {
     );
     return {
       title: group.stack.layers.at(-1)?.dir ?? group.stack.fingerprint_dir,
-      markdown: formatContextEntrypointMarkdown(
-        buildContextEntrypoint(context, {
-          targetPaths: group.changed_files,
-        }),
-        {
-          heading: "### Selected Fingerprint Context",
-          includeIntro: false,
-        },
+      markdown: formatReviewSelectedContextMarkdown(
+        context,
+        group.changed_files,
+        groups.length > 1 ? "#### Selected Context" : "### Selected Context",
       ),
     };
   });
@@ -140,9 +136,23 @@ function baseReviewPacket(
       "diff location",
       "fingerprint facet refs",
       "active check when blocking",
+      "selected-context gap or local-evidence rationale when context is silent",
       "repair or intentional-divergence rationale",
     ],
   };
+}
+
+function formatReviewSelectedContextMarkdown(
+  context: PackageContext,
+  targetPaths: string[],
+  heading = "### Selected Context",
+): string {
+  const entrypoint = buildContextEntrypoint(context, { targetPaths });
+  const selectedContext = buildSelectedContext(context, entrypoint);
+  return formatSelectedContextMarkdown(selectedContext, {
+    heading,
+    includeIntro: false,
+  });
 }
 
 function budgetDiff(
@@ -211,12 +221,15 @@ function reviewStackFromFingerprintStack(
     package_dir: leaf?.dir ?? stack.layers[0].dir,
     fingerprint_dir: stack.fingerprint_dir,
     changed_files: changedFiles,
-    layer_dirs: stack.layers.map((layer) => layer.dir),
+    stack_dirs: stack.layers.map((layer) => layer.dir),
     merged: {
       fingerprint: stack.merged.fingerprint,
       checks: stack.merged.checks,
     },
-    provenance: stack.provenance,
+    provenance: {
+      merge: stack.provenance.merge,
+      stack: stack.provenance.layers,
+    },
   };
 }
 
@@ -256,12 +269,15 @@ interface ReviewStackPacket {
   package_dir: string;
   fingerprint_dir: string;
   changed_files: string[];
-  layer_dirs: string[];
+  stack_dirs: string[];
   merged: {
     fingerprint: unknown;
     checks: unknown;
   };
-  provenance: GhostFingerprintStack["provenance"];
+  provenance: {
+    merge: "child-wins-by-id";
+    stack: GhostFingerprintStack["provenance"]["layers"];
+  };
 }
 
 export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
@@ -271,7 +287,9 @@ Package: ${packet.package_dir}
 
 Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in fingerprint/validate.yml. Keep findings grounded in fingerprint/intent.yml, fingerprint/inventory.yml, fingerprint/composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
 
-Use these finding categories: ${packet.finding_categories.join(", ")}.
+Use the selected context first: intent → composition → inventory → validation. When selected context exposes gaps, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
+
+Use these finding categories: ${packet.finding_categories.join(", ")}. 
 
 ${formatReviewBudgetSection(packet)}
 
@@ -318,7 +336,7 @@ function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
     lines.push(`### Stack ${index + 1}: ${stack.package_dir}`);
     lines.push("");
     lines.push(`Changed files: ${stack.changed_files.join(", ") || "none"}`);
-    lines.push(`Layers: ${stack.layer_dirs.join(" -> ")}`);
+    lines.push(`Stack: ${stack.stack_dirs.join(" -> ")}`);
     lines.push(`Merge: ${stack.provenance.merge}`);
     lines.push("");
   }
@@ -329,14 +347,12 @@ function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
 function formatReviewContextMarkdown(
   sections: Array<{ title: string; markdown: string }>,
 ): string {
-  const lines = ["## Selected Fingerprint Context", ""];
+  const lines = ["## Selected Context", ""];
   for (const [index, section] of sections.entries()) {
     if (sections.length > 1) {
       lines.push(`### Context ${index + 1}: ${section.title}`, "");
     }
-    lines.push(
-      section.markdown.replace(/^### Selected Fingerprint Context\n\n?/, ""),
-    );
+    lines.push(section.markdown);
   }
   return lines.join("\n").trim();
 }

@@ -15,7 +15,7 @@ export interface PackageContext {
   name: string;
   fingerprintDir?: string;
   targetPaths?: string[];
-  layerDirs?: string[];
+  stackDirs?: string[];
   fingerprint: GhostFingerprintDocument;
   fingerprintRaw: string;
   fingerprintLayers?: {

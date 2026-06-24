@@ -26,8 +26,7 @@ ghost review --base <ref>
 
 Use the emitted packet as context. It includes:
 
-- `fingerprint/intent.yml`, `fingerprint/inventory.yml`, and `fingerprint/composition.yml`
-- curated inventory exemplars
+- selected context hits: fingerprint refs, why they matched, suggested reads, omissions, and gaps
 - active checks from `fingerprint/validate.yml`
 - optional stack or config context when present or requested
 - the diff
@@ -39,11 +38,15 @@ Classify each finding as `fix`, `intentional-divergence`, `missing-fingerprint`,
 `experience-gap`, or `eval-uncertainty`.
 
 Each finding must cite the diff location, relevant fingerprint facet refs,
-exemplars when useful, active check when blocking, and repair or
-intentional-divergence rationale.
+exemplars when useful, active check when blocking, selected-context gap or
+local-evidence rationale when context is silent, and repair or intentional-divergence
+rationale.
 
-When fingerprint facets are silent, local evidence can still support advisory
-critique. Label those findings as provisional and non-Ghost-backed.
+Use the selected context hits first, then follow suggested reads when the task
+needs deeper evidence.
+When fingerprint facets are silent or selected-context gaps show the fingerprint is
+silent, local evidence can still support advisory critique. Label those findings
+as provisional and non-Ghost-backed.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint
 package. Do not silently rewrite the Ghost package during review unless the user
