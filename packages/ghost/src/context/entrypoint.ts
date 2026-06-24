@@ -12,6 +12,13 @@ import {
   unique,
 } from "./graph.js";
 import type { PackageContext } from "./package-context.js";
+import {
+  addSelectionReason,
+  directSelectionReasons,
+  expandOneHopWithReasons,
+  globalFallbackRefs,
+  type SelectionReason,
+} from "./selection-reasons.js";
 
 export type {
   FingerprintGraph,
@@ -51,9 +58,12 @@ export interface ContextEntrypoint {
     exemplars: FingerprintGraphNode[];
     checks: FingerprintGraphNode[];
   };
+  selectionReasons: Record<string, SelectionReason[]>;
   suggestedReads: Array<{ path: string; reason: string }>;
   omissions: Array<{ label: string; omitted: number; source: string }>;
 }
+
+export type { SelectionReason } from "./selection-reasons.js";
 
 export interface BuildContextEntrypointOptions {
   targetPaths?: string[];
@@ -81,22 +91,27 @@ export function buildContextEntrypoint(
     matchedScopes.flatMap((scope) => scope.surfaceTypes),
   );
   const directRefs = new Set<NodeRef>();
+  const selectionReasons = new Map<NodeRef, SelectionReason[]>();
 
   for (const node of graph.nodes) {
-    if (
-      nodeMatchesTargets(node, requestedPaths) ||
-      intersects(node.appliesTo.scopes, matchedScopeIds) ||
-      intersects(node.appliesTo.surfaceTypes, matchedSurfaceTypes)
-    ) {
+    const reasons = directSelectionReasons(node, {
+      requestedPaths,
+      matchedScopeIds,
+      matchedSurfaceTypes,
+    });
+    if (reasons.length > 0) {
       directRefs.add(node.ref);
+      for (const reason of reasons) {
+        addSelectionReason(selectionReasons, node.ref, reason);
+      }
     }
   }
 
+  const status = directRefs.size > 0 ? "path-match" : "global-fallback";
   const selectedRefs =
     directRefs.size > 0
-      ? expandOneHop(directRefs, graph)
-      : new Set<NodeRef>(graph.nodes.map((node) => node.ref));
-  const status = directRefs.size > 0 ? "path-match" : "global-fallback";
+      ? expandOneHopWithReasons(directRefs, graph, selectionReasons)
+      : globalFallbackRefs(graph, requestedPaths, selectionReasons);
   const selected = selectNodes(graph, selectedRefs, {
     directRefs,
     matchedScopeIds,
@@ -120,6 +135,7 @@ export function buildContextEntrypoint(
     identity,
     actionContract: buildActionContract(identity, selected, suggestedReads),
     selected,
+    selectionReasons: Object.fromEntries(selectionReasons),
     suggestedReads,
     omissions: buildOmissions(graph, selected),
   };
@@ -239,18 +255,6 @@ function isConnectedToDirectRef(
       (edge.from === ref && directRefs.has(edge.to)) ||
       (edge.to === ref && directRefs.has(edge.from)),
   );
-}
-
-function expandOneHop(
-  refs: Set<NodeRef>,
-  graph: FingerprintGraph,
-): Set<NodeRef> {
-  const expanded = new Set(refs);
-  for (const edge of graph.edges) {
-    if (refs.has(edge.from)) expanded.add(edge.to);
-    if (refs.has(edge.to)) expanded.add(edge.from);
-  }
-  return expanded;
 }
 
 function buildSuggestedReads(

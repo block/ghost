@@ -20,17 +20,14 @@ import {
 export type {
   SelectedContext,
   SelectedContextGap,
-  SelectedContextGuidance,
-  SelectedContextInventoryItem,
-  SelectedContextNodeSummary,
-  SelectedContextObligation,
+  SelectedContextHit,
   SelectedContextOmission,
   SelectedContextPackage,
   SelectedContextPosture,
   SelectedContextRead,
 } from "./context/selected-context.js";
 
-export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v1" as const;
+export const RELAY_GATHER_SCHEMA = "ghost.relay.gather/v2" as const;
 
 export interface GatherRelayContextOptions {
   cwd?: string;
