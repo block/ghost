@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEffectiveMapScopes, MapFrontmatterSchema } from "../src/index.js";
+import { getEffectiveMapScopes, MapFrontmatterSchema } from "#ghost-core";
 
 const BASE_MAP = {
   schema: "ghost.map/v1",

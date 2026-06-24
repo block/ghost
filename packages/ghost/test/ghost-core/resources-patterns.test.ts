@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { lintGhostPatterns } from "../src/patterns/lint.js";
-import { lintGhostResources } from "../src/resources/lint.js";
+import { lintGhostPatterns, lintGhostResources } from "#ghost-core";
 
 describe("ghost.resources/v1", () => {
   it("accepts a root resource ledger", () => {
