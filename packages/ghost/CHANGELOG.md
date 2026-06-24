@@ -1,5 +1,25 @@
 # @anarchitecture/ghost
 
+## 0.16.0
+
+### Minor Changes
+
+- [#171](https://github.com/block/ghost/pull/171) [`b30c58f`](https://github.com/block/ghost/commit/b30c58ff53bfe6da911c8d625d6834ab506ff683) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the portable fingerprint intent and validation artifacts to `intent.yml` and `validate.yml` with `ghost.validate/v1` refs.
+
+- [#173](https://github.com/block/ghost/pull/173) [`a827e7c`](https://github.com/block/ghost/commit/a827e7c415d2e35b08b8ea3ae693125fcdd23b1d) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Compile Relay gather output into selected context grouped by stack, intent, composition, inventory, validation, and gaps.
+
+- [#179](https://github.com/block/ghost/pull/179) [`5a2574e`](https://github.com/block/ghost/commit/5a2574e63bf0990b072456e8a0fef8fb0d62b4ae) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Change Relay gather output to the `ghost.relay.gather/v2` context hits contract.
+
+- [#174](https://github.com/block/ghost/pull/174) [`9fa2779`](https://github.com/block/ghost/commit/9fa2779d51ad05dfef4d6cc79ca20ac08c99ab29) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Use selected context in advisory review packets.
+
+- [#175](https://github.com/block/ghost/pull/175) [`1ff3437`](https://github.com/block/ghost/commit/1ff3437eb18d90b9007a5abbc57660467e52765e) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Expose Relay posture summaries in selected context.
+
+- [#172](https://github.com/block/ghost/pull/172) [`7eac380`](https://github.com/block/ghost/commit/7eac380032c7c2a3f10f3096955c6e56f7df9388) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Report sparse fingerprint package contribution facets in `ghost scan` instead of all-or-nothing readiness.
+
+### Patch Changes
+
+- [#175](https://github.com/block/ghost/pull/175) [`f0ef52d`](https://github.com/block/ghost/commit/f0ef52d19363af8819dd6c702d582da3442055e7) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Polish selected-context handoff wording and review context formatting.
+
 ## 0.15.0
 
 ### Minor Changes
