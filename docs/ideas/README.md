@@ -53,6 +53,10 @@ buildable Layer 2 design. They agree; read them as a sequence.
   placement → delete `ghost.map/v1` → resolver/menu → migration command →
   binding → command/skill/docs reconciliation. Marks Phase 3 (removing node
   coordinate fields) as the breaking line, with additive Phases 1–2 landed first.
+- `phase-1-plan.md` — execution spec for Phase 1: the additive
+  `ghost-core/surfaces/` module (`ghost.surfaces/v1` schema + types + index +
+  tests), mirroring the `fingerprint/` module. Bans dotted ids at the schema
+  layer; defers all graph-level validation (cycles, dangling refs) to Phase 2.
 
 ## Independent, still live
 
