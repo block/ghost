@@ -198,6 +198,18 @@ export {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
+// --- Surfaces (ghost.surfaces/v1) ---
+export {
+  GHOST_SURFACE_EDGE_KINDS,
+  GHOST_SURFACE_ROOT_ID,
+  GHOST_SURFACES_SCHEMA,
+  GHOST_SURFACES_YML_FILENAME,
+  type GhostSurface,
+  type GhostSurfaceEdge,
+  type GhostSurfaceEdgeKind,
+  type GhostSurfacesDocument,
+  GhostSurfacesSchema,
+} from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---
 export {
   type BreakpointSpec,
