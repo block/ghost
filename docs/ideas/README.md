@@ -48,6 +48,11 @@ buildable Layer 2 design. They agree; read them as a sequence.
   the escape hatch. Path / prompt / diff all resolve to a surface id through one
   resolver; nesting is reframed from data-merge to binding (retiring Leak E).
   Records that this is the least proof-validated layer, so it ships smallest-first.
+- `implementation-plan.md` — sequences the hard-cutover (breaking, no parallel
+  model) build in dependency order across eight phases: schema → lint →
+  placement → delete `ghost.map/v1` → resolver/menu → migration command →
+  binding → command/skill/docs reconciliation. Marks Phase 3 (removing node
+  coordinate fields) as the breaking line, with additive Phases 1–2 landed first.
 
 ## Independent, still live
 
