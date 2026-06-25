@@ -42,6 +42,12 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `surface:` placement pointer. Settles closed `edge_kinds`, flat ids, and
   explicit placement (no silent global default); the one remaining fork — the
   repo binding as scoped ownership — is reframed for its own note.
+- `surface-binding.md` — the second concrete extraction. Settles `ghost.binding/v1`:
+  the contract carries no paths, the binding owns all path matching, with
+  directory location as the default binding and an explicit `.ghost.bind.yml` as
+  the escape hatch. Path / prompt / diff all resolve to a surface id through one
+  resolver; nesting is reframed from data-merge to binding (retiring Leak E).
+  Records that this is the least proof-validated layer, so it ships smallest-first.
 
 ## Independent, still live
 

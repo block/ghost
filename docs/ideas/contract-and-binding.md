@@ -7,9 +7,11 @@ status: exploring
 > **Mostly subsumed.** The contract/binding split this note proposes now falls
 > out of `coordinate-space.md` for free: designing the coordinate space
 > medium-agnostically produces the portable-contract-vs-repo-binding split
-> without a separate decision. Keep this note for the *sort* (which piece goes
-> where) and the artifact rationale; treat `coordinate-space.md` as the live
-> design.
+> without a separate decision. The contract half is designed in
+> `surface-schema.md` (`ghost.surfaces/v1`); the binding half in
+> `surface-binding.md` (`ghost.binding/v1`). Keep this note for the *sort*
+> (which piece goes where) and the artifact rationale; treat those two as the
+> live design.
 
 This note is subordinate to `fingerprint-first-architecture.md` (settled) and a
 sibling to `ghost-layers.md` (exploring). It changes neither. The layers note
