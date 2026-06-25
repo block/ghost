@@ -67,44 +67,83 @@ model.** Outcome 3 is the forcing function: it has the least medium (no path, no
 repo), so the coordinate space must be designed from *it* and treat path / diff
 / prompt as conveniences layered on top. No medium is privileged.
 
-## The topology: strict tree + cascade + rare explicit edges
+## The topology: two axes, two layers
 
-Accepted in the design session. Stated precisely, in graph terms:
+> **Amended** after a real non-UI proof case. The original framing here was
+> "strict tree + cascade + rare explicit edges," which collapsed two distinct
+> things into one. A composition-heavy case (a typed graph of units of several
+> kinds resolved for a pathless request) showed the explicit edges are **not** a rare
+> exception — they are a first-class structure that belongs to a *different
+> layer*. The correction below makes the design stronger: it confirms Layer 2
+> (the map) and Layer 3 (selection) are genuinely separate, with different
+> shapes.
 
-**Containment is a strict tree.** Every node — every principle, exemplar,
-pattern, contract, check — has exactly **one home surface**. One parent. The
-path is the identity. Storage, ownership, and the menu are all this one tree.
-Trees lay out deterministically and read at a glance; that legibility *is* the
-predictability goal (`reset.md` goal #4).
+There are **two axes**, and they must not be conflated:
 
-**Sharing is resolved by altitude, not by multi-parent.** When a rule applies to
-several surfaces, it is placed at the **lowest common ancestor** and **cascades
-down**. The brand-wide color rule lives in `core` and flows everywhere. An
-email-wide voice lives in `email` and flows to `email/marketing` and
-`email/reminder`. Cascade replaces the DAG for the common case. Most "diagonal"
-sharing is really "lives higher up."
+1. **Containment — where a node lives and who owns it. This is Layer 2, and it
+   is a strict tree.**
+2. **Composition — what combines to answer a request. This is Layer 3, and it is
+   a typed reference graph laid over the containment tree.**
 
-**The genuinely diagonal case gets a rare, explicit, visible edge.** "Applies to
-email + web but not product" has no common ancestor short of root. That — and
-only that — uses an explicit authored `shares` edge that the menu *shows* and a
-human *writes on purpose*. It is never a smeared tag and never a silent second
-parent. In diagram terms: a tidy tree with a small, countable set of labeled
-overlay edges — never a force-directed hairball.
+### Containment is a strict tree (Layer 2)
 
-This is the org-chart-plus-dotted-lines pattern: the tree carries the weight,
-explicit edges handle the few exceptions, and one mechanism is never asked to do
-both jobs. It gives DAG-level expressiveness for the common case (through
-altitude) while keeping tree-level legibility.
+Every node — every principle, exemplar, pattern, contract, check — has exactly
+**one home surface**. One parent. The path is the identity. Storage, ownership,
+and the menu are all this one tree. Trees lay out deterministically and read at a
+glance; that legibility *is* the predictability goal (`reset.md` goal #4).
 
-### Why this kills the old leak
+**Sharing down the tree is resolved by altitude, not by multi-parent.** When a
+rule applies to several surfaces that share an ancestor, it is placed at the
+**lowest common ancestor** and **cascades down**. The brand-wide color rule lives
+in `core` and flows everywhere. An email-wide voice lives in `email` and flows to
+`email/marketing` and `email/reminder`. Cascade handles the common overlap
+without giving any node two parents. Most "lives in two places" is really "lives
+higher up."
 
-`applies_to` smeared across nodes (Leak A / Leak E) was exactly an implicit DAG:
-every node carrying `applies_to: [a, b]` is a node with two parents. Replacing it
-with **placement + cascade + rare explicit edge** is the death of that leak.
-Inheritance returns, but disciplined: *down the containment tree only.* No
-mixins, no priority weights, no union-merge-by-id — just "ancestors contribute to
-descendants," the most predictable inheritance there is. This satisfies
-`reset.md` goal #4 and the "model does not bend" rule in `purposes.md`.
+This kills the old leak. `applies_to` smeared across nodes (Leak A / Leak E) was
+an implicit DAG: every node carrying `applies_to: [a, b]` is a node with two
+parents. Placement + cascade replaces it. Inheritance returns, but disciplined:
+*down the containment tree only.* No mixins, no priority weights, no
+union-merge-by-id — just "ancestors contribute to descendants," the most
+predictable inheritance there is.
+
+### Composition is a typed graph (Layer 3)
+
+The containment tree answers "where does this live." It does **not** answer "what
+combines to serve this request." That second question is composition, and its
+shape is a **typed reference graph** over the tree: a node of one kind references
+nodes of other kinds by typed edge.
+
+In the simple UI case this graph is nearly invisible — a surface's slice is
+mostly its own subtree plus cascaded ancestors, and composition collapses back
+toward the tree. **But in the composition-heavy case the typed edges are the
+primary structure, not a rare exception.** A request resolves to a unit that
+references units of several other kinds, none of which are its parent or child.
+That is not "a tidy tree with a few overlay lines" — it is a graph whose edges
+are the point, and the tree underneath is only telling you where each referenced
+node is stored.
+
+The discipline that keeps this from becoming a hairball is **typing**: edges are
+not free-form "see also" links; each edge has a kind, and the legible set of edge
+kinds is small and authored. The org-chart-plus-dotted-lines intuition still
+holds — the difference the proof case revealed is that the dotted lines are
+**typed and load-bearing**, and they belong to selection (Layer 3), not to the
+map (Layer 2).
+
+### Why the split matters
+
+Collapsing composition into "rare tree edges" over-fit the in-repo UI case
+(outcomes 1 & 2, where path → subtree does most of the work) and under-served the
+no-repo composition case (outcomes 3 & 4, where a prompt resolves a typed
+composition with no target path). The four outcomes are equals; the topology must
+serve the composition case as a first-class shape, not an exception. Keeping the
+tree for containment and a typed graph for composition serves all four without
+bending either.
+
+Both axes satisfy `reset.md` goal #4 and the "model does not bend" rule in
+`purposes.md`: the containment tree is dumb and predictable, and the composition
+graph stays legible because its edges are typed and few. Neither axis introduces
+mixins, priority weights, or union-merge-by-id.
 
 ## Grouping is placement, not tags
 
@@ -193,24 +232,29 @@ Stated as obligations, not a schema (schema is a follow-on note):
 - **id / name** — the author's chosen label, slug-shaped.
 - **description** — optional, natural language, agent-draftable. Present when the
   name is not self-evident.
-- **parent** — at most one (strict tree). Absent = top-level under `core`.
+- **parent** — at most one (strict containment tree). Absent = top-level under
+  `core`.
 - **slice** — the nodes placed in this surface. Placement, not tags.
-- **shares** — optional, rare, explicit edges to other surfaces for the
-  irreducibly-diagonal case. Menu-visible.
+- **edges** — typed references to nodes in other surfaces (the composition graph,
+  Layer 3). Each edge has a kind from a small authored set; the menu shows them.
+  Sparse in UI cases, primary structure in composition-heavy cases.
 
 Resolution against a surface yields: its own slice + cascaded ancestor slices +
-shared-edge contributions. `core` is the root every surface inherits.
+typed-edge contributions. `core` is the root every surface inherits.
 
 ## What each layer asks of the coordinate space
 
 Confirming the design serves all consumers (the layer rule, `reset.md`):
 
-- **Selection (3):** "evidence → which surface → its slice." Served by the menu +
-  deterministic slice resolution. No NLP in Ghost.
+- **Selection (3):** "evidence → which surface → its composed slice." Served by
+  the menu + deterministic resolution of the typed composition graph (the
+  surface's subtree, its cascaded ancestors, and its typed edges). No NLP in
+  Ghost. **This is where the composition graph lives** — Layer 2 stores, Layer 3
+  composes.
 - **Governance (4):** "this diff touches which surfaces → run their checks."
-  Served by path→surface mapping over the tree.
-- **Comparison (5):** "compare these surfaces / whole trees." Served by the tree
-  being a clean, portable structure.
+  Served by path→surface mapping over the containment tree.
+- **Comparison (5):** "compare these surfaces / whole trees." Served by the
+  containment tree being a clean, portable structure.
 
 A new purpose still gets a new layer, never a new field on intent / inventory /
 composition.
@@ -242,8 +286,11 @@ earned; foundation kept where it's solid.
    ships the mechanism, never a taxonomy.
 2. Grouping is by placement (storage location), not tags. Layer 1 content stays
    constant; its coordinate annotations are removed.
-3. Topology = strict containment tree + cascade-from-ancestors + rare explicit
-   shared-edges. No silent multi-parent.
+3. Topology has two axes. **Containment** (Layer 2) is a strict tree: one home
+   per node, cascade-from-ancestors for overlap, no silent multi-parent.
+   **Composition** (Layer 3) is a typed reference graph over the tree: nodes
+   reference nodes of other kinds by typed edge. The edges are first-class, not
+   rare exceptions — in composition-heavy cases they are the primary structure.
 4. Resolution is BYOA: Ghost emits a described menu deterministically; the agent
    matches; Ghost returns `core + surface slice`. Ghost does no NLP.
 5. Ambiguity returns the menu, never the whole tree. (Brand-mixing cure.)
@@ -270,6 +317,7 @@ This note succeeds if:
   medium.
 - All four outcomes resolve through one model.
 - The point-1 coupling is fixed: the description no longer carries coordinates.
-- The topology is a clean tree a person can hold in their head, with cascade for
-  the common overlap and a handful of visible edges for the rare diagonal.
+- Containment is a clean tree a person can hold in their head, with cascade for
+  overlap; composition is a typed graph over it, legible because its edges are
+  typed and few. The two axes are not conflated.
 - Nothing in Layer 1, 4, or 5 had to change to make Layer 2 right.

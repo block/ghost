@@ -31,8 +31,8 @@ buildable Layer 2 design. They agree; read them as a sequence.
   else parked.
 - `coordinate-space.md` — the clean-room design for Layer 2 (the first cut). A
   surface is an author-named group with an optional description; topology is a
-  strict containment tree plus cascade-from-ancestors plus rare explicit
-  shared-edges; resolution is BYOA (Ghost emits a described menu, the agent
+  two axes — a strict containment tree (Layer 2) plus a typed composition graph
+  over it (Layer 3); resolution is BYOA (Ghost emits a described menu, the agent
   matches); delete list covers `inventory.topology`, smeared `applies_to`, and
   `ghost.map/v1`.
 
