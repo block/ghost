@@ -57,4 +57,7 @@ export interface GhostSurfacesLintIssue {
 
 export interface GhostSurfacesLintReport {
   issues: GhostSurfacesLintIssue[];
+  errors: number;
+  warnings: number;
+  info: number;
 }

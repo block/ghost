@@ -8,6 +8,7 @@ import {
   lintGhostFingerprint,
   lintGhostPatterns,
   lintGhostResources,
+  lintGhostSurfaces,
   lintGhostValidate,
   lintSurvey,
   type SurveyLintReport,
@@ -27,6 +28,7 @@ export type DetectedFileKind =
   | "validate"
   | "resources"
   | "patterns"
+  | "surfaces"
   | "unsupported-yaml";
 
 export interface LintDetectedFileKindOptions {
@@ -81,6 +83,8 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "resources.yaml") return "resources";
   if (filename === "patterns.yml") return "patterns";
   if (filename === "patterns.yaml") return "patterns";
+  if (filename === "surfaces.yml") return "surfaces";
+  if (filename === "surfaces.yaml") return "surfaces";
   if (raw.trimStart().startsWith("{")) return "survey";
   if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
     return "fingerprint-yml";
@@ -90,6 +94,7 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
+  if (/^\s*schema:\s*ghost\.surfaces\/v1\b/m.test(raw)) return "surfaces";
   if (/^\s*schema:\s*ghost\.validate\/v[12]\b/m.test(raw)) return "validate";
   if (lowerPath.endsWith(".yml") || lowerPath.endsWith(".yaml")) {
     return "unsupported-yaml";
@@ -126,11 +131,13 @@ export function lintDetectedFileKind(
                   ? lintResourcesFile(raw)
                   : kind === "patterns"
                     ? lintPatternsFile(raw)
-                    : kind === "validate"
-                      ? lintValidateFile(raw, options.fingerprint)
-                      : kind === "unsupported-yaml"
-                        ? lintUnsupportedYamlFile()
-                        : lintFingerprint(raw);
+                    : kind === "surfaces"
+                      ? lintSurfacesFile(raw)
+                      : kind === "validate"
+                        ? lintValidateFile(raw, options.fingerprint)
+                        : kind === "unsupported-yaml"
+                          ? lintUnsupportedYamlFile()
+                          : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -251,6 +258,14 @@ function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
     return lintGhostPatterns(parseYaml(raw));
   } catch (err) {
     return yamlErrorReport("patterns-not-yaml", "patterns file", err);
+  }
+}
+
+function lintSurfacesFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostSurfaces(parseYaml(raw));
+  } catch (err) {
+    return yamlErrorReport("surfaces-not-yaml", "surfaces file", err);
   }
 }
 

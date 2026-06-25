@@ -208,7 +208,11 @@ export {
   type GhostSurfaceEdge,
   type GhostSurfaceEdgeKind,
   type GhostSurfacesDocument,
+  type GhostSurfacesLintIssue,
+  type GhostSurfacesLintReport,
+  type GhostSurfacesLintSeverity,
   GhostSurfacesSchema,
+  lintGhostSurfaces,
 } from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---
 export {

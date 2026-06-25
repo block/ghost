@@ -5,6 +5,7 @@
  * disk loader and CLI wiring come later. See docs/ideas/phase-1-plan.md.
  */
 
+export { lintGhostSurfaces } from "./lint.js";
 export { GhostSurfacesSchema } from "./schema.js";
 export {
   GHOST_SURFACE_EDGE_KINDS,
