@@ -13,7 +13,10 @@ import {
   removeSandbox,
 } from "./fixtures/context-sandboxes/harness.js";
 
-describe("relay", () => {
+// Phase 3: relay is path-based selection over the now-dormant coordinate
+// machinery. The desire is rebuilt as `gather` in Phase 5 and relay is removed
+// in Phase 8 (see docs/ideas/implementation-plan.md). Skipped until then.
+describe.skip("relay", () => {
   const roots: string[] = [];
 
   afterEach(async () => {

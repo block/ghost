@@ -1,4 +1,7 @@
-export { lintGhostFingerprint } from "./lint.js";
+export {
+  type GhostFingerprintLintOptions,
+  lintGhostFingerprint,
+} from "./lint.js";
 export {
   GhostFingerprintCompositionSchema,
   GhostFingerprintEvidenceSchema,
@@ -17,11 +20,8 @@ export {
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
   GhostFingerprintSchema,
-  GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintSummarySchema,
-  GhostFingerprintTopologySchema,
-  GhostFingerprintTopologyScopeSchema,
 } from "./schema.js";
 export type {
   GhostFingerprintComposition,
@@ -43,11 +43,8 @@ export type {
   GhostFingerprintPrinciple,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
-  GhostFingerprintScope,
   GhostFingerprintSituation,
   GhostFingerprintSummary,
-  GhostFingerprintTopology,
-  GhostFingerprintTopologyScope,
 } from "./types.js";
 export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,

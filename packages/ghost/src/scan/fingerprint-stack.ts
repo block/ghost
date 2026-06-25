@@ -15,8 +15,6 @@ import {
   type GhostFingerprintInventory,
   type GhostFingerprintInventoryBuildingBlocks,
   type GhostFingerprintSummary,
-  type GhostFingerprintTopology,
-  type GhostFingerprintTopologyScope,
   type GhostValidateDocument,
   GhostValidateSchema,
   lintGhostFingerprint,
@@ -347,15 +345,13 @@ export function fingerprintStackToPackageContext(
 }
 
 export function mapFromFingerprint(
-  fingerprint: GhostFingerprintDocument,
+  _fingerprint: GhostFingerprintDocument,
 ): Pick<MapFrontmatter, "scopes" | "feature_areas"> {
+  // Phase 3: topology is removed, so there are no fingerprint-derived scopes.
+  // Path-based check routing is rebuilt against surfaces/binding in Phase 4/7;
+  // until then this map projection is dormant (empty).
   return {
-    scopes: fingerprint.inventory.topology.scopes?.map((scope) => ({
-      id: scope.id,
-      name: scope.id,
-      kind: "fingerprint-topology",
-      paths: [...scope.paths],
-    })),
+    scopes: [],
     feature_areas: [],
   };
 }
@@ -496,7 +492,6 @@ function mergeFingerprints(
       experience_contracts: [],
     },
     inventory: {
-      topology: {},
       building_blocks: {},
       exemplars: [],
       sources: [],
@@ -546,7 +541,6 @@ function mergeInventory(
   child: GhostFingerprintInventory,
 ): GhostFingerprintInventory {
   return {
-    topology: mergeTopology(parent.topology, child.topology),
     building_blocks: mergeBuildingBlocks(
       parent.building_blocks,
       child.building_blocks,
@@ -595,29 +589,6 @@ function mergeSummary(
   };
 }
 
-function mergeTopology(
-  parent: GhostFingerprintTopology,
-  child: GhostFingerprintTopology,
-): GhostFingerprintTopology {
-  const scopes = mergeById([
-    ...(parent.scopes ?? []),
-    ...(child.scopes ?? []),
-  ]) as GhostFingerprintTopologyScope[];
-  return {
-    scopes,
-    surface_types: mergeStrings(
-      mergeStrings(parent.surface_types, child.surface_types),
-      collectSurfaceTypes(scopes),
-    ),
-  };
-}
-
-function collectSurfaceTypes(
-  scopes: GhostFingerprintTopologyScope[],
-): string[] | undefined {
-  return mergeStrings(scopes.flatMap((scope) => scope.surface_types ?? []));
-}
-
 function mergeChecks(
   checksDocs: Array<GhostValidateDocument | undefined>,
 ): GhostValidateDocument {
@@ -652,11 +623,6 @@ function normalizeFingerprintPaths(
   repoRoot: string,
 ): GhostFingerprintDocument {
   const fingerprint = clone(input);
-  fingerprint.inventory.topology.scopes =
-    fingerprint.inventory.topology.scopes?.map((scope) => ({
-      ...scope,
-      paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
-    }));
   fingerprint.inventory.exemplars = fingerprint.inventory.exemplars.map(
     (exemplar) => ({
       ...exemplar,
@@ -676,7 +642,6 @@ function normalizeFingerprintPaths(
   fingerprint.intent.principles = fingerprint.intent.principles.map(
     (entry) => ({
       ...entry,
-      applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
       evidence: normalizeFingerprintEvidence(
         entry.evidence,
         baseRoot,
@@ -687,7 +652,6 @@ function normalizeFingerprintPaths(
   fingerprint.intent.experience_contracts =
     fingerprint.intent.experience_contracts.map((entry) => ({
       ...entry,
-      applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
       evidence: normalizeFingerprintEvidence(
         entry.evidence,
         baseRoot,
@@ -697,7 +661,6 @@ function normalizeFingerprintPaths(
   fingerprint.composition.patterns = fingerprint.composition.patterns.map(
     (entry) => ({
       ...entry,
-      applies_to: normalizeScopePaths(entry.applies_to, baseRoot, repoRoot),
       evidence: normalizeFingerprintEvidence(
         entry.evidence,
         baseRoot,
@@ -739,18 +702,6 @@ function normalizeChecksPaths(
       : undefined,
   }));
   return checks;
-}
-
-function normalizeScopePaths<T extends { paths?: string[] }>(
-  scope: T | undefined,
-  baseRoot: string,
-  repoRoot: string,
-): T | undefined {
-  if (!scope?.paths) return scope;
-  return {
-    ...scope,
-    paths: scope.paths.map((path) => normalizePath(path, baseRoot, repoRoot)),
-  };
 }
 
 function normalizeFingerprintEvidence(

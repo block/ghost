@@ -210,8 +210,6 @@ function countInventory(
 ): number {
   if (!fingerprint) return 0;
   return (
-    (fingerprint.inventory.topology.scopes?.length ?? 0) +
-    (fingerprint.inventory.topology.surface_types?.length ?? 0) +
     fingerprint.inventory.exemplars.length +
     fingerprint.inventory.sources.length +
     buildingBlockRows.tokens +

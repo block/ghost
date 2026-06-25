@@ -93,34 +93,15 @@ describe("ghost.validate/v1 grounding", () => {
     });
   });
 
-  it("accepts active checks scoped to known fingerprint topology", () => {
+  it("accepts active checks whose pattern_ids match the fingerprint", () => {
     const report = lintGhostValidate(
       checksDocument({
         applies_to: {
-          scopes: ["lending"],
-          surface_types: ["native-feature"],
+          paths: ["apps/dashboard/**"],
           pattern_ids: ["tokenized-ui-color"],
         },
       }),
-      {
-        fingerprint: fingerprintDocument({
-          inventory: {
-            topology: {
-              scopes: [
-                {
-                  id: "lending",
-                  paths: ["Code/Features/Lending"],
-                  surface_types: ["native-feature"],
-                },
-              ],
-              surface_types: ["native-feature"],
-            },
-            building_blocks: {},
-            exemplars: [],
-            sources: [],
-          },
-        }),
-      },
+      { fingerprint: fingerprintDocument() },
     );
 
     expect(report.errors).toBe(0);
@@ -147,53 +128,45 @@ describe("ghost.validate/v1 grounding", () => {
     });
   });
 
-  it("reports active checks scoped to unknown fingerprint targets", () => {
+  it("reports active checks with unknown pattern_id targets", () => {
     const report = lintGhostValidate(
       checksDocument({
         applies_to: {
-          scopes: ["unknown-scope"],
-          surface_types: ["unknown-surface"],
+          paths: ["apps/dashboard/**"],
           pattern_ids: ["unknown-pattern"],
         },
       }),
       { fingerprint: fingerprintDocument() },
     );
 
-    expect(report.errors).toBe(3);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          rule: "check-scope-unknown",
-          path: "checks[0].applies_to.scopes[0]",
-        }),
-        expect.objectContaining({
-          rule: "check-surface-type-unknown",
-          path: "checks[0].applies_to.surface_types[0]",
-        }),
-        expect.objectContaining({
-          rule: "check-pattern-unknown",
-          path: "checks[0].applies_to.pattern_ids[0]",
-        }),
-      ]),
-    );
+    expect(
+      report.issues.some(
+        (issue) =>
+          issue.rule === "check-pattern-unknown" &&
+          issue.path === "checks[0].applies_to.pattern_ids[0]",
+      ),
+    ).toBe(true);
   });
 
-  it("downgrades proposed check target misses to warnings", () => {
+  // Phase 3: scope/surface_type check-routing grounding is dormant (topology
+  // removed). Routing against surfaces is rebuilt in Phase 4/7; scope targets
+  // are no longer validated, so unknown scopes/surface_types no longer error.
+  it("downgrades proposed check pattern misses to warnings", () => {
     const report = lintGhostValidate(
       checksDocument({
         status: "proposed",
         applies_to: {
-          scopes: ["unknown-scope"],
+          paths: ["apps/dashboard/**"],
+          pattern_ids: ["unknown-pattern"],
         },
       }),
       { fingerprint: fingerprintDocument() },
     );
 
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "check-scope-unknown",
-    });
+    expect(report.warnings).toBeGreaterThanOrEqual(1);
+    expect(
+      report.issues.some((issue) => issue.rule === "check-pattern-unknown"),
+    ).toBe(true);
   });
 
   it("downgrades proposed check grounding misses to warnings", () => {
@@ -308,16 +281,6 @@ function fingerprintDocument(
       experience_contracts: [],
     },
     inventory: {
-      topology: {
-        scopes: [
-          {
-            id: "lending",
-            paths: ["Code/Features/Lending"],
-            surface_types: ["native-feature"],
-          },
-        ],
-        surface_types: ["native-feature"],
-      },
       building_blocks: {},
       exemplars: [
         {

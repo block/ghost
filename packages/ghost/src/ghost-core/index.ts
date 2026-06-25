@@ -79,11 +79,8 @@ export type {
   GhostFingerprintPrinciple,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
-  GhostFingerprintScope,
   GhostFingerprintSituation,
   GhostFingerprintSummary,
-  GhostFingerprintTopology,
-  GhostFingerprintTopologyScope,
 } from "./fingerprint/index.js";
 export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
@@ -106,11 +103,8 @@ export {
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
   GhostFingerprintSchema,
-  GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintSummarySchema,
-  GhostFingerprintTopologySchema,
-  GhostFingerprintTopologyScopeSchema,
   lintGhostFingerprint,
 } from "./fingerprint/index.js";
 // --- Map (ghost.map/v1) ---

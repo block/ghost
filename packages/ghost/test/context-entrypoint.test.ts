@@ -6,7 +6,10 @@ import {
 import { formatContextEntrypointMarkdown } from "../src/context/entrypoint-markdown.js";
 import type { PackageContext } from "../src/context/package-context.js";
 
-describe("context entrypoint", () => {
+// Phase 3: exercises the path-based selection graph (Job 2 of context/graph.ts),
+// made dormant by the coordinate removal and rebuilt in Phase 5/7. Skipped until
+// then (see docs/ideas/phase-3-plan.md).
+describe.skip("context entrypoint", () => {
   it("builds graph nodes and explicit edges from fingerprint refs", () => {
     const graph = buildFingerprintGraph(context());
 

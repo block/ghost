@@ -742,8 +742,6 @@ intent:
   principles:
 ${manyPrinciples}  experience_contracts: []
 inventory:
-  topology:
-    surface_types: [native-feature]
   building_blocks: {}
   exemplars: []
   sources: []
@@ -763,9 +761,8 @@ composition:
     );
     await writeFile(
       join(dir, ".ghost", "inventory.yml"),
-      `topology:
-  surface_types: [native-feature, digest-only-change]
-building_blocks: {}
+      `building_blocks:
+  notes: [digest-only-change]
 exemplars: []
 sources: []
 `,
@@ -1719,8 +1716,7 @@ checks:
     expect(result.stdout).toContain("# Ghost Relay Brief");
     expect(result.stdout).toContain("## Stack");
     expect(result.stdout).toContain("## Match");
-    expect(result.stdout).toContain("Status: path matched");
-    expect(result.stdout).toContain("Matched scopes: `lending`");
+    // Phase 3: path-based scope matching is dormant (rebuilt Phase 5/7).
     expect(result.stdout).toContain("## Context Hits");
     expect(result.stdout).toContain("## Suggested Reads");
     expect(result.stdout).toContain("## Omissions");
@@ -1751,7 +1747,9 @@ checks:
     expect(result.stdout).not.toContain("dialect");
   });
 
-  it("gathers Relay context as json from an exact package", async () => {
+  // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
+  // rebuilt as `gather` in Phase 5/7). Skipped until then.
+  it.skip("gathers Relay context as json from an exact package", async () => {
     await writeCheckPackage(dir);
 
     const result = await runCli(
@@ -2126,7 +2124,6 @@ intent:
   principles: []
   experience_contracts: []
 inventory:
-  topology: {}
   exemplars: []
   building_blocks: {}
 composition:
@@ -2346,8 +2343,7 @@ composition:
     expect(result.stdout).toContain("#### Suggested Reads");
     expect(result.stdout).toContain("#### Omissions");
     expect(result.stdout).toContain("#### Gaps");
-    expect(result.stdout).toContain("Status: path matched");
-    expect(result.stdout).toContain("Matched scopes: `lending`");
+    // Phase 3: path-based scope matching is dormant (rebuilt Phase 5/7).
     expect(result.stdout).toContain("diff location");
     expect(result.stdout).toContain("fingerprint facet refs");
     expect(result.stdout).toContain(
@@ -2742,18 +2738,11 @@ intent:
       check_refs: [validate.check:no-hardcoded-ui-color]
   experience_contracts: []
 inventory:
-  topology:
-    scopes:
-      - id: lending
-        paths: [Code/Features/Lending]
-        surface_types: [native-feature]
-    surface_types: [native-feature]
   exemplars:
     - id: lending-tokenized-screen
       path: Code/Features/Lending/LendingUI
       title: Lending tokenized UI
-      surface_type: native-feature
-      scope: lending
+      surface: lending
       why: Shows semantic CashTheme color usage for native lending UI.
       refs:
         - intent.principle:tokenized-ui-color
@@ -2782,7 +2771,6 @@ checks:
       composition: [composition.pattern:tokenized-ui-color]
       inventory: [inventory.exemplar:lending-tokenized-screen]
     applies_to:
-      scopes: [lending]
       paths: [Code/Features/Lending]
     detector:
       type: forbidden-regex
@@ -2801,7 +2789,6 @@ checks:
     derivation:
       intent: [intent.principle:tokenized-ui-color]
     applies_to:
-      scopes: [lending]
       paths: [Code/Features/Lending]
     detector:
       type: required-regex
@@ -2993,7 +2980,6 @@ async function writeSplitFingerprintPackage(
       join(packageDir, "inventory.yml"),
       stringifyYaml(
         doc.inventory ?? {
-          topology: {},
           building_blocks: {},
           exemplars: [],
           sources: [],
@@ -3055,11 +3041,6 @@ intent:
   principles: []
   experience_contracts: []
 inventory:
-  topology:
-    scopes:
-      - id: app
-        paths: [apps, shared]
-    surface_types: [web-app]
   building_blocks:
     tokens: [RootTheme]
 composition:
@@ -3101,12 +3082,6 @@ intent:
   principles: []
   experience_contracts: []
 inventory:
-  topology:
-    scopes:
-      - id: checkout
-        paths: [review]
-        surface_types: [payment-review]
-    surface_types: [payment-review]
   building_blocks:
     tokens: [CheckoutTheme]
 composition:
@@ -3114,8 +3089,7 @@ composition:
     - id: checkout-token-pattern
       kind: visual
       pattern: Checkout review uses checkout product tokens.
-      applies_to:
-        paths: [review]
+      surface: checkout
 `,
     `schema: ghost.validate/v1
 id: checkout
@@ -3158,8 +3132,6 @@ intent:
   summary:
     product: ${patternId}
 inventory:
-  topology:
-    surface_types: [settings]
   building_blocks:
     tokens: [${patternId}-token]
 composition:

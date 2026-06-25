@@ -168,26 +168,22 @@ describe("ghost.validate/v1", () => {
     });
   });
 
-  it("fails active checks that reference unknown fingerprint targets", () => {
+  // Phase 3: scope/surface_type check-grounding is dormant (topology removed);
+  // rebuilt against surfaces in Phase 4/7. Only pattern_id targets validate.
+  it("fails active checks that reference unknown fingerprint pattern targets", () => {
     const report = lintGhostValidate(
       checks({
         applies_to: {
-          scopes: ["unknown-scope"],
-          surface_types: ["unknown-surface"],
+          paths: ["Code/Features/Lending"],
           pattern_ids: ["unknown-pattern"],
         },
       }),
       { fingerprint: fingerprintContext() },
     );
 
-    expect(report.errors).toBe(3);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ rule: "check-scope-unknown" }),
-        expect.objectContaining({ rule: "check-surface-type-unknown" }),
-        expect.objectContaining({ rule: "check-pattern-unknown" }),
-      ]),
-    );
+    expect(
+      report.issues.some((issue) => issue.rule === "check-pattern-unknown"),
+    ).toBe(true);
   });
 
   it("fails invalid detector regex", () => {

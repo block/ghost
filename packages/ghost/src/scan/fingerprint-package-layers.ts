@@ -152,8 +152,7 @@ export function templateInventory(reference?: string): string {
     ? normalizeReferenceInput(reference)
     : undefined;
   if (referenceInput) {
-    return `topology: {}
-building_blocks:
+    return `building_blocks:
   libraries:
     - ${referenceInput.id}
 exemplars: []
@@ -164,8 +163,7 @@ sources:
 `;
   }
 
-  return `topology: {}
-building_blocks: {}
+  return `building_blocks: {}
 exemplars: []
 sources: []
 `;
@@ -248,7 +246,6 @@ function emptyIntent(): GhostFingerprintDocument["intent"] {
 
 function emptyInventory(): GhostFingerprintDocument["inventory"] {
   return {
-    topology: {},
     building_blocks: {},
     exemplars: [],
     sources: [],

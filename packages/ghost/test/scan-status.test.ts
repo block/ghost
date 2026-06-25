@@ -71,8 +71,7 @@ situations: []
 principles: []
 experience_contracts: []
 `,
-      inventory: `topology: {}
-building_blocks: {}
+      inventory: `building_blocks: {}
 exemplars: []
 sources: []
 `,
@@ -137,8 +136,7 @@ checks: []
 
   it("reports inventory contribution and counts curated sources", async () => {
     await writePackage(dir, {
-      inventory: `topology: {}
-building_blocks:
+      inventory: `building_blocks:
   tokens:
     - color.background
   components:
@@ -229,12 +227,9 @@ checks:
   - id: dense-workflows-prioritize-scanning
     principle: Dense workflows optimize for comparison and recovery.
 `,
-      inventory: `topology:
-  scopes:
-    - id: dashboard
-      paths: [apps/dashboard]
-      surface_types: [dense-dashboard]
-  surface_types: [dense-dashboard]
+      inventory: `building_blocks:
+  tokens:
+    - color.background
 `,
     });
 
@@ -260,17 +255,10 @@ checks:
   - id: dense-workflows-prioritize-scanning
     principle: Dense workflows optimize for comparison and recovery.
 `,
-      inventory: `topology:
-  scopes:
-    - id: dashboard
-      paths: [apps/dashboard]
-      surface_types: [dense-dashboard]
-  surface_types: [dense-dashboard]
-exemplars:
+      inventory: `exemplars:
   - id: orders-table
     path: apps/dashboard/orders.tsx
-    surface_type: dense-dashboard
-    scope: dashboard
+    surface: dashboard
     refs:
       - composition.pattern:preserve-table-density
 building_blocks:
@@ -310,7 +298,7 @@ checks:
     ]);
     expect(status.contribution.facets).toMatchObject({
       intent: { state: "useful", count: 1 },
-      inventory: { state: "useful", count: 5 },
+      inventory: { state: "useful", count: 3 },
       composition: { state: "useful", count: 1 },
       validate: { state: "useful", count: 1 },
     });
