@@ -5,9 +5,13 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
+// Genuinely shipped/public text only. `docs/` is intentionally excluded: it
+// holds non-authoritative design notes (docs/ideas/) plus the model doc
+// (docs/purposes.md), where "layers" (the five-layer model) and "cascade"
+// (cascade-from-ancestors) are the canonical vocabulary of the surface-model
+// redesign. The guard still protects user-facing prose and emitted prompts.
 const PUBLIC_TEXT_ROOTS = [
   "README.md",
-  "docs",
   "apps/docs/src/content",
   "packages/ghost/src/skill-bundle",
   ".changeset",
