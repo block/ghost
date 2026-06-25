@@ -113,12 +113,15 @@ accepts the old coordinate fields.
 
 Depends on: Phase 3 (surfaces must own scope resolution before map is removed).
 
-### Phase 5 — slice resolver + menu emitter (Layer 3, prompt road)
+### Phase 5 — slice resolver + menu emitter, as the new gather command (Layer 3, prompt road)
 
 - Resolver: given a surface id, compose its slice = own placed nodes + cascaded
   ancestor nodes + typed-edge contributions. Deterministic, no LLM.
 - Menu emitter: surfaces + descriptions for the host agent to match against.
 - Ambiguity returns the menu, never a whole-tree dump.
+- **Ship this as the new context-gathering command** (working name `gather` /
+  `select`): relay's *desire* done right (see "Command fate"). Do not build it
+  on the old relay-config / request-resolution plumbing.
 - Replace the old `context/entrypoint.ts` `CAPS` truncation and
   `globalFallbackRefs` with surface-scoped composition.
 - Tests: cascade correctness, edge contribution, menu shape, ambiguity → menu.
@@ -157,8 +160,10 @@ layer (`surface-binding.md` caution) and depends on everything above.
 
 ### Phase 8 — command + skill + docs reconciliation
 
-- Reconfirm delete-list commands against the new model: `relay`, `survey`,
-  `diff`, `describe`, `stack` — remove or rebuild, do not port blindly.
+- Delete the absorbed/dead commands per "Command fate" — `relay`, `stack`,
+  `survey`, `diff`, `describe` — and remove the relay-config loader,
+  request-resolution, and request-stack modules in `context/`. This is execution,
+  not decision.
 - Update the skill bundle references to teach placement + surfaces (the
   `voice.md` fix was a preview of this).
 - Regenerate the CLI manifest (`pnpm dump:cli-help`).
@@ -174,6 +179,33 @@ Phases 1–2 are **additive and safe** — they can land without breaking anythi
 fingerprints fail lint. Everything from Phase 3 on is part of the single major
 release. Plan to land 1–2 first to de-risk, then 3–8 as the breaking sequence.
 
+## Command fate: the desire-survives test (settled)
+
+Decided by one rule: **a command's desire survives if the new model serves it; the
+command's implementation survives only if it already is that.** Relay the desire
+("give an agent the right narrow context at the right time, traceably") is the
+whole point of the coordinate space and is realized correctly by the Phase 5
+resolver. Relay the implementation (`relay-config`, `request_resolvers`,
+`sources`, `ghost.relay-request/v1`, the selector-routing facet) is the second
+routing system on the delete list. So the *desire* lives on under a truer name;
+the *mechanism* dies.
+
+Applying the test to the whole delete list:
+
+| Command | Desire survives as | Implementation |
+| --- | --- | --- |
+| `relay` | Phase 5 slice resolver + menu emitter | **deleted** (absorbed into a new `gather` / `select` command) |
+| `stack` | path → surface (Phase 7 binding) | **deleted** (absorbed) |
+| `survey` | nothing in the new model | **deleted** |
+| `diff` | the dead direct-markdown path | **deleted** |
+| `describe` | the dead direct-markdown path | **deleted** |
+
+Consequence for sequencing: **Phase 5 ships the new context-gathering command**
+(working name `gather` or `select`) as relay's desire done right, and **Phase 8
+deletes `relay` / `stack` / `survey` / `diff` / `describe` as execution, not
+decision.** The relay config loader, request-resolution, and request-stack
+modules in `context/` are removed with `relay`.
+
 ## Open decisions for planning
 
 1. **One mega-PR vs. phased merges to the branch.** Recommendation: phased
@@ -182,12 +214,8 @@ release. Plan to land 1–2 first to de-risk, then 3–8 as the breaking sequenc
 2. **`ghost migrate` permanence.** Is the migrator a permanent command or a
    one-release transitional tool removed in the next major? Recommendation:
    transitional, documented as such.
-3. **Commands on the delete list.** `diff` / `describe` / `stack` / `survey` /
-   `relay` — confirm each is delete vs. rebuild *before* Phase 8, ideally noted
-   now so Phase 8 is execution not decision.
-4. **Does `relay` survive at all?** The prompt road (Phase 5) replaces most of
-   what `relay gather` did. Decide whether `relay` is renamed, absorbed into a
-   new `gather`/`select` command, or removed.
+3. **New command name.** `gather` vs. `select` vs. keeping `gather` as a verb on
+   a renamed noun. Cosmetic; decide at Phase 5.
 
 ## Not the work itself
 
