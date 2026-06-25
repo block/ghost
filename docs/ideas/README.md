@@ -57,6 +57,11 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `ghost-core/surfaces/` module (`ghost.surfaces/v1` schema + types + index +
   tests), mirroring the `fingerprint/` module. Bans dotted ids at the schema
   layer; defers all graph-level validation (cycles, dangling refs) to Phase 2.
+  **Shipped** (`cb2b7c4`).
+- `phase-2-plan.md` — execution spec for Phase 2: `lintGhostSurfaces` graph
+  validation (parent refs, tree/no-cycle, edge refs, reserved `core`, duplicate
+  and near-miss ids) plus `ghost lint` dispatch for `surfaces.yml`. Edge cycles
+  are allowed; only `parent` is tree-constrained. Still additive.
 
 ## Independent, still live
 
