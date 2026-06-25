@@ -152,9 +152,10 @@ follow-on:
    Description nodes keep living in `intent.yml` / `inventory.yml` /
    `composition.yml`, but their coordinate annotations (`applies_to`,
    `surface_type`, `scope`) are removed and replaced by a single `surface: <id>`
-   placement key. Default when absent is `core`. This is the smallest honest
-   step: it deletes the smeared DAG and replaces it with one placement pointer,
-   without restructuring the facet files.
+   placement key. Placement is explicit (see "Placement is explicit" below); an
+   absent `surface:` is not silently treated as global. This is the smallest
+   honest step: it deletes the smeared DAG and replaces it with one placement
+   pointer, without restructuring the facet files.
 
 2. **Storage-by-location, full model (follow-on note).** Nodes physically live
    under the surface they belong to (nested facet files per surface). Truest to
@@ -164,6 +165,30 @@ follow-on:
 The first cut keeps the flat facet files and changes annotations to a placement
 pointer. That is enough to kill Leak A and validate the tree + graph model
 before committing to a layout change.
+
+## Placement is explicit (settled)
+
+This was an open fork ("absent `surface:` defaults to `core`"); it is now
+decided against the silent default. Defaulting un-placed nodes to `core` quietly
+rebuilds global-fallback — a node that reaches every surface is exactly the
+brand-mixing failure `coordinate-space.md` exists to cure. So placement is
+explicit, made frictionless from three directions rather than enforced by nag:
+
+1. **Authoring drafts placement.** When a Ghost authoring skill captures a node,
+   it proposes a `surface:` from what is being captured. The author approves
+   rather than hand-writes, so most nodes are placed at birth.
+2. **Lint catches and teaches.** An un-placed node is flagged — not silently
+   dropped into `core` — with a message that explains *why* placement matters
+   (un-placed reaches everywhere; that is brand-mixing) and what to do. Teaching,
+   not just erroring.
+3. **No silent global default.** "Absent = core, move on" is explicitly not the
+   behavior.
+
+The un-placed lint is a **warning, not a hard error**, matching the existing
+convention that missing derivation refs warn so teams can draft while curation
+catches up. A hand-authored fingerprint can have un-placed nodes in draft; lint
+surfaces them and teaches the fix, and they never reach production silently
+global.
 
 ## The migration (off the dead coordinate systems)
 
@@ -223,6 +248,8 @@ the surface itself does not carry repo paths.
   is an existing surface;
 - every node `surface:` placement references an existing surface (warn on
   near-miss ids, per `purposes.md` leak #4);
+- an un-placed node warns (not errors) and teaches placement — it is never
+  silently treated as global `core`;
 - `core` is reserved as the implicit root.
 
 Composition edges are explicitly allowed to form a graph (including cross-links);
@@ -246,15 +273,46 @@ coordinate annotations move to a `surface:` placement pointer.
 - **IDs are flat; the tree lives only in `parent`.** Dotted ids as hierarchy are
   banned (a lint error). One source of truth for containment, killing the Leak C
   duplicate-vocabulary risk before it starts.
+- **Placement is explicit; no silent global default.** See "Placement is
+  explicit" above. Authoring drafts placement, lint warns-and-teaches on the
+  gap, and un-placed never silently means `core`.
+
+## The repo binding is scoped ownership (reframed)
+
+An earlier draft called this "where path→surface mapping lives," which made it
+sound like an exotic new subsystem. It is not. In a repo, **surfaces are owned
+by location** — the `checkout` surface *is* the thing realized under
+`apps/checkout/`. That is ordinary scoped ownership, CODEOWNERS- and
+directory-shaped, and Ghost already has the mechanism: nested packages.
+
+The contract/binding split makes this clean:
+
+- **The portable contract** (`surfaces.yml`) is repo-agnostic and carries **no
+  paths**. This is what lets the no-repo cases (outcomes 3 & 4) work at all.
+- **The repo binding** declares scoped ownership: *this surface is realized by
+  this scope here.* Path → surface resolution falls out of where the binding
+  sits in the tree, the way nested-package resolution already works.
+
+The hard rule that keeps the split honest: **the surface definition must never
+carry `paths`.** The moment `surfaces.yml` gains a `paths:` field, the portable
+contract is re-coupled to a repo and the no-repo cases break. Paths live on the
+binding, never on the surface. This is exactly why `topology.scopes[].paths` is
+on the delete list.
+
+This is a separate note, but it is the *familiar* part (nesting, ownership), not
+a new abstraction. The one real sub-fork it must settle:
+
+> Does scoped ownership live in **nested `.ghost/` packages** (directory
+> location = the binding), in an **explicit binding declaration** that names a
+> surface and its paths, or **both**? Lean: directory location is the default
+> binding; an explicit declaration is the escape hatch when ownership does not
+> match the tree.
 
 ## Open forks (decide before code)
 
-1. **`surface:` default.** Absent placement defaults to `core`. Confirm that an
-   un-placed node cascading from root is the desired default rather than a lint
-   warning that forces explicit placement.
-2. **Where path→surface mapping lives.** Out of scope here by design, but it is
-   the next note: the repo-side binding that turns a target path or diff into a
-   surface for outcomes 1 & 2. `surfaces.yml` stays repo-agnostic.
+1. **Scoped-ownership binding shape.** Nested-package-as-binding vs. explicit
+   path declaration vs. both. Its own note (see "The repo binding is scoped
+   ownership" above); `surfaces.yml` stays repo-agnostic regardless.
 
 ## Not a plan
 

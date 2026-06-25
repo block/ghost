@@ -39,7 +39,9 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `ghost.surfaces/v1` as a new `surfaces.yml` facet expressing both the
   containment `parent` and typed composition `edges`, plus a field-by-field
   migration off `topology` / `applies_to` / `surface_type` / `scope` to a
-  `surface:` placement pointer.
+  `surface:` placement pointer. Settles closed `edge_kinds`, flat ids, and
+  explicit placement (no silent global default); the one remaining fork — the
+  repo binding as scoped ownership — is reframed for its own note.
 
 ## Independent, still live
 
