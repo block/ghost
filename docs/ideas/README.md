@@ -67,7 +67,13 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `topology` / `applies_to` / `surface_type` / `scope` from the canonical
   fingerprint and replace with a single `surface:` placement per node, validated
   against `surfaces.yml`. Deliberately leaves `check.applies_to` for Phase 4/7
-  (it is coupled to map routing). First phase of the major release.
+  (it is coupled to map routing). First phase of the major release. **Shipped**
+  (`6140cd8`).
+- `phase-4-plan.md` — execution spec for Phase 4: delete the `ghost.map/v1`
+  coordinate/routing layer (dormant since Phase 3). Separates the routing layer
+  (delete) from the inventory-output types incidentally housed in `map/types.ts`
+  (relocate, not delete). Leaves `check` routing on `applies_to.paths` alone;
+  surface-based routing is deferred to Phase 7.
 
 ## Independent, still live
 
