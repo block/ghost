@@ -35,6 +35,11 @@ buildable Layer 2 design. They agree; read them as a sequence.
   over it (Layer 3); resolution is BYOA (Ghost emits a described menu, the agent
   matches); delete list covers `inventory.topology`, smeared `applies_to`, and
   `ghost.map/v1`.
+- `surface-schema.md` — the first concrete extraction. Proposes
+  `ghost.surfaces/v1` as a new `surfaces.yml` facet expressing both the
+  containment `parent` and typed composition `edges`, plus a field-by-field
+  migration off `topology` / `applies_to` / `surface_type` / `scope` to a
+  `surface:` placement pointer.
 
 ## Independent, still live
 
