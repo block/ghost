@@ -66,13 +66,8 @@ literals `ghost.intent/v1`, `ghost.inventory/v1`, `ghost.composition/v1`,
 ```yaml
 schema: ghost.surfaces/v1
 
-# Edge kinds this package allows. Small, authored, closed set.
-# Typing is the discipline that keeps composition legible (coordinate-space.md).
-edge_kinds:
-  - id: composes
-    description: This surface assembles the referenced surface into its output.
-  - id: governed-by
-    description: This surface must satisfy the referenced surface's obligations.
+# Edge kinds are a fixed, Ghost-owned set (see "edge_kinds is closed" below).
+# Not authored per-package; listed in the schema, not in surfaces.yml.
 
 surfaces:
   # core is implicit and always present; declare it only to describe it.
@@ -83,9 +78,9 @@ surfaces:
     description: Transactional and lifecycle email.
     parent: core
 
-  - id: email.marketing
+  - id: email-marketing
     description: Promotional email; campaign voice and offer framing.
-    parent: email
+    parent: email           # the tree lives here, not in the id
 
   - id: checkout
     description: The purchase decision surface.
@@ -100,16 +95,52 @@ surfaces:
 
 Field rules:
 
-- `id` — slug. Dots denote tree depth for readability; `parent` is the
-  authoritative containment link (the dotted id is sugar, the tree is truth).
+- `id` — a flat, unique, slug-shaped label with **no structural meaning**. Dots
+  are not allowed as hierarchy: the tree lives only in `parent`, never in the
+  id. `email-marketing` is a name; `email.marketing` is banned because the dot
+  would pretend to be a `parent` link. One source of truth for the tree.
 - `parent` — optional; absent means a top-level surface under the implicit
-  `core` root. Exactly one parent (strict tree; no arrays).
+  `core` root. Exactly one parent (strict tree; no arrays). **This is the only
+  place containment is expressed.**
 - `description` — optional string. Present when the name is not self-evident.
-- `edges` — optional; each has `kind` (must be in `edge_kinds`) and `to` (an
-  existing surface id). Edges are the composition graph; they never imply
-  containment and never cascade.
-- `edge_kinds` — the closed vocabulary. An edge with an unknown `kind` is a lint
-  error (mirrors how `surface_types` are error-enforced today).
+- `edges` — optional; each has `kind` (must be one of the Ghost-owned
+  `edge_kinds`) and `to` (an existing surface id). Edges are the composition
+  graph; they never imply containment and never cascade.
+
+`edge_kinds` are **not** declared per-package. They are a fixed, Ghost-owned set
+(see below), so `surfaces.yml` references kinds but never defines them.
+
+## `edge_kinds` is closed (settled)
+
+The edge vocabulary is a **closed, Ghost-owned set**, not author-extensible.
+This was an open fork; it is now decided, because opening it is the exact thing
+that loses the plot.
+
+An open vocabulary means the *author* defines what an edge means, which means
+Ghost has no opinion about edges, which means Ghost is a general-purpose graph
+database. That is unbounded scope — the sprawl the reset exists to end. Closing
+the set forces Ghost to commit to what edges are *for*, and for a fingerprint-
+first, interface-composition tool the answer is small: edges express how
+interface surfaces relate. A starting set:
+
+- `composes` — this surface assembles the referenced surface into its output.
+- `governed-by` — this surface must satisfy the referenced surface's
+  obligations.
+
+The discipline rule that comes with closing it:
+
+> If you cannot name an edge kind from the interface-composition domain, it does
+> not belong in Ghost. The temptation to add a non-interface edge kind is the
+> signal that the work has drifted toward a general world-model graph — which is
+> a consumer's job, not Ghost's.
+
+**The boundary for richer consumers.** A composition-heavy consumer (a typed
+unit graph with many relationship kinds) will legitimately want edge kinds Ghost
+does not ship. That is expected: such inputs are domain-shaped, Ghost is
+interface-shaped. The resolution is that the consumer extends edges *in the
+consumer*, not by opening Ghost's set. Ghost's closed set is the interface
+vocabulary; anything beyond it is consumer-local extension. This keeps Ghost
+small and keeps the consumer free.
 
 ## How nodes attach to surfaces (placement, not tags)
 
@@ -186,7 +217,10 @@ the surface itself does not carry repo paths.
 
 - every `parent` references an existing surface id; no cycles (it is a tree);
 - exactly one parent per surface (no parent arrays);
-- every edge `kind` is in `edge_kinds`; every edge `to` is an existing surface;
+- every surface `id` is a flat slug with no dots (dots-as-hierarchy is a lint
+  error; the tree lives only in `parent`);
+- every edge `kind` is one of the fixed Ghost-owned `edge_kinds`; every edge `to`
+  is an existing surface;
 - every node `surface:` placement references an existing surface (warn on
   near-miss ids, per `purposes.md` leak #4);
 - `core` is reserved as the implicit root.
@@ -204,22 +238,21 @@ Per `coordinate-space.md` and `reset.md`, hold these contracts while extracting:
 Layer 1 content (intent / inventory / composition prose) does not change. Only
 coordinate annotations move to a `surface:` placement pointer.
 
+## Settled in this note
+
+- **`edge_kinds` is closed and Ghost-owned.** See "`edge_kinds` is closed"
+  above. Authors reference kinds; they never define them. Richer consumers
+  extend edges consumer-side, not by opening Ghost's set.
+- **IDs are flat; the tree lives only in `parent`.** Dotted ids as hierarchy are
+  banned (a lint error). One source of truth for containment, killing the Leak C
+  duplicate-vocabulary risk before it starts.
+
 ## Open forks (decide before code)
 
-1. **`edge_kinds` closed vs. open.** Closed (lint-enforced) keeps the graph
-   legible; open lets authors invent edge kinds freely. Recommendation: closed,
-   small default set, matching the error-level discipline `surface_types` has
-   today. The composition-heavy proof case needs typed edges precisely *because*
-   the set is legible.
-2. **Dotted ids vs. explicit parent only.** Allowing `email.marketing` as an id
-   is readable but creates two sources of truth for the tree. Recommendation:
-   `parent` is authoritative; dotted ids are display sugar validated to agree
-   with `parent`, or disallowed entirely. Lean toward disallowing to keep one
-   source of truth (the layers note's Leak C instinct).
-3. **`surface:` default.** Absent placement defaults to `core`. Confirm that an
+1. **`surface:` default.** Absent placement defaults to `core`. Confirm that an
    un-placed node cascading from root is the desired default rather than a lint
    warning that forces explicit placement.
-4. **Where path→surface mapping lives.** Out of scope here by design, but it is
+2. **Where path→surface mapping lives.** Out of scope here by design, but it is
    the next note: the repo-side binding that turns a target path or diff into a
    surface for outcomes 1 & 2. `surfaces.yml` stays repo-agnostic.
 
