@@ -61,7 +61,13 @@ buildable Layer 2 design. They agree; read them as a sequence.
 - `phase-2-plan.md` — execution spec for Phase 2: `lintGhostSurfaces` graph
   validation (parent refs, tree/no-cycle, edge refs, reserved `core`, duplicate
   and near-miss ids) plus `ghost lint` dispatch for `surfaces.yml`. Edge cycles
-  are allowed; only `parent` is tree-constrained. Still additive.
+  are allowed; only `parent` is tree-constrained. Still additive. **Shipped**
+  (`f6b7941`).
+- `phase-3-plan.md` — execution spec for Phase 3, **the breaking line**: remove
+  `topology` / `applies_to` / `surface_type` / `scope` from the canonical
+  fingerprint and replace with a single `surface:` placement per node, validated
+  against `surfaces.yml`. Deliberately leaves `check.applies_to` for Phase 4/7
+  (it is coupled to map routing). First phase of the major release.
 
 ## Independent, still live
 
