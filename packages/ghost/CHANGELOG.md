@@ -1,5 +1,11 @@
 # @anarchitecture/ghost
 
+## 0.18.1
+
+### Patch Changes
+
+- [#187](https://github.com/block/ghost/pull/187) [`5a2be98`](https://github.com/block/ghost/commit/5a2be98f4ee77e372fb2bf5e2bac6cfc0a854ceb) Thanks [@chailandau](https://github.com/chailandau)! - Honor `GHOST_PACKAGE_DIR` in the drift, ack, diverge, compare-history, and review-command emit paths so relocated fingerprint packages resolve consistently.
+
 ## 0.18.0
 
 ### Minor Changes
