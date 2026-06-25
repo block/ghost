@@ -86,12 +86,34 @@ surface: email-marketing
 
 Measured callers of the removed fields:
 
-- `context/graph.ts` — the largest ripple. Builds a context graph from
-  `applies_to`, `surface_type`, `scope`, and `topology.scopes`. Rework to read
-  `surface:` placement and the surfaces tree instead. **This file is shared with
-  the Phase 5 resolver work**; in Phase 3, do the minimum to keep it compiling
-  and correct against placement (map the old "applicability" concept to "home
-  surface"), and leave the richer cascade/edge composition for Phase 5.
+- `context/graph.ts` — the largest ripple, and it is **two subsystems bolted
+  together**. A full read (379 lines) shows the coordinate removal hits them
+  completely differently:
+
+  - **Job 1 — the structure/content graph (KEEP, mechanical).** `nodes` (ref,
+    kind, label, summary, details) and `edges` (built from `check_refs`,
+    `situation.principles`, etc.). These are built from node *content and refs*,
+    none of which are coordinate fields. The only coordinate touch is cosmetic:
+    a few lines that stuff `surface_type` / `scope` into a node's `summary` /
+    `details` strings. Swap those to read `surface:`. Minimal, mechanical.
+
+  - **Job 2 — the applicability/scope selection machinery (COMPILE-DORMANT, do
+    NOT reimplement here).** `Applicability { paths, scopes, surfaceTypes }`,
+    `buildScopes` (reads `topology.scopes`), `matchScopes`,
+    `nodeMatchesTargets`, `applicabilityFromScope`, `applicabilityFromCheck`.
+    **This entire subsystem *is* the old coordinate model** — path/scope/
+    surface-type matching, exactly what the Phase 5 resolver (placement +
+    surfaces tree + cascade/edges) and the Phase 7 path→surface binding replace
+    wholesale.
+
+  The trap to avoid: "map applicability to home surface" would mean
+  *reimplementing Job 2 against placement* in the breaking phase, only for
+  Phase 5 to throw it away. That is doing the work twice. **Instead, in Phase 3
+  make Job 2 compile-dormant**: remove the dead coordinate reads, let
+  `appliesTo` / `scopes` go empty (or carry only `surface`), and accept that
+  path-based selection (`matchScopes` / `nodeMatchesTargets`) goes inert until
+  Phase 5/7 rebuild it properly against surfaces. Rewrite the selection
+  subsystem **once**, against the real target, in Phase 5 — not twice.
 - `scan/fingerprint-contribution.ts` — counts `topology.scopes` /
   `surface_types` toward contribution scoring. Replace with a surfaces.yml
   presence/count signal, or drop the topology term from the score.
@@ -122,6 +144,14 @@ Do **not** expand scope into resolver/menu logic (Phase 5) or map deletion
 - Any fixture across the suite that uses the old fields must migrate to
   `surface:` or be expected to fail — grep the test tree for the removed field
   names and fix each.
+- **Expected fallout: the path-based selection tests break, and that is
+  correct.** Making `graph.ts` Job 2 compile-dormant will break tests that
+  assert path/scope selection (the `relay.test.ts` and `context-*.test.ts`
+  family). Do **not** prop these up by reimplementing selection against
+  placement — that is the throwaway-work trap. Migrate or mark them pending
+  Phase 5/7, because the path road is rebuilt in Phase 7 and `relay` is deleted
+  in Phase 8 (the desire-survives decision). Keeping a doomed selection system
+  alive through Phase 3 is exactly what this plan refuses.
 - Full `pnpm test` is the gate (now enforced by the pre-commit hook).
 
 ## Changeset
