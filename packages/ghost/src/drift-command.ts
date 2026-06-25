@@ -15,6 +15,7 @@ import {
   resolveTrackedFingerprint,
 } from "./core/index.js";
 import { resolveFingerprintPackage } from "./fingerprint.js";
+import { resolveGhostDirDefault } from "./scan/index.js";
 
 const DEFAULT_SYNC_PATH = ".ghost-sync.json";
 const DRIFT_STATUS_SCHEMA = "ghost.drift.status/v1" as const;
@@ -243,14 +244,18 @@ async function loadLocalFingerprint(
   localPath: string | undefined,
   packageDir: string | undefined,
 ): Promise<Fingerprint> {
-  const source = localPath ?? packageDir ?? ".ghost";
+  const ghostDir = resolveGhostDirDefault();
+  const source = localPath ?? packageDir ?? ghostDir;
   try {
     return await loadComparableFingerprintFrom(cwd, source);
   } catch (err) {
     const defaultPackage = !localPath && !packageDir;
     const manifestPath = resolve(cwd, source, "manifest.yml");
     if (!defaultPackage || existsSync(manifestPath)) throw err;
-    return await loadComparableFingerprintFrom(cwd, ".ghost/fingerprint.md");
+    return await loadComparableFingerprintFrom(
+      cwd,
+      `${ghostDir}/fingerprint.md`,
+    );
   }
 }
 

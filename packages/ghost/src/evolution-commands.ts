@@ -8,9 +8,10 @@ import {
   loadConfig,
   resolveTrackedFingerprint,
 } from "./core/index.js";
+import { resolveGhostDirDefault } from "./scan/index.js";
 
 async function loadLocalFingerprint() {
-  return loadComparableFingerprint(".ghost");
+  return loadComparableFingerprint(resolveGhostDirDefault());
 }
 
 async function loadTrackedComparableFingerprint(

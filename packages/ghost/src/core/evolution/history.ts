@@ -2,23 +2,24 @@ import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { FingerprintHistoryEntry } from "#ghost-core";
+import { resolveGhostDirDefault } from "../../scan/index.js";
 
-const GHOST_DIR = ".ghost";
 const HISTORY_FILE = "history.jsonl";
 
 function historyPath(cwd: string): string {
-  return resolve(cwd, GHOST_DIR, HISTORY_FILE);
+  return resolve(cwd, resolveGhostDirDefault(), HISTORY_FILE);
 }
 
 /**
- * Append a fingerprint history entry to .ghost/history.jsonl.
- * Creates the .ghost directory if it doesn't exist.
+ * Append a fingerprint history entry to the fingerprint package's
+ * history.jsonl (honors GHOST_PACKAGE_DIR; defaults to .ghost).
+ * Creates the package directory if it doesn't exist.
  */
 export async function appendHistory(
   entry: FingerprintHistoryEntry,
   cwd: string = process.cwd(),
 ): Promise<void> {
-  const dir = resolve(cwd, GHOST_DIR);
+  const dir = resolve(cwd, resolveGhostDirDefault());
   if (!existsSync(dir)) {
     await mkdir(dir, { recursive: true });
   }
@@ -27,7 +28,7 @@ export async function appendHistory(
 }
 
 /**
- * Read all history entries from .ghost/history.jsonl.
+ * Read all history entries from the package history.jsonl.
  * Returns an empty array if no history exists.
  */
 export async function readHistory(

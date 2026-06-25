@@ -7,6 +7,7 @@ import type {
   GhostFingerprintPrinciple,
   GhostFingerprintSituation,
 } from "#ghost-core";
+import { resolveGhostDirDefault } from "../scan/index.js";
 import type { PackageContext } from "./package-context.js";
 
 export interface EmitPackageReviewInput {
@@ -285,7 +286,7 @@ Generated from \`${packageDir}/\` for ${context.name}. Re-run \`ghost emit revie
 }
 
 function displayPackageDir(context: PackageContext): string {
-  return displayPath(context.packageDir ?? ".ghost");
+  return displayPath(context.packageDir ?? resolveGhostDirDefault());
 }
 
 function displayPath(path: string): string {
