@@ -19,7 +19,6 @@ import {
   GhostValidateSchema,
   lintGhostFingerprint,
   lintGhostValidate,
-  type MapFrontmatter,
 } from "#ghost-core";
 import type { PackageContext } from "../context/package-context.js";
 import { readOptionalUtf8 } from "../internal/fs.js";
@@ -248,10 +247,7 @@ export function buildFingerprintStack(
     layers.map((layer) => layer.fingerprint),
   );
   const checks = mergeChecks(layers.map((layer) => layer.checks));
-  const checkLint = lintGhostValidate(checks, {
-    fingerprint,
-    map: mapFromFingerprint(fingerprint),
-  });
+  const checkLint = lintGhostValidate(checks, { fingerprint });
   if (checkLint.errors > 0) {
     throw new Error(
       `Merged checks failed lint with ${checkLint.errors} error(s): ${checkLint.issues
@@ -344,18 +340,6 @@ export function fingerprintStackToPackageContext(
   };
 }
 
-export function mapFromFingerprint(
-  _fingerprint: GhostFingerprintDocument,
-): Pick<MapFrontmatter, "scopes" | "feature_areas"> {
-  // Phase 3: topology is removed, so there are no fingerprint-derived scopes.
-  // Path-based check routing is rebuilt against surfaces/binding in Phase 4/7;
-  // until then this map projection is dormant (empty).
-  return {
-    scopes: [],
-    feature_areas: [],
-  };
-}
-
 export async function lintAllFingerprintStacks(
   root = process.cwd(),
   options: FingerprintDirectoryOptions = {},
@@ -395,7 +379,6 @@ export async function lintAllFingerprintStacks(
     );
     const checksReport = lintGhostValidate(stack.merged.checks, {
       fingerprint: stack.merged.fingerprint,
-      map: mapFromFingerprint(stack.merged.fingerprint),
     });
     issues.push(
       ...prefixIssues(

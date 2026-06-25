@@ -1,4 +1,3 @@
-import { getEffectiveMapScopes } from "../map/index.js";
 import { GhostValidateSchema } from "./schema.js";
 import type {
   GhostCheck,
@@ -86,21 +85,6 @@ function checkOne(
       message:
         "Checks must declare applies_to.paths or applies_to.scopes so routing is deterministic.",
       path: `${path}.applies_to`,
-    });
-  }
-
-  if (options.map && check.applies_to?.scopes?.length) {
-    const scopeIds = new Set(
-      getEffectiveMapScopes(options.map).map((scope) => scope.id),
-    );
-    check.applies_to.scopes.forEach((scope, scopeIndex) => {
-      if (scopeIds.has(scope)) return;
-      issues.push({
-        severity: "error",
-        rule: "check-scope-unknown",
-        message: `Check references unknown map scope '${scope}'.`,
-        path: `${path}.applies_to.scopes[${scopeIndex}]`,
-      });
     });
   }
 

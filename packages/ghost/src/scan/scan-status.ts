@@ -1,16 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
-import {
-  type GhostValidateDocument,
-  GhostValidateSchema,
-  getEffectiveMapScopes,
-  MAP_FILENAME,
-  type MapFrontmatter,
-  MapFrontmatterSchema,
-  SURVEY_FILENAME,
-} from "#ghost-core";
-import { FINGERPRINTS_DIRNAME, SCOPE_SURVEYS_DIRNAME } from "./constants.js";
+import { type GhostValidateDocument, GhostValidateSchema } from "#ghost-core";
 import {
   type ScanContributionReport,
   summarizeFingerprintContribution,
@@ -31,26 +22,11 @@ export interface ScanStageReport {
 
 export type ScanStage = "fingerprint";
 
-export interface ScanScopeReport {
-  id: string;
-  name?: string;
-  kind: string;
-  parent?: string;
-  survey: ScanStageReport;
-  fingerprint: ScanStageReport;
-}
-
-export interface ScanStatusOptions {
-  includeScopes?: boolean;
-}
-
 export interface ScanStatus {
   /** Absolute path to the Ghost package directory. */
   dir: string;
   fingerprint: ScanStageReport;
   validate: ScanStageReport;
-  scopes?: ScanScopeReport[];
-  scope_error?: string;
   contribution: ScanContributionReport;
   recommended_next: ScanStage | null;
 }
@@ -61,10 +37,7 @@ export interface ScanStatus {
  * composition, validate, or any combination; absent facets may be inherited
  * from broader stack context.
  */
-export async function scanStatus(
-  dirPath: string,
-  options: ScanStatusOptions = {},
-): Promise<ScanStatus> {
+export async function scanStatus(dirPath: string): Promise<ScanStatus> {
   const dir = resolve(dirPath);
   const paths = resolveFingerprintPackage(dir, process.cwd());
   const fingerprintPath = paths.packageDir;
@@ -106,16 +79,6 @@ export async function scanStatus(
     contribution,
     recommended_next: fingerprintPresent ? null : "fingerprint",
   };
-
-  if (options.includeScopes) {
-    try {
-      const mapPath = resolve(dir, MAP_FILENAME);
-      status.scopes = await scanScopes(dir, mapPath, await pathExists(mapPath));
-    } catch (err) {
-      status.scope_error = err instanceof Error ? err.message : String(err);
-      status.scopes = [];
-    }
-  }
 
   return status;
 }
@@ -189,76 +152,4 @@ async function pathExists(
   } catch {
     return false;
   }
-}
-
-async function scanScopes(
-  dir: string,
-  mapPath: string,
-  mapPresent: boolean,
-): Promise<ScanScopeReport[]> {
-  if (!mapPresent) return [];
-
-  const map = await readMapFrontmatter(mapPath);
-  const scopes = getEffectiveMapScopes(map);
-  const out: ScanScopeReport[] = [];
-
-  for (const scope of scopes) {
-    const surveyPath = join(
-      dir,
-      SCOPE_SURVEYS_DIRNAME,
-      scope.id,
-      SURVEY_FILENAME,
-    );
-    const fingerprintPath = join(dir, FINGERPRINTS_DIRNAME, `${scope.id}.md`);
-    const [surveyPresent, fingerprintPresent] = await Promise.all([
-      pathExists(surveyPath),
-      pathExists(fingerprintPath),
-    ]);
-
-    out.push({
-      id: scope.id,
-      ...(scope.name ? { name: scope.name } : {}),
-      kind: scope.kind,
-      ...(scope.parent ? { parent: scope.parent } : {}),
-      survey: {
-        state: surveyPresent ? "present" : "missing",
-        path: surveyPath,
-      },
-      fingerprint: {
-        state: fingerprintPresent ? "present" : "missing",
-        path: fingerprintPath,
-      },
-    });
-  }
-
-  return out;
-}
-
-async function readMapFrontmatter(path: string): Promise<MapFrontmatter> {
-  const raw = await readFile(path, "utf-8");
-  const split = splitFrontmatter(raw);
-  if (!split) {
-    throw new Error("map.md is missing a YAML frontmatter block");
-  }
-  const parsed = parseYaml(split.frontmatter);
-  const result = MapFrontmatterSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error(
-      `map.md frontmatter failed validation: ${result.error.issues
-        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
-  return result.data;
-}
-
-function splitFrontmatter(raw: string): { frontmatter: string } | null {
-  const lines = raw.replace(/^﻿/, "").split(/\r?\n/);
-  if (lines[0]?.trim() !== "---") return null;
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i]?.trim() === "---") {
-      return { frontmatter: lines.slice(1, i).join("\n") };
-    }
-  }
-  return null;
 }

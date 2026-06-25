@@ -3,27 +3,8 @@ import {
   type GhostValidateDocument,
   type GhostValidateFingerprintContext,
   lintGhostValidate,
-  type MapFrontmatter,
   routeGhostValidateForPath,
 } from "#ghost-core";
-
-const MAP: Pick<MapFrontmatter, "scopes" | "feature_areas"> = {
-  feature_areas: [],
-  scopes: [
-    {
-      id: "lending",
-      name: "Lending",
-      kind: "product-surface",
-      paths: ["Code/Features/Lending"],
-    },
-    {
-      id: "investing",
-      name: "Investing",
-      kind: "product-surface",
-      paths: ["Code/Features/Investing"],
-    },
-  ],
-};
 
 function checks(
   overrides: Partial<GhostValidateDocument["checks"][number]> = {},
@@ -42,7 +23,6 @@ function checks(
           composition: ["composition.pattern:tokenized-ui-color"],
         },
         applies_to: {
-          scopes: ["lending"],
           paths: ["Code/Features/Lending"],
         },
         detector: {
@@ -64,7 +44,7 @@ function checks(
 
 describe("ghost.validate/v1", () => {
   it("validates an active human-promoted check", () => {
-    const report = lintGhostValidate(checks(), { map: MAP });
+    const report = lintGhostValidate(checks());
 
     expect(report.errors).toBe(0);
   });
@@ -189,43 +169,27 @@ describe("ghost.validate/v1", () => {
   it("fails invalid detector regex", () => {
     const report = lintGhostValidate(
       checks({ detector: { type: "forbidden-regex", pattern: "[" } }),
-      { map: MAP },
     );
 
     expect(report.errors).toBe(1);
     expect(report.issues[0].rule).toBe("check-detector-pattern-invalid");
   });
 
-  it("fails active checks that reference unknown scopes", () => {
-    const report = lintGhostValidate(
-      checks({ applies_to: { scopes: ["banking"] } }),
-      { map: MAP },
-    );
-
-    expect(report.errors).toBe(1);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ rule: "check-scope-unknown" }),
-      ]),
-    );
-  });
-
-  it("routes path-scoped checks through map scopes", () => {
+  // Phase 4: map scopes are deleted; routing is path-only. Surface-based
+  // routing is rebuilt in Phase 7.
+  it("routes checks to a path matching their applies_to.paths", () => {
     const routed = routeGhostValidateForPath(
       checks().checks,
-      MAP,
       "Code/Features/Lending/Sources/View.swift",
     );
 
     expect(routed).toHaveLength(1);
     expect(routed[0].check.id).toBe("no-hardcoded-ui-color");
-    expect(routed[0].matched_scopes[0].id).toBe("lending");
   });
 
-  it("does not route checks outside their declared scope", () => {
+  it("does not route checks outside their declared paths", () => {
     const routed = routeGhostValidateForPath(
       checks().checks,
-      MAP,
       "Code/Features/Investing/Sources/View.swift",
     );
 

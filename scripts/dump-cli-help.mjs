@@ -17,11 +17,6 @@ const TOOLS = [
     filter: "@anarchitecture/ghost",
     dist: "packages/ghost/dist/cli.js",
   },
-  {
-    name: "ghost-fleet",
-    filter: "ghost-fleet",
-    dist: "packages/ghost-fleet/dist/cli.js",
-  },
 ];
 
 const OUT = resolve(ROOT, "apps/docs/src/generated/cli-manifest.json");

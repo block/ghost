@@ -29,7 +29,6 @@ export {
   lintGhostValidate,
   matchesGhostPath,
   normalizeGhostPath,
-  routeGhostPathToScopes,
   routeGhostValidateForPath,
 } from "./checks/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
@@ -107,7 +106,7 @@ export {
   GhostFingerprintSummarySchema,
   lintGhostFingerprint,
 } from "./fingerprint/index.js";
-// --- Map (ghost.map/v1) ---
+// --- Fingerprint package filenames ---
 export {
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_FILENAME,
@@ -120,23 +119,6 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
-// --- Map (ghost.map/v1) ---
-export {
-  type GitInfo,
-  getEffectiveMapScopes,
-  type InventoryOutput,
-  type LanguageHistogramEntry,
-  MAP_FILENAME,
-  type MapFeatureArea,
-  type MapFrontmatter,
-  MapFrontmatterSchema,
-  type MapScope,
-  MapScopeSchema,
-  REQUIRED_BODY_SECTIONS,
-  type RequiredBodySection,
-  slugifyScopeId,
-  type TopLevelEntry,
-} from "./map/index.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,
@@ -189,6 +171,13 @@ export {
   GhostSurfaceResourceSchema,
   lintGhostResources,
 } from "./resources/index.js";
+// --- Inventory scan output types ---
+export type {
+  GitInfo,
+  InventoryOutput,
+  LanguageHistogramEntry,
+  TopLevelEntry,
+} from "./scan-types.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";

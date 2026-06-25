@@ -186,10 +186,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "Report sparse fingerprint package contribution facets: intent, inventory, composition, validate, and the next BYOA step.",
     )
     .option(
-      "--include-scopes",
-      "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
-    )
-    .option(
       "--include-nested",
       "Also list nested fingerprint packages and contribution state",
     )
@@ -201,9 +197,7 @@ export function registerFingerprintCommands(cli: CAC): void {
           dirArg ?? ghostDir,
           process.cwd(),
         ).dir;
-        const status = await scanStatus(dir, {
-          includeScopes: Boolean(opts.includeScopes),
-        });
+        const status = await scanStatus(dir);
         const nested = opts.includeNested
           ? await nestedPackageStatus(
               dirnameForFingerprintPackageDir(dir, ghostDir),
@@ -283,20 +277,6 @@ export function registerFingerprintCommands(cli: CAC): void {
             process.stdout.write(
               `  inventory building blocks: ${buildingBlockRows.tokens} token(s), ${buildingBlockRows.components} component(s), ${buildingBlockRows.libraries} libraries, ${buildingBlockRows.assets} asset(s), ${buildingBlockRows.routes} route(s), ${buildingBlockRows.files} file(s), ${buildingBlockRows.notes} note(s)\n`,
             );
-          }
-          if (status.scope_error) {
-            process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
-          } else if (status.scopes) {
-            process.stdout.write("\nscopes:\n");
-            if (status.scopes.length === 0) {
-              process.stdout.write("  none\n");
-            } else {
-              for (const scope of status.scopes) {
-                process.stdout.write(
-                  `  ${scope.id}: survey ${scope.survey.state}, fingerprint ${scope.fingerprint.state}\n`,
-                );
-              }
-            }
           }
           if (nested) {
             process.stdout.write("\nnested packages:\n");

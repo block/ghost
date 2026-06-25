@@ -124,8 +124,3 @@ export {
   formatTemporalComparison,
   formatTemporalComparisonJSON,
 } from "./reporters/temporal.js";
-export type {
-  PathFingerprintResolution,
-  ResolveFingerprintsForPathsOptions,
-} from "./scope-resolver.js";
-export { resolveFingerprintsForPaths } from "./scope-resolver.js";

@@ -6,7 +6,6 @@ import {
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
   lintGhostValidate,
-  MAP_FILENAME,
   SURVEY_FILENAME,
 } from "#ghost-core";
 import {
@@ -47,7 +46,6 @@ export interface FingerprintPackagePaths {
   composition: string;
   fingerprintYml: string;
   resources: string;
-  map: string;
   survey: string;
   patterns: string;
   /** Legacy direct markdown path; not part of the canonical root bundle. */
@@ -86,7 +84,6 @@ export function resolveFingerprintPackage(
     composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
-    map: join(dir, MAP_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),

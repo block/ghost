@@ -1,8 +1,9 @@
 /**
- * Shared types for `ghost.map/v1`.
+ * Shared output types for inventory scanning (`ghost signals`).
  *
- * The inventory shape is the deterministic facts the CLI emits; the recipe
- * synthesizes the final `map.md` from these signals plus its own reads.
+ * The inventory shape is the deterministic facts the CLI emits from a repo;
+ * a host agent synthesizes higher-level fingerprint authoring from these
+ * signals plus its own reads.
  */
 
 /** Single language-extension survey. */
@@ -31,7 +32,7 @@ export interface GitInfo {
   default_branch: string | null;
 }
 
-/** Full output shape of `ghost map inventory`. */
+/** Full output shape of inventory scanning. */
 export interface InventoryOutput {
   /** Resolved absolute path that was inventoried. */
   root: string;
@@ -40,8 +41,7 @@ export interface InventoryOutput {
   /**
    * Coarse hints derived from manifest presence for the build system
    * (e.g. `gradle` if `settings.gradle*`, `style-dictionary` if a sibling
-   * `style-dictionary.config.*` is found). Informational — the recipe
-   * authors the authoritative `build_system` value in `map.md`.
+   * `style-dictionary.config.*` is found). Informational signals only.
    */
   build_system_hints: string[];
   /** Files-per-language histogram, sorted desc by `files`. Top 20. */

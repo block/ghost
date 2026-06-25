@@ -14,11 +14,9 @@ import {
   type SurveyLintReport,
 } from "#ghost-core";
 import { lintFingerprint } from "./lint.js";
-import { lintMap } from "./lint-map.js";
 
 export type DetectedFileKind =
   | "survey"
-  | "map"
   | "fingerprint"
   | "fingerprint-yml"
   | "fingerprint-manifest"
@@ -37,9 +35,8 @@ export interface LintDetectedFileKindOptions {
 
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v1` in frontmatter
- * routes to the map linter; YAML schemas and canonical package filenames route
- * to their artifact linters. Unknown YAML remains unsupported instead of being
+ * the survey linter; YAML schemas and canonical package filenames route to
+ * their artifact linters. Unknown YAML remains unsupported instead of being
  * guessed as `validate.yml`.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
@@ -99,12 +96,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (lowerPath.endsWith(".yml") || lowerPath.endsWith(".yaml")) {
     return "unsupported-yaml";
   }
-  const fmEnd = raw.indexOf("\n---", 3);
-  if (raw.startsWith("---") && fmEnd > 0) {
-    const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v1\b/.test(fm)) return "map";
-  }
-  if (path.toLowerCase().endsWith("map.md")) return "map";
   return "fingerprint";
 }
 
@@ -125,19 +116,17 @@ export function lintDetectedFileKind(
             ? lintFingerprintLayerFile(raw, "inventory")
             : kind === "fingerprint-composition"
               ? lintFingerprintLayerFile(raw, "composition")
-              : kind === "map"
-                ? lintMap(raw)
-                : kind === "resources"
-                  ? lintResourcesFile(raw)
-                  : kind === "patterns"
-                    ? lintPatternsFile(raw)
-                    : kind === "surfaces"
-                      ? lintSurfacesFile(raw)
-                      : kind === "validate"
-                        ? lintValidateFile(raw, options.fingerprint)
-                        : kind === "unsupported-yaml"
-                          ? lintUnsupportedYamlFile()
-                          : lintFingerprint(raw);
+              : kind === "resources"
+                ? lintResourcesFile(raw)
+                : kind === "patterns"
+                  ? lintPatternsFile(raw)
+                  : kind === "surfaces"
+                    ? lintSurfacesFile(raw)
+                    : kind === "validate"
+                      ? lintValidateFile(raw, options.fingerprint)
+                      : kind === "unsupported-yaml"
+                        ? lintUnsupportedYamlFile()
+                        : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {

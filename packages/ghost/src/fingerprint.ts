@@ -35,12 +35,6 @@ export {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./scan/fingerprint-package.js";
-export type {
-  LoadedFingerprintNode,
-  LoadedFingerprintSet,
-  LoadFingerprintSetOptions,
-} from "./scan/fingerprint-set.js";
-export { loadFingerprintSet } from "./scan/fingerprint-set.js";
 export {
   initScopedFingerprintPackage,
   lintAllFingerprintStacks,
@@ -59,12 +53,6 @@ export type {
   LintSeverity,
 } from "./scan/lint.js";
 export { lintFingerprint } from "./scan/lint.js";
-export type {
-  MapLintIssue,
-  MapLintReport,
-  MapLintSeverity,
-} from "./scan/lint-map.js";
-export { lintMap } from "./scan/lint-map.js";
 export { normalizeReferenceInput } from "./scan/package-config.js";
 export type { ParsedFingerprint, ParseOptions } from "./scan/parser.js";
 export { parseFingerprint, splitRaw } from "./scan/parser.js";

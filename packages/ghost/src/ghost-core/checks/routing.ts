@@ -1,8 +1,3 @@
-import {
-  getEffectiveMapScopes,
-  type MapFrontmatter,
-  type MapScope,
-} from "../map/index.js";
 import type { GhostCheck, RoutedGhostValidateCheck } from "./types.js";
 
 export function normalizeGhostPath(path: string): string {
@@ -20,45 +15,26 @@ export function matchesGhostPath(path: string, scopePath: string): boolean {
   return changedPath === normalized || changedPath.startsWith(`${normalized}/`);
 }
 
-export function routeGhostPathToScopes(
-  map: Pick<MapFrontmatter, "scopes" | "feature_areas">,
-  changedPath: string,
-): MapScope[] {
-  const scopes = getEffectiveMapScopes(map).sort(compareScopeSpecificity);
-  return scopes.filter((scope) =>
-    scope.paths.some((pattern) => matchesGhostPath(changedPath, pattern)),
-  );
-}
-
+/**
+ * Route active checks to a changed path by `applies_to.paths` alone.
+ *
+ * Phase 4: the map scope layer is gone. Surface-based routing is rebuilt in
+ * Phase 7; until then a check applies if it declares no paths (global) or one
+ * of its path globs matches the changed file.
+ */
 export function routeGhostValidateForPath(
   checks: GhostCheck[],
-  map: Pick<MapFrontmatter, "scopes" | "feature_areas">,
   changedPath: string,
 ): RoutedGhostValidateCheck[] {
-  const matchedScopes = routeGhostPathToScopes(map, changedPath);
   return checks
     .filter((check) => check.status === "active")
     .flatMap((check) => {
       const applies = check.applies_to;
-      if (!applies) return [{ check, matched_scopes: matchedScopes }];
-
       const pathMatched =
-        !applies.paths?.length ||
+        !applies?.paths?.length ||
         applies.paths.some((pattern) => matchesGhostPath(changedPath, pattern));
-      const scopeMatched =
-        !applies.scopes?.length ||
-        matchedScopes.some((scope) => applies.scopes?.includes(scope.id));
-
-      return pathMatched && scopeMatched
-        ? [{ check, matched_scopes: matchedScopes }]
-        : [];
+      return pathMatched ? [{ check }] : [];
     });
-}
-
-function compareScopeSpecificity(a: MapScope, b: MapScope): number {
-  const aMax = Math.max(...a.paths.map((path) => path.length));
-  const bMax = Math.max(...b.paths.map((path) => path.length));
-  return bMax - aMax || a.id.localeCompare(b.id);
 }
 
 function globToRegExp(glob: string): RegExp {

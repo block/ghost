@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T16:55:39.949Z",
+  "generatedAt": "2026-06-25T23:50:39.120Z",
   "tools": [
     {
       "tool": "ghost",
@@ -146,14 +146,6 @@
           "compactName": "scan",
           "summary": "Report fingerprint contribution facets.",
           "options": [
-            {
-              "rawName": "--include-scopes",
-              "name": "includeScopes",
-              "description": "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
             {
               "rawName": "--include-nested",
               "name": "includeNested",
@@ -778,81 +770,6 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        }
-      ],
-      "globalOptions": [
-        {
-          "rawName": "-h, --help",
-          "name": "help",
-          "description": "Display this message",
-          "default": null
-        },
-        {
-          "rawName": "-v, --version",
-          "name": "version",
-          "description": "Display version number",
-          "default": null
-        }
-      ]
-    },
-    {
-      "tool": "ghost-fleet",
-      "commands": [
-        {
-          "tool": "ghost-fleet",
-          "name": "members",
-          "rawName": "members [dir]",
-          "description": "List registered fleet members and their freshness — one row per (map.md, fingerprint.md) subdirectory.",
-          "options": [
-            {
-              "rawName": "--json",
-              "name": "json",
-              "description": "Output JSON (one object per member) instead of a table",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost-fleet",
-          "name": "view",
-          "rawName": "view [dir]",
-          "description": "Compute the fleet's pairwise distances, group-by tables, and tracks-graph; emit fleet.md + fleet.json into <dir>/reports/.",
-          "options": [
-            {
-              "rawName": "--id <id>",
-              "name": "id",
-              "description": "Override the fleet id (default: directory basename slug)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--out <path>",
-              "name": "out",
-              "description": "Reports directory (default: <dir>/reports)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost-fleet",
-          "name": "emit",
-          "rawName": "emit <kind>",
-          "description": "Emit the ghost-fleet agentskills.io bundle (kind: skill).",
-          "options": [
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Output directory (default: .claude/skills/ghost-fleet)",
-              "default": null,
               "takesValue": true,
               "negated": false
             }
