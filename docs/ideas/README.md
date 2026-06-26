@@ -168,3 +168,8 @@ buildable Layer 2 design. They agree; read them as a sequence.
   into a neutral module first; preserves the `drift` stance ledger (cleanly
   separable from the detector gate). Markdown `ghost.check/v1` becomes the single
   check format.
+- `polish-cut-d-plan.md` — execution spec for Cut D: external contract references
+  in bindings. A `.ghost.bind.yml` `contract:` accepts `.` (in-repo) or an npm
+  package name resolved from `node_modules`; `ghost verify` checks the external
+  contract resolves and its bound surfaces exist. Resolution + validation only;
+  external fingerprint loading for grounding is deferred.

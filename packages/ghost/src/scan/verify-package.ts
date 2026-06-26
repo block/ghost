@@ -1,15 +1,22 @@
-import { access } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
-import type {
-  GhostFingerprintDocument,
-  GhostFingerprintEvidence,
+import { access, readFile } from "node:fs/promises";
+import { dirname, isAbsolute, join, resolve } from "node:path";
+import { parse as parseYaml } from "yaml";
+import {
+  classifyContractReference,
+  GHOST_BINDING_FILENAME,
+  GhostBindingSchema,
+  type GhostFingerprintDocument,
+  type GhostFingerprintEvidence,
+  GhostSurfacesSchema,
 } from "#ghost-core";
+import { resolveContractDir } from "./contract-resolver.js";
 import {
   type LoadedFingerprintPackage,
   lintFingerprintPackage,
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
+import { resolveGitRoot } from "./fingerprint-stack.js";
 import type {
   VerifyFingerprintIssue,
   VerifyFingerprintReport,
@@ -46,7 +53,80 @@ export async function verifyFingerprintPackage(
     await verifyFingerprintExemplars(fingerprint, root, issues);
   }
 
+  // Verify an adjacent .ghost.bind.yml: an external contract must resolve and
+  // the bound surfaces must exist in it.
+  await verifyBindingContract(dirname(paths.dir), cwd, issues);
+
   return finalize(issues);
+}
+
+async function verifyBindingContract(
+  bindingDir: string,
+  cwd: string,
+  issues: VerifyFingerprintIssue[],
+): Promise<void> {
+  const bindingPath = join(bindingDir, GHOST_BINDING_FILENAME);
+  let raw: string;
+  try {
+    raw = await readFile(bindingPath, "utf-8");
+  } catch {
+    return; // no binding to verify
+  }
+
+  const parsed = GhostBindingSchema.safeParse(parseYaml(raw));
+  if (!parsed.success) return; // lint reports schema problems separately
+
+  const { contract, bindings } = parsed.data;
+  // The in-repo contract is validated by the package's own lint/verify.
+  if (classifyContractReference(contract) !== "npm") return;
+
+  const repoRoot = await resolveGitRoot(cwd);
+  const contractDir = await resolveContractDir(contract, bindingDir, repoRoot);
+  if (!contractDir) {
+    issues.push({
+      severity: "error",
+      rule: "binding-contract-unresolved",
+      message: `binding contract '${contract}' could not be resolved from node_modules.`,
+      path: GHOST_BINDING_FILENAME,
+    });
+    return;
+  }
+
+  const surfaceIds = await readContractSurfaceIds(contractDir);
+  if (surfaceIds === null) {
+    issues.push({
+      severity: "error",
+      rule: "binding-contract-unresolved",
+      message: `binding contract '${contract}' has no readable surfaces.yml.`,
+      path: GHOST_BINDING_FILENAME,
+    });
+    return;
+  }
+
+  bindings.forEach((entry, index) => {
+    if (entry.surface === "core") return; // implicit root
+    if (!surfaceIds.has(entry.surface)) {
+      issues.push({
+        severity: "error",
+        rule: "binding-surface-unknown",
+        message: `binding references surface '${entry.surface}' not declared in contract '${contract}'.`,
+        path: `bindings[${index}].surface`,
+      });
+    }
+  });
+}
+
+async function readContractSurfaceIds(
+  contractDir: string,
+): Promise<Set<string> | null> {
+  try {
+    const raw = await readFile(join(contractDir, "surfaces.yml"), "utf-8");
+    const parsed = GhostSurfacesSchema.safeParse(parseYaml(raw));
+    if (!parsed.success) return null;
+    return new Set(parsed.data.surfaces.map((surface) => surface.id));
+  } catch {
+    return null;
+  }
 }
 
 async function verifyFingerprintExemplars(

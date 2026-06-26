@@ -9,6 +9,10 @@ export {
   loadChecksDir,
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
+export {
+  type ResolveContractOptions,
+  resolveContractDir,
+} from "./contract-resolver.js";
 export type {
   ScanBuildingBlockRows,
   ScanContributionReport,
