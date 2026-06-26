@@ -44,8 +44,17 @@ describe("lintGhostBinding", () => {
     expect(lintGhostBinding(doc()).errors).toBe(0);
   });
 
-  it("errors on an unsupported external contract reference", () => {
+  it("accepts an npm-name external contract reference", () => {
     const report = lintGhostBinding(doc({ contract: "@scope/brand" }));
+    expect(
+      report.issues.some(
+        (issue) => issue.rule === "binding-contract-unsupported",
+      ),
+    ).toBe(false);
+  });
+
+  it("errors on a path-like contract reference", () => {
+    const report = lintGhostBinding(doc({ contract: "../brand" }));
     expect(
       report.issues.some(
         (issue) => issue.rule === "binding-contract-unsupported",

@@ -1,4 +1,5 @@
 import type { ZodIssue } from "zod";
+import { classifyContractReference } from "./contract-ref.js";
 import { GhostBindingSchema } from "./schema.js";
 import type {
   GhostBindingDocument,
@@ -9,11 +10,11 @@ import type {
 /**
  * Lint a `ghost.binding/v1` document. Schema-level validity (shape, slug ids,
  * non-empty paths) is enforced by Zod; this adds document-level checks the
- * schema cannot express: only the in-repo `contract: .` is supported for now,
- * and a surface should not be bound twice in one file.
+ * schema cannot express: the contract reference is `.` (in-repo) or an npm
+ * package name, and a surface should not be bound twice in one file.
  *
  * Cross-referencing surface ids against the contract's surfaces happens at
- * resolution, not here — the binding file cannot see the contract.
+ * resolution/verify, not here — the binding file cannot see the contract.
  */
 export function lintGhostBinding(input: unknown): GhostBindingLintReport {
   const result = GhostBindingSchema.safeParse(input);
@@ -22,11 +23,11 @@ export function lintGhostBinding(input: unknown): GhostBindingLintReport {
   const doc = result.data as GhostBindingDocument;
   const issues: GhostBindingLintIssue[] = [];
 
-  if (doc.contract !== ".") {
+  if (classifyContractReference(doc.contract) === "unsupported") {
     issues.push({
       severity: "error",
       rule: "binding-contract-unsupported",
-      message: `contract '${doc.contract}' is not supported; only the in-repo contract '.' is supported.`,
+      message: `contract '${doc.contract}' is not supported; use '.' (in-repo) or an npm package name.`,
       path: "contract",
     });
   }

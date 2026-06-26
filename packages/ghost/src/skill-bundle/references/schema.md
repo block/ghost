@@ -20,7 +20,10 @@ canonical, and uncommitted or unmerged edits are draft work.
 nodes are placed on (`surface:`) and the containment tree (`parent`) plus typed
 composition edges. The contract carries no paths. A repo binds paths to surfaces
 with `.ghost.bind.yml` (`ghost.binding/v1`) or by directory location; a nested
-`.ghost/` binds its subtree, it does not carry its own merged fingerprint.
+`.ghost/` binds its subtree, it does not carry its own merged fingerprint. A
+binding's `contract:` is `.` (the in-repo contract) or an npm package name
+(`@scope/brand`, resolved from `node_modules`); `ghost verify` checks an external
+contract resolves and its bound surfaces exist.
 
 `ghost gather <surface>` composes a surface's slice (own nodes + inherited
 ancestors + edge contributions). `ghost gather --path <file>` resolves the

@@ -3,6 +3,8 @@
 // --- Binding (ghost.binding/v1) ---
 export {
   type BindingCandidate,
+  type ContractReferenceKind,
+  classifyContractReference,
   GHOST_BINDING_FILENAME,
   GHOST_BINDING_SCHEMA,
   type GhostBindingDocument,
@@ -11,6 +13,7 @@ export {
   type GhostBindingLintReport,
   type GhostBindingLintSeverity,
   GhostBindingSchema,
+  IN_REPO_CONTRACT,
   lintGhostBinding,
   type PathResolution,
   type PathResolutionReason,

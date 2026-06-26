@@ -4,6 +4,11 @@
  * docs/ideas/surface-binding.md.
  */
 
+export {
+  type ContractReferenceKind,
+  classifyContractReference,
+  IN_REPO_CONTRACT,
+} from "./contract-ref.js";
 export { lintGhostBinding } from "./lint.js";
 export {
   type BindingCandidate,
