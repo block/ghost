@@ -2772,6 +2772,76 @@ composition:
     expect(result.code).toBe(2);
     expect(JSON.parse(result.stdout).kind).toBe("menu");
   });
+
+  it("migrates a legacy package to the surface model", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(ghost, { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: legacy\n",
+    );
+    await writeFile(
+      join(ghost, "inventory.yml"),
+      `topology:
+  scopes:
+    - id: lending
+      paths: [Code/Lending]
+building_blocks: {}
+exemplars: []
+sources: []
+`,
+    );
+    await writeFile(
+      join(ghost, "intent.yml"),
+      `principles:
+  - id: scoped
+    principle: Placed cleanly.
+    applies_to:
+      scopes: [lending]
+experience_contracts: []
+`,
+    );
+    await writeFile(join(ghost, "composition.yml"), "patterns: []\n");
+
+    const result = await runCli(
+      ["migrate", ".ghost", "--force", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const report = JSON.parse(result.stdout);
+    expect(report.surfaces.map((s: { id: string }) => s.id)).toEqual([
+      "lending",
+    ]);
+
+    // The migrated package must lint clean and gather correctly.
+    const lint = await runCli(["lint", ".ghost/surfaces.yml"], dir, {
+      allowNoExit: true,
+    });
+    expect(lint.stdout).toContain("0 error(s)");
+
+    const gather = await runCli(
+      ["gather", "lending", "--package", ".ghost", "--format", "json"],
+      dir,
+    );
+    const slice = JSON.parse(gather.stdout);
+    expect(
+      slice.principles.find(
+        (entry: { node: { id: string } }) => entry.node.id === "scoped",
+      )?.provenance,
+    ).toEqual({ kind: "own" });
+  });
+
+  it("refuses non-legacy packages", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(["migrate", ".ghost"], dir, {
+      allowNoExit: true,
+    });
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Nothing to migrate");
+  });
 });
 
 async function writeGatherPackage(dir: string): Promise<void> {

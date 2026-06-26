@@ -29,6 +29,12 @@ export {
   resolveGitRoot,
 } from "./fingerprint-stack.js";
 export { signals } from "./inventory.js";
+export type {
+  LegacyPackageInput,
+  MigrationNote,
+  MigrationResult,
+} from "./migrate-legacy.js";
+export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
 export type { MonorepoInitCandidate } from "./monorepo-init.js";
 export { detectMonorepoInitCandidates } from "./monorepo-init.js";
 export type {

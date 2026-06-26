@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T02:18:19.779Z",
+  "generatedAt": "2026-06-26T02:32:32.161Z",
   "tools": [
     {
       "tool": "ghost",
@@ -594,6 +594,38 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "migrate",
+          "rawName": "migrate [dir]",
+          "description": "Migrate a legacy .ghost/ package onto the surface model (surfaces.yml + surface: placement).",
+          "options": [
+            {
+              "rawName": "--dry-run",
+              "name": "dryRun",
+              "description": "Print the migration plan and report; write nothing",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--force",
+              "name": "force",
+              "description": "Overwrite existing facet files with the migrated form",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Report format: cli or json",
+              "default": "cli",
               "takesValue": true,
               "negated": false
             }
