@@ -8,26 +8,24 @@ Canonical package:
   intent.yml                    core surface intent
   inventory.yml                 core material and source links
   composition.yml               core patterns
+  surfaces.yml                  optional ghost.surfaces/v1 coordinate space
+  checks/*.md                   optional ghost.check/v1 markdown checks
   validate.yml                  optional ghost.validate/v1 gates
 ```
 
 Git is the approval boundary: checked-in Ghost package facet files are
 canonical, and uncommitted or unmerged edits are draft work.
 
-The flat package is Ghost's default shape. Advanced repos may add
-`.ghost/relay.yml`, pass `ghost relay gather --config <file>`, or set
-`GHOST_RELAY_CONFIG=<relative-file>` to declare extra Relay context sources.
-Extra project files are Ghost-readable only when they are listed as Relay
-config sources; a schema name alone is not enough. OSS Ghost does not infer
-proprietary ontology from arbitrary YAML, and authored stack files are not Ghost
-Relay source-of-truth.
+`surfaces.yml` declares the coordinate space — the surfaces a fingerprint's
+nodes are placed on (`surface:`) and the containment tree (`parent`) plus typed
+composition edges. The contract carries no paths. A repo binds paths to surfaces
+with `.ghost.bind.yml` (`ghost.binding/v1`) or by directory location; a nested
+`.ghost/` binds its subtree, it does not carry its own merged fingerprint.
 
-Relay configs choose the context-gathering base runtime. Omitted `base` means
-`base.kind: fingerprint`, which preserves the default `.ghost` fingerprint
-stack. Explicit `base.kind: none` lets a host framework gather declared request
-context without a `.ghost` package. In that mode, use `context.sections`,
-`context.extras`, source, gaps, and trace from `ghost.relay.gather/v2`; the
-top-level `selected_context` is intentionally sparse.
+`ghost gather <surface>` composes a surface's slice (own nodes + inherited
+ancestors + edge contributions). `ghost gather --path <file>` resolves the
+surface that owns a path via its binding. With no surface, `gather` returns the
+surface menu for the host agent to match against.
 
 `manifest.yml`:
 

@@ -74,11 +74,18 @@ const COMMAND_DISCOVERY = [
     summary: "Emit an advisory packet from fingerprint facets and a diff.",
   },
   {
-    name: "relay",
+    name: "gather",
     group: "core",
     defaultHelp: true,
-    compactName: "relay gather",
-    summary: "Gather fingerprint context for an agent target.",
+    compactName: "gather",
+    summary: "Gather the composed context slice for a surface.",
+  },
+  {
+    name: "checks",
+    group: "core",
+    defaultHelp: true,
+    compactName: "checks",
+    summary: "Select and ground the checks relevant to a diff, by surface.",
   },
   {
     name: "emit",
@@ -95,25 +102,11 @@ const COMMAND_DISCOVERY = [
     summary: "Install the Ghost skill bundle.",
   },
   {
-    name: "stack",
-    group: "advanced",
-    defaultHelp: false,
-    compactName: "stack",
-    summary: "Inspect a nested fingerprint stack for repo paths.",
-  },
-  {
     name: "signals",
     group: "advanced",
     defaultHelp: false,
     compactName: "signals",
     summary: "Emit raw repo signals for fingerprint authoring.",
-  },
-  {
-    name: "describe",
-    group: "advanced",
-    defaultHelp: false,
-    compactName: "describe",
-    summary: "Print markdown section ranges.",
   },
   {
     name: "compare",
@@ -151,18 +144,11 @@ const COMMAND_DISCOVERY = [
     summary: "Declare intentional divergence on a dimension.",
   },
   {
-    name: "diff",
+    name: "migrate",
     group: "maintenance",
     defaultHelp: false,
-    compactName: "diff",
-    summary: "Diff two direct markdown fingerprints.",
-  },
-  {
-    name: "survey",
-    group: "maintenance",
-    defaultHelp: false,
-    compactName: "survey",
-    summary: "Run legacy survey helpers.",
+    compactName: "migrate",
+    summary: "Migrate a legacy .ghost/ package onto the surface model.",
   },
 ] satisfies ReadonlyArray<Omit<CommandDiscoveryMetadata, "order">>;
 

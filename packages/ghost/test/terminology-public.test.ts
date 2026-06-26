@@ -19,7 +19,6 @@ const PUBLIC_TEXT_ROOTS = [
 
 const EMITTED_TEXT_FILES = [
   "packages/ghost/src/context/selected-context.ts",
-  "packages/ghost/src/context/entrypoint-markdown.ts",
   "packages/ghost/src/context/package-review-command.ts",
   "packages/ghost/src/review-packet.ts",
 ] as const;

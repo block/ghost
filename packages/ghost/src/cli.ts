@@ -32,7 +32,6 @@ import { formatSemanticDiff } from "./fingerprint.js";
 import { registerFingerprintCommands } from "./fingerprint-commands.js";
 import { registerGatherCommand } from "./gather-command.js";
 import { registerMigrateCommand } from "./migrate-command.js";
-import { registerRelayCommand } from "./relay-command.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
@@ -161,7 +160,6 @@ export function buildCli(): ReturnType<typeof cac> {
   registerGatherCommand(cli);
   registerChecksCommand(cli);
   registerMigrateCommand(cli);
-  registerRelayCommand(cli);
   registerSkillCommand(cli);
 
   // --- check ---

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T04:58:52.923Z",
+  "generatedAt": "2026-06-26T05:19:12.918Z",
   "tools": [
     {
       "tool": "ghost",
@@ -166,26 +166,6 @@
         },
         {
           "tool": "ghost",
-          "name": "stack",
-          "rawName": "stack [paths...]",
-          "description": "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
-          "group": "advanced",
-          "defaultHelp": false,
-          "compactName": "stack",
-          "summary": "Inspect a nested fingerprint stack for repo paths.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
           "name": "signals",
           "rawName": "signals [path]",
           "description": "Emit deterministic raw repo signals as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
@@ -194,90 +174,6 @@
           "compactName": "signals",
           "summary": "Emit raw repo signals for fingerprint authoring.",
           "options": []
-        },
-        {
-          "tool": "ghost",
-          "name": "describe",
-          "rawName": "describe <fingerprint>",
-          "description": "Print a section map of a markdown file (line ranges + token estimates).",
-          "group": "advanced",
-          "defaultHelp": false,
-          "compactName": "describe",
-          "summary": "Print markdown section ranges.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "diff",
-          "rawName": "diff <a> <b>",
-          "description": "Direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
-          "group": "maintenance",
-          "defaultHelp": false,
-          "compactName": "diff",
-          "summary": "Diff two direct markdown fingerprints.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "survey",
-          "rawName": "survey <op> [...surveys]",
-          "description": "Survey/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
-          "group": "maintenance",
-          "defaultHelp": false,
-          "compactName": "survey",
-          "summary": "Run legacy survey helpers.",
-          "options": [
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Write the result to this path (default: stdout)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: summarize/catalog use markdown or json; patterns use yaml, json, or markdown",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--kind <kind>",
-              "name": "kind",
-              "description": "survey catalog filter: include only this value kind",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--budget <name>",
-              "name": "budget",
-              "description": "survey summarize budget: compact, standard, full",
-              "default": "standard",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
         },
         {
           "tool": "ghost",
@@ -580,6 +476,10 @@
           "name": "gather",
           "rawName": "gather [surface]",
           "description": "Gather the composed context slice for a surface (the right context at the right time).",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "gather",
+          "summary": "Gather the composed context slice for a surface.",
           "options": [
             {
               "rawName": "--package <dir>",
@@ -612,6 +512,10 @@
           "name": "checks",
           "rawName": "checks",
           "description": "Select the markdown checks (ghost.check/v1) relevant to a diff, routed by surface.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "checks",
+          "summary": "Select and ground the checks relevant to a diff, by surface.",
           "options": [
             {
               "rawName": "--base <ref>",
@@ -660,6 +564,10 @@
           "name": "migrate",
           "rawName": "migrate [dir]",
           "description": "Migrate a legacy .ghost/ package onto the surface model (surfaces.yml + surface: placement).",
+          "group": "maintenance",
+          "defaultHelp": false,
+          "compactName": "migrate",
+          "summary": "Migrate a legacy .ghost/ package onto the surface model.",
           "options": [
             {
               "rawName": "--dry-run",
@@ -682,74 +590,6 @@
               "name": "format",
               "description": "Report format: cli or json",
               "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "relay",
-          "rawName": "relay <action> [target]",
-          "description": "Gather Relay context for an agent target.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "relay gather",
-          "summary": "Gather fingerprint context for an agent target.",
-          "options": [
-            {
-              "rawName": "--package <dir>",
-              "name": "package",
-              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--name <name>",
-              "name": "name",
-              "description": "Override the gathered context name (default: intent.yml product or resolved scope)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: markdown or json",
-              "default": "markdown",
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--config <file>",
-              "name": "config",
-              "description": "Load an explicit Ghost Relay config",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--request <file>",
-              "name": "request",
-              "description": "Load a structured Ghost Relay request",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--request-stdin",
-              "name": "requestStdin",
-              "description": "Read a structured Ghost Relay request from stdin",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--mode <mode>",
-              "name": "mode",
-              "description": "Relay mode: generation, review, or prompt",
-              "default": "generation",
               "takesValue": true,
               "negated": false
             }
