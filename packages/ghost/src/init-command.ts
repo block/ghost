@@ -112,7 +112,6 @@ export function registerInitCommand(cli: CAC): void {
           process.stdout.write(`  intent.yml: ${paths.intent}\n`);
           process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
           process.stdout.write(`  composition.yml: ${paths.composition}\n`);
-          process.stdout.write(`  validate.yml: ${paths.checks}\n`);
         }
         process.exit(0);
       } catch (err) {
@@ -137,6 +136,5 @@ function initCommandOutput(
     intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
-    checks: paths.checks,
   };
 }

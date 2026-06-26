@@ -1,10 +1,5 @@
 import { parse as parseYaml } from "yaml";
-import {
-  type GhostFingerprintDocument,
-  type GhostValidateDocument,
-  GhostValidateSchema,
-  lintGhostValidate,
-} from "#ghost-core";
+import type { GhostFingerprintDocument } from "#ghost-core";
 import { readOptionalUtf8 } from "../internal/fs.js";
 import {
   type FingerprintPackagePaths,
@@ -24,21 +19,15 @@ export interface PackageContext {
     inventory?: string;
     composition?: string;
   };
-  checks?: GhostValidateDocument;
-  checksRaw?: string;
 }
 
 export async function loadPackageContext(
   paths: FingerprintPackagePaths,
   nameOverride?: string,
 ): Promise<PackageContext> {
-  const [loaded, checksRaw] = await Promise.all([
-    loadFingerprintPackage(paths),
-    readOptional(paths.checks),
-  ]);
+  const loaded = await loadFingerprintPackage(paths);
 
   const fingerprint = loaded.fingerprint;
-  const checks = checksRaw ? parseChecks(checksRaw, fingerprint) : undefined;
   return {
     name: sanitizeName(nameOverride ?? inferPackageName(fingerprint)),
     packageDir: paths.dir,
@@ -48,33 +37,9 @@ export async function loadPackageContext(
       manifest: loaded.manifestRaw,
       ...loaded.layerRaw,
     },
-    checks,
-    checksRaw,
   };
 }
 
-function parseChecks(
-  raw: string,
-  fingerprint: GhostFingerprintDocument,
-): GhostValidateDocument {
-  const parsed = parseYamlSafe(raw, "validate.yml");
-  const report = lintGhostValidate(parsed, { fingerprint });
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.path ? ` @ ${first.path}` : "";
-    throw new Error(
-      `validate.yml failed lint with ${report.errors} error(s): ${
-        first?.message ?? "invalid checks"
-      }${suffix}`,
-    );
-  }
-
-  const result = GhostValidateSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error("validate.yml failed schema validation.");
-  }
-  return result.data as GhostValidateDocument;
-}
 
 function parseYamlSafe(raw: string, label: string): unknown {
   try {

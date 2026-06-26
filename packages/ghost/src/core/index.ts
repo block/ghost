@@ -58,20 +58,6 @@ export {
   embeddingDistance,
   inferSemanticRole,
 } from "#ghost-core";
-export type {
-  GhostDriftChangedFile,
-  GhostDriftChangedLine,
-  GhostDriftCheckFinding,
-  GhostDriftCheckOptions,
-  GhostDriftCheckReport,
-  GhostDriftCheckStack,
-  GhostDriftRoutedFile,
-} from "./check.js";
-export {
-  formatGhostDriftCheckMarkdown,
-  parseUnifiedDiff,
-  runGhostDriftCheck,
-} from "./check.js";
 export type { CompareOptions, CompareResult } from "./compare.js";
 export { compare } from "./compare.js";
 export { defineConfig, loadConfig, resolveTarget } from "./config.js";

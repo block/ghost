@@ -34,37 +34,6 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
-export type {
-  GhostCheck,
-  GhostCheckAppliesTo,
-  GhostCheckDerivation,
-  GhostCheckDerivationCompositionRef,
-  GhostCheckDerivationIntentRef,
-  GhostCheckDerivationInventoryRef,
-  GhostCheckDetector,
-  GhostCheckDetectorType,
-  GhostCheckEvidence,
-  GhostCheckSeverity,
-  GhostCheckStatus,
-  GhostValidateDocument,
-  GhostValidateLintIssue,
-  GhostValidateLintOptions,
-  GhostValidateLintReport,
-  GhostValidateLintSeverity,
-  RoutedGhostValidateCheck,
-} from "./checks/index.js";
-// --- Checks (ghost.validate/v1) ---
-export {
-  GHOST_VALIDATE_FILENAME,
-  GHOST_VALIDATE_SCHEMA,
-  GhostCheckDerivationSchema,
-  GhostCheckSchema,
-  GhostValidateSchema,
-  lintGhostValidate,
-  matchesGhostPath,
-  normalizeGhostPath,
-  routeGhostValidateForPath,
-} from "./checks/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
 export {
   CANONICAL_DECISION_DIMENSIONS,

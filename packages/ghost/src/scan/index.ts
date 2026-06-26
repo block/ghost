@@ -4,6 +4,11 @@ export {
   discoverBindingsForPath,
 } from "./binding-discovery.js";
 export {
+  type ChangedFile,
+  type ChangedLine,
+  parseUnifiedDiff,
+} from "./unified-diff.js";
+export {
   GHOST_CHECKS_DIRNAME,
   type LoadedChecksDir,
   loadChecksDir,
