@@ -9,11 +9,11 @@ import {
   type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { parseUnifiedDiff } from "./scan/unified-diff.js";
 import { resolveFingerprintPackage } from "./fingerprint.js";
 import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadChecksDir } from "./scan/checks-dir.js";
 import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
+import { parseUnifiedDiff } from "./scan/unified-diff.js";
 
 const execFileAsync = promisify(execFile);
 

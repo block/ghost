@@ -4,11 +4,6 @@ export {
   discoverBindingsForPath,
 } from "./binding-discovery.js";
 export {
-  type ChangedFile,
-  type ChangedLine,
-  parseUnifiedDiff,
-} from "./unified-diff.js";
-export {
   GHOST_CHECKS_DIRNAME,
   type LoadedChecksDir,
   loadChecksDir,
@@ -21,7 +16,6 @@ export type {
   ScanFacet,
   ScanFacetReport,
   ScanFacetState,
-  ScanValidateCounts,
 } from "./fingerprint-contribution.js";
 export type {
   DiscoveredGhostPackage,
@@ -59,3 +53,8 @@ export type {
   ScanStatus,
 } from "./scan-status.js";
 export { scanStatus } from "./scan-status.js";
+export {
+  type ChangedFile,
+  type ChangedLine,
+  parseUnifiedDiff,
+} from "./unified-diff.js";

@@ -1,7 +1,7 @@
 import * as compareApi from "./compare.js";
 import { compare as compareFunction } from "./core/index.js";
 
-/** @deprecated Use `govern`, `compare`, `@anarchitecture/ghost/govern`, or `@anarchitecture/ghost/compare`. */
+/** @deprecated Use `compare` or `@anarchitecture/ghost/compare`. */
 export * as drift from "./core/index.js";
 export * from "./core/index.js";
 export const compare = Object.assign(compareFunction, compareApi);

@@ -228,7 +228,6 @@ function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
   return lines.join("\n");
 }
 
-
 function packageReviewFooter(context: PackageContext): string {
   const packageDir = displayPackageDir(context);
   return `---

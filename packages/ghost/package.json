@@ -51,10 +51,7 @@
       "types": "./dist/fingerprint.d.ts",
       "import": "./dist/fingerprint.js"
     },
-    "./govern": {
-      "types": "./dist/govern.d.ts",
-      "import": "./dist/govern.js"
-    },
+
     "./compare": {
       "types": "./dist/compare.d.ts",
       "import": "./dist/compare.js"
