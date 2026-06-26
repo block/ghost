@@ -1,13 +1,9 @@
-import { access, readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
 import type {
-  GhostCheck,
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
-  GhostValidateDocument,
 } from "#ghost-core";
-import { GhostValidateSchema } from "#ghost-core";
 import {
   type LoadedFingerprintPackage,
   lintFingerprintPackage,
@@ -43,18 +39,11 @@ export async function verifyFingerprintPackage(
   );
   if (packageLint.errors > 0) return finalize(issues);
 
-  const [loaded, checks] = await Promise.all([
-    readFingerprintPackage(paths, issues),
-    readOptionalChecks(paths.checks, issues),
-  ]);
+  const loaded = await readFingerprintPackage(paths, issues);
   const fingerprint = loaded?.fingerprint;
   if (fingerprint) {
     await verifyFingerprintEvidence(fingerprint, root, issues);
     await verifyFingerprintExemplars(fingerprint, root, issues);
-  }
-
-  if (fingerprint && checks) {
-    verifyFingerprintCheckRefs(fingerprint, checks.checks, issues);
   }
 
   return finalize(issues);
@@ -95,35 +84,6 @@ async function readFingerprintPackage(
         err instanceof Error ? err.message : String(err)
       }`,
       path: "fingerprint",
-    });
-    return undefined;
-  }
-}
-
-async function readOptionalChecks(
-  path: string,
-  issues: VerifyFingerprintIssue[],
-): Promise<GhostValidateDocument | undefined> {
-  try {
-    const parsed = parseYaml(await readFile(path, "utf-8"));
-    const result = GhostValidateSchema.safeParse(parsed);
-    if (result.success) return result.data as GhostValidateDocument;
-    issues.push({
-      severity: "error",
-      rule: "verify-checks-read-failed",
-      message: "validate.yml failed schema validation after package lint.",
-      path: "validate.yml",
-    });
-    return undefined;
-  } catch (err) {
-    if (isMissingFileError(err)) return undefined;
-    issues.push({
-      severity: "error",
-      rule: "verify-checks-read-failed",
-      message: `validate.yml could not be read as YAML: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path: "validate.yml",
     });
     return undefined;
   }
@@ -186,50 +146,6 @@ async function verifyFingerprintEvidence(
   }
 }
 
-function verifyFingerprintCheckRefs(
-  fingerprint: GhostFingerprintDocument,
-  checks: GhostCheck[],
-  issues: VerifyFingerprintIssue[],
-): void {
-  const checkIds = new Set(checks.map((check) => check.id));
-  const checkRefLists: Array<[string, string[] | undefined]> = [
-    ...fingerprint.intent.principles.map(
-      (entry, index) =>
-        [`intent.yml.principles[${index}].check_refs`, entry.check_refs] as [
-          string,
-          string[] | undefined,
-        ],
-    ),
-    ...fingerprint.intent.experience_contracts.map(
-      (entry, index) =>
-        [
-          `intent.yml.experience_contracts[${index}].check_refs`,
-          entry.check_refs,
-        ] as [string, string[] | undefined],
-    ),
-    ...fingerprint.composition.patterns.map(
-      (entry, index) =>
-        [`composition.yml.patterns[${index}].check_refs`, entry.check_refs] as [
-          string,
-          string[] | undefined,
-        ],
-    ),
-  ];
-
-  checkRefLists.forEach(([path, refs]) => {
-    refs?.forEach((ref, index) => {
-      const [, id] = ref.split(":");
-      if (id && checkIds.has(id)) return;
-      issues.push({
-        severity: "error",
-        rule: "fingerprint-check-unknown",
-        message: `fingerprint facet references unknown check '${ref}'.`,
-        path: `${path}[${index}]`,
-      });
-    });
-  });
-}
-
 async function pathExists(path: string): Promise<boolean> {
   try {
     await access(path);
@@ -239,7 +155,7 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-function isMissingFileError(err: unknown): boolean {
+function _isMissingFileError(err: unknown): boolean {
   return (
     typeof err === "object" &&
     err !== null &&

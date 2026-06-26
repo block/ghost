@@ -18,13 +18,14 @@ materials it draws from, and the patterns that make it feel intentional.
   intent.yml
   inventory.yml
   composition.yml
-  validate.yml
+  surfaces.yml
+  checks/*.md
 ```
 
 The checked-in `.ghost/` package is the source of truth. Ordinary Git
 workflow is the staging and approval boundary: uncommitted or unmerged changes
-are drafts, and committed fingerprint changes are canonical for Ghost. Checks are optional
-deterministic gates. Ghost is not a lifecycle manager, proposal system,
+are drafts, and committed fingerprint changes are canonical for Ghost. Checks are
+markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
 Generation uses **intent + inventory + composition**:
@@ -42,7 +43,7 @@ Checks and review validate output; they are not generation input.
 facet content; Ghost normalizes omitted facet files or sections internally for
 checks, review, emit, and surface resolution.
 
-Optional deterministic gates live in `validate.yml`.
+Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
 raw repo observations while authoring curated fingerprint facets.
 
@@ -56,12 +57,12 @@ own review or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Create `.ghost/` with manifest, facets, and deterministic checks. |
+| `ghost init` | Create `.ghost/` with manifest and facets. |
 | `ghost scan [dir] [--format json]` | Report sparse fingerprint contribution facets. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
-| `ghost check --base <ref>` | Run active deterministic gates against a diff. |
-| `ghost review --base <ref>` | Emit an advisory review packet grounded in fingerprint facets, exemplars, checks, and diff evidence. |
+| `ghost checks --diff <patch>` | Select and ground the markdown checks governing a diff's surfaces. |
+| `ghost review --diff <patch>` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding. |
 | `ghost gather [surface]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
 | `ghost checks --diff <patch>` | Select and ground the markdown checks governing a diff's surfaces. |
 | `ghost emit <kind>` | Emit `review-command`. |
@@ -101,14 +102,14 @@ evidence-backed facet entries, then ask the human to curate the claims.
 
 - Treat checked-in Ghost package facet files as the source of truth.
 - Generate from intent, inventory, and composition.
-- Run active checks from `validate.yml`; only active deterministic checks block.
+- Route a diff with `ghost checks`; the agent evaluates the markdown checks it governs.
 - Use local evidence as provisional when fingerprint facets are silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
   fingerprint facets useful.
-- Run `ghost check` for deterministic gates and `ghost review` for advisory critique.
+- Run `ghost checks` to route checks and `ghost review` for the advisory packet.
 - Use nested stacks and custom package dirs only when
   present or requested.
 

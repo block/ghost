@@ -5,13 +5,13 @@ import {
   type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { parseUnifiedDiff } from "./scan/unified-diff.js";
 import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadChecksDir } from "./scan/checks-dir.js";
 import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./scan/fingerprint-package.js";
+import { parseUnifiedDiff } from "./scan/unified-diff.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 

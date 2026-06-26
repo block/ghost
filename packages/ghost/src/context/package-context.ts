@@ -40,8 +40,7 @@ export async function loadPackageContext(
   };
 }
 
-
-function parseYamlSafe(raw: string, label: string): unknown {
+function _parseYamlSafe(raw: string, label: string): unknown {
   try {
     return parseYaml(raw);
   } catch (err) {
@@ -53,7 +52,7 @@ function parseYamlSafe(raw: string, label: string): unknown {
   }
 }
 
-const readOptional = readOptionalUtf8;
+const _readOptional = readOptionalUtf8;
 
 function inferPackageName(fingerprint: GhostFingerprintDocument): string {
   if (fingerprint.intent.summary.product)

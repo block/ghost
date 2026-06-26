@@ -27,7 +27,6 @@ import {
 import {
   lintFingerprintPackageManifest,
   parseSplitFingerprintForLint,
-  templateChecks,
   templateComposition,
   templateIntent,
   templateInventory,
@@ -170,10 +169,10 @@ export async function lintFingerprintPackage(
   const inventoryRaw = await readOptional(paths.inventory);
   const compositionRaw = await readOptional(paths.composition);
 
-  let fingerprint: GhostFingerprintDocument | undefined;
+  let _fingerprint: GhostFingerprintDocument | undefined;
   if (manifestRaw !== undefined) {
     lintFingerprintPackageManifest(manifestRaw, issues);
-    fingerprint = parseSplitFingerprintForLint(
+    _fingerprint = parseSplitFingerprintForLint(
       { intentRaw, inventoryRaw, compositionRaw },
       issues,
     );
@@ -202,7 +201,7 @@ async function readRequired(
 
 const readOptional = readOptionalUtf8;
 
-function parseYamlSafe(
+function _parseYamlSafe(
   raw: string,
   label: string,
   issues: LintIssue[],
@@ -222,7 +221,7 @@ function parseYamlSafe(
   }
 }
 
-function prefixIssues(
+function _prefixIssues(
   label: string,
   input: Array<{
     severity: "error" | "warning" | "info";

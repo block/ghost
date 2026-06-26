@@ -109,7 +109,7 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
 export function lintDetectedFileKind(
   kind: DetectedFileKind,
   raw: string,
-  options: LintDetectedFileKindOptions = {},
+  _options: LintDetectedFileKindOptions = {},
 ): ReturnType<typeof lintFingerprint> {
   return kind === "survey"
     ? lintSurveyFile(raw)
@@ -158,7 +158,6 @@ function lintSurveyFile(raw: string): SurveyLintReport {
   }
   return lintSurvey(json);
 }
-
 
 function lintFingerprintYmlFile(
   raw: string,
