@@ -173,3 +173,7 @@ buildable Layer 2 design. They agree; read them as a sequence.
   package name resolved from `node_modules`; `ghost verify` checks the external
   contract resolves and its bound surfaces exist. Resolution + validation only;
   external fingerprint loading for grounding is deferred.
+- `parked-survey-module.md` — a deliberate decision **not** to act: the
+  `ghost.survey/v1` module is isolated, works, and is unexposed, so it stays
+  parked. Removal is an excavation (compare/perceptual-prior may depend on survey
+  evidence), not a deletion — surfaced only if a concrete reason appears.
