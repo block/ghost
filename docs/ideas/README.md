@@ -185,3 +185,10 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `checks`/`review` take agent-stated `--surface`; external contracts via
   `gather --package`. Surface engine + nested-package discovery untouched.
   Supersedes `surface-binding.md` / Phase 7a / `polish-cut-d-plan.md`.
+- `contract-storage.md` — open exploration: the unexamined fork is **facet-first
+  vs. surface-first** storage, not "one giant yml." Storage is a projection too;
+  the loader (`assembleFingerprint`) is the only structural boundary that moves,
+  and the model + every read consumer are untouched. Surface-first colocates each
+  concept (a surface = a directory), makes `surface:` implicit-by-location
+  (inside the contract, not the repo), and mirrors the cascade with `core/` as
+  the cross-cutting home. Lands after one-road. Not decided.
