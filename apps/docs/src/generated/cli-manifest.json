@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-25T23:50:39.120Z",
+  "generatedAt": "2026-06-26T02:18:19.779Z",
   "tools": [
     {
       "tool": "ghost",
@@ -561,6 +561,30 @@
               "rawName": "--max-divergence-days <n>",
               "name": "maxDivergenceDays",
               "description": "Flag diverging dimensions older than this many days as uncovered",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "gather",
+          "rawName": "gather [surface]",
+          "description": "Gather the composed context slice for a surface (the right context at the right time).",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false

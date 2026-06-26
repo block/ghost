@@ -2715,7 +2715,105 @@ composition:
     expect(verify.code).toBe(0);
     expect(JSON.parse(scan.stdout).nested_packages).toHaveLength(2);
   });
+
+  it("gathers a composed slice for a surface", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      ["gather", "email-marketing", "--package", ".ghost", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const slice = JSON.parse(result.stdout);
+    expect(slice.surface).toBe("email-marketing");
+    const byId = Object.fromEntries(
+      slice.principles.map(
+        (entry: { node: { id: string }; provenance: unknown }) => [
+          entry.node.id,
+          entry.provenance,
+        ],
+      ),
+    );
+    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", surface: "core" });
+    expect(byId["marketing-urgency"]).toEqual({ kind: "own" });
+    expect(byId["checkout-clarity"]).toEqual({
+      kind: "edge",
+      edge: "composes",
+      surface: "checkout",
+    });
+  });
+
+  it("returns the surface menu when no surface is named", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      ["gather", "--package", ".ghost", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("menu");
+    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
+      "email-marketing",
+    );
+  });
+
+  it("returns the menu and exits non-zero for an unknown surface", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      ["gather", "nope", "--package", ".ghost", "--format", "json"],
+      dir,
+      { allowNoExit: true },
+    );
+
+    expect(result.code).toBe(2);
+    expect(JSON.parse(result.stdout).kind).toBe("menu");
+  });
 });
+
+async function writeGatherPackage(dir: string): Promise<void> {
+  const ghost = join(dir, ".ghost");
+  await mkdir(ghost, { recursive: true });
+  await writeFile(
+    join(ghost, "manifest.yml"),
+    "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
+  );
+  await writeFile(
+    join(ghost, "surfaces.yml"),
+    `schema: ghost.surfaces/v1
+surfaces:
+  - id: email
+    description: Email surface.
+    parent: core
+  - id: email-marketing
+    description: Marketing email.
+    parent: email
+    edges:
+      - kind: composes
+        to: checkout
+  - id: checkout
+    description: Checkout.
+    parent: core
+`,
+  );
+  await writeFile(
+    join(ghost, "intent.yml"),
+    `principles:
+  - id: brand-voice
+    principle: Warm and concise.
+    surface: core
+  - id: marketing-urgency
+    principle: Marketing may use urgency.
+    surface: email-marketing
+  - id: checkout-clarity
+    principle: Checkout copy is plain.
+    surface: checkout
+`,
+  );
+}
 
 async function writeCheckPackage(
   dir: string,

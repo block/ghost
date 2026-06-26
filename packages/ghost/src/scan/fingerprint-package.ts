@@ -2,9 +2,11 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
+  GHOST_SURFACES_YML_FILENAME,
   GHOST_VALIDATE_FILENAME,
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
+  type GhostSurfacesDocument,
   lintGhostValidate,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -44,6 +46,7 @@ export interface FingerprintPackagePaths {
   intent: string;
   inventory: string;
   composition: string;
+  surfaces: string;
   fingerprintYml: string;
   resources: string;
   survey: string;
@@ -57,6 +60,8 @@ export interface LoadedFingerprintPackage {
   manifest: GhostFingerprintPackageManifest;
   manifestRaw: string;
   fingerprint: GhostFingerprintDocument;
+  /** Parsed `surfaces.yml`, or `undefined` when the package has no surfaces file. */
+  surfaces?: GhostSurfacesDocument;
   layerRaw: {
     intent?: string;
     inventory?: string;
@@ -82,6 +87,7 @@ export function resolveFingerprintPackage(
     intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
     inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
+    surfaces: join(packageDir, GHOST_SURFACES_YML_FILENAME),
     fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
     resources: join(dir, RESOURCES_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
