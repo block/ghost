@@ -18,6 +18,7 @@ export {
 } from "./binding/index.js";
 // --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
 export {
+  type CheckRelevance,
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,
   type GhostCheckDocument,
@@ -30,6 +31,8 @@ export {
   loadGhostCheck,
   type ParsedCheckMarkdown,
   parseCheckMarkdown,
+  type RoutedCheck,
+  selectChecksForSurfaces,
 } from "./check/index.js";
 export type {
   GhostCheck,

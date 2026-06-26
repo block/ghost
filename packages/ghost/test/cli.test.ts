@@ -2839,6 +2839,71 @@ experience_contracts: []
     expect(result.code).toBe(2);
     expect(result.stderr).toContain("Nothing to migrate");
   });
+
+  it("routes markdown checks to a diff by surface", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(join(ghost, "checks"), { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: c3\n",
+    );
+    await writeFile(
+      join(ghost, "surfaces.yml"),
+      `schema: ghost.surfaces/v1
+surfaces:
+  - id: checkout
+    parent: core
+  - id: email
+    parent: core
+`,
+    );
+    // Directory-implied binding for apps/checkout.
+    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
+      `schema: ghost.surfaces/v1
+surfaces:
+  - id: checkout
+    parent: core
+`,
+    );
+    await writeFile(
+      join(ghost, "checks", "brand.md"),
+      "---\nname: brand\ndescription: Brand voice.\nseverity: medium\nsurface: core\n---\n## Instructions\nVoice.\n",
+    );
+    await writeFile(
+      join(ghost, "checks", "checkout.md"),
+      "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsurface: checkout\n---\n## Instructions\nFlag hex.\n",
+    );
+    await writeFile(
+      join(ghost, "checks", "email.md"),
+      "---\nname: email-links\ndescription: Email links.\nseverity: low\nsurface: email\n---\n## Instructions\nLinks.\n",
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
+    );
+
+    const result = await runCli(
+      [
+        "checks",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.touched_surfaces).toContain("checkout");
+    const names = payload.checks.map((c: { name: string }) => c.name).sort();
+    expect(names).toEqual(["brand", "checkout-color"]);
+    expect(names).not.toContain("email-links");
+  });
 });
 
 async function writeGatherPackage(dir: string): Promise<void> {

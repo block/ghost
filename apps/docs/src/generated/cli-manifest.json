@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T04:28:18.407Z",
+  "generatedAt": "2026-06-26T04:44:02.150Z",
   "tools": [
     {
       "tool": "ghost",
@@ -593,6 +593,46 @@
               "rawName": "--path <file>",
               "name": "path",
               "description": "Resolve the surface that owns a repo path via its binding, then gather",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "checks",
+          "rawName": "checks",
+          "description": "Select the markdown checks (ghost.check/v1) relevant to a diff, routed by surface.",
+          "options": [
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to route instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false

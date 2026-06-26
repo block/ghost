@@ -3,6 +3,11 @@ export {
   type DiscoveredBindings,
   discoverBindingsForPath,
 } from "./binding-discovery.js";
+export {
+  GHOST_CHECKS_DIRNAME,
+  type LoadedChecksDir,
+  loadChecksDir,
+} from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
   ScanBuildingBlockRows,

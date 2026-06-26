@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { cac } from "cac";
+import { registerChecksCommand } from "./checks-command.js";
 import { formatGhostHelp } from "./command-discovery.js";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {
@@ -158,6 +159,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerDivergeCommand(cli);
   registerDriftCommand(cli);
   registerGatherCommand(cli);
+  registerChecksCommand(cli);
   registerMigrateCommand(cli);
   registerRelayCommand(cli);
   registerSkillCommand(cli);

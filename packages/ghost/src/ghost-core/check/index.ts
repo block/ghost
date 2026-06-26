@@ -8,6 +8,11 @@ export { lintGhostCheck } from "./lint.js";
 export { loadGhostCheck } from "./load.js";
 export { type ParsedCheckMarkdown, parseCheckMarkdown } from "./parse.js";
 export {
+  type CheckRelevance,
+  type RoutedCheck,
+  selectChecksForSurfaces,
+} from "./route.js";
+export {
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,
   type GhostCheckDocument,

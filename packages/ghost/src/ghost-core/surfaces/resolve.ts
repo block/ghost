@@ -5,6 +5,7 @@ import type {
   GhostFingerprintPrinciple,
   GhostFingerprintSituation,
 } from "../fingerprint/types.js";
+import { ancestorChain, buildParentMap } from "./cascade.js";
 import {
   GHOST_SURFACE_ROOT_ID,
   type GhostSurfaceEdgeKind,
@@ -60,10 +61,7 @@ export function resolveSurfaceSlice(
   fingerprint: GhostFingerprintDocument,
   surfaceId: string,
 ): ResolvedSlice {
-  const parentOf = new Map<string, string | undefined>();
-  for (const surface of surfaces?.surfaces ?? []) {
-    parentOf.set(surface.id, surface.parent);
-  }
+  const parentOf = buildParentMap(surfaces);
 
   // Ancestor chain: surfaceId's parents up to (and including) core, excluding
   // the surface itself. `core` is the implicit root every chain ends at.
@@ -146,30 +144,4 @@ export function resolveSurfaceSlice(
   }
 
   return slice;
-}
-
-/**
- * The parent chain from `surfaceId` up to the implicit `core` root, excluding
- * the surface itself. Stops at `core` (never included as an ancestor entry,
- * since `core`-placed nodes are handled as the cascade root) and guards against
- * cycles defensively (lint already rejects them).
- */
-function ancestorChain(
-  surfaceId: string,
-  parentOf: Map<string, string | undefined>,
-): string[] {
-  const chain: string[] = [];
-  const seen = new Set<string>([surfaceId]);
-  let current = parentOf.get(surfaceId);
-  while (current !== undefined && current !== GHOST_SURFACE_ROOT_ID) {
-    if (seen.has(current)) break;
-    chain.push(current);
-    seen.add(current);
-    if (!parentOf.has(current)) break;
-    current = parentOf.get(current);
-  }
-  // `core` is always an implicit ancestor (the cascade root) unless the surface
-  // *is* core.
-  if (surfaceId !== GHOST_SURFACE_ROOT_ID) chain.push(GHOST_SURFACE_ROOT_ID);
-  return chain;
 }
