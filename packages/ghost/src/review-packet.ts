@@ -1,106 +1,66 @@
-import { stringify as stringifyYaml } from "yaml";
-import { buildContextEntrypoint } from "./context/entrypoint.js";
 import {
-  loadPackageContext,
-  type PackageContext,
-} from "./context/package-context.js";
-import {
-  buildSelectedContext,
-  formatSelectedContextMarkdown,
-} from "./context/selected-context.js";
+  groundSurface,
+  type RoutedCheck,
+  resolvePathToSurface,
+  type SurfaceGrounding,
+  selectChecksForSurfaces,
+} from "#ghost-core";
 import { parseUnifiedDiff } from "./core/index.js";
-import { resolveFingerprintPackage } from "./scan/fingerprint-package.js";
+import { discoverBindingsForPath } from "./scan/binding-discovery.js";
+import { loadChecksDir } from "./scan/checks-dir.js";
 import {
-  fingerprintStackToPackageContext,
-  type GhostFingerprintStack,
-  groupFingerprintStacksForPaths,
-  resolveGhostDirDefault,
-} from "./scan/fingerprint-stack.js";
+  loadFingerprintPackage,
+  resolveFingerprintPackage,
+} from "./scan/fingerprint-package.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 
+/**
+ * Build an advisory review packet on the surface rails: resolve the diff's
+ * changed paths to the surfaces that own them (bindings), select the markdown
+ * checks governing those surfaces and their ancestors, and ground each in the
+ * surface's fingerprint slice. No `validate.yml`, no dormant context entrypoint.
+ */
 export async function buildReviewPacket(options: {
   packageDir?: string;
-  ghostDir?: string;
   diffText: string;
   maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
-  return options.packageDir
-    ? buildSinglePackageReviewPacket(options)
-    : buildStackReviewPacket(options);
-}
+  const cwd = process.cwd();
+  const paths = resolveFingerprintPackage(options.packageDir, cwd);
+  const loaded = await loadFingerprintPackage(paths);
+  const { checks, invalid } = await loadChecksDir(paths.dir);
 
-async function buildSinglePackageReviewPacket(options: {
-  packageDir?: string;
-  diffText: string;
-  maxDiffBytes?: number;
-}): Promise<ReviewPacket> {
-  const paths = resolveFingerprintPackage(options.packageDir, process.cwd());
-  const changedFiles = parseUnifiedDiff(options.diffText).map(
+  const changedPaths = parseUnifiedDiff(options.diffText).map(
     (file) => file.path,
   );
-  const context = await loadPackageContext(paths);
-  context.targetPaths = changedFiles;
-  const packet: ReviewPacket = {
+
+  // Resolve each changed path to its surface via bindings; union them.
+  const touched = new Set<string>();
+  for (const path of changedPaths) {
+    const discovered = await discoverBindingsForPath(path, cwd);
+    const resolution = resolvePathToSurface(
+      discovered.target_path,
+      discovered.candidates,
+      { hasRootContract: discovered.hasRootContract || !!loaded.surfaces },
+    );
+    if (resolution.surface) touched.add(resolution.surface);
+  }
+
+  const routed = selectChecksForSurfaces(checks, loaded.surfaces, [...touched]);
+  const grounding = [...touched].map((surface) =>
+    groundSurface(loaded.surfaces, loaded.fingerprint, surface),
+  );
+
+  return {
     ...baseReviewPacket(paths.dir, options.diffText, {
       maxDiffBytes: options.maxDiffBytes,
     }),
-    fingerprint: context.fingerprint,
-    context_markdown: formatReviewContextMarkdown([
-      {
-        title: paths.dir,
-        markdown: formatReviewSelectedContextMarkdown(context, changedFiles),
-      },
-    ]),
-    checks: context.checksRaw ?? null,
+    touched_surfaces: [...touched],
+    routed_checks: routed,
+    grounding,
+    invalid_checks: invalid,
   };
-  return packet;
-}
-
-async function buildStackReviewPacket(options: {
-  ghostDir?: string;
-  diffText: string;
-  maxDiffBytes?: number;
-}): Promise<ReviewPacket> {
-  const changedFiles = parseUnifiedDiff(options.diffText).map(
-    (file) => file.path,
-  );
-  const groups = await groupFingerprintStacksForPaths(
-    changedFiles,
-    process.cwd(),
-    { ghostDir: resolveGhostDirDefault(options.ghostDir) },
-  );
-  const stacks = groups.map((group) =>
-    reviewStackFromFingerprintStack(group.stack, group.changed_files),
-  );
-  const contextSections = groups.map((group) => {
-    const context = fingerprintStackToPackageContext(
-      group.stack,
-      undefined,
-      group.changed_files,
-    );
-    return {
-      title: group.stack.layers.at(-1)?.dir ?? group.stack.ghost_dir,
-      markdown: formatReviewSelectedContextMarkdown(
-        context,
-        group.changed_files,
-        groups.length > 1 ? "#### Selected Context" : "### Selected Context",
-      ),
-    };
-  });
-  const first = stacks[0];
-  const packet: ReviewPacket = {
-    ...baseReviewPacket(
-      stacks.length === 1 ? first.package_dir : "fingerprint-stack/multiple",
-      options.diffText,
-      { maxDiffBytes: options.maxDiffBytes },
-    ),
-    fingerprint: first.contract.fingerprint,
-    context_markdown: formatReviewContextMarkdown(contextSections),
-    checks: stringifyYaml(first.contract.checks, { lineWidth: 0 }),
-    stacks,
-  };
-  return packet;
 }
 
 function baseReviewPacket(
@@ -124,25 +84,12 @@ function baseReviewPacket(
     ],
     required_finding_citations: [
       "diff location",
-      "fingerprint facet refs",
-      "active check when blocking",
-      "selected-context gap or local-evidence rationale when context is silent",
+      "surface the change touches",
+      "routed check when blocking",
+      "grounding ref (why / what) or local-evidence rationale when the surface is silent",
       "repair or intentional-divergence rationale",
     ],
   };
-}
-
-function formatReviewSelectedContextMarkdown(
-  context: PackageContext,
-  targetPaths: string[],
-  heading = "### Selected Context",
-): string {
-  const entrypoint = buildContextEntrypoint(context, { targetPaths });
-  const selectedContext = buildSelectedContext(context, entrypoint);
-  return formatSelectedContextMarkdown(selectedContext, {
-    heading,
-    includeIntro: false,
-  });
 }
 
 function budgetDiff(
@@ -201,27 +148,6 @@ function endsWithHighSurrogate(value: string): boolean {
   return code >= 0xd800 && code <= 0xdbff;
 }
 
-function reviewStackFromFingerprintStack(
-  stack: GhostFingerprintStack,
-  changedFiles: string[],
-): ReviewStackPacket {
-  const leaf = stack.layers.at(-1);
-  return {
-    target_path: stack.target_path,
-    package_dir: leaf?.dir ?? stack.layers[0].dir,
-    ghost_dir: stack.ghost_dir,
-    changed_files: changedFiles,
-    stack_dirs: stack.layers.map((layer) => layer.dir),
-    contract: {
-      fingerprint: stack.contract.fingerprint,
-      checks: stack.contract.checks,
-    },
-    provenance: {
-      stack: stack.provenance.layers,
-    },
-  };
-}
-
 interface ReviewPacketBudgets {
   diff_bytes: number;
   max_diff_bytes: number;
@@ -238,33 +164,11 @@ interface ReviewPacketBase {
   required_finding_citations: string[];
 }
 
-interface ReviewPacket {
-  schema: "ghost.advisory-review/v1";
-  package_dir: string;
-  fingerprint: unknown;
-  context_markdown: string;
-  checks: string | null;
-  stacks?: ReviewStackPacket[];
-  diff: string;
-  budgets: ReviewPacketBudgets;
-  truncated: boolean;
-  finding_categories: string[];
-  required_finding_citations: string[];
-}
-
-interface ReviewStackPacket {
-  target_path: string;
-  package_dir: string;
-  ghost_dir: string;
-  changed_files: string[];
-  stack_dirs: string[];
-  contract: {
-    fingerprint: unknown;
-    checks: unknown;
-  };
-  provenance: {
-    stack: GhostFingerprintStack["provenance"]["layers"];
-  };
+interface ReviewPacket extends ReviewPacketBase {
+  touched_surfaces: string[];
+  routed_checks: RoutedCheck[];
+  grounding: SurfaceGrounding[];
+  invalid_checks: Array<{ file: string; message: string }>;
 }
 
 export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
@@ -272,21 +176,23 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to an active deterministic check in validate.yml. Keep findings grounded in intent.yml, inventory.yml, composition.yml, active deterministic checks, and diff evidence; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to a routed check. Keep findings grounded in the touched surfaces' principles, contracts, patterns, exemplars, and routed checks; do not expand the review into unrelated audit categories.
 
-Use the selected context first: intent → composition → inventory → validation. When selected context exposes gaps, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
+Use the surface grounding first: why (principles, contracts) → what good looks like (patterns, exemplars). When a surface's grounding is silent, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
 
-Use these finding categories: ${packet.finding_categories.join(", ")}. 
+Use these finding categories: ${packet.finding_categories.join(", ")}.
 
 ${formatReviewBudgetSection(packet)}
 
-When fingerprint facets are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
+When a surface's grounding is silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, token or copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
-If the diff exposes missing fingerprint grounding or facet coverage, report it as missing-fingerprint or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
+If the diff exposes missing fingerprint grounding or surface coverage, report it as missing-fingerprint or experience-gap. Do not silently rewrite the Ghost package during review; fingerprint and check edits are ordinary Git-reviewed edits.
 
-${formatReviewStacksSection(packet.stacks ?? null)}
+${formatTouchedSurfacesSection(packet)}
 
-${packet.context_markdown}
+${formatRoutedChecksSection(packet)}
+
+${formatGroundingSection(packet)}
 
 ## Diff
 
@@ -313,30 +219,62 @@ function formatReviewBudgetSection(packet: ReviewPacket): string {
   return lines.join("\n");
 }
 
-function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
-  if (!stacks?.length) return "";
-
-  const lines = ["## Resolved Fingerprint Stacks", ""];
-  for (const [index, stack] of stacks.entries()) {
-    lines.push(`### Stack ${index + 1}: ${stack.package_dir}`);
-    lines.push("");
-    lines.push(`Changed files: ${stack.changed_files.join(", ") || "none"}`);
-    lines.push(`Stack: ${stack.stack_dirs.join(" -> ")}`);
-    lines.push("");
-  }
-
-  return `${lines.join("\n")}\n`;
+function formatTouchedSurfacesSection(packet: ReviewPacket): string {
+  const surfaces = packet.touched_surfaces.length
+    ? packet.touched_surfaces.map((s) => `\`${s}\``).join(", ")
+    : "none (core only)";
+  return `## Touched Surfaces\n\n${surfaces}`;
 }
 
-function formatReviewContextMarkdown(
-  sections: Array<{ title: string; markdown: string }>,
-): string {
-  const lines = ["## Selected Context", ""];
-  for (const [index, section] of sections.entries()) {
-    if (sections.length > 1) {
-      lines.push(`### Context ${index + 1}: ${section.title}`, "");
+function formatRoutedChecksSection(packet: ReviewPacket): string {
+  const lines = ["## Routed Checks", ""];
+  if (packet.routed_checks.length === 0) {
+    lines.push("No checks govern the touched surfaces.");
+  } else {
+    for (const { check, relevance } of packet.routed_checks) {
+      const why =
+        relevance.kind === "own"
+          ? `own \`${relevance.surface}\``
+          : `inherited from \`${relevance.surface}\` (via \`${relevance.via}\`)`;
+      lines.push(
+        `- **${check.frontmatter.name}** (${check.frontmatter.severity}) — ${why}`,
+      );
     }
-    lines.push(section.markdown);
   }
-  return lines.join("\n").trim();
+  if (packet.invalid_checks.length > 0) {
+    lines.push("", "Skipped (invalid):");
+    for (const { file, message } of packet.invalid_checks) {
+      lines.push(`- \`${file}\`: ${message}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+function formatGroundingSection(packet: ReviewPacket): string {
+  const lines = ["## Grounding", ""];
+  if (
+    packet.grounding.every((g) => g.why.length === 0 && g.what.length === 0)
+  ) {
+    lines.push("No fingerprint grounding for the touched surfaces.");
+    return lines.join("\n");
+  }
+  for (const surface of packet.grounding) {
+    if (surface.why.length === 0 && surface.what.length === 0) continue;
+    lines.push(`### \`${surface.surface}\``);
+    if (surface.why.length > 0) {
+      lines.push("", "Why:");
+      for (const item of surface.why) {
+        lines.push(`- ${item.statement} (\`${item.ref}\`)`);
+      }
+    }
+    if (surface.what.length > 0) {
+      lines.push("", "What good looks like:");
+      for (const item of surface.what) {
+        const where = item.path ? ` — \`${item.path}\`` : "";
+        lines.push(`- ${item.statement}${where} (\`${item.ref}\`)`);
+      }
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trimEnd();
 }
