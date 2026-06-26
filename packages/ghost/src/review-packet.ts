@@ -95,9 +95,9 @@ async function buildStackReviewPacket(options: {
       options.diffText,
       { maxDiffBytes: options.maxDiffBytes },
     ),
-    fingerprint: first.merged.fingerprint,
+    fingerprint: first.contract.fingerprint,
     context_markdown: formatReviewContextMarkdown(contextSections),
-    checks: stringifyYaml(first.merged.checks, { lineWidth: 0 }),
+    checks: stringifyYaml(first.contract.checks, { lineWidth: 0 }),
     stacks,
   };
   return packet;
@@ -212,12 +212,11 @@ function reviewStackFromFingerprintStack(
     ghost_dir: stack.ghost_dir,
     changed_files: changedFiles,
     stack_dirs: stack.layers.map((layer) => layer.dir),
-    merged: {
-      fingerprint: stack.merged.fingerprint,
-      checks: stack.merged.checks,
+    contract: {
+      fingerprint: stack.contract.fingerprint,
+      checks: stack.contract.checks,
     },
     provenance: {
-      merge: stack.provenance.merge,
       stack: stack.provenance.layers,
     },
   };
@@ -259,12 +258,11 @@ interface ReviewStackPacket {
   ghost_dir: string;
   changed_files: string[];
   stack_dirs: string[];
-  merged: {
+  contract: {
     fingerprint: unknown;
     checks: unknown;
   };
   provenance: {
-    merge: "child-wins-by-id";
     stack: GhostFingerprintStack["provenance"]["layers"];
   };
 }
@@ -324,7 +322,6 @@ function formatReviewStacksSection(stacks: ReviewStackPacket[] | null): string {
     lines.push("");
     lines.push(`Changed files: ${stack.changed_files.join(", ") || "none"}`);
     lines.push(`Stack: ${stack.stack_dirs.join(" -> ")}`);
-    lines.push(`Merge: ${stack.provenance.merge}`);
     lines.push("");
   }
 

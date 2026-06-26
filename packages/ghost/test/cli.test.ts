@@ -2472,7 +2472,7 @@ composition:
     ).rejects.toThrow("Unknown option `--includeMemory`");
   });
 
-  it("check routes changed files through nested stacks by default", async () => {
+  it("routes changed files through the root contract; a child cannot disable an inherited check (Leak E)", async () => {
     await writeNestedCheckPackage(dir);
     await writeFile(
       join(dir, "change.patch"),
@@ -2482,20 +2482,16 @@ composition:
     const result = await runCli(
       ["check", "--diff", "change.patch", "--format", "json"],
       dir,
+      { allowNoExit: true },
     );
 
-    expect(result.code).toBe(0);
     const report = JSON.parse(result.stdout);
     expect(report.schema).toBe("ghost.check-report/v1");
-    expect(report.result).toBe("pass");
+    // The child package's `status: disabled` no longer wins by merge — the
+    // root contract's active check governs, so the hardcoded color fails.
+    expect(report.result).toBe("fail");
     expect(report.ghost_dir).toBe(".ghost");
-    expect(report.memory_dir).toBeUndefined();
-    expect(report.stacks[0].memory_dir).toBeUndefined();
     expect(report.stacks[0].stack_dirs).toHaveLength(2);
-    expect(report.routed_files[0]).toMatchObject({
-      path: "apps/checkout/review/page.tsx",
-      checks: [],
-    });
   });
 
   it("--package keeps check in exact single-bundle mode", async () => {
@@ -2544,10 +2540,9 @@ composition:
     const result = await runCli(
       ["check", "--diff", "change.patch", "--format", "json"],
       dir,
-      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
+      { env: { GHOST_PACKAGE_DIR: ".design/memory" }, allowNoExit: true },
     );
 
-    expect(result.code).toBe(0);
     const report = JSON.parse(result.stdout);
     expect(report.ghost_dir).toBe(".design/memory");
     expect(report.memory_dir).toBeUndefined();
@@ -2582,8 +2577,9 @@ composition:
     expect(packet.stacks).toHaveLength(2);
     expect(packet.stacks[0].ghost_dir).toBe(".ghost");
     expect(packet.stacks[0].memory_dir).toBeUndefined();
-    expect(packet.stacks[0].merged.fingerprint.intent.summary.product).toBe(
-      "Checkout",
+    // contract is the root package, used as-is (no merge).
+    expect(packet.stacks[0].contract.fingerprint.intent.summary.product).toBe(
+      "Root Product",
     );
     expect(packet.stacks[0].stack_dirs).toHaveLength(2);
     expect(packet.stacks[1].stack_dirs).toHaveLength(1);
@@ -2603,8 +2599,8 @@ composition:
     expect(stacks[0].ghost_dir).toBe(".ghost");
     expect(stacks[0].memory_dir).toBeUndefined();
     expect(stacks[0].stack[0].memory_dir).toBeUndefined();
-    expect(stacks[0].merged.fingerprint.intent.summary.product).toBe(
-      "Checkout",
+    expect(stacks[0].contract.fingerprint.intent.summary.product).toBe(
+      "Root Product",
     );
   });
 
@@ -2617,7 +2613,7 @@ composition:
     expect(result.stderr).toContain("GHOST_PACKAGE_DIR must not contain");
   });
 
-  it("emit review-command resolves merged fingerprint stack for --path", async () => {
+  it("emit review-command resolves the root contract for --path (no child merge)", async () => {
     await writeNestedCheckPackage(dir);
 
     const result = await runCli(
@@ -2632,9 +2628,10 @@ composition:
     );
 
     expect(result.code).toBe(0);
+    // The contract is the root package — its inventory is present...
     expect(result.stdout).toContain("RootTheme");
-    expect(result.stdout).toContain("Checkout");
-    expect(result.stdout).toContain("CheckoutTheme");
+    // ...and the child package's own fingerprint data is NOT merged in.
+    expect(result.stdout).not.toContain("CheckoutTheme");
   });
 
   it("init --scope creates a nested .ghost bundle", async () => {

@@ -61,12 +61,11 @@ function formatStackJson(
       fingerprint_id: layer.fingerprint.intent.summary.product ?? null,
       checks: layer.checks?.checks.length ?? 0,
     })),
-    merged: {
-      fingerprint: stack.merged.fingerprint,
-      checks: stack.merged.checks,
+    contract: {
+      fingerprint: stack.contract.fingerprint,
+      checks: stack.contract.checks,
     },
     provenance: {
-      merge: stack.provenance.merge,
       stack: stack.provenance.layers,
     },
   };
@@ -81,13 +80,13 @@ function formatStackCli(stack: GhostFingerprintStack): string {
       (layer) =>
         `  - ${fingerprintPackageDisplayPath(layer.relative_root, layer.ghost_dir)} (${layer.fingerprint.intent.summary.product ?? "unnamed"})`,
     ),
-    "merged:",
-    `  situations: ${stack.merged.fingerprint.intent.situations.length}`,
-    `  principles: ${stack.merged.fingerprint.intent.principles.length}`,
-    `  contracts: ${stack.merged.fingerprint.intent.experience_contracts.length}`,
-    `  patterns: ${stack.merged.fingerprint.composition.patterns.length}`,
+    "contract:",
+    `  situations: ${stack.contract.fingerprint.intent.situations.length}`,
+    `  principles: ${stack.contract.fingerprint.intent.principles.length}`,
+    `  contracts: ${stack.contract.fingerprint.intent.experience_contracts.length}`,
+    `  patterns: ${stack.contract.fingerprint.composition.patterns.length}`,
     `  active checks: ${
-      stack.merged.checks.checks.filter((check) => check.status === "active")
+      stack.contract.checks.checks.filter((check) => check.status === "active")
         .length
     }`,
     "",

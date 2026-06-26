@@ -81,7 +81,6 @@ export interface GhostDriftCheckStack {
   changed_files: string[];
   stack_dirs: string[];
   provenance: {
-    merge: "child-wins-by-id";
     stack: Array<{
       dir: string;
       root: string;
@@ -134,7 +133,7 @@ export async function runGhostDriftCheck(
     const leaf = group.stack.layers.at(-1);
     const pkg: LoadedCheckPackage = {
       dir: leaf?.dir ?? group.stack.layers[0].dir,
-      checks: group.stack.merged.checks,
+      checks: group.stack.contract.checks,
     };
     const evaluated = evaluateChangedFiles(filesForStack, pkg);
     routedFiles.push(...evaluated.routedFiles);
@@ -146,7 +145,6 @@ export async function runGhostDriftCheck(
       changed_files: group.changed_files,
       stack_dirs: group.stack.layers.map((layer) => layer.dir),
       provenance: {
-        merge: group.stack.provenance.merge,
         stack: group.stack.provenance.layers,
       },
     });

@@ -112,7 +112,6 @@ export type RelayGatherSource =
       ghostDir: string;
       stackDirs: string[];
       provenance: {
-        merge: "child-wins-by-id";
         stack: GhostFingerprintStack["provenance"]["layers"];
       };
     }
@@ -258,7 +257,6 @@ export async function gatherRelayContext(
         ghostDir: stack.ghost_dir,
         stackDirs: stack.layers.map((layer) => layer.dir),
         provenance: {
-          merge: stack.provenance.merge,
           stack: stack.provenance.layers,
         },
       },
@@ -279,7 +277,6 @@ export async function gatherRelayContext(
       ghostDir: stack.ghost_dir,
       stackDirs: stack.layers.map((layer) => layer.dir),
       provenance: {
-        merge: stack.provenance.merge,
         stack: stack.provenance.layers,
       },
     },

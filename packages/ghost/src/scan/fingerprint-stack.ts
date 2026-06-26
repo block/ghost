@@ -5,16 +5,9 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
-  GHOST_FINGERPRINT_SCHEMA,
   GHOST_VALIDATE_SCHEMA,
-  type GhostCheck,
-  type GhostFingerprintComposition,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
-  type GhostFingerprintIntent,
-  type GhostFingerprintInventory,
-  type GhostFingerprintInventoryBuildingBlocks,
-  type GhostFingerprintSummary,
   type GhostValidateDocument,
   GhostValidateSchema,
   lintGhostFingerprint,
@@ -77,12 +70,19 @@ export interface GhostFingerprintStack {
   repo_root: string;
   ghost_dir: string;
   layers: GhostFingerprintStackLayer[];
-  merged: {
+  /**
+   * The single source of truth for a path: the root contract's fingerprint and
+   * checks, used as-is. Nesting binds paths to surfaces (ghost.binding/v1); it
+   * no longer merges facets (the retired `child-wins-by-id` model). One
+   * contract, many bindings.
+   */
+  contract: {
+    /** Directory of the contract package (the root-most discovered package). */
+    dir: string;
     fingerprint: GhostFingerprintDocument;
     checks: GhostValidateDocument;
   };
   provenance: {
-    merge: "child-wins-by-id";
     layers: GhostFingerprintStackLayerRef[];
   };
 }
@@ -243,31 +243,29 @@ export function buildFingerprintStack(
     throw new Error("Cannot build a Ghost fingerprint stack without layers.");
   }
 
-  const fingerprint = mergeFingerprints(
-    layers.map((layer) => layer.fingerprint),
-  );
-  const checks = mergeChecks(layers.map((layer) => layer.checks));
-  const checkLint = lintGhostValidate(checks, { fingerprint });
-  if (checkLint.errors > 0) {
-    throw new Error(
-      `Merged checks failed lint with ${checkLint.errors} error(s): ${checkLint.issues
-        .filter((issue) => issue.severity === "error")
-        .map((issue) => `[${issue.rule}] ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
+  // One contract, many bindings: the root-most layer is the contract. Nesting
+  // no longer merges facets — a nested package binds paths to surfaces, it does
+  // not contribute its own fingerprint data (the retired child-wins-by-id
+  // model; see docs/ideas/surface-binding.md).
+  const contractLayer = layers[0];
+  const fingerprint = contractLayer.fingerprint;
+  const checks = contractLayer.checks ?? {
+    schema: GHOST_VALIDATE_SCHEMA,
+    id: "contract",
+    checks: [],
+  };
 
   return {
     target_path: targetPath,
     repo_root: repoRoot,
     ghost_dir: normalizedGhostDir,
     layers,
-    merged: {
+    contract: {
+      dir: contractLayer.dir,
       fingerprint,
       checks,
     },
     provenance: {
-      merge: "child-wins-by-id",
       layers: layers.map(layerRef),
     },
   };
@@ -324,19 +322,19 @@ export function fingerprintStackToPackageContext(
 ): PackageContext {
   const name = sanitizeName(
     nameOverride ??
-      stack.merged.fingerprint.intent.summary.product ??
+      stack.contract.fingerprint.intent.summary.product ??
       stack.layers.at(-1)?.relative_root ??
       "ghost-package",
   );
   return {
     name,
-    packageDir: stack.layers.at(-1)?.dir,
+    packageDir: stack.contract.dir,
     targetPaths,
     stackDirs: stack.layers.map((layer) => layer.dir),
-    fingerprint: stack.merged.fingerprint,
-    fingerprintRaw: stringifyYaml(stack.merged.fingerprint, { lineWidth: 0 }),
-    checks: stack.merged.checks,
-    checksRaw: stringifyYaml(stack.merged.checks, { lineWidth: 0 }),
+    fingerprint: stack.contract.fingerprint,
+    fingerprintRaw: stringifyYaml(stack.contract.fingerprint, { lineWidth: 0 }),
+    checks: stack.contract.checks,
+    checksRaw: stringifyYaml(stack.contract.checks, { lineWidth: 0 }),
   };
 }
 
@@ -370,19 +368,19 @@ export async function lintAllFingerprintStacks(
       });
       continue;
     }
-    const fingerprintReport = lintGhostFingerprint(stack.merged.fingerprint);
+    const fingerprintReport = lintGhostFingerprint(stack.contract.fingerprint);
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/merged.fingerprint`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/contract.fingerprint`,
         fingerprintReport.issues,
       ),
     );
-    const checksReport = lintGhostValidate(stack.merged.checks, {
-      fingerprint: stack.merged.fingerprint,
+    const checksReport = lintGhostValidate(stack.contract.checks, {
+      fingerprint: stack.contract.fingerprint,
     });
     issues.push(
       ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/merged.validate.yml`,
+        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/contract.validate.yml`,
         checksReport.issues,
       ),
     );
@@ -461,143 +459,6 @@ async function resolveAndInit(
 function parseChecks(raw: string): GhostValidateDocument {
   const parsed = parseYamlSafe(raw, "validate.yml");
   return GhostValidateSchema.parse(parsed) as GhostValidateDocument;
-}
-
-function mergeFingerprints(
-  fingerprints: GhostFingerprintDocument[],
-): GhostFingerprintDocument {
-  const merged: GhostFingerprintDocument = {
-    schema: GHOST_FINGERPRINT_SCHEMA,
-    intent: {
-      summary: {},
-      situations: [],
-      principles: [],
-      experience_contracts: [],
-    },
-    inventory: {
-      building_blocks: {},
-      exemplars: [],
-      sources: [],
-    },
-    composition: {
-      patterns: [],
-    },
-  };
-
-  for (const fingerprint of fingerprints) {
-    merged.intent = mergeIntent(merged.intent, fingerprint.intent);
-    merged.inventory = mergeInventory(merged.inventory, fingerprint.inventory);
-    merged.composition = mergeComposition(
-      merged.composition,
-      fingerprint.composition,
-    );
-  }
-
-  const report = lintGhostFingerprint(merged);
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.path ? ` @ ${first.path}` : "";
-    throw new Error(
-      `Merged fingerprint failed lint: ${first?.message ?? "invalid fingerprint"}${suffix}`,
-    );
-  }
-  return merged;
-}
-
-function mergeIntent(
-  parent: GhostFingerprintIntent,
-  child: GhostFingerprintIntent,
-): GhostFingerprintIntent {
-  return {
-    summary: mergeSummary(parent.summary, child.summary),
-    situations: mergeById([...parent.situations, ...child.situations]),
-    principles: mergeById([...parent.principles, ...child.principles]),
-    experience_contracts: mergeById([
-      ...parent.experience_contracts,
-      ...child.experience_contracts,
-    ]),
-  };
-}
-
-function mergeInventory(
-  parent: GhostFingerprintInventory,
-  child: GhostFingerprintInventory,
-): GhostFingerprintInventory {
-  return {
-    building_blocks: mergeBuildingBlocks(
-      parent.building_blocks,
-      child.building_blocks,
-    ),
-    exemplars: mergeById([...parent.exemplars, ...child.exemplars]),
-    sources: mergeById([...parent.sources, ...child.sources]),
-  };
-}
-
-function mergeComposition(
-  parent: GhostFingerprintComposition,
-  child: GhostFingerprintComposition,
-): GhostFingerprintComposition {
-  return {
-    patterns: mergeById([...parent.patterns, ...child.patterns]),
-  };
-}
-
-function mergeBuildingBlocks(
-  parent: GhostFingerprintInventoryBuildingBlocks,
-  child: GhostFingerprintInventoryBuildingBlocks,
-): GhostFingerprintInventoryBuildingBlocks {
-  return {
-    tokens: mergeStrings(parent.tokens, child.tokens),
-    components: mergeStrings(parent.components, child.components),
-    libraries: mergeStrings(parent.libraries, child.libraries),
-    assets: mergeStrings(parent.assets, child.assets),
-    routes: mergeStrings(parent.routes, child.routes),
-    files: mergeStrings(parent.files, child.files),
-    notes: mergeStrings(parent.notes, child.notes),
-  };
-}
-
-function mergeSummary(
-  parent: GhostFingerprintSummary,
-  child: GhostFingerprintSummary,
-): GhostFingerprintSummary {
-  return {
-    ...(parent.product ? { product: parent.product } : {}),
-    ...(child.product ? { product: child.product } : {}),
-    audience: mergeStrings(parent.audience, child.audience),
-    goals: mergeStrings(parent.goals, child.goals),
-    anti_goals: mergeStrings(parent.anti_goals, child.anti_goals),
-    tradeoffs: mergeStrings(parent.tradeoffs, child.tradeoffs),
-    tone: mergeStrings(parent.tone, child.tone),
-  };
-}
-
-function mergeChecks(
-  checksDocs: Array<GhostValidateDocument | undefined>,
-): GhostValidateDocument {
-  const checks = mergeById(checksDocs.flatMap((doc) => doc?.checks ?? []));
-  return {
-    schema: GHOST_VALIDATE_SCHEMA,
-    id: "fingerprint-stack",
-    checks: checks as GhostCheck[],
-  };
-}
-
-function mergeById<T extends { id: string }>(entries: T[]): T[] {
-  return mergeByKey(entries, (entry) => entry.id) as T[];
-}
-
-function mergeByKey<T>(entries: T[], keyFor: (entry: T) => string): T[] {
-  const byKey = new Map<string, T>();
-  for (const entry of entries) {
-    byKey.set(keyFor(entry), entry);
-  }
-  return [...byKey.values()];
-}
-
-function mergeStrings(a?: string[], b?: string[]): string[] | undefined {
-  const out = [...new Set([...(a ?? []), ...(b ?? [])])];
-  return out.length ? out : undefined;
 }
 
 function normalizeFingerprintPaths(
