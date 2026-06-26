@@ -2,12 +2,14 @@
 status: exploring
 ---
 
-# One road: remove the binding, drive everything from the prompt
+# One road: remove the binding and nesting, drive everything from the prompt
 
 A decision, not a hedge. Ghost keeps the one thing only it can do — deterministically
-compose the curated slice for a *named surface* — and drops the one place it tried
-to infer intent from repo location: the **binding** (`ghost.binding/v1`,
-path→surface resolution, Phase 7a + Cut D).
+compose the curated slice for a *named surface* — and drops everything that tried
+to infer intent or context from repo location: the **binding** (`ghost.binding/v1`,
+path→surface, Phase 7a + Cut D) **and nesting itself** (stacks, cross-package
+discovery, `--all`/`--scope`/`--path`). One contract per package; surfaces are
+the only locality.
 
 ## The case
 
@@ -37,18 +39,43 @@ External-contract use (Cut D) also survives via the **desire-survives test**: us
 installed brand package. The agent points at the package; no binding-side
 resolution needed. Mechanism dies, capability stays.
 
+## Nesting goes too (the correction)
+
+An earlier draft of this note kept "nested-package discovery." That was wrong.
+Nesting only ever meant two things: **merge** (federated child fingerprints,
+killed in 7b Cut 1) and **binding** (nested `.ghost/` = path→surface, killed
+here). Once both are gone, **nesting has no meaning left** — keeping discovery,
+stacks, and `--all` is scaffolding for a concept that no longer exists.
+
+**Decision: one contract per package.** A repo's `.ghost/` is the contract.
+A monorepo with genuinely independent products runs Ghost per-package (or points
+`--package` at each) — those are parallel standalone contracts, not a nested
+hierarchy. No stacks, no merge, no chain, no cross-package discovery.
+
+So this cut also removes the **stack machinery** and the nesting commands:
+
+- `loadFingerprintStackForPath`, `groupFingerprintStacksForPaths`,
+  `discoverFingerprintStack`, `buildFingerprintStack`,
+  `fingerprintStackToPackageContext`, `GhostFingerprintStack*` types,
+  `lintAllFingerprintStacks`, `verifyAllFingerprintStacks`,
+  `discoverGhostPackages`, `initScopedFingerprintPackage`.
+- `lint --all`, `verify --all`, `scan --include-nested`, `emit --path`,
+  `init --scope`.
+
 ## What stays untouched (the engine)
 
 Surfaces, the containment tree, cascade, typed edges, `gather <surface>`, the
 surface menu, `ghost.check/v1`, `selectChecksForSurfaces`, grounding,
-`resolveSurfaceSlice`. The core model does not move. We remove an **adapter**,
-not the engine.
+`resolveSurfaceSlice`. The core model does not move.
 
-**Nested-package discovery also stays.** `discoverGhostPackages` /
-`loadFingerprintStackForPath` / `groupFingerprintStacksForPaths` /
-`fingerprintStackToPackageContext` serve `lint --all`, `verify --all`, and
-`emit` for nested *packages* — that is package discovery, not path→surface
-binding, and it is unaffected.
+**Load-bearing helpers in `fingerprint-stack.ts` survive** (they are not nesting):
+`resolveGitRoot`, `normalizeGhostDir`, `resolveGhostDirDefault`,
+`GHOST_PACKAGE_DIR_ENV`, `fingerprintPackageDisplayPath`. Move them to a neutral
+home (e.g. `scan/package-paths.ts`) before deleting the rest of the file.
+
+**`--package` and `GHOST_PACKAGE_DIR` survive** — "use exactly this `.ghost/`
+dir" is direct addressing, not nesting. This is how a monorepo targets one of its
+independent contracts.
 
 ## The new command shapes
 
@@ -91,14 +118,37 @@ Do this first so nothing imports the binding when we delete it.
   detection, the `ghost.binding/v1` schema match, the dispatch branch, and
   `lintBindingFile`.
 
-### Step 3 — delete the modules
+### Step 3 — delete the binding modules
 
 - `ghost-core/binding/` (schema, lint, types, resolve, contract-ref, index).
 - `scan/binding-discovery.ts`, `scan/contract-resolver.ts`.
 - Remove all binding/contract re-exports from `ghost-core/index.ts` and
   `scan/index.ts`.
 
-### Step 4 — docs, skill, migrate note, changeset
+### Step 4 — tear down nesting (the correction)
+
+- **Rescue the load-bearing helpers first:** move `resolveGitRoot`,
+  `normalizeGhostDir`, `resolveGhostDirDefault`, `GHOST_PACKAGE_DIR_ENV`,
+  `fingerprintPackageDisplayPath` out of `fingerprint-stack.ts` into a neutral
+  `scan/package-paths.ts`; repoint importers (`fingerprint-commands`,
+  `verify-package`, `init-command`, `scan-emit-command`, `scan/index`).
+- **Delete the rest of `fingerprint-stack.ts`:** stack types, `discoverGhostPackages`,
+  `discoverFingerprintStack`, `loadFingerprintStackForPath`,
+  `groupFingerprintStacksForPaths`, `buildFingerprintStack`,
+  `loadFingerprintStackLayer`, `fingerprintStackToPackageContext`,
+  `lintAllFingerprintStacks`, `verifyAllFingerprintStacks`,
+  `initScopedFingerprintPackage`. (The file likely disappears entirely once
+  helpers are rescued.)
+- **`fingerprint-commands.ts`:** remove `lint --all`, `verify --all`,
+  `scan --include-nested`, `nestedPackageStatus`. `lint`/`verify`/`scan` operate
+  on the single resolved package (or `--package`).
+- **`scan-emit-command.ts`:** remove `--path` and the stack path; `emit` runs on
+  the resolved package or `--package`.
+- **`init-command.ts` / `monorepo-init-command.ts`:** remove `init --scope` and
+  the monorepo child-scaffolding that created nested packages.
+- Remove stack re-exports from `scan/index.ts`.
+
+### Step 5 — docs, skill, migrate note, changeset
 
 - **`migrate-legacy.ts`**: the `paths-not-migrated` note currently says
   "path→surface binding is not part of placement." Reword to "paths are not part
@@ -109,8 +159,10 @@ Do this first so nothing imports the binding when we delete it.
   `gather --package`).
 - Mark `surface-binding.md`, `phase-7-plan.md`/`7a`, `polish-cut-d-plan.md`
   superseded with a one-line header pointing here.
-- `major` changeset: removes `ghost.binding/v1`, `.ghost.bind.yml`, `gather
-  --path`, `checks --diff`; `checks`/`review` now take `--surface`.
+- `major` changeset: removes `ghost.binding/v1`, `.ghost.bind.yml`,
+  `gather --path`, `checks --diff`, `lint --all`, `verify --all`,
+  `scan --include-nested`, `emit --path`, `init --scope`, and nested-package
+  stacks. `checks`/`review` take `--surface`; one contract per package.
 
 ## Tests
 
@@ -128,16 +180,19 @@ Do this first so nothing imports the binding when we delete it.
 - Does **not** touch the surface model, cascade, gather slice, checks routing
   logic, or grounding — only how *which surfaces* is determined (agent-stated, not
   path-resolved).
-- Does **not** remove nested-package discovery (`lint --all` / `verify --all` /
-  `emit` keep working).
+- Does **not** remove `--package` / `GHOST_PACKAGE_DIR` — direct addressing of a
+  single package survives; it is how a monorepo targets one of its independent
+  contracts.
 - Does **not** add NLP to Ghost — the agent still does all matching; Ghost gains
   no understanding, it just stops guessing from paths.
 
 ## Read-back
 
 One road succeeds if: the binding (`ghost.binding/v1`, path→surface, contract
-resolution) is gone; `gather` takes only a surface or returns the menu; `checks`
-and `review` take agent-stated `--surface` ids (diff is embed-only); external
-contracts are reached via `gather --package`; nested-package discovery and the
-whole surface engine are untouched; and Ghost no longer infers intent from repo
-location anywhere.
+resolution) **and** all nesting (stacks, merge-era discovery, `--all`,
+`--include-nested`, `--path`, `--scope`) are gone; one contract per package;
+`gather` takes only a surface or returns the menu; `checks` and `review` take
+agent-stated `--surface` ids (diff is embed-only); external contracts and
+monorepo sub-contracts are reached via `--package`; the load-bearing path
+helpers survive in a neutral home; the surface engine is untouched; and Ghost no
+longer infers intent from repo location anywhere.
