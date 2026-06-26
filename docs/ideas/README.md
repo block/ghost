@@ -162,3 +162,9 @@ buildable Layer 2 design. They agree; read them as a sequence.
 - Delete notes that only describe superseded package splits, removed commands,
   or dead routing/coordinate models after their useful decisions are folded
   into current docs.
+- `polish-cut-c-plan.md` — execution spec for Cut C, escalated to full removal:
+  one check format. Deletes `ghost.validate/v1`, `validate.yml`, the `ghost
+  check` detector gate, and the `./govern` export; rescues `parseUnifiedDiff`
+  into a neutral module first; preserves the `drift` stance ledger (cleanly
+  separable from the detector gate). Markdown `ghost.check/v1` becomes the single
+  check format.
