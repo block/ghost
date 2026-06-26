@@ -119,7 +119,14 @@ buildable Layer 2 design. They agree; read them as a sequence.
   touched surfaces and ancestors (reusing the slice cascade); a checks-dir loader
   reads `checks/*.md`; a new additive command prints the relevant checks per
   surface. Adds surface routing *beside* the legacy path-glob detector router
-  rather than replacing it. Grounding deferred to Cut 4.
+  rather than replacing it. Grounding deferred to Cut 4. **Shipped** (`b6a8c93`).
+- `phase-7b-cut4-plan.md` — execution spec for Cut 4, the final governance cut:
+  fingerprint grounding. `groundSurface` projects a surface's slice into *why*
+  (principles/contracts) + *what to change* (patterns/exemplars with paths),
+  inherited from ancestors like context is. Attached to the Cut 3 `ghost checks`
+  command (the surface-native path) rather than the legacy `review` packet, so a
+  flagged check can be grounded in the fingerprint. Ghost still never runs the
+  check; `review`/`validate/v1` left for a later cut.
 
 ## Independent, still live
 
