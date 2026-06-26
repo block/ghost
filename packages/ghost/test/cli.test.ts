@@ -801,7 +801,7 @@ sources: []
     expect(verify.code).toBe(0);
     expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Selected Context");
+    expect(review.stdout).toContain("## Touched Surfaces");
     expect(reviewCommand.code).toBe(0);
   });
 
@@ -1848,22 +1848,16 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Selected Context");
-    expect(result.stdout).toContain("### Selected Context");
-    expect(result.stdout).toContain("#### Stack");
-    expect(result.stdout).toContain("#### Match");
-    expect(result.stdout).toContain("#### Context Hits");
-    expect(result.stdout).toContain("#### Suggested Reads");
-    expect(result.stdout).toContain("#### Omissions");
-    expect(result.stdout).toContain("#### Gaps");
-    // Phase 3: path-based scope matching is dormant (rebuilt Phase 5/7).
+    expect(result.stdout).toContain("## Touched Surfaces");
+    expect(result.stdout).toContain("## Routed Checks");
+    expect(result.stdout).toContain("## Grounding");
     expect(result.stdout).toContain("diff location");
-    expect(result.stdout).toContain("fingerprint facet refs");
+    expect(result.stdout).toContain("surface the change touches");
     expect(result.stdout).toContain(
-      "selected-context gap or local-evidence rationale when context is silent",
+      "grounding ref (why / what) or local-evidence rationale when the surface is silent",
     );
-    expect(result.stdout).toContain("Use the selected context first");
-    expect(result.stdout).toContain("active check when blocking");
+    expect(result.stdout).toContain("Use the surface grounding first");
+    expect(result.stdout).toContain("routed check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
     expect(result.stdout).not.toContain("recommend-proposal");
@@ -1954,8 +1948,11 @@ checks:
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v1");
+    expect(packet.schema).toBe("ghost.advisory-review/v1");
     expect(packet.finding_categories).toContain("experience-gap");
+    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
+    expect(Array.isArray(packet.routed_checks)).toBe(true);
+    expect(Array.isArray(packet.grounding)).toBe(true);
     expect(packet.proposal_types).toBeUndefined();
     expect(packet.open_proposals).toBeUndefined();
     expect(packet.accepted_decisions).toBeUndefined();
@@ -2070,7 +2067,7 @@ checks:
     ]);
   });
 
-  it("review emits stack packets for mixed diffs", async () => {
+  it("review resolves touched surfaces for a mixed diff", async () => {
     await writeNestedCheckPackage(dir);
     await writeFile(
       join(dir, "change.patch"),
@@ -2087,15 +2084,11 @@ checks:
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    expect(packet.stacks).toHaveLength(2);
-    expect(packet.stacks[0].ghost_dir).toBe(".ghost");
-    expect(packet.stacks[0].memory_dir).toBeUndefined();
-    // contract is the root package, used as-is (no merge).
-    expect(packet.stacks[0].contract.fingerprint.intent.summary.product).toBe(
-      "Root Product",
-    );
-    expect(packet.stacks[0].stack_dirs).toHaveLength(2);
-    expect(packet.stacks[1].stack_dirs).toHaveLength(1);
+    // Review is now surface-based: no merged stacks, just touched surfaces +
+    // routed checks + grounding from the root contract.
+    expect(packet.stacks).toBeUndefined();
+    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
+    expect(Array.isArray(packet.grounding)).toBe(true);
   });
 
   it("emit review-command resolves the root contract for --path (no child merge)", async () => {
