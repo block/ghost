@@ -177,3 +177,11 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `ghost.survey/v1` module is isolated, works, and is unexposed, so it stays
   parked. Removal is an excavation (compare/perceptual-prior may depend on survey
   evidence), not a deletion — surfaced only if a concrete reason appears.
+- `one-road.md` — a provocation turned decision: remove the binding
+  (`ghost.binding/v1`, path→surface, Cut D contract resolution) and drive
+  everything from the prompt. The agent already analyzes the whole repo, so it
+  states the touched surfaces; Ghost stops inferring intent from location. Four
+  outcomes collapse into one flow (prompt → menu → `gather <surface>`).
+  `checks`/`review` take agent-stated `--surface`; external contracts via
+  `gather --package`. Surface engine + nested-package discovery untouched.
+  Supersedes `surface-binding.md` / Phase 7a / `polish-cut-d-plan.md`.
