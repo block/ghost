@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T04:44:02.150Z",
+  "generatedAt": "2026-06-26T04:58:52.923Z",
   "tools": [
     {
       "tool": "ghost",
@@ -636,6 +636,14 @@
               "default": null,
               "takesValue": true,
               "negated": false
+            },
+            {
+              "rawName": "--no-grounding",
+              "name": "grounding",
+              "description": "Omit fingerprint grounding (why / what) and emit only the relevant checks",
+              "default": true,
+              "takesValue": false,
+              "negated": true
             },
             {
               "rawName": "--format <fmt>",

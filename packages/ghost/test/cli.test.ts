@@ -2904,6 +2904,100 @@ surfaces:
     expect(names).toEqual(["brand", "checkout-color"]);
     expect(names).not.toContain("email-links");
   });
+
+  it("grounds routed checks in the fingerprint slice", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(join(ghost, "checks"), { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: c4\n",
+    );
+    await writeFile(
+      join(ghost, "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+    );
+    await writeFile(
+      join(ghost, "intent.yml"),
+      `principles:
+  - id: brand-voice
+    principle: Warm everywhere.
+    surface: core
+  - id: checkout-clarity
+    principle: Checkout copy is plain.
+    surface: checkout
+`,
+    );
+    await writeFile(
+      join(ghost, "checks", "checkout.md"),
+      "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsurface: checkout\n---\n## Instructions\nFlag hex.\n",
+    );
+    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
+    await writeFile(
+      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
+    );
+
+    const result = await runCli(
+      [
+        "checks",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    const checkout = payload.grounding.find(
+      (g: { surface: string }) => g.surface === "checkout",
+    );
+    const whyRefs = checkout.why.map((i: { ref: string }) => i.ref);
+    expect(whyRefs).toContain("intent.principle:checkout-clarity"); // own
+    expect(whyRefs).toContain("intent.principle:brand-voice"); // inherited from core
+  });
+
+  it("omits grounding with --no-grounding", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(join(ghost, "checks"), { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: c4b\n",
+    );
+    await writeFile(
+      join(ghost, "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
+    );
+
+    const result = await runCli(
+      [
+        "checks",
+        "--diff",
+        "change.patch",
+        "--package",
+        ".ghost",
+        "--no-grounding",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.grounding).toBeUndefined();
+  });
 });
 
 async function writeGatherPackage(dir: string): Promise<void> {

@@ -230,11 +230,14 @@ export {
   type GhostSurfacesLintReport,
   type GhostSurfacesLintSeverity,
   GhostSurfacesSchema,
+  type GroundingItem,
+  groundSurface,
   lintGhostSurfaces,
   type ResolvedSlice,
   resolveSurfaceSlice,
   type SliceNode,
   type SliceProvenance,
+  type SurfaceGrounding,
   type SurfaceMenuEntry,
 } from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---

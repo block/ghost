@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { CAC } from "cac";
 import {
+  groundSurface,
   type RoutedCheck,
   resolvePathToSurface,
+  type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
 import { parseUnifiedDiff } from "./core/check.js";
@@ -29,6 +31,10 @@ export function registerChecksCommand(cli: CAC): void {
     .option(
       "--package <dir>",
       "Use this fingerprint package directory (default: ./.ghost)",
+    )
+    .option(
+      "--no-grounding",
+      "Omit fingerprint grounding (why / what) and emit only the relevant checks",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -70,6 +76,14 @@ export function registerChecksCommand(cli: CAC): void {
           ...touched,
         ]);
 
+        // grounding defaults on; cac sets opts.grounding=false for --no-grounding.
+        const withGrounding = opts.grounding !== false;
+        const grounding: SurfaceGrounding[] = withGrounding
+          ? [...touched].map((surface) =>
+              groundSurface(loaded.surfaces, loaded.fingerprint, surface),
+            )
+          : [];
+
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
@@ -81,6 +95,7 @@ export function registerChecksCommand(cli: CAC): void {
                   surface: r.check.frontmatter.surface ?? "core",
                   relevance: r.relevance,
                 })),
+                ...(withGrounding ? { grounding } : {}),
                 invalid,
               },
               null,
@@ -89,7 +104,7 @@ export function registerChecksCommand(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            formatChecksMarkdown([...touched], routed, invalid),
+            formatChecksMarkdown([...touched], routed, grounding, invalid),
           );
         }
         process.exit(0);
@@ -105,6 +120,7 @@ export function registerChecksCommand(cli: CAC): void {
 function formatChecksMarkdown(
   touched: string[],
   routed: RoutedCheck[],
+  grounding: SurfaceGrounding[],
   invalid: Array<{ file: string; message: string }>,
 ): string {
   const lines = ["# Relevant Checks", ""];
@@ -125,6 +141,25 @@ function formatChecksMarkdown(
       );
     }
   }
+
+  for (const surface of grounding) {
+    if (surface.why.length === 0 && surface.what.length === 0) continue;
+    lines.push("", `## Grounding: \`${surface.surface}\``);
+    if (surface.why.length > 0) {
+      lines.push("", "Why:");
+      for (const item of surface.why) {
+        lines.push(`- ${item.statement} (\`${item.ref}\`)`);
+      }
+    }
+    if (surface.what.length > 0) {
+      lines.push("", "What good looks like:");
+      for (const item of surface.what) {
+        const where = item.path ? ` — \`${item.path}\`` : "";
+        lines.push(`- ${item.statement}${where} (\`${item.ref}\`)`);
+      }
+    }
+  }
+
   if (invalid.length > 0) {
     lines.push("", "## Skipped (invalid)");
     for (const { file, message } of invalid) {

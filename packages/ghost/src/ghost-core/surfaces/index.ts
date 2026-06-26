@@ -5,6 +5,11 @@
  * disk loader and CLI wiring come later. See docs/ideas/phase-1-plan.md.
  */
 
+export {
+  type GroundingItem,
+  groundSurface,
+  type SurfaceGrounding,
+} from "./ground.js";
 export { lintGhostSurfaces } from "./lint.js";
 export { buildSurfaceMenu, type SurfaceMenuEntry } from "./menu.js";
 export {
