@@ -16,6 +16,21 @@ export {
   type PathResolutionReason,
   resolvePathToSurface,
 } from "./binding/index.js";
+// --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
+export {
+  GHOST_CHECK_SCHEMA,
+  GHOST_CHECK_SEVERITIES,
+  type GhostCheckDocument,
+  type GhostCheckFrontmatter,
+  type GhostCheckLintIssue,
+  type GhostCheckLintReport,
+  type GhostCheckLintSeverity,
+  type GhostCheckMarkdownSeverity,
+  lintGhostCheck,
+  loadGhostCheck,
+  type ParsedCheckMarkdown,
+  parseCheckMarkdown,
+} from "./check/index.js";
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
