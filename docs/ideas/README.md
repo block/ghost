@@ -80,7 +80,14 @@ buildable Layer 2 design. They agree; read them as a sequence.
   since Phase 1), a deterministic slice resolver (own + cascaded ancestors +
   typed-edge contributions), a menu emitter, and the new `gather` command
   (relay's desire done right). Ambiguity returns the menu, never the whole tree.
-  Prompt road only; path/diff road is Phase 7.
+  Prompt road only; path/diff road is Phase 7. **Shipped** (`5ee6cc0`).
+- `phase-6-plan.md` — execution spec for Phase 6: a `ghost migrate` command that
+  transforms a legacy `.ghost/` (raw YAML, since the schema now rejects legacy
+  fields) into the surface model — `surfaces.yml` from old `topology.scopes`,
+  single-scope nodes placed via `surface:`, legacy coordinate fields removed.
+  Report-don't-guess: ambiguous/unplaceable nodes are surfaced for human review,
+  never auto-placed. Additive; nothing in this repo needs it (dogfood `.ghost/`
+  was already removed).
 
 ## Independent, still live
 
