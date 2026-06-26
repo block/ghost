@@ -73,7 +73,14 @@ buildable Layer 2 design. They agree; read them as a sequence.
   coordinate/routing layer (dormant since Phase 3). Separates the routing layer
   (delete) from the inventory-output types incidentally housed in `map/types.ts`
   (relocate, not delete). Leaves `check` routing on `applies_to.paths` alone;
-  surface-based routing is deferred to Phase 7.
+  surface-based routing is deferred to Phase 7. **Shipped** (`2c22a8c`), with
+  `ghost-fleet` pulled out of the workspace.
+- `phase-5-plan.md` — execution spec for Phase 5, the first **additive** phase:
+  a surfaces loader (reads `surfaces.yml` into the package model — deferred
+  since Phase 1), a deterministic slice resolver (own + cascaded ancestors +
+  typed-edge contributions), a menu emitter, and the new `gather` command
+  (relay's desire done right). Ambiguity returns the menu, never the whole tree.
+  Prompt road only; path/diff road is Phase 7.
 
 ## Independent, still live
 
