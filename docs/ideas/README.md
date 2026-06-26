@@ -135,7 +135,15 @@ buildable Layer 2 design. They agree; read them as a sequence.
   entanglements: `relay` and `review` share `context/` machinery (partition,
   don't delete wholesale), and `survey` is a command *and* a module (delete the
   command surface only). `review` / `emit` / `validate-v1` / the survey module
-  left for later cuts.
+  left for later cuts. **Shipped** (`c12f8f1`) — the cutover (Phases 1–8) is
+  complete.
+- `polish-roadmap.md` — sequences the four deferred post-cutover cuts. Key
+  finding: they are not independent. `review`/`emit` sit on both `validate.yml`
+  and the dormant Job 2 entrypoint, so **Cut A** (move `review`/`emit` onto
+  `gather`+`checks`) is the keystone that unblocks **Cut B** (delete the dormant
+  entrypoint) and **Cut C** (`validate/v1` positioning). **Cut D** (external
+  contract references in bindings) is independent. The `ghost-core/survey` module
+  removal is held back as a deeper, separate excavation.
 
 ## Independent, still live
 
