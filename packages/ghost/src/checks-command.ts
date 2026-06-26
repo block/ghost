@@ -9,7 +9,7 @@ import {
   type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { parseUnifiedDiff } from "./core/check.js";
+import { parseUnifiedDiff } from "./scan/unified-diff.js";
 import { resolveFingerprintPackage } from "./fingerprint.js";
 import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadChecksDir } from "./scan/checks-dir.js";

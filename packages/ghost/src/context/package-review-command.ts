@@ -1,6 +1,5 @@
 import { isAbsolute, relative } from "node:path";
 import type {
-  GhostCheck,
   GhostFingerprintExemplar,
   GhostFingerprintExperienceContract,
   GhostFingerprintPattern,
@@ -37,8 +36,6 @@ export function emitPackageReviewCommand(
     product.toLowerCase() === "ghost"
       ? "# Ghost review"
       : `# ${product} Ghost review`;
-  const activeChecks =
-    context.checks?.checks.filter((check) => check.status === "active") ?? [];
   const parts = [
     packageFrontmatter(product),
     heading,
@@ -46,7 +43,6 @@ export function emitPackageReviewCommand(
     packageWorkflowSection(context),
     packageFindingPolicySection(),
     packageFingerprintIndex(context),
-    packageChecksSection(activeChecks),
     packageReviewFooter(context),
   ];
   return `${parts.filter(Boolean).join("\n\n").trim()}\n`;
@@ -68,14 +64,13 @@ function packageWorkflowSection(context: PackageContext): string {
   const packageDir = displayPackageDir(context);
   return `## Review Workflow
 
-1. Run \`ghost review\` for the advisory packet when you need full diff context and selected context excerpts. If reviewing manually, read \`${packageDir}/intent.yml\`, \`${packageDir}/inventory.yml\`, and \`${packageDir}/composition.yml\`.
-2. Start from selected intent and active obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
+1. Run \`ghost review --diff <patch>\` for the advisory packet, or \`ghost checks --diff <patch>\` for the routed checks and grounding. If reviewing manually, read \`${packageDir}/intent.yml\`, \`${packageDir}/inventory.yml\`, and \`${packageDir}/composition.yml\`.
+2. Start from the touched surfaces' intent and obligations before assessing UI, copy, flow, disclosure, recovery, trust, or interaction behavior.
 3. Apply composition guidance before choosing implementation details.
 4. Inspect inventory exemplars and building blocks as evidence/material, not as authority over intent.
-5. Treat validate checks as deterministic enforcement; only active checks can block.
-6. Use selected-context gaps to label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
-7. Run \`ghost check\` when a diff is available.
-8. Cite the diff location, fingerprint facet refs, relevant exemplars when useful, selected-context gaps when context is silent, and any active check when a finding blocks.`;
+5. Evaluate the routed \`ghost.check/v1\` markdown checks against the diff; cite the surface they govern.
+6. When a surface's grounding is silent, label provisional reasoning or report \`missing-fingerprint\` / \`experience-gap\`.
+7. Cite the diff location, the touched surface, grounding refs, and the routed check when a finding blocks.`;
 }
 
 function packageFindingPolicySection(): string {
@@ -83,9 +78,9 @@ function packageFindingPolicySection(): string {
 
 Use these categories: ${REVIEW_FINDING_CATEGORIES.map((category) => `\`${category}\``).join(", ")}.
 
-Only findings backed by an active check should be treated as blocking. Everything else is advisory surface-composition critique.
+Only findings backed by a routed check should be treated as blocking. Everything else is advisory surface-composition critique.
 
-Review only what fingerprint facets or active checks make relevant to the product surface.
+Review only what fingerprint facets or routed checks make relevant to the product surface.
 
 When fingerprint facets are silent, local evidence can still support advisory critique. Label those findings as provisional and non-Ghost-backed, and ground them in nearby product surfaces, local components, or token and copy conventions. Ask the human before assessing high-risk, irreversible, privacy/security/legal, or product-surface-defining choices.
 
@@ -233,40 +228,12 @@ function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
   return lines.join("\n");
 }
 
-function packageChecksSection(activeChecks: GhostCheck[]): string {
-  if (activeChecks.length === 0) {
-    return `## Active Checks
-
-No active checks are recorded. Review remains advisory unless \`validate.yml\` adds deterministic active checks.`;
-  }
-  const lines = ["## Active Checks", ""];
-  for (const check of activeChecks.slice(0, 12)) {
-    const refs = [
-      ...(check.derivation?.intent ?? []),
-      ...(check.derivation?.composition ?? []),
-      ...(check.derivation?.inventory ?? []),
-    ];
-    const derives = refs.length
-      ? ` from ${refs.map((ref) => `\`${ref}\``).join(", ")}`
-      : "";
-    lines.push(
-      `- \`${check.id}\` (${check.severity})${derives}: ${check.title}`,
-    );
-    if (check.repair) lines.push(`  - Repair: ${check.repair}`);
-  }
-  if (activeChecks.length > 12) {
-    lines.push(
-      `- ${activeChecks.length - 12} more active check(s); read \`validate.yml\` before deciding whether a finding blocks.`,
-    );
-  }
-  return lines.join("\n");
-}
 
 function packageReviewFooter(context: PackageContext): string {
   const packageDir = displayPackageDir(context);
   return `---
 
-Generated from \`${packageDir}/\` for ${context.name}. Re-run \`ghost emit review-command\` after updating fingerprint facets or deterministic checks.`;
+Generated from \`${packageDir}/\` for ${context.name}. Re-run \`ghost emit review-command\` after updating fingerprint facets or surface checks.`;
 }
 
 function displayPackageDir(context: PackageContext): string {

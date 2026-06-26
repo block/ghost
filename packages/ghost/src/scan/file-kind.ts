@@ -11,7 +11,6 @@ import {
   lintGhostPatterns,
   lintGhostResources,
   lintGhostSurfaces,
-  lintGhostValidate,
   lintSurvey,
   type SurveyLintReport,
 } from "#ghost-core";
@@ -25,7 +24,6 @@ export type DetectedFileKind =
   | "fingerprint-intent"
   | "fingerprint-inventory"
   | "fingerprint-composition"
-  | "validate"
   | "resources"
   | "patterns"
   | "surfaces"
@@ -77,9 +75,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "composition.yaml") {
     return "fingerprint-composition";
   }
-  if (filename === "validate.yml" || filename === "validate.yaml") {
-    return "validate";
-  }
   if (filename === "resources.yml") return "resources";
   if (filename === "resources.yaml") return "resources";
   if (filename === "patterns.yml") return "patterns";
@@ -105,7 +100,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.surfaces\/v1\b/m.test(raw)) return "surfaces";
   if (/^\s*schema:\s*ghost\.binding\/v1\b/m.test(raw)) return "binding";
-  if (/^\s*schema:\s*ghost\.validate\/v[12]\b/m.test(raw)) return "validate";
   if (lowerPath.endsWith(".yml") || lowerPath.endsWith(".yaml")) {
     return "unsupported-yaml";
   }
@@ -139,11 +133,9 @@ export function lintDetectedFileKind(
                       ? lintBindingFile(raw)
                       : kind === "check"
                         ? lintGhostCheck(raw)
-                        : kind === "validate"
-                          ? lintValidateFile(raw, options.fingerprint)
-                          : kind === "unsupported-yaml"
-                            ? lintUnsupportedYamlFile()
-                            : lintFingerprint(raw);
+                        : kind === "unsupported-yaml"
+                          ? lintUnsupportedYamlFile()
+                          : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -167,19 +159,6 @@ function lintSurveyFile(raw: string): SurveyLintReport {
   return lintSurvey(json);
 }
 
-function lintValidateFile(
-  raw: string,
-  fingerprint?: GhostFingerprintDocument,
-): ReturnType<typeof lintFingerprint> {
-  try {
-    return lintGhostValidate(
-      parseYaml(raw),
-      fingerprint ? { fingerprint } : {},
-    );
-  } catch (err) {
-    return yamlErrorReport("validate-not-yaml", "validate file", err);
-  }
-}
 
 function lintFingerprintYmlFile(
   raw: string,
@@ -290,7 +269,7 @@ function lintUnsupportedYamlFile(): ReturnType<typeof lintFingerprint> {
         severity: "error",
         rule: "unsupported-yaml",
         message:
-          "YAML file is not a recognized Ghost artifact. Use manifest.yml, intent.yml, inventory.yml, composition.yml, validate.yml, resources.yml, patterns.yml, fingerprint.yml, or include a supported ghost.* schema.",
+          "YAML file is not a recognized Ghost artifact. Use manifest.yml, intent.yml, inventory.yml, composition.yml, resources.yml, patterns.yml, fingerprint.yml, or include a supported ghost.* schema.",
       },
     ],
     errors: 1,

@@ -209,6 +209,5 @@ function initPackageOutput(
     intent: paths.intent,
     inventory: paths.inventory,
     composition: paths.composition,
-    checks: paths.checks,
   };
 }
