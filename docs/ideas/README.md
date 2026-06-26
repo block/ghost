@@ -106,6 +106,13 @@ buildable Layer 2 design. They agree; read them as a sequence.
   what to change). Ghost owns routing + grounding, never the check engine. The
   legacy `ghost.validate/v1` detector becomes legacy. Open: check placement,
   grounding emit shape, and the still-owed `child-wins-by-id` merge retirement.
+- `phase-7b-plan.md` — execution spec for 7b in four ordered cuts: (1) retire
+  the `child-wins-by-id` merge (Leak E) — independent, riskiest, done first;
+  (2) define `ghost.check/v1` as markdown + frontmatter with a `surface:`;
+  (3) surface-routed check relevance (a diff selects the checks governing its
+  surfaces and ancestors, reusing the Phase 5 cascade); (4) fingerprint
+  grounding via `review`. `ghost.validate/v1`'s detector kept parseable but no
+  longer the governance path; full removal deferred.
 
 ## Independent, still live
 
