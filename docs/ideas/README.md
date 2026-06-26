@@ -95,7 +95,17 @@ buildable Layer 2 design. They agree; read them as a sequence.
   binding, not data-merge. Directory-default binding with an explicit escape
   hatch; in-repo `contract: .` only (external references deferred). Flags the
   core structural tension (merge → binding-resolution) to resolve before
-  touching consumers.
+  touching consumers. **Phase 7a shipped** (`37eb562`): the binding + path road
+  (`ghost.binding/v1`, `resolvePathToSurface`, `gather --path`). The diff road
+  and merge retirement are reframed into `phase-7b-grounded-checks.md`.
+- `phase-7b-grounded-checks.md` — the governance (Layer 4) model, settled after
+  seeing how checks are really authored: Ghost does **not** run checks. Checks
+  are markdown rules an agent evaluates; Ghost deterministically **routes** a
+  diff to the surfaces it touches (via 7a binding) and **grounds** every flag in
+  that surface's `gather` slice (principles/contracts = why, patterns/exemplars =
+  what to change). Ghost owns routing + grounding, never the check engine. The
+  legacy `ghost.validate/v1` detector becomes legacy. Open: check placement,
+  grounding emit shape, and the still-owed `child-wins-by-id` merge retirement.
 
 ## Independent, still live
 
