@@ -1,3 +1,8 @@
+export {
+  type DiscoverBindingsOptions,
+  type DiscoveredBindings,
+  discoverBindingsForPath,
+} from "./binding-discovery.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
   ScanBuildingBlockRows,

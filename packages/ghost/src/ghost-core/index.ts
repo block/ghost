@@ -1,5 +1,21 @@
 // --- Embedding primitives ---
 
+// --- Binding (ghost.binding/v1) ---
+export {
+  type BindingCandidate,
+  GHOST_BINDING_FILENAME,
+  GHOST_BINDING_SCHEMA,
+  type GhostBindingDocument,
+  type GhostBindingEntry,
+  type GhostBindingLintIssue,
+  type GhostBindingLintReport,
+  type GhostBindingLintSeverity,
+  GhostBindingSchema,
+  lintGhostBinding,
+  type PathResolution,
+  type PathResolutionReason,
+  resolvePathToSurface,
+} from "./binding/index.js";
 export type {
   GhostCheck,
   GhostCheckAppliesTo,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T02:32:32.161Z",
+  "generatedAt": "2026-06-26T03:26:05.181Z",
   "tools": [
     {
       "tool": "ghost",
@@ -585,6 +585,14 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--path <file>",
+              "name": "path",
+              "description": "Resolve the surface that owns a repo path via its binding, then gather",
               "default": null,
               "takesValue": true,
               "negated": false
