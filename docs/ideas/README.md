@@ -112,7 +112,14 @@ buildable Layer 2 design. They agree; read them as a sequence.
   (3) surface-routed check relevance (a diff selects the checks governing its
   surfaces and ancestors, reusing the Phase 5 cascade); (4) fingerprint
   grounding via `review`. `ghost.validate/v1`'s detector kept parseable but no
-  longer the governance path; full removal deferred.
+  longer the governance path; full removal deferred. **Cuts 1 & 2 shipped**
+  (`8b81d76`, `3d042d2`).
+- `phase-7b-cut3-plan.md` — execution spec for Cut 3: surface-routed check
+  relevance. `selectChecksForSurfaces` selects markdown checks governing a diff's
+  touched surfaces and ancestors (reusing the slice cascade); a checks-dir loader
+  reads `checks/*.md`; a new additive command prints the relevant checks per
+  surface. Adds surface routing *beside* the legacy path-glob detector router
+  rather than replacing it. Grounding deferred to Cut 4.
 
 ## Independent, still live
 
