@@ -87,7 +87,15 @@ buildable Layer 2 design. They agree; read them as a sequence.
   single-scope nodes placed via `surface:`, legacy coordinate fields removed.
   Report-don't-guess: ambiguous/unplaceable nodes are surfaced for human review,
   never auto-placed. Additive; nothing in this repo needs it (dogfood `.ghost/`
-  was already removed).
+  was already removed). **Shipped** (`4f57b73`).
+- `phase-7-plan.md` — execution spec for Phase 7, the largest and least
+  proof-validated cut: `ghost.binding/v1` (`.ghost.bind.yml`), path→surface and
+  diff→surfaces resolution wired into `gather --path`, `check`, and `review`,
+  and the retirement of the `child-wins-by-id` merge (Leak E) — nesting becomes
+  binding, not data-merge. Directory-default binding with an explicit escape
+  hatch; in-repo `contract: .` only (external references deferred). Flags the
+  core structural tension (merge → binding-resolution) to resolve before
+  touching consumers.
 
 ## Independent, still live
 
