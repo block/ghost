@@ -126,7 +126,16 @@ buildable Layer 2 design. They agree; read them as a sequence.
   inherited from ancestors like context is. Attached to the Cut 3 `ghost checks`
   command (the surface-native path) rather than the legacy `review` packet, so a
   flagged check can be grounded in the fingerprint. Ghost still never runs the
-  check; `review`/`validate/v1` left for a later cut.
+  check; `review`/`validate/v1` left for a later cut. **Shipped** (`431b20a`) —
+  Phase 7b complete.
+- `phase-8-plan.md` — execution spec for Phase 8, the final phase: delete the
+  absorbed/dead commands (`relay`, `stack`, `survey`, `diff`, `describe`) and the
+  relay-only `context/` modules, update the skill bundle to teach surfaces,
+  regenerate the manifest, fill in the major changeset. Surfaces two
+  entanglements: `relay` and `review` share `context/` machinery (partition,
+  don't delete wholesale), and `survey` is a command *and* a module (delete the
+  command surface only). `review` / `emit` / `validate-v1` / the survey module
+  left for later cuts.
 
 ## Independent, still live
 
