@@ -151,7 +151,7 @@ function derivePlacement(
         path,
         ...(id ? { node_id: id } : {}),
         reason: "paths-not-migrated",
-        detail: `applies_to.paths preserved for review only; path→surface binding is not part of placement.`,
+        detail: `applies_to.paths preserved for review only; paths are not part of the surface model.`,
       });
     }
     return scopes[0];

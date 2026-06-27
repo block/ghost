@@ -1284,22 +1284,19 @@ sources: []
     ).resolves.toContain("grounding is silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
-    ).resolves.toContain("ghost gather --path <file> --format json");
-    await expect(
-      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
     ).resolves.toContain("ghost gather <surface> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "verify.md"),
         "utf-8",
       ),
-    ).resolves.toContain("ghost gather --path <file> --format json");
+    ).resolves.toContain("ghost gather <surface> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain("ghost checks --diff <patch> --format json");
+    ).resolves.toContain("ghost checks --surface <ids> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),

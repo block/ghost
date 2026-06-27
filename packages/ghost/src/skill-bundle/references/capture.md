@@ -46,8 +46,8 @@ Common starting points:
   exemplar scans.
 - Existing repos with mixed quality require curation before repeated patterns
   become canonical.
-- Monorepos and product suites need a nested-package decision pass before local
-  surfaces inherit or add guidance.
+- Monorepos and product suites run one contract per package: surfaces (not
+  nested packages) are how a single contract organizes locality.
 
 Human intent anchors surface composition. Scans provide evidence. Agent
 synthesis is draft work until a human curates it and ordinary Git review
@@ -148,9 +148,6 @@ ghost lint .ghost
 ghost verify .ghost --root <target>
 ghost check --base HEAD
 ```
-
-Use `ghost lint --all` and `ghost verify --all` only when nested fingerprint
-packages exist.
 
 ## Never
 
