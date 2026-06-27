@@ -1,22 +1,13 @@
 import type { CAC } from "cac";
 import {
   initFingerprintPackage,
-  initScopedFingerprintPackage,
   type resolveFingerprintPackage,
 } from "./fingerprint.js";
-import {
-  initMonorepoFingerprintPackages,
-  writeMonorepoInitOutput,
-} from "./monorepo-init-command.js";
 import { resolveGhostDirDefault } from "./scan/index.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
     .command("init", "Create a root .ghost split fingerprint package")
-    .option(
-      "--scope <path>",
-      "Create a scoped <path>/.ghost fingerprint package",
-    )
     .option(
       "--package <dir>",
       "Exact fingerprint package directory to initialize",
@@ -25,11 +16,6 @@ export function registerInitCommand(cli: CAC): void {
       "--reference <path-or-registry>",
       "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
     )
-    .option(
-      "--monorepo",
-      "Detect monorepo child package roots and propose scoped Ghost packages",
-    )
-    .option("--apply", "With --monorepo, create detected child scoped packages")
     .option("--force", "Overwrite existing Ghost fingerprint files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (opts) => {
@@ -37,35 +23,6 @@ export function registerInitCommand(cli: CAC): void {
         if (cli.args.length > 0) {
           console.error(
             "Error: ghost init no longer accepts a positional directory. Use --package <dir> for an exact package directory.",
-          );
-          process.exit(2);
-          return;
-        }
-        if (opts.monorepo && typeof opts.scope === "string") {
-          console.error(
-            "Error: use either init --scope <path> or init --monorepo",
-          );
-          process.exit(2);
-          return;
-        }
-        if (opts.apply && !opts.monorepo) {
-          console.error("Error: --apply can only be used with --monorepo");
-          process.exit(2);
-          return;
-        }
-        if (opts.monorepo && typeof opts.package === "string") {
-          console.error(
-            "Error: use either init --package <dir> or init --monorepo",
-          );
-          process.exit(2);
-          return;
-        }
-        if (
-          typeof opts.scope === "string" &&
-          typeof opts.package === "string"
-        ) {
-          console.error(
-            "Error: use either init --package <dir> or init --scope <path>",
           );
           process.exit(2);
           return;
@@ -79,27 +36,11 @@ export function registerInitCommand(cli: CAC): void {
             typeof opts.reference === "string" ? opts.reference : undefined,
           force: Boolean(opts.force),
         };
-        if (opts.monorepo) {
-          const output = await initMonorepoFingerprintPackages({
-            ghostDir: ghostDir ?? ghostDirFromEnv(),
-            apply: Boolean(opts.apply),
-            initOptions,
-          });
-          writeMonorepoInitOutput(output, opts.format);
-          process.exit(output.errors.length > 0 ? 2 : 0);
-          return;
-        }
-        const paths =
-          typeof opts.scope === "string"
-            ? await initScopedFingerprintPackage(opts.scope, process.cwd(), {
-                ...initOptions,
-                ghostDir: ghostDir ?? ghostDirFromEnv(),
-              })
-            : await initFingerprintPackage(
-                exactPackage ?? ghostDir,
-                process.cwd(),
-                initOptions,
-              );
+        const paths = await initFingerprintPackage(
+          exactPackage ?? ghostDir,
+          process.cwd(),
+          initOptions,
+        );
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(initCommandOutput(paths), null, 2)}\n`,

@@ -12,28 +12,6 @@ export type {
   ScanFacetReport,
   ScanFacetState,
 } from "./fingerprint-contribution.js";
-export type {
-  DiscoveredGhostPackage,
-  FingerprintDirectoryOptions,
-  GhostFingerprintStack,
-  GhostFingerprintStackGroup,
-  GhostFingerprintStackLayer,
-  GhostFingerprintStackLayerRef,
-} from "./fingerprint-stack.js";
-export {
-  buildFingerprintStack,
-  discoverFingerprintStack,
-  discoverGhostPackages,
-  groupFingerprintStacksForPaths,
-  loadFingerprintStackForPath,
-} from "./fingerprint-stack.js";
-export {
-  fingerprintPackageDisplayPath,
-  GHOST_PACKAGE_DIR_ENV,
-  normalizeGhostDir,
-  resolveGhostDirDefault,
-  resolveGitRoot,
-} from "./package-paths.js";
 export { signals } from "./inventory.js";
 export type {
   LegacyPackageInput,
@@ -41,8 +19,13 @@ export type {
   MigrationResult,
 } from "./migrate-legacy.js";
 export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
-export type { MonorepoInitCandidate } from "./monorepo-init.js";
-export { detectMonorepoInitCandidates } from "./monorepo-init.js";
+export {
+  fingerprintPackageDisplayPath,
+  GHOST_PACKAGE_DIR_ENV,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
+  resolveGitRoot,
+} from "./package-paths.js";
 export type {
   ScanStage,
   ScanStageReport,

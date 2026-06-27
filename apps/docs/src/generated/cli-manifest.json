@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T06:13:08.426Z",
+  "generatedAt": "2026-06-27T06:18:57.411Z",
   "tools": [
     {
       "tool": "ghost",
@@ -21,14 +21,6 @@
               "default": "cli",
               "takesValue": true,
               "negated": false
-            },
-            {
-              "rawName": "--all",
-              "name": "all",
-              "description": "Validate every nested fingerprint package and its resolved fingerprint stack",
-              "default": null,
-              "takesValue": false,
-              "negated": false
             }
           ]
         },
@@ -43,14 +35,6 @@
           "summary": "Create .ghost/ package facets.",
           "options": [
             {
-              "rawName": "--scope <path>",
-              "name": "scope",
-              "description": "Create a scoped <path>/.ghost fingerprint package",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Exact fingerprint package directory to initialize",
@@ -64,22 +48,6 @@
               "description": "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
               "default": null,
               "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--monorepo",
-              "name": "monorepo",
-              "description": "Detect monorepo child package roots and propose scoped Ghost packages",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--apply",
-              "name": "apply",
-              "description": "With --monorepo, create detected child scoped packages",
-              "default": null,
-              "takesValue": false,
               "negated": false
             },
             {
@@ -125,14 +93,6 @@
               "default": "cli",
               "takesValue": true,
               "negated": false
-            },
-            {
-              "rawName": "--all",
-              "name": "all",
-              "description": "Verify every nested fingerprint package and its resolved fingerprint stack",
-              "default": null,
-              "takesValue": false,
-              "negated": false
             }
           ]
         },
@@ -146,14 +106,6 @@
           "compactName": "scan",
           "summary": "Report fingerprint contribution facets.",
           "options": [
-            {
-              "rawName": "--include-nested",
-              "name": "includeNested",
-              "description": "Also list nested fingerprint packages and contribution state",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -186,17 +138,9 @@
           "summary": "Emit review-command artifacts.",
           "options": [
             {
-              "rawName": "--path <path>",
-              "name": "path",
-              "description": "Resolve a nested fingerprint stack for this repo path",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
+              "description": "Use exactly this fingerprint package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
