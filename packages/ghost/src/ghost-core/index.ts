@@ -1,24 +1,5 @@
 // --- Embedding primitives ---
 
-// --- Binding (ghost.binding/v1) ---
-export {
-  type BindingCandidate,
-  type ContractReferenceKind,
-  classifyContractReference,
-  GHOST_BINDING_FILENAME,
-  GHOST_BINDING_SCHEMA,
-  type GhostBindingDocument,
-  type GhostBindingEntry,
-  type GhostBindingLintIssue,
-  type GhostBindingLintReport,
-  type GhostBindingLintSeverity,
-  GhostBindingSchema,
-  IN_REPO_CONTRACT,
-  lintGhostBinding,
-  type PathResolution,
-  type PathResolutionReason,
-  resolvePathToSurface,
-} from "./binding/index.js";
 // --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
 export {
   type CheckRelevance,
