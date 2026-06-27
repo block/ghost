@@ -5,22 +5,21 @@ description: Build a concise pre-generation brief from a surface's gather slice.
 
 # Recipe: Brief Work From Ghost Fingerprint
 
-1. When a target path is known, run `ghost gather --path <file> --format json`
-   to resolve the surface that owns it and compose its slice.
-2. For prompt-shaped work, match the ask to a surface in the menu
-   (`ghost gather --format json` with no surface lists the surfaces and their
-   descriptions), then run `ghost gather <surface> --format json`.
-3. Treat the gather slice as the agent contract: `surface`, `ancestors`, and the
+1. Match the ask to a surface in the menu (`ghost gather --format json` with no
+   surface lists the surfaces and their descriptions), then run
+   `ghost gather <surface> --format json`.
+2. Treat the gather slice as the agent contract: `surface`, `ancestors`, and the
    composed `principles`, `experience_contracts`, and `patterns`, each with
    `provenance` (own, inherited from an ancestor, or contributed by a typed
    edge).
-4. Express the surface's intent through its composed patterns.
-5. Inspect matching `inventory.exemplars` as concrete generation anchors.
-6. Run `ghost signals <path>` when raw repo observations would help you find
+3. Express the surface's intent through its composed patterns.
+4. Inspect matching `inventory.exemplars` as concrete generation anchors.
+5. Run `ghost signals <path>` when raw repo observations would help you find
    evidence.
-7. Run `ghost checks --diff <patch>` to see which checks govern the touched
-   surfaces and their grounding, so generation avoids known failures.
-8. When the slice is sparse, label local reasoning provisional rather than
+6. Run `ghost checks --surface <ids>` (the surfaces you determined the change
+   touches) to see which checks govern them and their grounding, so generation
+   avoids known failures.
+7. When the slice is sparse, label local reasoning provisional rather than
    inventing surface-specific rules.
 
 Plain `ghost gather <surface>` is a compact human preview. Prefer `--format
@@ -28,8 +27,7 @@ json` as the agent interface.
 
 The host agent owns natural-language matching: read the surface menu (each
 surface's authored description) and pick the surface the ask belongs to. Ghost
-resolves a path to a surface deterministically via bindings, but it never does
-the natural-language matching itself.
+never infers a surface from a repo path — the agent names it.
 
 When no surface is selected (or an unknown one is named), `gather` returns the
 surface menu, never the whole tree — choose a surface from it rather than

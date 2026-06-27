@@ -47,11 +47,12 @@ Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surfa
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
 raw repo observations while authoring curated fingerprint facets.
 
-Advanced repos may contain nested fingerprint packages such as
-`apps/checkout/.ghost/`. Host wrappers may set
-`GHOST_PACKAGE_DIR=<relative-dir>` on the child `ghost` process when they need
-repo-local Ghost files outside raw `ghost`'s `.ghost` default. Ghost stays adapter-neutral: wrappers consume JSON and map severities into their
-own review or check format.
+One contract per package: a repo's `.ghost/` is the contract, and surfaces are
+the only locality. Host wrappers may set `GHOST_PACKAGE_DIR=<relative-dir>` on
+the child `ghost` process when they need repo-local Ghost files outside raw
+`ghost`'s `.ghost` default, and `--package <dir>` targets an exact package (e.g.
+one product in a monorepo). Ghost stays adapter-neutral: wrappers consume JSON
+and map severities into their own review or check format.
 
 ## Core CLI Verbs
 
@@ -61,10 +62,9 @@ own review or check format.
 | `ghost scan [dir] [--format json]` | Report sparse fingerprint contribution facets. |
 | `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
-| `ghost checks --diff <patch>` | Select and ground the markdown checks governing a diff's surfaces. |
-| `ghost review --diff <patch>` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding. |
+| `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
+| `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
 | `ghost gather [surface]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
-| `ghost checks --diff <patch>` | Select and ground the markdown checks governing a diff's surfaces. |
 | `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install this unified skill bundle. |
 
@@ -72,10 +72,9 @@ own review or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init --scope <path>` / `GHOST_PACKAGE_DIR=<relative-dir> ghost init` | Create or resolve scoped/custom fingerprint packages for nested packages or host wrappers. |
+| `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
 | `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the surface model. |
-| `ghost lint --all` / `ghost verify --all` | Validate nested fingerprint packages. |
 | `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 
@@ -102,7 +101,7 @@ evidence-backed facet entries, then ask the human to curate the claims.
 
 - Treat checked-in Ghost package facet files as the source of truth.
 - Generate from intent, inventory, and composition.
-- Route a diff with `ghost checks`; the agent evaluates the markdown checks it governs.
+- Name touched surfaces to `ghost checks --surface`; the agent evaluates the markdown checks it governs.
 - Use local evidence as provisional when fingerprint facets are silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.
@@ -110,8 +109,8 @@ evidence-backed facet entries, then ask the human to curate the claims.
 - Validate with `ghost lint` and `ghost verify --root <target>` before declaring
   fingerprint facets useful.
 - Run `ghost checks` to route checks and `ghost review` for the advisory packet.
-- Use nested stacks and custom package dirs only when
-  present or requested.
+- Use a custom package dir (`--package` / `GHOST_PACKAGE_DIR`) only when present
+  or requested.
 
 ## When Fingerprint Facets Are Silent
 
