@@ -70,9 +70,11 @@ describe("ghost.node/v1 schema", () => {
     ).toBeGreaterThan(0);
   });
 
-  it("accepts an arbitrary medium string", () => {
-    expect(lintGhostNode(node("id: a\nmedium: billboard")).errors).toBe(0);
-    expect(lintGhostNode(node("id: a\nmedium: voice-kiosk")).errors).toBe(0);
+  it("accepts an arbitrary incarnation string", () => {
+    expect(lintGhostNode(node("id: a\nincarnation: billboard")).errors).toBe(0);
+    expect(lintGhostNode(node("id: a\nincarnation: voice-kiosk")).errors).toBe(
+      0,
+    );
   });
 
   it("rejects unknown frontmatter keys (strict)", () => {
@@ -88,7 +90,7 @@ describe("ghost.node/v1 schema", () => {
           { to: "core-trust", as: "reinforces" },
           { to: "checkout-density" },
         ],
-        medium: "web",
+        incarnation: "web",
       },
       body: "Near payment, reduce felt risk.",
     };

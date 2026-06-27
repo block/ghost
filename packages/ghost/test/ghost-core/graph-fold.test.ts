@@ -67,7 +67,7 @@ describe("assembleGraph (Phase 2 fold)", () => {
             id: "checkout-trust",
             under: "checkout",
             relates: [{ to: "core-trust", as: "reinforces" }],
-            medium: "web",
+            incarnation: "web",
           },
           "Reduce felt risk near payment.",
         ),
@@ -76,7 +76,7 @@ describe("assembleGraph (Phase 2 fold)", () => {
     const node = graph.nodes.get("checkout-trust");
     expect(node?.origin).toBe("node-file");
     expect(node?.body).toBe("Reduce felt risk near payment.");
-    expect(node?.medium).toBe("web");
+    expect(node?.incarnation).toBe("web");
     expect(node?.relates).toEqual([{ to: "core-trust", as: "reinforces" }]);
   });
 

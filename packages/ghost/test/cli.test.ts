@@ -1513,20 +1513,44 @@ composition:
     const slice = JSON.parse(result.stdout);
     expect(slice.surface).toBe("email-marketing");
     const byId = Object.fromEntries(
-      slice.principles.map(
-        (entry: { node: { id: string }; provenance: unknown }) => [
-          entry.node.id,
-          entry.provenance,
-        ],
-      ),
+      slice.nodes.map((node: { id: string; provenance: unknown }) => [
+        node.id,
+        node.provenance,
+      ]),
     );
-    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", surface: "core" });
+    // Graph slice (Option A, prose nodes): own + cascaded ancestors.
+    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", from: "core" });
     expect(byId["marketing-urgency"]).toEqual({ kind: "own" });
-    expect(byId["checkout-clarity"]).toEqual({
-      kind: "edge",
-      edge: "composes",
-      surface: "checkout",
-    });
+    // Phase 3 decision: edge contributions come from node `relates`, not from
+    // legacy `composes` surface edges. checkout-clarity sits on a sibling
+    // surface with no `relates` link in, so it is no longer pulled in.
+    expect(byId["checkout-clarity"]).toBeUndefined();
+  });
+
+  it("filters the gather slice by incarnation via --as", async () => {
+    await writeIncarnationPackage(dir);
+
+    const web = await runCli(
+      [
+        "gather",
+        "launch",
+        "--as",
+        "web",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    expect(web.code).toBe(0);
+    const slice = JSON.parse(web.stdout);
+    expect(slice.incarnation).toBe("web");
+    const ids = slice.nodes.map((n: { id: string }) => n.id).sort();
+    // essence (untagged) + matching web; the email node is filtered out.
+    expect(ids).toContain("launch");
+    expect(ids).toContain("launch-web");
+    expect(ids).not.toContain("launch-email");
   });
 
   it("returns the surface menu when no surface is named", async () => {
@@ -1611,9 +1635,8 @@ experience_contracts: []
     );
     const slice = JSON.parse(gather.stdout);
     expect(
-      slice.principles.find(
-        (entry: { node: { id: string } }) => entry.node.id === "scoped",
-      )?.provenance,
+      slice.nodes.find((node: { id: string }) => node.id === "scoped")
+        ?.provenance,
     ).toEqual({ kind: "own" });
   });
 
@@ -1760,6 +1783,36 @@ surfaces:
     expect(payload.grounding).toBeUndefined();
   });
 });
+
+async function writeIncarnationPackage(dir: string): Promise<void> {
+  const ghost = join(dir, ".ghost");
+  await mkdir(join(ghost, "nodes"), { recursive: true });
+  await writeFile(
+    join(ghost, "manifest.yml"),
+    "schema: ghost.fingerprint-package/v1\nid: incarnation-demo\n",
+  );
+  await writeFile(
+    join(ghost, "surfaces.yml"),
+    `schema: ghost.surfaces/v1
+surfaces:
+  - id: launch
+    description: Launch announcement.
+    parent: core
+`,
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch.md"),
+    "---\nid: launch\nunder: core\n---\n\nOne idea, stated with confidence.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch-web.md"),
+    "---\nid: launch-web\nunder: launch\nincarnation: web\n---\n\nHero with one CTA.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch-email.md"),
+    "---\nid: launch-email\nunder: launch\nincarnation: email\n---\n\nSubject is the headline.\n",
+  );
+}
 
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");

@@ -25,7 +25,8 @@ export interface GhostNodeRelation {
 }
 
 /**
- * A node's frontmatter: the machinery's handle (identity, tree, links, medium).
+ * A node's frontmatter: the machinery's handle (identity, tree, links,
+ * incarnation).
  * The prose body carries the design expression; intent / inventory /
  * composition are authorship lenses, never fields.
  */
@@ -41,11 +42,12 @@ export interface GhostNodeFrontmatter {
   /** Typed lateral links to other nodes (composition graph). */
   relates?: GhostNodeRelation[];
   /**
-   * The medium this node's expression is for. Absent / `any` means
-   * medium-agnostic (cascades to every medium). Open enum: known media plus
-   * custom strings.
+   * The incarnation this node's expression takes — the form the intent appears
+   * in (email, billboard, voice, web…). Absent / `any` means essence:
+   * incarnation-agnostic, cascades to every incarnation. Open enum: known
+   * incarnations plus custom strings. Filtered at gather time by `--as`.
    */
-  medium?: string;
+  incarnation?: string;
 }
 
 export interface GhostNodeDocument {

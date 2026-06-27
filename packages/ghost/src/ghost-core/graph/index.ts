@@ -12,6 +12,13 @@ export {
 } from "./assemble.js";
 export { projectFacetsToNodes } from "./project-facets.js";
 export {
+  type GraphSlice,
+  type GraphSliceNode,
+  type GraphSliceProvenance,
+  type ResolveGraphSliceOptions,
+  resolveGraphSlice,
+} from "./slice.js";
+export {
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
   type GhostGraphNode,
