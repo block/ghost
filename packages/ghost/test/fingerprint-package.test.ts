@@ -119,6 +119,31 @@ sources:
     await expect(lintFingerprintPackage(dir)).rejects.toThrow();
   });
 
+  it("folds authored nodes/*.md and facet projections into the graph", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "intent.yml"),
+      "summary: {}\nsituations: []\nprinciples:\n  - id: brand-voice\n    principle: Warm everywhere.\n    surface: core\nexperience_contracts: []\n",
+    );
+    await mkdir(join(dir, "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "nodes", "checkout-trust.md"),
+      "---\nid: checkout-trust\nunder: core\nmedium: web\n---\n\nReduce felt risk near payment.\n",
+    );
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    // Authored node folded in...
+    const authored = loaded.graph.nodes.get("checkout-trust");
+    expect(authored?.origin).toBe("node-file");
+    expect(authored?.body).toBe("Reduce felt risk near payment.");
+    expect(authored?.medium).toBe("web");
+    // ...alongside the facet projection.
+    expect(loaded.graph.nodes.get("brand-voice")?.origin).toBe(
+      "facet-projection",
+    );
+  });
+
   it("does not discover old .ghost.yml alone as a package", async () => {
     await writeFile(
       join(dir, "fingerprint.yml"),

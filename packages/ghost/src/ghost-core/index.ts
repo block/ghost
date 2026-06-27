@@ -106,6 +106,17 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
+// --- Graph (in-memory fingerprint node graph) ---
+export {
+  type AssembleGraphInput,
+  ancestorChain,
+  assembleGraph,
+  GHOST_GRAPH_ROOT_ID,
+  type GhostGraph,
+  type GhostGraphNode,
+  type GhostGraphNodeOrigin,
+  projectFacetsToNodes,
+} from "./graph/index.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---
 export {
   GHOST_NODE_RELATION_KINDS,

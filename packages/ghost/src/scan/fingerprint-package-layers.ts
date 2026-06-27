@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import type { ZodIssue, ZodType } from "zod";
 import {
+  assembleGraph,
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
   GhostFingerprintCompositionSchema,
@@ -21,6 +22,7 @@ import type {
   LoadedFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
+import { loadNodesDir } from "./nodes-dir.js";
 import { normalizeReferenceInput } from "./package-config.js";
 
 export async function loadFingerprintPackage(
@@ -64,10 +66,15 @@ export async function loadFingerprintPackage(
       `fingerprint package failed lint: ${first?.message ?? "invalid fingerprint"}${suffix}`,
     );
   }
+  // Phase 2 fold: union authored node files with a transition projection of the
+  // facet model into one in-memory graph. Additive — nothing reads it yet.
+  const { nodes: nodeFiles } = await loadNodesDir(paths.dir);
+  const graph = assembleGraph({ nodeFiles, fingerprint, surfaces });
   return {
     manifest,
     manifestRaw,
     fingerprint,
+    graph,
     ...(surfaces ? { surfaces } : {}),
     layerRaw: {
       ...(intentRaw !== undefined ? { intent: intentRaw } : {}),
