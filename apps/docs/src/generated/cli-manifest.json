@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T12:58:29.867Z",
+  "generatedAt": "2026-06-27T06:13:08.426Z",
   "tools": [
     {
       "tool": "ghost",
@@ -490,14 +490,6 @@
               "negated": false
             },
             {
-              "rawName": "--path <file>",
-              "name": "path",
-              "description": "Resolve the surface that owns a repo path via its binding, then gather",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--format <fmt>",
               "name": "format",
               "description": "Output format: markdown or json",
@@ -511,24 +503,16 @@
           "tool": "ghost",
           "name": "checks",
           "rawName": "checks",
-          "description": "Select the markdown checks (ghost.check/v1) relevant to a diff, routed by surface.",
+          "description": "Select the markdown checks (ghost.check/v1) relevant to the named surfaces.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "checks",
           "summary": "Select and ground the checks relevant to a diff, by surface.",
           "options": [
             {
-              "rawName": "--base <ref>",
-              "name": "base",
-              "description": "Git ref to diff against (default: HEAD)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--diff <patch>",
-              "name": "diff",
-              "description": "Unified diff file to route instead of running git diff. Use '-' for stdin.",
+              "rawName": "--surface <ids>",
+              "name": "surface",
+              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -652,7 +636,15 @@
             {
               "rawName": "--diff <patch>",
               "name": "diff",
-              "description": "Unified diff file to review instead of running git diff. Use '-' for stdin.",
+              "description": "Unified diff file to embed in the review instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--surface <ids>",
+              "name": "surface",
+              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
               "default": null,
               "takesValue": true,
               "negated": false
