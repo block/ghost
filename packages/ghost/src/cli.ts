@@ -169,7 +169,11 @@ export function buildCli(): ReturnType<typeof cac> {
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(
       "--diff <patch>",
-      "Unified diff file to review instead of running git diff. Use '-' for stdin.",
+      "Unified diff file to embed in the review instead of running git diff. Use '-' for stdin.",
+    )
+    .option(
+      "--surface <ids>",
+      "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
     )
     .option(
       "--package <dir>",
@@ -195,6 +199,7 @@ export function buildCli(): ReturnType<typeof cac> {
           opts.maxDiffBytes,
           "--max-diff-bytes",
         );
+        const surfaces = parseSurfaceIdsOption(opts.surface);
         const diffText =
           typeof opts.diff === "string"
             ? await readDiffInput(opts.diff)
@@ -202,6 +207,7 @@ export function buildCli(): ReturnType<typeof cac> {
         const packet = await buildReviewPacket({
           packageDir,
           diffText,
+          surfaces,
           maxDiffBytes,
         });
         if (opts.format === "json") {
@@ -230,6 +236,15 @@ function readPackageVersion(): string {
     readFileSync(resolve(here, "../package.json"), "utf8"),
   );
   return pkg.version as string;
+}
+
+function parseSurfaceIdsOption(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value : value === undefined ? [] : [value];
+  const ids = raw
+    .flatMap((entry) => String(entry).split(","))
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+  return [...new Set(ids)];
 }
 
 function parsePositiveIntegerOption(

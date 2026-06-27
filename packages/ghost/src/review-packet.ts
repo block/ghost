@@ -1,29 +1,28 @@
 import {
   groundSurface,
   type RoutedCheck,
-  resolvePathToSurface,
   type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadChecksDir } from "./scan/checks-dir.js";
 import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./scan/fingerprint-package.js";
-import { parseUnifiedDiff } from "./scan/unified-diff.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 
 /**
- * Build an advisory review packet on the surface rails: resolve the diff's
- * changed paths to the surfaces that own them (bindings), select the markdown
- * checks governing those surfaces and their ancestors, and ground each in the
- * surface's fingerprint slice. No `validate.yml`, no dormant context entrypoint.
+ * Build an advisory review packet on the surface rails: for the agent-stated
+ * surfaces the change touches, select the markdown checks governing those
+ * surfaces and their ancestors, and ground each in the surface's fingerprint
+ * slice. The diff is embedded verbatim for the reviewer; it is not used to
+ * resolve surfaces (the agent already analyzed it and names the surfaces).
  */
 export async function buildReviewPacket(options: {
   packageDir?: string;
   diffText: string;
+  surfaces: string[];
   maxDiffBytes?: number;
 }): Promise<ReviewPacket> {
   const cwd = process.cwd();
@@ -31,24 +30,11 @@ export async function buildReviewPacket(options: {
   const loaded = await loadFingerprintPackage(paths);
   const { checks, invalid } = await loadChecksDir(paths.dir);
 
-  const changedPaths = parseUnifiedDiff(options.diffText).map(
-    (file) => file.path,
-  );
+  // The agent names the touched surfaces; dedupe and route.
+  const touched = [...new Set(options.surfaces.filter((s) => s.length > 0))];
 
-  // Resolve each changed path to its surface via bindings; union them.
-  const touched = new Set<string>();
-  for (const path of changedPaths) {
-    const discovered = await discoverBindingsForPath(path, cwd);
-    const resolution = resolvePathToSurface(
-      discovered.target_path,
-      discovered.candidates,
-      { hasRootContract: discovered.hasRootContract || !!loaded.surfaces },
-    );
-    if (resolution.surface) touched.add(resolution.surface);
-  }
-
-  const routed = selectChecksForSurfaces(checks, loaded.surfaces, [...touched]);
-  const grounding = [...touched].map((surface) =>
+  const routed = selectChecksForSurfaces(checks, loaded.surfaces, touched);
+  const grounding = touched.map((surface) =>
     groundSurface(loaded.surfaces, loaded.fingerprint, surface),
   );
 
@@ -56,7 +42,7 @@ export async function buildReviewPacket(options: {
     ...baseReviewPacket(paths.dir, options.diffText, {
       maxDiffBytes: options.maxDiffBytes,
     }),
-    touched_surfaces: [...touched],
+    touched_surfaces: touched,
     routed_checks: routed,
     grounding,
     invalid_checks: invalid,
