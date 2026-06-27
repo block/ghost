@@ -10,8 +10,8 @@ import { resolveFingerprintPackage } from "./fingerprint.js";
 import {
   fingerprintStackToPackageContext,
   loadFingerprintStackForPath,
-  resolveGhostDirDefault,
 } from "./scan/fingerprint-stack.js";
+import { resolveGhostDirDefault } from "./scan/package-paths.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 

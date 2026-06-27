@@ -33,14 +33,16 @@ export {
   buildFingerprintStack,
   discoverFingerprintStack,
   discoverGhostPackages,
-  fingerprintPackageDisplayPath,
-  GHOST_PACKAGE_DIR_ENV,
   groupFingerprintStacksForPaths,
   loadFingerprintStackForPath,
+} from "./fingerprint-stack.js";
+export {
+  fingerprintPackageDisplayPath,
+  GHOST_PACKAGE_DIR_ENV,
   normalizeGhostDir,
   resolveGhostDirDefault,
   resolveGitRoot,
-} from "./fingerprint-stack.js";
+} from "./package-paths.js";
 export { signals } from "./inventory.js";
 export type {
   LegacyPackageInput,

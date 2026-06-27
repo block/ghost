@@ -1,8 +1,6 @@
-import { execFile } from "node:child_process";
 import type { Dirent } from "node:fs";
 import { access, mkdir, readdir, stat } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { promisify } from "node:util";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
   type GhostFingerprintDocument,
@@ -26,9 +24,14 @@ import type {
   VerifyFingerprintIssue,
   VerifyFingerprintReport,
 } from "./verify-fingerprint.js";
+import {
+  fingerprintPackageDisplayPath,
+  GHOST_PACKAGE_DIR_ENV,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
+  resolveGitRoot,
+} from "./package-paths.js";
 import { verifyFingerprintPackage } from "./verify-package.js";
-
-const execFileAsync = promisify(execFile);
 
 const BASE_SKIP_DISCOVERY_DIRS = new Set([
   ".git",
@@ -91,21 +94,6 @@ export interface DiscoveredGhostPackage {
   root: string;
   relative_root: string;
   ghost_dir: string;
-}
-
-export async function resolveGitRoot(cwd = process.cwd()): Promise<string> {
-  try {
-    const { stdout } = await execFileAsync(
-      "git",
-      ["rev-parse", "--show-toplevel"],
-      {
-        cwd,
-      },
-    );
-    return resolve(stdout.trim());
-  } catch {
-    return resolve(cwd);
-  }
 }
 
 export async function discoverGhostPackages(
@@ -544,58 +532,6 @@ function layerRef(
     relative_root: layer.relative_root,
     ghost_dir: layer.ghost_dir,
   };
-}
-
-export function normalizeGhostDir(ghostDir = FINGERPRINT_PACKAGE_DIR): string {
-  const normalized = ghostDir
-    .trim()
-    .replaceAll("\\", "/")
-    .replace(/\/+/g, "/")
-    .replace(/\/$/g, "");
-  if (!normalized) {
-    throw new Error("GHOST_PACKAGE_DIR must not be empty");
-  }
-  if (
-    isAbsolute(ghostDir) ||
-    normalized.startsWith("/") ||
-    /^[A-Za-z]:/.test(normalized)
-  ) {
-    throw new Error("GHOST_PACKAGE_DIR must be a relative directory path");
-  }
-  const segments = normalized.split("/");
-  if (
-    segments.some(
-      (segment) => segment === "." || segment === ".." || segment === "",
-    )
-  ) {
-    throw new Error(
-      "GHOST_PACKAGE_DIR must not contain '.', '..', or empty path segments",
-    );
-  }
-  return normalized;
-}
-
-export const GHOST_PACKAGE_DIR_ENV = "GHOST_PACKAGE_DIR";
-
-export function resolveGhostDirDefault(
-  explicitGhostDir?: unknown,
-  env: NodeJS.ProcessEnv = process.env,
-): string {
-  return normalizeGhostDir(
-    typeof explicitGhostDir === "string"
-      ? explicitGhostDir
-      : env[GHOST_PACKAGE_DIR_ENV],
-  );
-}
-
-export function fingerprintPackageDisplayPath(
-  relativeRoot: string,
-  ghostDir = FINGERPRINT_PACKAGE_DIR,
-): string {
-  const normalizedGhostDir = normalizeGhostDir(ghostDir);
-  return relativeRoot === "."
-    ? normalizedGhostDir
-    : `${relativeRoot}/${normalizedGhostDir}`;
 }
 
 function skipDiscoveryDirs(ghostDir: string): Set<string> {
