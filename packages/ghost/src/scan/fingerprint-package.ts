@@ -5,6 +5,7 @@ import {
   GHOST_SURFACES_YML_FILENAME,
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
+  type GhostGraph,
   type GhostSurfacesDocument,
   SURVEY_FILENAME,
 } from "#ghost-core";
@@ -58,6 +59,12 @@ export interface LoadedFingerprintPackage {
   fingerprint: GhostFingerprintDocument;
   /** Parsed `surfaces.yml`, or `undefined` when the package has no surfaces file. */
   surfaces?: GhostSurfacesDocument;
+  /**
+   * The in-memory node graph: authored `nodes/*.md` folded with a transition
+   * projection of the facet model. Additive in Phase 2 — nothing reads it yet;
+   * later phases (gather, checks, compare) migrate onto it.
+   */
+  graph: GhostGraph;
   layerRaw: {
     intent?: string;
     inventory?: string;
