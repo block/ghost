@@ -106,6 +106,25 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
+// --- Node (ghost.node/v1) — the markdown node artifact ---
+export {
+  GHOST_NODE_RELATION_KINDS,
+  GHOST_NODE_SCHEMA,
+  type GhostNodeDocument,
+  type GhostNodeFrontmatter,
+  GhostNodeFrontmatterSchema,
+  type GhostNodeLintIssue,
+  type GhostNodeLintReport,
+  type GhostNodeLintSeverity,
+  type GhostNodeRelation,
+  type GhostNodeRelationKind,
+  lintGhostNode,
+  NodeIdSchema,
+  NodeRefSchema,
+  type ParseNodeResult,
+  parseNode,
+  serializeNode,
+} from "./node/index.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,
