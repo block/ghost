@@ -16,7 +16,7 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
-import { resolveGitRoot } from "./fingerprint-stack.js";
+import { resolveGitRoot } from "./package-paths.js";
 import type {
   VerifyFingerprintIssue,
   VerifyFingerprintReport,

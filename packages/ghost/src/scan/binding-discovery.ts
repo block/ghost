@@ -9,7 +9,7 @@ import {
   GhostSurfacesSchema,
 } from "#ghost-core";
 import { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
-import { resolveGitRoot } from "./fingerprint-stack.js";
+import { resolveGitRoot } from "./package-paths.js";
 
 export interface DiscoverBindingsOptions {
   ghostDir?: string;
