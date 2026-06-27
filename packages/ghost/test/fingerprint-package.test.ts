@@ -128,7 +128,7 @@ sources:
     await mkdir(join(dir, "nodes"), { recursive: true });
     await writeFile(
       join(dir, "nodes", "checkout-trust.md"),
-      "---\nid: checkout-trust\nunder: core\nmedium: web\n---\n\nReduce felt risk near payment.\n",
+      "---\nid: checkout-trust\nunder: core\nincarnation: web\n---\n\nReduce felt risk near payment.\n",
     );
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
@@ -137,7 +137,7 @@ sources:
     const authored = loaded.graph.nodes.get("checkout-trust");
     expect(authored?.origin).toBe("node-file");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
-    expect(authored?.medium).toBe("web");
+    expect(authored?.incarnation).toBe("web");
     // ...alongside the facet projection.
     expect(loaded.graph.nodes.get("brand-voice")?.origin).toBe(
       "facet-projection",

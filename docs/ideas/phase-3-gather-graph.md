@@ -47,7 +47,7 @@ prompt ──▶ [ LLM: which node(s)? ] ──▶ id(s) ──▶ [ Ghost: gath
 
 - The agent calls `gather --format json` with no id to get the **menu** (the
   surfaces with authored descriptions), matches the prompt against it, and picks
-  the id. That matching is the agent's judgment — there is no path→surface
+  the id. That matching is the agent's call — there is no path→surface
   lookup (one-road deleted it).
 - The agent then calls `gather <id> --as <incarnation>`; Ghost traverses and
   returns. Same input → same packet, always. This is what keeps trace / checks /

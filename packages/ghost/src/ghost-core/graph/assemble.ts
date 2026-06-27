@@ -41,7 +41,7 @@ export function assembleGraph(input: AssembleGraphInput): GhostGraph {
       id: fm.id,
       ...(fm.under !== undefined ? { under: fm.under } : {}),
       relates: fm.relates ?? [],
-      ...(fm.medium !== undefined ? { medium: fm.medium } : {}),
+      ...(fm.incarnation !== undefined ? { incarnation: fm.incarnation } : {}),
       body: doc.body,
       origin: "node-file",
     });

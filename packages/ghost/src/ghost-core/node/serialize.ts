@@ -3,7 +3,7 @@ import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 
 /**
  * Serialize a node back to its `---\n<yaml>\n---\n<body>` markdown form. Keys
- * are emitted in a stable order (id, under, relates, medium) so round-trips and
+ * are emitted in a stable order (id, under, relates, incarnation) so round-trips and
  * diffs are deterministic. Undefined fields are omitted.
  */
 export function serializeNode(node: GhostNodeDocument): string {
@@ -17,7 +17,7 @@ export function serializeNode(node: GhostNodeDocument): string {
       return entry;
     });
   }
-  if (fm.medium !== undefined) ordered.medium = fm.medium;
+  if (fm.incarnation !== undefined) ordered.incarnation = fm.incarnation;
 
   const yaml = stringifyYaml(ordered).trimEnd();
   const body = node.body.replace(/^\n+/, "");

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T06:23:34.307Z",
+  "generatedAt": "2026-06-27T07:47:33.864Z",
   "tools": [
     {
       "tool": "ghost",
@@ -429,6 +429,14 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--as <incarnation>",
+              "name": "as",
+              "description": "Filter to one incarnation (e.g. email, billboard, voice). Essence (untagged) nodes always pass.",
               "default": null,
               "takesValue": true,
               "negated": false

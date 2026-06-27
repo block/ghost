@@ -115,7 +115,12 @@ export {
   type GhostGraph,
   type GhostGraphNode,
   type GhostGraphNodeOrigin,
+  type GraphSlice,
+  type GraphSliceNode,
+  type GraphSliceProvenance,
   projectFacetsToNodes,
+  type ResolveGraphSliceOptions,
+  resolveGraphSlice,
 } from "./graph/index.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---
 export {

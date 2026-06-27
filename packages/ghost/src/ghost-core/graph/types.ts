@@ -16,13 +16,13 @@ export type GhostGraphNodeOrigin = "node-file" | "facet-projection";
  * A resolved graph node — pure prose (Option A). The body is the design
  * expression; there are no structured node fields. `under` is the single
  * containment parent (absent ⇒ child of the implicit `core` root); `relates`
- * are the typed lateral links; `medium` is the optional projection tag.
+ * are the typed lateral links; `incarnation` is the optional projection tag.
  */
 export interface GhostGraphNode {
   id: string;
   under?: string;
   relates: GhostNodeRelation[];
-  medium?: string;
+  incarnation?: string;
   body: string;
   origin: GhostGraphNodeOrigin;
 }
