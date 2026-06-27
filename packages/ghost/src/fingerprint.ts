@@ -35,11 +35,6 @@ export {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./scan/fingerprint-package.js";
-export {
-  initScopedFingerprintPackage,
-  lintAllFingerprintStacks,
-  verifyAllFingerprintStacks,
-} from "./scan/fingerprint-stack.js";
 export type { FingerprintMeta, FrontmatterData } from "./scan/frontmatter.js";
 export type {
   FingerprintLayout,

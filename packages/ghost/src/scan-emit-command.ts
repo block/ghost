@@ -7,11 +7,6 @@ import {
 } from "./context/package-context.js";
 import { emitPackageReviewCommand } from "./context/package-review-command.js";
 import { resolveFingerprintPackage } from "./fingerprint.js";
-import {
-  fingerprintStackToPackageContext,
-  loadFingerprintStackForPath,
-} from "./scan/fingerprint-stack.js";
-import { resolveGhostDirDefault } from "./scan/package-paths.js";
 
 const DEFAULT_REVIEW_OUT = ".claude/commands/design-review.md";
 
@@ -43,12 +38,8 @@ export function registerEmitCommand(cli: CAC): void {
       "Emit a derived artifact from the fingerprint package (review-command).",
     )
     .option(
-      "--path <path>",
-      "Resolve a nested fingerprint stack for this repo path",
-    )
-    .option(
       "--package <dir>",
-      "Use exactly this fingerprint package directory instead of resolving a stack",
+      "Use exactly this fingerprint package directory (default: ./.ghost)",
     )
     .option(
       "-o, --out <path>",
@@ -60,17 +51,6 @@ export function registerEmitCommand(cli: CAC): void {
         const parsed = parseEmitKind(kind);
         if (!parsed.ok) {
           console.error(`Error: ${parsed.error}`);
-          process.exit(2);
-          return;
-        }
-
-        const explicitPath = typeof opts.path === "string";
-        const explicitPackage = typeof opts.package === "string";
-        const explicitSources = [explicitPath, explicitPackage].filter(
-          Boolean,
-        ).length;
-        if (explicitSources > 1) {
-          console.error("Error: use only one of --path or --package");
           process.exit(2);
           return;
         }
@@ -102,21 +82,12 @@ export function registerEmitCommand(cli: CAC): void {
 }
 
 async function loadEmitPackageContext(opts: {
-  path?: unknown;
   package?: unknown;
 }): Promise<PackageContext> {
-  if (typeof opts.package === "string") {
-    return loadPackageContext(
-      resolveFingerprintPackage(opts.package, process.cwd()),
-    );
-  }
-
-  const stack = await loadFingerprintStackForPath(
-    typeof opts.path === "string" ? opts.path : ".",
-    process.cwd(),
-    {
-      ghostDir: resolveGhostDirDefault(),
-    },
+  return loadPackageContext(
+    resolveFingerprintPackage(
+      typeof opts.package === "string" ? opts.package : undefined,
+      process.cwd(),
+    ),
   );
-  return fingerprintStackToPackageContext(stack);
 }

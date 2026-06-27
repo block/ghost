@@ -9,24 +9,15 @@ import type {
 } from "#ghost-core";
 import {
   formatVerifyFingerprintReport,
-  lintAllFingerprintStacks,
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
   resolveFingerprintPackage,
-  verifyAllFingerprintStacks,
   verifyFingerprintPackage,
 } from "./fingerprint.js";
 import { registerInitCommand } from "./init-command.js";
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
-import {
-  discoverGhostPackages,
-  fingerprintPackageDisplayPath,
-  normalizeGhostDir,
-  resolveGhostDirDefault,
-  scanStatus,
-  signals,
-} from "./scan/index.js";
+import { resolveGhostDirDefault, scanStatus, signals } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
 
 /**
@@ -49,23 +40,9 @@ export function registerFingerprintCommands(cli: CAC): void {
       "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or direct markdown — defaults to .ghost",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .option(
-      "--all",
-      "Validate every nested fingerprint package and its resolved fingerprint stack",
-    )
     .action(async (path: string | undefined, opts) => {
       try {
         const ghostDir = ghostDirFromEnv();
-        if (opts.all) {
-          const report = await lintAllFingerprintStacks(
-            resolve(process.cwd(), path ?? "."),
-            { ghostDir },
-          );
-          writeLintReport(report, opts.format);
-          process.exit(report.errors > 0 ? 1 : 0);
-          return;
-        }
-
         const packagePath = path ?? ghostDir;
         const target = resolveFingerprintPackage(
           packagePath,
@@ -121,10 +98,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "Optional target root used to resolve fingerprint evidence and exemplar paths (default: cwd)",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .option(
-      "--all",
-      "Verify every nested fingerprint package and its resolved fingerprint stack",
-    )
     .action(async (dirArg: string | undefined, opts) => {
       try {
         if (opts.format !== "cli" && opts.format !== "json") {
@@ -134,16 +107,13 @@ export function registerFingerprintCommands(cli: CAC): void {
         }
 
         const ghostDir = ghostDirFromEnv();
-        const report = opts.all
-          ? await verifyAllFingerprintStacks(
-              resolve(process.cwd(), dirArg ?? "."),
-              {
-                ghostDir,
-              },
-            )
-          : await verifyFingerprintPackage(dirArg ?? ghostDir, process.cwd(), {
-              root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
-            });
+        const report = await verifyFingerprintPackage(
+          dirArg ?? ghostDir,
+          process.cwd(),
+          {
+            root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
+          },
+        );
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -166,10 +136,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "scan [dir]",
       "Report sparse fingerprint package contribution facets: intent, inventory, composition, and the next BYOA step.",
     )
-    .option(
-      "--include-nested",
-      "Also list nested fingerprint packages and contribution state",
-    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (dirArg: string | undefined, opts) => {
       try {
@@ -179,20 +145,8 @@ export function registerFingerprintCommands(cli: CAC): void {
           process.cwd(),
         ).dir;
         const status = await scanStatus(dir);
-        const nested = opts.includeNested
-          ? await nestedPackageStatus(
-              dirnameForFingerprintPackageDir(dir, ghostDir),
-              ghostDir,
-            )
-          : undefined;
         if (opts.format === "json") {
-          process.stdout.write(
-            `${JSON.stringify(
-              nested ? { ...status, nested_packages: nested } : status,
-              null,
-              2,
-            )}\n`,
-          );
+          process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
         } else {
           const fmt = (state: string) =>
             state === "present" ? "present" : "missing";
@@ -251,18 +205,6 @@ export function registerFingerprintCommands(cli: CAC): void {
               `  inventory building blocks: ${buildingBlockRows.tokens} token(s), ${buildingBlockRows.components} component(s), ${buildingBlockRows.libraries} libraries, ${buildingBlockRows.assets} asset(s), ${buildingBlockRows.routes} route(s), ${buildingBlockRows.files} file(s), ${buildingBlockRows.notes} note(s)\n`,
             );
           }
-          if (nested) {
-            process.stdout.write("\nnested packages:\n");
-            if (nested.length === 0) {
-              process.stdout.write("  none\n");
-            } else {
-              for (const pkg of nested) {
-                process.stdout.write(
-                  `  ${fingerprintPackageDisplayPath(pkg.relative_root, pkg.ghost_dir)}: ${pkg.contribution.state}\n`,
-                );
-              }
-            }
-          }
         }
         process.exit(0);
       } catch (err) {
@@ -294,43 +236,6 @@ export function registerFingerprintCommands(cli: CAC): void {
     });
 
   registerEmitCommand(cli);
-}
-
-async function nestedPackageStatus(
-  root: string,
-  ghostDir: string,
-): Promise<NestedPackageStatus[]> {
-  const packages = await discoverGhostPackages(root, { ghostDir });
-  return Promise.all(
-    packages.map(async (pkg) => {
-      const status = await scanStatus(pkg.dir);
-      return {
-        ...pkg,
-        fingerprint: status.fingerprint,
-        contribution: status.contribution,
-      };
-    }),
-  );
-}
-
-interface NestedPackageStatus {
-  dir: string;
-  root: string;
-  relative_root: string;
-  ghost_dir: string;
-  fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
-  contribution: Awaited<ReturnType<typeof scanStatus>>["contribution"];
-}
-
-function dirnameForFingerprintPackageDir(
-  dir: string,
-  ghostDir: string,
-): string {
-  let root = dir;
-  for (const _segment of normalizeGhostDir(ghostDir).split("/")) {
-    root = dirname(root);
-  }
-  return root;
 }
 
 function ghostDirFromEnv(): string {
