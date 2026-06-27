@@ -148,7 +148,12 @@ kinds, and one tag** — nothing more.
 | --- | --- |
 | **node** | one markdown file: frontmatter + body |
 | **link** | a typed pointer from one node to another |
-| **medium** | an optional tag on a node (`email`, `voice`, `any`, …) |
+| **incarnation** | an optional tag on a node (`email`, `voice`, `any`, …) — the form the intent takes; gather filters by it via `--as` |
+
+> Naming: this tag was called *medium* through early notes. Settled name is
+> **`incarnation`** (field) with **`--as`** (gather flag): the fingerprint is
+> disembodied intent; a tagged node is that intent incarnated in one output.
+> Voice-safe (unlike render/form/look) and free of "medium"'s abstractness.
 
 Links come in two kinds:
 
