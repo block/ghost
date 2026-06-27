@@ -2,13 +2,11 @@ import type { CAC } from "cac";
 import {
   buildSurfaceMenu,
   type ResolvedSlice,
-  resolvePathToSurface,
   resolveSurfaceSlice,
   type SliceProvenance,
   type SurfaceMenuEntry,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "./fingerprint.js";
-import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
 
 const GHOST_SURFACE_ROOT_ID = "core";
@@ -22,10 +20,6 @@ export function registerGatherCommand(cli: CAC): void {
     .option(
       "--package <dir>",
       "Use this fingerprint package directory (default: ./.ghost)",
-    )
-    .option(
-      "--path <file>",
-      "Resolve the surface that owns a repo path via its binding, then gather",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -42,22 +36,9 @@ export function registerGatherCommand(cli: CAC): void {
         const loaded = await loadFingerprintPackage(paths);
         const menu = buildSurfaceMenu(loaded.surfaces);
 
-        // The path road: resolve a repo path to its surface via bindings.
-        let surface = surfaceArg;
-        if (opts.path) {
-          const discovered = await discoverBindingsForPath(
-            opts.path,
-            process.cwd(),
-          );
-          const resolution = resolvePathToSurface(
-            discovered.target_path,
-            discovered.candidates,
-            {
-              hasRootContract: discovered.hasRootContract || !!loaded.surfaces,
-            },
-          );
-          if (resolution.surface) surface = resolution.surface;
-        }
+        // The agent names the surface (it analyzed the prompt + diff). Ghost
+        // does not infer surfaces from repo paths.
+        const surface = surfaceArg;
 
         // No surface named, or an unknown one: return the menu, never the tree.
         const known = new Set(menu.map((entry) => entry.id));

@@ -1789,7 +1789,7 @@ sources: []
     ).rejects.toThrow("Unknown option `--includeMemory`");
   });
 
-  it("review resolves touched surfaces for a mixed diff", async () => {
+  it("review uses agent-stated surfaces and embeds the diff", async () => {
     await writeNestedCheckPackage(dir);
     await writeFile(
       join(dir, "change.patch"),
@@ -1800,17 +1800,26 @@ sources: []
     );
 
     const result = await runCli(
-      ["review", "--diff", "change.patch", "--format", "json"],
+      [
+        "review",
+        "--diff",
+        "change.patch",
+        "--surface",
+        "core",
+        "--format",
+        "json",
+      ],
       dir,
     );
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    // Review is now surface-based: no merged stacks, just touched surfaces +
-    // routed checks + grounding from the root contract.
+    // Review is surface-based and agent-stated: the agent names the surfaces;
+    // the diff is embedded verbatim, never used to resolve surfaces.
     expect(packet.stacks).toBeUndefined();
-    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
+    expect(packet.touched_surfaces).toEqual(["core"]);
     expect(Array.isArray(packet.grounding)).toBe(true);
+    expect(packet.diff).toContain("CheckoutTheme");
   });
 
   it("emit review-command resolves the root contract for --path (no child merge)", async () => {
@@ -2040,7 +2049,7 @@ experience_contracts: []
     expect(result.stderr).toContain("Nothing to migrate");
   });
 
-  it("routes markdown checks to a diff by surface", async () => {
+  it("routes markdown checks to agent-stated surfaces", async () => {
     const ghost = join(dir, ".ghost");
     await mkdir(join(ghost, "checks"), { recursive: true });
     await writeFile(
@@ -2057,16 +2066,6 @@ surfaces:
     parent: core
 `,
     );
-    // Directory-implied binding for apps/checkout.
-    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
-      `schema: ghost.surfaces/v1
-surfaces:
-  - id: checkout
-    parent: core
-`,
-    );
     await writeFile(
       join(ghost, "checks", "brand.md"),
       "---\nname: brand\ndescription: Brand voice.\nseverity: medium\nsurface: core\n---\n## Instructions\nVoice.\n",
@@ -2079,16 +2078,12 @@ surfaces:
       join(ghost, "checks", "email.md"),
       "---\nname: email-links\ndescription: Email links.\nseverity: low\nsurface: email\n---\n## Instructions\nLinks.\n",
     );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--format",
@@ -2131,21 +2126,12 @@ surfaces:
       join(ghost, "checks", "checkout.md"),
       "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsurface: checkout\n---\n## Instructions\nFlag hex.\n",
     );
-    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
-    );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--format",
@@ -2175,16 +2161,12 @@ surfaces:
       join(ghost, "surfaces.yml"),
       "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
     );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--no-grounding",

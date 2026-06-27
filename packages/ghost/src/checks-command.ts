@@ -1,32 +1,32 @@
-import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
-import { promisify } from "node:util";
 import type { CAC } from "cac";
 import {
   groundSurface,
   type RoutedCheck,
-  resolvePathToSurface,
   type SurfaceGrounding,
   selectChecksForSurfaces,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "./fingerprint.js";
-import { discoverBindingsForPath } from "./scan/binding-discovery.js";
 import { loadChecksDir } from "./scan/checks-dir.js";
 import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
-import { parseUnifiedDiff } from "./scan/unified-diff.js";
 
-const execFileAsync = promisify(execFile);
+function parseSurfaceIds(value: unknown): string[] {
+  const raw = Array.isArray(value) ? value : value === undefined ? [] : [value];
+  const ids = raw
+    .flatMap((entry) => String(entry).split(","))
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+  return [...new Set(ids)];
+}
 
 export function registerChecksCommand(cli: CAC): void {
   cli
     .command(
       "checks",
-      "Select the markdown checks (ghost.check/v1) relevant to a diff, routed by surface.",
+      "Select the markdown checks (ghost.check/v1) relevant to the named surfaces.",
     )
-    .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(
-      "--diff <patch>",
-      "Unified diff file to route instead of running git diff. Use '-' for stdin.",
+      "--surface <ids>",
+      "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
     )
     .option(
       "--package <dir>",
@@ -52,34 +52,20 @@ export function registerChecksCommand(cli: CAC): void {
         const loaded = await loadFingerprintPackage(paths);
         const { checks, invalid } = await loadChecksDir(paths.dir);
 
-        const diffText =
-          typeof opts.diff === "string"
-            ? await readDiffInput(opts.diff)
-            : await readGitDiff(cwd, opts.base ?? "HEAD");
-        const changedPaths = parseUnifiedDiff(diffText).map((f) => f.path);
+        // The agent names the touched surfaces (it analyzed the diff). Ghost
+        // routes + grounds for those surfaces; it does not infer from paths.
+        const touched = parseSurfaceIds(opts.surface);
 
-        // Resolve each changed path to its surface via bindings; union them.
-        const touched = new Set<string>();
-        for (const path of changedPaths) {
-          const discovered = await discoverBindingsForPath(path, cwd);
-          const resolution = resolvePathToSurface(
-            discovered.target_path,
-            discovered.candidates,
-            {
-              hasRootContract: discovered.hasRootContract || !!loaded.surfaces,
-            },
-          );
-          if (resolution.surface) touched.add(resolution.surface);
-        }
-
-        const routed = selectChecksForSurfaces(checks, loaded.surfaces, [
-          ...touched,
-        ]);
+        const routed = selectChecksForSurfaces(
+          checks,
+          loaded.surfaces,
+          touched,
+        );
 
         // grounding defaults on; cac sets opts.grounding=false for --no-grounding.
         const withGrounding = opts.grounding !== false;
         const grounding: SurfaceGrounding[] = withGrounding
-          ? [...touched].map((surface) =>
+          ? touched.map((surface) =>
               groundSurface(loaded.surfaces, loaded.fingerprint, surface),
             )
           : [];
@@ -88,7 +74,7 @@ export function registerChecksCommand(cli: CAC): void {
           process.stdout.write(
             `${JSON.stringify(
               {
-                touched_surfaces: [...touched],
+                touched_surfaces: touched,
                 checks: routed.map((r) => ({
                   name: r.check.frontmatter.name,
                   severity: r.check.frontmatter.severity,
@@ -104,7 +90,7 @@ export function registerChecksCommand(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            formatChecksMarkdown([...touched], routed, grounding, invalid),
+            formatChecksMarkdown(touched, routed, grounding, invalid),
           );
         }
         process.exit(0);
@@ -167,21 +153,4 @@ function formatChecksMarkdown(
     }
   }
   return `${lines.join("\n")}\n`;
-}
-
-async function readDiffInput(input: string): Promise<string> {
-  if (input === "-") {
-    const chunks: Buffer[] = [];
-    for await (const chunk of process.stdin) chunks.push(Buffer.from(chunk));
-    return Buffer.concat(chunks).toString("utf-8");
-  }
-  return readFile(input, "utf-8");
-}
-
-async function readGitDiff(cwd: string, base: string): Promise<string> {
-  const { stdout } = await execFileAsync("git", ["diff", base, "--unified=0"], {
-    cwd,
-    maxBuffer: 64 * 1024 * 1024,
-  });
-  return stdout;
 }
