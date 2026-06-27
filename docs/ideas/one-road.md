@@ -94,6 +94,24 @@ The agent — which read the diff — states the surfaces. Ghost stops guessing.
 
 ## Surgical removal plan (sequenced, each step green)
 
+### Step 0 — rescue the load-bearing path helpers FIRST (ordering fix)
+
+Pressure-test finding: `scan/binding-discovery.ts` and `scan/verify-package.ts`
+both `import { resolveGitRoot } from "./fingerprint-stack.js"` — i.e. modules
+deleted in Steps 2–3 depend on helpers the old plan didn't move until Step 4.
+Deleting before moving creates a fragile window. So move the helpers **before any
+deletion**, and every later step stays trivially green.
+
+- Create `scan/package-paths.ts` and move the five survivors out of
+  `fingerprint-stack.ts`: `resolveGitRoot`, `normalizeGhostDir`,
+  `resolveGhostDirDefault`, `GHOST_PACKAGE_DIR_ENV`, `fingerprintPackageDisplayPath`.
+- Repoint **every** importer to the new home: `fingerprint-commands.ts`,
+  `verify-package.ts`, `binding-discovery.ts` (harmless — it dies in Step 3, but
+  keep the build green in between), `init-command.ts`, `scan-emit-command.ts`,
+  `monorepo-init-command.ts`, and the `scan/index.ts` re-exports.
+- **`scan/index.ts` keeps these five re-exported** (now from `package-paths.ts`).
+  They are live public exports — do not drop them when the stack re-exports go.
+
 ### Step 1 — reshape the consumers off path-resolution (before deleting it)
 
 Do this first so nothing imports the binding when we delete it.
@@ -108,6 +126,11 @@ Do this first so nothing imports the binding when we delete it.
   of resolving from the diff; keep the diff purely as embedded text. Drop the
   binding imports + `parseUnifiedDiff`-for-resolution (diff text still included).
 - **`cli.ts`**: update `review` to accept `--surface`; keep `--diff` as embed-only.
+
+> Nit (don't trip): the `item.path` field in `checks-command.ts:157` and
+> `review-packet.ts:273` is a **display** field on grounding items, not
+> path→surface resolution. Drop `parseUnifiedDiff` and the binding resolution;
+> **keep `item.path`** — it's unrelated and survives.
 
 ### Step 2 — delete the binding verify + file-kind dispatch
 
@@ -127,26 +150,32 @@ Do this first so nothing imports the binding when we delete it.
 
 ### Step 4 — tear down nesting (the correction)
 
-- **Rescue the load-bearing helpers first:** move `resolveGitRoot`,
-  `normalizeGhostDir`, `resolveGhostDirDefault`, `GHOST_PACKAGE_DIR_ENV`,
-  `fingerprintPackageDisplayPath` out of `fingerprint-stack.ts` into a neutral
-  `scan/package-paths.ts`; repoint importers (`fingerprint-commands`,
-  `verify-package`, `init-command`, `scan-emit-command`, `scan/index`).
+Helpers are already rescued (Step 0), so `fingerprint-stack.ts` deletes cleanly.
+
 - **Delete the rest of `fingerprint-stack.ts`:** stack types, `discoverGhostPackages`,
   `discoverFingerprintStack`, `loadFingerprintStackForPath`,
   `groupFingerprintStacksForPaths`, `buildFingerprintStack`,
   `loadFingerprintStackLayer`, `fingerprintStackToPackageContext`,
   `lintAllFingerprintStacks`, `verifyAllFingerprintStacks`,
-  `initScopedFingerprintPackage`. (The file likely disappears entirely once
-  helpers are rescued.)
+  `initScopedFingerprintPackage`. (The file disappears entirely once the five
+  helpers are gone.)
+- **`fingerprint.ts`:** drops imports of `initScopedFingerprintPackage`,
+  `lintAllFingerprintStacks`, `verifyAllFingerprintStacks` (lines 39–41). Missed
+  by the earlier draft — it is a real consumer of three deleted functions and
+  will break the build if skipped.
 - **`fingerprint-commands.ts`:** remove `lint --all`, `verify --all`,
   `scan --include-nested`, `nestedPackageStatus`. `lint`/`verify`/`scan` operate
   on the single resolved package (or `--package`).
 - **`scan-emit-command.ts`:** remove `--path` and the stack path; `emit` runs on
   the resolved package or `--package`.
-- **`init-command.ts` / `monorepo-init-command.ts`:** remove `init --scope` and
-  the monorepo child-scaffolding that created nested packages.
-- Remove stack re-exports from `scan/index.ts`.
+- **`init-command.ts`:** remove `init --scope`.
+- **`monorepo-init-command.ts`:** this command exists only to scaffold nested
+  packages via `initScopedFingerprintPackage` — confirm whether the whole command
+  dies (likely) or just the scoped path. It also imports the surviving
+  `normalizeGhostDir`, so do not delete the file wholesale without repointing
+  that import (handled in Step 0) and checking for any non-nesting use.
+- Remove the **stack** re-exports from `scan/index.ts` (the five path helpers
+  stay — see Step 0).
 
 ### Step 5 — docs, skill, migrate note, changeset
 

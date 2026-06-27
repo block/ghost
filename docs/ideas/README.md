@@ -192,3 +192,18 @@ buildable Layer 2 design. They agree; read them as a sequence.
   concept (a surface = a directory), makes `surface:` implicit-by-location
   (inside the contract, not the repo), and mirrors the cascade with `core/` as
   the cross-cutting home. Lands after one-road. Not decided.
+
+- `context-graph.md` — the reframe that subsumes the storage question: Ghost is
+  a **curated, opinionated context graph** queried by traversal, not a
+  file/bucket layout. The substrate (markdown + frontmatter folding into a graph)
+  is an **OKF-family** convergence we adopt; our deliberate divergences — **typed
+  links (`under` / `relates`) and the `medium` tag** — are the value. The whole
+  vocabulary is three nouns (node, link, medium), two link kinds, one tag;
+  `intent`/`inventory`/`composition` are how the body is written, not types.
+  See `scenarios-worked.md` for these as fully fleshed-out fingerprints (real
+  node files, bodies, links, `gather` packets). Includes the full conformance
+  schema. See `graph-implementation-plan.md` for the sequenced build (grounded in
+  the current code: the loader seam, `resolveSurfaceSlice` = gather,
+  `surfaces.yml` = the tree). Includes five
+  stress-test scenarios (dashboard, monorepo, marketing, voice super app, and one
+  brand spanning all of them). Downstream of one-road; not decided.
