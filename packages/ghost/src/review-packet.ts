@@ -1,7 +1,7 @@
 import {
-  groundSurface,
+  type GraphSlice,
   type RoutedCheck,
-  type SurfaceGrounding,
+  resolveGraphSlice,
   selectChecksForSurfaces,
 } from "#ghost-core";
 import { loadChecksDir } from "./scan/checks-dir.js";
@@ -33,9 +33,10 @@ export async function buildReviewPacket(options: {
   // The agent names the touched surfaces; dedupe and route.
   const touched = [...new Set(options.surfaces.filter((s) => s.length > 0))];
 
-  const routed = selectChecksForSurfaces(checks, loaded.surfaces, touched);
+  const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
+  // Grounding is the gather slice: the prose nodes a finding can cite.
   const grounding = touched.map((surface) =>
-    groundSurface(loaded.surfaces, loaded.fingerprint, surface),
+    resolveGraphSlice(loaded.graph, surface),
   );
 
   return {
@@ -153,7 +154,7 @@ interface ReviewPacketBase {
 interface ReviewPacket extends ReviewPacketBase {
   touched_surfaces: string[];
   routed_checks: RoutedCheck[];
-  grounding: SurfaceGrounding[];
+  grounding: GraphSlice[];
   invalid_checks: Array<{ file: string; message: string }>;
 }
 
@@ -162,9 +163,9 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to a routed check. Keep findings grounded in the touched surfaces' principles, contracts, patterns, exemplars, and routed checks; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to a routed check. Keep findings grounded in the touched surfaces' grounded nodes and routed checks; do not expand the review into unrelated audit categories.
 
-Use the surface grounding first: why (principles, contracts) → what good looks like (patterns, exemplars). When a surface's grounding is silent, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
+Read the grounded nodes for each touched surface (own first, then inherited from ancestors, then related). When a surface's grounding is silent, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
 
 Use these finding categories: ${packet.finding_categories.join(", ")}.
 
@@ -236,29 +237,42 @@ function formatRoutedChecksSection(packet: ReviewPacket): string {
   return lines.join("\n");
 }
 
+const GROUNDING_PROVENANCE_RANK = { own: 0, ancestor: 1, edge: 2 } as const;
+
+function groundingProvenanceLabel(
+  provenance: GraphSlice["nodes"][number]["provenance"],
+): string {
+  switch (provenance.kind) {
+    case "own":
+      return "own";
+    case "ancestor":
+      return `from \`${provenance.from}\``;
+    case "edge":
+      return provenance.via
+        ? `${provenance.via} \`${provenance.from}\``
+        : `relates \`${provenance.from}\``;
+  }
+}
+
 function formatGroundingSection(packet: ReviewPacket): string {
   const lines = ["## Grounding", ""];
-  if (
-    packet.grounding.every((g) => g.why.length === 0 && g.what.length === 0)
-  ) {
+  if (packet.grounding.every((slice) => slice.nodes.length === 0)) {
     lines.push("No fingerprint grounding for the touched surfaces.");
     return lines.join("\n");
   }
-  for (const surface of packet.grounding) {
-    if (surface.why.length === 0 && surface.what.length === 0) continue;
-    lines.push(`### \`${surface.surface}\``);
-    if (surface.why.length > 0) {
-      lines.push("", "Why:");
-      for (const item of surface.why) {
-        lines.push(`- ${item.statement} (\`${item.ref}\`)`);
-      }
-    }
-    if (surface.what.length > 0) {
-      lines.push("", "What good looks like:");
-      for (const item of surface.what) {
-        const where = item.path ? ` — \`${item.path}\`` : "";
-        lines.push(`- ${item.statement}${where} (\`${item.ref}\`)`);
-      }
+  for (const slice of packet.grounding) {
+    if (slice.nodes.length === 0) continue;
+    lines.push(`### \`${slice.surface}\``, "");
+    const ordered = [...slice.nodes].sort(
+      (a, b) =>
+        GROUNDING_PROVENANCE_RANK[a.provenance.kind] -
+        GROUNDING_PROVENANCE_RANK[b.provenance.kind],
+    );
+    for (const node of ordered) {
+      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
+      lines.push(
+        `- \`${node.id}\` (${groundingProvenanceLabel(node.provenance)})${tag}: ${node.body}`,
+      );
     }
     lines.push("");
   }
