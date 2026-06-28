@@ -53,14 +53,14 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
         node: node.id,
       });
     }
-    // relates targets must resolve (local refs only here)
+    // relates targets must resolve. A `<package-id>:<node>` ref resolves to an
+    // inherited node (id-keyed the same way) — same lookup, no special case.
     for (const relation of node.relates) {
-      if (relation.to.includes("#")) continue; // cross-package: later phase
       if (!ids.has(relation.to)) {
         issues.push({
           severity: "error",
           rule: "unresolved-relation",
-          message: `node '${node.id}' relates to '${relation.to}', which does not exist.`,
+          message: `node '${node.id}' relates to '${relation.to}', which does not exist (a cross-package ref needs the package in 'extends').`,
           node: node.id,
         });
       }
@@ -68,8 +68,13 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
   }
 
   // Exactly one root: the implicit core. Nodes with no `under` are roots.
+  // Inherited (extended-package) nodes are read-only context, not part of this
+  // package's tree — they are exempt from the single-root rule.
   const roots = [...graph.nodes.values()].filter(
-    (node) => node.under === undefined && node.id !== GHOST_GRAPH_ROOT_ID,
+    (node) =>
+      node.under === undefined &&
+      node.id !== GHOST_GRAPH_ROOT_ID &&
+      node.origin !== "inherited",
   );
   for (const root of roots) {
     issues.push({

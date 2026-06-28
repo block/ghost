@@ -852,6 +852,68 @@ composition:
     expect(ids).not.toContain("launch-email");
   });
 
+  it("inherits nodes from an extended package via extends", async () => {
+    // Brand contract.
+    await mkdir(join(dir, "brand", "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "brand", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: brand\n",
+    );
+    await writeFile(
+      join(dir, "brand", "nodes", "core-trust.md"),
+      "---\nid: core-trust\nunder: core\n---\n\nReduce felt risk.\n",
+    );
+    // Product contract extends the brand.
+    await mkdir(join(dir, "product", "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "product", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: acme-checkout\nextends:\n  brand: ../brand\n",
+    );
+    await writeFile(
+      join(dir, "product", "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+    );
+    await writeFile(
+      join(dir, "product", "nodes", "checkout-trust.md"),
+      "---\nid: checkout-trust\nunder: checkout\nrelates:\n  - to: brand:core-trust\n    as: reinforces\n---\n\nReassure at payment.\n",
+    );
+
+    const validate = await runCli(
+      ["validate", "product", "--format", "json"],
+      dir,
+    );
+    expect(validate.code).toBe(0);
+
+    const gather = await runCli(
+      ["gather", "checkout", "--package", "product", "--format", "json"],
+      dir,
+    );
+    expect(gather.code).toBe(0);
+    const slice = JSON.parse(gather.stdout);
+    const inherited = slice.nodes.find(
+      (n: { id: string }) => n.id === "brand:core-trust",
+    );
+    // The cross-package relation pulled the inherited brand node into the slice.
+    expect(inherited).toBeDefined();
+    expect(inherited.body).toContain("Reduce felt risk");
+  });
+
+  it("fails validate when a cross-package ref is not in extends", async () => {
+    await mkdir(join(dir, "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: solo\n",
+    );
+    await writeFile(
+      join(dir, "nodes", "n.md"),
+      "---\nid: n\nunder: core\nrelates:\n  - to: brand:core-trust\n---\n\nBody.\n",
+    );
+
+    const validate = await runCli(["validate", "."], dir);
+    expect(validate.code).toBe(1);
+    expect(validate.stdout).toContain("brand:core-trust");
+  });
+
   it("returns the surface menu when no surface is named", async () => {
     await writeGatherPackage(dir);
 

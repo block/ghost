@@ -10,7 +10,7 @@ export const GHOST_GRAPH_ROOT_ID = GHOST_SURFACE_ROOT_ID;
  * `origin` records which, so later phases and lint can treat them differently
  * (and so the projection can be deleted cleanly in the facet-removal phase).
  */
-export type GhostGraphNodeOrigin = "node-file" | "facet-projection";
+export type GhostGraphNodeOrigin = "node-file" | "inherited";
 
 /**
  * A resolved graph node — pure prose (Option A). The body is the design

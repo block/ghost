@@ -17,21 +17,18 @@ const NodeIdSchema = z
   });
 
 /**
- * A node ref points at another node: a local id, or a cross-package ref
- * `<package>#<id>`. The `<package>` prefix is accepted here so future
- * cross-package links validate; resolution is a later phase. `<package>` is an
- * npm-style name (optionally scoped): `@scope/name` or `name`.
+ * A node ref points at another node: a local id (`<node>`), or a cross-package
+ * ref `<package-id>:<node>` where `<package-id>` is a key declared in the
+ * package manifest's `extends` map. Reference is by identity, never by path —
+ * `:` is Ghost's qualifier lineage (e.g. the old `intent.principle:foo` refs).
  */
 const NodeRefSchema = z
   .string()
   .min(1)
-  .regex(
-    /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*#|[a-z0-9][a-z0-9._-]*#)?[a-z0-9][a-z0-9._-]*$/,
-    {
-      message:
-        "node ref must be a local id or a cross-package ref '<package>#<id>'",
-    },
-  );
+  .regex(/^(?:[a-z0-9][a-z0-9._-]*:)?[a-z0-9][a-z0-9._-]*$/, {
+    message:
+      "node ref must be a local id '<node>' or a cross-package ref '<package-id>:<node>'",
+  });
 
 const NodeRelationSchema = z
   .object({
