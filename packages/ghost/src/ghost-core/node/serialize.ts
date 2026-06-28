@@ -9,6 +9,7 @@ import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 export function serializeNode(node: GhostNodeDocument): string {
   const fm = node.frontmatter;
   const ordered: Record<string, unknown> = { id: fm.id };
+  if (fm.description !== undefined) ordered.description = fm.description;
   if (fm.under !== undefined) ordered.under = fm.under;
   if (fm.relates !== undefined) {
     ordered.relates = fm.relates.map((relation) => {

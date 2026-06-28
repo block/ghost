@@ -35,17 +35,25 @@ folds together; `ghost gather <surface>` traverses it.
 ```markdown
 ---
 id: checkout-trust          # required: unique, stable
-under: checkout             # optional: parent surface/node — inherited downward
+description: Trust at the payment moment.  # the retrieval payload (see below)
+under: checkout             # optional: parent — inherited downward
 relates:                    # optional: lateral links
   - to: core-trust
     as: reinforces          # reinforces | contrasts | variant
 incarnation: web            # optional: email | billboard | voice | … (omit = essence)
+# free-form keys (audience, stage, …) are allowed and pass through untouched
 ---
 
 Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness…
 ```
 
+- **`description`** is how an agent finds the node — a one-line "what this is and
+  when to gather it," exactly like a tool's name + description. `ghost gather`
+  with no argument lists nodes by id + description; the agent matches the ask
+  against those and names one. The body is the node's "implementation"; the
+  description is what makes it discoverable. Write one on any node worth
+  anchoring a task at.
 - **`under`** places the node — a node inherits everything it sits under. The
   brand soul lives at `core` (implicit root), so `core`-placed nodes reach every
   surface.

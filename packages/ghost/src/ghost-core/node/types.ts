@@ -34,6 +34,14 @@ export interface GhostNodeFrontmatter {
   /** Unique, addressable id within the package. */
   id: string;
   /**
+   * One-line statement of what this node is and when to gather it — the
+   * retrieval payload. Together with `id` it is how an agent selects a node,
+   * exactly like a tool's name + description. The body is the node's
+   * "implementation"; the description is what makes it discoverable. Optional,
+   * but strongly encouraged on any node worth anchoring a task at.
+   */
+  description?: string;
+  /**
    * The single containment parent (the tree + the cascade). Absent means a
    * top-level node under the implicit `core` root. The tree lives only here;
    * the id never encodes hierarchy.

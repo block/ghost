@@ -1,11 +1,11 @@
 import type { CAC } from "cac";
 import {
-  buildSurfaceMenu,
+  buildGraphMenu,
   GHOST_GRAPH_ROOT_ID,
+  type GraphMenuEntry,
   type GraphSlice,
   type GraphSliceProvenance,
   resolveGraphSlice,
-  type SurfaceMenuEntry,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "./fingerprint.js";
 import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
@@ -42,13 +42,13 @@ export function registerGatherCommand(cli: CAC): void {
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const menu = buildSurfaceMenu(loaded.surfaces);
+        const menu = buildGraphMenu(loaded.graph);
 
-        // The agent names the surface (it analyzed the prompt + diff). Ghost
-        // does not infer surfaces from repo paths.
+        // The agent names the node (it analyzed the prompt + diff). Ghost
+        // does not infer the anchor from repo paths.
         const surface = surfaceArg;
 
-        // No surface named, or an unknown one: return the menu, never the tree.
+        // No node named, or an unknown one: return the menu, never the tree.
         const known = new Set(menu.map((entry) => entry.id));
         if (!surface || !known.has(surface)) {
           if (opts.format === "json") {
@@ -84,19 +84,19 @@ export function registerGatherCommand(cli: CAC): void {
 }
 
 function formatMenuMarkdown(
-  menu: SurfaceMenuEntry[],
+  menu: GraphMenuEntry[],
   unknown: string | undefined,
 ): string {
-  const lines: string[] = ["# Ghost Surfaces"];
+  const lines: string[] = ["# Ghost Nodes"];
   if (unknown) {
     lines.push(
       "",
-      `Surface \`${unknown}\` is not declared. Pick one of the surfaces below.`,
+      `Node \`${unknown}\` is not in this package. Pick one of the nodes below.`,
     );
   } else {
     lines.push(
       "",
-      "No surface selected. Match the ask to one of these surfaces, then run `ghost gather <surface>`.",
+      "No node selected. Match the ask to one of these nodes, then run `ghost gather <node>`.",
     );
   }
   lines.push("");
@@ -105,9 +105,6 @@ function formatMenuMarkdown(
       entry.parent === entry.id ? "" : ` (under \`${entry.parent}\`)`;
     lines.push(`- \`${entry.id}\`${parent}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
-    for (const edge of entry.edges) {
-      lines.push(`  - ${edge.kind} → \`${edge.to}\``);
-    }
   }
   return `${lines.join("\n")}\n`;
 }

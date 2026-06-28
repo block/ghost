@@ -13,20 +13,13 @@ function rules(report: { issues: { rule: string }[] }): string[] {
 }
 
 describe("lintGhostSurfaces", () => {
-  it("passes a valid tree with cross-linked edges", () => {
+  it("passes a valid tree (id + parent + description)", () => {
     const report = lintGhostSurfaces(
       doc([
         { id: "core", description: "True everywhere." },
         { id: "email", parent: "core" },
         { id: "email-marketing", parent: "email" },
-        {
-          id: "checkout",
-          parent: "core",
-          edges: [
-            { kind: "composes", to: "email" },
-            { kind: "governed-by", to: "email-marketing" },
-          ],
-        },
+        { id: "checkout", parent: "core" },
       ]),
     );
 
@@ -85,33 +78,6 @@ describe("lintGhostSurfaces", () => {
     const report = lintGhostSurfaces(doc([{ id: "a", parent: "a" }]));
 
     expect(rules(report)).toContain("surface-parent-cycle");
-  });
-
-  it("errors on an edge target that matches no surface", () => {
-    const report = lintGhostSurfaces(
-      doc([{ id: "checkout", edges: [{ kind: "composes", to: "nope" }] }]),
-    );
-
-    expect(rules(report)).toContain("surface-edge-unknown");
-  });
-
-  it("allows an edge cycle (edges may form a graph)", () => {
-    const report = lintGhostSurfaces(
-      doc([
-        { id: "a", parent: "core", edges: [{ kind: "composes", to: "b" }] },
-        { id: "b", parent: "core", edges: [{ kind: "composes", to: "a" }] },
-      ]),
-    );
-
-    expect(report.errors).toBe(0);
-  });
-
-  it("does not exempt edge targets with the implicit core (edges must point at declared surfaces)", () => {
-    const report = lintGhostSurfaces(
-      doc([{ id: "checkout", edges: [{ kind: "governed-by", to: "core" }] }]),
-    );
-
-    expect(rules(report)).toContain("surface-edge-unknown");
   });
 
   it("errors on duplicate ids", () => {

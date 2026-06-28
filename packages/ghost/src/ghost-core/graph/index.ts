@@ -15,6 +15,7 @@ export {
   type GraphLintSeverity,
   lintGraph,
 } from "./lint.js";
+export { buildGraphMenu, type GraphMenuEntry } from "./menu.js";
 export {
   type GraphSlice,
   type GraphSliceNode,

@@ -39,6 +39,7 @@ export function assembleGraph(input: AssembleGraphInput): GhostGraph {
     const fm = doc.frontmatter;
     nodes.set(fm.id, {
       id: fm.id,
+      ...(fm.description !== undefined ? { description: fm.description } : {}),
       ...(fm.under !== undefined ? { under: fm.under } : {}),
       relates: fm.relates ?? [],
       ...(fm.incarnation !== undefined ? { incarnation: fm.incarnation } : {}),
