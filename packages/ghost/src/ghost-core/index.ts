@@ -18,55 +18,6 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
-// --- Fingerprint.yml (ghost.fingerprint/v1) ---
-export type {
-  GhostFingerprintComposition,
-  GhostFingerprintDocument,
-  GhostFingerprintEvidence,
-  GhostFingerprintExemplar,
-  GhostFingerprintExperienceContract,
-  GhostFingerprintIntent,
-  GhostFingerprintInventory,
-  GhostFingerprintInventoryBuildingBlocks,
-  GhostFingerprintInventorySource,
-  GhostFingerprintInventorySourceKind,
-  GhostFingerprintLintIssue,
-  GhostFingerprintLintReport,
-  GhostFingerprintLintSeverity,
-  GhostFingerprintPackageManifest,
-  GhostFingerprintPattern,
-  GhostFingerprintPatternKind,
-  GhostFingerprintPrinciple,
-  GhostFingerprintRef,
-  GhostFingerprintRefPrefix,
-  GhostFingerprintSituation,
-  GhostFingerprintSummary,
-} from "./fingerprint/index.js";
-export {
-  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
-  GHOST_FINGERPRINT_SCHEMA,
-  GHOST_FINGERPRINT_YML_FILENAME,
-  GhostFingerprintCompositionSchema,
-  GhostFingerprintEvidenceSchema,
-  GhostFingerprintExemplarSchema,
-  GhostFingerprintExperienceContractSchema,
-  GhostFingerprintIntentSchema,
-  GhostFingerprintInventoryBuildingBlocksSchema,
-  GhostFingerprintInventorySchema,
-  GhostFingerprintInventorySourceKindSchema,
-  GhostFingerprintInventorySourceSchema,
-  GhostFingerprintLayerRefSchema,
-  GhostFingerprintPackageManifestSchema,
-  GhostFingerprintPatternKindSchema,
-  GhostFingerprintPatternSchema,
-  GhostFingerprintPrincipleSchema,
-  GhostFingerprintRefPrefixSchema,
-  GhostFingerprintRefSchema,
-  GhostFingerprintSchema,
-  GhostFingerprintSituationSchema,
-  GhostFingerprintSummarySchema,
-  lintGhostFingerprint,
-} from "./fingerprint/index.js";
 // --- Fingerprint package filenames ---
 export {
   FINGERPRINT_COMPOSITION_FILENAME,
@@ -89,10 +40,13 @@ export {
   type GhostGraph,
   type GhostGraphNode,
   type GhostGraphNodeOrigin,
+  type GraphLintIssue,
+  type GraphLintReport,
+  type GraphLintSeverity,
   type GraphSlice,
   type GraphSliceNode,
   type GraphSliceProvenance,
-  projectFacetsToNodes,
+  lintGraph,
   type ResolveGraphSliceOptions,
   resolveGraphSlice,
 } from "./graph/index.js";
@@ -115,6 +69,12 @@ export {
   parseNode,
   serializeNode,
 } from "./node/index.js";
+// --- Fingerprint package manifest (ghost.fingerprint-package/v1) ---
+export type { GhostFingerprintPackageManifest } from "./package-manifest.js";
+export {
+  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
+  GhostFingerprintPackageManifestSchema,
+} from "./package-manifest.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,
@@ -178,14 +138,7 @@ export {
   type GhostSurfacesLintReport,
   type GhostSurfacesLintSeverity,
   GhostSurfacesSchema,
-  type GroundingItem,
-  groundSurface,
   lintGhostSurfaces,
-  type ResolvedSlice,
-  resolveSurfaceSlice,
-  type SliceNode,
-  type SliceProvenance,
-  type SurfaceGrounding,
   type SurfaceMenuEntry,
 } from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---

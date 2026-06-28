@@ -17,10 +17,7 @@ const PUBLIC_TEXT_ROOTS = [
   ".changeset",
 ] as const;
 
-const EMITTED_TEXT_FILES = [
-  "packages/ghost/src/context/package-review-command.ts",
-  "packages/ghost/src/review-packet.ts",
-] as const;
+const EMITTED_TEXT_FILES = ["packages/ghost/src/review-packet.ts"] as const;
 
 const FORBIDDEN_TERMS = [
   /\bcascade\b/i,

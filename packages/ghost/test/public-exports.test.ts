@@ -20,7 +20,7 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
 
     expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
     expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprintApi.verifyFingerprintPackage).toBeTypeOf("function");
+    expect(fingerprintApi.loadFingerprintPackage).toBeTypeOf("function");
     // Direct fingerprint.md loading was removed with compare/drift/fleet.
     expect(fingerprintApi.loadFingerprint).toBeUndefined();
     expect(fingerprintApi.writePackageContextBundle).toBeUndefined();

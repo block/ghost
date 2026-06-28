@@ -1,12 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import {
-  GhostFingerprintCompositionSchema,
-  type GhostFingerprintDocument,
-  GhostFingerprintIntentSchema,
-  GhostFingerprintInventorySchema,
   GhostFingerprintPackageManifestSchema,
   lintGhostCheck,
-  lintGhostFingerprint,
   lintGhostNode,
   lintGhostPatterns,
   lintGhostResources,
@@ -18,21 +13,13 @@ import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
   | "survey"
-  | "fingerprint-yml"
   | "fingerprint-manifest"
-  | "fingerprint-intent"
-  | "fingerprint-inventory"
-  | "fingerprint-composition"
   | "resources"
   | "patterns"
   | "surfaces"
   | "check"
   | "node"
   | "unsupported";
-
-export interface LintDetectedFileKindOptions {
-  fingerprint?: GhostFingerprintDocument;
-}
 
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
@@ -44,35 +31,11 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
   const filename = lowerPath.split(/[\\/]/).pop() ?? lowerPath;
   if (lowerPath.endsWith(".json")) return "survey";
-  if (filename === "fingerprint.yml") {
-    return "fingerprint-yml";
-  }
-  if (filename === "fingerprint.yaml") {
-    return "fingerprint-yml";
-  }
   if (filename === "manifest.yml") {
     return "fingerprint-manifest";
   }
   if (filename === "manifest.yaml") {
     return "fingerprint-manifest";
-  }
-  if (filename === "intent.yml") {
-    return "fingerprint-intent";
-  }
-  if (filename === "intent.yaml") {
-    return "fingerprint-intent";
-  }
-  if (filename === "inventory.yml") {
-    return "fingerprint-inventory";
-  }
-  if (filename === "inventory.yaml") {
-    return "fingerprint-inventory";
-  }
-  if (filename === "composition.yml") {
-    return "fingerprint-composition";
-  }
-  if (filename === "composition.yaml") {
-    return "fingerprint-composition";
   }
   if (filename === "resources.yml") return "resources";
   if (filename === "resources.yaml") return "resources";
@@ -90,9 +53,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
     return "node";
   }
   if (raw.trimStart().startsWith("{")) return "survey";
-  if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
-    return "fingerprint-yml";
-  }
   if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
     return "fingerprint-manifest";
   }
@@ -105,31 +65,22 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
 export function lintDetectedFileKind(
   kind: DetectedFileKind,
   raw: string,
-  _options: LintDetectedFileKindOptions = {},
 ): LintReport {
   return kind === "survey"
     ? lintSurveyFile(raw)
-    : kind === "fingerprint-yml"
-      ? lintFingerprintYmlFile(raw)
-      : kind === "fingerprint-manifest"
-        ? lintFingerprintManifestFile(raw)
-        : kind === "fingerprint-intent"
-          ? lintFingerprintLayerFile(raw, "intent")
-          : kind === "fingerprint-inventory"
-            ? lintFingerprintLayerFile(raw, "inventory")
-            : kind === "fingerprint-composition"
-              ? lintFingerprintLayerFile(raw, "composition")
-              : kind === "resources"
-                ? lintResourcesFile(raw)
-                : kind === "patterns"
-                  ? lintPatternsFile(raw)
-                  : kind === "surfaces"
-                    ? lintSurfacesFile(raw)
-                    : kind === "check"
-                      ? lintGhostCheck(raw)
-                      : kind === "node"
-                        ? lintGhostNode(raw)
-                        : lintUnsupportedFile();
+    : kind === "fingerprint-manifest"
+      ? lintFingerprintManifestFile(raw)
+      : kind === "resources"
+        ? lintResourcesFile(raw)
+        : kind === "patterns"
+          ? lintPatternsFile(raw)
+          : kind === "surfaces"
+            ? lintSurfacesFile(raw)
+            : kind === "check"
+              ? lintGhostCheck(raw)
+              : kind === "node"
+                ? lintGhostNode(raw)
+                : lintUnsupportedFile();
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -153,14 +104,6 @@ function lintSurveyFile(raw: string): SurveyLintReport {
   return lintSurvey(json);
 }
 
-function lintFingerprintYmlFile(raw: string): LintReport {
-  try {
-    return lintGhostFingerprint(parseYaml(raw));
-  } catch (err) {
-    return yamlErrorReport("fingerprint-yml-not-yaml", "fingerprint.yml", err);
-  }
-}
-
 function lintFingerprintManifestFile(raw: string): LintReport {
   try {
     return zodLintReport(
@@ -170,28 +113,6 @@ function lintFingerprintManifestFile(raw: string): LintReport {
     return yamlErrorReport(
       "fingerprint-manifest-not-yaml",
       "manifest.yml",
-      err,
-    );
-  }
-}
-
-function lintFingerprintLayerFile(
-  raw: string,
-  facet: "intent" | "inventory" | "composition",
-): LintReport {
-  try {
-    const parsed = parseYaml(raw);
-    const result =
-      facet === "intent"
-        ? GhostFingerprintIntentSchema.safeParse(parsed)
-        : facet === "inventory"
-          ? GhostFingerprintInventorySchema.safeParse(parsed)
-          : GhostFingerprintCompositionSchema.safeParse(parsed);
-    return zodLintReport(result);
-  } catch (err) {
-    return yamlErrorReport(
-      `fingerprint-${facet}-not-yaml`,
-      `${facet}.yml`,
       err,
     );
   }
@@ -250,7 +171,7 @@ function lintUnsupportedFile(): LintReport {
         severity: "error",
         rule: "unsupported-artifact",
         message:
-          "File is not a recognized Ghost artifact. Use manifest.yml, intent.yml, inventory.yml, composition.yml, resources.yml, patterns.yml, surfaces.yml, a checks/*.md check, or a nodes/*.md node.",
+          "File is not a recognized Ghost artifact. Use manifest.yml, surfaces.yml, resources.yml, patterns.yml, a checks/*.md check, or a nodes/*.md node.",
       },
     ],
     errors: 1,

@@ -8,16 +8,13 @@ import type {
   SurveySummaryBudget,
 } from "#ghost-core";
 import {
-  formatVerifyFingerprintReport,
   type LintReport,
   lintFingerprintPackage,
   resolveFingerprintPackage,
-  verifyFingerprintPackage,
 } from "./fingerprint.js";
 import { registerInitCommand } from "./init-command.js";
 import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
 import { resolveGhostDirDefault, scanStatus, signals } from "./scan/index.js";
-import { registerEmitCommand } from "./scan-emit-command.js";
 
 /**
  * Register fingerprint package commands on the unified Ghost CLI.
@@ -32,11 +29,11 @@ import { registerEmitCommand } from "./scan-emit-command.js";
  * operational pattern synthesis.
  */
 export function registerFingerprintCommands(cli: CAC): void {
-  // --- lint ---
+  // --- validate (shape pass + graph pass) ---
   cli
     .command(
-      "lint [file]",
-      "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or direct markdown — defaults to .ghost",
+      "validate [file]",
+      "Validate the Ghost fingerprint package — artifact shape and the node graph (links resolve, one root, acyclic). Defaults to .ghost.",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
@@ -73,49 +70,6 @@ export function registerFingerprintCommands(cli: CAC): void {
 
   registerInitCommand(cli);
 
-  // --- verify ---
-  cli
-    .command(
-      "verify [dir]",
-      "Verify a root Ghost fingerprint package: intent/composition evidence, inventory exemplars, and checks are grounded.",
-    )
-    .option(
-      "--root <dir>",
-      "Optional target root used to resolve fingerprint evidence and exemplar paths (default: cwd)",
-    )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (dirArg: string | undefined, opts) => {
-      try {
-        if (opts.format !== "cli" && opts.format !== "json") {
-          console.error("Error: --format must be 'cli' or 'json'");
-          process.exit(2);
-          return;
-        }
-
-        const ghostDir = ghostDirFromEnv();
-        const report = await verifyFingerprintPackage(
-          dirArg ?? ghostDir,
-          process.cwd(),
-          {
-            root: opts.root ? resolve(process.cwd(), opts.root) : undefined,
-          },
-        );
-
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-        } else {
-          process.stdout.write(formatVerifyFingerprintReport(report));
-        }
-
-        process.exit(report.errors > 0 ? 1 : 0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
-
   // --- scan ---
   cli
     .command(
@@ -147,49 +101,26 @@ export function registerFingerprintCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: edit contributing fingerprint facets, then run ghost verify/check/review\n",
+              "next: author nodes, then run ghost check/review\n",
             );
           }
-          process.stdout.write(`contribution: ${status.contribution.state}\n`);
-          for (const facet of ["intent", "inventory", "composition"] as const) {
-            const report = status.contribution.facets[facet];
+          const c = status.contribution;
+          process.stdout.write(`contribution: ${c.state}\n`);
+          process.stdout.write(
+            `  nodes: ${c.node_count} (${c.essence_count} essence, ${c.incarnation_count} incarnation-tagged)\n`,
+          );
+          for (const surface of c.surfaces) {
             process.stdout.write(
-              `  ${facet}: ${report.state} (${report.count})\n`,
+              `  surface ${surface.id}: ${surface.node_count} node(s)\n`,
             );
           }
-          if (status.contribution.contributing_facets.length > 0) {
+          if (c.sparse_surfaces.length > 0) {
             process.stdout.write(
-              `  contributing facets: ${status.contribution.contributing_facets.join(", ")}\n`,
+              `  sparse surfaces: ${c.sparse_surfaces.join(", ")}\n`,
             );
           }
-          if (status.contribution.empty_facets.length > 0) {
-            process.stdout.write(
-              `  empty facets: ${status.contribution.empty_facets.join(", ")}\n`,
-            );
-          }
-          if (status.contribution.absent_facets.length > 0) {
-            process.stdout.write(
-              `  absent facets: ${status.contribution.absent_facets.join(", ")}\n`,
-            );
-          }
-          if (status.contribution.reasons[0]) {
-            process.stdout.write(
-              `  reason: ${status.contribution.reasons[0]}\n`,
-            );
-          }
-          const buildingBlockRows = status.contribution.building_block_rows;
-          const buildingBlockCount =
-            buildingBlockRows.tokens +
-            buildingBlockRows.components +
-            buildingBlockRows.libraries +
-            buildingBlockRows.assets +
-            buildingBlockRows.routes +
-            buildingBlockRows.files +
-            buildingBlockRows.notes;
-          if (buildingBlockCount > 0) {
-            process.stdout.write(
-              `  inventory building blocks: ${buildingBlockRows.tokens} token(s), ${buildingBlockRows.components} component(s), ${buildingBlockRows.libraries} libraries, ${buildingBlockRows.assets} asset(s), ${buildingBlockRows.routes} route(s), ${buildingBlockRows.files} file(s), ${buildingBlockRows.notes} note(s)\n`,
-            );
+          if (c.reasons[0]) {
+            process.stdout.write(`  reason: ${c.reasons[0]}\n`);
           }
         }
         process.exit(0);
@@ -220,8 +151,6 @@ export function registerFingerprintCommands(cli: CAC): void {
         process.exit(2);
       }
     });
-
-  registerEmitCommand(cli);
 }
 
 function ghostDirFromEnv(): string {

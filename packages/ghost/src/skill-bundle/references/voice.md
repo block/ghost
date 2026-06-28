@@ -35,7 +35,7 @@ language flow through `intent.yml` (tone, voice principles, wording contracts),
    - Contextual guidance stays in composition only.
    - Give each check a `derivation` ref back to the intent or composition
      entry it enforces.
-5. Validate with `ghost lint` and `ghost verify --root <target>`, then hand
+5. Validate with `ghost validate`, then hand
    the draft to the human to curate. Fingerprint edits stay ordinary
    uncommitted draft work until Git review accepts them.
 

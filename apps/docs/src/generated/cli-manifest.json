@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-28T01:50:44.673Z",
+  "generatedAt": "2026-06-28T02:50:12.978Z",
   "tools": [
     {
       "tool": "ghost",
       "commands": [
         {
           "tool": "ghost",
-          "name": "lint",
-          "rawName": "lint [file]",
-          "description": "Validate a root Ghost fingerprint package, split fingerprint artifacts, checks, or direct markdown — defaults to .ghost",
+          "name": "validate",
+          "rawName": "validate [file]",
+          "description": "Validate the Ghost fingerprint package — artifact shape and the node graph (links resolve, one root, acyclic). Defaults to .ghost.",
           "group": "core",
           "defaultHelp": true,
-          "compactName": "lint",
-          "summary": "Validate a fingerprint package or artifact.",
+          "compactName": "validate",
+          "summary": "Validate the fingerprint: artifact shape + the node graph.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -70,34 +70,6 @@
         },
         {
           "tool": "ghost",
-          "name": "verify",
-          "rawName": "verify [dir]",
-          "description": "Verify a root Ghost fingerprint package: intent/composition evidence, inventory exemplars, and checks are grounded.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "verify",
-          "summary": "Verify evidence, exemplar paths, and typed refs.",
-          "options": [
-            {
-              "rawName": "--root <dir>",
-              "name": "root",
-              "description": "Optional target root used to resolve fingerprint evidence and exemplar paths (default: cwd)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
           "name": "scan",
           "rawName": "scan [dir]",
           "description": "Report sparse fingerprint package contribution facets: intent, inventory, composition, and the next BYOA step.",
@@ -126,42 +98,6 @@
           "compactName": "signals",
           "summary": "Emit raw repo signals for fingerprint authoring.",
           "options": []
-        },
-        {
-          "tool": "ghost",
-          "name": "emit",
-          "rawName": "emit <kind>",
-          "description": "Emit a derived artifact from the fingerprint package (review-command).",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "emit",
-          "summary": "Emit review-command artifacts.",
-          "options": [
-            {
-              "rawName": "--package <dir>",
-              "name": "package",
-              "description": "Use exactly this fingerprint package directory (default: ./.ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Output path (review-command → .claude/commands/design-review.md)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--stdout",
-              "name": "stdout",
-              "description": "Write to stdout instead of a file",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            }
-          ]
         },
         {
           "tool": "ghost",

@@ -138,8 +138,7 @@ Place local obligations on the surface that owns them.
 Validate before calling facets useful:
 
 ```bash
-ghost lint .ghost
-ghost verify .ghost --root <target>
+ghost validate .ghost
 ghost check --base HEAD
 ```
 

@@ -1,8 +1,7 @@
 /**
- * Public surface for the in-memory fingerprint graph (Phase 2). The graph is
- * the shape later phases traverse — gather (Phase 3), checks (Phase 4), compare
- * — assembled by folding authored node files with a transition projection of
- * the legacy facet model. See docs/ideas/phase-2-loader-fold.md.
+ * Public surface for the in-memory fingerprint graph — the only fingerprint
+ * model. The graph is folded from authored node files + the surface tree, and
+ * is what every consumer traverses (gather, checks, validate).
  */
 
 export {
@@ -10,7 +9,12 @@ export {
   ancestorChain,
   assembleGraph,
 } from "./assemble.js";
-export { projectFacetsToNodes } from "./project-facets.js";
+export {
+  type GraphLintIssue,
+  type GraphLintReport,
+  type GraphLintSeverity,
+  lintGraph,
+} from "./lint.js";
 export {
   type GraphSlice,
   type GraphSliceNode,

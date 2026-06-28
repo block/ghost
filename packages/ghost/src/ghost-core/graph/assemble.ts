@@ -1,7 +1,5 @@
-import type { GhostFingerprintDocument } from "../fingerprint/types.js";
 import type { GhostNodeDocument } from "../node/types.js";
 import type { GhostSurfacesDocument } from "../surfaces/types.js";
-import { projectFacetsToNodes } from "./project-facets.js";
 import {
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
@@ -11,8 +9,6 @@ import {
 export interface AssembleGraphInput {
   /** Authored on-disk node files (parsed `ghost.node/v1` documents). */
   nodeFiles?: GhostNodeDocument[];
-  /** The legacy facet doc, projected into prose nodes (transition scaffold). */
-  fingerprint?: GhostFingerprintDocument;
   /** The explicit surface tree, which seeds tree nodes even when empty. */
   surfaces?: GhostSurfacesDocument;
 }
@@ -20,21 +16,13 @@ export interface AssembleGraphInput {
 /**
  * Fold the package's sources into one in-memory prose-node graph.
  *
- * Sources are unioned: authored node files take precedence over same-id facet
- * projections (authored beats projected). The surface tree (`surfaces.yml`)
+ * Authored node files are unioned with the surface tree (`surfaces.yml`), which
  * seeds containment so a surface with no node still exists as a tree position.
  * The implicit `core` root is never required to be declared.
  */
 export function assembleGraph(input: AssembleGraphInput): GhostGraph {
   const nodes = new Map<string, GhostGraphNode>();
 
-  // Facet projections first (lowest precedence), then authored node files
-  // overwrite by id (authored beats projected).
-  if (input.fingerprint) {
-    for (const projected of projectFacetsToNodes(input.fingerprint)) {
-      nodes.set(projected.id, projected);
-    }
-  }
   for (const doc of input.nodeFiles ?? []) {
     const fm = doc.frontmatter;
     nodes.set(fm.id, {

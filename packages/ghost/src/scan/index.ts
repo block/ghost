@@ -5,12 +5,9 @@ export {
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
-  ScanBuildingBlockRows,
   ScanContributionReport,
   ScanContributionState,
-  ScanFacet,
-  ScanFacetReport,
-  ScanFacetState,
+  ScanSurfaceCoverage,
 } from "./fingerprint-contribution.js";
 export { signals } from "./inventory.js";
 export type {

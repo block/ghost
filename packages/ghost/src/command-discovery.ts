@@ -41,18 +41,11 @@ const COMMAND_DISCOVERY = [
     summary: "Report fingerprint contribution facets.",
   },
   {
-    name: "lint",
+    name: "validate",
     group: "core",
     defaultHelp: true,
-    compactName: "lint",
-    summary: "Validate a fingerprint package or artifact.",
-  },
-  {
-    name: "verify",
-    group: "core",
-    defaultHelp: true,
-    compactName: "verify",
-    summary: "Verify evidence, exemplar paths, and typed refs.",
+    compactName: "validate",
+    summary: "Validate the fingerprint: artifact shape + the node graph.",
   },
   {
     name: "check",
@@ -81,13 +74,6 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "checks",
     summary: "Select and ground the checks relevant to a diff, by surface.",
-  },
-  {
-    name: "emit",
-    group: "core",
-    defaultHelp: true,
-    compactName: "emit",
-    summary: "Emit review-command artifacts.",
   },
   {
     name: "skill",
