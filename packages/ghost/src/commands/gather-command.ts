@@ -7,8 +7,8 @@ import {
   type GraphSliceProvenance,
   resolveGraphSlice,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "./fingerprint.js";
-import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
+import { resolveFingerprintPackage } from "../fingerprint.js";
+import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli

@@ -4,11 +4,11 @@ import {
   resolveGraphSlice,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { loadChecksDir } from "./scan/checks-dir.js";
+import { loadChecksDir } from "../scan/checks-dir.js";
 import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
-} from "./scan/fingerprint-package.js";
+} from "../scan/fingerprint-package.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 

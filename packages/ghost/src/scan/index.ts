@@ -9,7 +9,7 @@ export type {
   ScanContributionState,
   ScanSurfaceCoverage,
 } from "./fingerprint-contribution.js";
-export { signals } from "./inventory.js";
+export { signals } from "./inventory/index.js";
 export type {
   LegacyPackageInput,
   MigratedNodeFile,

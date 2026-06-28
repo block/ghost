@@ -5,9 +5,9 @@ import {
   resolveGraphSlice,
   selectChecksForSurfaces,
 } from "#ghost-core";
-import { resolveFingerprintPackage } from "./fingerprint.js";
-import { loadChecksDir } from "./scan/checks-dir.js";
-import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
+import { resolveFingerprintPackage } from "../fingerprint.js";
+import { loadChecksDir } from "../scan/checks-dir.js";
+import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
 
 function parseSurfaceIds(value: unknown): string[] {
   const raw = Array.isArray(value) ? value : value === undefined ? [] : [value];
