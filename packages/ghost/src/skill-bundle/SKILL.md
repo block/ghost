@@ -14,12 +14,10 @@ materials it draws from, and the patterns that make it feel intentional.
 
 ```text
 .ghost/
-  manifest.yml
-  intent.yml
-  inventory.yml
-  composition.yml
-  surfaces.yml
-  checks/*.md
+  manifest.yml      # schema + id
+  surfaces.yml      # the spine: surfaces + their parent (core is implicit)
+  nodes/*.md        # prose nodes — the design expression
+  checks/*.md       # optional ghost.check/v1 checks
 ```
 
 The checked-in `.ghost/` package is the source of truth. Ordinary Git
@@ -28,20 +26,24 @@ are drafts, and committed fingerprint changes are canonical for Ghost. Checks ar
 markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
-Generation uses **intent + inventory + composition**:
+The fingerprint is a graph of **nodes**. A node is a markdown file:
+frontmatter (`id`, `under`, `relates`, `incarnation`) + a prose body.
+**Intent + inventory + composition** are the authoring lenses the body is
+written through — they guide what to capture, they are not fields or node types:
 
-- `intent.yml` captures the intent behind the surface.
-- `inventory` points to building blocks and precedents the agent can inspect
-  or use, including exemplars.
-- `composition.yml` captures the patterns that make the surface feel
-  intentional.
+- intent — the why and the stance.
+- inventory — the materials and pointers to implementation the agent can inspect.
+- composition — the patterns that make the surface feel intentional.
+
+`under` places a node so it is inherited downward (`core` is the implicit root
+that reaches every surface); `relates` links nodes laterally; `incarnation` tags
+a medium-bound expression (essence is untagged). See
+[references/capture.md](references/capture.md) for the full node shape.
 
 Checks and review validate output; they are not generation input.
 
-`manifest.yml` anchors the package with
-`schema: ghost.fingerprint-package/v1`. Add only sections that contain real
-facet content; Ghost normalizes omitted facet files or sections internally for
-checks, review, emit, and surface resolution.
+`manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
+The tree is declared in `surfaces.yml`, never inferred from filenames or paths.
 
 Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs

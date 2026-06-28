@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T00:53:32.494Z",
+  "generatedAt": "2026-06-28T01:50:44.673Z",
   "tools": [
     {
       "tool": "ghost",
@@ -28,7 +28,7 @@
           "tool": "ghost",
           "name": "init",
           "rawName": "init",
-          "description": "Create a root .ghost split fingerprint package",
+          "description": "Create a root .ghost node fingerprint package",
           "group": "core",
           "defaultHelp": true,
           "compactName": "init",
@@ -43,9 +43,9 @@
               "negated": false
             },
             {
-              "rawName": "--reference <path-or-registry>",
-              "name": "reference",
-              "description": "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
+              "rawName": "--template <name>",
+              "name": "template",
+              "description": "Init template to scaffold (default: default)",
               "default": null,
               "takesValue": true,
               "negated": false

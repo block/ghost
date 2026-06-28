@@ -3,7 +3,6 @@ import { parse as parseYaml } from "yaml";
 import type { ZodIssue, ZodType } from "zod";
 import {
   assembleGraph,
-  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
   GhostFingerprintCompositionSchema,
   type GhostFingerprintDocument,
@@ -23,7 +22,6 @@ import type {
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodesDir } from "./nodes-dir.js";
-import { normalizeReferenceInput } from "./package-config.js";
 
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
@@ -156,47 +154,6 @@ export function parseSplitFingerprintForLint(
     })),
   );
   return fingerprintReport.errors === 0 ? fingerprint : undefined;
-}
-
-export function templateManifest(): string {
-  return `schema: ${GHOST_FINGERPRINT_PACKAGE_SCHEMA}
-id: local
-`;
-}
-
-export function templateIntent(): string {
-  return `summary: {}
-situations: []
-principles: []
-experience_contracts: []
-`;
-}
-
-export function templateInventory(reference?: string): string {
-  const referenceInput = reference
-    ? normalizeReferenceInput(reference)
-    : undefined;
-  if (referenceInput) {
-    return `building_blocks:
-  libraries:
-    - ${referenceInput.id}
-exemplars: []
-sources:
-  - id: ${referenceInput.id}
-    kind: ${sourceKindForReference(referenceInput.source)}
-    ref: ${referenceInput.source}
-`;
-  }
-
-  return `building_blocks: {}
-exemplars: []
-sources: []
-`;
-}
-
-export function templateComposition(): string {
-  return `patterns: []
-`;
 }
 
 const readOptional = readOptionalUtf8;
@@ -362,13 +319,4 @@ function prefixIssues(
     message: issue.message,
     path: issue.path ? `${label}.${issue.path}` : label,
   }));
-}
-
-function sourceKindForReference(
-  source: string,
-): "cache" | "registry" | "file" | "url" | "package" {
-  if (source.startsWith("registry:")) return "registry";
-  if (/^https?:\/\//i.test(source)) return "url";
-  if (source.startsWith("npm:")) return "package";
-  return "file";
 }
