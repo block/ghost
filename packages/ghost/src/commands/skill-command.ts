@@ -6,8 +6,9 @@ import { fileURLToPath } from "node:url";
 import type { CAC } from "cac";
 import { loadSkillBundle } from "#ghost-core";
 
+// The bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(
-  new URL("./skill-bundle", import.meta.url),
+  new URL("../skill-bundle", import.meta.url),
 );
 
 const SUPPORTED_AGENTS = ["claude", "cursor", "codex", "opencode"] as const;

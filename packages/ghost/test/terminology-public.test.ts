@@ -17,7 +17,9 @@ const PUBLIC_TEXT_ROOTS = [
   ".changeset",
 ] as const;
 
-const EMITTED_TEXT_FILES = ["packages/ghost/src/review-packet.ts"] as const;
+const EMITTED_TEXT_FILES = [
+  "packages/ghost/src/commands/review-packet.ts",
+] as const;
 
 const FORBIDDEN_TERMS = [
   /\bcascade\b/i,
@@ -92,7 +94,8 @@ function isPublicTextFile(path: string): boolean {
 }
 
 function sanitizePublicText(file: string, text: string): string {
-  if (!file.endsWith("packages/ghost/src/review-packet.ts")) return text;
+  if (!file.endsWith("packages/ghost/src/commands/review-packet.ts"))
+    return text;
   return text
     .split("\n")
     .filter(

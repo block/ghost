@@ -1,6 +1,6 @@
 import type { CAC } from "cac";
-import { initFingerprintPackage } from "./fingerprint.js";
-import { resolveGhostDirDefault } from "./scan/index.js";
+import { initFingerprintPackage } from "../fingerprint.js";
+import { resolveGhostDirDefault } from "../scan/index.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli

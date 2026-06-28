@@ -5,10 +5,10 @@ import {
   type LintReport,
   lintFingerprintPackage,
   resolveFingerprintPackage,
-} from "./fingerprint.js";
+} from "../fingerprint.js";
+import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
+import { resolveGhostDirDefault, scanStatus, signals } from "../scan/index.js";
 import { registerInitCommand } from "./init-command.js";
-import { detectFileKind, lintDetectedFileKind } from "./scan/file-kind.js";
-import { resolveGhostDirDefault, scanStatus, signals } from "./scan/index.js";
 
 /**
  * Register fingerprint package commands on the unified Ghost CLI.

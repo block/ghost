@@ -2,14 +2,14 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { resolveFingerprintPackage } from "./fingerprint.js";
+import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   looksLegacy,
   type MigrationNote,
   type MigrationResult,
   migratedNodeFiles,
   migrateLegacyPackage,
-} from "./scan/index.js";
+} from "../scan/index.js";
 
 export function registerMigrateCommand(cli: CAC): void {
   cli
