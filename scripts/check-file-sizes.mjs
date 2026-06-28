@@ -13,7 +13,7 @@ const EXCEPTIONS = {
   "packages/ghost/src/fingerprint-commands.ts": {
     limit: 1135,
     justification:
-      "Fingerprint package command registry — temporarily holds package lifecycle, survey/cache, scan readiness, and adapter-neutral package-dir routing until command groups are split further",
+      "Fingerprint package command registry — holds package lifecycle, validate, scan, and adapter-neutral package-dir routing",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,
