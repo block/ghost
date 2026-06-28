@@ -1,5 +1,5 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   GHOST_SURFACES_YML_FILENAME,
@@ -28,12 +28,13 @@ import {
 import {
   lintFingerprintPackageManifest,
   parseSplitFingerprintForLint,
-  templateComposition,
-  templateIntent,
-  templateInventory,
-  templateManifest,
 } from "./fingerprint-package-layers.js";
 import type { LintIssue, LintReport } from "./lint.js";
+import {
+  DEFAULT_TEMPLATE_NAME,
+  getInitTemplate,
+  listInitTemplates,
+} from "./templates.js";
 
 export { loadFingerprintPackage } from "./fingerprint-package-layers.js";
 
@@ -73,8 +74,15 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  reference?: string;
+  /** Init template name (default: "default"). */
+  template?: string;
   force?: boolean;
+}
+
+export interface InitFingerprintPackageResult {
+  paths: FingerprintPackagePaths;
+  /** Package-relative paths of the files the template wrote. */
+  written: string[];
 }
 
 export function resolveFingerprintPackage(
@@ -103,22 +111,37 @@ export async function initFingerprintPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
   options: InitFingerprintPackageOptions = {},
-): Promise<FingerprintPackagePaths> {
+): Promise<InitFingerprintPackageResult> {
+  const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
+  const template = getInitTemplate(templateName);
+  if (!template) {
+    throw new Error(
+      `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+    );
+  }
+
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
-  const files = [
-    { path: paths.manifest, content: templateManifest() },
-    { path: paths.intent, content: templateIntent() },
-    { path: paths.inventory, content: templateInventory(options.reference) },
-    { path: paths.composition, content: templateComposition() },
-  ];
+
+  const files = template.files().map((file) => ({
+    relativePath: file.relativePath,
+    path: join(paths.packageDir, file.relativePath),
+    content: file.content,
+  }));
+
   if (!options.force) {
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
   }
+
+  // Create any nested directories the template needs (e.g. nodes/).
+  const dirs = new Set(files.map((file) => dirname(file.path)));
+  await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
+
   await Promise.all(
     files.map((file) => writeInitFile(file.path, file.content, options.force)),
   );
-  return paths;
+
+  return { paths, written: files.map((file) => file.relativePath) };
 }
 
 async function writeInitFile(

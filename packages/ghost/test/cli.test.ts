@@ -224,13 +224,13 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
-    expect(Object.keys(initOutput).sort()).toEqual([
-      "composition",
-      "dir",
-      "intent",
-      "inventory",
-      "manifest",
-    ]);
+    expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
+    // Node package: manifest + surfaces spine + a seed node, no facet files.
+    expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("surfaces.yml");
+    expect(initOutput.written.some((p: string) => p.startsWith("nodes/"))).toBe(
+      true,
+    );
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
@@ -332,8 +332,8 @@ describe("ghost CLI", () => {
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "intent.yml"),
-      "summary:\n  product: Curated Surface\n",
+      join(dir, ".ghost", "nodes", "core-voice.md"),
+      "---\nid: core-voice\nunder: core\n---\n\nCurated Surface voice.\n",
     );
 
     const refused = await runCli(["init"], dir);
@@ -343,15 +343,15 @@ describe("ghost CLI", () => {
       "Refusing to overwrite existing Ghost fingerprint file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
-    ).resolves.toContain("summary: {}");
+      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
+    ).resolves.toContain("intent / inventory / composition");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
@@ -390,10 +390,9 @@ describe("ghost CLI", () => {
     const scanHuman = await runCli(["scan"], dir);
 
     expect(init.code).toBe(0);
-    expect(init.stdout).toContain("manifest.yml:");
-    expect(init.stdout).toContain("intent.yml:");
-    expect(init.stdout).toContain("inventory.yml:");
-    expect(init.stdout).toContain("composition.yml:");
+    expect(init.stdout).toContain("manifest.yml");
+    expect(init.stdout).toContain("surfaces.yml");
+    expect(init.stdout).toContain("nodes/");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -409,14 +408,16 @@ describe("ghost CLI", () => {
     expect(status.checks).toBeUndefined();
     expect(status.contribution.state).toBe("empty");
     expect(status.contribution.contributing_facets).toEqual([]);
-    expect(status.contribution.empty_facets).toEqual([
+    // A node package has no facet files; facets are absent, not empty.
+    expect(status.contribution.empty_facets).toEqual([]);
+    expect(status.contribution.absent_facets).toEqual([
       "intent",
       "inventory",
       "composition",
     ]);
     expect(scanHuman.stdout).toContain("package dir:");
     expect(scanHuman.stdout).toContain("contribution: empty");
-    expect(scanHuman.stdout).toContain("intent: empty (0)");
+    expect(scanHuman.stdout).toContain("intent: absent (0)");
     expect(scanHuman.stdout).not.toContain("readiness:");
     expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
@@ -428,64 +429,25 @@ describe("ghost CLI", () => {
     );
   });
 
-  it("initializes a blank product scaffold with reference inventory wiring", async () => {
-    const init = await runCli(
-      ["init", "--reference", "packages/ghost-ui/.ghost", "--format", "json"],
-      dir,
-    );
-    const scan = await runCli(["scan", "--format", "json"], dir);
-    const signals = await runCli(["signals"], dir);
-    await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
-      recursive: true,
-    });
-    await mkdir(join(dir, "packages", "ghost-ui", "public", "r"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, "packages", "ghost-ui", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: ghost-ui\n",
-    );
-    await writeFile(
-      join(dir, "packages", "ghost-ui", "public", "r", "registry.json"),
-      "{}\n",
-    );
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
-
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.cache).toBeUndefined();
-
-    const fingerprint = parseYaml(
-      await readFile(join(dir, ".ghost", "inventory.yml"), "utf-8"),
-    ) as Record<string, unknown>;
-    expect(fingerprint).not.toHaveProperty("implementation_vocabulary");
-    expect(fingerprint).not.toHaveProperty("patterns");
-    expect(fingerprint).toMatchObject({
-      building_blocks: {
-        libraries: ["ghost-ui"],
-      },
-      sources: [
-        {
-          id: "ghost-ui",
-          kind: "registry",
-          ref: "registry:packages/ghost-ui/public/r/registry.json",
-        },
-      ],
-    });
+  it("rejects the removed --reference init flag", async () => {
     await expect(
-      readFile(join(dir, ".ghost", "config.yml"), "utf-8"),
-    ).rejects.toThrow();
+      runCli(["init", "--reference", "packages/ghost-ui/.ghost"], dir),
+    ).rejects.toThrow("Unknown option `--reference`");
+  });
 
-    const status = JSON.parse(scan.stdout);
-    expect(status.config).toBeUndefined();
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
-    expect(status.contribution.absent_facets).toEqual([]);
-    expect(status.contribution.empty_facets).toEqual(["intent", "composition"]);
+  it("init --force gathers cleanly on the scaffolded node package", async () => {
+    const init = await runCli(["init", "--format", "json"], dir);
+    expect(init.code).toBe(0);
+    const lint = await runCli(["lint"], dir);
+    expect(lint.code).toBe(0);
 
-    const signalsOutput = JSON.parse(signals.stdout);
-    expect(signalsOutput.config).toBeUndefined();
-    expect(verify.code).toBe(0);
+    // The seed node lives at core, so it cascades to a gather of any surface.
+    const gather = await runCli(["gather", "core", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const slice = JSON.parse(gather.stdout);
+    expect(slice.nodes.some((n: { id: string }) => n.id === "core-voice")).toBe(
+      true,
+    );
   });
 
   it("runs signals, lint, and verify from the unified cli", async () => {

@@ -15,10 +15,15 @@ export type {
 export { signals } from "./inventory.js";
 export type {
   LegacyPackageInput,
+  MigratedNodeFile,
   MigrationNote,
   MigrationResult,
 } from "./migrate-legacy.js";
-export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
+export {
+  looksLegacy,
+  migratedNodeFiles,
+  migrateLegacyPackage,
+} from "./migrate-legacy.js";
 export {
   fingerprintPackageDisplayPath,
   GHOST_PACKAGE_DIR_ENV,
