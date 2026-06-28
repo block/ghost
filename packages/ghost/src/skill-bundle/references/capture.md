@@ -56,9 +56,12 @@ action beats completeness…
   against those and names one. The body is the node's "implementation"; the
   description is what makes it discoverable. Write one on any node worth
   anchoring a task at.
-- **The directory places the node** — a node inherits everything in the
-  directories above it. The brand soul lives in the package-root `index.md` (the
-  `core` node), so it reaches every surface.
+- **The directory places the node** — folders are walls; files fill the
+  corridor. A node inherits every file in the folders above it, up to the root;
+  a sibling folder is invisible. The brand soul lives in the package-root files
+  (the `core` node and other root files), so it reaches every surface. Author a
+  broad rule at the broadest folder where it is true — a feature's
+  `invariants.md` reaches every screen in that feature and nowhere else.
 - **`relates`** links laterally when a relationship carries rationale. When the
   rationale is rich (e.g. "checkout and item-detail disagree on density on
   purpose"), write a **relationship node** whose body explains the tension.

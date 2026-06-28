@@ -101,10 +101,19 @@ ghost validate --format json
 ### Compose a surface slice — `gather`
 
 With no argument, list every node by id and description so an agent can match a
-task to one. With a surface, compose its context slice: the surface's own nodes,
-the ancestors it inherits from its parent directories, and one-hop `relates`
-edges. Use `--as` to filter to a single incarnation; untagged essence nodes
-always pass.
+task to one. With a surface, compose its context slice — folders are walls,
+files fill the corridor:
+
+- **spine** (full bodies): every file from the package root down to the
+  surface's own folder. A sibling folder is a wall — its nodes never appear.
+- **edges** (full bodies, one hop): each spine node's `relates` targets, so a
+  rule authored once high in the corridor reaches every descendant. A link to a
+  hub also unfolds the hub's subtree as spokes.
+- **spokes** (pointers): the surface's own descendants and any edge hub's
+  subtree, offered as `id` + `description` for the agent to pull on demand.
+
+Use `--as` to filter full-body nodes to a single incarnation; untagged essence
+nodes always pass.
 
 <CliHelp tool="ghost" command="gather" hideDescription />
 

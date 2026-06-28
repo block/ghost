@@ -73,10 +73,19 @@ key), never by repo path.
 
 ## Gather
 
-`ghost gather <node>` composes a node's slice: its own body + inherited
-ancestors + one-hop `relates`, filtered by `--as <incarnation>`. With no
-argument, `gather` lists nodes by id + description for the agent to match the ask
-against. The agent names the node; Ghost never infers it from a path.
+`ghost gather <node>` composes a node's slice, filtered by `--as <incarnation>`:
+
+- **spine** (full bodies): every file on the corridor from the package root
+  down to the node's own folder. Folders are walls — sibling folders never
+  appear.
+- **edges** (full bodies, one hop): each spine node's `relates` targets. A rule
+  authored high in the corridor (e.g. `relates: { to: arcade }` on `features/`)
+  reaches every descendant.
+- **spokes** (pointers): the node's own descendants and any edge hub's subtree,
+  offered as id + description for the agent to pull with a follow-up `gather`.
+
+With no argument, `gather` lists nodes by id + description for the agent to match
+the ask against. The agent names the node; Ghost never infers it from a path.
 
 ## Checks
 

@@ -50,6 +50,20 @@ medium-bound expression (essence is untagged). Free-form keys (`audience`, …)
 pass through. See [references/capture.md](references/capture.md) for the full
 node shape.
 
+**How `gather` composes** — folders are walls; files fill the corridor:
+
+- **spine** (full bodies): every file from the package root down to the
+  surface's own folder is inherited — so a feature's `invariants.md` reaches
+  every screen in that feature, and root files reach everywhere. A **sibling
+  folder is a wall**: its nodes never appear, not even as a pointer.
+- **edges** (full bodies, one hop): each spine node's `relates` targets. Author
+  a broad rule once at the level it is true — e.g. `relates: { to: arcade }` on
+  `features/` — and every descendant inherits it. A link to a hub also unfolds
+  the hub's subtree as spokes.
+- **spokes** (pointers: id + description): the surface's own descendants and any
+  edge hub's subtree — navigable optionality the agent pulls on demand with a
+  follow-up `gather`.
+
 Checks and review validate output; they are not generation input.
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
@@ -83,7 +97,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost validate [file-or-dir]` | Validate the package — artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
+| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (corridor spine + relates edges, plus spoke pointers), or list the surface menu. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
