@@ -22,7 +22,6 @@ export {
   migrateLegacyPackage,
 } from "./migrate-legacy.js";
 export {
-  fingerprintPackageDisplayPath,
   GHOST_PACKAGE_DIR_ENV,
   normalizeGhostDir,
   resolveGhostDirDefault,
