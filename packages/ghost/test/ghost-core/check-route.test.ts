@@ -19,7 +19,8 @@ function check(name: string, surface?: string): GhostCheckDocument {
 }
 
 function placed(id: string, parent: string): PlacedNode {
-  return { id, parent, doc: { frontmatter: {}, body: "Prose." } };
+  // Directory/index node: its file folder is its own id.
+  return { id, parent, folder: id, doc: { frontmatter: {}, body: "Prose." } };
 }
 
 // The directory tree that establishes the surfaces:

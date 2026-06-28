@@ -158,5 +158,21 @@ function formatSliceMarkdown(slice: GraphSlice): string {
     }
   }
 
+  // Spokes: pointers the agent may pull on demand (descendants + edge hubs).
+  if (slice.spokes.length > 0) {
+    lines.push(
+      "",
+      "## Available to pull",
+      "",
+      "Pointers to nearby context — run `ghost gather <id>` to expand.",
+      "",
+    );
+    for (const spoke of slice.spokes) {
+      const via = spoke.kind === "edge-hub" ? ` _(via \`${spoke.hub}\`)_` : "";
+      lines.push(`- \`${spoke.id}\`${via}`);
+      if (spoke.description) lines.push(`  - ${spoke.description}`);
+    }
+  }
+
   return `${lines.join("\n")}\n`;
 }

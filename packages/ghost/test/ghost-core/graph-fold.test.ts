@@ -6,15 +6,19 @@ import {
   type PlacedNode,
 } from "../../src/ghost-core/index.js";
 
+// Model an index/directory node: its folder is its own id (`a/b/index.md`).
+// A parentless node is the root `core` (folder ``).
 function placed(
   id: string,
   parent: string | undefined,
   frontmatter: PlacedNode["doc"]["frontmatter"] = {},
   body = "Prose.",
 ): PlacedNode {
+  const folder = parent === undefined ? "" : id;
   return {
     id,
     ...(parent !== undefined ? { parent } : {}),
+    folder,
     doc: { frontmatter, body },
   };
 }
