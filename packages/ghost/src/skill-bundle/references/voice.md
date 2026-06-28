@@ -5,8 +5,10 @@ description: Capture voice and language guidance into existing Ghost fingerprint
 
 # Recipe: Capture Voice And Language
 
-Language maps onto the existing facets; do not invent new schema. See
-`docs/language-fingerprints.md` in the Ghost repo for the full mapping.
+Language maps onto the existing facets; do not invent new schema. Voice and
+language flow through `intent.yml` (tone, voice principles, wording contracts),
+`inventory.yml` (copy material and writing-standard sources),
+`composition.yml` (copy patterns), and `validate.yml` (the detectable subset).
 
 1. Inventory the user-facing strings: i18n catalogs, error components,
    notifications, empty states, onboarding copy. Record durable locations in
@@ -21,10 +23,9 @@ Language maps onto the existing facets; do not invent new schema. See
      `intent.experience_contracts`.
    - Copy shapes into `composition.patterns` with `kind: content`, including
      `anti_patterns` observed in the repo.
-   - Scope each entry with `applies_to` (paths, scopes, surface types) so
-     selective context assembly surfaces it for copy work on those surfaces
-     and omits it elsewhere. Unscoped entries reach agents only through ref
-     edges or the global fallback.
+   - Place each entry in the surface it belongs to so selective context
+     assembly surfaces it for copy work on that surface and omits it
+     elsewhere. Brand-wide voice lives in the root surface and cascades down.
 4. Promote only the mechanically detectable subset into
    `validate.yml`:
    - Absolute rules (banned phrases, required boilerplate) become
