@@ -1,17 +1,20 @@
 import { access, readFile } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   assembleGraph,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
+  type GhostGraphNode,
   type GhostSurfacesDocument,
   GhostSurfacesSchema,
   lintGraph,
 } from "#ghost-core";
 import { isMissingPathError, readOptionalUtf8 } from "../internal/fs.js";
-import type {
-  FingerprintPackagePaths,
-  LoadedFingerprintPackage,
+import {
+  type FingerprintPackagePaths,
+  type LoadedFingerprintPackage,
+  resolveFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodesDir } from "./nodes-dir.js";
@@ -32,7 +35,8 @@ export async function loadFingerprintPackage(
   await assertNotLegacyFacetPackage(paths);
 
   const { nodes: nodeFiles } = await loadNodesDir(paths.dir);
-  const graph = assembleGraph({ nodeFiles, surfaces });
+  const inheritedNodes = await loadInheritedNodes(manifest, paths);
+  const graph = assembleGraph({ nodeFiles, surfaces, inheritedNodes });
 
   const report = lintGraph(graph);
   if (report.errors > 0) {
@@ -49,6 +53,54 @@ export async function loadFingerprintPackage(
     graph,
     ...(surfaces ? { surfaces } : {}),
   };
+}
+
+/**
+ * Resolve the package's `extends` map into read-only inherited nodes. Each
+ * entry maps a package identity (the key, used in `<id>:<node>` refs) to where
+ * that package's `.ghost/` lives. Inherited node ids are qualified with the
+ * identity; their internal containment is *not* re-rooted into this package
+ * (it was validated in their own package) — they enter as referenceable,
+ * read-only context. One level deep (no transitive extends in v1).
+ */
+async function loadInheritedNodes(
+  manifest: GhostFingerprintPackageManifest,
+  paths: FingerprintPackagePaths,
+): Promise<GhostGraphNode[]> {
+  const out: GhostGraphNode[] = [];
+  for (const [id, location] of Object.entries(manifest.extends ?? {})) {
+    const dir = isAbsolute(location)
+      ? location
+      : resolve(paths.packageDir, location);
+    let loaded: LoadedFingerprintPackage;
+    try {
+      loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    } catch (err) {
+      throw new Error(
+        `extends '${id}': could not load package at ${location} (${
+          err instanceof Error ? err.message : String(err)
+        }).`,
+      );
+    }
+    if (loaded.manifest.id !== id) {
+      throw new Error(
+        `extends '${id}': resolved package at ${location} declares id '${loaded.manifest.id}'. The extends key must match the extended package's manifest id.`,
+      );
+    }
+    for (const node of loaded.graph.nodes.values()) {
+      if (node.origin === "inherited") continue; // no transitive extends in v1
+      out.push({
+        id: `${id}:${node.id}`,
+        relates: [],
+        ...(node.incarnation !== undefined
+          ? { incarnation: node.incarnation }
+          : {}),
+        body: node.body,
+        origin: "inherited",
+      });
+    }
+  }
+  return out;
 }
 
 /**

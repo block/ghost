@@ -11,17 +11,29 @@ export interface AssembleGraphInput {
   nodeFiles?: GhostNodeDocument[];
   /** The explicit surface tree, which seeds tree nodes even when empty. */
   surfaces?: GhostSurfacesDocument;
+  /**
+   * Read-only nodes inherited from extended packages. Their ids are already
+   * qualified (`<package-id>:<node>`). Local nodes never override these and
+   * these never override local — they are a disjoint id space.
+   */
+  inheritedNodes?: GhostGraphNode[];
 }
 
 /**
  * Fold the package's sources into one in-memory prose-node graph.
  *
  * Authored node files are unioned with the surface tree (`surfaces.yml`), which
- * seeds containment so a surface with no node still exists as a tree position.
- * The implicit `core` root is never required to be declared.
+ * seeds containment so a surface with no node still exists as a tree position,
+ * plus any read-only nodes inherited from extended packages. The implicit
+ * `core` root is never required to be declared.
  */
 export function assembleGraph(input: AssembleGraphInput): GhostGraph {
   const nodes = new Map<string, GhostGraphNode>();
+
+  // Inherited (extended-package) nodes first — lowest precedence, read-only.
+  for (const node of input.inheritedNodes ?? []) {
+    nodes.set(node.id, node);
+  }
 
   for (const doc of input.nodeFiles ?? []) {
     const fm = doc.frontmatter;

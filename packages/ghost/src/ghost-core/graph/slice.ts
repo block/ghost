@@ -122,8 +122,8 @@ export function resolveGraphSlice(
     const source = graph.nodes.get(sliceNode.id);
     if (!source) continue;
     for (const relation of source.relates) {
-      // Local refs only in Phase 3; cross-package (`pkg#id`) is a later phase.
-      if (relation.to.includes("#")) continue;
+      // A `<package-id>:<node>` ref resolves to an inherited node, keyed the
+      // same way in graph.nodes — `add` no-ops if it isn't present.
       add(relation.to, {
         kind: "edge",
         ...(relation.as !== undefined ? { via: relation.as } : {}),

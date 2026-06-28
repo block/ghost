@@ -58,7 +58,7 @@ describe("ghost.node/v1 schema", () => {
   it("accepts local and cross-package refs in under/relates", () => {
     const report = lintGhostNode(
       node(
-        "id: checkout-trust\nunder: checkout\nrelates:\n  - to: '@acme/brand#core-trust'\n    as: reinforces",
+        "id: checkout-trust\nunder: checkout\nrelates:\n  - to: 'brand:core-trust'\n    as: reinforces",
       ),
     );
     expect(report.errors).toBe(0);
