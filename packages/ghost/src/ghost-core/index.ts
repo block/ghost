@@ -65,44 +65,6 @@ export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GhostFingerprintPackageManifestSchema,
 } from "./package-manifest.js";
-// --- Patterns (ghost.patterns/v1) ---
-export type {
-  GhostCompositionAnatomy,
-  GhostCompositionPattern,
-  GhostPatternEvidence,
-  GhostPatternsDocument,
-  GhostPatternsLintIssue,
-  GhostPatternsLintReport,
-  GhostPatternsLintSeverity,
-  GhostSurfaceTypePattern,
-} from "./patterns/index.js";
-export {
-  GHOST_PATTERNS_FILENAME,
-  GHOST_PATTERNS_SCHEMA,
-  GhostCompositionAnatomySchema,
-  GhostCompositionPatternSchema,
-  GhostPatternEvidenceSchema,
-  GhostPatternsSchema,
-  GhostSurfaceTypePatternSchema,
-  lintGhostPatterns,
-} from "./patterns/index.js";
-// --- Resources (ghost.resources/v1) ---
-export type {
-  GhostResourceRef,
-  GhostResourcesDocument,
-  GhostResourcesLintIssue,
-  GhostResourcesLintReport,
-  GhostResourcesLintSeverity,
-  GhostSurfaceResource,
-} from "./resources/index.js";
-export {
-  GHOST_RESOURCES_FILENAME,
-  GHOST_RESOURCES_SCHEMA,
-  GhostResourceRefSchema,
-  GhostResourcesSchema,
-  GhostSurfaceResourceSchema,
-  lintGhostResources,
-} from "./resources/index.js";
 // --- Inventory scan output types ---
 export type {
   GitInfo,
