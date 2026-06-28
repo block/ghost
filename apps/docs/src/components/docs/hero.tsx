@@ -61,6 +61,10 @@ export function Hero() {
           >
             <span className="hero-line block">Ghost</span>
           </h1>
+          <p className="hero-line mt-8 max-w-[46ch] text-center text-balance text-base md:text-lg text-muted-foreground leading-relaxed">
+            The product-surface fingerprint your agent reads before it builds
+            and checks after it changes.
+          </p>
         </div>
       </section>
     </>

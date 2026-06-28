@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: Commands around the portable fingerprint lifecycle. Your agent handles the composition work.
+description: The deterministic commands around the node-graph fingerprint lifecycle. Your agent does the reading, writing, and reviewing.
 kicker: Docs
 section: guide
 order: 30
@@ -9,25 +9,22 @@ slug: cli
 
 <DocSection title="Overview">
 
-The CLI does the repeatable parts around the fingerprint lifecycle: create
-packages, report contribution state, validate files, gather optional source material,
-emit handoff packets, govern diffs, compare packages, and record intent. Your
-agent does the reading, writing, and reviewing.
+The CLI does the repeatable parts around the fingerprint lifecycle: scaffold a
+package, validate the node graph, compose context for a surface, route checks,
+and emit advisory review packets. Your agent does the interpretation.
 
-`ghost --help` intentionally shows the short core workflow for new adopters.
-Run `ghost --help --all` for the complete command index; command-specific help
-remains available with `ghost <command> --help`.
+`ghost --help` shows the short core workflow. `ghost --help --all` shows the
+complete command index, and `ghost <command> --help` shows flags for one
+command.
 
-Canonical Ghost fingerprints start here, with optional child packages for scoped
-product areas:
+The canonical fingerprint is a flat `.ghost/` package:
 
 ```text
-.ghost/manifest.yml
-.ghost/intent.yml
-.ghost/inventory.yml
-.ghost/composition.yml
-.ghost/validate.yml
-apps/checkout/.ghost/manifest.yml
+.ghost/
+  manifest.yml      # schema + id
+  surfaces.yml      # the spine: surfaces and their parent (core is implicit)
+  nodes/*.md        # prose nodes — the design expression
+  checks/*.md       # optional rules an agent evaluates
 ```
 
 The command tables below are generated from the CLI source. Run
@@ -37,59 +34,40 @@ The command tables below are generated from the CLI source. Run
 
 <DocSection title="Create And Inspect">
 
-### Initialize - `init`
+### Initialize — `init`
 
-Create a `.ghost/` package with a manifest, raw facet files,
-and deterministic checks. Use `--scope <path>` for nested package roots. Use
-`--monorepo` to create or preserve the root package, detect workspace child
-roots, and print scoped init commands; add `--apply` to create the detected
-child packages. Use
-`GHOST_PACKAGE_DIR=<relative-dir>` only when a host wrapper stores Ghost package
-roots under a different safe relative directory; raw `ghost` defaults to
-`.ghost`. Exact `--package <dir>` values win over the environment default.
+Scaffold a `.ghost/` package: a manifest, an empty surfaces spine (the `core`
+root needs no declaration), and one seed node placed at `core`. Use
+`--template <name>` to pick a starter, `--package <dir>` for an exact directory,
+or set `GHOST_PACKAGE_DIR` when a host wrapper stores Ghost files outside the
+default `.ghost`.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
 ghost init
-ghost init --monorepo
-ghost init --monorepo --apply
-ghost init --scope apps/checkout
+ghost init --template default
 ghost init --package product-surface
-ghost init --package .design/custom-ghost
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
-GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout
 ```
 
-### Contribution facets - `scan`
+### Contribution — `scan`
 
-Report whether `manifest.yml` is present and which sparse facets
-this package contributes: `intent`, `inventory`, `composition`, and `validate`.
-Raw repo signals do not count toward inventory contribution.
+Report what the package contributes: presence of the manifest and surfaces
+spine, and the nodes and surfaces it carries.
 
 <CliHelp tool="ghost" command="scan" hideDescription />
 
 ```bash
 ghost scan
 ghost scan --format json
-GHOST_PACKAGE_DIR=.agents/ghost ghost scan --format json
-GHOST_PACKAGE_DIR=.design/memory ghost scan --include-nested --format json
 ```
 
-### Stack inspection - `stack`
-
-Inspect the root-to-leaf fingerprint stack for one or more paths.
-
-<CliHelp tool="ghost" command="stack" hideDescription />
-
-```bash
-ghost stack apps/checkout/review/page.tsx --format json
-```
-
-### Inspect repo signals - `signals`
+### Repo signals — `signals`
 
 Emit raw signals about a frontend repo as JSON. Use this as scratch evidence
-while authoring curated fingerprint facets.
+while authoring curated nodes — it does not contribute to the fingerprint by
+itself.
 
 <CliHelp tool="ghost" command="signals" hideDescription />
 
@@ -99,108 +77,109 @@ ghost signals .
 
 </DocSection>
 
-<DocSection title="Validate And Emit">
+<DocSection title="Validate">
 
-### Validation - `lint`
+### Validation — `validate`
 
-Validate a root `.ghost` fingerprint package or an individual split artifact.
-`--all` validates every nested package and merged stack.
+Validate the package: artifact shape plus the node graph — every `under` and
+`relates` link resolves, there is exactly one root, and the graph is acyclic.
+Defaults to `.ghost`; pass a file to validate a single artifact.
 
-<CliHelp tool="ghost" command="lint" hideDescription />
-
-```bash
-ghost lint
-ghost lint .ghost/intent.yml
-ghost lint .ghost/validate.yml --format json
-ghost lint --all
-```
-
-### Package fidelity - `verify`
-
-Validate fingerprint evidence and exemplar paths, typed check refs, and
-optional rationale files.
-
-<CliHelp tool="ghost" command="verify" hideDescription />
+<CliHelp tool="ghost" command="validate" hideDescription />
 
 ```bash
-ghost verify .ghost --root .
-GHOST_PACKAGE_DIR=.design/memory ghost verify --all
+ghost validate
+ghost validate .ghost/nodes/checkout-trust.md
+ghost validate --format json
 ```
-
-### Reusable Review Command - `emit`
-
-Emit `review-command` from split fingerprint facets when a host wants a
-reusable review prompt.
-
-<CliHelp tool="ghost" command="emit" hideDescription />
-
-### Agent Context - `relay gather`
-
-Gather Relay context for a target path or structured Relay request. Relay loads
-config first; omitted `base` means `base.kind: fingerprint`, while
-`base.kind: none` lets agent-framework repos gather declared request context
-without a `.ghost` package. For agents and host adapters, use JSON: the full
-`ghost.relay.gather/v2` result is the stable contract, and its nested `context`
-is `ghost.relay-context/v1`. Plain markdown output remains a compact human
-preview.
-
-<CliHelp tool="ghost" command="relay" hideDescription />
-
-```bash
-ghost relay gather apps/checkout/review/page.tsx --format json
-ghost relay gather apps/checkout/review/page.tsx --package product-surface --format json
-ghost relay gather apps/checkout/review/page.tsx --config .ghost/relay.yml --format json
-GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
-ghost relay gather stacks/portal.renewal-reminder.email.yml --config .agents/ghost/relay.yml --format json
-ghost relay gather --request request.yml --format json
-ghost relay gather --request-stdin --format json
-ghost relay gather apps/checkout/review/page.tsx # human preview
-```
-
-### Inspection - `describe`
-
-Print a markdown section map.
-
-<CliHelp tool="ghost" command="describe" hideDescription />
-
-### Survey/cache ops - `survey <op>`
-
-Operate on `ghost.survey/v1` files as compatibility cache source material.
-
-<CliHelp tool="ghost" command="survey" hideDescription />
 
 </DocSection>
 
-<DocSection title="Govern And Compare">
+<DocSection title="Gather Context">
 
-### Deterministic gates - `check`
+### Compose a surface slice — `gather`
 
-Run active `ghost.validate/v1` gates against a git diff. Without `--package`,
-Ghost groups changed files by resolved fingerprint stack and runs merged checks
-per group.
+With no argument, list every node by id and description so an agent can match a
+task to one. With a surface, compose its context slice: the surface's own nodes,
+the ancestors it inherits via `under`, and one-hop `relates` edges. Use `--as`
+to filter to a single incarnation; untagged essence nodes always pass.
 
-<CliHelp tool="ghost" command="check" hideDescription />
+<CliHelp tool="ghost" command="gather" hideDescription />
 
-### Advisory governance packet - `review`
+```bash
+ghost gather
+ghost gather checkout
+ghost gather checkout --as email
+ghost gather checkout --format json
+```
 
-Emit an evidence-routed advisory review packet grounded in selected context,
-validation checks, and the diff.
+This is the pre-generation step: Ghost gives agents surface-composition context
+before they build, not only after a review finds drift.
+
+</DocSection>
+
+<DocSection title="Govern Changes">
+
+### Route checks — `checks`
+
+Select and ground the markdown checks governing the named surfaces. The agent
+names the surfaces the change touches, then evaluates the returned checks. Use
+`--no-grounding` to omit the grounded nodes and return only the relevant checks.
+
+<CliHelp tool="ghost" command="checks" hideDescription />
+
+```bash
+ghost checks --surface checkout
+ghost checks --surface checkout,billing
+ghost checks --surface checkout --format json
+```
+
+### Advisory review packet — `review`
+
+Emit an advisory packet for a diff: touched surfaces, routed checks, and
+fingerprint grounding, with the diff embedded verbatim. Diff against a git ref
+with `--base`, or pass a patch with `--diff` (use `-` for stdin).
 
 <CliHelp tool="ghost" command="review" hideDescription />
 
-### Comparison - `compare`
+```bash
+ghost review --surface checkout --base main
+ghost review --surface checkout --diff change.patch
+git diff | ghost review --surface checkout --diff -
+ghost review --surface checkout --format json
+```
 
-Pairwise distance or composite analysis over fingerprint packages.
+Wrappers should consume `--format json` and map Ghost severities (`critical`,
+`serious`, `nit`) into their own review format. Advisory review is never a CI
+gate on its own.
 
-<CliHelp tool="ghost" command="compare" hideDescription />
+</DocSection>
 
-### Drift stance - `ack` / `track` / `diverge`
+<DocSection title="Skill And Maintenance">
 
-Record how the repo should treat tracked fingerprint drift. These compatibility
-governance verbs still operate on tracked direct fingerprint markdown files.
+### Install the skill — `skill`
 
-<CliHelp tool="ghost" command="ack" hideDescription />
-<CliHelp tool="ghost" command="track" hideDescription />
-<CliHelp tool="ghost" command="diverge" hideDescription />
+Install the unified Ghost skill bundle so a host agent knows how to author and
+use the fingerprint.
+
+<CliHelp tool="ghost" command="skill" hideDescription />
+
+```bash
+ghost skill install
+ghost skill install --agent claude
+ghost skill install --dest ~/.codex/skills/ghost
+```
+
+### Migrate a legacy package — `migrate`
+
+Migrate a legacy `.ghost/` package onto the node-graph surface model. Use
+`--dry-run` to print the plan without writing.
+
+<CliHelp tool="ghost" command="migrate" hideDescription />
+
+```bash
+ghost migrate
+ghost migrate .ghost --dry-run
+```
 
 </DocSection>
