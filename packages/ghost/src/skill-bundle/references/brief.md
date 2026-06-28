@@ -9,17 +9,17 @@ description: Build a concise pre-generation brief from a surface's gather slice.
    surface lists the surfaces and their descriptions), then run
    `ghost gather <surface> --format json`.
 2. Treat the gather slice as the agent contract: `surface`, `ancestors`, and the
-   composed `principles`, `experience_contracts`, and `patterns`, each with
-   `provenance` (own, inherited from an ancestor, or contributed by a typed
-   edge).
-3. Express the surface's intent through its composed patterns.
-4. Inspect matching `inventory.exemplars` as concrete generation anchors.
-5. Run `ghost signals <path>` when raw repo observations would help you find
+   prose `nodes`, each with `provenance` (own, inherited from an ancestor, or
+   contributed by a typed `relates` edge). The intent, the material, and the
+   composition live in each node's prose.
+3. Add `--as <incarnation>` (e.g. email, voice) to filter the slice to one
+   output form; essence (untagged) nodes always pass.
+4. Run `ghost signals <path>` when raw repo observations would help you find
    evidence.
-6. Run `ghost checks --surface <ids>` (the surfaces you determined the change
+5. Run `ghost checks --surface <ids>` (the surfaces you determined the change
    touches) to see which checks govern them and their grounding, so generation
    avoids known failures.
-7. When the slice is sparse, label local reasoning provisional rather than
+6. When the slice is sparse, label local reasoning provisional rather than
    inventing surface-specific rules.
 
 Plain `ghost gather <surface>` is a compact human preview. Prefer `--format
@@ -33,10 +33,9 @@ When no surface is selected (or an unknown one is named), `gather` returns the
 surface menu, never the whole tree — choose a surface from it rather than
 guessing.
 
-Return a short human-facing brief synthesized from the slice: relevant
-principles and contracts (the why), patterns and inventory exemplars to inspect
-(what good looks like), checks to avoid, and provisional assumptions when the
-surface is silent.
+Return a short human-facing brief synthesized from the slice: the relevant
+grounded nodes (their prose carries the why and what good looks like), checks to
+avoid, and provisional assumptions when the surface is silent.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint
 package.

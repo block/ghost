@@ -1,8 +1,5 @@
-import { ancestorChain, buildParentMap } from "../surfaces/cascade.js";
-import {
-  GHOST_SURFACE_ROOT_ID,
-  type GhostSurfacesDocument,
-} from "../surfaces/types.js";
+import { ancestorChain } from "../graph/assemble.js";
+import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "../graph/types.js";
 import type { GhostCheckDocument } from "./types.js";
 
 /** Why a check is relevant to a diff: placed on a touched surface, or cascaded. */
@@ -18,27 +15,26 @@ export interface RoutedCheck {
 /**
  * Select the markdown checks relevant to a set of touched surfaces,
  * deterministically and with no LLM. A check governs a touched surface when its
- * `surface:` equals that surface (own) or any ancestor of it (cascade) — the
- * same rule the slice resolver uses for context. An unplaced check governs
- * `core`, so it applies to every diff.
+ * `surface:` equals that surface (own) or any **graph** ancestor of it
+ * (cascade) — the same ancestry the slice resolver uses for context. An
+ * unplaced check governs `core`, so it applies to every diff.
  *
  * Ghost selects and emits; it never runs the check. The host agent evaluates
  * the markdown rule.
  */
 export function selectChecksForSurfaces(
   checks: GhostCheckDocument[],
-  surfaces: GhostSurfacesDocument | undefined,
+  graph: GhostGraph,
   touchedSurfaces: string[],
 ): RoutedCheck[] {
-  const parentOf = buildParentMap(surfaces);
-
   // For each touched surface, the set of surfaces whose checks apply: itself
-  // plus its ancestors (up to and including core). Track, per governing
+  // plus its graph ancestors (up to and including core). Track, per governing
   // surface, the nearest touched surface it cascades into (for provenance).
   const governing = new Map<string, CheckRelevance>();
   for (const touched of touchedSurfaces) {
     record(governing, touched, { kind: "own", surface: touched });
-    for (const ancestor of ancestorChain(touched, parentOf)) {
+    for (const ancestor of ancestorChain(graph, touched)) {
+      if (ancestor === touched) continue;
       record(governing, ancestor, {
         kind: "ancestor",
         surface: ancestor,
@@ -47,14 +43,14 @@ export function selectChecksForSurfaces(
     }
   }
   // core governs every diff even when no surface was touched.
-  record(governing, GHOST_SURFACE_ROOT_ID, {
+  record(governing, GHOST_GRAPH_ROOT_ID, {
     kind: "own",
-    surface: GHOST_SURFACE_ROOT_ID,
+    surface: GHOST_GRAPH_ROOT_ID,
   });
 
   const routed: RoutedCheck[] = [];
   for (const check of checks) {
-    const placement = check.frontmatter.surface ?? GHOST_SURFACE_ROOT_ID;
+    const placement = check.frontmatter.surface ?? GHOST_GRAPH_ROOT_ID;
     const relevance = governing.get(placement);
     if (relevance) routed.push({ check, relevance });
   }

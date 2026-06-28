@@ -21,8 +21,9 @@ in the surface's fingerprint slice. Use JSON as the agent contract. It includes:
 
 - `touched_surfaces`: the surfaces the diff resolved to
 - `checks`: the relevant checks per surface, with `relevance` (own or inherited)
-- `grounding`: per surface, the *why* (principles, contracts) and the *what good
-  looks like* (patterns, exemplars with paths)
+- `grounding`: per surface, the slice's prose `nodes`, each with `provenance`
+  (own / ancestor / edge). The why and the what live in each node's prose — read
+  the grounded nodes, own first, then inherited, then related.
 
 Ghost selects and grounds the checks; it does not run them. Evaluate each
 markdown check's instructions against the diff yourself.

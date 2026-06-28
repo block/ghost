@@ -1324,7 +1324,7 @@ sources: []
     expect(result.stdout).toContain(
       "grounding ref (why / what) or local-evidence rationale when the surface is silent",
     );
-    expect(result.stdout).toContain("Use the surface grounding first");
+    expect(result.stdout).toContain("Read the grounded nodes");
     expect(result.stdout).toContain("routed check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
@@ -1747,9 +1747,14 @@ surfaces:
     const checkout = payload.grounding.find(
       (g: { surface: string }) => g.surface === "checkout",
     );
-    const whyRefs = checkout.why.map((i: { ref: string }) => i.ref);
-    expect(whyRefs).toContain("intent.principle:checkout-clarity"); // own
-    expect(whyRefs).toContain("intent.principle:brand-voice"); // inherited from core
+    // Grounding is the gather slice: prose nodes by provenance (Phase 4).
+    const ids = checkout.nodes.map((n: { id: string }) => n.id);
+    expect(ids).toContain("checkout-clarity"); // own
+    expect(ids).toContain("brand-voice"); // inherited from core
+    const own = checkout.nodes.find(
+      (n: { id: string }) => n.id === "checkout-clarity",
+    );
+    expect(own.provenance).toEqual({ kind: "own" });
   });
 
   it("omits grounding with --no-grounding", async () => {

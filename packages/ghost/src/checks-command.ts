@@ -1,8 +1,8 @@
 import type { CAC } from "cac";
 import {
-  groundSurface,
+  type GraphSlice,
   type RoutedCheck,
-  type SurfaceGrounding,
+  resolveGraphSlice,
   selectChecksForSurfaces,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "./fingerprint.js";
@@ -33,8 +33,12 @@ export function registerChecksCommand(cli: CAC): void {
       "Use this fingerprint package directory (default: ./.ghost)",
     )
     .option(
+      "--as <incarnation>",
+      "Filter grounding to one incarnation (e.g. email, voice). Essence nodes always pass.",
+    )
+    .option(
       "--no-grounding",
-      "Omit fingerprint grounding (why / what) and emit only the relevant checks",
+      "Omit fingerprint grounding (the grounded nodes) and emit only the relevant checks",
     )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
@@ -56,17 +60,21 @@ export function registerChecksCommand(cli: CAC): void {
         // routes + grounds for those surfaces; it does not infer from paths.
         const touched = parseSurfaceIds(opts.surface);
 
-        const routed = selectChecksForSurfaces(
-          checks,
-          loaded.surfaces,
-          touched,
-        );
+        const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
+
+        const incarnation =
+          typeof opts.as === "string" && opts.as.length > 0
+            ? opts.as
+            : undefined;
 
         // grounding defaults on; cac sets opts.grounding=false for --no-grounding.
+        // Grounding is the gather slice: the prose nodes a finding can cite.
         const withGrounding = opts.grounding !== false;
-        const grounding: SurfaceGrounding[] = withGrounding
+        const grounding: GraphSlice[] = withGrounding
           ? touched.map((surface) =>
-              groundSurface(loaded.surfaces, loaded.fingerprint, surface),
+              resolveGraphSlice(loaded.graph, surface, {
+                ...(incarnation !== undefined ? { incarnation } : {}),
+              }),
             )
           : [];
 
@@ -103,10 +111,27 @@ export function registerChecksCommand(cli: CAC): void {
     });
 }
 
+const PROVENANCE_RANK = { own: 0, ancestor: 1, edge: 2 } as const;
+
+function provenanceLabel(
+  provenance: GraphSlice["nodes"][number]["provenance"],
+): string {
+  switch (provenance.kind) {
+    case "own":
+      return "own";
+    case "ancestor":
+      return `from \`${provenance.from}\``;
+    case "edge":
+      return provenance.via
+        ? `${provenance.via} \`${provenance.from}\``
+        : `relates \`${provenance.from}\``;
+  }
+}
+
 function formatChecksMarkdown(
   touched: string[],
   routed: RoutedCheck[],
-  grounding: SurfaceGrounding[],
+  grounding: GraphSlice[],
   invalid: Array<{ file: string; message: string }>,
 ): string {
   const lines = ["# Relevant Checks", ""];
@@ -128,21 +153,21 @@ function formatChecksMarkdown(
     }
   }
 
-  for (const surface of grounding) {
-    if (surface.why.length === 0 && surface.what.length === 0) continue;
-    lines.push("", `## Grounding: \`${surface.surface}\``);
-    if (surface.why.length > 0) {
-      lines.push("", "Why:");
-      for (const item of surface.why) {
-        lines.push(`- ${item.statement} (\`${item.ref}\`)`);
-      }
-    }
-    if (surface.what.length > 0) {
-      lines.push("", "What good looks like:");
-      for (const item of surface.what) {
-        const where = item.path ? ` — \`${item.path}\`` : "";
-        lines.push(`- ${item.statement}${where} (\`${item.ref}\`)`);
-      }
+  for (const slice of grounding) {
+    if (slice.nodes.length === 0) continue;
+    lines.push("", `## Grounding: \`${slice.surface}\``);
+    const ordered = [...slice.nodes].sort(
+      (a, b) =>
+        PROVENANCE_RANK[a.provenance.kind] - PROVENANCE_RANK[b.provenance.kind],
+    );
+    for (const node of ordered) {
+      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
+      lines.push(
+        "",
+        `### \`${node.id}\` — ${provenanceLabel(node.provenance)}${tag}`,
+        "",
+        node.body,
+      );
     }
   }
 
