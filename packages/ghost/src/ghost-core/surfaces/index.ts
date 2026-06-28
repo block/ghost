@@ -6,16 +6,12 @@
  */
 
 export { lintGhostSurfaces } from "./lint.js";
-export { buildSurfaceMenu, type SurfaceMenuEntry } from "./menu.js";
 export { GhostSurfacesSchema } from "./schema.js";
 export {
-  GHOST_SURFACE_EDGE_KINDS,
   GHOST_SURFACE_ROOT_ID,
   GHOST_SURFACES_SCHEMA,
   GHOST_SURFACES_YML_FILENAME,
   type GhostSurface,
-  type GhostSurfaceEdge,
-  type GhostSurfaceEdgeKind,
   type GhostSurfacesDocument,
   type GhostSurfacesLintIssue,
   type GhostSurfacesLintReport,

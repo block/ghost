@@ -24,6 +24,7 @@ export {
   type AssembleGraphInput,
   ancestorChain,
   assembleGraph,
+  buildGraphMenu,
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
   type GhostGraphNode,
@@ -31,6 +32,7 @@ export {
   type GraphLintIssue,
   type GraphLintReport,
   type GraphLintSeverity,
+  type GraphMenuEntry,
   type GraphSlice,
   type GraphSliceNode,
   type GraphSliceProvenance,
@@ -111,21 +113,16 @@ export type {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Surfaces (ghost.surfaces/v1) ---
+// --- Surfaces (ghost.surfaces/v1) — the optional terse spine file ---
 export {
-  buildSurfaceMenu,
-  GHOST_SURFACE_EDGE_KINDS,
   GHOST_SURFACE_ROOT_ID,
   GHOST_SURFACES_SCHEMA,
   GHOST_SURFACES_YML_FILENAME,
   type GhostSurface,
-  type GhostSurfaceEdge,
-  type GhostSurfaceEdgeKind,
   type GhostSurfacesDocument,
   type GhostSurfacesLintIssue,
   type GhostSurfacesLintReport,
   type GhostSurfacesLintSeverity,
   GhostSurfacesSchema,
   lintGhostSurfaces,
-  type SurfaceMenuEntry,
 } from "./surfaces/index.js";

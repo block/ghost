@@ -77,8 +77,15 @@ describe("ghost.node/v1 schema", () => {
     );
   });
 
-  it("rejects unknown frontmatter keys (strict)", () => {
-    expect(lintGhostNode(node("id: a\nsurface: checkout")).errors).toBe(1);
+  it("passes through free-form descriptive keys (e.g. audience)", () => {
+    // Authors may add descriptive keys; Ghost does not gate on them.
+    expect(lintGhostNode(node("id: a\naudience: enterprise")).errors).toBe(0);
+  });
+
+  it("accepts a description (the retrieval payload)", () => {
+    expect(
+      lintGhostNode(node("id: email\ndescription: Lifecycle email.")).errors,
+    ).toBe(0);
   });
 
   it("round-trips through serialize/parse", () => {

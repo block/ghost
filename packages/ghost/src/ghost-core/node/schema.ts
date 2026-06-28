@@ -48,10 +48,14 @@ const NodeRelationSchema = z
 export const GhostNodeFrontmatterSchema = z
   .object({
     id: NodeIdSchema,
+    description: z.string().min(1).optional(),
     under: NodeRefSchema.optional(),
     relates: z.array(NodeRelationSchema).optional(),
     incarnation: z.string().min(1).optional(),
   })
-  .strict();
+  // Passthrough, not strict: authors may add free-form descriptive keys
+  // (e.g. `audience`, `stage`) that describe what the node is. Ghost does not
+  // gate on them — they ride along as part of the node's descriptive surface.
+  .passthrough();
 
 export { NodeIdSchema, NodeRefSchema };

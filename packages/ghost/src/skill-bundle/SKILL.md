@@ -27,18 +27,21 @@ markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal sy
 design-system registry, or screenshot archive.
 
 The fingerprint is a graph of **nodes**. A node is a markdown file:
-frontmatter (`id`, `under`, `relates`, `incarnation`) + a prose body.
-**Intent + inventory + composition** are the authoring lenses the body is
+frontmatter (`id`, `description`, `under`, `relates`, `incarnation`) + a prose
+body. **Intent + inventory + composition** are the authoring lenses the body is
 written through — they guide what to capture, they are not fields or node types:
 
 - intent — the why and the stance.
 - inventory — the materials and pointers to implementation the agent can inspect.
 - composition — the patterns that make the surface feel intentional.
 
-`under` places a node so it is inherited downward (`core` is the implicit root
-that reaches every surface); `relates` links nodes laterally; `incarnation` tags
-a medium-bound expression (essence is untagged). See
-[references/capture.md](references/capture.md) for the full node shape.
+`description` is the retrieval payload — a one-line "what this is / when to
+gather it" (like a tool's name + description); `ghost gather` with no argument
+lists nodes by id + description for the agent to match against. `under` places a
+node so it is inherited downward (`core` is the implicit root that reaches every
+surface); `relates` links nodes laterally; `incarnation` tags a medium-bound
+expression (essence is untagged). Free-form keys (`audience`, …) pass through.
+See [references/capture.md](references/capture.md) for the full node shape.
 
 Checks and review validate output; they are not generation input.
 

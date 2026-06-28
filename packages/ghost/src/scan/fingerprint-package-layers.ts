@@ -91,6 +91,9 @@ async function loadInheritedNodes(
       if (node.origin === "inherited") continue; // no transitive extends in v1
       out.push({
         id: `${id}:${node.id}`,
+        ...(node.description !== undefined
+          ? { description: node.description }
+          : {}),
         relates: [],
         ...(node.incarnation !== undefined
           ? { incarnation: node.incarnation }
