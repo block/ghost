@@ -14,10 +14,3 @@ export interface LintReport {
   warnings: number;
   info: number;
 }
-
-export interface LintOptions {
-  /** Treat this set of rules as errors instead of their default severity. */
-  strict?: string[];
-  /** Silence these rules entirely. */
-  off?: string[];
-}

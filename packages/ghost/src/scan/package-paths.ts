@@ -69,13 +69,3 @@ export function resolveGhostDirDefault(
       : env[GHOST_PACKAGE_DIR_ENV],
   );
 }
-
-export function fingerprintPackageDisplayPath(
-  relativeRoot: string,
-  ghostDir = FINGERPRINT_PACKAGE_DIR,
-): string {
-  const normalizedGhostDir = normalizeGhostDir(ghostDir);
-  return relativeRoot === "."
-    ? normalizedGhostDir
-    : `${relativeRoot}/${normalizedGhostDir}`;
-}

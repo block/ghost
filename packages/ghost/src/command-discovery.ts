@@ -112,13 +112,6 @@ export function getCommandDiscoveryMetadata(): CommandDiscoveryMetadata[] {
   return COMMAND_METADATA.map((entry) => ({ ...entry }));
 }
 
-export function getCommandDiscoveryForCommand(
-  name: string,
-): CommandDiscoveryMetadata | undefined {
-  const entry = METADATA_BY_NAME.get(name);
-  return entry ? { ...entry } : undefined;
-}
-
 export function formatGhostHelp(
   cli: CAC,
   sections: HelpSection[],

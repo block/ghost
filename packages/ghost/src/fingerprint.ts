@@ -12,10 +12,4 @@ export {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./scan/fingerprint-package.js";
-export type {
-  LintIssue,
-  LintOptions,
-  LintReport,
-  LintSeverity,
-} from "./scan/lint.js";
-export { normalizeReferenceInput } from "./scan/package-config.js";
+export type { LintIssue, LintReport, LintSeverity } from "./scan/lint.js";
