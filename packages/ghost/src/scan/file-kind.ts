@@ -6,13 +6,10 @@ import {
   lintGhostPatterns,
   lintGhostResources,
   lintGhostSurfaces,
-  lintSurvey,
-  type SurveyLintReport,
 } from "#ghost-core";
 import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
-  | "survey"
   | "fingerprint-manifest"
   | "resources"
   | "patterns"
@@ -30,7 +27,6 @@ export type DetectedFileKind =
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
   const filename = lowerPath.split(/[\\/]/).pop() ?? lowerPath;
-  if (lowerPath.endsWith(".json")) return "survey";
   if (filename === "manifest.yml") {
     return "fingerprint-manifest";
   }
@@ -52,7 +48,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename.endsWith(".md") && /(^|[\\/])nodes[\\/]/.test(lowerPath)) {
     return "node";
   }
-  if (raw.trimStart().startsWith("{")) return "survey";
   if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
     return "fingerprint-manifest";
   }
@@ -66,42 +61,19 @@ export function lintDetectedFileKind(
   kind: DetectedFileKind,
   raw: string,
 ): LintReport {
-  return kind === "survey"
-    ? lintSurveyFile(raw)
-    : kind === "fingerprint-manifest"
-      ? lintFingerprintManifestFile(raw)
-      : kind === "resources"
-        ? lintResourcesFile(raw)
-        : kind === "patterns"
-          ? lintPatternsFile(raw)
-          : kind === "surfaces"
-            ? lintSurfacesFile(raw)
-            : kind === "check"
-              ? lintGhostCheck(raw)
-              : kind === "node"
-                ? lintGhostNode(raw)
-                : lintUnsupportedFile();
-}
-
-function lintSurveyFile(raw: string): SurveyLintReport {
-  let json: unknown;
-  try {
-    json = JSON.parse(raw);
-  } catch (err) {
-    return {
-      issues: [
-        {
-          severity: "error",
-          rule: "survey-not-json",
-          message: `survey file is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-        },
-      ],
-      errors: 1,
-      warnings: 0,
-      info: 0,
-    };
-  }
-  return lintSurvey(json);
+  return kind === "fingerprint-manifest"
+    ? lintFingerprintManifestFile(raw)
+    : kind === "resources"
+      ? lintResourcesFile(raw)
+      : kind === "patterns"
+        ? lintPatternsFile(raw)
+        : kind === "surfaces"
+          ? lintSurfacesFile(raw)
+          : kind === "check"
+            ? lintGhostCheck(raw)
+            : kind === "node"
+              ? lintGhostNode(raw)
+              : lintUnsupportedFile();
 }
 
 function lintFingerprintManifestFile(raw: string): LintReport {
