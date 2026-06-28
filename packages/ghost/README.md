@@ -34,20 +34,23 @@ command index, and `ghost <command> --help` shows flags for one command.
 
 ## The Shape
 
-A fingerprint is a small folder of prose — a **graph of nodes**:
+A fingerprint is a directory tree of prose — a **graph of nodes**:
 
 ```text
 .ghost/
-  manifest.yml      # schema + id
-  surfaces.yml      # the spine: surfaces and their parent (core is implicit)
-  nodes/*.md        # prose nodes — the design expression
-  checks/*.md       # optional rules an agent evaluates
+  manifest.yml          # schema + id
+  index.md              # the core node — true everywhere (optional)
+  <surface>/index.md    # a surface's own prose (the directory is the surface)
+  <surface>/<node>.md   # a prose node placed in that surface
+  checks/*.md           # optional ghost.check/v1 checks
 ```
 
-A node is one markdown file: frontmatter handles (`id`, `description`, `under`,
-`relates`, `incarnation`) plus a prose body written through three lenses —
-**intent** (the why), **inventory** (the materials), and **composition** (the
-patterns). `under` cascades a node downward; `core` reaches every surface.
+The **directory tree is the graph**. A node is one markdown file: descriptive
+frontmatter (`description`, `relates`, `incarnation`) plus a prose body written
+through three lenses — **intent** (the why), **inventory** (the materials), and
+**composition** (the patterns). A node's id is its path and its parent is its
+directory; a surface is just a directory, and the package-root `index.md` is the
+implicit `core` node that reaches every surface.
 
 ## Use
 

@@ -17,24 +17,45 @@ writes, and decides.
 
 ```text
 .ghost/
-  manifest.yml      # schema + id
-  surfaces.yml      # the spine: surfaces and their parent (core is implicit)
-  nodes/*.md        # prose nodes — the design expression
-  checks/*.md       # optional rules an agent evaluates
+  manifest.yml          # ghost.fingerprint-package/v1 anchor: schema + id
+  index.md              # the core node — true everywhere (optional)
+  <surface>/index.md    # a surface's own prose (the directory is the surface)
+  <surface>/<node>.md   # a prose node placed in that surface
+  checks/*.md           # optional ghost.check/v1 checks
 ```
 
-The fingerprint is a **graph of nodes**. A node is one markdown file:
-frontmatter handles (`id`, `description`, `under`, `relates`, `incarnation`)
-plus a prose body. You write that body through three lenses — they guide what to
-capture, they are not fields:
+The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
+A node is a markdown file: descriptive frontmatter (`description`, `relates`,
+`incarnation`) plus a prose body. A node's identity is its path
+(`marketing/email.md` → `marketing/email`) and its parent is its containing
+directory — a surface is just a directory, and a directory's own prose lives in
+its `index.md`. The package-root `index.md` is the implicit `core` node, true
+everywhere.
 
-- **intent** — the why and the stance.
-- **inventory** — the materials, and pointers to the code an agent can inspect.
-- **composition** — the patterns that make the surface feel like one product.
+The body is written through three authoring lenses — they guide what to capture,
+they are not fields:
 
-`under` cascades a node downward (`core` reaches every surface). `relates` links
-nodes laterally. `description` is the retrieval payload — how an agent finds the
-right node for a task. Checks validate output; they are never generation input.
+- **intent** — what the surface is trying to do and for whom.
+- **inventory** — the materials, and pointers to code the agent can inspect.
+- **composition** — the patterns that make the surface feel intentional.
+
+`description` is the retrieval payload; `relates` links nodes laterally;
+`incarnation` tags a medium-bound expression (essence is untagged). Reserved at
+the package root: `manifest.yml` and the `checks/` subtree; every other `*.md`
+is a node. `ghost signals` answers what exists; the curated node graph answers
+what the surface is trying to preserve.
+
+## Project Status: Beta
+
+> [!WARNING]
+> Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+> on-disk `.ghost/` package shape, and public JavaScript exports may
+> change in breaking ways before a stable 1.0 release.
+>
+> Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
+> versions are reserved for fixes that should not require migration. If you adopt
+> Ghost today, expect some churn, pin the version you depend on, and review
+> release notes before upgrading.
 
 ## Install
 
@@ -46,20 +67,19 @@ npx ghost --help
 ## Quick Start
 
 ```bash
-ghost init          # scaffold .ghost/ — manifest, surfaces spine, one seed node
+ghost init          # scaffold .ghost/ — manifest + a core index.md node
 ghost validate      # links resolve, one root, acyclic
 ghost gather        # list nodes; ghost gather <surface> composes a context slice
 ```
 
-A node looks like this:
+A node is a markdown file; its id is its path (`checkout/trust.md` →
+`checkout/trust`) and its parent is its directory:
 
 ```markdown
 ---
-id: checkout-trust
 description: Trust at the payment moment.
-under: checkout
 relates:
-  - to: core-trust
+  - to: core/trust
     as: reinforces
 ---
 
@@ -104,7 +124,7 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` — manifest, surfaces spine, and a seed node. |
+| `ghost init` | Scaffold `.ghost/` — a manifest and a core `index.md` node. |
 | `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph. |
 | `ghost gather` | List nodes, or compose a surface's context slice. |

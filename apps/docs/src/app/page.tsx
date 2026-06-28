@@ -52,8 +52,13 @@ export default function Home() {
                 <code>.ghost/</code> is the portable fingerprint package
               </li>
               <li>
-                <code>surfaces.yml</code> is the spine; <code>nodes/*.md</code>{" "}
-                are the design expression
+                the directory tree <em>is</em> the graph: a node&apos;s id is
+                its file path, and its parent is its containing directory
+              </li>
+              <li>
+                a surface is just a directory; its own prose lives in that
+                directory&apos;s <code>index.md</code>, and the root{" "}
+                <code>index.md</code> is the implicit <code>core</code> node
               </li>
               <li>
                 each node is written through <code>intent</code>,{" "}
@@ -67,8 +72,9 @@ export default function Home() {
               <li>ordinary Git review is the approval boundary for edits</li>
             </ul>
             <p className="thesis-item">
-              A node inherits everything it sits <code>under</code>. The brand
-              soul lives at <code>core</code> and reaches every surface;
+              A node inherits everything in the directories above it. The brand
+              soul lives in the root <code>index.md</code> (the{" "}
+              <code>core</code> node) and reaches every surface;
               surface-specific nodes refine it; <code>relates</code> links them
               laterally. Asking for context becomes a graph traversal:{" "}
               <code>ghost gather &lt;surface&gt;</code> composes the slice that

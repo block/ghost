@@ -6,37 +6,31 @@ import {
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
   type GhostGraphNode,
-  type GhostSurfacesDocument,
-  GhostSurfacesSchema,
   lintGraph,
 } from "#ghost-core";
-import { isMissingPathError, readOptionalUtf8 } from "../internal/fs.js";
+import { isMissingPathError } from "../internal/fs.js";
 import {
   type FingerprintPackagePaths,
   type LoadedFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
-import { loadNodesDir } from "./nodes-dir.js";
+import { loadNodeTree } from "./node-tree.js";
 
 const LEGACY_FACET_FILES = ["intent.yml", "inventory.yml", "composition.yml"];
 
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
 ): Promise<LoadedFingerprintPackage> {
-  const [manifestRaw, surfacesRaw] = await Promise.all([
-    readFile(paths.manifest, "utf-8"),
-    readOptional(paths.surfaces),
-  ]);
+  const manifestRaw = await readFile(paths.manifest, "utf-8");
   const manifest = parseManifest(manifestRaw, "manifest.yml");
-  const surfaces = parseSurfaces(surfacesRaw);
 
   // Legacy facet packages no longer load directly — guide to `ghost migrate`.
   await assertNotLegacyFacetPackage(paths);
 
-  const { nodes: nodeFiles } = await loadNodesDir(paths.dir);
+  const { nodes: placedNodes } = await loadNodeTree(paths.packageDir);
   const inheritedNodes = await loadInheritedNodes(manifest, paths);
-  const graph = assembleGraph({ nodeFiles, surfaces, inheritedNodes });
+  const graph = assembleGraph({ placedNodes, inheritedNodes });
 
   const report = lintGraph(graph);
   if (report.errors > 0) {
@@ -51,7 +45,6 @@ export async function loadFingerprintPackage(
     manifest,
     manifestRaw,
     graph,
-    ...(surfaces ? { surfaces } : {}),
   };
 }
 
@@ -107,18 +100,16 @@ async function loadInheritedNodes(
 }
 
 /**
- * If a package still ships the legacy facet files and has no `nodes/`, fail
- * with migrate guidance rather than a confusing graph error.
+ * If a package still ships the legacy facet files, fail with migrate guidance
+ * rather than a confusing graph error.
  */
 async function assertNotLegacyFacetPackage(
   paths: FingerprintPackagePaths,
 ): Promise<void> {
-  const hasNodes = await pathExists(paths.nodes);
-  if (hasNodes) return;
   for (const facet of LEGACY_FACET_FILES) {
     if (await pathExists(`${paths.packageDir}/${facet}`)) {
       throw new Error(
-        `This is a legacy facet package (found ${facet}, no nodes/). Run \`ghost migrate\` to convert it to the node model.`,
+        `This is a legacy facet package (found ${facet}). Run \`ghost migrate\` to convert it to the directory-tree node model.`,
       );
     }
   }
@@ -132,20 +123,6 @@ async function pathExists(path: string): Promise<boolean> {
     if (isMissingPathError(err)) return false;
     throw err;
   }
-}
-
-function parseSurfaces(
-  raw: string | undefined,
-): GhostSurfacesDocument | undefined {
-  if (raw === undefined) return undefined;
-  const result = GhostSurfacesSchema.safeParse(parseYaml(raw));
-  if (!result.success) {
-    const first = result.error.issues[0];
-    throw new Error(
-      `surfaces.yml failed schema validation: ${first?.message ?? "invalid surfaces"}`,
-    );
-  }
-  return result.data as GhostSurfacesDocument;
 }
 
 export function lintFingerprintPackageManifest(
@@ -211,5 +188,3 @@ function parseYamlSafe(
     return undefined;
   }
 }
-
-const readOptional = readOptionalUtf8;

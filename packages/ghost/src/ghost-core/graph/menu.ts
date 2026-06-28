@@ -38,12 +38,12 @@ export function buildGraphMenu(graph: GhostGraph): GraphMenuEntry[] {
     entries.push({
       id: node.id,
       ...(node.description ? { description: node.description } : {}),
-      parent: node.under ?? GHOST_GRAPH_ROOT_ID,
+      parent: node.parent ?? GHOST_GRAPH_ROOT_ID,
     });
   }
 
-  // Tree positions declared only in the spine file (surfaces.yml) — no node of
-  // their own yet — are still anchorable. Include them as bare entries.
+  // Intermediate directories with no index node of their own are still
+  // anchorable tree positions. Include them as bare entries.
   for (const [id, parent] of graph.parents) {
     if (seen.has(id)) continue;
     seen.add(id);

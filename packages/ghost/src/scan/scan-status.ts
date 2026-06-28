@@ -69,7 +69,6 @@ async function scanContribution(
     const loaded = await loadFingerprintPackage(paths);
     return summarizeFingerprintContribution({
       graph: loaded.graph,
-      surfaceIds: (loaded.surfaces?.surfaces ?? []).map((s) => s.id),
     });
   } catch (err) {
     return summarizeFingerprintContribution({

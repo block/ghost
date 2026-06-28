@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   assembleGraph,
-  GHOST_SURFACES_SCHEMA,
   type GhostCheckDocument,
-  type GhostSurfacesDocument,
+  type PlacedNode,
   selectChecksForSurfaces,
 } from "../../src/ghost-core/index.js";
 
@@ -19,22 +18,25 @@ function check(name: string, surface?: string): GhostCheckDocument {
   };
 }
 
-const SURFACES: GhostSurfacesDocument = {
-  schema: GHOST_SURFACES_SCHEMA,
-  surfaces: [
-    { id: "checkout", parent: "core" },
-    { id: "email", parent: "core" },
-    { id: "email-marketing", parent: "email" },
-  ],
-};
+function placed(id: string, parent: string): PlacedNode {
+  return { id, parent, doc: { frontmatter: {}, body: "Prose." } };
+}
 
-const GRAPH = assembleGraph({ surfaces: SURFACES });
+// The directory tree that establishes the surfaces:
+//   checkout/  email/  email/marketing/
+const GRAPH = assembleGraph({
+  placedNodes: [
+    placed("checkout", "core"),
+    placed("email", "core"),
+    placed("email/marketing", "email"),
+  ],
+});
 
 const CHECKS = [
   check("brand", "core"),
   check("checkout-color", "checkout"),
   check("email-links", "email"),
-  check("marketing-unsub", "email-marketing"),
+  check("marketing-unsub", "email/marketing"),
   check("unplaced"), // governs core
 ];
 
@@ -55,7 +57,7 @@ describe("selectChecksForSurfaces", () => {
   });
 
   it("cascades multiple ancestor levels", () => {
-    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email-marketing"]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email/marketing"]);
     // own marketing + ancestor email + ancestor core (brand, unplaced)
     expect(names(routed)).toEqual([
       "brand",
@@ -66,18 +68,18 @@ describe("selectChecksForSurfaces", () => {
   });
 
   it("tags provenance own vs. ancestor", () => {
-    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email-marketing"]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email/marketing"]);
     const byName = Object.fromEntries(
       routed.map((r) => [r.check.frontmatter.name, r.relevance]),
     );
     expect(byName["marketing-unsub"]).toEqual({
       kind: "own",
-      surface: "email-marketing",
+      surface: "email/marketing",
     });
     expect(byName["email-links"]).toMatchObject({
       kind: "ancestor",
       surface: "email",
-      via: "email-marketing",
+      via: "email/marketing",
     });
   });
 

@@ -1,6 +1,6 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { scanStatus } from "../src/scan/scan-status.js";
 
@@ -39,41 +39,33 @@ describe("scanStatus contribution", () => {
     expect(status.contribution.node_count).toBe(0);
   });
 
-  it("reports node contribution and surface coverage", async () => {
-    await writePackage(
-      dir,
-      `schema: ghost.surfaces/v1
-surfaces:
-  - id: checkout
-    parent: core
-  - id: email
-    parent: core
-`,
-      {
-        "core-voice.md": "---\nid: core-voice\nunder: core\n---\n\nCalm.\n",
-        "checkout-trust.md":
-          "---\nid: checkout-trust\nunder: checkout\nincarnation: web\n---\n\nReassure.\n",
-      },
-    );
+  it("reports node contribution and surface coverage over the directory tree", async () => {
+    await writePackage(dir, {
+      // The core root prose (essence).
+      "index.md": "---\n---\n\nCalm.\n",
+      // The checkout surface directory, with one placed node (web incarnation).
+      "checkout/index.md": "---\n---\n\nCheckout surface.\n",
+      "checkout/trust.md": "---\nincarnation: web\n---\n\nReassure.\n",
+    });
 
     const status = await scanStatus(join(dir, ".ghost"));
 
     expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.node_count).toBe(2);
-    expect(status.contribution.essence_count).toBe(1);
+    // 3 authored nodes: root index + checkout/index + checkout/trust.
+    expect(status.contribution.node_count).toBe(3);
+    // Two essence (the two index nodes) + one web-tagged (checkout/trust).
+    expect(status.contribution.essence_count).toBe(2);
     expect(status.contribution.incarnation_count).toBe(1);
+    // `checkout` is an interior directory holding one node.
     const checkout = status.contribution.surfaces.find(
       (s) => s.id === "checkout",
     );
     expect(checkout?.node_count).toBe(1);
-    // email surface declared but has no nodes → sparse.
-    expect(status.contribution.sparse_surfaces).toContain("email");
   });
 });
 
 async function writePackage(
   dir: string,
-  surfacesYml?: string,
   nodes?: Record<string, string>,
 ): Promise<void> {
   await mkdir(join(dir, ".ghost"), { recursive: true });
@@ -81,13 +73,11 @@ async function writePackage(
     join(dir, ".ghost", "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: local\n",
   );
-  if (surfacesYml) {
-    await writeFile(join(dir, ".ghost", "surfaces.yml"), surfacesYml);
-  }
   if (nodes) {
-    await mkdir(join(dir, ".ghost", "nodes"), { recursive: true });
-    for (const [name, content] of Object.entries(nodes)) {
-      await writeFile(join(dir, ".ghost", "nodes", name), content);
+    for (const [relPath, content] of Object.entries(nodes)) {
+      const full = join(dir, ".ghost", relPath);
+      await mkdir(dirname(full), { recursive: true });
+      await writeFile(full, content);
     }
   }
 }

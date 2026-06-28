@@ -14,10 +14,11 @@ materials it draws from, and the patterns that make it feel intentional.
 
 ```text
 .ghost/
-  manifest.yml      # schema + id
-  surfaces.yml      # the spine: surfaces + their parent (core is implicit)
-  nodes/*.md        # prose nodes — the design expression
-  checks/*.md       # optional ghost.check/v1 checks
+  manifest.yml          # schema + id
+  index.md              # the core node — true everywhere (optional)
+  <surface>/index.md    # a surface's own prose
+  <surface>/<node>.md   # a node placed in that surface
+  checks/*.md           # optional ghost.check/v1 checks
 ```
 
 The checked-in `.ghost/` package is the source of truth. Ordinary Git
@@ -26,10 +27,15 @@ are drafts, and committed fingerprint changes are canonical for Ghost. Checks ar
 markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
-The fingerprint is a graph of **nodes**. A node is a markdown file:
-frontmatter (`id`, `description`, `under`, `relates`, `incarnation`) + a prose
-body. **Intent + inventory + composition** are the authoring lenses the body is
-written through — they guide what to capture, they are not fields or node types:
+The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
+A node is a markdown file: descriptive frontmatter (`description`, `relates`,
+`incarnation`) + a prose body. A node's **identity is its path** (`marketing/email.md`
+→ `marketing/email`) and its **parent is its containing directory** — a surface
+is just a directory, and a directory's own prose lives in its `index.md`
+(`marketing/index.md` is the `marketing` surface; the package-root `index.md` is
+the implicit `core` node, true everywhere). **Intent + inventory + composition**
+are the authoring lenses the body is written through — they guide what to
+capture, they are not fields or node types:
 
 - intent — the why and the stance.
 - inventory — the materials and pointers to implementation the agent can inspect.
@@ -37,16 +43,19 @@ written through — they guide what to capture, they are not fields or node type
 
 `description` is the retrieval payload — a one-line "what this is / when to
 gather it" (like a tool's name + description); `ghost gather` with no argument
-lists nodes by id + description for the agent to match against. `under` places a
-node so it is inherited downward (`core` is the implicit root that reaches every
-surface); `relates` links nodes laterally; `incarnation` tags a medium-bound
-expression (essence is untagged). Free-form keys (`audience`, …) pass through.
-See [references/capture.md](references/capture.md) for the full node shape.
+lists nodes by id + description for the agent to match against. The directory
+places a node so it is inherited downward (`core` is the implicit root that
+reaches every surface); `relates` links nodes laterally; `incarnation` tags a
+medium-bound expression (essence is untagged). Free-form keys (`audience`, …)
+pass through. See [references/capture.md](references/capture.md) for the full
+node shape.
 
 Checks and review validate output; they are not generation input.
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
-The tree is declared in `surfaces.yml`, never inferred from filenames or paths.
+The tree is the layout itself: ids and parents come from where files sit, so
+moving a node is a rename. Reserved at the package root: `manifest.yml` and the
+`checks/` subtree; every other `*.md` is a node.
 
 Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
@@ -62,14 +71,14 @@ and map severities into their own review or check format.
 A package can **extend** another by identity — the shared-brand pattern. The
 manifest's `extends` maps a package id to where it lives:
 `extends: { brand: ../brand/.ghost }`. Then nodes reference inherited context by
-identity, never path: `under: brand:core` or `relates: [{ to: brand:core-trust }]`.
-Inherited nodes are read-only and flow into gather/validate like local ones.
+identity, never path: `relates: [{ to: brand:core/trust }]` (a `<package>:<path>`
+ref). Inherited nodes are read-only and flow into gather/validate like local ones.
 
 ## Core CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [--template <name>]` | Scaffold `.ghost/` with manifest, surfaces spine, and a seed node. |
+| `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan [dir] [--format json]` | Report node/surface contribution. |
 | `ghost validate [file-or-dir]` | Validate the package — artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
@@ -83,7 +92,7 @@ Inherited nodes are read-only and flow into gather/validate like local ones.
 |---|---|
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
-| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the surface model. |
+| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
 
 ## Workflows
 

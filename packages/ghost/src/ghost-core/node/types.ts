@@ -25,28 +25,21 @@ export interface GhostNodeRelation {
 }
 
 /**
- * A node's frontmatter: the machinery's handle (identity, tree, links,
- * incarnation).
- * The prose body carries the design expression; intent / inventory /
- * composition are authorship lenses, never fields.
+ * A node's frontmatter: descriptive properties only. Identity and containment
+ * are not here — they are the node's location in the directory tree (the file
+ * path is the id; the containing directory is the parent). The prose body
+ * carries the design expression; intent / inventory / composition are
+ * authorship lenses, never fields.
  */
 export interface GhostNodeFrontmatter {
-  /** Unique, addressable id within the package. */
-  id: string;
   /**
    * One-line statement of what this node is and when to gather it — the
-   * retrieval payload. Together with `id` it is how an agent selects a node,
-   * exactly like a tool's name + description. The body is the node's
-   * "implementation"; the description is what makes it discoverable. Optional,
-   * but strongly encouraged on any node worth anchoring a task at.
+   * retrieval payload. Together with the node's id (its path) it is how an
+   * agent selects a node, exactly like a tool's name + description. The body is
+   * the node's "implementation"; the description is what makes it discoverable.
+   * Optional, but strongly encouraged on any node worth anchoring a task at.
    */
   description?: string;
-  /**
-   * The single containment parent (the tree + the cascade). Absent means a
-   * top-level node under the implicit `core` root. The tree lives only here;
-   * the id never encodes hierarchy.
-   */
-  under?: string;
   /** Typed lateral links to other nodes (composition graph). */
   relates?: GhostNodeRelation[];
   /**

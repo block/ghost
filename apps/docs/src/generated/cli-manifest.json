@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T13:42:06.396Z",
+  "generatedAt": "2026-06-28T21:25:38.799Z",
   "tools": [
     {
       "tool": "ghost",
@@ -191,7 +191,7 @@
           "tool": "ghost",
           "name": "migrate",
           "rawName": "migrate [dir]",
-          "description": "Migrate a legacy .ghost/ package onto the surface model (surfaces.yml + surface: placement).",
+          "description": "Migrate a legacy .ghost/ package onto the directory-tree node model.",
           "group": "maintenance",
           "defaultHelp": false,
           "compactName": "migrate",

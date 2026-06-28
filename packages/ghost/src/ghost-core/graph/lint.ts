@@ -1,4 +1,4 @@
-import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
+import type { GhostGraph } from "./types.js";
 
 export type GraphLintSeverity = "error" | "warning" | "info";
 
@@ -20,39 +20,23 @@ export interface GraphLintReport {
 /**
  * The graph pass of `validate`: the ghost-specific network is correct.
  *
- * - every `under` parent resolves to a node or a declared surface tree position;
- * - every local `relates` target resolves (cross-package `pkg#id` refs are
- *   skipped here — they are resolved in the cross-package phase);
- * - exactly one root (no `under`) — the implicit `core`;
- * - the containment graph is acyclic.
+ * Containment comes from the directory tree (a node's parent is its directory),
+ * so parent edges resolve by construction — there is no "unresolved parent" to
+ * check. What remains is the network correctness the layout cannot guarantee:
+ *
+ * - every local `relates` target resolves (cross-package `pkg:id` refs resolve
+ *   against inherited nodes; an unknown one is reported);
+ * - the containment graph reaches the single implicit `core` root (it always
+ *   does by construction; verified defensively);
+ * - the containment graph is acyclic (a directory tree is, defensively checked).
  *
  * Pure: operates on the assembled in-memory graph, no I/O.
  */
 export function lintGraph(graph: GhostGraph): GraphLintReport {
   const issues: GraphLintIssue[] = [];
   const ids = new Set(graph.nodes.keys());
-  // Valid containment targets: nodes, declared surface tree positions, and the
-  // implicit root. Surfaces are tree positions (in parents/children), not nodes.
-  const treePositions = new Set<string>([
-    GHOST_GRAPH_ROOT_ID,
-    ...graph.parents.keys(),
-    ...graph.children.keys(),
-  ]);
 
   for (const node of graph.nodes.values()) {
-    // under must resolve to a known node or surface tree position
-    if (
-      node.under !== undefined &&
-      !ids.has(node.under) &&
-      !treePositions.has(node.under)
-    ) {
-      issues.push({
-        severity: "error",
-        rule: "unresolved-parent",
-        message: `node '${node.id}' is under '${node.under}', which is not a known node or surface.`,
-        node: node.id,
-      });
-    }
     // relates targets must resolve. A `<package-id>:<node>` ref resolves to an
     // inherited node (id-keyed the same way) — same lookup, no special case.
     for (const relation of node.relates) {
@@ -67,25 +51,8 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
     }
   }
 
-  // Exactly one root: the implicit core. Nodes with no `under` are roots.
-  // Inherited (extended-package) nodes are read-only context, not part of this
-  // package's tree — they are exempt from the single-root rule.
-  const roots = [...graph.nodes.values()].filter(
-    (node) =>
-      node.under === undefined &&
-      node.id !== GHOST_GRAPH_ROOT_ID &&
-      node.origin !== "inherited",
-  );
-  for (const root of roots) {
-    issues.push({
-      severity: "error",
-      rule: "multiple-roots",
-      message: `node '${root.id}' has no 'under'; every node must descend from the implicit '${GHOST_GRAPH_ROOT_ID}' root (give it an 'under').`,
-      node: root.id,
-    });
-  }
-
-  // Cycle detection over containment.
+  // Cycle detection over containment (defensive — a directory tree cannot cycle,
+  // but inherited/seeded positions are checked for safety).
   for (const node of graph.nodes.values()) {
     const seen = new Set<string>();
     let cursor: string | undefined = node.id;
@@ -94,13 +61,13 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
         issues.push({
           severity: "error",
           rule: "containment-cycle",
-          message: `node '${node.id}' is part of an 'under' cycle.`,
+          message: `node '${node.id}' is part of a containment cycle.`,
           node: node.id,
         });
         break;
       }
       seen.add(cursor);
-      cursor = graph.nodes.get(cursor)?.under;
+      cursor = graph.parents.get(cursor);
     }
   }
 

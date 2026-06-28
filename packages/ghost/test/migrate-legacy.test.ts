@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  GhostSurfacesSchema,
-  lintGhostNode,
-  lintGhostSurfaces,
-} from "../src/ghost-core/index.js";
+import { lintGhostNode } from "../src/ghost-core/index.js";
 import {
   type LegacyPackageInput,
   looksLegacy,
@@ -58,12 +54,9 @@ function legacy(): LegacyPackageInput {
 }
 
 describe("migrateLegacyPackage", () => {
-  it("derives surfaces.yml from topology.scopes", () => {
-    const { surfaces } = migrateLegacyPackage(legacy());
-    const parsed = GhostSurfacesSchema.safeParse(surfaces);
-    expect(parsed.success).toBe(true);
-    const ids = (surfaces.surfaces as Array<{ id: string }>).map((s) => s.id);
-    expect(ids).toEqual(["lending", "checkout"]);
+  it("derives surface directories from topology.scopes", () => {
+    const { surfaceIds } = migrateLegacyPackage(legacy());
+    expect(surfaceIds).toEqual(["lending", "checkout"]);
   });
 
   it("places single-scope nodes via surface: and strips legacy fields", () => {
@@ -126,18 +119,23 @@ describe("migrateLegacyPackage", () => {
     expect(principles[0]).toHaveProperty("applies_to");
   });
 
-  it("produces a node package: valid surfaces + parseable nodes", () => {
+  it("produces a directory tree of parseable nodes", () => {
     const result = migrateLegacyPackage(legacy());
 
-    expect(lintGhostSurfaces(result.surfaces).errors).toBe(0);
-
-    // The migration emits one prose node per facet entry.
+    // The migration emits one prose node per facet entry, plus an index.md per
+    // derived surface directory. Placed nodes land under their surface dir.
     const files = migratedNodeFiles(result);
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
-      expect(file.relativePath).toMatch(/^nodes\/.+\.md$/);
+      expect(file.relativePath).toMatch(/\.md$/);
       expect(lintGhostNode(file.content).errors).toBe(0);
     }
+    // Each derived surface gets its index.md directory marker.
+    expect(files.some((f) => f.relativePath === "lending/index.md")).toBe(true);
+    // A single-scope node lands inside its surface directory.
+    expect(
+      files.some((f) => f.relativePath === "lending/single-scope.md"),
+    ).toBe(true);
   });
 });
 

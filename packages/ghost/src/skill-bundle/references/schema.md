@@ -9,11 +9,17 @@ Canonical package:
 
 ```text
 .ghost/
-  manifest.yml      ghost.fingerprint-package/v1 — id + optional extends
-  nodes/*.md        ghost.node/v1 — the design expression (the unit)
-  surfaces.yml      optional ghost.surfaces/v1 — a terse spine (id + parent)
-  checks/*.md       optional ghost.check/v1 — agent-evaluated output checks
+  manifest.yml          ghost.fingerprint-package/v1 — id + optional extends
+  index.md              the core node — true everywhere (optional)
+  <surface>/index.md    a surface's own prose (the directory is the surface)
+  <surface>/<node>.md   ghost.node/v1 — a node placed in that surface
+  checks/*.md           optional ghost.check/v1 — agent-evaluated output checks
 ```
+
+The **directory tree is the graph**: a node's id is its path and its parent is
+its containing directory. A surface is a directory; its own prose is its
+`index.md`. The package-root `index.md` is the implicit `core` node. Reserved at
+the root: `manifest.yml` and `checks/`; every other `*.md` is a node.
 
 Git is the approval boundary: checked-in files are canonical; uncommitted or
 unmerged edits are draft work. One contract per package; the contract carries no
@@ -21,15 +27,15 @@ paths and infers nothing from repo location.
 
 ## Nodes
 
-A node is the unit — a markdown file with frontmatter + a prose body:
+A node is the unit — a markdown file with descriptive frontmatter + a prose
+body. Identity and containment are not in the frontmatter; they are where the
+file sits. A node at `checkout/trust.md`:
 
 ```yaml
 ---
-id: checkout-trust            # required, unique
 description: Trust at the payment moment.   # the retrieval payload
-under: checkout               # optional parent (inherited downward)
 relates:                      # optional lateral links
-  - to: core-trust
+  - to: core/trust
     as: reinforces            # reinforces | contrasts | variant
 incarnation: web              # optional: email | billboard | voice | … (omit = essence)
 # free-form keys (audience, stage, …) pass through untouched
@@ -39,25 +45,18 @@ lenses, not fields.
 ```
 
 `description` is how an agent selects a node (like a tool's name + description).
-`under` places the node so it is inherited downward (`core` is the implicit root that
-reaches everywhere). `relates` links nodes laterally. `incarnation` tags a
-medium-bound expression. The tree lives only in `under`/`surfaces.yml`, never in
-the id and never inferred from a path.
+The file's location places it: `checkout/trust.md` has id `checkout/trust` and
+is inherited downward from `checkout` (`core` is the implicit root that reaches
+everywhere). `relates` links nodes laterally. `incarnation` tags a medium-bound
+expression. The tree is the layout; ids encode hierarchy because they *are* paths.
 
-## The spine (optional)
+## Surfaces are directories
 
-`surfaces.yml` is a terse place to declare bare tree positions (id + parent +
-optional description) in one file instead of as bodyless node files. It folds
-into the same node id space — a position that needs guidance is just a node with
-that id.
-
-```yaml
-schema: ghost.surfaces/v1
-surfaces:
-  - id: checkout
-    parent: core
-    description: The purchase flow.
-```
+There is no spine file. A surface exists when its directory exists; give it prose
+with an `index.md`, place nodes inside it, and nest surfaces by nesting
+directories. A surface that needs no prose of its own is simply a directory that
+holds nodes. Moving a node to another directory changes its id (a rename) and
+its parent — `ghost validate` reports any `relates` that no longer resolve.
 
 ## Manifest + extends
 
@@ -68,9 +67,9 @@ extends:
   brand: ../brand/.ghost      # inherit another contract's nodes, by identity
 ```
 
-A `brand:core-trust` ref in `under`/`relates` resolves into the extended
-package's nodes (read-only). Reference is by identity (the `extends` key), never
-by path.
+A `brand:core/trust` ref in `relates` resolves into the extended package's nodes
+(read-only) — a `<package>:<path>` ref. Reference is by identity (the `extends`
+key), never by repo path.
 
 ## Gather
 

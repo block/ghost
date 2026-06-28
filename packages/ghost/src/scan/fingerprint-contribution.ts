@@ -35,8 +35,6 @@ export interface ScanContributionReport {
  */
 export function summarizeFingerprintContribution(input: {
   graph?: GhostGraph;
-  /** Declared surface ids from surfaces.yml (excluding the implicit root). */
-  surfaceIds?: string[];
   missing?: boolean;
   invalidReason?: string;
 }): ScanContributionReport {
@@ -52,20 +50,25 @@ export function summarizeFingerprintContribution(input: {
   }
 
   const graph = input.graph;
+  // Authored local nodes contribute. The root `index.md` is a real authored
+  // node (origin node-file) and counts; the implicit root (when undeclared) and
+  // inherited nodes do not.
   const nodes = [...graph.nodes.values()].filter(
-    (node) => node.id !== GHOST_GRAPH_ROOT_ID,
+    (node) => node.origin === "node-file",
   );
   const essence = nodes.filter((node) => node.incarnation === undefined);
   const tagged = nodes.filter((node) => node.incarnation !== undefined);
 
-  // Surface coverage: count nodes whose `under` is each declared surface.
+  // Surface coverage: count nodes whose parent is each declared surface.
   const placement = new Map<string, number>();
   for (const node of nodes) {
-    const under = node.under ?? GHOST_GRAPH_ROOT_ID;
-    placement.set(under, (placement.get(under) ?? 0) + 1);
+    const parent = node.parent ?? GHOST_GRAPH_ROOT_ID;
+    placement.set(parent, (placement.get(parent) ?? 0) + 1);
   }
-  const surfaceIds = (input.surfaceIds ?? []).filter(
-    (id) => id !== GHOST_GRAPH_ROOT_ID,
+  // Surfaces are the tree's interior positions: any id that is a parent of at
+  // least one node (a directory), excluding the implicit root.
+  const surfaceIds = [...graph.parents.values()].filter(
+    (id, index, all) => id !== GHOST_GRAPH_ROOT_ID && all.indexOf(id) === index,
   );
   const surfaces: ScanSurfaceCoverage[] = surfaceIds
     .map((id) => ({ id, node_count: placement.get(id) ?? 0 }))
@@ -88,7 +91,7 @@ export function summarizeFingerprintContribution(input: {
           ? [`Add nodes for sparse surfaces: ${sparse.join(", ")}.`]
           : ["Package contributes nodes across its declared surfaces."]
         : [
-            "Package is valid but has no nodes yet. Add nodes/*.md to contribute.",
+            "Package is valid but has no nodes yet. Add an index.md or <surface>/<node>.md to contribute.",
           ],
   };
 }

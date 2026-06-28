@@ -37,6 +37,7 @@ export {
   type GraphSliceNode,
   type GraphSliceProvenance,
   lintGraph,
+  type PlacedNode,
   type ResolveGraphSliceOptions,
   resolveGraphSlice,
 } from "./graph/index.js";
@@ -75,16 +76,3 @@ export type {
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
-// --- Surfaces (ghost.surfaces/v1) — the optional terse spine file ---
-export {
-  GHOST_SURFACE_ROOT_ID,
-  GHOST_SURFACES_SCHEMA,
-  GHOST_SURFACES_YML_FILENAME,
-  type GhostSurface,
-  type GhostSurfacesDocument,
-  type GhostSurfacesLintIssue,
-  type GhostSurfacesLintReport,
-  type GhostSurfacesLintSeverity,
-  GhostSurfacesSchema,
-  lintGhostSurfaces,
-} from "./surfaces/index.js";

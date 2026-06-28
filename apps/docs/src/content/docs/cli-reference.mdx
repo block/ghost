@@ -17,14 +17,15 @@ and emit advisory review packets. Your agent does the interpretation.
 complete command index, and `ghost <command> --help` shows flags for one
 command.
 
-The canonical fingerprint is a flat `.ghost/` package:
+The canonical fingerprint is a `.ghost/` directory tree of prose nodes:
 
 ```text
 .ghost/
-  manifest.yml      # schema + id
-  surfaces.yml      # the spine: surfaces and their parent (core is implicit)
-  nodes/*.md        # prose nodes — the design expression
-  checks/*.md       # optional rules an agent evaluates
+  manifest.yml          # schema + id
+  index.md              # the core node — true everywhere (optional)
+  <surface>/index.md    # a surface's own prose (the directory is the surface)
+  <surface>/<node>.md   # a prose node placed in that surface
+  checks/*.md           # optional ghost.check/v1 checks
 ```
 
 The command tables below are generated from the CLI source. Run
@@ -36,11 +37,11 @@ The command tables below are generated from the CLI source. Run
 
 ### Initialize — `init`
 
-Scaffold a `.ghost/` package: a manifest, an empty surfaces spine (the `core`
-root needs no declaration), and one seed node placed at `core`. Use
-`--template <name>` to pick a starter, `--package <dir>` for an exact directory,
-or set `GHOST_PACKAGE_DIR` when a host wrapper stores Ghost files outside the
-default `.ghost`.
+Scaffold a `.ghost/` package: a manifest and a core `index.md` node. Add
+surfaces by adding directories (`checkout/index.md` is the `checkout` surface).
+Use `--template <name>` to pick a starter, `--package <dir>` for an exact
+directory, or set `GHOST_PACKAGE_DIR` when a host wrapper stores Ghost files
+outside the default `.ghost`.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
@@ -81,15 +82,15 @@ ghost signals .
 
 ### Validation — `validate`
 
-Validate the package: artifact shape plus the node graph — every `under` and
-`relates` link resolves, there is exactly one root, and the graph is acyclic.
-Defaults to `.ghost`; pass a file to validate a single artifact.
+Validate the package: artifact shape plus the node graph — every `relates` link
+resolves, there is exactly one root, and the graph is acyclic. Defaults to
+`.ghost`; pass a file to validate a single node.
 
 <CliHelp tool="ghost" command="validate" hideDescription />
 
 ```bash
 ghost validate
-ghost validate .ghost/nodes/checkout-trust.md
+ghost validate .ghost/checkout/trust.md
 ghost validate --format json
 ```
 
@@ -101,8 +102,9 @@ ghost validate --format json
 
 With no argument, list every node by id and description so an agent can match a
 task to one. With a surface, compose its context slice: the surface's own nodes,
-the ancestors it inherits via `under`, and one-hop `relates` edges. Use `--as`
-to filter to a single incarnation; untagged essence nodes always pass.
+the ancestors it inherits from its parent directories, and one-hop `relates`
+edges. Use `--as` to filter to a single incarnation; untagged essence nodes
+always pass.
 
 <CliHelp tool="ghost" command="gather" hideDescription />
 

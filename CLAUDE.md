@@ -35,33 +35,39 @@ another host agent reads, decides, and writes. Ghost is the deterministic
 calculator the agent reaches for: schema and graph validation, repo-signal
 helpers, context composition, check routing, and advisory review packets.
 
-The canonical root `.ghost/` package is a flat folder:
+The canonical root `.ghost/` package is a directory tree of prose nodes:
 
 ```text
-manifest.yml      # schema + id
-surfaces.yml      # the spine: surfaces and their parent (core is implicit)
-nodes/*.md        # prose nodes — the design expression
-checks/*.md       # optional ghost.check/v1 checks
+manifest.yml          # schema + id
+index.md              # the core node — true everywhere (optional)
+<surface>/index.md    # a surface's own prose (the directory is the surface)
+<surface>/<node>.md   # a prose node placed in that surface
+checks/*.md           # optional ghost.check/v1 checks
 ```
 
-The fingerprint is a **graph of nodes**. A node is one markdown file:
-frontmatter handles (`id`, `description`, `under`, `relates`, `incarnation`)
-plus a prose body. The body is written through three authoring lenses — they
-guide what to capture, they are not fields or node types:
+The **directory tree is the graph**. A node is a markdown file: descriptive
+frontmatter (`description`, `relates`, `incarnation`) plus a prose body. A
+node's identity is its path (`marketing/email.md` → `marketing/email`) and its
+parent is its containing directory — a surface is just a directory, and a
+directory's own prose lives in its `index.md`. The package-root `index.md` is
+the implicit `core` node. The body is written through three authoring lenses
+(they guide what to capture, they are not fields):
 
 - **intent** — the why and the stance.
 - **inventory** — the materials, and pointers to code the agent can inspect.
 - **composition** — the patterns that make the surface feel intentional.
 
-`under` cascades a node downward (`core` is the implicit root and reaches every
-surface). `relates` links nodes laterally. `description` is the retrieval
-payload. `checks/*.md` validate output, routed by surface; they are not
-generation input. Surfaces are declared in `surfaces.yml`, never inferred from
-filenames. Ordinary Git review is the approval boundary for fingerprint edits.
+`description` is the retrieval payload; `relates` links nodes laterally;
+`incarnation` tags a medium-bound expression. Reserved at the package root:
+`manifest.yml` and the `checks/` subtree; every other `*.md` is a node. Moving a
+node is a rename. `checks/*.md` validate output, routed by surface; they are not
+generation input. Ordinary Git review is the approval boundary for fingerprint
+edits.
 
 A package may `extend` another by identity (the shared-brand pattern): the
 manifest's `extends` maps a package id to where it lives, and nodes reference
-inherited context by identity (`under: brand:core`), never by path.
+inherited context by identity (`relates: [{ to: brand:core/trust }]`), never by
+path.
 
 ## Packages
 
@@ -79,7 +85,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` — manifest, surfaces spine, and a seed node. |
+| `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost gather` | List nodes by id + description, or compose a surface's context slice (own + inherited + edges). |
@@ -137,10 +143,10 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
 
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
-- The canonical on-disk form is a flat `.ghost/` package: `manifest.yml`,
-  `surfaces.yml`, `nodes/*.md`, and optional `checks/*.md`.
-- The graph is the only model. Surfaces are the only locality; they are
-  declared in `surfaces.yml`, never inferred from paths or filenames.
+- The canonical on-disk form is a `.ghost/` directory tree: `manifest.yml` plus
+  prose nodes (`index.md` and `<surface>/<node>.md`) and optional `checks/*.md`.
+  The directory layout is the graph — ids and parents come from paths, never a
+  spine file.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated

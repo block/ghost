@@ -1,13 +1,14 @@
 /**
  * Public surface for the in-memory fingerprint graph — the only fingerprint
- * model. The graph is folded from authored node files + the surface tree, and
- * is what every consumer traverses (gather, checks, validate).
+ * model. The graph is folded from the package's directory tree of prose nodes,
+ * and is what every consumer traverses (gather, checks, validate).
  */
 
 export {
   type AssembleGraphInput,
   ancestorChain,
   assembleGraph,
+  type PlacedNode,
 } from "./assemble.js";
 export {
   type GraphLintIssue,
