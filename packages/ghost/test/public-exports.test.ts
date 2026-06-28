@@ -10,10 +10,9 @@ const hasBuiltExports = existsSync(
 
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
-    const [fingerprint, scan, compareApi] = await Promise.all([
+    const [fingerprint, scan] = await Promise.all([
       import("@anarchitecture/ghost/fingerprint"),
       import("@anarchitecture/ghost/scan"),
-      import("@anarchitecture/ghost/compare"),
     ]);
 
     const fingerprintApi = fingerprint as Record<string, unknown>;
@@ -22,7 +21,8 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
     expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
     expect(fingerprintApi.verifyFingerprintPackage).toBeTypeOf("function");
-    expect(fingerprintApi.loadFingerprint).toBeTypeOf("function");
+    // Direct fingerprint.md loading was removed with compare/drift/fleet.
+    expect(fingerprintApi.loadFingerprint).toBeUndefined();
     expect(fingerprintApi.writePackageContextBundle).toBeUndefined();
     expect(fingerprintApi.writeContextBundle).toBeUndefined();
 
@@ -32,9 +32,5 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(scanApi.initFingerprintPackage).toBeUndefined();
     expect(scanApi.lintFingerprintPackage).toBeUndefined();
     expect(scanApi.writePackageContextBundle).toBeUndefined();
-
-    expect(compareApi.compare).toBeTypeOf("function");
-    expect(compareApi.compareFingerprints).toBeTypeOf("function");
-    expect(compareApi.formatComparison).toBeTypeOf("function");
   });
 });

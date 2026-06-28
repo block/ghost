@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { isAbsolute, join, resolve } from "node:path";
+import { access } from "node:fs/promises";
+import { isAbsolute, resolve } from "node:path";
 import type {
   GhostFingerprintDocument,
   GhostFingerprintEvidence,
@@ -10,10 +10,24 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
-import type {
-  VerifyFingerprintIssue,
-  VerifyFingerprintReport,
-} from "./verify-fingerprint.js";
+
+export type VerifyFingerprintSeverity = "error" | "warning" | "info";
+
+export interface VerifyFingerprintIssue {
+  severity: VerifyFingerprintSeverity;
+  rule: string;
+  message: string;
+  path?: string;
+  expected?: unknown;
+  actual?: unknown;
+}
+
+export interface VerifyFingerprintReport {
+  issues: VerifyFingerprintIssue[];
+  errors: number;
+  warnings: number;
+  info: number;
+}
 
 export interface VerifyFingerprintPackageOptions {
   root?: string;
@@ -171,4 +185,31 @@ function finalize(issues: VerifyFingerprintIssue[]): VerifyFingerprintReport {
     warnings: issues.filter((issue) => issue.severity === "warning").length,
     info: issues.filter((issue) => issue.severity === "info").length,
   };
+}
+
+export function formatVerifyFingerprintReport(
+  report: VerifyFingerprintReport,
+): string {
+  const lines: string[] = [];
+  for (const issue of report.issues) {
+    const prefix =
+      issue.severity === "error"
+        ? "ERROR"
+        : issue.severity === "warning"
+          ? "WARN "
+          : "INFO ";
+    const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
+    const countSuffix =
+      issue.expected !== undefined || issue.actual !== undefined
+        ? ` (expected ${String(issue.expected)}, actual ${String(issue.actual)})`
+        : "";
+    lines.push(
+      `${prefix} [${issue.rule}] ${issue.message}${pathSuffix}${countSuffix}`,
+    );
+  }
+  lines.push(
+    "",
+    `${report.errors} error(s), ${report.warnings} warning(s), ${report.info} info`,
+  );
+  return `${lines.join("\n")}\n`;
 }

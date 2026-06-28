@@ -52,14 +52,6 @@
       "import": "./dist/fingerprint.js"
     },
 
-    "./compare": {
-      "types": "./dist/compare.d.ts",
-      "import": "./dist/compare.js"
-    },
-    "./drift": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
-    },
     "./scan": {
       "types": "./dist/scan/index.d.ts",
       "import": "./dist/scan/index.js"

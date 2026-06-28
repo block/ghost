@@ -18,32 +18,6 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
-// --- Decision vocabulary (controlled list for fleet aggregation) ---
-export {
-  CANONICAL_DECISION_DIMENSIONS,
-  type CanonicalDecisionDimension,
-  closestCanonical,
-  isCanonicalDimension,
-  resolveDecisionKind,
-} from "./decision-vocabulary.js";
-export type { CompareOptions, RoleCandidate } from "./embedding/index.js";
-export {
-  classifyContrast,
-  classifySaturation,
-  colorToSemanticColor,
-  compareFingerprints,
-  computeDriftVectors,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  contrastScore,
-  DIMENSION_RANGES,
-  describeFingerprint,
-  embeddingDistance,
-  embedTexts,
-  inferSemanticRole,
-  parseColorToOklch,
-  saturationScore,
-} from "./embedding/index.js";
 // --- Fingerprint.yml (ghost.fingerprint/v1) ---
 export type {
   GhostFingerprintComposition,
@@ -162,20 +136,6 @@ export {
   GhostSurfaceTypePatternSchema,
   lintGhostPatterns,
 } from "./patterns/index.js";
-// --- Perceptual prior (drift severity calibration) ---
-export {
-  computeCheckSeverity,
-  DEFAULT_MATCH,
-  DEFAULT_TOLERANCE,
-  escalateForPresence,
-  escalateTier,
-  PERCEPTUAL_TIER,
-  type PerceptualTier,
-  resolveMatchShape,
-  resolveTolerance,
-  TIER_SEVERITY,
-  tierForCanonical,
-} from "./perceptual-prior.js";
 // --- Resources (ghost.resources/v1) ---
 export type {
   GhostResourceRef,
@@ -310,63 +270,3 @@ export {
   ValueSpecSchema,
   valueRowId,
 } from "./survey/index.js";
-// --- Target resolution ---
-export { resolveTarget } from "./target-resolver.js";
-
-// --- Shared types ---
-export type {
-  Check,
-  CheckKind,
-  CheckMatchShape,
-  ColorRamp,
-  ComponentMeta,
-  CompositeCluster,
-  CompositeComparison,
-  CompositeMember,
-  CompositePair,
-  CSSToken,
-  CSSVarsMap,
-  DesignDecision,
-  DesignObservation,
-  DetectedFormat,
-  DimensionAck,
-  DimensionDelta,
-  DimensionStance,
-  DivergenceClass,
-  DriftSeverity,
-  DriftVector,
-  DriftVelocity,
-  EmbeddingConfig,
-  EnrichedComparison,
-  EnrichedFingerprint,
-  ExtractedFile,
-  ExtractedMaterial,
-  Extractor,
-  ExtractorOptions,
-  Fingerprint,
-  FingerprintComparison,
-  FingerprintHistoryEntry,
-  FingerprintReferences,
-  FontDescriptor,
-  GhostConfig,
-  NormalizedToken,
-  Registry,
-  RegistryFile,
-  RegistryItem,
-  RegistryItemType,
-  ResolvedRegistry,
-  RuleSeverity,
-  SampledFile,
-  SampledMaterial,
-  SemanticColor,
-  SourceInfo,
-  StructureDrift,
-  SyncManifest,
-  Target,
-  TargetOptions,
-  TargetType,
-  TemporalComparison,
-  TokenCategory,
-  TokenFormat,
-  ValueDrift,
-} from "./types.js";
