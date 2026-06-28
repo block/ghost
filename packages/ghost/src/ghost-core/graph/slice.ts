@@ -101,13 +101,13 @@ export function resolveGraphSlice(
   // *is* a surface in the cascade are themselves placed there. We resolve
   // placement as: a node belongs to surface S if its containment parent chain
   // reaches S directly (its `under` is S), or the node id equals S.
-  const placementOf = (nodeId: string, nodeUnder?: string): string =>
+  const placementOf = (nodeUnder?: string): string =>
     nodeUnder ?? GHOST_GRAPH_ROOT_ID;
 
   // Own + ancestor: walk every node, place it, decide provenance by cascade.
   for (const node of graph.nodes.values()) {
     const placement =
-      node.id === surfaceId ? surfaceId : placementOf(node.id, node.under);
+      node.id === surfaceId ? surfaceId : placementOf(node.under);
     if (placement === surfaceId || node.id === surfaceId) {
       add(node.id, { kind: "own" });
     } else if (cascadeIds.has(placement)) {

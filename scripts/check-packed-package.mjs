@@ -18,9 +18,7 @@ const PUBLIC_IMPORTS = [
   "@anarchitecture/ghost/cli",
   "@anarchitecture/ghost/fingerprint",
   "@anarchitecture/ghost/scan",
-  "@anarchitecture/ghost/compare",
   "@anarchitecture/ghost/core",
-  "@anarchitecture/ghost/drift",
 ];
 
 function fail(message) {

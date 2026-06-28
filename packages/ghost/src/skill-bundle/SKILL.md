@@ -1,6 +1,6 @@
 ---
 name: ghost
-description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product-surface fingerprint, update .ghost, brief work from surface-composition context, review drift, verify generated UI, or compare fingerprint packages.
+description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product-surface fingerprint, update .ghost, brief work from surface-composition context, review changes, or verify generated UI.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
@@ -75,8 +75,6 @@ and map severities into their own review or check format.
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
 | `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the surface model. |
-| `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
-| `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 
 ## Workflows
 
@@ -87,10 +85,9 @@ and map severities into their own review or check format.
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
-- Review drift: follow [references/review.md](references/review.md).
+- Review changes: follow [references/review.md](references/review.md).
 - Verify generation: follow [references/verify.md](references/verify.md).
-- Remediate drift: follow [references/remediate.md](references/remediate.md).
-- Advanced compare bundles: follow [references/compare.md](references/compare.md).
+- Remediate findings: follow [references/remediate.md](references/remediate.md).
 
 When the user asks to set up a fingerprint with `auto-draft`, treat that as an
 agent authoring mode, not a Ghost CLI command. Follow the auto-draft branch in

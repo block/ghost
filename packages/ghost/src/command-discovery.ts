@@ -5,11 +5,7 @@ type HelpSection = {
   body: string;
 };
 
-export type CommandDiscoveryGroup =
-  | "core"
-  | "advanced"
-  | "compare"
-  | "maintenance";
+export type CommandDiscoveryGroup = "core" | "advanced" | "maintenance";
 
 export type CommandDiscoveryMetadata = {
   name: string;
@@ -26,7 +22,6 @@ const GROUPS: ReadonlyArray<{
 }> = [
   { group: "core", title: "Core workflow" },
   { group: "advanced", title: "Advanced/package inspection" },
-  { group: "compare", title: "Compare/stance" },
   { group: "maintenance", title: "Maintenance/legacy" },
 ];
 
@@ -107,41 +102,6 @@ const COMMAND_DISCOVERY = [
     defaultHelp: false,
     compactName: "signals",
     summary: "Emit raw repo signals for fingerprint authoring.",
-  },
-  {
-    name: "compare",
-    group: "compare",
-    defaultHelp: false,
-    compactName: "compare",
-    summary: "Compare fingerprint packages.",
-  },
-  {
-    name: "drift",
-    group: "compare",
-    defaultHelp: false,
-    compactName: "drift check",
-    summary: "Run the continuous design-loop drift check.",
-  },
-  {
-    name: "ack",
-    group: "compare",
-    defaultHelp: false,
-    compactName: "ack",
-    summary: "Record stance toward tracked drift.",
-  },
-  {
-    name: "track",
-    group: "compare",
-    defaultHelp: false,
-    compactName: "track",
-    summary: "Shift the tracked reference fingerprint.",
-  },
-  {
-    name: "diverge",
-    group: "compare",
-    defaultHelp: false,
-    compactName: "diverge",
-    summary: "Declare intentional divergence on a dimension.",
   },
   {
     name: "migrate",

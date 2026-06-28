@@ -5,35 +5,20 @@ const DEFAULT_LIMIT = 500;
 
 // Add narrowly scoped exceptions here with justification
 const EXCEPTIONS = {
-  "packages/ghost/src/ghost-core/types.ts": {
-    limit: 780,
-    justification:
-      "Canonical type barrel — all shared types in one file for discoverability, including three-layer fingerprint types and role bindings",
-  },
   "packages/ghost/src/cli.ts": {
     limit: 580,
     justification:
-      "Unified CLI command registry — review/check/compare plus drift stance verbs live together for one public bin",
+      "Unified CLI command registry — all verbs live together for one public bin",
   },
   "packages/ghost/src/fingerprint-commands.ts": {
     limit: 1135,
     justification:
-      "Fingerprint package command registry — temporarily holds package lifecycle, legacy markdown, survey/cache, scan readiness, and adapter-neutral package-dir routing until command groups are split further",
+      "Fingerprint package command registry — temporarily holds package lifecycle, survey/cache, scan readiness, and adapter-neutral package-dir routing until command groups are split further",
   },
   "packages/ghost/src/scan/inventory.ts": {
     limit: 1120,
     justification:
       "Deterministic repository inventory collector — intentionally broad because map authoring depends on one cohesive raw signal pass",
-  },
-  "packages/ghost/src/scan/verify-fingerprint.ts": {
-    limit: 900,
-    justification:
-      "Fingerprint fidelity verifier — schema, reference, and survey evidence checks stay together so reports share one issue model",
-  },
-  "packages/ghost/src/ghost-core/embedding/compare.ts": {
-    limit: 600,
-    justification:
-      "Fingerprint comparison — cosine-based decision matching alongside existing value comparison",
   },
 };
 

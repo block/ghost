@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import type { CAC } from "cac";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { stringify as stringifyYaml } from "yaml";
 import type {
   GhostPatternsDocument,
   Survey,
@@ -9,9 +9,8 @@ import type {
 } from "#ghost-core";
 import {
   formatVerifyFingerprintReport,
-  type lintFingerprint,
+  type LintReport,
   lintFingerprintPackage,
-  loadFingerprint,
   resolveFingerprintPackage,
   verifyFingerprintPackage,
 } from "./fingerprint.js";
@@ -48,7 +47,7 @@ export function registerFingerprintCommands(cli: CAC): void {
           packagePath,
           process.cwd(),
         ).dir;
-        let report: ReturnType<typeof lintFingerprint>;
+        let report: LintReport;
         if (path === undefined || (await isDirectory(target))) {
           report = await lintFingerprintPackage(packagePath, process.cwd());
           writeLintReport(report, opts.format);
@@ -60,19 +59,6 @@ export function registerFingerprintCommands(cli: CAC): void {
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
         report = lintDetectedFileKind(kind, raw);
-
-        if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
-          try {
-            await loadFingerprint(fileTarget, { noEmbeddingBackfill: true });
-          } catch (err) {
-            report = appendLintError(
-              report,
-              "extends-resolution",
-              err instanceof Error ? err.message : String(err),
-              "extends",
-            );
-          }
-        }
 
         writeLintReport(report, opts.format);
 
@@ -242,10 +228,7 @@ function ghostDirFromEnv(): string {
   return resolveGhostDirDefault();
 }
 
-function writeLintReport(
-  report: ReturnType<typeof lintFingerprint>,
-  format: unknown,
-): void {
+function writeLintReport(report: LintReport, format: unknown): void {
   if (format === "json") {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     return;
@@ -274,39 +257,6 @@ async function isDirectory(path: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-function hasExtends(raw: string): boolean {
-  try {
-    const frontmatter = raw.match(/^---\n([\s\S]*?)\n---/)?.[1];
-    if (!frontmatter) return false;
-    const parsed = parseYaml(frontmatter);
-    return Boolean(
-      parsed &&
-        typeof parsed === "object" &&
-        typeof (parsed as Record<string, unknown>).extends === "string",
-    );
-  } catch {
-    return false;
-  }
-}
-
-function appendLintError(
-  report: ReturnType<typeof lintFingerprint>,
-  rule: string,
-  message: string,
-  path?: string,
-): ReturnType<typeof lintFingerprint> {
-  const issues = [
-    ...report.issues,
-    { severity: "error" as const, rule, message, ...(path ? { path } : {}) },
-  ];
-  return {
-    issues,
-    errors: report.errors + 1,
-    warnings: report.warnings,
-    info: report.info,
-  };
 }
 
 function _isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
