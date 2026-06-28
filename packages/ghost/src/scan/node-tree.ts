@@ -96,31 +96,44 @@ async function walk(
       continue;
     }
 
-    const { id, parent } = locate(relPath);
-    nodes.push({ id, ...(parent !== undefined ? { parent } : {}), doc: node });
+    const { id, parent, folder } = locate(relPath);
+    nodes.push({
+      id,
+      ...(parent !== undefined ? { parent } : {}),
+      folder,
+      doc: node,
+    });
   }
 }
 
 /**
- * Compute a node's id and parent from its package-relative file path.
- * - `index.md`            → id `core`, parent absent (the root node).
- * - `a/index.md`          → id `a`,    parent `core`.
- * - `a/b/index.md`        → id `a/b`,  parent `a`.
- * - `a.md`                → id `a`,    parent `core`.
- * - `a/b.md`              → id `a/b`,  parent `a`.
+ * Compute a node's id, parent, and file folder from its package-relative path.
+ * The folder is the directory the file sits in — the unit of corridor
+ * containment, which differs from `parent` for index nodes.
+ * - `index.md`            → id `core`, parent absent, folder ``.
+ * - `a/index.md`          → id `a`,    parent `core`, folder `a`.
+ * - `a/b/index.md`        → id `a/b`,  parent `a`,    folder `a/b`.
+ * - `a.md`                → id `a`,    parent `core`, folder ``.
+ * - `a/b.md`              → id `a/b`,  parent `a`,    folder `a`.
  */
-function locate(relPath: string): { id: string; parent?: string } {
+function locate(relPath: string): {
+  id: string;
+  parent?: string;
+  folder: string;
+} {
   const withoutExt = relPath.replace(/\.md$/, "");
   const segments = withoutExt.split("/");
   const isIndex = segments[segments.length - 1] === "index";
   const idSegments = isIndex ? segments.slice(0, -1) : segments;
+  // The file folder: drop the filename segment (`index` or the leaf name).
+  const folder = segments.slice(0, -1).join("/");
 
   if (idSegments.length === 0) {
-    // Root index.md → the core node.
-    return { id: "core" };
+    // Root index.md → the core node, folder is the package root ("").
+    return { id: "core", folder };
   }
   const id = idSegments.join("/");
   const parent =
     idSegments.length === 1 ? "core" : idSegments.slice(0, -1).join("/");
-  return { id, parent: parent === "core" ? "core" : parent };
+  return { id, parent: parent === "core" ? "core" : parent, folder };
 }

@@ -28,6 +28,16 @@ export interface GhostGraphNode {
   description?: string;
   /** The containing directory's id; absent ⇒ this node is the `core` root. */
   parent?: string;
+  /**
+   * The node's **file folder** — the directory the source file physically sits
+   * in, which is the unit of containment for corridor composition. This differs
+   * from `parent` for index nodes: `features/bitcoin/index.md` has folder
+   * `features/bitcoin` but parent `features`. A plain leaf shares its parent's
+   * value (`features/bitcoin/buy.md` → folder `features/bitcoin`). The root
+   * `core` node has folder `""`. Folders are walls: a node only cascades into
+   * surfaces whose folder chain includes this folder.
+   */
+  folder: string;
   relates: GhostNodeRelation[];
   incarnation?: string;
   body: string;

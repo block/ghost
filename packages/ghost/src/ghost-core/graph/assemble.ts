@@ -13,6 +13,12 @@ import {
 export interface PlacedNode {
   id: string;
   parent?: string;
+  /**
+   * The node's file folder — the directory its source file sits in. For an
+   * index node this is its own id (`a/b/index.md` → `a/b`); for a leaf it is
+   * the parent (`a/b.md` → `a`); for the root `index.md` it is `""`.
+   */
+  folder: string;
   doc: GhostNodeDocument;
 }
 
@@ -52,6 +58,7 @@ export function assembleGraph(input: AssembleGraphInput): GhostGraph {
       id,
       ...(fm.description !== undefined ? { description: fm.description } : {}),
       ...(placed.parent !== undefined ? { parent: placed.parent } : {}),
+      folder: placed.folder,
       relates: fm.relates ?? [],
       ...(fm.incarnation !== undefined ? { incarnation: fm.incarnation } : {}),
       body: placed.doc.body,
