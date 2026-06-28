@@ -3,26 +3,22 @@ import {
   GhostFingerprintPackageManifestSchema,
   lintGhostCheck,
   lintGhostNode,
-  lintGhostPatterns,
-  lintGhostResources,
   lintGhostSurfaces,
 } from "#ghost-core";
 import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
   | "fingerprint-manifest"
-  | "resources"
-  | "patterns"
   | "surfaces"
   | "check"
   | "node"
   | "unsupported";
 
 /**
- * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; YAML schemas and canonical package filenames route to
- * their artifact linters. Unknown YAML remains unsupported instead of being
- * guessed as `validate.yml`.
+ * Decide whether a file is a bundle artifact. Canonical filenames and YAML
+ * `schema:` markers route to their artifact linters; markdown under `nodes/`
+ * or `checks/` routes to the node / check linter. Unknown files remain
+ * unsupported instead of being guessed at.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
@@ -33,10 +29,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "manifest.yaml") {
     return "fingerprint-manifest";
   }
-  if (filename === "resources.yml") return "resources";
-  if (filename === "resources.yaml") return "resources";
-  if (filename === "patterns.yml") return "patterns";
-  if (filename === "patterns.yaml") return "patterns";
   if (filename === "surfaces.yml") return "surfaces";
   if (filename === "surfaces.yaml") return "surfaces";
   // A markdown check lives under a `checks/` directory. Detected by location so
@@ -51,8 +43,6 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
     return "fingerprint-manifest";
   }
-  if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
-  if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
   if (/^\s*schema:\s*ghost\.surfaces\/v1\b/m.test(raw)) return "surfaces";
   return "unsupported";
 }
@@ -63,17 +53,13 @@ export function lintDetectedFileKind(
 ): LintReport {
   return kind === "fingerprint-manifest"
     ? lintFingerprintManifestFile(raw)
-    : kind === "resources"
-      ? lintResourcesFile(raw)
-      : kind === "patterns"
-        ? lintPatternsFile(raw)
-        : kind === "surfaces"
-          ? lintSurfacesFile(raw)
-          : kind === "check"
-            ? lintGhostCheck(raw)
-            : kind === "node"
-              ? lintGhostNode(raw)
-              : lintUnsupportedFile();
+    : kind === "surfaces"
+      ? lintSurfacesFile(raw)
+      : kind === "check"
+        ? lintGhostCheck(raw)
+        : kind === "node"
+          ? lintGhostNode(raw)
+          : lintUnsupportedFile();
 }
 
 function lintFingerprintManifestFile(raw: string): LintReport {
@@ -112,22 +98,6 @@ function zodLintReport(result: {
   };
 }
 
-function lintResourcesFile(raw: string): LintReport {
-  try {
-    return lintGhostResources(parseYaml(raw));
-  } catch (err) {
-    return yamlErrorReport("resources-not-yaml", "resources file", err);
-  }
-}
-
-function lintPatternsFile(raw: string): LintReport {
-  try {
-    return lintGhostPatterns(parseYaml(raw));
-  } catch (err) {
-    return yamlErrorReport("patterns-not-yaml", "patterns file", err);
-  }
-}
-
 function lintSurfacesFile(raw: string): LintReport {
   try {
     return lintGhostSurfaces(parseYaml(raw));
@@ -143,7 +113,7 @@ function lintUnsupportedFile(): LintReport {
         severity: "error",
         rule: "unsupported-artifact",
         message:
-          "File is not a recognized Ghost artifact. Use manifest.yml, surfaces.yml, resources.yml, patterns.yml, a checks/*.md check, or a nodes/*.md node.",
+          "File is not a recognized Ghost artifact. Use manifest.yml, surfaces.yml, a checks/*.md check, or a nodes/*.md node.",
       },
     ],
     errors: 1,

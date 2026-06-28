@@ -4,7 +4,7 @@ description: Choose the right human-agent workflow for authoring Ghost fingerpri
 handoffs:
   - label: Inspect fingerprint contribution
     command: ghost scan --format json
-    prompt: Classify this repo's fingerprint authoring scenario and summarize absent facets.
+    prompt: Classify this repo's fingerprint authoring scenario and summarize node/surface contribution.
 ---
 
 # Recipe: Collaborative Fingerprint Authoring
@@ -17,12 +17,12 @@ stories, and UI libraries provide evidence. Agent synthesis is draft work until
 the human curates it and ordinary Git review accepts it.
 
 `auto-draft` is an optional skill mode for reducing blank-page cost. It scans
-first and writes starter facet edits, but those edits are still draft work
+first and writes starter node edits, but those edits are still draft work
 until the human curates them and Git review accepts them.
 
 ## 1. Classify The Scenario
 
-Choose the nearest scenario before writing fingerprint facets:
+Choose the nearest scenario before writing nodes:
 
 | Scenario | Default authoring posture |
 | --- | --- |
@@ -55,7 +55,7 @@ Ask only high-leverage questions that change the fingerprint:
 - Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
 - Are there surfaces where the same UI decision should be assessed differently?
 
-Use human-authored or human-approved answers in `intent.yml`. Do not treat
+Capture human-authored or human-approved answers as nodes. Do not treat
 unapproved notes as canonical.
 
 When auto-draft is requested, move the interview after the starter draft and
@@ -74,31 +74,25 @@ Optional signals:
 ghost signals .
 ```
 
-Treat signals as scratch evidence. They can support curated entries in
-`inventory.yml`, but it does not establish surface-composition guidance by
-itself.
+Treat signals as scratch evidence. They can support curated node bodies, but
+raw signals do not establish surface-composition guidance by themselves.
 
 In auto-draft mode, always gather signals before drafting, then inspect the
-high-signal files they point to. Signal facts may seed `inventory.yml`; scan
-frequency and raw signals do not establish surface-composition guidance.
+high-signal files they point to. Signal facts may seed a node's inventory
+content; scan frequency and raw signals do not establish guidance.
 
-## 4. Draft The Core Facets
+## 4. Draft The Nodes
 
-Write the smallest useful durable content:
+Write the smallest useful set of `nodes/*.md`, each a purpose-coherent prose
+body with a one-line `description`, placed with `under` and linked with
+`relates` where a relationship carries meaning. Write each body through the
+intent / inventory / composition lenses — the why, the material (with pointers
+to implementation), and how it is assembled. These are lenses, not fields.
 
-- `intent.yml`: product summary, audience, situations, principles, contracts,
-  anti-goals, and tradeoffs.
-- `inventory.yml`: building blocks, source links, and curated
-  exemplars the agent can inspect or use.
-- `composition.yml`: patterns, layouts, structures, flows, states, content,
-  behavior, and visual arrangements.
-
-Label uncertain reasoning in the working notes as provisional. Prefer a few
-high-confidence claims with evidence over a broad catalog.
-
-In auto-draft mode, write directly to the facet files rather than a
-separate proposal artifact. Keep entries sparse, cite concrete files or
-exemplars where possible, and leave ambiguous product meaning for curation.
+Label uncertain reasoning as provisional. Prefer a few high-confidence nodes
+with evidence over a broad catalog. In auto-draft mode, write nodes directly
+(sparse, citing concrete files where possible) and leave ambiguous product
+meaning for curation.
 
 ## 5. Curate With The Human
 
@@ -113,7 +107,7 @@ important claims:
 - convert into a deterministic check
 
 Only add checks when the rule can be enforced deterministically. Subjective
-composition critique belongs in `composition.yml` or advisory review, not in a
+composition critique belongs in a node body or advisory review, not in a
 blocking gate.
 
 ## 6. Decide Surfaces
@@ -135,7 +129,7 @@ Place local obligations on the surface that owns them.
 
 ## 7. Validate And Ratify
 
-Validate before calling facets useful:
+Validate before calling the fingerprint useful:
 
 ```bash
 ghost validate .ghost
@@ -143,12 +137,11 @@ ghost check --base HEAD
 ```
 
 Use ordinary Git review as the approval boundary. Uncommitted or unmerged
-fingerprint edits are drafts; checked-in Ghost package facet files are the
-canonical package.
+fingerprint edits are drafts; checked-in nodes are the canonical package.
 
 ## Never
 
-- Never copy raw inventory into canonical facets without curation.
+- Never copy raw signals into canonical nodes without curation.
 - Never claim scan frequency is product authority.
 - Never create surfaces just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.

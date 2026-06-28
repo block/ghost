@@ -1,21 +1,23 @@
 ---
 name: recall
-description: Recall applicable Ghost fingerprint facets for a task or file path.
+description: Recall the applicable Ghost fingerprint nodes for a task.
 ---
 
 # Recipe: Recall Ghost Fingerprint
 
-1. Read checked-in `intent.yml`, `inventory.yml`, and `composition.yml` entries.
-2. Select relevant intent, inventory exemplars, composition patterns, and active
-   checks.
-3. Summarize only fingerprint refs that apply to the task.
+1. Run `ghost gather` (no argument) to list nodes by id + description.
+2. Match the task to one or more nodes by their descriptions; name the node.
+3. Run `ghost gather <node>` to compose its slice (own body + inherited
+   ancestors + one-hop `relates`), filtered by `--as <incarnation>` when the
+   work targets a specific medium.
 
 Return:
 
-- Applicable fingerprint refs and short claims.
-- Inventory exemplars to inspect when generation or review needs a concrete anchor.
+- The gathered nodes and their short claims (cite by node id).
+- Related nodes worth inspecting as concrete anchors.
 - Active checks that may affect the work.
 - Any gaps where local evidence must carry the reasoning.
 
-If the fingerprint is silent, say that plainly and continue with provisional
-local reasoning when safe. Fingerprint edits are ordinary Git-reviewed edits.
+If the fingerprint is silent on the task, say that plainly and continue with
+provisional local reasoning when safe. Fingerprint edits are ordinary
+Git-reviewed edits.

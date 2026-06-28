@@ -1,6 +1,6 @@
 ---
 name: critique
-description: Critique generated or changed UI using Ghost fingerprint facets.
+description: Critique generated or changed UI using Ghost fingerprint nodes.
 ---
 
 # Recipe: Critique Generated Work
@@ -12,11 +12,11 @@ description: Critique generated or changed UI using Ghost fingerprint facets.
 5. Lead with actionable findings. Cite diff locations, fingerprint refs,
    inventory exemplars, active checks, selected-context gaps, and repairs where relevant.
 
-When fingerprint facets are silent, you may use nearby product surfaces, local
+When fingerprint nodes are silent, you may use nearby product surfaces, local
 components, token and copy conventions. Label that reasoning as provisional and
 non-Ghost-backed.
 
 Do not make advisory taste critique sound blocking unless an active check backs
-it. If fingerprint grounding or facet coverage is missing or contradictory,
+it. If fingerprint grounding or node coverage is missing or contradictory,
 name that as `missing-fingerprint` or `experience-gap`; edit the Ghost package
 only when the user asks you to.
