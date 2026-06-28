@@ -78,7 +78,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Tools"
         title="Tool Directory"
-        description="Pick the workflow you need: set up fingerprint facets, review drift, compare projects, or inspect the reference UI system."
+        description="Pick the workflow you need: author the fingerprint, gather context, review changes, or inspect the reference UI system."
       />
 
       <ToolStrip />

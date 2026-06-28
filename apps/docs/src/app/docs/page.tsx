@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { BookOpen, Rocket } from "lucide-react";
+import { BookOpen, FileText, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -21,10 +21,17 @@ const sections: {
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
+    name: "Fingerprint Authoring",
+    href: "/docs/fingerprint-authoring",
+    description:
+      "Co-author nodes through the intent, inventory, and composition lenses, and place them for inheritance.",
+    icon: <FileText className="size-8" strokeWidth={1.5} />,
+  },
+  {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Commands for checks and comparison, plus the skill recipes your agent runs.",
+      "Every command around the node-graph fingerprint: init, validate, gather, checks, and review.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];

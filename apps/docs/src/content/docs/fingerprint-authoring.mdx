@@ -1,6 +1,6 @@
 ---
 title: Fingerprint Authoring
-description: Co-author Ghost fingerprints with human intent, repo evidence, agent synthesis, and Git review.
+description: Co-author a Ghost fingerprint as a graph of prose nodes — human intent, repo evidence, agent synthesis, and Git review.
 kicker: Docs
 section: guide
 order: 20
@@ -10,32 +10,65 @@ slug: fingerprint-authoring
 <DocSection title="The Authoring Model">
 
 A Ghost fingerprint is not a scan dump. It is durable product-surface
-composition that a human and agent shape together.
+composition that a human and agent shape together, stored as a graph of prose
+**nodes**.
 
-The human names the intent: what the product surface should feel like, who it
-serves, which situations matter, and what should not drift. Repo scans provide
-evidence: components, routes, docs, stories, copy, screenshots, tokens,
-examples, and UI library references. The agent synthesizes drafts, but ordinary
-Git review is where fingerprint edits become canonical.
+The human names the intent: what the surface should feel like, who it serves,
+which situations matter, and what should not drift. Repo scans provide evidence:
+components, routes, docs, stories, copy, tokens, and library references. The
+agent synthesizes drafts. Ordinary Git review is where node edits become
+canonical.
+
+</DocSection>
+
+<DocSection title="The Node Shape">
+
+Each node is one markdown file in `nodes/`. Frontmatter carries the machine
+handles; the body carries the design expression, written through the intent /
+inventory / composition lenses.
+
+```markdown
+---
+id: checkout-trust
+description: Trust at the payment moment.
+under: checkout
+relates:
+  - to: core-trust
+    as: reinforces
+---
+
+Near the moment of payment, reduce felt risk. Proximity of reassurance to the
+action beats completeness…
+```
+
+| Handle | Role |
+| --- | --- |
+| `id` | Unique, stable identifier. How the node is referenced. |
+| `description` | The retrieval payload — a one-line "what this is / when to gather it." Write one on any node worth anchoring a task at. |
+| `under` | Places the node so it is inherited downward. `core` is the implicit root and reaches every surface. |
+| `relates` | Lateral links carrying rationale (`reinforces`, `contrasts`, `variant`). |
+| `incarnation` | Tags a medium-bound expression (`email`, `voice`, …). Essence is untagged. |
+
+Free-form keys (`audience`, `stage`, …) are allowed and pass through untouched.
+Surfaces themselves are declared in `surfaces.yml`, never inferred from paths.
 
 </DocSection>
 
 <DocSection title="Scenario Matrix">
 
-Start by classifying the authoring scenario. The scenario determines how much
-weight to give human intent, existing code, and library evidence.
+Classify the authoring scenario first. It determines how much weight to give
+human intent, existing code, and library evidence.
 
 | Scenario | Authoring posture |
 | --- | --- |
 | Net new repo | Human-led. Capture intent, audience, posture, and early anti-goals before inventory grows. |
 | Net new repo + UI library | Human-led with library evidence. Explain how this product uses the library. |
 | Existing repo | Human + scan. Find repeated patterns and exemplars, then ask which ones are canonical. |
-| Existing repo with mixed quality | Curated scan. Separate durable surface composition from legacy debt and accidental repetition. |
-| Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
-| Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
+| Existing repo, mixed quality | Curated scan. Separate durable composition from legacy debt and accidental repetition. |
+| Design system or UI library | Grammar-led. Describe primitives, tokens, behavior, accessibility, and composition constraints. |
+| Rebrand, redesign, migration | Human-led transition. Capture current, target, and migration cautions. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
-| Fork, white label, or tenant variant | Shared base + local divergence. Keep common surface composition broad and local differences scoped. |
-| Monorepo or nested surfaces | Stack-aware. Use root guidance for broad composition and nested packages for surfaces assessed differently. |
+| Fork, white label, tenant variant | Shared base + local divergence. Keep common composition at `core`, scope differences to surface nodes. |
 
 </DocSection>
 
@@ -43,109 +76,86 @@ weight to give human intent, existing code, and library evidence.
 
 Ghost supports two agent authoring modes:
 
-- **Default** - interview first, scan as needed, draft facet edits, then
-  curate.
-- **Auto-draft** - scan first, draft a small starter fingerprint, then curate
+- **Default** — interview first, scan as needed, draft nodes, then curate.
+- **Auto-draft** — scan first, draft a small starter fingerprint, then curate
   the claims with a human.
 
-Auto-draft is a skill workflow, not a Ghost CLI command. Ask for it in plain
-English:
+Auto-draft is a skill workflow, not a CLI command. Ask for it in plain English:
 
 ```text
 Set up the Ghost fingerprint for this repo with auto-draft.
 ```
 
-1. **Interview** - ask what the product should feel like, who it serves, which
+1. **Interview** — ask what the product should feel like, who it serves, which
    surfaces show it at its best, and which existing patterns are accidental or
-   legacy. In auto-draft mode, use this step after the starter draft to curate
-   claims.
-2. **Scan** - inspect routes, components, stories, tests, docs, screenshots,
-   copy, tokens, assets, and UI library references.
-3. **Draft** - write the smallest useful `intent.yml`, `inventory.yml`, and
-   `composition.yml` entries.
-4. **Curate** - have the human keep, soften, reject, scope, or record important
-   claims before treating them as durable surface context.
-5. **Validate** - run Ghost validation and use Git review as the approval
+   legacy.
+2. **Scan** — inspect routes, components, stories, tests, docs, copy, tokens,
+   and library references. Use `ghost signals` for raw observations.
+3. **Draft** — write the smallest useful nodes. Place durable, cross-surface
+   guidance at `core`; place surface-specific obligations `under` that surface.
+4. **Curate** — have the human keep, soften, reject, or scope each claim before
+   it is treated as durable context.
+5. **Validate** — run `ghost validate` and use Git review as the approval
    boundary.
 
 ```bash
-ghost scan --format json
 ghost signals .
-ghost lint .ghost
-ghost verify .ghost --root .
+ghost scan
+ghost validate
 ```
 
-Raw repo signals are source evidence only. They can support curated inventory,
-but they do not establish surface-composition guidance by themselves. Signal
-frequency may seed a draft, but it does not decide what the surface should do.
+Raw repo signals are source evidence only. Signal frequency may seed a draft,
+but it does not decide what the surface should do.
 
 </DocSection>
 
-<DocSection title="Facet Responsibilities">
+<DocSection title="Place Nodes For Inheritance">
 
-Keep each claim in the file that will make it useful later:
+The graph is the model. Decide where each claim lives by how far it should
+reach.
 
-| Facet | What belongs there |
-| --- | --- |
-| `intent.yml` | Audience, goals, anti-goals, situations, principles, and experience contracts. |
-| `inventory.yml` | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
-| `composition.yml` | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
-| `validate.yml` | Deterministic gates that can be checked from a diff. |
+- Put the brand soul — voice, trust posture, broad product intent — at `core`.
+  It cascades to every surface.
+- Put surface-specific obligations `under` the surface that owns them
+  (`under: checkout`).
+- Link nodes laterally with `relates` only when the relationship carries
+  rationale a future agent needs.
+
+```bash
+ghost gather              # list nodes by id + description
+ghost gather checkout     # compose checkout's slice (own + inherited + edges)
+```
+
+`ghost gather <surface>` is the test: if the composed slice reads like coherent
+guidance for that surface, the placement is right.
 
 </DocSection>
 
-<DocSection title="Authoring For Steering">
+<DocSection title="Author For Steering">
 
-A useful fingerprint should help future agents choose, restrain, route, anchor,
-and review. It should not only describe what exists or collect every available
-style detail.
+A useful node helps a future agent choose, restrain, and review — not just
+describe what exists. Write the body so generation decisions become explicit:
 
-Write facet content so generation decisions become explicit:
-
-- `goals` name what generated work should preserve.
-- `anti_goals` block plausible defaults that would make the surface feel
-  generic or wrong.
-- `tradeoffs` say which value wins when choices conflict.
-- `situations` route guidance by task, surface type, state, or audience need.
-- `principles` capture broad product intent.
-- `experience_contracts` turn taste, trust, recovery, or disclosure into
-  obligations.
-- `composition.patterns` give repeatable layout, flow, state, content,
-  behavior, or visual rules.
-- `inventory.exemplars` anchor the guidance in concrete material an agent can
-  inspect.
+- Name what generated work should preserve.
+- Block the plausible defaults that would make the surface feel generic.
+- Say which value wins when choices conflict.
+- Anchor the guidance in concrete material an agent can inspect.
 
 Write less like a brand book and more like a decision engine.
 
 </DocSection>
 
-<DocSection title="Nested Packages">
+<DocSection title="Checks And Ratification">
 
-Nested fingerprints are opt-in. Create a local `.ghost/` only when a surface
-should be assessed differently from the root product fingerprint.
+Uncommitted or unmerged node edits are drafts. Checked-in nodes are canonical.
 
-Use a nested package when a surface has distinct users, information density,
-trust or recovery posture, interaction rhythm, component grammar, UI library
-usage, or review criteria for the same UI decision.
-
-Keep broad product-family guidance at the root. Put local obligations in the
-nearest package that owns the surface.
+Add `ghost.check/v1` markdown checks in `checks/*.md` sparingly, and only when a
+rule can be enforced from a diff. Checks are routed by surface and validate
+output — they are never generation input.
 
 ```bash
-ghost init --scope apps/checkout
-ghost stack apps/checkout
-ghost lint --all
-ghost verify --all
+ghost checks --surface checkout
+ghost review --surface checkout --base main
 ```
-
-</DocSection>
-
-<DocSection title="Ratification">
-
-Uncommitted or unmerged fingerprint edits are drafts. Checked-in
-Ghost package facet files are canonical.
-
-Add deterministic checks sparingly, and only when a rule can be enforced
-deterministically.
 
 </DocSection>
