@@ -66,10 +66,6 @@ try {
     "dist/bin.js",
     "dist/cli.js",
     "node_modules/cac",
-    "node_modules/fdir",
-    "node_modules/jiti",
-    "node_modules/picomatch",
-    "node_modules/tinyglobby",
     "node_modules/yaml",
     "node_modules/zod",
   ];

@@ -51,7 +51,6 @@
       "types": "./dist/fingerprint.d.ts",
       "import": "./dist/fingerprint.js"
     },
-
     "./scan": {
       "types": "./dist/scan/index.d.ts",
       "import": "./dist/scan/index.js"
@@ -69,13 +68,11 @@
     "provenance": true
   },
   "scripts": {
-    "build": "rm -rf dist && tsc --build --force && chmod +x dist/bin.js && node ../../scripts/link-package-bin.mjs && cp -r src/skill-bundle dist/skill-bundle",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc --build --force && chmod +x dist/bin.js && node ../../scripts/link-package-bin.mjs && cp -r src/skill-bundle dist/skill-bundle",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "cac": "^6.7.14",
-    "jiti": "^2.4.0",
-    "tinyglobby": "^0.2.16",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }
