@@ -3,7 +3,7 @@ name: patterns
 description: Author surface-composition patterns inside .ghost/composition.yml.
 handoffs:
   - label: Verify fingerprint package
-    command: ghost verify .ghost --root .
+    command: ghost validate .ghost
     prompt: Verify the root fingerprint package
 ---
 
@@ -77,8 +77,7 @@ Allowed `kind` values:
 ## Validate
 
 ```bash
-ghost lint .ghost
-ghost verify .ghost --root .
+ghost validate .ghost
 ```
 
 If a pattern is speculative, do not add it as canonical composition. Leave it in

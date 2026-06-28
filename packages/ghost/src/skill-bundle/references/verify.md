@@ -5,7 +5,7 @@ description: Verify generated UI or fingerprint edits against Ghost.
 
 # Recipe: Verify Ghost Work
 
-1. Run `ghost lint .ghost` and `ghost verify .ghost --root <target>` after
+1. Run `ghost validate .ghost` after
    fingerprint edits.
 2. Run `ghost check --base <ref>` after implementation changes.
 3. For advisory review, run `ghost checks --surface <ids>` (the surfaces the

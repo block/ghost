@@ -47,7 +47,7 @@ The tree is declared in `surfaces.yml`, never inferred from filenames or paths.
 
 Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
-raw repo observations while authoring curated fingerprint facets.
+raw repo observations while authoring curated nodes.
 
 One contract per package: a repo's `.ghost/` is the contract, and surfaces are
 the only locality. Host wrappers may set `GHOST_PACKAGE_DIR=<relative-dir>` on
@@ -60,14 +60,12 @@ and map severities into their own review or check format.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Create `.ghost/` with manifest and facets. |
-| `ghost scan [dir] [--format json]` | Report sparse fingerprint contribution facets. |
-| `ghost lint [file-or-dir]` | Validate a fingerprint package or artifact. |
-| `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
+| `ghost init [--template <name>]` | Scaffold `.ghost/` with manifest, surfaces spine, and a seed node. |
+| `ghost scan [dir] [--format json]` | Report node/surface contribution. |
+| `ghost validate [file-or-dir]` | Validate the package — artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [surface]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
-| `ghost emit <kind>` | Emit `review-command`. |
+| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -101,19 +99,19 @@ evidence-backed facet entries, then ask the human to curate the claims.
 - Treat checked-in Ghost package facet files as the source of truth.
 - Generate from intent, inventory, and composition.
 - Name touched surfaces to `ghost checks --surface`; the agent evaluates the markdown checks it governs.
-- Use local evidence as provisional when fingerprint facets are silent.
+- Use local evidence as provisional when the fingerprint is silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
-- Validate with `ghost lint` and `ghost verify --root <target>` before declaring
-  fingerprint facets useful.
+- Validate with `ghost validate` before declaring
+  fingerprint nodes useful.
 - Run `ghost checks` to route checks and `ghost review` for the advisory packet.
 - Use a custom package dir (`--package` / `GHOST_PACKAGE_DIR`) only when present
   or requested.
 
 ## When Fingerprint Facets Are Silent
 
-Silent fingerprint facets do not require stopping by default. When the fingerprint does
+Silent fingerprint nodes do not require stopping by default. When the fingerprint does
 not cover the task, proceed from nearby product surfaces, local components,
 token and copy conventions, and ordinary UX reasoning when safe. Label that reasoning as provisional and
 non-Ghost-backed.

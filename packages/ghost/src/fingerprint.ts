@@ -29,13 +29,3 @@ export type {
   LintSeverity,
 } from "./scan/lint.js";
 export { normalizeReferenceInput } from "./scan/package-config.js";
-export type {
-  VerifyFingerprintIssue,
-  VerifyFingerprintPackageOptions,
-  VerifyFingerprintReport,
-  VerifyFingerprintSeverity,
-} from "./scan/verify-package.js";
-export {
-  formatVerifyFingerprintReport,
-  verifyFingerprintPackage,
-} from "./scan/verify-package.js";

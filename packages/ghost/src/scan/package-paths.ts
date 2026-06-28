@@ -9,7 +9,7 @@ const execFileAsync = promisify(execFile);
  * Neutral home for the load-bearing package-path helpers. These survive the
  * removal of nesting/stacks (see docs/ideas/one-road.md, Step 0): they are
  * direct package addressing, not nesting machinery, and are consumed by
- * fingerprint-commands, verify-package, init-command, scan-emit-command,
+ * fingerprint-commands, init-command,
  * monorepo-init-command, and the scan/index re-exports.
  */
 

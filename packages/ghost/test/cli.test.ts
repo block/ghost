@@ -167,13 +167,11 @@ describe("ghost CLI", () => {
     for (const command of [
       "init",
       "scan",
-      "lint",
-      "verify",
+      "validate",
       "check",
       "review",
       "gather",
       "checks",
-      "emit",
       "skill install",
     ]) {
       expect(result.stdout).toContain(command);
@@ -198,15 +196,13 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Advanced/package inspection");
     expect(result.stdout).toContain("Maintenance/legacy");
     for (const command of [
-      "lint [file]",
+      "validate [file]",
       "init",
-      "verify [dir]",
       "scan [dir]",
       "signals [path]",
       "gather",
       "checks",
       "migrate",
-      "emit <kind>",
       "skill <action>",
       "review",
     ]) {
@@ -237,16 +233,12 @@ describe("ghost CLI", () => {
     const status = JSON.parse(scan.stdout);
     expect(status.cache).toBeUndefined();
 
-    const lint = await runCli(["lint"], dir);
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const validate = await runCli(["validate"], dir);
     const review = await runCli(["review", "--diff", "change.patch"], dir);
-    const reviewCommand = await runCli(["emit", "review-command"], dir);
 
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
+    expect(validate.code).toBe(0);
     expect(review.code).toBe(0);
     expect(review.stdout).toContain("## Touched Surfaces");
-    expect(reviewCommand.code).toBe(0);
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -358,7 +350,7 @@ describe("ghost CLI", () => {
     await writeFile(join(dir, "workflow.yml"), "name: ci\non: push\n");
 
     const lint = await runCli(
-      ["lint", "workflow.yml", "--format", "json"],
+      ["validate", "workflow.yml", "--format", "json"],
       dir,
     );
 
@@ -376,7 +368,7 @@ describe("ghost CLI", () => {
     );
 
     const lint = await runCli(
-      ["lint", "package-anchor.yml", "--format", "json"],
+      ["validate", "package-anchor.yml", "--format", "json"],
       dir,
     );
 
@@ -403,23 +395,15 @@ describe("ghost CLI", () => {
     expect(status.fingerprint.state).toBe("present");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
-    expect(status.intent).toBeUndefined();
     expect(status.readiness).toBeUndefined();
     expect(status.checks).toBeUndefined();
-    expect(status.contribution.state).toBe("empty");
-    expect(status.contribution.contributing_facets).toEqual([]);
-    // A node package has no facet files; facets are absent, not empty.
-    expect(status.contribution.empty_facets).toEqual([]);
-    expect(status.contribution.absent_facets).toEqual([
-      "intent",
-      "inventory",
-      "composition",
-    ]);
+    // The default template seeds one core node, so the package contributes.
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.node_count).toBe(1);
     expect(scanHuman.stdout).toContain("package dir:");
-    expect(scanHuman.stdout).toContain("contribution: empty");
-    expect(scanHuman.stdout).toContain("intent: absent (0)");
+    expect(scanHuman.stdout).toContain("contribution: contributing");
+    expect(scanHuman.stdout).toContain("nodes: 1");
     expect(scanHuman.stdout).not.toContain("readiness:");
-    expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -438,7 +422,7 @@ describe("ghost CLI", () => {
   it("init --force gathers cleanly on the scaffolded node package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
     expect(init.code).toBe(0);
-    const lint = await runCli(["lint"], dir);
+    const lint = await runCli(["validate"], dir);
     expect(lint.code).toBe(0);
 
     // The seed node lives at core, so it cascades to a gather of any surface.
@@ -450,92 +434,17 @@ describe("ghost CLI", () => {
     );
   });
 
-  it("runs signals, lint, and verify from the unified cli", async () => {
+  it("runs signals and validate from the unified cli", async () => {
     await writeCheckPackage(dir);
     const signals = await runCli(["signals"], dir);
-    const lint = await runCli(["lint"], dir);
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const validate = await runCli(["validate"], dir);
 
     expect(signals.code).toBe(0);
     expect(await realpath(JSON.parse(signals.stdout).root)).toBe(
       await realpath(dir),
     );
-    expect(lint.code).toBe(0);
-    expect(lint.stdout).toContain("0 error");
-    expect(verify.code).toBe(0);
-    expect(verify.stdout).toContain("0 error");
-  });
-
-  it("lints, verifies, and scans the Ghost UI reference bundle", async () => {
-    const lint = await runCli(["lint", "packages/ghost-ui/.ghost"], REPO_ROOT);
-    const verify = await runCli(
-      ["verify", "packages/ghost-ui/.ghost", "--root", "packages/ghost-ui"],
-      REPO_ROOT,
-    );
-    const scan = await runCli(
-      ["scan", "packages/ghost-ui/.ghost", "--format", "json"],
-      REPO_ROOT,
-    );
-
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
-    expect(scan.code).toBe(0);
-    const status = JSON.parse(scan.stdout);
-    expect(status.fingerprint.state).toBe("present");
-    expect(status.proposals).toBeUndefined();
-    expect(status.cache).toBeUndefined();
-    expect(status.readiness).toBeUndefined();
-    expect(status.checks).toBeUndefined();
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.contributing_facets).toEqual([
-      "intent",
-      "inventory",
-    ]);
-    expect(status.contribution.empty_facets).toEqual([]);
-    expect(status.contribution.absent_facets).toEqual(["composition"]);
-    expect(status.contribution.reasons[0]).toContain(
-      "Absent facets may be inherited",
-    );
-  });
-
-  it("emits review commands from the unified cli", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-
-    const reviewCommand = await runCli(["emit", "review-command"], dir);
-
-    expect(reviewCommand.code).toBe(0);
-    expect(reviewCommand.stdout).toContain("design-review.md");
-    const emittedReviewCommand = await readFile(
-      join(dir, ".claude", "commands", "design-review.md"),
-      "utf-8",
-    );
-    expect(emittedReviewCommand).toContain(
-      ".ghost/intent.yml`, `.ghost/inventory.yml`, and `.ghost/composition.yml",
-    );
-    expect(emittedReviewCommand).toContain("Exemplars");
-    expect(emittedReviewCommand).toContain("lending-tokenized-screen");
-    expect(emittedReviewCommand).toContain("provisional and non-Ghost-backed");
-    expect(emittedReviewCommand).not.toContain("Proposal Threshold");
-    expect(emittedReviewCommand).not.toContain("recommend-proposal");
-    expect(emittedReviewCommand).toContain("experience-gap");
-    expect(emittedReviewCommand).not.toContain(
-      "deprecated legacy direct-markdown",
-    );
-  });
-
-  it("rejects removed context-bundle emit kind", async () => {
-    await writeCheckPackage(dir);
-
-    const contextBundle = await runCli(["emit", "context-bundle"], dir);
-
-    expect(contextBundle.code).toBe(2);
-    expect(contextBundle.stderr).toContain(
-      "unknown emit kind 'context-bundle'",
-    );
+    expect(validate.code).toBe(0);
+    expect(validate.stdout).toContain("0 error");
   });
 
   // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
@@ -640,44 +549,6 @@ describe("ghost CLI", () => {
     expect(json.brief).toContain("## Context Hits");
   });
 
-  it("warns when fingerprint exemplar paths are unreachable", async () => {
-    await writeCheckPackage(dir);
-
-    const verify = await runCli(
-      ["verify", ".ghost", "--root", ".", "--format", "json"],
-      dir,
-    );
-
-    expect(verify.code).toBe(0);
-    const report = JSON.parse(verify.stdout);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          rule: "fingerprint-exemplar-unreachable",
-          path: "inventory.yml.exemplars[0].path",
-        }),
-      ]),
-    );
-  });
-
-  it("rejects removed legacy direct markdown emit flags", () => {
-    const cli = buildCli();
-
-    expect(() =>
-      cli.parse([
-        "node",
-        "ghost",
-        "emit",
-        "review-command",
-        "--fingerprint",
-        "legacy.fingerprint.md",
-        "--stdout",
-      ]),
-    ).toThrow("Unknown option `--fingerprint`");
-    expect(() =>
-      cli.parse(["node", "ghost", "emit", "context-bundle", "--no-tokens"]),
-    ).toThrow("Unknown option `--tokens`");
-  });
   it("installs the unified ghost skill bundle", async () => {
     const result = await runCli(
       ["skill", "install", "--dest", "skills/ghost"],
@@ -1052,7 +923,7 @@ experience_contracts: []
     ]);
 
     // The migrated package must lint clean and gather correctly.
-    const lint = await runCli(["lint", ".ghost/surfaces.yml"], dir, {
+    const lint = await runCli(["validate", ".ghost/surfaces.yml"], dir, {
       allowNoExit: true,
     });
     expect(lint.stdout).toContain("0 error(s)");
@@ -1133,6 +1004,7 @@ surfaces:
   it("grounds routed checks in the fingerprint slice", async () => {
     const ghost = join(dir, ".ghost");
     await mkdir(join(ghost, "checks"), { recursive: true });
+    await mkdir(join(ghost, "nodes"), { recursive: true });
     await writeFile(
       join(ghost, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: c4\n",
@@ -1142,15 +1014,12 @@ surfaces:
       "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
     );
     await writeFile(
-      join(ghost, "intent.yml"),
-      `principles:
-  - id: brand-voice
-    principle: Warm everywhere.
-    surface: core
-  - id: checkout-clarity
-    principle: Checkout copy is plain.
-    surface: checkout
-`,
+      join(ghost, "nodes", "brand-voice.md"),
+      "---\nid: brand-voice\nunder: core\n---\n\nWarm everywhere.\n",
+    );
+    await writeFile(
+      join(ghost, "nodes", "checkout-clarity.md"),
+      "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
     );
     await writeFile(
       join(ghost, "checks", "checkout.md"),
@@ -1249,7 +1118,7 @@ surfaces:
 
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");
-  await mkdir(ghost, { recursive: true });
+  await mkdir(join(ghost, "nodes"), { recursive: true });
   await writeFile(
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
@@ -1264,27 +1133,22 @@ surfaces:
   - id: email-marketing
     description: Marketing email.
     parent: email
-    edges:
-      - kind: composes
-        to: checkout
   - id: checkout
     description: Checkout.
     parent: core
 `,
   );
   await writeFile(
-    join(ghost, "intent.yml"),
-    `principles:
-  - id: brand-voice
-    principle: Warm and concise.
-    surface: core
-  - id: marketing-urgency
-    principle: Marketing may use urgency.
-    surface: email-marketing
-  - id: checkout-clarity
-    principle: Checkout copy is plain.
-    surface: checkout
-`,
+    join(ghost, "nodes", "brand-voice.md"),
+    "---\nid: brand-voice\nunder: core\n---\n\nWarm and concise.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "marketing-urgency.md"),
+    "---\nid: marketing-urgency\nunder: email-marketing\n---\n\nMarketing may use urgency.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "checkout-clarity.md"),
+    "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
   );
 }
 
@@ -1500,43 +1364,40 @@ async function writeSplitFingerprintPackage(
   fingerprintRaw: string,
   checksRaw?: string,
 ): Promise<void> {
+  // Node package: derive prose nodes from the legacy facet doc's
+  // principles/patterns so check-routing/grounding fixtures keep working.
   const packageDir = pkg;
-  const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(packageDir, { recursive: true });
-  await Promise.all([
+  const doc = parseYaml(fingerprintRaw) as {
+    intent?: { principles?: Array<{ id: string; principle?: string }> };
+    composition?: { patterns?: Array<{ id: string; pattern?: string }> };
+  };
+  await mkdir(join(packageDir, "nodes"), { recursive: true });
+  const writes: Array<Promise<void>> = [
     writeFile(
       join(packageDir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
-    writeFile(
-      join(packageDir, "intent.yml"),
-      stringifyYaml(
-        doc.intent ?? {
-          summary: {},
-          situations: [],
-          principles: [],
-          experience_contracts: [],
-        },
+  ];
+  for (const p of doc.intent?.principles ?? []) {
+    writes.push(
+      writeFile(
+        join(packageDir, "nodes", `${p.id}.md`),
+        `---\nid: ${p.id}\nunder: core\n---\n\n${p.principle ?? p.id}\n`,
       ),
-    ),
-    writeFile(
-      join(packageDir, "inventory.yml"),
-      stringifyYaml(
-        doc.inventory ?? {
-          building_blocks: {},
-          exemplars: [],
-          sources: [],
-        },
+    );
+  }
+  for (const p of doc.composition?.patterns ?? []) {
+    writes.push(
+      writeFile(
+        join(packageDir, "nodes", `${p.id}.md`),
+        `---\nid: ${p.id}\nunder: core\n---\n\n${p.pattern ?? p.id}\n`,
       ),
-    ),
-    writeFile(
-      join(packageDir, "composition.yml"),
-      stringifyYaml(doc.composition ?? { patterns: [] }),
-    ),
-    ...(checksRaw
-      ? [writeFile(join(packageDir, "validate.yml"), checksRaw)]
-      : []),
-  ]);
+    );
+  }
+  if (checksRaw) {
+    writes.push(writeFile(join(packageDir, "validate.yml"), checksRaw));
+  }
+  await Promise.all(writes);
 }
 
 function _checksFileWithDerivation(intentRef: string): string {

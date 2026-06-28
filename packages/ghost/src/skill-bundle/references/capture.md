@@ -123,8 +123,7 @@ not generation input. Add only deterministic checks.
 ### 7. Validate
 
 ```bash
-ghost lint .ghost
-ghost verify .ghost --root <target>
+ghost validate .ghost
 ghost check --base HEAD
 ```
 
