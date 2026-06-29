@@ -4,23 +4,7 @@ import { join, relative } from "node:path";
 const DEFAULT_LIMIT = 500;
 
 // Add narrowly scoped exceptions here with justification
-const EXCEPTIONS = {
-  "packages/ghost/src/cli.ts": {
-    limit: 580,
-    justification:
-      "Unified CLI command registry — all verbs live together for one public bin",
-  },
-  "packages/ghost/src/fingerprint-commands.ts": {
-    limit: 1135,
-    justification:
-      "Fingerprint package command registry — temporarily holds package lifecycle, survey/cache, scan readiness, and adapter-neutral package-dir routing until command groups are split further",
-  },
-  "packages/ghost/src/scan/inventory.ts": {
-    limit: 1120,
-    justification:
-      "Deterministic repository inventory collector — intentionally broad because map authoring depends on one cohesive raw signal pass",
-  },
-};
+const EXCEPTIONS = {};
 
 const DIRS_TO_CHECK = [{ dir: "packages/ghost/src", glob: /\.[jt]sx?$/ }];
 

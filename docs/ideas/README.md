@@ -1,209 +1,50 @@
 # Ideas
 
-This folder is for live, non-authoritative exploration that should not be lost
-to chat history but is not ready to become public docs or a changeset.
+Live, non-authoritative exploration that should not be lost to chat history but
+is not yet public docs. Notes are subordinate to `../purposes.md` (one model,
+many projections).
 
-The one public doc one level up is `../purposes.md` (one model, many
-projections). Older format / loop / adapter / fleet docs were deleted in a
-focus pass: they described the pre-redesign Relay-routing and
-`topology`/`applies_to` model that `coordinate-space.md` replaces.
+This folder is pruned in focus passes: notes that only describe superseded
+models, shipped execution plans, or removed commands are deleted — the code and
+git history are the record. What remains is either *settled architecture*,
+*durable reference*, or *open/parked exploration*.
 
-## The settled center
+## Settled
 
-- `fingerprint-first-architecture.md` records the settled product center:
-  Ghost is fingerprint-first, and drift is one governance workflow over the
-  portable `.ghost/` package. Everything below is subordinate to it.
+- `fingerprint-first-architecture.md` — the product center: Ghost is
+  fingerprint-first; the durable artifact is the checked-in `.ghost/` package.
+  Everything else is tooling for or around that contract.
 
-## The reset arc (read in order)
+## The model (what shipped)
 
-These notes form one continuous thread from "I overcomplicated this" to a
-buildable Layer 2 design. They agree; read them as a sequence.
+Ghost is a **curated graph of described nodes**. The full design and its
+prior-art lineage live here:
 
-- `../purposes.md` — one model, many projections. The artifact never bends to
-  serve a consumer.
-- `ghost-layers.md` — the five layers Ghost actually has (description, map,
-  selection, governance, comparison), with each piece of code assigned to a
-  layer and each leak named.
-- `contract-and-binding.md` — the portable-contract vs repo-binding split.
-  (Now mostly subsumed: the split falls out of `coordinate-space.md` for free.)
-- `reset.md` — the stop-circling note. Fixes purpose, goals, layers, and
-  separation of concerns, and schedules a single first move with everything
-  else parked.
-- `coordinate-space.md` — the clean-room design for Layer 2 (the first cut). A
-  surface is an author-named group with an optional description; topology is a
-  two axes — a strict containment tree (Layer 2) plus a typed composition graph
-  over it (Layer 3); resolution is BYOA (Ghost emits a described menu, the agent
-  matches); delete list covers `inventory.topology`, smeared `applies_to`, and
-  `ghost.map/v1`.
-- `surface-schema.md` — the first concrete extraction. Proposes
-  `ghost.surfaces/v1` as a new `surfaces.yml` facet expressing both the
-  containment `parent` and typed composition `edges`, plus a field-by-field
-  migration off `topology` / `applies_to` / `surface_type` / `scope` to a
-  `surface:` placement pointer. Settles closed `edge_kinds`, flat ids, and
-  explicit placement (no silent global default); the one remaining fork — the
-  repo binding as scoped ownership — is reframed for its own note.
-- `surface-binding.md` — the second concrete extraction. Settles `ghost.binding/v1`:
-  the contract carries no paths, the binding owns all path matching, with
-  directory location as the default binding and an explicit `.ghost.bind.yml` as
-  the escape hatch. Path / prompt / diff all resolve to a surface id through one
-  resolver; nesting is reframed from data-merge to binding (retiring Leak E).
-  Records that this is the least proof-validated layer, so it ships smallest-first.
-- `implementation-plan.md` — sequences the hard-cutover (breaking, no parallel
-  model) build in dependency order across eight phases: schema → lint →
-  placement → delete `ghost.map/v1` → resolver/menu → migration command →
-  binding → command/skill/docs reconciliation. Marks Phase 3 (removing node
-  coordinate fields) as the breaking line, with additive Phases 1–2 landed first.
-- `phase-1-plan.md` — execution spec for Phase 1: the additive
-  `ghost-core/surfaces/` module (`ghost.surfaces/v1` schema + types + index +
-  tests), mirroring the `fingerprint/` module. Bans dotted ids at the schema
-  layer; defers all graph-level validation (cycles, dangling refs) to Phase 2.
-  **Shipped** (`cb2b7c4`).
-- `phase-2-plan.md` — execution spec for Phase 2: `lintGhostSurfaces` graph
-  validation (parent refs, tree/no-cycle, edge refs, reserved `core`, duplicate
-  and near-miss ids) plus `ghost lint` dispatch for `surfaces.yml`. Edge cycles
-  are allowed; only `parent` is tree-constrained. Still additive. **Shipped**
-  (`f6b7941`).
-- `phase-3-plan.md` — execution spec for Phase 3, **the breaking line**: remove
-  `topology` / `applies_to` / `surface_type` / `scope` from the canonical
-  fingerprint and replace with a single `surface:` placement per node, validated
-  against `surfaces.yml`. Deliberately leaves `check.applies_to` for Phase 4/7
-  (it is coupled to map routing). First phase of the major release. **Shipped**
-  (`6140cd8`).
-- `phase-4-plan.md` — execution spec for Phase 4: delete the `ghost.map/v1`
-  coordinate/routing layer (dormant since Phase 3). Separates the routing layer
-  (delete) from the inventory-output types incidentally housed in `map/types.ts`
-  (relocate, not delete). Leaves `check` routing on `applies_to.paths` alone;
-  surface-based routing is deferred to Phase 7. **Shipped** (`2c22a8c`), with
-  `ghost-fleet` pulled out of the workspace.
-- `phase-5-plan.md` — execution spec for Phase 5, the first **additive** phase:
-  a surfaces loader (reads `surfaces.yml` into the package model — deferred
-  since Phase 1), a deterministic slice resolver (own + cascaded ancestors +
-  typed-edge contributions), a menu emitter, and the new `gather` command
-  (relay's desire done right). Ambiguity returns the menu, never the whole tree.
-  Prompt road only; path/diff road is Phase 7. **Shipped** (`5ee6cc0`).
-- `phase-6-plan.md` — execution spec for Phase 6: a `ghost migrate` command that
-  transforms a legacy `.ghost/` (raw YAML, since the schema now rejects legacy
-  fields) into the surface model — `surfaces.yml` from old `topology.scopes`,
-  single-scope nodes placed via `surface:`, legacy coordinate fields removed.
-  Report-don't-guess: ambiguous/unplaceable nodes are surfaced for human review,
-  never auto-placed. Additive; nothing in this repo needs it (dogfood `.ghost/`
-  was already removed). **Shipped** (`4f57b73`).
-- `phase-7-plan.md` — execution spec for Phase 7, the largest and least
-  proof-validated cut: `ghost.binding/v1` (`.ghost.bind.yml`), path→surface and
-  diff→surfaces resolution wired into `gather --path`, `check`, and `review`,
-  and the retirement of the `child-wins-by-id` merge (Leak E) — nesting becomes
-  binding, not data-merge. Directory-default binding with an explicit escape
-  hatch; in-repo `contract: .` only (external references deferred). Flags the
-  core structural tension (merge → binding-resolution) to resolve before
-  touching consumers. **Phase 7a shipped** (`37eb562`): the binding + path road
-  (`ghost.binding/v1`, `resolvePathToSurface`, `gather --path`). The diff road
-  and merge retirement are reframed into `phase-7b-grounded-checks.md`.
-- `phase-7b-grounded-checks.md` — the governance (Layer 4) model, settled after
-  seeing how checks are really authored: Ghost does **not** run checks. Checks
-  are markdown rules an agent evaluates; Ghost deterministically **routes** a
-  diff to the surfaces it touches (via 7a binding) and **grounds** every flag in
-  that surface's `gather` slice (principles/contracts = why, patterns/exemplars =
-  what to change). Ghost owns routing + grounding, never the check engine. The
-  legacy `ghost.validate/v1` detector becomes legacy. Open: check placement,
-  grounding emit shape, and the still-owed `child-wins-by-id` merge retirement.
-- `phase-7b-plan.md` — execution spec for 7b in four ordered cuts: (1) retire
-  the `child-wins-by-id` merge (Leak E) — independent, riskiest, done first;
-  (2) define `ghost.check/v1` as markdown + frontmatter with a `surface:`;
-  (3) surface-routed check relevance (a diff selects the checks governing its
-  surfaces and ancestors, reusing the Phase 5 cascade); (4) fingerprint
-  grounding via `review`. `ghost.validate/v1`'s detector kept parseable but no
-  longer the governance path; full removal deferred. **Cuts 1 & 2 shipped**
-  (`8b81d76`, `3d042d2`).
-- `phase-7b-cut3-plan.md` — execution spec for Cut 3: surface-routed check
-  relevance. `selectChecksForSurfaces` selects markdown checks governing a diff's
-  touched surfaces and ancestors (reusing the slice cascade); a checks-dir loader
-  reads `checks/*.md`; a new additive command prints the relevant checks per
-  surface. Adds surface routing *beside* the legacy path-glob detector router
-  rather than replacing it. Grounding deferred to Cut 4. **Shipped** (`b6a8c93`).
-- `phase-7b-cut4-plan.md` — execution spec for Cut 4, the final governance cut:
-  fingerprint grounding. `groundSurface` projects a surface's slice into *why*
-  (principles/contracts) + *what to change* (patterns/exemplars with paths),
-  inherited from ancestors like context is. Attached to the Cut 3 `ghost checks`
-  command (the surface-native path) rather than the legacy `review` packet, so a
-  flagged check can be grounded in the fingerprint. Ghost still never runs the
-  check; `review`/`validate/v1` left for a later cut. **Shipped** (`431b20a`) —
-  Phase 7b complete.
-- `phase-8-plan.md` — execution spec for Phase 8, the final phase: delete the
-  absorbed/dead commands (`relay`, `stack`, `survey`, `diff`, `describe`) and the
-  relay-only `context/` modules, update the skill bundle to teach surfaces,
-  regenerate the manifest, fill in the major changeset. Surfaces two
-  entanglements: `relay` and `review` share `context/` machinery (partition,
-  don't delete wholesale), and `survey` is a command *and* a module (delete the
-  command surface only). `review` / `emit` / `validate-v1` / the survey module
-  left for later cuts. **Shipped** (`c12f8f1`) — the cutover (Phases 1–8) is
-  complete.
-- `polish-roadmap.md` — sequences the four deferred post-cutover cuts. Key
-  finding: they are not independent. `review`/`emit` sit on both `validate.yml`
-  and the dormant Job 2 entrypoint, so **Cut A** (move `review`/`emit` onto
-  `gather`+`checks`) is the keystone that unblocks **Cut B** (delete the dormant
-  entrypoint) and **Cut C** (`validate/v1` positioning). **Cut D** (external
-  contract references in bindings) is independent. The `ghost-core/survey` module
-  removal is held back as a deeper, separate excavation.
+- `context-graph.md` — the core model: nodes + `under`/`relates` links + the
+  `incarnation` tag; OKF as substrate prior-art; `description` as the
+  tool-style retrieval payload; the conformance invariants. The canonical
+  reference for what Ghost *is*.
+- `scenarios-worked.md` — five worked fingerprints (dashboard, monorepo,
+  marketing, voice-first app, one-brand superset) that stress-tested the model.
+  Durable reference for how the shape behaves across mediums.
 
-## Independent, still live
+## Open / parked exploration
 
-- `ghost-ui.md` explores additive registry metadata for the private Ghost UI
-  reference package. Orthogonal to the coordinate redesign.
-- `guided-migration.md` explores a future host-agent workflow for migrating one
-  fingerprint toward another. Layer 5 (comparison); untouched by the redesign.
+- `contract-storage.md` — the on-disk organization fork (now largely subsumed by
+  `context-graph.md`: storage is a free projection over the schema). Kept for the
+  reasoning.
+- `compare-drift-fleet-rethink.md` — **parked.** Concepts held, implementations
+  removed (they rested on the abandoned quantified-design-system model). Records
+  the intent and the trigger to rebuild them graph-native.
+
+## Independent
+
+- `ghost-ui.md` — additive registry metadata for the private Ghost UI package.
 
 ## Conventions
 
-- One file per idea, kebab-case slug.
-- Add frontmatter with `status: exploring`, `status: deferred`, or
-  `status: settled`.
-- Keep idea notes explicitly subordinate to the current fingerprint package
-  model.
-- Delete notes that only describe superseded package splits, removed commands,
-  or dead routing/coordinate models after their useful decisions are folded
-  into current docs.
-- `polish-cut-c-plan.md` — execution spec for Cut C, escalated to full removal:
-  one check format. Deletes `ghost.validate/v1`, `validate.yml`, the `ghost
-  check` detector gate, and the `./govern` export; rescues `parseUnifiedDiff`
-  into a neutral module first; preserves the `drift` stance ledger (cleanly
-  separable from the detector gate). Markdown `ghost.check/v1` becomes the single
-  check format.
-- `polish-cut-d-plan.md` — execution spec for Cut D: external contract references
-  in bindings. A `.ghost.bind.yml` `contract:` accepts `.` (in-repo) or an npm
-  package name resolved from `node_modules`; `ghost verify` checks the external
-  contract resolves and its bound surfaces exist. Resolution + validation only;
-  external fingerprint loading for grounding is deferred.
-- `parked-survey-module.md` — a deliberate decision **not** to act: the
-  `ghost.survey/v1` module is isolated, works, and is unexposed, so it stays
-  parked. Removal is an excavation (compare/perceptual-prior may depend on survey
-  evidence), not a deletion — surfaced only if a concrete reason appears.
-- `one-road.md` — a provocation turned decision: remove the binding
-  (`ghost.binding/v1`, path→surface, Cut D contract resolution) and drive
-  everything from the prompt. The agent already analyzes the whole repo, so it
-  states the touched surfaces; Ghost stops inferring intent from location. Four
-  outcomes collapse into one flow (prompt → menu → `gather <surface>`).
-  `checks`/`review` take agent-stated `--surface`; external contracts via
-  `gather --package`. Surface engine + nested-package discovery untouched.
-  Supersedes `surface-binding.md` / Phase 7a / `polish-cut-d-plan.md`.
-- `contract-storage.md` — open exploration: the unexamined fork is **facet-first
-  vs. surface-first** storage, not "one giant yml." Storage is a projection too;
-  the loader (`assembleFingerprint`) is the only structural boundary that moves,
-  and the model + every read consumer are untouched. Surface-first colocates each
-  concept (a surface = a directory), makes `surface:` implicit-by-location
-  (inside the contract, not the repo), and mirrors the cascade with `core/` as
-  the cross-cutting home. Lands after one-road. Not decided.
-
-- `context-graph.md` — the reframe that subsumes the storage question: Ghost is
-  a **curated, opinionated context graph** queried by traversal, not a
-  file/bucket layout. The substrate (markdown + frontmatter folding into a graph)
-  is an **OKF-family** convergence we adopt; our deliberate divergences — **typed
-  links (`under` / `relates`) and the `medium` tag** — are the value. The whole
-  vocabulary is three nouns (node, link, medium), two link kinds, one tag;
-  `intent`/`inventory`/`composition` are how the body is written, not types.
-  See `scenarios-worked.md` for these as fully fleshed-out fingerprints (real
-  node files, bodies, links, `gather` packets). Includes the full conformance
-  schema. See `graph-implementation-plan.md` for the sequenced build (grounded in
-  the current code: the loader seam, `resolveSurfaceSlice` = gather,
-  `surfaces.yml` = the tree). Includes five
-  stress-test scenarios (dashboard, monorepo, marketing, voice super app, and one
-  brand spanning all of them). Downstream of one-road; not decided.
+- One file per idea, kebab-case slug, `status:` frontmatter
+  (`exploring` / `settled` / `parked`).
+- Idea notes are subordinate to the fingerprint-package model.
+- Delete notes that only describe superseded models, shipped plans, or removed
+  commands — git is the record.

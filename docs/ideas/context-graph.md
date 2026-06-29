@@ -4,11 +4,11 @@ status: exploring
 
 # The context graph: Ghost as a curated, opinionated graph for generation
 
-This note records a shift in how we frame Ghost's model. It is downstream of
-`one-road.md` (remove the binding + nesting) and `contract-storage.md`
-(facet-first vs surface-first storage), and it reframes both: the real shape of
-the problem is a **curated, opinionated context graph**, and the right context
-for an agent to generate an interaction is found by **traversing** it.
+This note records the shift in how we frame Ghost's model: the real shape of the
+problem is a **curated, opinionated context graph**, and the right context for an
+agent to generate an interaction is found by **traversing** it. (It grew out of
+two earlier explorations — removing the path binding/nesting, and the
+storage-layout fork — both now shipped or subsumed; see git history.)
 
 It composes with the build order already set: **one-road first**, storage and
 anything here after. Nothing here is committed to code.

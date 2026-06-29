@@ -5,20 +5,20 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { cac } from "cac";
-import { registerChecksCommand } from "./checks-command.js";
-import { formatGhostHelp } from "./command-discovery.js";
-import { registerFingerprintCommands } from "./fingerprint-commands.js";
-import { registerGatherCommand } from "./gather-command.js";
-import { registerMigrateCommand } from "./migrate-command.js";
+import { registerChecksCommand } from "./commands/checks-command.js";
+import { formatGhostHelp } from "./commands/command-discovery.js";
+import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
+import { registerGatherCommand } from "./commands/gather-command.js";
+import { registerMigrateCommand } from "./commands/migrate-command.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
-} from "./review-packet.js";
-import { registerSkillCommand } from "./skill-command.js";
+} from "./commands/review-packet.js";
+import { registerSkillCommand } from "./commands/skill-command.js";
 
 const execFileAsync = promisify(execFile);
 
-export { getCommandDiscoveryMetadata } from "./command-discovery.js";
+export { getCommandDiscoveryMetadata } from "./commands/command-discovery.js";
 
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");

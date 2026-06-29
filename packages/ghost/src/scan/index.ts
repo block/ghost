@@ -9,7 +9,7 @@ export type {
   ScanContributionState,
   ScanSurfaceCoverage,
 } from "./fingerprint-contribution.js";
-export { signals } from "./inventory.js";
+export { signals } from "./inventory/index.js";
 export type {
   LegacyPackageInput,
   MigratedNodeFile,
@@ -22,7 +22,6 @@ export {
   migrateLegacyPackage,
 } from "./migrate-legacy.js";
 export {
-  fingerprintPackageDisplayPath,
   GHOST_PACKAGE_DIR_ENV,
   normalizeGhostDir,
   resolveGhostDirDefault,

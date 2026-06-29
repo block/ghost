@@ -34,7 +34,6 @@ export function lintGhostSurfaces(input: unknown): GhostSurfacesLintReport {
   checkReservedCore(doc, issues);
   checkParentRefs(doc, knownIds, issues);
   checkParentCycles(doc, issues);
-  checkEdgeRefs(doc, ids, issues);
   checkNearMissIds(doc, ids, issues);
 
   return finalize(issues);
@@ -124,27 +123,6 @@ function checkParentCycles(
   });
 }
 
-function checkEdgeRefs(
-  doc: GhostSurfacesDocument,
-  ids: Set<string>,
-  issues: GhostSurfacesLintIssue[],
-): void {
-  // Edge targets must be declared surfaces. Unlike `parent`, edges do not get
-  // the implicit-`core` exemption: an edge must point at a real surface.
-  doc.surfaces.forEach((surface, index) => {
-    surface.edges?.forEach((edge, edgeIndex) => {
-      if (!ids.has(edge.to)) {
-        issues.push({
-          severity: "error",
-          rule: "surface-edge-unknown",
-          message: `edge '${edge.kind}' target '${edge.to}' does not match any surface id`,
-          path: `surfaces[${index}].edges[${edgeIndex}].to`,
-        });
-      }
-    });
-  });
-}
-
 function checkNearMissIds(
   doc: GhostSurfacesDocument,
   ids: Set<string>,
@@ -164,19 +142,6 @@ function checkNearMissIds(
         });
       }
     }
-    surface.edges?.forEach((edge, edgeIndex) => {
-      if (!ids.has(edge.to)) {
-        const near = nearest(edge.to, candidates);
-        if (near) {
-          issues.push({
-            severity: "warning",
-            rule: "surface-id-near-miss",
-            message: `edge target '${edge.to}' is unknown; did you mean '${near}'?`,
-            path: `surfaces[${index}].edges[${edgeIndex}].to`,
-          });
-        }
-      }
-    });
   });
 }
 

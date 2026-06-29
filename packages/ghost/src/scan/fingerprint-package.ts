@@ -6,7 +6,6 @@ import {
   type GhostGraph,
   type GhostSurfacesDocument,
   lintGraph,
-  SURVEY_FILENAME,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
 import {
@@ -15,8 +14,6 @@ import {
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
-  PATTERNS_FILENAME,
-  RESOURCES_FILENAME,
 } from "./constants.js";
 import {
   lintFingerprintPackageManifest,
@@ -38,9 +35,6 @@ export interface FingerprintPackagePaths {
   surfaces: string;
   /** The `nodes/` directory holding `ghost.node/v1` markdown nodes. */
   nodes: string;
-  resources: string;
-  survey: string;
-  patterns: string;
   /** Legacy facet paths — used only to detect legacy packages for migration. */
   intent: string;
   inventory: string;
@@ -80,9 +74,6 @@ export function resolveFingerprintPackage(
     manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
     surfaces: join(packageDir, GHOST_SURFACES_YML_FILENAME),
     nodes: join(packageDir, "nodes"),
-    resources: join(dir, RESOURCES_FILENAME),
-    survey: join(dir, SURVEY_FILENAME),
-    patterns: join(dir, PATTERNS_FILENAME),
     intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
     inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),

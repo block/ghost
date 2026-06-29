@@ -20,6 +20,8 @@ export type GhostGraphNodeOrigin = "node-file" | "inherited";
  */
 export interface GhostGraphNode {
   id: string;
+  /** One-line "what this is / when to gather it" — the retrieval payload. */
+  description?: string;
   under?: string;
   relates: GhostNodeRelation[];
   incarnation?: string;

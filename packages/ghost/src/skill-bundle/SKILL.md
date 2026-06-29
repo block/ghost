@@ -27,18 +27,21 @@ markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal sy
 design-system registry, or screenshot archive.
 
 The fingerprint is a graph of **nodes**. A node is a markdown file:
-frontmatter (`id`, `under`, `relates`, `incarnation`) + a prose body.
-**Intent + inventory + composition** are the authoring lenses the body is
+frontmatter (`id`, `description`, `under`, `relates`, `incarnation`) + a prose
+body. **Intent + inventory + composition** are the authoring lenses the body is
 written through — they guide what to capture, they are not fields or node types:
 
 - intent — the why and the stance.
 - inventory — the materials and pointers to implementation the agent can inspect.
 - composition — the patterns that make the surface feel intentional.
 
-`under` places a node so it is inherited downward (`core` is the implicit root
-that reaches every surface); `relates` links nodes laterally; `incarnation` tags
-a medium-bound expression (essence is untagged). See
-[references/capture.md](references/capture.md) for the full node shape.
+`description` is the retrieval payload — a one-line "what this is / when to
+gather it" (like a tool's name + description); `ghost gather` with no argument
+lists nodes by id + description for the agent to match against. `under` places a
+node so it is inherited downward (`core` is the implicit root that reaches every
+surface); `relates` links nodes laterally; `incarnation` tags a medium-bound
+expression (essence is untagged). Free-form keys (`audience`, …) pass through.
+See [references/capture.md](references/capture.md) for the full node shape.
 
 Checks and review validate output; they are not generation input.
 
@@ -86,8 +89,6 @@ Inherited nodes are read-only and flow into gather/validate like local ones.
 
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
-- Author fingerprint patterns: follow [references/patterns.md](references/patterns.md).
-- Capture voice and language: follow [references/voice.md](references/voice.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
@@ -98,11 +99,11 @@ Inherited nodes are read-only and flow into gather/validate like local ones.
 When the user asks to set up a fingerprint with `auto-draft`, treat that as an
 agent authoring mode, not a Ghost CLI command. Follow the auto-draft branch in
 the capture and authoring-scenarios recipes: scan first, draft the smallest
-evidence-backed facet entries, then ask the human to curate the claims.
+evidence-backed node drafts, then ask the human to curate the claims.
 
 ## Always
 
-- Treat checked-in Ghost package facet files as the source of truth.
+- Treat checked-in Ghost package nodes as the source of truth.
 - Generate from intent, inventory, and composition.
 - Name touched surfaces to `ghost checks --surface`; the agent evaluates the markdown checks it governs.
 - Use local evidence as provisional when the fingerprint is silent.

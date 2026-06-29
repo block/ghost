@@ -309,27 +309,6 @@ importers:
       cac:
         specifier: ^6.7.14
         version: 6.7.14
-      jiti:
-        specifier: ^2.4.0
-        version: 2.6.1
-      tinyglobby:
-        specifier: ^0.2.16
-        version: 0.2.16
-      yaml:
-        specifier: ^2.8.3
-        version: 2.8.3
-      zod:
-        specifier: ^4.3.6
-        version: 4.3.6
-
-  packages/ghost-fleet:
-    dependencies:
-      '@anarchitecture/ghost':
-        specifier: workspace:*
-        version: link:../ghost
-      cac:
-        specifier: ^6.7.14
-        version: 6.7.14
       yaml:
         specifier: ^2.8.3
         version: 2.8.3

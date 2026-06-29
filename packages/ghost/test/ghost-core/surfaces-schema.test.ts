@@ -18,21 +18,14 @@ describe("ghost.surfaces/v1", () => {
     });
   });
 
-  it("accepts a realistic tree with typed composition edges", () => {
+  it("accepts a realistic tree (id + parent + optional description)", () => {
     const result = GhostSurfacesSchema.safeParse({
       schema: GHOST_SURFACES_SCHEMA,
       surfaces: [
         { id: "core", description: "True everywhere." },
         { id: "email", description: "Lifecycle email.", parent: "core" },
         { id: "email-marketing", parent: "email" },
-        {
-          id: "checkout",
-          parent: "core",
-          edges: [
-            { kind: "composes", to: "payments" },
-            { kind: "governed-by", to: "consent" },
-          ],
-        },
+        { id: "checkout", parent: "core" },
       ],
     });
 
@@ -59,11 +52,11 @@ describe("ghost.surfaces/v1", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects an unknown edge kind", () => {
+  it("rejects an unknown surface key (strict; edges are gone)", () => {
     const result = GhostSurfacesSchema.safeParse({
       schema: GHOST_SURFACES_SCHEMA,
       surfaces: [
-        { id: "checkout", edges: [{ kind: "see-also", to: "payments" }] },
+        { id: "checkout", edges: [{ kind: "composes", to: "payments" }] },
       ],
     });
 
@@ -80,15 +73,12 @@ describe("ghost.surfaces/v1", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts an edge `to` that does not exist as a surface", () => {
-    // INTENTIONAL: dangling-reference detection is a Phase 2 lint concern, not a
-    // schema concern. Zod validates a node in isolation and cannot see the rest
-    // of the tree. Do not "fix" this at the schema layer — it belongs in lint.
+  it("accepts a parent that does not exist as a surface", () => {
+    // INTENTIONAL: dangling-reference detection is a lint concern, not a schema
+    // concern. Zod validates a position in isolation and cannot see the tree.
     const result = GhostSurfacesSchema.safeParse({
       schema: GHOST_SURFACES_SCHEMA,
-      surfaces: [
-        { id: "checkout", edges: [{ kind: "composes", to: "nonexistent" }] },
-      ],
+      surfaces: [{ id: "checkout", parent: "nonexistent" }],
     });
 
     expect(result.success).toBe(true);

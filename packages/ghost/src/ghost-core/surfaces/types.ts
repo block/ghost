@@ -1,40 +1,25 @@
 export const GHOST_SURFACES_SCHEMA = "ghost.surfaces/v1" as const;
 export const GHOST_SURFACES_YML_FILENAME = "surfaces.yml" as const;
 
-/**
- * The fixed, Ghost-owned edge vocabulary for the composition graph.
- *
- * Closed by design (see docs/ideas/surface-schema.md): an open vocabulary would
- * make Ghost a general-purpose graph database and lose the interface-composition
- * focus. Edges express how interface surfaces relate; richer consumers extend
- * edges consumer-side, never by opening this set. This is a code constant, never
- * package data.
- */
-export const GHOST_SURFACE_EDGE_KINDS = ["composes", "governed-by"] as const;
-export type GhostSurfaceEdgeKind = (typeof GHOST_SURFACE_EDGE_KINDS)[number];
-
-/** The implicit root surface every surface ultimately descends from. */
+/** The implicit root every node ultimately descends from. */
 export const GHOST_SURFACE_ROOT_ID = "core" as const;
 
-export interface GhostSurfaceEdge {
-  kind: GhostSurfaceEdgeKind;
-  to: string;
-}
-
+/**
+ * `surfaces.yml` is an optional terse spine file: a place to declare bare tree
+ * positions (id + parent) in one file rather than as bodyless node files. It
+ * folds into the same node id space at load time — a position that needs
+ * guidance is simply a node with that id. Lateral composition lives on node
+ * `relates`, never here (the old surface edge vocabulary is gone).
+ */
 export interface GhostSurface {
   id: string;
   description?: string;
   /**
-   * The single containment parent. Absent means a top-level surface under the
-   * implicit `core` root. This is the only place containment is expressed; the
-   * id never encodes hierarchy (see GhostSurfacesSchema id rules).
+   * The single containment parent. Absent means a top-level position under the
+   * implicit `core` root. Containment lives only here; the id never encodes
+   * hierarchy (see GhostSurfacesSchema id rules).
    */
   parent?: string;
-  /**
-   * Typed composition edges to other surfaces (the Layer 3 composition graph).
-   * Edges never imply containment and never cascade.
-   */
-  edges?: GhostSurfaceEdge[];
 }
 
 export interface GhostSurfacesDocument {
