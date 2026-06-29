@@ -1,6 +1,7 @@
 import type { CAC } from "cac";
 import {
   buildGraphMenu,
+  closestIds,
   GHOST_GRAPH_ROOT_ID,
   type GraphMenuEntry,
   type GraphSlice,
@@ -51,12 +52,25 @@ export function registerGatherCommand(cli: CAC): void {
         // No node named, or an unknown one: return the menu, never the tree.
         const known = new Set(menu.map((entry) => entry.id));
         if (!surface || !known.has(surface)) {
+          const suggestions = surface ? closestIds(surface, known) : [];
           if (opts.format === "json") {
             process.stdout.write(
-              `${JSON.stringify({ kind: "menu", surfaces: menu }, null, 2)}\n`,
+              `${JSON.stringify(
+                {
+                  kind: "menu",
+                  surfaces: menu,
+                  ...(surface && !known.has(surface)
+                    ? { code: "ERR_UNKNOWN_SURFACE", suggestions }
+                    : {}),
+                },
+                null,
+                2,
+              )}\n`,
             );
           } else {
-            process.stdout.write(formatMenuMarkdown(menu, surface));
+            process.stdout.write(
+              formatMenuMarkdown(menu, surface, suggestions),
+            );
           }
           // Unknown surface is an error (2); no surface at all is a valid menu
           // request (0).
@@ -86,12 +100,17 @@ export function registerGatherCommand(cli: CAC): void {
 function formatMenuMarkdown(
   menu: GraphMenuEntry[],
   unknown: string | undefined,
+  suggestions: string[] = [],
 ): string {
   const lines: string[] = ["# Ghost Nodes"];
   if (unknown) {
+    const didYouMean =
+      suggestions.length > 0
+        ? ` Did you mean: ${suggestions.map((s) => `\`${s}\``).join(", ")}?`
+        : "";
     lines.push(
       "",
-      `Node \`${unknown}\` is not in this package. Pick one of the nodes below.`,
+      `Node \`${unknown}\` is not in this package.${didYouMean} Pick one of the nodes below.`,
     );
   } else {
     lines.push(

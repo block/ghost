@@ -8,6 +8,7 @@ import {
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadChecksDir } from "../scan/checks-dir.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { guardSurfaces } from "./surface-guard.js";
 
 function parseSurfaceIds(value: unknown): string[] {
   const raw = Array.isArray(value) ? value : value === undefined ? [] : [value];
@@ -59,6 +60,10 @@ export function registerChecksCommand(cli: CAC): void {
         // The agent names the touched surfaces (it analyzed the diff). Ghost
         // routes + grounds for those surfaces; it does not infer from paths.
         const touched = parseSurfaceIds(opts.surface);
+
+        // A named surface absent from the graph is an error, not a silent
+        // empty route — emit ERR_UNKNOWN_SURFACE with suggestions and stop.
+        if (guardSurfaces(loaded.graph, touched, opts.format)) return;
 
         const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
 

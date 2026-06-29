@@ -127,6 +127,30 @@ ghost gather checkout --format json
 This is the pre-generation step: Ghost gives agents surface-composition context
 before they build, not only after a review finds drift.
 
+### Find anything: `search`
+
+When you do not know whether what you need is a node, a surface, or a check,
+search across all of them at once. Results are ranked: a verbatim match wins
+(an exact id, then a name, description, or body substring), then a whole-name
+typo fallback, then multi-word queries by how many of their words a candidate
+covers — so a natural phrase like `payment confirmation screen` still finds the
+right surface. Each result carries the follow-up command to run. Restrict with
+`--type <node|surface|check>` and cap with `--limit`.
+
+<CliHelp tool="ghost" command="search" hideDescription />
+
+```bash
+ghost search checkout
+ghost search trust --type node
+ghost search contrast --type check
+ghost search marketing --format json
+```
+
+Naming a surface that is not in the package is an error, not a silent empty
+result: `gather`, `checks`, and `review` emit the stable code
+`ERR_UNKNOWN_SURFACE` with closest-id suggestions so an agent can retry without
+a human.
+
 </DocSection>
 
 <DocSection title="Govern Changes">

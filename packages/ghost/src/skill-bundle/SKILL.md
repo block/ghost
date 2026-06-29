@@ -64,6 +64,12 @@ node shape.
   edge hub's subtree. The agent reads the descriptions and pulls what it needs
   with a follow-up `gather`.
 
+Naming a surface that is not in the package is an error, not a silent empty
+result: `gather`, `checks`, and `review` emit the stable code
+`ERR_UNKNOWN_SURFACE` with closest-id `suggestions` (in `--format json`) and a
+"Did you mean" line otherwise. Branch on the code, retry with a suggested id, or
+run `ghost search <term>` to find the right one.
+
 Checks and review validate output; they are not generation input.
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
@@ -98,6 +104,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
 | `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (corridor spine + relates edges, plus spoke pointers), or list the surface menu. |
+| `ghost search <query> [--type <node\|surface\|check>]` | Find nodes, surfaces, and checks in one ranked, cross-domain result set, each tagged with the follow-up command to run. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -110,6 +117,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 
 ## Workflows
 
+- Self-check before generating: follow [references/self-check.md](references/self-check.md).
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).

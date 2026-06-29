@@ -18,6 +18,16 @@ export {
 } from "./lint.js";
 export { buildGraphMenu, type GraphMenuEntry } from "./menu.js";
 export {
+  closestIds,
+  type SearchCheck,
+  type SearchDomain,
+  type SearchHit,
+  type SearchInput,
+  type SearchOptions,
+  type SearchReason,
+  searchGraph,
+} from "./search.js";
+export {
   type GraphSlice,
   type GraphSliceNode,
   type GraphSliceProvenance,
