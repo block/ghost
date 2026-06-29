@@ -1,73 +1,71 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
+import { dirname, join, resolve } from "node:path";
 import {
   GHOST_SURFACES_YML_FILENAME,
-  type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
+  type GhostGraph,
   type GhostSurfacesDocument,
+  lintGraph,
   SURVEY_FILENAME,
 } from "#ghost-core";
-import {
-  isExistingPathError,
-  isMissingPathError,
-  readOptionalUtf8,
-} from "../internal/fs.js";
+import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
 import {
   FINGERPRINT_COMPOSITION_FILENAME,
-  FINGERPRINT_FILENAME,
   FINGERPRINT_INTENT_FILENAME,
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
-  FINGERPRINT_YML_FILENAME,
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./constants.js";
 import {
   lintFingerprintPackageManifest,
-  parseSplitFingerprintForLint,
-  templateComposition,
-  templateIntent,
-  templateInventory,
-  templateManifest,
+  loadFingerprintPackage,
 } from "./fingerprint-package-layers.js";
 import type { LintIssue, LintReport } from "./lint.js";
+import {
+  DEFAULT_TEMPLATE_NAME,
+  getInitTemplate,
+  listInitTemplates,
+} from "./templates.js";
 
-export { loadFingerprintPackage } from "./fingerprint-package-layers.js";
+export { loadFingerprintPackage };
 
 export interface FingerprintPackagePaths {
   dir: string;
   packageDir: string;
   manifest: string;
-  intent: string;
-  inventory: string;
-  composition: string;
   surfaces: string;
-  fingerprintYml: string;
+  /** The `nodes/` directory holding `ghost.node/v1` markdown nodes. */
+  nodes: string;
   resources: string;
   survey: string;
   patterns: string;
-  /** Legacy direct markdown path; not part of the canonical root bundle. */
-  fingerprint: string;
+  /** Legacy facet paths — used only to detect legacy packages for migration. */
+  intent: string;
+  inventory: string;
+  composition: string;
 }
 
 export interface LoadedFingerprintPackage {
   manifest: GhostFingerprintPackageManifest;
   manifestRaw: string;
-  fingerprint: GhostFingerprintDocument;
   /** Parsed `surfaces.yml`, or `undefined` when the package has no surfaces file. */
   surfaces?: GhostSurfacesDocument;
-  layerRaw: {
-    intent?: string;
-    inventory?: string;
-    composition?: string;
-  };
+  /** The in-memory node graph — the only fingerprint model. */
+  graph: GhostGraph;
 }
 
 export interface InitFingerprintPackageOptions {
-  reference?: string;
+  /** Init template name (default: "default"). */
+  template?: string;
   force?: boolean;
+}
+
+export interface InitFingerprintPackageResult {
+  paths: FingerprintPackagePaths;
+  /** Package-relative paths of the files the template wrote. */
+  written: string[];
 }
 
 export function resolveFingerprintPackage(
@@ -80,15 +78,14 @@ export function resolveFingerprintPackage(
     dir,
     packageDir,
     manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
-    intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
-    inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
-    composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
     surfaces: join(packageDir, GHOST_SURFACES_YML_FILENAME),
-    fingerprintYml: join(dir, FINGERPRINT_YML_FILENAME),
+    nodes: join(packageDir, "nodes"),
     resources: join(dir, RESOURCES_FILENAME),
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
-    fingerprint: join(dir, FINGERPRINT_FILENAME),
+    intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
+    inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
+    composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
   };
 }
 
@@ -96,22 +93,37 @@ export async function initFingerprintPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
   options: InitFingerprintPackageOptions = {},
-): Promise<FingerprintPackagePaths> {
+): Promise<InitFingerprintPackageResult> {
+  const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
+  const template = getInitTemplate(templateName);
+  if (!template) {
+    throw new Error(
+      `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
+    );
+  }
+
   const paths = resolveFingerprintPackage(dirArg, cwd);
   await mkdir(paths.packageDir, { recursive: true });
-  const files = [
-    { path: paths.manifest, content: templateManifest() },
-    { path: paths.intent, content: templateIntent() },
-    { path: paths.inventory, content: templateInventory(options.reference) },
-    { path: paths.composition, content: templateComposition() },
-  ];
+
+  const files = template.files().map((file) => ({
+    relativePath: file.relativePath,
+    path: join(paths.packageDir, file.relativePath),
+    content: file.content,
+  }));
+
   if (!options.force) {
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
   }
+
+  // Create any nested directories the template needs (e.g. nodes/).
+  const dirs = new Set(files.map((file) => dirname(file.path)));
+  await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
+
   await Promise.all(
     files.map((file) => writeInitFile(file.path, file.content, options.force)),
   );
-  return paths;
+
+  return { paths, written: files.map((file) => file.relativePath) };
 }
 
 async function writeInitFile(
@@ -153,6 +165,12 @@ async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
   }
 }
 
+/**
+ * `validate` for a package: shape pass (manifest well-formed) + graph pass
+ * (the node network is correct — links resolve, one root, acyclic). Loading the
+ * package already runs the graph pass and throws on error; here we surface both
+ * passes as a structured report.
+ */
 export async function lintFingerprintPackage(
   dirArg: string | undefined,
   cwd = process.cwd(),
@@ -165,17 +183,30 @@ export async function lintFingerprintPackage(
     "manifest.yml",
     issues,
   );
-  const intentRaw = await readOptional(paths.intent);
-  const inventoryRaw = await readOptional(paths.inventory);
-  const compositionRaw = await readOptional(paths.composition);
 
-  let _fingerprint: GhostFingerprintDocument | undefined;
   if (manifestRaw !== undefined) {
+    // shape pass: manifest well-formed.
     lintFingerprintPackageManifest(manifestRaw, issues);
-    _fingerprint = parseSplitFingerprintForLint(
-      { intentRaw, inventoryRaw, compositionRaw },
-      issues,
-    );
+    // graph pass: fold + validate the node network.
+    try {
+      const { graph } = await loadFingerprintPackage(paths);
+      const graphReport = lintGraph(graph);
+      issues.push(
+        ...graphReport.issues.map((issue) => ({
+          severity: issue.severity,
+          rule: issue.rule,
+          message: issue.message,
+          ...(issue.node ? { path: `nodes/${issue.node}` } : {}),
+        })),
+      );
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        rule: "package-graph-invalid",
+        message: err instanceof Error ? err.message : String(err),
+        path: ".ghost",
+      });
+    }
   }
 
   return finalize(issues);
@@ -197,45 +228,6 @@ async function readRequired(
     });
     return undefined;
   }
-}
-
-const readOptional = readOptionalUtf8;
-
-function _parseYamlSafe(
-  raw: string,
-  label: string,
-  issues: LintIssue[],
-): unknown | undefined {
-  try {
-    return parseYaml(raw);
-  } catch (err) {
-    issues.push({
-      severity: "error",
-      rule: "package-yaml-invalid",
-      message: `${label} is not valid YAML: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path: label,
-    });
-    return undefined;
-  }
-}
-
-function _prefixIssues(
-  label: string,
-  input: Array<{
-    severity: "error" | "warning" | "info";
-    rule: string;
-    message: string;
-    path?: string;
-  }>,
-): LintIssue[] {
-  return input.map((issue) => ({
-    severity: issue.severity,
-    rule: issue.rule,
-    message: issue.message,
-    path: issue.path ? `${label}.${issue.path}` : label,
-  }));
 }
 
 function finalize(issues: LintIssue[]): LintReport {

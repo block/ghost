@@ -5,20 +5,22 @@ export {
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
-  ScanBuildingBlockRows,
   ScanContributionReport,
   ScanContributionState,
-  ScanFacet,
-  ScanFacetReport,
-  ScanFacetState,
+  ScanSurfaceCoverage,
 } from "./fingerprint-contribution.js";
 export { signals } from "./inventory.js";
 export type {
   LegacyPackageInput,
+  MigratedNodeFile,
   MigrationNote,
   MigrationResult,
 } from "./migrate-legacy.js";
-export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
+export {
+  looksLegacy,
+  migratedNodeFiles,
+  migrateLegacyPackage,
+} from "./migrate-legacy.js";
 export {
   fingerprintPackageDisplayPath,
   GHOST_PACKAGE_DIR_ENV,

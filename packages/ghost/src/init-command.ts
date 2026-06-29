@@ -1,21 +1,15 @@
 import type { CAC } from "cac";
-import {
-  initFingerprintPackage,
-  type resolveFingerprintPackage,
-} from "./fingerprint.js";
+import { initFingerprintPackage } from "./fingerprint.js";
 import { resolveGhostDirDefault } from "./scan/index.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
-    .command("init", "Create a root .ghost split fingerprint package")
+    .command("init", "Create a root .ghost node fingerprint package")
     .option(
       "--package <dir>",
       "Exact fingerprint package directory to initialize",
     )
-    .option(
-      "--reference <path-or-registry>",
-      "Reference UI registry, library path, or fingerprint to record in inventory building blocks",
-    )
+    .option("--template <name>", "Init template to scaffold (default: default)")
     .option("--force", "Overwrite existing Ghost fingerprint files")
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (opts) => {
@@ -31,28 +25,31 @@ export function registerInitCommand(cli: CAC): void {
           typeof opts.package === "string" ? opts.package : undefined;
         const ghostDir =
           exactPackage === undefined ? ghostDirFromEnv() : undefined;
-        const initOptions = {
-          reference:
-            typeof opts.reference === "string" ? opts.reference : undefined,
-          force: Boolean(opts.force),
-        };
-        const paths = await initFingerprintPackage(
+        const result = await initFingerprintPackage(
           exactPackage ?? ghostDir,
           process.cwd(),
-          initOptions,
+          {
+            ...(typeof opts.template === "string"
+              ? { template: opts.template }
+              : {}),
+            force: Boolean(opts.force),
+          },
         );
         if (opts.format === "json") {
           process.stdout.write(
-            `${JSON.stringify(initCommandOutput(paths), null, 2)}\n`,
+            `${JSON.stringify(
+              { dir: result.paths.dir, written: result.written },
+              null,
+              2,
+            )}\n`,
           );
         } else {
           process.stdout.write(
-            `Initialized Ghost fingerprint package: ${paths.dir}\n`,
+            `Initialized Ghost fingerprint package: ${result.paths.dir}\n`,
           );
-          process.stdout.write(`  manifest.yml: ${paths.manifest}\n`);
-          process.stdout.write(`  intent.yml: ${paths.intent}\n`);
-          process.stdout.write(`  inventory.yml: ${paths.inventory}\n`);
-          process.stdout.write(`  composition.yml: ${paths.composition}\n`);
+          for (const relativePath of result.written) {
+            process.stdout.write(`  ${relativePath}\n`);
+          }
         }
         process.exit(0);
       } catch (err) {
@@ -66,16 +63,4 @@ export function registerInitCommand(cli: CAC): void {
 
 function ghostDirFromEnv(): string {
   return resolveGhostDirDefault();
-}
-
-function initCommandOutput(
-  paths: ReturnType<typeof resolveFingerprintPackage>,
-): Record<string, string> {
-  return {
-    dir: paths.dir,
-    manifest: paths.manifest,
-    intent: paths.intent,
-    inventory: paths.inventory,
-    composition: paths.composition,
-  };
 }

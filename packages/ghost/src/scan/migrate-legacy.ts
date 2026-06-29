@@ -1,4 +1,9 @@
-import { GHOST_SURFACE_ROOT_ID, GHOST_SURFACES_SCHEMA } from "#ghost-core";
+import {
+  GHOST_SURFACE_ROOT_ID,
+  GHOST_SURFACES_SCHEMA,
+  type GhostNodeDocument,
+  serializeNode,
+} from "#ghost-core";
 
 /**
  * One-shot migration of a legacy `.ghost/` package (pre-surface coordinates)
@@ -210,4 +215,78 @@ export function looksLegacy(input: LegacyPackageInput): boolean {
     }
   }
   return false;
+}
+
+/** A node file the migration writes, relative to the package dir. */
+export interface MigratedNodeFile {
+  relativePath: string;
+  content: string;
+}
+
+/**
+ * Convert the migrated facet docs into `nodes/*.md` files — the persistent form
+ * of the Phase 2 facet→node projection. Each facet entry becomes one prose node
+ * whose body is the entry's primary text and whose `under` is its placement
+ * (`surface`, omitted when unplaced ⇒ cascades from core). Lossy by design:
+ * structured affordances (evidence, check_refs, exemplar paths) are dropped, in
+ * line with Option A. Returns one file per node (`nodes/<id>.md`).
+ */
+export function migratedNodeFiles(result: MigrationResult): MigratedNodeFile[] {
+  const files: MigratedNodeFile[] = [];
+  const seen = new Set<string>();
+
+  const emit = (entry: Yaml, body: string) => {
+    const id = typeof entry.id === "string" ? entry.id : undefined;
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    const under = typeof entry.surface === "string" ? entry.surface : undefined;
+    const doc: GhostNodeDocument = {
+      frontmatter: { id, ...(under !== undefined ? { under } : {}) },
+      body: body.trim(),
+    };
+    files.push({
+      relativePath: `nodes/${id}.md`,
+      content: serializeNode(doc),
+    });
+  };
+
+  collect(result.intent, "situations", (e) =>
+    emit(
+      e,
+      str(e.user_intent) ?? str(e.product_obligation) ?? str(e.title) ?? id(e),
+    ),
+  );
+  collect(result.intent, "principles", (e) =>
+    emit(e, str(e.principle) ?? id(e)),
+  );
+  collect(result.intent, "experience_contracts", (e) =>
+    emit(e, str(e.contract) ?? id(e)),
+  );
+  collect(result.composition, "patterns", (e) =>
+    emit(e, str(e.pattern) ?? id(e)),
+  );
+  collect(result.inventory, "exemplars", (e) =>
+    emit(e, str(e.why) ?? str(e.note) ?? str(e.title) ?? str(e.path) ?? id(e)),
+  );
+
+  return files;
+}
+
+function collect(
+  doc: Yaml | undefined,
+  key: string,
+  visit: (entry: Yaml) => void,
+): void {
+  if (!doc) return;
+  const list = doc[key];
+  if (!Array.isArray(list)) return;
+  for (const entry of list) if (isRecord(entry)) visit(entry);
+}
+
+function str(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function id(entry: Yaml): string {
+  return typeof entry.id === "string" ? entry.id : "node";
 }

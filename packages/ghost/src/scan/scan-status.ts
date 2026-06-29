@@ -39,28 +39,13 @@ export async function scanStatus(dirPath: string): Promise<ScanStatus> {
   const paths = resolveFingerprintPackage(dir, process.cwd());
   const fingerprintPath = paths.packageDir;
 
-  const [
-    fingerprintPresent,
-    intentPresent,
-    inventoryPresent,
-    compositionPresent,
-  ] = await Promise.all([
-    pathExists(paths.manifest, "file"),
-    pathExists(paths.intent, "file"),
-    pathExists(paths.inventory, "file"),
-    pathExists(paths.composition, "file"),
-  ]);
+  const fingerprintPresent = await pathExists(paths.manifest, "file");
 
   const fingerprint: ScanStageReport = {
     state: fingerprintPresent ? "present" : "missing",
     path: fingerprintPath,
   };
-  const contribution = await scanContribution(paths, {
-    fingerprintPresent,
-    intentPresent,
-    inventoryPresent,
-    compositionPresent,
-  });
+  const contribution = await scanContribution(paths, fingerprintPresent);
 
   const status: ScanStatus = {
     dir,
@@ -74,35 +59,20 @@ export async function scanStatus(dirPath: string): Promise<ScanStatus> {
 
 async function scanContribution(
   paths: FingerprintPackagePaths,
-  present: {
-    fingerprintPresent: boolean;
-    intentPresent: boolean;
-    inventoryPresent: boolean;
-    compositionPresent: boolean;
-  },
+  fingerprintPresent: boolean,
 ): Promise<ScanContributionReport> {
-  const files = {
-    intent: { path: paths.intent, present: present.intentPresent },
-    inventory: { path: paths.inventory, present: present.inventoryPresent },
-    composition: {
-      path: paths.composition,
-      present: present.compositionPresent,
-    },
-  } as const;
-
-  if (!present.fingerprintPresent) {
-    return summarizeFingerprintContribution({ files, missing: true });
+  if (!fingerprintPresent) {
+    return summarizeFingerprintContribution({ missing: true });
   }
 
   try {
     const loaded = await loadFingerprintPackage(paths);
     return summarizeFingerprintContribution({
-      fingerprint: loaded.fingerprint,
-      files,
+      graph: loaded.graph,
+      surfaceIds: (loaded.surfaces?.surfaces ?? []).map((s) => s.id),
     });
   } catch (err) {
     return summarizeFingerprintContribution({
-      files,
       invalidReason: err instanceof Error ? err.message : String(err),
     });
   }

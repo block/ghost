@@ -1,15 +1,14 @@
 import type { CAC } from "cac";
 import {
   buildSurfaceMenu,
-  type ResolvedSlice,
-  resolveSurfaceSlice,
-  type SliceProvenance,
+  GHOST_GRAPH_ROOT_ID,
+  type GraphSlice,
+  type GraphSliceProvenance,
+  resolveGraphSlice,
   type SurfaceMenuEntry,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "./fingerprint.js";
 import { loadFingerprintPackage } from "./scan/fingerprint-package.js";
-
-const GHOST_SURFACE_ROOT_ID = "core";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
@@ -21,6 +20,10 @@ export function registerGatherCommand(cli: CAC): void {
       "--package <dir>",
       "Use this fingerprint package directory (default: ./.ghost)",
     )
+    .option(
+      "--as <incarnation>",
+      "Filter to one incarnation (e.g. email, billboard, voice). Essence (untagged) nodes always pass.",
+    )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -31,6 +34,11 @@ export function registerGatherCommand(cli: CAC): void {
           process.exit(2);
           return;
         }
+
+        const incarnation =
+          typeof opts.as === "string" && opts.as.length > 0
+            ? opts.as
+            : undefined;
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
@@ -56,11 +64,9 @@ export function registerGatherCommand(cli: CAC): void {
           return;
         }
 
-        const slice = resolveSurfaceSlice(
-          loaded.surfaces,
-          loaded.fingerprint,
-          surface,
-        );
+        const slice = resolveGraphSlice(loaded.graph, surface, {
+          ...(incarnation !== undefined ? { incarnation } : {}),
+        });
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(slice, null, 2)}\n`);
@@ -106,57 +112,54 @@ function formatMenuMarkdown(
   return `${lines.join("\n")}\n`;
 }
 
-function provenanceLabel(provenance: SliceProvenance): string {
+function provenanceLabel(provenance: GraphSliceProvenance): string {
   switch (provenance.kind) {
     case "own":
       return "own";
     case "ancestor":
-      return `from \`${provenance.surface}\``;
+      return `from \`${provenance.from}\``;
     case "edge":
-      return `${provenance.edge} \`${provenance.surface}\``;
+      return provenance.via
+        ? `${provenance.via} \`${provenance.from}\``
+        : `relates \`${provenance.from}\``;
   }
 }
 
-function formatSliceMarkdown(slice: ResolvedSlice): string {
+const PROVENANCE_RANK: Record<GraphSliceProvenance["kind"], number> = {
+  own: 0,
+  ancestor: 1,
+  edge: 2,
+};
+
+function formatSliceMarkdown(slice: GraphSlice): string {
   const lines: string[] = [`# Ghost Context: \`${slice.surface}\``];
   const chain =
-    slice.surface === GHOST_SURFACE_ROOT_ID
+    slice.surface === GHOST_GRAPH_ROOT_ID
       ? slice.surface
       : [slice.surface, ...slice.ancestors].join(" → ");
   lines.push("", `Cascade: ${chain}`);
+  if (slice.incarnation) lines.push(`As: ${slice.incarnation}`);
 
-  section(lines, "Situations", slice.situations, (entry) => {
-    const node = entry.node;
-    return `\`${node.id}\` — ${node.title ?? node.user_intent ?? node.id} (${provenanceLabel(entry.provenance)})`;
-  });
-  section(lines, "Principles", slice.principles, (entry) => {
-    return `\`${entry.node.id}\` — ${entry.node.principle} (${provenanceLabel(entry.provenance)})`;
-  });
-  section(
-    lines,
-    "Experience contracts",
-    slice.experience_contracts,
-    (entry) => {
-      return `\`${entry.node.id}\` — ${entry.node.contract} (${provenanceLabel(entry.provenance)})`;
-    },
+  // Provenance-ordered: own first, then ancestors, then edges.
+  const ordered = [...slice.nodes].sort(
+    (a, b) =>
+      PROVENANCE_RANK[a.provenance.kind] - PROVENANCE_RANK[b.provenance.kind],
   );
-  section(lines, "Patterns", slice.patterns, (entry) => {
-    return `\`${entry.node.id}\` (${entry.node.kind}) — ${entry.node.pattern} (${provenanceLabel(entry.provenance)})`;
-  });
+
+  lines.push("", "## Nodes");
+  if (ordered.length === 0) {
+    lines.push("- none");
+  } else {
+    for (const node of ordered) {
+      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
+      lines.push(
+        "",
+        `### \`${node.id}\` — ${provenanceLabel(node.provenance)}${tag}`,
+        "",
+        node.body,
+      );
+    }
+  }
 
   return `${lines.join("\n")}\n`;
-}
-
-function section<T>(
-  lines: string[],
-  title: string,
-  entries: T[],
-  render: (entry: T) => string,
-): void {
-  lines.push("", `## ${title}`);
-  if (entries.length === 0) {
-    lines.push("- none");
-    return;
-  }
-  for (const entry of entries) lines.push(`- ${render(entry)}`);
 }

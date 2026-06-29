@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   GhostSurfacesSchema,
-  lintGhostFingerprint,
+  lintGhostNode,
   lintGhostSurfaces,
 } from "../src/ghost-core/index.js";
 import {
   type LegacyPackageInput,
   looksLegacy,
+  migratedNodeFiles,
   migrateLegacyPackage,
 } from "../src/scan/migrate-legacy.js";
 
@@ -125,22 +126,18 @@ describe("migrateLegacyPackage", () => {
     expect(principles[0]).toHaveProperty("applies_to");
   });
 
-  it("produces a package that passes surfaces and fingerprint lint", () => {
+  it("produces a node package: valid surfaces + parseable nodes", () => {
     const result = migrateLegacyPackage(legacy());
-    const surfaceIds = (result.surfaces.surfaces as Array<{ id: string }>).map(
-      (s) => s.id,
-    );
 
     expect(lintGhostSurfaces(result.surfaces).errors).toBe(0);
 
-    const fingerprint = {
-      schema: "ghost.fingerprint/v1",
-      intent: result.intent ?? {},
-      inventory: result.inventory ?? {},
-      composition: result.composition ?? {},
-    };
-    const report = lintGhostFingerprint(fingerprint, { surfaceIds });
-    expect(report.errors).toBe(0);
+    // The migration emits one prose node per facet entry.
+    const files = migratedNodeFiles(result);
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      expect(file.relativePath).toMatch(/^nodes\/.+\.md$/);
+      expect(lintGhostNode(file.content).errors).toBe(0);
+    }
   });
 });
 

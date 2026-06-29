@@ -1,10 +1,10 @@
 ---
 name: capture
-description: Author repo-local Ghost fingerprints.
+description: Author repo-local Ghost fingerprints as nodes.
 handoffs:
-  - label: Inspect fingerprint facets
+  - label: Inspect the package
     command: ghost scan
-    prompt: What fingerprint facets does this package contribute, and which facets are absent?
+    prompt: What does this fingerprint package contribute, and what is absent?
   - label: Run deterministic checks
     command: ghost check
     prompt: Run ghost check against this bundle
@@ -12,147 +12,128 @@ handoffs:
 
 # Recipe: Author Ghost Fingerprint
 
-**Goal:** record durable product-surface composition in `.ghost/`.
-If a change is uncommitted or unmerged, it is draft work. If it is checked in,
-Ghost treats the fingerprint package as canonical.
+**Goal:** record durable product-surface composition in `.ghost/` as a graph of
+prose **nodes**. If a change is uncommitted or unmerged, it is draft work. If it
+is checked in, Ghost treats the fingerprint package as canonical.
 
 ```text
 .ghost/
-  manifest.yml
-  intent.yml
-  inventory.yml
-  composition.yml
-  validate.yml
+  manifest.yml      # schema + id
+  surfaces.yml      # the spine: surfaces + their `parent` (core is implicit)
+  nodes/            # one prose node per file
+    core-voice.md
+    checkout-trust.md
+  checks/           # optional ghost.check/v1 markdown checks
 ```
 
-`intent.yml` captures the intent behind the surface. `inventory.yml` records
-curated materials, exemplars, and source links. `composition.yml` records the
-patterns that make the surface feel intentional. Checks validate output after
-generation; they are not generation input.
+A **node** is a markdown file: YAML frontmatter (the machine handles) + a prose
+body (the design expression). The fingerprint is the graph of nodes the loader
+folds together; `ghost gather <surface>` traverses it.
+
+## The node shape
+
+```markdown
+---
+id: checkout-trust          # required: unique, stable
+under: checkout             # optional: parent surface/node — inherited downward
+relates:                    # optional: lateral links
+  - to: core-trust
+    as: reinforces          # reinforces | contrasts | variant
+incarnation: web            # optional: email | billboard | voice | … (omit = essence)
+---
+
+Near the moment of payment, reduce felt risk. Proximity of reassurance to the
+action beats completeness…
+```
+
+- **`under`** places the node — a node inherits everything it sits under. The
+  brand soul lives at `core` (implicit root), so `core`-placed nodes reach every
+  surface.
+- **`relates`** links laterally when a relationship carries rationale. When the
+  rationale is rich (e.g. "checkout and item-detail disagree on density on
+  purpose"), write a **relationship node** whose body explains the tension.
+- **`incarnation`** tags a node only when its expression is bound to one output
+  form. Leave medium-agnostic essence untagged.
+
+## Write the body through three lenses
+
+Intent / inventory / composition are **authoring lenses**, not fields and not
+node types. They are the things worth thinking through as you write a node's
+prose — a node may lean entirely on one:
+
+- **intent** — the why and the stance.
+- **inventory** — the material you have (tokens, components, and pointers to the
+  actual implementation in code).
+- **composition** — how it is assembled (the patterns that make it intentional).
+
+A finding cites a node by id, so keep a node **purpose-coherent**: one purpose,
+any length. Split into a second node only when a handle diverges — a different
+`under`, a different `incarnation`, or a genuinely different `relates` role.
 
 ## Steps
 
-### 1. Classify The Authoring Scenario
+### 1. Classify the authoring scenario
 
-Before initialization or edits, decide which authoring posture fits this repo.
-Follow [authoring-scenarios.md](authoring-scenarios.md) when the user is setting
-up or substantially revising a fingerprint.
-
-Common starting points:
-
-- Net new repos are mostly human-led because the repo has little evidence.
-- Net new repos with a UI library combine human intent with library scans.
-- Existing repos combine human intent with code, docs, route, story, and
-  exemplar scans.
-- Existing repos with mixed quality require curation before repeated patterns
-  become canonical.
-- Monorepos and product suites run one contract per package: surfaces (not
-  nested packages) are how a single contract organizes locality.
-
-Human intent anchors surface composition. Scans provide evidence. Agent
-synthesis is draft work until a human curates it and ordinary Git review
+Decide which posture fits the repo before scaffolding. Follow
+[authoring-scenarios.md](authoring-scenarios.md) when setting up or substantially
+revising a fingerprint. Human intent anchors composition; scans provide
+evidence; agent synthesis is draft work until a human curates it and Git review
 accepts it.
 
-If the user asks for `auto-draft`, keep this same boundary: the mode may create
-starter edits, but it does not make scan output canonical.
+Monorepos and product suites run **one contract per package**: surfaces are how
+a single contract organizes locality.
 
 ### 2. Initialize
 
 ```bash
-ghost init
+ghost init            # scaffolds manifest + surfaces.yml + a seed node
 ghost scan
 ```
 
-Use `--reference <path-or-registry>` when a reference UI registry or library
-should seed `inventory.yml`.
+`ghost init` is template-driven (`--template <name>` selects a starter). The
+default template seeds the spine plus one `core` node demonstrating the shape.
 
-### 3. Auto-Draft Mode
+### 3. Shape the spine
 
-Use this branch only when the user explicitly asks for auto-draft, such as:
-
-```text
-Set up the Ghost fingerprint for this repo with auto-draft.
-```
-
-Auto-draft is a skill workflow, not a Ghost CLI action or flag.
-
-1. If `.ghost/manifest.yml` is missing, run `ghost init`.
-2. Run `ghost scan --format json`.
-3. Gather raw repo signals:
-
-   ```bash
-   ghost signals .
-   ```
-
-4. Inspect high-signal files from the signals, plus routes, docs, stories,
-   tests, tokens, registries, assets, screenshots, and exemplars.
-5. Write only the smallest evidence-backed starter entries into
-   `intent.yml`, `inventory.yml`, and `composition.yml`.
-6. Ask the human to keep, soften, reject, scope, record, or convert important
-   claims before treating them as durable fingerprint guidance.
-
-If evidence is thin, contradictory, or mostly implementation plumbing, write
-less and ask more. Do not fill facets with speculative product claims.
+Edit `surfaces.yml` to declare the surfaces this product has and their `parent`
+(containment). `core` is implicit. The tree is always declared here — never
+inferred from node filenames or repo paths.
 
 ### 4. Orient
 
 Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal hierarchy,
-behavior, copy, accessibility, trust, and flow.
+behavior, copy, accessibility, trust, and flow. `ghost signals .` emits raw
+scratch observations — curate, never copy verbatim into a node.
 
-Optional helper:
+### 5. Write sparse nodes
 
-```bash
-ghost signals .
-```
+Add the smallest useful set of `nodes/*.md`, each a purpose-coherent prose body
+written through the lenses, placed with `under` and linked with `relates` where
+a relationship carries meaning. Prefer a few high-confidence nodes over a noisy
+catalog. Ask the human to keep, soften, reject, or re-place important claims
+before treating draft nodes as durable.
 
-Treat signals as scratch observations. Do not copy raw signals into
-`inventory.yml` without curation.
+### 6. Add checks sparingly
 
-### 5. Write Sparse Facets
-
-Edit the smallest useful durable facet content:
-
-- Before writing, ask whether the draft will help future agents choose what
-  matters most, avoid plausible-but-wrong defaults, resolve competing
-  priorities, route guidance by situation, inspect concrete exemplars, and
-  review whether generated work preserved the intended experience.
-- `intent.yml`: summary, situations, principles, and experience contracts.
-- `inventory.yml`: building blocks, exemplars, and `sources[]` links.
-- `composition.yml`: rules, layouts, structures, flows, states, content,
-  behavior, and visual arrangements.
-
-Prefer a few high-confidence entries over a comprehensive but noisy catalog.
-Ask the human to keep, soften, reject, scope, or record important claims before
-treating draft content as durable fingerprint guidance.
-
-### 6. Add Checks Sparingly
-
-`validate.yml` is the executable appendix. Add only
-deterministic checks with typed derivation refs:
-
-```yaml
-derivation:
-  composition:
-    - composition.pattern:resource-index-stays-tabular
-```
-
-Ref-backed checks are preferred. Missing or unresolved derivation refs lint as
-warnings. Inventory can support a check, but inventory-only grounding is not
-surface-composition guidance by itself.
+`checks/*.md` are `ghost.check/v1` markdown, placed by `surface:` frontmatter
+(unplaced = core = everywhere). They validate output after generation; they are
+not generation input. Add only deterministic checks.
 
 ### 7. Validate
 
 ```bash
-ghost lint .ghost
-ghost verify .ghost --root <target>
+ghost validate .ghost
 ghost check --base HEAD
 ```
 
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never treat raw `ghost signals` output as canonical inventory.
-- Never treat auto-draft as a CLI feature or a replacement for human curation.
-- Never invent surface-composition obligations absent from evidence or human direction.
-- Never promote subjective taste directly into checks; make it deterministic or keep it advisory.
+- Never treat raw `ghost signals` output as a node without curation.
+- Never infer the surface tree from filenames or repo paths — declare it in
+  `surfaces.yml`.
+- Never invent surface-composition obligations absent from evidence or human
+  direction.
+- Never promote subjective taste directly into checks; make it deterministic or
+  keep it advisory.

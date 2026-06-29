@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
-import { runDriftCheck } from "../src/drift-command.js";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -168,13 +167,11 @@ describe("ghost CLI", () => {
     for (const command of [
       "init",
       "scan",
-      "lint",
-      "verify",
+      "validate",
       "check",
       "review",
       "gather",
       "checks",
-      "emit",
       "skill install",
     ]) {
       expect(result.stdout).toContain(command);
@@ -197,555 +194,20 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("Core workflow");
     expect(result.stdout).toContain("Advanced/package inspection");
-    expect(result.stdout).toContain("Compare/stance");
     expect(result.stdout).toContain("Maintenance/legacy");
     for (const command of [
-      "lint [file]",
+      "validate [file]",
       "init",
-      "verify [dir]",
       "scan [dir]",
       "signals [path]",
       "gather",
       "checks",
       "migrate",
-      "emit <kind>",
-      "compare [...fingerprints]",
-      "drift <action>",
-      "ack",
-      "track <fingerprint>",
-      "diverge <dimension>",
       "skill <action>",
-      "check",
       "review",
     ]) {
       expect(result.stdout).toContain(command);
     }
-  });
-
-  it("compares explicitly supplied fingerprint files", async () => {
-    await writeFile(join(dir, "a.fingerprint.md"), fingerprintWithId("a"));
-    await writeFile(join(dir, "b.fingerprint.md"), fingerprintWithId("b"));
-
-    const result = await runCli(
-      ["compare", "a.fingerprint.md", "b.fingerprint.md"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Distance");
-  });
-
-  it("compares root fingerprint bundle directories", async () => {
-    await writeComparableBundle(join(dir, "a", ".ghost"), "sectioned-form");
-    await writeComparableBundle(join(dir, "b", ".ghost"), "data-table");
-
-    const result = await runCli(["compare", "a/.ghost", "b/.ghost"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Distance");
-  });
-
-  it("track writes the neutral sync manifest shape", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await writeFile(
-      join(dir, "tracked.fingerprint.md"),
-      fingerprintWithId("tracked"),
-    );
-
-    const result = await runCli(["track", "tracked.fingerprint.md"], dir);
-    const manifest = JSON.parse(
-      await readFile(join(dir, ".ghost-sync.json"), "utf-8"),
-    ) as Record<string, unknown>;
-
-    expect(result.code).toBe(0);
-    expect(manifest.tracks).toEqual({
-      type: "path",
-      value: "tracked.fingerprint.md",
-    });
-    expect(manifest.trackedFingerprintId).toBe("tracked");
-    expect(manifest.localFingerprintId).toBe("local");
-    const legacyRelationFields = [
-      "parent",
-      ["parent", "FingerprintId"].join(""),
-      ["child", "FingerprintId"].join(""),
-    ];
-    for (const field of legacyRelationFields) {
-      expect(manifest).not.toHaveProperty(field);
-    }
-  });
-
-  it("track bootstraps the sync manifest for canonical fingerprint packages", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-
-    const track = await runCli(["track", "tracked/.ghost"], dir);
-    const check = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(track.code).toBe(0);
-    const manifest = JSON.parse(
-      await readFile(join(dir, ".ghost-sync.json"), "utf-8"),
-    );
-    expect(manifest.tracks).toEqual({ type: "path", value: "tracked/.ghost" });
-    expect(manifest.trackedFingerprintId).toBe("tracked");
-    expect(manifest.localFingerprintId).toBe("local");
-    expect(check.code).toBe(0);
-    expect(JSON.parse(check.stdout).overall.verdict).toBe("covered");
-  });
-
-  it("ack and diverge write stance updates from the unified cli", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await writeFile(
-      join(dir, "tracked.fingerprint.md"),
-      fingerprintWithId("tracked"),
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: './tracked.fingerprint.md' };\n",
-    );
-
-    const ack = await runCli(
-      [
-        "ack",
-        "--stance",
-        "aligned",
-        "--reason",
-        "baseline",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    const diverge = await runCli(
-      ["diverge", "typography", "--reason", "editorial", "--format", "json"],
-      dir,
-    );
-
-    expect(ack.code).toBe(0);
-    expect(JSON.parse(ack.stdout).trackedFingerprintId).toBe("tracked");
-    expect(diverge.code).toBe(0);
-    const manifest = JSON.parse(diverge.stdout);
-    expect(manifest.dimensions.typography.stance).toBe("diverging");
-    expect(manifest.dimensions.typography.reason).toBe("editorial");
-  });
-
-  it("ack reads canonical fingerprint packages from config tracks", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: './tracked/.ghost' };\n",
-    );
-
-    const ack = await runCli(["ack", "--format", "json"], dir);
-
-    expect(ack.code).toBe(0);
-    const manifest = JSON.parse(ack.stdout);
-    expect(manifest.trackedFingerprintId).toBe("tracked");
-    expect(manifest.localFingerprintId).toBe("local");
-  });
-
-  it("ack preserves npm tracks that expose a .ghost fingerprint", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await mkdir(join(dir, "node_modules", "@scope", "tracked", ".ghost"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(
-        dir,
-        "node_modules",
-        "@scope",
-        "tracked",
-        ".ghost",
-        "fingerprint.md",
-      ),
-      fingerprintWithId("tracked"),
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: 'npm:@scope/tracked' };\n",
-    );
-
-    const ack = await runCli(["ack", "--format", "json"], dir);
-
-    expect(ack.code).toBe(0);
-    const manifest = JSON.parse(ack.stdout);
-    expect(manifest.tracks).toEqual({ type: "npm", value: "@scope/tracked" });
-    expect(manifest.trackedFingerprintId).toBe("tracked");
-    expect(manifest.localFingerprintId).toBe("local");
-  });
-
-  it("drift check resolves npm tracks that expose canonical fingerprint packages", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "node_modules", "@scope", "tracked"), {
-      checks: false,
-    });
-    await writeFile(
-      join(dir, "node_modules", "@scope", "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: 'npm:@scope/tracked' };\n",
-    );
-
-    const ack = await runCli(["ack", "--format", "json"], dir);
-    const check = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(ack.code).toBe(0);
-    expect(check.code).toBe(0);
-    const report = JSON.parse(check.stdout);
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-    expect(report.overall.verdict).toBe("covered");
-  });
-
-  it("omits removed design-loop status by default", async () => {
-    const result = await runCli(["drift", "status", "--format", "json"], dir);
-
-    expect(result.code).toBe(0);
-    const status = JSON.parse(result.stdout);
-    expect(status.schema).toBe("ghost.drift.status/v1");
-    expect(status.designLoop).toBeUndefined();
-  });
-
-  it("runs the Ghost-owned drift check contract through the stance ledger", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await writeFile(
-      join(dir, "tracked.fingerprint.md"),
-      fingerprintWithId("tracked"),
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: './tracked.fingerprint.md' };\n",
-    );
-    await runCli(["track", "tracked.fingerprint.md"], dir);
-
-    const result = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.schema).toBe("ghost.drift.check/v1");
-    expect(report.designLoop).toBeUndefined();
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-    expect(report.overall.verdict).toBe("covered");
-    expect(report.gate.schema).toBe("ghost.compare.gate/v1");
-  });
-
-  it("drift check loads canonical fingerprint packages", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, ".ghost-sync.json"),
-      JSON.stringify({
-        tracks: { type: "path", value: "tracked/.ghost" },
-        ackedAt: "2026-06-16T00:00:00.000Z",
-        trackedFingerprintId: "tracked",
-        localFingerprintId: "local",
-        overallDistance: 0,
-        dimensions: {
-          spacing: {
-            distance: 0,
-            stance: "accepted",
-            ackedAt: "2026-06-16T00:00:00.000Z",
-          },
-          palette: {
-            distance: 0,
-            stance: "accepted",
-            ackedAt: "2026-06-16T00:00:00.000Z",
-          },
-          typography: {
-            distance: 0,
-            stance: "accepted",
-            ackedAt: "2026-06-16T00:00:00.000Z",
-          },
-          surfaces: {
-            distance: 0,
-            stance: "accepted",
-            ackedAt: "2026-06-16T00:00:00.000Z",
-          },
-          decisions: {
-            distance: 0,
-            stance: "accepted",
-            ackedAt: "2026-06-16T00:00:00.000Z",
-          },
-        },
-      }),
-    );
-
-    const result = await runCli(
-      [
-        "drift",
-        "check",
-        "--package",
-        ".ghost",
-        "--tracked",
-        "tracked/.ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.schema).toBe("ghost.drift.check/v1");
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-  });
-
-  it("drift check uses ledger tracks when no config is present", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-  });
-
-  it("drift check resolves config tracks that point at canonical packages", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: './tracked/.ghost' };\n",
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-  });
-
-  it("runDriftCheck resolves config tracks relative to the supplied cwd", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, "ghost.config.js"),
-      "export default { tracks: 'tracked/.ghost' };\n",
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const report = await runDriftCheck({ cwd: dir, config: "ghost.config.js" });
-
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-    expect(report.overall.verdict).toBe("covered");
-  });
-
-  it("drift check resolves tracked canonical package manifest paths", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(
-      [
-        "drift",
-        "check",
-        "--tracked",
-        "tracked/.ghost/manifest.yml",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.trackedFingerprintId).toBe("tracked");
-    expect(report.localFingerprintId).toBe("local");
-  });
-
-  it("drift check rejects tracked fingerprints that do not match the ledger", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeCheckPackage(join(dir, "other"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, "other", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: other\n",
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(
-      ["drift", "check", "--tracked", "other/.ghost", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain(
-      'sync manifest tracks fingerprint "tracked" but resolved tracked fingerprint "other"',
-    );
-  });
-
-  it("drift check reports uncovered canonical package changes", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeCheckPackage(join(dir, "tracked"), { checks: false });
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "intent.yml"),
-      `summary:
-  product: Cash iOS
-situations: []
-principles:
-  - id: tokenized-ui-color
-    principle: Use celebratory spring motion and playful transitions throughout lending.
-experience_contracts: []
-`,
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(result.code).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.overall.verdict).toBe("uncovered");
-    expect(report.dimensions.decisions.verdict).toBe("uncovered");
-  });
-
-  it("drift check reports digest-only canonical package changes", async () => {
-    const manyPrinciples = Array.from(
-      { length: 30 },
-      (_, index) => `    - id: principle-${index + 1}
-      principle: Preserve durable product surface rule ${index + 1}.
-`,
-    ).join("");
-    const fingerprintRaw = `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: Cash iOS
-  situations: []
-  principles:
-${manyPrinciples}  experience_contracts: []
-inventory:
-  building_blocks: {}
-  exemplars: []
-  sources: []
-composition:
-  patterns: []
-`;
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await mkdir(join(dir, "tracked", ".ghost"), { recursive: true });
-    await writeSplitFingerprintPackage(join(dir, ".ghost"), fingerprintRaw);
-    await writeSplitFingerprintPackage(
-      join(dir, "tracked", ".ghost"),
-      fingerprintRaw,
-    );
-    await writeFile(
-      join(dir, "tracked", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: tracked\n",
-    );
-    await writeFile(
-      join(dir, ".ghost", "inventory.yml"),
-      `building_blocks:
-  notes: [digest-only-change]
-exemplars: []
-sources: []
-`,
-    );
-    await writeCoveredSyncManifest(dir, { tracked: "tracked/.ghost" });
-
-    const result = await runCli(["drift", "check", "--format", "json"], dir);
-
-    expect(result.code).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.overall.verdict).toBe("uncovered");
-    expect(report.dimensions.decisions.verdict).toBe("uncovered");
-  });
-
-  it("exits with uncovered drift when current distance exceeds the stance ledger", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-    await writeFile(
-      join(dir, "tracked.fingerprint.md"),
-      fingerprintWithId("tracked"),
-    );
-    await runCli(["track", "tracked.fingerprint.md"], dir);
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local").replace(
-        "spacing: { scale: [4, 8, 16], baseUnit: 4, regularity: 1 }",
-        "spacing: { scale: [2, 3, 5, 7, 11, 13], baseUnit: 2, regularity: 0.1 }",
-      ),
-    );
-
-    const result = await runCli(
-      [
-        "drift",
-        "check",
-        "--tracked",
-        "tracked.fingerprint.md",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.schema).toBe("ghost.drift.check/v1");
-    expect(report.overall.verdict).toBe("uncovered");
-    expect(report.dimensions.spacing.verdict).toBe("uncovered");
   });
 
   it("initializes the default fingerprint package without cache", async () => {
@@ -758,29 +220,25 @@ sources: []
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
-    expect(Object.keys(initOutput).sort()).toEqual([
-      "composition",
-      "dir",
-      "intent",
-      "inventory",
-      "manifest",
-    ]);
+    expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
+    // Node package: manifest + surfaces spine + a seed node, no facet files.
+    expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("surfaces.yml");
+    expect(initOutput.written.some((p: string) => p.startsWith("nodes/"))).toBe(
+      true,
+    );
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache).toBeUndefined();
 
-    const lint = await runCli(["lint"], dir);
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const validate = await runCli(["validate"], dir);
     const review = await runCli(["review", "--diff", "change.patch"], dir);
-    const reviewCommand = await runCli(["emit", "review-command"], dir);
 
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
+    expect(validate.code).toBe(0);
     expect(review.code).toBe(0);
     expect(review.stdout).toContain("## Touched Surfaces");
-    expect(reviewCommand.code).toBe(0);
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -866,8 +324,8 @@ sources: []
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "intent.yml"),
-      "summary:\n  product: Curated Surface\n",
+      join(dir, ".ghost", "nodes", "core-voice.md"),
+      "---\nid: core-voice\nunder: core\n---\n\nCurated Surface voice.\n",
     );
 
     const refused = await runCli(["init"], dir);
@@ -877,29 +335,29 @@ sources: []
       "Refusing to overwrite existing Ghost fingerprint file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
+      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "intent.yml"), "utf-8"),
-    ).resolves.toContain("summary: {}");
+      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
+    ).resolves.toContain("intent / inventory / composition");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
     await writeFile(join(dir, "workflow.yml"), "name: ci\non: push\n");
 
     const lint = await runCli(
-      ["lint", "workflow.yml", "--format", "json"],
+      ["validate", "workflow.yml", "--format", "json"],
       dir,
     );
 
     expect(lint.code).toBe(1);
     expect(JSON.parse(lint.stdout).issues[0]).toMatchObject({
       severity: "error",
-      rule: "unsupported-yaml",
+      rule: "unsupported-artifact",
     });
   });
 
@@ -910,7 +368,7 @@ sources: []
     );
 
     const lint = await runCli(
-      ["lint", "package-anchor.yml", "--format", "json"],
+      ["validate", "package-anchor.yml", "--format", "json"],
       dir,
     );
 
@@ -924,10 +382,9 @@ sources: []
     const scanHuman = await runCli(["scan"], dir);
 
     expect(init.code).toBe(0);
-    expect(init.stdout).toContain("manifest.yml:");
-    expect(init.stdout).toContain("intent.yml:");
-    expect(init.stdout).toContain("inventory.yml:");
-    expect(init.stdout).toContain("composition.yml:");
+    expect(init.stdout).toContain("manifest.yml");
+    expect(init.stdout).toContain("surfaces.yml");
+    expect(init.stdout).toContain("nodes/");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -938,21 +395,15 @@ sources: []
     expect(status.fingerprint.state).toBe("present");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
-    expect(status.intent).toBeUndefined();
     expect(status.readiness).toBeUndefined();
     expect(status.checks).toBeUndefined();
-    expect(status.contribution.state).toBe("empty");
-    expect(status.contribution.contributing_facets).toEqual([]);
-    expect(status.contribution.empty_facets).toEqual([
-      "intent",
-      "inventory",
-      "composition",
-    ]);
+    // The default template seeds one core node, so the package contributes.
+    expect(status.contribution.state).toBe("contributing");
+    expect(status.contribution.node_count).toBe(1);
     expect(scanHuman.stdout).toContain("package dir:");
-    expect(scanHuman.stdout).toContain("contribution: empty");
-    expect(scanHuman.stdout).toContain("intent: empty (0)");
+    expect(scanHuman.stdout).toContain("contribution: contributing");
+    expect(scanHuman.stdout).toContain("nodes: 1");
     expect(scanHuman.stdout).not.toContain("readiness:");
-    expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
   });
 
@@ -962,152 +413,38 @@ sources: []
     );
   });
 
-  it("initializes a blank product scaffold with reference inventory wiring", async () => {
-    const init = await runCli(
-      ["init", "--reference", "packages/ghost-ui/.ghost", "--format", "json"],
-      dir,
-    );
-    const scan = await runCli(["scan", "--format", "json"], dir);
-    const signals = await runCli(["signals"], dir);
-    await mkdir(join(dir, "packages", "ghost-ui", ".ghost"), {
-      recursive: true,
-    });
-    await mkdir(join(dir, "packages", "ghost-ui", "public", "r"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, "packages", "ghost-ui", ".ghost", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: ghost-ui\n",
-    );
-    await writeFile(
-      join(dir, "packages", "ghost-ui", "public", "r", "registry.json"),
-      "{}\n",
-    );
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
-
-    expect(init.code).toBe(0);
-    const initOutput = JSON.parse(init.stdout);
-    expect(initOutput.cache).toBeUndefined();
-
-    const fingerprint = parseYaml(
-      await readFile(join(dir, ".ghost", "inventory.yml"), "utf-8"),
-    ) as Record<string, unknown>;
-    expect(fingerprint).not.toHaveProperty("implementation_vocabulary");
-    expect(fingerprint).not.toHaveProperty("patterns");
-    expect(fingerprint).toMatchObject({
-      building_blocks: {
-        libraries: ["ghost-ui"],
-      },
-      sources: [
-        {
-          id: "ghost-ui",
-          kind: "registry",
-          ref: "registry:packages/ghost-ui/public/r/registry.json",
-        },
-      ],
-    });
+  it("rejects the removed --reference init flag", async () => {
     await expect(
-      readFile(join(dir, ".ghost", "config.yml"), "utf-8"),
-    ).rejects.toThrow();
-
-    const status = JSON.parse(scan.stdout);
-    expect(status.config).toBeUndefined();
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.contributing_facets).toEqual(["inventory"]);
-    expect(status.contribution.absent_facets).toEqual([]);
-    expect(status.contribution.empty_facets).toEqual(["intent", "composition"]);
-
-    const signalsOutput = JSON.parse(signals.stdout);
-    expect(signalsOutput.config).toBeUndefined();
-    expect(verify.code).toBe(0);
+      runCli(["init", "--reference", "packages/ghost-ui/.ghost"], dir),
+    ).rejects.toThrow("Unknown option `--reference`");
   });
 
-  it("runs signals, lint, and verify from the unified cli", async () => {
+  it("init --force gathers cleanly on the scaffolded node package", async () => {
+    const init = await runCli(["init", "--format", "json"], dir);
+    expect(init.code).toBe(0);
+    const lint = await runCli(["validate"], dir);
+    expect(lint.code).toBe(0);
+
+    // The seed node lives at core, so it cascades to a gather of any surface.
+    const gather = await runCli(["gather", "core", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const slice = JSON.parse(gather.stdout);
+    expect(slice.nodes.some((n: { id: string }) => n.id === "core-voice")).toBe(
+      true,
+    );
+  });
+
+  it("runs signals and validate from the unified cli", async () => {
     await writeCheckPackage(dir);
     const signals = await runCli(["signals"], dir);
-    const lint = await runCli(["lint"], dir);
-    const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
+    const validate = await runCli(["validate"], dir);
 
     expect(signals.code).toBe(0);
     expect(await realpath(JSON.parse(signals.stdout).root)).toBe(
       await realpath(dir),
     );
-    expect(lint.code).toBe(0);
-    expect(lint.stdout).toContain("0 error");
-    expect(verify.code).toBe(0);
-    expect(verify.stdout).toContain("0 error");
-  });
-
-  it("lints, verifies, and scans the Ghost UI reference bundle", async () => {
-    const lint = await runCli(["lint", "packages/ghost-ui/.ghost"], REPO_ROOT);
-    const verify = await runCli(
-      ["verify", "packages/ghost-ui/.ghost", "--root", "packages/ghost-ui"],
-      REPO_ROOT,
-    );
-    const scan = await runCli(
-      ["scan", "packages/ghost-ui/.ghost", "--format", "json"],
-      REPO_ROOT,
-    );
-
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
-    expect(scan.code).toBe(0);
-    const status = JSON.parse(scan.stdout);
-    expect(status.fingerprint.state).toBe("present");
-    expect(status.proposals).toBeUndefined();
-    expect(status.cache).toBeUndefined();
-    expect(status.readiness).toBeUndefined();
-    expect(status.checks).toBeUndefined();
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.contributing_facets).toEqual([
-      "intent",
-      "inventory",
-    ]);
-    expect(status.contribution.empty_facets).toEqual([]);
-    expect(status.contribution.absent_facets).toEqual(["composition"]);
-    expect(status.contribution.reasons[0]).toContain(
-      "Absent facets may be inherited",
-    );
-  });
-
-  it("emits review commands from the unified cli", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, ".ghost", "fingerprint.md"),
-      fingerprintWithId("local"),
-    );
-
-    const reviewCommand = await runCli(["emit", "review-command"], dir);
-
-    expect(reviewCommand.code).toBe(0);
-    expect(reviewCommand.stdout).toContain("design-review.md");
-    const emittedReviewCommand = await readFile(
-      join(dir, ".claude", "commands", "design-review.md"),
-      "utf-8",
-    );
-    expect(emittedReviewCommand).toContain(
-      ".ghost/intent.yml`, `.ghost/inventory.yml`, and `.ghost/composition.yml",
-    );
-    expect(emittedReviewCommand).toContain("Exemplars");
-    expect(emittedReviewCommand).toContain("lending-tokenized-screen");
-    expect(emittedReviewCommand).toContain("provisional and non-Ghost-backed");
-    expect(emittedReviewCommand).not.toContain("Proposal Threshold");
-    expect(emittedReviewCommand).not.toContain("recommend-proposal");
-    expect(emittedReviewCommand).toContain("experience-gap");
-    expect(emittedReviewCommand).not.toContain(
-      "deprecated legacy direct-markdown",
-    );
-  });
-
-  it("rejects removed context-bundle emit kind", async () => {
-    await writeCheckPackage(dir);
-
-    const contextBundle = await runCli(["emit", "context-bundle"], dir);
-
-    expect(contextBundle.code).toBe(2);
-    expect(contextBundle.stderr).toContain(
-      "unknown emit kind 'context-bundle'",
-    );
+    expect(validate.code).toBe(0);
+    expect(validate.stdout).toContain("0 error");
   });
 
   // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
@@ -1212,44 +549,6 @@ sources: []
     expect(json.brief).toContain("## Context Hits");
   });
 
-  it("warns when fingerprint exemplar paths are unreachable", async () => {
-    await writeCheckPackage(dir);
-
-    const verify = await runCli(
-      ["verify", ".ghost", "--root", ".", "--format", "json"],
-      dir,
-    );
-
-    expect(verify.code).toBe(0);
-    const report = JSON.parse(verify.stdout);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          rule: "fingerprint-exemplar-unreachable",
-          path: "inventory.yml.exemplars[0].path",
-        }),
-      ]),
-    );
-  });
-
-  it("rejects removed legacy direct markdown emit flags", () => {
-    const cli = buildCli();
-
-    expect(() =>
-      cli.parse([
-        "node",
-        "ghost",
-        "emit",
-        "review-command",
-        "--fingerprint",
-        "legacy.fingerprint.md",
-        "--stdout",
-      ]),
-    ).toThrow("Unknown option `--fingerprint`");
-    expect(() =>
-      cli.parse(["node", "ghost", "emit", "context-bundle", "--no-tokens"]),
-    ).toThrow("Unknown option `--tokens`");
-  });
   it("installs the unified ghost skill bundle", async () => {
     const result = await runCli(
       ["skill", "install", "--dest", "skills/ghost"],
@@ -1324,7 +623,7 @@ sources: []
     expect(result.stdout).toContain(
       "grounding ref (why / what) or local-evidence rationale when the surface is silent",
     );
-    expect(result.stdout).toContain("Use the surface grounding first");
+    expect(result.stdout).toContain("Read the grounded nodes");
     expect(result.stdout).toContain("routed check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
@@ -1513,20 +812,106 @@ composition:
     const slice = JSON.parse(result.stdout);
     expect(slice.surface).toBe("email-marketing");
     const byId = Object.fromEntries(
-      slice.principles.map(
-        (entry: { node: { id: string }; provenance: unknown }) => [
-          entry.node.id,
-          entry.provenance,
-        ],
-      ),
+      slice.nodes.map((node: { id: string; provenance: unknown }) => [
+        node.id,
+        node.provenance,
+      ]),
     );
-    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", surface: "core" });
+    // Graph slice (Option A, prose nodes): own + cascaded ancestors.
+    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", from: "core" });
     expect(byId["marketing-urgency"]).toEqual({ kind: "own" });
-    expect(byId["checkout-clarity"]).toEqual({
-      kind: "edge",
-      edge: "composes",
-      surface: "checkout",
-    });
+    // Phase 3 decision: edge contributions come from node `relates`, not from
+    // legacy `composes` surface edges. checkout-clarity sits on a sibling
+    // surface with no `relates` link in, so it is no longer pulled in.
+    expect(byId["checkout-clarity"]).toBeUndefined();
+  });
+
+  it("filters the gather slice by incarnation via --as", async () => {
+    await writeIncarnationPackage(dir);
+
+    const web = await runCli(
+      [
+        "gather",
+        "launch",
+        "--as",
+        "web",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+    );
+    expect(web.code).toBe(0);
+    const slice = JSON.parse(web.stdout);
+    expect(slice.incarnation).toBe("web");
+    const ids = slice.nodes.map((n: { id: string }) => n.id).sort();
+    // essence (untagged) + matching web; the email node is filtered out.
+    expect(ids).toContain("launch");
+    expect(ids).toContain("launch-web");
+    expect(ids).not.toContain("launch-email");
+  });
+
+  it("inherits nodes from an extended package via extends", async () => {
+    // Brand contract.
+    await mkdir(join(dir, "brand", "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "brand", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: brand\n",
+    );
+    await writeFile(
+      join(dir, "brand", "nodes", "core-trust.md"),
+      "---\nid: core-trust\nunder: core\n---\n\nReduce felt risk.\n",
+    );
+    // Product contract extends the brand.
+    await mkdir(join(dir, "product", "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "product", "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: acme-checkout\nextends:\n  brand: ../brand\n",
+    );
+    await writeFile(
+      join(dir, "product", "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+    );
+    await writeFile(
+      join(dir, "product", "nodes", "checkout-trust.md"),
+      "---\nid: checkout-trust\nunder: checkout\nrelates:\n  - to: brand:core-trust\n    as: reinforces\n---\n\nReassure at payment.\n",
+    );
+
+    const validate = await runCli(
+      ["validate", "product", "--format", "json"],
+      dir,
+    );
+    expect(validate.code).toBe(0);
+
+    const gather = await runCli(
+      ["gather", "checkout", "--package", "product", "--format", "json"],
+      dir,
+    );
+    expect(gather.code).toBe(0);
+    const slice = JSON.parse(gather.stdout);
+    const inherited = slice.nodes.find(
+      (n: { id: string }) => n.id === "brand:core-trust",
+    );
+    // The cross-package relation pulled the inherited brand node into the slice.
+    expect(inherited).toBeDefined();
+    expect(inherited.body).toContain("Reduce felt risk");
+  });
+
+  it("fails validate when a cross-package ref is not in extends", async () => {
+    await mkdir(join(dir, "nodes"), { recursive: true });
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: solo\n",
+    );
+    await writeFile(
+      join(dir, "nodes", "n.md"),
+      "---\nid: n\nunder: core\nrelates:\n  - to: brand:core-trust\n---\n\nBody.\n",
+    );
+
+    const validate = await runCli(["validate", "."], dir);
+    expect(validate.code).toBe(1);
+    expect(validate.stdout).toContain("brand:core-trust");
   });
 
   it("returns the surface menu when no surface is named", async () => {
@@ -1600,7 +985,7 @@ experience_contracts: []
     ]);
 
     // The migrated package must lint clean and gather correctly.
-    const lint = await runCli(["lint", ".ghost/surfaces.yml"], dir, {
+    const lint = await runCli(["validate", ".ghost/surfaces.yml"], dir, {
       allowNoExit: true,
     });
     expect(lint.stdout).toContain("0 error(s)");
@@ -1611,9 +996,8 @@ experience_contracts: []
     );
     const slice = JSON.parse(gather.stdout);
     expect(
-      slice.principles.find(
-        (entry: { node: { id: string } }) => entry.node.id === "scoped",
-      )?.provenance,
+      slice.nodes.find((node: { id: string }) => node.id === "scoped")
+        ?.provenance,
     ).toEqual({ kind: "own" });
   });
 
@@ -1682,6 +1066,7 @@ surfaces:
   it("grounds routed checks in the fingerprint slice", async () => {
     const ghost = join(dir, ".ghost");
     await mkdir(join(ghost, "checks"), { recursive: true });
+    await mkdir(join(ghost, "nodes"), { recursive: true });
     await writeFile(
       join(ghost, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: c4\n",
@@ -1691,15 +1076,12 @@ surfaces:
       "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
     );
     await writeFile(
-      join(ghost, "intent.yml"),
-      `principles:
-  - id: brand-voice
-    principle: Warm everywhere.
-    surface: core
-  - id: checkout-clarity
-    principle: Checkout copy is plain.
-    surface: checkout
-`,
+      join(ghost, "nodes", "brand-voice.md"),
+      "---\nid: brand-voice\nunder: core\n---\n\nWarm everywhere.\n",
+    );
+    await writeFile(
+      join(ghost, "nodes", "checkout-clarity.md"),
+      "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
     );
     await writeFile(
       join(ghost, "checks", "checkout.md"),
@@ -1724,9 +1106,14 @@ surfaces:
     const checkout = payload.grounding.find(
       (g: { surface: string }) => g.surface === "checkout",
     );
-    const whyRefs = checkout.why.map((i: { ref: string }) => i.ref);
-    expect(whyRefs).toContain("intent.principle:checkout-clarity"); // own
-    expect(whyRefs).toContain("intent.principle:brand-voice"); // inherited from core
+    // Grounding is the gather slice: prose nodes by provenance (Phase 4).
+    const ids = checkout.nodes.map((n: { id: string }) => n.id);
+    expect(ids).toContain("checkout-clarity"); // own
+    expect(ids).toContain("brand-voice"); // inherited from core
+    const own = checkout.nodes.find(
+      (n: { id: string }) => n.id === "checkout-clarity",
+    );
+    expect(own.provenance).toEqual({ kind: "own" });
   });
 
   it("omits grounding with --no-grounding", async () => {
@@ -1761,9 +1148,39 @@ surfaces:
   });
 });
 
+async function writeIncarnationPackage(dir: string): Promise<void> {
+  const ghost = join(dir, ".ghost");
+  await mkdir(join(ghost, "nodes"), { recursive: true });
+  await writeFile(
+    join(ghost, "manifest.yml"),
+    "schema: ghost.fingerprint-package/v1\nid: incarnation-demo\n",
+  );
+  await writeFile(
+    join(ghost, "surfaces.yml"),
+    `schema: ghost.surfaces/v1
+surfaces:
+  - id: launch
+    description: Launch announcement.
+    parent: core
+`,
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch.md"),
+    "---\nid: launch\nunder: core\n---\n\nOne idea, stated with confidence.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch-web.md"),
+    "---\nid: launch-web\nunder: launch\nincarnation: web\n---\n\nHero with one CTA.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "launch-email.md"),
+    "---\nid: launch-email\nunder: launch\nincarnation: email\n---\n\nSubject is the headline.\n",
+  );
+}
+
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");
-  await mkdir(ghost, { recursive: true });
+  await mkdir(join(ghost, "nodes"), { recursive: true });
   await writeFile(
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
@@ -1778,27 +1195,22 @@ surfaces:
   - id: email-marketing
     description: Marketing email.
     parent: email
-    edges:
-      - kind: composes
-        to: checkout
   - id: checkout
     description: Checkout.
     parent: core
 `,
   );
   await writeFile(
-    join(ghost, "intent.yml"),
-    `principles:
-  - id: brand-voice
-    principle: Warm and concise.
-    surface: core
-  - id: marketing-urgency
-    principle: Marketing may use urgency.
-    surface: email-marketing
-  - id: checkout-clarity
-    principle: Checkout copy is plain.
-    surface: checkout
-`,
+    join(ghost, "nodes", "brand-voice.md"),
+    "---\nid: brand-voice\nunder: core\n---\n\nWarm and concise.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "marketing-urgency.md"),
+    "---\nid: marketing-urgency\nunder: email-marketing\n---\n\nMarketing may use urgency.\n",
+  );
+  await writeFile(
+    join(ghost, "nodes", "checkout-clarity.md"),
+    "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
   );
 }
 
@@ -2009,76 +1421,45 @@ units:
   );
 }
 
-async function writeCoveredSyncManifest(
-  dir: string,
-  options: { tracked: string },
-): Promise<void> {
-  const ackedAt = "2026-06-16T00:00:00.000Z";
-  await writeFile(
-    join(dir, ".ghost-sync.json"),
-    JSON.stringify(
-      {
-        tracks: { type: "path", value: options.tracked },
-        ackedAt,
-        trackedFingerprintId: "tracked",
-        localFingerprintId: "local",
-        overallDistance: 0,
-        dimensions: {
-          spacing: { distance: 0, stance: "accepted", ackedAt },
-          palette: { distance: 0, stance: "accepted", ackedAt },
-          typography: { distance: 0, stance: "accepted", ackedAt },
-          surfaces: { distance: 0, stance: "accepted", ackedAt },
-          decisions: { distance: 0, stance: "accepted", ackedAt },
-        },
-      },
-      null,
-      2,
-    ),
-  );
-}
-
 async function writeSplitFingerprintPackage(
   pkg: string,
   fingerprintRaw: string,
   checksRaw?: string,
 ): Promise<void> {
+  // Node package: derive prose nodes from the legacy facet doc's
+  // principles/patterns so check-routing/grounding fixtures keep working.
   const packageDir = pkg;
-  const doc = parseYaml(fingerprintRaw) as Record<string, unknown>;
-  await mkdir(packageDir, { recursive: true });
-  await Promise.all([
+  const doc = parseYaml(fingerprintRaw) as {
+    intent?: { principles?: Array<{ id: string; principle?: string }> };
+    composition?: { patterns?: Array<{ id: string; pattern?: string }> };
+  };
+  await mkdir(join(packageDir, "nodes"), { recursive: true });
+  const writes: Array<Promise<void>> = [
     writeFile(
       join(packageDir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: local\n",
     ),
-    writeFile(
-      join(packageDir, "intent.yml"),
-      stringifyYaml(
-        doc.intent ?? {
-          summary: {},
-          situations: [],
-          principles: [],
-          experience_contracts: [],
-        },
+  ];
+  for (const p of doc.intent?.principles ?? []) {
+    writes.push(
+      writeFile(
+        join(packageDir, "nodes", `${p.id}.md`),
+        `---\nid: ${p.id}\nunder: core\n---\n\n${p.principle ?? p.id}\n`,
       ),
-    ),
-    writeFile(
-      join(packageDir, "inventory.yml"),
-      stringifyYaml(
-        doc.inventory ?? {
-          building_blocks: {},
-          exemplars: [],
-          sources: [],
-        },
+    );
+  }
+  for (const p of doc.composition?.patterns ?? []) {
+    writes.push(
+      writeFile(
+        join(packageDir, "nodes", `${p.id}.md`),
+        `---\nid: ${p.id}\nunder: core\n---\n\n${p.pattern ?? p.id}\n`,
       ),
-    ),
-    writeFile(
-      join(packageDir, "composition.yml"),
-      stringifyYaml(doc.composition ?? { patterns: [] }),
-    ),
-    ...(checksRaw
-      ? [writeFile(join(packageDir, "validate.yml"), checksRaw)]
-      : []),
-  ]);
+    );
+  }
+  if (checksRaw) {
+    writes.push(writeFile(join(packageDir, "validate.yml"), checksRaw));
+  }
+  await Promise.all(writes);
 }
 
 function _checksFileWithDerivation(intentRef: string): string {
@@ -2113,78 +1494,6 @@ index 1111111..2222222 100644
 @@ -0,0 +1 @@
 +${added}
 `;
-}
-
-async function writeComparableBundle(
-  pkg: string,
-  patternId: string,
-): Promise<void> {
-  await mkdir(pkg, { recursive: true });
-  await writeSplitFingerprintPackage(
-    pkg,
-    `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: ${patternId}
-inventory:
-  building_blocks:
-    tokens: [${patternId}-token]
-composition:
-  patterns:
-    - id: ${patternId}
-      kind: layout
-      pattern: ${patternId} uses a settings-oriented layout.
-`,
-  );
-  await writeFile(
-    join(pkg, "survey.json"),
-    JSON.stringify({
-      schema: "ghost.survey/v1",
-      sources: [
-        { id: patternId, target: ".", scanned_at: "2026-05-10T00:00:00Z" },
-      ],
-      values: [
-        {
-          id: `value_${patternId}`,
-          source: { target: ".", scanned_at: "2026-05-10T00:00:00Z" },
-          kind: "spacing",
-          value: "8px",
-          raw: "p-2",
-          occurrences: 4,
-          files_count: 2,
-        },
-      ],
-      tokens: [],
-      components: [],
-      ui_surfaces: [
-        {
-          id: `surface_${patternId}`,
-          source: { target: ".", scanned_at: "2026-05-10T00:00:00Z" },
-          name: patternId,
-          kind: "route",
-          locator: `/${patternId}`,
-          renderability: "source-only",
-          files: [`src/${patternId}.tsx`],
-          classification: { surface_type: "settings" },
-          signals: { layout_patterns: [patternId] },
-        },
-      ],
-    }),
-  );
-  await writeFile(
-    join(pkg, "patterns.yml"),
-    `schema: ghost.patterns/v1
-id: ${patternId}
-surface_types:
-  - id: settings
-    preferred_patterns: [${patternId}]
-composition_patterns:
-  - id: ${patternId}
-    surface_types: [settings]
-    evidence:
-      - locator: /${patternId}
-`,
-  );
 }
 
 function lendingPatch(line: string): string {

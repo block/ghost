@@ -18,9 +18,7 @@ const PUBLIC_IMPORTS = [
   "@anarchitecture/ghost/cli",
   "@anarchitecture/ghost/fingerprint",
   "@anarchitecture/ghost/scan",
-  "@anarchitecture/ghost/compare",
   "@anarchitecture/ghost/core",
-  "@anarchitecture/ghost/drift",
 ];
 
 function fail(message) {
@@ -115,8 +113,12 @@ try {
     cwd: consumerDir,
   });
   const initOutput = JSON.parse(init);
-  if (!initOutput.manifest?.endsWith(".ghost/manifest.yml")) {
-    fail("packed ghost init did not emit the expected manifest path");
+  if (
+    !initOutput.dir?.endsWith(".ghost") ||
+    !Array.isArray(initOutput.written) ||
+    !initOutput.written.includes("manifest.yml")
+  ) {
+    fail("packed ghost init did not scaffold the expected node package");
   }
   run("pnpm", ["exec", "ghost", "lint", ".ghost"], { cwd: consumerDir });
 

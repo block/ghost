@@ -23,7 +23,7 @@ describe("split fingerprint package", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("loads manifest and normalizes missing raw facet files", async () => {
+  it("loads a manifest-only package as an empty graph", async () => {
     await writeManifest(dir);
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
@@ -32,97 +32,39 @@ describe("split fingerprint package", () => {
       schema: "ghost.fingerprint-package/v1",
       id: "local",
     });
-    expect(loaded.fingerprint).toMatchObject({
-      schema: "ghost.fingerprint/v1",
-      intent: {
-        summary: {},
-        situations: [],
-        principles: [],
-        experience_contracts: [],
-      },
-      inventory: {
-        building_blocks: {},
-        exemplars: [],
-        sources: [],
-      },
-      composition: { patterns: [] },
-    });
+    // Only the implicit root, no authored nodes.
+    expect([...loaded.graph.nodes.keys()]).toEqual([]);
   });
 
-  it("accepts inventory source links without making source material canonical", async () => {
+  it("folds authored nodes/*.md into the graph", async () => {
     await writeManifest(dir);
+    await mkdir(join(dir, "nodes"), { recursive: true });
     await writeFile(
-      join(dir, "inventory.yml"),
-      `building_blocks: {}
-exemplars: []
-sources:
-  - id: repo-signals
-    kind: file
-    ref: docs/architecture.md
-    note: Human-curated source material.
-`,
+      join(dir, "nodes", "checkout-trust.md"),
+      "---\nid: checkout-trust\nunder: core\nincarnation: web\n---\n\nReduce felt risk near payment.\n",
     );
 
-    const report = await lintFingerprintPackage(dir);
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
-    expect(report.errors).toBe(0);
-    expect(loaded.fingerprint.inventory.sources[0]).toMatchObject({
-      id: "repo-signals",
-      kind: "file",
-      ref: "docs/architecture.md",
-    });
+    const authored = loaded.graph.nodes.get("checkout-trust");
+    expect(authored?.origin).toBe("node-file");
+    expect(authored?.body).toBe("Reduce felt risk near payment.");
+    expect(authored?.incarnation).toBe("web");
   });
 
-  it("reports duplicate inventory source ids", async () => {
+  it("guides legacy facet packages to migrate", async () => {
     await writeManifest(dir);
+    await writeFile(join(dir, "intent.yml"), "summary: {}\nprinciples: []\n");
+
+    await expect(
+      loadFingerprintPackage(resolveFingerprintPackage(dir)),
+    ).rejects.toThrow(/ghost migrate/);
+  });
+
+  it("reports a missing manifest", async () => {
     await writeFile(
-      join(dir, "inventory.yml"),
-      `building_blocks: {}
-exemplars: []
-sources:
-  - id: repo-signals
-    kind: file
-    ref: docs/architecture.md
-  - id: repo-signals
-    kind: file
-    ref: tmp/inventory.json
-`,
-    );
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "duplicate-id",
-      path: "inventory.yml.sources[1].id",
-    });
-  });
-
-  it("reports invalid raw layer YAML at the split path", async () => {
-    await writeManifest(dir);
-    await writeFile(join(dir, "intent.yml"), "{nope");
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "package-yaml-invalid",
-      path: "intent.yml",
-    });
-  });
-
-  it("does not silently treat unreadable optional layer paths as missing", async () => {
-    await writeManifest(dir);
-    await mkdir(join(dir, "intent.yml"));
-
-    await expect(lintFingerprintPackage(dir)).rejects.toThrow();
-  });
-
-  it("does not discover old .ghost.yml alone as a package", async () => {
-    await writeFile(
-      join(dir, "fingerprint.yml"),
-      "schema: ghost.fingerprint/v1\n",
+      join(dir, "surfaces.yml"),
+      "schema: ghost.surfaces/v1\nsurfaces: []\n",
     );
 
     const report = await lintFingerprintPackage(dir);

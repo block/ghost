@@ -148,7 +148,12 @@ kinds, and one tag** — nothing more.
 | --- | --- |
 | **node** | one markdown file: frontmatter + body |
 | **link** | a typed pointer from one node to another |
-| **medium** | an optional tag on a node (`email`, `voice`, `any`, …) |
+| **incarnation** | an optional tag on a node (`email`, `voice`, `any`, …) — the form the intent takes; gather filters by it via `--as` |
+
+> Naming: this tag was called *medium* through early notes. Settled name is
+> **`incarnation`** (field) with **`--as`** (gather flag): the fingerprint is
+> disembodied intent; a tagged node is that intent incarnated in one output.
+> Voice-safe (unlike render/form/look) and free of "medium"'s abstractness.
 
 Links come in two kinds:
 
@@ -229,8 +234,8 @@ id: core/trust              # unique, addressable
 under: core                 # parent node — builds the tree, drives the cascade
                             #   (omitted at the root)
 relates: [checkout/payment] # lateral links (optional)
-medium: any                 # omit or `any` = applies everywhere; else web/email/
-                            #   billboard/slide/voice/generated-screen/…
+incarnation: any            # omit or `any` = essence, applies everywhere; else
+                            #   web/email/billboard/slide/voice/generated-screen/…
 ---
 Prose body. The guidance. Intent / inventory / composition are how it is
 written and read, not fields.
@@ -239,6 +244,16 @@ written and read, not fields.
 **A node is valid iff** it has an `id`, parses (frontmatter + body), and every
 `under` / `relates` target resolves. Everything else defaults. The tree is the
 set of `under` links — there is no separate spine object.
+
+**Granularity: a node is a purpose, not an atom.** A node's body is a
+*purpose-coherent, frontmatter-uniform* block of **any length** — 1 or 100 prose
+points about that purpose live in one node. Body length never forces a split;
+what forces a second node is a **divergence in the handles**: a different `under`
+(placement), a different `incarnation` (medium), or a genuinely different
+`relates` role. So `core/voice` can be three paragraphs (one node), while
+`launch/email` and `launch/billboard` are separate nodes *because their
+`incarnation` differs* — not because they are different ideas. Findings cite a
+node by id (the purpose), so a coherent purpose stays one citable thing.
 
 ### Naming a node (refs)
 

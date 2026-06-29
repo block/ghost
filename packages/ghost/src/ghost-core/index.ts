@@ -18,81 +18,6 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
-// --- Decision vocabulary (controlled list for fleet aggregation) ---
-export {
-  CANONICAL_DECISION_DIMENSIONS,
-  type CanonicalDecisionDimension,
-  closestCanonical,
-  isCanonicalDimension,
-  resolveDecisionKind,
-} from "./decision-vocabulary.js";
-export type { CompareOptions, RoleCandidate } from "./embedding/index.js";
-export {
-  classifyContrast,
-  classifySaturation,
-  colorToSemanticColor,
-  compareFingerprints,
-  computeDriftVectors,
-  computeEmbedding,
-  computeSemanticEmbedding,
-  contrastScore,
-  DIMENSION_RANGES,
-  describeFingerprint,
-  embeddingDistance,
-  embedTexts,
-  inferSemanticRole,
-  parseColorToOklch,
-  saturationScore,
-} from "./embedding/index.js";
-// --- Fingerprint.yml (ghost.fingerprint/v1) ---
-export type {
-  GhostFingerprintComposition,
-  GhostFingerprintDocument,
-  GhostFingerprintEvidence,
-  GhostFingerprintExemplar,
-  GhostFingerprintExperienceContract,
-  GhostFingerprintIntent,
-  GhostFingerprintInventory,
-  GhostFingerprintInventoryBuildingBlocks,
-  GhostFingerprintInventorySource,
-  GhostFingerprintInventorySourceKind,
-  GhostFingerprintLintIssue,
-  GhostFingerprintLintReport,
-  GhostFingerprintLintSeverity,
-  GhostFingerprintPackageManifest,
-  GhostFingerprintPattern,
-  GhostFingerprintPatternKind,
-  GhostFingerprintPrinciple,
-  GhostFingerprintRef,
-  GhostFingerprintRefPrefix,
-  GhostFingerprintSituation,
-  GhostFingerprintSummary,
-} from "./fingerprint/index.js";
-export {
-  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
-  GHOST_FINGERPRINT_SCHEMA,
-  GHOST_FINGERPRINT_YML_FILENAME,
-  GhostFingerprintCompositionSchema,
-  GhostFingerprintEvidenceSchema,
-  GhostFingerprintExemplarSchema,
-  GhostFingerprintExperienceContractSchema,
-  GhostFingerprintIntentSchema,
-  GhostFingerprintInventoryBuildingBlocksSchema,
-  GhostFingerprintInventorySchema,
-  GhostFingerprintInventorySourceKindSchema,
-  GhostFingerprintInventorySourceSchema,
-  GhostFingerprintLayerRefSchema,
-  GhostFingerprintPackageManifestSchema,
-  GhostFingerprintPatternKindSchema,
-  GhostFingerprintPatternSchema,
-  GhostFingerprintPrincipleSchema,
-  GhostFingerprintRefPrefixSchema,
-  GhostFingerprintRefSchema,
-  GhostFingerprintSchema,
-  GhostFingerprintSituationSchema,
-  GhostFingerprintSummarySchema,
-  lintGhostFingerprint,
-} from "./fingerprint/index.js";
 // --- Fingerprint package filenames ---
 export {
   FINGERPRINT_COMPOSITION_FILENAME,
@@ -106,6 +31,50 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
+// --- Graph (in-memory fingerprint node graph) ---
+export {
+  type AssembleGraphInput,
+  ancestorChain,
+  assembleGraph,
+  GHOST_GRAPH_ROOT_ID,
+  type GhostGraph,
+  type GhostGraphNode,
+  type GhostGraphNodeOrigin,
+  type GraphLintIssue,
+  type GraphLintReport,
+  type GraphLintSeverity,
+  type GraphSlice,
+  type GraphSliceNode,
+  type GraphSliceProvenance,
+  lintGraph,
+  type ResolveGraphSliceOptions,
+  resolveGraphSlice,
+} from "./graph/index.js";
+// --- Node (ghost.node/v1) — the markdown node artifact ---
+export {
+  GHOST_NODE_RELATION_KINDS,
+  GHOST_NODE_SCHEMA,
+  type GhostNodeDocument,
+  type GhostNodeFrontmatter,
+  GhostNodeFrontmatterSchema,
+  type GhostNodeLintIssue,
+  type GhostNodeLintReport,
+  type GhostNodeLintSeverity,
+  type GhostNodeRelation,
+  type GhostNodeRelationKind,
+  lintGhostNode,
+  NodeIdSchema,
+  NodeRefSchema,
+  type ParseNodeResult,
+  parseNode,
+  serializeNode,
+} from "./node/index.js";
+// --- Fingerprint package manifest (ghost.fingerprint-package/v1) ---
+export type { GhostFingerprintPackageManifest } from "./package-manifest.js";
+export {
+  GHOST_FINGERPRINT_PACKAGE_SCHEMA,
+  GhostFingerprintPackageManifestSchema,
+} from "./package-manifest.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,
@@ -127,20 +96,6 @@ export {
   GhostSurfaceTypePatternSchema,
   lintGhostPatterns,
 } from "./patterns/index.js";
-// --- Perceptual prior (drift severity calibration) ---
-export {
-  computeCheckSeverity,
-  DEFAULT_MATCH,
-  DEFAULT_TOLERANCE,
-  escalateForPresence,
-  escalateTier,
-  PERCEPTUAL_TIER,
-  type PerceptualTier,
-  resolveMatchShape,
-  resolveTolerance,
-  TIER_SEVERITY,
-  tierForCanonical,
-} from "./perceptual-prior.js";
 // --- Resources (ghost.resources/v1) ---
 export type {
   GhostResourceRef,
@@ -183,14 +138,7 @@ export {
   type GhostSurfacesLintReport,
   type GhostSurfacesLintSeverity,
   GhostSurfacesSchema,
-  type GroundingItem,
-  groundSurface,
   lintGhostSurfaces,
-  type ResolvedSlice,
-  resolveSurfaceSlice,
-  type SliceNode,
-  type SliceProvenance,
-  type SurfaceGrounding,
   type SurfaceMenuEntry,
 } from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---
@@ -275,63 +223,3 @@ export {
   ValueSpecSchema,
   valueRowId,
 } from "./survey/index.js";
-// --- Target resolution ---
-export { resolveTarget } from "./target-resolver.js";
-
-// --- Shared types ---
-export type {
-  Check,
-  CheckKind,
-  CheckMatchShape,
-  ColorRamp,
-  ComponentMeta,
-  CompositeCluster,
-  CompositeComparison,
-  CompositeMember,
-  CompositePair,
-  CSSToken,
-  CSSVarsMap,
-  DesignDecision,
-  DesignObservation,
-  DetectedFormat,
-  DimensionAck,
-  DimensionDelta,
-  DimensionStance,
-  DivergenceClass,
-  DriftSeverity,
-  DriftVector,
-  DriftVelocity,
-  EmbeddingConfig,
-  EnrichedComparison,
-  EnrichedFingerprint,
-  ExtractedFile,
-  ExtractedMaterial,
-  Extractor,
-  ExtractorOptions,
-  Fingerprint,
-  FingerprintComparison,
-  FingerprintHistoryEntry,
-  FingerprintReferences,
-  FontDescriptor,
-  GhostConfig,
-  NormalizedToken,
-  Registry,
-  RegistryFile,
-  RegistryItem,
-  RegistryItemType,
-  ResolvedRegistry,
-  RuleSeverity,
-  SampledFile,
-  SampledMaterial,
-  SemanticColor,
-  SourceInfo,
-  StructureDrift,
-  SyncManifest,
-  Target,
-  TargetOptions,
-  TargetType,
-  TemporalComparison,
-  TokenCategory,
-  TokenFormat,
-  ValueDrift,
-} from "./types.js";

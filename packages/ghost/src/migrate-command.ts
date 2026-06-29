@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { resolveFingerprintPackage } from "./fingerprint.js";
@@ -6,6 +7,7 @@ import {
   looksLegacy,
   type MigrationNote,
   type MigrationResult,
+  migratedNodeFiles,
   migrateLegacyPackage,
 } from "./scan/index.js";
 
@@ -58,10 +60,9 @@ export function registerMigrateCommand(cli: CAC): void {
 
         await writeMigrated(
           {
+            packageDir: paths.packageDir,
             surfaces: paths.surfaces,
-            intent: paths.intent,
-            inventory: paths.inventory,
-            composition: paths.composition,
+            facetFiles: [paths.intent, paths.inventory, paths.composition],
           },
           result,
           Boolean(opts.force),
@@ -94,24 +95,28 @@ async function readYaml(
 
 async function writeMigrated(
   paths: {
+    packageDir: string;
     surfaces: string;
-    intent: string;
-    inventory: string;
-    composition: string;
+    facetFiles: string[];
   },
   result: MigrationResult,
   force: boolean,
 ): Promise<void> {
+  // One-way conversion to the node form: surfaces.yml (spine) + nodes/*.md.
+  // Facet files are removed; Git history preserves the old form.
+  const nodeFiles = migratedNodeFiles(result);
   const writes: Array<[string, string]> = [
     [paths.surfaces, stringifyYaml(result.surfaces)],
+    ...nodeFiles.map((file): [string, string] => [
+      join(paths.packageDir, file.relativePath),
+      file.content,
+    ]),
   ];
-  if (result.intent) writes.push([paths.intent, stringifyYaml(result.intent)]);
-  if (result.inventory) {
-    writes.push([paths.inventory, stringifyYaml(result.inventory)]);
-  }
-  if (result.composition) {
-    writes.push([paths.composition, stringifyYaml(result.composition)]);
-  }
+
+  // Ensure nested dirs (nodes/) exist.
+  const dirs = new Set(writes.map(([path]) => dirname(path)));
+  await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
+
   await Promise.all(
     writes.map(([path, content]) =>
       writeFile(path, content, {
@@ -127,6 +132,9 @@ async function writeMigrated(
       }),
     ),
   );
+
+  // Remove the legacy facet files (one-way migration).
+  await Promise.all(paths.facetFiles.map((path) => rm(path, { force: true })));
 }
 
 function isExisting(err: unknown): boolean {

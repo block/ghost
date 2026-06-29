@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  assembleGraph,
   GHOST_SURFACES_SCHEMA,
   type GhostCheckDocument,
   type GhostSurfacesDocument,
@@ -27,6 +28,8 @@ const SURFACES: GhostSurfacesDocument = {
   ],
 };
 
+const GRAPH = assembleGraph({ surfaces: SURFACES });
+
 const CHECKS = [
   check("brand", "core"),
   check("checkout-color", "checkout"),
@@ -41,20 +44,18 @@ function names(routed: ReturnType<typeof selectChecksForSurfaces>): string[] {
 
 describe("selectChecksForSurfaces", () => {
   it("selects own + ancestor (core) checks for a touched surface", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, ["checkout"]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["checkout"]);
     expect(names(routed)).toEqual(["brand", "checkout-color", "unplaced"]);
   });
 
   it("excludes checks on sibling branches", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, ["checkout"]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["checkout"]);
     expect(names(routed)).not.toContain("email-links");
     expect(names(routed)).not.toContain("marketing-unsub");
   });
 
   it("cascades multiple ancestor levels", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, [
-      "email-marketing",
-    ]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email-marketing"]);
     // own marketing + ancestor email + ancestor core (brand, unplaced)
     expect(names(routed)).toEqual([
       "brand",
@@ -65,9 +66,7 @@ describe("selectChecksForSurfaces", () => {
   });
 
   it("tags provenance own vs. ancestor", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, [
-      "email-marketing",
-    ]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["email-marketing"]);
     const byName = Object.fromEntries(
       routed.map((r) => [r.check.frontmatter.name, r.relevance]),
     );
@@ -83,12 +82,12 @@ describe("selectChecksForSurfaces", () => {
   });
 
   it("with no touched surfaces, only core checks apply", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, []);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, []);
     expect(names(routed)).toEqual(["brand", "unplaced"]);
   });
 
   it("an unplaced check governs core and applies to every diff", () => {
-    const routed = selectChecksForSurfaces(CHECKS, SURFACES, ["checkout"]);
+    const routed = selectChecksForSurfaces(CHECKS, GRAPH, ["checkout"]);
     expect(names(routed)).toContain("unplaced");
   });
 });

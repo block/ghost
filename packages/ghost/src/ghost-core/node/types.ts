@@ -1,0 +1,73 @@
+export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
+
+/**
+ * The closed `relates` qualifier vocabulary: how one node relates laterally to
+ * another. Closed by design (mirrors the surface edge vocabulary): an open set
+ * would make Ghost a general graph database and lose the design-composition
+ * focus. `governs` / `projects` are deliberately deferred (Scenario D and
+ * explicit medium projection) — not in v1. A relation may also be untyped
+ * (qualifier omitted), matching OKF's untyped-link default; the qualifier is the
+ * machinery handle when the author states it.
+ */
+export const GHOST_NODE_RELATION_KINDS = [
+  "reinforces",
+  "contrasts",
+  "variant",
+] as const;
+export type GhostNodeRelationKind = (typeof GHOST_NODE_RELATION_KINDS)[number];
+
+/** A lateral link from one node to another, optionally typed. */
+export interface GhostNodeRelation {
+  /** Target node ref: `<id>` (local) or `<package>#<id>` (cross-package). */
+  to: string;
+  /** The relation kind. Absent means an untyped relate. */
+  as?: GhostNodeRelationKind;
+}
+
+/**
+ * A node's frontmatter: the machinery's handle (identity, tree, links,
+ * incarnation).
+ * The prose body carries the design expression; intent / inventory /
+ * composition are authorship lenses, never fields.
+ */
+export interface GhostNodeFrontmatter {
+  /** Unique, addressable id within the package. */
+  id: string;
+  /**
+   * The single containment parent (the tree + the cascade). Absent means a
+   * top-level node under the implicit `core` root. The tree lives only here;
+   * the id never encodes hierarchy.
+   */
+  under?: string;
+  /** Typed lateral links to other nodes (composition graph). */
+  relates?: GhostNodeRelation[];
+  /**
+   * The incarnation this node's expression takes — the form the intent appears
+   * in (email, billboard, voice, web…). Absent / `any` means essence:
+   * incarnation-agnostic, cascades to every incarnation. Open enum: known
+   * incarnations plus custom strings. Filtered at gather time by `--as`.
+   */
+  incarnation?: string;
+}
+
+export interface GhostNodeDocument {
+  frontmatter: GhostNodeFrontmatter;
+  /** The markdown body: prose design expression. */
+  body: string;
+}
+
+export type GhostNodeLintSeverity = "error" | "warning" | "info";
+
+export interface GhostNodeLintIssue {
+  severity: GhostNodeLintSeverity;
+  rule: string;
+  message: string;
+  path?: string;
+}
+
+export interface GhostNodeLintReport {
+  issues: GhostNodeLintIssue[];
+  errors: number;
+  warnings: number;
+  info: number;
+}
