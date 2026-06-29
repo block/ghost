@@ -254,15 +254,6 @@ export function Dock() {
               <Wrench className="mr-2 size-4" />
               ghost-fleet
             </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                navigate("/tools/ui");
-                setSearchOpen(false);
-              }}
-            >
-              <Wrench className="mr-2 size-4" />
-              ghost-ui
-            </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
