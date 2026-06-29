@@ -31,9 +31,11 @@ pnpm --filter @anarchitecture/ghost exec ghost <command>
 ## Architecture
 
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
-another host agent reads, decides, and writes. Ghost is the deterministic
-calculator the agent reaches for: schema and graph validation, repo-signal
-helpers, context composition, check routing, and advisory review packets.
+another host agent reads, decides, and writes. Ghost grounds that work with two
+things: a **deterministic CLI** — schema and graph validation, repo-signal
+helpers, context composition, check routing, and advisory review packets (no
+LLM, repeatable) — and an **interpretive skill bundle** that teaches the agent
+how to author and use the fingerprint.
 
 The canonical root `.ghost/` package is a directory tree of prose nodes:
 
