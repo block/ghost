@@ -22,16 +22,16 @@ const cards: {
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--fingerprint-layers-and-package-checks",
+    href: "/docs/cli",
     description:
-      "Check fingerprint contribution facets, validate packages, and emit context.",
+      "Report node and surface contribution, validate the graph, and compose context.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
-    name: "Format spec",
-    href: "https://github.com/block/ghost/blob/main/docs/fingerprint-format.md",
+    name: "Authoring",
+    href: "/docs/fingerprint-authoring",
     description:
-      "The full package format for fingerprint intent, inventory, composition, and validation.",
+      "How to write nodes through the intent, inventory, and composition lenses.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -48,7 +48,7 @@ export default function GhostScanLanding() {
       <AnimatedPageHeader
         kicker="ghost scan"
         title="Fingerprint Readiness"
-        description="The deterministic handoff that shows whether repo-local Ghost fingerprint facets are ready to guide generation and review."
+        description="The deterministic handoff that shows what a repo-local Ghost fingerprint contributes (its nodes and surfaces) before it guides generation and review."
       />
 
       <div

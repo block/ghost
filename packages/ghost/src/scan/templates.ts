@@ -29,45 +29,34 @@ function manifestFile(): TemplateFile {
 }
 
 /**
- * The default starter: the surfaces spine (the implicit `core` root needs no
- * declaration, so the file starts empty) plus one `core`-placed intent node
- * that demonstrates the shape — frontmatter handles + prose body written
- * through the intent/inventory/composition lenses.
+ * The default starter: a manifest plus the package-root `index.md` — the `core`
+ * node whose prose cascades to every surface. The directory tree is the spine:
+ * add a surface by adding a directory, give it prose with its own `index.md`,
+ * and place nodes as `<surface>/<node>.md`.
  */
 const DEFAULT_TEMPLATE: GhostInitTemplate = {
   name: "default",
-  description: "Minimal node package: surfaces spine + one core intent node.",
+  description: "Minimal node package: manifest + a core index node.",
   files() {
     return [
       manifestFile(),
       {
-        relativePath: "surfaces.yml",
-        content: `schema: ghost.surfaces/v1
-# The implicit \`core\` root needs no declaration. Add surfaces as you author,
-# e.g.:
-#   surfaces:
-#     - id: checkout
-#       parent: core
-surfaces: []
-`,
-      },
-      {
-        relativePath: "nodes/core-voice.md",
+        relativePath: "index.md",
         content: `---
-id: core-voice
-under: core
+description: The product-wide root; true everywhere.
 ---
 
-Replace this with your product's voice. A node is prose written through the
-intent / inventory / composition lenses — they guide what to capture, they are
-not fields:
+Replace this with your product's voice — the \`core\` node. A node is prose
+written through the intent / inventory / composition lenses; they guide what to
+capture, they are not fields:
 
 - intent — the why and the stance (e.g. "calm, direct, never breathless").
 - inventory — the material you have (tokens, components, pointers to code).
 - composition — how it is assembled (the patterns that make it feel intentional).
 
-This node sits at \`core\`, so it cascades to every surface. Place
-surface-specific nodes with \`under: <surface>\`, link related nodes with
+This file is the package-root \`index.md\`, so it cascades to every surface. Add
+a surface by adding a directory: \`checkout/index.md\` is the \`checkout\` surface,
+and \`checkout/payment.md\` is a node under it. Link related nodes with
 \`relates\`, and tag medium-bound expressions with \`incarnation\` (e.g. email,
 billboard, voice). Leave essence untagged.
 `,

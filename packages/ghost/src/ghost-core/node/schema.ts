@@ -2,33 +2,38 @@ import { z } from "zod";
 import { GHOST_NODE_RELATION_KINDS } from "./types.js";
 
 /**
- * A node id is a permissive lowercase slug, unique within the package. The
- * charset is liberal on purpose (lowercase alphanumeric plus `.` `_` `-`): the
- * schema enforces machine-tractability, not a separator style. Dashes are the
- * emitted convention (skill / init / agent authoring), nudged in guidance — not
- * a lint rule. The tree lives only in `under`; an id never encodes hierarchy.
+ * A node id is its path within the package, `.md` dropped (`marketing/email`).
+ * The directory tree is the containment spine: the containing directory is the
+ * parent, so the id *does* encode hierarchy by design. A segment is a permissive
+ * lowercase slug (alphanumeric plus `.` `_` `-`); segments join with `/`. No
+ * leading, trailing, or doubled slash. Ids are computed by the loader from the
+ * file path, never authored in frontmatter.
  */
-const NodeIdSchema = z
-  .string()
-  .min(1)
-  .regex(/^[a-z0-9][a-z0-9._-]*$/, {
-    message:
-      "node id must be a lowercase slug (alphanumeric plus . _ -, leading alphanumeric)",
-  });
+const NODE_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*(?:\/[a-z0-9][a-z0-9._-]*)*$/;
+
+const NodeIdSchema = z.string().min(1).regex(NODE_ID_PATTERN, {
+  message:
+    "node id must be a path of lowercase slug segments joined by '/' (alphanumeric plus . _ -, no leading/trailing/doubled slash)",
+});
 
 /**
- * A node ref points at another node: a local id (`<node>`), or a cross-package
- * ref `<package-id>:<node>` where `<package-id>` is a key declared in the
- * package manifest's `extends` map. Reference is by identity, never by path —
- * `:` is Ghost's qualifier lineage (e.g. the old `intent.principle:foo` refs).
+ * A node ref points at another node by its path id (`marketing/email`), or a
+ * cross-package ref `<package-id>:<path>` where `<package-id>` is a key declared
+ * in the package manifest's `extends` map. The local part is a path id; `:` is
+ * Ghost's cross-package qualifier lineage (e.g. the old `intent.principle:foo`).
  */
 const NodeRefSchema = z
   .string()
   .min(1)
-  .regex(/^(?:[a-z0-9][a-z0-9._-]*:)?[a-z0-9][a-z0-9._-]*$/, {
-    message:
-      "node ref must be a local id '<node>' or a cross-package ref '<package-id>:<node>'",
-  });
+  .regex(
+    new RegExp(
+      `^(?:[a-z0-9][a-z0-9._-]*:)?${NODE_ID_PATTERN.source.slice(1, -1)}$`,
+    ),
+    {
+      message:
+        "node ref must be a path id 'marketing/email' or a cross-package ref '<package-id>:<path>'",
+    },
+  );
 
 const NodeRelationSchema = z
   .object({
@@ -47,9 +52,7 @@ const NodeRelationSchema = z
  */
 export const GhostNodeFrontmatterSchema = z
   .object({
-    id: NodeIdSchema,
     description: z.string().min(1).optional(),
-    under: NodeRefSchema.optional(),
     relates: z.array(NodeRelationSchema).optional(),
     incarnation: z.string().min(1).optional(),
   })

@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { FileText, Network, Orbit, Palette } from "lucide-react";
+import { FileText, Network, Orbit } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -31,12 +31,6 @@ const tools: {
     blurb: "Compare projects",
     icon: <Network className="size-5" strokeWidth={1.5} />,
   },
-  {
-    name: "ghost-ui",
-    href: "/tools/ui",
-    blurb: "Reference UI library",
-    icon: <Palette className="size-5" strokeWidth={1.5} />,
-  },
 ];
 
 function ToolStrip() {
@@ -49,7 +43,7 @@ function ToolStrip() {
   return (
     <div
       ref={ref}
-      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 overflow-visible"
+      className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-4 overflow-visible"
     >
       {tools.map((tool) => (
         <Link
@@ -78,7 +72,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Tools"
         title="Tool Directory"
-        description="Pick the workflow you need: set up fingerprint facets, review drift, compare projects, or inspect the reference UI system."
+        description="Pick the workflow you need: author the fingerprint, gather context, review changes, or compare projects."
       />
 
       <ToolStrip />

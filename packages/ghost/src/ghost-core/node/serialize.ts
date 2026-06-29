@@ -3,14 +3,15 @@ import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 
 /**
  * Serialize a node back to its `---\n<yaml>\n---\n<body>` markdown form. Keys
- * are emitted in a stable order (id, under, relates, incarnation) so round-trips and
- * diffs are deterministic. Undefined fields are omitted.
+ * are emitted in a stable order (description, relates, incarnation) so
+ * round-trips and diffs are deterministic. Identity and containment are not
+ * serialized — they are the node's path in the directory tree. Undefined fields
+ * are omitted; a node with no frontmatter fields emits an empty block.
  */
 export function serializeNode(node: GhostNodeDocument): string {
   const fm = node.frontmatter;
-  const ordered: Record<string, unknown> = { id: fm.id };
+  const ordered: Record<string, unknown> = {};
   if (fm.description !== undefined) ordered.description = fm.description;
-  if (fm.under !== undefined) ordered.under = fm.under;
   if (fm.relates !== undefined) {
     ordered.relates = fm.relates.map((relation) => {
       const entry: Record<string, unknown> = { to: relation.to };
@@ -20,9 +21,13 @@ export function serializeNode(node: GhostNodeDocument): string {
   }
   if (fm.incarnation !== undefined) ordered.incarnation = fm.incarnation;
 
-  const yaml = stringifyYaml(ordered).trimEnd();
+  // An empty frontmatter object stringifies to "{}"; emit a bare block instead.
+  const yaml =
+    Object.keys(ordered).length === 0
+      ? ""
+      : `${stringifyYaml(ordered).trimEnd()}\n`;
   const body = node.body.replace(/^\n+/, "");
-  return `---\n${yaml}\n---\n${body.length ? `\n${body}\n` : "\n"}`;
+  return `---\n${yaml}---\n${body.length ? `\n${body}\n` : "\n"}`;
 }
 
 export type { GhostNodeFrontmatter };

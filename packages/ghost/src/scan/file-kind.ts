@@ -3,22 +3,20 @@ import {
   GhostFingerprintPackageManifestSchema,
   lintGhostCheck,
   lintGhostNode,
-  lintGhostSurfaces,
 } from "#ghost-core";
 import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
   | "fingerprint-manifest"
-  | "surfaces"
   | "check"
   | "node"
   | "unsupported";
 
 /**
- * Decide whether a file is a bundle artifact. Canonical filenames and YAML
- * `schema:` markers route to their artifact linters; markdown under `nodes/`
- * or `checks/` routes to the node / check linter. Unknown files remain
- * unsupported instead of being guessed at.
+ * Decide whether a file is a bundle artifact. The manifest routes to its
+ * artifact linter; markdown under `checks/` is a check; any other markdown is a
+ * node (its path is its id — containment is the directory tree). Unknown files
+ * remain unsupported instead of being guessed at.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
@@ -29,21 +27,19 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "manifest.yaml") {
     return "fingerprint-manifest";
   }
-  if (filename === "surfaces.yml") return "surfaces";
-  if (filename === "surfaces.yaml") return "surfaces";
   // A markdown check lives under a `checks/` directory. Detected by location so
   // the established agent-check format (no `schema:` field) is recognized.
   if (filename.endsWith(".md") && /(^|[\\/])checks[\\/]/.test(lowerPath)) {
     return "check";
   }
-  // A markdown node lives under a `nodes/` directory (ghost.node/v1).
-  if (filename.endsWith(".md") && /(^|[\\/])nodes[\\/]/.test(lowerPath)) {
+  // Any other markdown file is a node (ghost.node/v1). Its id is its path; the
+  // containing directory is its parent.
+  if (filename.endsWith(".md")) {
     return "node";
   }
   if (/^\s*schema:\s*ghost\.fingerprint-package\/v1\b/m.test(raw)) {
     return "fingerprint-manifest";
   }
-  if (/^\s*schema:\s*ghost\.surfaces\/v1\b/m.test(raw)) return "surfaces";
   return "unsupported";
 }
 
@@ -53,13 +49,11 @@ export function lintDetectedFileKind(
 ): LintReport {
   return kind === "fingerprint-manifest"
     ? lintFingerprintManifestFile(raw)
-    : kind === "surfaces"
-      ? lintSurfacesFile(raw)
-      : kind === "check"
-        ? lintGhostCheck(raw)
-        : kind === "node"
-          ? lintGhostNode(raw)
-          : lintUnsupportedFile();
+    : kind === "check"
+      ? lintGhostCheck(raw)
+      : kind === "node"
+        ? lintGhostNode(raw)
+        : lintUnsupportedFile();
 }
 
 function lintFingerprintManifestFile(raw: string): LintReport {
@@ -98,14 +92,6 @@ function zodLintReport(result: {
   };
 }
 
-function lintSurfacesFile(raw: string): LintReport {
-  try {
-    return lintGhostSurfaces(parseYaml(raw));
-  } catch (err) {
-    return yamlErrorReport("surfaces-not-yaml", "surfaces file", err);
-  }
-}
-
 function lintUnsupportedFile(): LintReport {
   return {
     issues: [
@@ -113,7 +99,7 @@ function lintUnsupportedFile(): LintReport {
         severity: "error",
         rule: "unsupported-artifact",
         message:
-          "File is not a recognized Ghost artifact. Use manifest.yml, surfaces.yml, a checks/*.md check, or a nodes/*.md node.",
+          "File is not a recognized Ghost artifact. Use manifest.yml, a checks/*.md check, or a *.md node.",
       },
     ],
     errors: 1,

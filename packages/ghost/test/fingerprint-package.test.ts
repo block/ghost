@@ -36,20 +36,24 @@ describe("split fingerprint package", () => {
     expect([...loaded.graph.nodes.keys()]).toEqual([]);
   });
 
-  it("folds authored nodes/*.md into the graph", async () => {
+  it("folds the directory tree of *.md nodes into the graph", async () => {
     await writeManifest(dir);
-    await mkdir(join(dir, "nodes"), { recursive: true });
+    await mkdir(join(dir, "checkout"), { recursive: true });
     await writeFile(
-      join(dir, "nodes", "checkout-trust.md"),
-      "---\nid: checkout-trust\nunder: core\nincarnation: web\n---\n\nReduce felt risk near payment.\n",
+      join(dir, "checkout", "trust.md"),
+      "---\nincarnation: web\n---\n\nReduce felt risk near payment.\n",
     );
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
-    const authored = loaded.graph.nodes.get("checkout-trust");
+    // id is the path; parent is the containing directory.
+    const authored = loaded.graph.nodes.get("checkout/trust");
     expect(authored?.origin).toBe("node-file");
+    expect(authored?.parent).toBe("checkout");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
     expect(authored?.incarnation).toBe("web");
+    // The containing directory resolves up to the implicit core root.
+    expect(loaded.graph.parents.get("checkout")).toBe("core");
   });
 
   it("guides legacy facet packages to migrate", async () => {
@@ -62,10 +66,7 @@ describe("split fingerprint package", () => {
   });
 
   it("reports a missing manifest", async () => {
-    await writeFile(
-      join(dir, "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces: []\n",
-    );
+    await writeFile(join(dir, "index.md"), "---\n---\n\nRoot prose.\n");
 
     const report = await lintFingerprintPackage(dir);
 

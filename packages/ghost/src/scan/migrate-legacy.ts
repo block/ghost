@@ -1,19 +1,15 @@
-import {
-  GHOST_SURFACE_ROOT_ID,
-  GHOST_SURFACES_SCHEMA,
-  type GhostNodeDocument,
-  serializeNode,
-} from "#ghost-core";
+import { type GhostNodeDocument, serializeNode } from "#ghost-core";
 
 /**
  * One-shot migration of a legacy `.ghost/` package (pre-surface coordinates)
- * onto the surface model. Operates on raw parsed YAML, because the current
- * schema rejects the legacy fields (`topology`, `applies_to`, `surface_type`,
- * `scope`) and a legacy package no longer parses through the loader.
+ * onto the directory-tree node model. Operates on raw parsed YAML, because the
+ * current schema rejects the legacy fields (`topology`, `applies_to`,
+ * `surface_type`, `scope`) and a legacy package no longer parses through the
+ * loader.
  *
  * Core discipline: report, don't guess. A node whose home cannot be derived
- * unambiguously is left unplaced and recorded for human review, never
- * auto-placed.
+ * unambiguously is left unplaced (at the package root, cascading from core) and
+ * recorded for human review, never auto-placed into a surface.
  */
 
 type Yaml = Record<string, unknown>;
@@ -31,7 +27,8 @@ export interface MigrationNote {
 }
 
 export interface MigrationResult {
-  surfaces: Yaml;
+  /** Derived surface ids (directories), each a child of the implicit `core`. */
+  surfaceIds: string[];
   intent: Yaml | undefined;
   inventory: Yaml | undefined;
   composition: Yaml | undefined;
@@ -61,17 +58,10 @@ export function migrateLegacyPackage(
     ? structuredClone(input.composition)
     : undefined;
 
-  // --- surfaces.yml from inventory.topology.scopes ---
-  const scopeIds = collectScopeIds(inventory);
-  const surfaces: Yaml = {
-    schema: GHOST_SURFACES_SCHEMA,
-    surfaces: scopeIds.map((id) => ({
-      id,
-      parent: GHOST_SURFACE_ROOT_ID,
-    })),
-  };
+  // --- surface ids (directories) from inventory.topology.scopes ---
+  const surfaceIds = collectScopeIds(inventory);
 
-  // Drop topology from inventory (its data is now surfaces.yml).
+  // Drop topology from inventory (its data is now the directory layout).
   if (inventory && "topology" in inventory) delete inventory.topology;
 
   // --- place + clean nodes ---
@@ -86,7 +76,7 @@ export function migrateLegacyPackage(
   placeArray(composition, "patterns", "composition.patterns", notes);
   placeArray(inventory, "exemplars", "inventory.exemplars", notes);
 
-  return { surfaces, intent, inventory, composition, notes };
+  return { surfaceIds, intent, inventory, composition, notes };
 }
 
 function collectScopeIds(inventory: Yaml | undefined): string[] {
@@ -224,28 +214,45 @@ export interface MigratedNodeFile {
 }
 
 /**
- * Convert the migrated facet docs into `nodes/*.md` files — the persistent form
- * of the Phase 2 facet→node projection. Each facet entry becomes one prose node
- * whose body is the entry's primary text and whose `under` is its placement
- * (`surface`, omitted when unplaced ⇒ cascades from core). Lossy by design:
- * structured affordances (evidence, check_refs, exemplar paths) are dropped, in
- * line with Option A. Returns one file per node (`nodes/<id>.md`).
+ * Convert the migrated facet docs into a directory tree of `*.md` nodes — the
+ * persistent form of the facet→node projection. Each facet entry becomes one
+ * prose node placed by the directory layout: a placed node lands at
+ * `<surface>/<id>.md` (its directory is its parent), an unplaced node at
+ * `<id>.md` (the package root, cascading from core). Each derived surface also
+ * gets a bare `<surface>/index.md` so the directory survives even when no node
+ * lands in it. Lossy by design: structured affordances (evidence, check_refs,
+ * exemplar paths) are dropped, in line with Option A.
  */
 export function migratedNodeFiles(result: MigrationResult): MigratedNodeFile[] {
   const files: MigratedNodeFile[] = [];
   const seen = new Set<string>();
 
+  // Seed each derived surface as a directory with an index node, so an empty
+  // surface still exists as a tree position.
+  for (const surfaceId of result.surfaceIds) {
+    files.push({
+      relativePath: `${surfaceId}/index.md`,
+      content: serializeNode({
+        frontmatter: {},
+        body: `The \`${surfaceId}\` surface.`,
+      }),
+    });
+  }
+
   const emit = (entry: Yaml, body: string) => {
     const id = typeof entry.id === "string" ? entry.id : undefined;
     if (!id || seen.has(id)) return;
     seen.add(id);
-    const under = typeof entry.surface === "string" ? entry.surface : undefined;
+    const surface =
+      typeof entry.surface === "string" ? entry.surface : undefined;
     const doc: GhostNodeDocument = {
-      frontmatter: { id, ...(under !== undefined ? { under } : {}) },
+      frontmatter: {},
       body: body.trim(),
     };
+    const relativePath =
+      surface !== undefined ? `${surface}/${id}.md` : `${id}.md`;
     files.push({
-      relativePath: `nodes/${id}.md`,
+      relativePath,
       content: serializeNode(doc),
     });
   };

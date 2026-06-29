@@ -14,10 +14,11 @@ materials it draws from, and the patterns that make it feel intentional.
 
 ```text
 .ghost/
-  manifest.yml      # schema + id
-  surfaces.yml      # the spine: surfaces + their parent (core is implicit)
-  nodes/*.md        # prose nodes — the design expression
-  checks/*.md       # optional ghost.check/v1 checks
+  manifest.yml          # schema + id
+  index.md              # the core node, true everywhere (optional)
+  <surface>/index.md    # a surface's own prose
+  <surface>/<node>.md   # a node placed in that surface
+  checks/*.md           # optional ghost.check/v1 checks
 ```
 
 The checked-in `.ghost/` package is the source of truth. Ordinary Git
@@ -26,27 +27,49 @@ are drafts, and committed fingerprint changes are canonical for Ghost. Checks ar
 markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal system,
 design-system registry, or screenshot archive.
 
-The fingerprint is a graph of **nodes**. A node is a markdown file:
-frontmatter (`id`, `description`, `under`, `relates`, `incarnation`) + a prose
-body. **Intent + inventory + composition** are the authoring lenses the body is
-written through — they guide what to capture, they are not fields or node types:
+The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
+A node is a markdown file: descriptive frontmatter (`description`, `relates`,
+`incarnation`) + a prose body. A node's **identity is its path** (`marketing/email.md`
+→ `marketing/email`) and its **parent is its containing directory**. A surface
+is just a directory, and a directory's own prose lives in its `index.md`
+(`marketing/index.md` is the `marketing` surface; the package-root `index.md` is
+the implicit `core` node, true everywhere). You write the body through three
+authoring lenses, **intent + inventory + composition**. They guide what to
+capture; they are not fields or node types:
 
-- intent — the why and the stance.
-- inventory — the materials and pointers to implementation the agent can inspect.
-- composition — the patterns that make the surface feel intentional.
+- intent: the why and the stance.
+- inventory: the materials and pointers to implementation the agent can inspect.
+- composition: the patterns that make the surface feel intentional.
 
-`description` is the retrieval payload — a one-line "what this is / when to
+`description` is the retrieval payload, a one-line "what this is / when to
 gather it" (like a tool's name + description); `ghost gather` with no argument
-lists nodes by id + description for the agent to match against. `under` places a
-node so it is inherited downward (`core` is the implicit root that reaches every
-surface); `relates` links nodes laterally; `incarnation` tags a medium-bound
-expression (essence is untagged). Free-form keys (`audience`, …) pass through.
-See [references/capture.md](references/capture.md) for the full node shape.
+lists nodes by id + description for the agent to match against. The directory
+places a node so it is inherited downward (`core` is the implicit root that
+reaches every surface); `relates` links nodes laterally; `incarnation` tags a
+medium-bound expression (essence is untagged). Free-form keys (`audience`, …)
+pass through. See [references/capture.md](references/capture.md) for the full
+node shape.
+
+**How `gather` composes** (folders are walls; files fill the corridor):
+
+- **spine** (full bodies): the package inherits every file from the root down to
+  the surface's own folder, so a feature's `invariants.md` reaches every screen
+  in that feature, and root files reach everywhere. A **sibling folder is a
+  wall**: its nodes never appear, not even as a pointer.
+- **edges** (full bodies, one hop): each spine node's `relates` targets. Author
+  a broad rule once at the level it is true (say `relates: { to: arcade }` on
+  `features/`) and every descendant inherits it. A link to a hub also unfolds
+  the hub's subtree as spokes.
+- **spokes** (pointers: id + description): the surface's own descendants and any
+  edge hub's subtree. The agent reads the descriptions and pulls what it needs
+  with a follow-up `gather`.
 
 Checks and review validate output; they are not generation input.
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
-The tree is declared in `surfaces.yml`, never inferred from filenames or paths.
+The tree is the layout itself: ids and parents come from where files sit, so
+moving a node is a rename. Reserved at the package root: `manifest.yml` and the
+`checks/` subtree; every other `*.md` is a node.
 
 Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
@@ -59,22 +82,22 @@ the child `ghost` process when they need repo-local Ghost files outside raw
 one product in a monorepo). Ghost stays adapter-neutral: wrappers consume JSON
 and map severities into their own review or check format.
 
-A package can **extend** another by identity — the shared-brand pattern. The
+A package can **extend** another by identity (the shared-brand pattern). The
 manifest's `extends` maps a package id to where it lives:
 `extends: { brand: ../brand/.ghost }`. Then nodes reference inherited context by
-identity, never path: `under: brand:core` or `relates: [{ to: brand:core-trust }]`.
-Inherited nodes are read-only and flow into gather/validate like local ones.
+identity, never path: `relates: [{ to: brand:core/trust }]` (a `<package>:<path>`
+ref). Inherited nodes are read-only and flow into gather/validate like local ones.
 
 ## Core CLI Verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init [--template <name>]` | Scaffold `.ghost/` with manifest, surfaces spine, and a seed node. |
+| `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan [dir] [--format json]` | Report node/surface contribution. |
-| `ghost validate [file-or-dir]` | Validate the package — artifact shape and the node graph (links resolve, one root, acyclic). |
+| `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
+| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (corridor spine + relates edges, plus spoke pointers), or list the surface menu. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -83,7 +106,7 @@ Inherited nodes are read-only and flow into gather/validate like local ones.
 |---|---|
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
-| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the surface model. |
+| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
 
 ## Workflows
 

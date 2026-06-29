@@ -221,12 +221,9 @@ describe("ghost CLI", () => {
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
-    // Node package: manifest + surfaces spine + a seed node, no facet files.
+    // Node package: manifest + the package-root core index node, no facet files.
     expect(initOutput.written).toContain("manifest.yml");
-    expect(initOutput.written).toContain("surfaces.yml");
-    expect(initOutput.written.some((p: string) => p.startsWith("nodes/"))).toBe(
-      true,
-    );
+    expect(initOutput.written).toContain("index.md");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
@@ -324,8 +321,8 @@ describe("ghost CLI", () => {
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
     await runCli(["init"], dir);
     await writeFile(
-      join(dir, ".ghost", "nodes", "core-voice.md"),
-      "---\nid: core-voice\nunder: core\n---\n\nCurated Surface voice.\n",
+      join(dir, ".ghost", "index.md"),
+      "---\n---\n\nCurated Surface voice.\n",
     );
 
     const refused = await runCli(["init"], dir);
@@ -335,14 +332,14 @@ describe("ghost CLI", () => {
       "Refusing to overwrite existing Ghost fingerprint file(s)",
     );
     await expect(
-      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
+      readFile(join(dir, ".ghost", "index.md"), "utf-8"),
     ).resolves.toContain("Curated Surface");
 
     const forced = await runCli(["init", "--force"], dir);
 
     expect(forced.code).toBe(0);
     await expect(
-      readFile(join(dir, ".ghost", "nodes", "core-voice.md"), "utf-8"),
+      readFile(join(dir, ".ghost", "index.md"), "utf-8"),
     ).resolves.toContain("intent / inventory / composition");
   });
 
@@ -383,8 +380,7 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml");
-    expect(init.stdout).toContain("surfaces.yml");
-    expect(init.stdout).toContain("nodes/");
+    expect(init.stdout).toContain("index.md");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -425,13 +421,11 @@ describe("ghost CLI", () => {
     const lint = await runCli(["validate"], dir);
     expect(lint.code).toBe(0);
 
-    // The seed node lives at core, so it cascades to a gather of any surface.
+    // The seed node is the package-root index — the core node itself.
     const gather = await runCli(["gather", "core", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     const slice = JSON.parse(gather.stdout);
-    expect(slice.nodes.some((n: { id: string }) => n.id === "core-voice")).toBe(
-      true,
-    );
+    expect(slice.nodes.some((n: { id: string }) => n.id === "core")).toBe(true);
   });
 
   it("runs signals and validate from the unified cli", async () => {
@@ -804,13 +798,13 @@ composition:
     await writeGatherPackage(dir);
 
     const result = await runCli(
-      ["gather", "email-marketing", "--package", ".ghost", "--format", "json"],
+      ["gather", "email/marketing", "--package", ".ghost", "--format", "json"],
       dir,
     );
 
     expect(result.code).toBe(0);
     const slice = JSON.parse(result.stdout);
-    expect(slice.surface).toBe("email-marketing");
+    expect(slice.surface).toBe("email/marketing");
     const byId = Object.fromEntries(
       slice.nodes.map((node: { id: string; provenance: unknown }) => [
         node.id,
@@ -818,12 +812,12 @@ composition:
       ]),
     );
     // Graph slice (Option A, prose nodes): own + cascaded ancestors.
-    expect(byId["brand-voice"]).toEqual({ kind: "ancestor", from: "core" });
-    expect(byId["marketing-urgency"]).toEqual({ kind: "own" });
-    // Phase 3 decision: edge contributions come from node `relates`, not from
-    // legacy `composes` surface edges. checkout-clarity sits on a sibling
-    // surface with no `relates` link in, so it is no longer pulled in.
-    expect(byId["checkout-clarity"]).toBeUndefined();
+    // The root index (`core`) cascades; the marketing index node is own.
+    expect(byId["core"]).toEqual({ kind: "ancestor", from: "core" });
+    expect(byId["email/marketing"]).toEqual({ kind: "own" });
+    // checkout/clarity sits on a sibling surface with no `relates` link in, so
+    // it is not pulled in.
+    expect(byId["checkout/clarity"]).toBeUndefined();
   });
 
   it("filters the gather slice by incarnation via --as", async () => {
@@ -848,34 +842,31 @@ composition:
     const ids = slice.nodes.map((n: { id: string }) => n.id).sort();
     // essence (untagged) + matching web; the email node is filtered out.
     expect(ids).toContain("launch");
-    expect(ids).toContain("launch-web");
-    expect(ids).not.toContain("launch-email");
+    expect(ids).toContain("launch/web");
+    expect(ids).not.toContain("launch/email");
   });
 
   it("inherits nodes from an extended package via extends", async () => {
-    // Brand contract.
-    await mkdir(join(dir, "brand", "nodes"), { recursive: true });
+    // Brand contract: a node at brand/core-trust.md → id `core-trust`.
+    await mkdir(join(dir, "brand"), { recursive: true });
     await writeFile(
       join(dir, "brand", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: brand\n",
     );
     await writeFile(
-      join(dir, "brand", "nodes", "core-trust.md"),
-      "---\nid: core-trust\nunder: core\n---\n\nReduce felt risk.\n",
+      join(dir, "brand", "core-trust.md"),
+      "---\n---\n\nReduce felt risk.\n",
     );
-    // Product contract extends the brand.
-    await mkdir(join(dir, "product", "nodes"), { recursive: true });
+    // Product contract extends the brand. The checkout surface is the
+    // directory `product/checkout/`, with a node at checkout/trust.md.
+    await mkdir(join(dir, "product", "checkout"), { recursive: true });
     await writeFile(
       join(dir, "product", "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: acme-checkout\nextends:\n  brand: ../brand\n",
     );
     await writeFile(
-      join(dir, "product", "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
-    );
-    await writeFile(
-      join(dir, "product", "nodes", "checkout-trust.md"),
-      "---\nid: checkout-trust\nunder: checkout\nrelates:\n  - to: brand:core-trust\n    as: reinforces\n---\n\nReassure at payment.\n",
+      join(dir, "product", "checkout", "trust.md"),
+      "---\nrelates:\n  - to: brand:core-trust\n    as: reinforces\n---\n\nReassure at payment.\n",
     );
 
     const validate = await runCli(
@@ -899,14 +890,13 @@ composition:
   });
 
   it("fails validate when a cross-package ref is not in extends", async () => {
-    await mkdir(join(dir, "nodes"), { recursive: true });
     await writeFile(
       join(dir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: solo\n",
     );
     await writeFile(
-      join(dir, "nodes", "n.md"),
-      "---\nid: n\nunder: core\nrelates:\n  - to: brand:core-trust\n---\n\nBody.\n",
+      join(dir, "n.md"),
+      "---\nrelates:\n  - to: brand:core-trust\n---\n\nBody.\n",
     );
 
     const validate = await runCli(["validate", "."], dir);
@@ -926,7 +916,7 @@ composition:
     const payload = JSON.parse(result.stdout);
     expect(payload.kind).toBe("menu");
     expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
-      "email-marketing",
+      "email/marketing",
     );
   });
 
@@ -980,12 +970,10 @@ experience_contracts: []
 
     expect(result.code).toBe(0);
     const report = JSON.parse(result.stdout);
-    expect(report.surfaces.map((s: { id: string }) => s.id)).toEqual([
-      "lending",
-    ]);
+    expect(report.surfaces).toEqual(["lending"]);
 
     // The migrated package must lint clean and gather correctly.
-    const lint = await runCli(["validate", ".ghost/surfaces.yml"], dir, {
+    const lint = await runCli(["validate", ".ghost"], dir, {
       allowNoExit: true,
     });
     expect(lint.stdout).toContain("0 error(s)");
@@ -995,8 +983,9 @@ experience_contracts: []
       dir,
     );
     const slice = JSON.parse(gather.stdout);
+    // The single-scope node landed at lending/scoped.md → id `lending/scoped`.
     expect(
-      slice.nodes.find((node: { id: string }) => node.id === "scoped")
+      slice.nodes.find((node: { id: string }) => node.id === "lending/scoped")
         ?.provenance,
     ).toEqual({ kind: "own" });
   });
@@ -1019,16 +1008,14 @@ experience_contracts: []
       join(ghost, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: c3\n",
     );
+    // Surfaces are directories: checkout/ and email/ each with an index node.
+    await mkdir(join(ghost, "checkout"), { recursive: true });
+    await mkdir(join(ghost, "email"), { recursive: true });
     await writeFile(
-      join(ghost, "surfaces.yml"),
-      `schema: ghost.surfaces/v1
-surfaces:
-  - id: checkout
-    parent: core
-  - id: email
-    parent: core
-`,
+      join(ghost, "checkout", "index.md"),
+      "---\n---\n\nCheckout.\n",
     );
+    await writeFile(join(ghost, "email", "index.md"), "---\n---\n\nEmail.\n");
     await writeFile(
       join(ghost, "checks", "brand.md"),
       "---\nname: brand\ndescription: Brand voice.\nseverity: medium\nsurface: core\n---\n## Instructions\nVoice.\n",
@@ -1071,17 +1058,12 @@ surfaces:
       join(ghost, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: c4\n",
     );
+    // core prose at the package root; checkout surface as a directory node.
+    await mkdir(join(ghost, "checkout"), { recursive: true });
+    await writeFile(join(ghost, "index.md"), "---\n---\n\nWarm everywhere.\n");
     await writeFile(
-      join(ghost, "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
-    );
-    await writeFile(
-      join(ghost, "nodes", "brand-voice.md"),
-      "---\nid: brand-voice\nunder: core\n---\n\nWarm everywhere.\n",
-    );
-    await writeFile(
-      join(ghost, "nodes", "checkout-clarity.md"),
-      "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
+      join(ghost, "checkout", "clarity.md"),
+      "---\n---\n\nCheckout copy is plain.\n",
     );
     await writeFile(
       join(ghost, "checks", "checkout.md"),
@@ -1108,10 +1090,10 @@ surfaces:
     );
     // Grounding is the gather slice: prose nodes by provenance (Phase 4).
     const ids = checkout.nodes.map((n: { id: string }) => n.id);
-    expect(ids).toContain("checkout-clarity"); // own
-    expect(ids).toContain("brand-voice"); // inherited from core
+    expect(ids).toContain("checkout/clarity"); // own
+    expect(ids).toContain("core"); // cascades from the root index
     const own = checkout.nodes.find(
-      (n: { id: string }) => n.id === "checkout-clarity",
+      (n: { id: string }) => n.id === "checkout/clarity",
     );
     expect(own.provenance).toEqual({ kind: "own" });
   });
@@ -1123,9 +1105,10 @@ surfaces:
       join(ghost, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: c4b\n",
     );
+    await mkdir(join(ghost, "checkout"), { recursive: true });
     await writeFile(
-      join(ghost, "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
+      join(ghost, "checkout", "index.md"),
+      "---\n---\n\nCheckout.\n",
     );
 
     const result = await runCli(
@@ -1155,62 +1138,47 @@ async function writeIncarnationPackage(dir: string): Promise<void> {
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: incarnation-demo\n",
   );
+  // launch surface as a directory; web/email incarnations as nodes under it.
+  await mkdir(join(ghost, "launch"), { recursive: true });
   await writeFile(
-    join(ghost, "surfaces.yml"),
-    `schema: ghost.surfaces/v1
-surfaces:
-  - id: launch
-    description: Launch announcement.
-    parent: core
-`,
+    join(ghost, "launch", "index.md"),
+    "---\n---\n\nOne idea, stated with confidence.\n",
   );
   await writeFile(
-    join(ghost, "nodes", "launch.md"),
-    "---\nid: launch\nunder: core\n---\n\nOne idea, stated with confidence.\n",
+    join(ghost, "launch", "web.md"),
+    "---\nincarnation: web\n---\n\nHero with one CTA.\n",
   );
   await writeFile(
-    join(ghost, "nodes", "launch-web.md"),
-    "---\nid: launch-web\nunder: launch\nincarnation: web\n---\n\nHero with one CTA.\n",
-  );
-  await writeFile(
-    join(ghost, "nodes", "launch-email.md"),
-    "---\nid: launch-email\nunder: launch\nincarnation: email\n---\n\nSubject is the headline.\n",
+    join(ghost, "launch", "email.md"),
+    "---\nincarnation: email\n---\n\nSubject is the headline.\n",
   );
 }
 
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");
-  await mkdir(join(ghost, "nodes"), { recursive: true });
+  await mkdir(join(ghost, "email", "marketing"), { recursive: true });
+  await mkdir(join(ghost, "checkout"), { recursive: true });
   await writeFile(
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
   );
+  // Surfaces are directories: email/ (with marketing/ nested) and checkout/.
+  // The root index is the brand voice that cascades everywhere.
   await writeFile(
-    join(ghost, "surfaces.yml"),
-    `schema: ghost.surfaces/v1
-surfaces:
-  - id: email
-    description: Email surface.
-    parent: core
-  - id: email-marketing
-    description: Marketing email.
-    parent: email
-  - id: checkout
-    description: Checkout.
-    parent: core
-`,
+    join(ghost, "index.md"),
+    "---\ndescription: Brand voice.\n---\n\nWarm and concise.\n",
   );
   await writeFile(
-    join(ghost, "nodes", "brand-voice.md"),
-    "---\nid: brand-voice\nunder: core\n---\n\nWarm and concise.\n",
+    join(ghost, "email", "index.md"),
+    "---\ndescription: Email surface.\n---\n\nEmail.\n",
   );
   await writeFile(
-    join(ghost, "nodes", "marketing-urgency.md"),
-    "---\nid: marketing-urgency\nunder: email-marketing\n---\n\nMarketing may use urgency.\n",
+    join(ghost, "email", "marketing", "index.md"),
+    "---\ndescription: Marketing email.\n---\n\nMarketing may use urgency.\n",
   );
   await writeFile(
-    join(ghost, "nodes", "checkout-clarity.md"),
-    "---\nid: checkout-clarity\nunder: checkout\n---\n\nCheckout copy is plain.\n",
+    join(ghost, "checkout", "clarity.md"),
+    "---\n---\n\nCheckout copy is plain.\n",
   );
 }
 

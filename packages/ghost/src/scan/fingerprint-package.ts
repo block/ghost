@@ -1,10 +1,8 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
-  GHOST_SURFACES_YML_FILENAME,
   type GhostFingerprintPackageManifest,
   type GhostGraph,
-  type GhostSurfacesDocument,
   lintGraph,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
@@ -32,9 +30,6 @@ export interface FingerprintPackagePaths {
   dir: string;
   packageDir: string;
   manifest: string;
-  surfaces: string;
-  /** The `nodes/` directory holding `ghost.node/v1` markdown nodes. */
-  nodes: string;
   /** Legacy facet paths — used only to detect legacy packages for migration. */
   intent: string;
   inventory: string;
@@ -44,8 +39,6 @@ export interface FingerprintPackagePaths {
 export interface LoadedFingerprintPackage {
   manifest: GhostFingerprintPackageManifest;
   manifestRaw: string;
-  /** Parsed `surfaces.yml`, or `undefined` when the package has no surfaces file. */
-  surfaces?: GhostSurfacesDocument;
   /** The in-memory node graph — the only fingerprint model. */
   graph: GhostGraph;
 }
@@ -72,8 +65,6 @@ export function resolveFingerprintPackage(
     dir,
     packageDir,
     manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
-    surfaces: join(packageDir, GHOST_SURFACES_YML_FILENAME),
-    nodes: join(packageDir, "nodes"),
     intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
     inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
@@ -187,7 +178,7 @@ export async function lintFingerprintPackage(
           severity: issue.severity,
           rule: issue.rule,
           message: issue.message,
-          ...(issue.node ? { path: `nodes/${issue.node}` } : {}),
+          ...(issue.node ? { path: `${issue.node}.md` } : {}),
         })),
       );
     } catch (err) {

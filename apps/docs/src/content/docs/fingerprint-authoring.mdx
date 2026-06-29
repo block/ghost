@@ -34,8 +34,8 @@ weight to give human intent, existing code, and library evidence.
 | Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
 | Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
-| Fork, white label, or tenant variant | Shared base + local divergence. Keep common surface composition broad and local differences scoped. |
-| Monorepo or nested surfaces | Stack-aware. Use root guidance for broad composition and nested packages for surfaces assessed differently. |
+| Fork, white label, or tenant variant | Shared base + local divergence. Put the common surface composition in a base package and `extends` it from each variant. |
+| Monorepo or shared brand | Keep one package per product surface. A shared brand lives in its own package that the others `extends` by identity. |
 
 </DocSection>
 
@@ -43,7 +43,7 @@ weight to give human intent, existing code, and library evidence.
 
 Ghost supports two agent authoring modes:
 
-- **Default** - interview first, scan as needed, draft facet edits, then
+- **Default** - interview first, scan as needed, draft node prose, then
   curate.
 - **Auto-draft** - scan first, draft a small starter fingerprint, then curate
   the claims with a human.
@@ -61,8 +61,8 @@ Set up the Ghost fingerprint for this repo with auto-draft.
    claims.
 2. **Scan** - inspect routes, components, stories, tests, docs, screenshots,
    copy, tokens, assets, and UI library references.
-3. **Draft** - write the smallest useful `intent.yml`, `inventory.yml`, and
-   `composition.yml` entries.
+3. **Draft** - write the smallest useful node prose, reading each node through
+   the intent, inventory, and composition lenses.
 4. **Curate** - have the human keep, soften, reject, scope, or record important
    claims before treating them as durable surface context.
 5. **Validate** - run Ghost validation and use Git review as the approval
@@ -71,8 +71,7 @@ Set up the Ghost fingerprint for this repo with auto-draft.
 ```bash
 ghost scan --format json
 ghost signals .
-ghost lint .ghost
-ghost verify .ghost --root .
+ghost validate
 ```
 
 Raw repo signals are source evidence only. They can support curated inventory,
@@ -81,16 +80,45 @@ frequency may seed a draft, but it does not decide what the surface should do.
 
 </DocSection>
 
-<DocSection title="Facet Responsibilities">
+<DocSection title="The Directory Tree">
 
-Keep each claim in the file that will make it useful later:
+The fingerprint is a directory tree of prose nodes. The tree _is_ the graph: a
+node's identity is its file path with `.md` dropped (`marketing/email.md` is the
+node `marketing/email`), and its parent is the directory that contains it. A
+surface is just a directory; its own prose lives in that directory's
+`index.md` (`checkout/index.md` is the `checkout` surface), and the
+package-root `index.md` is the implicit `core` node that is true everywhere.
 
-| Facet | What belongs there |
+There is no spine file. A surface exists when its directory exists. Reserved at
+the package root are `manifest.yml` and the `checks/` subtree; every other
+`*.md` is a node. Moving a node to another directory is a rename: its id and
+parent change, and `ghost validate` reports any `relates` that no longer
+resolve.
+
+Node frontmatter carries only descriptive properties:
+
+| Property | What it does |
 | --- | --- |
-| `intent.yml` | Audience, goals, anti-goals, situations, principles, and experience contracts. |
-| `inventory.yml` | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
-| `composition.yml` | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
-| `validate.yml` | Deterministic gates that can be checked from a diff. |
+| `description` | A short summary of the node. |
+| `relates` | Lateral links to other nodes by path id (`to: core/trust`); cross-package refs use `<package>:<path>`, e.g. `brand:core/trust`. |
+| `incarnation` | Tags a medium-bound expression (`email`, `billboard`, `voice`, `web`); untagged nodes are essence. |
+| _passthrough_ | Free-form keys are preserved for host tooling. |
+
+</DocSection>
+
+<DocSection title="The Three Lenses">
+
+You write and read a node's prose body through three lenses. They shape how you
+write; they are never frontmatter fields:
+
+| Lens | What belongs there |
+| --- | --- |
+| Intent | Audience, goals, anti-goals, situations, principles, and experience contracts. |
+| Inventory | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
+| Composition | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
+
+Deterministic `checks/` gates that can be evaluated from a diff live alongside
+the tree in the `checks/` subtree.
 
 </DocSection>
 
@@ -100,50 +128,59 @@ A useful fingerprint should help future agents choose, restrain, route, anchor,
 and review. It should not only describe what exists or collect every available
 style detail.
 
-Write facet content so generation decisions become explicit:
+Write node prose so generation decisions become explicit:
 
-- `goals` name what generated work should preserve.
-- `anti_goals` block plausible defaults that would make the surface feel
-  generic or wrong.
-- `tradeoffs` say which value wins when choices conflict.
-- `situations` route guidance by task, surface type, state, or audience need.
-- `principles` capture broad product intent.
-- `experience_contracts` turn taste, trust, recovery, or disclosure into
-  obligations.
-- `composition.patterns` give repeatable layout, flow, state, content,
-  behavior, or visual rules.
-- `inventory.exemplars` anchor the guidance in concrete material an agent can
-  inspect.
+- Name what generated work should preserve.
+- Block plausible defaults that would make the surface feel generic or wrong.
+- Say which value wins when choices conflict.
+- Route guidance by task, surface type, state, or audience need.
+- Capture broad product intent.
+- Turn taste, trust, recovery, or disclosure into obligations.
+- Give repeatable layout, flow, state, content, behavior, or visual rules.
+- Anchor the guidance in concrete exemplars an agent can inspect.
 
 Write less like a brand book and more like a decision engine.
 
 </DocSection>
 
-<DocSection title="Nested Packages">
+<DocSection title="Shared Brand Across Packages">
 
-Nested fingerprints are opt-in. Create a local `.ghost/` only when a surface
-should be assessed differently from the root product fingerprint.
+One contract per package: a repo's `.ghost/` is the whole fingerprint, and
+surfaces are directories within it. Reach for a second package only when a
+distinct product owns its own fingerprint: a separate app, a shared brand, a
+tenant variant.
 
-Use a nested package when a surface has distinct users, information density,
-trust or recovery posture, interaction rhythm, component grammar, UI library
-usage, or review criteria for the same UI decision.
+When several packages share a brand, put the common composition in its own
+package and `extends` it by identity:
 
-Keep broad product-family guidance at the root. Put local obligations in the
-nearest package that owns the surface.
-
-```bash
-ghost init --scope apps/checkout
-ghost stack apps/checkout
-ghost lint --all
-ghost verify --all
+```yaml
+# product/.ghost/manifest.yml
+schema: ghost.fingerprint-package/v1
+id: acme-product
+extends:
+  brand: ../brand/.ghost   # map the brand contract's id to where it lives
 ```
+
+Nodes then reference inherited context by identity, never by path:
+
+```yaml
+# product/.ghost/checkout/trust.md
+---
+relates:
+  - to: brand:core/trust
+    as: reinforces
+---
+```
+
+Inherited nodes load read-only and flow into `gather` and `validate` like local
+ones. A variant inherits the brand without seeing its siblings.
 
 </DocSection>
 
 <DocSection title="Ratification">
 
 Uncommitted or unmerged fingerprint edits are drafts. Checked-in
-Ghost package facet files are canonical.
+Ghost package node prose is canonical.
 
 Add deterministic checks sparingly, and only when a rule can be enforced
 deterministically.

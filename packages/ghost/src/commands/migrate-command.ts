@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { CAC } from "cac";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { parse as parseYaml } from "yaml";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   looksLegacy,
@@ -15,7 +15,7 @@ export function registerMigrateCommand(cli: CAC): void {
   cli
     .command(
       "migrate [dir]",
-      "Migrate a legacy .ghost/ package onto the surface model (surfaces.yml + surface: placement).",
+      "Migrate a legacy .ghost/ package onto the directory-tree node model.",
     )
     .option("--dry-run", "Print the migration plan and report; write nothing")
     .option("--force", "Overwrite existing facet files with the migrated form")
@@ -50,7 +50,7 @@ export function registerMigrateCommand(cli: CAC): void {
             `${JSON.stringify(reportJson(result), null, 2)}\n`,
           );
         } else {
-          process.stdout.write(formatReport(result, paths.surfaces));
+          process.stdout.write(formatReport(result, paths.packageDir));
         }
 
         if (opts.dryRun) {
@@ -61,7 +61,6 @@ export function registerMigrateCommand(cli: CAC): void {
         await writeMigrated(
           {
             packageDir: paths.packageDir,
-            surfaces: paths.surfaces,
             facetFiles: [paths.intent, paths.inventory, paths.composition],
           },
           result,
@@ -96,24 +95,22 @@ async function readYaml(
 async function writeMigrated(
   paths: {
     packageDir: string;
-    surfaces: string;
     facetFiles: string[];
   },
   result: MigrationResult,
   force: boolean,
 ): Promise<void> {
-  // One-way conversion to the node form: surfaces.yml (spine) + nodes/*.md.
-  // Facet files are removed; Git history preserves the old form.
+  // One-way conversion to the directory-tree node form. Facet files are
+  // removed; Git history preserves the old form.
   const nodeFiles = migratedNodeFiles(result);
-  const writes: Array<[string, string]> = [
-    [paths.surfaces, stringifyYaml(result.surfaces)],
-    ...nodeFiles.map((file): [string, string] => [
+  const writes: Array<[string, string]> = nodeFiles.map(
+    (file): [string, string] => [
       join(paths.packageDir, file.relativePath),
       file.content,
-    ]),
-  ];
+    ],
+  );
 
-  // Ensure nested dirs (nodes/) exist.
+  // Ensure nested surface directories exist.
   const dirs = new Set(writes.map(([path]) => dirname(path)));
   await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
 
@@ -147,18 +144,18 @@ function isExisting(err: unknown): boolean {
 
 function reportJson(result: MigrationResult): Record<string, unknown> {
   return {
-    surfaces: (result.surfaces.surfaces as unknown[]) ?? [],
+    surfaces: result.surfaceIds,
     notes: result.notes,
   };
 }
 
-function formatReport(result: MigrationResult, surfacesPath: string): string {
-  const surfaces = (result.surfaces.surfaces as Array<{ id: string }>) ?? [];
+function formatReport(result: MigrationResult, packageDir: string): string {
+  const surfaceIds = result.surfaceIds;
   const lines: string[] = ["# Ghost Migration"];
   lines.push(
     "",
-    `Derived ${surfaces.length} surface(s) → ${surfacesPath}`,
-    ...surfaces.map((surface) => `  - \`${surface.id}\``),
+    `Derived ${surfaceIds.length} surface director(ies) under ${packageDir}/`,
+    ...surfaceIds.map((id) => `  - \`${id}/\``),
   );
   lines.push("", `## Review (${result.notes.length})`);
   if (result.notes.length === 0) {
