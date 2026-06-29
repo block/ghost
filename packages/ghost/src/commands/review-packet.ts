@@ -3,6 +3,7 @@ import {
   type RoutedCheck,
   resolveGraphSlice,
   selectChecksForSurfaces,
+  UsageError,
 } from "#ghost-core";
 import { loadChecksDir } from "../scan/checks-dir.js";
 import {
@@ -90,7 +91,7 @@ function budgetDiff(
   maxDiffBytes = DEFAULT_REVIEW_MAX_DIFF_BYTES,
 ): { diff: string; budgets: ReviewPacketBudgets; truncated: boolean } {
   if (!Number.isSafeInteger(maxDiffBytes) || maxDiffBytes < 1) {
-    throw new Error("--max-diff-bytes must be a positive integer");
+    throw new UsageError("--max-diff-bytes must be a positive integer");
   }
   const bytes = Buffer.byteLength(diffText, "utf-8");
   if (bytes <= maxDiffBytes) {

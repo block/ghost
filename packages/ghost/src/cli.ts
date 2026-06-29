@@ -5,8 +5,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { cac } from "cac";
+import { UsageError } from "#ghost-core";
 import { registerChecksCommand } from "./commands/checks-command.js";
 import { formatGhostHelp } from "./commands/command-discovery.js";
+import { failFromError } from "./commands/errors.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
 import { registerMigrateCommand } from "./commands/migrate-command.js";
@@ -99,10 +101,7 @@ export function buildCli(): ReturnType<typeof cac> {
           process.exit(2);
           return;
         }
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 
@@ -135,14 +134,14 @@ function parsePositiveIntegerOption(
 ): number | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "string" && typeof value !== "number") {
-    throw new Error(`${flagName} must be a positive integer`);
+    throw new UsageError(`${flagName} must be a positive integer`);
   }
   if (typeof value === "string" && value.trim() === "") {
-    throw new Error(`${flagName} must be a positive integer`);
+    throw new UsageError(`${flagName} must be a positive integer`);
   }
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 1) {
-    throw new Error(`${flagName} must be a positive integer`);
+    throw new UsageError(`${flagName} must be a positive integer`);
   }
   return parsed;
 }

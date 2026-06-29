@@ -8,6 +8,7 @@ import {
 } from "../fingerprint.js";
 import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
 import { resolveGhostDirDefault, scanStatus, signals } from "../scan/index.js";
+import { failFromError } from "./errors.js";
 import { registerInitCommand } from "./init-command.js";
 
 /**
@@ -50,10 +51,7 @@ export function registerFingerprintCommands(cli: CAC): void {
 
         process.exit(report.errors > 0 ? 1 : 0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 
@@ -114,10 +112,7 @@ export function registerFingerprintCommands(cli: CAC): void {
         }
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 
@@ -134,10 +129,7 @@ export function registerFingerprintCommands(cli: CAC): void {
         process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
         process.exit(0);
       } catch (err) {
-        process.stderr.write(
-          `Error: ${err instanceof Error ? err.message : String(err)}\n`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 }

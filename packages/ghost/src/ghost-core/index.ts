@@ -18,6 +18,8 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
+// --- CLI exit-code contract ---
+export { EXIT, UsageError } from "./errors.js";
 // --- Fingerprint package filenames ---
 // --- Graph (in-memory fingerprint node graph) ---
 export {

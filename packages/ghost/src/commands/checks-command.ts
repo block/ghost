@@ -8,6 +8,7 @@ import {
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadChecksDir } from "../scan/checks-dir.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { failFromError } from "./errors.js";
 import { guardSurfaces } from "./surface-guard.js";
 
 function parseSurfaceIds(value: unknown): string[] {
@@ -108,10 +109,7 @@ export function registerChecksCommand(cli: CAC): void {
         }
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(1);
+        failFromError(err);
       }
     });
 }
