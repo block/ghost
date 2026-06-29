@@ -4,9 +4,6 @@ import { type PlacedNode, parseNode } from "#ghost-core";
 import { GHOST_CHECKS_DIRNAME } from "./checks-dir.js";
 import { FINGERPRINT_MANIFEST_FILENAME } from "./constants.js";
 
-/** A directory `index.md` denotes the prose for the directory itself. */
-const INDEX_FILENAME = "index.md";
-
 /**
  * Reserved package-root entries that are never nodes. `checks/` is a reserved
  * top-level subtree (the markdown checks that govern surfaces). The manifest is

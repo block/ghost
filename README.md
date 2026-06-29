@@ -132,6 +132,7 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 | `ghost review` | Emit an advisory review packet grounded in fingerprint + diff. |
 | `ghost skill install` | Install the BYOA skill bundle. |
 | `ghost signals` | Emit raw repo signals as authoring evidence _(advanced)_. |
+| `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
 | `ghost migrate` | Migrate a legacy `.ghost/` package onto the node model _(maintenance)_. |
 
 Run `ghost --help` for the core workflow, `ghost --help --all` for everything,

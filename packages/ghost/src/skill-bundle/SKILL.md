@@ -113,6 +113,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 |---|---|
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
+| `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
 | `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
 
 ## Workflows

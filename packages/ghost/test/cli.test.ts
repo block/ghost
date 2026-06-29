@@ -1,50 +1,10 @@
 import { mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join } from "node:path";
 import { Readable } from "node:stream";
-import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { parse as parseYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
-
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-
-const BASE_FINGERPRINT = `---
-id: local
-source: llm
-timestamp: 2026-04-24T00:00:00.000Z
-palette:
-  dominant:
-    - { role: primary, value: "#111111" }
-  neutrals: { steps: ["#ffffff", "#111111"], count: 2 }
-  semantic: []
-  saturationProfile: muted
-  contrast: high
-spacing: { scale: [4, 8, 16], baseUnit: 4, regularity: 1 }
-typography:
-  families: ["Inter"]
-  sizeRamp: [12, 16, 24]
-  weightDistribution: { 400: 1 }
-  lineHeightPattern: normal
-surfaces:
-  borderRadii: [4, 8]
-  shadowComplexity: deliberate-none
-  borderUsage: minimal
----
-
-# Character
-
-Quiet and direct.
-
-# Decisions
-
-### shape-language
-Use modest radii.
-`;
-
-function fingerprintWithId(id: string): string {
-  return BASE_FINGERPRINT.replace("id: local", `id: ${id}`);
-}
 
 async function runCli(
   argv: string[],
@@ -202,12 +162,50 @@ describe("ghost CLI", () => {
       "signals [path]",
       "gather",
       "checks",
+      "manifest",
       "migrate",
       "skill <action>",
       "review",
     ]) {
       expect(result.stdout).toContain(command);
     }
+  });
+
+  it("emits a self-describing JSON manifest of commands and flags", async () => {
+    const result = await runCli(["manifest", "--format", "json"], dir);
+
+    expect(result.code).toBe(0);
+    const manifest = JSON.parse(result.stdout);
+    expect(manifest.apiVersion).toBe(1);
+    expect(manifest.type).toBe("manifest");
+    expect(manifest.data.tool).toBe("ghost");
+
+    const names = manifest.data.commands.map(
+      (command: { name: string }) => command.name,
+    );
+    expect(names).toContain("gather");
+    expect(names).toContain("manifest");
+
+    const gather = manifest.data.commands.find(
+      (command: { name: string }) => command.name === "gather",
+    );
+    expect(gather.group).toBe("core");
+    expect(typeof gather.summary).toBe("string");
+    expect(Array.isArray(gather.options)).toBe(true);
+
+    const globalNames = manifest.data.globalOptions.map(
+      (option: { name: string }) => option.name,
+    );
+    expect(globalNames).toContain("help");
+  });
+
+  it("rejects a non-json manifest format with a usage error", async () => {
+    const result = await runCli(["manifest", "--format", "text"], dir, {
+      allowNoExit: true,
+    });
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--format json");
   });
 
   it("initializes the default fingerprint package without cache", async () => {
@@ -832,7 +830,7 @@ composition:
     );
     // Graph slice (Option A, prose nodes): own + cascaded ancestors.
     // The root index (`core`) cascades; the marketing index node is own.
-    expect(byId["core"]).toEqual({ kind: "ancestor", from: "core" });
+    expect(byId.core).toEqual({ kind: "ancestor", from: "core" });
     expect(byId["email/marketing"]).toEqual({ kind: "own" });
     // checkout/clarity sits on a sibling surface with no `relates` link in, so
     // it is not pulled in.
