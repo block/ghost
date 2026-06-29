@@ -27,10 +27,10 @@ The canonical portable fingerprint is a directory tree of prose nodes:
 
 The directory tree _is_ the graph. A node's identity is its file path with
 `.md` dropped (`marketing/email.md` is the node `marketing/email`), and its
-parent is the directory that contains it. A surface is simply a directory: its
-own prose lives in that directory's `index.md`, and the package-root `index.md`
-is the implicit `core` node. There is no spine file to maintain — a surface
-exists when its directory exists.
+parent is the directory that contains it. A surface is a directory: its own
+prose lives in that directory's `index.md`, and the package-root `index.md` is
+the implicit `core` node. No spine file to maintain. A surface exists when its
+directory exists.
 
 Folders are walls; files fill the corridor. A node inherits every file from the
 package root down to its own folder, so root nodes (`index.md`, `trust.md`)
@@ -135,9 +135,9 @@ ghost gather marketing --format json
 
 `gather` returns the **spine** (every node on the corridor from the root down to
 the surface, as full bodies), the **edges** reachable in one hop from any spine
-node's `relates`, and **spokes** — pointers to nearby nodes the agent can pull on
-demand. This is the pre-generation step: agents get surface-composition context
-before they build, not only after a review finds drift.
+node's `relates`, and **spokes**, pointers to nearby nodes the agent can pull on
+demand. Run it before generation, so the agent builds with surface composition
+in hand rather than discovering the gaps in review.
 
 </DocSection>
 

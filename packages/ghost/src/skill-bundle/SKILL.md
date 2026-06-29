@@ -61,8 +61,8 @@ node shape.
   `features/` — and every descendant inherits it. A link to a hub also unfolds
   the hub's subtree as spokes.
 - **spokes** (pointers: id + description): the surface's own descendants and any
-  edge hub's subtree — navigable optionality the agent pulls on demand with a
-  follow-up `gather`.
+  edge hub's subtree. The agent reads the descriptions and pulls what it needs
+  with a follow-up `gather`.
 
 Checks and review validate output; they are not generation input.
 
