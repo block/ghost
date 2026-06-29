@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { isAbsolute, resolve } from "node:path";
 import { promisify } from "node:util";
+import { UsageError } from "#ghost-core";
 import { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 
 const execFileAsync = promisify(execFile);
@@ -35,14 +36,14 @@ export function normalizeGhostDir(ghostDir = FINGERPRINT_PACKAGE_DIR): string {
     .replace(/\/+/g, "/")
     .replace(/\/$/g, "");
   if (!normalized) {
-    throw new Error("GHOST_PACKAGE_DIR must not be empty");
+    throw new UsageError("GHOST_PACKAGE_DIR must not be empty");
   }
   if (
     isAbsolute(ghostDir) ||
     normalized.startsWith("/") ||
     /^[A-Za-z]:/.test(normalized)
   ) {
-    throw new Error("GHOST_PACKAGE_DIR must be a relative directory path");
+    throw new UsageError("GHOST_PACKAGE_DIR must be a relative directory path");
   }
   const segments = normalized.split("/");
   if (
@@ -50,7 +51,7 @@ export function normalizeGhostDir(ghostDir = FINGERPRINT_PACKAGE_DIR): string {
       (segment) => segment === "." || segment === ".." || segment === "",
     )
   ) {
-    throw new Error(
+    throw new UsageError(
       "GHOST_PACKAGE_DIR must not contain '.', '..', or empty path segments",
     );
   }

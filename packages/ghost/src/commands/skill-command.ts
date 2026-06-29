@@ -4,7 +4,8 @@ import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CAC } from "cac";
-import { loadSkillBundle } from "#ghost-core";
+import { loadSkillBundle, UsageError } from "#ghost-core";
+import { failFromError } from "./errors.js";
 
 // The bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(
@@ -65,10 +66,7 @@ export function registerSkillCommand(cli: CAC): void {
         for (const file of written) process.stdout.write(`  ${file}\n`);
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 }
@@ -81,7 +79,9 @@ function parseAgent(raw: unknown): SupportedAgent | undefined {
   ) {
     return raw as SupportedAgent;
   }
-  throw new Error(`--agent must be one of: ${SUPPORTED_AGENTS.join(", ")}`);
+  throw new UsageError(
+    `--agent must be one of: ${SUPPORTED_AGENTS.join(", ")}`,
+  );
 }
 
 function detectAgent(): SupportedAgent {

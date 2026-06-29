@@ -31,6 +31,21 @@ The canonical fingerprint is a `.ghost/` directory tree of prose nodes:
 The command tables below are generated from the CLI source. Run
 `pnpm dump:cli-help` after command or flag changes.
 
+#### Exit codes
+
+Every command follows one contract, so an agent can branch on the exit code:
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Success. |
+| `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
+| `2` | The command was called wrong: a bad flag or argument, a node or surface that is not in the package (`ERR_UNKNOWN_SURFACE`), or a missing package for a command that needs one to do its work (`gather`, `checks`, `review`). |
+| `3` | A command-specific refusal — currently only `skill install` when a skill is already present (pass `--force`). |
+
+Reporting commands treat a missing package as a state to report, not a usage
+error: `validate` records it as a finding (exit `1`), and `scan`/`signals`
+report what they can (exit `0`).
+
 </DocSection>
 
 <DocSection title="Create And Inspect">

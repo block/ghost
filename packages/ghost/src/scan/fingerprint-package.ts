@@ -4,6 +4,7 @@ import {
   type GhostFingerprintPackageManifest,
   type GhostGraph,
   lintGraph,
+  UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
 import {
@@ -79,7 +80,7 @@ export async function initFingerprintPackage(
   const templateName = options.template ?? DEFAULT_TEMPLATE_NAME;
   const template = getInitTemplate(templateName);
   if (!template) {
-    throw new Error(
+    throw new UsageError(
       `Unknown init template '${templateName}'. Available: ${listInitTemplates().join(", ")}.`,
     );
   }
@@ -120,7 +121,7 @@ async function writeInitFile(
     });
   } catch (err) {
     if (!force && isExistingPathError(err)) {
-      throw new Error(
+      throw new UsageError(
         `Refusing to overwrite existing Ghost fingerprint file:\n  ${path}\nPass --force to overwrite.`,
       );
     }
@@ -141,7 +142,7 @@ async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
   }
   if (existing.length > 0) {
     const formatted = existing.map((path) => `  ${path}`).join("\n");
-    throw new Error(
+    throw new UsageError(
       `Refusing to overwrite existing Ghost fingerprint file(s):\n${formatted}\nPass --force to overwrite.`,
     );
   }

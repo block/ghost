@@ -11,6 +11,7 @@ import {
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { failFromError } from "./errors.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
@@ -100,10 +101,7 @@ export function registerGatherCommand(cli: CAC): void {
         }
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(1);
+        failFromError(err);
       }
     });
 }

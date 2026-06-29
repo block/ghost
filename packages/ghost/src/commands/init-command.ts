@@ -1,6 +1,7 @@
 import type { CAC } from "cac";
 import { initFingerprintPackage } from "../fingerprint.js";
 import { resolveGhostDirDefault } from "../scan/index.js";
+import { failFromError } from "./errors.js";
 
 export function registerInitCommand(cli: CAC): void {
   cli
@@ -53,10 +54,7 @@ export function registerInitCommand(cli: CAC): void {
         }
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
+        failFromError(err);
       }
     });
 }

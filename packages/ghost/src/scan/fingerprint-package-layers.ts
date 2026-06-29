@@ -7,6 +7,7 @@ import {
   GhostFingerprintPackageManifestSchema,
   type GhostGraphNode,
   lintGraph,
+  UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
 import {
@@ -22,7 +23,18 @@ const LEGACY_FACET_FILES = ["intent.yml", "inventory.yml", "composition.yml"];
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
 ): Promise<LoadedFingerprintPackage> {
-  const manifestRaw = await readFile(paths.manifest, "utf-8");
+  let manifestRaw: string;
+  try {
+    manifestRaw = await readFile(paths.manifest, "utf-8");
+  } catch (err) {
+    // A missing package is a usage error (run `ghost init`), not a crash.
+    if (isMissingPathError(err)) {
+      throw new UsageError(
+        `No Ghost fingerprint package found at ${paths.packageDir} (expected manifest.yml). Run \`ghost init\` or pass --package <dir>.`,
+      );
+    }
+    throw err;
+  }
   const manifest = parseManifest(manifestRaw, "manifest.yml");
 
   // Legacy facet packages no longer load directly — guide to `ghost migrate`.

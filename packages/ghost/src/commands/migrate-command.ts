@@ -2,6 +2,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml } from "yaml";
+import { UsageError } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   looksLegacy,
@@ -10,6 +11,7 @@ import {
   migratedNodeFiles,
   migrateLegacyPackage,
 } from "../scan/index.js";
+import { failFromError } from "./errors.js";
 
 export function registerMigrateCommand(cli: CAC): void {
   cli
@@ -68,10 +70,7 @@ export function registerMigrateCommand(cli: CAC): void {
         );
         process.exit(0);
       } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(1);
+        failFromError(err);
       }
     });
 }
@@ -121,7 +120,7 @@ async function writeMigrated(
         flag: force ? "w" : "wx",
       }).catch((err: unknown) => {
         if (!force && isExisting(err)) {
-          throw new Error(
+          throw new UsageError(
             `Refusing to overwrite ${path}. Pass --force to rewrite the package in place.`,
           );
         }

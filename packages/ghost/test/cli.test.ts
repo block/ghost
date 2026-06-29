@@ -303,6 +303,25 @@ describe("ghost CLI", () => {
     expect(init.stderr).toContain("GHOST_PACKAGE_DIR must not contain");
   });
 
+  it("exits 2 for a usage error surfaced by a thrown UsageError", async () => {
+    // A bad flag value is a usage error even when it throws from deep in a
+    // helper, not an unexpected crash: it must exit 2, not 1.
+    const bad = await runCli(["skill", "install", "--agent", "nope"], dir, {
+      allowNoExit: true,
+    });
+    expect(bad.code).toBe(2);
+    expect(bad.stderr).toContain("--agent must be one of");
+  });
+
+  it("exits 2 with guidance when no fingerprint package is present", async () => {
+    // A missing package is a usage error (run `ghost init`), not a raw crash.
+    const result = await runCli(["gather", "core"], dir, {
+      allowNoExit: true,
+    });
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("No Ghost fingerprint package found");
+  });
+
   it("uses GHOST_PACKAGE_DIR as the default package lookup for scan", async () => {
     await runCli(["init", "--package", ".agents/ghost"], dir);
 
