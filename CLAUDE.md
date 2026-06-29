@@ -78,7 +78,7 @@ path.
 | `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check routing, advisory review packets, and the unified skill bundle. |
 | `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
 | `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
-| `packages/ghost-ui` | no | Reference design system: shadcn registry plus `ghost-mcp` MCP server. |
+| `packages/ghost-ui` | no | Parked. A standalone shadcn component registry plus `ghost-mcp` MCP server, developed in this monorepo. Not coupled to Ghost and not referenced by the docs site or public surfaces. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands

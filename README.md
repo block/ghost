@@ -155,7 +155,6 @@ workspace packages are development context.
 | ---- | ---- | --- |
 | [`packages/ghost`](./packages/ghost) | Public package: the `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. | yes: `@anarchitecture/ghost` |
 | [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many Ghost bundles. | no |
-| [`packages/ghost-ui`](./packages/ghost-ui) | Reference design system: shadcn registry plus `ghost-mcp` server. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development
