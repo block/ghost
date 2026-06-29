@@ -111,6 +111,31 @@ describe("searchGraph", () => {
     expect(withStop[0]?.score).toBe(withoutStop[0]?.score);
   });
 
+  it("carries no coverage on a whole-query hit", () => {
+    const graph = fixture();
+    const hit = searchGraph("marketing", graph)[0];
+    expect(hit?.reason).toBe("exact");
+    expect(hit?.coverage).toBeUndefined();
+  });
+
+  it("attaches token coverage for a multi-word phrase match", () => {
+    const graph = fixture();
+    // 'outbound surfaces' — both words are in "Outbound brand surfaces." but
+    // not contiguous, so this is coverage, not a verbatim substring.
+    const hit = searchGraph("outbound surfaces", graph)[0];
+    expect(hit?.reason).toBe("description");
+    expect(hit?.coverage).toEqual({ covered: 2, total: 2 });
+  });
+
+  it("reports partial coverage when only some words land", () => {
+    const graph = fixture();
+    // 'payment elsewhere' — only 'payment' is in checkout's description.
+    const hit = searchGraph("payment elsewhere", graph).find(
+      (h) => h.id === "checkout",
+    );
+    expect(hit?.coverage).toEqual({ covered: 1, total: 2 });
+  });
+
   it("excludes the implicit core root and returns nothing for an empty query", () => {
     const graph = fixture();
     expect(searchGraph("core", graph).every((h) => h.id !== "core")).toBe(true);
