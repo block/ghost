@@ -3,11 +3,9 @@ import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   GHOST_SURFACES_YML_FILENAME,
-  GHOST_VALIDATE_FILENAME,
   type GhostFingerprintDocument,
   type GhostFingerprintPackageManifest,
   type GhostSurfacesDocument,
-  lintGhostValidate,
   SURVEY_FILENAME,
 } from "#ghost-core";
 import {
@@ -29,7 +27,6 @@ import {
 import {
   lintFingerprintPackageManifest,
   parseSplitFingerprintForLint,
-  templateChecks,
   templateComposition,
   templateIntent,
   templateInventory,
@@ -53,7 +50,6 @@ export interface FingerprintPackagePaths {
   patterns: string;
   /** Legacy direct markdown path; not part of the canonical root bundle. */
   fingerprint: string;
-  checks: string;
 }
 
 export interface LoadedFingerprintPackage {
@@ -93,7 +89,6 @@ export function resolveFingerprintPackage(
     survey: join(dir, SURVEY_FILENAME),
     patterns: join(dir, PATTERNS_FILENAME),
     fingerprint: join(dir, FINGERPRINT_FILENAME),
-    checks: join(packageDir, GHOST_VALIDATE_FILENAME),
   };
 }
 
@@ -109,7 +104,6 @@ export async function initFingerprintPackage(
     { path: paths.intent, content: templateIntent() },
     { path: paths.inventory, content: templateInventory(options.reference) },
     { path: paths.composition, content: templateComposition() },
-    { path: paths.checks, content: templateChecks() },
   ];
   if (!options.force) {
     await assertInitDoesNotOverwrite(files.map((file) => file.path));
@@ -174,23 +168,14 @@ export async function lintFingerprintPackage(
   const intentRaw = await readOptional(paths.intent);
   const inventoryRaw = await readOptional(paths.inventory);
   const compositionRaw = await readOptional(paths.composition);
-  const checksRaw = await readOptional(paths.checks);
 
-  let fingerprint: GhostFingerprintDocument | undefined;
+  let _fingerprint: GhostFingerprintDocument | undefined;
   if (manifestRaw !== undefined) {
     lintFingerprintPackageManifest(manifestRaw, issues);
-    fingerprint = parseSplitFingerprintForLint(
+    _fingerprint = parseSplitFingerprintForLint(
       { intentRaw, inventoryRaw, compositionRaw },
       issues,
     );
-  }
-
-  if (checksRaw !== undefined) {
-    const checks = parseYamlSafe(checksRaw, "validate.yml", issues);
-    if (checks !== undefined) {
-      const checksReport = lintGhostValidate(checks, { fingerprint });
-      issues.push(...prefixIssues("validate.yml", checksReport.issues));
-    }
   }
 
   return finalize(issues);
@@ -216,7 +201,7 @@ async function readRequired(
 
 const readOptional = readOptionalUtf8;
 
-function parseYamlSafe(
+function _parseYamlSafe(
   raw: string,
   label: string,
   issues: LintIssue[],
@@ -236,7 +221,7 @@ function parseYamlSafe(
   }
 }
 
-function prefixIssues(
+function _prefixIssues(
   label: string,
   input: Array<{
     severity: "error" | "warning" | "info";

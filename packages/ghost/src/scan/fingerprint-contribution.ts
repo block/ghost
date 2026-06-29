@@ -1,7 +1,4 @@
-import type {
-  GhostFingerprintDocument,
-  GhostValidateDocument,
-} from "#ghost-core";
+import type { GhostFingerprintDocument } from "#ghost-core";
 
 export type ScanContributionState =
   | "missing"
@@ -9,7 +6,7 @@ export type ScanContributionState =
   | "empty"
   | "contributing";
 
-export type ScanFacet = "intent" | "inventory" | "composition" | "validate";
+export type ScanFacet = "intent" | "inventory" | "composition";
 export type ScanFacetState = "absent" | "empty" | "useful";
 
 export interface ScanFacetFileState {
@@ -36,12 +33,6 @@ export interface ScanBuildingBlockRows {
   notes: number;
 }
 
-export interface ScanValidateCounts {
-  active: number;
-  proposed: number;
-  disabled: number;
-}
-
 export interface ScanContributionReport {
   state: ScanContributionState;
   facets: Record<ScanFacet, ScanFacetReport>;
@@ -52,14 +43,12 @@ export interface ScanContributionReport {
   product_surface_count: number;
   demo_surface_count: number;
   building_block_rows: ScanBuildingBlockRows;
-  validate_counts: ScanValidateCounts;
 }
 
-const FACETS: ScanFacet[] = ["intent", "inventory", "composition", "validate"];
+const FACETS: ScanFacet[] = ["intent", "inventory", "composition"];
 
 export function summarizeFingerprintContribution(input: {
   fingerprint?: GhostFingerprintDocument;
-  validate?: GhostValidateDocument;
   files: Record<ScanFacet, ScanFacetFileState>;
   missing?: boolean;
   invalidReason?: string;
@@ -69,9 +58,7 @@ export function summarizeFingerprintContribution(input: {
     intent: countIntent(input.fingerprint),
     inventory: countInventory(input.fingerprint, buildingBlockRows),
     composition: countComposition(input.fingerprint),
-    validate: countValidate(input.validate),
   };
-  const validateCounts = countValidateStatuses(input.validate);
   const facets = Object.fromEntries(
     FACETS.map((facet) => [
       facet,
@@ -109,7 +96,6 @@ export function summarizeFingerprintContribution(input: {
     product_surface_count: input.fingerprint?.inventory.exemplars.length ?? 0,
     demo_surface_count: 0,
     building_block_rows: buildingBlockRows,
-    validate_counts: validateCounts,
   };
 }
 
@@ -226,20 +212,6 @@ function countComposition(
   fingerprint: GhostFingerprintDocument | undefined,
 ): number {
   return fingerprint?.composition.patterns.length ?? 0;
-}
-
-function countValidate(validate: GhostValidateDocument | undefined): number {
-  return validate?.checks.length ?? 0;
-}
-
-function countValidateStatuses(
-  validate: GhostValidateDocument | undefined,
-): ScanValidateCounts {
-  const counts: ScanValidateCounts = { active: 0, proposed: 0, disabled: 0 };
-  for (const check of validate?.checks ?? []) {
-    counts[check.status] += 1;
-  }
-  return counts;
 }
 
 function countBuildingBlocks(

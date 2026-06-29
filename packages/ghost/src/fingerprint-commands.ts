@@ -3,7 +3,6 @@ import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type {
-  GhostFingerprintDocument,
   GhostPatternsDocument,
   Survey,
   SurveySummaryBudget,
@@ -14,7 +13,6 @@ import {
   type lintFingerprint,
   lintFingerprintPackage,
   loadFingerprint,
-  loadFingerprintPackage,
   resolveFingerprintPackage,
   verifyAllFingerprintStacks,
   verifyFingerprintPackage,
@@ -84,12 +82,7 @@ export function registerFingerprintCommands(cli: CAC): void {
         const fileTarget = resolve(process.cwd(), path ?? target);
         const raw = await readFile(fileTarget, "utf-8");
         const kind = detectFileKind(fileTarget, raw);
-        const fingerprint =
-          kind === "validate"
-            ? await loadSiblingFingerprintForValidateLint(fileTarget)
-            : undefined;
-
-        report = lintDetectedFileKind(kind, raw, { fingerprint });
+        report = lintDetectedFileKind(kind, raw);
 
         if (kind === "fingerprint" && hasExtends(raw) && report.errors === 0) {
           try {
@@ -171,7 +164,7 @@ export function registerFingerprintCommands(cli: CAC): void {
   cli
     .command(
       "scan [dir]",
-      "Report sparse fingerprint package contribution facets: intent, inventory, composition, validate, and the next BYOA step.",
+      "Report sparse fingerprint package contribution facets: intent, inventory, composition, and the next BYOA step.",
     )
     .option(
       "--include-nested",
@@ -207,9 +200,6 @@ export function registerFingerprintCommands(cli: CAC): void {
           process.stdout.write(
             `  package    (manifest.yml): ${fmt(status.fingerprint.state)}\n`,
           );
-          process.stdout.write(
-            `  validate   (validate.yml): ${fmt(status.validate.state)}\n`,
-          );
           process.stdout.write("\n");
           if (status.recommended_next) {
             process.stdout.write(
@@ -221,12 +211,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             );
           }
           process.stdout.write(`contribution: ${status.contribution.state}\n`);
-          for (const facet of [
-            "intent",
-            "inventory",
-            "composition",
-            "validate",
-          ] as const) {
+          for (const facet of ["intent", "inventory", "composition"] as const) {
             const report = status.contribution.facets[facet];
             process.stdout.write(
               `  ${facet}: ${report.state} (${report.count})\n`,
@@ -322,7 +307,6 @@ async function nestedPackageStatus(
       return {
         ...pkg,
         fingerprint: status.fingerprint,
-        validate: status.validate,
         contribution: status.contribution,
       };
     }),
@@ -335,7 +319,6 @@ interface NestedPackageStatus {
   relative_root: string;
   ghost_dir: string;
   fingerprint: Awaited<ReturnType<typeof scanStatus>>["fingerprint"];
-  validate: Awaited<ReturnType<typeof scanStatus>>["validate"];
   contribution: Awaited<ReturnType<typeof scanStatus>>["contribution"];
 }
 
@@ -352,19 +335,6 @@ function dirnameForFingerprintPackageDir(
 
 function ghostDirFromEnv(): string {
   return resolveGhostDirDefault();
-}
-
-async function loadSiblingFingerprintForValidateLint(
-  fileTarget: string,
-): Promise<GhostFingerprintDocument | undefined> {
-  const validateDir = dirname(fileTarget);
-  try {
-    return (
-      await loadFingerprintPackage(resolveFingerprintPackage(validateDir))
-    ).fingerprint;
-  } catch {
-    return undefined;
-  }
 }
 
 function writeLintReport(

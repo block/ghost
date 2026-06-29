@@ -775,7 +775,6 @@ sources: []
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual([
-      "checks",
       "composition",
       "dir",
       "intent",
@@ -785,23 +784,18 @@ sources: []
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
-    await expect(
-      readFile(join(dir, ".ghost", "validate.yml"), "utf-8"),
-    ).resolves.toContain("schema: ghost.validate/v1");
     const status = JSON.parse(scan.stdout);
     expect(status.cache).toBeUndefined();
 
     const lint = await runCli(["lint"], dir);
     const verify = await runCli(["verify", ".ghost", "--root", "."], dir);
-    const check = await runCli(["check", "--diff", "change.patch"], dir);
     const review = await runCli(["review", "--diff", "change.patch"], dir);
     const reviewCommand = await runCli(["emit", "review-command"], dir);
 
     expect(lint.code).toBe(0);
     expect(verify.code).toBe(0);
-    expect(check.code).toBe(0);
     expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Selected Context");
+    expect(review.stdout).toContain("## Touched Surfaces");
     expect(reviewCommand.code).toBe(0);
   });
 
@@ -1230,112 +1224,6 @@ sources: []
     ).resolves.toContain("summary: {}");
   });
 
-  it("warns for checks grounded in omitted sparse fingerprint refs", async () => {
-    await runCli(["init"], dir);
-    await writeFile(
-      join(dir, ".ghost", "validate.yml"),
-      `schema: ghost.validate/v1
-id: local
-checks:
-  - id: missing-fingerprint-check
-    title: Missing fingerprint check
-    status: active
-    severity: serious
-    derivation:
-      intent: [intent.principle:not-recorded]
-    applies_to:
-      paths: [Code/Features/Lending]
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}'
-    evidence:
-      support: 0.94
-      observed_count: 47
-      examples:
-        - Code/Features/Lending/LendingUI
-`,
-    );
-
-    const lint = await runCli(["lint", ".ghost", "--format", "json"], dir);
-
-    expect(lint.code).toBe(0);
-    const report = JSON.parse(lint.stdout);
-    expect(report.issues[0]).toMatchObject({
-      severity: "warning",
-      rule: "check-grounding-unknown",
-      path: "validate.yml.checks[0].derivation.intent[0]",
-    });
-  });
-
-  it("validates standalone validate.yml derivation refs with a valid sibling fingerprint", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeFile(
-      join(dir, ".ghost", "validate.yml"),
-      checksFileWithDerivation("intent.principle:not-recorded"),
-    );
-
-    const lint = await runCli(
-      ["lint", ".ghost/validate.yml", "--format", "json"],
-      dir,
-    );
-
-    expect(lint.code).toBe(0);
-    const report = JSON.parse(lint.stdout);
-    expect(report.issues[0]).toMatchObject({
-      severity: "warning",
-      rule: "check-grounding-unknown",
-      path: "checks[0].derivation.intent[0]",
-    });
-    expect(report.issues).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ rule: "check-grounding-unverified" }),
-      ]),
-    );
-  });
-
-  it("marks standalone validate.yml grounding unverified when no sibling fingerprint exists", async () => {
-    await writeFile(
-      join(dir, "validate.yml"),
-      checksFileWithDerivation("intent.principle:tokenized-ui-color"),
-    );
-
-    const lint = await runCli(
-      ["lint", "validate.yml", "--format", "json"],
-      dir,
-    );
-
-    expect(lint.code).toBe(0);
-    const report = JSON.parse(lint.stdout);
-    expect(report.info).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      severity: "info",
-      rule: "check-grounding-unverified",
-      path: "checks[0].derivation",
-    });
-  });
-
-  it("keeps standalone validate.yml lint non-blocking when the sibling fingerprint is invalid", async () => {
-    await mkdir(join(dir, ".ghost"), { recursive: true });
-    await writeFile(join(dir, ".ghost", "manifest.yml"), "not: draft\n");
-    await writeFile(
-      join(dir, ".ghost", "validate.yml"),
-      checksFileWithDerivation("intent.principle:tokenized-ui-color"),
-    );
-
-    const lint = await runCli(
-      ["lint", ".ghost/validate.yml", "--format", "json"],
-      dir,
-    );
-
-    expect(lint.code).toBe(0);
-    const report = JSON.parse(lint.stdout);
-    expect(report.issues[0]).toMatchObject({
-      severity: "info",
-      rule: "check-grounding-unverified",
-      path: "checks[0].derivation",
-    });
-  });
-
   it("does not guess arbitrary YAML files are validate.yml", async () => {
     await writeFile(join(dir, "workflow.yml"), "name: ci\non: push\n");
 
@@ -1376,7 +1264,6 @@ checks:
     expect(init.stdout).toContain("intent.yml:");
     expect(init.stdout).toContain("inventory.yml:");
     expect(init.stdout).toContain("composition.yml:");
-    expect(init.stdout).toContain("validate.yml:");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
     expect(
@@ -1390,19 +1277,16 @@ checks:
     expect(status.intent).toBeUndefined();
     expect(status.readiness).toBeUndefined();
     expect(status.checks).toBeUndefined();
-    expect(status.validate.state).toBe("present");
     expect(status.contribution.state).toBe("empty");
     expect(status.contribution.contributing_facets).toEqual([]);
     expect(status.contribution.empty_facets).toEqual([
       "intent",
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(scanHuman.stdout).toContain("package dir:");
     expect(scanHuman.stdout).toContain("contribution: empty");
     expect(scanHuman.stdout).toContain("intent: empty (0)");
-    expect(scanHuman.stdout).toContain("validate: empty (0)");
     expect(scanHuman.stdout).not.toContain("readiness:");
     expect(scanHuman.stdout).not.toContain("missing facets:");
     expect(scanHuman.stdout).not.toContain("memory dir:");
@@ -1467,11 +1351,7 @@ checks:
     expect(status.contribution.state).toBe("contributing");
     expect(status.contribution.contributing_facets).toEqual(["inventory"]);
     expect(status.contribution.absent_facets).toEqual([]);
-    expect(status.contribution.empty_facets).toEqual([
-      "intent",
-      "composition",
-      "validate",
-    ]);
+    expect(status.contribution.empty_facets).toEqual(["intent", "composition"]);
 
     const signalsOutput = JSON.parse(signals.stdout);
     expect(signalsOutput.config).toBeUndefined();
@@ -1510,7 +1390,6 @@ checks:
     expect(scan.code).toBe(0);
     const status = JSON.parse(scan.stdout);
     expect(status.fingerprint.state).toBe("present");
-    expect(status.validate.state).toBe("missing");
     expect(status.proposals).toBeUndefined();
     expect(status.cache).toBeUndefined();
     expect(status.readiness).toBeUndefined();
@@ -1521,10 +1400,7 @@ checks:
       "inventory",
     ]);
     expect(status.contribution.empty_facets).toEqual([]);
-    expect(status.contribution.absent_facets).toEqual([
-      "composition",
-      "validate",
-    ]);
+    expect(status.contribution.absent_facets).toEqual(["composition"]);
     expect(status.contribution.reasons[0]).toContain(
       "Absent facets may be inherited",
     );
@@ -1554,7 +1430,6 @@ checks:
     expect(emittedReviewCommand).not.toContain("Proposal Threshold");
     expect(emittedReviewCommand).not.toContain("recommend-proposal");
     expect(emittedReviewCommand).toContain("experience-gap");
-    expect(emittedReviewCommand).toContain("no-hardcoded-ui-color");
     expect(emittedReviewCommand).not.toContain(
       "deprecated legacy direct-markdown",
     );
@@ -1769,74 +1644,6 @@ checks:
     ).rejects.toThrow();
   });
 
-  it("check fails when an active deterministic check matches added lines", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("UIColor(#ffffff)"),
-    );
-
-    const result = await runCli(
-      ["check", "--diff", "change.patch", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code, result.stderr).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.result).toBe("fail");
-    expect(report.findings[0]).toMatchObject({
-      check_id: "no-hardcoded-ui-color",
-      path: "Code/Features/Lending/View.swift",
-      line: 1,
-    });
-  });
-
-  it("check treats inline color detectors as literal patterns, not exact values", async () => {
-    await writeCheckPackage(dir, { detectorPattern: "#000000" });
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let colors = [Color(#000), Color.black]"),
-    );
-
-    const result = await runCli(
-      ["check", "--diff", "change.patch", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code, result.stderr).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.result).toBe("fail");
-    expect(
-      report.findings.map((finding: { match: string }) => finding.match),
-    ).toEqual(["#000", "Color.black"]);
-  });
-
-  it("check passes when active scoped checks do not match", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(["check", "--diff", "change.patch"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("Design Check: PASS");
-  });
-
-  it("check passes when optional validate.yml is absent", async () => {
-    await writeCheckPackage(dir, { checks: false });
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("UIColor(#ffffff)"),
-    );
-
-    const result = await runCli(["check", "--diff", "change.patch"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("No active deterministic check failures.");
-  });
-
   it("review emits an advisory packet with required citation fields", async () => {
     await writeCheckPackage(dir);
     await writeFile(
@@ -1848,22 +1655,16 @@ checks:
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Selected Context");
-    expect(result.stdout).toContain("### Selected Context");
-    expect(result.stdout).toContain("#### Stack");
-    expect(result.stdout).toContain("#### Match");
-    expect(result.stdout).toContain("#### Context Hits");
-    expect(result.stdout).toContain("#### Suggested Reads");
-    expect(result.stdout).toContain("#### Omissions");
-    expect(result.stdout).toContain("#### Gaps");
-    // Phase 3: path-based scope matching is dormant (rebuilt Phase 5/7).
+    expect(result.stdout).toContain("## Touched Surfaces");
+    expect(result.stdout).toContain("## Routed Checks");
+    expect(result.stdout).toContain("## Grounding");
     expect(result.stdout).toContain("diff location");
-    expect(result.stdout).toContain("fingerprint facet refs");
+    expect(result.stdout).toContain("surface the change touches");
     expect(result.stdout).toContain(
-      "selected-context gap or local-evidence rationale when context is silent",
+      "grounding ref (why / what) or local-evidence rationale when the surface is silent",
     );
-    expect(result.stdout).toContain("Use the selected context first");
-    expect(result.stdout).toContain("active check when blocking");
+    expect(result.stdout).toContain("Use the surface grounding first");
+    expect(result.stdout).toContain("routed check when blocking");
     expect(result.stdout).not.toContain("Proposal Threshold");
     expect(result.stdout).toContain("provisional and non-Ghost-backed");
     expect(result.stdout).not.toContain("recommend-proposal");
@@ -1954,8 +1755,11 @@ checks:
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    expect(packet.fingerprint.schema).toBe("ghost.fingerprint/v1");
+    expect(packet.schema).toBe("ghost.advisory-review/v1");
     expect(packet.finding_categories).toContain("experience-gap");
+    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
+    expect(Array.isArray(packet.routed_checks)).toBe(true);
+    expect(Array.isArray(packet.grounding)).toBe(true);
     expect(packet.proposal_types).toBeUndefined();
     expect(packet.open_proposals).toBeUndefined();
     expect(packet.accepted_decisions).toBeUndefined();
@@ -1985,92 +1789,7 @@ checks:
     ).rejects.toThrow("Unknown option `--includeMemory`");
   });
 
-  it("routes changed files through the root contract; a child cannot disable an inherited check (Leak E)", async () => {
-    await writeNestedCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
-    );
-
-    const result = await runCli(
-      ["check", "--diff", "change.patch", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    const report = JSON.parse(result.stdout);
-    expect(report.schema).toBe("ghost.check-report/v1");
-    // The child package's `status: disabled` no longer wins by merge — the
-    // root contract's active check governs, so the hardcoded color fails.
-    expect(report.result).toBe("fail");
-    expect(report.ghost_dir).toBe(".ghost");
-    expect(report.stacks[0].stack_dirs).toHaveLength(2);
-  });
-
-  it("--package keeps check in exact single-bundle mode", async () => {
-    await writeNestedCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
-    );
-
-    const result = await runCli(
-      [
-        "check",
-        "--diff",
-        "change.patch",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(1);
-    const report = JSON.parse(result.stdout);
-    expect(report.schema).toBe("ghost.check-report/v1");
-    expect(report.findings[0].check_id).toBe("no-hardcoded-color");
-    expect(report.findings[0]).toMatchObject({
-      path: "apps/checkout/review/page.tsx",
-      line: 1,
-      title: "No hardcoded colors",
-      severity: "serious",
-      detector: "forbidden-regex",
-      message: "Added UI code matched a forbidden pattern.",
-      match: "#ffffff",
-    });
-    expect(report.stacks).toBeUndefined();
-  });
-
-  it("resolves stack checks from a custom package directory", async () => {
-    await writeNestedCheckPackage(dir, ".design/memory");
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/review/page.tsx", 'const color = "#ffffff";'),
-    );
-
-    const result = await runCli(
-      ["check", "--diff", "change.patch", "--format", "json"],
-      dir,
-      { env: { GHOST_PACKAGE_DIR: ".design/memory" }, allowNoExit: true },
-    );
-
-    const report = JSON.parse(result.stdout);
-    expect(report.ghost_dir).toBe(".design/memory");
-    expect(report.memory_dir).toBeUndefined();
-    expect(report.stacks[0]).toMatchObject({
-      ghost_dir: ".design/memory",
-      changed_files: ["apps/checkout/review/page.tsx"],
-    });
-    expect(report.stacks[0].memory_dir).toBeUndefined();
-    expect(report.stacks[0].stack_dirs).toEqual([
-      await realpath(join(dir, ".design", "memory")),
-      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
-    ]);
-  });
-
-  it("review emits stack packets for mixed diffs", async () => {
+  it("review resolves touched surfaces for a mixed diff", async () => {
     await writeNestedCheckPackage(dir);
     await writeFile(
       join(dir, "change.patch"),
@@ -2087,15 +1806,11 @@ checks:
 
     expect(result.code).toBe(0);
     const packet = JSON.parse(result.stdout);
-    expect(packet.stacks).toHaveLength(2);
-    expect(packet.stacks[0].ghost_dir).toBe(".ghost");
-    expect(packet.stacks[0].memory_dir).toBeUndefined();
-    // contract is the root package, used as-is (no merge).
-    expect(packet.stacks[0].contract.fingerprint.intent.summary.product).toBe(
-      "Root Product",
-    );
-    expect(packet.stacks[0].stack_dirs).toHaveLength(2);
-    expect(packet.stacks[1].stack_dirs).toHaveLength(1);
+    // Review is now surface-based: no merged stacks, just touched surfaces +
+    // routed checks + grounding from the root contract.
+    expect(packet.stacks).toBeUndefined();
+    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
+    expect(Array.isArray(packet.grounding)).toBe(true);
   });
 
   it("emit review-command resolves the root contract for --path (no child merge)", async () => {
@@ -2805,7 +2520,7 @@ async function writeSplitFingerprintPackage(
   ]);
 }
 
-function checksFileWithDerivation(intentRef: string): string {
+function _checksFileWithDerivation(intentRef: string): string {
   return `schema: ghost.validate/v1
 id: local
 checks:

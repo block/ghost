@@ -1,19 +1,22 @@
 import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
-import type {
-  GhostCheck,
-  GhostFingerprintDocument,
-  GhostFingerprintEvidence,
-  GhostValidateDocument,
+import {
+  classifyContractReference,
+  GHOST_BINDING_FILENAME,
+  GhostBindingSchema,
+  type GhostFingerprintDocument,
+  type GhostFingerprintEvidence,
+  GhostSurfacesSchema,
 } from "#ghost-core";
-import { GhostValidateSchema } from "#ghost-core";
+import { resolveContractDir } from "./contract-resolver.js";
 import {
   type LoadedFingerprintPackage,
   lintFingerprintPackage,
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "./fingerprint-package.js";
+import { resolveGitRoot } from "./fingerprint-stack.js";
 import type {
   VerifyFingerprintIssue,
   VerifyFingerprintReport,
@@ -43,21 +46,87 @@ export async function verifyFingerprintPackage(
   );
   if (packageLint.errors > 0) return finalize(issues);
 
-  const [loaded, checks] = await Promise.all([
-    readFingerprintPackage(paths, issues),
-    readOptionalChecks(paths.checks, issues),
-  ]);
+  const loaded = await readFingerprintPackage(paths, issues);
   const fingerprint = loaded?.fingerprint;
   if (fingerprint) {
     await verifyFingerprintEvidence(fingerprint, root, issues);
     await verifyFingerprintExemplars(fingerprint, root, issues);
   }
 
-  if (fingerprint && checks) {
-    verifyFingerprintCheckRefs(fingerprint, checks.checks, issues);
-  }
+  // Verify an adjacent .ghost.bind.yml: an external contract must resolve and
+  // the bound surfaces must exist in it.
+  await verifyBindingContract(dirname(paths.dir), cwd, issues);
 
   return finalize(issues);
+}
+
+async function verifyBindingContract(
+  bindingDir: string,
+  cwd: string,
+  issues: VerifyFingerprintIssue[],
+): Promise<void> {
+  const bindingPath = join(bindingDir, GHOST_BINDING_FILENAME);
+  let raw: string;
+  try {
+    raw = await readFile(bindingPath, "utf-8");
+  } catch {
+    return; // no binding to verify
+  }
+
+  const parsed = GhostBindingSchema.safeParse(parseYaml(raw));
+  if (!parsed.success) return; // lint reports schema problems separately
+
+  const { contract, bindings } = parsed.data;
+  // The in-repo contract is validated by the package's own lint/verify.
+  if (classifyContractReference(contract) !== "npm") return;
+
+  const repoRoot = await resolveGitRoot(cwd);
+  const contractDir = await resolveContractDir(contract, bindingDir, repoRoot);
+  if (!contractDir) {
+    issues.push({
+      severity: "error",
+      rule: "binding-contract-unresolved",
+      message: `binding contract '${contract}' could not be resolved from node_modules.`,
+      path: GHOST_BINDING_FILENAME,
+    });
+    return;
+  }
+
+  const surfaceIds = await readContractSurfaceIds(contractDir);
+  if (surfaceIds === null) {
+    issues.push({
+      severity: "error",
+      rule: "binding-contract-unresolved",
+      message: `binding contract '${contract}' has no readable surfaces.yml.`,
+      path: GHOST_BINDING_FILENAME,
+    });
+    return;
+  }
+
+  bindings.forEach((entry, index) => {
+    if (entry.surface === "core") return; // implicit root
+    if (!surfaceIds.has(entry.surface)) {
+      issues.push({
+        severity: "error",
+        rule: "binding-surface-unknown",
+        message: `binding references surface '${entry.surface}' not declared in contract '${contract}'.`,
+        path: `bindings[${index}].surface`,
+      });
+    }
+  });
+}
+
+async function readContractSurfaceIds(
+  contractDir: string,
+): Promise<Set<string> | null> {
+  try {
+    const raw = await readFile(join(contractDir, "surfaces.yml"), "utf-8");
+    const parsed = GhostSurfacesSchema.safeParse(parseYaml(raw));
+    if (!parsed.success) return null;
+    return new Set(parsed.data.surfaces.map((surface) => surface.id));
+  } catch {
+    return null;
+  }
 }
 
 async function verifyFingerprintExemplars(
@@ -95,35 +164,6 @@ async function readFingerprintPackage(
         err instanceof Error ? err.message : String(err)
       }`,
       path: "fingerprint",
-    });
-    return undefined;
-  }
-}
-
-async function readOptionalChecks(
-  path: string,
-  issues: VerifyFingerprintIssue[],
-): Promise<GhostValidateDocument | undefined> {
-  try {
-    const parsed = parseYaml(await readFile(path, "utf-8"));
-    const result = GhostValidateSchema.safeParse(parsed);
-    if (result.success) return result.data as GhostValidateDocument;
-    issues.push({
-      severity: "error",
-      rule: "verify-checks-read-failed",
-      message: "validate.yml failed schema validation after package lint.",
-      path: "validate.yml",
-    });
-    return undefined;
-  } catch (err) {
-    if (isMissingFileError(err)) return undefined;
-    issues.push({
-      severity: "error",
-      rule: "verify-checks-read-failed",
-      message: `validate.yml could not be read as YAML: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
-      path: "validate.yml",
     });
     return undefined;
   }
@@ -186,50 +226,6 @@ async function verifyFingerprintEvidence(
   }
 }
 
-function verifyFingerprintCheckRefs(
-  fingerprint: GhostFingerprintDocument,
-  checks: GhostCheck[],
-  issues: VerifyFingerprintIssue[],
-): void {
-  const checkIds = new Set(checks.map((check) => check.id));
-  const checkRefLists: Array<[string, string[] | undefined]> = [
-    ...fingerprint.intent.principles.map(
-      (entry, index) =>
-        [`intent.yml.principles[${index}].check_refs`, entry.check_refs] as [
-          string,
-          string[] | undefined,
-        ],
-    ),
-    ...fingerprint.intent.experience_contracts.map(
-      (entry, index) =>
-        [
-          `intent.yml.experience_contracts[${index}].check_refs`,
-          entry.check_refs,
-        ] as [string, string[] | undefined],
-    ),
-    ...fingerprint.composition.patterns.map(
-      (entry, index) =>
-        [`composition.yml.patterns[${index}].check_refs`, entry.check_refs] as [
-          string,
-          string[] | undefined,
-        ],
-    ),
-  ];
-
-  checkRefLists.forEach(([path, refs]) => {
-    refs?.forEach((ref, index) => {
-      const [, id] = ref.split(":");
-      if (id && checkIds.has(id)) return;
-      issues.push({
-        severity: "error",
-        rule: "fingerprint-check-unknown",
-        message: `fingerprint facet references unknown check '${ref}'.`,
-        path: `${path}[${index}]`,
-      });
-    });
-  });
-}
-
 async function pathExists(path: string): Promise<boolean> {
   try {
     await access(path);
@@ -239,7 +235,7 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-function isMissingFileError(err: unknown): boolean {
+function _isMissingFileError(err: unknown): boolean {
   return (
     typeof err === "object" &&
     err !== null &&

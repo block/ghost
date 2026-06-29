@@ -14,9 +14,11 @@ export interface GhostBindingEntry {
 export interface GhostBindingDocument {
   schema: typeof GHOST_BINDING_SCHEMA;
   /**
-   * Reference to the contract this binding instantiates. Only `.` (the in-repo
-   * root contract) is supported now; external references (npm name, resource
-   * id) are deferred (see docs/ideas/surface-binding.md open fork 1).
+   * Reference to the contract this binding instantiates: `.` (the in-repo root
+   * contract) or an npm package name (`@scope/brand`), resolved from
+   * `node_modules`. Other references (paths, URLs, resource ids) are not yet
+   * supported. `verify` checks an external contract resolves and the bound
+   * surfaces exist in it (see docs/ideas/polish-cut-d-plan.md).
    */
   contract: string;
   bindings: GhostBindingEntry[];

@@ -1,7 +1,5 @@
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
-import { type GhostValidateDocument, GhostValidateSchema } from "#ghost-core";
 import {
   type ScanContributionReport,
   summarizeFingerprintContribution,
@@ -26,7 +24,6 @@ export interface ScanStatus {
   /** Absolute path to the Ghost package directory. */
   dir: string;
   fingerprint: ScanStageReport;
-  validate: ScanStageReport;
   contribution: ScanContributionReport;
   recommended_next: ScanStage | null;
 }
@@ -47,35 +44,27 @@ export async function scanStatus(dirPath: string): Promise<ScanStatus> {
     intentPresent,
     inventoryPresent,
     compositionPresent,
-    validatePresent,
   ] = await Promise.all([
     pathExists(paths.manifest, "file"),
     pathExists(paths.intent, "file"),
     pathExists(paths.inventory, "file"),
     pathExists(paths.composition, "file"),
-    pathExists(paths.checks, "file"),
   ]);
 
   const fingerprint: ScanStageReport = {
     state: fingerprintPresent ? "present" : "missing",
     path: fingerprintPath,
   };
-  const validate: ScanStageReport = {
-    state: validatePresent ? "present" : "missing",
-    path: paths.checks,
-  };
   const contribution = await scanContribution(paths, {
     fingerprintPresent,
     intentPresent,
     inventoryPresent,
     compositionPresent,
-    validatePresent,
   });
 
   const status: ScanStatus = {
     dir,
     fingerprint,
-    validate,
     contribution,
     recommended_next: fingerprintPresent ? null : "fingerprint",
   };
@@ -90,7 +79,6 @@ async function scanContribution(
     intentPresent: boolean;
     inventoryPresent: boolean;
     compositionPresent: boolean;
-    validatePresent: boolean;
   },
 ): Promise<ScanContributionReport> {
   const files = {
@@ -100,7 +88,6 @@ async function scanContribution(
       path: paths.composition,
       present: present.compositionPresent,
     },
-    validate: { path: paths.checks, present: present.validatePresent },
   } as const;
 
   if (!present.fingerprintPresent) {
@@ -108,13 +95,9 @@ async function scanContribution(
   }
 
   try {
-    const [loaded, validate] = await Promise.all([
-      loadFingerprintPackage(paths),
-      readOptionalValidate(paths.checks, present.validatePresent),
-    ]);
+    const loaded = await loadFingerprintPackage(paths);
     return summarizeFingerprintContribution({
       fingerprint: loaded.fingerprint,
-      validate,
       files,
     });
   } catch (err) {
@@ -123,23 +106,6 @@ async function scanContribution(
       invalidReason: err instanceof Error ? err.message : String(err),
     });
   }
-}
-
-async function readOptionalValidate(
-  path: string,
-  present: boolean,
-): Promise<GhostValidateDocument | undefined> {
-  if (!present) return undefined;
-  const parsed = parseYaml(await readFile(path, "utf-8"));
-  const result = GhostValidateSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error(
-      `validate.yml failed schema validation: ${result.error.issues
-        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
-  return result.data as GhostValidateDocument;
 }
 
 async function pathExists(

@@ -5,13 +5,9 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import {
-  GHOST_VALIDATE_SCHEMA,
   type GhostFingerprintDocument,
   type GhostFingerprintEvidence,
-  type GhostValidateDocument,
-  GhostValidateSchema,
   lintGhostFingerprint,
-  lintGhostValidate,
 } from "#ghost-core";
 import type { PackageContext } from "../context/package-context.js";
 import { readOptionalUtf8 } from "../internal/fs.js";
@@ -61,8 +57,6 @@ export interface GhostFingerprintStackLayer
   extends GhostFingerprintStackLayerRef {
   fingerprint: GhostFingerprintDocument;
   fingerprint_raw: string;
-  checks?: GhostValidateDocument;
-  checks_raw?: string;
 }
 
 export interface GhostFingerprintStack {
@@ -80,7 +74,6 @@ export interface GhostFingerprintStack {
     /** Directory of the contract package (the root-most discovered package). */
     dir: string;
     fingerprint: GhostFingerprintDocument;
-    checks: GhostValidateDocument;
   };
   provenance: {
     layers: GhostFingerprintStackLayerRef[];
@@ -249,11 +242,6 @@ export function buildFingerprintStack(
   // model; see docs/ideas/surface-binding.md).
   const contractLayer = layers[0];
   const fingerprint = contractLayer.fingerprint;
-  const checks = contractLayer.checks ?? {
-    schema: GHOST_VALIDATE_SCHEMA,
-    id: "contract",
-    checks: [],
-  };
 
   return {
     target_path: targetPath,
@@ -263,7 +251,6 @@ export function buildFingerprintStack(
     contract: {
       dir: contractLayer.dir,
       fingerprint,
-      checks,
     },
     provenance: {
       layers: layers.map(layerRef),
@@ -279,39 +266,18 @@ export async function loadFingerprintStackLayer(
   const paths = resolveFingerprintPackage(packageDir, process.cwd());
   const normalizedGhostDir = normalizeGhostDir(ghostDir);
   const root = rootForFingerprintPackageDir(paths.dir, normalizedGhostDir);
-  const [loaded, checksRaw] = await Promise.all([
-    loadFingerprintPackage(paths),
-    readOptional(paths.checks),
-  ]);
+  const loaded = await loadFingerprintPackage(paths);
 
   const fingerprint = normalizeFingerprintPaths(
     loaded.fingerprint,
     root,
     repoRoot,
   );
-  const checks = checksRaw
-    ? normalizeChecksPaths(parseChecks(checksRaw), root, repoRoot)
-    : undefined;
-
-  if (checks) {
-    const checksReport = lintGhostValidate(checks);
-    if (checksReport.errors > 0) {
-      const first = checksReport.issues.find(
-        (issue) => issue.severity === "error",
-      );
-      const suffix = first?.path ? ` @ ${first.path}` : "";
-      throw new Error(
-        `${paths.checks} failed checks lint: ${first?.message ?? "invalid checks"}${suffix}`,
-      );
-    }
-  }
 
   return {
     ...packageRef(paths.dir, repoRoot, normalizedGhostDir),
     fingerprint,
     fingerprint_raw: stringifyYaml(fingerprint, { lineWidth: 0 }),
-    ...(checks ? { checks } : {}),
-    ...(checksRaw ? { checks_raw: checksRaw } : {}),
   };
 }
 
@@ -333,8 +299,6 @@ export function fingerprintStackToPackageContext(
     stackDirs: stack.layers.map((layer) => layer.dir),
     fingerprint: stack.contract.fingerprint,
     fingerprintRaw: stringifyYaml(stack.contract.fingerprint, { lineWidth: 0 }),
-    checks: stack.contract.checks,
-    checksRaw: stringifyYaml(stack.contract.checks, { lineWidth: 0 }),
   };
 }
 
@@ -373,15 +337,6 @@ export async function lintAllFingerprintStacks(
       ...prefixIssues(
         `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/contract.fingerprint`,
         fingerprintReport.issues,
-      ),
-    );
-    const checksReport = lintGhostValidate(stack.contract.checks, {
-      fingerprint: stack.contract.fingerprint,
-    });
-    issues.push(
-      ...prefixIssues(
-        `${fingerprintPackageDisplayPath(pkg.relative_root, ghostDir)}/contract.validate.yml`,
-        checksReport.issues,
       ),
     );
   }
@@ -456,11 +411,6 @@ async function resolveAndInit(
   return initFingerprintPackage(normalizeGhostDir(ghostDir), root, initOptions);
 }
 
-function parseChecks(raw: string): GhostValidateDocument {
-  const parsed = parseYamlSafe(raw, "validate.yml");
-  return GhostValidateSchema.parse(parsed) as GhostValidateDocument;
-}
-
 function normalizeFingerprintPaths(
   input: GhostFingerprintDocument,
   baseRoot: string,
@@ -513,39 +463,6 @@ function normalizeFingerprintPaths(
     }),
   );
   return fingerprint;
-}
-
-function normalizeChecksPaths(
-  input: GhostValidateDocument,
-  baseRoot: string,
-  repoRoot: string,
-): GhostValidateDocument {
-  const checks = clone(input);
-  checks.checks = checks.checks.map((check) => ({
-    ...check,
-    applies_to: check.applies_to
-      ? {
-          ...check.applies_to,
-          paths: check.applies_to.paths?.map((path) =>
-            normalizePath(path, baseRoot, repoRoot),
-          ),
-        }
-      : undefined,
-    evidence: check.evidence
-      ? {
-          ...check.evidence,
-          examples: check.evidence.examples?.map((example) =>
-            typeof example === "string"
-              ? normalizePath(example, baseRoot, repoRoot)
-              : {
-                  ...example,
-                  path: normalizePath(example.path, baseRoot, repoRoot),
-                },
-          ),
-        }
-      : undefined,
-  }));
-  return checks;
 }
 
 function normalizeFingerprintEvidence(
@@ -699,9 +616,9 @@ function rootForFingerprintPackageDir(
   return root;
 }
 
-const readOptional = readOptionalUtf8;
+const _readOptional = readOptionalUtf8;
 
-function parseYamlSafe(raw: string, label: string): unknown {
+function _parseYamlSafe(raw: string, label: string): unknown {
   try {
     return parseYaml(raw);
   } catch (err) {

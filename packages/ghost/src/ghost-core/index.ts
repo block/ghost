@@ -3,6 +3,8 @@
 // --- Binding (ghost.binding/v1) ---
 export {
   type BindingCandidate,
+  type ContractReferenceKind,
+  classifyContractReference,
   GHOST_BINDING_FILENAME,
   GHOST_BINDING_SCHEMA,
   type GhostBindingDocument,
@@ -11,6 +13,7 @@ export {
   type GhostBindingLintReport,
   type GhostBindingLintSeverity,
   GhostBindingSchema,
+  IN_REPO_CONTRACT,
   lintGhostBinding,
   type PathResolution,
   type PathResolutionReason,
@@ -34,37 +37,6 @@ export {
   type RoutedCheck,
   selectChecksForSurfaces,
 } from "./check/index.js";
-export type {
-  GhostCheck,
-  GhostCheckAppliesTo,
-  GhostCheckDerivation,
-  GhostCheckDerivationCompositionRef,
-  GhostCheckDerivationIntentRef,
-  GhostCheckDerivationInventoryRef,
-  GhostCheckDetector,
-  GhostCheckDetectorType,
-  GhostCheckEvidence,
-  GhostCheckSeverity,
-  GhostCheckStatus,
-  GhostValidateDocument,
-  GhostValidateLintIssue,
-  GhostValidateLintOptions,
-  GhostValidateLintReport,
-  GhostValidateLintSeverity,
-  RoutedGhostValidateCheck,
-} from "./checks/index.js";
-// --- Checks (ghost.validate/v1) ---
-export {
-  GHOST_VALIDATE_FILENAME,
-  GHOST_VALIDATE_SCHEMA,
-  GhostCheckDerivationSchema,
-  GhostCheckSchema,
-  GhostValidateSchema,
-  lintGhostValidate,
-  matchesGhostPath,
-  normalizeGhostPath,
-  routeGhostValidateForPath,
-} from "./checks/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
 export {
   CANONICAL_DECISION_DIMENSIONS,

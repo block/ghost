@@ -19,7 +19,6 @@ const PUBLIC_IMPORTS = [
   "@anarchitecture/ghost/fingerprint",
   "@anarchitecture/ghost/scan",
   "@anarchitecture/ghost/compare",
-  "@anarchitecture/ghost/govern",
   "@anarchitecture/ghost/core",
   "@anarchitecture/ghost/drift",
 ];

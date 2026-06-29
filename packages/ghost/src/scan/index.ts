@@ -9,6 +9,10 @@ export {
   loadChecksDir,
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
+export {
+  type ResolveContractOptions,
+  resolveContractDir,
+} from "./contract-resolver.js";
 export type {
   ScanBuildingBlockRows,
   ScanContributionReport,
@@ -16,7 +20,6 @@ export type {
   ScanFacet,
   ScanFacetReport,
   ScanFacetState,
-  ScanValidateCounts,
 } from "./fingerprint-contribution.js";
 export type {
   DiscoveredGhostPackage,
@@ -54,3 +57,8 @@ export type {
   ScanStatus,
 } from "./scan-status.js";
 export { scanStatus } from "./scan-status.js";
+export {
+  type ChangedFile,
+  type ChangedLine,
+  parseUnifiedDiff,
+} from "./unified-diff.js";

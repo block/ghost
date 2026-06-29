@@ -14,13 +14,11 @@ import {
   formatComparisonJSON,
   formatCompositeComparison,
   formatCompositeComparisonJSON,
-  formatGhostDriftCheckMarkdown,
   formatTemporalComparison,
   formatTemporalComparisonJSON,
   readHistory,
   readSyncManifest,
   runGateCli,
-  runGhostDriftCheck,
 } from "./core/index.js";
 import { registerDriftCommand } from "./drift-command.js";
 import {
@@ -161,56 +159,6 @@ export function buildCli(): ReturnType<typeof cac> {
   registerChecksCommand(cli);
   registerMigrateCommand(cli);
   registerSkillCommand(cli);
-
-  // --- check ---
-  cli
-    .command(
-      "check",
-      "Run active ghost.validate/v1 gates from the resolved fingerprint stack against a git diff.",
-    )
-    .option("--base <ref>", "Git ref to diff against (default: HEAD)")
-    .option(
-      "--diff <patch>",
-      "Unified diff file to check instead of running git diff. Use '-' for stdin.",
-    )
-    .option(
-      "--package <dir>",
-      "Exact fingerprint package directory; bypasses stack discovery",
-    )
-    .option("--format <fmt>", "Output format: markdown or json", {
-      default: "markdown",
-    })
-    .action(async (opts) => {
-      try {
-        if (opts.format !== "markdown" && opts.format !== "json") {
-          console.error("Error: --format must be 'markdown' or 'json'");
-          process.exit(2);
-          return;
-        }
-        const diffText =
-          typeof opts.diff === "string"
-            ? await readDiffInput(opts.diff)
-            : undefined;
-        const report = await runGhostDriftCheck({
-          cwd: process.cwd(),
-          packageDir:
-            typeof opts.package === "string" ? opts.package : undefined,
-          base: typeof opts.base === "string" ? opts.base : undefined,
-          diffText,
-        });
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-        } else {
-          process.stdout.write(formatGhostDriftCheckMarkdown(report));
-        }
-        process.exit(report.result === "fail" ? 1 : 0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
 
   // --- review ---
   cli

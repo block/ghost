@@ -23,7 +23,6 @@ describe("scanStatus contribution", () => {
     const status = await scanStatus(dir);
 
     expect(status.fingerprint.state).toBe("missing");
-    expect(status.validate.state).toBe("missing");
     expect(status.recommended_next).toBe("fingerprint");
     expect(status.contribution.state).toBe("missing");
     expect(status.contribution.contributing_facets).toEqual([]);
@@ -31,7 +30,6 @@ describe("scanStatus contribution", () => {
       "intent",
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(status.contribution.reasons.join(" ")).toContain(
       "manifest.yml is missing",
@@ -55,7 +53,6 @@ describe("scanStatus contribution", () => {
       "intent",
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(status.contribution.facets.intent).toMatchObject({
       state: "absent",
@@ -77,22 +74,16 @@ sources: []
 `,
       composition: `patterns: []
 `,
-      validate: `schema: ghost.validate/v1
-id: test
-checks: []
-`,
     });
 
     const status = await scanStatus(dir);
 
-    expect(status.validate.state).toBe("present");
     expect(status.contribution.state).toBe("empty");
     expect(status.contribution.contributing_facets).toEqual([]);
     expect(status.contribution.empty_facets).toEqual([
       "intent",
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(status.contribution.absent_facets).toEqual([]);
   });
@@ -125,7 +116,6 @@ checks: []
     expect(status.contribution.absent_facets).toEqual([
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(status.contribution.facets.intent).toMatchObject({
       state: "useful",
@@ -162,7 +152,6 @@ sources:
     expect(status.contribution.absent_facets).toEqual([
       "intent",
       "composition",
-      "validate",
     ]);
   });
 
@@ -183,42 +172,7 @@ sources:
       state: "useful",
       count: 1,
     });
-    expect(status.contribution.absent_facets).toEqual([
-      "intent",
-      "inventory",
-      "validate",
-    ]);
-  });
-
-  it("reports validate contribution from deterministic checks", async () => {
-    await writePackage(dir, {
-      validate: `schema: ghost.validate/v1
-id: test
-checks:
-  - id: no-hardcoded-color
-    title: Use semantic colors
-    status: active
-    severity: serious
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{6}'
-`,
-    });
-
-    const status = await scanStatus(dir);
-
-    expect(status.validate.state).toBe("present");
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.contributing_facets).toEqual(["validate"]);
-    expect(status.contribution.facets.validate).toMatchObject({
-      state: "useful",
-      count: 1,
-    });
-    expect(status.contribution.validate_counts).toEqual({
-      active: 1,
-      proposed: 0,
-      disabled: 0,
-    });
+    expect(status.contribution.absent_facets).toEqual(["intent", "inventory"]);
   });
 
   it("reports multiple sparse contributions without calling absent facets missing", async () => {
@@ -240,10 +194,7 @@ checks:
       "intent",
       "inventory",
     ]);
-    expect(status.contribution.absent_facets).toEqual([
-      "composition",
-      "validate",
-    ]);
+    expect(status.contribution.absent_facets).toEqual(["composition"]);
     expect(status.contribution.reasons[0]).toContain(
       "Absent facets may be inherited",
     );
@@ -273,17 +224,6 @@ sources: []
     kind: layout
     pattern: Keep dense operational tables scannable.
 `,
-      validate: `schema: ghost.validate/v1
-id: test
-checks:
-  - id: no-hardcoded-color
-    title: Use semantic colors
-    status: proposed
-    severity: serious
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{6}'
-`,
     });
 
     const status = await scanStatus(dir);
@@ -294,18 +234,15 @@ checks:
       "intent",
       "inventory",
       "composition",
-      "validate",
     ]);
     expect(status.contribution.facets).toMatchObject({
       intent: { state: "useful", count: 1 },
       inventory: { state: "useful", count: 3 },
       composition: { state: "useful", count: 1 },
-      validate: { state: "useful", count: 1 },
     });
     expect(status.contribution.building_block_rows.tokens).toBe(1);
     expect(status.contribution.building_block_rows.components).toBe(1);
     expect(status.contribution.product_surface_count).toBe(1);
-    expect(status.contribution.validate_counts.proposed).toBe(1);
   });
 });
 
@@ -315,7 +252,6 @@ async function writePackage(
     intent?: string;
     inventory?: string;
     composition?: string;
-    validate?: string;
   },
 ): Promise<void> {
   const packageDir = dir;

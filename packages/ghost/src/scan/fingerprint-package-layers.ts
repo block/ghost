@@ -4,7 +4,6 @@ import type { ZodIssue, ZodType } from "zod";
 import {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GHOST_FINGERPRINT_SCHEMA,
-  GHOST_VALIDATE_SCHEMA,
   GhostFingerprintCompositionSchema,
   type GhostFingerprintDocument,
   GhostFingerprintIntentSchema,
@@ -190,13 +189,6 @@ sources: []
 
 export function templateComposition(): string {
   return `patterns: []
-`;
-}
-
-export function templateChecks(): string {
-  return `schema: ${GHOST_VALIDATE_SCHEMA}
-id: local
-checks: []
 `;
 }
 

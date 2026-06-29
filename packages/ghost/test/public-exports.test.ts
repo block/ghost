@@ -10,10 +10,9 @@ const hasBuiltExports = existsSync(
 
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
-    const [fingerprint, scan, govern, compareApi] = await Promise.all([
+    const [fingerprint, scan, compareApi] = await Promise.all([
       import("@anarchitecture/ghost/fingerprint"),
       import("@anarchitecture/ghost/scan"),
-      import("@anarchitecture/ghost/govern"),
       import("@anarchitecture/ghost/compare"),
     ]);
 
@@ -33,13 +32,6 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(scanApi.initFingerprintPackage).toBeUndefined();
     expect(scanApi.lintFingerprintPackage).toBeUndefined();
     expect(scanApi.writePackageContextBundle).toBeUndefined();
-
-    expect(govern.runGhostCheck).toBeTypeOf("function");
-    expect(govern.runGhostCheck).toBe(govern.runGhostDriftCheck);
-    expect(govern.formatGhostCheckMarkdown).toBeTypeOf("function");
-    expect(govern.formatGhostCheckMarkdown).toBe(
-      govern.formatGhostDriftCheckMarkdown,
-    );
 
     expect(compareApi.compare).toBeTypeOf("function");
     expect(compareApi.compareFingerprints).toBeTypeOf("function");

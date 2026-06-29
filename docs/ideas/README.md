@@ -135,7 +135,15 @@ buildable Layer 2 design. They agree; read them as a sequence.
   entanglements: `relay` and `review` share `context/` machinery (partition,
   don't delete wholesale), and `survey` is a command *and* a module (delete the
   command surface only). `review` / `emit` / `validate-v1` / the survey module
-  left for later cuts.
+  left for later cuts. **Shipped** (`c12f8f1`) — the cutover (Phases 1–8) is
+  complete.
+- `polish-roadmap.md` — sequences the four deferred post-cutover cuts. Key
+  finding: they are not independent. `review`/`emit` sit on both `validate.yml`
+  and the dormant Job 2 entrypoint, so **Cut A** (move `review`/`emit` onto
+  `gather`+`checks`) is the keystone that unblocks **Cut B** (delete the dormant
+  entrypoint) and **Cut C** (`validate/v1` positioning). **Cut D** (external
+  contract references in bindings) is independent. The `ghost-core/survey` module
+  removal is held back as a deeper, separate excavation.
 
 ## Independent, still live
 
@@ -154,3 +162,14 @@ buildable Layer 2 design. They agree; read them as a sequence.
 - Delete notes that only describe superseded package splits, removed commands,
   or dead routing/coordinate models after their useful decisions are folded
   into current docs.
+- `polish-cut-c-plan.md` — execution spec for Cut C, escalated to full removal:
+  one check format. Deletes `ghost.validate/v1`, `validate.yml`, the `ghost
+  check` detector gate, and the `./govern` export; rescues `parseUnifiedDiff`
+  into a neutral module first; preserves the `drift` stance ledger (cleanly
+  separable from the detector gate). Markdown `ghost.check/v1` becomes the single
+  check format.
+- `polish-cut-d-plan.md` — execution spec for Cut D: external contract references
+  in bindings. A `.ghost.bind.yml` `contract:` accepts `.` (in-repo) or an npm
+  package name resolved from `node_modules`; `ghost verify` checks the external
+  contract resolves and its bound surfaces exist. Resolution + validation only;
+  external fingerprint loading for grounding is deferred.
