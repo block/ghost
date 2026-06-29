@@ -42,8 +42,11 @@ This is large but bounded, and concentrated: `fingerprint/{schema,types,lint}`,
 ## Sequencing principle
 
 Each phase is one PR-sized cut, lands green (`pnpm check` + `pnpm test`), and is
-committed before the next starts. No two phases open at once — the same
-discipline that kept the design notes clean. The order is **dependency-driven**:
+committed before the next starts. Both gates run automatically on the
+pre-commit hook (`lefthook.yml`), so a phase cannot be committed red — there is
+no per-phase choice about which suite to run, and no `--no-verify` split to keep
+clean. No two phases open at once — the same discipline that kept the design
+notes clean. The order is **dependency-driven**:
 schema before lint before loader before consumers before resolver before
 binding. Nothing downstream is touched until its upstream lands.
 

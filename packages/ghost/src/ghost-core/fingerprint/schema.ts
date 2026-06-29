@@ -62,15 +62,6 @@ export const GhostFingerprintEvidenceSchema = z
   })
   .strict();
 
-export const GhostFingerprintScopeSchema = z
-  .object({
-    scopes: z.array(SlugIdSchema).optional(),
-    paths: z.array(z.string().min(1)).optional(),
-    surface_types: z.array(SlugIdSchema).optional(),
-    situations: z.array(SlugIdSchema).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintSummarySchema = z
   .object({
     product: z.string().min(1).optional(),
@@ -82,28 +73,12 @@ export const GhostFingerprintSummarySchema = z
   })
   .strict();
 
-export const GhostFingerprintTopologyScopeSchema = z
-  .object({
-    id: SlugIdSchema,
-    paths: z.array(z.string().min(1)).min(1),
-    surface_types: z.array(SlugIdSchema).optional(),
-  })
-  .strict();
-
-export const GhostFingerprintTopologySchema = z
-  .object({
-    scopes: z.array(GhostFingerprintTopologyScopeSchema).optional(),
-    surface_types: z.array(SlugIdSchema).optional(),
-  })
-  .strict();
-
 export const GhostFingerprintExemplarSchema = z
   .object({
     id: SlugIdSchema,
     path: z.string().min(1),
     title: z.string().min(1).optional(),
-    surface_type: SlugIdSchema.optional(),
-    scope: SlugIdSchema.optional(),
+    surface: SlugIdSchema.optional(),
     note: z.string().min(1).optional(),
     why: z.string().min(1).optional(),
     refs: z.array(GhostFingerprintLayerRefSchema).optional(),
@@ -116,7 +91,7 @@ export const GhostFingerprintSituationSchema = z
     title: z.string().min(1).optional(),
     user_intent: z.string().min(1).optional(),
     product_obligation: z.string().min(1).optional(),
-    surface_type: SlugIdSchema.optional(),
+    surface: SlugIdSchema.optional(),
     hierarchy: z.record(z.string(), z.string().min(1)).optional(),
     refuses: z.array(z.string().min(1)).optional(),
     principles: z.array(GhostFingerprintRefSchema).optional(),
@@ -130,7 +105,7 @@ export const GhostFingerprintPrincipleSchema = z
   .object({
     id: SlugIdSchema,
     principle: z.string().min(1),
-    applies_to: GhostFingerprintScopeSchema.optional(),
+    surface: SlugIdSchema.optional(),
     guidance: z.array(z.string().min(1)).optional(),
     evidence: z.array(GhostFingerprintEvidenceSchema).optional(),
     counterexamples: z.array(z.string().min(1)).optional(),
@@ -142,7 +117,7 @@ export const GhostFingerprintExperienceContractSchema = z
   .object({
     id: SlugIdSchema,
     contract: z.string().min(1),
-    applies_to: GhostFingerprintScopeSchema.optional(),
+    surface: SlugIdSchema.optional(),
     obligations: z.array(z.string().min(1)).optional(),
     evidence: z.array(GhostFingerprintEvidenceSchema).optional(),
     check_refs: z.array(GhostFingerprintRefSchema).optional(),
@@ -154,7 +129,7 @@ export const GhostFingerprintPatternSchema = z
     id: SlugIdSchema,
     kind: GhostFingerprintPatternKindSchema,
     pattern: z.string().min(1),
-    applies_to: GhostFingerprintScopeSchema.optional(),
+    surface: SlugIdSchema.optional(),
     guidance: z.array(z.string().min(1)).optional(),
     evidence: z.array(GhostFingerprintEvidenceSchema).optional(),
     anti_patterns: z.array(z.string().min(1)).optional(),
@@ -204,7 +179,6 @@ export const GhostFingerprintIntentSchema = z
 
 export const GhostFingerprintInventorySchema = z
   .object({
-    topology: GhostFingerprintTopologySchema.optional().default({}),
     building_blocks:
       GhostFingerprintInventoryBuildingBlocksSchema.optional().default({}),
     exemplars: z.array(GhostFingerprintExemplarSchema).optional().default([]),
@@ -231,7 +205,6 @@ export const GhostFingerprintSchema = z
       experience_contracts: [],
     }),
     inventory: GhostFingerprintInventorySchema.optional().default({
-      topology: {},
       building_blocks: {},
       exemplars: [],
       sources: [],

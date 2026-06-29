@@ -10,17 +10,15 @@ const hasBuiltExports = existsSync(
 
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
-    const [fingerprint, scan, relay, govern, compareApi] = await Promise.all([
+    const [fingerprint, scan, govern, compareApi] = await Promise.all([
       import("@anarchitecture/ghost/fingerprint"),
       import("@anarchitecture/ghost/scan"),
-      import("@anarchitecture/ghost/relay"),
       import("@anarchitecture/ghost/govern"),
       import("@anarchitecture/ghost/compare"),
     ]);
 
     const fingerprintApi = fingerprint as Record<string, unknown>;
     const scanApi = scan as Record<string, unknown>;
-    const relayApi = relay as Record<string, unknown>;
 
     expect(fingerprintApi.initFingerprintPackage).toBeTypeOf("function");
     expect(fingerprintApi.lintFingerprintPackage).toBeTypeOf("function");
@@ -35,14 +33,6 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(scanApi.initFingerprintPackage).toBeUndefined();
     expect(scanApi.lintFingerprintPackage).toBeUndefined();
     expect(scanApi.writePackageContextBundle).toBeUndefined();
-
-    expect(relay.gatherRelayContext).toBeTypeOf("function");
-    expect(relay.formatRelayBrief).toBeTypeOf("function");
-    expect(relay.GHOST_RELAY_CONTEXT_SCHEMA).toBe("ghost.relay-context/v1");
-    expect(relay.GHOST_RELAY_CONFIG_SCHEMA).toBe("ghost.relay-config/v1");
-    expect(relay.GHOST_RELAY_REQUEST_SCHEMA).toBe("ghost.relay-request/v1");
-    expect(relay.parseGhostRelayRequest).toBeTypeOf("function");
-    expect(relayApi.GHOST_CONTEXT_PACKET_SCHEMA).toBeUndefined();
 
     expect(govern.runGhostCheck).toBeTypeOf("function");
     expect(govern.runGhostCheck).toBe(govern.runGhostDriftCheck);

@@ -1,5 +1,39 @@
 // --- Embedding primitives ---
 
+// --- Binding (ghost.binding/v1) ---
+export {
+  type BindingCandidate,
+  GHOST_BINDING_FILENAME,
+  GHOST_BINDING_SCHEMA,
+  type GhostBindingDocument,
+  type GhostBindingEntry,
+  type GhostBindingLintIssue,
+  type GhostBindingLintReport,
+  type GhostBindingLintSeverity,
+  GhostBindingSchema,
+  lintGhostBinding,
+  type PathResolution,
+  type PathResolutionReason,
+  resolvePathToSurface,
+} from "./binding/index.js";
+// --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
+export {
+  type CheckRelevance,
+  GHOST_CHECK_SCHEMA,
+  GHOST_CHECK_SEVERITIES,
+  type GhostCheckDocument,
+  type GhostCheckFrontmatter,
+  type GhostCheckLintIssue,
+  type GhostCheckLintReport,
+  type GhostCheckLintSeverity,
+  type GhostCheckMarkdownSeverity,
+  lintGhostCheck,
+  loadGhostCheck,
+  type ParsedCheckMarkdown,
+  parseCheckMarkdown,
+  type RoutedCheck,
+  selectChecksForSurfaces,
+} from "./check/index.js";
 export type {
   GhostCheck,
   GhostCheckAppliesTo,
@@ -29,7 +63,6 @@ export {
   lintGhostValidate,
   matchesGhostPath,
   normalizeGhostPath,
-  routeGhostPathToScopes,
   routeGhostValidateForPath,
 } from "./checks/index.js";
 // --- Decision vocabulary (controlled list for fleet aggregation) ---
@@ -79,11 +112,8 @@ export type {
   GhostFingerprintPrinciple,
   GhostFingerprintRef,
   GhostFingerprintRefPrefix,
-  GhostFingerprintScope,
   GhostFingerprintSituation,
   GhostFingerprintSummary,
-  GhostFingerprintTopology,
-  GhostFingerprintTopologyScope,
 } from "./fingerprint/index.js";
 export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
@@ -106,14 +136,11 @@ export {
   GhostFingerprintRefPrefixSchema,
   GhostFingerprintRefSchema,
   GhostFingerprintSchema,
-  GhostFingerprintScopeSchema,
   GhostFingerprintSituationSchema,
   GhostFingerprintSummarySchema,
-  GhostFingerprintTopologySchema,
-  GhostFingerprintTopologyScopeSchema,
   lintGhostFingerprint,
 } from "./fingerprint/index.js";
-// --- Map (ghost.map/v1) ---
+// --- Fingerprint package filenames ---
 export {
   FINGERPRINT_COMPOSITION_FILENAME,
   FINGERPRINT_FILENAME,
@@ -126,23 +153,6 @@ export {
   PATTERNS_FILENAME,
   RESOURCES_FILENAME,
 } from "./fingerprint-package.js";
-// --- Map (ghost.map/v1) ---
-export {
-  type GitInfo,
-  getEffectiveMapScopes,
-  type InventoryOutput,
-  type LanguageHistogramEntry,
-  MAP_FILENAME,
-  type MapFeatureArea,
-  type MapFrontmatter,
-  MapFrontmatterSchema,
-  type MapScope,
-  MapScopeSchema,
-  REQUIRED_BODY_SECTIONS,
-  type RequiredBodySection,
-  slugifyScopeId,
-  type TopLevelEntry,
-} from "./map/index.js";
 // --- Patterns (ghost.patterns/v1) ---
 export type {
   GhostCompositionAnatomy,
@@ -195,9 +205,41 @@ export {
   GhostSurfaceResourceSchema,
   lintGhostResources,
 } from "./resources/index.js";
+// --- Inventory scan output types ---
+export type {
+  GitInfo,
+  InventoryOutput,
+  LanguageHistogramEntry,
+  TopLevelEntry,
+} from "./scan-types.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";
+// --- Surfaces (ghost.surfaces/v1) ---
+export {
+  buildSurfaceMenu,
+  GHOST_SURFACE_EDGE_KINDS,
+  GHOST_SURFACE_ROOT_ID,
+  GHOST_SURFACES_SCHEMA,
+  GHOST_SURFACES_YML_FILENAME,
+  type GhostSurface,
+  type GhostSurfaceEdge,
+  type GhostSurfaceEdgeKind,
+  type GhostSurfacesDocument,
+  type GhostSurfacesLintIssue,
+  type GhostSurfacesLintReport,
+  type GhostSurfacesLintSeverity,
+  GhostSurfacesSchema,
+  type GroundingItem,
+  groundSurface,
+  lintGhostSurfaces,
+  type ResolvedSlice,
+  resolveSurfaceSlice,
+  type SliceNode,
+  type SliceProvenance,
+  type SurfaceGrounding,
+  type SurfaceMenuEntry,
+} from "./surfaces/index.js";
 // --- Survey (ghost.survey/v1) ---
 export {
   type BreakpointSpec,

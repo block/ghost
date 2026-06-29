@@ -118,7 +118,7 @@ Edit the smallest useful durable facet content:
   priorities, route guidance by situation, inspect concrete exemplars, and
   review whether generated work preserved the intended experience.
 - `intent.yml`: summary, situations, principles, and experience contracts.
-- `inventory.yml`: topology, building blocks, exemplars, and `sources[]` links.
+- `inventory.yml`: building blocks, exemplars, and `sources[]` links.
 - `composition.yml`: rules, layouts, structures, flows, states, content,
   behavior, and visual arrangements.
 

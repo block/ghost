@@ -1,17 +1,3 @@
-topology:
-  scopes:
-    - id: ui-primitives
-      paths: [src/components/ui]
-      surface_types: [component-library]
-    - id: ai-elements
-      paths: [src/components/ai-elements]
-      surface_types: [component-library]
-    - id: tokens
-      paths: [src/styles]
-      surface_types: [token-system]
-    - id: registry
-      paths: [registry.json, public/r/registry.json]
-      surface_types: [shadcn-registry]
 building_blocks:
   tokens:
     - src/styles/main.css

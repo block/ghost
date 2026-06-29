@@ -22,24 +22,25 @@ const REF_TARGET_PREFIXES = [
   "composition.pattern",
 ] as const satisfies readonly RefTargetPrefix[];
 
+export interface GhostFingerprintLintOptions {
+  /**
+   * Surface ids declared in the sibling `surfaces.yml`. When provided, node
+   * `surface:` placements are validated against this set. When omitted (single-
+   * file lint with no package context), placement existence is not checked —
+   * matching how validate lint skips routing checks without a fingerprint.
+   */
+  surfaceIds?: Iterable<string>;
+}
+
 export function lintGhostFingerprint(
   input: unknown,
+  options: GhostFingerprintLintOptions = {},
 ): GhostFingerprintLintReport {
   const issues: GhostFingerprintLintIssue[] = [];
   const result = GhostFingerprintSchema.safeParse(input);
   if (!result.success) return finalize(zodIssues(result.error.issues));
 
   const doc = result.data as GhostFingerprintDocument;
-  checkDuplicateIds(
-    "inventory.topology.scopes",
-    doc.inventory.topology.scopes ?? [],
-    issues,
-  );
-  checkDuplicateStrings(
-    "inventory.topology.surface_types",
-    doc.inventory.topology.surface_types ?? [],
-    issues,
-  );
   checkDuplicateIds("intent.situations", doc.intent.situations, issues);
   checkDuplicateIds("intent.principles", doc.intent.principles, issues);
   checkDuplicateIds(
@@ -50,7 +51,7 @@ export function lintGhostFingerprint(
   checkDuplicateIds("composition.patterns", doc.composition.patterns, issues);
   checkDuplicateIds("inventory.exemplars", doc.inventory.exemplars, issues);
   checkDuplicateIds("inventory.sources", doc.inventory.sources, issues);
-  checkTopologyRefs(doc, issues);
+  checkPlacement(doc, options.surfaceIds, issues);
   checkRefs(doc, issues);
 
   return finalize(issues);
@@ -77,97 +78,103 @@ function checkDuplicateIds(
   });
 }
 
-function checkDuplicateStrings(
-  collectionPath: string,
-  entries: string[],
+function checkPlacement(
+  doc: GhostFingerprintDocument,
+  surfaceIds: Iterable<string> | undefined,
   issues: GhostFingerprintLintIssue[],
 ): void {
-  const seen = new Map<string, number>();
-  entries.forEach((entry, index) => {
-    const previous = seen.get(entry);
-    if (previous !== undefined) {
+  // `core` is always a valid placement (the implicit root) even when not
+  // explicitly declared in surfaces.yml.
+  const known = surfaceIds ? new Set(surfaceIds) : null;
+  if (known) known.add("core");
+  const candidates = known ? [...known] : [];
+
+  const visit = (
+    surface: string | undefined,
+    path: string,
+    nodeLabel: string,
+  ) => {
+    if (surface === undefined) {
       issues.push({
-        severity: "error",
-        rule: "duplicate-id",
-        message: `'${entry}' is duplicated (also at ${collectionPath}[${previous}])`,
-        path: `${collectionPath}[${index}]`,
+        severity: "warning",
+        rule: "fingerprint-node-unplaced",
+        message: `${nodeLabel} has no surface placement; place it on a surface so it does not implicitly reach everywhere.`,
+        path,
       });
-    } else {
-      seen.set(entry, index);
+      return;
     }
+    if (!known || known.has(surface)) return;
+    issues.push({
+      severity: "error",
+      rule: "fingerprint-surface-unknown",
+      message: `surface '${surface}' is not declared in surfaces.yml.`,
+      path,
+    });
+    const near = nearest(surface, candidates);
+    if (near) {
+      issues.push({
+        severity: "warning",
+        rule: "fingerprint-surface-near-miss",
+        message: `surface '${surface}' is unknown; did you mean '${near}'?`,
+        path,
+      });
+    }
+  };
+
+  doc.intent.situations.forEach((node, index) => {
+    visit(node.surface, `intent.situations[${index}].surface`, "situation");
+  });
+  doc.intent.principles.forEach((node, index) => {
+    visit(node.surface, `intent.principles[${index}].surface`, "principle");
+  });
+  doc.intent.experience_contracts.forEach((node, index) => {
+    visit(
+      node.surface,
+      `intent.experience_contracts[${index}].surface`,
+      "experience contract",
+    );
+  });
+  doc.composition.patterns.forEach((node, index) => {
+    visit(node.surface, `composition.patterns[${index}].surface`, "pattern");
+  });
+  doc.inventory.exemplars.forEach((node, index) => {
+    visit(node.surface, `inventory.exemplars[${index}].surface`, "exemplar");
   });
 }
 
-function checkTopologyRefs(
-  doc: GhostFingerprintDocument,
-  issues: GhostFingerprintLintIssue[],
-): void {
-  const topology = collectTopology(doc);
+/** Nearest candidate within edit distance 2, or null. */
+function nearest(value: string, candidates: string[]): string | null {
+  let best: string | null = null;
+  let bestDistance = 3;
+  for (const candidate of candidates) {
+    const distance = levenshtein(value, candidate);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = candidate;
+    }
+  }
+  return bestDistance <= 2 ? best : null;
+}
 
-  doc.inventory.topology.scopes?.forEach((scope, scopeIndex) => {
-    scope.surface_types?.forEach((surfaceType, surfaceIndex) => {
-      if (
-        topology.explicitSurfaceTypes.size === 0 ||
-        topology.explicitSurfaceTypes.has(surfaceType)
-      ) {
-        return;
-      }
-      issues.push({
-        severity: "error",
-        rule: "fingerprint-surface-type-unknown",
-        message: `Surface type '${surfaceType}' is not declared in inventory.topology.surface_types.`,
-        path: `inventory.topology.scopes[${scopeIndex}].surface_types[${surfaceIndex}]`,
-      });
-    });
-  });
-
-  doc.intent.situations.forEach((situation, situationIndex) => {
-    checkSurfaceTypeRef(
-      situation.surface_type,
-      `intent.situations[${situationIndex}].surface_type`,
-      topology,
-      issues,
-    );
-  });
-
-  doc.intent.principles.forEach((principle, index) => {
-    checkScopeRefs(
-      principle.applies_to,
-      `intent.principles[${index}].applies_to`,
-      topology,
-      issues,
-    );
-  });
-  doc.intent.experience_contracts.forEach((contract, index) => {
-    checkScopeRefs(
-      contract.applies_to,
-      `intent.experience_contracts[${index}].applies_to`,
-      topology,
-      issues,
-    );
-  });
-  doc.composition.patterns.forEach((pattern, index) => {
-    checkScopeRefs(
-      pattern.applies_to,
-      `composition.patterns[${index}].applies_to`,
-      topology,
-      issues,
-    );
-  });
-  doc.inventory.exemplars.forEach((exemplar, index) => {
-    checkScopeIdRef(
-      exemplar.scope,
-      `inventory.exemplars[${index}].scope`,
-      topology,
-      issues,
-    );
-    checkSurfaceTypeRef(
-      exemplar.surface_type,
-      `inventory.exemplars[${index}].surface_type`,
-      topology,
-      issues,
-    );
-  });
+function levenshtein(a: string, b: string): number {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const dist: number[][] = Array.from({ length: rows }, () =>
+    new Array<number>(cols).fill(0),
+  );
+  for (let i = 0; i < rows; i++) dist[i][0] = i;
+  for (let j = 0; j < cols; j++) dist[0][j] = j;
+  for (let i = 1; i < rows; i++) {
+    for (let j = 1; j < cols; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dist[i][j] = Math.min(
+        dist[i - 1][j] + 1,
+        dist[i][j - 1] + 1,
+        dist[i - 1][j - 1] + cost,
+      );
+    }
+  }
+  return dist[a.length][b.length];
 }
 
 function checkRefs(
@@ -227,104 +234,6 @@ function checkRefs(
       targets,
       issues,
     );
-  });
-}
-
-function collectTopology(doc: GhostFingerprintDocument): {
-  scopes: Set<string>;
-  explicitSurfaceTypes: Set<string>;
-  surfaceTypes: Set<string>;
-  situations: Set<string>;
-} {
-  const explicitSurfaceTypes = new Set(
-    doc.inventory.topology.surface_types ?? [],
-  );
-  const surfaceTypes = new Set(explicitSurfaceTypes);
-  for (const scope of doc.inventory.topology.scopes ?? []) {
-    for (const surfaceType of scope.surface_types ?? []) {
-      surfaceTypes.add(surfaceType);
-    }
-  }
-  return {
-    scopes: new Set(
-      doc.inventory.topology.scopes?.map((entry) => entry.id) ?? [],
-    ),
-    explicitSurfaceTypes,
-    surfaceTypes,
-    situations: new Set(doc.intent.situations.map((entry) => entry.id)),
-  };
-}
-
-function checkSurfaceTypeRef(
-  surfaceType: string | undefined,
-  path: string,
-  topology: ReturnType<typeof collectTopology>,
-  issues: GhostFingerprintLintIssue[],
-): void {
-  if (!surfaceType) return;
-  if (topology.surfaceTypes.has(surfaceType)) return;
-  issues.push({
-    severity: "error",
-    rule: "fingerprint-surface-type-unknown",
-    message: `Surface type '${surfaceType}' is not declared in inventory.topology.surface_types.`,
-    path,
-  });
-}
-
-function checkScopeRefs(
-  scope:
-    | {
-        scopes?: string[];
-        surface_types?: string[];
-        situations?: string[];
-      }
-    | undefined,
-  path: string,
-  topology: ReturnType<typeof collectTopology>,
-  issues: GhostFingerprintLintIssue[],
-): void {
-  scope?.scopes?.forEach((scopeId, index) => {
-    if (topology.scopes.has(scopeId)) return;
-    issues.push({
-      severity: "error",
-      rule: "fingerprint-scope-unknown",
-      message: `Scope '${scopeId}' is not declared in topology.scopes.`,
-      path: `${path}.scopes[${index}]`,
-    });
-  });
-  scope?.surface_types?.forEach((surfaceType, index) => {
-    if (topology.surfaceTypes.has(surfaceType)) return;
-    issues.push({
-      severity: "error",
-      rule: "fingerprint-surface-type-unknown",
-      message: `Surface type '${surfaceType}' is not declared in topology.surface_types.`,
-      path: `${path}.surface_types[${index}]`,
-    });
-  });
-  scope?.situations?.forEach((situation, index) => {
-    if (topology.situations.has(situation)) return;
-    issues.push({
-      severity: "error",
-      rule: "fingerprint-situation-unknown",
-      message: `Situation '${situation}' is not declared in situations.`,
-      path: `${path}.situations[${index}]`,
-    });
-  });
-}
-
-function checkScopeIdRef(
-  scope: string | undefined,
-  path: string,
-  topology: ReturnType<typeof collectTopology>,
-  issues: GhostFingerprintLintIssue[],
-): void {
-  if (!scope) return;
-  if (topology.scopes.has(scope)) return;
-  issues.push({
-    severity: "error",
-    rule: "fingerprint-scope-unknown",
-    message: `Scope '${scope}' is not declared in topology.scopes.`,
-    path,
   });
 }
 

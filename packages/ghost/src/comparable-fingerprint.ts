@@ -116,8 +116,7 @@ function synthesizeFingerprintFromPackage(
       dimension_kind: "inventory-exemplar",
       decision: compactJoin([
         exemplar.title,
-        exemplar.surface_type,
-        exemplar.scope,
+        exemplar.surface,
         exemplar.note,
         exemplar.why,
         exemplar.path,

@@ -41,7 +41,6 @@ describe("split fingerprint package", () => {
         experience_contracts: [],
       },
       inventory: {
-        topology: {},
         building_blocks: {},
         exemplars: [],
         sources: [],
@@ -54,8 +53,7 @@ describe("split fingerprint package", () => {
     await writeManifest(dir);
     await writeFile(
       join(dir, "inventory.yml"),
-      `topology: {}
-building_blocks: {}
+      `building_blocks: {}
 exemplars: []
 sources:
   - id: repo-signals
@@ -80,8 +78,7 @@ sources:
     await writeManifest(dir);
     await writeFile(
       join(dir, "inventory.yml"),
-      `topology: {}
-building_blocks: {}
+      `building_blocks: {}
 exemplars: []
 sources:
   - id: repo-signals

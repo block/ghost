@@ -12,6 +12,8 @@ import {
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
   GhostFingerprintSchema,
+  type GhostSurfacesDocument,
+  GhostSurfacesSchema,
   lintGhostFingerprint,
 } from "#ghost-core";
 import { readOptionalUtf8 } from "../internal/fs.js";
@@ -25,14 +27,16 @@ import { normalizeReferenceInput } from "./package-config.js";
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
 ): Promise<LoadedFingerprintPackage> {
-  const [manifestRaw, intentRaw, inventoryRaw, compositionRaw] =
+  const [manifestRaw, intentRaw, inventoryRaw, compositionRaw, surfacesRaw] =
     await Promise.all([
       readFile(paths.manifest, "utf-8"),
       readOptional(paths.intent),
       readOptional(paths.inventory),
       readOptional(paths.composition),
+      readOptional(paths.surfaces),
     ]);
   const manifest = parseManifest(manifestRaw, "manifest.yml");
+  const surfaces = parseSurfaces(surfacesRaw);
   const fingerprint = assembleFingerprint({
     intent: parseLayer(
       intentRaw,
@@ -65,12 +69,27 @@ export async function loadFingerprintPackage(
     manifest,
     manifestRaw,
     fingerprint,
+    ...(surfaces ? { surfaces } : {}),
     layerRaw: {
       ...(intentRaw !== undefined ? { intent: intentRaw } : {}),
       ...(inventoryRaw !== undefined ? { inventory: inventoryRaw } : {}),
       ...(compositionRaw !== undefined ? { composition: compositionRaw } : {}),
     },
   };
+}
+
+function parseSurfaces(
+  raw: string | undefined,
+): GhostSurfacesDocument | undefined {
+  if (raw === undefined) return undefined;
+  const result = GhostSurfacesSchema.safeParse(parseYaml(raw));
+  if (!result.success) {
+    const first = result.error.issues[0];
+    throw new Error(
+      `surfaces.yml failed schema validation: ${first?.message ?? "invalid surfaces"}`,
+    );
+  }
+  return result.data as GhostSurfacesDocument;
 }
 
 export function lintFingerprintPackageManifest(
@@ -152,8 +171,7 @@ export function templateInventory(reference?: string): string {
     ? normalizeReferenceInput(reference)
     : undefined;
   if (referenceInput) {
-    return `topology: {}
-building_blocks:
+    return `building_blocks:
   libraries:
     - ${referenceInput.id}
 exemplars: []
@@ -164,8 +182,7 @@ sources:
 `;
   }
 
-  return `topology: {}
-building_blocks: {}
+  return `building_blocks: {}
 exemplars: []
 sources: []
 `;
@@ -248,7 +265,6 @@ function emptyIntent(): GhostFingerprintDocument["intent"] {
 
 function emptyInventory(): GhostFingerprintDocument["inventory"] {
   return {
-    topology: {},
     building_blocks: {},
     exemplars: [],
     sources: [],

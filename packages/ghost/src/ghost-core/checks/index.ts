@@ -2,7 +2,6 @@ export { lintGhostValidate } from "./lint.js";
 export {
   matchesGhostPath,
   normalizeGhostPath,
-  routeGhostPathToScopes,
   routeGhostValidateForPath,
 } from "./routing.js";
 export {

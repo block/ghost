@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T16:55:39.949Z",
+  "generatedAt": "2026-06-26T05:19:12.918Z",
   "tools": [
     {
       "tool": "ghost",
@@ -147,14 +147,6 @@
           "summary": "Report fingerprint contribution facets.",
           "options": [
             {
-              "rawName": "--include-scopes",
-              "name": "includeScopes",
-              "description": "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
               "rawName": "--include-nested",
               "name": "includeNested",
               "description": "Also list nested fingerprint packages and contribution state",
@@ -162,26 +154,6 @@
               "takesValue": false,
               "negated": false
             },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "stack",
-          "rawName": "stack [paths...]",
-          "description": "Inspect the nested Ghost fingerprint stack for one or more repo paths.",
-          "group": "advanced",
-          "defaultHelp": false,
-          "compactName": "stack",
-          "summary": "Inspect a nested fingerprint stack for repo paths.",
-          "options": [
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -202,90 +174,6 @@
           "compactName": "signals",
           "summary": "Emit raw repo signals for fingerprint authoring.",
           "options": []
-        },
-        {
-          "tool": "ghost",
-          "name": "describe",
-          "rawName": "describe <fingerprint>",
-          "description": "Print a section map of a markdown file (line ranges + token estimates).",
-          "group": "advanced",
-          "defaultHelp": false,
-          "compactName": "describe",
-          "summary": "Print markdown section ranges.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "diff",
-          "rawName": "diff <a> <b>",
-          "description": "Direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
-          "group": "maintenance",
-          "defaultHelp": false,
-          "compactName": "diff",
-          "summary": "Diff two direct markdown fingerprints.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "survey",
-          "rawName": "survey <op> [...surveys]",
-          "description": "Survey/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
-          "group": "maintenance",
-          "defaultHelp": false,
-          "compactName": "survey",
-          "summary": "Run legacy survey helpers.",
-          "options": [
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Write the result to this path (default: stdout)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: summarize/catalog use markdown or json; patterns use yaml, json, or markdown",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--kind <kind>",
-              "name": "kind",
-              "description": "survey catalog filter: include only this value kind",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--budget <name>",
-              "name": "budget",
-              "description": "survey summarize budget: compact, standard, full",
-              "default": "standard",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
         },
         {
           "tool": "ghost",
@@ -585,26 +473,26 @@
         },
         {
           "tool": "ghost",
-          "name": "relay",
-          "rawName": "relay <action> [target]",
-          "description": "Gather Relay context for an agent target.",
+          "name": "gather",
+          "rawName": "gather [surface]",
+          "description": "Gather the composed context slice for a surface (the right context at the right time).",
           "group": "core",
           "defaultHelp": true,
-          "compactName": "relay gather",
-          "summary": "Gather fingerprint context for an agent target.",
+          "compactName": "gather",
+          "summary": "Gather the composed context slice for a surface.",
           "options": [
             {
               "rawName": "--package <dir>",
               "name": "package",
-              "description": "Use exactly this fingerprint package directory instead of resolving a stack",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false
             },
             {
-              "rawName": "--name <name>",
-              "name": "name",
-              "description": "Override the gathered context name (default: intent.yml product or resolved scope)",
+              "rawName": "--path <file>",
+              "name": "path",
+              "description": "Resolve the surface that owns a repo path via its binding, then gather",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -616,36 +504,92 @@
               "default": "markdown",
               "takesValue": true,
               "negated": false
-            },
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "checks",
+          "rawName": "checks",
+          "description": "Select the markdown checks (ghost.check/v1) relevant to a diff, routed by surface.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "checks",
+          "summary": "Select and ground the checks relevant to a diff, by surface.",
+          "options": [
             {
-              "rawName": "--config <file>",
-              "name": "config",
-              "description": "Load an explicit Ghost Relay config",
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
               "default": null,
               "takesValue": true,
               "negated": false
             },
             {
-              "rawName": "--request <file>",
-              "name": "request",
-              "description": "Load a structured Ghost Relay request",
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to route instead of running git diff. Use '-' for stdin.",
               "default": null,
               "takesValue": true,
               "negated": false
             },
             {
-              "rawName": "--request-stdin",
-              "name": "requestStdin",
-              "description": "Read a structured Ghost Relay request from stdin",
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--no-grounding",
+              "name": "grounding",
+              "description": "Omit fingerprint grounding (why / what) and emit only the relevant checks",
+              "default": true,
+              "takesValue": false,
+              "negated": true
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "migrate",
+          "rawName": "migrate [dir]",
+          "description": "Migrate a legacy .ghost/ package onto the surface model (surfaces.yml + surface: placement).",
+          "group": "maintenance",
+          "defaultHelp": false,
+          "compactName": "migrate",
+          "summary": "Migrate a legacy .ghost/ package onto the surface model.",
+          "options": [
+            {
+              "rawName": "--dry-run",
+              "name": "dryRun",
+              "description": "Print the migration plan and report; write nothing",
               "default": null,
               "takesValue": false,
               "negated": false
             },
             {
-              "rawName": "--mode <mode>",
-              "name": "mode",
-              "description": "Relay mode: generation, review, or prompt",
-              "default": "generation",
+              "rawName": "--force",
+              "name": "force",
+              "description": "Overwrite existing facet files with the migrated form",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Report format: cli or json",
+              "default": "cli",
               "takesValue": true,
               "negated": false
             }
@@ -778,81 +722,6 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        }
-      ],
-      "globalOptions": [
-        {
-          "rawName": "-h, --help",
-          "name": "help",
-          "description": "Display this message",
-          "default": null
-        },
-        {
-          "rawName": "-v, --version",
-          "name": "version",
-          "description": "Display version number",
-          "default": null
-        }
-      ]
-    },
-    {
-      "tool": "ghost-fleet",
-      "commands": [
-        {
-          "tool": "ghost-fleet",
-          "name": "members",
-          "rawName": "members [dir]",
-          "description": "List registered fleet members and their freshness — one row per (map.md, fingerprint.md) subdirectory.",
-          "options": [
-            {
-              "rawName": "--json",
-              "name": "json",
-              "description": "Output JSON (one object per member) instead of a table",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost-fleet",
-          "name": "view",
-          "rawName": "view [dir]",
-          "description": "Compute the fleet's pairwise distances, group-by tables, and tracks-graph; emit fleet.md + fleet.json into <dir>/reports/.",
-          "options": [
-            {
-              "rawName": "--id <id>",
-              "name": "id",
-              "description": "Override the fleet id (default: directory basename slug)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--out <path>",
-              "name": "out",
-              "description": "Reports directory (default: <dir>/reports)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost-fleet",
-          "name": "emit",
-          "rawName": "emit <kind>",
-          "description": "Emit the ghost-fleet agentskills.io bundle (kind: skill).",
-          "options": [
-            {
-              "rawName": "-o, --out <path>",
-              "name": "out",
-              "description": "Output directory (default: .claude/skills/ghost-fleet)",
-              "default": null,
               "takesValue": true,
               "negated": false
             }

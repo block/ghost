@@ -28,13 +28,6 @@ export interface GhostFingerprintEvidence {
   note?: string;
 }
 
-export interface GhostFingerprintScope {
-  scopes?: string[];
-  paths?: string[];
-  surface_types?: string[];
-  situations?: string[];
-}
-
 export interface GhostFingerprintSummary {
   product?: string;
   audience?: string[];
@@ -44,26 +37,14 @@ export interface GhostFingerprintSummary {
   tone?: string[];
 }
 
-export interface GhostFingerprintTopologyScope {
-  id: string;
-  paths: string[];
-  surface_types?: string[];
-}
-
 export interface GhostFingerprintExemplar {
   id: string;
   path: string;
   title?: string;
-  surface_type?: string;
-  scope?: string;
+  surface?: string;
   note?: string;
   why?: string;
   refs?: GhostFingerprintRef[];
-}
-
-export interface GhostFingerprintTopology {
-  scopes?: GhostFingerprintTopologyScope[];
-  surface_types?: string[];
 }
 
 export interface GhostFingerprintInventoryBuildingBlocks {
@@ -97,7 +78,6 @@ export interface GhostFingerprintIntent {
 }
 
 export interface GhostFingerprintInventory {
-  topology: GhostFingerprintTopology;
   building_blocks: GhostFingerprintInventoryBuildingBlocks;
   exemplars: GhostFingerprintExemplar[];
   sources: GhostFingerprintInventorySource[];
@@ -112,7 +92,7 @@ export interface GhostFingerprintSituation {
   title?: string;
   user_intent?: string;
   product_obligation?: string;
-  surface_type?: string;
+  surface?: string;
   hierarchy?: Record<string, string>;
   refuses?: string[];
   principles?: GhostFingerprintRef[];
@@ -124,7 +104,7 @@ export interface GhostFingerprintSituation {
 export interface GhostFingerprintPrinciple {
   id: string;
   principle: string;
-  applies_to?: GhostFingerprintScope;
+  surface?: string;
   guidance?: string[];
   evidence?: GhostFingerprintEvidence[];
   counterexamples?: string[];
@@ -134,7 +114,7 @@ export interface GhostFingerprintPrinciple {
 export interface GhostFingerprintExperienceContract {
   id: string;
   contract: string;
-  applies_to?: GhostFingerprintScope;
+  surface?: string;
   obligations?: string[];
   evidence?: GhostFingerprintEvidence[];
   check_refs?: GhostFingerprintRef[];
@@ -144,7 +124,7 @@ export interface GhostFingerprintPattern {
   id: string;
   kind: GhostFingerprintPatternKind;
   pattern: string;
-  applies_to?: GhostFingerprintScope;
+  surface?: string;
   guidance?: string[];
   evidence?: GhostFingerprintEvidence[];
   anti_patterns?: string[];

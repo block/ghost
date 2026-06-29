@@ -5,19 +5,20 @@ import {
   GhostFingerprintIntentSchema,
   GhostFingerprintInventorySchema,
   GhostFingerprintPackageManifestSchema,
+  lintGhostBinding,
+  lintGhostCheck,
   lintGhostFingerprint,
   lintGhostPatterns,
   lintGhostResources,
+  lintGhostSurfaces,
   lintGhostValidate,
   lintSurvey,
   type SurveyLintReport,
 } from "#ghost-core";
 import { lintFingerprint } from "./lint.js";
-import { lintMap } from "./lint-map.js";
 
 export type DetectedFileKind =
   | "survey"
-  | "map"
   | "fingerprint"
   | "fingerprint-yml"
   | "fingerprint-manifest"
@@ -27,6 +28,9 @@ export type DetectedFileKind =
   | "validate"
   | "resources"
   | "patterns"
+  | "surfaces"
+  | "binding"
+  | "check"
   | "unsupported-yaml";
 
 export interface LintDetectedFileKindOptions {
@@ -35,9 +39,8 @@ export interface LintDetectedFileKindOptions {
 
 /**
  * Decide whether a file is a bundle artifact. JSON paths/contents route to
- * the survey linter; markdown with `schema: ghost.map/v1` in frontmatter
- * routes to the map linter; YAML schemas and canonical package filenames route
- * to their artifact linters. Unknown YAML remains unsupported instead of being
+ * the survey linter; YAML schemas and canonical package filenames route to
+ * their artifact linters. Unknown YAML remains unsupported instead of being
  * guessed as `validate.yml`.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
@@ -81,6 +84,16 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "resources.yaml") return "resources";
   if (filename === "patterns.yml") return "patterns";
   if (filename === "patterns.yaml") return "patterns";
+  if (filename === "surfaces.yml") return "surfaces";
+  if (filename === "surfaces.yaml") return "surfaces";
+  if (filename === ".ghost.bind.yml" || filename === ".ghost.bind.yaml") {
+    return "binding";
+  }
+  // A markdown check lives under a `checks/` directory. Detected by location so
+  // the established agent-check format (no `schema:` field) is recognized.
+  if (filename.endsWith(".md") && /(^|[\\/])checks[\\/]/.test(lowerPath)) {
+    return "check";
+  }
   if (raw.trimStart().startsWith("{")) return "survey";
   if (/^\s*schema:\s*ghost\.fingerprint\/v[12]\b/m.test(raw)) {
     return "fingerprint-yml";
@@ -90,16 +103,12 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   }
   if (/^\s*schema:\s*ghost\.resources\/v1\b/m.test(raw)) return "resources";
   if (/^\s*schema:\s*ghost\.patterns\/v1\b/m.test(raw)) return "patterns";
+  if (/^\s*schema:\s*ghost\.surfaces\/v1\b/m.test(raw)) return "surfaces";
+  if (/^\s*schema:\s*ghost\.binding\/v1\b/m.test(raw)) return "binding";
   if (/^\s*schema:\s*ghost\.validate\/v[12]\b/m.test(raw)) return "validate";
   if (lowerPath.endsWith(".yml") || lowerPath.endsWith(".yaml")) {
     return "unsupported-yaml";
   }
-  const fmEnd = raw.indexOf("\n---", 3);
-  if (raw.startsWith("---") && fmEnd > 0) {
-    const fm = raw.slice(0, fmEnd);
-    if (/\bschema:\s*ghost\.map\/v1\b/.test(fm)) return "map";
-  }
-  if (path.toLowerCase().endsWith("map.md")) return "map";
   return "fingerprint";
 }
 
@@ -120,17 +129,21 @@ export function lintDetectedFileKind(
             ? lintFingerprintLayerFile(raw, "inventory")
             : kind === "fingerprint-composition"
               ? lintFingerprintLayerFile(raw, "composition")
-              : kind === "map"
-                ? lintMap(raw)
-                : kind === "resources"
-                  ? lintResourcesFile(raw)
-                  : kind === "patterns"
-                    ? lintPatternsFile(raw)
-                    : kind === "validate"
-                      ? lintValidateFile(raw, options.fingerprint)
-                      : kind === "unsupported-yaml"
-                        ? lintUnsupportedYamlFile()
-                        : lintFingerprint(raw);
+              : kind === "resources"
+                ? lintResourcesFile(raw)
+                : kind === "patterns"
+                  ? lintPatternsFile(raw)
+                  : kind === "surfaces"
+                    ? lintSurfacesFile(raw)
+                    : kind === "binding"
+                      ? lintBindingFile(raw)
+                      : kind === "check"
+                        ? lintGhostCheck(raw)
+                        : kind === "validate"
+                          ? lintValidateFile(raw, options.fingerprint)
+                          : kind === "unsupported-yaml"
+                            ? lintUnsupportedYamlFile()
+                            : lintFingerprint(raw);
 }
 
 function lintSurveyFile(raw: string): SurveyLintReport {
@@ -251,6 +264,22 @@ function lintPatternsFile(raw: string): ReturnType<typeof lintFingerprint> {
     return lintGhostPatterns(parseYaml(raw));
   } catch (err) {
     return yamlErrorReport("patterns-not-yaml", "patterns file", err);
+  }
+}
+
+function lintSurfacesFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostSurfaces(parseYaml(raw));
+  } catch (err) {
+    return yamlErrorReport("surfaces-not-yaml", "surfaces file", err);
+  }
+}
+
+function lintBindingFile(raw: string): ReturnType<typeof lintFingerprint> {
+  try {
+    return lintGhostBinding(parseYaml(raw));
+  } catch (err) {
+    return yamlErrorReport("binding-not-yaml", "binding file", err);
   }
 }
 

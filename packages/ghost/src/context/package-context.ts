@@ -93,8 +93,6 @@ const readOptional = readOptionalUtf8;
 function inferPackageName(fingerprint: GhostFingerprintDocument): string {
   if (fingerprint.intent.summary.product)
     return fingerprint.intent.summary.product;
-  const firstScope = fingerprint.inventory.topology.scopes?.[0]?.id;
-  if (firstScope) return firstScope;
   return "ghost-package";
 }
 

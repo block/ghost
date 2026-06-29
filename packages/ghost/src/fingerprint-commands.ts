@@ -1,26 +1,15 @@
-import { readFile, stat, writeFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { CAC } from "cac";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import {
-  catalogSurveyValues,
-  formatSurveyCatalogMarkdown,
-  formatSurveySummaryMarkdown,
-  type GhostFingerprintDocument,
-  type GhostPatternsDocument,
-  lintSurvey,
-  mergeSurveys,
-  recomputeSurveyIds,
-  type Survey,
-  type SurveySummaryBudget,
-  summarizeSurvey,
+import type {
+  GhostFingerprintDocument,
+  GhostPatternsDocument,
+  Survey,
+  SurveySummaryBudget,
 } from "#ghost-core";
 import {
-  diffFingerprints,
-  formatLayout,
-  formatSemanticDiff,
   formatVerifyFingerprintReport,
-  layoutFingerprint,
   lintAllFingerprintStacks,
   type lintFingerprint,
   lintFingerprintPackage,
@@ -41,7 +30,6 @@ import {
   signals,
 } from "./scan/index.js";
 import { registerEmitCommand } from "./scan-emit-command.js";
-import { registerStackCommand } from "./scan-stack-command.js";
 
 /**
  * Register fingerprint package commands on the unified Ghost CLI.
@@ -186,10 +174,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       "Report sparse fingerprint package contribution facets: intent, inventory, composition, validate, and the next BYOA step.",
     )
     .option(
-      "--include-scopes",
-      "Also report per-scope survey and fingerprint artifacts under modules/<scope>/ and fingerprints/<scope>.md",
-    )
-    .option(
       "--include-nested",
       "Also list nested fingerprint packages and contribution state",
     )
@@ -201,9 +185,7 @@ export function registerFingerprintCommands(cli: CAC): void {
           dirArg ?? ghostDir,
           process.cwd(),
         ).dir;
-        const status = await scanStatus(dir, {
-          includeScopes: Boolean(opts.includeScopes),
-        });
+        const status = await scanStatus(dir);
         const nested = opts.includeNested
           ? await nestedPackageStatus(
               dirnameForFingerprintPackageDir(dir, ghostDir),
@@ -284,20 +266,6 @@ export function registerFingerprintCommands(cli: CAC): void {
               `  inventory building blocks: ${buildingBlockRows.tokens} token(s), ${buildingBlockRows.components} component(s), ${buildingBlockRows.libraries} libraries, ${buildingBlockRows.assets} asset(s), ${buildingBlockRows.routes} route(s), ${buildingBlockRows.files} file(s), ${buildingBlockRows.notes} note(s)\n`,
             );
           }
-          if (status.scope_error) {
-            process.stdout.write(`\nscopes: error — ${status.scope_error}\n`);
-          } else if (status.scopes) {
-            process.stdout.write("\nscopes:\n");
-            if (status.scopes.length === 0) {
-              process.stdout.write("  none\n");
-            } else {
-              for (const scope of status.scopes) {
-                process.stdout.write(
-                  `  ${scope.id}: survey ${scope.survey.state}, fingerprint ${scope.fingerprint.state}\n`,
-                );
-              }
-            }
-          }
           if (nested) {
             process.stdout.write("\nnested packages:\n");
             if (nested.length === 0) {
@@ -320,8 +288,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       }
     });
 
-  registerStackCommand(cli);
-
   // --- signals ---
   cli
     .command(
@@ -337,244 +303,6 @@ export function registerFingerprintCommands(cli: CAC): void {
       } catch (err) {
         process.stderr.write(
           `Error: ${err instanceof Error ? err.message : String(err)}\n`,
-        );
-        process.exit(2);
-      }
-    });
-
-  // --- describe ---
-  cli
-    .command(
-      "describe <fingerprint>",
-      "Print a section map of a markdown file (line ranges + token estimates).",
-    )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (path: string, opts) => {
-      try {
-        const target = resolve(process.cwd(), path);
-        const raw = await readFile(target, "utf-8");
-        const layout = layoutFingerprint(raw);
-        if (opts.format === "json") {
-          process.stdout.write(
-            `${JSON.stringify({ path: target, ...layout }, null, 2)}\n`,
-          );
-        } else {
-          process.stdout.write(`${formatLayout(layout, target)}\n`);
-        }
-        process.exit(0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
-
-  // --- diff ---
-  cli
-    .command(
-      "diff <a> <b>",
-      "Direct markdown diff between two fingerprint.md files — what decisions, palette roles, and tokens changed (text-level, NOT embedding distance; for that, use `ghost compare`).",
-    )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (a: string, b: string, opts) => {
-      try {
-        const [{ fingerprint: exprA }, { fingerprint: exprB }] =
-          await Promise.all([
-            loadFingerprint(resolve(process.cwd(), a), {
-              noEmbeddingBackfill: true,
-            }),
-            loadFingerprint(resolve(process.cwd(), b), {
-              noEmbeddingBackfill: true,
-            }),
-          ]);
-        const diff = diffFingerprints(exprA, exprB);
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(diff, null, 2)}\n`);
-        } else {
-          process.stdout.write(formatSemanticDiff(diff));
-        }
-        process.exit(diff.unchanged ? 0 : 1);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
-        );
-        process.exit(2);
-      }
-    });
-
-  // --- survey <op> ---
-  cli
-    .command(
-      "survey <op> [...surveys]",
-      "Survey/cache helpers for ghost.survey/v1 files. Ops: merge, fix-ids, summarize, catalog, patterns.",
-    )
-    .option(
-      "-o, --out <path>",
-      "Write the result to this path (default: stdout)",
-    )
-    .option(
-      "--format <fmt>",
-      "Output format: summarize/catalog use markdown or json; patterns use yaml, json, or markdown",
-    )
-    .option(
-      "--kind <kind>",
-      "survey catalog filter: include only this value kind",
-    )
-    .option(
-      "--budget <name>",
-      "survey summarize budget: compact, standard, full",
-      {
-        default: "standard",
-      },
-    )
-    .action(async (op: string, surveys: string[], opts) => {
-      try {
-        if (
-          op !== "merge" &&
-          op !== "fix-ids" &&
-          op !== "summarize" &&
-          op !== "catalog" &&
-          op !== "patterns"
-        ) {
-          console.error(
-            `Error: unknown survey op '${op}'. Supported: merge, fix-ids, summarize, catalog, patterns`,
-          );
-          process.exit(2);
-          return;
-        }
-        if (!Array.isArray(surveys) || surveys.length === 0) {
-          console.error(`Error: survey ${op} requires at least one input file`);
-          process.exit(2);
-          return;
-        }
-        if (op === "fix-ids" && surveys.length !== 1) {
-          console.error("Error: survey fix-ids takes exactly one input file");
-          process.exit(2);
-          return;
-        }
-        if (op === "summarize" && surveys.length !== 1) {
-          console.error("Error: survey summarize takes exactly one input file");
-          process.exit(2);
-          return;
-        }
-        if ((op === "catalog" || op === "patterns") && surveys.length !== 1) {
-          console.error(`Error: survey ${op} takes exactly one input file`);
-          process.exit(2);
-          return;
-        }
-        const format = defaultSurveyFormat(op, opts.format);
-        if (op === "summarize" || op === "catalog") {
-          if (format !== "markdown" && format !== "json") {
-            console.error(
-              `Error: survey ${op} --format must be 'markdown' or 'json'`,
-            );
-            process.exit(2);
-            return;
-          }
-        }
-        if (op === "patterns") {
-          if (format !== "yaml" && format !== "json" && format !== "markdown") {
-            console.error(
-              "Error: survey patterns --format must be 'yaml', 'json', or 'markdown'",
-            );
-            process.exit(2);
-            return;
-          }
-        }
-        if (op === "summarize") {
-          if (!isSurveySummaryBudget(opts.budget)) {
-            console.error(
-              "Error: survey summarize --budget must be 'compact', 'standard', or 'full'",
-            );
-            process.exit(2);
-            return;
-          }
-        }
-        if (opts.kind && op !== "catalog") {
-          console.error("Error: --kind is only supported for survey catalog");
-          process.exit(2);
-          return;
-        }
-
-        const parsed: Survey[] = [];
-        for (const path of surveys) {
-          const target = resolve(process.cwd(), path);
-          const raw = await readFile(target, "utf-8");
-          let json: unknown;
-          try {
-            json = JSON.parse(raw);
-          } catch (err) {
-            console.error(
-              `Error: ${target} is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
-            );
-            process.exit(2);
-            return;
-          }
-          if (
-            op === "merge" ||
-            op === "summarize" ||
-            op === "catalog" ||
-            op === "patterns"
-          ) {
-            const report = lintSurvey(json);
-            if (report.errors > 0) {
-              console.error(
-                `Error: ${target} failed survey lint with ${report.errors} error(s); fix before ${surveyVerbName(op)}`,
-              );
-              for (const issue of report.issues) {
-                if (issue.severity !== "error") continue;
-                const pathSuffix = issue.path ? ` @ ${issue.path}` : "";
-                console.error(
-                  `  [${issue.rule}] ${issue.message}${pathSuffix}`,
-                );
-              }
-              process.exit(1);
-              return;
-            }
-          }
-          parsed.push(json as Survey);
-        }
-
-        let out: string;
-        if (op === "summarize") {
-          const summary = summarizeSurvey(parsed[0], {
-            budget: opts.budget as SurveySummaryBudget,
-          });
-          out =
-            format === "json"
-              ? `${JSON.stringify(summary, null, 2)}\n`
-              : formatSurveySummaryMarkdown(summary);
-        } else if (op === "catalog") {
-          const catalog = catalogSurveyValues(parsed[0], {
-            kind: typeof opts.kind === "string" ? opts.kind : undefined,
-          });
-          out =
-            format === "json"
-              ? `${JSON.stringify(catalog, null, 2)}\n`
-              : formatSurveyCatalogMarkdown(catalog);
-        } else if (op === "patterns") {
-          const patterns = summarizeSurveyPatterns(parsed[0]);
-          out = formatPatternsOutput(patterns, format);
-        } else {
-          const result =
-            op === "merge"
-              ? mergeSurveys(...parsed)
-              : recomputeSurveyIds(parsed[0]);
-          out = `${JSON.stringify(result, null, 2)}\n`;
-        }
-
-        if (opts.out) {
-          const outPath = resolve(process.cwd(), opts.out);
-          await writeFile(outPath, out, "utf-8");
-        } else {
-          process.stdout.write(out);
-        }
-
-        process.exit(0);
-      } catch (err) {
-        console.error(
-          `Error: ${err instanceof Error ? err.message : String(err)}`,
         );
         process.exit(2);
       }
@@ -706,11 +434,11 @@ function appendLintError(
   };
 }
 
-function isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
+function _isSurveySummaryBudget(value: unknown): value is SurveySummaryBudget {
   return value === "compact" || value === "standard" || value === "full";
 }
 
-function surveyVerbName(op: string): string {
+function _surveyVerbName(op: string): string {
   if (op === "merge") return "merging";
   if (op === "summarize") return "summarizing";
   if (op === "catalog") return "cataloging";
@@ -718,12 +446,12 @@ function surveyVerbName(op: string): string {
   return op;
 }
 
-function defaultSurveyFormat(op: string, format: unknown): string {
+function _defaultSurveyFormat(op: string, format: unknown): string {
   if (typeof format === "string") return format;
   return op === "patterns" ? "yaml" : "markdown";
 }
 
-function formatPatternsOutput(
+function _formatPatternsOutput(
   patterns: GhostPatternsDocument,
   format: string,
 ): string {
@@ -732,7 +460,7 @@ function formatPatternsOutput(
   return stringifyYaml(patterns);
 }
 
-function summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
+function _summarizeSurveyPatterns(survey: Survey): GhostPatternsDocument {
   const surfaceTypes = new Map<string, PatternAccumulator>();
   const layoutPatterns = new Map<string, PatternAccumulator>();
 

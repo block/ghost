@@ -5,6 +5,8 @@ import {
   lintGhostFingerprint,
 } from "../src/ghost-core/fingerprint/index.js";
 
+const SURFACE_IDS = ["core", "dashboard", "docs"];
+
 describe("ghost.fingerprint/v1", () => {
   it("accepts a minimal fingerprint.yml document", () => {
     const result = GhostFingerprintSchema.safeParse(minimalFingerprint());
@@ -20,7 +22,6 @@ describe("ghost.fingerprint/v1", () => {
         experience_contracts: [],
       },
       inventory: {
-        topology: {},
         building_blocks: {},
         exemplars: [],
         sources: [],
@@ -32,7 +33,9 @@ describe("ghost.fingerprint/v1", () => {
   });
 
   it("accepts a full OSS-friendly fingerprint.yml document", () => {
-    const report = lintGhostFingerprint(fullFingerprint());
+    const report = lintGhostFingerprint(fullFingerprint(), {
+      surfaceIds: SURFACE_IDS,
+    });
 
     expect(report.errors).toBe(0);
     expect(report.issues).toEqual([]);
@@ -48,18 +51,47 @@ describe("ghost.fingerprint/v1", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects old topology examples", () => {
+  it("rejects the removed topology subtree", () => {
     const input = fullFingerprint();
-    (input.inventory.topology as Record<string, unknown>).examples = [
-      {
-        path: "apps/dashboard/src/routes/orders/page.tsx",
-        surface_type: "dense-dashboard",
-      },
-    ];
+    (input.inventory as Record<string, unknown>).topology = {
+      scopes: [{ id: "dashboard", paths: ["apps/dashboard/**"] }],
+    };
 
     const result = GhostFingerprintSchema.safeParse(input);
 
     expect(result.success).toBe(false);
+  });
+
+  it("rejects the removed applies_to coordinate on a principle", () => {
+    const input = fullFingerprint();
+    (input.intent.principles[0] as Record<string, unknown>).applies_to = {
+      scopes: ["dashboard"],
+    };
+
+    const result = GhostFingerprintSchema.safeParse(input);
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects the removed surface_type/scope coordinates on an exemplar", () => {
+    const withSurfaceType = fullFingerprint();
+    (
+      withSurfaceType.inventory.exemplars[0] as Record<string, unknown>
+    ).surface_type = "dense-dashboard";
+    expect(GhostFingerprintSchema.safeParse(withSurfaceType).success).toBe(
+      false,
+    );
+
+    const withScope = fullFingerprint();
+    (withScope.inventory.exemplars[0] as Record<string, unknown>).scope =
+      "dashboard";
+    expect(GhostFingerprintSchema.safeParse(withScope).success).toBe(false);
+  });
+
+  it("accepts surface placement on every placeable node", () => {
+    const result = GhostFingerprintSchema.safeParse(fullFingerprint());
+
+    expect(result.success).toBe(true);
   });
 
   it("rejects implementation vocabulary as a typed ref target", () => {
@@ -93,7 +125,7 @@ describe("ghost.fingerprint/v1", () => {
       "intent.principle:missing-principle",
     ];
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -108,7 +140,7 @@ describe("ghost.fingerprint/v1", () => {
       "intent.principle:dense-workflows-prioritize-scanning",
     ];
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -121,7 +153,7 @@ describe("ghost.fingerprint/v1", () => {
     const input = fullFingerprint();
     input.composition.patterns.push({ ...input.composition.patterns[0] });
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
     expect(report.errors).toBe(1);
     expect(report.issues[0]).toMatchObject({
@@ -130,74 +162,56 @@ describe("ghost.fingerprint/v1", () => {
     });
   });
 
-  it("reports duplicate topology surface types", () => {
+  it("errors on a placement that is not a declared surface", () => {
     const input = fullFingerprint();
-    input.inventory.topology.surface_types?.push("dense-dashboard");
+    input.intent.principles[0].surface = "unknown-surface";
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "duplicate-id",
-      path: "inventory.topology.surface_types[2]",
-    });
+    expect(
+      report.issues.some(
+        (issue) => issue.rule === "fingerprint-surface-unknown",
+      ),
+    ).toBe(true);
   });
 
-  it("reports unknown topology scope and surface type references", () => {
+  it("warns on an unplaced node", () => {
     const input = fullFingerprint();
-    input.intent.situations[0].surface_type = "unknown-surface";
-    input.inventory.exemplars[0].scope = "unknown-scope";
-    input.inventory.exemplars[0].surface_type = "unknown-surface";
-    input.intent.principles[0].applies_to = {
-      scopes: ["unknown-scope"],
-      surface_types: ["unknown-surface"],
-      situations: ["unknown-situation"],
-    };
+    input.intent.principles[0].surface = undefined;
+
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
+
+    expect(
+      report.issues.some((issue) => issue.rule === "fingerprint-node-unplaced"),
+    ).toBe(true);
+  });
+
+  it("skips placement existence checks when no surfaces are provided", () => {
+    const input = fullFingerprint();
+    input.intent.principles[0].surface = "unknown-surface";
 
     const report = lintGhostFingerprint(input);
 
-    expect(report.errors).toBe(6);
-    expect(report.issues).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          rule: "fingerprint-surface-type-unknown",
-          path: "intent.situations[0].surface_type",
-        }),
-        expect.objectContaining({
-          rule: "fingerprint-scope-unknown",
-          path: "intent.principles[0].applies_to.scopes[0]",
-        }),
-        expect.objectContaining({
-          rule: "fingerprint-surface-type-unknown",
-          path: "intent.principles[0].applies_to.surface_types[0]",
-        }),
-        expect.objectContaining({
-          rule: "fingerprint-situation-unknown",
-          path: "intent.principles[0].applies_to.situations[0]",
-        }),
-        expect.objectContaining({
-          rule: "fingerprint-scope-unknown",
-          path: "inventory.exemplars[0].scope",
-        }),
-        expect.objectContaining({
-          rule: "fingerprint-surface-type-unknown",
-          path: "inventory.exemplars[0].surface_type",
-        }),
-      ]),
-    );
+    expect(
+      report.issues.some(
+        (issue) => issue.rule === "fingerprint-surface-unknown",
+      ),
+    ).toBe(false);
   });
 
   it("reports unknown exemplar refs", () => {
     const input = fullFingerprint();
     input.inventory.exemplars[0].refs = ["composition.pattern:missing-pattern"];
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "fingerprint-ref-unknown",
-      path: "inventory.exemplars[0].refs[0]",
-    });
+    expect(
+      report.issues.some(
+        (issue) =>
+          issue.rule === "fingerprint-ref-unknown" &&
+          issue.path === "inventory.exemplars[0].refs[0]",
+      ),
+    ).toBe(true);
   });
 
   it("requires check refs to use validate.check:*", () => {
@@ -206,13 +220,15 @@ describe("ghost.fingerprint/v1", () => {
       "composition.pattern:compact-filter-toolbar",
     ];
 
-    const report = lintGhostFingerprint(input);
+    const report = lintGhostFingerprint(input, { surfaceIds: SURFACE_IDS });
 
-    expect(report.errors).toBe(1);
-    expect(report.issues[0]).toMatchObject({
-      rule: "fingerprint-check-ref-prefix",
-      path: "intent.principles[0].check_refs[0]",
-    });
+    expect(
+      report.issues.some(
+        (issue) =>
+          issue.rule === "fingerprint-check-ref-prefix" &&
+          issue.path === "intent.principles[0].check_refs[0]",
+      ),
+    ).toBe(true);
   });
 });
 
@@ -240,7 +256,7 @@ function fullFingerprint() {
           user_intent: "find and compare records quickly",
           product_obligation:
             "preserve scan speed and reduce accidental changes",
-          surface_type: "dense-dashboard",
+          surface: "dashboard",
           hierarchy: {
             primary: "table readability and filtering",
             secondary: "bulk actions and record detail",
@@ -258,10 +274,7 @@ function fullFingerprint() {
           id: "dense-workflows-prioritize-scanning",
           principle:
             "Dense operational workflows should optimize for comparison, speed, and recovery before visual novelty.",
-          applies_to: {
-            scopes: ["dashboard"],
-            surface_types: ["dense-dashboard"],
-          },
+          surface: "dashboard",
           guidance: ["keep controls close to the table or list they affect"],
           evidence: [
             {
@@ -281,21 +294,12 @@ function fullFingerprint() {
           id: "destructive-actions-require-clear-confirmation",
           contract:
             "Destructive actions need explicit confirmation and a clear recovery path.",
+          surface: "core",
           obligations: ["confirm intent", "explain consequence"],
         },
       ],
     },
     inventory: {
-      topology: {
-        scopes: [
-          {
-            id: "dashboard",
-            paths: ["apps/dashboard/**"],
-            surface_types: ["dense-dashboard"],
-          },
-        ],
-        surface_types: ["dense-dashboard", "docs"],
-      },
       building_blocks: {
         tokens: ["use semantic color tokens"],
         components: ["prefer shared table primitives"],
@@ -310,8 +314,7 @@ function fullFingerprint() {
           id: "orders-table",
           path: "apps/dashboard/src/routes/orders/page.tsx",
           title: "Order review table",
-          surface_type: "dense-dashboard",
-          scope: "dashboard",
+          surface: "dashboard",
           note: "Dense filtering and comparison surface.",
           why: "Shows the compact hierarchy future dashboard work should preserve.",
           refs: [
@@ -327,6 +330,7 @@ function fullFingerprint() {
           id: "compact-filter-toolbar",
           kind: "layout",
           pattern: "Filters stay visually attached to the table they affect.",
+          surface: "dashboard",
           guidance: ["keep primary filters before secondary actions"],
         },
       ],

@@ -23,7 +23,7 @@ describe("nested Ghost fingerprint stacks", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("discovers root-to-leaf layers and merges child entries by id", async () => {
+  it("discovers root-to-leaf layers; the contract is the root, not a merge", async () => {
     await writeStackFixture(dir);
 
     const stack = await loadFingerprintStackForPath(
@@ -31,57 +31,25 @@ describe("nested Ghost fingerprint stacks", () => {
       dir,
     );
 
+    // Layers are still discovered root-to-leaf (binding discovery).
     expect(stack.layers.map((layer) => layer.relative_root)).toEqual([
       ".",
       "apps/checkout",
     ]);
     expect(stack.provenance.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.intent.summary.product).toBe("Checkout");
-    expect(stack.merged.fingerprint.intent.summary.audience).toEqual([
-      "operators",
-      "buyers",
-    ]);
-    expect(stack.merged.fingerprint.inventory.topology.surface_types).toEqual(
-      expect.arrayContaining(["app-shell", "payment-review"]),
+
+    // One contract, many bindings: the contract is the ROOT package's
+    // fingerprint, used as-is. Nesting binds; it does not merge child facets in.
+    expect(stack.contract.dir).toBe(stack.layers[0].dir);
+    expect(stack.contract.fingerprint.intent.summary.product).toBe(
+      "Root Product",
     );
+    // The child's own principle is NOT merged into the contract.
     expect(
-      stack.merged.fingerprint.intent.principles.find(
+      stack.contract.fingerprint.intent.principles.find(
         (principle) => principle.id === "shared-principle",
       )?.principle,
-    ).toBe("Checkout review must make reversal obvious.");
-    expect(
-      stack.merged.fingerprint.intent.situations.find(
-        (situation) => situation.id === "shared-situation",
-      )?.user_intent,
-    ).toBe("review checkout before committing payment");
-    expect(stack.merged.fingerprint.inventory.topology.scopes).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: "checkout",
-          paths: ["apps/checkout/review"],
-        }),
-      ]),
-    );
-    expect(
-      stack.merged.fingerprint.composition.patterns.find(
-        (pattern) => pattern.id === "child-pattern",
-      )?.evidence?.[0],
-    ).toMatchObject({ path: "apps/checkout/review/page.tsx" });
-    expect(
-      stack.merged.fingerprint.inventory.exemplars.find(
-        (exemplar) => exemplar.id === "shared-exemplar",
-      ),
-    ).toMatchObject({
-      title: "Child review exemplar",
-      path: "apps/checkout/review/page.tsx",
-      scope: "checkout",
-      surface_type: "payment-review",
-    });
-    expect(
-      stack.merged.checks.checks.find(
-        (check) => check.id === "no-hardcoded-color",
-      )?.status,
-    ).toBe("disabled");
+    ).toBe("Parent product layer.");
   });
 
   it("groups changed files by resolved fingerprint stack", async () => {
@@ -98,11 +66,15 @@ describe("nested Ghost fingerprint stacks", () => {
     ]);
   });
 
-  it("merges sparse parent and child fingerprints with normalized defaults", async () => {
+  it("uses the root contract as-is; a child package does not contribute its fingerprint", async () => {
     await mkdir(join(dir, ".ghost"), { recursive: true });
     await writeSplitFingerprintPackage(
       join(dir, ".ghost"),
-      "schema: ghost.fingerprint/v1\n",
+      `schema: ghost.fingerprint/v1
+intent:
+  summary:
+    product: Root Product
+`,
     );
     await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
     await writeSplitFingerprintPackage(
@@ -122,26 +94,14 @@ intent:
       dir,
     );
 
+    // Both packages are discovered as layers...
     expect(stack.layers).toHaveLength(2);
-    expect(stack.merged.fingerprint.intent.summary.product).toBe("Checkout");
-    expect(stack.merged.fingerprint.inventory.topology).toEqual({
-      scopes: [],
-      surface_types: undefined,
-    });
-    expect(stack.merged.fingerprint.intent.situations).toEqual([]);
-    expect(stack.merged.fingerprint.intent.principles).toHaveLength(1);
-    expect(stack.merged.fingerprint.intent.experience_contracts).toEqual([]);
-    expect(stack.merged.fingerprint.composition.patterns).toEqual([]);
-    expect(stack.merged.fingerprint.inventory.exemplars).toEqual([]);
-    expect(stack.merged.fingerprint.inventory.building_blocks).toEqual({
-      tokens: undefined,
-      components: undefined,
-      libraries: undefined,
-      assets: undefined,
-      routes: undefined,
-      files: undefined,
-      notes: undefined,
-    });
+    // ...but the contract is the ROOT, used as-is. The child's product and
+    // principle are NOT merged in (nesting binds, it does not federate data).
+    expect(stack.contract.fingerprint.intent.summary.product).toBe(
+      "Root Product",
+    );
+    expect(stack.contract.fingerprint.intent.principles).toEqual([]);
   });
 
   it("resolves root-to-leaf layers from a custom fingerprint directory", async () => {
@@ -203,17 +163,11 @@ intent:
       principle: Parent product layer.
   experience_contracts: []
 inventory:
-  topology:
-    scopes:
-      - id: app
-        paths: [apps]
-    surface_types: [app-shell]
   exemplars:
     - id: shared-exemplar
       path: apps/root.tsx
       title: Parent exemplar
-      surface_type: app-shell
-      scope: app
+      surface: app
       refs: [composition.pattern:root-pattern]
   building_blocks:
     tokens: [RootTheme.color]
@@ -267,25 +221,18 @@ intent:
     - id: shared-situation
       user_intent: review checkout before committing payment
       product_obligation: make edit and reversal paths visible
-      surface_type: payment-review
+      surface: checkout
   principles:
     - id: shared-principle
       principle: Checkout review must make reversal obvious.
-      applies_to:
-        paths: [review]
+      surface: checkout
   experience_contracts: []
 inventory:
-  topology:
-    scopes:
-      - id: checkout
-        paths: [review]
-        surface_types: [payment-review]
   exemplars:
     - id: shared-exemplar
       path: review/page.tsx
       title: Child review exemplar
-      surface_type: payment-review
-      scope: checkout
+      surface: checkout
       refs: [composition.pattern:child-pattern]
   building_blocks:
     tokens: [CheckoutTheme.action]
@@ -294,8 +241,7 @@ composition:
     - id: child-pattern
       kind: behavior
       pattern: Checkout keeps review controls visible.
-      applies_to:
-        paths: [review]
+      surface: checkout
       evidence:
         - path: review/page.tsx
 `,
@@ -362,7 +308,6 @@ async function writeSplitFingerprintPackage(
       join(packageDir, "inventory.yml"),
       stringifyYaml(
         doc.inventory ?? {
-          topology: {},
           building_blocks: {},
           exemplars: [],
           sources: [],

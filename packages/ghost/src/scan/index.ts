@@ -1,3 +1,13 @@
+export {
+  type DiscoverBindingsOptions,
+  type DiscoveredBindings,
+  discoverBindingsForPath,
+} from "./binding-discovery.js";
+export {
+  GHOST_CHECKS_DIRNAME,
+  type LoadedChecksDir,
+  loadChecksDir,
+} from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
   ScanBuildingBlockRows,
@@ -29,14 +39,18 @@ export {
   resolveGitRoot,
 } from "./fingerprint-stack.js";
 export { signals } from "./inventory.js";
+export type {
+  LegacyPackageInput,
+  MigrationNote,
+  MigrationResult,
+} from "./migrate-legacy.js";
+export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
 export type { MonorepoInitCandidate } from "./monorepo-init.js";
 export { detectMonorepoInitCandidates } from "./monorepo-init.js";
 export type {
-  ScanScopeReport,
   ScanStage,
   ScanStageReport,
   ScanStageState,
   ScanStatus,
-  ScanStatusOptions,
 } from "./scan-status.js";
 export { scanStatus } from "./scan-status.js";

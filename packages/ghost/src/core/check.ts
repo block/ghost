@@ -7,9 +7,6 @@ import {
   type GhostValidateDocument,
   GhostValidateSchema,
   lintGhostValidate,
-  type MapFrontmatter,
-  MapFrontmatterSchema,
-  type MapScope,
   routeGhostValidateForPath,
 } from "#ghost-core";
 import { readOptionalUtf8 } from "../internal/fs.js";
@@ -19,7 +16,6 @@ import {
 } from "../scan/fingerprint-package.js";
 import {
   groupFingerprintStacksForPaths,
-  mapFromFingerprint,
   resolveGhostDirDefault,
 } from "../scan/fingerprint-stack.js";
 import {
@@ -85,7 +81,6 @@ export interface GhostDriftCheckStack {
   changed_files: string[];
   stack_dirs: string[];
   provenance: {
-    merge: "child-wins-by-id";
     stack: Array<{
       dir: string;
       root: string;
@@ -96,7 +91,6 @@ export interface GhostDriftCheckStack {
 
 interface LoadedCheckPackage {
   dir: string;
-  map: Pick<MapFrontmatter, "scopes" | "feature_areas">;
   checks: GhostValidateDocument;
 }
 
@@ -139,8 +133,7 @@ export async function runGhostDriftCheck(
     const leaf = group.stack.layers.at(-1);
     const pkg: LoadedCheckPackage = {
       dir: leaf?.dir ?? group.stack.layers[0].dir,
-      map: mapFromFingerprint(group.stack.merged.fingerprint),
-      checks: group.stack.merged.checks,
+      checks: group.stack.contract.checks,
     };
     const evaluated = evaluateChangedFiles(filesForStack, pkg);
     routedFiles.push(...evaluated.routedFiles);
@@ -152,7 +145,6 @@ export async function runGhostDriftCheck(
       changed_files: group.changed_files,
       stack_dirs: group.stack.layers.map((layer) => layer.dir),
       provenance: {
-        merge: group.stack.provenance.merge,
         stack: group.stack.provenance.layers,
       },
     });
@@ -263,17 +255,14 @@ async function loadCheckPackage(
   cwd: string,
 ): Promise<LoadedCheckPackage> {
   const paths = resolveFingerprintPackage(packageDir, cwd);
-  const [loaded, mapRaw, checksRaw] = await Promise.all([
+  const [loaded, checksRaw] = await Promise.all([
     loadFingerprintPackage(paths),
-    readOptional(paths.map),
     readOptional(paths.checks),
   ]);
   const fingerprint = loaded.fingerprint;
-  const map = mapRaw ? parseMap(mapRaw) : mapFromFingerprint(fingerprint);
   if (checksRaw === undefined) {
     return {
       dir: paths.dir,
-      map,
       checks: {
         schema: GHOST_VALIDATE_SCHEMA,
         id: "none",
@@ -291,7 +280,7 @@ async function loadCheckPackage(
     );
   }
   const checks = checksResult.data as GhostValidateDocument;
-  const checkLint = lintGhostValidate(checks, { fingerprint, map });
+  const checkLint = lintGhostValidate(checks, { fingerprint });
   if (checkLint.errors > 0) {
     throw new Error(
       `validate.yml failed lint with ${checkLint.errors} error(s): ${checkLint.issues
@@ -300,7 +289,7 @@ async function loadCheckPackage(
         .join("; ")}`,
     );
   }
-  return { dir: paths.dir, map, checks };
+  return { dir: paths.dir, checks };
 }
 
 function evaluateChangedFiles(
@@ -314,14 +303,10 @@ function evaluateChangedFiles(
   const findings: GhostDriftCheckFinding[] = [];
 
   for (const file of changedFiles) {
-    const routed = routeGhostValidateForPath(
-      pkg.checks.checks,
-      pkg.map,
-      file.path,
-    );
+    const routed = routeGhostValidateForPath(pkg.checks.checks, file.path);
     routedFiles.push({
       path: file.path,
-      scopes: uniqueScopeIds(routed.flatMap((entry) => entry.matched_scopes)),
+      scopes: [],
       checks: routed.map((entry) => entry.check.id),
     });
 
@@ -335,21 +320,6 @@ function evaluateChangedFiles(
 }
 
 const readOptional = readOptionalUtf8;
-
-function parseMap(raw: string): MapFrontmatter {
-  const block = raw.match(/^---\n([\s\S]*?)\n---/)?.[1];
-  if (!block) throw new Error("map.md is missing YAML frontmatter");
-  const parsed = parseYaml(block);
-  const result = MapFrontmatterSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error(
-      `map.md failed validation: ${result.error.issues
-        .map((issue) => `${issue.path.join(".") || "<root>"}: ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
-  return result.data;
-}
 
 async function readGitDiff(
   cwd: string,
@@ -475,10 +445,6 @@ function forbiddenMessage(check: GhostCheck): string {
     return "Added UI code uses a banned component.";
   }
   return "Added UI code matched a forbidden pattern.";
-}
-
-function uniqueScopeIds(scopes: MapScope[]): string[] {
-  return [...new Set(scopes.map((scope) => scope.id))];
 }
 
 function escapeRegExp(value: string): string {

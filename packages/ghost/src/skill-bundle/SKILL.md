@@ -40,7 +40,7 @@ Checks and review validate output; they are not generation input.
 `manifest.yml` anchors the package with
 `schema: ghost.fingerprint-package/v1`. Add only sections that contain real
 facet content; Ghost normalizes omitted facet files or sections internally for
-checks, review, emit, and stack resolution.
+checks, review, emit, and surface resolution.
 
 Optional deterministic gates live in `validate.yml`.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
@@ -49,10 +49,7 @@ raw repo observations while authoring curated fingerprint facets.
 Advanced repos may contain nested fingerprint packages such as
 `apps/checkout/.ghost/`. Host wrappers may set
 `GHOST_PACKAGE_DIR=<relative-dir>` on the child `ghost` process when they need
-repo-local Ghost files outside raw `ghost`'s `.ghost` default. Host wrappers
-may also set `GHOST_RELAY_CONFIG=<relative-file>` or pass
-`ghost relay gather --config <file>` when Relay runtime config lives elsewhere.
-Ghost stays adapter-neutral: wrappers consume JSON and map severities into their
+repo-local Ghost files outside raw `ghost`'s `.ghost` default. Ghost stays adapter-neutral: wrappers consume JSON and map severities into their
 own review or check format.
 
 ## Core CLI Verbs
@@ -65,7 +62,8 @@ own review or check format.
 | `ghost verify [dir] --root <dir>` | Validate evidence paths, exemplar paths, and typed check refs. |
 | `ghost check --base <ref>` | Run active deterministic gates against a diff. |
 | `ghost review --base <ref>` | Emit an advisory review packet grounded in fingerprint facets, exemplars, checks, and diff evidence. |
-| `ghost relay gather [target]` | Gather Relay context for an agent target or structured Relay request. |
+| `ghost gather [surface]` | Compose a surface's context slice (own + inherited + edge), or list the surface menu. |
+| `ghost checks --diff <patch>` | Select and ground the markdown checks governing a diff's surfaces. |
 | `ghost emit <kind>` | Emit `review-command`. |
 | `ghost skill install` | Install this unified skill bundle. |
 
@@ -74,9 +72,9 @@ own review or check format.
 | Verb | Purpose |
 |---|---|
 | `ghost init --scope <path>` / `GHOST_PACKAGE_DIR=<relative-dir> ghost init` | Create or resolve scoped/custom fingerprint packages for nested packages or host wrappers. |
-| `ghost stack [path...]` | Inspect resolved broad-to-local fingerprint stack and merged output. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
-| `ghost lint --all` / `ghost verify --all` | Validate nested stack merges. |
+| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the surface model. |
+| `ghost lint --all` / `ghost verify --all` | Validate nested fingerprint packages. |
 | `ghost compare <a> <b> [...more]` | Compare root fingerprint packages. |
 | `ghost ack` / `track` / `diverge` | Record stance toward tracked drift. |
 

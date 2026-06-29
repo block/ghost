@@ -2,7 +2,6 @@ import type {
   GhostFingerprintDocument,
   GhostFingerprintRef,
 } from "../fingerprint/index.js";
-import type { MapFrontmatter, MapScope } from "../map/index.js";
 
 export const GHOST_VALIDATE_SCHEMA = "ghost.validate/v1" as const;
 export const GHOST_VALIDATE_FILENAME = "validate.yml" as const;
@@ -92,11 +91,9 @@ export interface GhostValidateLintReport {
 }
 
 export interface GhostValidateLintOptions {
-  map?: Pick<MapFrontmatter, "scopes" | "feature_areas">;
   fingerprint?: GhostFingerprintDocument;
 }
 
 export interface RoutedGhostValidateCheck {
   check: GhostCheck;
-  matched_scopes: MapScope[];
 }

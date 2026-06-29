@@ -123,7 +123,6 @@ ${patterns}`;
 
 function formatSummary(context: PackageContext): string {
   const { summary } = context.fingerprint.intent;
-  const { topology } = context.fingerprint.inventory;
   const lines = ["### Summary"];
   lines.push(`- Product: ${summary.product ?? context.name}`);
   pushJoined(lines, "Audience", summary.audience);
@@ -131,20 +130,6 @@ function formatSummary(context: PackageContext): string {
   pushJoined(lines, "Anti-goals", summary.anti_goals);
   pushJoined(lines, "Tradeoffs", summary.tradeoffs);
   pushJoined(lines, "Tone", summary.tone);
-  if (topology.scopes?.length) {
-    lines.push(
-      `- Scopes: ${topology.scopes
-        .map((scope) => `\`${scope.id}\``)
-        .join(", ")}`,
-    );
-  }
-  if (topology.surface_types?.length) {
-    lines.push(
-      `- Surface types: ${topology.surface_types
-        .map((surface) => `\`${surface}\``)
-        .join(", ")}`,
-    );
-  }
   return lines.join("\n");
 }
 
@@ -158,7 +143,7 @@ function formatSituations(situations: GhostFingerprintSituation[]): string {
     const detail =
       situation.product_obligation ??
       situation.user_intent ??
-      situation.surface_type ??
+      situation.surface ??
       "select when relevant";
     lines.push(`- \`${situation.id}\` - ${label}: ${detail}`);
   }
@@ -234,7 +219,7 @@ function formatExemplars(exemplars: GhostFingerprintExemplar[]): string {
   }
   const lines = ["### Exemplars"];
   for (const exemplar of exemplars.slice(0, 12)) {
-    const detail = exemplar.title ?? exemplar.note ?? exemplar.surface_type;
+    const detail = exemplar.title ?? exemplar.note ?? exemplar.surface;
     lines.push(
       `- \`${exemplar.id}\` - \`${exemplar.path}\`${detail ? `: ${detail}` : ""}`,
     );

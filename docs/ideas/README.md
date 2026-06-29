@@ -57,6 +57,85 @@ buildable Layer 2 design. They agree; read them as a sequence.
   `ghost-core/surfaces/` module (`ghost.surfaces/v1` schema + types + index +
   tests), mirroring the `fingerprint/` module. Bans dotted ids at the schema
   layer; defers all graph-level validation (cycles, dangling refs) to Phase 2.
+  **Shipped** (`cb2b7c4`).
+- `phase-2-plan.md` — execution spec for Phase 2: `lintGhostSurfaces` graph
+  validation (parent refs, tree/no-cycle, edge refs, reserved `core`, duplicate
+  and near-miss ids) plus `ghost lint` dispatch for `surfaces.yml`. Edge cycles
+  are allowed; only `parent` is tree-constrained. Still additive. **Shipped**
+  (`f6b7941`).
+- `phase-3-plan.md` — execution spec for Phase 3, **the breaking line**: remove
+  `topology` / `applies_to` / `surface_type` / `scope` from the canonical
+  fingerprint and replace with a single `surface:` placement per node, validated
+  against `surfaces.yml`. Deliberately leaves `check.applies_to` for Phase 4/7
+  (it is coupled to map routing). First phase of the major release. **Shipped**
+  (`6140cd8`).
+- `phase-4-plan.md` — execution spec for Phase 4: delete the `ghost.map/v1`
+  coordinate/routing layer (dormant since Phase 3). Separates the routing layer
+  (delete) from the inventory-output types incidentally housed in `map/types.ts`
+  (relocate, not delete). Leaves `check` routing on `applies_to.paths` alone;
+  surface-based routing is deferred to Phase 7. **Shipped** (`2c22a8c`), with
+  `ghost-fleet` pulled out of the workspace.
+- `phase-5-plan.md` — execution spec for Phase 5, the first **additive** phase:
+  a surfaces loader (reads `surfaces.yml` into the package model — deferred
+  since Phase 1), a deterministic slice resolver (own + cascaded ancestors +
+  typed-edge contributions), a menu emitter, and the new `gather` command
+  (relay's desire done right). Ambiguity returns the menu, never the whole tree.
+  Prompt road only; path/diff road is Phase 7. **Shipped** (`5ee6cc0`).
+- `phase-6-plan.md` — execution spec for Phase 6: a `ghost migrate` command that
+  transforms a legacy `.ghost/` (raw YAML, since the schema now rejects legacy
+  fields) into the surface model — `surfaces.yml` from old `topology.scopes`,
+  single-scope nodes placed via `surface:`, legacy coordinate fields removed.
+  Report-don't-guess: ambiguous/unplaceable nodes are surfaced for human review,
+  never auto-placed. Additive; nothing in this repo needs it (dogfood `.ghost/`
+  was already removed). **Shipped** (`4f57b73`).
+- `phase-7-plan.md` — execution spec for Phase 7, the largest and least
+  proof-validated cut: `ghost.binding/v1` (`.ghost.bind.yml`), path→surface and
+  diff→surfaces resolution wired into `gather --path`, `check`, and `review`,
+  and the retirement of the `child-wins-by-id` merge (Leak E) — nesting becomes
+  binding, not data-merge. Directory-default binding with an explicit escape
+  hatch; in-repo `contract: .` only (external references deferred). Flags the
+  core structural tension (merge → binding-resolution) to resolve before
+  touching consumers. **Phase 7a shipped** (`37eb562`): the binding + path road
+  (`ghost.binding/v1`, `resolvePathToSurface`, `gather --path`). The diff road
+  and merge retirement are reframed into `phase-7b-grounded-checks.md`.
+- `phase-7b-grounded-checks.md` — the governance (Layer 4) model, settled after
+  seeing how checks are really authored: Ghost does **not** run checks. Checks
+  are markdown rules an agent evaluates; Ghost deterministically **routes** a
+  diff to the surfaces it touches (via 7a binding) and **grounds** every flag in
+  that surface's `gather` slice (principles/contracts = why, patterns/exemplars =
+  what to change). Ghost owns routing + grounding, never the check engine. The
+  legacy `ghost.validate/v1` detector becomes legacy. Open: check placement,
+  grounding emit shape, and the still-owed `child-wins-by-id` merge retirement.
+- `phase-7b-plan.md` — execution spec for 7b in four ordered cuts: (1) retire
+  the `child-wins-by-id` merge (Leak E) — independent, riskiest, done first;
+  (2) define `ghost.check/v1` as markdown + frontmatter with a `surface:`;
+  (3) surface-routed check relevance (a diff selects the checks governing its
+  surfaces and ancestors, reusing the Phase 5 cascade); (4) fingerprint
+  grounding via `review`. `ghost.validate/v1`'s detector kept parseable but no
+  longer the governance path; full removal deferred. **Cuts 1 & 2 shipped**
+  (`8b81d76`, `3d042d2`).
+- `phase-7b-cut3-plan.md` — execution spec for Cut 3: surface-routed check
+  relevance. `selectChecksForSurfaces` selects markdown checks governing a diff's
+  touched surfaces and ancestors (reusing the slice cascade); a checks-dir loader
+  reads `checks/*.md`; a new additive command prints the relevant checks per
+  surface. Adds surface routing *beside* the legacy path-glob detector router
+  rather than replacing it. Grounding deferred to Cut 4. **Shipped** (`b6a8c93`).
+- `phase-7b-cut4-plan.md` — execution spec for Cut 4, the final governance cut:
+  fingerprint grounding. `groundSurface` projects a surface's slice into *why*
+  (principles/contracts) + *what to change* (patterns/exemplars with paths),
+  inherited from ancestors like context is. Attached to the Cut 3 `ghost checks`
+  command (the surface-native path) rather than the legacy `review` packet, so a
+  flagged check can be grounded in the fingerprint. Ghost still never runs the
+  check; `review`/`validate/v1` left for a later cut. **Shipped** (`431b20a`) —
+  Phase 7b complete.
+- `phase-8-plan.md` — execution spec for Phase 8, the final phase: delete the
+  absorbed/dead commands (`relay`, `stack`, `survey`, `diff`, `describe`) and the
+  relay-only `context/` modules, update the skill bundle to teach surfaces,
+  regenerate the manifest, fill in the major changeset. Surfaces two
+  entanglements: `relay` and `review` share `context/` machinery (partition,
+  don't delete wholesale), and `survey` is a command *and* a module (delete the
+  command surface only). `review` / `emit` / `validate-v1` / the survey module
+  left for later cuts.
 
 ## Independent, still live
 

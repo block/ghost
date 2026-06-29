@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { cac } from "cac";
+import { registerChecksCommand } from "./checks-command.js";
 import { formatGhostHelp } from "./command-discovery.js";
 import { loadComparableFingerprint } from "./comparable-fingerprint.js";
 import {
@@ -29,7 +30,8 @@ import {
 } from "./evolution-commands.js";
 import { formatSemanticDiff } from "./fingerprint.js";
 import { registerFingerprintCommands } from "./fingerprint-commands.js";
-import { registerRelayCommand } from "./relay-command.js";
+import { registerGatherCommand } from "./gather-command.js";
+import { registerMigrateCommand } from "./migrate-command.js";
 import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
@@ -155,7 +157,9 @@ export function buildCli(): ReturnType<typeof cac> {
   registerTrackCommand(cli);
   registerDivergeCommand(cli);
   registerDriftCommand(cli);
-  registerRelayCommand(cli);
+  registerGatherCommand(cli);
+  registerChecksCommand(cli);
+  registerMigrateCommand(cli);
   registerSkillCommand(cli);
 
   // --- check ---

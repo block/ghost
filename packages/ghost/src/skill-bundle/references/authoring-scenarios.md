@@ -91,7 +91,7 @@ Write the smallest useful durable content:
 
 - `intent.yml`: product summary, audience, situations, principles, contracts,
   anti-goals, and tradeoffs.
-- `inventory.yml`: topology, building blocks, source links, and curated
+- `inventory.yml`: building blocks, source links, and curated
   exemplars the agent can inspect or use.
 - `composition.yml`: patterns, layouts, structures, flows, states, content,
   behavior, and visual arrangements.

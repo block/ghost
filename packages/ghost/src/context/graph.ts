@@ -91,7 +91,7 @@ export function buildFingerprintGraph(
       summary:
         situation.product_obligation ??
         situation.user_intent ??
-        situation.surface_type ??
+        situation.surface ??
         "Recorded situation.",
       details: [
         situation.user_intent ? `User intent: ${situation.user_intent}` : "",
@@ -102,7 +102,6 @@ export function buildFingerprintGraph(
       ].filter(Boolean),
       sourceFile: "intent.yml",
       appliesTo: {
-        surfaceTypes: situation.surface_type ? [situation.surface_type] : [],
         paths: evidencePaths(situation.evidence),
       },
     });
@@ -130,7 +129,7 @@ export function buildFingerprintGraph(
         ),
       ],
       sourceFile: "intent.yml",
-      appliesTo: applicabilityFromScope(principle.applies_to),
+      appliesTo: {},
     });
     addRefEdges(ref, principle.check_refs, "principle check");
   }
@@ -145,7 +144,7 @@ export function buildFingerprintGraph(
       summary: contract.contract,
       details: contract.obligations ?? [],
       sourceFile: "intent.yml",
-      appliesTo: applicabilityFromScope(contract.applies_to),
+      appliesTo: {},
     });
     addRefEdges(ref, contract.check_refs, "experience contract check");
   }
@@ -165,7 +164,7 @@ export function buildFingerprintGraph(
           : []),
       ],
       sourceFile: "composition.yml",
-      appliesTo: applicabilityFromScope(pattern.applies_to),
+      appliesTo: {},
     });
     addRefEdges(ref, pattern.check_refs, "composition check");
   }
@@ -180,14 +179,11 @@ export function buildFingerprintGraph(
       summary: exemplar.why ?? exemplar.note ?? exemplar.path,
       details: [
         `Path: ${exemplar.path}`,
-        exemplar.surface_type ? `Surface type: ${exemplar.surface_type}` : "",
-        exemplar.scope ? `Scope: ${exemplar.scope}` : "",
+        exemplar.surface ? `Surface: ${exemplar.surface}` : "",
       ].filter(Boolean),
       sourceFile: "inventory.yml",
       appliesTo: {
         paths: [exemplar.path],
-        scopes: exemplar.scope ? [exemplar.scope] : [],
-        surfaceTypes: exemplar.surface_type ? [exemplar.surface_type] : [],
       },
     });
     addRefEdges(ref, exemplar.refs, "exemplar ref");
@@ -303,14 +299,12 @@ export function pathsOverlap(a: string, b: string): boolean {
   return left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
 }
 
+// Phase 3: the topology-derived scope list is gone. Path/scope selection is
+// rebuilt against surfaces in Phase 5/7; until then this is dormant (empty).
 function buildScopes(
-  fingerprint: GhostFingerprintDocument,
+  _fingerprint: GhostFingerprintDocument,
 ): FingerprintGraphScope[] {
-  return (fingerprint.inventory.topology.scopes ?? []).map((scope) => ({
-    id: scope.id,
-    paths: scope.paths.map(normalizePath),
-    surfaceTypes: scope.surface_types ?? [],
-  }));
+  return [];
 }
 
 function normalizePath(path: string): string {
@@ -324,22 +318,6 @@ function normalizeApplicability(
     paths: unique((value?.paths ?? []).map(normalizePath).filter(Boolean)),
     scopes: unique(value?.scopes ?? []),
     surfaceTypes: unique(value?.surfaceTypes ?? []),
-  };
-}
-
-function applicabilityFromScope(
-  scope:
-    | {
-        paths?: string[];
-        scopes?: string[];
-        surface_types?: string[];
-      }
-    | undefined,
-): Partial<Applicability> {
-  return {
-    paths: scope?.paths ?? [],
-    scopes: scope?.scopes ?? [],
-    surfaceTypes: scope?.surface_types ?? [],
   };
 }
 
