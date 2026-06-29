@@ -5,7 +5,7 @@ surface composition behind that UI: hierarchy, density, restraint, repetition,
 trust, flow, and the choices that make a surface feel intentional.
 
 Ghost keeps that surface composition in a repo-local `.ghost/` fingerprint
-package — a graph of prose nodes. The public npm shape is one package,
+package, a graph of prose nodes. The public npm shape is one package,
 `@anarchitecture/ghost`, with one user-facing bin, `ghost`. The CLI validates
 the node graph, composes context, routes checks, and emits deterministic
 packets. The host agent does the interpretive BYOA work through the installed
@@ -32,16 +32,16 @@ pnpm --filter @anarchitecture/ghost exec ghost <command>
 
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. Ghost grounds that work with two
-things: a **deterministic CLI** — schema and graph validation, repo-signal
-helpers, context composition, check routing, and advisory review packets (no
-LLM, repeatable) — and an **interpretive skill bundle** that teaches the agent
+things. A **deterministic CLI** does the repeatable parts with no LLM: schema
+and graph validation, repo-signal helpers, context composition, check routing,
+and advisory review packets. An **interpretive skill bundle** teaches the agent
 how to author and use the fingerprint.
 
 The canonical root `.ghost/` package is a directory tree of prose nodes:
 
 ```text
 manifest.yml          # schema + id
-index.md              # the core node — true everywhere (optional)
+index.md              # the core node, true everywhere (optional)
 <surface>/index.md    # a surface's own prose (the directory is the surface)
 <surface>/<node>.md   # a prose node placed in that surface
 checks/*.md           # optional ghost.check/v1 checks
@@ -50,14 +50,14 @@ checks/*.md           # optional ghost.check/v1 checks
 The **directory tree is the graph**. A node is a markdown file: descriptive
 frontmatter (`description`, `relates`, `incarnation`) plus a prose body. A
 node's identity is its path (`marketing/email.md` → `marketing/email`) and its
-parent is its containing directory — a surface is just a directory, and a
+parent is its containing directory. A surface is just a directory, and a
 directory's own prose lives in its `index.md`. The package-root `index.md` is
 the implicit `core` node. The body is written through three authoring lenses
 (they guide what to capture, they are not fields):
 
-- **intent** — the why and the stance.
-- **inventory** — the materials, and pointers to code the agent can inspect.
-- **composition** — the patterns that make the surface feel intentional.
+- **intent**: the why and the stance.
+- **inventory**: the materials, and pointers to code the agent can inspect.
+- **composition**: the patterns that make the surface feel intentional.
 
 `description` is the retrieval payload; `relates` links nodes laterally;
 `incarnation` tags a medium-bound expression. Reserved at the package root:
@@ -147,7 +147,7 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
   `workspace:*` runtime dependencies in the packed public artifact.
 - The canonical on-disk form is a `.ghost/` directory tree: `manifest.yml` plus
   prose nodes (`index.md` and `<surface>/<node>.md`) and optional `checks/*.md`.
-  The directory layout is the graph — ids and parents come from paths, never a
+  The directory layout is the graph; ids and parents come from paths, never a
   spine file.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.

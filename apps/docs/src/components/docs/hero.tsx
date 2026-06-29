@@ -28,7 +28,7 @@ export function Hero() {
 
   return (
     <>
-      {/* Concentric circles — fixed backdrop, persists through page scroll */}
+      {/* Concentric circles: fixed backdrop, persists through page scroll */}
       <div className="pointer-events-none fixed inset-0 z-0">
         {[3, 4, 5].map((i) => {
           const size = Math.pow(i, 1.6) * 12;

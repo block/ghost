@@ -51,7 +51,7 @@ export function App() {
         <Routes>
           <Route index element={<HomePage />} />
 
-          {/* Tools — four-card index plus per-tool landings */}
+          {/* Tools: four-card index plus per-tool landings */}
           <Route path="tools" element={<ToolsIndex />} />
           <Route
             path="tools/map"

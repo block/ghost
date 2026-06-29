@@ -72,7 +72,7 @@ export default function FoundationsIndex() {
       <AnimatedPageHeader
         kicker="Foundations"
         title="Foundations"
-        description="The building blocks that underpin every component. Color, type, and iconography — tuned for Ghost UI."
+        description="The building blocks that underpin every component. Color, type, and iconography, tuned for Ghost UI."
       />
 
       <div

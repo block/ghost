@@ -1,7 +1,7 @@
 # Ghost
 
 **Agents can assemble UI. They can't reliably preserve the _composition_ behind
-it — the hierarchy, density, restraint, copy, trust, and flow that make a
+it: the hierarchy, density, restraint, copy, trust, and flow that make a
 surface feel intentional.**
 
 Ghost is a checked-in product-surface fingerprint your agent reads before it
@@ -18,7 +18,7 @@ writes, and decides.
 ```text
 .ghost/
   manifest.yml          # ghost.fingerprint-package/v1 anchor: schema + id
-  index.md              # the core node — true everywhere (optional)
+  index.md              # the core node, true everywhere (optional)
   <surface>/index.md    # a surface's own prose (the directory is the surface)
   <surface>/<node>.md   # a prose node placed in that surface
   checks/*.md           # optional ghost.check/v1 checks
@@ -28,16 +28,16 @@ The fingerprint is a graph of **nodes**, and the **directory tree is the graph**
 A node is a markdown file: descriptive frontmatter (`description`, `relates`,
 `incarnation`) plus a prose body. A node's identity is its path
 (`marketing/email.md` → `marketing/email`) and its parent is its containing
-directory — a surface is just a directory, and a directory's own prose lives in
+directory. A surface is just a directory, and a directory's own prose lives in
 its `index.md`. The package-root `index.md` is the implicit `core` node, true
 everywhere.
 
-The body is written through three authoring lenses — they guide what to capture,
+The body is written through three authoring lenses. They guide what to capture;
 they are not fields:
 
-- **intent** — what the surface is trying to do and for whom.
-- **inventory** — the materials, and pointers to code the agent can inspect.
-- **composition** — the patterns that make the surface feel intentional.
+- **intent**: what the surface is trying to do and for whom.
+- **inventory**: the materials, and pointers to code the agent can inspect.
+- **composition**: the patterns that make the surface feel intentional.
 
 `description` is the retrieval payload; `relates` links nodes laterally;
 `incarnation` tags a medium-bound expression (essence is untagged). Reserved at
@@ -67,7 +67,7 @@ npx ghost --help
 ## Quick Start
 
 ```bash
-ghost init          # scaffold .ghost/ — manifest + a core index.md node
+ghost init          # scaffold .ghost/ with a manifest + a core index.md node
 ghost validate      # links resolve, one root, acyclic
 ghost gather        # list nodes; ghost gather <surface> composes a context slice
 ```
@@ -124,7 +124,7 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` — a manifest and a core `index.md` node. |
+| `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph. |
 | `ghost gather` | List nodes, or compose a surface's context slice. |

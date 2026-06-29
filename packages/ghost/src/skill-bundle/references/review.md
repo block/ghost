@@ -22,7 +22,7 @@ in the surface's fingerprint slice. Use JSON as the agent contract. It includes:
 - `touched_surfaces`: the surfaces the diff resolved to
 - `checks`: the relevant checks per surface, with `relevance` (own or inherited)
 - `grounding`: per surface, the slice's prose `nodes`, each with `provenance`
-  (own / ancestor / edge). The why and the what live in each node's prose — read
+  (own / ancestor / edge). The why and the what live in each node's prose; read
   the grounded nodes, own first, then inherited, then related.
 
 Ghost selects and grounds the checks; it does not run them. Evaluate each
@@ -48,7 +48,7 @@ refs (principles/contracts as the why, exemplars as what good looks like), and a
 repair or intentional-divergence rationale.
 
 When a surface's grounding is silent, local evidence can still support advisory
-critique — label those findings provisional and non-Ghost-backed.
+critique; label those findings provisional and non-Ghost-backed.
 
 Fingerprint edits are ordinary Git-reviewed edits to the split fingerprint
 package. Do not silently rewrite the Ghost package during review unless the user

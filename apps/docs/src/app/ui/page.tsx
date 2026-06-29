@@ -83,7 +83,7 @@ const sections: {
     name: "Components",
     href: "/ui/components",
     description:
-      "Production-ready building blocks. Every component follows Ghost UI — pill-first, monochromatic, accessible.",
+      "Production-ready building blocks. Every component follows Ghost UI: pill-first, monochromatic, accessible.",
     visual: <ComponentsVisual />,
   },
 ];
@@ -100,7 +100,7 @@ export default function DesignLanguageIndex() {
       <AnimatedPageHeader
         kicker="Design Language"
         title="Ghost UI"
-        description="The shared design language across Ghost — foundations, primitives, and AI-native components."
+        description="The shared design language across Ghost: foundations, primitives, and AI-native components."
       />
 
       <div

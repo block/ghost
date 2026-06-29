@@ -27,14 +27,14 @@ const cards: {
     name: `Components (${componentCount})`,
     href: "/ui/components",
     description:
-      "Production-ready primitives + AI elements. Distributed via the shadcn registry.json — installed component-by-component, never wholesale.",
+      "Production-ready primitives + AI elements. Distributed via the shadcn registry.json, installed component-by-component, never wholesale.",
     icon: <Component className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "MCP server",
     href: "https://github.com/block/ghost/tree/main/packages/ghost-ui#mcp-server",
     description:
-      "ghost-mcp re-exposes the registry to AI assistants — five tools, two resources, so an agent can search components and pull source.",
+      "ghost-mcp re-exposes the registry to AI assistants with five tools and two resources, so an agent can search components and pull source.",
     icon: <Box className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -51,7 +51,7 @@ export default function GhostUiLanding() {
       <AnimatedPageHeader
         kicker="ghost-ui"
         title="Reference design system"
-        description="The design language Ghost dogfoods. 49 UI primitives + 48 AI elements, monochromatic-by-default, pill-first, distributed via the shadcn registry — and an MCP server that re-exposes the registry to AI assistants. Not on npm; the catalogue lives here."
+        description="The design language Ghost dogfoods. 49 UI primitives + 48 AI elements, monochromatic-by-default, pill-first, distributed via the shadcn registry, plus an MCP server that re-exposes the registry to AI assistants. Not on npm; the catalogue lives here."
       />
 
       <div

@@ -85,14 +85,14 @@ frequency may seed a draft, but it does not decide what the surface should do.
 The fingerprint is a directory tree of prose nodes. The tree _is_ the graph: a
 node's identity is its file path with `.md` dropped (`marketing/email.md` is the
 node `marketing/email`), and its parent is the directory that contains it. A
-surface is just a directory — its own prose lives in that directory's
+surface is just a directory; its own prose lives in that directory's
 `index.md` (`checkout/index.md` is the `checkout` surface), and the
 package-root `index.md` is the implicit `core` node that is true everywhere.
 
 There is no spine file. A surface exists when its directory exists. Reserved at
 the package root are `manifest.yml` and the `checks/` subtree; every other
-`*.md` is a node. Moving a node to another directory is a rename — its id and
-parent change — and `ghost validate` reports any `relates` that no longer
+`*.md` is a node. Moving a node to another directory is a rename: its id and
+parent change, and `ghost validate` reports any `relates` that no longer
 resolve.
 
 Node frontmatter carries only descriptive properties:
@@ -108,8 +108,8 @@ Node frontmatter carries only descriptive properties:
 
 <DocSection title="The Three Lenses">
 
-A node's prose body is written — and read — through three lenses. They shape
-how you write, never frontmatter fields:
+You write and read a node's prose body through three lenses. They shape how you
+write; they are never frontmatter fields:
 
 | Lens | What belongs there |
 | --- | --- |
@@ -147,8 +147,8 @@ Write less like a brand book and more like a decision engine.
 
 One contract per package: a repo's `.ghost/` is the whole fingerprint, and
 surfaces are directories within it. Reach for a second package only when a
-distinct product genuinely owns its own fingerprint — a separate app, a shared
-brand, a tenant variant.
+distinct product owns its own fingerprint: a separate app, a shared brand, a
+tenant variant.
 
 When several packages share a brand, put the common composition in its own
 package and `extends` it by identity:

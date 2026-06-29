@@ -62,7 +62,7 @@ export default function ComponentsIndex() {
       <AnimatedPageHeader
         kicker="Registry"
         title="Components"
-        description="Production-ready building blocks. Every component follows Ghost UI — pill-first, monochromatic, accessible."
+        description="Production-ready building blocks. Every component follows Ghost UI: pill-first, monochromatic, accessible."
       />
 
       {/* Search */}

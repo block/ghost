@@ -83,11 +83,12 @@ content; scan frequency and raw signals do not establish guidance.
 
 ## 4. Draft The Nodes
 
-Write the smallest useful set of nodes — each a purpose-coherent prose body with
+Write the smallest useful set of nodes, each a purpose-coherent prose body with
 a one-line `description`, placed by putting its file in the right surface
-directory and linked with `relates` where a relationship carries meaning. Write each body through the
-intent / inventory / composition lenses — the why, the material (with pointers
-to implementation), and how it is assembled. These are lenses, not fields.
+directory and linked with `relates` where a relationship carries meaning. Write
+each body through the intent / inventory / composition lenses: the why, the
+material (with pointers to implementation), and how it is assembled. These are
+lenses, not fields.
 
 Label uncertain reasoning as provisional. Prefer a few high-confidence nodes
 with evidence over a broad catalog. In auto-draft mode, write nodes directly

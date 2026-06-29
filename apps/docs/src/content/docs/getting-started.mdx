@@ -18,8 +18,8 @@ The canonical portable fingerprint is a directory tree of prose nodes:
 ```text
 .ghost/
   manifest.yml          # schema + package id
-  index.md              # the core node — true everywhere
-  trust.md              # another root node — also true everywhere
+  index.md              # the core node, true everywhere
+  trust.md              # another root node, also true everywhere
   marketing/index.md    # the `marketing` surface's own prose
   marketing/email.md    # a node in the marketing surface
   checks/*.md           # optional ghost.check/v1 deterministic checks
@@ -37,9 +37,9 @@ package root down to its own folder, so root nodes (`index.md`, `trust.md`)
 reach every surface while a sibling surface stays invisible. `relates` links
 nodes laterally across that boundary when a relationship carries rationale.
 
-Every prose node is read through three lenses — intent, inventory, and
-composition — and deterministic `checks/` validate the result afterward; they
-are not generation input.
+Write and read every prose node through three lenses: intent, inventory, and
+composition. Deterministic `checks/` validate the result afterward; they are not
+generation input.
 
 One contract per package: a repo's `.ghost/` is the whole fingerprint, and
 surfaces (directories) are the only locality.
@@ -113,9 +113,9 @@ lenses:
 3. **Composition** - the patterns that make it intentional: rules, layouts,
    structures, flows, states, content, behavior, and visual arrangements.
 
-These lenses are how the prose body is written, never frontmatter fields. Node
-frontmatter carries only descriptive properties — `description`, `relates`,
-`incarnation`, plus free-form passthrough keys. Raw repo signals are optional
+These lenses shape how you write the prose body; they are never frontmatter
+fields. Node frontmatter carries only descriptive properties: `description`,
+`relates`, `incarnation`, plus free-form passthrough keys. Raw repo signals are optional
 authoring evidence. Curate durable intent, inventory, and composition into the
 node prose, then use normal Git review for approval. For a fuller human-agent
 workflow, read [Fingerprint Authoring](/docs/fingerprint-authoring).

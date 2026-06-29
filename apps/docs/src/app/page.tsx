@@ -30,7 +30,7 @@ export default function Home() {
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
               Agents can assemble UI. What they can't reliably preserve is the
-              composition behind it — the hierarchy, density, restraint, copy,
+              composition behind it: the hierarchy, density, restraint, copy,
               trust, and flow that make a surface feel intentional.
             </p>
             <p className="thesis-item">
@@ -43,9 +43,9 @@ export default function Home() {
             <p className="thesis-item">
               Ghost captures that composition and checks it into the repo, where
               generation happens. It is a{" "}
-              <span className="text-foreground">graph of prose nodes</span> —
-              one markdown file each — that your agent reads before it builds
-              and checks after it changes.
+              <span className="text-foreground">graph of prose nodes</span>, one
+              markdown file each, that your agent reads before it builds and
+              checks after it changes.
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
@@ -62,7 +62,7 @@ export default function Home() {
               </li>
               <li>
                 each node is written through <code>intent</code>,{" "}
-                <code>inventory</code>, and <code>composition</code> — the why,
+                <code>inventory</code>, and <code>composition</code>: the why,
                 the materials, the patterns
               </li>
               <li>
@@ -100,15 +100,14 @@ export default function Home() {
             </p>
             <p className="thesis-item">
               Composition that can't be recalled or evaluated can't be
-              delegated. A surface only its author can assess isn't transferable
-              — not to agents, not to new engineers, not to forks. Ghost makes
-              it transferable, and makes drift measurable: where generated UI
-              diverges from the fingerprint, the gap is signal, and it is
-              localized.
+              delegated. A surface only its author can assess won't transfer to
+              an agent, a new engineer, or a fork. Ghost makes it transferable,
+              and makes drift measurable: where generated UI diverges from the
+              fingerprint, the gap is signal, and it is localized.
             </p>
             <p className="thesis-item">
               Design systems were libraries for humans. Ghost is composition
-              context for agents — every surface carries the fingerprint it
+              context for agents: every surface carries the fingerprint it
               extends, and every deviation can carry evidence.
             </p>
           </div>

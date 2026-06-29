@@ -27,10 +27,10 @@ json` as the agent interface.
 
 The host agent owns natural-language matching: read the surface menu (each
 surface's authored description) and pick the surface the ask belongs to. Ghost
-never infers a surface from a repo path — the agent names it.
+never infers a surface from a repo path; the agent names it.
 
 When no surface is selected (or an unknown one is named), `gather` returns the
-surface menu, never the whole tree — choose a surface from it rather than
+surface menu, never the whole tree; choose a surface from it rather than
 guessing.
 
 Return a short human-facing brief synthesized from the slice: the relevant

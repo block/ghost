@@ -22,7 +22,7 @@ The canonical fingerprint is a `.ghost/` directory tree of prose nodes:
 ```text
 .ghost/
   manifest.yml          # schema + id
-  index.md              # the core node — true everywhere (optional)
+  index.md              # the core node, true everywhere (optional)
   <surface>/index.md    # a surface's own prose (the directory is the surface)
   <surface>/<node>.md   # a prose node placed in that surface
   checks/*.md           # optional ghost.check/v1 checks
@@ -35,7 +35,7 @@ The command tables below are generated from the CLI source. Run
 
 <DocSection title="Create And Inspect">
 
-### Initialize — `init`
+### Initialize: `init`
 
 Scaffold a `.ghost/` package: a manifest and a core `index.md` node. Add
 surfaces by adding directories (`checkout/index.md` is the `checkout` surface).
@@ -52,7 +52,7 @@ ghost init --package product-surface
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
 ```
 
-### Contribution — `scan`
+### Contribution: `scan`
 
 Report what the package contributes: presence of the manifest, and the nodes
 and surfaces (directories) it carries.
@@ -64,10 +64,10 @@ ghost scan
 ghost scan --format json
 ```
 
-### Repo signals — `signals`
+### Repo signals: `signals`
 
 Emit raw signals about a frontend repo as JSON. Use this as scratch evidence
-while authoring curated nodes — it does not contribute to the fingerprint by
+while authoring curated nodes. It does not contribute to the fingerprint by
 itself.
 
 <CliHelp tool="ghost" command="signals" hideDescription />
@@ -80,9 +80,9 @@ ghost signals .
 
 <DocSection title="Validate">
 
-### Validation — `validate`
+### Validation: `validate`
 
-Validate the package: artifact shape plus the node graph — every `relates` link
+Validate the package: artifact shape plus the node graph. Every `relates` link
 resolves, there is exactly one root, and the graph is acyclic. Defaults to
 `.ghost`; pass a file to validate a single node.
 
@@ -98,14 +98,14 @@ ghost validate --format json
 
 <DocSection title="Gather Context">
 
-### Compose a surface slice — `gather`
+### Compose a surface slice: `gather`
 
 With no argument, list every node by id and description so an agent can match a
-task to one. With a surface, compose its context slice — folders are walls,
+task to one. With a surface, compose its context slice. Folders are walls,
 files fill the corridor:
 
 - **spine** (full bodies): every file from the package root down to the
-  surface's own folder. A sibling folder is a wall — its nodes never appear.
+  surface's own folder. A sibling folder is a wall; its nodes never appear.
 - **edges** (full bodies, one hop): each spine node's `relates` targets, so a
   rule authored once high in the corridor reaches every descendant. A link to a
   hub also unfolds the hub's subtree as spokes.
@@ -131,7 +131,7 @@ before they build, not only after a review finds drift.
 
 <DocSection title="Govern Changes">
 
-### Route checks — `checks`
+### Route checks: `checks`
 
 Select and ground the markdown checks governing the named surfaces. The agent
 names the surfaces the change touches, then evaluates the returned checks. Use
@@ -145,7 +145,7 @@ ghost checks --surface checkout,billing
 ghost checks --surface checkout --format json
 ```
 
-### Advisory review packet — `review`
+### Advisory review packet: `review`
 
 Emit an advisory packet for a diff: touched surfaces, routed checks, and
 fingerprint grounding, with the diff embedded verbatim. Diff against a git ref
@@ -168,7 +168,7 @@ gate on its own.
 
 <DocSection title="Skill And Maintenance">
 
-### Install the skill — `skill`
+### Install the skill: `skill`
 
 Install the unified Ghost skill bundle so a host agent knows how to author and
 use the fingerprint.
@@ -181,7 +181,7 @@ ghost skill install --agent claude
 ghost skill install --dest ~/.codex/skills/ghost
 ```
 
-### Migrate a legacy package — `migrate`
+### Migrate a legacy package: `migrate`
 
 Migrate a legacy `.ghost/` package onto the node-graph surface model. Use
 `--dry-run` to print the plan without writing.

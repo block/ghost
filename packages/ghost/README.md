@@ -2,8 +2,8 @@
 
 **A unified Ghost CLI for product-surface composition fingerprints.**
 
-Agents can assemble UI. They can't reliably preserve the _composition_ behind it
-— the hierarchy, density, restraint, copy, trust, and flow that make a surface
+Agents can assemble UI. They can't reliably preserve the _composition_ behind
+it: the hierarchy, density, restraint, copy, trust, and flow that make a surface
 feel intentional. Ghost captures that composition in a repo-local `.ghost/`
 package that a host agent reads before it builds and checks after it changes.
 
@@ -34,12 +34,12 @@ command index, and `ghost <command> --help` shows flags for one command.
 
 ## The Shape
 
-A fingerprint is a directory tree of prose — a **graph of nodes**:
+A fingerprint is a directory tree of prose, a **graph of nodes**:
 
 ```text
 .ghost/
   manifest.yml          # schema + id
-  index.md              # the core node — true everywhere (optional)
+  index.md              # the core node, true everywhere (optional)
   <surface>/index.md    # a surface's own prose (the directory is the surface)
   <surface>/<node>.md   # a prose node placed in that surface
   checks/*.md           # optional ghost.check/v1 checks
@@ -47,7 +47,7 @@ A fingerprint is a directory tree of prose — a **graph of nodes**:
 
 The **directory tree is the graph**. A node is one markdown file: descriptive
 frontmatter (`description`, `relates`, `incarnation`) plus a prose body written
-through three lenses — **intent** (the why), **inventory** (the materials), and
+through three lenses: **intent** (the why), **inventory** (the materials), and
 **composition** (the patterns). A node's id is its path and its parent is its
 directory; a surface is just a directory, and the package-root `index.md` is the
 implicit `core` node that reaches every surface.
@@ -83,7 +83,7 @@ verify fingerprints:
 ghost skill install
 ```
 
-Advanced and maintenance commands — `signals` and `migrate` — remain available
+Advanced and maintenance commands (`signals` and `migrate`) remain available
 in the full command index.
 
 No API key is required. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and

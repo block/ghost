@@ -15,7 +15,7 @@ materials it draws from, and the patterns that make it feel intentional.
 ```text
 .ghost/
   manifest.yml          # schema + id
-  index.md              # the core node — true everywhere (optional)
+  index.md              # the core node, true everywhere (optional)
   <surface>/index.md    # a surface's own prose
   <surface>/<node>.md   # a node placed in that surface
   checks/*.md           # optional ghost.check/v1 checks
@@ -30,18 +30,18 @@ design-system registry, or screenshot archive.
 The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
 A node is a markdown file: descriptive frontmatter (`description`, `relates`,
 `incarnation`) + a prose body. A node's **identity is its path** (`marketing/email.md`
-→ `marketing/email`) and its **parent is its containing directory** — a surface
+→ `marketing/email`) and its **parent is its containing directory**. A surface
 is just a directory, and a directory's own prose lives in its `index.md`
 (`marketing/index.md` is the `marketing` surface; the package-root `index.md` is
-the implicit `core` node, true everywhere). **Intent + inventory + composition**
-are the authoring lenses the body is written through — they guide what to
-capture, they are not fields or node types:
+the implicit `core` node, true everywhere). You write the body through three
+authoring lenses, **intent + inventory + composition**. They guide what to
+capture; they are not fields or node types:
 
-- intent — the why and the stance.
-- inventory — the materials and pointers to implementation the agent can inspect.
-- composition — the patterns that make the surface feel intentional.
+- intent: the why and the stance.
+- inventory: the materials and pointers to implementation the agent can inspect.
+- composition: the patterns that make the surface feel intentional.
 
-`description` is the retrieval payload — a one-line "what this is / when to
+`description` is the retrieval payload, a one-line "what this is / when to
 gather it" (like a tool's name + description); `ghost gather` with no argument
 lists nodes by id + description for the agent to match against. The directory
 places a node so it is inherited downward (`core` is the implicit root that
@@ -50,15 +50,15 @@ medium-bound expression (essence is untagged). Free-form keys (`audience`, …)
 pass through. See [references/capture.md](references/capture.md) for the full
 node shape.
 
-**How `gather` composes** — folders are walls; files fill the corridor:
+**How `gather` composes** (folders are walls; files fill the corridor):
 
-- **spine** (full bodies): every file from the package root down to the
-  surface's own folder is inherited — so a feature's `invariants.md` reaches
-  every screen in that feature, and root files reach everywhere. A **sibling
-  folder is a wall**: its nodes never appear, not even as a pointer.
+- **spine** (full bodies): the package inherits every file from the root down to
+  the surface's own folder, so a feature's `invariants.md` reaches every screen
+  in that feature, and root files reach everywhere. A **sibling folder is a
+  wall**: its nodes never appear, not even as a pointer.
 - **edges** (full bodies, one hop): each spine node's `relates` targets. Author
-  a broad rule once at the level it is true — e.g. `relates: { to: arcade }` on
-  `features/` — and every descendant inherits it. A link to a hub also unfolds
+  a broad rule once at the level it is true (say `relates: { to: arcade }` on
+  `features/`) and every descendant inherits it. A link to a hub also unfolds
   the hub's subtree as spokes.
 - **spokes** (pointers: id + description): the surface's own descendants and any
   edge hub's subtree. The agent reads the descriptions and pulls what it needs
@@ -82,7 +82,7 @@ the child `ghost` process when they need repo-local Ghost files outside raw
 one product in a monorepo). Ghost stays adapter-neutral: wrappers consume JSON
 and map severities into their own review or check format.
 
-A package can **extend** another by identity — the shared-brand pattern. The
+A package can **extend** another by identity (the shared-brand pattern). The
 manifest's `extends` maps a package id to where it lives:
 `extends: { brand: ../brand/.ghost }`. Then nodes reference inherited context by
 identity, never path: `relates: [{ to: brand:core/trust }]` (a `<package>:<path>`
@@ -94,7 +94,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 |---|---|
 | `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan [dir] [--format json]` | Report node/surface contribution. |
-| `ghost validate [file-or-dir]` | Validate the package — artifact shape and the node graph (links resolve, one root, acyclic). |
+| `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
 | `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (corridor spine + relates edges, plus spoke pointers), or list the surface menu. |

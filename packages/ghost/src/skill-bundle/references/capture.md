@@ -19,7 +19,7 @@ is checked in, Ghost treats the fingerprint package as canonical.
 ```text
 .ghost/
   manifest.yml          # schema + id
-  index.md              # the core node — true everywhere
+  index.md              # the core node, true everywhere
   checkout/             # a surface is a directory
     index.md            #   the checkout surface's own prose
     trust.md            #   a node placed under checkout
@@ -50,17 +50,17 @@ Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness…
 ```
 
-- **`description`** is how an agent finds the node — a one-line "what this is and
+- **`description`** is how an agent finds the node: a one-line "what this is and
   when to gather it," exactly like a tool's name + description. `ghost gather`
   with no argument lists nodes by id + description; the agent matches the ask
   against those and names one. The body is the node's "implementation"; the
   description is what makes it discoverable. Write one on any node worth
   anchoring a task at.
-- **The directory places the node** — folders are walls; files fill the
+- **The directory places the node.** Folders are walls; files fill the
   corridor. A node inherits every file in the folders above it, up to the root;
   a sibling folder is invisible. The brand soul lives in the package-root files
   (the `core` node and other root files), so it reaches every surface. Author a
-  broad rule at the broadest folder where it is true — a feature's
+  broad rule at the broadest folder where it is true: a feature's
   `invariants.md` reaches every screen in that feature and nowhere else.
 - **`relates`** links laterally when a relationship carries rationale. When the
   rationale is rich (e.g. "checkout and item-detail disagree on density on
@@ -72,15 +72,15 @@ action beats completeness…
 
 Intent / inventory / composition are **authoring lenses**, not fields and not
 node types. They are the things worth thinking through as you write a node's
-prose — a node may lean entirely on one:
+prose, and a node may lean entirely on one:
 
-- **intent** — the why and the stance.
-- **inventory** — the material you have (tokens, components, and pointers to the
+- **intent**: the why and the stance.
+- **inventory**: the material you have (tokens, components, and pointers to the
   actual implementation in code).
-- **composition** — how it is assembled (the patterns that make it intentional).
+- **composition**: how it is assembled (the patterns that make it intentional).
 
 A finding cites a node by id, so keep a node **purpose-coherent**: one purpose,
-any length. Split into a second node only when a handle diverges — a different
+any length. Split into a second node only when a handle diverges, say a different
 directory (parent), a different `incarnation`, or a genuinely different
 `relates` role.
 
@@ -105,14 +105,14 @@ ghost scan
 ```
 
 `ghost init` is template-driven (`--template <name>` selects a starter). The
-default template seeds the package-root `index.md` — the `core` node —
+default template seeds the package-root `index.md` (the `core` node),
 demonstrating the shape.
 
 ### 3. Shape the tree
 
 Add a surface by adding a directory: `checkout/` is the `checkout` surface, and
 `checkout/index.md` holds its prose. Nest surfaces by nesting directories. The
-tree is the layout itself — a node's id and parent come from where its file
+tree is the layout itself; a node's id and parent come from where its file
 sits, never from a declared spine.
 
 ### 4. Orient
@@ -120,11 +120,11 @@ sits, never from a declared spine.
 Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal hierarchy,
 behavior, copy, accessibility, trust, and flow. `ghost signals .` emits raw
-scratch observations — curate, never copy verbatim into a node.
+scratch observations; curate, never copy verbatim into a node.
 
 ### 5. Write sparse nodes
 
-Add the smallest useful set of nodes — each a purpose-coherent prose body
+Add the smallest useful set of nodes, each a purpose-coherent prose body
 written through the lenses, placed by putting its file in the right directory
 and linked with `relates` where a relationship carries meaning. Prefer a few
 high-confidence nodes over a noisy

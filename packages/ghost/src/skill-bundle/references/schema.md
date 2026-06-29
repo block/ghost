@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape — nodes, the spine, checks, and extends.
+description: The Ghost fingerprint package shape: nodes, the directory tree, checks, and extends.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -9,11 +9,11 @@ Canonical package:
 
 ```text
 .ghost/
-  manifest.yml          ghost.fingerprint-package/v1 — id + optional extends
-  index.md              the core node — true everywhere (optional)
+  manifest.yml          ghost.fingerprint-package/v1: id + optional extends
+  index.md              the core node, true everywhere (optional)
   <surface>/index.md    a surface's own prose (the directory is the surface)
-  <surface>/<node>.md   ghost.node/v1 — a node placed in that surface
-  checks/*.md           optional ghost.check/v1 — agent-evaluated output checks
+  <surface>/<node>.md   ghost.node/v1: a node placed in that surface
+  checks/*.md           optional ghost.check/v1: agent-evaluated output checks
 ```
 
 The **directory tree is the graph**: a node's id is its path and its parent is
@@ -27,7 +27,7 @@ paths and infers nothing from repo location.
 
 ## Nodes
 
-A node is the unit — a markdown file with descriptive frontmatter + a prose
+A node is the unit: a markdown file with descriptive frontmatter + a prose
 body. Identity and containment are not in the frontmatter; they are where the
 file sits. A node at `checkout/trust.md`:
 
@@ -56,7 +56,7 @@ There is no spine file. A surface exists when its directory exists; give it pros
 with an `index.md`, place nodes inside it, and nest surfaces by nesting
 directories. A surface that needs no prose of its own is simply a directory that
 holds nodes. Moving a node to another directory changes its id (a rename) and
-its parent — `ghost validate` reports any `relates` that no longer resolve.
+its parent; `ghost validate` reports any `relates` that no longer resolve.
 
 ## Manifest + extends
 
@@ -68,7 +68,7 @@ extends:
 ```
 
 A `brand:core/trust` ref in `relates` resolves into the extended package's nodes
-(read-only) — a `<package>:<path>` ref. Reference is by identity (the `extends`
+(read-only), a `<package>:<path>` ref. Reference is by identity (the `extends`
 key), never by repo path.
 
 ## Gather
@@ -76,7 +76,7 @@ key), never by repo path.
 `ghost gather <node>` composes a node's slice, filtered by `--as <incarnation>`:
 
 - **spine** (full bodies): every file on the corridor from the package root
-  down to the node's own folder. Folders are walls — sibling folders never
+  down to the node's own folder. Folders are walls; sibling folders never
   appear.
 - **edges** (full bodies, one hop): each spine node's `relates` targets. A rule
   authored high in the corridor (e.g. `relates: { to: arcade }` on `features/`)

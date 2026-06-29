@@ -48,7 +48,7 @@ export default function GhostScanLanding() {
       <AnimatedPageHeader
         kicker="ghost scan"
         title="Fingerprint Readiness"
-        description="The deterministic handoff that shows what a repo-local Ghost fingerprint contributes — its nodes and surfaces — before it guides generation and review."
+        description="The deterministic handoff that shows what a repo-local Ghost fingerprint contributes (its nodes and surfaces) before it guides generation and review."
       />
 
       <div
