@@ -15,6 +15,10 @@ import {
   formatReviewPacketMarkdown,
 } from "./commands/review-packet.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
+import {
+  UnknownSurfaceError,
+  writeUnknownSurfaceError,
+} from "./commands/surface-guard.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -87,6 +91,14 @@ export function buildCli(): ReturnType<typeof cac> {
         }
         process.exit(0);
       } catch (err) {
+        if (err instanceof UnknownSurfaceError) {
+          writeUnknownSurfaceError(
+            err.unknown,
+            opts.format === "json" ? "json" : "markdown",
+          );
+          process.exit(2);
+          return;
+        }
         console.error(
           `Error: ${err instanceof Error ? err.message : String(err)}`,
         );

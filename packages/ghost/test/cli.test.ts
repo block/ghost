@@ -920,17 +920,74 @@ composition:
     );
   });
 
-  it("returns the menu and exits non-zero for an unknown surface", async () => {
+  it("ranks closest candidates for an inexact gather query", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
-      ["gather", "nope", "--package", ".ghost", "--format", "json"],
+      ["gather", "marketng", "--package", ".ghost", "--format", "json"],
       dir,
       { allowNoExit: true },
     );
 
     expect(result.code).toBe(2);
-    expect(JSON.parse(result.stdout).kind).toBe("menu");
+    const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("candidates");
+    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
+    expect(payload.candidates.map((c: { id: string }) => c.id)).toContain(
+      "email/marketing",
+    );
+  });
+
+  it("matches a gather query by phrase against descriptions", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      ["gather", "marketing email", "--package", ".ghost", "--format", "json"],
+      dir,
+      { allowNoExit: true },
+    );
+
+    expect(result.code).toBe(2);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.candidates[0].id).toBe("email/marketing");
+  });
+
+  it("returns an empty candidate set for a gather query with no match", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      ["gather", "zzzzznope", "--package", ".ghost", "--format", "json"],
+      dir,
+      { allowNoExit: true },
+    );
+
+    expect(result.code).toBe(2);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("candidates");
+    expect(payload.candidates).toEqual([]);
+  });
+
+  it("errors with ERR_UNKNOWN_SURFACE when checks names an unknown surface", async () => {
+    await writeGatherPackage(dir);
+
+    const result = await runCli(
+      [
+        "checks",
+        "--surface",
+        "checkou",
+        "--package",
+        ".ghost",
+        "--format",
+        "json",
+      ],
+      dir,
+      { allowNoExit: true },
+    );
+
+    expect(result.code).toBe(2);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
+    expect(payload.unknown[0].suggestions).toContain("checkout");
   });
 
   it("migrates a legacy package to the surface model", async () => {

@@ -5,6 +5,10 @@ description: Build a concise pre-generation brief from a surface's gather slice.
 
 # Recipe: Brief Work From Ghost Fingerprint
 
+0. Before building, run the [self-check](self-check.md): if you cannot name the
+   nodes you gathered, label each claim as Ghost-backed or provisional, and
+   point to where the fingerprint is silent, you are not grounded yet — gather
+   first.
 1. Match the ask to a surface in the menu (`ghost gather --format json` with no
    surface lists the surfaces and their descriptions), then run
    `ghost gather <surface> --format json`.

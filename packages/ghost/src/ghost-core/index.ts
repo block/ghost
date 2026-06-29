@@ -25,6 +25,7 @@ export {
   ancestorChain,
   assembleGraph,
   buildGraphMenu,
+  closestIds,
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
   type GhostGraphNode,
@@ -40,6 +41,9 @@ export {
   type PlacedNode,
   type ResolveGraphSliceOptions,
   resolveGraphSlice,
+  type SearchHit,
+  type SearchReason,
+  searchGraph,
 } from "./graph/index.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---
 export {

@@ -64,6 +64,13 @@ node shape.
   edge hub's subtree. The agent reads the descriptions and pulls what it needs
   with a follow-up `gather`.
 
+Naming a node that is not in the package is an error, not a silent empty
+result. An inexact `gather <query>` ranks the closest nodes as `candidates`
+(matching id, description, then body — single words or a phrase) under the
+stable code `ERR_UNKNOWN_SURFACE`; `checks` and `review` emit the same code with
+closest-id `suggestions` (in `--format json`) and a "Did you mean" line
+otherwise. Branch on the code and retry with a ranked candidate or suggestion.
+
 Checks and review validate output; they are not generation input.
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
@@ -97,7 +104,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [surface] [--as <incarnation>]` | Compose a surface's context slice (corridor spine + relates edges, plus spoke pointers), or list the surface menu. |
+| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (corridor spine + relates edges, plus spoke pointers), list the node menu, or rank the closest nodes for an inexact query. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -110,6 +117,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 
 ## Workflows
 
+- Self-check before generating: follow [references/self-check.md](references/self-check.md).
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).

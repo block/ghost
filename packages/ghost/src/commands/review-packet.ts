@@ -9,6 +9,7 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "../scan/fingerprint-package.js";
+import { findUnknownSurfaces, UnknownSurfaceError } from "./surface-guard.js";
 
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 
@@ -32,6 +33,11 @@ export async function buildReviewPacket(options: {
 
   // The agent names the touched surfaces; dedupe and route.
   const touched = [...new Set(options.surfaces.filter((s) => s.length > 0))];
+
+  // A named surface absent from the graph is an error, not a silent empty
+  // route. The command renders this with suggestions.
+  const unknown = findUnknownSurfaces(loaded.graph, touched);
+  if (unknown.length > 0) throw new UnknownSurfaceError(unknown);
 
   const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
   // Grounding is the gather slice: the prose nodes a finding can cite.
