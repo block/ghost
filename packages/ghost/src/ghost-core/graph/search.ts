@@ -10,7 +10,11 @@ import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
  * its words a node covers. Selection machinery, not interpretation.
  */
 
-/** Why a hit matched, strongest first. Doubles as the ranking tier. */
+/**
+ * Why a hit matched, strongest first. Doubles as the ranking tier, and — for
+ * the `name`/`description`/`body` tiers — names the field the signal landed in,
+ * so a route can explain itself without a parallel field.
+ */
 export type SearchReason = "exact" | "name" | "description" | "body" | "fuzzy";
 
 export interface SearchHit {
@@ -21,6 +25,13 @@ export interface SearchHit {
   /** Higher is more relevant; ties break on id ascending. */
   score: number;
   reason: SearchReason;
+  /**
+   * For a multi-word query, how many of its tokens the node covered. Present
+   * only on a coverage match — a whole-query (verbatim or fuzzy) hit has no
+   * coverage story. This is the one fact the `reason` tier alone can't tell,
+   * and it's what makes a multi-word route auditable rather than a bare score.
+   */
+  coverage?: { covered: number; total: number };
 }
 
 const SCORE: Record<SearchReason, number> = {
@@ -74,6 +85,7 @@ export function searchGraph(
       surface,
       score: scored.score,
       reason: scored.reason,
+      ...(scored.coverage ? { coverage: scored.coverage } : {}),
     });
   }
 
@@ -115,6 +127,7 @@ const STOPWORDS = new Set([
 interface ScoredMatch {
   score: number;
   reason: SearchReason;
+  coverage?: { covered: number; total: number };
 }
 
 /**
@@ -163,7 +176,7 @@ function scoreCandidate(
   if (tokens.length < 2) return undefined;
 
   let covered = 0;
-  let strongest: SearchReason | undefined;
+  let strongest: "name" | "description" | "body" | undefined;
   for (const token of tokens) {
     const field = matchField(token, lowerName, lowerDesc, lowerBody);
     if (!field) continue;
@@ -175,7 +188,11 @@ function scoreCandidate(
   // Scale the field tier by the fraction of tokens covered so a full-phrase
   // match outranks a partial one, but keep it below the verbatim tiers.
   const coverage = covered / tokens.length;
-  return { score: Math.round(SCORE[strongest] * coverage), reason: strongest };
+  return {
+    score: Math.round(SCORE[strongest] * coverage),
+    reason: strongest,
+    coverage: { covered, total: tokens.length },
+  };
 }
 
 /** The strongest field a single token appears in, or undefined. */
@@ -184,7 +201,7 @@ function matchField(
   lowerName: string,
   lowerDesc: string | undefined,
   lowerBody: string,
-): SearchReason | undefined {
+): "name" | "description" | "body" | undefined {
   if (lowerName.includes(token)) return "name";
   if (lowerDesc?.includes(token)) return "description";
   if (lowerBody.includes(token)) return "body";
