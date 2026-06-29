@@ -11,6 +11,7 @@ import { formatGhostHelp } from "./commands/command-discovery.js";
 import { failFromError } from "./commands/errors.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
+import { registerManifestCommand } from "./commands/manifest-command.js";
 import { registerMigrateCommand } from "./commands/migrate-command.js";
 import {
   buildReviewPacket,
@@ -24,7 +25,10 @@ import {
 
 const execFileAsync = promisify(execFile);
 
-export { getCommandDiscoveryMetadata } from "./commands/command-discovery.js";
+export {
+  buildCliManifest,
+  getCommandDiscoveryMetadata,
+} from "./commands/command-discovery.js";
 
 export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");
@@ -33,6 +37,7 @@ export function buildCli(): ReturnType<typeof cac> {
 
   registerGatherCommand(cli);
   registerChecksCommand(cli);
+  registerManifestCommand(cli);
   registerMigrateCommand(cli);
   registerSkillCommand(cli);
 

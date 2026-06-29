@@ -1,5 +1,85 @@
 import type { CAC, Command } from "cac";
 
+export type CliManifestOption = {
+  rawName: string;
+  name: string;
+  description: string;
+  default: unknown;
+  takesValue: boolean;
+  negated: boolean;
+};
+
+export type CliManifestCommand = {
+  tool: string;
+  name: string;
+  rawName: string;
+  description: string;
+  group?: CommandDiscoveryGroup;
+  defaultHelp?: boolean;
+  compactName?: string;
+  summary?: string;
+  options: CliManifestOption[];
+};
+
+export type CliManifestGlobalOption = {
+  rawName: string;
+  name: string;
+  description: string;
+  default: unknown;
+};
+
+export type CliManifestTool = {
+  tool: string;
+  commands: CliManifestCommand[];
+  globalOptions: CliManifestGlobalOption[];
+};
+
+/**
+ * Derive a structured manifest of a built cac CLI: every command, its
+ * curated discovery metadata, and its flags. The cac registry is the single
+ * source of truth, so this can never drift from the real command definitions.
+ *
+ * Shared by the terminal help formatter's data layer and the docs-site
+ * manifest dump (`scripts/dump-cli-help.mjs`) so both read one shape.
+ */
+export function buildCliManifest(cli: CAC, toolName: string): CliManifestTool {
+  const commands: CliManifestCommand[] = cli.commands.map((cmd) => {
+    const discovery = metadataFor(cmd);
+    return {
+      tool: toolName,
+      name: cmd.name,
+      rawName: cmd.rawName,
+      description: cmd.description,
+      ...(discovery
+        ? {
+            group: discovery.group,
+            defaultHelp: discovery.defaultHelp,
+            compactName: discovery.compactName,
+            summary: discovery.summary,
+          }
+        : {}),
+      options: cmd.options.map((o) => ({
+        rawName: o.rawName,
+        name: o.name,
+        description: o.description,
+        default: o.config?.default ?? null,
+        takesValue: /<[^>]+>/.test(o.rawName),
+        negated: Boolean(o.negated),
+      })),
+    };
+  });
+
+  const globalOptions: CliManifestGlobalOption[] =
+    cli.globalCommand.options.map((o) => ({
+      rawName: o.rawName,
+      name: o.name,
+      description: o.description,
+      default: o.config?.default ?? null,
+    }));
+
+  return { tool: toolName, commands, globalOptions };
+}
+
 type HelpSection = {
   title?: string;
   body: string;
@@ -88,6 +168,13 @@ const COMMAND_DISCOVERY = [
     defaultHelp: false,
     compactName: "signals",
     summary: "Emit raw repo signals for fingerprint authoring.",
+  },
+  {
+    name: "manifest",
+    group: "advanced",
+    defaultHelp: false,
+    compactName: "manifest",
+    summary: "Emit a self-describing JSON manifest of commands and flags.",
   },
   {
     name: "migrate",
