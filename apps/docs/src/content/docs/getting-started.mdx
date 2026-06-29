@@ -1,6 +1,6 @@
 ---
 title: Getting Started
-description: Install Ghost, author a product-surface composition fingerprint, and use it to generate, validate, compare, and govern product surfaces.
+description: Install Ghost, author a product-surface composition fingerprint, and use it to brief, validate, and review product surfaces.
 kicker: Docs
 section: guide
 order: 10
@@ -18,18 +18,24 @@ The canonical portable fingerprint is a directory tree of prose nodes:
 ```text
 .ghost/
   manifest.yml          # schema + package id
-  index.md              # the core node — true everywhere (optional)
-  checkout/index.md     # the `checkout` surface's own prose
-  checkout/review.md    # a node placed in the checkout surface
+  index.md              # the core node — true everywhere
+  trust.md              # another root node — also true everywhere
+  marketing/index.md    # the `marketing` surface's own prose
+  marketing/email.md    # a node in the marketing surface
   checks/*.md           # optional ghost.check/v1 deterministic checks
 ```
 
 The directory tree _is_ the graph. A node's identity is its file path with
-`.md` dropped (`checkout/review.md` is the node `checkout/review`), and its
+`.md` dropped (`marketing/email.md` is the node `marketing/email`), and its
 parent is the directory that contains it. A surface is simply a directory: its
 own prose lives in that directory's `index.md`, and the package-root `index.md`
-is the implicit `core` node that is true everywhere. There is no spine file to
-maintain — a surface exists when its directory exists.
+is the implicit `core` node. There is no spine file to maintain — a surface
+exists when its directory exists.
+
+Folders are walls; files fill the corridor. A node inherits every file from the
+package root down to its own folder, so root nodes (`index.md`, `trust.md`)
+reach every surface while a sibling surface stays invisible. `relates` links
+nodes laterally across that boundary when a relationship carries rationale.
 
 Every prose node is read through three lenses — intent, inventory, and
 composition — and deterministic `checks/` validate the result afterward; they
@@ -93,8 +99,7 @@ core `index.md` node.
 ghost init
 ghost scan --format json
 ghost signals .
-ghost lint .ghost
-ghost verify .ghost --root .
+ghost validate
 ```
 
 Each node's prose records durable surface-composition guidance through three
@@ -117,64 +122,42 @@ workflow, read [Fingerprint Authoring](/docs/fingerprint-authoring).
 
 </DocSection>
 
-<DocSection title="Relay Context From Ghost">
+<DocSection title="Gather Context Before You Build">
 
-Before generating or revising UI, gather Relay JSON for the target path:
-
-```bash
-ghost relay gather apps/checkout/review/page.tsx --format json
-```
-
-`ghost.relay.gather/v2` is the agent contract. Agents should read `context`,
-`selected_context`, `targetPaths`, `source`, `stackDirs`, gaps, and trace fields
-from JSON. Plain `ghost relay gather <target>` remains a compact human preview.
-For prompt-shaped work where there is no clear path, host agents can create a
-`ghost.relay-request/v1` and run
-`ghost relay gather --request-stdin --format json`.
-Relay config controls the runtime. Omitted `base` uses the resolved fingerprint
-stack; `base.kind: none` lets frameworks provide declared request context
-without a `.ghost` package:
+Before generating or revising UI, gather the composed slice for the surface the
+work touches. The agent names the surface; Ghost composes its corridor of prose:
 
 ```bash
-GHOST_RELAY_CONFIG=.agents/ghost/relay.yml ghost relay gather --request-stdin --format json
-ghost relay gather stacks/portal.renewal-reminder.email.yml --config .agents/ghost/relay.yml --format json
+ghost gather marketing
+ghost gather marketing/email --as email
+ghost gather marketing --format json
 ```
 
-The package remains the approved product-surface context; review and check
-commands apply it after implementation.
+`gather` returns the **spine** (every node on the corridor from the root down to
+the surface, as full bodies), the **edges** reachable in one hop from any spine
+node's `relates`, and **spokes** — pointers to nearby nodes the agent can pull on
+demand. This is the pre-generation step: agents get surface-composition context
+before they build, not only after a review finds drift.
 
 </DocSection>
 
 <DocSection title="Govern Changes">
 
-After implementation, run Ghost against the same fingerprint:
+After implementation, run Ghost against the same fingerprint. The agent names
+the surfaces the change touches:
 
 ```bash
-ghost check --base main
-ghost review --base main
+ghost checks --surface marketing
+ghost review --surface marketing --base main
+git diff | ghost review --surface marketing --diff -
 ```
 
-`ghost check` applies active deterministic gates from the resolved fingerprint
-stack for each changed file. `ghost review` emits advisory context grounded in
-the same selected context as Relay, selected validation checks, and the diff.
+`ghost checks` selects and grounds the markdown checks governing the named
+surfaces. `ghost review` emits an advisory packet: touched surfaces, routed
+checks, fingerprint grounding, and the diff embedded verbatim.
 
-Wrappers should consume `ghost check --format json` and map Ghost severities
-outside Ghost. Ghost severities remain `critical`, `serious`, and `nit`.
-
-</DocSection>
-
-<DocSection title="Compare And Track Intent">
-
-```bash
-ghost compare market/.ghost dashboard/.ghost
-ghost stack apps/checkout/review/page.tsx
-ghost ack --stance aligned --reason "Initial baseline"
-ghost track new-tracked.fingerprint.md
-ghost diverge typography --reason "Editorial product uses a different type scale"
-```
-
-Package comparison uses canonical `.ghost/` packages. `ack`,
-`track`, and `diverge` record stance for compatibility drift workflows that
-track direct fingerprint markdown references.
+Wrappers should consume `--format json` and map Ghost severities outside Ghost.
+Ghost severities remain `critical`, `serious`, and `nit`. Advisory review is
+never a CI gate on its own.
 
 </DocSection>

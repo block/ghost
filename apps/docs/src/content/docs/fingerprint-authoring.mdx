@@ -34,8 +34,8 @@ weight to give human intent, existing code, and library evidence.
 | Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
 | Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
-| Fork, white label, or tenant variant | Shared base + local divergence. Keep common surface composition broad and local differences scoped. |
-| Monorepo or nested surfaces | Stack-aware. Use root guidance for broad composition and nested packages for surfaces assessed differently. |
+| Fork, white label, or tenant variant | Shared base + local divergence. Put the common surface composition in a base package and `extends` it from each variant. |
+| Monorepo or shared brand | Keep one package per product surface. A shared brand lives in its own package that the others `extends` by identity. |
 
 </DocSection>
 
@@ -71,8 +71,7 @@ Set up the Ghost fingerprint for this repo with auto-draft.
 ```bash
 ghost scan --format json
 ghost signals .
-ghost lint .ghost
-ghost verify .ghost --root .
+ghost validate
 ```
 
 Raw repo signals are source evidence only. They can support curated inventory,
@@ -144,24 +143,37 @@ Write less like a brand book and more like a decision engine.
 
 </DocSection>
 
-<DocSection title="Nested Packages">
+<DocSection title="Shared Brand Across Packages">
 
-Nested fingerprints are opt-in. Create a local `.ghost/` only when a surface
-should be assessed differently from the root product fingerprint.
+One contract per package: a repo's `.ghost/` is the whole fingerprint, and
+surfaces are directories within it. Reach for a second package only when a
+distinct product genuinely owns its own fingerprint — a separate app, a shared
+brand, a tenant variant.
 
-Use a nested package when a surface has distinct users, information density,
-trust or recovery posture, interaction rhythm, component grammar, UI library
-usage, or review criteria for the same UI decision.
+When several packages share a brand, put the common composition in its own
+package and `extends` it by identity:
 
-Keep broad product-family guidance at the root. Put local obligations in the
-nearest package that owns the surface.
-
-```bash
-ghost init --scope apps/checkout
-ghost stack apps/checkout
-ghost lint --all
-ghost verify --all
+```yaml
+# product/.ghost/manifest.yml
+schema: ghost.fingerprint-package/v1
+id: acme-product
+extends:
+  brand: ../brand/.ghost   # map the brand contract's id to where it lives
 ```
+
+Nodes then reference inherited context by identity, never by path:
+
+```yaml
+# product/.ghost/checkout/trust.md
+---
+relates:
+  - to: brand:core/trust
+    as: reinforces
+---
+```
+
+Inherited nodes load read-only and flow into `gather` and `validate` like local
+ones. A variant inherits the brand without seeing its siblings.
 
 </DocSection>
 
