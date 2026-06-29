@@ -18,17 +18,13 @@ canonical, and uncommitted or unmerged edits are draft work.
 
 `surfaces.yml` declares the coordinate space — the surfaces a fingerprint's
 nodes are placed on (`surface:`) and the containment tree (`parent`) plus typed
-composition edges. The contract carries no paths. A repo binds paths to surfaces
-with `.ghost.bind.yml` (`ghost.binding/v1`) or by directory location; a nested
-`.ghost/` binds its subtree, it does not carry its own merged fingerprint. A
-binding's `contract:` is `.` (the in-repo contract) or an npm package name
-(`@scope/brand`, resolved from `node_modules`); `ghost verify` checks an external
-contract resolves and its bound surfaces exist.
+composition edges. The contract carries no paths and infers nothing from repo
+location. One contract per package; surfaces are the only locality.
 
 `ghost gather <surface>` composes a surface's slice (own nodes + inherited
-ancestors + edge contributions). `ghost gather --path <file>` resolves the
-surface that owns a path via its binding. With no surface, `gather` returns the
-surface menu for the host agent to match against.
+ancestors + edge contributions). With no surface, `gather` returns the surface
+menu for the host agent to match against. The agent names the surface from the
+prompt and its own repo analysis; Ghost never infers a surface from a path.
 
 `manifest.yml`:
 

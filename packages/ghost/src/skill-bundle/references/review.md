@@ -9,16 +9,15 @@ handoffs:
 
 # Recipe: Review Code Changes For Experience Drift
 
-## 1. Route The Diff To Its Surfaces
+## 1. Route The Change To Its Surfaces
 
 ```bash
-ghost checks --diff <patch> --format json
+ghost checks --surface <ids> --format json
 ```
 
-This resolves each changed path to the surface that owns it (via bindings),
-selects the markdown checks governing those surfaces and their ancestors, and
-grounds each in the surface's fingerprint slice. Use JSON as the agent contract.
-It includes:
+Name the surfaces the change touches (you analyzed the diff). Ghost selects the
+markdown checks governing those surfaces and their ancestors, and grounds each
+in the surface's fingerprint slice. Use JSON as the agent contract. It includes:
 
 - `touched_surfaces`: the surfaces the diff resolved to
 - `checks`: the relevant checks per surface, with `relevance` (own or inherited)

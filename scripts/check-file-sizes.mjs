@@ -25,11 +25,6 @@ const EXCEPTIONS = {
     justification:
       "Deterministic repository inventory collector — intentionally broad because map authoring depends on one cohesive raw signal pass",
   },
-  "packages/ghost/src/scan/fingerprint-stack.ts": {
-    limit: 1120,
-    justification:
-      "Canonical nested fingerprint stack loader — discovery, merge, path normalization, package-dir validation, and stack validation stay together so CLI routing shares one provenance model",
-  },
   "packages/ghost/src/scan/verify-fingerprint.ts": {
     limit: 900,
     justification:

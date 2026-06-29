@@ -222,22 +222,6 @@ describe("ghost CLI", () => {
     }
   });
 
-  it("keeps command-specific --all help local to lint and verify", async () => {
-    const lint = await runCli(["lint", "--help"], dir, { allowNoExit: true });
-    const verify = await runCli(["verify", "--help"], dir, {
-      allowNoExit: true,
-    });
-
-    expect(lint.code).toBe(0);
-    expect(lint.stdout).toContain("--all");
-    expect(lint.stdout).toContain("Validate every nested fingerprint package");
-    expect(lint.stdout).not.toContain("Core workflow");
-    expect(verify.code).toBe(0);
-    expect(verify.stdout).toContain("--all");
-    expect(verify.stdout).toContain("Verify every nested fingerprint package");
-    expect(verify.stdout).not.toContain("Core workflow");
-  });
-
   it("compares explicitly supplied fingerprint files", async () => {
     await writeFile(join(dir, "a.fingerprint.md"), fingerprintWithId("a"));
     await writeFile(join(dir, "b.fingerprint.md"), fingerprintWithId("b"));
@@ -799,326 +783,6 @@ sources: []
     expect(reviewCommand.code).toBe(0);
   });
 
-  it("init --monorepo detects package.json array workspaces without creating children by default", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.mode).toBe("plan");
-    expect(out.candidates).toEqual([
-      {
-        path: "apps/checkout",
-        source: "package-json",
-        packageJson: "apps/checkout/package.json",
-        state: "candidate",
-      },
-    ]);
-    expect(out.commands).toEqual(["ghost init --scope apps/checkout"]);
-    await expect(
-      readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-    await expect(
-      readFile(
-        join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
-        "utf-8",
-      ),
-    ).rejects.toThrow();
-  });
-
-  it("init --monorepo detects pnpm workspace packages", async () => {
-    await mkdir(join(dir, "packages", "admin"), { recursive: true });
-    await writeFile(
-      join(dir, "pnpm-workspace.yaml"),
-      "packages:\n  - packages/*\n",
-    );
-    await writeFile(
-      join(dir, "packages", "admin", "package.json"),
-      JSON.stringify({ name: "admin" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).candidates).toEqual([
-      {
-        path: "packages/admin",
-        source: "pnpm-workspace",
-        packageJson: "packages/admin/package.json",
-        state: "candidate",
-      },
-    ]);
-  });
-
-  it("init --monorepo expands recursive workspace globs", async () => {
-    await mkdir(join(dir, "packages", "group", "admin"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, "pnpm-workspace.yaml"),
-      "packages:\n  - packages/**\n",
-    );
-    await writeFile(
-      join(dir, "packages", "group", "admin", "package.json"),
-      JSON.stringify({ name: "admin" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).candidates).toEqual([
-      {
-        path: "packages/group/admin",
-        source: "pnpm-workspace",
-        packageJson: "packages/group/admin/package.json",
-        state: "candidate",
-      },
-    ]);
-  });
-
-  it("init --monorepo expands brace workspace globs", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await mkdir(join(dir, "packages", "admin"), { recursive: true });
-    await writeFile(
-      join(dir, "pnpm-workspace.yaml"),
-      "packages:\n  - '{apps,packages}/*'\n",
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-    await writeFile(
-      join(dir, "packages", "admin", "package.json"),
-      JSON.stringify({ name: "admin" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).candidates).toEqual([
-      {
-        path: "apps/checkout",
-        source: "pnpm-workspace",
-        packageJson: "apps/checkout/package.json",
-        state: "candidate",
-      },
-      {
-        path: "packages/admin",
-        source: "pnpm-workspace",
-        packageJson: "packages/admin/package.json",
-        state: "candidate",
-      },
-    ]);
-  });
-
-  it("init --monorepo honors negated workspace globs", async () => {
-    await mkdir(join(dir, "packages", "admin"), { recursive: true });
-    await mkdir(join(dir, "packages", "fixtures", "example"), {
-      recursive: true,
-    });
-    await writeFile(
-      join(dir, "pnpm-workspace.yaml"),
-      "packages:\n  - packages/**\n  - '!packages/fixtures/**'\n",
-    );
-    await writeFile(
-      join(dir, "packages", "admin", "package.json"),
-      JSON.stringify({ name: "admin" }, null, 2),
-    );
-    await writeFile(
-      join(dir, "packages", "fixtures", "example", "package.json"),
-      JSON.stringify({ name: "example" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout).candidates).toEqual([
-      {
-        path: "packages/admin",
-        source: "pnpm-workspace",
-        packageJson: "packages/admin/package.json",
-        state: "candidate",
-      },
-    ]);
-  });
-
-  it("init --monorepo --apply creates detected child packages", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: { packages: ["apps/*"] } }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--apply", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.mode).toBe("apply");
-    expect(out.created.map((entry: { path: string }) => entry.path)).toEqual([
-      "apps/checkout",
-    ]);
-    await expect(
-      readFile(
-        join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-  });
-
-  it("init --monorepo --apply skips existing child packages without force", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-    await runCli(["init", "--scope", "apps/checkout"], dir);
-
-    const result = await runCli(
-      ["init", "--monorepo", "--apply", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.created).toEqual([]);
-    expect(out.skipped).toEqual([
-      {
-        path: "apps/checkout",
-        source: "package-json",
-        packageJson: "apps/checkout/package.json",
-        state: "exists",
-      },
-    ]);
-  });
-
-  it("init --monorepo applies GHOST_PACKAGE_DIR to root and child packages", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--apply", "--format", "json"],
-      dir,
-      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.ghostDir).toBe(".design/memory");
-    expect(out.commands).toEqual([
-      "GHOST_PACKAGE_DIR=.design/memory ghost init --scope apps/checkout",
-    ]);
-    await expect(
-      readFile(join(dir, ".design", "memory", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-    await expect(
-      readFile(
-        join(dir, "apps", "checkout", ".design", "memory", "manifest.yml"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-  });
-
-  it("init --monorepo uses GHOST_PACKAGE_DIR for root and child packages", async () => {
-    await mkdir(join(dir, "apps", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "package.json"),
-      JSON.stringify({ workspaces: ["apps/*"] }, null, 2),
-    );
-    await writeFile(
-      join(dir, "apps", "checkout", "package.json"),
-      JSON.stringify({ name: "checkout" }, null, 2),
-    );
-
-    const result = await runCli(
-      ["init", "--monorepo", "--apply", "--format", "json"],
-      dir,
-      { env: { GHOST_PACKAGE_DIR: ".agents/ghost" } },
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(out.ghostDir).toBe(".agents/ghost");
-    expect(out.commands).toEqual([
-      "GHOST_PACKAGE_DIR=.agents/ghost ghost init --scope apps/checkout",
-    ]);
-    await expect(
-      readFile(join(dir, ".agents", "ghost", "manifest.yml"), "utf-8"),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-    await expect(
-      readFile(
-        join(dir, "apps", "checkout", ".agents", "ghost", "manifest.yml"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost.fingerprint-package/v1");
-  });
-
-  it("init --monorepo rejects exact scope and dir combinations", async () => {
-    const withPackage = await runCli(
-      ["init", "--package", "custom-dir", "--monorepo"],
-      dir,
-    );
-    const withScope = await runCli(
-      ["init", "--scope", "apps/checkout", "--monorepo"],
-      dir,
-    );
-    const withApplyOnly = await runCli(["init", "--apply"], dir);
-
-    expect(withPackage.code).toBe(2);
-    expect(withPackage.stderr).toContain(
-      "use either init --package <dir> or init --monorepo",
-    );
-    expect(withScope.code).toBe(2);
-    expect(withScope.stderr).toContain(
-      "use either init --scope <path> or init --monorepo",
-    );
-    expect(withApplyOnly.code).toBe(2);
-    expect(withApplyOnly.stderr).toContain(
-      "--apply can only be used with --monorepo",
-    );
-  });
-
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
     const init = await runCli(["init", "--format", "json"], dir, {
       env: { GHOST_PACKAGE_DIR: ".agents/ghost" },
@@ -1620,22 +1284,19 @@ sources: []
     ).resolves.toContain("grounding is silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
-    ).resolves.toContain("ghost gather --path <file> --format json");
-    await expect(
-      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
     ).resolves.toContain("ghost gather <surface> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "verify.md"),
         "utf-8",
       ),
-    ).resolves.toContain("ghost gather --path <file> --format json");
+    ).resolves.toContain("ghost gather <surface> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "review.md"),
         "utf-8",
       ),
-    ).resolves.toContain("ghost checks --diff <patch> --format json");
+    ).resolves.toContain("ghost checks --surface <ids> --format json");
     await expect(
       readFile(
         join(dir, "skills", "ghost", "references", "propose.md"),
@@ -1789,8 +1450,26 @@ sources: []
     ).rejects.toThrow("Unknown option `--includeMemory`");
   });
 
-  it("review resolves touched surfaces for a mixed diff", async () => {
-    await writeNestedCheckPackage(dir);
+  it("review uses agent-stated surfaces and embeds the diff", async () => {
+    await writeSplitFingerprintPackage(
+      join(dir, ".ghost"),
+      `schema: ghost.fingerprint/v1
+intent:
+  summary:
+    product: Root Product
+  situations: []
+  principles: []
+  experience_contracts: []
+inventory:
+  building_blocks:
+    tokens: [RootTheme]
+composition:
+  patterns:
+    - id: root-token-pattern
+      kind: visual
+      pattern: Web UI color uses semantic product tokens.
+`,
+    );
     await writeFile(
       join(dir, "change.patch"),
       [
@@ -1800,117 +1479,26 @@ sources: []
     );
 
     const result = await runCli(
-      ["review", "--diff", "change.patch", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    // Review is now surface-based: no merged stacks, just touched surfaces +
-    // routed checks + grounding from the root contract.
-    expect(packet.stacks).toBeUndefined();
-    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
-    expect(Array.isArray(packet.grounding)).toBe(true);
-  });
-
-  it("emit review-command resolves the root contract for --path (no child merge)", async () => {
-    await writeNestedCheckPackage(dir);
-
-    const result = await runCli(
       [
-        "emit",
-        "review-command",
-        "--path",
-        "apps/checkout/review/page.tsx",
-        "--stdout",
+        "review",
+        "--diff",
+        "change.patch",
+        "--surface",
+        "core",
+        "--format",
+        "json",
       ],
       dir,
     );
 
     expect(result.code).toBe(0);
-    // The contract is the root package — its inventory is present...
-    expect(result.stdout).toContain("RootTheme");
-    // ...and the child package's own fingerprint data is NOT merged in.
-    expect(result.stdout).not.toContain("CheckoutTheme");
-  });
-
-  it("init --scope creates a nested .ghost bundle", async () => {
-    const result = await runCli(
-      ["init", "--scope", "apps/checkout", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(await realpath(out.dir)).toBe(
-      await realpath(join(dir, "apps", "checkout", ".ghost")),
-    );
-    const manifest = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "manifest.yml"),
-      "utf-8",
-    );
-    expect(manifest).toContain("ghost.fingerprint-package/v1");
-    const intent = await readFile(
-      join(dir, "apps", "checkout", ".ghost", "intent.yml"),
-      "utf-8",
-    );
-    expect(intent).not.toContain("review_policy");
-    expect(intent).not.toContain("proposal");
-  });
-
-  it("init --scope creates a nested package under a custom package directory", async () => {
-    const result = await runCli(
-      ["init", "--scope", "apps/checkout", "--format", "json"],
-      dir,
-      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
-    );
-
-    expect(result.code).toBe(0);
-    const out = JSON.parse(result.stdout);
-    expect(await realpath(out.dir)).toBe(
-      await realpath(join(dir, "apps", "checkout", ".design", "memory")),
-    );
-    expect(
-      await readFile(
-        join(dir, "apps", "checkout", ".design", "memory", "manifest.yml"),
-        "utf-8",
-      ),
-    ).toContain("ghost.fingerprint-package/v1");
-  });
-
-  it("lint --all and verify --all include nested packages", async () => {
-    await writeNestedCheckPackage(dir);
-
-    const lint = await runCli(["lint", "--all", "--format", "json"], dir);
-    const verify = await runCli(["verify", "--all", "--format", "json"], dir);
-    const scan = await runCli(
-      ["scan", "--include-nested", "--format", "json"],
-      dir,
-    );
-
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
-    expect(JSON.parse(scan.stdout).nested_packages).toHaveLength(2);
-  });
-
-  it("lint, verify, and scan discover nested custom fingerprint directories", async () => {
-    await writeNestedCheckPackage(dir, ".design/memory");
-
-    const lint = await runCli(["lint", "--all", "--format", "json"], dir, {
-      env: { GHOST_PACKAGE_DIR: ".design/memory" },
-    });
-    const verify = await runCli(["verify", "--all", "--format", "json"], dir, {
-      env: { GHOST_PACKAGE_DIR: ".design/memory" },
-    });
-    const scan = await runCli(
-      ["scan", "--include-nested", "--format", "json"],
-      dir,
-      { env: { GHOST_PACKAGE_DIR: ".design/memory" } },
-    );
-
-    expect(lint.code).toBe(0);
-    expect(verify.code).toBe(0);
-    expect(JSON.parse(scan.stdout).nested_packages).toHaveLength(2);
+    const packet = JSON.parse(result.stdout);
+    // Review is surface-based and agent-stated: the agent names the surfaces;
+    // the diff is embedded verbatim, never used to resolve surfaces.
+    expect(packet.stacks).toBeUndefined();
+    expect(packet.touched_surfaces).toEqual(["core"]);
+    expect(Array.isArray(packet.grounding)).toBe(true);
+    expect(packet.diff).toContain("CheckoutTheme");
   });
 
   it("gathers a composed slice for a surface", async () => {
@@ -2040,7 +1628,7 @@ experience_contracts: []
     expect(result.stderr).toContain("Nothing to migrate");
   });
 
-  it("routes markdown checks to a diff by surface", async () => {
+  it("routes markdown checks to agent-stated surfaces", async () => {
     const ghost = join(dir, ".ghost");
     await mkdir(join(ghost, "checks"), { recursive: true });
     await writeFile(
@@ -2057,16 +1645,6 @@ surfaces:
     parent: core
 `,
     );
-    // Directory-implied binding for apps/checkout.
-    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
-      `schema: ghost.surfaces/v1
-surfaces:
-  - id: checkout
-    parent: core
-`,
-    );
     await writeFile(
       join(ghost, "checks", "brand.md"),
       "---\nname: brand\ndescription: Brand voice.\nseverity: medium\nsurface: core\n---\n## Instructions\nVoice.\n",
@@ -2079,16 +1657,12 @@ surfaces:
       join(ghost, "checks", "email.md"),
       "---\nname: email-links\ndescription: Email links.\nseverity: low\nsurface: email\n---\n## Instructions\nLinks.\n",
     );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--format",
@@ -2131,21 +1705,12 @@ surfaces:
       join(ghost, "checks", "checkout.md"),
       "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsurface: checkout\n---\n## Instructions\nFlag hex.\n",
     );
-    await mkdir(join(dir, "apps", "checkout", ".ghost"), { recursive: true });
-    await writeFile(
-      join(dir, "apps", "checkout", ".ghost", "surfaces.yml"),
-      "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
-    );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--format",
@@ -2175,16 +1740,12 @@ surfaces:
       join(ghost, "surfaces.yml"),
       "schema: ghost.surfaces/v1\nsurfaces:\n  - id: checkout\n    parent: core\n",
     );
-    await writeFile(
-      join(dir, "change.patch"),
-      webPatch("apps/checkout/page.tsx", 'const c = "#fff";'),
-    );
 
     const result = await runCli(
       [
         "checks",
-        "--diff",
-        "change.patch",
+        "--surface",
+        "checkout",
         "--package",
         ".ghost",
         "--no-grounding",
@@ -2542,96 +2103,6 @@ checks:
       examples:
         - Code/Features/Lending/LendingUI
 `;
-}
-
-async function writeNestedCheckPackage(
-  dir: string,
-  ghostDir = ".ghost",
-): Promise<void> {
-  const rootPackage = packagePath(dir, ghostDir);
-  const checkoutPackage = packagePath(join(dir, "apps", "checkout"), ghostDir);
-  await mkdir(join(dir, "apps", "checkout", "review"), { recursive: true });
-  await mkdir(join(dir, "shared"), { recursive: true });
-  await writeFile(join(dir, "apps", "checkout", "review", "page.tsx"), "");
-  await writeFile(join(dir, "shared", "home.tsx"), "");
-
-  await writeSplitFingerprintPackage(
-    rootPackage,
-    `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: Root Product
-  situations: []
-  principles: []
-  experience_contracts: []
-inventory:
-  building_blocks:
-    tokens: [RootTheme]
-composition:
-  patterns:
-    - id: root-token-pattern
-      kind: visual
-      pattern: Web UI color uses semantic product tokens.
-`,
-    `schema: ghost.validate/v1
-id: root
-checks:
-  - id: no-hardcoded-color
-    title: No hardcoded colors
-    status: active
-    severity: serious
-    derivation:
-      composition: [composition.pattern:root-token-pattern]
-    applies_to:
-      paths: [apps, shared]
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}'
-      contexts: [react]
-    evidence:
-      support: 0.93
-      observed_count: 8
-      examples:
-        - shared/home.tsx
-`,
-  );
-
-  await writeSplitFingerprintPackage(
-    checkoutPackage,
-    `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: Checkout
-  situations: []
-  principles: []
-  experience_contracts: []
-inventory:
-  building_blocks:
-    tokens: [CheckoutTheme]
-composition:
-  patterns:
-    - id: checkout-token-pattern
-      kind: visual
-      pattern: Checkout review uses checkout product tokens.
-      surface: checkout
-`,
-    `schema: ghost.validate/v1
-id: checkout
-checks:
-  - id: no-hardcoded-color
-    title: No hardcoded colors
-    status: disabled
-    severity: serious
-    detector:
-      type: forbidden-regex
-      pattern: '#[0-9a-fA-F]{3,8}'
-      contexts: [react]
-`,
-  );
-}
-
-function packagePath(root: string, ghostDir: string): string {
-  return join(root, ...ghostDir.split("/"));
 }
 
 function webPatch(path: string, added: string): string {

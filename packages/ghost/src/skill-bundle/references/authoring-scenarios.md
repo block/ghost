@@ -5,9 +5,6 @@ handoffs:
   - label: Inspect fingerprint contribution
     command: ghost scan --format json
     prompt: Classify this repo's fingerprint authoring scenario and summarize absent facets.
-  - label: Inspect nested stacks
-    command: ghost stack <path>
-    prompt: Decide whether this path needs local fingerprint guidance or can inherit the root package.
 ---
 
 # Recipe: Collaborative Fingerprint Authoring
@@ -37,10 +34,10 @@ Choose the nearest scenario before writing fingerprint facets:
 | Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions; use decisions for rationale. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns a human wants to keep. |
 | Fork, white label, or tenant variant | Shared base + local divergence. Keep common surface composition broad and local differences scoped. |
-| Monorepo or nested surfaces | Stack-aware. Use root guidance for product-family composition and nested packages for surfaces assessed differently. |
+| Monorepo or product suite | One contract per package. Use surfaces and the containment tree to organize locality within a single contract. |
 
-If more than one scenario applies, start with the broad repo scenario, then run
-the nested decision test for individual products, apps, or feature areas.
+If more than one scenario applies, start with the broad repo scenario, then
+distinguish individual products, apps, or feature areas as surfaces.
 
 Use auto-draft when an existing repo has enough product evidence to support a
 starter sketch. Avoid relying on auto-draft for net-new repos, thin prototypes,
@@ -112,19 +109,19 @@ important claims:
 - soften into guidance
 - reject as accidental or legacy
 - move to scratch notes
-- scope to a nested package
+- place on a more specific surface
 - convert into a deterministic check
 
 Only add checks when the rule can be enforced deterministically. Subjective
 composition critique belongs in `composition.yml` or advisory review, not in a
 blocking gate.
 
-## 6. Decide Nested Packages
+## 6. Decide Surfaces
 
-Create or update a local `.ghost/` only when a surface should be assessed
-differently from the root package.
+Add a distinct surface (placed in the containment tree) when part of the product
+should be assessed differently from its parent.
 
-Use a nested package when the local surface has distinct:
+Use a separate surface when it has distinct:
 
 - users or jobs-to-be-done
 - density or information architecture
@@ -133,15 +130,8 @@ Use a nested package when the local surface has distinct:
 - component grammar or UI library usage
 - review criteria for the same UI decision
 
-Keep broad product-family guidance at the root. Put local obligations in the
-nearest package that owns the surface. Validate nested repos with stack-aware
-commands:
-
-```bash
-ghost stack <path>
-ghost lint --all
-ghost verify --all
-```
+Keep broad product-family guidance on `core` (it cascades to every surface).
+Place local obligations on the surface that owns them.
 
 ## 7. Validate And Ratify
 
@@ -161,5 +151,5 @@ canonical package.
 
 - Never copy raw inventory into canonical facets without curation.
 - Never claim scan frequency is product authority.
-- Never create nested packages just to mirror directory structure.
+- Never create surfaces just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.

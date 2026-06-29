@@ -173,3 +173,37 @@ buildable Layer 2 design. They agree; read them as a sequence.
   package name resolved from `node_modules`; `ghost verify` checks the external
   contract resolves and its bound surfaces exist. Resolution + validation only;
   external fingerprint loading for grounding is deferred.
+- `parked-survey-module.md` — a deliberate decision **not** to act: the
+  `ghost.survey/v1` module is isolated, works, and is unexposed, so it stays
+  parked. Removal is an excavation (compare/perceptual-prior may depend on survey
+  evidence), not a deletion — surfaced only if a concrete reason appears.
+- `one-road.md` — a provocation turned decision: remove the binding
+  (`ghost.binding/v1`, path→surface, Cut D contract resolution) and drive
+  everything from the prompt. The agent already analyzes the whole repo, so it
+  states the touched surfaces; Ghost stops inferring intent from location. Four
+  outcomes collapse into one flow (prompt → menu → `gather <surface>`).
+  `checks`/`review` take agent-stated `--surface`; external contracts via
+  `gather --package`. Surface engine + nested-package discovery untouched.
+  Supersedes `surface-binding.md` / Phase 7a / `polish-cut-d-plan.md`.
+- `contract-storage.md` — open exploration: the unexamined fork is **facet-first
+  vs. surface-first** storage, not "one giant yml." Storage is a projection too;
+  the loader (`assembleFingerprint`) is the only structural boundary that moves,
+  and the model + every read consumer are untouched. Surface-first colocates each
+  concept (a surface = a directory), makes `surface:` implicit-by-location
+  (inside the contract, not the repo), and mirrors the cascade with `core/` as
+  the cross-cutting home. Lands after one-road. Not decided.
+
+- `context-graph.md` — the reframe that subsumes the storage question: Ghost is
+  a **curated, opinionated context graph** queried by traversal, not a
+  file/bucket layout. The substrate (markdown + frontmatter folding into a graph)
+  is an **OKF-family** convergence we adopt; our deliberate divergences — **typed
+  links (`under` / `relates`) and the `medium` tag** — are the value. The whole
+  vocabulary is three nouns (node, link, medium), two link kinds, one tag;
+  `intent`/`inventory`/`composition` are how the body is written, not types.
+  See `scenarios-worked.md` for these as fully fleshed-out fingerprints (real
+  node files, bodies, links, `gather` packets). Includes the full conformance
+  schema. See `graph-implementation-plan.md` for the sequenced build (grounded in
+  the current code: the loader seam, `resolveSurfaceSlice` = gather,
+  `surfaces.yml` = the tree). Includes five
+  stress-test scenarios (dashboard, monorepo, marketing, voice super app, and one
+  brand spanning all of them). Downstream of one-road; not decided.

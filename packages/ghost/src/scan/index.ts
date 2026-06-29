@@ -1,18 +1,9 @@
 export {
-  type DiscoverBindingsOptions,
-  type DiscoveredBindings,
-  discoverBindingsForPath,
-} from "./binding-discovery.js";
-export {
   GHOST_CHECKS_DIRNAME,
   type LoadedChecksDir,
   loadChecksDir,
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
-export {
-  type ResolveContractOptions,
-  resolveContractDir,
-} from "./contract-resolver.js";
 export type {
   ScanBuildingBlockRows,
   ScanContributionReport,
@@ -21,26 +12,6 @@ export type {
   ScanFacetReport,
   ScanFacetState,
 } from "./fingerprint-contribution.js";
-export type {
-  DiscoveredGhostPackage,
-  FingerprintDirectoryOptions,
-  GhostFingerprintStack,
-  GhostFingerprintStackGroup,
-  GhostFingerprintStackLayer,
-  GhostFingerprintStackLayerRef,
-} from "./fingerprint-stack.js";
-export {
-  buildFingerprintStack,
-  discoverFingerprintStack,
-  discoverGhostPackages,
-  fingerprintPackageDisplayPath,
-  GHOST_PACKAGE_DIR_ENV,
-  groupFingerprintStacksForPaths,
-  loadFingerprintStackForPath,
-  normalizeGhostDir,
-  resolveGhostDirDefault,
-  resolveGitRoot,
-} from "./fingerprint-stack.js";
 export { signals } from "./inventory.js";
 export type {
   LegacyPackageInput,
@@ -48,8 +19,13 @@ export type {
   MigrationResult,
 } from "./migrate-legacy.js";
 export { looksLegacy, migrateLegacyPackage } from "./migrate-legacy.js";
-export type { MonorepoInitCandidate } from "./monorepo-init.js";
-export { detectMonorepoInitCandidates } from "./monorepo-init.js";
+export {
+  fingerprintPackageDisplayPath,
+  GHOST_PACKAGE_DIR_ENV,
+  normalizeGhostDir,
+  resolveGhostDirDefault,
+  resolveGitRoot,
+} from "./package-paths.js";
 export type {
   ScanStage,
   ScanStageReport,
@@ -57,8 +33,3 @@ export type {
   ScanStatus,
 } from "./scan-status.js";
 export { scanStatus } from "./scan-status.js";
-export {
-  type ChangedFile,
-  type ChangedLine,
-  parseUnifiedDiff,
-} from "./unified-diff.js";
