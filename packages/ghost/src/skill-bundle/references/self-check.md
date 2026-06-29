@@ -30,10 +30,10 @@ If they do not, that is a valid answer — record it as silence, not as a failur
 
 When you cannot answer 1–3:
 
-1. Run `ghost search <term>` to find the node, surface, or check that covers the
-   work, then follow the `→` command it prints.
-2. Run `ghost gather <surface> --format json` to compose the surface slice and
-   read the gathered nodes' prose.
+1. Run `ghost gather` to list the node menu, or `ghost gather <query>` to rank
+   the closest nodes for a term the work is about.
+2. Run `ghost gather <node> --format json` to compose the slice and read the
+   gathered nodes' prose.
 3. Re-ask the three questions, citing node ids.
 
 A genuinely silent fingerprint is an expected state, not a blocker. When the

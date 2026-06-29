@@ -19,11 +19,7 @@ export {
 export { buildGraphMenu, type GraphMenuEntry } from "./menu.js";
 export {
   closestIds,
-  type SearchCheck,
-  type SearchDomain,
   type SearchHit,
-  type SearchInput,
-  type SearchOptions,
   type SearchReason,
   searchGraph,
 } from "./search.js";

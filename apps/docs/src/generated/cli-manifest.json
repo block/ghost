@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T12:20:15.926Z",
+  "generatedAt": "2026-06-29T14:19:25.804Z",
   "tools": [
     {
       "tool": "ghost",
@@ -121,50 +121,6 @@
               "rawName": "--as <incarnation>",
               "name": "as",
               "description": "Filter to one incarnation (e.g. email, billboard, voice). Essence (untagged) nodes always pass.",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: markdown or json",
-              "default": "markdown",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "search",
-          "rawName": "search <query>",
-          "description": "Search nodes, surfaces, and checks in one ranked, cross-domain result set, each tagged with the follow-up command.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "search",
-          "summary": "Search nodes, surfaces, and checks in one ranked result set.",
-          "options": [
-            {
-              "rawName": "--type <domain>",
-              "name": "type",
-              "description": "Restrict to one domain: node, surface, or check",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--limit <n>",
-              "name": "limit",
-              "description": "Cap the number of results (default 20)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--package <dir>",
-              "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
               "default": null,
               "takesValue": true,
               "negated": false

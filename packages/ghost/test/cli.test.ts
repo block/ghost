@@ -920,68 +920,51 @@ composition:
     );
   });
 
-  it("returns the menu and exits non-zero for an unknown surface", async () => {
+  it("ranks closest candidates for an inexact gather query", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
-      ["gather", "nope", "--package", ".ghost", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    expect(JSON.parse(result.stdout).kind).toBe("menu");
-  });
-
-  it("suggests the closest surface for an unknown gather target", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(
-      ["gather", "checkou", "--package", ".ghost", "--format", "json"],
+      ["gather", "marketng", "--package", ".ghost", "--format", "json"],
       dir,
       { allowNoExit: true },
     );
 
     expect(result.code).toBe(2);
     const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("candidates");
     expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
-    expect(payload.suggestions).toContain("checkout");
+    expect(payload.candidates.map((c: { id: string }) => c.id)).toContain(
+      "email/marketing",
+    );
   });
 
-  it("searches nodes, surfaces, and checks in one ranked set", async () => {
+  it("matches a gather query by phrase against descriptions", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
-      ["search", "marketing", "--package", ".ghost", "--format", "json"],
+      ["gather", "marketing email", "--package", ".ghost", "--format", "json"],
       dir,
+      { allowNoExit: true },
     );
 
-    expect(result.code).toBe(0);
+    expect(result.code).toBe(2);
     const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("search");
-    const surface = payload.results.find(
-      (r: { id: string }) => r.id === "email/marketing",
-    );
-    expect(surface).toBeDefined();
-    expect(surface.next).toContain("ghost gather email/marketing");
+    expect(payload.candidates[0].id).toBe("email/marketing");
   });
 
-  it("search markdown emits follow-up commands and exits 0 on no match", async () => {
+  it("returns an empty candidate set for a gather query with no match", async () => {
     await writeGatherPackage(dir);
 
-    const hit = await runCli(
-      ["search", "marketing", "--package", ".ghost"],
+    const result = await runCli(
+      ["gather", "zzzzznope", "--package", ".ghost", "--format", "json"],
       dir,
+      { allowNoExit: true },
     );
-    expect(hit.code).toBe(0);
-    expect(hit.stdout).toContain("→ `ghost gather email/marketing`");
 
-    const miss = await runCli(
-      ["search", "zzzzznope", "--package", ".ghost"],
-      dir,
-    );
-    expect(miss.code).toBe(0);
-    expect(miss.stdout).toContain("No matching");
+    expect(result.code).toBe(2);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("candidates");
+    expect(payload.candidates).toEqual([]);
   });
 
   it("errors with ERR_UNKNOWN_SURFACE when checks names an unknown surface", async () => {

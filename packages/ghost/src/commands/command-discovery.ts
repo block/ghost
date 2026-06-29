@@ -69,13 +69,6 @@ const COMMAND_DISCOVERY = [
     summary: "Gather the composed context slice for a surface.",
   },
   {
-    name: "search",
-    group: "core",
-    defaultHelp: true,
-    compactName: "search",
-    summary: "Search nodes, surfaces, and checks in one ranked result set.",
-  },
-  {
     name: "checks",
     group: "core",
     defaultHelp: true,

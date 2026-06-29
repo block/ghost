@@ -1,49 +1,26 @@
 import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
 
 /**
- * Cross-domain discovery over a fingerprint package. Where `gather` with no
- * argument dumps the full node menu sorted by id, `search` ranks nodes,
- * surfaces, and checks against a query and tags each hit with the follow-up
- * command an agent should run. Ranking is deterministic and LLM-free: a name
- * match outranks a description match outranks an incidental body mention, with
- * a fuzzy fallback for typos. This is selection machinery, not interpretation.
+ * Node ranking for `gather`. Where `gather` with no argument lists the full
+ * node menu sorted by id, and `gather <exact-id>` composes a slice, an inexact
+ * query (`gather payment`) needs the *closest* nodes ranked, not the whole menu
+ * dumped. This is that ranking: deterministic and LLM-free — a name match
+ * outranks a description match outranks an incidental body mention, a
+ * whole-name typo is tolerated, and a multi-word phrase matches by how many of
+ * its words a node covers. Selection machinery, not interpretation.
  */
-
-export type SearchDomain = "node" | "surface" | "check";
 
 /** Why a hit matched, strongest first. Doubles as the ranking tier. */
 export type SearchReason = "exact" | "name" | "description" | "body" | "fuzzy";
 
 export interface SearchHit {
-  domain: SearchDomain;
-  /** Node id or check name. */
   id: string;
   description?: string;
+  /** True when the node is a directory/surface (vs. a leaf node). */
+  surface: boolean;
   /** Higher is more relevant; ties break on id ascending. */
   score: number;
   reason: SearchReason;
-  /** Follow-up command(s) an agent should run to act on this hit. */
-  next: string[];
-}
-
-/** A check projected into a searchable shape (the graph carries nodes only). */
-export interface SearchCheck {
-  name: string;
-  surface: string;
-  body: string;
-  description?: string;
-}
-
-export interface SearchInput {
-  graph: GhostGraph;
-  checks: SearchCheck[];
-}
-
-export interface SearchOptions {
-  /** Cap the number of results. Default 20. */
-  limit?: number;
-  /** Restrict to a single domain. */
-  domain?: SearchDomain;
 }
 
 const SCORE: Record<SearchReason, number> = {
@@ -57,15 +34,15 @@ const SCORE: Record<SearchReason, number> = {
 const DEFAULT_LIMIT = 20;
 
 /**
- * Rank package contents against `query`. Nodes and surfaces come from the
- * graph (a node with children is a surface); checks come from `input.checks`.
- * Inherited nodes are excluded — search lists what this package offers to
- * anchor at, mirroring `buildGraphMenu`.
+ * Rank a package's local nodes against `query`, nearest first. A node with
+ * children (or whose index sits in its own folder) is flagged as a surface.
+ * Inherited (extended-package) nodes are excluded, mirroring `buildGraphMenu` —
+ * ranking lists what this package offers to anchor at.
  */
 export function searchGraph(
   query: string,
-  input: SearchInput,
-  opts: SearchOptions = {},
+  graph: GhostGraph,
+  opts: { limit?: number } = {},
 ): SearchHit[] {
   const needle = query.trim().toLowerCase();
   const limit = opts.limit ?? DEFAULT_LIMIT;
@@ -74,19 +51,14 @@ export function searchGraph(
   if (needle.length === 0) return [];
   const tokens = tokenize(needle);
 
-  const wantNode = opts.domain === undefined || opts.domain === "node";
-  const wantSurface = opts.domain === undefined || opts.domain === "surface";
-
-  for (const node of input.graph.nodes.values()) {
+  for (const node of graph.nodes.values()) {
     if (node.origin === "inherited") continue;
     if (node.id === GHOST_GRAPH_ROOT_ID) continue;
     // A surface is a directory: its index node sits in its own folder
     // (`folder === id`), or it has children placed under it. A leaf's folder is
     // its parent directory, so it never matches.
-    const isSurface =
-      node.folder === node.id ||
-      (input.graph.children.get(node.id)?.length ?? 0) > 0;
-    if (isSurface ? !wantSurface : !wantNode) continue;
+    const surface =
+      node.folder === node.id || (graph.children.get(node.id)?.length ?? 0) > 0;
 
     const scored = scoreCandidate(
       needle,
@@ -97,34 +69,12 @@ export function searchGraph(
     );
     if (!scored) continue;
     hits.push({
-      domain: isSurface ? "surface" : "node",
       id: node.id,
       ...(node.description ? { description: node.description } : {}),
+      surface,
       score: scored.score,
       reason: scored.reason,
-      next: nextForNode(node.id, isSurface),
     });
-  }
-
-  if (opts.domain === undefined || opts.domain === "check") {
-    for (const check of input.checks) {
-      const scored = scoreCandidate(
-        needle,
-        tokens,
-        check.name,
-        check.description,
-        check.body,
-      );
-      if (!scored) continue;
-      hits.push({
-        domain: "check",
-        id: check.name,
-        ...(check.description ? { description: check.description } : {}),
-        score: scored.score,
-        reason: scored.reason,
-        next: [`ghost checks --surface ${check.surface}`],
-      });
-    }
   }
 
   hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
@@ -161,12 +111,6 @@ const STOPWORDS = new Set([
   "to",
   "with",
 ]);
-
-function nextForNode(id: string, isSurface: boolean): string[] {
-  const next = [`ghost gather ${id}`];
-  if (isSurface) next.push(`ghost checks --surface ${id}`);
-  return next;
-}
 
 interface ScoredMatch {
   score: number;

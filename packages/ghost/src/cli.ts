@@ -14,7 +14,6 @@ import {
   buildReviewPacket,
   formatReviewPacketMarkdown,
 } from "./commands/review-packet.js";
-import { registerSearchCommand } from "./commands/search-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
 import {
   UnknownSurfaceError,
@@ -31,7 +30,6 @@ export function buildCli(): ReturnType<typeof cac> {
   registerFingerprintCommands(cli);
 
   registerGatherCommand(cli);
-  registerSearchCommand(cli);
   registerChecksCommand(cli);
   registerMigrateCommand(cli);
   registerSkillCommand(cli);

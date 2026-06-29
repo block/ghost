@@ -1,12 +1,13 @@
 import type { CAC } from "cac";
 import {
   buildGraphMenu,
-  closestIds,
   GHOST_GRAPH_ROOT_ID,
   type GraphMenuEntry,
   type GraphSlice,
   type GraphSliceProvenance,
   resolveGraphSlice,
+  type SearchHit,
+  searchGraph,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
@@ -48,33 +49,43 @@ export function registerGatherCommand(cli: CAC): void {
         // The agent names the node (it analyzed the prompt + diff). Ghost
         // does not infer the anchor from repo paths.
         const surface = surfaceArg;
-
-        // No node named, or an unknown one: return the menu, never the tree.
         const known = new Set(menu.map((entry) => entry.id));
-        if (!surface || !known.has(surface)) {
-          const suggestions = surface ? closestIds(surface, known) : [];
+
+        // No node named: list the full menu so the agent can match against it.
+        if (!surface) {
+          if (opts.format === "json") {
+            process.stdout.write(
+              `${JSON.stringify({ kind: "menu", surfaces: menu }, null, 2)}\n`,
+            );
+          } else {
+            process.stdout.write(formatMenuMarkdown(menu));
+          }
+          process.exit(0);
+          return;
+        }
+
+        // An inexact query (not an exact node id): rank the closest nodes
+        // rather than dumping the whole menu. This is `gather`'s search front
+        // end — the same act as picking from the menu, done intelligently.
+        if (!known.has(surface)) {
+          const matches = searchGraph(surface, loaded.graph);
           if (opts.format === "json") {
             process.stdout.write(
               `${JSON.stringify(
                 {
-                  kind: "menu",
-                  surfaces: menu,
-                  ...(surface && !known.has(surface)
-                    ? { code: "ERR_UNKNOWN_SURFACE", suggestions }
-                    : {}),
+                  kind: "candidates",
+                  code: "ERR_UNKNOWN_SURFACE",
+                  query: surface,
+                  candidates: matches,
                 },
                 null,
                 2,
               )}\n`,
             );
           } else {
-            process.stdout.write(
-              formatMenuMarkdown(menu, surface, suggestions),
-            );
+            process.stdout.write(formatCandidatesMarkdown(surface, matches));
           }
-          // Unknown surface is an error (2); no surface at all is a valid menu
-          // request (0).
-          process.exit(surface && !known.has(surface) ? 2 : 0);
+          process.exit(2);
           return;
         }
 
@@ -97,33 +108,38 @@ export function registerGatherCommand(cli: CAC): void {
     });
 }
 
-function formatMenuMarkdown(
-  menu: GraphMenuEntry[],
-  unknown: string | undefined,
-  suggestions: string[] = [],
-): string {
-  const lines: string[] = ["# Ghost Nodes"];
-  if (unknown) {
-    const didYouMean =
-      suggestions.length > 0
-        ? ` Did you mean: ${suggestions.map((s) => `\`${s}\``).join(", ")}?`
-        : "";
-    lines.push(
-      "",
-      `Node \`${unknown}\` is not in this package.${didYouMean} Pick one of the nodes below.`,
-    );
-  } else {
-    lines.push(
-      "",
-      "No node selected. Match the ask to one of these nodes, then run `ghost gather <node>`.",
-    );
-  }
-  lines.push("");
+function formatMenuMarkdown(menu: GraphMenuEntry[]): string {
+  const lines: string[] = [
+    "# Ghost Nodes",
+    "",
+    "No node selected. Match the ask to one of these nodes, then run `ghost gather <node>`.",
+    "",
+  ];
   for (const entry of menu) {
     const parent =
       entry.parent === entry.id ? "" : ` (under \`${entry.parent}\`)`;
     lines.push(`- \`${entry.id}\`${parent}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function formatCandidatesMarkdown(query: string, matches: SearchHit[]): string {
+  const lines: string[] = ["# Ghost Nodes", ""];
+  if (matches.length === 0) {
+    lines.push(
+      `No node matches \`${query}\`. Run \`ghost gather\` to list every node.`,
+    );
+    return `${lines.join("\n")}\n`;
+  }
+  lines.push(
+    `\`${query}\` is not a node id. Closest matches — run \`ghost gather <node>\`:`,
+    "",
+  );
+  for (const hit of matches) {
+    const kind = hit.surface ? "surface" : "node";
+    lines.push(`- \`${hit.id}\` (${kind})`);
+    if (hit.description) lines.push(`  - ${hit.description}`);
   }
   return `${lines.join("\n")}\n`;
 }

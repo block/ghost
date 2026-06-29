@@ -41,11 +41,7 @@ export {
   type PlacedNode,
   type ResolveGraphSliceOptions,
   resolveGraphSlice,
-  type SearchCheck,
-  type SearchDomain,
   type SearchHit,
-  type SearchInput,
-  type SearchOptions,
   type SearchReason,
   searchGraph,
 } from "./graph/index.js";
