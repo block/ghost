@@ -32,8 +32,8 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
       : typeof frontmatter.turn_limit === "number"
         ? (frontmatter.turn_limit as number)
         : undefined;
-  const surface =
-    typeof frontmatter.surface === "string" ? frontmatter.surface : undefined;
+  const source =
+    typeof frontmatter.source === "string" ? frontmatter.source : undefined;
 
   return {
     frontmatter: {
@@ -42,7 +42,7 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
       severity: severity as GhostCheckMarkdownSeverity,
       ...(tools ? { tools } : {}),
       ...(turnLimit !== undefined ? { turn_limit: turnLimit } : {}),
-      ...(surface ? { surface } : {}),
+      ...(source ? { source } : {}),
     },
     body,
   };

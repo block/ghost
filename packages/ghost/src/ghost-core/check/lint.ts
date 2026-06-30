@@ -1,3 +1,4 @@
+import { NodeIdSchema } from "../node/schema.js";
 import { parseCheckMarkdown } from "./parse.js";
 import {
   GHOST_CHECK_SEVERITIES,
@@ -5,13 +6,11 @@ import {
   type GhostCheckLintReport,
 } from "./types.js";
 
-const SURFACE_ID = /^[a-z0-9][a-z0-9_-]*$/;
-
 /**
  * Lint a Ghost check markdown file (`ghost.check/v1`): required frontmatter
- * (`name`, `description`, `severity`), a known severity, a flat-slug `surface`
- * when present, and a non-empty body. Ghost never executes the check — this only
- * validates that it is well-formed and routable.
+ * (`name`, `description`, `severity`), an optional `source:` provenance pointer,
+ * and a non-empty body. Ghost never executes the check — this only validates
+ * that it is well-formed.
  */
 export function lintGhostCheck(raw: string): GhostCheckLintReport {
   const issues: GhostCheckLintIssue[] = [];
@@ -51,25 +50,26 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     });
   }
 
-  const surface = frontmatter.surface;
-  if (surface !== undefined) {
-    if (typeof surface !== "string" || !SURFACE_ID.test(surface)) {
+  const source = frontmatter.source;
+  if (source !== undefined) {
+    // `source:` is a soft provenance pointer: `<node-id>` with an optional
+    // `> <heading>` anchor. The node-id part should resolve like a path id; a
+    // malformed shape is a *warning*, never an error, since it may name
+    // not-yet-written prose (OKF-style tolerance).
+    const nodePart =
+      typeof source === "string" ? source.split(">")[0].trim() : "";
+    if (
+      typeof source !== "string" ||
+      !NodeIdSchema.safeParse(nodePart).success
+    ) {
       issues.push({
-        severity: "error",
-        rule: "check-surface-invalid",
+        severity: "warning",
+        rule: "check-source-malformed",
         message:
-          "surface must be a flat slug (lowercase alphanumeric plus _ -, no dots)",
-        path: "surface",
+          "source should be a node path id with an optional `> Heading` anchor (e.g. 'checkout/payment > Confirmation')",
+        path: "source",
       });
     }
-  } else {
-    issues.push({
-      severity: "warning",
-      rule: "check-surface-unplaced",
-      message:
-        "check has no surface; it will govern the implicit `core` (applies everywhere). Add `surface:` to scope it.",
-      path: "surface",
-    });
   }
 
   if (body.trim().length === 0) {

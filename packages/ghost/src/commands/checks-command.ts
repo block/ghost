@@ -1,9 +1,8 @@
 import type { CAC } from "cac";
 import {
+  type GhostCheckDocument,
   type GraphSlice,
-  type RoutedCheck,
   resolveGraphSlice,
-  selectChecksForSurfaces,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadChecksDir } from "../scan/checks-dir.js";
@@ -24,11 +23,11 @@ export function registerChecksCommand(cli: CAC): void {
   cli
     .command(
       "checks",
-      "Select the markdown checks (ghost.check/v1) relevant to the named surfaces.",
+      "List the markdown checks (ghost.check/v1) and ground the named surfaces.",
     )
     .option(
       "--surface <ids>",
-      "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
+      "Surface id(s) the change touches (comma-separated or repeated). The agent names them; used to ground, not to filter checks.",
     )
     .option(
       "--package <dir>",
@@ -59,14 +58,13 @@ export function registerChecksCommand(cli: CAC): void {
         const { checks, invalid } = await loadChecksDir(paths.dir);
 
         // The agent names the touched surfaces (it analyzed the diff). Ghost
-        // routes + grounds for those surfaces; it does not infer from paths.
+        // grounds those surfaces; it does not infer from paths. Every check is
+        // offered — the agent judges relevance.
         const touched = parseSurfaceIds(opts.surface);
 
         // A named surface absent from the graph is an error, not a silent
-        // empty route — emit ERR_UNKNOWN_SURFACE with suggestions and stop.
+        // empty slice — emit ERR_UNKNOWN_SURFACE with suggestions and stop.
         if (guardSurfaces(loaded.graph, touched, opts.format)) return;
-
-        const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
 
         const incarnation =
           typeof opts.as === "string" && opts.as.length > 0
@@ -89,11 +87,12 @@ export function registerChecksCommand(cli: CAC): void {
             `${JSON.stringify(
               {
                 touched_surfaces: touched,
-                checks: routed.map((r) => ({
-                  name: r.check.frontmatter.name,
-                  severity: r.check.frontmatter.severity,
-                  surface: r.check.frontmatter.surface ?? "core",
-                  relevance: r.relevance,
+                checks: checks.map((check) => ({
+                  name: check.frontmatter.name,
+                  severity: check.frontmatter.severity,
+                  ...(check.frontmatter.source
+                    ? { source: check.frontmatter.source }
+                    : {}),
                 })),
                 ...(withGrounding ? { grounding } : {}),
                 invalid,
@@ -104,7 +103,7 @@ export function registerChecksCommand(cli: CAC): void {
           );
         } else {
           process.stdout.write(
-            formatChecksMarkdown(touched, routed, grounding, invalid),
+            formatChecksMarkdown(touched, checks, grounding, invalid),
           );
         }
         process.exit(0);
@@ -133,25 +132,24 @@ function provenanceLabel(
 
 function formatChecksMarkdown(
   touched: string[],
-  routed: RoutedCheck[],
+  checks: GhostCheckDocument[],
   grounding: GraphSlice[],
   invalid: Array<{ file: string; message: string }>,
 ): string {
-  const lines = ["# Relevant Checks", ""];
+  const lines = ["# Checks", ""];
   lines.push(
     `Touched surfaces: ${touched.length ? touched.map((s) => `\`${s}\``).join(", ") : "none (core only)"}`,
     "",
   );
-  if (routed.length === 0) {
-    lines.push("No checks govern the touched surfaces.");
+  if (checks.length === 0) {
+    lines.push("No checks defined.");
   } else {
-    for (const { check, relevance } of routed) {
-      const why =
-        relevance.kind === "own"
-          ? `own \`${relevance.surface}\``
-          : `inherited from \`${relevance.surface}\` (via \`${relevance.via}\`)`;
+    for (const check of checks) {
+      const source = check.frontmatter.source
+        ? ` — enforces \`${check.frontmatter.source}\``
+        : "";
       lines.push(
-        `- **${check.frontmatter.name}** (${check.frontmatter.severity}) — ${why}`,
+        `- **${check.frontmatter.name}** (${check.frontmatter.severity})${source}`,
       );
     }
   }

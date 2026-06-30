@@ -1,8 +1,7 @@
 import {
+  type GhostCheckDocument,
   type GraphSlice,
-  type RoutedCheck,
   resolveGraphSlice,
-  selectChecksForSurfaces,
   UsageError,
 } from "#ghost-core";
 import { loadChecksDir } from "../scan/checks-dir.js";
@@ -15,11 +14,12 @@ import { findUnknownSurfaces, UnknownSurfaceError } from "./surface-guard.js";
 const DEFAULT_REVIEW_MAX_DIFF_BYTES = 200_000;
 
 /**
- * Build an advisory review packet on the surface rails: for the agent-stated
- * surfaces the change touches, select the markdown checks governing those
- * surfaces and their ancestors, and ground each in the surface's fingerprint
- * slice. The diff is embedded verbatim for the reviewer; it is not used to
- * resolve surfaces (the agent already analyzed it and names the surfaces).
+ * Build an advisory review packet on the surface rails: ground the agent-stated
+ * touched surfaces in their fingerprint slices, and offer every markdown check
+ * for the reviewer to apply (the agent judges relevance against the diff and the
+ * grounded prose; a check's `source:` names the prose it enforces). The diff is
+ * embedded verbatim; it is not used to resolve surfaces (the agent already
+ * analyzed it and names the surfaces).
  */
 export async function buildReviewPacket(options: {
   packageDir?: string;
@@ -40,7 +40,6 @@ export async function buildReviewPacket(options: {
   const unknown = findUnknownSurfaces(loaded.graph, touched);
   if (unknown.length > 0) throw new UnknownSurfaceError(unknown);
 
-  const routed = selectChecksForSurfaces(checks, loaded.graph, touched);
   // Grounding is the gather slice: the prose nodes a finding can cite.
   const grounding = touched.map((surface) =>
     resolveGraphSlice(loaded.graph, surface),
@@ -51,7 +50,7 @@ export async function buildReviewPacket(options: {
       maxDiffBytes: options.maxDiffBytes,
     }),
     touched_surfaces: touched,
-    routed_checks: routed,
+    checks,
     grounding,
     invalid_checks: invalid,
   };
@@ -79,7 +78,7 @@ function baseReviewPacket(
     required_finding_citations: [
       "diff location",
       "surface the change touches",
-      "routed check when blocking",
+      "the applicable check when blocking (cite its `source:` section when the check declares one)",
       "grounding ref (why / what) or local-evidence rationale when the surface is silent",
       "repair or intentional-divergence rationale",
     ],
@@ -160,7 +159,7 @@ interface ReviewPacketBase {
 
 interface ReviewPacket extends ReviewPacketBase {
   touched_surfaces: string[];
-  routed_checks: RoutedCheck[];
+  checks: GhostCheckDocument[];
   grounding: GraphSlice[];
   invalid_checks: Array<{ file: string; message: string }>;
 }
@@ -170,7 +169,7 @@ export function formatReviewPacketMarkdown(packet: ReviewPacket): string {
 
 Package: ${packet.package_dir}
 
-Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to a routed check. Keep findings grounded in the touched surfaces' grounded nodes and routed checks; do not expand the review into unrelated audit categories.
+Review this diff as a non-blocking design-language critic. Advisory findings must be evidence-routed and must cite: ${packet.required_finding_citations.join(", ")}. Do not fail the build unless the issue is tied to a check. Every check below is offered; judge which apply to this diff and the grounded prose, and ignore the rest. Keep findings grounded in the touched surfaces' grounded nodes and the applicable checks; do not expand the review into unrelated audit categories.
 
 Read the grounded nodes for each touched surface (own first, then inherited from ancestors, then related). When a surface's grounding is silent, label the reasoning provisional or report missing-fingerprint / experience-gap instead of pretending the fingerprint is more specific than it is.
 
@@ -184,7 +183,7 @@ If the diff exposes missing fingerprint grounding or surface coverage, report it
 
 ${formatTouchedSurfacesSection(packet)}
 
-${formatRoutedChecksSection(packet)}
+${formatChecksSection(packet)}
 
 ${formatGroundingSection(packet)}
 
@@ -220,18 +219,17 @@ function formatTouchedSurfacesSection(packet: ReviewPacket): string {
   return `## Touched Surfaces\n\n${surfaces}`;
 }
 
-function formatRoutedChecksSection(packet: ReviewPacket): string {
-  const lines = ["## Routed Checks", ""];
-  if (packet.routed_checks.length === 0) {
-    lines.push("No checks govern the touched surfaces.");
+function formatChecksSection(packet: ReviewPacket): string {
+  const lines = ["## Checks", ""];
+  if (packet.checks.length === 0) {
+    lines.push("No checks defined.");
   } else {
-    for (const { check, relevance } of packet.routed_checks) {
-      const why =
-        relevance.kind === "own"
-          ? `own \`${relevance.surface}\``
-          : `inherited from \`${relevance.surface}\` (via \`${relevance.via}\`)`;
+    for (const check of packet.checks) {
+      const source = check.frontmatter.source
+        ? ` — enforces \`${check.frontmatter.source}\``
+        : "";
       lines.push(
-        `- **${check.frontmatter.name}** (${check.frontmatter.severity}) — ${why}`,
+        `- **${check.frontmatter.name}** (${check.frontmatter.severity})${source}`,
       );
     }
   }
