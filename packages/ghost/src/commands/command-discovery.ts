@@ -114,13 +114,6 @@ const COMMAND_DISCOVERY = [
     summary: "Create .ghost/ package facets.",
   },
   {
-    name: "scan",
-    group: "core",
-    defaultHelp: true,
-    compactName: "scan",
-    summary: "Report fingerprint contribution facets.",
-  },
-  {
     name: "validate",
     group: "core",
     defaultHelp: true,
@@ -161,13 +154,6 @@ const COMMAND_DISCOVERY = [
     defaultHelp: true,
     compactName: "skill install",
     summary: "Install the Ghost skill bundle.",
-  },
-  {
-    name: "signals",
-    group: "advanced",
-    defaultHelp: false,
-    compactName: "signals",
-    summary: "Emit raw repo signals for fingerprint authoring.",
   },
   {
     name: "manifest",

@@ -5,12 +5,6 @@ export {
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
 export type {
-  ScanContributionReport,
-  ScanContributionState,
-  ScanSurfaceCoverage,
-} from "./fingerprint-contribution.js";
-export { signals } from "./inventory/index.js";
-export type {
   LegacyPackageInput,
   MigratedNodeFile,
   MigrationNote,
@@ -27,10 +21,3 @@ export {
   resolveGhostDirDefault,
   resolveGitRoot,
 } from "./package-paths.js";
-export type {
-  ScanStage,
-  ScanStageReport,
-  ScanStageState,
-  ScanStatus,
-} from "./scan-status.js";
-export { scanStatus } from "./scan-status.js";

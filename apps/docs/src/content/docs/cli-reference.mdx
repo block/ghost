@@ -42,9 +42,8 @@ Every command follows one contract, so an agent can branch on the exit code:
 | `2` | The command was called wrong: a bad flag or argument, a node or surface that is not in the package (`ERR_UNKNOWN_SURFACE`), or a missing package for a command that needs one to do its work (`gather`, `checks`, `review`). |
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
-Reporting commands treat a missing package as a state to report, not a usage
-error: `validate` records it as a finding (exit `1`), and `scan`/`signals`
-report what they can (exit `0`).
+A missing package is reported, not treated as a crash: `validate` records it as
+a finding (exit `1`).
 
 </DocSection>
 
@@ -65,30 +64,6 @@ ghost init
 ghost init --template default
 ghost init --package product-surface
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
-```
-
-### Contribution: `scan`
-
-Report what the package contributes: presence of the manifest, and the nodes
-and surfaces (directories) it carries.
-
-<CliHelp tool="ghost" command="scan" hideDescription />
-
-```bash
-ghost scan
-ghost scan --format json
-```
-
-### Repo signals: `signals`
-
-Emit raw signals about a frontend repo as JSON. Use this as scratch evidence
-while authoring curated nodes. It does not contribute to the fingerprint by
-itself.
-
-<CliHelp tool="ghost" command="signals" hideDescription />
-
-```bash
-ghost signals .
 ```
 
 </DocSection>
@@ -119,8 +94,8 @@ With no argument, list every node by id and description so an agent can match a
 task to one. With an exact node id, compose its context slice. With an inexact
 query (`ghost gather payment`), `gather` ranks the closest nodes instead of
 dumping the whole menu: a verbatim match wins (an exact id, then a name,
-description, or body substring), then a whole-name typo fallback, then
-multi-word phrases by how many of their words a node covers, so
+description, or body substring), then a whole-name typo fallback, then a
+multi-word phrase where every word lands somewhere on the node, so
 `ghost gather payment confirmation` still finds the right surface. Each
 candidate is returned for the agent to pick with a follow-up `ghost gather`.
 

@@ -2,9 +2,9 @@
 name: authoring-scenarios
 description: Choose the right human-agent workflow for authoring Ghost fingerprints.
 handoffs:
-  - label: Inspect fingerprint contribution
-    command: ghost scan --format json
-    prompt: Classify this repo's fingerprint authoring scenario and summarize node/surface contribution.
+  - label: Validate the fingerprint
+    command: ghost validate --format json
+    prompt: Classify this repo's fingerprint authoring scenario and confirm the package validates.
 ---
 
 # Recipe: Collaborative Fingerprint Authoring
@@ -78,18 +78,13 @@ stories, tests, docs, screenshots, examples, copy, tokens, assets, and UI
 library references that reveal hierarchy, behavior, accessibility, trust, and
 flow.
 
-Optional signals:
+Read the repo directly (tree, grep, source inspection) for raw observations.
+Treat them as scratch evidence: they can support curated node bodies, but raw
+observations do not establish surface-composition guidance by themselves.
 
-```bash
-ghost signals .
-```
-
-Treat signals as scratch evidence. They can support curated node bodies, but
-raw signals do not establish surface-composition guidance by themselves.
-
-In auto-draft mode, always gather signals before drafting, then inspect the
-high-signal files they point to. Signal facts may seed a node's inventory
-content; scan frequency and raw signals do not establish guidance.
+In auto-draft mode, always survey the repo before drafting, then inspect the
+high-signal files. Observed facts may seed a node's inventory content; raw
+repeated patterns do not establish guidance.
 
 ## 4. Draft The Nodes
 
@@ -152,7 +147,7 @@ fingerprint edits are drafts; checked-in nodes are the canonical package.
 
 ## Never
 
-- Never copy raw signals into canonical nodes without curation.
-- Never claim scan frequency is product authority.
+- Never copy raw repo observations into canonical nodes without curation.
+- Never claim repetition frequency is product authority.
 - Never create surfaces just to mirror directory structure.
 - Never turn advisory composition critique into a deterministic gate.

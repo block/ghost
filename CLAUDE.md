@@ -76,9 +76,7 @@ path.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. |
-| `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
-| `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
+| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/ghost-ui` | no | Parked. A standalone shadcn component registry plus `ghost-mcp` MCP server, developed in this monorepo. Not coupled to Ghost and not referenced by the docs site or public surfaces. |
 | `apps/docs` | no | Docs site. |
 
@@ -89,7 +87,6 @@ Core workflow:
 | Command | Description |
 | --- | --- |
 | `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost gather` | List nodes by id + description, or compose a surface's context slice (own + inherited + edges). |
 | `ghost checks` | List the markdown checks and ground the named surfaces; every check is offered, the agent judges which apply. |
@@ -100,17 +97,13 @@ Advanced/maintenance:
 
 | Command | Description |
 | --- | --- |
-| `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
 | `ghost migrate` | Migrate a legacy `.ghost/` package onto the node-graph surface model. |
 | `ghost manifest` | Emit a self-describing JSON manifest of every command and flag. |
-
-`ghost scan --format json` is deterministic contribution state. It does not run
-an LLM.
 
 ## Public Exports
 
 - `@anarchitecture/ghost` for the combined surface.
-- `@anarchitecture/ghost/scan` for scan contribution and source signals.
+- `@anarchitecture/ghost/scan` for package-path resolution, checks-dir loading, and legacy migration helpers.
 - `@anarchitecture/ghost/fingerprint` for node package authoring, validation, parsing, and serialization.
 - `@anarchitecture/ghost/core` for shared schemas, types, and loaders.
 - `@anarchitecture/ghost/cli` for `buildCli()`.

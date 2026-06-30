@@ -4,7 +4,6 @@ import { Navigate, Route, Routes, useLocation } from "react-router";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";
-import GhostFleetLanding from "@/app/tools/fleet/page";
 import ToolsIndex from "@/app/tools/page";
 import GhostScanLanding from "@/app/tools/scan/page";
 import { Dock } from "@/components/docs/dock";
@@ -47,7 +46,6 @@ export function App() {
           />
           <Route path="tools/scan" element={<GhostScanLanding />} />
           <Route path="tools/drift" element={<GhostDriftLanding />} />
-          <Route path="tools/fleet" element={<GhostFleetLanding />} />
 
           {/* Cross-tool docs hub */}
           <Route path="docs" element={<DocsIndex />} />

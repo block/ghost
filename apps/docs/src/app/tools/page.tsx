@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "ghost-ui";
-import { FileText, Network, Orbit } from "lucide-react";
+import { FileText, Orbit } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -24,12 +24,6 @@ const tools: {
     href: "/tools/drift",
     blurb: "Review UI drift",
     icon: <Orbit className="size-5" strokeWidth={1.5} />,
-  },
-  {
-    name: "ghost-fleet",
-    href: "/tools/fleet",
-    blurb: "Compare projects",
-    icon: <Network className="size-5" strokeWidth={1.5} />,
   },
 ];
 
@@ -72,7 +66,7 @@ export default function ToolsIndex() {
       <AnimatedPageHeader
         kicker="Tools"
         title="Tool Directory"
-        description="Pick the workflow you need: author the fingerprint, gather context, review changes, or compare projects."
+        description="Pick the workflow you need: author the fingerprint, gather context, and review changes."
       />
 
       <ToolStrip />

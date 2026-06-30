@@ -3,8 +3,8 @@ name: capture
 description: Author repo-local Ghost fingerprints as nodes.
 handoffs:
   - label: Inspect the package
-    command: ghost scan
-    prompt: What does this fingerprint package contribute, and what is absent?
+    command: ghost validate
+    prompt: Does this fingerprint package validate, and what is absent?
   - label: Run advisory review
     command: ghost review
     prompt: Run ghost review against this bundle
@@ -103,7 +103,7 @@ a single contract organizes locality.
 
 ```bash
 ghost init            # scaffolds manifest + a core index.md node
-ghost scan
+ghost validate
 ```
 
 `ghost init` is template-driven (`--template <name>` selects a starter). The
@@ -121,8 +121,9 @@ sits, never from a separate declaration.
 
 Read the product, not just the component library. Look for surfaces, docs,
 tests, stories, routes, screenshots, or examples that reveal hierarchy,
-behavior, copy, accessibility, trust, and flow. `ghost signals .` emits raw
-scratch observations; curate, never copy verbatim into a node.
+behavior, copy, accessibility, trust, and flow. Read the repo directly (tree,
+grep, source inspection) for raw observations; curate, never copy verbatim into
+a node.
 
 ### 5. Write sparse nodes
 
@@ -151,7 +152,7 @@ ghost review --base HEAD
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never treat raw `ghost signals` output as a node without curation.
+- Never treat raw repo observations as a node without curation.
 - Never invent surface-composition obligations absent from evidence or human
   direction.
 - Never promote subjective taste directly into checks; make it deterministic or

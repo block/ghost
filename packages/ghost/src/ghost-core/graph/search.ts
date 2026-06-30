@@ -3,44 +3,46 @@ import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
 /**
  * Node ranking for `gather`. Where `gather` with no argument lists the full
  * node menu sorted by id, and `gather <exact-id>` composes a slice, an inexact
- * query (`gather payment`) needs the *closest* nodes ranked, not the whole menu
- * dumped. This is that ranking: deterministic and LLM-free — a name match
- * outranks a description match outranks an incidental body mention, a
- * whole-name typo is tolerated, and a multi-word phrase matches by how many of
- * its words a node covers. Selection machinery, not interpretation.
+ * query (`gather payment`) needs the *closest* nodes surfaced, not the whole
+ * menu dumped. This is that ranking: deterministic and LLM-free, ordered by
+ * match tier — a name match outranks a description match outranks an incidental
+ * body mention, a whole-name typo is tolerated, and a multi-word phrase matches
+ * when all of its words land on a node. Selection machinery, not
+ * interpretation: the agent reads the short candidate list and re-picks by
+ * description, so the tiers exist for recall, not calibrated ordering.
  */
 
 /**
- * Why a hit matched, strongest first. Doubles as the ranking tier, and — for
- * the `name`/`description`/`body` tiers — names the field the signal landed in,
- * so a route can explain itself without a parallel field.
+ * Why a hit matched, strongest first. Doubles as the ranking tier and — for the
+ * `name`/`description`/`body` tiers — names the field the signal landed in, so
+ * a route can explain itself.
  */
-export type SearchReason = "exact" | "name" | "description" | "body" | "fuzzy";
+export type SearchReason =
+  | "exact"
+  | "name"
+  | "description"
+  | "body"
+  | "tokens"
+  | "fuzzy";
 
 export interface SearchHit {
   id: string;
   description?: string;
   /** True when the node is a directory/surface (vs. a leaf node). */
   surface: boolean;
-  /** Higher is more relevant; ties break on id ascending. */
-  score: number;
+  /** The match tier; also fixes the order (stronger tiers first). */
   reason: SearchReason;
-  /**
-   * For a multi-word query, how many of its tokens the node covered. Present
-   * only on a coverage match — a whole-query (verbatim or fuzzy) hit has no
-   * coverage story. This is the one fact the `reason` tier alone can't tell,
-   * and it's what makes a multi-word route auditable rather than a bare score.
-   */
-  coverage?: { covered: number; total: number };
 }
 
-const SCORE: Record<SearchReason, number> = {
-  exact: 100,
-  name: 80,
-  description: 50,
-  body: 20,
-  fuzzy: 10,
-};
+/** Tier order, strongest first. Lower index ranks higher. */
+const TIER_ORDER: SearchReason[] = [
+  "exact",
+  "name",
+  "description",
+  "body",
+  "tokens",
+  "fuzzy",
+];
 
 const DEFAULT_LIMIT = 20;
 
@@ -71,141 +73,86 @@ export function searchGraph(
     const surface =
       node.folder === node.id || (graph.children.get(node.id)?.length ?? 0) > 0;
 
-    const scored = scoreCandidate(
+    const reason = matchTier(
       needle,
       tokens,
       node.id,
       node.description,
       node.body,
     );
-    if (!scored) continue;
+    if (!reason) continue;
     hits.push({
       id: node.id,
       ...(node.description ? { description: node.description } : {}),
       surface,
-      score: scored.score,
-      reason: scored.reason,
-      ...(scored.coverage ? { coverage: scored.coverage } : {}),
+      reason,
     });
   }
 
-  hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+  hits.sort(
+    (a, b) =>
+      TIER_ORDER.indexOf(a.reason) - TIER_ORDER.indexOf(b.reason) ||
+      a.id.localeCompare(b.id),
+  );
   return hits.slice(0, Math.max(0, limit));
 }
 
 /**
- * Split a query into meaningful tokens: lowercase words of length >= 2 that are
- * not common stopwords. An agent's natural query ("payment confirmation
- * screen") is a phrase, not a node id, so search must match its words
- * independently rather than as one verbatim string.
+ * Split a query into meaningful tokens: lowercase words of length >= 2. An
+ * agent's natural query ("payment confirmation screen") is a phrase, not a node
+ * id, so the token tier matches its words independently rather than as one
+ * verbatim string.
  */
 function tokenize(needle: string): string[] {
   return needle
     .split(/[^a-z0-9]+/i)
     .map((token) => token.toLowerCase())
-    .filter((token) => token.length >= 2 && !STOPWORDS.has(token));
-}
-
-const STOPWORDS = new Set([
-  "a",
-  "an",
-  "and",
-  "as",
-  "at",
-  "by",
-  "for",
-  "from",
-  "in",
-  "of",
-  "on",
-  "or",
-  "the",
-  "to",
-  "with",
-]);
-
-interface ScoredMatch {
-  score: number;
-  reason: SearchReason;
-  coverage?: { covered: number; total: number };
+    .filter((token) => token.length >= 2);
 }
 
 /**
- * Score a candidate against the query, strongest signal first:
+ * The match tier for a candidate, strongest first, or undefined when nothing
+ * matches:
  *
- * 1. Whole-query matches (the query, verbatim, in name/description/body) win —
- *    an exact id, then a name/description/body substring. These are the precise
- *    hits and keep single-word ranking sharp.
+ * 1. Whole-query matches (verbatim, in name/description/body): an exact id,
+ *    then a name/description/body substring.
  * 2. A whole-name typo gets the fuzzy tier (e.g. `markting` → `marketing`).
- * 3. Otherwise, multi-word coverage: how many query tokens appear in the
- *    candidate (the agent typed a phrase, not an id). The tier follows the
- *    strongest field any token hit, and the score scales with the fraction of
- *    tokens covered, so a closer phrase match outranks a looser one. A single
- *    token hitting only the body is the weakest signal that still counts.
- *
- * Returns undefined when nothing matches.
+ * 3. Otherwise, a multi-word query where every token lands somewhere on the
+ *    node (the agent typed a phrase, not an id).
  */
-function scoreCandidate(
+function matchTier(
   needle: string,
   tokens: string[],
   name: string,
   description: string | undefined,
   body: string,
-): ScoredMatch | undefined {
+): SearchReason | undefined {
   const lowerName = name.toLowerCase();
   const lowerDesc = description?.toLowerCase();
   const lowerBody = body.toLowerCase();
 
   // 1. Whole-query matches: precise, highest-ranked.
-  if (lowerName === needle) return { score: SCORE.exact, reason: "exact" };
-  if (lowerName.includes(needle)) return { score: SCORE.name, reason: "name" };
-  if (lowerDesc?.includes(needle)) {
-    return { score: SCORE.description, reason: "description" };
-  }
-  if (lowerBody.includes(needle)) return { score: SCORE.body, reason: "body" };
+  if (lowerName === needle) return "exact";
+  if (lowerName.includes(needle)) return "name";
+  if (lowerDesc?.includes(needle)) return "description";
+  if (lowerBody.includes(needle)) return "body";
 
   // 2. Whole-name typo fallback.
   const segment = lowerName.split("/").pop() ?? lowerName;
   if (isFuzzyMatch(needle, segment) || isFuzzyMatch(needle, lowerName)) {
-    return { score: SCORE.fuzzy, reason: "fuzzy" };
+    return "fuzzy";
   }
 
   // 3. Multi-word token coverage. Only meaningful for multi-token queries; a
-  // single token already had its verbatim shot above (a single-token body hit
-  // is the verbatim body case, already handled).
+  // single token already had its verbatim shot above. Every token must land.
   if (tokens.length < 2) return undefined;
-
-  let covered = 0;
-  let strongest: "name" | "description" | "body" | undefined;
-  for (const token of tokens) {
-    const field = matchField(token, lowerName, lowerDesc, lowerBody);
-    if (!field) continue;
-    covered += 1;
-    if (!strongest || SCORE[field] > SCORE[strongest]) strongest = field;
-  }
-  if (covered === 0 || !strongest) return undefined;
-
-  // Scale the field tier by the fraction of tokens covered so a full-phrase
-  // match outranks a partial one, but keep it below the verbatim tiers.
-  const coverage = covered / tokens.length;
-  return {
-    score: Math.round(SCORE[strongest] * coverage),
-    reason: strongest,
-    coverage: { covered, total: tokens.length },
-  };
-}
-
-/** The strongest field a single token appears in, or undefined. */
-function matchField(
-  token: string,
-  lowerName: string,
-  lowerDesc: string | undefined,
-  lowerBody: string,
-): "name" | "description" | "body" | undefined {
-  if (lowerName.includes(token)) return "name";
-  if (lowerDesc?.includes(token)) return "description";
-  if (lowerBody.includes(token)) return "body";
-  return undefined;
+  const allCovered = tokens.every(
+    (token) =>
+      lowerName.includes(token) ||
+      lowerDesc?.includes(token) ||
+      lowerBody.includes(token),
+  );
+  return allCovered ? "tokens" : undefined;
 }
 
 /**

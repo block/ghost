@@ -70,13 +70,11 @@ fingerprint surface by surface as the next repeated decision shows up.
 | Command | Description |
 | --- | --- |
 | `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph. |
 | `ghost gather` | List nodes, or compose a surface's context slice. |
 | `ghost checks` | List the markdown checks and ground the named surfaces. |
 | `ghost review` | Emit an advisory review packet grounded in fingerprint + diff. |
 | `ghost skill install` | Install the BYOA skill bundle. |
-| `ghost signals` | Emit raw repo signals as authoring evidence _(advanced)_. |
 | `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
 | `ghost migrate` | Migrate a legacy `.ghost/` package onto the node model _(maintenance)_. |
 
@@ -137,8 +135,9 @@ medium-agnostic — its **essence**.
 A surface is just a directory, and a directory's own prose lives in its
 `index.md`. The package-root `index.md` is the implicit `core` node, true
 everywhere. Reserved at the package root: `manifest.yml` and the `checks/`
-subtree; every other `*.md` is a node. `ghost signals` answers what exists; the
-curated node graph answers what the surface is trying to preserve.
+subtree; every other `*.md` is a node. The host agent's own repo reconnaissance
+answers what exists; the curated node graph answers what the surface is trying
+to preserve.
 
 ## Project Status: Beta
 
@@ -160,7 +159,7 @@ workspace packages are development context.
 | Path | Role | Published? |
 | ---- | ---- | --- |
 | [`packages/ghost`](./packages/ghost) | Public package: the `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. | yes: `@anarchitecture/ghost` |
-| [`packages/ghost-fleet`](./packages/ghost-fleet) | Private fleet view across many Ghost bundles. | no |
+| [`packages/ghost-ui`](./packages/ghost-ui) | Private, parked: a standalone shadcn component registry plus `ghost-mcp` MCP server. Not coupled to Ghost. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development

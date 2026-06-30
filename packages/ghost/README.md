@@ -59,7 +59,6 @@ Create and validate the fingerprint package:
 ```bash
 ghost init
 ghost validate
-ghost scan
 ```
 
 Gather context before generation:
@@ -83,7 +82,7 @@ verify fingerprints:
 ghost skill install
 ```
 
-Advanced and maintenance commands (`signals` and `migrate`) remain available
+Advanced and maintenance commands (`manifest` and `migrate`) remain available
 in the full command index.
 
 No API key is required. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and
@@ -105,9 +104,9 @@ Available subpath exports: `@anarchitecture/ghost`,
 
 ## BYOA
 
-Ghost is bring-your-own-agent. The CLI performs deterministic work: repo
-signals, contribution reporting, graph validation, context composition, check
-selection and grounding, and advisory review packets. The installed `ghost` skill teaches a host
+Ghost is bring-your-own-agent. The CLI performs deterministic work: graph
+validation, context composition, check selection and grounding, and advisory
+review packets. The installed `ghost` skill teaches a host
 agent how to capture canonical `.ghost/` surface-composition context, brief and
 generate work from it, review changes against it, and verify generated UI.
 

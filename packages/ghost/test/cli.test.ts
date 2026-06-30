@@ -126,7 +126,6 @@ describe("ghost CLI", () => {
     expect(result.stdout).toContain("Core workflow");
     for (const command of [
       "init",
-      "scan",
       "validate",
       "check",
       "review",
@@ -158,8 +157,6 @@ describe("ghost CLI", () => {
     for (const command of [
       "validate [file]",
       "init",
-      "scan [dir]",
-      "signals [path]",
       "gather",
       "checks",
       "manifest",
@@ -208,9 +205,8 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("--format json");
   });
 
-  it("initializes the default fingerprint package without cache", async () => {
+  it("initializes the default fingerprint package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
-    const scan = await runCli(["scan", "--format", "json"], dir);
     await writeFile(
       join(dir, "change.patch"),
       lendingPatch("let color = CashTheme.primary"),
@@ -225,8 +221,6 @@ describe("ghost CLI", () => {
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
-    const status = JSON.parse(scan.stdout);
-    expect(status.cache).toBeUndefined();
 
     const validate = await runCli(["validate"], dir);
     const review = await runCli(["review", "--diff", "change.patch"], dir);
@@ -320,19 +314,15 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("No Ghost fingerprint package found");
   });
 
-  it("uses GHOST_PACKAGE_DIR as the default package lookup for scan", async () => {
+  it("uses GHOST_PACKAGE_DIR as the default package lookup for validate", async () => {
     await runCli(["init", "--package", ".agents/ghost"], dir);
 
-    const scan = await runCli(["scan", "--format", "json"], dir, {
+    const validate = await runCli(["validate", "--format", "json"], dir, {
       env: { GHOST_PACKAGE_DIR: ".agents/ghost" },
     });
 
-    expect(scan.code).toBe(0);
-    const status = JSON.parse(scan.stdout);
-    expect(await realpath(status.dir)).toBe(
-      await realpath(join(dir, ".agents", "ghost")),
-    );
-    expect(status.fingerprint.state).toBe("present");
+    expect(validate.code).toBe(0);
+    expect(JSON.parse(validate.stdout).errors).toBe(0);
   });
 
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
@@ -390,10 +380,8 @@ describe("ghost CLI", () => {
     expect(JSON.parse(lint.stdout).errors).toBe(0);
   });
 
-  it("initializes a bundle and reports fingerprint capture state as json", async () => {
+  it("initializes a bundle with manifest and core node", async () => {
     const init = await runCli(["init"], dir);
-    const scan = await runCli(["scan", "--format", "json"], dir);
-    const scanHuman = await runCli(["scan"], dir);
 
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml");
@@ -403,21 +391,10 @@ describe("ghost CLI", () => {
     expect(
       await readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).toContain("schema: ghost.fingerprint-package/v1");
-    expect(scan.code).toBe(0);
-    const status = JSON.parse(scan.stdout);
-    expect(status.fingerprint.state).toBe("present");
-    expect(status.proposals).toBeUndefined();
-    expect(status.cache).toBeUndefined();
-    expect(status.readiness).toBeUndefined();
-    expect(status.checks).toBeUndefined();
-    // The default template seeds one core node, so the package contributes.
-    expect(status.contribution.state).toBe("contributing");
-    expect(status.contribution.node_count).toBe(1);
-    expect(scanHuman.stdout).toContain("package dir:");
-    expect(scanHuman.stdout).toContain("contribution: contributing");
-    expect(scanHuman.stdout).toContain("nodes: 1");
-    expect(scanHuman.stdout).not.toContain("readiness:");
-    expect(scanHuman.stdout).not.toContain("memory dir:");
+
+    const validate = await runCli(["validate", "--format", "json"], dir);
+    expect(validate.code).toBe(0);
+    expect(JSON.parse(validate.stdout).errors).toBe(0);
   });
 
   it("rejects removed init intent flag", async () => {
@@ -445,15 +422,10 @@ describe("ghost CLI", () => {
     expect(slice.nodes.some((n: { id: string }) => n.id === "core")).toBe(true);
   });
 
-  it("runs signals and validate from the unified cli", async () => {
+  it("runs validate from the unified cli", async () => {
     await writeCheckPackage(dir);
-    const signals = await runCli(["signals"], dir);
     const validate = await runCli(["validate"], dir);
 
-    expect(signals.code).toBe(0);
-    expect(await realpath(JSON.parse(signals.stdout).root)).toBe(
-      await realpath(dir),
-    );
     expect(validate.code).toBe(0);
     expect(validate.stdout).toContain("0 error");
   });

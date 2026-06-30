@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T05:25:40.805Z",
+  "generatedAt": "2026-06-30T19:15:49.960Z",
   "tools": [
     {
       "tool": "ghost",
@@ -67,37 +67,6 @@
               "negated": false
             }
           ]
-        },
-        {
-          "tool": "ghost",
-          "name": "scan",
-          "rawName": "scan [dir]",
-          "description": "Report sparse fingerprint package contribution facets: intent, inventory, composition, and the next BYOA step.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "scan",
-          "summary": "Report fingerprint contribution facets.",
-          "options": [
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: cli or json",
-              "default": "cli",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "signals",
-          "rawName": "signals [path]",
-          "description": "Emit deterministic raw repo signals as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
-          "group": "advanced",
-          "defaultHelp": false,
-          "compactName": "signals",
-          "summary": "Emit raw repo signals for fingerprint authoring.",
-          "options": []
         },
         {
           "tool": "ghost",

@@ -1,6 +1,6 @@
 import manifest from "@/generated/cli-manifest.json";
 
-type ToolName = "ghost" | "ghost-fleet";
+type ToolName = "ghost";
 
 interface CliHelpProps {
   command: string;

@@ -145,9 +145,7 @@ function formatCandidatesMarkdown(query: string, matches: SearchHit[]): string {
 /**
  * Explain *why* a candidate matched, so the route is auditable rather than a
  * bare ranking. Mirrors `gather`'s slice provenance: the agent (and the human
- * reading a review packet) can see which signal placed each node. The `reason`
- * tier names the field for the substring tiers; `coverage` tells the multi-word
- * story the tier alone can't.
+ * reading a review packet) can see which tier placed each node.
  */
 function matchLabel(hit: SearchHit): string {
   switch (hit.reason) {
@@ -155,13 +153,10 @@ function matchLabel(hit: SearchHit): string {
       return "exact id";
     case "fuzzy":
       return "likely typo of the name";
-    default: {
-      if (hit.coverage) {
-        const { covered, total } = hit.coverage;
-        return `matched ${covered}/${total} words in ${hit.reason}`;
-      }
+    case "tokens":
+      return "matched every query word";
+    default:
       return `matched the query in ${hit.reason}`;
-    }
   }
 }
 

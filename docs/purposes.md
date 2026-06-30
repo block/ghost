@@ -56,7 +56,7 @@ Two resolution mechanisms, both read-only:
 
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
-| **Authoring** | `init`, `scan`, `signals`, `validate`, `migrate` | The raw nodes plus repo signals, for a human or agent writing the fingerprint. | the node graph, raw signals | **No**, this *is* the model. |
+| **Authoring** | `init`, `validate`, `migrate` | The raw nodes, for a human or agent writing the fingerprint. The agent does its own repo reconnaissance. | the node graph | **No**, this *is* the model. |
 | **Generation** | `gather` | A narrow, task-scoped *slice* delivered before building: full bodies along the surface's path, one-hop edges, and pointers. | the composed `gather` slice | **No** if selection stays a read-only narrowing pass. **Leak risk:** if retrieval needs are pushed back into the tree shape. |
 | **Governance** | `checks`, `review` | Every check offered, grounded in the touched surfaces' slice, evaluated against a diff. | offered checks plus the grounding slice | **No** if checks stay offered-and-grounded. **Leak risk:** making checks filter or route by surface instead of binding to prose via `source:`. |
 | **Fleet** | (`ghost-fleet`, private) | Many bundles at once: distances, cohorts, tracks-graph. | many fingerprints, read-only | **No**, consumes workspace exports read-only. |
@@ -90,8 +90,9 @@ thing to fix at the boundary, not a reason to redesign the artifact.
 
 5. **Low-value nodes accrue.** "Don't add a node just to restate what it
    inherits" is advice no one follows.
-   *Fix: `scan` reports thin contribution so a node that says nothing the nodes
-   above it did not already say is visible.*
+   *Fix: `gather` makes inherited context explicit (own / ancestor / edge
+   provenance), so a node that says nothing the nodes above it did not already
+   say is visible.*
 
 ## What we are NOT doing
 

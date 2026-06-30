@@ -48,7 +48,6 @@ Authoring a fingerprint comes first (`ghost init`, then write nodes); the
 | Verb | Purpose |
 |---|---|
 | `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost scan [dir] [--format json]` | Report node/surface contribution. |
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
@@ -60,7 +59,6 @@ Authoring a fingerprint comes first (`ghost init`, then write nodes); the
 | Verb | Purpose |
 |---|---|
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
-| `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
 | `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
 | `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
 
@@ -79,8 +77,8 @@ Authoring a fingerprint comes first (`ghost init`, then write nodes); the
 
 When the user asks to set up a fingerprint with `auto-draft`, treat that as an
 agent authoring mode, not a Ghost CLI command. Follow the auto-draft branch in
-the capture and authoring-scenarios recipes: scan first, draft the smallest
-evidence-backed node drafts, then ask the human to curate the claims.
+the capture and authoring-scenarios recipes: read the repo first, draft the
+smallest evidence-backed node drafts, then ask the human to curate the claims.
 
 ## How It Works
 
@@ -141,8 +139,9 @@ for the full node shape.
 
 Naming a node that is not in the package is an error, not a silent empty
 result. An inexact `gather <query>` ranks the closest nodes as `candidates`
-(matching id, description, then body, by single words or a phrase) under the
-stable code `ERR_UNKNOWN_SURFACE`; `checks` and `review` emit the same code with
+(matching id, description, then body verbatim, then a phrase where every word
+lands on the node) under the stable code `ERR_UNKNOWN_SURFACE`; `checks` and
+`review` emit the same code with
 closest-id `suggestions` (in `--format json`) and a "Did you mean" line
 otherwise. Branch on the code and retry with a ranked candidate or suggestion.
 
@@ -155,8 +154,8 @@ moving a node is a rename. Reserved at the package root: `manifest.yml` and the
 
 Optional `ghost.check/v1` markdown checks live in `checks/*.md`; every check is
 offered to the reviewer and the agent judges which apply.
-Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
-raw repo observations while authoring curated nodes.
+When authoring curated nodes, read the repo directly (tree, grep, source
+inspection) for raw observations.
 
 One contract per package: a repo's `.ghost/` is the contract, and surfaces are
 the only locality. Host wrappers may set `GHOST_PACKAGE_DIR=<relative-dir>` on

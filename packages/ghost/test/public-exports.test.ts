@@ -26,8 +26,8 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(fingerprintApi.writePackageContextBundle).toBeUndefined();
     expect(fingerprintApi.writeContextBundle).toBeUndefined();
 
-    expect(scanApi.scanStatus).toBeTypeOf("function");
-    expect(scanApi.signals).toBeTypeOf("function");
+    expect(scanApi.scanStatus).toBeUndefined();
+    expect(scanApi.signals).toBeUndefined();
     expect(scanApi.loadFingerprintStackForPath).toBeUndefined();
     expect(scanApi.initFingerprintPackage).toBeUndefined();
     expect(scanApi.lintFingerprintPackage).toBeUndefined();

@@ -7,16 +7,15 @@ import {
   resolveFingerprintPackage,
 } from "../fingerprint.js";
 import { detectFileKind, lintDetectedFileKind } from "../scan/file-kind.js";
-import { resolveGhostDirDefault, scanStatus, signals } from "../scan/index.js";
+import { resolveGhostDirDefault } from "../scan/index.js";
 import { failFromError } from "./errors.js";
 import { registerInitCommand } from "./init-command.js";
 
 /**
  * Register fingerprint package commands on the unified Ghost CLI.
  *
- * Verbs author and validate the root `.ghost/` fingerprint package: `validate`
- * (artifact shape + node-graph integrity), `scan` (node/surface contribution),
- * and `signals` (raw repo signals for authoring).
+ * Verbs author and validate the root `.ghost/` fingerprint package: `init`
+ * (scaffold) and `validate` (artifact shape + node-graph integrity).
  */
 export function registerFingerprintCommands(cli: CAC): void {
   // --- validate (shape pass + graph pass) ---
@@ -56,82 +55,6 @@ export function registerFingerprintCommands(cli: CAC): void {
     });
 
   registerInitCommand(cli);
-
-  // --- scan ---
-  cli
-    .command(
-      "scan [dir]",
-      "Report sparse fingerprint package contribution facets: intent, inventory, composition, and the next BYOA step.",
-    )
-    .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
-    .action(async (dirArg: string | undefined, opts) => {
-      try {
-        const ghostDir = ghostDirFromEnv();
-        const dir = resolveFingerprintPackage(
-          dirArg ?? ghostDir,
-          process.cwd(),
-        ).dir;
-        const status = await scanStatus(dir);
-        if (opts.format === "json") {
-          process.stdout.write(`${JSON.stringify(status, null, 2)}\n`);
-        } else {
-          const fmt = (state: string) =>
-            state === "present" ? "present" : "missing";
-          process.stdout.write(`package dir: ${status.dir}\n\n`);
-          process.stdout.write(
-            `  package    (manifest.yml): ${fmt(status.fingerprint.state)}\n`,
-          );
-          process.stdout.write("\n");
-          if (status.recommended_next) {
-            process.stdout.write(
-              `next: run the ${status.recommended_next} stage\n`,
-            );
-          } else {
-            process.stdout.write(
-              "next: author nodes, then run ghost validate/review\n",
-            );
-          }
-          const c = status.contribution;
-          process.stdout.write(`contribution: ${c.state}\n`);
-          process.stdout.write(
-            `  nodes: ${c.node_count} (${c.essence_count} essence, ${c.incarnation_count} incarnation-tagged)\n`,
-          );
-          for (const surface of c.surfaces) {
-            process.stdout.write(
-              `  surface ${surface.id}: ${surface.node_count} node(s)\n`,
-            );
-          }
-          if (c.sparse_surfaces.length > 0) {
-            process.stdout.write(
-              `  sparse surfaces: ${c.sparse_surfaces.join(", ")}\n`,
-            );
-          }
-          if (c.reasons[0]) {
-            process.stdout.write(`  reason: ${c.reasons[0]}\n`);
-          }
-        }
-        process.exit(0);
-      } catch (err) {
-        failFromError(err);
-      }
-    });
-
-  // --- signals ---
-  cli
-    .command(
-      "signals [path]",
-      "Emit deterministic raw repo signals as JSON: package manifests, language histogram, candidate config files, registry presence, top-level tree, and git remote.",
-    )
-    .action(async (path: string | undefined) => {
-      try {
-        const target = resolve(process.cwd(), path ?? ".");
-        const out = signals(target);
-        process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
-        process.exit(0);
-      } catch (err) {
-        failFromError(err);
-      }
-    });
 }
 
 function ghostDirFromEnv(): string {

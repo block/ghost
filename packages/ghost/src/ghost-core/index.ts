@@ -69,13 +69,6 @@ export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GhostFingerprintPackageManifestSchema,
 } from "./package-manifest.js";
-// --- Inventory scan output types ---
-export type {
-  GitInfo,
-  InventoryOutput,
-  LanguageHistogramEntry,
-  TopLevelEntry,
-} from "./scan-types.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";
 export { loadSkillBundle } from "./skill-bundle-loader.js";

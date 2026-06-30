@@ -86,54 +86,40 @@ describe("searchGraph", () => {
     expect(capped.length).toBeLessThanOrEqual(1);
   });
 
-  it("matches a multi-word phrase by token coverage", () => {
+  it("matches a multi-word phrase when every token lands", () => {
     const graph = fixture();
-    // "Outbound brand surfaces." — neither word is the id, but both are in the
-    // description, so the phrase should still find the marketing surface.
-    const hits = searchGraph("outbound brand", graph);
+    // "Outbound brand surfaces." — neither word is the id, but the words are in
+    // the description (non-contiguous), so the phrase still finds marketing via
+    // the all-tokens tier.
+    const hits = searchGraph("outbound surfaces", graph);
     expect(hits[0]?.id).toBe("marketing");
+    expect(hits[0]?.reason).toBe("tokens");
   });
 
-  it("ranks fuller phrase coverage above partial coverage", () => {
+  it("finds the only node where all phrase tokens land", () => {
     const graph = fixture();
-    // 'payment flow' — both words are in checkout's description; only 'payment'
-    // weakly elsewhere. Checkout should lead.
+    // 'payment flow' — both words are in checkout's description; no other node
+    // covers both. Checkout should lead.
     const hits = searchGraph("payment flow", graph);
     expect(hits[0]?.id).toBe("checkout");
   });
 
-  it("drops stopwords so they do not force false coverage", () => {
+  it("does not match when only some phrase tokens land", () => {
     const graph = fixture();
-    // "the payment flow" — 'the' is a stopword; coverage is over payment+flow.
-    const withStop = searchGraph("the payment flow", graph);
-    const withoutStop = searchGraph("payment flow", graph);
-    expect(withStop[0]?.id).toBe(withoutStop[0]?.id);
-    expect(withStop[0]?.score).toBe(withoutStop[0]?.score);
-  });
-
-  it("carries no coverage on a whole-query hit", () => {
-    const graph = fixture();
-    const hit = searchGraph("marketing", graph)[0];
-    expect(hit?.reason).toBe("exact");
-    expect(hit?.coverage).toBeUndefined();
-  });
-
-  it("attaches token coverage for a multi-word phrase match", () => {
-    const graph = fixture();
-    // 'outbound surfaces' — both words are in "Outbound brand surfaces." but
-    // not contiguous, so this is coverage, not a verbatim substring.
-    const hit = searchGraph("outbound surfaces", graph)[0];
-    expect(hit?.reason).toBe("description");
-    expect(hit?.coverage).toEqual({ covered: 2, total: 2 });
-  });
-
-  it("reports partial coverage when only some words land", () => {
-    const graph = fixture();
-    // 'payment elsewhere' — only 'payment' is in checkout's description.
+    // 'payment elsewhere' — only 'payment' is in checkout's description, so the
+    // all-tokens tier does not fire.
     const hit = searchGraph("payment elsewhere", graph).find(
       (h) => h.id === "checkout",
     );
-    expect(hit?.coverage).toEqual({ covered: 1, total: 2 });
+    expect(hit).toBeUndefined();
+  });
+
+  it("tags a non-contiguous phrase match as the tokens tier", () => {
+    const graph = fixture();
+    // 'outbound surfaces' — both words are in "Outbound brand surfaces." but
+    // not contiguous, so this is the tokens tier, not a verbatim substring.
+    const hit = searchGraph("outbound surfaces", graph)[0];
+    expect(hit?.reason).toBe("tokens");
   });
 
   it("excludes the implicit core root and returns nothing for an empty query", () => {
