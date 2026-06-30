@@ -89,6 +89,11 @@ the ask against. The agent names the node; Ghost never infers it from a path.
 
 ## Checks
 
-`checks/*.md` are `ghost.check/v1` markdown, placed by `surface:` frontmatter
-(unplaced = core = everywhere), routed to touched nodes. They validate generated
-output; they are not generation input. Keep them deterministic.
+`checks/*.md` are `ghost.check/v1` markdown. Every check is offered to the
+reviewer; the host agent judges which apply to the diff and the grounded prose.
+An optional `source:` names the fingerprint prose the check enforces — a node
+path id with an optional `> Heading` anchor (`checkout/payment > Confirmation`) —
+and `review` surfaces it so a finding can cite which section it derives from.
+`source:` is a soft pointer: an unresolved one is a warning, not an error.
+Checks validate generated output; they are not generation input. Keep them
+deterministic.

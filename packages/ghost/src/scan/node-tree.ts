@@ -6,7 +6,7 @@ import { FINGERPRINT_MANIFEST_FILENAME } from "./constants.js";
 
 /**
  * Reserved package-root entries that are never nodes. `checks/` is a reserved
- * top-level subtree (the markdown checks that govern surfaces). The manifest is
+ * top-level subtree (the markdown checks an agent evaluates). The manifest is
  * the package anchor.
  *
  * NOTE: `checks/` is reserved at the package root only. Internal/nested reuse
