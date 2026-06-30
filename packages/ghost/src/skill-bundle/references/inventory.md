@@ -17,8 +17,10 @@ that prose so an agent can translate the fingerprint's intent into concrete
 building blocks without the fingerprint ever naming a component.
 
 This is opinionated method, not new schema. Intent / inventory / composition are
-**authoring lenses**: things for an author to think through, not fields, node
-types, or sections that must coexist in one node. A node may lean entirely on
+**authoring lenses**: angles for an author to think through while writing a
+node's prose body. They live in that prose; the frontmatter still holds the
+fields, so a lens is never a frontmatter key, a node type, or a section that
+must coexist with the others in one node. A node may lean entirely on
 one lens: a pure-inventory node is fine, just as a pure-intent node is. Inventory
 can be one paragraph inside a broader node, or it can be split across many
 nodes, one per block grouped under a surface, whatever keeps each node

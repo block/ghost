@@ -7,59 +7,24 @@ order: 10
 slug: getting-started
 ---
 
-<DocSection title="The Model">
+<DocSection title="What Ghost Does">
 
-Ghost captures the composition of a product surface: the intent behind it, the
-materials it draws from, and the patterns that make it feel intentional. The
-public package is `@anarchitecture/ghost`, and it installs one CLI: `ghost`.
+Ghost gives your agent the composition behind a product surface — the intent,
+materials, and patterns that make it feel intentional — **before** it builds,
+and checks the result after it changes. The public package is
+`@anarchitecture/ghost`, and it installs one CLI: `ghost`.
 
-The canonical portable fingerprint is a directory tree of prose nodes:
+You work through three verbs:
 
-```text
-.ghost/
-  manifest.yml          # schema + package id
-  index.md              # the core node, true everywhere
-  trust.md              # another top-level node (child of core), also true everywhere
-  marketing/index.md    # the `marketing` surface's own prose
-  marketing/email.md    # a node in the marketing surface
-  checks/*.md           # optional ghost.check/v1 deterministic checks
+```bash
+ghost gather <surface>        # before: compose the context slice for the work
+ghost checks --surface <ids>  # list the markdown checks and ground the named surfaces
+ghost review --surface <ids>  # after: an advisory packet grounded in the diff
 ```
 
-The directory tree _is_ the graph. A node's identity is its file path with
-`.md` dropped (`marketing/email.md` is the node `marketing/email`), and its
-parent is the directory that contains it. A surface is a directory: its own
-prose lives in that directory's `index.md`, and the package-root `index.md` is
-the implicit `core` node. No separate file declares the graph. A surface exists
-when its directory exists.
-
-A node inherits every file from the package root down to its own folder, so
-top-level nodes (`index.md`, `trust.md`) reach every surface while a sibling
-surface stays invisible. `relates` links nodes laterally across that boundary
-when a relationship carries rationale.
-
-Write and read every prose node through three lenses: intent, inventory, and
-composition. Deterministic `checks/` validate the result afterward; they are not
-generation input.
-
-One contract per package: a repo's `.ghost/` is the whole fingerprint, and
-surfaces (directories) are the only locality.
-
-</DocSection>
-
-<DocSection title="Project Status: Beta">
-
-<Callout variant="warning" title="Beta / pre-1.0">
-
-Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
-on-disk `.ghost/` package shape, and public JavaScript exports may
-change in breaking ways before a stable 1.0 release.
-
-Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
-versions are reserved for fixes that should not require migration. If you adopt
-Ghost today, expect some churn, pin the version you depend on, and review
-release notes before upgrading.
-
-</Callout>
+The CLI does the deterministic work; your agent does the interpretation. The
+rest of this guide walks the loop end to end; the **How It Works** section at
+the end covers the data model underneath it.
 
 </DocSection>
 
@@ -89,6 +54,13 @@ run.
 </DocSection>
 
 <DocSection title="Author Your First Fingerprint">
+
+Start with one surface, not the whole product. The hardest part is picking the
+first one, so pick the surface whose review feedback you keep repeating — the
+checkout you always flag for trust, the settings form you always re-pace, the
+empty state you always rewrite. Write that one decision down as a node, and grow
+the fingerprint surface by surface as the next repeated decision shows up. One
+high-confidence node beats an empty catalog.
 
 The CLI handles the deterministic package work. Your agent handles the
 composition work: interviewing, reading repo evidence, drafting node prose, and
@@ -160,5 +132,57 @@ and the diff embedded verbatim.
 Wrappers should consume `--format json` and map Ghost severities outside Ghost.
 Ghost severities remain `critical`, `serious`, and `nit`. Advisory review is
 never a CI gate on its own.
+
+</DocSection>
+
+<DocSection title="How It Works">
+
+The canonical portable fingerprint is a directory tree of prose nodes:
+
+```text
+.ghost/
+  manifest.yml          # schema + package id
+  index.md              # the core node, true everywhere
+  trust.md              # another top-level node (child of core), also true everywhere
+  marketing/index.md    # the `marketing` surface's own prose
+  marketing/email.md    # a node in the marketing surface
+  checks/*.md           # optional ghost.check/v1 deterministic checks
+```
+
+The directory tree _is_ the graph. A node's identity is its file path with
+`.md` dropped (`marketing/email.md` is the node `marketing/email`), and its
+parent is the directory that contains it. A surface is a directory: its own
+prose lives in that directory's `index.md`, and the package-root `index.md` is
+the implicit `core` node. No separate file declares the graph. A surface exists
+when its directory exists.
+
+A node inherits every file from the package root down to its own folder, so
+top-level nodes (`index.md`, `trust.md`) reach every surface while a sibling
+surface stays invisible. `relates` links nodes laterally across that boundary
+when a relationship carries rationale.
+
+Write and read every prose node through three lenses: intent, inventory, and
+composition. Deterministic `checks/` validate the result afterward; they are not
+generation input.
+
+One contract per package: a repo's `.ghost/` is the whole fingerprint, and
+surfaces (directories) are the only locality.
+
+</DocSection>
+
+<DocSection title="Project Status: Beta">
+
+<Callout variant="warning" title="Beta / pre-1.0">
+
+Ghost is pre-1.0 and under active development. The CLI, fingerprint schema,
+on-disk `.ghost/` package shape, and public JavaScript exports may
+change in breaking ways before a stable 1.0 release.
+
+Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
+versions are reserved for fixes that should not require migration. If you adopt
+Ghost today, expect some churn, pin the version you depend on, and review
+release notes before upgrading.
+
+</Callout>
 
 </DocSection>

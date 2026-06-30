@@ -46,9 +46,10 @@ const DEFAULT_TEMPLATE: GhostInitTemplate = {
 description: The product-wide root; true everywhere.
 ---
 
-Replace this with your product's voice — the \`core\` node. A node is prose
-written through the intent / inventory / composition lenses; they guide what to
-capture, they are not fields:
+Replace this prose with your product's voice — the \`core\` node. Everything
+below the \`---\` is the node's body; the frontmatter above holds the fields.
+Write the body through three authoring lenses (angles to think through, not
+frontmatter keys):
 
 - intent — the why and the stance (e.g. "calm, direct, never breathless").
 - inventory — the material you have (tokens, components, pointers to code).
@@ -57,8 +58,8 @@ capture, they are not fields:
 This file is the package-root \`index.md\`, so it cascades to every surface. Add
 a surface by adding a directory: \`checkout/index.md\` is the \`checkout\` surface,
 and \`checkout/payment.md\` is a node under it. Link related nodes with
-\`relates\`, and tag medium-bound expressions with \`incarnation\` (e.g. email,
-billboard, voice). Leave essence untagged.
+\`relates\`, and add \`incarnation\` to a node bound to one medium (e.g. email,
+billboard, voice); a node with no \`incarnation\` is medium-agnostic essence.
 `,
       },
     ];

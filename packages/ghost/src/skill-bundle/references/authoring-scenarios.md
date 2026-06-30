@@ -20,7 +20,17 @@ the human curates it and ordinary Git review accepts it.
 first and writes starter node edits, but those edits are still draft work
 until the human curates them and Git review accepts them.
 
-## 1. Classify The Scenario
+## 1. Start With One Repeated Decision
+
+The hardest part is picking the first surface, so do not try to fingerprint the
+whole product. Ask the human (or find in review history) the one surface whose
+feedback keeps repeating — the checkout always flagged for trust, the settings
+form always re-paced, the empty state always rewritten — and capture that one
+decision as a node first. One high-confidence node beats an empty catalog; the
+fingerprint grows surface by surface as the next repeated decision shows up.
+
+The scenario below tunes the authoring *posture* for that first node; it is not
+a gate to clear before writing anything.
 
 Choose the nearest scenario before writing nodes:
 

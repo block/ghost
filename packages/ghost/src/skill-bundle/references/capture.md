@@ -70,9 +70,11 @@ action beats completeness…
 
 ## Write the body through three lenses
 
-Intent / inventory / composition are **authoring lenses**, not fields and not
-node types. They are the things worth thinking through as you write a node's
-prose, and a node may lean entirely on one:
+Intent / inventory / composition are **authoring lenses**: angles you think
+through as you write a node's prose body (the part below the `---` in the
+example above). They live in that prose, while the frontmatter holds the fields
+— so a lens is never a frontmatter key or a separate node type, and a node may
+lean entirely on one:
 
 - **intent**: the why and the stance.
 - **inventory**: the material you have (tokens, components, and pointers to the

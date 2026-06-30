@@ -357,7 +357,7 @@ describe("ghost CLI", () => {
     expect(forced.code).toBe(0);
     await expect(
       readFile(join(dir, ".ghost", "index.md"), "utf-8"),
-    ).resolves.toContain("intent / inventory / composition");
+    ).resolves.toContain("three authoring lenses");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
