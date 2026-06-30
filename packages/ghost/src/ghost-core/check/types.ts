@@ -8,8 +8,8 @@ export type GhostCheckMarkdownSeverity =
 /**
  * A Ghost check: markdown + frontmatter, evaluated by an agent — never run by
  * Ghost. Shape-compatible with the established `.agents/checks` format, plus the
- * Ghost addition `surface:` (the placement that routes the check, mirroring node
- * placement). See docs/ideas/phase-7b-grounded-checks.md.
+ * Ghost addition `source:` (the fingerprint prose the check enforces). Every
+ * check is offered to the reviewer; the agent judges relevance.
  */
 export interface GhostCheckFrontmatter {
   name: string;
@@ -20,11 +20,17 @@ export interface GhostCheckFrontmatter {
   /** Max tool-use turns the check should spend (passthrough). */
   turn_limit?: number;
   /**
-   * The surface this check governs. Ghost routes a diff to surfaces and selects
-   * checks placed on the touched surfaces and their ancestors. Absent means the
-   * check governs the implicit `core` (applies everywhere).
+   * Optional provenance: the fingerprint prose this check enforces, as a node
+   * path id with an optional `> Heading` anchor (`checkout/payment > Confirmation`).
+   * A soft pointer — `review` surfaces it so a finding can cite which section it
+   * derives from. An unresolved `source:` is tolerated: it may name
+   * not-yet-written prose.
+   *
+   * This is the check's only binding to the graph. Checks always fire; the host
+   * agent judges relevance against the diff and the grounded prose. `source:`
+   * tells it which prose the check enforces.
    */
-  surface?: string;
+  source?: string;
 }
 
 export interface GhostCheckDocument {

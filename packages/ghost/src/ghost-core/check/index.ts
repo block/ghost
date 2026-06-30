@@ -1,17 +1,13 @@
 /**
  * Public surface for `ghost.check/v1` — markdown + frontmatter checks an agent
- * evaluates (Ghost never runs them). Ghost routes them by surface and grounds
- * their findings in the fingerprint. See docs/ideas/phase-7b-grounded-checks.md.
+ * evaluates (Ghost never runs them). Every check is offered to the reviewer;
+ * the agent judges relevance against the diff and the grounded prose. A check's
+ * optional `source:` names the fingerprint prose it enforces.
  */
 
 export { lintGhostCheck } from "./lint.js";
 export { loadGhostCheck } from "./load.js";
 export { type ParsedCheckMarkdown, parseCheckMarkdown } from "./parse.js";
-export {
-  type CheckRelevance,
-  type RoutedCheck,
-  selectChecksForSurfaces,
-} from "./route.js";
 export {
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T14:19:25.804Z",
+  "generatedAt": "2026-06-30T05:25:40.805Z",
   "tools": [
     {
       "tool": "ghost",
@@ -139,7 +139,7 @@
           "tool": "ghost",
           "name": "checks",
           "rawName": "checks",
-          "description": "Select the markdown checks (ghost.check/v1) relevant to the named surfaces.",
+          "description": "List the markdown checks (ghost.check/v1) and ground the named surfaces.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "checks",
@@ -148,7 +148,7 @@
             {
               "rawName": "--surface <ids>",
               "name": "surface",
-              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
+              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them; used to ground, not to filter checks.",
               "default": null,
               "takesValue": true,
               "negated": false
@@ -182,6 +182,26 @@
               "name": "format",
               "description": "Output format: markdown or json",
               "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "manifest",
+          "rawName": "manifest",
+          "description": "Emit a self-describing JSON manifest of every command and flag.",
+          "group": "advanced",
+          "defaultHelp": false,
+          "compactName": "manifest",
+          "summary": "Emit a self-describing JSON manifest of commands and flags.",
+          "options": [
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: json",
+              "default": "json",
               "takesValue": true,
               "negated": false
             }

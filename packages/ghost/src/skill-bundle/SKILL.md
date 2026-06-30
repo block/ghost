@@ -78,7 +78,8 @@ The tree is the layout itself: ids and parents come from where files sit, so
 moving a node is a rename. Reserved at the package root: `manifest.yml` and the
 `checks/` subtree; every other `*.md` is a node.
 
-Optional `ghost.check/v1` markdown checks live in `checks/*.md`, routed by surface.
+Optional `ghost.check/v1` markdown checks live in `checks/*.md`; every check is
+offered to the reviewer and the agent judges which apply.
 Use `ghost signals` as a stdout-only reconnaissance helper when an agent needs
 raw repo observations while authoring curated nodes.
 
@@ -102,8 +103,8 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
 | `ghost scan [dir] [--format json]` | Report node/surface contribution. |
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
-| `ghost checks --surface <ids>` | Select and ground the markdown checks governing the named surfaces. |
-| `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, routed checks, and fingerprint grounding (diff embedded verbatim). |
+| `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
+| `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
 | `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (corridor spine + relates edges, plus spoke pointers), list the node menu, or rank the closest nodes for an inexact query. |
 | `ghost skill install` | Install this unified skill bundle. |
 
@@ -113,6 +114,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 |---|---|
 | `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
 | `ghost signals [path]` | Emit raw repo signals for fingerprint authoring. |
+| `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
 | `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
 
 ## Workflows
@@ -120,6 +122,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 - Self-check before generating: follow [references/self-check.md](references/self-check.md).
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
+- Author the inventory lens: follow [references/inventory.md](references/inventory.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
@@ -136,14 +139,14 @@ evidence-backed node drafts, then ask the human to curate the claims.
 
 - Treat checked-in Ghost package nodes as the source of truth.
 - Generate from intent, inventory, and composition.
-- Name touched surfaces to `ghost checks --surface`; the agent evaluates the markdown checks it governs.
+- Name touched surfaces to `ghost checks --surface` to ground them; the agent evaluates which markdown checks apply.
 - Use local evidence as provisional when the fingerprint is silent.
 - Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
   the human curates them and Git review accepts them.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
 - Validate with `ghost validate` before declaring
   fingerprint nodes useful.
-- Run `ghost checks` to route checks and `ghost review` for the advisory packet.
+- Run `ghost checks` to list checks and ground surfaces, and `ghost review` for the advisory packet.
 - Use a custom package dir (`--package` / `GHOST_PACKAGE_DIR`) only when present
   or requested.
 
