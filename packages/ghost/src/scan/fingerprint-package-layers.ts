@@ -100,7 +100,7 @@ async function loadInheritedNodes(
           ? { description: node.description }
           : {}),
         // Inherited nodes carry a package-qualified folder so they never sit on
-        // a local corridor (folders are walls per package); they enter a slice
+        // a local path (folders are scoped per package); they enter a slice
         // only via an explicit cross-package `relates` edge.
         folder: `${id}:${node.folder}`,
         relates: [],

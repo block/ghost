@@ -80,8 +80,8 @@ key), never by repo path.
 - **edges** (full bodies, one hop): the `relates` targets of every node on that
   path. A rule authored high in the tree (e.g. `relates: { to: arcade }` on
   `features/`) reaches every descendant.
-- **spokes** (pointers): the node's own descendants and the subtree of any node
-  it relates to, offered as id + description for the agent to pull with a
+- **pointers**: the node's own descendants and the subtree of any node it
+  relates to, offered as id + description for the agent to pull with a
   follow-up `gather`.
 
 With no argument, `gather` lists nodes by id + description for the agent to match

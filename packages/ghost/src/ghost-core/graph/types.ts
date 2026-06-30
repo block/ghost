@@ -29,13 +29,13 @@ export interface GhostGraphNode {
   /** The containing directory's id; absent ⇒ this node is the `core` root. */
   parent?: string;
   /**
-   * The node's **file folder** — the directory the source file physically sits
-   * in, which is the unit of containment for corridor composition. This differs
-   * from `parent` for index nodes: `features/bitcoin/index.md` has folder
+   * The node's **file folder**: the directory the source file physically sits
+   * in, the unit of containment for slice composition. This differs from
+   * `parent` for index nodes: `features/bitcoin/index.md` has folder
    * `features/bitcoin` but parent `features`. A plain leaf shares its parent's
    * value (`features/bitcoin/buy.md` → folder `features/bitcoin`). The root
-   * `core` node has folder `""`. Folders are walls: a node only cascades into
-   * surfaces whose folder chain includes this folder.
+   * `core` node has folder `""`. A node only cascades into surfaces whose
+   * folder path includes this folder.
    */
   folder: string;
   relates: GhostNodeRelation[];
@@ -47,7 +47,7 @@ export interface GhostGraphNode {
 /**
  * The in-memory fingerprint graph: prose nodes indexed by id, plus the
  * containment tree (parent edges from the directory layout, root = `core`) that
- * is the traversal spine. This is the shape later phases (gather, checks,
+ * is traversed. This is the shape later phases (gather, checks,
  * review) traverse; the directory layout is just one serialization of it.
  */
 export interface GhostGraph {

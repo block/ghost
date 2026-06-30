@@ -60,7 +60,7 @@ node shape.
   path. Author a broad rule once at the level it is true (say
   `relates: { to: arcade }` on `features/`) and every descendant inherits it. A
   link to a node also offers that node's subtree as pointers.
-- **spokes** (pointers: id + description): the surface's own descendants and the
+- **pointers** (id + description, no body): the surface's own descendants and the
   subtree of any node it relates to. The agent reads the descriptions and pulls
   what it needs with a follow-up `gather`.
 
@@ -105,7 +105,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus spoke pointers), list the node menu, or rank the closest nodes for an inexact query. |
+| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), list the node menu, or rank the closest nodes for an inexact query. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs

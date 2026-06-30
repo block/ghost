@@ -67,7 +67,7 @@ export function registerGatherCommand(cli: CAC): void {
 
         // An inexact query (not an exact node id): rank the closest nodes
         // rather than dumping the whole menu. This is `gather`'s search front
-        // end — the same act as picking from the menu, done intelligently.
+        // end, the same act as picking from the menu, done intelligently.
         if (!known.has(surface)) {
           const matches = searchGraph(surface, loaded.graph);
           if (opts.format === "json") {
@@ -131,12 +131,12 @@ function formatCandidatesMarkdown(query: string, matches: SearchHit[]): string {
     return `${lines.join("\n")}\n`;
   }
   lines.push(
-    `\`${query}\` is not a node id. Closest matches — run \`ghost gather <node>\`:`,
+    `\`${query}\` is not a node id. Closest matches (run \`ghost gather <node>\`):`,
     "",
   );
   for (const hit of matches) {
     const kind = hit.surface ? "surface" : "node";
-    lines.push(`- \`${hit.id}\` (${kind}) — ${matchLabel(hit)}`);
+    lines.push(`- \`${hit.id}\` (${kind}): ${matchLabel(hit)}`);
     if (hit.description) lines.push(`  - ${hit.description}`);
   }
   return `${lines.join("\n")}\n`;
@@ -207,26 +207,27 @@ function formatSliceMarkdown(slice: GraphSlice): string {
       const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
       lines.push(
         "",
-        `### \`${node.id}\` — ${provenanceLabel(node.provenance)}${tag}`,
+        `### \`${node.id}\` (${provenanceLabel(node.provenance)})${tag}`,
         "",
         node.body,
       );
     }
   }
 
-  // Spokes: pointers the agent may pull on demand (descendants + edge hubs).
-  if (slice.spokes.length > 0) {
+  // Pointers the agent may pull on demand (descendants + related subtrees).
+  if (slice.pointers.length > 0) {
     lines.push(
       "",
       "## Available to pull",
       "",
-      "Pointers to nearby context — run `ghost gather <id>` to expand.",
+      "Pointers to nearby context. Run `ghost gather <id>` to expand.",
       "",
     );
-    for (const spoke of slice.spokes) {
-      const via = spoke.kind === "edge-hub" ? ` _(via \`${spoke.hub}\`)_` : "";
-      lines.push(`- \`${spoke.id}\`${via}`);
-      if (spoke.description) lines.push(`  - ${spoke.description}`);
+    for (const pointer of slice.pointers) {
+      const via =
+        pointer.kind === "related" ? ` _(via \`${pointer.from}\`)_` : "";
+      lines.push(`- \`${pointer.id}\`${via}`);
+      if (pointer.description) lines.push(`  - ${pointer.description}`);
     }
   }
 

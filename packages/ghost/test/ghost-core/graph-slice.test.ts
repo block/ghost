@@ -6,8 +6,8 @@ import {
 } from "../../src/ghost-core/index.js";
 
 /**
- * Model a node the way the loader does. `folder` is the file's directory — the
- * unit of corridor containment:
+ * Model a node the way the loader does. `folder` is the file's directory, the
+ * unit of containment:
  * - a root file (`voice.md`)        → parent `core`,   folder ``.
  * - a directory index (`a/index.md`)→ parent of `a`,   folder `a`.
  * - a leaf (`a/b.md`)               → parent `a`,       folder `a`.
@@ -41,13 +41,13 @@ function provenanceOf(slice: ReturnType<typeof resolveGraphSlice>, id: string) {
 }
 const bodyIds = (slice: ReturnType<typeof resolveGraphSlice>) =>
   slice.nodes.map((n) => n.id).sort();
-const spokeIds = (slice: ReturnType<typeof resolveGraphSlice>) =>
-  slice.spokes.map((s) => s.id).sort();
+const pointerIds = (slice: ReturnType<typeof resolveGraphSlice>) =>
+  slice.pointers.map((s) => s.id).sort();
 
-describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
-  // A cash-ios-shaped fixture: globals at root, a design-system hub (arcade),
-  // and two walled feature subtrees. The `features` module declares the Arcade
-  // dependency once, for all its children.
+describe("resolveGraphSlice: path nodes + related pointers", () => {
+  // A cash-ios-shaped fixture: globals at root, a design-system node (arcade),
+  // and two separate feature subtrees. The `features` module declares the
+  // Arcade dependency once, for all its children.
   function cashGraph() {
     return assembleGraph({
       placedNodes: [
@@ -76,20 +76,20 @@ describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
     });
   }
 
-  it("1. a sibling folder is a wall — its nodes never leak in", () => {
+  it("1. a sibling folder never leaks in", () => {
     const slice = resolveGraphSlice(
       cashGraph(),
       "features/bitcoin/buy/confirm",
     );
     const ids = bodyIds(slice);
-    // Walled-off siblings: other features, the design system, sibling sub-areas.
+    // Off-path siblings: other features, the design system, sibling sub-areas.
     expect(ids).not.toContain("features/banking");
     expect(ids).not.toContain("features/banking/paychecks");
     expect(ids).not.toContain("features/lending");
     expect(ids).not.toContain("features/bitcoin/education");
-    // And not even as spokes — a wall is total.
-    expect(spokeIds(slice)).not.toContain("features/banking");
-    expect(spokeIds(slice)).not.toContain("features/lending");
+    // And not even as pointers: the exclusion is total.
+    expect(pointerIds(slice)).not.toContain("features/banking");
+    expect(pointerIds(slice)).not.toContain("features/lending");
   });
 
   it("2. an ancestor's relates propagates down to a deep leaf", () => {
@@ -98,7 +98,7 @@ describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
       "features/bitcoin/buy/confirm",
     );
     // `features` declares the Arcade dependency; a screen 3 levels deeper
-    // inherits it via the corridor → edge path.
+    // inherits it via the path → edge route.
     expect(provenanceOf(slice, "arcade")).toEqual({
       kind: "edge",
       via: "reinforces",
@@ -106,32 +106,32 @@ describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
     });
   });
 
-  it("3. an edge to a hub unfolds the hub's subtree as spokes", () => {
+  it("3. an edge to a node offers that node's subtree as pointers", () => {
     const slice = resolveGraphSlice(
       cashGraph(),
       "features/bitcoin/buy/confirm",
     );
-    const hubSpokes = slice.spokes
-      .filter((s) => s.kind === "edge-hub")
+    const relatedPointers = slice.pointers
+      .filter((s) => s.kind === "related")
       .map((s) => s.id)
       .sort();
-    expect(hubSpokes).toEqual([
+    expect(relatedPointers).toEqual([
       "arcade/color",
       "arcade/components",
       "arcade/components/button",
       "arcade/motion",
     ]);
-    // The hub body itself is a full-body edge node, not a spoke.
-    expect(spokeIds(slice)).not.toContain("arcade");
+    // The related node's body itself is a full-body edge node, not a pointer.
+    expect(pointerIds(slice)).not.toContain("arcade");
   });
 
-  it("4. a loose file in a corridor folder cascades full-body (invariants)", () => {
+  it("4. a loose file in a path folder cascades full-body (invariants)", () => {
     const slice = resolveGraphSlice(
       cashGraph(),
       "features/bitcoin/buy/confirm",
     );
     // `features/bitcoin/invariants` is a plain file in folder features/bitcoin,
-    // which is on the corridor — so it is inherited as a full body.
+    // which is on the path, so it is inherited as a full body.
     expect(provenanceOf(slice, "features/bitcoin/invariants")).toEqual({
       kind: "ancestor",
       from: "features/bitcoin",
@@ -147,9 +147,9 @@ describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
     });
   });
 
-  it("5. descendants appear as spokes (pointers), not spine", () => {
+  it("5. descendants appear as pointers, not full bodies", () => {
     const slice = resolveGraphSlice(cashGraph(), "features/bitcoin");
-    const descendants = slice.spokes
+    const descendants = slice.pointers
       .filter((s) => s.kind === "descendant")
       .map((s) => s.id)
       .sort();
@@ -161,8 +161,8 @@ describe("resolveGraphSlice — corridor + hub-and-spoke", () => {
     ]);
     // A descendant is a pointer, never a full body.
     expect(bodyIds(slice)).not.toContain("features/bitcoin/buy/confirm");
-    // A descendant spoke carries its description for agent selection.
-    const buy = slice.spokes.find((s) => s.id === "features/bitcoin/buy");
+    // A descendant pointer carries its description for agent selection.
+    const buy = slice.pointers.find((s) => s.id === "features/bitcoin/buy");
     expect(buy?.kind).toBe("descendant");
   });
 
