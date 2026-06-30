@@ -121,6 +121,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 - Self-check before generating: follow [references/self-check.md](references/self-check.md).
 - Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Fingerprint capture: follow [references/capture.md](references/capture.md).
+- Author the inventory lens: follow [references/inventory.md](references/inventory.md).
 - Recall surface-composition context: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Critique generated or changed work: follow [references/critique.md](references/critique.md).
