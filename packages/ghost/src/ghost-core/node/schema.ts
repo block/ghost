@@ -3,7 +3,7 @@ import { GHOST_NODE_RELATION_KINDS } from "./types.js";
 
 /**
  * A node id is its path within the package, `.md` dropped (`marketing/email`).
- * The directory tree is the containment spine: the containing directory is the
+ * The directory tree is the containment graph: the containing directory is the
  * parent, so the id *does* encode hierarchy by design. A segment is a permissive
  * lowercase slug (alphanumeric plus `.` `_` `-`); segments join with `/`. No
  * leading, trailing, or doubled slash. Ids are computed by the loader from the

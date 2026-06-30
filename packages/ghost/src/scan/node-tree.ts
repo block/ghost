@@ -105,8 +105,8 @@ async function walk(
 
 /**
  * Compute a node's id, parent, and file folder from its package-relative path.
- * The folder is the directory the file sits in — the unit of corridor
- * containment, which differs from `parent` for index nodes.
+ * The folder is the directory the file sits in, the unit of containment for
+ * slice composition, which differs from `parent` for index nodes.
  * - `index.md`            → id `core`, parent absent, folder ``.
  * - `a/index.md`          → id `a`,    parent `core`, folder `a`.
  * - `a/b/index.md`        → id `a/b`,  parent `a`,    folder `a/b`.

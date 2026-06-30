@@ -49,7 +49,7 @@ Two resolution mechanisms, both read-only:
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
 | **Authoring** | `init`, `scan`, `signals`, `validate`, `migrate` | The raw nodes plus repo signals, for a human or agent writing the fingerprint. | the node graph, raw signals | **No**, this *is* the model. |
-| **Generation** | `gather` | A narrow, task-scoped *slice* delivered before building: full bodies along the surface's path, one-hop edges, and spoke pointers. | the composed `gather` slice | **No** if selection stays a read-only narrowing pass. **Leak risk:** if retrieval needs are pushed back into the tree shape. |
+| **Generation** | `gather` | A narrow, task-scoped *slice* delivered before building: full bodies along the surface's path, one-hop edges, and pointers. | the composed `gather` slice | **No** if selection stays a read-only narrowing pass. **Leak risk:** if retrieval needs are pushed back into the tree shape. |
 | **Governance** | `checks`, `review` | Every check offered, grounded in the touched surfaces' slice, evaluated against a diff. | offered checks plus the grounding slice | **No** if checks stay offered-and-grounded. **Leak risk:** making checks filter or route by surface instead of binding to prose via `source:`. |
 | **Fleet** | (`ghost-fleet`, private) | Many bundles at once: distances, cohorts, tracks-graph. | many fingerprints, read-only | **No**, consumes workspace exports read-only. |
 | **Discovery / pathless** | `gather <query>` | A ranked set of candidate nodes when there is no exact surface to name. | `description` payloads, ranked | **Leak risk:** inventing a routing model in the data instead of ranking on `description` and letting the agent pick. |

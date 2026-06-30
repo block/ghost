@@ -5,8 +5,8 @@ import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
 /**
  * Why a full-body node is present in a resolved slice.
  * - `own`: a file in the requested surface's own folder.
- * - `ancestor`: a file in a folder higher on the corridor (root → surface).
- * - `edge`: contributed by a typed `relates` link from a spine node (one hop).
+ * - `ancestor`: a file in a folder higher on the path (root → surface).
+ * - `edge`: contributed by a typed `relates` link from a node on the path (one hop).
  */
 export type GraphSliceProvenance =
   | { kind: "own" }
@@ -21,21 +21,20 @@ export interface GraphSliceNode {
 }
 
 /**
- * A spoke: a node offered as a pointer (id + description, no body) for the agent
- * to pull on demand. Spokes are navigable optionality, never authoritative
- * context.
+ * A pointer: a node offered as id + description (no body) for the agent to pull
+ * on demand. Pointers are navigable optionality, never authoritative context.
  * - `descendant`: a node within or below the requested surface's own subtree.
- * - `edge-hub`: a node within or below an `edge` target's subtree (a hub the
- *   surface `relates` to unfolds its menu).
+ * - `related`: a node within or below an `edge` target's subtree (a node the
+ *   surface `relates` to offers its subtree as pointers).
  */
-export type GraphSpokeKind = "descendant" | "edge-hub";
+export type GraphPointerKind = "descendant" | "related";
 
 export interface GraphSlicePointer {
   id: string;
   description?: string;
-  kind: GraphSpokeKind;
-  /** For an `edge-hub` spoke, the hub id it belongs to. */
-  hub?: string;
+  kind: GraphPointerKind;
+  /** For a `related` pointer, the `relates` target whose subtree it belongs to. */
+  from?: string;
 }
 
 export interface GraphSlice {
@@ -45,10 +44,10 @@ export interface GraphSlice {
   ancestors: string[];
   /** The `--as` incarnation filter applied, if any. */
   incarnation?: string;
-  /** Full-body context: the corridor spine plus one-hop `relates` edges. */
+  /** Full-body context: every node on the path plus one-hop `relates` edges. */
   nodes: GraphSliceNode[];
-  /** Pointers (id + description) the agent may pull: descendants + edge hubs. */
-  spokes: GraphSlicePointer[];
+  /** Pointers (id + description) the agent may pull: descendants + related subtrees. */
+  pointers: GraphSlicePointer[];
 }
 
 export interface ResolveGraphSliceOptions {
@@ -57,23 +56,21 @@ export interface ResolveGraphSliceOptions {
 }
 
 /**
- * Compose a context slice for a surface by traversing the graph — deterministic,
- * no I/O, no LLM. The model is "folders are walls; files fill the corridor":
+ * Compose a context slice for a surface by traversing the graph. Deterministic,
+ * no I/O, no LLM.
  *
- * - **spine** (`own`/`ancestor`): every node whose **file folder** is on the
- *   surface's corridor — the chain of folders from the package root down to the
- *   surface's own folder. A sibling folder is a wall: its nodes never appear.
- *   Spine nodes are full bodies.
- * - **edge**: for each spine node's `relates`, the target node's body is
+ * - **path nodes** (`own`/`ancestor`): every node whose **file folder** is on
+ *   the path from the package root down to the surface's own folder. A sibling
+ *   folder's nodes never appear. Path nodes are full bodies.
+ * - **edge**: for each path node's `relates`, the target node's body is
  *   included once (one hop, no recursion), tagged by the relation qualifier.
- *   This is how a broad rule placed high in the corridor (e.g. "all feature UI
+ *   This is how a broad rule placed high in the tree (e.g. "all feature UI
  *   draws on Arcade", authored once on `features`) reaches every descendant.
- * - **spokes**: descendants of the surface's own folder, plus descendants of
- *   each edge target (a hub the surface draws on unfolds its menu), as pointers.
+ * - **pointers**: descendants of the surface's own folder, plus descendants of
+ *   each edge target (a related node offers its subtree), as id + description.
  *
  * The `incarnation` option filters full-body nodes: essence (untagged) always
- * passes; a tagged node passes only when it matches. Spokes are unfiltered
- * pointers.
+ * passes; a tagged node passes only when it matches. Pointers are unfiltered.
  */
 export function resolveGraphSlice(
   graph: GhostGraph,
@@ -84,10 +81,10 @@ export function resolveGraphSlice(
   const ancestors = ancestorsFull.filter((id) => id !== GHOST_GRAPH_ROOT_ID);
 
   const surfaceNode = graph.nodes.get(surfaceId);
-  // The surface's own file folder anchors the corridor. For a bare tree
-  // position (a directory with no index node) the folder is the id itself.
+  // The surface's own file folder anchors the path. For a bare tree position
+  // (a directory with no index node) the folder is the id itself.
   const surfaceFolder = surfaceNode?.folder ?? surfaceId;
-  const corridor = corridorFolders(surfaceFolder);
+  const pathFolders = foldersOnPath(surfaceFolder);
 
   const passesIncarnation = (incarnation?: string): boolean => {
     if (options.incarnation === undefined) return true;
@@ -102,7 +99,7 @@ export function resolveGraphSlice(
       ? { incarnation: options.incarnation }
       : {}),
     nodes: [],
-    spokes: [],
+    pointers: [],
   };
 
   const seenBody = new Set<string>();
@@ -123,11 +120,11 @@ export function resolveGraphSlice(
     return true;
   };
 
-  // Spine: every node whose file folder is on the corridor. `own` when the
+  // Path nodes: every node whose file folder is on the path. `own` when the
   // node sits in the surface's own folder; `ancestor` when higher up.
   for (const node of graph.nodes.values()) {
     if (node.origin === "inherited") continue;
-    if (!corridor.has(node.folder)) continue;
+    if (!pathFolders.has(node.folder)) continue;
     const provenance: GraphSliceProvenance =
       node.folder === surfaceFolder
         ? { kind: "own" }
@@ -135,11 +132,11 @@ export function resolveGraphSlice(
     addBody(node.id, provenance);
   }
 
-  // Edges: one hop along `relates` from every spine node. The target's body is
-  // included; if the target is a hub, its subtree is offered as spokes.
-  const spineIds = slice.nodes.map((n) => n.id);
+  // Edges: one hop along `relates` from every path node. The target's body is
+  // included; the target's subtree is then offered as pointers.
+  const pathNodeIds = slice.nodes.map((n) => n.id);
   const edgeTargets: string[] = [];
-  for (const sourceId of spineIds) {
+  for (const sourceId of pathNodeIds) {
     const source = graph.nodes.get(sourceId);
     if (!source) continue;
     for (const relation of source.relates) {
@@ -152,35 +149,35 @@ export function resolveGraphSlice(
     }
   }
 
-  // Spokes: descendants of the surface, plus descendants of each edge hub.
-  const seenSpoke = new Set<string>(seenBody);
-  const addSpoke = (id: string, kind: GraphSpokeKind, hub?: string) => {
-    if (seenSpoke.has(id)) return;
+  // Pointers: descendants of the surface, plus descendants of each edge target.
+  const seenPointer = new Set<string>(seenBody);
+  const addPointer = (id: string, kind: GraphPointerKind, from?: string) => {
+    if (seenPointer.has(id)) return;
     const node = graph.nodes.get(id);
     if (!node) return;
-    seenSpoke.add(id);
-    slice.spokes.push({
+    seenPointer.add(id);
+    slice.pointers.push({
       id: node.id,
       ...(node.description !== undefined
         ? { description: node.description }
         : {}),
       kind,
-      ...(hub !== undefined ? { hub } : {}),
+      ...(from !== undefined ? { from } : {}),
     });
   };
 
   for (const node of graph.nodes.values()) {
     if (node.origin === "inherited") continue;
     if (isWithinOrBelow(node.folder, surfaceFolder)) {
-      addSpoke(node.id, "descendant");
+      addPointer(node.id, "descendant");
     }
   }
-  for (const hubId of edgeTargets) {
-    const hub = graph.nodes.get(hubId);
-    if (!hub) continue;
+  for (const targetId of edgeTargets) {
+    const target = graph.nodes.get(targetId);
+    if (!target) continue;
     for (const node of graph.nodes.values()) {
-      if (isWithinOrBelow(node.folder, hub.folder)) {
-        addSpoke(node.id, "edge-hub", hubId);
+      if (isWithinOrBelow(node.folder, target.folder)) {
+        addPointer(node.id, "related", targetId);
       }
     }
   }
@@ -188,8 +185,8 @@ export function resolveGraphSlice(
   return slice;
 }
 
-/** The set of folders on the corridor from the package root down to `folder`. */
-function corridorFolders(folder: string): Set<string> {
+/** The set of folders on the path from the package root down to `folder`. */
+function foldersOnPath(folder: string): Set<string> {
   const set = new Set<string>([""]); // root files reach everywhere
   let current = folder;
   while (current !== "") {

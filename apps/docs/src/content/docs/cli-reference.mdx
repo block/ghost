@@ -130,9 +130,9 @@ A slice composes three things:
   surface's own folder. A sibling folder's nodes never appear.
 - **edges** (full bodies, one hop): the `relates` targets of every node on that
   path, so a rule authored once high in the tree reaches every descendant. A
-  link to a node also offers that node's subtree as spokes.
-- **spokes** (pointers): the surface's own descendants and the subtree of any
-  node it relates to, offered as `id` + `description` for the agent to pull on
+  link to a node also offers that node's subtree as pointers.
+- **pointers**: the surface's own descendants and the subtree of any node it
+  relates to, offered as `id` + `description` for the agent to pull on
   demand.
 
 Use `--as` to filter full-body nodes to a single incarnation; untagged essence

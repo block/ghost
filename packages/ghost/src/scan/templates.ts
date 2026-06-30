@@ -29,8 +29,8 @@ function manifestFile(): TemplateFile {
 }
 
 /**
- * The default starter: a manifest plus the package-root `index.md` — the `core`
- * node whose prose cascades to every surface. The directory tree is the spine:
+ * The default starter: a manifest plus the package-root `index.md`, the `core`
+ * node whose prose cascades to every surface. The directory tree is the graph:
  * add a surface by adding a directory, give it prose with its own `index.md`,
  * and place nodes as `<surface>/<node>.md`.
  */
