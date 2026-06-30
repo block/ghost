@@ -107,7 +107,7 @@ Available subpath exports: `@anarchitecture/ghost`,
 
 Ghost is bring-your-own-agent. The CLI performs deterministic work: repo
 signals, contribution reporting, graph validation, context composition, check
-routing, and advisory review packets. The installed `ghost` skill teaches a host
+selection and grounding, and advisory review packets. The installed `ghost` skill teaches a host
 agent how to capture canonical `.ghost/` surface-composition context, brief and
 generate work from it, review changes against it, and verify generated UI.
 

@@ -1,6 +1,6 @@
 ---
 status: exploring
-companion: context-graph.md, scenarios-worked.md, contract-storage.md, phase-7b-grounded-checks.md
+companion: context-graph.md, scenarios-worked.md, contract-storage.md
 source: external POC (block-as-intelligence / .ghost) exercising Ghost as a multi-brand, multi-medium composition graph
 ---
 

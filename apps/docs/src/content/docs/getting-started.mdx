@@ -19,7 +19,7 @@ The canonical portable fingerprint is a directory tree of prose nodes:
 .ghost/
   manifest.yml          # schema + package id
   index.md              # the core node, true everywhere
-  trust.md              # another root node, also true everywhere
+  trust.md              # another top-level node (child of core), also true everywhere
   marketing/index.md    # the `marketing` surface's own prose
   marketing/email.md    # a node in the marketing surface
   checks/*.md           # optional ghost.check/v1 deterministic checks
@@ -29,13 +29,13 @@ The directory tree _is_ the graph. A node's identity is its file path with
 `.md` dropped (`marketing/email.md` is the node `marketing/email`), and its
 parent is the directory that contains it. A surface is a directory: its own
 prose lives in that directory's `index.md`, and the package-root `index.md` is
-the implicit `core` node. No spine file to maintain. A surface exists when its
-directory exists.
+the implicit `core` node. No separate file declares the graph. A surface exists
+when its directory exists.
 
-Folders are walls; files fill the corridor. A node inherits every file from the
-package root down to its own folder, so root nodes (`index.md`, `trust.md`)
-reach every surface while a sibling surface stays invisible. `relates` links
-nodes laterally across that boundary when a relationship carries rationale.
+A node inherits every file from the package root down to its own folder, so
+top-level nodes (`index.md`, `trust.md`) reach every surface while a sibling
+surface stays invisible. `relates` links nodes laterally across that boundary
+when a relationship carries rationale.
 
 Write and read every prose node through three lenses: intent, inventory, and
 composition. Deterministic `checks/` validate the result afterward; they are not
@@ -125,7 +125,7 @@ workflow, read [Fingerprint Authoring](/docs/fingerprint-authoring).
 <DocSection title="Gather Context Before You Build">
 
 Before generating or revising UI, gather the composed slice for the surface the
-work touches. The agent names the surface; Ghost composes its corridor of prose:
+work touches. The agent names the surface; Ghost composes its prose:
 
 ```bash
 ghost gather marketing
@@ -133,11 +133,11 @@ ghost gather marketing/email --as email
 ghost gather marketing --format json
 ```
 
-`gather` returns the **spine** (every node on the corridor from the root down to
-the surface, as full bodies), the **edges** reachable in one hop from any spine
-node's `relates`, and **spokes**, pointers to nearby nodes the agent can pull on
-demand. Run it before generation, so the agent builds with surface composition
-in hand rather than discovering the gaps in review.
+`gather` returns full bodies for every node from the root down to the surface,
+the **edges** reachable in one hop from any of their `relates`, and **spokes**,
+pointers to nearby nodes the agent can pull on demand. Run it before generation,
+so the agent builds with surface composition in hand rather than discovering the
+gaps in review.
 
 </DocSection>
 
@@ -152,9 +152,10 @@ ghost review --surface marketing --base main
 git diff | ghost review --surface marketing --diff -
 ```
 
-`ghost checks` selects and grounds the markdown checks governing the named
-surfaces. `ghost review` emits an advisory packet: touched surfaces, routed
-checks, fingerprint grounding, and the diff embedded verbatim.
+`ghost checks` lists the markdown checks and grounds the named surfaces; every
+check is offered and the agent judges which apply. `ghost review` emits an
+advisory packet: touched surfaces, the offered checks, fingerprint grounding,
+and the diff embedded verbatim.
 
 Wrappers should consume `--format json` and map Ghost severities outside Ghost.
 Ghost severities remain `critical`, `serious`, and `nit`. Advisory review is

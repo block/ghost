@@ -7,14 +7,14 @@ description: A pre-generation probe that reveals whether you have actually gathe
 
 Before writing or reviewing UI for a surface, check whether you are grounded in
 its fingerprint or about to fall back on generic instincts. These questions test
-your **grounding and provenance**, not the surface's contents — so they hold for
+your **grounding and provenance**, not the surface's contents, so they hold for
 any fingerprint, however sparse, whatever the product, whoever authored it.
 
 Ask yourself:
 
 1. **What did you gather?** Which Ghost nodes did you pull for this surface
    (`ghost gather <surface>`), and can you cite them by id? If you have not
-   gathered, you are not grounded — gather first.
+   gathered, you are not grounded. Gather first.
 2. **What is Ghost-backed vs. provisional?** For each claim you are about to
    encode in the UI, is it backed by a gathered node (cite the id), or is it
    your own provisional local reasoning? You must be able to label every claim
@@ -26,7 +26,7 @@ Ask yourself:
 
 Optionally, where the prose speaks to it: if the gathered nodes say anything
 about hierarchy, density, restraint, repetition, or trust, state what they say.
-If they do not, that is a valid answer — record it as silence, not as a failure.
+If they do not, that is a valid answer: record it as silence, not as a failure.
 
 When you cannot answer 1–3:
 

@@ -5,9 +5,9 @@ handoffs:
   - label: Inspect the package
     command: ghost scan
     prompt: What does this fingerprint package contribute, and what is absent?
-  - label: Run deterministic checks
-    command: ghost check
-    prompt: Run ghost check against this bundle
+  - label: Run advisory review
+    command: ghost review
+    prompt: Run ghost review against this bundle
 ---
 
 # Recipe: Author Ghost Fingerprint
@@ -56,9 +56,9 @@ action beats completeness…
   against those and names one. The body is the node's "implementation"; the
   description is what makes it discoverable. Write one on any node worth
   anchoring a task at.
-- **The directory places the node.** Folders are walls; files fill the
-  corridor. A node inherits every file in the folders above it, up to the root;
-  a sibling folder is invisible. The brand soul lives in the package-root files
+- **The directory places the node.** A node inherits every file in the folders
+  above it, up to the root; a sibling folder is invisible. The brand soul lives
+  in the package-root files
   (the `core` node and other root files), so it reaches every surface. Author a
   broad rule at the broadest folder where it is true: a feature's
   `invariants.md` reaches every screen in that feature and nowhere else.
@@ -113,7 +113,7 @@ demonstrating the shape.
 Add a surface by adding a directory: `checkout/` is the `checkout` surface, and
 `checkout/index.md` holds its prose. Nest surfaces by nesting directories. The
 tree is the layout itself; a node's id and parent come from where its file
-sits, never from a declared spine.
+sits, never from a separate declaration.
 
 ### 4. Orient
 
@@ -133,15 +133,17 @@ before treating draft nodes as durable.
 
 ### 6. Add checks sparingly
 
-`checks/*.md` are `ghost.check/v1` markdown, placed by `surface:` frontmatter
-(unplaced = core = everywhere). They validate output after generation; they are
-not generation input. Add only deterministic checks.
+`checks/*.md` are `ghost.check/v1` markdown. Each may carry an optional
+`source:` pointer (a node id with an optional `> Heading`) binding it to the
+prose it enforces; every check is offered and the agent judges which apply.
+They validate output after generation; they are not generation input. Add only
+deterministic checks.
 
 ### 7. Validate
 
 ```bash
 ghost validate .ghost
-ghost check --base HEAD
+ghost review --base HEAD
 ```
 
 ## Never

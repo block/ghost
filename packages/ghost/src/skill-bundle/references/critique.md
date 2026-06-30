@@ -10,13 +10,13 @@ description: Critique generated or changed UI using Ghost fingerprint nodes.
 3. Compare the work against relevant intent and composition guidance.
 4. Inspect relevant inventory exemplars as concrete anchors for what good looks like.
 5. Lead with actionable findings. Cite diff locations, fingerprint refs,
-   inventory exemplars, active checks, selected-context gaps, and repairs where relevant.
+   inventory exemplars, checks, selected-context gaps, and repairs where relevant.
 
 When fingerprint nodes are silent, you may use nearby product surfaces, local
 components, token and copy conventions. Label that reasoning as provisional and
 non-Ghost-backed.
 
-Do not make advisory taste critique sound blocking unless an active check backs
+Do not make advisory taste critique sound blocking unless a check backs
 it. If fingerprint grounding or node coverage is missing or contradictory,
 name that as `missing-fingerprint` or `experience-gap`; edit the Ghost package
 only when the user asks you to.

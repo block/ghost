@@ -89,7 +89,7 @@ surface is just a directory; its own prose lives in that directory's
 `index.md` (`checkout/index.md` is the `checkout` surface), and the
 package-root `index.md` is the implicit `core` node that is true everywhere.
 
-There is no spine file. A surface exists when its directory exists. Reserved at
+No separate file declares the graph. A surface exists when its directory exists. Reserved at
 the package root are `manifest.yml` and the `checks/` subtree; every other
 `*.md` is a node. Moving a node to another directory is a rename: its id and
 parent change, and `ghost validate` reports any `relates` that no longer
@@ -118,7 +118,10 @@ write; they are never frontmatter fields:
 | Composition | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
 
 Deterministic `checks/` gates that can be evaluated from a diff live alongside
-the tree in the `checks/` subtree.
+the tree in the `checks/` subtree. A check may carry an optional `source:`
+pointer (a node id with an optional `> Heading`, e.g. `checkout/payment >
+Confirmation`) binding it to the prose it enforces. Checks are not routed by
+surface: every check is offered and the agent judges which apply.
 
 </DocSection>
 

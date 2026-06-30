@@ -52,7 +52,7 @@ expression. The tree is the layout; ids encode hierarchy because they *are* path
 
 ## Surfaces are directories
 
-There is no spine file. A surface exists when its directory exists; give it prose
+No separate file declares the graph. A surface exists when its directory exists; give it prose
 with an `index.md`, place nodes inside it, and nest surfaces by nesting
 directories. A surface that needs no prose of its own is simply a directory that
 holds nodes. Moving a node to another directory changes its id (a rename) and
@@ -75,14 +75,14 @@ key), never by repo path.
 
 `ghost gather <node>` composes a node's slice, filtered by `--as <incarnation>`:
 
-- **spine** (full bodies): every file on the corridor from the package root
-  down to the node's own folder. Folders are walls; sibling folders never
-  appear.
-- **edges** (full bodies, one hop): each spine node's `relates` targets. A rule
-  authored high in the corridor (e.g. `relates: { to: arcade }` on `features/`)
-  reaches every descendant.
-- **spokes** (pointers): the node's own descendants and any edge hub's subtree,
-  offered as id + description for the agent to pull with a follow-up `gather`.
+- **full bodies along the path**: every file from the package root down to the
+  node's own folder. Sibling folders never appear.
+- **edges** (full bodies, one hop): the `relates` targets of every node on that
+  path. A rule authored high in the tree (e.g. `relates: { to: arcade }` on
+  `features/`) reaches every descendant.
+- **spokes** (pointers): the node's own descendants and the subtree of any node
+  it relates to, offered as id + description for the agent to pull with a
+  follow-up `gather`.
 
 With no argument, `gather` lists nodes by id + description for the agent to match
 the ask against. The agent names the node; Ghost never infers it from a path.
@@ -91,9 +91,9 @@ the ask against. The agent names the node; Ghost never infers it from a path.
 
 `checks/*.md` are `ghost.check/v1` markdown. Every check is offered to the
 reviewer; the host agent judges which apply to the diff and the grounded prose.
-An optional `source:` names the fingerprint prose the check enforces — a node
-path id with an optional `> Heading` anchor (`checkout/payment > Confirmation`) —
-and `review` surfaces it so a finding can cite which section it derives from.
+An optional `source:` names the fingerprint prose the check enforces: a node
+path id with an optional `> Heading` anchor (`checkout/payment > Confirmation`).
+`review` surfaces it so a finding can cite which section it derives from.
 `source:` is a soft pointer: an unresolved one is a warning, not an error.
 Checks validate generated output; they are not generation input. Keep them
 deterministic.

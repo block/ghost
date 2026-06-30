@@ -15,7 +15,7 @@ Return:
 
 - The gathered nodes and their short claims (cite by node id).
 - Related nodes worth inspecting as concrete anchors.
-- Active checks that may affect the work.
+- Checks that may affect the work.
 - Any gaps where local evidence must carry the reasoning.
 
 If the fingerprint is silent on the task, say that plainly and continue with

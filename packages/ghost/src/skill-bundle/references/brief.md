@@ -7,7 +7,7 @@ description: Build a concise pre-generation brief from a surface's gather slice.
 
 0. Before building, run the [self-check](self-check.md): if you cannot name the
    nodes you gathered, label each claim as Ghost-backed or provisional, and
-   point to where the fingerprint is silent, you are not grounded yet — gather
+   point to where the fingerprint is silent, you are not grounded yet. Gather
    first.
 1. Match the ask to a surface in the menu (`ghost gather --format json` with no
    surface lists the surfaces and their descriptions), then run
@@ -21,8 +21,8 @@ description: Build a concise pre-generation brief from a surface's gather slice.
 4. Run `ghost signals <path>` when raw repo observations would help you find
    evidence.
 5. Run `ghost checks --surface <ids>` (the surfaces you determined the change
-   touches) to see which checks govern them and their grounding, so generation
-   avoids known failures.
+   touches) to ground them and see the offered checks, so generation avoids
+   known failures.
 6. When the slice is sparse, label local reasoning provisional rather than
    inventing surface-specific rules.
 

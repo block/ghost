@@ -88,7 +88,7 @@ export function registerFingerprintCommands(cli: CAC): void {
             );
           } else {
             process.stdout.write(
-              "next: author nodes, then run ghost check/review\n",
+              "next: author nodes, then run ghost validate/review\n",
             );
           }
           const c = status.contribution;

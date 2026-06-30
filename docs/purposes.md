@@ -1,91 +1,101 @@
 # What Fingerprints Are For
 
-Ghost has one artifact — the `.ghost/` fingerprint package — and several
-consumers that read it. This page exists to keep them honest.
+Ghost has one artifact, the `.ghost/` fingerprint package, and several consumers
+that read it. This page exists to keep them honest.
 
 ## The rule
 
 > A consumer may read the fingerprint through any **projection** it likes.
-> A consumer may **not** change the shape of the fingerprint or the merge
-> semantics to suit itself.
+> A consumer may **not** change the shape of the fingerprint to suit itself.
 
 The fingerprint is a deliberately dumb source of truth. It does not know who is
 asking. Every purpose lives in the projection, not in the artifact.
 
 The test for any feature that "feels bundled":
 
-> Does serving this purpose require changing the *shape* of the fingerprint or
-> its *merge semantics*?
-> - **No** → it's a projection. Fine. Keep it out of the model.
-> - **Yes** → that's a leak. Write it down below and fix the boundary.
+> Does serving this purpose require changing the *shape* of the fingerprint: the
+> directory tree, the node frontmatter, or the path-inheritance rules?
+> - **No** then it is a projection. Fine. Keep it out of the model.
+> - **Yes** then that is a leak. Write it down below and fix the boundary.
 
 ## The model (does not bend)
 
-Four facets, one job each:
+The package is a **directory tree of prose nodes**. The tree is the graph: a
+node is a markdown file, its id is its path with `.md` dropped
+(`marketing/email.md` is `marketing/email`), and its parent is the directory
+that contains it. A surface is a directory; its own prose lives in that
+directory's `index.md`, and the package-root `index.md` is the implicit `core`
+node. No separate file declares the graph.
 
-| Facet | Job |
+| Part | Job |
 | --- | --- |
-| `intent.yml` | Obligations: situations, principles, experience contracts. |
-| `inventory.yml` | Material and evidence: topology, building blocks, exemplars, sources. |
-| `composition.yml` | Assembly grammar: patterns. |
-| `validate.yml` | Hard deterministic checks. Output validation, not generation input. |
+| `manifest.yml` | Schema version, package id, and `extends` (which other packages this one inherits by identity). |
+| Prose nodes (`index.md`, `<surface>/<node>.md`) | The durable surface composition, written through three authoring **lenses**: intent (the why), inventory (the materials), composition (the patterns). The lenses guide what to capture; they are not fields. |
+| Node frontmatter | `description` (the retrieval payload), `relates` (lateral links by id), `incarnation` (a medium-bound expression). |
+| `checks/*.md` | Optional `ghost.check/v1` checks. They validate output, not generation input. A check binds to the prose it enforces through an optional `source:` pointer, never by surface routing. |
 
-Plus one resolution mechanism: nested packages merged root→leaf,
-`child-wins-by-id`. Nesting is the **storage and ownership** model. It is *not*
-the selection model.
+Two resolution mechanisms, both read-only:
+
+- **Path inheritance.** A node inherits every file from the package root down to
+  its own folder, so a rule authored once high in the tree reaches every
+  descendant while a sibling surface stays invisible. `relates` links nodes
+  laterally across folders when a relationship carries rationale.
+- **`extends` by identity.** A package may inherit another package's nodes by
+  id (the shared-brand pattern). Inherited context is referenced by identity
+  (`relates: [{ to: brand:core/trust }]`), never by path.
 
 ## The consumers (each is a projection)
 
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
-| **Authoring** | `init`, `scan`, `signals`, `lint`, `verify` | The raw facets + repo signals, for a human/agent writing the fingerprint. | all facets, raw signals | **No** — this *is* the model. |
-| **Generation** | `relay gather --mode generation` | A narrow, task-scoped *slice* of the merged stack, delivered before building. | merged stack → `selected-context` filtered by `applies_to` / route selectors | **No** if selection stays a read-only narrowing pass. **Leak risk:** if routing needs are pushed back into merge semantics. |
-| **Governance** | `check`, `review`, `relay gather --mode review` | Active checks for the changed paths, evaluated against a diff. | `merged.checks` filtered to changed paths | **No** if check-scoping is pure projection. **Leak risk:** child `status: disabled` silently suppressing an inherited `critical` gate is governance policy living in the data merge. |
-| **Comparison / drift** | `compare`, `diff`, `ack`, `track`, `diverge` | The whole structure, often across *bundles*, not one repo. | full fingerprint(s), structural | **No** — read-only structural views. |
-| **Fleet** | (`ghost-fleet`, private) | Many bundles at once: distances, cohorts, tracks-graph. | many merged fingerprints | **No** — consumes workspace exports read-only. |
-| **Prompt-shaped / pathless** | `relay gather --mode prompt`, `--request*` | A slice selected by prompt selectors when there is no meaningful target path. | route → stack candidates → merged → slice | **Leak risk:** this is where path-based nesting degrades to global fallback. The fix is routing as a selector, not new merge behavior. |
+| **Authoring** | `init`, `scan`, `signals`, `validate`, `migrate` | The raw nodes plus repo signals, for a human or agent writing the fingerprint. | the node graph, raw signals | **No**, this *is* the model. |
+| **Generation** | `gather` | A narrow, task-scoped *slice* delivered before building: full bodies along the surface's path, one-hop edges, and spoke pointers. | the composed `gather` slice | **No** if selection stays a read-only narrowing pass. **Leak risk:** if retrieval needs are pushed back into the tree shape. |
+| **Governance** | `checks`, `review` | Every check offered, grounded in the touched surfaces' slice, evaluated against a diff. | offered checks plus the grounding slice | **No** if checks stay offered-and-grounded. **Leak risk:** making checks filter or route by surface instead of binding to prose via `source:`. |
+| **Fleet** | (`ghost-fleet`, private) | Many bundles at once: distances, cohorts, tracks-graph. | many fingerprints, read-only | **No**, consumes workspace exports read-only. |
+| **Discovery / pathless** | `gather <query>` | A ranked set of candidate nodes when there is no exact surface to name. | `description` payloads, ranked | **Leak risk:** inventing a routing model in the data instead of ranking on `description` and letting the agent pick. |
 
-## Known leaks (the `Yes` and `Leak risk` rows, restated)
+## Known leaks (the `Leak risk` rows, restated)
 
-These are the places where a consumer's need has bent, or is bending, the model.
-Each is a thing to fix at the boundary — not a reason to redesign the artifact.
+These are the places where a consumer's need could bend the model. Each is a
+thing to fix at the boundary, not a reason to redesign the artifact.
 
-1. **Generation reads the merged stack too broadly.** Nothing should consume
-   `merged.fingerprint` directly for generation; everything should go through
-   `selected-context`. The merged stack is an *index*, not a *payload*.
-   *Fix: merge to assemble, select to deliver.*
+1. **Generation reads the whole tree too broadly.** Nothing should consume the
+   raw graph for generation; everything should go through the `gather` slice.
+   The tree is an *index*, not a *payload*.
+   *Fix: compose to assemble, slice to deliver.*
 
-2. **Pathless tasks fall through to `global-fallback`.** Tree-walking is the
-   privileged selector, so when there's no path the mechanism stops
-   discriminating exactly when you want it to.
-   *Fix: path is one selector among several; route by prompt selectors too.*
+2. **Pathless tasks need a target.** When there is no exact surface to name,
+   `gather <query>` ranks the closest nodes on their `description` and the agent
+   picks; the mechanism must not invent surface routing to compensate.
+   *Fix: `description` is the retrieval payload; rank and let the agent pick.*
 
-3. **A child can silently disable an inherited critical check.** Suppressing a
-   parent's hard gate from a child folder is governance action-at-a-distance
-   that is invisible in review.
-   *Fix: make the suppression explicit and surface it in `review` / `diff` with
-   per-layer provenance (already recorded in `provenance.layers`).*
+3. **A check could be made to route by surface.** Checks bind to prose through
+   their `source:` pointer; every check is offered and the agent decides which
+   apply. Filtering or routing checks by surface is governance policy leaking
+   into selection.
+   *Fix: keep checks offered-and-grounded; bind to prose via `source:`.*
 
-4. **id-coupling is silent.** Overrides only happen on exact id match; a typo
-   produces two contradictory entries that both merge in, with no error.
-   *Fix: warn on near-miss ids during `lint`.*
+4. **id-coupling is silent.** `relates` links and `extends` references resolve by
+   id; a typo points at nothing.
+   *Fix: `validate` reports unresolved links and a `source:` that does not
+   resolve (a soft warning, not an error).*
 
-5. **Low-value overlays accrue.** "Don't nest just because files differ" is
-   advice no one follows.
-   *Fix: `scan` / `lint --all` warns when a nested package contributes almost
-   nothing the parent didn't already say.*
+5. **Low-value nodes accrue.** "Don't add a node just to restate what it
+   inherits" is advice no one follows.
+   *Fix: `scan` reports thin contribution so a node that says nothing the nodes
+   above it did not already say is visible.*
 
 ## What we are NOT doing
 
-- **Not** flattening to a single fingerprint — that kills ownership locality and
-  reintroduces drift.
+- **Not** collapsing the tree into one node; that kills ownership locality and
+  the reach of path inheritance.
 - **Not** adding deeper inheritance (mixins, priority weights, multiple
-  inheritance) — cascade-fragility grows faster than the expressive payoff. The
-  whole value of the nesting model is that it is dumb and predictable.
-- **Not** giving any consumer write access to the merge.
+  inheritance); cascade-fragility grows faster than the expressive payoff. The
+  whole value of path inheritance is that it is dumb and predictable.
+- **Not** giving any consumer write access to the shape of the tree.
 
 ## One line
 
-Nesting is how fingerprints are **stored and owned**; routing plus `applies_to`
-filtering is how context is **selected**. One model, many projections, and the
-model never bends to serve a projection.
+The directory tree is how fingerprints are **stored and owned**; path
+inheritance plus `gather` is how context is **selected**. One model, many
+projections, and the model never bends to serve a projection.

@@ -17,11 +17,11 @@ that prose so an agent can translate the fingerprint's intent into concrete
 building blocks without the fingerprint ever naming a component.
 
 This is opinionated method, not new schema. Intent / inventory / composition are
-**authoring lenses** — things for an author to think through, not fields, node
+**authoring lenses**: things for an author to think through, not fields, node
 types, or sections that must coexist in one node. A node may lean entirely on
 one lens: a pure-inventory node is fine, just as a pure-intent node is. Inventory
 can be one paragraph inside a broader node, or it can be split across many
-nodes — one per block, grouped under a surface — whatever keeps each node
+nodes, one per block grouped under a surface, whatever keeps each node
 purpose-coherent. Everything here is guidance for writing inventory prose well,
 wherever it lands. It adds nothing to the artifact: a node is still a markdown
 file with `description` / `relates` / `incarnation` frontmatter and a prose body,
@@ -33,7 +33,7 @@ A fingerprint declares intent in medium-agnostic terms. Inventory grounds that
 intent in concrete materials. A realizing surface (an agent emitting web, Arrow,
 iOS, …) **reads** the inventory and matches against it; the fingerprint never
 references the surface. Strip every inventory node and the fingerprint is still
-valid and still portable — it just gives the agent less to draw on. The agent
+valid and still portable. It just gives the agent less to draw on. The agent
 does the matching.
 
 ## Inventory richness is the portability dial
@@ -47,14 +47,14 @@ This trade belongs to the author:
   strongly grounded, less portable. Tag medium-bound nodes with `incarnation`;
   leave essence untagged.
 
-Neither is correct. A medium-specific inventory node is not a leak — it is a
-deliberate trade, and it does not contaminate the fingerprint, which still does
-not *depend* on it.
+Neither is correct. A medium-specific inventory node is a deliberate trade, not
+a leak, and it does not contaminate the fingerprint, which still does not
+*depend* on it.
 
 ## Tier first: not everything earns a node
 
 - **Primitives** (button, input, badge, avatar, spinner, separator, skeleton…)
-  get **no prose body**. They are shared vocabulary, not intent — the agent
+  get **no prose body**. They are shared vocabulary, not intent; the agent
   already knows what a button is. If you record one at all, give it only a
   `description` so `gather` can surface it; the absence of a body is the signal
   it is a primitive.
@@ -66,7 +66,7 @@ not *depend* on it.
   matching; lean on "not when" to separate it from neighbors.
 
 If a primitive ever seems to need intent guidance, that is a signal it is doing
-a composer's job — promote the pattern into a node, do not write a body on the
+a composer's job. Promote the pattern into a node; do not write a body on the
 primitive.
 
 ## The shape of an inventory node
@@ -77,27 +77,27 @@ real reserved keys; the body is prose the agent reasons over.
 
 **Frontmatter:**
 
-- **`description`** — the retrieval payload. This is how `gather` and search
+- **`description`**: the retrieval payload. This is how `gather` and search
   find the node, so write one on every block worth matching.
-- **`relates`** — link the nearest rivals here (`as: contrasts`). This is the
+- **`relates`**: link the nearest rivals here (`as: contrasts`). This is the
   "see-also" set, and it is the real graph edge, so `ghost validate` checks it
   resolves and `ghost gather` unfolds it. Do **not** invent a parallel `name` or
   `see-also` field; identity comes from the path and links come from `relates`.
 
-**Body:** one short paragraph in a consistent rhythm — *for / reach when / not
+**Body:** one short paragraph in a consistent rhythm, *for / reach when / not
 when (use X instead) / never*:
 
-- **for** — the user need or moment it exists for, framed as the problem, not
+- **for**: the user need or moment it exists for, framed as the problem, not
   the widget.
-- **reach when** — phrased as the user's *first question* ("who/what is this?"
+- **reach when**: phrased as the user's *first question* ("who/what is this?"
   vs "what's happening / what do I do?"). First-question framing forces a clean
   pick between overlapping blocks; situation framing lets both claim a match.
-- **not when** — and name the rival node to reach for instead. This is the prose
+- **not when**: name the rival node to reach for instead. This is the prose
   echo of a `relates` edge and makes the set navigable.
-- **never** — what it must not be conscripted into, so the agent does not
+- **never**: what it must not be conscripted into, so the agent does not
   stretch it to fit and misleading associations get caught.
 
-Keep appearance, props, tokens, and code out — those are API reference, not
+Keep appearance, props, tokens, and code out; those are API reference, not
 inventory prose. The body stays medium-agnostic; the implementation beneath it
 is swappable.
 
@@ -115,7 +115,7 @@ A block earns its node when its purpose is **distinguishable** from every
 other's. Two blocks may overlap heavily and still be distinct *as long as their
 "reach when" answers a different first question*. If they answer the same first
 question, they are one node with a variant, not two. (When the rationale for the
-split is itself rich, write a relationship node whose body explains the tension —
+split is itself rich, write a relationship node whose body explains the tension;
 see [capture.md](capture.md).)
 
 ## Worked example: an inventory surface
@@ -136,7 +136,7 @@ relates:
     as: contrasts
 ---
 Gates a tool action behind explicit user approval. Reach for it when the user's
-first question is "do I allow this?" — a consequential action needs a human
+first question is "do I allow this?", when a consequential action needs a human
 decision before it runs. Not when the action is already complete (that's
 `inventory/tool`) or when no decision is required. It is never a status display;
 with no decision to make, it only manufactures friction.
@@ -154,7 +154,7 @@ relates:
     as: contrasts
 ---
 Reveals an agent's intermediate reasoning as a progressive, collapsible trail.
-Reach for it when the user's first question is "how did it get here?" — the
+Reach for it when the user's first question is "how did it get here?", when the
 process is the content. Not when you want final explanation prose (that's
 `inventory/reasoning`) or a checklist of work (that's `inventory/plan` or
 `inventory/task`). It is never a to-do list or a final answer; it is process
@@ -176,7 +176,7 @@ Tracks discrete units of work and their live status as the agent executes. Reach
 for it when the user's first question is "what's happening right now?" Not when
 the steps are a forward proposal not yet started (that's `inventory/plan`) or the
 content is reasoning rather than work (that's `inventory/chain-of-thought`). It
-never reports a proposal or a rationale — only work in flight.
+never reports a proposal or a rationale, only work in flight.
 ```
 
 `inventory/table.md`
@@ -221,7 +221,7 @@ with `incarnation` rather than by smuggling markup into the prose.
 - Never invent `name` or `see-also` frontmatter; identity is the path and links
   are `relates`.
 - Never write a prose body on a primitive; the absence of a body is the signal.
-- Never put props, tokens, or markup in an inventory body — that is API
+- Never put props, tokens, or markup in an inventory body; that is API
   reference, not purpose.
 - Never let the fingerprint reference the realizing surface; inventory is read,
   not addressed.

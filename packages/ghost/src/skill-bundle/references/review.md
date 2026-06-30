@@ -9,24 +9,26 @@ handoffs:
 
 # Recipe: Review Code Changes For Experience Drift
 
-## 1. Route The Change To Its Surfaces
+## 1. Ground The Change In Its Surfaces
 
 ```bash
 ghost checks --surface <ids> --format json
 ```
 
-Name the surfaces the change touches (you analyzed the diff). Ghost selects the
-markdown checks governing those surfaces and their ancestors, and grounds each
-in the surface's fingerprint slice. Use JSON as the agent contract. It includes:
+Name the surfaces the change touches (you analyzed the diff). Ghost grounds
+those surfaces and their ancestors in their fingerprint slice, and offers every
+markdown check; you judge which apply. Use JSON as the agent contract. It
+includes:
 
-- `touched_surfaces`: the surfaces the diff resolved to
-- `checks`: the relevant checks per surface, with `relevance` (own or inherited)
+- `touched_surfaces`: the surfaces you named
+- `checks`: every check, each with its optional `source:` pointer (the prose it
+  enforces). The agent judges which apply to the diff and the grounded prose.
 - `grounding`: per surface, the slice's prose `nodes`, each with `provenance`
   (own / ancestor / edge). The why and the what live in each node's prose; read
   the grounded nodes, own first, then inherited, then related.
 
-Ghost selects and grounds the checks; it does not run them. Evaluate each
-markdown check's instructions against the diff yourself.
+Ghost offers and grounds the checks; it does not run them or route them by
+surface. Evaluate each markdown check's instructions against the diff yourself.
 
 ## 2. Compose Deeper Context When Needed
 

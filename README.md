@@ -112,7 +112,7 @@ run. The CLI does the deterministic work; the agent does the interpretation.
 
 ```bash
 ghost gather <surface>        # before: compose the context slice for the work
-ghost checks --surface <ids>  # route the markdown checks the change touches
+ghost checks --surface <ids>  # list the markdown checks and ground the named surfaces
 ghost review --surface <ids>  # after: an advisory packet grounded in the diff
 ```
 
@@ -128,7 +128,7 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 | `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph. |
 | `ghost gather` | List nodes, or compose a surface's context slice. |
-| `ghost checks` | Select and ground the checks a change touches, by surface. |
+| `ghost checks` | List the markdown checks and ground the named surfaces. |
 | `ghost review` | Emit an advisory review packet grounded in fingerprint + diff. |
 | `ghost skill install` | Install the BYOA skill bundle. |
 | `ghost signals` | Emit raw repo signals as authoring evidence _(advanced)_. |
@@ -137,15 +137,6 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 
 Run `ghost --help` for the core workflow, `ghost --help --all` for everything,
 and `ghost <command> --help` for flags.
-
-## Status: Beta
-
-> [!WARNING]
-> Ghost is pre-1.0 and under active development. The CLI, node schema, on-disk
-> `.ghost/` shape, and public exports may change in breaking ways before 1.0.
-> Breaking changes may ship in minor versions while pre-1.0; patch versions are
-> reserved for fixes that should not require migration. Pin the version you
-> depend on and review release notes before upgrading.
 
 ## Repo Layout
 

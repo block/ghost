@@ -50,23 +50,23 @@ medium-bound expression (essence is untagged). Free-form keys (`audience`, …)
 pass through. See [references/capture.md](references/capture.md) for the full
 node shape.
 
-**How `gather` composes** (folders are walls; files fill the corridor):
+**How `gather` composes** a surface's slice:
 
-- **spine** (full bodies): the package inherits every file from the root down to
-  the surface's own folder, so a feature's `invariants.md` reaches every screen
-  in that feature, and root files reach everywhere. A **sibling folder is a
-  wall**: its nodes never appear, not even as a pointer.
-- **edges** (full bodies, one hop): each spine node's `relates` targets. Author
-  a broad rule once at the level it is true (say `relates: { to: arcade }` on
-  `features/`) and every descendant inherits it. A link to a hub also unfolds
-  the hub's subtree as spokes.
-- **spokes** (pointers: id + description): the surface's own descendants and any
-  edge hub's subtree. The agent reads the descriptions and pulls what it needs
-  with a follow-up `gather`.
+- **full bodies along the path**: every file from the package root down to the
+  surface's own folder, so a feature's `invariants.md` reaches every screen in
+  that feature, and root files reach everywhere. A sibling folder's nodes never
+  appear, not even as a pointer.
+- **edges** (full bodies, one hop): the `relates` targets of every node on that
+  path. Author a broad rule once at the level it is true (say
+  `relates: { to: arcade }` on `features/`) and every descendant inherits it. A
+  link to a node also offers that node's subtree as pointers.
+- **spokes** (pointers: id + description): the surface's own descendants and the
+  subtree of any node it relates to. The agent reads the descriptions and pulls
+  what it needs with a follow-up `gather`.
 
 Naming a node that is not in the package is an error, not a silent empty
 result. An inexact `gather <query>` ranks the closest nodes as `candidates`
-(matching id, description, then body — single words or a phrase) under the
+(matching id, description, then body, by single words or a phrase) under the
 stable code `ERR_UNKNOWN_SURFACE`; `checks` and `review` emit the same code with
 closest-id `suggestions` (in `--format json`) and a "Did you mean" line
 otherwise. Branch on the code and retry with a ranked candidate or suggestion.
@@ -105,7 +105,7 @@ ref). Inherited nodes are read-only and flow into gather/validate like local one
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (corridor spine + relates edges, plus spoke pointers), list the node menu, or rank the closest nodes for an inexact query. |
+| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus spoke pointers), list the node menu, or rank the closest nodes for an inexact query. |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs

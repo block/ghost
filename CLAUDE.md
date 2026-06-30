@@ -7,8 +7,8 @@ trust, flow, and the choices that make a surface feel intentional.
 Ghost keeps that surface composition in a repo-local `.ghost/` fingerprint
 package, a graph of prose nodes. The public npm shape is one package,
 `@anarchitecture/ghost`, with one user-facing bin, `ghost`. The CLI validates
-the node graph, composes context, routes checks, and emits deterministic
-packets. The host agent does the interpretive BYOA work through the installed
+the node graph, composes context, selects and grounds checks, and emits
+deterministic packets. The host agent does the interpretive BYOA work through the installed
 `ghost` skill.
 
 ## Build & Run
@@ -33,8 +33,8 @@ pnpm --filter @anarchitecture/ghost exec ghost <command>
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. Ghost grounds that work with two
 things. A **deterministic CLI** does the repeatable parts with no LLM: schema
-and graph validation, repo-signal helpers, context composition, check routing,
-and advisory review packets. An **interpretive skill bundle** teaches the agent
+and graph validation, repo-signal helpers, context composition, check selection
+and grounding, and advisory review packets. An **interpretive skill bundle** teaches the agent
 how to author and use the fingerprint.
 
 The canonical root `.ghost/` package is a directory tree of prose nodes:
@@ -62,8 +62,9 @@ the implicit `core` node. The body is written through three authoring lenses
 `description` is the retrieval payload; `relates` links nodes laterally;
 `incarnation` tags a medium-bound expression. Reserved at the package root:
 `manifest.yml` and the `checks/` subtree; every other `*.md` is a node. Moving a
-node is a rename. `checks/*.md` validate output, routed by surface; they are not
-generation input. Ordinary Git review is the approval boundary for fingerprint
+node is a rename. `checks/*.md` validate output and bind to the prose they enforce
+via an optional `source:` pointer; every check is offered and the agent judges
+which apply. They are not generation input. Ordinary Git review is the approval boundary for fingerprint
 edits.
 
 A package may `extend` another by identity (the shared-brand pattern): the
@@ -75,7 +76,7 @@ path.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check routing, advisory review packets, and the unified skill bundle. |
+| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. |
 | `packages/ghost-core` | no | Private historical shared package. Runtime code needed by npm is folded into `packages/ghost/src/ghost-core`. |
 | `packages/ghost-fleet` | no | Private fleet view across many Ghost bundles. Consumes workspace exports from `@anarchitecture/ghost`. |
 | `packages/ghost-ui` | no | Parked. A standalone shadcn component registry plus `ghost-mcp` MCP server, developed in this monorepo. Not coupled to Ghost and not referenced by the docs site or public surfaces. |
@@ -91,8 +92,8 @@ Core workflow:
 | `ghost scan` | Report node and surface contribution. |
 | `ghost validate` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost gather` | List nodes by id + description, or compose a surface's context slice (own + inherited + edges). |
-| `ghost checks` | Select and ground the markdown checks governing the named surfaces. |
-| `ghost review` | Emit an advisory review packet: touched surfaces, routed checks, fingerprint grounding, and the diff. |
+| `ghost checks` | List the markdown checks and ground the named surfaces; every check is offered, the agent judges which apply. |
+| `ghost review` | Emit an advisory review packet: touched surfaces, the offered checks, fingerprint grounding, and the diff. |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
 Advanced/maintenance:
@@ -101,6 +102,7 @@ Advanced/maintenance:
 | --- | --- |
 | `ghost signals` | Emit raw repo signals as JSON for fingerprint authoring. |
 | `ghost migrate` | Migrate a legacy `.ghost/` package onto the node-graph surface model. |
+| `ghost manifest` | Emit a self-describing JSON manifest of every command and flag. |
 
 `ghost scan --format json` is deterministic contribution state. It does not run
 an LLM.
@@ -148,7 +150,7 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
 - The canonical on-disk form is a `.ghost/` directory tree: `manifest.yml` plus
   prose nodes (`index.md` and `<surface>/<node>.md`) and optional `checks/*.md`.
   The directory layout is the graph; ids and parents come from paths, never a
-  spine file.
+  separate declaration.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated

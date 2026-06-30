@@ -134,7 +134,7 @@ Validate before calling the fingerprint useful:
 
 ```bash
 ghost validate .ghost
-ghost check --base HEAD
+ghost review --base HEAD
 ```
 
 Use ordinary Git review as the approval boundary. Uncommitted or unmerged

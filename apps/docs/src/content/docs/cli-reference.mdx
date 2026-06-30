@@ -10,7 +10,7 @@ slug: cli
 <DocSection title="Overview">
 
 The CLI does the repeatable parts around the fingerprint lifecycle: scaffold a
-package, validate the node graph, compose context for a surface, route checks,
+package, validate the node graph, compose context for a surface, select checks,
 and emit advisory review packets. Your agent does the interpretation.
 
 `ghost --help` shows the short core workflow. `ghost --help --all` shows the
@@ -40,7 +40,7 @@ Every command follows one contract, so an agent can branch on the exit code:
 | `0` | Success. |
 | `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
 | `2` | The command was called wrong: a bad flag or argument, a node or surface that is not in the package (`ERR_UNKNOWN_SURFACE`), or a missing package for a command that needs one to do its work (`gather`, `checks`, `review`). |
-| `3` | A command-specific refusal — currently only `skill install` when a skill is already present (pass `--force`). |
+| `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
 Reporting commands treat a missing package as a state to report, not a usage
 error: `validate` records it as a finding (exit `1`), and `scan`/`signals`
@@ -120,19 +120,20 @@ task to one. With an exact node id, compose its context slice. With an inexact
 query (`ghost gather payment`), `gather` ranks the closest nodes instead of
 dumping the whole menu: a verbatim match wins (an exact id, then a name,
 description, or body substring), then a whole-name typo fallback, then
-multi-word phrases by how many of their words a node covers — so
+multi-word phrases by how many of their words a node covers, so
 `ghost gather payment confirmation` still finds the right surface. Each
 candidate is returned for the agent to pick with a follow-up `ghost gather`.
 
-Composing a slice, folders are walls and files fill the corridor:
+A slice composes three things:
 
-- **spine** (full bodies): every file from the package root down to the
-  surface's own folder. A sibling folder is a wall; its nodes never appear.
-- **edges** (full bodies, one hop): each spine node's `relates` targets, so a
-  rule authored once high in the corridor reaches every descendant. A link to a
-  hub also unfolds the hub's subtree as spokes.
-- **spokes** (pointers): the surface's own descendants and any edge hub's
-  subtree, offered as `id` + `description` for the agent to pull on demand.
+- **full bodies along the path**: every file from the package root down to the
+  surface's own folder. A sibling folder's nodes never appear.
+- **edges** (full bodies, one hop): the `relates` targets of every node on that
+  path, so a rule authored once high in the tree reaches every descendant. A
+  link to a node also offers that node's subtree as spokes.
+- **spokes** (pointers): the surface's own descendants and the subtree of any
+  node it relates to, offered as `id` + `description` for the agent to pull on
+  demand.
 
 Use `--as` to filter full-body nodes to a single incarnation; untagged essence
 nodes always pass.
@@ -159,11 +160,13 @@ retry without a human.
 
 <DocSection title="Govern Changes">
 
-### Route checks: `checks`
+### Select checks: `checks`
 
-Select and ground the markdown checks governing the named surfaces. The agent
-names the surfaces the change touches, then evaluates the returned checks. Use
-`--no-grounding` to omit the grounded nodes and return only the relevant checks.
+List the markdown checks and ground the named surfaces. Every check is offered;
+the agent names the surfaces the change touches to ground them, then judges
+which checks apply. A check binds to the prose it enforces through its optional
+`source:` pointer, not by surface routing. Use `--no-grounding` to omit the
+grounded nodes and return only the checks.
 
 <CliHelp tool="ghost" command="checks" hideDescription />
 
@@ -175,7 +178,7 @@ ghost checks --surface checkout --format json
 
 ### Advisory review packet: `review`
 
-Emit an advisory packet for a diff: touched surfaces, routed checks, and
+Emit an advisory packet for a diff: touched surfaces, the offered checks, and
 fingerprint grounding, with the diff embedded verbatim. Diff against a git ref
 with `--base`, or pass a patch with `--diff` (use `-` for stdin).
 
