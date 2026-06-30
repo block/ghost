@@ -1,4 +1,12 @@
-# What Fingerprints Are For
+# Architecture: What Fingerprints Are For
+
+> **Audience: Ghost maintainers and contributors.** This is the internal model
+> doc — it defends the boundary between the fingerprint artifact and the
+> consumers that read it. It is not an onboarding guide and it assumes the full
+> vocabulary (projection, leak, path inheritance). If you are adopting Ghost,
+> start with [Five-Minute Ghost](../apps/docs/src/content/docs/quickstart.mdx)
+> and [Getting Started](../apps/docs/src/content/docs/getting-started.mdx)
+> instead; come back here when you want to change the model, not use it.
 
 Ghost has one artifact, the `.ghost/` fingerprint package, and several consumers
 that read it. This page exists to keep them honest.

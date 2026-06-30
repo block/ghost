@@ -4,9 +4,15 @@
 it: the hierarchy, density, restraint, copy, trust, and flow that make a
 surface feel intentional.**
 
-Ghost is a checked-in product-surface fingerprint your agent reads before it
-builds and checks after it changes. One package, `@anarchitecture/ghost`. One
-CLI, `ghost`.
+You keep leaving the same review comment — "don't introduce a new button style
+on checkout," "this empty state needs a way out." Ghost lets you **write that
+decision down once, in your repo, so your agent reads it before it builds** —
+not after you flag it. One package, `@anarchitecture/ghost`. One CLI, `ghost`.
+
+**New here?** The fastest path is [Five-Minute
+Ghost](https://block.github.io/ghost/docs/quickstart) — one file, one win, no
+vocabulary. The model underneath (the rest of this page) is optional until you
+want it.
 
 [Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@anarchitecture/ghost) · [Skill](#use-it)
 
@@ -77,7 +83,11 @@ fingerprint surface by surface as the next repeated decision shows up.
 Run `ghost --help` for the core workflow, `ghost --help --all` for everything,
 and `ghost <command> --help` for flags.
 
-## How It Works
+## How It Works (under the hood)
+
+You don't need this section to use Ghost — your agent handles the format, and
+[Five-Minute Ghost](https://block.github.io/ghost/docs/quickstart) gets you a
+first win without any of it. Read on when you want to understand the model.
 
 A fingerprint is a small folder of prose. The CLI computes; your agent reads,
 writes, and decides.

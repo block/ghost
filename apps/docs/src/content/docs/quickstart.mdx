@@ -1,0 +1,100 @@
+---
+title: Five-Minute Ghost
+description: Write down the product-design comment you keep repeating, once, so your agent reads it before it builds.
+kicker: Docs
+section: guide
+order: 5
+slug: quickstart
+---
+
+<DocSection title="The problem Ghost solves">
+
+You keep leaving the same review comment.
+
+"Don't introduce a new button style on checkout." "This empty state needs a way
+out, not just a message." "Slow down — this form is doing three things at once."
+
+Your agent can build the screen. What it can't do is remember the decision you'd
+make when it does. So you catch the same drift in review, every time, on every
+surface.
+
+Ghost is one move against that: **write the decision down once, in your repo, and
+your agent reads it before it builds** — not after you flag it.
+
+</DocSection>
+
+<DocSection title="Do it once (about five minutes)">
+
+Install Ghost and teach your agent to use it:
+
+```bash
+npm install -D @anarchitecture/ghost
+npx ghost skill install
+```
+
+Then ask your agent, in plain English:
+
+```text
+Set up Ghost for this repo, starting with the checkout surface.
+```
+
+That's it. Your agent scaffolds a small `.ghost/` folder and writes your first
+file. You don't need to learn the format to start — you just need to know which
+decision you keep repeating.
+
+</DocSection>
+
+<DocSection title="What you actually wrote down">
+
+Pick the one surface whose feedback you repeat most. Say it's checkout, and the
+note you always leave is about trust. Your agent writes that as a single small
+file, `.ghost/checkout/index.md`:
+
+```markdown
+---
+description: Trust at the payment moment.
+---
+
+Near the moment of payment, reduce felt risk. Keep reassurance close to the
+action — proximity beats completeness. Never introduce a new visual system here.
+```
+
+A few lines of plain prose, checked into your repo next to the code. That's the
+whole artifact. No schema to memorize, no config to wire up. You wrote the
+comment you were going to leave anyway — once, in a place your agent can read.
+
+</DocSection>
+
+<DocSection title="The payoff: before, not after">
+
+Now the loop runs the other direction. Before your agent builds on checkout, it
+reads what you wrote:
+
+```text
+Brief this checkout change from Ghost first.
+```
+
+And after it changes the surface, it checks the result against the same note:
+
+```text
+Review this change against Ghost.
+```
+
+The comment you used to leave in review is now context the agent has up front.
+That's the entire idea: **catch the drift before it's written, not after.**
+
+</DocSection>
+
+<DocSection title="Grow it one surface at a time">
+
+Don't fingerprint the whole product. One good file beats an empty catalog. The
+next time you catch yourself repeating a comment on a different surface — the
+settings form you always re-pace, the nav you always simplify — write that one
+down too. The fingerprint grows surface by surface, decision by decision.
+
+When you're ready for the full workflow — composing context, running checks,
+advisory review packets — read [Getting Started](/docs/getting-started). When
+you want to know how the folder of files works underneath, that guide's **How It
+Works** section has it. You don't need either to get your first win.
+
+</DocSection>

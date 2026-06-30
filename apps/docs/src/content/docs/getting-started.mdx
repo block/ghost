@@ -9,10 +9,18 @@ slug: getting-started
 
 <DocSection title="What Ghost Does">
 
-Ghost gives your agent the composition behind a product surface — the intent,
-materials, and patterns that make it feel intentional — **before** it builds,
-and checks the result after it changes. The public package is
-`@anarchitecture/ghost`, and it installs one CLI: `ghost`.
+<Callout variant="info" title="Just want a first win?">
+
+Start with [Five-Minute Ghost](/docs/quickstart) — one file, one repeated
+decision, no vocabulary. This guide is the full loop for when you're ready to
+compose context, run checks, and review changes end to end.
+
+</Callout>
+
+Ghost gives your agent the composition behind a product surface — what it's
+for, what it's made of, and the patterns that make it feel intentional —
+**before** it builds, and checks the result after it changes. The public package
+is `@anarchitecture/ghost`, and it installs one CLI: `ghost`.
 
 You work through three verbs:
 
@@ -135,7 +143,10 @@ never a CI gate on its own.
 
 </DocSection>
 
-<DocSection title="How It Works">
+<DocSection title="How It Works (the model underneath)">
+
+You can run the whole loop above without this section — your agent handles the
+format. Read on when you want to understand how the folder of files is wired.
 
 The canonical portable fingerprint is a directory tree of prose nodes:
 
