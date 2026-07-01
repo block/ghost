@@ -41,9 +41,8 @@ run. The CLI does the deterministic work; the agent does the interpretation.
 ## The Loop
 
 ```bash
-ghost gather <surface>        # before: compose the context slice for the work
-ghost checks --surface <ids>  # list the markdown checks and ground the named surfaces
-ghost review --surface <ids>  # after: an advisory packet grounded in the diff
+ghost gather        # before: emit the fingerprint menu — the agent selects what applies
+ghost validate      # after edits: artifact shape + node validity
 ```
 
 The shift is timing: Ghost gives agents surface-composition context **before**
@@ -54,8 +53,8 @@ of truth; ordinary Git review is the approval boundary for fingerprint edits.
 
 ```bash
 ghost init          # scaffold .ghost/ with a manifest + a core index.md node
-ghost validate      # links resolve, one root, acyclic
-ghost gather        # list nodes; ghost gather <surface> composes a context slice
+ghost validate      # artifact shape + node validity
+ghost gather        # emit the fingerprint menu for the agent to select from
 ```
 
 **Your first node.** Don't try to fingerprint the whole product. Pick the one
@@ -70,13 +69,13 @@ fingerprint surface by surface as the next repeated decision shows up.
 | Command | Description |
 | --- | --- |
 | `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost validate` | Validate the package: artifact shape and the node graph. |
-| `ghost gather` | List nodes, or compose a surface's context slice. |
-| `ghost checks` | List the markdown checks and ground the named surfaces. |
-| `ghost review` | Emit an advisory review packet grounded in fingerprint + diff. |
+| `ghost validate` | Validate the package: artifact shape and node validity. |
+| `ghost gather` | Emit the fingerprint menu for the agent to select from. |
 | `ghost skill install` | Install the BYOA skill bundle. |
 | `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
-| `ghost migrate` | Migrate a legacy `.ghost/` package onto the node model _(maintenance)_. |
+
+Diff review lives in Haunt (`haunt review`), the private adherence + drift
+package (`packages/haunt`).
 
 Run `ghost --help` for the core workflow, `ghost --help --all` for everything,
 and `ghost <command> --help` for flags.

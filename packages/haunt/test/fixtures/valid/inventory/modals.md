@@ -5,4 +5,5 @@ paths:
   - apps/site/components/overlays/**
 ---
 
-Modals are for interruptions that must be resolved before continuing. No nested modals.
+Modals are for interruptions that must be resolved before continuing.
+No nested modals. The body scrolls; header and footer stay fixed.

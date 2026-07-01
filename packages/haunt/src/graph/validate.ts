@@ -1,4 +1,5 @@
-import { parseQualifiedRef } from "../model/ids.js";
+import type { LoadedFingerprintPackage } from "../fingerprint/load.js";
+import { classifyReference } from "../model/ids.js";
 import {
   finalizeReport,
   type HauntLintIssue,
@@ -7,82 +8,56 @@ import {
 } from "../model/types.js";
 
 /**
- * Cross-tier graph validation (Slice 2). Assumes each document already parsed
- * and per-document-validated (loadHauntPackage). Here we check the edges the
- * frontmatter declares:
- *   - `honors` → an existing tenet
- *   - `uses` → an existing inventory entry
- *   - `grounds` → an existing tenet/surface/inventory (tier-qualified)
- *   - inventory `paths` globs are well-formed
- * plus advisory warnings: orphan tenets (no surface honors, no check grounds),
- * inventory with no `paths` (can't bridge to code), and surfaces with no edges.
- *
- * There is no cascade to cycle over — `honors`/`uses`/`grounds` are one-way
- * citations across tiers — so no acyclicity check is needed. (Note:
- * `honors`/`uses` are provisional scaffolding slated for removal; see
- * notes/haunt-direction.md → "One edge: `grounds`".)
+ * Reference validation. Assumes each document already parsed and
+ * per-document-validated (loadHauntPackage). For each check reference:
+ *   - a bare slug matching local inventory → ok (local-first);
+ *   - a fingerprint-shaped target → looked up in the loaded catalog when a
+ *     fingerprint is present (warning when it does not resolve — it may name
+ *     not-yet-written prose); an info note when no fingerprint resolves at all;
+ *   - a string that parses as neither → error.
+ * Inventory `paths` glob sanity checks survive from the earlier shape.
  */
-export function validateHauntGraph(pkg: HauntPackage): HauntLintReport {
+export function validateHauntGraph(
+  pkg: HauntPackage,
+  fingerprint: LoadedFingerprintPackage | null = null,
+): HauntLintReport {
   const issues: HauntLintIssue[] = [];
+  const localIds = new Set(pkg.inventory.keys());
 
-  // Track incoming references for orphan detection.
-  const tenetReferenced = new Set<string>();
-  const inventoryReferenced = new Set<string>();
-
-  // --- surfaces: honors → tenets, uses → inventory ---
-  for (const surface of pkg.surfaces.values()) {
-    for (const ref of surface.frontmatter.honors ?? []) {
-      if (pkg.tenets.has(ref)) {
-        tenetReferenced.add(ref);
-      } else {
+  let hasFingerprintRefs = false;
+  for (const check of pkg.checks.values()) {
+    for (const raw of check.references) {
+      const ref = classifyReference(raw, localIds);
+      if (ref.kind === "local") continue;
+      if (ref.kind === "malformed") {
         issues.push({
           severity: "error",
-          rule: "edge/honors-unresolved",
-          where: `surfaces/${surface.id}.honors`,
-          message: `honors '${ref}' does not resolve to a tenet`,
+          rule: "reference/malformed",
+          where: `checks/${check.id}.references`,
+          message: `reference '${raw}' is neither a local inventory id nor a fingerprint node target (node path id with optional '> Heading' anchor)`,
         });
+        continue;
       }
-    }
-    for (const ref of surface.frontmatter.uses ?? []) {
-      if (pkg.inventory.has(ref)) {
-        inventoryReferenced.add(ref);
-      } else {
+      hasFingerprintRefs = true;
+      if (fingerprint !== null && !fingerprint.catalog.nodes.has(ref.nodeId)) {
         issues.push({
-          severity: "error",
-          rule: "edge/uses-unresolved",
-          where: `surfaces/${surface.id}.uses`,
-          message: `uses '${ref}' does not resolve to an inventory entry`,
+          severity: "warning",
+          rule: "reference/fingerprint-unresolved",
+          where: `checks/${check.id}.references`,
+          message: `reference '${raw}' does not resolve in the .ghost/ fingerprint (node '${ref.nodeId}' not found — it may name not-yet-written prose)`,
         });
       }
     }
   }
 
-  // --- checks: grounds → tenets/surfaces/inventory ---
-  const tenetGrounded = new Set<string>();
-  for (const check of pkg.checks.values()) {
-    for (const ref of check.frontmatter.grounds) {
-      const { tier, id } = parseQualifiedRef(ref);
-      const bucket =
-        tier === "tenets"
-          ? pkg.tenets
-          : tier === "inventory"
-            ? pkg.inventory
-            : pkg.surfaces;
-      if (bucket.has(id)) {
-        if (tier === "tenets") {
-          tenetReferenced.add(id);
-          tenetGrounded.add(id);
-        }
-        if (tier === "inventory") inventoryReferenced.add(id);
-      } else {
-        issues.push({
-          severity: "error",
-          rule: "edge/grounds-unresolved",
-          where: `checks/${check.id}.grounds`,
-          message: `grounds '${ref}' does not resolve to a ${tier} entry`,
-        });
-      }
-    }
+  if (hasFingerprintRefs && fingerprint === null) {
+    issues.push({
+      severity: "info",
+      rule: "reference/no-fingerprint",
+      where: "checks",
+      message:
+        "checks reference fingerprint nodes but no .ghost/ package resolves — `haunt review` requires one (npm i -D @anarchitecture/ghost-fingerprint && ghost init)",
+    });
   }
 
   // --- inventory: paths well-formed + present ---
@@ -106,27 +81,6 @@ export function validateHauntGraph(pkg: HauntPackage): HauntLintReport {
           message: `path glob '${glob}' is not well-formed (must be a relative repo glob, no leading '/')`,
         });
       }
-    }
-  }
-
-  // --- advisory: orphan tenets (nothing honors them, nothing grounds them) ---
-  for (const tenet of pkg.tenets.values()) {
-    if (!tenetReferenced.has(tenet.id)) {
-      issues.push({
-        severity: "warning",
-        rule: "tenet/orphan",
-        where: `tenets/${tenet.id}`,
-        message:
-          "no surface honors this tenet and no check grounds in it — it is unreachable by review",
-      });
-    } else if (!tenetGrounded.has(tenet.id)) {
-      issues.push({
-        severity: "info",
-        rule: "tenet/ungrounded",
-        where: `tenets/${tenet.id}`,
-        message:
-          "tenet is honored by a surface but no check grounds in it — drift against it will not be graded",
-      });
     }
   }
 

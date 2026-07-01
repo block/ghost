@@ -11,12 +11,15 @@ export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("haunt");
 
   cli
-    .command("init", "Scaffold a .haunt/ package with an example per tier.")
+    .command(
+      "init",
+      "Scaffold a .haunt/ package: manifest + inventory + check examples.",
+    )
     .option(
       "--package <dir>",
       "The .haunt/ package directory (default: .haunt)",
     )
-    .option("--id <id>", "Package id (default: fingerprint)")
+    .option("--id <id>", "Package id (default: haunt)")
     .option("--force", "Overwrite an existing manifest")
     .action(
       async (opts: { package?: string; id?: string; force?: boolean }) => {
@@ -34,13 +37,23 @@ export function buildCli(): ReturnType<typeof cac> {
     );
 
   cli
-    .command("validate", "Validate a .haunt/ package: shape + the edge graph.")
+    .command(
+      "validate",
+      "Validate a .haunt/ package: shape + check references.",
+    )
     .option(
       "--package <dir>",
       "The .haunt/ package directory (default: .haunt)",
     )
-    .action(async (options: { package?: string }) => {
-      const { report, code } = await runValidate({ package: options.package });
+    .option(
+      "--ghost-dir <dir>",
+      "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
+    )
+    .action(async (options: { package?: string; ghostDir?: string }) => {
+      const { report, code } = await runValidate({
+        package: options.package,
+        ghostDir: options.ghostDir,
+      });
       const out = formatReport(report);
       if (code === 0) {
         process.stdout.write(`${out}\n`);
@@ -53,11 +66,15 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "review",
-      "Emit an advisory review packet from the .haunt/ package and a git diff.",
+      "Emit an advisory review packet from the .haunt/ package, the .ghost/ fingerprint, and a git diff.",
     )
     .option(
       "--package <dir>",
       "The .haunt/ package directory (default: .haunt)",
+    )
+    .option(
+      "--ghost-dir <dir>",
+      "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
     )
     .option("--base <ref>", "Git ref to diff against (default: HEAD)")
     .option(
@@ -71,6 +88,7 @@ export function buildCli(): ReturnType<typeof cac> {
     .action(
       async (options: {
         package?: string;
+        ghostDir?: string;
         base?: string;
         diff?: string;
         json?: boolean;

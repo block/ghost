@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HauntIdSchema, HauntQualifiedRefSchema } from "./ids.js";
+import { HauntIdSchema } from "./ids.js";
 
 export const HAUNT_PACKAGE_SCHEMA = "haunt.package/v1" as const;
 
@@ -10,18 +10,6 @@ export const HauntPackageManifestSchema = z
     id: HauntIdSchema,
   })
   .strict();
-
-/**
- * tenet frontmatter. A broad, system-wide principle: composition, product
- * stance, principles. Portable prose — no code binding (`paths` lives on
- * inventory, where code actually lives). Free-form descriptive keys pass
- * through.
- */
-export const HauntTenetFrontmatterSchema = z
-  .object({
-    description: z.string().min(1).optional(),
-  })
-  .passthrough();
 
 /**
  * inventory frontmatter — the code bridge. `paths` are repo globs naming where
@@ -37,32 +25,18 @@ export const HauntInventoryFrontmatterSchema = z
   .passthrough();
 
 /**
- * surface frontmatter — a feature area (composition tier). Cites tenets
- * (`honors`) and materials (`uses`) by bare id; it does NOT inherit them (Haunt
- * has no cascade — the citation is an explicit edge, see notes/haunt-direction.md).
+ * The haunt-side check addition: `references` binds a `ghost.check/v1` check
+ * to the prose it enforces — local inventory ids and/or fingerprint node
+ * targets (see `classifyReference`). Required, min 1: a haunt check with
+ * nothing to reference has no reason to live in `.haunt/`. The rest of the
+ * check frontmatter (`name`, `description`, `severity`, …) is ghost-core's
+ * contract, linted by `lintGhostCheck`.
  */
-export const HauntSurfaceFrontmatterSchema = z
-  .object({
-    description: z.string().min(1).optional(),
-    honors: z.array(HauntIdSchema).optional(),
-    uses: z.array(HauntIdSchema).optional(),
+export const HauntCheckReferencesSchema = z
+  .array(z.string().min(1), {
+    message: "references must be an array of non-empty strings",
   })
-  .passthrough();
-
-/**
- * check frontmatter — an assertion that grounds *up* into the prose that
- * justifies it. Its kind falls out of what it grounds in: inventory-grounded
- * checks tend mechanical; tenet-grounded checks are agent-judged high-altitude
- * drift (see notes/haunt-direction.md → "Two kinds of check").
- */
-export const HAUNT_CHECK_SEVERITIES = ["high", "medium", "low"] as const;
-
-export const HauntCheckFrontmatterSchema = z
-  .object({
-    description: z.string().min(1).optional(),
-    grounds: z.array(HauntQualifiedRefSchema).min(1, {
-      message: "a check must ground in at least one tenet/surface/inventory",
-    }),
-    severity: z.enum(HAUNT_CHECK_SEVERITIES).optional(),
-  })
-  .passthrough();
+  .min(1, {
+    message:
+      "a check must declare at least one reference (a local inventory id or a fingerprint node target)",
+  });

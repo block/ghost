@@ -1,5 +1,7 @@
 ---
-grounds:
-  - surfaces/missing
+name: bad
+description: A check with no references.
+severity: high
 ---
-Body.
+
+This check declares no references, which is an error.

@@ -17,15 +17,16 @@ export interface InitResult {
 }
 
 /**
- * Scaffold a `.haunt/` package: a manifest plus one self-teaching example per
- * tier (a tenet, an inventory entry with `paths`, a surface that honors + uses
- * them, and a check that grounds in both). The result validates clean, so
- * `haunt validate` and `haunt review` work immediately and the shape teaches
- * itself.
+ * Scaffold a `.haunt/` package: a manifest, one inventory example with
+ * `paths`, and one `ghost.check/v1` check whose `references` demonstrate the
+ * grammar — a bare local inventory id plus a fingerprint-shaped
+ * `node > Heading` target. The scaffold loads clean; the fingerprint-shaped
+ * reference is expected to dangle until you author the `.ghost/` node it
+ * names (`haunt validate` surfaces that as a warning, not an error).
  */
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const dir = resolve(process.cwd(), options.package ?? ".haunt");
-  const id = options.id ?? "fingerprint";
+  const id = options.id ?? "haunt";
 
   if (existsSync(join(dir, "manifest.yml")) && !options.force) {
     return {
@@ -38,9 +39,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
 
   const files: Array<[string, string]> = [
     ["manifest.yml", `schema: ${HAUNT_PACKAGE_SCHEMA}\nid: ${id}\n`],
-    ["tenets/composition.md", TENET],
     ["inventory/modals.md", INVENTORY],
-    ["surfaces/checkout.md", SURFACE],
     ["checks/density-does-not-creep.md", CHECK],
   ];
 
@@ -54,14 +53,6 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   return { written, dir, code: 0 };
 }
 
-const TENET = `---
-description: How the product surface holds hierarchy, density, and restraint.
----
-
-Restraint is the default. A surface earns density; it does not start dense.
-Hierarchy stays legible under change — the primary action stays unmistakable.
-`;
-
 const INVENTORY = `---
 description: Dialogs, sheets, and overlays.
 paths:
@@ -73,24 +64,13 @@ Modals are for interruptions that must be resolved before continuing.
 No nested modals. The body scrolls; header and footer stay fixed.
 `;
 
-const SURFACE = `---
-description: The payment surface.
-honors:
-  - composition
-uses:
-  - modals
----
-
-Checkout runs dense on purpose — but earns it with hierarchy and spacing,
-not by stacking competing emphasis.
-`;
-
 const CHECK = `---
+name: density-does-not-creep
 description: Density must not exceed what the surface earns.
-grounds:
-  - tenets/composition
-  - surfaces/checkout
 severity: high
+references:
+  - modals
+  - checkout > Density
 ---
 
 Grade whether the change increases visual density beyond what the surface earns.

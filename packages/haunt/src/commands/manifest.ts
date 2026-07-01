@@ -28,6 +28,13 @@ const PACKAGE_FLAG: ManifestFlag = {
   takesValue: true,
 };
 
+const GHOST_DIR_FLAG: ManifestFlag = {
+  name: "--ghost-dir",
+  description:
+    "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
+  takesValue: true,
+};
+
 export function buildHauntManifest(version: string): HauntManifest {
   return {
     cli: "haunt",
@@ -36,12 +43,12 @@ export function buildHauntManifest(version: string): HauntManifest {
       {
         name: "init",
         description:
-          "Scaffold a .haunt/ package: manifest + one example per tier.",
+          "Scaffold a .haunt/ package: manifest + an inventory example + a ghost.check/v1 check example.",
         flags: [
           PACKAGE_FLAG,
           {
             name: "--id",
-            description: "Package id (default: fingerprint)",
+            description: "Package id (default: haunt)",
             takesValue: true,
           },
           {
@@ -53,15 +60,17 @@ export function buildHauntManifest(version: string): HauntManifest {
       },
       {
         name: "validate",
-        description: "Validate a .haunt/ package: shape + the edge graph.",
-        flags: [PACKAGE_FLAG],
+        description:
+          "Validate a .haunt/ package: shape + check references (local + fingerprint).",
+        flags: [PACKAGE_FLAG, GHOST_DIR_FLAG],
       },
       {
         name: "review",
         description:
-          "Emit an advisory review packet from the package and a git diff.",
+          "Emit an advisory review packet from the package, the .ghost/ fingerprint, and a git diff.",
         flags: [
           PACKAGE_FLAG,
+          GHOST_DIR_FLAG,
           {
             name: "--base",
             description: "Git ref to diff against (default: HEAD)",

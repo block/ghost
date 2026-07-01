@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { loadFingerprint } from "../src/fingerprint/load.js";
 import { validateHauntGraph } from "../src/graph/validate.js";
 import { loadHauntPackage } from "../src/scan/load-package.js";
 
@@ -13,31 +14,49 @@ async function loadOrThrow(name: string) {
   return pkg;
 }
 
+async function loadGhostFixture() {
+  const fingerprint = await loadFingerprint({ ghostDir: fixture("ghost") });
+  if (!fingerprint) throw new Error("ghost fixture failed to load");
+  return fingerprint;
+}
+
 describe("validateHauntGraph", () => {
-  it("passes a well-formed graph with no issues", async () => {
-    const report = validateHauntGraph(await loadOrThrow("valid"));
+  it("passes local + resolvable fingerprint references with a fingerprint present", async () => {
+    const pkg = await loadOrThrow("valid");
+    const fingerprint = await loadGhostFixture();
+    const report = validateHauntGraph(pkg, fingerprint);
     expect(report.errors).toBe(0);
     expect(report.warnings).toBe(0);
+    expect(report.info).toBe(0);
   });
 
-  it("flags dangling honors, uses, and grounds edges", async () => {
-    const report = validateHauntGraph(await loadOrThrow("broken"));
-    const rules = report.issues.map((i) => i.rule);
-    expect(rules).toContain("edge/honors-unresolved");
-    expect(rules).toContain("edge/uses-unresolved");
-    expect(rules).toContain("edge/grounds-unresolved");
+  it("warns when a fingerprint reference does not resolve in the catalog", async () => {
+    const pkg = await loadOrThrow("danglers");
+    const fingerprint = await loadGhostFixture();
+    const report = validateHauntGraph(pkg, fingerprint);
+    const dangling = report.issues.find(
+      (i) => i.rule === "reference/fingerprint-unresolved",
+    );
+    expect(dangling?.severity).toBe("warning");
+    expect(dangling?.where).toBe("checks/points-at-missing-node.references");
+    expect(report.errors).toBe(0);
   });
 
-  it("warns on orphan tenets and inventory without paths", async () => {
-    const report = validateHauntGraph(await loadOrThrow("broken"));
-    const rules = report.issues.map((i) => i.rule);
-    expect(rules).toContain("tenet/orphan");
-    expect(rules).toContain("inventory/no-paths");
+  it("emits an info note (not an error) when no fingerprint resolves", async () => {
+    const pkg = await loadOrThrow("valid");
+    const report = validateHauntGraph(pkg, null);
+    const info = report.issues.find(
+      (i) => i.rule === "reference/no-fingerprint",
+    );
+    expect(info?.severity).toBe("info");
+    expect(report.errors).toBe(0);
   });
 
-  it("emits info when a honored tenet has no grounding check", async () => {
-    const report = validateHauntGraph(await loadOrThrow("broken"));
-    const ungrounded = report.issues.find((i) => i.rule === "tenet/ungrounded");
-    expect(ungrounded?.where).toBe("tenets/honored");
+  it("warns on inventory without paths", async () => {
+    const pkg = await loadOrThrow("danglers");
+    const report = validateHauntGraph(pkg, null);
+    expect(report.issues.some((i) => i.rule === "inventory/no-paths")).toBe(
+      true,
+    );
   });
 });

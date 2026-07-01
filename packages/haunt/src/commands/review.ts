@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
+import { loadFingerprint } from "../fingerprint/load.js";
 import { loadHauntPackage } from "../scan/load-package.js";
 import {
   buildReviewPacket,
@@ -13,6 +14,8 @@ const execFileAsync = promisify(execFile);
 
 export interface ReviewOptions {
   package?: string;
+  /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
+  ghostDir?: string;
   /** Git ref to diff against (default: HEAD). */
   base?: string;
   /** A diff file to embed instead of running git; "-" reads stdin. */
@@ -26,6 +29,15 @@ export interface ReviewResult {
   output: string;
   code: number;
 }
+
+const NO_FINGERPRINT_MESSAGE = `Cannot review: no .ghost/ fingerprint package resolves.
+Haunt grades drift against your fingerprint's brand truths — without one, review
+degrades to generic lint. Set one up:
+
+  npm i -D @anarchitecture/ghost-fingerprint && ghost init
+
+then author a node or two and point your checks' \`references\` at them.
+(Use --ghost-dir <dir> if your fingerprint lives somewhere non-standard.)`;
 
 /** Read the diff from --diff (file or "-" for stdin) or `git diff <base>`. */
 async function resolveDiff(options: ReviewOptions): Promise<string> {
@@ -55,9 +67,10 @@ function readStdin(): Promise<string> {
 }
 
 /**
- * Run `haunt review`: load + (implicitly) trust the package, resolve the diff,
- * build the advisory packet. Returns the rendered output and an exit code. The
- * packet is advisory — findings are the agent's job.
+ * Run `haunt review`: load the package and the fingerprint (required — the
+ * fingerprint's prose is the review baseline), resolve the diff, build the
+ * advisory packet. Returns the rendered output and an exit code. The packet is
+ * advisory — findings are the agent's job.
  */
 export async function runReview(options: ReviewOptions): Promise<ReviewResult> {
   const dir = resolve(process.cwd(), options.package ?? ".haunt");
@@ -73,8 +86,13 @@ export async function runReview(options: ReviewOptions): Promise<ReviewResult> {
     };
   }
 
+  const fingerprint = await loadFingerprint({ ghostDir: options.ghostDir });
+  if (fingerprint === null) {
+    return { packet: null, output: NO_FINGERPRINT_MESSAGE, code: 2 };
+  }
+
   const diffText = await resolveDiff(options);
-  const packet = buildReviewPacket(pkg, diffText);
+  const packet = buildReviewPacket(pkg, fingerprint, diffText);
   const output = options.json
     ? JSON.stringify(packet, null, 2)
     : formatReviewPacket(packet);

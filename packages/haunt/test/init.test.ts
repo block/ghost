@@ -16,13 +16,16 @@ afterEach(async () => {
 });
 
 describe("runInit", () => {
-  it("scaffolds a package that loads and validates clean", async () => {
+  it("scaffolds a two-dir package that loads clean", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
     const pkgDir = join(dir, ".haunt");
     const result = await runInit({ package: pkgDir, id: "demo" });
     expect(result.code).toBe(0);
-    expect(result.written).toContain("manifest.yml");
-    expect(result.written).toContain("checks/density-does-not-creep.md");
+    expect(result.written).toEqual([
+      "manifest.yml",
+      "inventory/modals.md",
+      "checks/density-does-not-creep.md",
+    ]);
 
     const { pkg, report } = await loadHauntPackage(pkgDir);
     expect(report.errors).toBe(0);
@@ -30,10 +33,18 @@ describe("runInit", () => {
     if (!pkg) return;
     expect(pkg.manifest.id).toBe("demo");
 
-    // The scaffold is internally consistent — no dangling edges, no orphans.
-    const graph = validateHauntGraph(pkg);
+    // The example check demonstrates the references grammar: one local
+    // inventory id plus one fingerprint-shaped `node > Heading` target.
+    const check = pkg.checks.get("density-does-not-creep");
+    expect(check?.references).toEqual(["modals", "checkout > Density"]);
+
+    // With no fingerprint present the fingerprint-shaped reference is an
+    // info-level note, never an error.
+    const graph = validateHauntGraph(pkg, null);
     expect(graph.errors).toBe(0);
-    expect(graph.warnings).toBe(0);
+    expect(
+      graph.issues.some((i) => i.rule === "reference/no-fingerprint"),
+    ).toBe(true);
   });
 
   it("refuses to overwrite an existing manifest without --force", async () => {

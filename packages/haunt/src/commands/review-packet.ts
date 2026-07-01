@@ -1,34 +1,43 @@
+import { sliceNodeSection } from "@anarchitecture/ghost-fingerprint/core";
 import type { BridgeResolution } from "../bridge/resolve.js";
 import { resolveBridge } from "../bridge/resolve.js";
+import type { LoadedFingerprintPackage } from "../fingerprint/load.js";
+import { classifyReference } from "../model/ids.js";
 import type { HauntPackage } from "../model/types.js";
 
 /**
- * The advisory review packet (Slice 4). Deterministic assembly only — the CLI
- * gathers the evidence, the host agent renders the findings (P0–P3, evidence
- * cited). Haunt does not grade. The packet is the payload behind the "oh" demo.
+ * The advisory review packet. Deterministic assembly only — the CLI gathers
+ * the evidence, the host agent renders the findings (P0–P3, evidence cited).
+ * Haunt does not grade.
  *
- * For each offered check we assemble the three things the synthesis names:
+ * For each offered check we assemble:
  *   - the check's prose (what to grade)
- *   - the grounded tenet/surface prose      → the BASELINE (stated composition)
- *   - the matched code facts via inventory  → the OBSERVABLE (what code now does)
- *   - the diff hunks                         → what changed
+ *   - the referenced prose (local inventory, or fingerprint node bodies —
+ *     sliced to the anchored heading section)   → the BASELINE
+ *   - the matched code facts via inventory       → the OBSERVABLE
+ *   - the diff hunks                              → what changed
  */
-export interface GroundedProse {
+export interface BaselineProse {
+  /** The reference string as authored (e.g. `modals` or `checkout > Density`). */
   ref: string;
+  /** `local` (inventory) or `fingerprint` (a .ghost/ node). */
+  kind: "local" | "fingerprint";
   description?: string;
   body: string;
+  /** Set when a heading anchor did not match — the whole body is embedded. */
+  warning?: string;
 }
 
 export interface PacketCheck {
   id: string;
   severity: string | undefined;
-  groundsTenet: boolean;
+  referencesFingerprint: boolean;
   /** Refs that put this check in play. */
   via: string[];
   /** The check's own prose (the assertion to grade). */
   prose: string;
-  /** The grounded baseline prose this check enforces. */
-  baseline: GroundedProse[];
+  /** The referenced baseline prose this check enforces. */
+  baseline: BaselineProse[];
 }
 
 export interface PacketInventory {
@@ -40,14 +49,26 @@ export interface PacketInventory {
   files: string[];
 }
 
+export interface PacketFingerprintNode {
+  /** The reference string that pulled this node in. */
+  ref: string;
+  nodeId: string;
+  heading?: string;
+  description?: string;
+  /** The node body — sliced to the anchored section when a heading matched. */
+  body: string;
+  warning?: string;
+}
+
 export interface ReviewPacket {
   packageId: string;
+  fingerprintId: string;
   touchedFiles: string[];
   /** Matched materials with prose + the code facts (files). */
   inventory: PacketInventory[];
-  surfaces: GroundedProse[];
-  tenets: GroundedProse[];
-  /** Offered checks with prose + baseline. The agent judges relevance. */
+  /** The fingerprint truths in play — resolved from the offered checks' refs. */
+  fingerprint: PacketFingerprintNode[];
+  /** Offered checks with prose + baseline. The agent decides relevance. */
   checks: PacketCheck[];
   /** Coverage gaps — where the fingerprint cannot grade. */
   gaps: BridgeResolution["gaps"];
@@ -55,38 +76,112 @@ export interface ReviewPacket {
   diff: string;
 }
 
+/**
+ * Resolve one reference to its baseline prose: local inventory prose, or a
+ * fingerprint node body — sliced by `sliceNodeSection` when a heading anchor
+ * is present (whole body if no anchor; whole body plus a warning line when
+ * the anchor doesn't match). Unresolved refs return null (tolerated: they may
+ * name not-yet-written prose; `haunt validate` reports them).
+ */
+function resolveBaseline(
+  raw: string,
+  pkg: HauntPackage,
+  fingerprint: LoadedFingerprintPackage,
+  localIds: ReadonlySet<string>,
+): BaselineProse | null {
+  const ref = classifyReference(raw, localIds);
+  if (ref.kind === "local") {
+    const doc = pkg.inventory.get(ref.id);
+    if (!doc) return null;
+    return {
+      ref: raw,
+      kind: "local",
+      ...(doc.frontmatter.description !== undefined
+        ? { description: doc.frontmatter.description }
+        : {}),
+      body: doc.body,
+    };
+  }
+  if (ref.kind === "malformed") return null;
+
+  const node = fingerprint.catalog.nodes.get(ref.nodeId);
+  if (!node) return null;
+  if (ref.heading === undefined) {
+    return {
+      ref: raw,
+      kind: "fingerprint",
+      ...(node.description !== undefined
+        ? { description: node.description }
+        : {}),
+      body: node.body,
+    };
+  }
+  const section = sliceNodeSection(node.body, ref.heading);
+  if (section === null) {
+    return {
+      ref: raw,
+      kind: "fingerprint",
+      ...(node.description !== undefined
+        ? { description: node.description }
+        : {}),
+      body: node.body,
+      warning: `heading '${ref.heading}' not found in node '${ref.nodeId}' — embedding the whole body`,
+    };
+  }
+  return {
+    ref: raw,
+    kind: "fingerprint",
+    ...(node.description !== undefined
+      ? { description: node.description }
+      : {}),
+    body: section,
+  };
+}
+
 export function buildReviewPacket(
   pkg: HauntPackage,
+  fingerprint: LoadedFingerprintPackage,
   diffText: string,
 ): ReviewPacket {
   const res = resolveBridge(pkg, diffText);
+  const localIds = new Set(pkg.inventory.keys());
 
-  const groundedFor = (ref: string): GroundedProse | null => {
-    const slash = ref.indexOf("/");
-    const tier = ref.slice(0, slash);
-    const id = ref.slice(slash + 1);
-    const bucket =
-      tier === "tenets"
-        ? pkg.tenets
-        : tier === "surfaces"
-          ? pkg.surfaces
-          : pkg.inventory;
-    const doc = bucket.get(id);
-    if (!doc) return null;
-    return { ref, description: doc.frontmatter.description, body: doc.body };
-  };
+  const fingerprintNodes = new Map<string, PacketFingerprintNode>();
 
   const checks: PacketCheck[] = res.offeredChecks.map((offered) => {
     const check = pkg.checks.get(offered.id);
+    const baseline: BaselineProse[] = [];
+    for (const raw of check?.references ?? []) {
+      const resolved = resolveBaseline(raw, pkg, fingerprint, localIds);
+      if (resolved === null) continue;
+      baseline.push(resolved);
+      if (resolved.kind === "fingerprint" && !fingerprintNodes.has(raw)) {
+        const parsed = classifyReference(raw, localIds);
+        if (parsed.kind === "fingerprint") {
+          fingerprintNodes.set(raw, {
+            ref: raw,
+            nodeId: parsed.nodeId,
+            ...(parsed.heading !== undefined
+              ? { heading: parsed.heading }
+              : {}),
+            ...(resolved.description !== undefined
+              ? { description: resolved.description }
+              : {}),
+            body: resolved.body,
+            ...(resolved.warning !== undefined
+              ? { warning: resolved.warning }
+              : {}),
+          });
+        }
+      }
+    }
     return {
       id: offered.id,
       severity: offered.severity,
-      groundsTenet: offered.groundsTenet,
+      referencesFingerprint: offered.referencesFingerprint,
       via: offered.via,
       prose: check?.body ?? "",
-      baseline: (check?.frontmatter.grounds ?? [])
-        .map(groundedFor)
-        .filter((g): g is GroundedProse => g !== null),
+      baseline,
     };
   });
 
@@ -94,25 +189,20 @@ export function buildReviewPacket(
     const doc = pkg.inventory.get(m.id);
     return {
       id: m.id,
-      description: doc?.frontmatter.description,
+      ...(doc?.frontmatter.description !== undefined
+        ? { description: doc.frontmatter.description }
+        : {}),
       prose: doc?.body ?? "",
       files: m.files,
     };
   });
 
-  const surfaces = res.surfaces
-    .map((id) => groundedFor(`surfaces/${id}`))
-    .filter((g): g is GroundedProse => g !== null);
-  const tenets = res.tenets
-    .map((id) => groundedFor(`tenets/${id}`))
-    .filter((g): g is GroundedProse => g !== null);
-
   return {
     packageId: pkg.manifest.id,
+    fingerprintId: fingerprint.manifest.id,
     touchedFiles: res.touchedFiles.map((f) => f.path),
     inventory,
-    surfaces,
-    tenets,
+    fingerprint: [...fingerprintNodes.values()],
     checks,
     gaps: res.gaps,
     diff: diffText,
@@ -122,7 +212,7 @@ export function buildReviewPacket(
 /**
  * Render the packet as an agent-facing markdown prompt: the evidence, the
  * offered checks, the coverage gaps, and instructions to produce P0–P3 findings
- * with cited evidence (an evidence-cited finding format). Advisory — the agent judges.
+ * with cited evidence. Advisory — the agent decides.
  */
 export function formatReviewPacket(packet: ReviewPacket): string {
   const out: string[] = [];
@@ -132,7 +222,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     "You are grading **high-altitude compositional drift**: hierarchy collapsing,",
     "density creeping, restraint eroding — the drift linters can't see. The prose",
     "below is the **baseline** (stated composition); the diff is what changed; the",
-    "matched files are the **observable**. Judge which offered checks apply — every",
+    "matched files are the **observable**. Weigh which offered checks apply — every",
     "check is offered, you decide relevance. Do not grade what no check covers; note",
     "it as a gap instead.",
     "",
@@ -156,26 +246,24 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     }
   }
 
-  if (packet.tenets.length > 0 || packet.surfaces.length > 0) {
-    out.push("## Baseline prose in play");
-    for (const t of packet.tenets) {
-      out.push(`### ${t.ref}`);
-      if (t.description) out.push(`_${t.description}_`, "");
-      out.push(t.body, "");
-    }
-    for (const s of packet.surfaces) {
-      out.push(`### ${s.ref}`);
-      if (s.description) out.push(`_${s.description}_`, "");
-      out.push(s.body, "");
+  if (packet.fingerprint.length > 0) {
+    out.push(
+      `## Fingerprint truths in play (.ghost/ \`${packet.fingerprintId}\`)`,
+    );
+    for (const node of packet.fingerprint) {
+      out.push(`### ${node.ref}`);
+      if (node.description) out.push(`_${node.description}_`, "");
+      if (node.warning) out.push(`> ⚠ ${node.warning}`, "");
+      out.push(node.body, "");
     }
   }
 
-  out.push("## Offered checks — judge which apply");
+  out.push("## Offered checks — weigh which apply");
   if (packet.checks.length === 0) {
     out.push("_No checks were offered for this diff._", "");
   } else {
     for (const c of packet.checks) {
-      const kind = c.groundsTenet ? "high-altitude (judgment)" : "structural";
+      const kind = c.referencesFingerprint ? "high-altitude" : "structural";
       out.push(
         `### checks/${c.id}${c.severity ? ` · ${c.severity}` : ""} · ${kind}`,
       );
@@ -202,7 +290,7 @@ export function formatReviewPacket(packet: ReviewPacket): string {
     "- **Severity**: P0 (blocks primary task / severe) · P1 (likely failure / misleading)",
     "  · P2 (meaningful friction, weak hierarchy) · P3 (minor craft).",
     "- **Location**: file:line or the material it concerns.",
-    "- **Baseline**: the grounded prose ref it diverges from.",
+    "- **Baseline**: the referenced prose it diverges from.",
     "- **Observable**: what the diff does that pulls away from the baseline.",
     "- **Fix**: the smallest coherent change.",
     "Lead with the highest-severity findings. If nothing drifts, say so plainly.",

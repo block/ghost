@@ -1,59 +1,41 @@
+import type { GhostCheckFrontmatter } from "@anarchitecture/ghost-fingerprint/core";
 import type { z } from "zod";
 import type {
-  HauntCheckFrontmatterSchema,
   HauntInventoryFrontmatterSchema,
   HauntPackageManifestSchema,
-  HauntSurfaceFrontmatterSchema,
-  HauntTenetFrontmatterSchema,
 } from "./schema.js";
 
 export type HauntPackageManifest = z.infer<typeof HauntPackageManifestSchema>;
 
-export type HauntTenetFrontmatter = z.infer<typeof HauntTenetFrontmatterSchema>;
 export type HauntInventoryFrontmatter = z.infer<
   typeof HauntInventoryFrontmatterSchema
 >;
-export type HauntSurfaceFrontmatter = z.infer<
-  typeof HauntSurfaceFrontmatterSchema
->;
-export type HauntCheckFrontmatter = z.infer<typeof HauntCheckFrontmatterSchema>;
 
-/** A parsed document in any tier: flat id + validated frontmatter + prose. */
-export interface HauntTenet {
-  id: string;
-  frontmatter: HauntTenetFrontmatter;
-  body: string;
-}
+/** A parsed inventory entry: flat id + validated frontmatter + prose. */
 export interface HauntInventory {
   id: string;
   frontmatter: HauntInventoryFrontmatter;
   body: string;
 }
-export interface HauntSurface {
-  id: string;
-  frontmatter: HauntSurfaceFrontmatter;
-  body: string;
-}
+
+/**
+ * A haunt check is a `ghost.check/v1` document (parsed and linted by
+ * ghost-core) plus the haunt-side `references` edge: the local inventory ids
+ * and fingerprint node targets the check enforces.
+ */
 export interface HauntCheck {
   id: string;
-  frontmatter: HauntCheckFrontmatter;
-  body: string;
-}
-
-/** An exemplar: a shipped decision worth repeating (prose only, for now). */
-export interface HauntExemplar {
-  id: string;
+  frontmatter: GhostCheckFrontmatter;
+  /** Raw reference strings, classified lazily (see `classifyReference`). */
+  references: string[];
   body: string;
 }
 
 /** The whole `.haunt/` package, loaded and validated per-document. */
 export interface HauntPackage {
   manifest: HauntPackageManifest;
-  tenets: Map<string, HauntTenet>;
   inventory: Map<string, HauntInventory>;
-  surfaces: Map<string, HauntSurface>;
   checks: Map<string, HauntCheck>;
-  exemplars: Map<string, HauntExemplar>;
 }
 
 export type HauntLintSeverity = "error" | "warning" | "info";
@@ -61,7 +43,7 @@ export type HauntLintSeverity = "error" | "warning" | "info";
 export interface HauntLintIssue {
   severity: HauntLintSeverity;
   rule: string;
-  /** Where the issue lives, e.g. `surfaces/checkout` or `checks/foo.grounds`. */
+  /** Where the issue lives, e.g. `inventory/modals` or `checks/foo.references`. */
   where: string;
   message: string;
 }

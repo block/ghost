@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { loadFingerprint } from "../fingerprint/load.js";
 import { validateHauntGraph } from "../graph/validate.js";
 import type { HauntLintReport } from "../model/types.js";
 import { loadHauntPackage } from "../scan/load-package.js";
@@ -6,6 +7,8 @@ import { loadHauntPackage } from "../scan/load-package.js";
 export interface ValidateOptions {
   /** The `.haunt/` package directory (default: `.haunt` under cwd). */
   package?: string;
+  /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
+  ghostDir?: string;
 }
 
 /** Merge two reports (load + graph) into one. */
@@ -20,9 +23,11 @@ function merge(a: HauntLintReport, b: HauntLintReport): HauntLintReport {
 }
 
 /**
- * Run `haunt validate`: load the package (shape) then validate the graph
- * (edges). Returns the combined report and an exit code (0 clean/warnings,
- * 1 on errors).
+ * Run `haunt validate`: load the package (shape) then validate references —
+ * local against inventory, fingerprint-shaped against the `.ghost/` catalog
+ * when one resolves (absent/broken fingerprint is tolerated here; `review` is
+ * where it hard-fails). Returns the combined report and an exit code (0
+ * clean/warnings, 1 on errors).
  */
 export async function runValidate(
   options: ValidateOptions,
@@ -34,7 +39,8 @@ export async function runValidate(
     return { report: loadReport, code: 1 };
   }
 
-  const graphReport = validateHauntGraph(pkg);
+  const fingerprint = await loadFingerprint({ ghostDir: options.ghostDir });
+  const graphReport = validateHauntGraph(pkg, fingerprint);
   const report = merge(loadReport, graphReport);
   return { report, code: report.errors > 0 ? 1 : 0 };
 }

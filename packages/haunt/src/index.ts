@@ -1,27 +1,18 @@
 /**
  * haunt — the BYO-design-system adherence and drift layer for Ghost (Problem A).
  *
- * Where Fingerprint (@anarchitecture/ghost-fingerprint) carries the portable, medium-agnostic
- * intent contract, Haunt is the implementation-layer counterpart: it bridges to the
- * design-system code a repo already owns (code as source of truth) and grades
- * *high-altitude* compositional drift.
+ * Where Fingerprint (@anarchitecture/ghost-fingerprint) carries the portable,
+ * medium-agnostic intent contract, Haunt is the implementation-side
+ * counterpart: it bridges to the design-system code a repo already owns (code
+ * as source of truth) and grades *high-altitude* compositional drift against
+ * the fingerprint's brand truths.
  *
- * On-disk shape (built): a `.haunt/` package of four flat tiers plus exemplars —
- * tenets (principles), inventory (materials + `paths` to code), surfaces
- * (composition; `honors` tenets, `uses` inventory), and checks (assertions that
- * `grounds` up into the prose they enforce). Flat, no inheritance; the edges are
- * the graph.
- *
- * NOTE: this four-tier shape is provisional scaffolding. The intended direction
- * (notes/haunt-direction.md) reduces Haunt to two optional tiers — inventory +
- * checks — with brand stance (tenets/surfaces) consumed from the Fingerprint
- * (.ghost/) and `grounds` repointing at Fingerprint node ids. Reconciliation is
- * a future, separately planned change.
- *
- * Standalone-first: Haunt does not depend on ghost-core yet. It copies the few
- * primitives it needs locally and proves its shape against its own graph model
- * before we reconcile (notes/haunt-direction.md → "Where the code is vs. where
- * this points").
+ * On-disk shape: a `.haunt/` package of two flat dirs — inventory (materials +
+ * `paths` to code) and checks (`ghost.check/v1` documents whose `references`
+ * bind them to local inventory ids and/or `.ghost/` fingerprint node targets).
+ * Brand stance lives in `.ghost/` as Fingerprint nodes, consumed via
+ * `@anarchitecture/ghost-fingerprint` — a fingerprint is *required* for
+ * `haunt review` (see notes/haunt-reconciliation.md).
  */
 
 export const HAUNT_VERSION = "0.0.0";
@@ -37,19 +28,17 @@ export {
 } from "./commands/review-packet.js";
 export { runSkillInstall } from "./commands/skill.js";
 export { runValidate } from "./commands/validate.js";
+export type { LoadedFingerprintPackage } from "./fingerprint/load.js";
+export { loadFingerprint } from "./fingerprint/load.js";
 export { validateHauntGraph } from "./graph/validate.js";
-export {
-  HAUNT_CHECK_SEVERITIES,
-  HAUNT_PACKAGE_SCHEMA,
-} from "./model/schema.js";
+export type { HauntReference } from "./model/ids.js";
+export { classifyReference } from "./model/ids.js";
+export { HAUNT_PACKAGE_SCHEMA } from "./model/schema.js";
 export type {
   HauntCheck,
-  HauntExemplar,
   HauntInventory,
   HauntLintIssue,
   HauntLintReport,
   HauntPackage,
-  HauntSurface,
-  HauntTenet,
 } from "./model/types.js";
 export { loadHauntPackage } from "./scan/load-package.js";

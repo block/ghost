@@ -83,18 +83,18 @@ Core workflow:
 | Command | Description |
 | --- | --- |
 | `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost validate` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
-| `ghost gather` | List nodes by id + description, or compose a surface's context slice (own + inherited + edges). |
-| `ghost checks` | List the markdown checks and ground the named surfaces; every check is offered, the agent judges which apply. |
-| `ghost review` | Emit an advisory review packet: touched surfaces, the offered checks, fingerprint grounding, and the diff. |
+| `ghost validate` | Validate the package: artifact shape and node validity. |
+| `ghost gather` | Emit the fingerprint menu for the agent to select from. |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
 Advanced/maintenance:
 
 | Command | Description |
 | --- | --- |
-| `ghost migrate` | Migrate a legacy `.ghost/` package onto the node-graph surface model. |
 | `ghost manifest` | Emit a self-describing JSON manifest of every command and flag. |
+
+Diff review lives in Haunt (`haunt review`), the private adherence + drift
+package (`packages/haunt`).
 
 ## Public Exports
 

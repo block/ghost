@@ -1,4 +1,4 @@
-import { parseQualifiedRef } from "../model/ids.js";
+import { classifyReference } from "../model/ids.js";
 import type { HauntPackage } from "../model/types.js";
 import { parseTouchedFiles, type TouchedFile } from "./diff.js";
 import { matchesGlob } from "./glob.js";
@@ -10,22 +10,22 @@ export interface MatchedInventory {
   files: string[];
 }
 
-/** A check offered for the agent to judge, with why it was surfaced. */
+/** A check offered for the agent to weigh, with why it was surfaced. */
 export interface OfferedCheck {
   id: string;
   severity: string | undefined;
-  /** The grounded refs that intersected the touched graph (why it's offered). */
+  /** The references that put this check in play (why it's offered). */
   via: string[];
   /**
-   * Whether the check grounds in a tenet — a signal it is likely high-altitude
-   * (agent-judged) rather than mechanical. Not authoritative; the agent decides.
+   * Whether the check references fingerprint prose — a signal it is likely
+   * high-altitude rather than mechanical. Not authoritative; the agent decides.
    */
-  groundsTenet: boolean;
+  referencesFingerprint: boolean;
 }
 
-/** A touched file that no inventory entry claims — unbridged. */
+/** A place where the fingerprint cannot grade — the anti-rot signal. */
 export interface CoverageGap {
-  kind: "unbridged-file" | "ungraded-inventory";
+  kind: "unbridged-file" | "unreferenced-inventory";
   detail: string;
   files?: string[];
 }
@@ -33,35 +33,34 @@ export interface CoverageGap {
 export interface BridgeResolution {
   touchedFiles: TouchedFile[];
   inventory: MatchedInventory[];
-  /** Surface ids that `use` any matched inventory. */
-  surfaces: string[];
-  /** Tenet ids reachable via matched surfaces' `honors`. */
-  tenets: string[];
-  /** Checks offered because they ground in a touched tenet/surface/inventory. */
+  /** Checks offered because they reference touched inventory or fingerprint prose. */
   offeredChecks: OfferedCheck[];
   /** Where the fingerprint cannot grade — the anti-rot signal. */
   gaps: CoverageGap[];
 }
 
 /**
- * The inventory bridge (Slice 3). Deterministic, no LLM: given a validated
- * package and a diff, walk the edges to decide what is in play, which checks to
- * offer, and where coverage is missing.
+ * The inventory bridge. Deterministic, no LLM: one hop from the diff to the
+ * materials it touches.
  *
  *   diff files → inventory (via `paths`)
- *              → surfaces  (which `use` that inventory)
- *              → tenets    (which those surfaces `honor`)
- *   offered checks = every check that `grounds` in any touched inventory/surface/tenet
- *   gaps          = touched files no inventory claims; touched inventory no check grounds
+ *   offered checks = every check whose `references` hits a touched inventory
+ *                    id, plus every check whose references are all
+ *                    fingerprint-shaped (fingerprint truths are always in
+ *                    play — there is no mechanical hop from a diff to a truth;
+ *                    the agent weighs relevance)
+ *   gaps          = touched files no inventory claims; touched inventory no
+ *                    check references directly
  *
- * Checks are *offered*, never enforced — the host agent judges relevance against
- * the diff and the grounded prose (see notes/haunt-direction.md).
+ * Checks are *offered*, never enforced — the host agent decides relevance
+ * against the diff and the referenced prose (see notes/haunt-direction.md).
  */
 export function resolveBridge(
   pkg: HauntPackage,
   diffText: string,
 ): BridgeResolution {
   const touchedFiles = parseTouchedFiles(diffText);
+  const localIds = new Set(pkg.inventory.keys());
 
   // --- diff files → inventory ---
   const matched = new Map<string, string[]>();
@@ -80,45 +79,32 @@ export function resolveBridge(
 
   const touchedInventory = new Set(matched.keys());
 
-  // --- inventory → surfaces (uses) ---
-  const touchedSurfaces = new Set<string>();
-  for (const surface of pkg.surfaces.values()) {
-    const uses = surface.frontmatter.uses ?? [];
-    if (uses.some((u) => touchedInventory.has(u))) {
-      touchedSurfaces.add(surface.id);
-    }
-  }
-
-  // --- surfaces → tenets (honors) ---
-  const touchedTenets = new Set<string>();
-  for (const id of touchedSurfaces) {
-    for (const t of pkg.surfaces.get(id)?.frontmatter.honors ?? []) {
-      if (pkg.tenets.has(t)) touchedTenets.add(t);
-    }
-  }
-
-  // --- offered checks: grounds ∩ touched graph ---
+  // --- offered checks ---
   const offeredChecks: OfferedCheck[] = [];
+  const referencedInventory = new Set<string>();
   for (const check of pkg.checks.values()) {
     const via: string[] = [];
-    let groundsTenet = false;
-    for (const ref of check.frontmatter.grounds) {
-      const { tier, id } = parseQualifiedRef(ref);
-      const hit =
-        (tier === "inventory" && touchedInventory.has(id)) ||
-        (tier === "surfaces" && touchedSurfaces.has(id)) ||
-        (tier === "tenets" && touchedTenets.has(id));
-      if (hit) {
-        via.push(ref);
-        if (tier === "tenets") groundsTenet = true;
+    let referencesFingerprint = false;
+    let referencesLocal = false;
+    for (const raw of check.references) {
+      const ref = classifyReference(raw, localIds);
+      if (ref.kind === "local") {
+        referencesLocal = true;
+        referencedInventory.add(ref.id);
+        if (touchedInventory.has(ref.id)) via.push(raw);
+      } else if (ref.kind === "fingerprint") {
+        referencesFingerprint = true;
       }
     }
-    if (via.length > 0) {
+    // Fingerprint-only checks are always offered: brand truths are always in
+    // play, and no mechanical hop connects a diff to one.
+    const alwaysOffered = referencesFingerprint && !referencesLocal;
+    if (via.length > 0 || alwaysOffered) {
       offeredChecks.push({
         id: check.id,
         severity: check.frontmatter.severity,
-        via,
-        groundsTenet,
+        via: via.length > 0 ? via : check.references.slice(),
+        referencesFingerprint,
       });
     }
   }
@@ -138,53 +124,21 @@ export function resolveBridge(
     });
   }
 
-  // Touched inventory that no offered check grounds against → ungraded material.
-  const groundedInventory = new Set<string>();
-  for (const check of pkg.checks.values()) {
-    for (const ref of check.frontmatter.grounds) {
-      const { tier, id } = parseQualifiedRef(ref);
-      if (tier === "inventory") groundedInventory.add(id);
-    }
-  }
-  const ungraded = [...touchedInventory].filter(
-    (id) => !groundedInventory.has(id),
+  const unreferenced = [...touchedInventory].filter(
+    (id) => !referencedInventory.has(id),
   );
-  // Only a gap if none of the tenets/surfaces this inventory feeds are graded
-  // either — otherwise the material is covered transitively.
-  const gradedTenets = new Set<string>();
-  const gradedSurfaces = new Set<string>();
-  for (const check of pkg.checks.values()) {
-    for (const ref of check.frontmatter.grounds) {
-      const { tier, id } = parseQualifiedRef(ref);
-      if (tier === "tenets") gradedTenets.add(id);
-      if (tier === "surfaces") gradedSurfaces.add(id);
-    }
-  }
-  const trulyUngraded = ungraded.filter((invId) => {
-    // Find surfaces using this inventory; if any is graded (directly or via a
-    // graded tenet), the material is covered transitively.
-    for (const surface of pkg.surfaces.values()) {
-      if (!(surface.frontmatter.uses ?? []).includes(invId)) continue;
-      if (gradedSurfaces.has(surface.id)) return false;
-      if ((surface.frontmatter.honors ?? []).some((t) => gradedTenets.has(t)))
-        return false;
-    }
-    return true;
-  });
-  if (trulyUngraded.length > 0) {
+  if (unreferenced.length > 0) {
     gaps.push({
-      kind: "ungraded-inventory",
+      kind: "unreferenced-inventory",
       detail:
-        "touched inventory has no grounding check (directly or via a graded surface/tenet) — drift unmeasured",
-      files: trulyUngraded,
+        "touched inventory has no check referencing it — drift unmeasured",
+      files: unreferenced,
     });
   }
 
   return {
     touchedFiles,
     inventory: [...matched].map(([id, files]) => ({ id, files })),
-    surfaces: [...touchedSurfaces],
-    tenets: [...touchedTenets],
     offeredChecks,
     gaps,
   };

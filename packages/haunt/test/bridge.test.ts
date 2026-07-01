@@ -17,7 +17,7 @@ const diffTouching = (path: string) =>
   `diff --git a/${path} b/${path}\n--- a/${path}\n+++ b/${path}\n@@ -1 +1 @@\n-old\n+new\n`;
 
 describe("resolveBridge", () => {
-  it("walks diff → inventory → surfaces → tenets → offered checks", async () => {
+  it("bridges one hop: diff files → inventory → offered checks", async () => {
     const pkg = await loadValid();
     const res = resolveBridge(
       pkg,
@@ -25,17 +25,25 @@ describe("resolveBridge", () => {
     );
 
     expect(res.inventory.map((i) => i.id)).toEqual(["modals"]);
-    expect(res.surfaces).toEqual(["checkout"]);
-    expect(res.tenets).toEqual(["composition"]);
-    expect(res.offeredChecks.map((c) => c.id)).toContain(
-      "density-does-not-creep",
-    );
-
     const check = res.offeredChecks.find(
       (c) => c.id === "density-does-not-creep",
     );
-    expect(check?.groundsTenet).toBe(true); // grounds tenets/composition
-    expect(check?.via).toContain("surfaces/checkout");
+    expect(check).toBeDefined();
+    expect(check?.via).toContain("modals");
+    expect(check?.referencesFingerprint).toBe(true); // checkout > Density
+  });
+
+  it("always offers checks whose references are all fingerprint-shaped", async () => {
+    const pkg = await loadValid();
+    const res = resolveBridge(
+      pkg,
+      diffTouching("apps/site/app/settings/page.tsx"),
+    );
+
+    // No inventory matched, but the fingerprint-only check is still offered.
+    expect(res.inventory).toHaveLength(0);
+    expect(res.offeredChecks.map((c) => c.id)).toEqual(["restraint-holds"]);
+    expect(res.offeredChecks[0]?.referencesFingerprint).toBe(true);
   });
 
   it("reports unbridged files as a coverage gap", async () => {
@@ -45,10 +53,20 @@ describe("resolveBridge", () => {
       diffTouching("apps/site/app/settings/page.tsx"),
     );
 
-    expect(res.inventory).toHaveLength(0);
-    expect(res.offeredChecks).toHaveLength(0);
-    expect(res.gaps.some((g) => g.kind === "unbridged-file")).toBe(true);
     const gap = res.gaps.find((g) => g.kind === "unbridged-file");
     expect(gap?.files).toContain("apps/site/app/settings/page.tsx");
+  });
+
+  it("reports touched inventory no check references directly", async () => {
+    const pkg = await loadValid();
+    const res = resolveBridge(
+      pkg,
+      diffTouching("packages/geist/src/Button/Button.tsx"),
+    );
+
+    // buttons is matched by the diff but no check references it.
+    expect(res.inventory.map((i) => i.id)).toEqual(["buttons"]);
+    const gap = res.gaps.find((g) => g.kind === "unreferenced-inventory");
+    expect(gap?.files).toEqual(["buttons"]);
   });
 });

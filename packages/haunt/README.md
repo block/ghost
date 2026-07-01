@@ -1,16 +1,16 @@
 # haunt
 
-**The BYO-design-system adherence + drift layer for Ghost. Problem A. Scaffolded.**
+**The BYO-design-system adherence + drift layer for Ghost. Problem A.**
 
 Ghost splits into two differently-shaped jobs (see
 [`notes/session-synthesis.md`](../../notes/session-synthesis.md) and
 [`notes/naming-and-structure.md`](../../notes/naming-and-structure.md)):
 
 - **Fingerprint** (`@anarchitecture/ghost-fingerprint`) — the portable, medium-agnostic on-brand
-  generation contract. The knowledge layer.
-- **Haunt** (this package) — the implementation-layer adherence + drift layer. It
+  generation contract. The knowledge substrate.
+- **Haunt** (this package) — the implementation-side adherence + drift layer. It
   bridges to the design-system code a repo already owns and grades high-altitude
-  compositional drift.
+  compositional drift against the fingerprint's brand truths.
 
 > **Summon** a ghost. It leaves a **Fingerprint**. Then it **Haunts** the code —
 > whether that code is yours or lives in a **Vessel** we provide.
@@ -23,51 +23,63 @@ Ghost splits into two differently-shaped jobs (see
 | Astryx | yes (their stack) | declines on purpose | high |
 | **Haunt** | **no — bridges to yours** | **yes, novel** | **none** |
 
-Haunt is design-system-agnostic and ships standalone. **Vessel** is the reference body
-it ships knowing best (richest out-of-the-box read), but Haunt never requires it —
+Haunt is design-system-agnostic. **Vessel** is the reference body it ships
+knowing best (richest out-of-the-box read), but Haunt never requires it —
 point it at any repo's own components and it still works.
 
 ## The mechanism (BYOA)
 
-The deterministic core assembles the evidence — inventory-extracted code facts + the
-bound intent/composition prose + the diff — and the **host agent renders the adherence
-judgment**. Prose is the baseline; code is the observable; the inventory bridge
-reconnects them.
+The deterministic core assembles the evidence — the matched materials + files,
+the referenced fingerprint prose, and the diff — and the **host agent renders
+the findings**. Prose is the baseline; code is the observable; the inventory
+bridge reconnects them.
 
 ## Shape
 
-A `.haunt/` package is four flat tiers plus exemplars — no nesting, no inheritance;
-the edges between tiers are the graph (see `notes/haunt-direction.md`):
+A `.haunt/` package is two flat dirs — no nesting, no inheritance. Brand truths
+(principles, surface composition, stance) live in the repo's `.ghost/`
+fingerprint as prose nodes; haunt checks point at them (see
+`notes/haunt-reconciliation.md`):
 
 ```text
 .haunt/
-  manifest.yml
-  tenets/     # broad principles — the why / the stance. Prose, no paths.
-  inventory/  # the materials — prose + `paths` to where they live in code.
-  surfaces/   # feature areas — how principles land; honors tenets, uses inventory.
-  checks/     # assertions — ground up into tenets/surfaces/inventory.
-  exemplars/  # shipped decisions worth repeating.
+  manifest.yml   # schema: haunt.package/v1, id
+  inventory/     # the materials — prose + `paths` to where they live in code.
+  checks/        # ghost.check/v1 assertions — `references` bind them to prose.
 ```
+
+A check is a `ghost.check/v1` document (`name`, `description`, `severity` +
+prose body) plus the haunt-side `references` field (required, min 1). Each
+reference is either a bare local inventory id (`modals`) or a fingerprint node
+target with an optional heading anchor (`checkout/payment > Confirmation`) —
+one pointer grammar system-wide, shared with `ghost.check/v1`'s `source:`.
+
+**A `.ghost/` fingerprint is required for `haunt review`** — without brand
+truths, review degrades to generic lint. `haunt init` and `haunt validate`
+work without one.
 
 ## CLI
 
 ```bash
-haunt init                 # scaffold a .haunt/ package (one example per tier)
-haunt validate             # shape (flat tiers) + edge graph (honors/uses/grounds resolve)
-haunt review --diff=-      # advisory packet: matched materials, baseline prose,
-                           #   offered checks, coverage gaps, diff (agent renders findings)
+haunt init                 # scaffold a .haunt/ package (manifest + inventory + check examples)
+haunt validate             # shape (flat dirs) + check references (local + fingerprint)
+haunt review --diff=-      # advisory packet: matched materials, referenced fingerprint
+                           #   prose, offered checks, coverage gaps, diff (agent renders findings)
 haunt skill install        # install the host-agent skill bundle
 haunt manifest             # self-describing JSON of commands + flags
 ```
 
-`haunt review` is advisory — it assembles evidence and offers checks; the host
-agent judges relevance and produces P0–P3 findings. Haunt never edits and never
-grades on its own.
+`haunt review` requires a resolvable `.ghost/` package (exit 2 with an on-ramp
+message otherwise; `--ghost-dir <dir>` overrides the location). The bridge is
+one hop: diff files → inventory via `paths`. Offered checks are those whose
+`references` hit a touched inventory id, plus every check that references only
+fingerprint nodes (brand truths are always in play). The packet embeds each
+reference's baseline prose — fingerprint node bodies are sliced to the anchored
+heading section. Haunt never edits and never grades on its own.
 
 ## Status
 
-Working core (Slices 1–6): package model + loader, graph validation, the inventory
-bridge, the advisory review packet, the skill bundle, and scaffolding. Built
-standalone — no dependency on `ghost-core` yet (see `notes/haunt-direction.md` →
-"Where the code is vs. where this points"). Deferred: the eval/vibe-test harness,
-the evidence-intake loop, and first-party Vessel knowledge.
+Reconciled onto the fingerprint (see `notes/haunt-reconciliation.md`): two-dir
+shape, `ghost.check/v1` checks, `references` grammar, fingerprint-required
+review. Deferred: inventory self-linting, the eval/vibe-test harness, and
+first-party Vessel knowledge. Private until the self-lint slice lands.
