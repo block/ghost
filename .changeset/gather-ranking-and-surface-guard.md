@@ -2,8 +2,9 @@
 "@anarchitecture/ghost": minor
 ---
 
-Rank the closest nodes when `ghost gather` is given an inexact query (matching
-id, description, then body, single words or a phrase) instead of dumping the
-whole menu, and emit the stable `ERR_UNKNOWN_SURFACE` code with closest-id
-suggestions when `gather`, `checks`, or `review` is given a node or surface that
-is not in the package.
+Return the node menu plus closest-id "did you mean" suggestions when `ghost
+gather` is given an inexact query, instead of a separate ranked-candidate
+search — the agent re-picks by description from the same menu the no-argument
+form prints. `gather`, `checks`, and `review` all emit the stable
+`ERR_UNKNOWN_SURFACE` code with closest-id suggestions for a node or surface
+that is not in the package.

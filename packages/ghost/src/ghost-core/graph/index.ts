@@ -9,7 +9,10 @@ export {
   ancestorChain,
   assembleGraph,
   type PlacedNode,
+  parentIdOf,
+  parentIdOrRoot,
 } from "./assemble.js";
+export { closestIds } from "./closest.js";
 export {
   type GraphLintIssue,
   type GraphLintReport,
@@ -17,12 +20,6 @@ export {
   lintGraph,
 } from "./lint.js";
 export { buildGraphMenu, type GraphMenuEntry } from "./menu.js";
-export {
-  closestIds,
-  type SearchHit,
-  type SearchReason,
-  searchGraph,
-} from "./search.js";
 export {
   type GraphSlice,
   type GraphSliceNode,

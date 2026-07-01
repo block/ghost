@@ -7,20 +7,14 @@ import {
 } from "../../src/ghost-core/index.js";
 
 // Model an index/directory node: its folder is its own id (`a/b/index.md`).
-// A parentless node is the root `core` (folder ``).
+// The root `core` node has folder `""`; every other node's folder is its id.
 function placed(
   id: string,
-  parent: string | undefined,
   frontmatter: PlacedNode["doc"]["frontmatter"] = {},
   body = "Prose.",
 ): PlacedNode {
-  const folder = parent === undefined ? "" : id;
-  return {
-    id,
-    ...(parent !== undefined ? { parent } : {}),
-    folder,
-    doc: { frontmatter, body },
-  };
+  const folder = id === GHOST_GRAPH_ROOT_ID ? "" : id;
+  return { id, folder, doc: { frontmatter, body } };
 }
 
 describe("assembleGraph (directory-tree fold)", () => {
@@ -29,7 +23,6 @@ describe("assembleGraph (directory-tree fold)", () => {
       placedNodes: [
         placed(
           "checkout/trust",
-          "checkout",
           {
             relates: [{ to: "core/trust", as: "reinforces" }],
             incarnation: "web",
@@ -43,29 +36,24 @@ describe("assembleGraph (directory-tree fold)", () => {
     expect(node?.body).toBe("Reduce felt risk near payment.");
     expect(node?.incarnation).toBe("web");
     expect(node?.relates).toEqual([{ to: "core/trust", as: "reinforces" }]);
-    expect(node?.parent).toBe("checkout");
+    expect(node?.folder).toBe("checkout/trust");
   });
 
-  it("seeds the containment tree from directory parents and resolves ancestors", () => {
+  it("resolves ancestors from the id alone (no stored containment)", () => {
     const graph = assembleGraph({
-      placedNodes: [
-        placed("checkout", "core"),
-        placed("checkout/payment", "checkout"),
-      ],
+      placedNodes: [placed("checkout"), placed("checkout/payment")],
     });
-    expect(graph.parents.get("checkout/payment")).toBe("checkout");
-    expect(graph.parents.get("checkout")).toBe(GHOST_GRAPH_ROOT_ID);
     expect(ancestorChain(graph, "checkout/payment")).toEqual([
       "checkout",
       GHOST_GRAPH_ROOT_ID,
     ]);
+    expect(ancestorChain(graph, "checkout")).toEqual([GHOST_GRAPH_ROOT_ID]);
   });
 
-  it("seeds intermediate directories that have no index node", () => {
-    // Only the deep leaf is placed; a/b and a are empty directories.
-    const graph = assembleGraph({
-      placedNodes: [placed("a/b/c", "a/b")],
-    });
+  it("resolves ancestors through intermediate directories with no index node", () => {
+    // Only the deep leaf is placed; a/b and a are empty directories. The chain
+    // is derived from the id string, so it resolves with no seeded positions.
+    const graph = assembleGraph({ placedNodes: [placed("a/b/c")] });
     expect(ancestorChain(graph, "a/b/c")).toEqual([
       "a/b",
       "a",
@@ -73,20 +61,11 @@ describe("assembleGraph (directory-tree fold)", () => {
     ]);
   });
 
-  it("treats a parentless node as the implicit core root", () => {
+  it("treats the `core` node as the implicit root with an empty chain", () => {
     const graph = assembleGraph({
-      placedNodes: [placed("core", undefined, {}, "Root prose.")],
+      placedNodes: [placed("core", {}, "Root prose.")],
     });
     expect(graph.nodes.get(GHOST_GRAPH_ROOT_ID)?.body).toBe("Root prose.");
-  });
-
-  it("records children for downward traversal", () => {
-    const graph = assembleGraph({
-      placedNodes: [placed("checkout", "core"), placed("email", "core")],
-    });
-    expect(graph.children.get(GHOST_GRAPH_ROOT_ID)?.sort()).toEqual([
-      "checkout",
-      "email",
-    ]);
+    expect(ancestorChain(graph, GHOST_GRAPH_ROOT_ID)).toEqual([]);
   });
 });

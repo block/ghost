@@ -20,15 +20,12 @@ export interface GraphLintReport {
 /**
  * The graph pass of `validate`: the ghost-specific network is correct.
  *
- * Containment comes from the directory tree (a node's parent is its directory),
- * so parent edges resolve by construction — there is no "unresolved parent" to
- * check. What remains is the network correctness the layout cannot guarantee:
- *
- * - every local `relates` target resolves (cross-package `pkg:id` refs resolve
- *   against inherited nodes; an unknown one is reported);
- * - the containment graph reaches the single implicit `core` root (it always
- *   does by construction; verified defensively);
- * - the containment graph is acyclic (a directory tree is, defensively checked).
+ * Containment comes from the directory tree — a node's parent is its containing
+ * directory, derived from its id — so the containment graph is a tree by
+ * construction: it reaches the single `core` root and cannot cycle. Neither
+ * needs checking. What remains is the network correctness the layout cannot
+ * guarantee: every local `relates` target resolves (cross-package `pkg:id`
+ * refs resolve against inherited nodes; an unknown one is reported).
  *
  * Pure: operates on the assembled in-memory graph, no I/O.
  */
@@ -48,26 +45,6 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
           node: node.id,
         });
       }
-    }
-  }
-
-  // Cycle detection over containment (defensive — a directory tree cannot cycle,
-  // but inherited/seeded positions are checked for safety).
-  for (const node of graph.nodes.values()) {
-    const seen = new Set<string>();
-    let cursor: string | undefined = node.id;
-    while (cursor !== undefined) {
-      if (seen.has(cursor)) {
-        issues.push({
-          severity: "error",
-          rule: "containment-cycle",
-          message: `node '${node.id}' is part of a containment cycle.`,
-          node: node.id,
-        });
-        break;
-      }
-      seen.add(cursor);
-      cursor = graph.parents.get(cursor);
     }
   }
 

@@ -25,3 +25,4 @@ packages/ghost-ui/.ghost/cache/*
 # Local Superpowers planning artifacts
 docs/superpowers/plans/
 docs/superpowers/specs/
+notes/

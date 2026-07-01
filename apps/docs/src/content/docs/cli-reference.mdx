@@ -91,13 +91,10 @@ ghost validate --format json
 ### Compose a surface slice: `gather`
 
 With no argument, list every node by id and description so an agent can match a
-task to one. With an exact node id, compose its context slice. With an inexact
-query (`ghost gather payment`), `gather` ranks the closest nodes instead of
-dumping the whole menu: a verbatim match wins (an exact id, then a name,
-description, or body substring), then a whole-name typo fallback, then a
-multi-word phrase where every word lands somewhere on the node, so
-`ghost gather payment confirmation` still finds the right surface. Each
-candidate is returned for the agent to pick with a follow-up `ghost gather`.
+task to one. With an exact node id, compose its context slice. An inexact query
+(`ghost gather payment`) is not search: it returns the same node menu so the
+agent re-picks by description, plus closest-id "did you mean" suggestions for a
+likely typo, under the stable code `ERR_UNKNOWN_SURFACE`.
 
 A slice composes three things:
 
@@ -118,7 +115,7 @@ nodes always pass.
 ```bash
 ghost gather
 ghost gather checkout
-ghost gather payment            # inexact: ranks the closest nodes
+ghost gather payment            # inexact: returns the menu + did-you-mean suggestions
 ghost gather checkout --as email
 ghost gather checkout --format json
 ```
@@ -127,9 +124,9 @@ This is the pre-generation step: Ghost gives agents surface-composition context
 before they build, not only after a review finds drift.
 
 Naming a surface that is not in the package is an error, not a silent empty
-result: `gather` returns ranked candidates, and `checks` and `review` emit the
-stable code `ERR_UNKNOWN_SURFACE` with closest-id suggestions, so an agent can
-retry without a human.
+result: `gather`, `checks`, and `review` all emit the stable code
+`ERR_UNKNOWN_SURFACE` with closest-id suggestions, so an agent can retry without
+a human.
 
 </DocSection>
 

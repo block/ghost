@@ -1,13 +1,12 @@
 import type { CAC } from "cac";
 import {
   buildGraphMenu,
+  closestIds,
   GHOST_GRAPH_ROOT_ID,
   type GraphMenuEntry,
   type GraphSlice,
   type GraphSliceProvenance,
   resolveGraphSlice,
-  type SearchHit,
-  searchGraph,
 } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
@@ -65,26 +64,30 @@ export function registerGatherCommand(cli: CAC): void {
           return;
         }
 
-        // An inexact query (not an exact node id): rank the closest nodes
-        // rather than dumping the whole menu. This is `gather`'s search front
-        // end, the same act as picking from the menu, done intelligently.
+        // An inexact query (not an exact node id) is not search: show the same
+        // node menu the no-arg form prints so the agent re-picks by
+        // description, plus closest-id "did you mean" suggestions for a likely
+        // typo. Same path, same stable code as `checks`/`review`.
         if (!known.has(surface)) {
-          const matches = searchGraph(surface, loaded.graph);
+          const suggestions = closestIds(surface, known);
           if (opts.format === "json") {
             process.stdout.write(
               `${JSON.stringify(
                 {
-                  kind: "candidates",
+                  kind: "menu",
                   code: "ERR_UNKNOWN_SURFACE",
                   query: surface,
-                  candidates: matches,
+                  suggestions,
+                  surfaces: menu,
                 },
                 null,
                 2,
               )}\n`,
             );
           } else {
-            process.stdout.write(formatCandidatesMarkdown(surface, matches));
+            process.stdout.write(
+              formatUnknownMenuMarkdown(surface, suggestions, menu),
+            );
           }
           process.exit(2);
           return;
@@ -122,42 +125,32 @@ function formatMenuMarkdown(menu: GraphMenuEntry[]): string {
   return `${lines.join("\n")}\n`;
 }
 
-function formatCandidatesMarkdown(query: string, matches: SearchHit[]): string {
+/**
+ * An inexact query named no node. Show the full menu (the agent re-picks by
+ * description) and lead with closest-id "did you mean" suggestions for a likely
+ * typo.
+ */
+function formatUnknownMenuMarkdown(
+  query: string,
+  suggestions: string[],
+  menu: GraphMenuEntry[],
+): string {
   const lines: string[] = ["# Ghost Nodes", ""];
-  if (matches.length === 0) {
-    lines.push(
-      `No node matches \`${query}\`. Run \`ghost gather\` to list every node.`,
-    );
-    return `${lines.join("\n")}\n`;
-  }
+  const didYouMean =
+    suggestions.length > 0
+      ? ` Did you mean: ${suggestions.map((s) => `\`${s}\``).join(", ")}?`
+      : "";
   lines.push(
-    `\`${query}\` is not a node id. Closest matches (run \`ghost gather <node>\`):`,
+    `\`${query}\` is not a node id.${didYouMean} Match the ask to one of these nodes, then run \`ghost gather <node>\`.`,
     "",
   );
-  for (const hit of matches) {
-    const kind = hit.surface ? "surface" : "node";
-    lines.push(`- \`${hit.id}\` (${kind}): ${matchLabel(hit)}`);
-    if (hit.description) lines.push(`  - ${hit.description}`);
+  for (const entry of menu) {
+    const parent =
+      entry.parent === entry.id ? "" : ` (under \`${entry.parent}\`)`;
+    lines.push(`- \`${entry.id}\`${parent}`);
+    if (entry.description) lines.push(`  - ${entry.description}`);
   }
   return `${lines.join("\n")}\n`;
-}
-
-/**
- * Explain *why* a candidate matched, so the route is auditable rather than a
- * bare ranking. Mirrors `gather`'s slice provenance: the agent (and the human
- * reading a review packet) can see which tier placed each node.
- */
-function matchLabel(hit: SearchHit): string {
-  switch (hit.reason) {
-    case "exact":
-      return "exact id";
-    case "fuzzy":
-      return "likely typo of the name";
-    case "tokens":
-      return "matched every query word";
-    default:
-      return `matched the query in ${hit.reason}`;
-  }
 }
 
 function provenanceLabel(provenance: GraphSliceProvenance): string {

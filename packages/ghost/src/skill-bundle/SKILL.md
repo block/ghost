@@ -51,7 +51,7 @@ Authoring a fingerprint comes first (`ghost init`, then write nodes); the
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), list the node menu, or rank the closest nodes for an inexact query. |
+| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), or list the node menu (with no argument or for an inexact query). |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -138,12 +138,12 @@ for the full node shape.
   what it needs with a follow-up `gather`.
 
 Naming a node that is not in the package is an error, not a silent empty
-result. An inexact `gather <query>` ranks the closest nodes as `candidates`
-(matching id, description, then body verbatim, then a phrase where every word
-lands on the node) under the stable code `ERR_UNKNOWN_SURFACE`; `checks` and
-`review` emit the same code with
-closest-id `suggestions` (in `--format json`) and a "Did you mean" line
-otherwise. Branch on the code and retry with a ranked candidate or suggestion.
+result. An inexact `gather <query>` is not search: it returns the node menu
+(`kind: "menu"`, the same listing the no-argument form prints) under the stable
+code `ERR_UNKNOWN_SURFACE`, with closest-id `suggestions` for a likely typo. So
+do `checks` and `review`, emitting the same code with `suggestions` (in
+`--format json`) and a "Did you mean" line otherwise. Branch on the code and
+retry with a suggestion or a node you match from the menu's descriptions.
 
 Checks and review validate output; they are not generation input.
 

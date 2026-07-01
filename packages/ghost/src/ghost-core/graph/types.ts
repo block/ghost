@@ -18,24 +18,24 @@ export type GhostGraphNodeOrigin = "node-file" | "inherited";
 /**
  * A resolved graph node — pure prose (Option A). The body is the design
  * expression; there are no structured node fields. `id` is the node's path in
- * the package; `parent` is its containing directory — the single containment
- * parent (absent ⇒ the implicit `core` root itself); `relates` are the typed
- * lateral links; `incarnation` is the optional projection tag.
+ * the package; `relates` are the typed lateral links; `incarnation` is the
+ * optional projection tag.
+ *
+ * Containment is not stored: a node's parent is `parentIdOrRoot(id)` and its
+ * ancestor chain is a pure walk over the id string. The `folder` axis is the
+ * one spatial truth the slice engine runs on.
  */
 export interface GhostGraphNode {
   id: string;
   /** One-line "what this is / when to gather it" — the retrieval payload. */
   description?: string;
-  /** The containing directory's id; absent ⇒ this node is the `core` root. */
-  parent?: string;
   /**
    * The node's **file folder**: the directory the source file physically sits
-   * in, the unit of containment for slice composition. This differs from
-   * `parent` for index nodes: `features/bitcoin/index.md` has folder
-   * `features/bitcoin` but parent `features`. A plain leaf shares its parent's
-   * value (`features/bitcoin/buy.md` → folder `features/bitcoin`). The root
-   * `core` node has folder `""`. A node only cascades into surfaces whose
-   * folder path includes this folder.
+   * in, the single unit of containment for slice composition. An index node's
+   * folder is its own id (`features/bitcoin/index.md` → `features/bitcoin`); a
+   * leaf's folder is the directory it sits in (`features/bitcoin/buy.md` →
+   * `features/bitcoin`). The root `core` node has folder `""`. A node only
+   * cascades into surfaces whose folder path includes this folder.
    */
   folder: string;
   relates: GhostNodeRelation[];
@@ -45,16 +45,12 @@ export interface GhostGraphNode {
 }
 
 /**
- * The in-memory fingerprint graph: prose nodes indexed by id, plus the
- * containment tree (parent edges from the directory layout, root = `core`) that
- * is traversed. This is the shape later phases (gather, checks,
- * review) traverse; the directory layout is just one serialization of it.
+ * The in-memory fingerprint graph: prose nodes indexed by id. Containment is
+ * not materialized as a second structure — parent and ancestor facts are
+ * derived from ids on demand (`parentIdOrRoot`, `ancestorChain`), and the slice
+ * engine traverses the `folder` axis. The directory layout is the graph.
  */
 export interface GhostGraph {
   /** Every node, indexed by id. */
   nodes: Map<string, GhostGraphNode>;
-  /** child id → parent id (the `under` tree). The root has no entry. */
-  parents: Map<string, string>;
-  /** parent id → child ids, for downward traversal. */
-  children: Map<string, string[]>;
 }

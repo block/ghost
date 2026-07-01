@@ -1,5 +1,5 @@
 import type { GhostNodeRelationKind } from "../node/types.js";
-import { ancestorChain } from "./assemble.js";
+import { ancestorChain, parentIdOrRoot } from "./assemble.js";
 import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
 
 /**
@@ -128,7 +128,7 @@ export function resolveGraphSlice(
     const provenance: GraphSliceProvenance =
       node.folder === surfaceFolder
         ? { kind: "own" }
-        : { kind: "ancestor", from: node.parent ?? GHOST_GRAPH_ROOT_ID };
+        : { kind: "ancestor", from: parentIdOrRoot(node.id) };
     addBody(node.id, provenance);
   }
 

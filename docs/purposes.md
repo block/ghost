@@ -73,9 +73,10 @@ thing to fix at the boundary, not a reason to redesign the artifact.
    *Fix: compose to assemble, slice to deliver.*
 
 2. **Pathless tasks need a target.** When there is no exact surface to name,
-   `gather <query>` ranks the closest nodes on their `description` and the agent
-   picks; the mechanism must not invent surface routing to compensate.
-   *Fix: `description` is the retrieval payload; rank and let the agent pick.*
+   `gather` lists the node menu (id + `description`) and the agent picks; an
+   inexact `gather <query>` returns that same menu plus closest-id suggestions.
+   The mechanism must not invent surface routing to compensate.
+   *Fix: `description` is the retrieval payload; show the menu and let the agent pick.*
 
 3. **A check could be made to route by surface.** Checks bind to prose through
    their `source:` pointer; every check is offered and the agent decides which

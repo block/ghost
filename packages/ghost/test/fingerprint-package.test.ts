@@ -7,6 +7,7 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "../src/fingerprint.js";
+import { ancestorChain } from "../src/ghost-core/index.js";
 
 describe("split fingerprint package", () => {
   let dir: string;
@@ -46,14 +47,17 @@ describe("split fingerprint package", () => {
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
-    // id is the path; parent is the containing directory.
+    // id is the path; the folder is the containing directory.
     const authored = loaded.graph.nodes.get("checkout/trust");
     expect(authored?.origin).toBe("node-file");
-    expect(authored?.parent).toBe("checkout");
+    expect(authored?.folder).toBe("checkout");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
     expect(authored?.incarnation).toBe("web");
-    // The containing directory resolves up to the implicit core root.
-    expect(loaded.graph.parents.get("checkout")).toBe("core");
+    // Containment is derived from the id: it resolves up to the core root.
+    expect(ancestorChain(loaded.graph, "checkout/trust")).toEqual([
+      "checkout",
+      "core",
+    ]);
   });
 
   it("guides legacy facet packages to migrate", async () => {

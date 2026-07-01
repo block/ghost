@@ -1,3 +1,4 @@
+import { parentIdOf, parentIdOrRoot } from "./assemble.js";
 import { GHOST_GRAPH_ROOT_ID, type GhostGraph } from "./types.js";
 
 /**
@@ -38,16 +39,24 @@ export function buildGraphMenu(graph: GhostGraph): GraphMenuEntry[] {
     entries.push({
       id: node.id,
       ...(node.description ? { description: node.description } : {}),
-      parent: node.parent ?? GHOST_GRAPH_ROOT_ID,
+      parent: parentIdOrRoot(node.id),
     });
   }
 
   // Intermediate directories with no index node of their own are still
-  // anchorable tree positions. Include them as bare entries.
-  for (const [id, parent] of graph.parents) {
-    if (seen.has(id)) continue;
-    seen.add(id);
-    entries.push({ id, parent });
+  // anchorable tree positions. Derive them from every local node's id chain
+  // (e.g. `a/b/c` implies bare positions `a/b` and `a`) and include any not
+  // already present as a node.
+  for (const node of graph.nodes.values()) {
+    if (node.origin === "inherited") continue;
+    let ancestor = parentIdOf(node.id);
+    while (ancestor !== undefined) {
+      if (!seen.has(ancestor)) {
+        seen.add(ancestor);
+        entries.push({ id: ancestor, parent: parentIdOrRoot(ancestor) });
+      }
+      ancestor = parentIdOf(ancestor);
+    }
   }
 
   return entries.sort((a, b) => a.id.localeCompare(b.id));

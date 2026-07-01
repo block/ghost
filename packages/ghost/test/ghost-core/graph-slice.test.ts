@@ -6,25 +6,23 @@ import {
 } from "../../src/ghost-core/index.js";
 
 /**
- * Model a node the way the loader does. `folder` is the file's directory, the
- * unit of containment:
- * - a root file (`voice.md`)        → parent `core`,   folder ``.
- * - a directory index (`a/index.md`)→ parent of `a`,   folder `a`.
- * - a leaf (`a/b.md`)               → parent `a`,       folder `a`.
+ * Model a node the way the loader does. `folder` is the file's directory — the
+ * single unit of containment:
+ * - a root file (`voice.md`)        → folder ``.
+ * - a directory index (`a/index.md`)→ folder `a`.
+ * - a leaf (`a/b.md`)               → folder `a` (the directory it sits in).
  */
 function root(
   id: string,
   fm: PlacedNode["doc"]["frontmatter"] = {},
 ): PlacedNode {
-  return { id, parent: "core", folder: "", doc: { frontmatter: fm, body: id } };
+  return { id, folder: "", doc: { frontmatter: fm, body: id } };
 }
 function dir(
   id: string,
   fm: PlacedNode["doc"]["frontmatter"] = {},
 ): PlacedNode {
-  const slash = id.lastIndexOf("/");
-  const parent = slash === -1 ? "core" : id.slice(0, slash);
-  return { id, parent, folder: id, doc: { frontmatter: fm, body: id } };
+  return { id, folder: id, doc: { frontmatter: fm, body: id } };
 }
 function leaf(
   id: string,
@@ -32,8 +30,7 @@ function leaf(
 ): PlacedNode {
   const slash = id.lastIndexOf("/");
   const folder = slash === -1 ? "" : id.slice(0, slash);
-  const parent = folder === "" ? "core" : folder;
-  return { id, parent, folder, doc: { frontmatter: fm, body: id } };
+  return { id, folder, doc: { frontmatter: fm, body: id } };
 }
 
 function provenanceOf(slice: ReturnType<typeof resolveGraphSlice>, id: string) {

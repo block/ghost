@@ -38,11 +38,10 @@ export {
   type GraphSliceProvenance,
   lintGraph,
   type PlacedNode,
+  parentIdOf,
+  parentIdOrRoot,
   type ResolveGraphSliceOptions,
   resolveGraphSlice,
-  type SearchHit,
-  type SearchReason,
-  searchGraph,
 } from "./graph/index.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---
 export {

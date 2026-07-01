@@ -909,7 +909,7 @@ composition:
     );
   });
 
-  it("ranks closest candidates for an inexact gather query", async () => {
+  it("returns the menu with did-you-mean suggestions for an inexact gather query", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
@@ -920,28 +920,16 @@ composition:
 
     expect(result.code).toBe(2);
     const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("candidates");
+    expect(payload.kind).toBe("menu");
     expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
-    expect(payload.candidates.map((c: { id: string }) => c.id)).toContain(
+    expect(payload.query).toBe("marketng");
+    expect(payload.suggestions).toContain("email/marketing");
+    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
       "email/marketing",
     );
   });
 
-  it("matches a gather query by phrase against descriptions", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(
-      ["gather", "marketing email", "--package", ".ghost", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.candidates[0].id).toBe("email/marketing");
-  });
-
-  it("returns an empty candidate set for a gather query with no match", async () => {
+  it("returns the menu with empty suggestions for a gather query with no near match", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
@@ -952,8 +940,12 @@ composition:
 
     expect(result.code).toBe(2);
     const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("candidates");
-    expect(payload.candidates).toEqual([]);
+    expect(payload.kind).toBe("menu");
+    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
+    expect(payload.suggestions).toEqual([]);
+    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
+      "email/marketing",
+    );
   });
 
   it("errors with ERR_UNKNOWN_SURFACE when checks names an unknown surface", async () => {
