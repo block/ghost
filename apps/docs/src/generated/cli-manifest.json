@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T20:29:44.824Z",
+  "generatedAt": "2026-07-01T02:20:26.624Z",
   "tools": [
     {
       "tool": "ghost",
@@ -87,14 +87,6 @@
               "negated": false
             },
             {
-              "rawName": "--as <incarnation>",
-              "name": "as",
-              "description": "Filter to one incarnation (e.g. email, billboard, voice). Essence (untagged) nodes always pass.",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
               "rawName": "--format <fmt>",
               "name": "format",
               "description": "Output format: markdown or json",
@@ -126,14 +118,6 @@
               "rawName": "--package <dir>",
               "name": "package",
               "description": "Use this fingerprint package directory (default: ./.ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--as <incarnation>",
-              "name": "as",
-              "description": "Filter grounding to one incarnation (e.g. email, voice). Essence nodes always pass.",
               "default": null,
               "takesValue": true,
               "negated": false

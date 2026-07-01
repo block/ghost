@@ -8,8 +8,7 @@ description: Recall the applicable Ghost fingerprint nodes for a task.
 1. Run `ghost gather` (no argument) to list nodes by id + description.
 2. Match the task to one or more nodes by their descriptions; name the node.
 3. Run `ghost gather <node>` to compose its slice (own body + inherited
-   ancestors + one-hop `relates`), filtered by `--as <incarnation>` when the
-   work targets a specific medium.
+   ancestors + one-hop `relates`).
 
 Return:
 

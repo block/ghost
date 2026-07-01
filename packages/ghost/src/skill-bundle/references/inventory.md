@@ -26,32 +26,27 @@ can be one paragraph inside a broader node, or it can be split across many
 nodes, one per block grouped under a surface, whatever keeps each node
 purpose-coherent. Everything here is guidance for writing inventory prose well,
 wherever it lands. It adds nothing to the artifact: a node is still a markdown
-file with `description` / `relates` / `incarnation` frontmatter and a prose body,
+file with `description` / `relates` frontmatter and a prose body,
 placed by its path. See [capture.md](capture.md) for the node shape.
 
 ## Where it sits
 
-A fingerprint declares intent in medium-agnostic terms. Inventory grounds that
-intent in concrete materials. A realizing surface (an agent emitting web, Arrow,
-iOS, …) **reads** the inventory and matches against it; the fingerprint never
-references the surface. Strip every inventory node and the fingerprint is still
-valid and still portable. It just gives the agent less to draw on. The agent
-does the matching.
+A fingerprint declares intent in terms of stance. Inventory grounds that
+intent in concrete materials. A realizing agent **reads** the inventory and
+matches against it. Strip every inventory node and the fingerprint is still
+valid — it just gives the agent less to draw on. The agent does the matching.
 
-## Inventory richness is the portability dial
+## Inventory richness is the grounding dial
 
 This trade belongs to the author:
 
 - **Abstract inventory** (principles, arrangement, no concrete components) →
-  maximally portable. The same fingerprint composes onto web, Arrow, iOS,
-  Android.
-- **Concrete inventory** (named building blocks, possibly medium-bound) →
-  strongly grounded, less portable. Tag medium-bound nodes with `incarnation`;
-  leave essence untagged.
+  leaves the agent more room, grounds it less.
+- **Concrete inventory** (named building blocks) → strongly grounds the agent
+  in the materials it should reach for, at the cost of that room.
 
-Neither is correct. A medium-specific inventory node is a deliberate trade, not
-a leak, and it does not contaminate the fingerprint, which still does not
-*depend* on it.
+Neither is correct. A concrete inventory node is a deliberate trade, not a leak,
+and it does not contaminate the fingerprint, which still does not *depend* on it.
 
 ## Tier first: not everything earns a node
 
@@ -100,7 +95,7 @@ when (use X instead) / never*:
   stretch it to fit and misleading associations get caught.
 
 Keep appearance, props, tokens, and code out; those are API reference, not
-inventory prose. The body stays medium-agnostic; the implementation beneath it
+inventory prose. The body documents purpose; the implementation beneath it
 is swappable.
 
 ## How a match runs
@@ -210,13 +205,10 @@ already knows what a button is.)
 
 ## Reuse vs. free-compose
 
-A realizing surface may target a different medium than the one your inventory
-was drawn from. So do not pin inventory by prop or markup shape. Document the
-*purpose* and any *guarantees* a block must hold (an action routes through a
-declared tool, a control is keyboard-reachable). Let the surface author the
-form. Pinning prop APIs re-imports medium-specific opinion and creates a mirror
-to maintain. Where a block's expression really is bound to one medium, say so
-with `incarnation` rather than by smuggling markup into the prose.
+Do not pin inventory by prop or markup shape. Document the *purpose* and any
+*guarantees* a block must hold (an action routes through a declared tool, a
+control is keyboard-reachable). Let the realizing agent author the form. Pinning
+prop APIs re-imports implementation opinion and creates a mirror to maintain.
 
 ## Never
 

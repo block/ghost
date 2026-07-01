@@ -23,9 +23,8 @@ function finalize(issues: GhostNodeLintIssue[]): GhostNodeLintReport {
 
 /**
  * Parse and validate a single `ghost.node/v1` markdown artifact (frontmatter +
- * prose body) in isolation. Per-node only: identity, well-formed links,
- * incarnation
- * shape. Cross-node graph rules (targets exist, one root, no cycles) are a
+ * prose body) in isolation. Per-node only: identity and well-formed links.
+ * Cross-node graph rules (targets exist, one root, no cycles) are a
  * later phase.
  */
 export function parseNode(raw: string): ParseNodeResult {

@@ -42,13 +42,6 @@ export interface GhostNodeFrontmatter {
   description?: string;
   /** Typed lateral links to other nodes (composition graph). */
   relates?: GhostNodeRelation[];
-  /**
-   * The incarnation this node's expression takes — the form the intent appears
-   * in (email, billboard, voice, web…). Absent / `any` means essence:
-   * incarnation-agnostic, cascades to every incarnation. Open enum: known
-   * incarnations plus custom strings. Filtered at gather time by `--as`.
-   */
-  incarnation?: string;
 }
 
 export interface GhostNodeDocument {

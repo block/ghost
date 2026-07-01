@@ -48,7 +48,7 @@ checks/*.md           # optional ghost.check/v1 checks
 ```
 
 The **directory tree is the graph**. A node is a markdown file: descriptive
-frontmatter (`description`, `relates`, `incarnation`) plus a prose body. A
+frontmatter (`description`, `relates`) plus a prose body. A
 node's identity is its path (`marketing/email.md` → `marketing/email`) and its
 parent is its containing directory. A surface is just a directory, and a
 directory's own prose lives in its `index.md`. The package-root `index.md` is
@@ -59,8 +59,8 @@ the implicit `core` node. The body is written through three authoring lenses
 - **inventory**: the materials, and pointers to code the agent can inspect.
 - **composition**: the patterns that make the surface feel intentional.
 
-`description` is the retrieval payload; `relates` links nodes laterally;
-`incarnation` tags a medium-bound expression. Reserved at the package root:
+`description` is the retrieval payload; `relates` links nodes laterally.
+Reserved at the package root:
 `manifest.yml` and the `checks/` subtree; every other `*.md` is a node. Moving a
 node is a rename. `checks/*.md` validate output and bind to the prose they enforce
 via an optional `source:` pointer; every check is offered and the agent judges

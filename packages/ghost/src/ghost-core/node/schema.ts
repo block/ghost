@@ -46,7 +46,7 @@ const NodeRelationSchema = z
  * Zod schema for a `ghost.node/v1` frontmatter block.
  *
  * Validates a node in isolation. Graph-level rules that need the whole package
- * — `under` / `relates` targets exist, exactly one incarnation-agnostic root, no
+ * — `under` / `relates` targets exist, exactly one root, no
  * cycles, cross-package resolution — are deferred to later-phase lint, because
  * Zod cannot see other nodes from a single frontmatter.
  */
@@ -54,7 +54,6 @@ export const GhostNodeFrontmatterSchema = z
   .object({
     description: z.string().min(1).optional(),
     relates: z.array(NodeRelationSchema).optional(),
-    incarnation: z.string().min(1).optional(),
   })
   // Passthrough, not strict: authors may add free-form descriptive keys
   // (e.g. `audience`, `stage`) that describe what the node is. Ghost does not

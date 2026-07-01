@@ -34,10 +34,6 @@ export function registerChecksCommand(cli: CAC): void {
       "Use this fingerprint package directory (default: ./.ghost)",
     )
     .option(
-      "--as <incarnation>",
-      "Filter grounding to one incarnation (e.g. email, voice). Essence nodes always pass.",
-    )
-    .option(
       "--no-grounding",
       "Omit fingerprint grounding (the grounded nodes) and emit only the relevant checks",
     )
@@ -66,20 +62,11 @@ export function registerChecksCommand(cli: CAC): void {
         // empty slice — emit ERR_UNKNOWN_SURFACE with suggestions and stop.
         if (guardSurfaces(loaded.graph, touched, opts.format)) return;
 
-        const incarnation =
-          typeof opts.as === "string" && opts.as.length > 0
-            ? opts.as
-            : undefined;
-
         // grounding defaults on; cac sets opts.grounding=false for --no-grounding.
         // Grounding is the gather slice: the prose nodes a finding can cite.
         const withGrounding = opts.grounding !== false;
         const grounding: GraphSlice[] = withGrounding
-          ? touched.map((surface) =>
-              resolveGraphSlice(loaded.graph, surface, {
-                ...(incarnation !== undefined ? { incarnation } : {}),
-              }),
-            )
+          ? touched.map((surface) => resolveGraphSlice(loaded.graph, surface))
           : [];
 
         if (opts.format === "json") {
@@ -162,10 +149,9 @@ function formatChecksMarkdown(
         PROVENANCE_RANK[a.provenance.kind] - PROVENANCE_RANK[b.provenance.kind],
     );
     for (const node of ordered) {
-      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
       lines.push(
         "",
-        `### \`${node.id}\` — ${provenanceLabel(node.provenance)}${tag}`,
+        `### \`${node.id}\` — ${provenanceLabel(node.provenance)}`,
         "",
         node.body,
       );

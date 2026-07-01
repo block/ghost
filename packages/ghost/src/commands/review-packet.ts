@@ -274,9 +274,8 @@ function formatGroundingSection(packet: ReviewPacket): string {
         GROUNDING_PROVENANCE_RANK[b.provenance.kind],
     );
     for (const node of ordered) {
-      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
       lines.push(
-        `- \`${node.id}\` (${groundingProvenanceLabel(node.provenance)})${tag}: ${node.body}`,
+        `- \`${node.id}\` (${groundingProvenanceLabel(node.provenance)}): ${node.body}`,
       );
     }
     lines.push("");

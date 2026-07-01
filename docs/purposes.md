@@ -39,7 +39,7 @@ node. No separate file declares the graph.
 | --- | --- |
 | `manifest.yml` | Schema version, package id, and `extends` (which other packages this one inherits by identity). |
 | Prose nodes (`index.md`, `<surface>/<node>.md`) | The durable surface composition, written through three authoring **lenses**: intent (the why), inventory (the materials), composition (the patterns). The lenses guide what to capture; they are not fields. |
-| Node frontmatter | `description` (the retrieval payload), `relates` (lateral links by id), `incarnation` (a medium-bound expression). |
+| Node frontmatter | `description` (the retrieval payload), `relates` (lateral links by id). |
 | `checks/*.md` | Optional `ghost.check/v1` checks. They validate output, not generation input. A check binds to the prose it enforces through an optional `source:` pointer, never by surface routing. |
 
 Two resolution mechanisms, both read-only:

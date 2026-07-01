@@ -18,8 +18,7 @@ export type GhostGraphNodeOrigin = "node-file" | "inherited";
 /**
  * A resolved graph node — pure prose (Option A). The body is the design
  * expression; there are no structured node fields. `id` is the node's path in
- * the package; `relates` are the typed lateral links; `incarnation` is the
- * optional projection tag.
+ * the package; `relates` are the typed lateral links.
  *
  * Containment is not stored: a node's parent is `parentIdOrRoot(id)` and its
  * ancestor chain is a pure walk over the id string. The `folder` axis is the
@@ -39,7 +38,6 @@ export interface GhostGraphNode {
    */
   folder: string;
   relates: GhostNodeRelation[];
-  incarnation?: string;
   body: string;
   origin: GhostGraphNodeOrigin;
 }

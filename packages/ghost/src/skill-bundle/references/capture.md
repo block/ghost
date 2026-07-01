@@ -42,7 +42,6 @@ description: Trust at the payment moment.  # the retrieval payload (see below)
 relates:                    # optional: lateral links
   - to: core/trust
     as: reinforces          # reinforces | contrasts | variant
-incarnation: web            # optional: email | billboard | voice | … (omit = essence)
 # free-form keys (audience, stage, …) are allowed and pass through untouched
 ---
 
@@ -65,8 +64,6 @@ action beats completeness…
 - **`relates`** links laterally when a relationship carries rationale. When the
   rationale is rich (e.g. "checkout and item-detail disagree on density on
   purpose"), write a **relationship node** whose body explains the tension.
-- **`incarnation`** tags a node only when its expression is bound to one output
-  form. Leave medium-agnostic essence untagged.
 
 ## Write the body through three lenses
 
@@ -83,8 +80,7 @@ lean entirely on one:
 
 A finding cites a node by id, so keep a node **purpose-coherent**: one purpose,
 any length. Split into a second node only when a handle diverges, say a different
-directory (parent), a different `incarnation`, or a genuinely different
-`relates` role.
+directory (parent) or a genuinely different `relates` role.
 
 ## Steps
 

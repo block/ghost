@@ -42,11 +42,6 @@ describe("ghost.node/v1 schema", () => {
     expect(report.errors).toBe(0);
   });
 
-  it("accepts an arbitrary incarnation string", () => {
-    expect(lintGhostNode(node("incarnation: billboard")).errors).toBe(0);
-    expect(lintGhostNode(node("incarnation: voice-kiosk")).errors).toBe(0);
-  });
-
   it("passes through free-form descriptive keys (e.g. audience)", () => {
     // Authors may add descriptive keys; Ghost does not gate on them.
     expect(lintGhostNode(node("audience: enterprise")).errors).toBe(0);
@@ -64,7 +59,6 @@ describe("ghost.node/v1 schema", () => {
           { to: "core/trust", as: "reinforces" },
           { to: "checkout/density" },
         ],
-        incarnation: "web",
       },
       body: "Near payment, reduce felt risk.",
     };

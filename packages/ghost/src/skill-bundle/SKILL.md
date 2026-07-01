@@ -51,7 +51,7 @@ Authoring a fingerprint comes first (`ghost init`, then write nodes); the
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
 | `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
 | `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [node] [--as <incarnation>]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), or list the node menu (with no argument or for an inexact query). |
+| `ghost gather [node]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), or list the node menu (with no argument or for an inexact query). |
 | `ghost skill install` | Install this unified skill bundle. |
 
 ## Advanced CLI Verbs
@@ -117,9 +117,7 @@ the retrieval payload, a one-line "what this is / when to gather it" (like a
 tool's name + description); `ghost gather` with no argument lists nodes by id +
 description for the agent to match against. The directory places a node so it is
 inherited downward (`core` is the implicit root that reaches every surface);
-`relates` links nodes laterally (the example reinforces `core/trust`);
-`incarnation` tags a node bound to one medium, like an `email` or `voice`
-variant — the example has none, so it is medium-agnostic **essence**. Free-form
+`relates` links nodes laterally (the example reinforces `core/trust`). Free-form
 keys (`audience`, …) pass through. See [references/capture.md](references/capture.md)
 for the full node shape.
 

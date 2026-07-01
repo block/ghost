@@ -104,9 +104,6 @@ async function loadInheritedNodes(
         // only via an explicit cross-package `relates` edge.
         folder: `${id}:${node.folder}`,
         relates: [],
-        ...(node.incarnation !== undefined
-          ? { incarnation: node.incarnation }
-          : {}),
         body: node.body,
         origin: "inherited",
       });

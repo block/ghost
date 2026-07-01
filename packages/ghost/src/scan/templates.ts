@@ -58,8 +58,7 @@ frontmatter keys):
 This file is the package-root \`index.md\`, so it cascades to every surface. Add
 a surface by adding a directory: \`checkout/index.md\` is the \`checkout\` surface,
 and \`checkout/payment.md\` is a node under it. Link related nodes with
-\`relates\`, and add \`incarnation\` to a node bound to one medium (e.g. email,
-billboard, voice); a node with no \`incarnation\` is medium-agnostic essence.
+\`relates\`.
 `,
       },
     ];

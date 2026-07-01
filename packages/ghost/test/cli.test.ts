@@ -809,32 +809,6 @@ composition:
     expect(byId["checkout/clarity"]).toBeUndefined();
   });
 
-  it("filters the gather slice by incarnation via --as", async () => {
-    await writeIncarnationPackage(dir);
-
-    const web = await runCli(
-      [
-        "gather",
-        "launch",
-        "--as",
-        "web",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-    expect(web.code).toBe(0);
-    const slice = JSON.parse(web.stdout);
-    expect(slice.incarnation).toBe("web");
-    const ids = slice.nodes.map((n: { id: string }) => n.id).sort();
-    // essence (untagged) + matching web; the email node is filtered out.
-    expect(ids).toContain("launch");
-    expect(ids).toContain("launch/web");
-    expect(ids).not.toContain("launch/email");
-  });
-
   it("inherits nodes from an extended package via extends", async () => {
     // Brand contract: a node at brand/core-trust.md → id `core-trust`.
     await mkdir(join(dir, "brand"), { recursive: true });
@@ -1172,29 +1146,6 @@ experience_contracts: []
     expect(payload.grounding).toBeUndefined();
   });
 });
-
-async function writeIncarnationPackage(dir: string): Promise<void> {
-  const ghost = join(dir, ".ghost");
-  await mkdir(join(ghost, "nodes"), { recursive: true });
-  await writeFile(
-    join(ghost, "manifest.yml"),
-    "schema: ghost.fingerprint-package/v1\nid: incarnation-demo\n",
-  );
-  // launch surface as a directory; web/email incarnations as nodes under it.
-  await mkdir(join(ghost, "launch"), { recursive: true });
-  await writeFile(
-    join(ghost, "launch", "index.md"),
-    "---\n---\n\nOne idea, stated with confidence.\n",
-  );
-  await writeFile(
-    join(ghost, "launch", "web.md"),
-    "---\nincarnation: web\n---\n\nHero with one CTA.\n",
-  );
-  await writeFile(
-    join(ghost, "launch", "email.md"),
-    "---\nincarnation: email\n---\n\nSubject is the headline.\n",
-  );
-}
 
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");

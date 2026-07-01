@@ -24,7 +24,6 @@ export {
   type GraphSlice,
   type GraphSliceNode,
   type GraphSliceProvenance,
-  type ResolveGraphSliceOptions,
   resolveGraphSlice,
 } from "./slice.js";
 export {

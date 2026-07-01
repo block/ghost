@@ -42,7 +42,7 @@ describe("split fingerprint package", () => {
     await mkdir(join(dir, "checkout"), { recursive: true });
     await writeFile(
       join(dir, "checkout", "trust.md"),
-      "---\nincarnation: web\n---\n\nReduce felt risk near payment.\n",
+      "---\ndescription: Trust at the payment moment.\n---\n\nReduce felt risk near payment.\n",
     );
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
@@ -52,7 +52,7 @@ describe("split fingerprint package", () => {
     expect(authored?.origin).toBe("node-file");
     expect(authored?.folder).toBe("checkout");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
-    expect(authored?.incarnation).toBe("web");
+    expect(authored?.description).toBe("Trust at the payment moment.");
     // Containment is derived from the id: it resolves up to the core root.
     expect(ancestorChain(loaded.graph, "checkout/trust")).toEqual([
       "checkout",

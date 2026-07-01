@@ -3,7 +3,7 @@ import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 
 /**
  * Serialize a node back to its `---\n<yaml>\n---\n<body>` markdown form. Keys
- * are emitted in a stable order (description, relates, incarnation) so
+ * are emitted in a stable order (description, relates) so
  * round-trips and diffs are deterministic. Identity and containment are not
  * serialized — they are the node's path in the directory tree. Undefined fields
  * are omitted; a node with no frontmatter fields emits an empty block.
@@ -19,7 +19,6 @@ export function serializeNode(node: GhostNodeDocument): string {
       return entry;
     });
   }
-  if (fm.incarnation !== undefined) ordered.incarnation = fm.incarnation;
 
   // An empty frontmatter object stringifies to "{}"; emit a bare block instead.
   const yaml =

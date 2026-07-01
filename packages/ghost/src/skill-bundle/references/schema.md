@@ -37,7 +37,6 @@ description: Trust at the payment moment.   # the retrieval payload
 relates:                      # optional lateral links
   - to: core/trust
     as: reinforces            # reinforces | contrasts | variant
-incarnation: web              # optional: email | billboard | voice | … (omit = essence)
 # free-form keys (audience, stage, …) pass through untouched
 ---
 Prose design expression. Intent / inventory / composition are authoring
@@ -47,8 +46,8 @@ lenses, not fields.
 `description` is how an agent selects a node (like a tool's name + description).
 The file's location places it: `checkout/trust.md` has id `checkout/trust` and
 is inherited downward from `checkout` (`core` is the implicit root that reaches
-everywhere). `relates` links nodes laterally. `incarnation` tags a medium-bound
-expression. The tree is the layout; ids encode hierarchy because they *are* paths.
+everywhere). `relates` links nodes laterally. The tree is the layout; ids encode
+hierarchy because they *are* paths.
 
 ## Surfaces are directories
 
@@ -73,7 +72,7 @@ key), never by repo path.
 
 ## Gather
 
-`ghost gather <node>` composes a node's slice, filtered by `--as <incarnation>`:
+`ghost gather <node>` composes a node's slice:
 
 - **full bodies along the path**: every file from the package root down to the
   node's own folder. Sibling folders never appear.

@@ -22,12 +22,10 @@ one node into three pieces.
    prose `nodes`, each with `provenance` (own, inherited from an ancestor, or
    contributed by a typed `relates` edge). The intent, the material, and the
    composition live in that node prose — surface them, do not add to them.
-3. Add `--as <incarnation>` (e.g. email, voice) to filter the slice to one
-   output form; essence (untagged) nodes always pass.
-4. Run `ghost checks --surface <ids>` (the surfaces you determined the change
+3. Run `ghost checks --surface <ids>` (the surfaces you determined the change
    touches) to ground them and see the offered checks, so generation avoids
    known failures.
-5. When the slice is sparse, label local reasoning provisional rather than
+4. When the slice is sparse, label local reasoning provisional rather than
    inventing surface-specific rules. An empty section is a valid result: write
    "the fingerprint is silent here" instead of manufacturing one.
 
@@ -49,8 +47,7 @@ Ghost-backed lines; mark the rest provisional. The packet is ephemeral working
 context, never written back into `.ghost/`.
 
 - **Grounded in:** the node ids you pulled (`surface`, its `ancestors`, and any
-  `relates` edges), the incarnation if you filtered with `--as`, and the checks
-  `ghost checks` offered.
+  `relates` edges), and the checks `ghost checks` offered.
 - **Intent** — the why and the stance the work must carry.
 - **Inventory** — the concrete materials to build with, and pointers to the code
   or inventory nodes the agent can inspect. Do not name components the

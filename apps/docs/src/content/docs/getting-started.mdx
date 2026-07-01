@@ -93,7 +93,7 @@ lenses:
 
 These lenses shape how you write the prose body; they are never frontmatter
 fields. Node frontmatter carries only descriptive properties: `description`,
-`relates`, `incarnation`, plus free-form passthrough keys. Raw repo observations
+`relates`, plus free-form passthrough keys. Raw repo observations
 are optional authoring evidence. Curate durable intent, inventory, and composition into the
 node prose, then use normal Git review for approval. For a fuller human-agent
 workflow, read [Fingerprint Authoring](/docs/fingerprint-authoring).
@@ -107,7 +107,7 @@ work touches. The agent names the surface; Ghost composes its prose:
 
 ```bash
 ghost gather marketing
-ghost gather marketing/email --as email
+ghost gather marketing/email
 ghost gather marketing --format json
 ```
 

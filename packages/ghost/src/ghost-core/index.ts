@@ -40,7 +40,6 @@ export {
   type PlacedNode,
   parentIdOf,
   parentIdOrRoot,
-  type ResolveGraphSliceOptions,
   resolveGraphSlice,
 } from "./graph/index.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---

@@ -107,16 +107,12 @@ A slice composes three things:
   relates to, offered as `id` + `description` for the agent to pull on
   demand.
 
-Use `--as` to filter full-body nodes to a single incarnation; untagged essence
-nodes always pass.
-
 <CliHelp tool="ghost" command="gather" hideDescription />
 
 ```bash
 ghost gather
 ghost gather checkout
 ghost gather payment            # inexact: returns the menu + did-you-mean suggestions
-ghost gather checkout --as email
 ghost gather checkout --format json
 ```
 

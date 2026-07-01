@@ -58,7 +58,6 @@ export function assembleGraph(input: AssembleGraphInput): GhostGraph {
       ...(fm.description !== undefined ? { description: fm.description } : {}),
       folder: placed.folder,
       relates: fm.relates ?? [],
-      ...(fm.incarnation !== undefined ? { incarnation: fm.incarnation } : {}),
       body: placed.doc.body,
       origin: "node-file",
     });

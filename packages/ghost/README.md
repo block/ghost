@@ -46,7 +46,7 @@ A fingerprint is a directory tree of prose, a **graph of nodes**:
 ```
 
 The **directory tree is the graph**. A node is one markdown file: descriptive
-frontmatter (`description`, `relates`, `incarnation`) plus a prose body written
+frontmatter (`description`, `relates`) plus a prose body written
 through three lenses: **intent** (the why), **inventory** (the materials), and
 **composition** (the patterns). A node's id is its path and its parent is its
 directory; a surface is just a directory, and the package-root `index.md` is the

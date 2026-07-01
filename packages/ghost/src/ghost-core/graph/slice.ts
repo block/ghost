@@ -16,7 +16,6 @@ export type GraphSliceProvenance =
 export interface GraphSliceNode {
   id: string;
   body: string;
-  incarnation?: string;
   provenance: GraphSliceProvenance;
 }
 
@@ -42,17 +41,10 @@ export interface GraphSlice {
   surface: string;
   /** Ancestor chain from the surface up to (but excluding) the implicit root. */
   ancestors: string[];
-  /** The `--as` incarnation filter applied, if any. */
-  incarnation?: string;
   /** Full-body context: every node on the path plus one-hop `relates` edges. */
   nodes: GraphSliceNode[];
   /** Pointers (id + description) the agent may pull: descendants + related subtrees. */
   pointers: GraphSlicePointer[];
-}
-
-export interface ResolveGraphSliceOptions {
-  /** Filter to nodes whose incarnation matches, plus essence (untagged) nodes. */
-  incarnation?: string;
 }
 
 /**
@@ -68,14 +60,10 @@ export interface ResolveGraphSliceOptions {
  *   draws on Arcade", authored once on `features`) reaches every descendant.
  * - **pointers**: descendants of the surface's own folder, plus descendants of
  *   each edge target (a related node offers its subtree), as id + description.
- *
- * The `incarnation` option filters full-body nodes: essence (untagged) always
- * passes; a tagged node passes only when it matches. Pointers are unfiltered.
  */
 export function resolveGraphSlice(
   graph: GhostGraph,
   surfaceId: string,
-  options: ResolveGraphSliceOptions = {},
 ): GraphSlice {
   const ancestorsFull = ancestorChain(graph, surfaceId);
   const ancestors = ancestorsFull.filter((id) => id !== GHOST_GRAPH_ROOT_ID);
@@ -86,18 +74,9 @@ export function resolveGraphSlice(
   const surfaceFolder = surfaceNode?.folder ?? surfaceId;
   const pathFolders = foldersOnPath(surfaceFolder);
 
-  const passesIncarnation = (incarnation?: string): boolean => {
-    if (options.incarnation === undefined) return true;
-    if (incarnation === undefined || incarnation === "any") return true;
-    return incarnation === options.incarnation;
-  };
-
   const slice: GraphSlice = {
     surface: surfaceId,
     ancestors,
-    ...(options.incarnation !== undefined
-      ? { incarnation: options.incarnation }
-      : {}),
     nodes: [],
     pointers: [],
   };
@@ -107,14 +86,10 @@ export function resolveGraphSlice(
     if (seenBody.has(id)) return false;
     const node = graph.nodes.get(id);
     if (!node) return false;
-    if (!passesIncarnation(node.incarnation)) return false;
     seenBody.add(id);
     slice.nodes.push({
       id: node.id,
       body: node.body,
-      ...(node.incarnation !== undefined
-        ? { incarnation: node.incarnation }
-        : {}),
       provenance,
     });
     return true;

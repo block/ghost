@@ -22,10 +22,6 @@ export function registerGatherCommand(cli: CAC): void {
       "--package <dir>",
       "Use this fingerprint package directory (default: ./.ghost)",
     )
-    .option(
-      "--as <incarnation>",
-      "Filter to one incarnation (e.g. email, billboard, voice). Essence (untagged) nodes always pass.",
-    )
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
@@ -36,11 +32,6 @@ export function registerGatherCommand(cli: CAC): void {
           process.exit(2);
           return;
         }
-
-        const incarnation =
-          typeof opts.as === "string" && opts.as.length > 0
-            ? opts.as
-            : undefined;
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
@@ -93,9 +84,7 @@ export function registerGatherCommand(cli: CAC): void {
           return;
         }
 
-        const slice = resolveGraphSlice(loaded.graph, surface, {
-          ...(incarnation !== undefined ? { incarnation } : {}),
-        });
+        const slice = resolveGraphSlice(loaded.graph, surface);
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(slice, null, 2)}\n`);
@@ -179,7 +168,6 @@ function formatSliceMarkdown(slice: GraphSlice): string {
       ? slice.surface
       : [slice.surface, ...slice.ancestors].join(" → ");
   lines.push("", `Cascade: ${chain}`);
-  if (slice.incarnation) lines.push(`As: ${slice.incarnation}`);
 
   // Provenance-ordered: own first, then ancestors, then edges.
   const ordered = [...slice.nodes].sort(
@@ -192,10 +180,9 @@ function formatSliceMarkdown(slice: GraphSlice): string {
     lines.push("- none");
   } else {
     for (const node of ordered) {
-      const tag = node.incarnation ? ` _(as ${node.incarnation})_` : "";
       lines.push(
         "",
-        `### \`${node.id}\` (${provenanceLabel(node.provenance)})${tag}`,
+        `### \`${node.id}\` (${provenanceLabel(node.provenance)})`,
         "",
         node.body,
       );

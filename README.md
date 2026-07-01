@@ -128,9 +128,7 @@ say, the way the body above does:
 
 The lenses live in the prose; the frontmatter holds the fields. `description` is
 the retrieval payload; `relates` links nodes laterally (the example reinforces
-`core/trust`); `incarnation` would tag a node bound to one medium, like an
-`email` or `voice` variant. This node has no `incarnation`, so it is
-medium-agnostic — its **essence**.
+`core/trust`).
 
 A surface is just a directory, and a directory's own prose lives in its
 `index.md`. The package-root `index.md` is the implicit `core` node, true

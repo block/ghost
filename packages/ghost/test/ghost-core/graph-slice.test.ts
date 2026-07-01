@@ -191,22 +191,4 @@ describe("resolveGraphSlice: path nodes + related pointers", () => {
     expect(ids).toContain("dashboard/b"); // one hop
     expect(ids).not.toContain("dashboard/c"); // two hops — excluded
   });
-
-  it("filters full-body nodes by incarnation; essence always passes", () => {
-    const graph = assembleGraph({
-      placedNodes: [
-        root("voice"), // essence
-        leaf("checkout/web", { incarnation: "web" }),
-        leaf("checkout/mail", { incarnation: "email" }),
-      ],
-    });
-    const slice = resolveGraphSlice(graph, "checkout/web", {
-      incarnation: "web",
-    });
-    const ids = bodyIds(slice);
-    expect(ids).toContain("voice"); // essence
-    expect(ids).toContain("checkout/web"); // matches
-    expect(ids).not.toContain("checkout/mail"); // mismatched
-    expect(slice.incarnation).toBe("web");
-  });
 });
