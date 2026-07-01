@@ -2,7 +2,7 @@
  * A tiny, dependency-free glob matcher for repo paths. Supports the subset the
  * inventory bridge needs — enough to match diff file paths against inventory
  * `paths` without pulling in a glob library. Shallow by design (see
- * notes/haunt-shape.md → the linter/agent decision tree): inventory names where
+ * notes/haunt-direction.md → "The review loop"): inventory names where
  * materials live; the agent reads the actual code.
  *
  * Supported:

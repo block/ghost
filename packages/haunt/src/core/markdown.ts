@@ -2,7 +2,7 @@ import { parse as parseYaml } from "yaml";
 
 /**
  * Copied from `packages/ghost/src/ghost-core/markdown.ts` (standalone-first; see
- * notes/haunt-shape.md → "Standalone-first"). Haunt intentionally does not depend
+ * notes/haunt-direction.md → "Where the code is vs. where this points"). Haunt intentionally does not depend
  * on ghost-core yet — it proves its shape against a different graph model first,
  * then we reconcile. Keep this in sync manually until that decision.
  */

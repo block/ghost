@@ -6,15 +6,22 @@
  * design-system code a repo already owns (code as source of truth) and grades
  * *high-altitude* compositional drift.
  *
- * On-disk shape (see notes/haunt-shape.md): a `.haunt/` package of four flat tiers
- * plus exemplars — tenets (principles), inventory (materials + `paths` to code),
- * surfaces (composition; `honors` tenets, `uses` inventory), and checks (assertions
- * that `grounds` up into the prose they enforce). Flat, no inheritance; the edges
- * are the graph.
+ * On-disk shape (built): a `.haunt/` package of four flat tiers plus exemplars —
+ * tenets (principles), inventory (materials + `paths` to code), surfaces
+ * (composition; `honors` tenets, `uses` inventory), and checks (assertions that
+ * `grounds` up into the prose they enforce). Flat, no inheritance; the edges are
+ * the graph.
+ *
+ * NOTE: this four-tier shape is provisional scaffolding. The intended direction
+ * (notes/haunt-direction.md) reduces Haunt to two optional tiers — inventory +
+ * checks — with brand stance (tenets/surfaces) consumed from the Fingerprint
+ * (.ghost/) and `grounds` repointing at Fingerprint node ids. Reconciliation is
+ * a future, separately planned change.
  *
  * Standalone-first: Haunt does not depend on ghost-core yet. It copies the few
  * primitives it needs locally and proves its shape against its own graph model
- * before we reconcile. See notes/haunt-shape.md → "Standalone-first".
+ * before we reconcile (notes/haunt-direction.md → "Where the code is vs. where
+ * this points").
  */
 
 export const HAUNT_VERSION = "0.0.0";

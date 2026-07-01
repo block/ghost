@@ -55,7 +55,7 @@ export interface BridgeResolution {
  *   gaps          = touched files no inventory claims; touched inventory no check grounds
  *
  * Checks are *offered*, never enforced — the host agent judges relevance against
- * the diff and the grounded prose (see notes/haunt-shape.md).
+ * the diff and the grounded prose (see notes/haunt-direction.md).
  */
 export function resolveBridge(
   pkg: HauntPackage,

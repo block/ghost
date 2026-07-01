@@ -39,7 +39,7 @@ export const HauntInventoryFrontmatterSchema = z
 /**
  * surface frontmatter — a feature area (composition tier). Cites tenets
  * (`honors`) and materials (`uses`) by bare id; it does NOT inherit them (Haunt
- * has no cascade — the citation is an explicit edge, see notes/haunt-shape.md).
+ * has no cascade — the citation is an explicit edge, see notes/haunt-direction.md).
  */
 export const HauntSurfaceFrontmatterSchema = z
   .object({
@@ -53,7 +53,7 @@ export const HauntSurfaceFrontmatterSchema = z
  * check frontmatter — an assertion that grounds *up* into the prose that
  * justifies it. Its kind falls out of what it grounds in: inventory-grounded
  * checks tend mechanical; tenet-grounded checks are agent-judged high-altitude
- * drift (see notes/haunt-shape.md → "Two kinds of check").
+ * drift (see notes/haunt-direction.md → "Two kinds of check").
  */
 export const HAUNT_CHECK_SEVERITIES = ["high", "medium", "low"] as const;
 

@@ -1,6 +1,6 @@
 /**
  * Copied from `packages/ghost/src/ghost-core/skill-bundle-loader.ts`
- * (standalone-first; see notes/haunt-shape.md → "Standalone-first"). Loads an
+ * (standalone-first; see notes/haunt-direction.md → "Where the code is vs. where this points"). Loads an
  * agentskills.io-compatible bundle: walk a root, return a deterministically
  * ordered flat file list so `haunt skill install` can write it into a project.
  *

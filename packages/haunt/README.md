@@ -37,7 +37,7 @@ reconnects them.
 ## Shape
 
 A `.haunt/` package is four flat tiers plus exemplars — no nesting, no inheritance;
-the edges between tiers are the graph (see `notes/haunt-shape.md`):
+the edges between tiers are the graph (see `notes/haunt-direction.md`):
 
 ```text
 .haunt/
@@ -68,6 +68,6 @@ grades on its own.
 
 Working core (Slices 1–6): package model + loader, graph validation, the inventory
 bridge, the advisory review packet, the skill bundle, and scaffolding. Built
-standalone — no dependency on `ghost-core` yet (see `notes/haunt-shape.md` →
-"Standalone-first"). Deferred: the eval/vibe-test harness, the evidence-intake
-loop, and first-party Vessel knowledge.
+standalone — no dependency on `ghost-core` yet (see `notes/haunt-direction.md` →
+"Where the code is vs. where this points"). Deferred: the eval/vibe-test harness,
+the evidence-intake loop, and first-party Vessel knowledge.

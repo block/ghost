@@ -18,8 +18,9 @@ import {
  * inventory with no `paths` (can't bridge to code), and surfaces with no edges.
  *
  * There is no cascade to cycle over — `honors`/`uses`/`grounds` are one-way
- * citations across tiers — so no acyclicity check is needed (see
- * notes/haunt-shape.md → "no inheritance").
+ * citations across tiers — so no acyclicity check is needed. (Note:
+ * `honors`/`uses` are provisional scaffolding slated for removal; see
+ * notes/haunt-direction.md → "One edge: `grounds`".)
  */
 export function validateHauntGraph(pkg: HauntPackage): HauntLintReport {
   const issues: HauntLintIssue[] = [];

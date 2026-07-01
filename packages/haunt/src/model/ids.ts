@@ -4,8 +4,8 @@ import { z } from "zod";
  * A Haunt id is a single flat slug — no path segments, no nesting. Unlike
  * Fingerprint (where ids are directory paths and encode a cascade), Haunt tiers
  * are flat: `tenets/composition.md` → id `composition`, scoped by its tier. The
- * absence of `/` is the mechanical enforcement of "no nesting" (see
- * notes/haunt-shape.md → "no arbitrary nesting").
+ * absence of `/` is the mechanical enforcement of "no nesting" (per the
+ * flat-tier scaffolding; direction in notes/haunt-direction.md).
  */
 const HAUNT_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
 
