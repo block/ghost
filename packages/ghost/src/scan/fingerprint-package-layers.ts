@@ -37,7 +37,7 @@ export async function loadFingerprintPackage(
   // Legacy facet packages no longer load directly — guide to `ghost migrate`.
   await assertNotLegacyFacetPackage(paths);
 
-  const { nodes: placedNodes } = await loadNodeTree(paths.packageDir);
+  const { nodes: placedNodes, invalid } = await loadNodeTree(paths.packageDir);
   const graph = assembleGraph({ placedNodes });
 
   const report = lintGraph(graph);
@@ -53,6 +53,7 @@ export async function loadFingerprintPackage(
     manifest,
     manifestRaw,
     graph,
+    invalid,
   };
 }
 

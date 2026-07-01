@@ -92,8 +92,8 @@ We are not alone in this shape. Google Cloud's **Open Knowledge Format (OKF)**
 (`GoogleCloudPlatform/knowledge-catalog`, `okf/SPEC.md`, v0.1 draft) is the same
 *substrate*, arrived at independently for *data* knowledge: a directory of
 markdown files with YAML frontmatter, folded into a graph, queried by traversal,
-shippable by `git clone`, with no registry and no server. Vercel's product-design
-skill (markdown + frontmatter references) sits in the same family.
+shippable by `git clone`, with no registry and no server. Mature agent
+product-design skills (markdown + frontmatter references) sit in the same family.
 
 This convergence is a strong signal: **"a directory of markdown+frontmatter that
 self-describes and folds into a graph" is an emerging cross-industry standard.**

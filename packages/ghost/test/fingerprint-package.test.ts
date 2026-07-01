@@ -59,6 +59,32 @@ describe("split fingerprint package", () => {
     ]);
   });
 
+  it("surfaces a node that fails its own schema instead of dropping it", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "features"), { recursive: true });
+    // `kind` is not a valid relation key (it's `as`) — the node fails per-node
+    // lint and is skipped while folding, but must not vanish silently.
+    await writeFile(
+      join(dir, "features", "index.md"),
+      "---\ndescription: All feature UI.\nrelates:\n  - to: core\n    kind: draws-on\n---\n\nFeature prose.\n",
+    );
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+    // The malformed node is excluded from the graph but retained as invalid.
+    expect(loaded.graph.nodes.has("features")).toBe(false);
+    expect(loaded.invalid).toEqual([
+      { file: "features/index.md", message: expect.stringContaining("kind") },
+    ]);
+
+    // `validate` promotes it to a loud error keyed to the offending file.
+    const report = await lintFingerprintPackage(dir);
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "node-invalid",
+      path: "features/index.md",
+    });
+  });
+
   it("guides legacy facet packages to migrate", async () => {
     await writeManifest(dir);
     await writeFile(join(dir, "intent.yml"), "summary: {}\nprinciples: []\n");

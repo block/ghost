@@ -42,6 +42,12 @@ export interface LoadedFingerprintPackage {
   manifestRaw: string;
   /** The in-memory node graph — the only fingerprint model. */
   graph: GhostGraph;
+  /**
+   * Nodes that failed per-node lint and were skipped while folding the graph,
+   * each with its package-relative file path and first error message. Carried
+   * so `validate` can surface a malformed node instead of silently dropping it.
+   */
+  invalid: Array<{ file: string; message: string }>;
 }
 
 export interface InitFingerprintPackageOptions {
@@ -172,7 +178,17 @@ export async function lintFingerprintPackage(
     lintFingerprintPackageManifest(manifestRaw, issues);
     // graph pass: fold + validate the node network.
     try {
-      const { graph } = await loadFingerprintPackage(paths);
+      const { graph, invalid } = await loadFingerprintPackage(paths);
+      // node pass: a node that failed its own schema was skipped while folding
+      // the graph; surface it here so a malformed node is loud, not silent.
+      issues.push(
+        ...invalid.map((entry) => ({
+          severity: "error" as const,
+          rule: "node-invalid",
+          message: entry.message,
+          path: entry.file,
+        })),
+      );
       const graphReport = lintGraph(graph);
       issues.push(
         ...graphReport.issues.map((issue) => ({

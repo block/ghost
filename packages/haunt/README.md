@@ -34,7 +34,40 @@ bound intent/composition prose + the diff — and the **host agent renders the a
 judgment**. Prose is the baseline; code is the observable; the inventory bridge
 reconnects them.
 
+## Shape
+
+A `.haunt/` package is four flat tiers plus exemplars — no nesting, no inheritance;
+the edges between tiers are the graph (see `notes/haunt-shape.md`):
+
+```text
+.haunt/
+  manifest.yml
+  tenets/     # broad principles — the why / the stance. Prose, no paths.
+  inventory/  # the materials — prose + `paths` to where they live in code.
+  surfaces/   # feature areas — how principles land; honors tenets, uses inventory.
+  checks/     # assertions — ground up into tenets/surfaces/inventory.
+  exemplars/  # shipped decisions worth repeating.
+```
+
+## CLI
+
+```bash
+haunt init                 # scaffold a .haunt/ package (one example per tier)
+haunt validate             # shape (flat tiers) + edge graph (honors/uses/grounds resolve)
+haunt review --diff=-      # advisory packet: matched materials, baseline prose,
+                           #   offered checks, coverage gaps, diff (agent renders findings)
+haunt skill install        # install the host-agent skill bundle
+haunt manifest             # self-describing JSON of commands + flags
+```
+
+`haunt review` is advisory — it assembles evidence and offers checks; the host
+agent judges relevance and produces P0–P3 findings. Haunt never edits and never
+grades on its own.
+
 ## Status
 
-Scaffolded skeleton only. The design (inventory-bridge depth, the `haunt review`
-"oh" demo, the Berd pilot) is tracked in `notes/`.
+Working core (Slices 1–6): package model + loader, graph validation, the inventory
+bridge, the advisory review packet, the skill bundle, and scaffolding. Built
+standalone — no dependency on `ghost-core` yet (see `notes/haunt-shape.md` →
+"Standalone-first"). Deferred: the eval/vibe-test harness, the evidence-intake
+loop, and first-party Vessel knowledge.

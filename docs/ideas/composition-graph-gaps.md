@@ -262,10 +262,10 @@ just for retrieval.
 The three proposals above were prototyped, then re-evaluated against two
 minimalist references: the Open Knowledge Format (OKF) spec — *"the specific
 kind of relationship is conveyed by the surrounding prose, not by the link
-itself … consumers MUST tolerate broken links"* — and Vercel's *Teaching agents
-product design*, whose Skill Integrity rule keeps deterministic checks mechanical
-and keeps everything that needs interpretation in prose, with its evidence and
-degree of freedom. The bar shifted from *"is this a real
+itself … consumers MUST tolerate broken links"* — and prior art in teaching
+agents product design, whose skill-integrity discipline keeps deterministic checks
+mechanical and keeps everything that needs interpretation in prose, with its
+evidence and degree of freedom. The bar shifted from *"is this a real
 gap?"* to *"does this earn schema an LLM doesn't need?"* Result:
 
 - **Gap 3 — superseded by removing routing entirely.** The fix (accept a node
@@ -286,8 +286,8 @@ gap?"* to *"does this earn schema an LLM doesn't need?"* Result:
 - **Gap 1 — rejected as built; idea partially survives.** The `anchors[]`
   array (closed `kind` enum, floating ids that bound to no text span,
   unresolved-citation-as-hard-error) was the wrong *form* and was removed. But
-  the *citation idea* has real support — Vercel gives rules stable IDs that cite
-  their source (`Source: copy.md > Actionable`), and Ghost already does the same
+  the *citation idea* has real support — the prior art gives rules stable IDs that
+  cite their source (`Source: copy.md > Actionable`), and Ghost already does the same
   one level coarser (review requires findings to cite grounding nodes;
   `review-packet.ts` `required_finding_citations`). The chain
   *finding → check → surface grounding* exists today at node granularity.
@@ -295,9 +295,9 @@ gap?"* to *"does this earn schema an LLM doesn't need?"* Result:
 ### The correct successor to Gap 1 (built — and now the check's only graph binding)
 
 This shipped as an optional `source:` on the check, consumed by `review`.
-It mirrors Vercel's `Source: copy.md >
-Actionable` literally — as a **soft, optional pointer on the check**, not a
-schema on every node. With routing gone (see Gap 3 above), `source:` is the
+It mirrors the prior-art `Source: copy.md >
+Actionable` convention literally — as a **soft, optional pointer on the check**, not
+a schema on every node. With routing gone (see Gap 3 above), `source:` is the
 check's *only* binding to the graph: it tells the reviewer which prose the check
 enforces, so a finding can cite the section it derives from.
 
@@ -318,7 +318,7 @@ Design constraints (the lessons from this thread, encoded):
   binds to nothing" incoherence that sank `anchors[]`. No new id space, no
   closed `kind` enum.
 - **On the check (or finding), not on every node.** It rides the artifact that
-  makes a claim, exactly where Vercel puts it — not as a frontmatter array
+  makes a claim, exactly where the prior art puts it — not as a frontmatter array
   bolted onto authoring.
 - **Only when a consumer needs it.** `review` is that consumer: the routed-checks
   section now renders `— enforces \`<source>\`` and the prompt instructs the
