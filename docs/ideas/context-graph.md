@@ -4,6 +4,16 @@ status: exploring
 
 # The context graph: Ghost as a curated, opinionated graph for generation
 
+> **Reconciliation note (2026-06):** two mechanisms this note treats as core were
+> cut before shipping this version — the **`incarnation` tag + `--as`** gather
+> filter (cross-medium projection) and the **cross-package ref grammar /
+> `extends`** (the shared-brand fleet). They were shipping unused: cross-medium
+> and shared-brand are not real in this version. A Ghost package is a single,
+> single-medium, self-contained contract; a node is `description` + `relates` +
+> prose, `relates` targets are local path ids, and the manifest is `schema` +
+> `id`. The passages below about `incarnation`, `medium`, `--as`, and
+> `package#ref` are preserved as design reasoning, not current behavior.
+
 This note records the shift in how we frame Ghost's model: the real shape of the
 problem is a **curated, opinionated context graph**, and the right context for an
 agent to generate an interaction is found by **traversing** it. (It grew out of

@@ -4,6 +4,14 @@ status: parked
 
 # Compare / drift / fleet — concepts parked, implementations removed
 
+> **Reconciliation note (2026-06):** the rebuild sketch below assumes
+> `incarnation` and cross-package refs as graph axes. Both were cut in this
+> version, so the "compare projection-siblings across a shared brand" framing and
+> the "incarnations added/removed" diff grain no longer have inputs. The
+> single-surface concepts (compare/drift over one contract's nodes) still hold;
+> the fleet/brand-coherence framing is parked harder until (if ever) those axes
+> return.
+
 The **concepts hold**; the **implementations did not**, so they were removed
 (not frozen — dead code does not linger). This note preserves the intent and the
 trigger to rebuild them graph-native.

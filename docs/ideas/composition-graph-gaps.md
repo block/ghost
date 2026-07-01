@@ -6,6 +6,14 @@ source: external POC (block-as-intelligence / .ghost) exercising Ghost as a mult
 
 # Composition-graph gaps: three schema changes a real composition graph forces
 
+> **Reconciliation note (2026-06):** this note reasons from a multi-brand,
+> multi-medium POC and weighs a `projects` edge against the `incarnation` tag and
+> a brand projection axis. Both premises were cut before this version shipped:
+> **`incarnation`/`--as`** (cross-medium) and **cross-package `extends`**
+> (multi-brand) are gone, so the `projects`-vs-`incarnation` question below is
+> moot for now. Kept as a record of the pressure a composition graph *would*
+> put on the schema if those axes ever return.
+
 An exploration, not a decision. A large external POC
 (`block-as-intelligence/.ghost`) used Ghost 0.18 not as "the fingerprint of one
 product surface" but as Ghost's *stated* next identity — a **curated, opinionated

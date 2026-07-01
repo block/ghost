@@ -4,6 +4,14 @@ status: exploring
 
 # Worked scenarios: what a Ghost fingerprint actually looks like
 
+> **Reconciliation note (2026-06):** several scenarios below lean on features cut
+> before this version shipped — the **`medium`/`incarnation` tag** and
+> medium-bound child renderings (Scenario C, the voice/billboard variants), and
+> the **cross-package `package#ref` grammar / shared brand fleet** (Scenario E).
+> Cross-medium and shared-brand are not real in this version: a package is a
+> single, single-medium, self-contained contract. These scenarios are kept as a
+> record of how the shape was stress-tested, not as buildable examples.
+
 Companion to `context-graph.md`. The model there is abstract; this note makes it
 concrete. Each scenario is a real fingerprint — actual node files, actual bodies,
 the three relationship tiers, the `medium` tag — and the `gather` that turns it

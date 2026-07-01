@@ -20,13 +20,19 @@ git history are the record. What remains is either *settled architecture*,
 Ghost is a **curated graph of described nodes**. The full design and its
 prior-art lineage live here:
 
-- `context-graph.md` — the core model: nodes + `under`/`relates` links + the
-  `incarnation` tag; OKF as substrate prior-art; `description` as the
-  tool-style retrieval payload; the conformance invariants. The canonical
-  reference for what Ghost *is*.
+- `context-graph.md` — the core model: nodes + `under`/`relates` links;
+  OKF as substrate prior-art; `description` as the tool-style retrieval payload;
+  the conformance invariants. The canonical reference for what Ghost *is*.
 - `scenarios-worked.md` — five worked fingerprints (dashboard, monorepo,
   marketing, voice-first app, one-brand superset) that stress-tested the model.
-  Durable reference for how the shape behaves across mediums.
+  Durable reference for how the shape behaves.
+
+> **Cut in this version (see banners in the notes below).** Two axes these notes
+> explore were considered and removed rather than shipped: the **`incarnation`
+> tag + `--as` filter** (cross-medium projection) and **cross-package `extends`**
+> / inherited nodes (the shared-brand fleet). A Ghost package is now a single,
+> single-medium, self-contained contract. The reasoning is kept because it maps
+> the shape of the problem, not because these features exist.
 
 ## Open / parked exploration
 
