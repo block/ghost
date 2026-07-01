@@ -1,6 +1,6 @@
 ---
 title: Fingerprint Authoring
-description: Co-author Ghost fingerprints with human intent, repo evidence, agent synthesis, and Git review.
+description: Co-author Ghost brand fingerprints with human intent, repo evidence, agent synthesis, and Git review.
 kicker: Docs
 section: guide
 order: 20
@@ -9,14 +9,14 @@ slug: fingerprint-authoring
 
 <DocSection title="The Authoring Model">
 
-A Ghost fingerprint is not a scan dump. It is durable product-surface
-composition that a human and agent shape together.
+A Ghost fingerprint is not a scan dump. It is a set of durable brand truths that
+a human and agent shape together.
 
-The human names the intent: what the product surface should feel like, who it
-serves, which situations matter, and what should not drift. Repo scans provide
-evidence: components, routes, docs, stories, copy, screenshots, tokens,
-examples, and UI library references. The agent synthesizes drafts, but ordinary
-Git review is where fingerprint edits become canonical.
+The human names the intent: what the brand should feel like, who it serves,
+which truths are universal, which hold only under a condition, and what should
+not drift. Repo scans provide evidence: components, routes, docs, copy, tokens,
+examples, and UI. The agent synthesizes drafts, but ordinary Git review is where
+fingerprint edits become canonical.
 
 </DocSection>
 
@@ -61,8 +61,8 @@ Set up the Ghost fingerprint for this repo with auto-draft.
    copy, tokens, assets, and UI library references.
 3. **Draft** - write the smallest useful node prose, reading each node through
    the intent, inventory, and composition lenses.
-4. **Curate** - have the human keep, soften, reject, scope, or record important
-   claims before treating them as durable surface context.
+4. **Curate** - have the human keep, soften, reject, restate at a different
+   altitude, or record important claims before treating them as durable.
 5. **Validate** - run Ghost validation and use Git review as the approval
    boundary.
 
@@ -72,33 +72,44 @@ ghost validate
 
 Raw repo observations (gathered with the agent's own tree/grep/source
 inspection) are source evidence only. They can support curated inventory, but
-they do not establish surface-composition guidance by themselves. Repetition
-frequency may seed a draft, but it does not decide what the surface should do.
+they do not establish brand truth by themselves. Repetition frequency may seed a
+draft, but it does not decide what the brand should do.
 
 </DocSection>
 
-<DocSection title="The Directory Tree">
+<DocSection title="The Flat Node Set">
 
-The fingerprint is a directory tree of prose nodes. The tree _is_ the graph: a
-node's identity is its file path with `.md` dropped (`marketing/email.md` is the
-node `marketing/email`), and its parent is the directory that contains it. A
-surface is just a directory; its own prose lives in that directory's
-`index.md` (`checkout/index.md` is the `checkout` surface), and the
-package-root `index.md` is the implicit `core` node that is true everywhere.
+The fingerprint is a **flat set of prose nodes** — no hierarchy, no inheritance,
+no edges. A node's identity is its file path with `.md` dropped
+(`marketing.email.md` is the node `marketing.email`). Its **kind** is the
+filename's first dotted segment (`principle.trust.md` → kind `principle`), and
+must be a category declared in `glossary.md`; a bare name (`voice.md`) is
+uncategorized. Folders are a human-browsing convenience only.
 
-No separate file declares the graph. A surface exists when its directory exists. Reserved at
-the package root are `manifest.yml` and the `checks/` subtree; every other
-`*.md` is a node. Moving a node to another directory is a rename: its id and
-parent change, and `ghost validate` reports any `relates` that no longer
-resolve.
+Reserved at the package root are `manifest.yml` and `glossary.md`; every other
+`*.md` is a node. Moving or renaming a node changes its id.
 
 Node frontmatter carries only descriptive properties:
 
 | Property | What it does |
 | --- | --- |
-| `description` | A short summary of the node. |
-| `relates` | Lateral links to other nodes by path id (`to: core/trust`). |
-| _passthrough_ | Free-form keys are preserved for host tooling. |
+| `description` | A short summary of the node — the retrieval payload the menu shows. |
+| _passthrough_ | Free-form keys (`audience`, `stage`, …) are preserved for host tooling. |
+
+The **glossary** (`glossary.md`) declares the category vocabulary and what each
+category means — its normative weight, so an agent knows how to read a node of
+that kind. Kinds are the author's choice; Ghost ships no fixed vocabulary.
+
+</DocSection>
+
+<DocSection title="Altitude And Conditions">
+
+State each truth at the altitude it is actually true. A universal truth is stated
+plainly. A narrower truth names its **condition** in the prose — the *situation*
+it applies in ("when a surface must show many items at once, carry hierarchy with
+weight, not color"), never a destination or filing bucket ("for dashboards:").
+The agent reads the condition and decides when the truth applies; that
+interpretation is the agent's job, not the filename's.
 
 </DocSection>
 
@@ -109,31 +120,25 @@ write; they are never frontmatter fields:
 
 | Lens | What belongs there |
 | --- | --- |
-| Intent | Audience, goals, anti-goals, situations, principles, and experience contracts. |
-| Inventory | Scopes, surface types, files, routes, libraries, assets, building blocks, exemplars, and source links. |
-| Composition | Repeatable rules, layouts, structures, flows, states, content patterns, behavior, and visual arrangements. |
-
-Deterministic `checks/` gates that can be evaluated from a diff live alongside
-the tree in the `checks/` subtree. A check may carry an optional `source:`
-pointer (a node id with an optional `> Heading`, e.g. `checkout/payment >
-Confirmation`) binding it to the prose it enforces. Checks are not routed by
-surface: every check is offered and the agent judges which apply.
+| Intent | Audience, goals, anti-goals, principles, and the stance. |
+| Inventory | Building blocks, files, routes, libraries, assets, exemplars, and source links. |
+| Composition | Repeatable rules, layouts, flows, states, content patterns, behavior, and visual arrangements. |
 
 </DocSection>
 
 <DocSection title="Authoring For Steering">
 
-A useful fingerprint should help future agents choose, restrain, route, anchor,
-and review. It should not only describe what exists or collect every available
+A useful fingerprint should help future agents choose, restrain, anchor, and
+manifest. It should not only describe what exists or collect every available
 style detail.
 
 Write node prose so generation decisions become explicit:
 
 - Name what generated work should preserve.
-- Block plausible defaults that would make the surface feel generic or wrong.
+- Block plausible defaults that would make the output feel generic or wrong.
 - Say which value wins when choices conflict.
-- Route guidance by task, surface type, state, or audience need.
-- Capture broad product intent.
+- State the condition under which a narrower truth applies.
+- Capture broad brand intent.
 - Turn taste, trust, recovery, or disclosure into obligations.
 - Give repeatable layout, flow, state, content, behavior, or visual rules.
 - Anchor the guidance in concrete exemplars an agent can inspect.
@@ -144,19 +149,15 @@ Write less like a brand book and more like a decision engine.
 
 <DocSection title="One Contract Per Package">
 
-One contract per package: a repo's `.ghost/` is the whole fingerprint, and
-surfaces are directories within it. Reach for a second package only when a
-distinct product owns its own fingerprint — a separate app in a monorepo —
-and target it with `ghost --package <dir>`.
+One contract per package: a repo's `.ghost/` is the whole fingerprint. Reach for
+a second package only when a distinct product owns its own fingerprint — a
+separate app in a monorepo — and target it with `ghost --package <dir>`.
 
 </DocSection>
 
 <DocSection title="Ratification">
 
-Uncommitted or unmerged fingerprint edits are drafts. Checked-in
-Ghost package node prose is canonical.
-
-Add deterministic checks sparingly, and only when a rule can be enforced
-deterministically.
+Uncommitted or unmerged fingerprint edits are drafts. Checked-in Ghost node prose
+is canonical.
 
 </DocSection>

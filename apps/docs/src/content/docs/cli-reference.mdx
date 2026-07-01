@@ -1,6 +1,6 @@
 ---
 title: CLI Reference
-description: The deterministic commands around the node-graph fingerprint lifecycle. Your agent does the reading, writing, and reviewing.
+description: The deterministic commands around the flat fingerprint lifecycle. Your agent does the reading, writing, and interpreting.
 kicker: Docs
 section: guide
 order: 30
@@ -10,22 +10,21 @@ slug: cli
 <DocSection title="Overview">
 
 The CLI does the repeatable parts around the fingerprint lifecycle: scaffold a
-package, validate the node graph, compose context for a surface, select checks,
-and emit advisory review packets. Your agent does the interpretation.
+package, validate it, and emit the menu of brand truths. Your agent does the
+interpretation.
 
 `ghost --help` shows the short core workflow. `ghost --help --all` shows the
 complete command index, and `ghost <command> --help` shows flags for one
 command.
 
-The canonical fingerprint is a `.ghost/` directory tree of prose nodes:
+The canonical fingerprint is a `.ghost/` directory: a flat set of prose nodes.
 
 ```text
 .ghost/
-  manifest.yml          # schema + id
-  index.md              # the core node, true everywhere (optional)
-  <surface>/index.md    # a surface's own prose (the directory is the surface)
-  <surface>/<node>.md   # a prose node placed in that surface
-  checks/*.md           # optional ghost.check/v1 checks
+  manifest.yml        # schema + id
+  glossary.md         # the category vocabulary + what each category means
+  <kind>.<slug>.md    # a brand truth of a declared kind (principle.density.md)
+  <slug>.md           # an uncategorized brand truth (voice.md)
 ```
 
 The command tables below are generated from the CLI source. Run
@@ -39,7 +38,7 @@ Every command follows one contract, so an agent can branch on the exit code:
 | --- | --- |
 | `0` | Success. |
 | `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
-| `2` | The command was called wrong: a bad flag or argument, a node or surface that is not in the package (`ERR_UNKNOWN_SURFACE`), or a missing package for a command that needs one to do its work (`gather`, `checks`, `review`). |
+| `2` | The command was called wrong: a bad flag or argument, or a missing package for a command that needs one (`gather`). |
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
 A missing package is reported, not treated as a crash: `validate` records it as
@@ -51,18 +50,16 @@ a finding (exit `1`).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package: a manifest and a core `index.md` node. Add
-surfaces by adding directories (`checkout/index.md` is the `checkout` surface).
-Use `--template <name>` to pick a starter, `--package <dir>` for an exact
-directory, or set `GHOST_PACKAGE_DIR` when a host wrapper stores Ghost files
-outside the default `.ghost`.
+Scaffold a `.ghost/` package: a manifest, a starter `glossary.md`, and a core
+`index.md` node. Add truths by adding files (`principle.density.md`). Use
+`--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
+wrapper stores Ghost files outside the default `.ghost`.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
 ghost init
-ghost init --template default
-ghost init --package product-surface
+ghost init --package product-fingerprint
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
 ```
 
@@ -72,15 +69,16 @@ GHOST_PACKAGE_DIR=.agents/ghost ghost init
 
 ### Validation: `validate`
 
-Validate the package: artifact shape plus the node graph. Every `relates` link
-resolves, there is exactly one root, and the graph is acyclic. Defaults to
-`.ghost`; pass a file to validate a single node.
+Validate the package: artifact shape, per-node validity, and that each node's
+kind prefix is declared in `glossary.md`. An undeclared prefix is a warning with
+a "did you mean" suggestion, not a failure. Defaults to `.ghost`; pass a file to
+validate a single node.
 
 <CliHelp tool="ghost" command="validate" hideDescription />
 
 ```bash
 ghost validate
-ghost validate .ghost/checkout/trust.md
+ghost validate .ghost/principle.trust.md
 ghost validate --format json
 ```
 
@@ -88,89 +86,32 @@ ghost validate --format json
 
 <DocSection title="Gather Context">
 
-### Compose a surface slice: `gather`
+### Emit the menu: `gather`
 
-With no argument, list every node by id and description so an agent can match a
-task to one. With an exact node id, compose its context slice. An inexact query
-(`ghost gather payment`) is not search: it returns the same node menu so the
-agent re-picks by description, plus closest-id "did you mean" suggestions for a
-likely typo, under the stable code `ERR_UNKNOWN_SURFACE`.
-
-A slice composes three things:
-
-- **full bodies along the path**: every file from the package root down to the
-  surface's own folder. A sibling folder's nodes never appear.
-- **edges** (full bodies, one hop): the `relates` targets of every node on that
-  path, so a rule authored once high in the tree reaches every descendant. A
-  link to a node also offers that node's subtree as pointers.
-- **pointers**: the surface's own descendants and the subtree of any node it
-  relates to, offered as `id` + `description` for the agent to pull on
-  demand.
+`gather` emits the **menu**: every node's id, kind, and description. It does no
+selection — the agent reads the ask against the menu and pulls the truths it
+judges relevant. There is no slice, no anchor, and no inheritance between nodes;
+the package is flat.
 
 <CliHelp tool="ghost" command="gather" hideDescription />
 
 ```bash
 ghost gather
-ghost gather checkout
-ghost gather payment            # inexact: returns the menu + did-you-mean suggestions
-ghost gather checkout --format json
+ghost gather --format json
 ```
 
-This is the pre-generation step: Ghost gives agents surface-composition context
-before they build, not only after a review finds drift.
-
-Naming a surface that is not in the package is an error, not a silent empty
-result: `gather`, `checks`, and `review` all emit the stable code
-`ERR_UNKNOWN_SURFACE` with closest-id suggestions, so an agent can retry without
-a human.
+This is the pre-generation step, and "the right context at the right time": the
+agent selects just-in-time against the actual task, then manifests the truths
+into whatever it is building — product UI, marketing, email, a landing page.
 
 </DocSection>
 
-<DocSection title="Govern Changes">
-
-### Select checks: `checks`
-
-List the markdown checks and ground the named surfaces. Every check is offered;
-the agent names the surfaces the change touches to ground them, then judges
-which checks apply. A check binds to the prose it enforces through its optional
-`source:` pointer, not by surface routing. Use `--no-grounding` to omit the
-grounded nodes and return only the checks.
-
-<CliHelp tool="ghost" command="checks" hideDescription />
-
-```bash
-ghost checks --surface checkout
-ghost checks --surface checkout,billing
-ghost checks --surface checkout --format json
-```
-
-### Advisory review packet: `review`
-
-Emit an advisory packet for a diff: touched surfaces, the offered checks, and
-fingerprint grounding, with the diff embedded verbatim. Diff against a git ref
-with `--base`, or pass a patch with `--diff` (use `-` for stdin).
-
-<CliHelp tool="ghost" command="review" hideDescription />
-
-```bash
-ghost review --surface checkout --base main
-ghost review --surface checkout --diff change.patch
-git diff | ghost review --surface checkout --diff -
-ghost review --surface checkout --format json
-```
-
-Wrappers should consume `--format json` and map Ghost severities (`critical`,
-`serious`, `nit`) into their own review format. Advisory review is never a CI
-gate on its own.
-
-</DocSection>
-
-<DocSection title="Skill And Maintenance">
+<DocSection title="Skill And Inspection">
 
 ### Install the skill: `skill`
 
-Install the unified Ghost skill bundle so a host agent knows how to author and
-use the fingerprint.
+Install the Ghost skill bundle so a host agent knows how to author and use the
+fingerprint.
 
 <CliHelp tool="ghost" command="skill" hideDescription />
 
@@ -180,16 +121,14 @@ ghost skill install --agent claude
 ghost skill install --dest ~/.codex/skills/ghost
 ```
 
-### Migrate a legacy package: `migrate`
+### Command manifest: `manifest`
 
-Migrate a legacy `.ghost/` package onto the node-graph surface model. Use
-`--dry-run` to print the plan without writing.
+Emit a self-describing JSON manifest of every command and flag.
 
-<CliHelp tool="ghost" command="migrate" hideDescription />
+<CliHelp tool="ghost" command="manifest" hideDescription />
 
 ```bash
-ghost migrate
-ghost migrate .ghost --dry-run
+ghost manifest --format json
 ```
 
 </DocSection>

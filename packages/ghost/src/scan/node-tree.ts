@@ -2,7 +2,10 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { type PlacedNode, parseNode } from "#ghost-core";
 import { GHOST_CHECKS_DIRNAME } from "./checks-dir.js";
-import { FINGERPRINT_MANIFEST_FILENAME } from "./constants.js";
+import {
+  FINGERPRINT_MANIFEST_FILENAME,
+  GHOST_GLOSSARY_FILENAME,
+} from "./constants.js";
 
 /**
  * Reserved package-root entries that are never nodes. `checks/` is a reserved
@@ -16,6 +19,7 @@ import { FINGERPRINT_MANIFEST_FILENAME } from "./constants.js";
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
   "manifest.yaml",
+  GHOST_GLOSSARY_FILENAME,
   GHOST_CHECKS_DIRNAME,
 ]);
 
@@ -93,33 +97,57 @@ async function walk(
       continue;
     }
 
-    const { id, folder } = locate(relPath);
-    nodes.push({ id, folder, doc: node });
+    const { id, kind, slug } = locate(relPath);
+    nodes.push({
+      id,
+      ...(kind !== undefined ? { kind } : {}),
+      slug,
+      doc: node,
+    });
   }
 }
 
 /**
- * Compute a node's id and file folder from its package-relative path. The
- * folder is the directory the file sits in — the single unit of containment for
- * slice composition. Parent facts are derived from the id later
- * (`parentIdOrRoot`), never stored.
- * - `index.md`            → id `core`, folder ``.
- * - `a/index.md`          → id `a`,    folder `a`.
- * - `a/b/index.md`        → id `a/b`,  folder `a/b`.
- * - `a.md`                → id `a`,    folder ``.
- * - `a/b.md`              → id `a/b`,  folder `a`.
+ * Compute a node's id and filename kind/slug from its package-relative path.
+ *
+ * The **kind** is the leaf filename's first dotted segment, and only exists when
+ * the leaf has a dot; the **slug** is the rest of the leaf. The id is the path
+ * with `.md` dropped (an `index.md` collapses to its directory name), so a kind
+ * never changes a node's identity path.
+ * - `index.md`               → id `core`,              slug `core`.
+ * - `a/index.md`             → id `a`,                 slug `a`.
+ * - `voice.md`               → id `voice`,             slug `voice` (no kind).
+ * - `principle.density.md`   → id `principle.density`, kind `principle`, slug `density`.
+ * - `a/principle.trust.md`   → id `a/principle.trust`, kind `principle`, slug `trust`.
  */
-function locate(relPath: string): { id: string; folder: string } {
+function locate(relPath: string): {
+  id: string;
+  kind?: string;
+  slug: string;
+} {
   const withoutExt = relPath.replace(/\.md$/, "");
   const segments = withoutExt.split("/");
-  const isIndex = segments[segments.length - 1] === "index";
+  const leaf = segments[segments.length - 1] ?? "";
+  const isIndex = leaf === "index";
   const idSegments = isIndex ? segments.slice(0, -1) : segments;
-  // The file folder: drop the filename segment (`index` or the leaf name).
-  const folder = segments.slice(0, -1).join("/");
 
   if (idSegments.length === 0) {
-    // Root index.md → the core node, folder is the package root ("").
-    return { id: "core", folder };
+    // Root index.md → the core node.
+    return { id: "core", slug: "core" };
   }
-  return { id: idSegments.join("/"), folder };
+
+  const id = idSegments.join("/");
+  // Kind/slug come from the leaf name. An index node's leaf is the directory
+  // name and carries no kind. A dotted leaf splits into kind (first segment)
+  // and slug (the remainder); a bare leaf is all slug with no kind.
+  const leafName = isIndex ? (idSegments[idSegments.length - 1] ?? "") : leaf;
+  const dot = leafName.indexOf(".");
+  if (!isIndex && dot > 0) {
+    return {
+      id,
+      kind: leafName.slice(0, dot),
+      slug: leafName.slice(dot + 1),
+    };
+  }
+  return { id, slug: leafName };
 }

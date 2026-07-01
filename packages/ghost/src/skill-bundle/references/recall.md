@@ -1,22 +1,26 @@
 ---
 name: recall
-description: Recall the applicable Ghost fingerprint nodes for a task.
+description: Gather the applicable Ghost brand truths for a task.
 ---
 
 # Recipe: Recall Ghost Fingerprint
 
-1. Run `ghost gather` (no argument) to list nodes by id + description.
-2. Match the task to one or more nodes by their descriptions; name the node.
-3. Run `ghost gather <node>` to compose its slice (own body + inherited
-   ancestors + one-hop `relates`).
+1. Run `ghost gather` to emit the menu — every node's id, kind, and description.
+2. Read the ask against the menu and match it to one or more nodes by their
+   descriptions.
+3. Read those nodes' bodies (they are markdown files under `.ghost/`) and apply
+   the truths, honoring each node's kind (a `principle` is always-on; a
+   `condition` fires only when its stated situation holds; an `exemplar` is
+   illustrative, not normative).
 
 Return:
 
-- The gathered nodes and their short claims (cite by node id).
-- Related nodes worth inspecting as concrete anchors.
-- Checks that may affect the work.
-- Any gaps where local evidence must carry the reasoning.
+- The truths you selected and their short claims (cite by node id).
+- How each applies (or does not) to the task at hand, respecting stated
+  conditions.
+- Any gaps where the fingerprint is silent and local evidence must carry the
+  reasoning.
 
-If the fingerprint is silent on the task, say that plainly and continue with
-provisional local reasoning when safe. Fingerprint edits are ordinary
-Git-reviewed edits.
+Ghost does no selection — it emits the menu; you pick. If the fingerprint is
+silent on the task, say so plainly and continue with provisional local reasoning
+when safe. Fingerprint edits are ordinary Git-reviewed edits.

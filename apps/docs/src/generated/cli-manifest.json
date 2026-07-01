@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T02:29:04.216Z",
+  "generatedAt": "2026-07-01T19:43:55.973Z",
   "tools": [
     {
       "tool": "ghost",
@@ -12,7 +12,7 @@
           "group": "core",
           "defaultHelp": true,
           "compactName": "validate",
-          "summary": "Validate the fingerprint: artifact shape + the node graph.",
+          "summary": "Validate the fingerprint: artifact shape + node validity.",
           "options": [
             {
               "rawName": "--format <fmt>",
@@ -32,7 +32,7 @@
           "group": "core",
           "defaultHelp": true,
           "compactName": "init",
-          "summary": "Create .ghost/ package facets.",
+          "summary": "Scaffold a .ghost/ fingerprint: manifest, glossary, and a node.",
           "options": [
             {
               "rawName": "--package <dir>",
@@ -71,12 +71,12 @@
         {
           "tool": "ghost",
           "name": "gather",
-          "rawName": "gather [surface]",
-          "description": "Gather the composed context slice for a surface (the right context at the right time).",
+          "rawName": "gather",
+          "description": "Emit the fingerprint menu — every node's id, kind, and description — for the agent to select from.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "gather",
-          "summary": "Gather the composed context slice for a surface.",
+          "summary": "Emit the fingerprint menu for the agent to select from.",
           "options": [
             {
               "rawName": "--package <dir>",
@@ -85,50 +85,6 @@
               "default": null,
               "takesValue": true,
               "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: markdown or json",
-              "default": "markdown",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "checks",
-          "rawName": "checks",
-          "description": "List the markdown checks (ghost.check/v1) and ground the named surfaces.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "checks",
-          "summary": "Select and ground the checks relevant to a diff, by surface.",
-          "options": [
-            {
-              "rawName": "--surface <ids>",
-              "name": "surface",
-              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them; used to ground, not to filter checks.",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--package <dir>",
-              "name": "package",
-              "description": "Use this fingerprint package directory (default: ./.ghost)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--no-grounding",
-              "name": "grounding",
-              "description": "Omit fingerprint grounding (the grounded nodes) and emit only the relevant checks",
-              "default": true,
-              "takesValue": false,
-              "negated": true
             },
             {
               "rawName": "--format <fmt>",
@@ -155,42 +111,6 @@
               "name": "format",
               "description": "Output format: json",
               "default": "json",
-              "takesValue": true,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "migrate",
-          "rawName": "migrate [dir]",
-          "description": "Migrate a legacy .ghost/ package onto the directory-tree node model.",
-          "group": "maintenance",
-          "defaultHelp": false,
-          "compactName": "migrate",
-          "summary": "Migrate a legacy .ghost/ package onto the surface model.",
-          "options": [
-            {
-              "rawName": "--dry-run",
-              "name": "dryRun",
-              "description": "Print the migration plan and report; write nothing",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--force",
-              "name": "force",
-              "description": "Overwrite existing facet files with the migrated form",
-              "default": null,
-              "takesValue": false,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Report format: cli or json",
-              "default": "cli",
               "takesValue": true,
               "negated": false
             }
@@ -228,66 +148,6 @@
               "description": "Overwrite an existing installed Ghost skill",
               "default": null,
               "takesValue": false,
-              "negated": false
-            }
-          ]
-        },
-        {
-          "tool": "ghost",
-          "name": "review",
-          "rawName": "review",
-          "description": "Emit an evidence-routed advisory review prompt from the fingerprint package and a git diff.",
-          "group": "core",
-          "defaultHelp": true,
-          "compactName": "review",
-          "summary": "Emit an advisory packet from fingerprint facets and a diff.",
-          "options": [
-            {
-              "rawName": "--base <ref>",
-              "name": "base",
-              "description": "Git ref to diff against (default: HEAD)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--diff <patch>",
-              "name": "diff",
-              "description": "Unified diff file to embed in the review instead of running git diff. Use '-' for stdin.",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--surface <ids>",
-              "name": "surface",
-              "description": "Surface id(s) the change touches (comma-separated or repeated). The agent names them.",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--package <dir>",
-              "name": "package",
-              "description": "Exact fingerprint package directory; bypasses stack discovery",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--max-diff-bytes <n>",
-              "name": "maxDiffBytes",
-              "description": "Maximum diff bytes to include in the review packet (default: 200000)",
-              "default": null,
-              "takesValue": true,
-              "negated": false
-            },
-            {
-              "rawName": "--format <fmt>",
-              "name": "format",
-              "description": "Output format: markdown or json",
-              "default": "markdown",
-              "takesValue": true,
               "negated": false
             }
           ]

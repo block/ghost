@@ -1,193 +1,171 @@
 ---
 name: ghost
-description: Author, validate, and review repo-local Ghost fingerprints. Use when the user wants to set up a product-surface fingerprint, update .ghost, brief work from surface-composition context, review changes, or verify generated UI.
+description: Author, validate, and consume a repo-local Ghost fingerprint — the medium-agnostic articulation of a product's brand. Use when the user wants to set up a .ghost fingerprint, write or update brand-truth nodes, or gather the right brand context before generating UI, copy, email, or landing pages.
 license: Apache-2.0
 metadata:
   homepage: https://github.com/block/ghost
   cli: ghost
 ---
 
-# Ghost - Product-Surface Fingerprints
+# Ghost — Brand Fingerprints
 
-Ghost captures the composition of a product surface: the intent behind it, the
-materials it draws from, and the patterns that make it feel intentional. You
-read it before building and check against it after changing.
+A Ghost fingerprint is the medium-agnostic articulation of a brand: its truths,
+its stance, its conditions. One brand truth is stated once, at the altitude it is
+actually true, and an agent reads the relevant truths and manifests them into
+whatever it is building — product UI, marketing, email, a landing page. Ghost is
+**feed-forward**: it grounds generation. It does not review or grade output.
 
 ```text
 .ghost/
-  manifest.yml          # schema + id
-  index.md              # the core node, true everywhere (optional)
-  <surface>/index.md    # a surface's own prose
-  <surface>/<node>.md   # a node placed in that surface
-  checks/*.md           # optional ghost.check/v1 checks
+  manifest.yml        # schema + id (the package anchor)
+  glossary.md         # the author's category vocabulary + what each category means
+  <kind>.<slug>.md    # a brand truth of a declared kind (e.g. principle.density.md)
+  <slug>.md           # an uncategorized brand truth (e.g. voice.md)
 ```
 
-The checked-in `.ghost/` package is the source of truth. Ordinary Git
-workflow is the staging and approval boundary: uncommitted or unmerged changes
-are drafts, and committed fingerprint changes are canonical for Ghost. Checks are
-markdown rules an agent evaluates. Ghost is not a lifecycle manager, proposal system,
-design-system registry, or screenshot archive.
+The checked-in `.ghost/` package is the source of truth. Ordinary Git workflow is
+the staging and approval boundary: uncommitted changes are drafts, committed
+changes are canonical. Ghost is not a lifecycle manager, a design-system
+registry, or a review tool.
 
-## The Loop
+## The model in one breath
 
-You work through three verbs. The CLI does the deterministic work; you do the
-interpretation.
+- A **node** is a markdown file: a `description` in frontmatter, a brand truth in
+  the prose body.
+- A node's **kind** comes from its filename prefix (`principle.density.md` → kind
+  `principle`). A bare name (`voice.md`) is uncategorized — that is fine.
+- The **glossary** declares the category vocabulary and what each category means
+  (its normative weight). Kinds are the author's choice; Ghost ships no fixed
+  vocabulary.
+- There is **no hierarchy, no inheritance, no edges**. The package is a flat set
+  of truths. Nesting into folders is a human-browsing convenience only; the model
+  reads a flat menu.
+- **Altitude lives in the prose.** A universal truth is stated plainly; a narrower
+  truth names its **condition** — the *situation* it applies in ("when a surface
+  must show many items at once…"), never a destination or filing bucket ("for
+  emails:").
+
+## The loop
+
+The CLI does the deterministic work; you do the interpretation.
 
 ```bash
-ghost gather <surface>        # before: compose the context slice for the work
-ghost checks --surface <ids>  # list the markdown checks and ground the named surfaces
-ghost review --surface <ids>  # after: an advisory packet grounded in the diff
+ghost init        # scaffold .ghost/ (manifest + glossary + a core node)
+# ...author brand-truth nodes...
+ghost validate    # artifact shape + node validity + kind-prefix check
+ghost gather      # emit the fingerprint menu; you select the truths the task needs
 ```
 
-Authoring a fingerprint comes first (`ghost init`, then write nodes); the
-[Workflows](#workflows) below route each task to a recipe, and
-[How It Works](#how-it-works) covers the node model underneath.
+`gather` does no selection. It emits the whole menu — every node's id, kind, and
+description — and you read the ask against it and pull the truths you judge
+relevant. That is "the right context at the right time": you select just-in-time
+against the actual task, not against a precomputed slice.
 
-## Core CLI Verbs
-
-| Verb | Purpose |
-|---|---|
-| `ghost init [--template <name>]` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost validate [file-or-dir]` | Validate the package: artifact shape and the node graph (links resolve, one root, acyclic). |
-| `ghost checks --surface <ids>` | List the markdown checks and ground the named surfaces. |
-| `ghost review --surface <ids> [--diff <patch>]` | Emit an advisory review packet: touched surfaces, the offered checks, and fingerprint grounding (diff embedded verbatim). |
-| `ghost gather [node]` | Compose a node's context slice (full bodies along its path + relates edges, plus pointers), or list the node menu (with no argument or for an inexact query). |
-| `ghost skill install` | Install this unified skill bundle. |
-
-## Advanced CLI Verbs
+## CLI verbs
 
 | Verb | Purpose |
 |---|---|
-| `GHOST_PACKAGE_DIR=<relative-dir> ghost init` / `ghost init --package <dir>` | Create or resolve a custom fingerprint package directory for host wrappers or a monorepo package. |
+| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a core `index.md` node. |
+| `ghost validate [file-or-dir]` | Validate the package: artifact shape, per-node validity, and that each node's kind prefix is declared in the glossary. |
+| `ghost gather [--format json]` | Emit the fingerprint menu (every node's id, kind, description) for the agent to select from. |
+| `ghost skill install` | Install this skill bundle. |
 | `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
-| `ghost migrate [dir]` | Migrate a legacy `.ghost/` package onto the directory-tree node model. |
+
+Custom package dir: set `GHOST_PACKAGE_DIR=<relative-dir>` or pass `--package
+<dir>` (e.g. one product in a monorepo).
 
 ## Workflows
 
-- Self-check before generating: follow [references/self-check.md](references/self-check.md).
-- Collaborative authoring scenarios: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
-- Fingerprint capture: follow [references/capture.md](references/capture.md).
-- Author the inventory lens: follow [references/inventory.md](references/inventory.md).
-- Recall surface-composition context: follow [references/recall.md](references/recall.md).
-- Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
-- Critique generated or changed work: follow [references/critique.md](references/critique.md).
-- Review changes: follow [references/review.md](references/review.md).
-- Verify generation: follow [references/verify.md](references/verify.md).
-- Remediate findings: follow [references/remediate.md](references/remediate.md).
+- Author or update the fingerprint: follow [references/capture.md](references/capture.md).
+- Write node bodies through the three lenses: follow [references/inventory.md](references/inventory.md).
+- Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
+- Gather the applicable truths for a task: follow [references/recall.md](references/recall.md).
+- Shape a pre-generation brief from the menu: follow [references/brief.md](references/brief.md).
+- Probe your own readiness before generating: follow [references/self-check.md](references/self-check.md).
+- Understand the package shape in full: see [references/schema.md](references/schema.md).
 
 When the user asks to set up a fingerprint with `auto-draft`, treat that as an
-agent authoring mode, not a Ghost CLI command. Follow the auto-draft branch in
-the capture and authoring-scenarios recipes: read the repo first, draft the
-smallest evidence-backed node drafts, then ask the human to curate the claims.
+agent authoring mode, not a CLI command: read the repo first, draft the smallest
+evidence-backed nodes, then ask the human to curate them.
 
-## How It Works
+## How it works
 
-The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
-A node is a markdown file — frontmatter on top, a prose body below. The node at
-`checkout/trust.md` (id `checkout/trust`, parent `checkout`):
+The fingerprint is a **flat set of nodes**. A node is a markdown file — a
+`description` in frontmatter, a brand truth in the prose body. The node at
+`principle.trust.md` (id `principle.trust`, kind `principle`, slug `trust`):
 
 ```markdown
 ---
 description: Trust at the payment moment.
-relates:
-  - to: core/trust
-    as: reinforces
 ---
 
 Near the moment of payment, reduce felt risk. Proximity of reassurance to the
 action beats completeness. Never introduce a new visual system here.
 ```
 
-A node's **identity is its path** (`marketing/email.md` → `marketing/email`) and
-its **parent is its containing directory**. A surface is just a directory, and a
-directory's own prose lives in its `index.md` (`marketing/index.md` is the
-`marketing` surface; the package-root `index.md` is the implicit `core` node,
-true everywhere).
+- **Identity** is the filename minus `.md` (`marketing.email.md` → `marketing.email`).
+- **Kind** is the first dotted segment of the filename, and must be a category the
+  glossary declares. A bare name has no kind and is uncategorized.
+- The **body** is written through three **authoring lenses** — angles for
+  thinking, not fields:
+  - intent: the why and the stance.
+  - inventory: the materials and pointers to implementation the agent can inspect.
+  - composition: the patterns that make it feel intentional.
+- `description` is the retrieval payload: a one-line "what this is / when to
+  gather it" (like a tool's name + description). It is what `gather` puts in the
+  menu and what you select against.
 
-You write the prose body — the part below the `---` above — through three
-**authoring lenses**, angles for thinking through what the body should say:
+The **glossary** (`glossary.md`) declares the categories and their meaning:
 
-- intent: the why and the stance ("reduce felt risk near the payment moment").
-- inventory: the materials and pointers to implementation the agent can inspect.
-- composition: the patterns that make the surface feel intentional ("proximity
-  of reassurance beats completeness").
+```markdown
+---
+categories:
+  - name: principle
+  - name: condition
+  - name: exemplar
+---
 
-The lenses live in the prose; the frontmatter holds the fields. `description` is
-the retrieval payload, a one-line "what this is / when to gather it" (like a
-tool's name + description); `ghost gather` with no argument lists nodes by id +
-description for the agent to match against. The directory places a node so it is
-inherited downward (`core` is the implicit root that reaches every surface);
-`relates` links nodes laterally (the example reinforces `core/trust`). Free-form
-keys (`audience`, …) pass through. See [references/capture.md](references/capture.md)
-for the full node shape.
+# principle
+A durable stance: true across media unless a narrower condition explicitly limits it.
 
-**How `gather` composes** a surface's slice:
+# condition
+A situational truth: fires only when its stated situation holds.
 
-- **full bodies along the path**: every file from the package root down to the
-  surface's own folder, so a feature's `invariants.md` reaches every screen in
-  that feature, and root files reach everywhere. A sibling folder's nodes never
-  appear, not even as a pointer.
-- **edges** (full bodies, one hop): the `relates` targets of every node on that
-  path. Author a broad rule once at the level it is true (say
-  `relates: { to: arcade }` on `features/`) and every descendant inherits it. A
-  link to a node also offers that node's subtree as pointers.
-- **pointers** (id + description, no body): the surface's own descendants and the
-  subtree of any node it relates to. The agent reads the descriptions and pulls
-  what it needs with a follow-up `gather`.
+# exemplar
+An illustrative reference: useful evidence, not normative on its own.
+```
 
-Naming a node that is not in the package is an error, not a silent empty
-result. An inexact `gather <query>` is not search: it returns the node menu
-(`kind: "menu"`, the same listing the no-argument form prints) under the stable
-code `ERR_UNKNOWN_SURFACE`, with closest-id `suggestions` for a likely typo. So
-do `checks` and `review`, emitting the same code with `suggestions` (in
-`--format json`) and a "Did you mean" line otherwise. Branch on the code and
-retry with a suggestion or a node you match from the menu's descriptions.
-
-Checks and review validate output; they are not generation input.
+`ghost validate` warns (does not fail) when a node's kind prefix is not a declared
+category, suggesting the closest declared kind — so `guiding-principles.density.md`
+is flagged with "did you mean `principle`?".
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
-The tree is the layout itself: ids and parents come from where files sit, so
-moving a node is a rename. Reserved at the package root: `manifest.yml` and the
-`checks/` subtree; every other `*.md` is a node.
-
-Optional `ghost.check/v1` markdown checks live in `checks/*.md`; every check is
-offered to the reviewer and the agent judges which apply.
-When authoring curated nodes, read the repo directly (tree, grep, source
-inspection) for raw observations.
-
-One contract per package: a repo's `.ghost/` is the contract, and surfaces are
-the only locality. Host wrappers may set `GHOST_PACKAGE_DIR=<relative-dir>` on
-the child `ghost` process when they need repo-local Ghost files outside raw
-`ghost`'s `.ghost` default, and `--package <dir>` targets an exact package (e.g.
-one product in a monorepo). Ghost stays adapter-neutral: wrappers consume JSON
-and map severities into their own review or check format.
+Reserved at the package root: `manifest.yml` and `glossary.md`; every other `*.md`
+is a node. Moving or renaming a node changes its id.
 
 ## Always
 
-- Treat checked-in Ghost package nodes as the source of truth.
-- Generate from intent, inventory, and composition.
-- Name touched surfaces to `ghost checks --surface` to ground them; the agent evaluates which markdown checks apply.
-- Use local evidence as provisional when the fingerprint is silent.
-- Treat auto-drafted fingerprint edits as ordinary uncommitted draft work until
-  the human curates them and Git review accepts them.
+- Treat checked-in fingerprint nodes as the source of truth.
+- Author brand truths at the altitude they are actually true; state conditions as
+  situations in the prose, never as filename destinations.
+- Gather the menu and select the truths the task needs; read the descriptions and
+  pull what applies.
+- Manifest the truths into the medium you are building for — product, marketing,
+  email, landing — the manifestation is yours to interpret.
+- Validate with `ghost validate` before declaring fingerprint nodes useful.
 - Treat fingerprint edits as ordinary Git-reviewed edits.
-- Validate with `ghost validate` before declaring
-  fingerprint nodes useful.
-- Run `ghost checks` to list checks and ground surfaces, and `ghost review` for the advisory packet.
-- Use a custom package dir (`--package` / `GHOST_PACKAGE_DIR`) only when present
-  or requested.
+- Use local evidence as provisional, and label it as such, when the fingerprint is
+  silent on a task.
 
-## When Fingerprint Facets Are Silent
+## When the fingerprint is silent
 
-Silent fingerprint nodes do not require stopping by default. When the fingerprint does
-not cover the task, proceed from nearby product surfaces, local components,
-token and copy conventions, and ordinary UX reasoning when safe. Label that reasoning as provisional and
-non-Ghost-backed.
-Ask a human before making high-risk, irreversible, privacy/security/legal, or
-product-surface-defining choices.
+A silent fingerprint does not require stopping. Proceed from nearby product
+surfaces, local conventions, and ordinary reasoning when safe — and label that
+reasoning as provisional and non-Ghost-backed. Ask a human before high-risk,
+irreversible, or privacy/security/legal choices.
 
 ## Never
 
-- Never treat advisory composition critique as a CI gate.
-- Never claim provisional reasoning, local convention, or general UX reasoning as
-  Ghost-backed.
+- Never invent a hierarchy, inheritance, or cross-node edges — the package is flat.
+- Never file a truth by destination (`for-emails.md`); state its condition in prose.
+- Never claim provisional or local-convention reasoning as Ghost-backed.

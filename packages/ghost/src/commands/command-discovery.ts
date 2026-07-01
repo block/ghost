@@ -85,7 +85,7 @@ type HelpSection = {
   body: string;
 };
 
-export type CommandDiscoveryGroup = "core" | "advanced" | "maintenance";
+export type CommandDiscoveryGroup = "core" | "advanced";
 
 export type CommandDiscoveryMetadata = {
   name: string;
@@ -102,7 +102,6 @@ const GROUPS: ReadonlyArray<{
 }> = [
   { group: "core", title: "Core workflow" },
   { group: "advanced", title: "Advanced/package inspection" },
-  { group: "maintenance", title: "Maintenance/legacy" },
 ];
 
 const COMMAND_DISCOVERY = [
@@ -111,42 +110,21 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "init",
-    summary: "Create .ghost/ package facets.",
+    summary: "Scaffold a .ghost/ fingerprint: manifest, glossary, and a node.",
   },
   {
     name: "validate",
     group: "core",
     defaultHelp: true,
     compactName: "validate",
-    summary: "Validate the fingerprint: artifact shape + the node graph.",
-  },
-  {
-    name: "check",
-    group: "core",
-    defaultHelp: true,
-    compactName: "check",
-    summary: "Run active deterministic gates against a diff.",
-  },
-  {
-    name: "review",
-    group: "core",
-    defaultHelp: true,
-    compactName: "review",
-    summary: "Emit an advisory packet from fingerprint facets and a diff.",
+    summary: "Validate the fingerprint: artifact shape + node validity.",
   },
   {
     name: "gather",
     group: "core",
     defaultHelp: true,
     compactName: "gather",
-    summary: "Gather the composed context slice for a surface.",
-  },
-  {
-    name: "checks",
-    group: "core",
-    defaultHelp: true,
-    compactName: "checks",
-    summary: "Select and ground the checks relevant to a diff, by surface.",
+    summary: "Emit the fingerprint menu for the agent to select from.",
   },
   {
     name: "skill",
@@ -161,13 +139,6 @@ const COMMAND_DISCOVERY = [
     defaultHelp: false,
     compactName: "manifest",
     summary: "Emit a self-describing JSON manifest of commands and flags.",
-  },
-  {
-    name: "migrate",
-    group: "maintenance",
-    defaultHelp: false,
-    compactName: "migrate",
-    summary: "Migrate a legacy .ghost/ package onto the surface model.",
   },
 ] satisfies ReadonlyArray<Omit<CommandDiscoveryMetadata, "order">>;
 
@@ -290,7 +261,7 @@ function formatMoreSection(): HelpSection {
   return {
     title: "More",
     body: [
-      "  $ ghost --help --all      Show all advanced and maintenance commands",
+      "  $ ghost --help --all      Show all advanced commands",
       "  $ ghost <command> --help  Show command-specific options",
     ].join("\n"),
   };

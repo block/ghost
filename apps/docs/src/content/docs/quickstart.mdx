@@ -1,6 +1,6 @@
 ---
 title: Five-Minute Ghost
-description: Write down the product-design comment you keep repeating, once, so your agent reads it before it builds.
+description: Write down the brand decision you keep repeating, once, so your agent reads it before it builds.
 kicker: Docs
 section: guide
 order: 5
@@ -46,9 +46,10 @@ decision you keep repeating.
 
 <DocSection title="What you actually wrote down">
 
-Pick the one surface whose feedback you repeat most. Say it's checkout, and the
-note you always leave is about trust. Your agent writes that as a single small
-file, `.ghost/checkout/index.md`:
+Pick the one decision whose feedback you repeat most. Say it's about trust at
+checkout. Your agent writes that as a single small file,
+`.ghost/principle.trust.md` — the filename's first segment (`principle`) is its
+*kind*, declared in the package's `glossary.md`:
 
 ```markdown
 ---
@@ -74,27 +75,22 @@ reads what you wrote:
 Brief this checkout change from Ghost first.
 ```
 
-And after it changes the surface, it checks the result against the same note:
-
-```text
-Review this change against Ghost.
-```
-
 The comment you used to leave in review is now context the agent has up front.
-That's the entire idea: **catch the drift before it's written, not after.**
+That's the entire idea: **give the agent the decision before it builds, not
+after.**
 
 </DocSection>
 
 <DocSection title="Grow it one surface at a time">
 
-Don't fingerprint the whole product. One good file beats an empty catalog. The
-next time you catch yourself repeating a comment on a different surface — the
-settings form you always re-pace, the nav you always simplify — write that one
-down too. The fingerprint grows surface by surface, decision by decision.
+Don't fingerprint the whole brand. One good file beats an empty catalog. The
+next time you catch yourself repeating a decision — the settings form you always
+re-pace, the voice you always re-tone — write that one down too. The fingerprint
+grows decision by decision.
 
-When you're ready for the full workflow — composing context, running checks,
-advisory review packets — read [Getting Started](/docs/getting-started). When
-you want to know how the folder of files works underneath, that guide's **How It
-Works** section has it. You don't need either to get your first win.
+When you're ready for the full workflow — the glossary, gathering context,
+validating — read [Getting Started](/docs/getting-started). When you want to know
+how the folder of files works underneath, that guide's **How It Works** section
+has it. You don't need either to get your first win.
 
 </DocSection>

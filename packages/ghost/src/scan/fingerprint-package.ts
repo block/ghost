@@ -1,9 +1,10 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
+  closestIds,
+  type GhostCatalog,
   type GhostFingerprintPackageManifest,
-  type GhostGraph,
-  lintGraph,
+  parseGlossary,
   UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
@@ -13,6 +14,7 @@ import {
   FINGERPRINT_INVENTORY_FILENAME,
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
+  GHOST_GLOSSARY_FILENAME,
 } from "./constants.js";
 import {
   lintFingerprintPackageManifest,
@@ -31,6 +33,7 @@ export interface FingerprintPackagePaths {
   dir: string;
   packageDir: string;
   manifest: string;
+  glossary: string;
   /** Legacy facet paths — used only to detect legacy packages for migration. */
   intent: string;
   inventory: string;
@@ -40,10 +43,10 @@ export interface FingerprintPackagePaths {
 export interface LoadedFingerprintPackage {
   manifest: GhostFingerprintPackageManifest;
   manifestRaw: string;
-  /** The in-memory node graph — the only fingerprint model. */
-  graph: GhostGraph;
+  /** The in-memory flat node catalog — the only fingerprint model. */
+  catalog: GhostCatalog;
   /**
-   * Nodes that failed per-node lint and were skipped while folding the graph,
+   * Nodes that failed per-node lint and were skipped while folding the catalog,
    * each with its package-relative file path and first error message. Carried
    * so `validate` can surface a malformed node instead of silently dropping it.
    */
@@ -72,6 +75,7 @@ export function resolveFingerprintPackage(
     dir,
     packageDir,
     manifest: join(packageDir, FINGERPRINT_MANIFEST_FILENAME),
+    glossary: join(packageDir, GHOST_GLOSSARY_FILENAME),
     intent: join(packageDir, FINGERPRINT_INTENT_FILENAME),
     inventory: join(packageDir, FINGERPRINT_INVENTORY_FILENAME),
     composition: join(packageDir, FINGERPRINT_COMPOSITION_FILENAME),
@@ -155,10 +159,9 @@ async function assertInitDoesNotOverwrite(paths: string[]): Promise<void> {
 }
 
 /**
- * `validate` for a package: shape pass (manifest well-formed) + graph pass
- * (the node network is correct — links resolve, one root, acyclic). Loading the
- * package already runs the graph pass and throws on error; here we surface both
- * passes as a structured report.
+ * `validate` for a package: artifact shape, per-node validity, and the
+ * deterministic kind-prefix lint enabled by glossary.md. The catalog is flat;
+ * loading collects malformed nodes so they can be surfaced as structured issues.
  */
 export async function lintFingerprintPackage(
   dirArg: string | undefined,
@@ -178,9 +181,9 @@ export async function lintFingerprintPackage(
     lintFingerprintPackageManifest(manifestRaw, issues);
     // graph pass: fold + validate the node network.
     try {
-      const { graph, invalid } = await loadFingerprintPackage(paths);
+      const { catalog, invalid } = await loadFingerprintPackage(paths);
       // node pass: a node that failed its own schema was skipped while folding
-      // the graph; surface it here so a malformed node is loud, not silent.
+      // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
         ...invalid.map((entry) => ({
           severity: "error" as const,
@@ -189,15 +192,7 @@ export async function lintFingerprintPackage(
           path: entry.file,
         })),
       );
-      const graphReport = lintGraph(graph);
-      issues.push(
-        ...graphReport.issues.map((issue) => ({
-          severity: issue.severity,
-          rule: issue.rule,
-          message: issue.message,
-          ...(issue.node ? { path: `${issue.node}.md` } : {}),
-        })),
-      );
+      await lintKindPrefixes(paths, catalog, issues);
     } catch (err) {
       issues.push({
         severity: "error",
@@ -209,6 +204,51 @@ export async function lintFingerprintPackage(
   }
 
   return finalize(issues);
+}
+
+async function lintKindPrefixes(
+  paths: FingerprintPackagePaths,
+  catalog: GhostCatalog,
+  issues: LintIssue[],
+): Promise<void> {
+  const declaredKinds = await readDeclaredGlossaryKinds(paths.glossary);
+  if (declaredKinds === undefined) return;
+
+  const declared = new Set(declaredKinds);
+  for (const node of catalog.nodes.values()) {
+    if (node.kind === undefined || declared.has(node.kind)) continue;
+
+    const suggestions = closestIds(node.kind, declaredKinds, 1);
+    const suggestion = suggestions[0];
+    issues.push({
+      severity: "warning",
+      rule: "kind-undeclared",
+      message:
+        `Kind prefix \`${node.kind}\` is not declared in ${GHOST_GLOSSARY_FILENAME}.` +
+        (suggestion === undefined
+          ? " Drop the prefix if this node is uncategorized."
+          : ` Did you mean \`${suggestion}\`? Drop the prefix if this node is uncategorized.`),
+      path: `${node.id}.md`,
+    });
+  }
+}
+
+async function readDeclaredGlossaryKinds(
+  glossaryPath: string,
+): Promise<string[] | undefined> {
+  let raw: string;
+  try {
+    raw = await readFile(glossaryPath, "utf-8");
+  } catch (err) {
+    if (isMissingPathError(err)) return undefined;
+    throw err;
+  }
+
+  const result = parseGlossary(raw);
+  if (result.glossary === null) return [];
+  return result.glossary.frontmatter.categories.map(
+    (category) => category.name,
+  );
 }
 
 async function readRequired(

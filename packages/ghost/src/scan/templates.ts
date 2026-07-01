@@ -4,7 +4,7 @@ import { GHOST_FINGERPRINT_PACKAGE_SCHEMA } from "#ghost-core";
  * A single seed file an `init` template writes, relative to the package dir.
  */
 export interface TemplateFile {
-  /** Path relative to the package directory (e.g. "nodes/core-voice.md"). */
+  /** Path relative to the package directory (e.g. "principle.voice.md"). */
   relativePath: string;
   content: string;
 }
@@ -29,36 +29,61 @@ function manifestFile(): TemplateFile {
 }
 
 /**
- * The default starter: a manifest plus the package-root `index.md`, the `core`
- * node whose prose cascades to every surface. The directory tree is the graph:
- * add a surface by adding a directory, give it prose with its own `index.md`,
- * and place nodes as `<surface>/<node>.md`.
+ * The default starter: a manifest, a package-level glossary declaring the
+ * starter category vocabulary, and the package-root `index.md` core node.
+ * Additional truths are plain markdown nodes; an optional kind comes from a
+ * dotted filename prefix such as `principle.density.md`.
  */
 const DEFAULT_TEMPLATE: GhostInitTemplate = {
   name: "default",
-  description: "Minimal node package: manifest + a core index node.",
+  description: "Minimal node package: manifest + glossary + a core index node.",
   files() {
     return [
       manifestFile(),
       {
-        relativePath: "index.md",
+        relativePath: "glossary.md",
         content: `---
-description: The product-wide root; true everywhere.
+categories:
+  - name: principle
+  - name: condition
+  - name: exemplar
 ---
 
-Replace this prose with your product's voice — the \`core\` node. Everything
-below the \`---\` is the node's body; the frontmatter above holds the fields.
-Write the body through three authoring lenses (angles to think through, not
-frontmatter keys):
+# principle
 
-- intent — the why and the stance (e.g. "calm, direct, never breathless").
-- inventory — the material you have (tokens, components, pointers to code).
-- composition — how it is assembled (the patterns that make it feel intentional).
+Durable stance: true across media unless a narrower condition explicitly limits it.
 
-This file is the package-root \`index.md\`, so it cascades to every surface. Add
-a surface by adding a directory: \`checkout/index.md\` is the \`checkout\` surface,
-and \`checkout/payment.md\` is a node under it. Link related nodes with
-\`relates\`.
+# condition
+
+Situational truth: fires only when the stated situation holds.
+
+# exemplar
+
+Illustrative reference: useful evidence, but not normative on its own.
+`,
+      },
+      {
+        relativePath: "index.md",
+        content: `---
+description: The product-wide core truth.
+---
+
+Replace this prose with your product's core truth — the stance an agent should
+read before interpreting the rest of the fingerprint. Everything below the
+\`---\` is the node's body; the frontmatter above is the retrieval description.
+
+Nodes are prose truths. Use them to capture intent, materials, and composition in
+language an agent can apply across code, copy, and UI decisions. Keep each node
+focused enough to be useful on its own.
+
+The glossary declares the category vocabulary. A node's kind comes from its
+filename prefix: \`principle.density.md\` has kind \`principle\` and slug
+\`density\`. A bare filename like \`voice.md\` is uncategorized, which is fine.
+
+When a truth is narrower, state the condition in the prose: the situation where
+it applies, the evidence that activates it, and what changes when it does. Do not
+use filename categories as destinations or filing buckets; the model reads the
+prose to understand applicability.
 `,
       },
     ];

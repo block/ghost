@@ -1,10 +1,9 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import {
-  assembleGraph,
+  assembleCatalog,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
-  lintGraph,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
@@ -14,8 +13,6 @@ import type {
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeTree } from "./node-tree.js";
-
-const LEGACY_FACET_FILES = ["intent.yml", "inventory.yml", "composition.yml"];
 
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
@@ -34,53 +31,17 @@ export async function loadFingerprintPackage(
   }
   const manifest = parseManifest(manifestRaw, "manifest.yml");
 
-  // Legacy facet packages no longer load directly — guide to `ghost migrate`.
-  await assertNotLegacyFacetPackage(paths);
-
+  // The catalog is flat and valid by construction — no edges to resolve, so no
+  // graph-level lint. Per-node schema failures are collected as `invalid`.
   const { nodes: placedNodes, invalid } = await loadNodeTree(paths.packageDir);
-  const graph = assembleGraph({ placedNodes });
-
-  const report = lintGraph(graph);
-  if (report.errors > 0) {
-    const first = report.issues.find((issue) => issue.severity === "error");
-    const suffix = first?.node ? ` (node '${first.node}')` : "";
-    throw new Error(
-      `fingerprint package graph is invalid: ${first?.message ?? "invalid graph"}${suffix}`,
-    );
-  }
+  const catalog = assembleCatalog({ placedNodes });
 
   return {
     manifest,
     manifestRaw,
-    graph,
+    catalog,
     invalid,
   };
-}
-
-/**
- * If a package still ships the legacy facet files, fail with migrate guidance
- * rather than a confusing graph error.
- */
-async function assertNotLegacyFacetPackage(
-  paths: FingerprintPackagePaths,
-): Promise<void> {
-  for (const facet of LEGACY_FACET_FILES) {
-    if (await pathExists(`${paths.packageDir}/${facet}`)) {
-      throw new Error(
-        `This is a legacy facet package (found ${facet}). Run \`ghost migrate\` to convert it to the directory-tree node model.`,
-      );
-    }
-  }
-}
-
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await access(path);
-    return true;
-  } catch (err) {
-    if (isMissingPathError(err)) return false;
-    throw err;
-  }
 }
 
 export function lintFingerprintPackageManifest(

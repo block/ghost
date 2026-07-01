@@ -4,6 +4,9 @@ export const FINGERPRINT_PACKAGE_DIR = ".ghost";
 /** Portable fingerprint package manifest filename. */
 export const FINGERPRINT_MANIFEST_FILENAME = "manifest.yml";
 
+/** Reserved package-root glossary filename. */
+export const GHOST_GLOSSARY_FILENAME = "glossary.md";
+
 /**
  * Legacy facet filenames — retained only so the loader can detect a
  * pre-graph package and guide the user to `ghost migrate`.

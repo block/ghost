@@ -124,25 +124,15 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("ghost");
     expect(result.stdout).toContain("Core workflow");
-    for (const command of [
-      "init",
-      "validate",
-      "check",
-      "review",
-      "gather",
-      "checks",
-      "skill install",
-    ]) {
+    for (const command of ["init", "validate", "gather", "skill install"]) {
       expect(result.stdout).toContain(command);
     }
     expect(result.stdout).toContain("ghost --help --all");
+    // Removed in the graph collapse.
+    expect(result.stdout).not.toContain("checks");
+    expect(result.stdout).not.toContain("review");
+    expect(result.stdout).not.toContain("migrate");
     expect(result.stdout).not.toContain("relay");
-    expect(result.stdout).not.toContain("survey <op>");
-    expect(result.stdout).not.toContain("diff <a> <b>");
-    expect(result.stdout).not.toMatch(/\n {2}ack\s/);
-    expect(result.stdout).not.toContain("track <fingerprint>");
-    expect(result.stdout).not.toContain("diverge <dimension>");
-    expect(result.stdout).not.toContain("proposal <op>");
   });
 
   it("prints the complete grouped command index with --help --all", async () => {
@@ -152,20 +142,19 @@ describe("ghost CLI", () => {
 
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("Core workflow");
-    expect(result.stdout).toContain("Advanced/package inspection");
-    expect(result.stdout).toContain("Maintenance/legacy");
     for (const command of [
       "validate [file]",
       "init",
       "gather",
-      "checks",
       "manifest",
-      "migrate",
       "skill <action>",
-      "review",
     ]) {
       expect(result.stdout).toContain(command);
     }
+    // Removed in the graph collapse.
+    expect(result.stdout).not.toContain("checks");
+    expect(result.stdout).not.toContain("migrate");
+    expect(result.stdout).not.toContain("review");
   });
 
   it("emits a self-describing JSON manifest of commands and flags", async () => {
@@ -207,27 +196,19 @@ describe("ghost CLI", () => {
 
   it("initializes the default fingerprint package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
 
     expect(init.code).toBe(0);
     const initOutput = JSON.parse(init.stdout);
     expect(Object.keys(initOutput).sort()).toEqual(["dir", "written"]);
-    // Node package: manifest + the package-root core index node, no facet files.
     expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
 
     const validate = await runCli(["validate"], dir);
-    const review = await runCli(["review", "--diff", "change.patch"], dir);
-
     expect(validate.code).toBe(0);
-    expect(review.code).toBe(0);
-    expect(review.stdout).toContain("## Touched Surfaces");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -347,7 +328,7 @@ describe("ghost CLI", () => {
     expect(forced.code).toBe(0);
     await expect(
       readFile(join(dir, ".ghost", "index.md"), "utf-8"),
-    ).resolves.toContain("three authoring lenses");
+    ).resolves.toContain("The glossary declares the category vocabulary");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
@@ -385,6 +366,7 @@ describe("ghost CLI", () => {
 
     expect(init.code).toBe(0);
     expect(init.stdout).toContain("manifest.yml");
+    expect(init.stdout).toContain("glossary.md");
     expect(init.stdout).toContain("index.md");
     expect(init.stdout).not.toContain("cache/:");
     expect(init.stdout).not.toContain("memory/intent.md:");
@@ -542,9 +524,12 @@ describe("ghost CLI", () => {
     for (const path of [
       "SKILL.md",
       "references/capture.md",
-      "references/review.md",
-      "references/remediate.md",
+      "references/inventory.md",
       "references/brief.md",
+      "references/recall.md",
+      "references/self-check.md",
+      "references/schema.md",
+      "references/authoring-scenarios.md",
     ]) {
       await expect(
         readFile(join(dir, "skills", "ghost", path), "utf-8"),
@@ -552,264 +537,44 @@ describe("ghost CLI", () => {
     }
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
-    ).resolves.toContain("When Fingerprint Facets Are Silent");
+    ).resolves.toContain("When the fingerprint is silent");
     await expect(
       readFile(join(dir, "skills", "ghost", "SKILL.md"), "utf-8"),
     ).resolves.toContain(
-      "Never claim provisional reasoning, local convention, or general UX reasoning",
+      "Never claim provisional or local-convention reasoning",
     );
-    await expect(
-      readFile(
-        join(dir, "skills", "ghost", "references", "review.md"),
-        "utf-8",
-      ),
-    ).resolves.toContain("grounding is silent");
-    await expect(
-      readFile(join(dir, "skills", "ghost", "references", "brief.md"), "utf-8"),
-    ).resolves.toContain("ghost gather <surface> --format json");
-    await expect(
-      readFile(
-        join(dir, "skills", "ghost", "references", "verify.md"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost gather <surface> --format json");
-    await expect(
-      readFile(
-        join(dir, "skills", "ghost", "references", "review.md"),
-        "utf-8",
-      ),
-    ).resolves.toContain("ghost checks --surface <ids> --format json");
-    await expect(
-      readFile(
-        join(dir, "skills", "ghost", "references", "propose.md"),
-        "utf-8",
-      ),
-    ).rejects.toThrow();
+    // The review/verify/remediate/critique recipes moved out of Fingerprint
+    // (review of output against the fingerprint is Haunt's verb).
+    for (const gone of [
+      "review.md",
+      "verify.md",
+      "remediate.md",
+      "critique.md",
+    ]) {
+      await expect(
+        readFile(join(dir, "skills", "ghost", "references", gone), "utf-8"),
+      ).rejects.toThrow();
+    }
   });
 
-  it("review emits an advisory packet with required citation fields", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(["review", "--diff", "change.patch"], dir);
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("# Ghost Advisory Review");
-    expect(result.stdout).toContain("## Touched Surfaces");
-    expect(result.stdout).toContain("## Checks");
-    expect(result.stdout).toContain("## Grounding");
-    expect(result.stdout).toContain("diff location");
-    expect(result.stdout).toContain("surface the change touches");
-    expect(result.stdout).toContain(
-      "grounding ref (why / what) or local-evidence rationale when the surface is silent",
-    );
-    expect(result.stdout).toContain("Read the grounded nodes");
-    expect(result.stdout).toContain("the applicable check when blocking");
-    expect(result.stdout).not.toContain("Proposal Threshold");
-    expect(result.stdout).toContain("provisional and non-Ghost-backed");
-    expect(result.stdout).not.toContain("recommend-proposal");
-    expect(result.stdout).toContain("missing-fingerprint");
-    expect(result.stdout).toContain("experience-gap");
-    expect(result.stdout).toContain("repair or intentional-divergence");
-    expect(result.stdout).not.toContain("schema: ghost.fingerprint/v1");
-  });
-
-  it("review reports and truncates oversized diffs by byte budget", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch(`const copy = "${"x".repeat(160)}";`),
-    );
-
-    const result = await runCli(
-      [
-        "review",
-        "--diff",
-        "change.patch",
-        "--max-diff-bytes",
-        "80",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    expect(packet.truncated).toBe(true);
-    expect(packet.budgets.max_diff_bytes).toBe(80);
-    expect(packet.budgets.diff_bytes).toBeGreaterThan(80);
-    expect(packet.budgets.included_diff_bytes).toBeLessThanOrEqual(80);
-    expect(packet.diff).toContain("Ghost truncated diff");
-    expect(packet.diff).not.toContain("x".repeat(120));
-  });
-
-  it("review markdown includes packet budget metadata", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch(`const copy = "${"x".repeat(160)}";`),
-    );
-
-    const result = await runCli(
-      ["review", "--diff", "change.patch", "--max-diff-bytes", "80"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    expect(result.stdout).toContain("## Review Packet Budget");
-    expect(result.stdout).toContain("- Max diff bytes: 80");
-    expect(result.stdout).toContain("- Truncated: yes");
-    expect(result.stdout).toContain("Ghost truncated diff");
-  });
-
-  it("review rejects invalid max diff byte budgets", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(
-      ["review", "--diff", "change.patch", "--max-diff-bytes", "0"],
-      dir,
-    );
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain(
-      "--max-diff-bytes must be a positive integer",
-    );
-  });
-
-  it("review omits removed memory fields", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    const result = await runCli(
-      ["review", "--diff", "change.patch", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    expect(packet.schema).toBe("ghost.advisory-review/v1");
-    expect(packet.finding_categories).toContain("experience-gap");
-    expect(Array.isArray(packet.touched_surfaces)).toBe(true);
-    expect(Array.isArray(packet.checks)).toBe(true);
-    expect(Array.isArray(packet.grounding)).toBe(true);
-    expect(packet.proposal_types).toBeUndefined();
-    expect(packet.open_proposals).toBeUndefined();
-    expect(packet.accepted_decisions).toBeUndefined();
-    expect(packet.intent).toBeUndefined();
-    expect(packet.memory).toBeUndefined();
-  });
-
-  it("rejects removed review memory flag", async () => {
-    await writeCheckPackage(dir);
-    await writeFile(
-      join(dir, "change.patch"),
-      lendingPatch("let color = CashTheme.primary"),
-    );
-
-    await expect(
-      runCli(
-        [
-          "review",
-          "--diff",
-          "change.patch",
-          "--include-memory",
-          "--format",
-          "json",
-        ],
-        dir,
-      ),
-    ).rejects.toThrow("Unknown option `--includeMemory`");
-  });
-
-  it("review uses agent-stated surfaces and embeds the diff", async () => {
-    await writeSplitFingerprintPackage(
-      join(dir, ".ghost"),
-      `schema: ghost.fingerprint/v1
-intent:
-  summary:
-    product: Root Product
-  situations: []
-  principles: []
-  experience_contracts: []
-inventory:
-  building_blocks:
-    tokens: [RootTheme]
-composition:
-  patterns:
-    - id: root-token-pattern
-      kind: visual
-      pattern: Web UI color uses semantic product tokens.
-`,
-    );
-    await writeFile(
-      join(dir, "change.patch"),
-      [
-        webPatch("apps/checkout/review/page.tsx", "const x = CheckoutTheme;"),
-        webPatch("shared/home.tsx", "const x = RootTheme;"),
-      ].join("\n"),
-    );
-
-    const result = await runCli(
-      [
-        "review",
-        "--diff",
-        "change.patch",
-        "--surface",
-        "core",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const packet = JSON.parse(result.stdout);
-    // Review is surface-based and agent-stated: the agent names the surfaces;
-    // the diff is embedded verbatim, never used to resolve surfaces.
-    expect(packet.stacks).toBeUndefined();
-    expect(packet.touched_surfaces).toEqual(["core"]);
-    expect(Array.isArray(packet.grounding)).toBe(true);
-    expect(packet.diff).toContain("CheckoutTheme");
-  });
-
-  it("gathers a composed slice for a surface", async () => {
+  it("gather emits the full flat menu (no anchor, no slice)", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
-      ["gather", "email/marketing", "--package", ".ghost", "--format", "json"],
+      ["gather", "--package", ".ghost", "--format", "json"],
       dir,
     );
 
     expect(result.code).toBe(0);
-    const slice = JSON.parse(result.stdout);
-    expect(slice.surface).toBe("email/marketing");
-    const byId = Object.fromEntries(
-      slice.nodes.map((node: { id: string; provenance: unknown }) => [
-        node.id,
-        node.provenance,
-      ]),
-    );
-    // Graph slice (Option A, prose nodes): own + cascaded ancestors.
-    // The root index (`core`) cascades; the marketing index node is own.
-    expect(byId.core).toEqual({ kind: "ancestor", from: "core" });
-    expect(byId["email/marketing"]).toEqual({ kind: "own" });
-    // checkout/clarity sits on a sibling surface with no `relates` link in, so
-    // it is not pulled in.
-    expect(byId["checkout/clarity"]).toBeUndefined();
+    const payload = JSON.parse(result.stdout);
+    expect(payload.kind).toBe("menu");
+    const ids = payload.nodes.map((node: { id: string }) => node.id);
+    // Every authored node is offered; the agent selects. No cascade, no slice.
+    expect(ids).toContain("email/marketing");
+    expect(ids).toContain("checkout/clarity");
   });
 
-  it("fails validate when a relates target does not resolve", async () => {
+  it("fails validate when a node uses the removed `relates` key", async () => {
     await writeFile(
       join(dir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: solo\n",
@@ -821,10 +586,10 @@ composition:
 
     const validate = await runCli(["validate", "."], dir);
     expect(validate.code).toBe(1);
-    expect(validate.stdout).toContain("nope/missing");
+    expect(validate.stdout).toContain("relates");
   });
 
-  it("returns the surface menu when no surface is named", async () => {
+  it("gather carries each node's kind in the menu", async () => {
     await writeGatherPackage(dir);
 
     const result = await runCli(
@@ -834,273 +599,11 @@ composition:
 
     expect(result.code).toBe(0);
     const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("menu");
-    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
-      "email/marketing",
+    const byId = Object.fromEntries(
+      payload.nodes.map((n: { id: string; kind?: string }) => [n.id, n.kind]),
     );
-  });
-
-  it("returns the menu with did-you-mean suggestions for an inexact gather query", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(
-      ["gather", "marketng", "--package", ".ghost", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("menu");
-    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
-    expect(payload.query).toBe("marketng");
-    expect(payload.suggestions).toContain("email/marketing");
-    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
-      "email/marketing",
-    );
-  });
-
-  it("returns the menu with empty suggestions for a gather query with no near match", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(
-      ["gather", "zzzzznope", "--package", ".ghost", "--format", "json"],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.kind).toBe("menu");
-    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
-    expect(payload.suggestions).toEqual([]);
-    expect(payload.surfaces.map((entry: { id: string }) => entry.id)).toContain(
-      "email/marketing",
-    );
-  });
-
-  it("errors with ERR_UNKNOWN_SURFACE when checks names an unknown surface", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(
-      [
-        "checks",
-        "--surface",
-        "checkou",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-      { allowNoExit: true },
-    );
-
-    expect(result.code).toBe(2);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.code).toBe("ERR_UNKNOWN_SURFACE");
-    expect(payload.unknown[0].suggestions).toContain("checkout");
-  });
-
-  it("migrates a legacy package to the surface model", async () => {
-    const ghost = join(dir, ".ghost");
-    await mkdir(ghost, { recursive: true });
-    await writeFile(
-      join(ghost, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: legacy\n",
-    );
-    await writeFile(
-      join(ghost, "inventory.yml"),
-      `topology:
-  scopes:
-    - id: lending
-      paths: [Code/Lending]
-building_blocks: {}
-exemplars: []
-sources: []
-`,
-    );
-    await writeFile(
-      join(ghost, "intent.yml"),
-      `principles:
-  - id: scoped
-    principle: Placed cleanly.
-    applies_to:
-      scopes: [lending]
-experience_contracts: []
-`,
-    );
-    await writeFile(join(ghost, "composition.yml"), "patterns: []\n");
-
-    const result = await runCli(
-      ["migrate", ".ghost", "--force", "--format", "json"],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const report = JSON.parse(result.stdout);
-    expect(report.surfaces).toEqual(["lending"]);
-
-    // The migrated package must lint clean and gather correctly.
-    const lint = await runCli(["validate", ".ghost"], dir, {
-      allowNoExit: true,
-    });
-    expect(lint.stdout).toContain("0 error(s)");
-
-    const gather = await runCli(
-      ["gather", "lending", "--package", ".ghost", "--format", "json"],
-      dir,
-    );
-    const slice = JSON.parse(gather.stdout);
-    // The single-scope node landed at lending/scoped.md → id `lending/scoped`.
-    expect(
-      slice.nodes.find((node: { id: string }) => node.id === "lending/scoped")
-        ?.provenance,
-    ).toEqual({ kind: "own" });
-  });
-
-  it("refuses non-legacy packages", async () => {
-    await writeGatherPackage(dir);
-
-    const result = await runCli(["migrate", ".ghost"], dir, {
-      allowNoExit: true,
-    });
-
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("Nothing to migrate");
-  });
-
-  it("lists every check (checks always fire) and grounds the named surface", async () => {
-    const ghost = join(dir, ".ghost");
-    await mkdir(join(ghost, "checks"), { recursive: true });
-    await writeFile(
-      join(ghost, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: c3\n",
-    );
-    // Surfaces are directories: checkout/ and email/ each with an index node.
-    await mkdir(join(ghost, "checkout"), { recursive: true });
-    await mkdir(join(ghost, "email"), { recursive: true });
-    await writeFile(
-      join(ghost, "checkout", "index.md"),
-      "---\n---\n\nCheckout.\n",
-    );
-    await writeFile(join(ghost, "email", "index.md"), "---\n---\n\nEmail.\n");
-    await writeFile(
-      join(ghost, "checks", "brand.md"),
-      "---\nname: brand\ndescription: Brand voice.\nseverity: medium\n---\n## Instructions\nVoice.\n",
-    );
-    await writeFile(
-      join(ghost, "checks", "checkout.md"),
-      "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsource: checkout > Color\n---\n## Instructions\nFlag hex.\n",
-    );
-    await writeFile(
-      join(ghost, "checks", "email.md"),
-      "---\nname: email-links\ndescription: Email links.\nseverity: low\n---\n## Instructions\nLinks.\n",
-    );
-
-    const result = await runCli(
-      [
-        "checks",
-        "--surface",
-        "checkout",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.touched_surfaces).toContain("checkout");
-    // Every check is offered — routing is gone; the agent judges relevance.
-    const names = payload.checks.map((c: { name: string }) => c.name).sort();
-    expect(names).toEqual(["brand", "checkout-color", "email-links"]);
-    const checkoutColor = payload.checks.find(
-      (c: { name: string }) => c.name === "checkout-color",
-    );
-    expect(checkoutColor.source).toBe("checkout > Color");
-  });
-
-  it("grounds the named surface in the fingerprint slice", async () => {
-    const ghost = join(dir, ".ghost");
-    await mkdir(join(ghost, "checks"), { recursive: true });
-    await mkdir(join(ghost, "nodes"), { recursive: true });
-    await writeFile(
-      join(ghost, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: c4\n",
-    );
-    // core prose at the package root; checkout surface as a directory node.
-    await mkdir(join(ghost, "checkout"), { recursive: true });
-    await writeFile(join(ghost, "index.md"), "---\n---\n\nWarm everywhere.\n");
-    await writeFile(
-      join(ghost, "checkout", "clarity.md"),
-      "---\n---\n\nCheckout copy is plain.\n",
-    );
-    await writeFile(
-      join(ghost, "checks", "checkout.md"),
-      "---\nname: checkout-color\ndescription: No raw color.\nseverity: high\nsource: checkout > Color\n---\n## Instructions\nFlag hex.\n",
-    );
-
-    const result = await runCli(
-      [
-        "checks",
-        "--surface",
-        "checkout",
-        "--package",
-        ".ghost",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const payload = JSON.parse(result.stdout);
-    const checkout = payload.grounding.find(
-      (g: { surface: string }) => g.surface === "checkout",
-    );
-    // Grounding is the gather slice: prose nodes by provenance (Phase 4).
-    const ids = checkout.nodes.map((n: { id: string }) => n.id);
-    expect(ids).toContain("checkout/clarity"); // own
-    expect(ids).toContain("core"); // cascades from the root index
-    const own = checkout.nodes.find(
-      (n: { id: string }) => n.id === "checkout/clarity",
-    );
-    expect(own.provenance).toEqual({ kind: "own" });
-  });
-
-  it("omits grounding with --no-grounding", async () => {
-    const ghost = join(dir, ".ghost");
-    await mkdir(join(ghost, "checks"), { recursive: true });
-    await writeFile(
-      join(ghost, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: c4b\n",
-    );
-    await mkdir(join(ghost, "checkout"), { recursive: true });
-    await writeFile(
-      join(ghost, "checkout", "index.md"),
-      "---\n---\n\nCheckout.\n",
-    );
-
-    const result = await runCli(
-      [
-        "checks",
-        "--surface",
-        "checkout",
-        "--package",
-        ".ghost",
-        "--no-grounding",
-        "--format",
-        "json",
-      ],
-      dir,
-    );
-
-    expect(result.code).toBe(0);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.grounding).toBeUndefined();
+    // Present as a key for every node (undefined when uncategorized).
+    expect(Object.keys(byId)).toContain("email/marketing");
   });
 });
 
@@ -1401,25 +904,6 @@ checks:
       observed_count: 47
       examples:
         - Code/Features/Lending/LendingUI
-`;
-}
-
-function webPatch(path: string, added: string): string {
-  return `diff --git a/${path} b/${path}
-index 1111111..2222222 100644
---- a/${path}
-+++ b/${path}
-@@ -0,0 +1 @@
-+${added}
-`;
-}
-
-function lendingPatch(line: string): string {
-  return `diff --git a/Code/Features/Lending/View.swift b/Code/Features/Lending/View.swift
---- a/Code/Features/Lending/View.swift
-+++ b/Code/Features/Lending/View.swift
-@@ -0,0 +1,1 @@
-+${line}
 `;
 }
 

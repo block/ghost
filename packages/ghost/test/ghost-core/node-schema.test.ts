@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  GHOST_NODE_RELATION_KINDS,
   type GhostNodeDocument,
   lintGhostNode,
   NodeIdSchema,
@@ -26,20 +25,9 @@ describe("ghost.node/v1 schema", () => {
     expect(report.issues[0]?.rule).toBe("node-missing-frontmatter");
   });
 
-  it("accepts the closed relates qualifier set and rejects unknowns", () => {
-    for (const as of GHOST_NODE_RELATION_KINDS) {
-      const report = lintGhostNode(
-        node(`relates:\n  - to: core\n    as: ${as}`),
-      );
-      expect(report.errors).toBe(0);
-    }
-    const bad = lintGhostNode(node("relates:\n  - to: core\n    as: governs"));
-    expect(bad.errors).toBeGreaterThan(0);
-  });
-
-  it("allows untyped relations (qualifier omitted)", () => {
+  it("rejects the removed `relates` key (edges are gone)", () => {
     const report = lintGhostNode(node("relates:\n  - to: core"));
-    expect(report.errors).toBe(0);
+    expect(report.errors).toBeGreaterThan(0);
   });
 
   it("passes through free-form descriptive keys (e.g. audience)", () => {
@@ -55,10 +43,6 @@ describe("ghost.node/v1 schema", () => {
     const original: GhostNodeDocument = {
       frontmatter: {
         description: "Near payment, reduce felt risk.",
-        relates: [
-          { to: "core/trust", as: "reinforces" },
-          { to: "checkout/density" },
-        ],
       },
       body: "Near payment, reduce felt risk.",
     };

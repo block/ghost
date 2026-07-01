@@ -14,13 +14,10 @@ export {
 } from "./schema.js";
 export { serializeNode } from "./serialize.js";
 export {
-  GHOST_NODE_RELATION_KINDS,
   GHOST_NODE_SCHEMA,
   type GhostNodeDocument,
   type GhostNodeFrontmatter,
   type GhostNodeLintIssue,
   type GhostNodeLintReport,
   type GhostNodeLintSeverity,
-  type GhostNodeRelation,
-  type GhostNodeRelationKind,
 } from "./types.js";

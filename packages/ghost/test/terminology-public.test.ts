@@ -17,10 +17,6 @@ const PUBLIC_TEXT_ROOTS = [
   ".changeset",
 ] as const;
 
-const EMITTED_TEXT_FILES = [
-  "packages/ghost/src/commands/review-packet.ts",
-] as const;
-
 const FORBIDDEN_TERMS = [
   /\bcascade\b/i,
   /\blayer\b/i,
@@ -36,20 +32,17 @@ const FORBIDDEN_TERMS = [
 
 describe("public terminology", () => {
   it("keeps public prose and emitted prompts on selected-context vocabulary", async () => {
-    const files = [
-      ...(
-        await Promise.all(
-          PUBLIC_TEXT_ROOTS.map((path) =>
-            publicTextFiles(resolve(REPO_ROOT, path)),
-          ),
-        )
-      ).flat(),
-      ...EMITTED_TEXT_FILES.map((path) => resolve(REPO_ROOT, path)),
-    ];
+    const files = (
+      await Promise.all(
+        PUBLIC_TEXT_ROOTS.map((path) =>
+          publicTextFiles(resolve(REPO_ROOT, path)),
+        ),
+      )
+    ).flat();
     const failures: string[] = [];
 
     for (const file of files) {
-      const text = sanitizePublicText(file, await readFile(file, "utf-8"));
+      const text = await readFile(file, "utf-8");
       for (const term of FORBIDDEN_TERMS) {
         if (term.test(text)) {
           failures.push(`${relative(REPO_ROOT, file)} matched ${term}`);
@@ -91,18 +84,4 @@ async function publicTextFiles(path: string): Promise<string[]> {
 
 function isPublicTextFile(path: string): boolean {
   return /\.(md|mdx|ts)$/.test(path);
-}
-
-function sanitizePublicText(file: string, text: string): string {
-  if (!file.endsWith("packages/ghost/src/commands/review-packet.ts"))
-    return text;
-  return text
-    .split("\n")
-    .filter(
-      (line) =>
-        !/stack\.layers|provenance\.layers|provenance.*\["layers"\]|layer\) =>/.test(
-          line,
-        ),
-    )
-    .join("\n");
 }

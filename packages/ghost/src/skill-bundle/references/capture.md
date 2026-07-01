@@ -1,47 +1,38 @@
 ---
 name: capture
-description: Author repo-local Ghost fingerprints as nodes.
+description: Author repo-local Ghost brand fingerprints as a flat set of prose nodes.
 handoffs:
   - label: Inspect the package
     command: ghost validate
     prompt: Does this fingerprint package validate, and what is absent?
-  - label: Run advisory review
-    command: ghost review
-    prompt: Run ghost review against this bundle
 ---
 
 # Recipe: Author Ghost Fingerprint
 
-**Goal:** record durable product-surface composition in `.ghost/` as a graph of
-prose **nodes**. If a change is uncommitted or unmerged, it is draft work. If it
-is checked in, Ghost treats the fingerprint package as canonical.
+**Goal:** record durable brand truths in `.ghost/` as a flat set of prose
+**nodes**. If a change is uncommitted, it is draft work. If it is checked in,
+Ghost treats the fingerprint package as canonical.
 
 ```text
 .ghost/
   manifest.yml          # schema + id
-  index.md              # the core node, true everywhere
-  checkout/             # a surface is a directory
-    index.md            #   the checkout surface's own prose
-    trust.md            #   a node placed under checkout
-  checks/               # optional ghost.check/v1 markdown checks
+  glossary.md           # the category vocabulary + what each category means
+  principle.trust.md    # a brand truth of kind `principle`
+  condition.density.md  # a brand truth of kind `condition`
+  voice.md              # an uncategorized brand truth
 ```
 
-A **node** is a markdown file: YAML frontmatter (descriptive properties) + a
-prose body (the design expression). The **directory tree is the graph**: a
-node's id is its path, its parent is its containing directory, and a surface is
-just a directory whose own prose lives in its `index.md`. `ghost gather
-<surface>` traverses it.
+A **node** is a markdown file: a `description` in frontmatter + a prose body (the
+brand truth). The package is **flat** — no hierarchy, no inheritance, no edges. A
+node's kind comes from its filename prefix; the glossary declares the kinds.
 
 ## The node shape
 
-A node at `checkout/trust.md` (id `checkout/trust`, parent `checkout`):
+A node at `principle.trust.md` (id `principle.trust`, kind `principle`):
 
 ```markdown
 ---
 description: Trust at the payment moment.  # the retrieval payload (see below)
-relates:                    # optional: lateral links
-  - to: core/trust
-    as: reinforces          # reinforces | contrasts | variant
 # free-form keys (audience, stage, …) are allowed and pass through untouched
 ---
 
@@ -51,105 +42,88 @@ action beats completeness…
 
 - **`description`** is how an agent finds the node: a one-line "what this is and
   when to gather it," exactly like a tool's name + description. `ghost gather`
-  with no argument lists nodes by id + description; the agent matches the ask
-  against those and names one. The body is the node's "implementation"; the
-  description is what makes it discoverable. Write one on any node worth
-  anchoring a task at.
-- **The directory places the node.** A node inherits every file in the folders
-  above it, up to the root; a sibling folder is invisible. The brand soul lives
-  in the package-root files
-  (the `core` node and other root files), so it reaches every surface. Author a
-  broad rule at the broadest folder where it is true: a feature's
-  `invariants.md` reaches every screen in that feature and nowhere else.
-- **`relates`** links laterally when a relationship carries rationale. When the
-  rationale is rich (e.g. "checkout and item-detail disagree on density on
-  purpose"), write a **relationship node** whose body explains the tension.
+  emits the menu of id + kind + description; the agent matches the ask against
+  those. Write one on every node.
+- **Kind is the filename prefix** and must be a category the glossary declares. A
+  bare name (`voice.md`) is uncategorized — fine.
+- **Altitude lives in the prose.** State a universal truth plainly; give a
+  narrower truth its **condition** — the *situation* it applies in — in the prose.
+  Never file a truth by destination (`for-emails.md`); the model reads the
+  condition and decides when it applies.
 
 ## Write the body through three lenses
 
 Intent / inventory / composition are **authoring lenses**: angles you think
-through as you write a node's prose body (the part below the `---` in the
-example above). They live in that prose, while the frontmatter holds the fields
-— so a lens is never a frontmatter key or a separate node type, and a node may
-lean entirely on one:
+through as you write a node's prose body. They live in that prose, never as
+frontmatter keys or node types, and a node may lean entirely on one:
 
 - **intent**: the why and the stance.
 - **inventory**: the material you have (tokens, components, and pointers to the
   actual implementation in code).
 - **composition**: how it is assembled (the patterns that make it intentional).
 
-A finding cites a node by id, so keep a node **purpose-coherent**: one purpose,
-any length. Split into a second node only when a handle diverges, say a different
-directory (parent) or a genuinely different `relates` role.
+Keep a node **purpose-coherent**: one truth, any length. Split into a second node
+only when it is genuinely a different truth.
 
 ## Steps
 
 ### 1. Classify the authoring scenario
 
-Decide which posture fits the repo before scaffolding. Follow
+Decide which posture fits before scaffolding. Follow
 [authoring-scenarios.md](authoring-scenarios.md) when setting up or substantially
-revising a fingerprint. Human intent anchors composition; scans provide
-evidence; agent synthesis is draft work until a human curates it and Git review
-accepts it.
+revising a fingerprint. Human intent anchors the truths; scans provide evidence;
+agent synthesis is draft work until a human curates it and Git review accepts it.
 
-Monorepos and product suites run **one contract per package**: surfaces are how
-a single contract organizes locality.
+Monorepos and product suites run **one contract per package**.
 
 ### 2. Initialize
 
 ```bash
-ghost init            # scaffolds manifest + a core index.md node
+ghost init            # scaffolds manifest + a starter glossary + a core node
 ghost validate
 ```
 
-`ghost init` is template-driven (`--template <name>` selects a starter). The
-default template seeds the package-root `index.md` (the `core` node),
+`ghost init` seeds the manifest, a starter `glossary.md` (with suggested
+categories you keep, rename, or replace), and the package-root `index.md`,
 demonstrating the shape.
 
-### 3. Shape the tree
+### 3. Shape the glossary
 
-Add a surface by adding a directory: `checkout/` is the `checkout` surface, and
-`checkout/index.md` holds its prose. Nest surfaces by nesting directories. The
-tree is the layout itself; a node's id and parent come from where its file
-sits, never from a separate declaration.
+Declare the categories you will use in `glossary.md` — the frontmatter
+`categories` list plus a `#` section per category explaining its meaning and
+normative weight. Kinds are your choice; Ghost ships no fixed vocabulary. A
+node's filename prefix must match a declared kind (or the node stays
+uncategorized).
 
 ### 4. Orient
 
-Read the product, not just the component library. Look for surfaces, docs,
-tests, stories, routes, screenshots, or examples that reveal hierarchy,
-behavior, copy, accessibility, trust, and flow. Read the repo directly (tree,
-grep, source inspection) for raw observations; curate, never copy verbatim into
-a node.
+Read the brand and the product, not just the component library. Look for
+surfaces, docs, tests, copy, and examples that reveal stance, hierarchy, density,
+restraint, repetition, trust, and flow. Read the repo directly (tree, grep,
+source inspection) for raw observations; curate, never copy verbatim.
 
 ### 5. Write sparse nodes
 
-Add the smallest useful set of nodes, each a purpose-coherent prose body
-written through the lenses, placed by putting its file in the right directory
-and linked with `relates` where a relationship carries meaning. Prefer a few
-high-confidence nodes over a noisy
-catalog. Ask the human to keep, soften, reject, or re-place important claims
-before treating draft nodes as durable.
+Add the smallest useful set of nodes, each a purpose-coherent prose truth written
+through the lenses, named `<kind>.<slug>.md` (or a bare slug when uncategorized).
+State conditions as situations in the prose. Prefer a few high-confidence truths
+over a noisy catalog. Ask the human to keep, soften, reject, or re-title
+important claims before treating draft nodes as durable.
 
-### 6. Add checks sparingly
-
-`checks/*.md` are `ghost.check/v1` markdown. Each may carry an optional
-`source:` pointer (a node id with an optional `> Heading`) binding it to the
-prose it enforces; every check is offered and the agent judges which apply.
-They validate output after generation; they are not generation input. Add only
-deterministic checks.
-
-### 7. Validate
+### 6. Validate
 
 ```bash
 ghost validate .ghost
-ghost review --base HEAD
 ```
+
+`validate` checks artifact shape, per-node validity, and that each node's kind
+prefix is a declared glossary category (an undeclared prefix is a warning with a
+"did you mean" suggestion, not a failure).
 
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
 - Never treat raw repo observations as a node without curation.
-- Never invent surface-composition obligations absent from evidence or human
-  direction.
-- Never promote subjective taste directly into checks; make it deterministic or
-  keep it advisory.
+- Never invent a hierarchy, inheritance, or cross-node edges — the package is
+  flat.
+- Never file a truth by destination; state its condition in the prose.

@@ -4,17 +4,6 @@ export {
   loadChecksDir,
 } from "./checks-dir.js";
 export { FINGERPRINT_PACKAGE_DIR } from "./constants.js";
-export type {
-  LegacyPackageInput,
-  MigratedNodeFile,
-  MigrationNote,
-  MigrationResult,
-} from "./migrate-legacy.js";
-export {
-  looksLegacy,
-  migratedNodeFiles,
-  migrateLegacyPackage,
-} from "./migrate-legacy.js";
 export {
   GHOST_PACKAGE_DIR_ENV,
   normalizeGhostDir,
