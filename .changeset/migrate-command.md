@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Add `ghost migrate`: transform a legacy `.ghost/` package onto the directory-tree

@@ -6,7 +6,7 @@ trust, flow, and the choices that make a surface feel intentional.
 
 Ghost keeps that surface composition in a repo-local `.ghost/` fingerprint
 package, a graph of prose nodes. The public npm shape is one package,
-`@anarchitecture/ghost`, with one user-facing bin, `ghost`. The CLI validates
+`@anarchitecture/ghost-fingerprint`, with one user-facing bin, `ghost`. The CLI validates
 the node graph, composes context, selects and grounds checks, and emits
 deterministic packets. The host agent does the interpretive BYOA work through the installed
 `ghost` skill.
@@ -25,7 +25,7 @@ Run the public CLI after building:
 
 ```bash
 node packages/ghost/dist/bin.js <command>
-pnpm --filter @anarchitecture/ghost exec ghost <command>
+pnpm --filter @anarchitecture/ghost-fingerprint exec ghost <command>
 ```
 
 ## Architecture
@@ -71,7 +71,7 @@ edits.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
+| `packages/ghost` | yes: `@anarchitecture/ghost-fingerprint` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel` | no | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference ("batteries-included" body a Haunt can inhabit). Design-system-agnostic; nothing in Ghost requires it. |
 | `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer (Problem A). Bridges to code you already own and grades high-altitude compositional drift. Scaffolded; see `notes/naming-and-structure.md`. |
 | `apps/docs` | no | Docs site. |
@@ -98,11 +98,11 @@ Advanced/maintenance:
 
 ## Public Exports
 
-- `@anarchitecture/ghost` for the combined surface.
-- `@anarchitecture/ghost/scan` for package-path resolution, checks-dir loading, and legacy migration helpers.
-- `@anarchitecture/ghost/fingerprint` for node package authoring, validation, parsing, and serialization.
-- `@anarchitecture/ghost/core` for shared schemas, types, and loaders.
-- `@anarchitecture/ghost/cli` for `buildCli()`.
+- `@anarchitecture/ghost-fingerprint` for the combined surface.
+- `@anarchitecture/ghost-fingerprint/scan` for package-path resolution, checks-dir loading, and legacy migration helpers.
+- `@anarchitecture/ghost-fingerprint/fingerprint` for node package authoring, validation, parsing, and serialization.
+- `@anarchitecture/ghost-fingerprint/core` for shared schemas, types, and loaders.
+- `@anarchitecture/ghost-fingerprint/cli` for `buildCli()`.
 
 ## Environment Variables
 
@@ -115,7 +115,7 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ## Releasing & Changesets
 
-`@anarchitecture/ghost` is the only public package. Private packages are
+`@anarchitecture/ghost-fingerprint` is the only public package. Private packages are
 ignored by Changesets.
 
 When an agent completes a user-visible change to the public package, write a
@@ -123,7 +123,7 @@ changeset file instead of asking the user to run `pnpm changeset`:
 
 ```markdown
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 One sentence, user-facing, present tense.

@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 Align docs and the skill bundle with the prose-bound check model: checks are no

@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Recompose `gather` on a corridor + hub-and-spoke model and fix a sibling-surface

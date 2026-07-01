@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Remove the absorbed and dead commands: `relay`, `stack`, `survey`, `diff`, and

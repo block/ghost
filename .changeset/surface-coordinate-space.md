@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Replace topology/applies_to/surface_type/scope coordinates with a surface

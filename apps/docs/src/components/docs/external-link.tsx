@@ -1,6 +1,6 @@
+import { cn } from "@anarchitecture/ghost-vessel";
 import { ArrowUpRight } from "lucide-react";
 import { ComponentProps } from "react";
-import { cn } from "vessel";
 
 interface ExternalLinkProps extends ComponentProps<"a"> {
   showIcon?: boolean;

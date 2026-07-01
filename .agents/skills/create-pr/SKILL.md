@@ -72,14 +72,14 @@ personal or non-Block repositories.
 
 ## Step 4: Check Release Hygiene
 
-Ghost publishes only `@anarchitecture/ghost`; private packages are ignored by
+Ghost publishes only `@anarchitecture/ghost-fingerprint`; private packages are ignored by
 Changesets.
 
 Inspect the diff and decide whether a changeset is required:
 
 - Required: user-visible changes to the public package, including CLI behavior,
   public exports, schema behavior, package output, docs that affect users, or
-  fixes shipped through `@anarchitecture/ghost`.
+  fixes shipped through `@anarchitecture/ghost-fingerprint`.
 - Usually not required: tests only, internal scripts only, private package only,
   CI-only changes, or docs/ideas notes that are not release-facing.
 
@@ -87,7 +87,7 @@ When a changeset is required, create one before the PR:
 
 ```markdown
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 One sentence, user-facing, present tense.

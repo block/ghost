@@ -1,7 +1,7 @@
 /**
  * haunt — the BYO-design-system adherence and drift layer for Ghost (Problem A).
  *
- * Where Fingerprint (@anarchitecture/ghost) carries the portable, medium-agnostic
+ * Where Fingerprint (@anarchitecture/ghost-fingerprint) carries the portable, medium-agnostic
  * intent contract, Haunt is the implementation-layer counterpart: it bridges to the
  * design-system code a repo already owns (code as source of truth) and grades
  * *high-altitude* compositional drift.

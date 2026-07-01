@@ -62,7 +62,7 @@ if (result.status !== 0) {
 
 const pnpmResult = spawnSync(
   "pnpm",
-  ["--filter", "@anarchitecture/ghost", "exec", "ghost", "--help"],
+  ["--filter", "@anarchitecture/ghost-fingerprint", "exec", "ghost", "--help"],
   {
     cwd: ROOT,
     encoding: "utf8",

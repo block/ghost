@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": major
+"@anarchitecture/ghost-fingerprint": major
 ---
 
 Rename the `gather` slice vocabulary to plain language. The JSON `slice.spokes`

@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 Refresh the README and docs site onto the current command set (drop the removed

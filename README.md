@@ -7,19 +7,19 @@ surface feel intentional.**
 You keep leaving the same review comment — "don't introduce a new button style
 on checkout," "this empty state needs a way out." Ghost lets you **write that
 decision down once, in your repo, so your agent reads it before it builds** —
-not after you flag it. One package, `@anarchitecture/ghost`. One CLI, `ghost`.
+not after you flag it. One package, `@anarchitecture/ghost-fingerprint`. One CLI, `ghost`.
 
 **New here?** The fastest path is [Five-Minute
 Ghost](https://block.github.io/ghost/docs/quickstart) — one file, one win, no
 vocabulary. The model underneath (the rest of this page) is optional until you
 want it.
 
-[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@anarchitecture/ghost) · [Skill](#use-it)
+[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@anarchitecture/ghost-fingerprint) · [Skill](#use-it)
 
 ## Install
 
 ```bash
-npm install -D @anarchitecture/ghost
+npm install -D @anarchitecture/ghost-fingerprint
 npx ghost skill install   # teach your agent to author and use the fingerprint
 ```
 
@@ -156,7 +156,7 @@ workspace packages are development context.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | **Fingerprint** — the public `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. The portable, medium-agnostic on-brand generation contract. | yes: `@anarchitecture/ghost` |
+| [`packages/ghost`](./packages/ghost) | **Fingerprint** — the public `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. The portable, medium-agnostic on-brand generation contract. | yes: `@anarchitecture/ghost-fingerprint` |
 | [`packages/vessel`](./packages/vessel) | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference / "batteries-included" body. Design-system-agnostic Ghost never requires it. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 

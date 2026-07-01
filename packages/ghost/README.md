@@ -1,4 +1,4 @@
-# @anarchitecture/ghost
+# @anarchitecture/ghost-fingerprint
 
 **A unified Ghost CLI for product-surface composition fingerprints.**
 
@@ -24,7 +24,7 @@ This package ships one CLI: `ghost`.
 ## Install
 
 ```bash
-npm install -D @anarchitecture/ghost
+npm install -D @anarchitecture/ghost-fingerprint
 npx ghost --help
 npx ghost --help --all
 ```
@@ -94,13 +94,13 @@ only used by semantic embedding helpers when a host opts in.
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
-} from "@anarchitecture/ghost/fingerprint";
-import { buildCli } from "@anarchitecture/ghost/cli";
+} from "@anarchitecture/ghost-fingerprint/fingerprint";
+import { buildCli } from "@anarchitecture/ghost-fingerprint/cli";
 ```
 
-Available subpath exports: `@anarchitecture/ghost`,
-`@anarchitecture/ghost/scan`, `@anarchitecture/ghost/fingerprint`,
-`@anarchitecture/ghost/core`, and `@anarchitecture/ghost/cli`.
+Available subpath exports: `@anarchitecture/ghost-fingerprint`,
+`@anarchitecture/ghost-fingerprint/scan`, `@anarchitecture/ghost-fingerprint/fingerprint`,
+`@anarchitecture/ghost-fingerprint/core`, and `@anarchitecture/ghost-fingerprint/cli`.
 
 ## BYOA
 

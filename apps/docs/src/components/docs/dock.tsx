@@ -1,5 +1,18 @@
 "use client";
 
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  cn,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useTheme,
+} from "@anarchitecture/ghost-vessel";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
@@ -14,19 +27,6 @@ import {
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  cn,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useTheme,
-} from "vessel";
 
 const nav: {
   name: string;

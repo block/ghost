@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Collapse to one check format. Remove `ghost.validate/v1`, the `validate.yml`

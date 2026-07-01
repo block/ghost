@@ -1,4 +1,4 @@
-import { useStaggerReveal } from "vessel";
+import { useStaggerReveal } from "@anarchitecture/ghost-vessel";
 import { Hero } from "@/components/docs/hero";
 import { SectionWrapper } from "@/components/docs/wrappers";
 

@@ -1,5 +1,5 @@
 {
-  "name": "haunt",
+  "name": "@anarchitecture/ghost-haunt",
   "version": "0.0.0",
   "private": true,
   "description": "The BYO-design-system adherence and drift layer for Ghost — bridges to code you already own and grades high-altitude compositional drift.",

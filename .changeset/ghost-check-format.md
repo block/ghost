@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Add `ghost.check/v1`: markdown + frontmatter checks (`name`, `description`,

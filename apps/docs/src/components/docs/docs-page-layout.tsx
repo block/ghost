@@ -1,7 +1,7 @@
 "use client";
 
+import { cn } from "@anarchitecture/ghost-vessel";
 import type { ReactNode } from "react";
-import { cn } from "vessel";
 
 /**
  * Wrapper for doc pages that use the two-column section layout.

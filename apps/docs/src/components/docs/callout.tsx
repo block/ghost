@@ -1,5 +1,5 @@
+import { cn } from "@anarchitecture/ghost-vessel";
 import type { ReactNode } from "react";
-import { cn } from "vessel";
 
 type Variant = "info" | "warning" | "wip";
 

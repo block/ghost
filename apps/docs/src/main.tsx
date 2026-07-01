@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
-import "vessel/styles.css";
+import "@anarchitecture/ghost-vessel/styles.css";
 import { App } from "./App";
 import "./styles/dev-fonts.css";
 

@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 Add an inventory-lens authoring reference to the skill bundle.

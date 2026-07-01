@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": patch
+"@anarchitecture/ghost-fingerprint": patch
 ---
 
 Make CLI exit codes consistent so an agent can branch on them: unexpected

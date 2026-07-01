@@ -1,7 +1,7 @@
 name: Publish tarball to GitHub Release
 
 # Manual fallback for the tarball distribution channel. Builds a
-# package-manager-friendly @anarchitecture/ghost archive with runtime
+# package-manager-friendly @anarchitecture/ghost-fingerprint archive with runtime
 # dependencies included and attaches the .tgz to a GitHub Release.
 #
 # The normal path is release.yml, which attaches the tarball automatically on
@@ -43,7 +43,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm --filter @anarchitecture/ghost build
+        run: pnpm --filter @anarchitecture/ghost-fingerprint build
 
       # Keep this distribution archive separate from npm publishing: npm gets
       # the normal package, while GitHub Releases get a self-contained archive
@@ -63,7 +63,7 @@ jobs:
         env:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          TAG="anarchitecture-ghost@$INPUT_VERSION"
+          TAG="anarchitecture-ghost-fingerprint@$INPUT_VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release

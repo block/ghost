@@ -1,5 +1,5 @@
+import { cn } from "@anarchitecture/ghost-vessel";
 import { ComponentProps } from "react";
-import { cn } from "vessel";
 
 interface SectionWrapperProps extends ComponentProps<"div"> {
   withCane?: boolean;

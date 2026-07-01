@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": major
+"@anarchitecture/ghost-fingerprint": major
 ---
 
 Remove cross-package `extends` and inherited nodes. A Ghost package is a single

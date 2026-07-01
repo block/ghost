@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Bindings can reference an external contract: a `.ghost.bind.yml` `contract:` now

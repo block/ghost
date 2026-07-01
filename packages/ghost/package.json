@@ -1,5 +1,5 @@
 {
-  "name": "@anarchitecture/ghost",
+  "name": "@anarchitecture/ghost-fingerprint",
   "version": "0.19.0",
   "description": "Unified Ghost CLI for product-surface composition fingerprints, deterministic checks, advisory review, and comparison",
   "license": "Apache-2.0",

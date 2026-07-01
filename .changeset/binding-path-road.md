@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Add `ghost.binding/v1` (`.ghost.bind.yml`) and the path road: a repo path

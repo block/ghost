@@ -6,7 +6,7 @@ Ghost splits into two differently-shaped jobs (see
 [`notes/session-synthesis.md`](../../notes/session-synthesis.md) and
 [`notes/naming-and-structure.md`](../../notes/naming-and-structure.md)):
 
-- **Fingerprint** (`@anarchitecture/ghost`) — the portable, medium-agnostic on-brand
+- **Fingerprint** (`@anarchitecture/ghost-fingerprint`) — the portable, medium-agnostic on-brand
   generation contract. The knowledge layer.
 - **Haunt** (this package) — the implementation-layer adherence + drift layer. It
   bridges to the design-system code a repo already owns and grades high-altitude

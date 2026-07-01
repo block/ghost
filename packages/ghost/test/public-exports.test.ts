@@ -11,8 +11,8 @@ const hasBuiltExports = existsSync(
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
     const [fingerprint, scan] = await Promise.all([
-      import("@anarchitecture/ghost/fingerprint"),
-      import("@anarchitecture/ghost/scan"),
+      import("@anarchitecture/ghost-fingerprint/fingerprint"),
+      import("@anarchitecture/ghost-fingerprint/scan"),
     ]);
 
     const fingerprintApi = fingerprint as Record<string, unknown>;

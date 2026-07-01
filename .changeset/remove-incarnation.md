@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": major
+"@anarchitecture/ghost-fingerprint": major
 ---
 
 Remove the `incarnation` node field and the `--as` gather/checks flag. Ghost

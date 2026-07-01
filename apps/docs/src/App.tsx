@@ -1,6 +1,6 @@
+import { ThemeProvider } from "@anarchitecture/ghost-vessel";
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
-import { ThemeProvider } from "vessel";
 import DocsIndex from "@/app/docs/page";
 import HomePage from "@/app/page";
 import GhostDriftLanding from "@/app/tools/drift/page";

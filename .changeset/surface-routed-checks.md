@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost": minor
+"@anarchitecture/ghost-fingerprint": minor
 ---
 
 Add markdown checks (`ghost.check/v1`) in a package's `checks/` directory.
