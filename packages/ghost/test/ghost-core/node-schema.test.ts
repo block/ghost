@@ -114,19 +114,21 @@ describe("node id / ref grammar (path-based identity)", () => {
     }
   });
 
-  it("accepts local path refs and cross-package refs", () => {
-    for (const ref of [
-      "core",
-      "marketing/email",
-      "brand:core/trust",
-      "brand:core",
-    ]) {
+  it("accepts local path refs", () => {
+    for (const ref of ["core", "marketing/email"]) {
       expect(NodeRefSchema.safeParse(ref).success).toBe(true);
     }
   });
 
-  it("rejects malformed refs", () => {
-    for (const ref of ["Bad Ref", "/x", "x/", "a//b"]) {
+  it("rejects malformed refs (including cross-package colon refs)", () => {
+    for (const ref of [
+      "Bad Ref",
+      "/x",
+      "x/",
+      "a//b",
+      "brand:core/trust",
+      "brand:core",
+    ]) {
       expect(NodeRefSchema.safeParse(ref).success).toBe(false);
     }
   });

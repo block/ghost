@@ -17,23 +17,12 @@ const NodeIdSchema = z.string().min(1).regex(NODE_ID_PATTERN, {
 });
 
 /**
- * A node ref points at another node by its path id (`marketing/email`), or a
- * cross-package ref `<package-id>:<path>` where `<package-id>` is a key declared
- * in the package manifest's `extends` map. The local part is a path id; `:` is
- * Ghost's cross-package qualifier lineage (e.g. the old `intent.principle:foo`).
+ * A node ref points at another node by its path id (`marketing/email`). Refs are
+ * always local to the package; a `relates` target is another node in this tree.
  */
-const NodeRefSchema = z
-  .string()
-  .min(1)
-  .regex(
-    new RegExp(
-      `^(?:[a-z0-9][a-z0-9._-]*:)?${NODE_ID_PATTERN.source.slice(1, -1)}$`,
-    ),
-    {
-      message:
-        "node ref must be a path id 'marketing/email' or a cross-package ref '<package-id>:<path>'",
-    },
-  );
+const NodeRefSchema = z.string().min(1).regex(NODE_ID_PATTERN, {
+  message: "node ref must be a path id like 'marketing/email'",
+});
 
 const NodeRelationSchema = z
   .object({
@@ -47,7 +36,7 @@ const NodeRelationSchema = z
  *
  * Validates a node in isolation. Graph-level rules that need the whole package
  * — `under` / `relates` targets exist, exactly one root, no
- * cycles, cross-package resolution — are deferred to later-phase lint, because
+ * cycles — are deferred to later-phase lint, because
  * Zod cannot see other nodes from a single frontmatter.
  */
 export const GhostNodeFrontmatterSchema = z

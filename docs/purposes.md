@@ -37,20 +37,17 @@ node. No separate file declares the graph.
 
 | Part | Job |
 | --- | --- |
-| `manifest.yml` | Schema version, package id, and `extends` (which other packages this one inherits by identity). |
+| `manifest.yml` | Schema version and package id. |
 | Prose nodes (`index.md`, `<surface>/<node>.md`) | The durable surface composition, written through three authoring **lenses**: intent (the why), inventory (the materials), composition (the patterns). The lenses guide what to capture; they are not fields. |
 | Node frontmatter | `description` (the retrieval payload), `relates` (lateral links by id). |
 | `checks/*.md` | Optional `ghost.check/v1` checks. They validate output, not generation input. A check binds to the prose it enforces through an optional `source:` pointer, never by surface routing. |
 
-Two resolution mechanisms, both read-only:
+One resolution mechanism, read-only:
 
 - **Path inheritance.** A node inherits every file from the package root down to
   its own folder, so a rule authored once high in the tree reaches every
   descendant while a sibling surface stays invisible. `relates` links nodes
   laterally across folders when a relationship carries rationale.
-- **`extends` by identity.** A package may inherit another package's nodes by
-  id (the shared-brand pattern). Inherited context is referenced by identity
-  (`relates: [{ to: brand:core/trust }]`), never by path.
 
 ## The consumers (each is a projection)
 
@@ -84,7 +81,7 @@ thing to fix at the boundary, not a reason to redesign the artifact.
    into selection.
    *Fix: keep checks offered-and-grounded; bind to prose via `source:`.*
 
-4. **id-coupling is silent.** `relates` links and `extends` references resolve by
+4. **id-coupling is silent.** `relates` links resolve by
    id; a typo points at nothing.
    *Fix: `validate` reports unresolved links and a `source:` that does not
    resolve (a soft warning, not an error).*

@@ -34,8 +34,6 @@ weight to give human intent, existing code, and library evidence.
 | Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
 | Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
 | Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
-| Fork, white label, or tenant variant | Shared base + local divergence. Put the common surface composition in a base package and `extends` it from each variant. |
-| Monorepo or shared brand | Keep one package per product surface. A shared brand lives in its own package that the others `extends` by identity. |
 
 </DocSection>
 
@@ -99,7 +97,7 @@ Node frontmatter carries only descriptive properties:
 | Property | What it does |
 | --- | --- |
 | `description` | A short summary of the node. |
-| `relates` | Lateral links to other nodes by path id (`to: core/trust`); cross-package refs use `<package>:<path>`, e.g. `brand:core/trust`. |
+| `relates` | Lateral links to other nodes by path id (`to: core/trust`). |
 | _passthrough_ | Free-form keys are preserved for host tooling. |
 
 </DocSection>
@@ -144,37 +142,12 @@ Write less like a brand book and more like a decision engine.
 
 </DocSection>
 
-<DocSection title="Shared Brand Across Packages">
+<DocSection title="One Contract Per Package">
 
 One contract per package: a repo's `.ghost/` is the whole fingerprint, and
 surfaces are directories within it. Reach for a second package only when a
-distinct product owns its own fingerprint: a separate app, a shared brand, a
-tenant variant.
-
-When several packages share a brand, put the common composition in its own
-package and `extends` it by identity:
-
-```yaml
-# product/.ghost/manifest.yml
-schema: ghost.fingerprint-package/v1
-id: acme-product
-extends:
-  brand: ../brand/.ghost   # map the brand contract's id to where it lives
-```
-
-Nodes then reference inherited context by identity, never by path:
-
-```yaml
-# product/.ghost/checkout/trust.md
----
-relates:
-  - to: brand:core/trust
-    as: reinforces
----
-```
-
-Inherited nodes load read-only and flow into `gather` and `validate` like local
-ones. A variant inherits the brand without seeing its siblings.
+distinct product owns its own fingerprint — a separate app in a monorepo —
+and target it with `ghost --package <dir>`.
 
 </DocSection>
 

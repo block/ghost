@@ -26,30 +26,18 @@ export interface PlacedNode {
 export interface AssembleGraphInput {
   /** Local nodes located in the package's directory tree. */
   placedNodes?: PlacedNode[];
-  /**
-   * Read-only nodes inherited from extended packages. Their ids are already
-   * qualified (`<package-id>:<node>`). Local nodes never override these and
-   * these never override local — they are a disjoint id space.
-   */
-  inheritedNodes?: GhostGraphNode[];
 }
 
 /**
- * Fold the package's sources into one in-memory prose-node graph.
+ * Fold the package's directory tree into one in-memory prose-node graph.
  *
- * Local nodes are the package's directory tree: each node's id is its path (the
- * package-root `index.md` computes to `core`). Containment is not materialized
- * — a node's parent is `parentIdOrRoot(id)` and its ancestor chain is a pure id
- * walk, so intermediate directories with no `index.md` need no bare positions.
- * Inherited nodes from extended packages join as read-only context.
+ * Each node's id is its path (the package-root `index.md` computes to `core`).
+ * Containment is not materialized — a node's parent is `parentIdOrRoot(id)` and
+ * its ancestor chain is a pure id walk, so intermediate directories with no
+ * `index.md` need no bare positions.
  */
 export function assembleGraph(input: AssembleGraphInput): GhostGraph {
   const nodes = new Map<string, GhostGraphNode>();
-
-  // Inherited (extended-package) nodes first — lowest precedence, read-only.
-  for (const node of input.inheritedNodes ?? []) {
-    nodes.set(node.id, node);
-  }
 
   for (const placed of input.placedNodes ?? []) {
     const fm = placed.doc.frontmatter;
@@ -59,7 +47,6 @@ export function assembleGraph(input: AssembleGraphInput): GhostGraph {
       folder: placed.folder,
       relates: fm.relates ?? [],
       body: placed.doc.body,
-      origin: "node-file",
     });
   }
 

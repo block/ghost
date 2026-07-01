@@ -98,7 +98,6 @@ export function resolveGraphSlice(
   // Path nodes: every node whose file folder is on the path. `own` when the
   // node sits in the surface's own folder; `ancestor` when higher up.
   for (const node of graph.nodes.values()) {
-    if (node.origin === "inherited") continue;
     if (!pathFolders.has(node.folder)) continue;
     const provenance: GraphSliceProvenance =
       node.folder === surfaceFolder
@@ -142,7 +141,6 @@ export function resolveGraphSlice(
   };
 
   for (const node of graph.nodes.values()) {
-    if (node.origin === "inherited") continue;
     if (isWithinOrBelow(node.folder, surfaceFolder)) {
       addPointer(node.id, "descendant");
     }

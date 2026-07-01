@@ -15,11 +15,9 @@ export interface GraphMenuEntry {
 }
 
 /**
- * Build the gather catalog: every local node, with its description, plus the
- * implicit `core` root. Sorted by id for stable output. Inherited
- * (extended-package) nodes are excluded — the menu lists what this package
- * offers to anchor at. Callers may further narrow (e.g. only described nodes)
- * for large graphs; this returns the full local catalog.
+ * Build the gather catalog: every node, with its description, plus the implicit
+ * `core` root. Sorted by id for stable output. Callers may further narrow (e.g.
+ * only described nodes) for large graphs; this returns the full catalog.
  */
 export function buildGraphMenu(graph: GhostGraph): GraphMenuEntry[] {
   const entries: GraphMenuEntry[] = [
@@ -34,7 +32,6 @@ export function buildGraphMenu(graph: GhostGraph): GraphMenuEntry[] {
 
   for (const node of graph.nodes.values()) {
     if (node.id === GHOST_GRAPH_ROOT_ID) continue;
-    if (node.origin === "inherited") continue;
     seen.add(node.id);
     entries.push({
       id: node.id,
@@ -48,7 +45,6 @@ export function buildGraphMenu(graph: GhostGraph): GraphMenuEntry[] {
   // (e.g. `a/b/c` implies bare positions `a/b` and `a`) and include any not
   // already present as a node.
   for (const node of graph.nodes.values()) {
-    if (node.origin === "inherited") continue;
     let ancestor = parentIdOf(node.id);
     while (ancestor !== undefined) {
       if (!seen.has(ancestor)) {

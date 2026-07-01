@@ -8,14 +8,6 @@ import type { GhostNodeRelation } from "../node/types.js";
 export const GHOST_GRAPH_ROOT_ID = "core";
 
 /**
- * Where a node in the resolved graph came from. A local node is read from the
- * package's own directory tree (its path is its id, its directory its parent);
- * an inherited node is read-only context pulled in by `extends`. `origin`
- * records which, so later phases and lint can treat them differently.
- */
-export type GhostGraphNodeOrigin = "node-file" | "inherited";
-
-/**
  * A resolved graph node — pure prose (Option A). The body is the design
  * expression; there are no structured node fields. `id` is the node's path in
  * the package; `relates` are the typed lateral links.
@@ -39,7 +31,6 @@ export interface GhostGraphNode {
   folder: string;
   relates: GhostNodeRelation[];
   body: string;
-  origin: GhostGraphNodeOrigin;
 }
 
 /**

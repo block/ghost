@@ -1,19 +1,16 @@
 import { access, readFile } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import {
   assembleGraph,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
-  type GhostGraphNode,
   lintGraph,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
-import {
-  type FingerprintPackagePaths,
-  type LoadedFingerprintPackage,
-  resolveFingerprintPackage,
+import type {
+  FingerprintPackagePaths,
+  LoadedFingerprintPackage,
 } from "./fingerprint-package.js";
 import type { LintIssue } from "./lint.js";
 import { loadNodeTree } from "./node-tree.js";
@@ -41,8 +38,7 @@ export async function loadFingerprintPackage(
   await assertNotLegacyFacetPackage(paths);
 
   const { nodes: placedNodes } = await loadNodeTree(paths.packageDir);
-  const inheritedNodes = await loadInheritedNodes(manifest, paths);
-  const graph = assembleGraph({ placedNodes, inheritedNodes });
+  const graph = assembleGraph({ placedNodes });
 
   const report = lintGraph(graph);
   if (report.errors > 0) {
@@ -58,58 +54,6 @@ export async function loadFingerprintPackage(
     manifestRaw,
     graph,
   };
-}
-
-/**
- * Resolve the package's `extends` map into read-only inherited nodes. Each
- * entry maps a package identity (the key, used in `<id>:<node>` refs) to where
- * that package's `.ghost/` lives. Inherited node ids are qualified with the
- * identity; their internal containment is *not* re-rooted into this package
- * (it was validated in their own package) — they enter as referenceable,
- * read-only context. One level deep (no transitive extends in v1).
- */
-async function loadInheritedNodes(
-  manifest: GhostFingerprintPackageManifest,
-  paths: FingerprintPackagePaths,
-): Promise<GhostGraphNode[]> {
-  const out: GhostGraphNode[] = [];
-  for (const [id, location] of Object.entries(manifest.extends ?? {})) {
-    const dir = isAbsolute(location)
-      ? location
-      : resolve(paths.packageDir, location);
-    let loaded: LoadedFingerprintPackage;
-    try {
-      loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
-    } catch (err) {
-      throw new Error(
-        `extends '${id}': could not load package at ${location} (${
-          err instanceof Error ? err.message : String(err)
-        }).`,
-      );
-    }
-    if (loaded.manifest.id !== id) {
-      throw new Error(
-        `extends '${id}': resolved package at ${location} declares id '${loaded.manifest.id}'. The extends key must match the extended package's manifest id.`,
-      );
-    }
-    for (const node of loaded.graph.nodes.values()) {
-      if (node.origin === "inherited") continue; // no transitive extends in v1
-      out.push({
-        id: `${id}:${node.id}`,
-        ...(node.description !== undefined
-          ? { description: node.description }
-          : {}),
-        // Inherited nodes carry a package-qualified folder so they never sit on
-        // a local path (folders are scoped per package); they enter a slice
-        // only via an explicit cross-package `relates` edge.
-        folder: `${id}:${node.folder}`,
-        relates: [],
-        body: node.body,
-        origin: "inherited",
-      });
-    }
-  }
-  return out;
 }
 
 /**

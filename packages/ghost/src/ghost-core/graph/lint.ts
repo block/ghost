@@ -24,8 +24,7 @@ export interface GraphLintReport {
  * directory, derived from its id — so the containment graph is a tree by
  * construction: it reaches the single `core` root and cannot cycle. Neither
  * needs checking. What remains is the network correctness the layout cannot
- * guarantee: every local `relates` target resolves (cross-package `pkg:id`
- * refs resolve against inherited nodes; an unknown one is reported).
+ * guarantee: every `relates` target resolves to a node in the tree.
  *
  * Pure: operates on the assembled in-memory graph, no I/O.
  */
@@ -34,14 +33,13 @@ export function lintGraph(graph: GhostGraph): GraphLintReport {
   const ids = new Set(graph.nodes.keys());
 
   for (const node of graph.nodes.values()) {
-    // relates targets must resolve. A `<package-id>:<node>` ref resolves to an
-    // inherited node (id-keyed the same way) — same lookup, no special case.
+    // relates targets must resolve to a node in the package's tree.
     for (const relation of node.relates) {
       if (!ids.has(relation.to)) {
         issues.push({
           severity: "error",
           rule: "unresolved-relation",
-          message: `node '${node.id}' relates to '${relation.to}', which does not exist (a cross-package ref needs the package in 'extends').`,
+          message: `node '${node.id}' relates to '${relation.to}', which does not exist.`,
           node: node.id,
         });
       }

@@ -67,11 +67,6 @@ via an optional `source:` pointer; every check is offered and the agent judges
 which apply. They are not generation input. Ordinary Git review is the approval boundary for fingerprint
 edits.
 
-A package may `extend` another by identity (the shared-brand pattern): the
-manifest's `extends` maps a package id to where it lives, and nodes reference
-inherited context by identity (`relates: [{ to: brand:core/trust }]`), never by
-path.
-
 ## Packages
 
 | Package | Published? | Description |

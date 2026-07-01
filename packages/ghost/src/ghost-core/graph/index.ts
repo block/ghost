@@ -30,5 +30,4 @@ export {
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
   type GhostGraphNode,
-  type GhostGraphNodeOrigin,
 } from "./types.js";

@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: nodes, the directory tree, checks, and extends.
+description: The Ghost fingerprint package shape: nodes, the directory tree, and checks.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -9,7 +9,7 @@ Canonical package:
 
 ```text
 .ghost/
-  manifest.yml          ghost.fingerprint-package/v1: id + optional extends
+  manifest.yml          ghost.fingerprint-package/v1: schema + id
   index.md              the core node, true everywhere (optional)
   <surface>/index.md    a surface's own prose (the directory is the surface)
   <surface>/<node>.md   ghost.node/v1: a node placed in that surface
@@ -57,18 +57,15 @@ directories. A surface that needs no prose of its own is simply a directory that
 holds nodes. Moving a node to another directory changes its id (a rename) and
 its parent; `ghost validate` reports any `relates` that no longer resolve.
 
-## Manifest + extends
+## Manifest
 
 ```yaml
 schema: ghost.fingerprint-package/v1
 id: acme-checkout
-extends:
-  brand: ../brand/.ghost      # inherit another contract's nodes, by identity
 ```
 
-A `brand:core/trust` ref in `relates` resolves into the extended package's nodes
-(read-only), a `<package>:<path>` ref. Reference is by identity (the `extends`
-key), never by repo path.
+The manifest anchors the package: a schema version and a slug id. Everything
+else is the directory tree of nodes.
 
 ## Gather
 

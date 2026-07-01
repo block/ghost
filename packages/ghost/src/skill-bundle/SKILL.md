@@ -162,12 +162,6 @@ the child `ghost` process when they need repo-local Ghost files outside raw
 one product in a monorepo). Ghost stays adapter-neutral: wrappers consume JSON
 and map severities into their own review or check format.
 
-A package can **extend** another by identity (the shared-brand pattern). The
-manifest's `extends` maps a package id to where it lives:
-`extends: { brand: ../brand/.ghost }`. Then nodes reference inherited context by
-identity, never path: `relates: [{ to: brand:core/trust }]` (a `<package>:<path>`
-ref). Inherited nodes are read-only and flow into gather/validate like local ones.
-
 ## Always
 
 - Treat checked-in Ghost package nodes as the source of truth.

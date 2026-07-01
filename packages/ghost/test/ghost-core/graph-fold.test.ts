@@ -31,7 +31,6 @@ describe("assembleGraph (directory-tree fold)", () => {
       ],
     });
     const node = graph.nodes.get("checkout/trust");
-    expect(node?.origin).toBe("node-file");
     expect(node?.body).toBe("Reduce felt risk near payment.");
     expect(node?.relates).toEqual([{ to: "core/trust", as: "reinforces" }]);
     expect(node?.folder).toBe("checkout/trust");

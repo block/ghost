@@ -809,62 +809,19 @@ composition:
     expect(byId["checkout/clarity"]).toBeUndefined();
   });
 
-  it("inherits nodes from an extended package via extends", async () => {
-    // Brand contract: a node at brand/core-trust.md → id `core-trust`.
-    await mkdir(join(dir, "brand"), { recursive: true });
-    await writeFile(
-      join(dir, "brand", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: brand\n",
-    );
-    await writeFile(
-      join(dir, "brand", "core-trust.md"),
-      "---\n---\n\nReduce felt risk.\n",
-    );
-    // Product contract extends the brand. The checkout surface is the
-    // directory `product/checkout/`, with a node at checkout/trust.md.
-    await mkdir(join(dir, "product", "checkout"), { recursive: true });
-    await writeFile(
-      join(dir, "product", "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: acme-checkout\nextends:\n  brand: ../brand\n",
-    );
-    await writeFile(
-      join(dir, "product", "checkout", "trust.md"),
-      "---\nrelates:\n  - to: brand:core-trust\n    as: reinforces\n---\n\nReassure at payment.\n",
-    );
-
-    const validate = await runCli(
-      ["validate", "product", "--format", "json"],
-      dir,
-    );
-    expect(validate.code).toBe(0);
-
-    const gather = await runCli(
-      ["gather", "checkout", "--package", "product", "--format", "json"],
-      dir,
-    );
-    expect(gather.code).toBe(0);
-    const slice = JSON.parse(gather.stdout);
-    const inherited = slice.nodes.find(
-      (n: { id: string }) => n.id === "brand:core-trust",
-    );
-    // The cross-package relation pulled the inherited brand node into the slice.
-    expect(inherited).toBeDefined();
-    expect(inherited.body).toContain("Reduce felt risk");
-  });
-
-  it("fails validate when a cross-package ref is not in extends", async () => {
+  it("fails validate when a relates target does not resolve", async () => {
     await writeFile(
       join(dir, "manifest.yml"),
       "schema: ghost.fingerprint-package/v1\nid: solo\n",
     );
     await writeFile(
       join(dir, "n.md"),
-      "---\nrelates:\n  - to: brand:core-trust\n---\n\nBody.\n",
+      "---\nrelates:\n  - to: nope/missing\n---\n\nBody.\n",
     );
 
     const validate = await runCli(["validate", "."], dir);
     expect(validate.code).toBe(1);
-    expect(validate.stdout).toContain("brand:core-trust");
+    expect(validate.stdout).toContain("nope/missing");
   });
 
   it("returns the surface menu when no surface is named", async () => {

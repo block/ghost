@@ -18,7 +18,7 @@ export type GhostNodeRelationKind = (typeof GHOST_NODE_RELATION_KINDS)[number];
 
 /** A lateral link from one node to another, optionally typed. */
 export interface GhostNodeRelation {
-  /** Target node ref: `<id>` (local) or `<package>#<id>` (cross-package). */
+  /** Target node ref: a local path id (`marketing/email`). */
   to: string;
   /** The relation kind. Absent means an untyped relate. */
   as?: GhostNodeRelationKind;

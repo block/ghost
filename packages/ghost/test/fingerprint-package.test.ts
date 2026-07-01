@@ -49,7 +49,6 @@ describe("split fingerprint package", () => {
 
     // id is the path; the folder is the containing directory.
     const authored = loaded.graph.nodes.get("checkout/trust");
-    expect(authored?.origin).toBe("node-file");
     expect(authored?.folder).toBe("checkout");
     expect(authored?.body).toBe("Reduce felt risk near payment.");
     expect(authored?.description).toBe("Trust at the payment moment.");

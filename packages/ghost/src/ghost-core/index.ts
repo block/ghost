@@ -28,7 +28,6 @@ export {
   GHOST_GRAPH_ROOT_ID,
   type GhostGraph,
   type GhostGraphNode,
-  type GhostGraphNodeOrigin,
   type GraphLintIssue,
   type GraphLintReport,
   type GraphLintSeverity,
