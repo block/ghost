@@ -71,8 +71,9 @@ edits.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost` | Unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
-| `packages/ghost-ui` | no | Parked. A standalone shadcn component registry plus `ghost-mcp` MCP server, developed in this monorepo. Not coupled to Ghost and not referenced by the docs site or public surfaces. |
+| `packages/ghost` | yes: `@anarchitecture/ghost` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
+| `packages/vessel` | no | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference ("batteries-included" body a Haunt can inhabit). Design-system-agnostic; nothing in Ghost requires it. |
+| `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer (Problem A). Bridges to code you already own and grades high-altitude compositional drift. Scaffolded; see `notes/naming-and-structure.md`. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands

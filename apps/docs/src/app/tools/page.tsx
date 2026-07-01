@@ -1,9 +1,9 @@
 "use client";
 
-import { useStaggerReveal } from "ghost-ui";
 import { FileText, Orbit } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
+import { useStaggerReveal } from "vessel";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
 import { SectionWrapper } from "@/components/docs/wrappers";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "ghost-ui";
 import type { ReactNode } from "react";
+import { cn } from "vessel";
 
 /**
  * Wrapper for doc pages that use the two-column section layout.

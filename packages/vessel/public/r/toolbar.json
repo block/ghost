@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toolbar",
+  "dependencies": ["@xyflow/react"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/toolbar.tsx",
+      "content": "import { NodeToolbar, Position } from \"@xyflow/react\";\nimport type { ComponentProps } from \"react\";\nimport { cn } from \"@/lib/utils\";\n\ntype ToolbarProps = ComponentProps<typeof NodeToolbar>;\n\nexport const Toolbar = ({ className, ...props }: ToolbarProps) => (\n  <NodeToolbar\n    className={cn(\n      \"flex items-center gap-1 rounded-sm border bg-background p-1.5\",\n      className,\n    )}\n    position={Position.Bottom}\n    {...props}\n  />\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/toolbar.tsx"
+    }
+  ],
+  "categories": ["ai", "layout"],
+  "type": "registry:ui"
+}

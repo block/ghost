@@ -1,5 +1,5 @@
-import { cn } from "ghost-ui";
 import { ComponentProps } from "react";
+import { cn } from "vessel";
 
 function PageHeader({
   className,

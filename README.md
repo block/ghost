@@ -156,8 +156,8 @@ workspace packages are development context.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | Public package: the `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. | yes: `@anarchitecture/ghost` |
-| [`packages/ghost-ui`](./packages/ghost-ui) | Private, parked: a standalone shadcn component registry plus `ghost-mcp` MCP server. Not coupled to Ghost. | no |
+| [`packages/ghost`](./packages/ghost) | **Fingerprint** — the public `ghost` CLI, folded core runtime, node authoring, checks, advisory review, and the skill bundle. The portable, medium-agnostic on-brand generation contract. | yes: `@anarchitecture/ghost` |
+| [`packages/vessel`](./packages/vessel) | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference / "batteries-included" body. Design-system-agnostic Ghost never requires it. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 
 ## Development

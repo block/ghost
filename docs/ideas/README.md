@@ -43,10 +43,6 @@ prior-art lineage live here:
   removed (they rested on the abandoned quantified-design-system model). Records
   the intent and the trigger to rebuild them graph-native.
 
-## Independent
-
-- `ghost-ui.md` — additive registry metadata for the private Ghost UI package.
-
 ## Conventions
 
 - One file per idea, kebab-case slug, `status:` frontmatter

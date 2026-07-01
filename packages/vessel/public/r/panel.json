@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "panel",
+  "dependencies": ["@xyflow/react"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/panel.tsx",
+      "content": "import { Panel as PanelPrimitive } from \"@xyflow/react\";\nimport type { ComponentProps } from \"react\";\nimport { cn } from \"@/lib/utils\";\n\ntype PanelProps = ComponentProps<typeof PanelPrimitive>;\n\nexport const Panel = ({ className, ...props }: PanelProps) => (\n  <PanelPrimitive\n    className={cn(\n      \"m-4 overflow-hidden rounded-md border bg-card p-1\",\n      className,\n    )}\n    {...props}\n  />\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/panel.tsx"
+    }
+  ],
+  "categories": ["ai", "layout"],
+  "type": "registry:ui"
+}

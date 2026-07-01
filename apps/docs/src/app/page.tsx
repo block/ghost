@@ -1,4 +1,4 @@
-import { useStaggerReveal } from "ghost-ui";
+import { useStaggerReveal } from "vessel";
 import { Hero } from "@/components/docs/hero";
 import { SectionWrapper } from "@/components/docs/wrappers";
 

@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/ghost-ui/**", "apps/docs/**"],
+      "includes": ["packages/vessel/**", "apps/docs/**"],
       "linter": {
         "enabled": false
       }

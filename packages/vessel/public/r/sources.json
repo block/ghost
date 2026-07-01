@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sources",
+  "dependencies": ["lucide-react"],
+  "registryDependencies": ["utils", "collapsible"],
+  "files": [
+    {
+      "path": "src/components/ai-elements/sources.tsx",
+      "content": "\"use client\";\n\nimport { BookIcon, ChevronDownIcon } from \"lucide-react\";\nimport type { ComponentProps } from \"react\";\nimport {\n  Collapsible,\n  CollapsibleContent,\n  CollapsibleTrigger,\n} from \"@/components/ui/collapsible\";\nimport { cn } from \"@/lib/utils\";\n\nexport type SourcesProps = ComponentProps<\"div\">;\n\nexport const Sources = ({ className, ...props }: SourcesProps) => (\n  <Collapsible\n    className={cn(\"not-prose mb-4 text-primary text-xs\", className)}\n    {...props}\n  />\n);\n\nexport type SourcesTriggerProps = ComponentProps<typeof CollapsibleTrigger> & {\n  count: number;\n};\n\nexport const SourcesTrigger = ({\n  className,\n  count,\n  children,\n  ...props\n}: SourcesTriggerProps) => (\n  <CollapsibleTrigger\n    className={cn(\"flex items-center gap-2\", className)}\n    {...props}\n  >\n    {children ?? (\n      <>\n        <p className=\"font-medium\">Used {count} sources</p>\n        <ChevronDownIcon className=\"h-4 w-4\" />\n      </>\n    )}\n  </CollapsibleTrigger>\n);\n\nexport type SourcesContentProps = ComponentProps<typeof CollapsibleContent>;\n\nexport const SourcesContent = ({\n  className,\n  ...props\n}: SourcesContentProps) => (\n  <CollapsibleContent\n    className={cn(\n      \"mt-3 flex w-fit flex-col gap-2\",\n      \"data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-none data-[state=closed]:animate-out data-[state=open]:animate-in\",\n      className,\n    )}\n    {...props}\n  />\n);\n\nexport type SourceProps = ComponentProps<\"a\">;\n\nexport const Source = ({ href, title, children, ...props }: SourceProps) => (\n  <a\n    className=\"flex items-center gap-2\"\n    href={href}\n    rel=\"noreferrer\"\n    target=\"_blank\"\n    {...props}\n  >\n    {children ?? (\n      <>\n        <BookIcon className=\"h-4 w-4\" />\n        <span className=\"block font-medium\">{title}</span>\n      </>\n    )}\n  </a>\n);\n",
+      "type": "registry:ui",
+      "target": "components/ai-elements/sources.tsx"
+    }
+  ],
+  "categories": ["ai", "display"],
+  "type": "registry:ui"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "haunt",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The BYO-design-system adherence and drift layer for Ghost — bridges to code you already own and grades high-altitude compositional drift.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "haunt": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc --build --force",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

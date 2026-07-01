@@ -49,13 +49,13 @@ dev:
 build-ui:
     pnpm -F ghost-docs build
 
-# Build ghost-ui library (dist-lib + types)
+# Build vessel library (dist-lib + types)
 build-lib:
-    pnpm -F ghost-ui build:lib
+    pnpm -F vessel build:lib
 
-# Build ghost-ui shadcn registry
+# Build vessel shadcn registry
 build-registry:
-    pnpm -F ghost-ui build:registry
+    pnpm -F vessel build:registry
 
 # Build docs site for GitHub Pages (base=/ghost/)
 build-pages:

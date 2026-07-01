@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font-faces",
+  "files": [
+    {
+      "path": "src/styles/font-faces.css",
+      "content": "/* Design language ships with no bundled fonts — consumers bring their own. */\n",
+      "type": "registry:theme",
+      "target": "styles/font-faces.css"
+    }
+  ],
+  "type": "registry:style"
+}

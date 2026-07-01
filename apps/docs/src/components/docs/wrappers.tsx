@@ -1,5 +1,5 @@
-import { cn } from "ghost-ui";
 import { ComponentProps } from "react";
+import { cn } from "vessel";
 
 interface SectionWrapperProps extends ComponentProps<"div"> {
   withCane?: boolean;

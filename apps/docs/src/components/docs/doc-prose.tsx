@@ -1,5 +1,5 @@
-import { cn } from "ghost-ui";
 import type { ComponentProps } from "react";
+import { cn } from "vessel";
 
 export function DocProse({
   children,

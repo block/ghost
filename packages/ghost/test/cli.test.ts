@@ -405,7 +405,7 @@ describe("ghost CLI", () => {
 
   it("rejects the removed --reference init flag", async () => {
     await expect(
-      runCli(["init", "--reference", "packages/ghost-ui/.ghost"], dir),
+      runCli(["init", "--reference", "packages/vessel/.ghost"], dir),
     ).rejects.toThrow("Unknown option `--reference`");
   });
 
