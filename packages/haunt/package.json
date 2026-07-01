@@ -24,6 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anarchitecture/ghost-fingerprint": "workspace:*",
     "cac": "^6.7.14",
     "yaml": "^2.8.3",
     "zod": "^4.3.6"

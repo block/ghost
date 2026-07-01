@@ -33,4 +33,13 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
     expect(scanApi.lintFingerprintPackage).toBeUndefined();
     expect(scanApi.writePackageContextBundle).toBeUndefined();
   });
+
+  it("exposes the source-ref parser from the core subpath", async () => {
+    const core = (await import(
+      "@anarchitecture/ghost-fingerprint/core"
+    )) as Record<string, unknown>;
+
+    expect(core.parseSourceRef).toBeTypeOf("function");
+    expect(core.sliceNodeSection).toBeTypeOf("function");
+  });
 });

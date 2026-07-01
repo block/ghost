@@ -1,5 +1,5 @@
-import { NodeIdSchema } from "../node/schema.js";
 import { parseCheckMarkdown } from "./parse.js";
+import { parseSourceRef } from "./source-ref.js";
 import {
   GHOST_CHECK_SEVERITIES,
   type GhostCheckLintIssue,
@@ -56,12 +56,7 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     // `> <heading>` anchor. The node-id part should resolve like a path id; a
     // malformed shape is a *warning*, never an error, since it may name
     // not-yet-written prose (OKF-style tolerance).
-    const nodePart =
-      typeof source === "string" ? source.split(">")[0].trim() : "";
-    if (
-      typeof source !== "string" ||
-      !NodeIdSchema.safeParse(nodePart).success
-    ) {
+    if (typeof source !== "string" || parseSourceRef(source) === null) {
       issues.push({
         severity: "warning",
         rule: "check-source-malformed",

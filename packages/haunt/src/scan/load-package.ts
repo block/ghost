@@ -1,8 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
+import { parseCheckMarkdown } from "@anarchitecture/ghost-fingerprint/core";
 import { parse as parseYaml } from "yaml";
 import type { ZodType } from "zod";
-import { splitMarkdownFrontmatter } from "../core/markdown.js";
 import { HauntIdSchema } from "../model/ids.js";
 import {
   HauntCheckFrontmatterSchema,
@@ -152,7 +152,7 @@ async function loadTier<F>(
     }
 
     const raw = await readFile(join(dir, tier, entry.name), "utf8");
-    const { frontmatter, body } = splitMarkdownFrontmatter(raw);
+    const { frontmatter, body } = parseCheckMarkdown(raw);
     if (frontmatter === null) {
       issues.push({
         severity: "error",
@@ -191,7 +191,7 @@ async function loadExemplars(dir: string): Promise<HauntPackage["exemplars"]> {
     if (entry.isDirectory() || !entry.name.endsWith(".md")) continue;
     const id = basename(entry.name, ".md");
     const raw = await readFile(join(dir, "exemplars", entry.name), "utf8");
-    const { body } = splitMarkdownFrontmatter(raw);
+    const { body } = parseCheckMarkdown(raw);
     out.set(id, { id, body: body.replace(/^\n+/, "").replace(/\s+$/, "") });
   }
   return out;

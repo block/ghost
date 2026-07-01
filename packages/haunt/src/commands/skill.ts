@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadSkillBundle } from "../core/skill-bundle-loader.js";
+import { loadSkillBundle } from "@anarchitecture/ghost-fingerprint/core";
 
 // Bundle assets are copied to `dist/skill-bundle` (sibling of `commands/`).
 const SKILL_BUNDLE_ROOT = fileURLToPath(

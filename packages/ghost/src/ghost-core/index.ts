@@ -24,7 +24,10 @@ export {
   lintGhostCheck,
   loadGhostCheck,
   type ParsedCheckMarkdown,
+  type ParsedSourceRef,
   parseCheckMarkdown,
+  parseSourceRef,
+  sliceNodeSection,
 } from "./check/index.js";
 // --- CLI exit-code contract ---
 export { EXIT, UsageError } from "./errors.js";
