@@ -85,7 +85,7 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a core `index.md` node. |
+| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a starter `index.md` node (id `index`, the curated front door). |
 | `ghost validate` | Validate the package: artifact shape, node validity, and glossary kind prefixes. |
 | `ghost gather` | Emit the fingerprint menu for the agent to select from. |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |

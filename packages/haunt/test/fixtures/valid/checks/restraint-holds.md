@@ -3,7 +3,7 @@ name: restraint-holds
 description: Restraint stays the default across the product surface.
 severity: medium
 references:
-  - core
+  - index
 ---
 
 Grade whether the change adds emphasis, motion, or ornament the surface has not

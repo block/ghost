@@ -79,13 +79,23 @@ Monorepos and product suites run **one contract per package**.
 ### 2. Initialize
 
 ```bash
-ghost init            # scaffolds manifest + a starter glossary + a core node
+ghost init            # scaffolds manifest + a starter glossary + a starter index node
 ghost validate
 ```
 
 `ghost init` seeds the manifest, a starter `glossary.md` (with suggested
-categories you keep, rename, or replace), and the package-root `index.md`,
-demonstrating the shape.
+categories you keep, rename, or replace), and the package-root `index.md`
+(id `index`), demonstrating the shape. Write `index.md` as the human-curated
+front door: what this fingerprint is, how its kinds organize the corpus, and
+what to read first. It is an ordinary node, listed in the menu like any other.
+
+The manifest supports an optional `plugins:` key declaring the reserved plugin
+subtrees the package uses (currently only `haunt`); `ghost-haunt init` adds
+`plugins: [haunt]` when it scaffolds the adherence subtree, and `ghost
+validate` warns when a `haunt/` subtree exists undeclared. When a haunt
+inventory exists, `ghost gather` also serves it as a Materials section —
+building blocks generation may lean on; checks are feed-back only and are
+never gathered.
 
 ### 3. Shape the glossary
 
@@ -94,6 +104,12 @@ Declare the categories you will use in `glossary.md` — the frontmatter
 normative weight. Kinds are your choice; Ghost ships no fixed vocabulary. A
 node's filename prefix must match a declared kind (or the node stays
 uncategorized).
+
+The glossary is a dictionary of every term with defined meaning in the corpus —
+including a term currently used by only a bare node. A root `voice.md` with a
+`voice` glossary entry declares the scope for future `voice.<slug>.md` nodes;
+declaring a category with zero or one users is good hygiene, not
+over-structure.
 
 ### 4. Orient
 

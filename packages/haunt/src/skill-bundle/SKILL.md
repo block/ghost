@@ -39,6 +39,11 @@ The checked-in `.ghost/haunt/` package is the source of truth. Ordinary Git work
 is the approval boundary: uncommitted changes are drafts, committed changes are
 canonical.
 
+`ghost-haunt init` declares the plugin in the fingerprint manifest
+(`plugins: [haunt]`). The haunt inventory also surfaces in `ghost gather` as a
+Materials section — building blocks generation may lean on. Checks never
+surface in gather; they are feed-back only.
+
 ## Core CLI Verbs
 
 | Verb | Purpose |

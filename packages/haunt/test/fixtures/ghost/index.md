@@ -1,5 +1,5 @@
 ---
-description: The core node — true everywhere.
+description: The front-door node — true everywhere.
 ---
 
 Restraint is the default. A surface earns density; it does not start dense.

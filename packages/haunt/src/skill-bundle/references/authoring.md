@@ -22,6 +22,12 @@ for `ghost-haunt review`; if the repo has none, set one up first:
 npm i -D @anarchitecture/ghost-fingerprint && ghost init
 ```
 
+`ghost-haunt init` scaffolds the subtree and declares the plugin in the
+fingerprint's `manifest.yml` (`plugins: [haunt]`) — `ghost validate` warns
+when the subtree exists undeclared. Note that the inventory does double duty:
+`ghost gather` serves it as a Materials section (feed-forward building blocks
+for generation), while checks stay feed-back only and never appear in gather.
+
 Start with one material where the same review comments keep recurring, and grow
 from there. Do not try to describe the whole product at once.
 

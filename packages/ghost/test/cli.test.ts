@@ -288,7 +288,7 @@ describe("ghost CLI", () => {
 
   it("exits 2 with guidance when no fingerprint package is present", async () => {
     // A missing package is a usage error (run `ghost init`), not a raw crash.
-    const result = await runCli(["gather", "core"], dir, {
+    const result = await runCli(["gather"], dir, {
       allowNoExit: true,
     });
     expect(result.code).toBe(2);
@@ -361,7 +361,7 @@ describe("ghost CLI", () => {
     expect(JSON.parse(lint.stdout).errors).toBe(0);
   });
 
-  it("initializes a bundle with manifest and core node", async () => {
+  it("initializes a bundle with manifest and starter index node", async () => {
     const init = await runCli(["init"], dir);
 
     expect(init.code).toBe(0);
@@ -397,11 +397,13 @@ describe("ghost CLI", () => {
     const lint = await runCli(["validate"], dir);
     expect(lint.code).toBe(0);
 
-    // The seed node is the package-root index — the core node itself.
-    const gather = await runCli(["gather", "core", "--format", "json"], dir);
+    // The seed node is the package-root index.md — id `index`, listed like any other.
+    const gather = await runCli(["gather", "--format", "json"], dir);
     expect(gather.code).toBe(0);
     const slice = JSON.parse(gather.stdout);
-    expect(slice.nodes.some((n: { id: string }) => n.id === "core")).toBe(true);
+    expect(slice.nodes.some((n: { id: string }) => n.id === "index")).toBe(
+      true,
+    );
   });
 
   it("runs validate from the unified cli", async () => {
@@ -570,8 +572,61 @@ describe("ghost CLI", () => {
     expect(payload.kind).toBe("menu");
     const ids = payload.nodes.map((node: { id: string }) => node.id);
     // Every authored node is offered; the agent selects. No cascade, no slice.
-    expect(ids).toContain("email/marketing");
+    // The id rule is uniform: path minus .md — index.md is id `index`.
+    expect(ids).toContain("index");
+    expect(ids).toContain("email/marketing/index");
     expect(ids).toContain("checkout/clarity");
+  });
+
+  it("gather serves haunt inventory as a materials section, never checks", async () => {
+    await writeGatherPackage(dir);
+    const haunt = join(dir, ".ghost", "haunt");
+    await mkdir(join(haunt, "inventory"), { recursive: true });
+    await mkdir(join(haunt, "checks"), { recursive: true });
+    await writeFile(
+      join(haunt, "inventory", "modals.md"),
+      "---\ndescription: Dialogs, sheets, and overlays.\npaths:\n  - src/Modal/**\n---\n\nModal prose.\n",
+    );
+    await writeFile(
+      join(haunt, "checks", "secret-check.md"),
+      "---\nname: secret-check\ndescription: Never served.\nseverity: high\nreferences:\n  - modals\n---\n\nGrade it.\n",
+    );
+
+    const md = await runCli(["gather", "--package", ".ghost"], dir);
+    expect(md.code).toBe(0);
+    expect(md.stdout).toContain("## Materials (haunt inventory)");
+    expect(md.stdout).toContain("- `modals` — Dialogs, sheets, and overlays.");
+    // Checks are feed-back only — never gathered.
+    expect(md.stdout).not.toContain("secret-check");
+
+    const json = await runCli(
+      ["gather", "--package", ".ghost", "--format", "json"],
+      dir,
+    );
+    expect(json.code).toBe(0);
+    const payload = JSON.parse(json.stdout);
+    expect(payload.materials).toEqual([
+      { id: "modals", description: "Dialogs, sheets, and overlays." },
+    ]);
+    // Materials never land in the node menu itself.
+    expect(
+      payload.nodes.some((n: { id: string }) => n.id.includes("modals")),
+    ).toBe(false);
+  });
+
+  it("gather omits the materials section without a haunt inventory", async () => {
+    await writeGatherPackage(dir);
+
+    const md = await runCli(["gather", "--package", ".ghost"], dir);
+    expect(md.code).toBe(0);
+    expect(md.stdout).not.toContain("Materials");
+
+    const json = await runCli(
+      ["gather", "--package", ".ghost", "--format", "json"],
+      dir,
+    );
+    const payload = JSON.parse(json.stdout);
+    expect(payload).not.toHaveProperty("materials");
   });
 
   it("fails validate when a node uses the removed `relates` key", async () => {
@@ -603,7 +658,7 @@ describe("ghost CLI", () => {
       payload.nodes.map((n: { id: string; kind?: string }) => [n.id, n.kind]),
     );
     // Present as a key for every node (undefined when uncategorized).
-    expect(Object.keys(byId)).toContain("email/marketing");
+    expect(Object.keys(byId)).toContain("email/marketing/index");
   });
 });
 
@@ -615,8 +670,7 @@ async function writeGatherPackage(dir: string): Promise<void> {
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
   );
-  // Surfaces are directories: email/ (with marketing/ nested) and checkout/.
-  // The root index is the brand voice that cascades everywhere.
+  // Folders are a browsing convenience only; ids are paths minus .md.
   await writeFile(
     join(ghost, "index.md"),
     "---\ndescription: Brand voice.\n---\n\nWarm and concise.\n",

@@ -1,11 +1,12 @@
 import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   initFingerprintPackage,
   resolveFingerprintPackage,
 } from "@anarchitecture/ghost-fingerprint/fingerprint";
 import { resolveGhostDirDefault } from "@anarchitecture/ghost-fingerprint/scan";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { loadFingerprint, resolveHauntDir } from "../fingerprint/load.js";
 
 export interface InitOptions {
@@ -81,6 +82,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     await writeFile(path, content, "utf-8");
     written.push(rel);
   }
+
+  // Declare the plugin in the fingerprint manifest: `plugins: [haunt]`.
+  // Declaration is hygiene, not gating — but `ghost validate` warns when the
+  // haunt/ subtree exists undeclared, so init keeps the manifest honest,
+  // whether it scaffolded the fingerprint or the fingerprint already existed.
+  await ensureHauntPluginDeclared(join(dir, "..", "manifest.yml"));
+
   return {
     written,
     dir,
@@ -88,6 +96,36 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     ...(ghostWritten ? { ghostWritten } : {}),
     ...(notice ? { notice } : {}),
   };
+}
+
+/**
+ * Ensure the fingerprint `manifest.yml` declares the haunt plugin
+ * (`plugins: [haunt]`), preserving every other key. A missing or unreadable
+ * manifest is left alone — that is `ghost validate`'s job, not ours.
+ */
+async function ensureHauntPluginDeclared(manifestPath: string): Promise<void> {
+  let raw: string;
+  try {
+    raw = await readFile(manifestPath, "utf-8");
+  } catch {
+    return;
+  }
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(raw);
+  } catch {
+    return;
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return;
+  }
+  const manifest = parsed as Record<string, unknown>;
+  const plugins = Array.isArray(manifest.plugins)
+    ? manifest.plugins.filter((p): p is string => typeof p === "string")
+    : [];
+  if (plugins.includes("haunt")) return;
+  manifest.plugins = [...plugins, "haunt"];
+  await writeFile(manifestPath, stringifyYaml(manifest), "utf-8");
 }
 
 const INVENTORY = `---

@@ -37,7 +37,17 @@ registry, or a review tool.
   `principle`). A bare name (`voice.md`) is uncategorized — that is fine.
 - The **glossary** declares the category vocabulary and what each category means
   (its normative weight). Kinds are the author's choice; Ghost ships no fixed
-  vocabulary.
+  vocabulary. It is a dictionary of every term with defined meaning in the
+  corpus — including a term currently used by only a bare node (a root
+  `voice.md` with a `voice` glossary entry declaring scope for future
+  `voice.<slug>.md` nodes). Declaring a category with zero or one users is
+  good hygiene, not over-structure.
+- The starter `index.md` node (id `index`) is the human-curated **front door**:
+  what this fingerprint is, how its kinds organize, what to read first. It is
+  an ordinary node, listed in the menu like any other.
+- The manifest may declare an optional `plugins:` key (e.g. `plugins: [haunt]`)
+  naming the reserved plugin subtrees the package uses. `ghost-haunt init`
+  adds it; `ghost validate` warns when a `haunt/` subtree exists undeclared.
 - There is **no hierarchy, no inheritance, no edges**. The package is a flat set
   of truths. Nesting into folders is a human-browsing convenience only; the model
   reads a flat menu.
@@ -51,7 +61,7 @@ registry, or a review tool.
 The CLI does the deterministic work; you do the interpretation.
 
 ```bash
-ghost init        # scaffold .ghost/ (manifest + glossary + a core node)
+ghost init        # scaffold .ghost/ (manifest + glossary + a starter index node)
 # ...author brand-truth nodes...
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather      # emit the fingerprint menu; you select the truths the task needs
@@ -62,11 +72,16 @@ description — and you read the ask against it and pull the truths you judge
 relevant. That is "the right context at the right time": you select just-in-time
 against the actual task, not against a precomputed slice.
 
+When the haunt plugin's inventory exists (`.ghost/haunt/inventory/`), `gather`
+also appends a **Materials** section — repo-local building blocks generation
+may lean on, each with its id and description (inspect their `paths` in the
+inventory files). Checks are feed-back only and are never gathered.
+
 ## CLI verbs
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a core `index.md` node. |
+| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a starter `index.md` node (the front door, id `index`). |
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape, per-node validity, and that each node's kind prefix is declared in the glossary. |
 | `ghost gather [--format json]` | Emit the fingerprint menu (every node's id, kind, description) for the agent to select from. |
 | `ghost skill install` | Install this skill bundle. |

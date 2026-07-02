@@ -25,15 +25,14 @@ export interface LoadedNodeTree {
 }
 
 /**
- * Load authored prose nodes from the package's directory tree.
+ * Load authored prose nodes from the package directory. The corpus is flat:
+ * there is no hierarchy, no inheritance, no edges. Nesting into folders is a
+ * browsing convenience only.
  *
  * Every `*.md` file under the package directory is a node. Its id is its path
- * with `.md` dropped (`marketing/email.md` → `marketing/email`); its parent is
- * its containing directory (`marketing`), or the implicit `core` root at the
- * top level. A directory's own prose lives in its `index.md`: the root
- * `index.md` is the `core` node (parent absent); `marketing/index.md` is the
- * `marketing` node (id `marketing`, parent `core`). The `haunt/` subtree and
- * `manifest.yml` are reserved and skipped.
+ * with `.md` dropped, uniformly (`marketing/email.md` → `marketing/email`,
+ * `index.md` → `index`). The reserved root entries — `manifest.yml`,
+ * `glossary.md`, and the `haunt/` plugin subtree — are skipped.
  *
  * A file that fails per-node lint is collected in `invalid` (with its first
  * error) and skipped rather than throwing, so one bad node does not block
@@ -105,12 +104,12 @@ async function walk(
 /**
  * Compute a node's id and filename kind/slug from its package-relative path.
  *
- * The **kind** is the leaf filename's first dotted segment, and only exists when
- * the leaf has a dot; the **slug** is the rest of the leaf. The id is the path
- * with `.md` dropped (an `index.md` collapses to its directory name), so a kind
- * never changes a node's identity path.
- * - `index.md`               → id `core`,              slug `core`.
- * - `a/index.md`             → id `a`,                 slug `a`.
+ * The rule is uniform: the **id** is the path with `.md` dropped. The **kind**
+ * is the leaf filename's first dotted segment, and only exists when the leaf
+ * has a dot; the **slug** is the rest of the leaf. A kind never changes a
+ * node's identity path. `index.md` is an ordinary node with id `index` — by
+ * convention the human-curated front door, but nothing special to the loader.
+ * - `index.md`               → id `index`,             slug `index` (no kind).
  * - `voice.md`               → id `voice`,             slug `voice` (no kind).
  * - `principle.density.md`   → id `principle.density`, kind `principle`, slug `density`.
  * - `a/principle.trust.md`   → id `a/principle.trust`, kind `principle`, slug `trust`.
@@ -123,26 +122,17 @@ function locate(relPath: string): {
   const withoutExt = relPath.replace(/\.md$/, "");
   const segments = withoutExt.split("/");
   const leaf = segments[segments.length - 1] ?? "";
-  const isIndex = leaf === "index";
-  const idSegments = isIndex ? segments.slice(0, -1) : segments;
+  const id = withoutExt;
 
-  if (idSegments.length === 0) {
-    // Root index.md → the core node.
-    return { id: "core", slug: "core" };
-  }
-
-  const id = idSegments.join("/");
-  // Kind/slug come from the leaf name. An index node's leaf is the directory
-  // name and carries no kind. A dotted leaf splits into kind (first segment)
-  // and slug (the remainder); a bare leaf is all slug with no kind.
-  const leafName = isIndex ? (idSegments[idSegments.length - 1] ?? "") : leaf;
-  const dot = leafName.indexOf(".");
-  if (!isIndex && dot > 0) {
+  // A dotted leaf splits into kind (first segment) and slug (the remainder);
+  // a bare leaf is all slug with no kind.
+  const dot = leaf.indexOf(".");
+  if (dot > 0) {
     return {
       id,
-      kind: leafName.slice(0, dot),
-      slug: leafName.slice(dot + 1),
+      kind: leaf.slice(0, dot),
+      slug: leaf.slice(dot + 1),
     };
   }
-  return { id, slug: leafName };
+  return { id, slug: leaf };
 }

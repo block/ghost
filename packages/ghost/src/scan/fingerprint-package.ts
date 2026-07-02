@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
   closestIds,
@@ -177,8 +177,10 @@ export async function lintFingerprintPackage(
   );
 
   if (manifestRaw !== undefined) {
-    // shape pass: manifest well-formed.
-    lintFingerprintPackageManifest(manifestRaw, issues);
+    // shape pass: manifest well-formed + plugin declaration hygiene.
+    lintFingerprintPackageManifest(manifestRaw, issues, {
+      hauntDirPresent: await isDirectory(join(paths.packageDir, "haunt")),
+    });
     // graph pass: fold + validate the node network.
     try {
       const { catalog, invalid } = await loadFingerprintPackage(paths);
@@ -249,6 +251,14 @@ async function readDeclaredGlossaryKinds(
   return result.glossary.frontmatter.categories.map(
     (category) => category.name,
   );
+}
+
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 async function readRequired(

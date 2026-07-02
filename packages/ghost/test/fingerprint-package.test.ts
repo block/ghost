@@ -180,6 +180,95 @@ describe("split fingerprint package", () => {
     expect(loaded.invalid).toEqual([]);
   });
 
+  it("gives index.md the uniform id `index` — no core mapping", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "index.md"),
+      "---\ndescription: Start here.\n---\n\nFront door prose.\n",
+    );
+    await mkdir(join(dir, "email"), { recursive: true });
+    await writeFile(
+      join(dir, "email", "index.md"),
+      "---\ndescription: Email surface.\n---\n\nEmail.\n",
+    );
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    // The id rule is uniform: path minus .md.
+    expect([...loaded.catalog.nodes.keys()]).toEqual(["email/index", "index"]);
+    expect(loaded.catalog.nodes.get("index")?.slug).toBe("index");
+    expect(loaded.catalog.nodes.get("index")?.kind).toBeUndefined();
+  });
+
+  it("warns when a haunt/ subtree exists but is not declared in plugins", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "plugin-undeclared",
+        message: "haunt/ subtree present but not declared in manifest plugins",
+      }),
+    );
+  });
+
+  it("accepts a declared haunt plugin with the subtree present", async () => {
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - haunt\n",
+    );
+    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+    expect(report.info).toBe(0);
+  });
+
+  it("warns on an unknown plugin name", async () => {
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - spectre\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "warning",
+        rule: "plugin-unknown",
+        message: "unknown plugin 'spectre'",
+      }),
+    );
+  });
+
+  it("notes declared haunt with no subtree as harmless info", async () => {
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - haunt\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(0);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        severity: "info",
+        rule: "plugin-subtree-absent",
+      }),
+    );
+  });
+
   it("reports a missing manifest", async () => {
     await writeFile(join(dir, "index.md"), "---\n---\n\nRoot prose.\n");
 

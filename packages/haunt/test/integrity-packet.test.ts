@@ -79,7 +79,7 @@ describe("buildIntegrityPacket", () => {
     expect(packet.fingerprint.map((n) => n.ref)).toContain(
       "checkout > Density",
     );
-    expect(packet.fingerprint.map((n) => n.ref)).toContain("core");
+    expect(packet.fingerprint.map((n) => n.ref)).toContain("index");
   });
 
   it("renders a multi-material check in each referenced material's section", async () => {
@@ -113,7 +113,7 @@ describe("buildIntegrityPacket", () => {
     expect(packet.globalChecks.map((c) => c.id)).toEqual(["restraint-holds"]);
     const global = packet.globalChecks[0];
     expect(global?.referencesFingerprint).toBe(true);
-    expect(global?.baseline.find((b) => b.ref === "core")?.kind).toBe(
+    expect(global?.baseline.find((b) => b.ref === "index")?.kind).toBe(
       "fingerprint",
     );
     for (const m of packet.materials) {

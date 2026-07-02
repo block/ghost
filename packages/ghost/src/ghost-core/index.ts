@@ -60,6 +60,7 @@ export type { GhostFingerprintPackageManifest } from "./package-manifest.js";
 export {
   GHOST_FINGERPRINT_PACKAGE_SCHEMA,
   GhostFingerprintPackageManifestSchema,
+  KNOWN_FINGERPRINT_PLUGINS,
 } from "./package-manifest.js";
 // --- Skill bundle loader ---
 export type { SkillBundleFile } from "./skill-bundle-loader.js";

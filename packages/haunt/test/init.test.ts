@@ -1,5 +1,12 @@
 import { existsSync } from "node:fs";
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -75,6 +82,41 @@ describe("runInit", () => {
     expect(result.ghostWritten).toContain("manifest.yml");
     expect(result.notice).toBe(NO_TRUTHS_NOTICE);
     expect(NO_TRUTHS_NOTICE).toContain("scaffolded .ghost/");
+  });
+
+  it("declares plugins: [haunt] in the scaffolded fingerprint manifest", async () => {
+    dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
+    const ghostDir = join(dir, ".ghost");
+    const result = await runInit({ ghostDir });
+    expect(result.code).toBe(0);
+
+    const manifest = await readFile(join(ghostDir, "manifest.yml"), "utf-8");
+    expect(manifest).toContain("schema: ghost.fingerprint-package/v1");
+    expect(manifest).toContain("id: local");
+    expect(manifest).toMatch(/plugins:\s*\n\s*- haunt/);
+  });
+
+  it("adds plugins: [haunt] to a pre-existing fingerprint manifest, preserving keys", async () => {
+    dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
+    const ghostDir = join(dir, ".ghost");
+    await mkdir(ghostDir, { recursive: true });
+    await writeFile(
+      join(ghostDir, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: existing-brand\n",
+      "utf-8",
+    );
+
+    const result = await runInit({ ghostDir });
+    expect(result.code).toBe(0);
+
+    const manifest = await readFile(join(ghostDir, "manifest.yml"), "utf-8");
+    expect(manifest).toContain("id: existing-brand");
+    expect(manifest).toMatch(/plugins:\s*\n\s*- haunt/);
+
+    // Idempotent: a second (forced) init does not duplicate the entry.
+    await runInit({ ghostDir, force: true });
+    const again = await readFile(join(ghostDir, "manifest.yml"), "utf-8");
+    expect(again.match(/- haunt/g)?.length).toBe(1);
   });
 
   it("leaves an existing .ghost/ fingerprint untouched", async () => {

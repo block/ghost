@@ -30,13 +30,15 @@ function manifestFile(): TemplateFile {
 
 /**
  * The default starter: a manifest, a package-level glossary declaring the
- * starter category vocabulary, and the package-root `index.md` core node.
- * Additional truths are plain markdown nodes; an optional kind comes from a
- * dotted filename prefix such as `principle.density.md`.
+ * starter category vocabulary, and the package-root `index.md` node — the
+ * human-curated front door. Additional truths are plain markdown nodes; an
+ * optional kind comes from a dotted filename prefix such as
+ * `principle.density.md`.
  */
 const DEFAULT_TEMPLATE: GhostInitTemplate = {
   name: "default",
-  description: "Minimal node package: manifest + glossary + a core index node.",
+  description:
+    "Minimal node package: manifest + glossary + a starter index node.",
   files() {
     return [
       manifestFile(),
@@ -65,12 +67,14 @@ Illustrative reference: useful evidence, but not normative on its own.
       {
         relativePath: "index.md",
         content: `---
-description: The product-wide core truth.
+description: Start here — what this fingerprint is and how to read it.
 ---
 
-Replace this prose with your product's core truth — the stance an agent should
-read before interpreting the rest of the fingerprint. Everything below the
-\`---\` is the node's body; the frontmatter above is the retrieval description.
+Replace this prose with your fingerprint's front door: what this fingerprint
+covers, how its kinds organize the corpus, and what to read first. \`index\` is
+an ordinary node — it appears in the menu like any other — but by convention it
+orients a reader before they interpret the rest. Everything below the \`---\` is
+the node's body; the frontmatter above is the retrieval description.
 
 Nodes are prose truths. Use them to capture intent, materials, and composition in
 language an agent can apply across code, copy, and UI decisions. Keep each node
