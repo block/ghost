@@ -89,6 +89,20 @@ export function buildHauntManifest(version: string): HauntManifest {
         ],
       },
       {
+        name: "integrity",
+        description:
+          "Emit an advisory integrity packet: the whole inventory audited for sprawl against the .ghost/ fingerprint.",
+        flags: [
+          PACKAGE_FLAG,
+          GHOST_DIR_FLAG,
+          {
+            name: "--json",
+            description: "Emit the raw JSON packet",
+            takesValue: false,
+          },
+        ],
+      },
+      {
         name: "skill install",
         description: "Install the Haunt skill bundle.",
         flags: [

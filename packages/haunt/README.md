@@ -65,6 +65,9 @@ haunt init                 # scaffold a .haunt/ package (manifest + inventory + 
 haunt validate             # shape (flat dirs) + check references (local + fingerprint)
 haunt review --diff=-      # advisory packet: matched materials, referenced fingerprint
                            #   prose, offered checks, coverage gaps, diff (agent renders findings)
+haunt integrity            # advisory audit packet: the whole inventory partitioned by
+                           #   material — prose, bound checks + baselines, sibling pointers,
+                           #   glob match counts, gaps (agent renders findings)
 haunt skill install        # install the host-agent skill bundle
 haunt manifest             # self-describing JSON of commands + flags
 ```
@@ -76,6 +79,16 @@ one hop: diff files → inventory via `paths`. Offered checks are those whose
 fingerprint nodes (brand truths are always in play). The packet embeds each
 reference's baseline prose — fingerprint node bodies are sliced to the anchored
 heading section. Haunt never edits and never grades on its own.
+
+**Two tenses, one substrate.** `review` grades a change; `integrity` grades
+the whole — "does what we own still cohere with what we said, and with
+itself?" Sprawl (contracts diverging, naming drifting, variants accumulating)
+is invisible at diff granularity, so integrity audits the entire inventory in
+one holistic, stateless run: each material bound to its prose, the checks that
+reference it, their fingerprint baselines, and its sibling materials. The
+packet is a map, not a payload — authored prose plus glob pointers with
+verified match counts; the agent reads the code. It also requires `.ghost/`
+(exit 2 with the same on-ramp).
 
 ## Status
 

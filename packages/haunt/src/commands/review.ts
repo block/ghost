@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { loadFingerprint } from "../fingerprint/load.js";
 import { loadHauntPackage } from "../scan/load-package.js";
+import { noFingerprintMessage } from "./fingerprint-required.js";
 import {
   buildReviewPacket,
   formatReviewPacket,
@@ -29,15 +30,6 @@ export interface ReviewResult {
   output: string;
   code: number;
 }
-
-const NO_FINGERPRINT_MESSAGE = `Cannot review: no .ghost/ fingerprint package resolves.
-Haunt grades drift against your fingerprint's brand truths — without one, review
-degrades to generic lint. Set one up:
-
-  npm i -D @anarchitecture/ghost-fingerprint && ghost init
-
-then author a node or two and point your checks' \`references\` at them.
-(Use --ghost-dir <dir> if your fingerprint lives somewhere non-standard.)`;
 
 /** Read the diff from --diff (file or "-" for stdin) or `git diff <base>`. */
 async function resolveDiff(options: ReviewOptions): Promise<string> {
@@ -88,7 +80,7 @@ export async function runReview(options: ReviewOptions): Promise<ReviewResult> {
 
   const fingerprint = await loadFingerprint({ ghostDir: options.ghostDir });
   if (fingerprint === null) {
-    return { packet: null, output: NO_FINGERPRINT_MESSAGE, code: 2 };
+    return { packet: null, output: noFingerprintMessage("review"), code: 2 };
   }
 
   const diffText = await resolveDiff(options);

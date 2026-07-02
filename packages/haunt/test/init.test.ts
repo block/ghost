@@ -24,7 +24,7 @@ describe("runInit", () => {
     expect(result.written).toEqual([
       "manifest.yml",
       "inventory/modals.md",
-      "checks/density-does-not-creep.md",
+      "checks/contracts-stay-congruent.md",
     ]);
 
     const { pkg, report } = await loadHauntPackage(pkgDir);
@@ -35,7 +35,7 @@ describe("runInit", () => {
 
     // The example check demonstrates the references grammar: one local
     // inventory id plus one fingerprint-shaped `node > Heading` target.
-    const check = pkg.checks.get("density-does-not-creep");
+    const check = pkg.checks.get("contracts-stay-congruent");
     expect(check?.references).toEqual(["modals", "checkout > Density"]);
 
     // With no fingerprint present the fingerprint-shaped reference is an

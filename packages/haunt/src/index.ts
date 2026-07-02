@@ -17,9 +17,22 @@
 
 export const HAUNT_VERSION = "0.0.0";
 
+export type { BaselineProse } from "./baseline/resolve.js";
+export { resolveBaseline } from "./baseline/resolve.js";
 export type { BridgeResolution } from "./bridge/resolve.js";
 export { resolveBridge } from "./bridge/resolve.js";
+export { listRepoFiles, partitionInventory } from "./bridge/tree.js";
 export { buildCli } from "./cli.js";
+export { runIntegrity } from "./commands/integrity.js";
+export type {
+  IntegrityGap,
+  IntegrityMaterial,
+  IntegrityPacket,
+} from "./commands/integrity-packet.js";
+export {
+  buildIntegrityPacket,
+  formatIntegrityPacket,
+} from "./commands/integrity-packet.js";
 export { runReview } from "./commands/review.js";
 export type { ReviewPacket } from "./commands/review-packet.js";
 export {

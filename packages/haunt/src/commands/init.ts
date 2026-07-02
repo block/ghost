@@ -40,7 +40,7 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
   const files: Array<[string, string]> = [
     ["manifest.yml", `schema: ${HAUNT_PACKAGE_SCHEMA}\nid: ${id}\n`],
     ["inventory/modals.md", INVENTORY],
-    ["checks/density-does-not-creep.md", CHECK],
+    ["checks/contracts-stay-congruent.md", CHECK],
   ];
 
   const written: string[] = [];
@@ -65,16 +65,17 @@ No nested modals. The body scrolls; header and footer stay fixed.
 `;
 
 const CHECK = `---
-name: density-does-not-creep
-description: Density must not exceed what the surface earns.
+name: contracts-stay-congruent
+description: Modal contracts stay congruent across the material.
 severity: high
 references:
   - modals
   - checkout > Density
 ---
 
-Grade whether the change increases visual density beyond what the surface earns.
-Look for: more elements per region, reduced whitespace, competing emphasis.
-This is not a token check — a change can pass every lint and still collapse
-hierarchy.
+Grade whether the modal components expose congruent contracts: equivalent
+props share names (one of onClose/onDismiss, never both), variants line up,
+and the same composition is not solved two different ways. In a diff, grade
+the change against the material's existing contract; in an integrity audit,
+grade the whole material against itself and its siblings.
 `;

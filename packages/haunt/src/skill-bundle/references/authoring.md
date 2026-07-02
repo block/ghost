@@ -94,10 +94,24 @@ references get caught.
 ### What a check's references determine
 
 - A check referencing a **local inventory id** is offered when the diff touches
-  that material's `paths`.
+  that material's `paths` (review), and bound into that material's section of
+  the integrity packet (a check referencing several materials appears in each
+  of their sections).
 - A check whose references are **all fingerprint-shaped** is *always offered* —
   there is no mechanical hop from a diff to a brand truth; the reviewing agent
-  weighs relevance.
+  weighs relevance. In the integrity packet these checks are listed once, in a
+  global section (they assert truths about the whole surface).
+
+### Author for both tenses
+
+The same check serves two verbs: `haunt review` grades a **change** against it,
+`haunt integrity` grades the **whole material** against it (and against its
+siblings). Sprawl assertions — "modal contracts stay congruent", "naming
+follows the glossary", "tokens, not hardcoded values" — are ordinary checks
+referencing the materials they guard. A material no check references shows up
+in the integrity packet as an `unreferenced-material` gap: unguarded against
+sprawl. Run `haunt integrity` locally when the system feels like it's
+drifting, and on PRs whenever a diff touches inventory `paths`.
 
 ## Validate as you go
 

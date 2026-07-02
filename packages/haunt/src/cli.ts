@@ -1,5 +1,6 @@
 import { cac } from "cac";
 import { runInit } from "./commands/init.js";
+import { runIntegrity } from "./commands/integrity.js";
 import { buildHauntManifest } from "./commands/manifest.js";
 import { runReview } from "./commands/review.js";
 import { runSkillInstall } from "./commands/skill.js";
@@ -94,6 +95,39 @@ export function buildCli(): ReturnType<typeof cac> {
         json?: boolean;
       }) => {
         const { output, code } = await runReview(options);
+        if (code === 0) {
+          process.stdout.write(`${output}\n`);
+        } else {
+          process.stderr.write(`${output}\n`);
+        }
+        process.exitCode = code;
+      },
+    );
+
+  cli
+    .command(
+      "integrity",
+      "Emit an advisory integrity packet: the whole inventory audited for sprawl against the .ghost/ fingerprint.",
+    )
+    .option(
+      "--package <dir>",
+      "The .haunt/ package directory (default: .haunt)",
+    )
+    .option(
+      "--ghost-dir <dir>",
+      "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
+    )
+    .option(
+      "--json",
+      "Emit the raw JSON packet instead of the markdown prompt.",
+    )
+    .action(
+      async (options: {
+        package?: string;
+        ghostDir?: string;
+        json?: boolean;
+      }) => {
+        const { output, code } = await runIntegrity(options);
         if (code === 0) {
           process.stdout.write(`${output}\n`);
         } else {

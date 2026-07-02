@@ -1,6 +1,6 @@
 ---
 name: haunt
-description: Grade high-altitude compositional drift against a repo's design fingerprint. Use when reviewing a diff or PR for hierarchy, density, restraint, product-stance, or composition drift that linters can't see — and when authoring or updating a .haunt/ package (inventory, checks).
+description: Grade high-altitude compositional drift against a repo's design fingerprint. Use when reviewing a diff or PR for hierarchy, density, restraint, product-stance, or composition drift that linters can't see, when auditing the whole inventory for sprawl (haunt integrity), and when authoring or updating a .haunt/ package (inventory, checks).
 license: Apache-2.0
 metadata:
   cli: haunt
@@ -42,9 +42,17 @@ canonical.
 |---|---|
 | `haunt validate [--package <dir>] [--ghost-dir <dir>]` | Validate the package: shape (flat dirs, no nesting) and check `references` (local ids resolve; fingerprint targets are checked against `.ghost/` when it resolves). |
 | `haunt review [--diff <patch>] [--base <ref>] [--ghost-dir <dir>] [--json]` | Emit an advisory review packet from the package, the fingerprint, and a diff: matched materials, referenced fingerprint prose, offered checks, coverage gaps, and the diff. Requires `.ghost/`. |
+| `haunt integrity [--package <dir>] [--ghost-dir <dir>] [--json]` | Emit an advisory integrity packet: the whole inventory partitioned by material, each bound to its prose, its checks (with baselines), and its siblings — the sprawl audit. Requires `.ghost/`. |
 
 Diff sources for `review`: `--diff <file>`, `--diff=-` (stdin), or omit to run
 `git diff <base>` (default `HEAD`).
+
+**Two tenses, one substrate.** `review` grades a change (the diff is the
+observable); `integrity` grades the whole ("does what we own still cohere with
+what we said, and with itself?"). Both consume the same inventory and checks;
+sprawl is invisible at diff granularity, so run integrity locally when the
+system feels like it's drifting, and on PRs whenever the diff touches
+inventory `paths` (review's matched materials are that signal).
 
 ## The `references` grammar
 
@@ -88,6 +96,26 @@ fingerprint and never edits code. Two distinct jobs, and you must not blur them:
 4. **Report coverage gaps, do not grade them.** If the packet lists an
    `unbridged-file` or `unreferenced-inventory` gap, surface it plainly — that
    is the fingerprint admitting it can't measure there, not a pass.
+
+## The integrity loop (the sprawl audit)
+
+1. Run `haunt integrity` (or `--json`). The packet is a **map, not a
+   payload**: it embeds authored prose (materials, checks, baselines) and
+   points at code with glob pointers plus verified match counts — no file
+   lists. You explore from the pointers with your own file tools.
+2. For each material section, grade against **two baselines**: the stated
+   truths (fingerprint prose and check baselines), and the inventory's own
+   latent pattern — how the sibling materials solve the same job. Sensing
+   that pattern is your job; an outlier finding must name the pattern it
+   breaks.
+3. Five sprawl axes orient the audit — contract congruence, naming coherence,
+   token discipline, variant proliferation, pattern forks — but they are
+   orientation, not grading instructions: don't grade what no check covers;
+   note it as a gap.
+4. Report the packet's gaps plainly: `dead-paths` (a material's globs match
+   nothing — the map rotted) and `unreferenced-material` (no check guards it
+   against sprawl).
+5. Group findings per material, same P0–P3 evidence-cited format as review.
 
 ## Two kinds of check
 
