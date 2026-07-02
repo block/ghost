@@ -70,7 +70,6 @@ export interface IntegrityGap {
 }
 
 export interface IntegrityPacket {
-  packageId: string;
   fingerprintId: string;
   /** Per-material sections — the packet's internal structure. */
   materials: IntegrityMaterial[];
@@ -249,7 +248,6 @@ export function buildIntegrityPacket(
   }
 
   return {
-    packageId: pkg.manifest.id,
     fingerprintId: fingerprint.manifest.id,
     materials,
     fingerprint: [...fingerprintNodes.values()],
@@ -281,7 +279,7 @@ function renderCheck(out: string[], c: IntegrityCheck, heading: string): void {
  */
 export function formatIntegrityPacket(packet: IntegrityPacket): string {
   const out: string[] = [];
-  out.push(`# Haunt integrity — package \`${packet.packageId}\``);
+  out.push(`# Haunt integrity — fingerprint \`${packet.fingerprintId}\``);
   out.push("");
   out.push(
     "You are auditing the **whole inventory** for sprawl: the design system",

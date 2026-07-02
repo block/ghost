@@ -98,7 +98,7 @@ writes, and decides.
   index.md              # the core node, true everywhere (optional)
   <surface>/index.md    # a surface's own prose (the directory is the surface)
   <surface>/<node>.md   # a prose node placed in that surface
-  checks/*.md           # optional ghost.check/v1 checks
+  haunt/                # reserved: the adherence plugin's subtree (inventory + checks); never a node
 ```
 
 The fingerprint is a graph of **nodes**, and the **directory tree is the graph**.
@@ -134,8 +134,9 @@ the retrieval payload; `relates` links nodes laterally (the example reinforces
 
 A surface is just a directory, and a directory's own prose lives in its
 `index.md`. The package-root `index.md` is the implicit `core` node, true
-everywhere. Reserved at the package root: `manifest.yml` and the `checks/`
-subtree; every other `*.md` is a node. The host agent's own repo reconnaissance
+everywhere. Reserved at the package root: `manifest.yml`, `glossary.md`, and
+the `haunt/` subtree (the adherence plugin's inventory + checks); every other
+`*.md` is a node. The host agent's own repo reconnaissance
 answers what exists; the curated node graph answers what the surface is trying
 to preserve.
 

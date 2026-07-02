@@ -38,8 +38,9 @@ no inheritance, no edges. Nesting into folders is a browsing convenience only.
 
 | Part | Job |
 | --- | --- |
-| `manifest.yml` | Schema version and package id. |
+| `manifest.yml` | Schema version and package id — the package's only anchor. |
 | `glossary.md` | The author's category vocabulary and what each kind means (its normative weight). Ghost ships no fixed vocabulary. |
+| `haunt/` | **Reserved subtree** — the adherence plugin's repo-local data (inventory + checks). Never a node source; `gather` and `validate` skip it. |
 | Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | The durable brand truths, written through three authoring **lenses**: intent (the why), inventory (the materials), composition (the patterns). The lenses guide what to capture; they are not fields. Altitude lives in the prose: a narrower truth names its **condition** — the situation it applies in, never a filing destination. |
 | Node frontmatter | `description` (the retrieval payload — the one-liner `gather` puts in the menu). |
 
@@ -49,9 +50,21 @@ One resolution mechanism, read-only:
   whole corpus, flat. The agent reads the ask against the descriptions and
   pulls the truths it judges relevant. Ghost does no NLP and no selection.
 
-Checks do **not** live in the fingerprint. They live in Haunt's `.haunt/`
-package and bind to the fingerprint prose they enforce via `references`. The
-fingerprint is feed-forward only.
+Checks are **not** nodes. They live in the reserved `haunt/` subtree — Haunt
+is a plugin that piggybacks on the fingerprint package, anchored by the
+fingerprint's own manifest — and bind to the prose they enforce via
+`references`. The corpus itself stays feed-forward only.
+
+Two rules keep the reservation honest:
+
+- **The reserved list is closed.** `manifest.yml`, `glossary.md`, `haunt/`.
+  A new entry must pass the shape-test above and ships only with a new
+  fingerprint schema version — a tool that wants a home inside `.ghost/` has
+  to amend the constitution, not just claim a directory.
+- **Reserved subtrees never travel.** A fingerprint export — for a fleet
+  view, a sibling repo, any consumer outside this repo — is the root nodes
+  plus glossary plus manifest. `haunt/` is repo-local by definition (its
+  `paths` globs are welded to this tree) and is always left behind.
 
 ## The consumers (each is a projection)
 

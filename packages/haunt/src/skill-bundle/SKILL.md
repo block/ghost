@@ -1,6 +1,6 @@
 ---
 name: haunt
-description: Grade high-altitude compositional drift against a repo's design fingerprint. Use when reviewing a diff or PR for hierarchy, density, restraint, product-stance, or composition drift that linters can't see, when auditing the whole inventory for sprawl (haunt integrity), and when authoring or updating a .haunt/ package (inventory, checks).
+description: Grade high-altitude compositional drift against a repo's design fingerprint. Use when reviewing a diff or PR for hierarchy, density, restraint, product-stance, or composition drift that linters can't see, when auditing the whole inventory for sprawl (haunt integrity), and when authoring or updating a .ghost/haunt/ package (inventory, checks).
 license: Apache-2.0
 metadata:
   cli: ghost-haunt
@@ -20,19 +20,22 @@ checks. **You render the findings.** Haunt never edits and never grades on its
 own — it hands you a packet, you produce findings.
 
 ```text
-.haunt/
-  manifest.yml   # schema + id
-  inventory/     # the materials — prose + `paths` to where they live in code.
-  checks/        # ghost.check/v1 assertions — `references` bind them to prose.
+.ghost/
+  manifest.yml   # the fingerprint's anchor — haunt has no manifest of its own
+  haunt/         # the haunt package: a reserved subtree inside the fingerprint
+    inventory/   # the materials — prose + `paths` to where they live in code.
+    checks/      # ghost.check/v1 assertions — `references` bind them to prose.
 ```
 
-Brand truths (principles, surface composition, stance) do **not** live in
-`.haunt/` — they live in `.ghost/` as fingerprint nodes, and checks point at
-them. **A `.ghost/` fingerprint is required for `ghost-haunt review`**; without one
+Haunt is a plugin of the fingerprint: it lives at `.ghost/haunt/`, always
+derived from the fingerprint's location, never configured separately. Brand
+truths (principles, surface composition, stance) do **not** live in
+`.ghost/haunt/` — they live at the `.ghost/` root as fingerprint nodes, and
+checks point at them. **A `.ghost/` fingerprint is required for `ghost-haunt review`**; without one
 review degrades to generic lint, so the CLI refuses and points you at
 `npm i -D @anarchitecture/ghost-fingerprint && ghost init`.
 
-The checked-in `.haunt/` package is the source of truth. Ordinary Git workflow
+The checked-in `.ghost/haunt/` package is the source of truth. Ordinary Git workflow
 is the approval boundary: uncommitted changes are drafts, committed changes are
 canonical.
 
@@ -40,9 +43,12 @@ canonical.
 
 | Verb | Purpose |
 |---|---|
-| `ghost-haunt validate [--package <dir>] [--ghost-dir <dir>]` | Validate the package: shape (flat dirs, no nesting) and check `references` (local ids resolve; fingerprint targets are checked against `.ghost/` when it resolves). |
+| `ghost-haunt validate [--ghost-dir <dir>]` | Validate the package: shape (flat dirs, no nesting) and check `references` (local ids resolve; fingerprint targets are checked against `.ghost/` when it resolves). |
 | `ghost-haunt review [--diff <patch>] [--base <ref>] [--ghost-dir <dir>] [--json]` | Emit an advisory review packet from the package, the fingerprint, and a diff: matched materials, referenced fingerprint prose, offered checks, coverage gaps, and the diff. Requires `.ghost/`. |
-| `ghost-haunt integrity [--package <dir>] [--ghost-dir <dir>] [--json]` | Emit an advisory integrity packet: the whole inventory partitioned by material, each bound to its prose, its checks (with baselines), and its siblings — the sprawl audit. Requires `.ghost/`. |
+| `ghost-haunt integrity [--ghost-dir <dir>] [--json]` | Emit an advisory integrity packet: the whole inventory partitioned by material, each bound to its prose, its checks (with baselines), and its siblings — the sprawl audit. Requires `.ghost/`. |
+
+`ghost haunt <command>` also works via the ghost hub dispatch when both CLIs
+are installed.
 
 Diff sources for `review`: `--diff <file>`, `--diff=-` (stdin), or omit to run
 `git diff <base>` (default `HEAD`).
@@ -147,7 +153,7 @@ If nothing drifts, say so plainly. Do not manufacture findings to fill a report.
 
 ## Authoring the package
 
-When asked to set up or update `.haunt/`, see `references/authoring.md`. The one
+When asked to set up or update `.ghost/haunt/`, see `references/authoring.md`. The one
 rule that governs everything: **write observable decisions, not adjectives.**
 "Destructive actions use Verb + Noun" is checkable; "buttons should be clear" is
 not. Keep code pointers in inventory `paths`, keep brand stance in `.ghost/`

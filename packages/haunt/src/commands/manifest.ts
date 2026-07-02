@@ -22,12 +22,6 @@ export interface HauntManifest {
   commands: ManifestCommand[];
 }
 
-const PACKAGE_FLAG: ManifestFlag = {
-  name: "--package",
-  description: "The .haunt/ package directory (default: .haunt)",
-  takesValue: true,
-};
-
 const GHOST_DIR_FLAG: ManifestFlag = {
   name: "--ghost-dir",
   description:
@@ -43,17 +37,12 @@ export function buildHauntManifest(version: string): HauntManifest {
       {
         name: "init",
         description:
-          "Scaffold a .haunt/ package: manifest + an inventory example + a ghost.check/v1 check example.",
+          "Scaffold the .ghost/haunt/ package: an inventory example + a ghost.check/v1 check example (and the .ghost/ fingerprint when missing).",
         flags: [
-          PACKAGE_FLAG,
-          {
-            name: "--id",
-            description: "Package id (default: haunt)",
-            takesValue: true,
-          },
+          GHOST_DIR_FLAG,
           {
             name: "--force",
-            description: "Overwrite an existing manifest",
+            description: "Overwrite an existing .ghost/haunt/ package",
             takesValue: false,
           },
         ],
@@ -61,15 +50,14 @@ export function buildHauntManifest(version: string): HauntManifest {
       {
         name: "validate",
         description:
-          "Validate a .haunt/ package: shape + check references (local + fingerprint).",
-        flags: [PACKAGE_FLAG, GHOST_DIR_FLAG],
+          "Validate the .ghost/haunt/ package: shape + check references (local + fingerprint).",
+        flags: [GHOST_DIR_FLAG],
       },
       {
         name: "review",
         description:
           "Emit an advisory review packet from the package, the .ghost/ fingerprint, and a git diff.",
         flags: [
-          PACKAGE_FLAG,
           GHOST_DIR_FLAG,
           {
             name: "--base",
@@ -93,7 +81,6 @@ export function buildHauntManifest(version: string): HauntManifest {
         description:
           "Emit an advisory integrity packet: the whole inventory audited for sprawl against the .ghost/ fingerprint.",
         flags: [
-          PACKAGE_FLAG,
           GHOST_DIR_FLAG,
           {
             name: "--json",

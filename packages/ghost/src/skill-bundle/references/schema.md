@@ -13,11 +13,13 @@ Canonical package:
   glossary.md         the category vocabulary + what each category means
   <kind>.<slug>.md    a brand truth of a declared kind (principle.density.md)
   <slug>.md           an uncategorized brand truth (voice.md)
+  haunt/              reserved: the adherence plugin's subtree (inventory + checks); never a node
 ```
 
 The package is a **flat set of nodes** — no hierarchy, no inheritance, no edges.
 Folders may be used for human browsing, but they carry no meaning; the model
-reads a flat menu. Reserved at the root: `manifest.yml` and `glossary.md`; every
+reads a flat menu. Reserved at the root: `manifest.yml`, `glossary.md`, and the
+`haunt/` subtree (the adherence plugin's inventory + checks — never a node); every
 other `*.md` is a node.
 
 Git is the approval boundary: checked-in files are canonical; uncommitted edits

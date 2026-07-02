@@ -14,57 +14,40 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "init",
-      "Scaffold a .haunt/ package: manifest + inventory + check examples.",
-    )
-    .option(
-      "--package <dir>",
-      "The .haunt/ package directory (default: .haunt)",
+      "Scaffold the .ghost/haunt/ package: inventory + check examples (and the .ghost/ fingerprint when missing).",
     )
     .option(
       "--ghost-dir <dir>",
       "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
     )
-    .option("--id <id>", "Package id (default: haunt)")
-    .option("--force", "Overwrite an existing manifest")
-    .action(
-      async (opts: {
-        package?: string;
-        ghostDir?: string;
-        id?: string;
-        force?: boolean;
-      }) => {
-        const result = await runInit(opts);
-        if (result.notice) {
-          process.stderr.write(`${result.notice}\n`);
-        }
-        if (result.code !== 0) {
-          process.stderr.write(`Error: ${result.message}\n`);
-          process.exitCode = result.code;
-          return;
-        }
-        process.stdout.write(
-          `Scaffolded ${result.written.length} files in ${result.dir}:\n`,
-        );
-        for (const f of result.written) process.stdout.write(`  ${f}\n`);
-      },
-    );
+    .option("--force", "Overwrite an existing .ghost/haunt/ package")
+    .action(async (opts: { ghostDir?: string; force?: boolean }) => {
+      const result = await runInit(opts);
+      if (result.notice) {
+        process.stderr.write(`${result.notice}\n`);
+      }
+      if (result.code !== 0) {
+        process.stderr.write(`Error: ${result.message}\n`);
+        process.exitCode = result.code;
+        return;
+      }
+      process.stdout.write(
+        `Scaffolded ${result.written.length} files in ${result.dir}:\n`,
+      );
+      for (const f of result.written) process.stdout.write(`  ${f}\n`);
+    });
 
   cli
     .command(
       "validate",
-      "Validate a .haunt/ package: shape + check references.",
-    )
-    .option(
-      "--package <dir>",
-      "The .haunt/ package directory (default: .haunt)",
+      "Validate the .ghost/haunt/ package: shape + check references.",
     )
     .option(
       "--ghost-dir <dir>",
       "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
     )
-    .action(async (options: { package?: string; ghostDir?: string }) => {
+    .action(async (options: { ghostDir?: string }) => {
       const { report, code } = await runValidate({
-        package: options.package,
         ghostDir: options.ghostDir,
       });
       const out = formatReport(report);
@@ -79,11 +62,7 @@ export function buildCli(): ReturnType<typeof cac> {
   cli
     .command(
       "review",
-      "Emit an advisory review packet from the .haunt/ package, the .ghost/ fingerprint, and a git diff.",
-    )
-    .option(
-      "--package <dir>",
-      "The .haunt/ package directory (default: .haunt)",
+      "Emit an advisory review packet from the .ghost/haunt/ package, the .ghost/ fingerprint, and a git diff.",
     )
     .option(
       "--ghost-dir <dir>",
@@ -100,7 +79,6 @@ export function buildCli(): ReturnType<typeof cac> {
     )
     .action(
       async (options: {
-        package?: string;
         ghostDir?: string;
         base?: string;
         diff?: string;
@@ -122,10 +100,6 @@ export function buildCli(): ReturnType<typeof cac> {
       "Emit an advisory integrity packet: the whole inventory audited for sprawl against the .ghost/ fingerprint.",
     )
     .option(
-      "--package <dir>",
-      "The .haunt/ package directory (default: .haunt)",
-    )
-    .option(
       "--ghost-dir <dir>",
       "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
     )
@@ -133,21 +107,15 @@ export function buildCli(): ReturnType<typeof cac> {
       "--json",
       "Emit the raw JSON packet instead of the markdown prompt.",
     )
-    .action(
-      async (options: {
-        package?: string;
-        ghostDir?: string;
-        json?: boolean;
-      }) => {
-        const { output, code } = await runIntegrity(options);
-        if (code === 0) {
-          process.stdout.write(`${output}\n`);
-        } else {
-          process.stderr.write(`${output}\n`);
-        }
-        process.exitCode = code;
-      },
-    );
+    .action(async (options: { ghostDir?: string; json?: boolean }) => {
+      const { output, code } = await runIntegrity(options);
+      if (code === 0) {
+        process.stdout.write(`${output}\n`);
+      } else {
+        process.stderr.write(`${output}\n`);
+      }
+      process.exitCode = code;
+    });
 
   cli
     .command(

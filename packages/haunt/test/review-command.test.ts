@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,14 +29,15 @@ const DIFF = `diff --git a/packages/geist/src/Modal/x.tsx b/packages/geist/src/M
 describe("runReview", () => {
   it("hard-errors (exit 2) with an on-ramp when no .ghost/ resolves", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-review-"));
-    const pkgDir = join(dir, ".haunt");
-    await runInit({ package: pkgDir });
+    // A haunt package without a loadable fingerprint: copy the valid fixture
+    // into <ghost dir>/haunt but write no fingerprint manifest.
+    const ghostDir = join(dir, ".ghost");
+    await cp(fixture("valid"), join(ghostDir, "haunt"), { recursive: true });
     const diffPath = join(dir, "change.diff");
     await writeFile(diffPath, DIFF, "utf8");
 
     const result = await runReview({
-      package: pkgDir,
-      ghostDir: join(dir, "no-such-ghost"),
+      ghostDir,
       diff: diffPath,
     });
     expect(result.code).toBe(2);
@@ -47,18 +48,32 @@ describe("runReview", () => {
 
   it("builds a packet when --ghost-dir points at a fingerprint", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-review-"));
-    const pkgDir = join(dir, ".haunt");
-    await runInit({ package: pkgDir });
+    // Assemble a full .ghost/ package: the ghost fixture root + the valid
+    // haunt fixture as its haunt/ subtree.
+    const ghostDir = join(dir, ".ghost");
+    await cp(fixture("ghost"), ghostDir, { recursive: true });
+    await cp(fixture("valid"), join(ghostDir, "haunt"), { recursive: true });
     const diffPath = join(dir, "change.diff");
     await writeFile(diffPath, DIFF, "utf8");
 
     const result = await runReview({
-      package: pkgDir,
-      ghostDir: fixture("ghost"),
+      ghostDir,
       diff: diffPath,
     });
     expect(result.code).toBe(0);
     expect(result.packet?.fingerprintId).toBe("demo-fingerprint");
+    expect(result.output).toContain("# Haunt review");
+  });
+
+  it("scaffolds via init then reviews against the scaffolded fingerprint", async () => {
+    dir = await mkdtemp(join(tmpdir(), "haunt-review-"));
+    const ghostDir = join(dir, ".ghost");
+    await runInit({ ghostDir });
+    const diffPath = join(dir, "change.diff");
+    await writeFile(diffPath, DIFF, "utf8");
+
+    const result = await runReview({ ghostDir, diff: diffPath });
+    expect(result.code).toBe(0);
     expect(result.output).toContain("# Haunt review");
   });
 });

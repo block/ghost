@@ -21,6 +21,7 @@ whatever it is building — product UI, marketing, email, a landing page. Ghost 
   glossary.md         # the author's category vocabulary + what each category means
   <kind>.<slug>.md    # a brand truth of a declared kind (e.g. principle.density.md)
   <slug>.md           # an uncategorized brand truth (e.g. voice.md)
+  haunt/              # reserved: the adherence plugin's subtree (inventory + checks); never a node
 ```
 
 The checked-in `.ghost/` package is the source of truth. Ordinary Git workflow is
@@ -140,8 +141,9 @@ category, suggesting the closest declared kind — so `guiding-principles.densit
 is flagged with "did you mean `principle`?".
 
 `manifest.yml` anchors the package with `schema: ghost.fingerprint-package/v1`.
-Reserved at the package root: `manifest.yml` and `glossary.md`; every other `*.md`
-is a node. Moving or renaming a node changes its id.
+Reserved at the package root: `manifest.yml`, `glossary.md`, and the `haunt/`
+subtree (the adherence plugin's inventory + checks — never a node source);
+every other `*.md` is a node. Moving or renaming a node changes its id.
 
 ## Always
 

@@ -154,6 +154,32 @@ describe("split fingerprint package", () => {
     );
   });
 
+  it("reserves the haunt/ subtree — its files are never nodes and never invalid", async () => {
+    await writeManifest(dir);
+    await writeGlossary(dir, ["principle"]);
+    await writeFile(
+      join(dir, "principle.density.md"),
+      "---\ndescription: Density is earned.\n---\n\nEvery surface earns its density.\n",
+    );
+    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
+    await mkdir(join(dir, "haunt", "checks"), { recursive: true });
+    await writeFile(
+      join(dir, "haunt", "inventory", "x.md"),
+      "---\ndescription: Modals.\npaths:\n  - src/**\n---\n\nModal material.\n",
+    );
+    await writeFile(
+      join(dir, "haunt", "checks", "y.md"),
+      "---\nname: y\ndescription: A check.\nseverity: high\nreferences:\n  - x\n---\n\nGrade it.\n",
+    );
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    // Only the real node is in the catalog; nothing under haunt/ leaks in —
+    // neither as a node nor as an invalid file.
+    expect([...loaded.catalog.nodes.keys()]).toEqual(["principle.density"]);
+    expect(loaded.invalid).toEqual([]);
+  });
+
   it("reports a missing manifest", async () => {
     await writeFile(join(dir, "index.md"), "---\n---\n\nRoot prose.\n");
 

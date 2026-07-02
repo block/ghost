@@ -1,26 +1,21 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { type PlacedNode, parseNode } from "#ghost-core";
-import { GHOST_CHECKS_DIRNAME } from "./checks-dir.js";
 import {
   FINGERPRINT_MANIFEST_FILENAME,
   GHOST_GLOSSARY_FILENAME,
 } from "./constants.js";
 
 /**
- * Reserved package-root entries that are never nodes. `checks/` is a reserved
- * top-level subtree (the markdown checks an agent evaluates). The manifest is
- * the package anchor.
- *
- * NOTE: `checks/` is reserved at the package root only. Internal/nested reuse
- * (e.g. teams that compose nested `.agents`-style trees) will want this set to
- * be configurable per package — a planned follow-up, deliberately not built yet.
+ * Reserved package-root entries that are never nodes: the manifest (the
+ * package anchor), the glossary, and `haunt/` (the adherence plugin's
+ * subtree — inventory + checks, owned by Haunt). The list is closed.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
   "manifest.yaml",
   GHOST_GLOSSARY_FILENAME,
-  GHOST_CHECKS_DIRNAME,
+  "haunt",
 ]);
 
 export interface LoadedNodeTree {
@@ -37,7 +32,7 @@ export interface LoadedNodeTree {
  * its containing directory (`marketing`), or the implicit `core` root at the
  * top level. A directory's own prose lives in its `index.md`: the root
  * `index.md` is the `core` node (parent absent); `marketing/index.md` is the
- * `marketing` node (id `marketing`, parent `core`). The `checks/` subtree and
+ * `marketing` node (id `marketing`, parent `core`). The `haunt/` subtree and
  * `manifest.yml` are reserved and skipped.
  *
  * A file that fails per-node lint is collected in `invalid` (with its first

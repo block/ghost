@@ -44,6 +44,7 @@ manifest.yml          # schema + id (the package anchor)
 glossary.md           # the author's category vocabulary + what each kind means
 <kind>.<slug>.md      # a brand truth of a declared kind (principle.density.md)
 <slug>.md             # an uncategorized brand truth (voice.md)
+haunt/                # reserved: the adherence plugin's subtree (inventory + checks); never a node
 ```
 
 The **corpus is flat**. A node is a markdown file: a `description` in
@@ -62,11 +63,12 @@ Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names its **condition** — the situation it applies in, never a filing
 destination. `ghost gather` emits the whole menu (every node's id, kind, and
 description); the agent selects just-in-time against the actual task. Reserved
-at the package root: `manifest.yml` and `glossary.md`; every other `*.md` is a
-node. Renaming a node changes its id. Checks do **not** live in `.ghost/`;
-they live in Haunt's `.haunt/` package and bind to fingerprint prose via
-`references`. Ordinary Git review is the approval boundary for fingerprint
-edits.
+at the package root: `manifest.yml`, `glossary.md`, and the `haunt/` subtree
+(the adherence plugin's inventory + checks — never a node source); every other
+`*.md` is a node. Renaming a node changes its id. Checks do **not** live at
+the fingerprint root; they live in Haunt's `.ghost/haunt/` package and bind to
+fingerprint prose via `references`. Ordinary Git review is the approval
+boundary for fingerprint edits.
 
 ## Packages
 
@@ -74,7 +76,7 @@ edits.
 | --- | --- | --- |
 | `packages/ghost` | yes: `@anarchitecture/ghost-fingerprint` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, corpus validation, the flat gather menu, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel` | no | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference ("batteries-included" body a Haunt can inhabit). Design-system-agnostic; nothing in Ghost requires it. |
-| `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer. A `.haunt/` package bridges to code you already own (inventory with `paths` globs, checks with `references`); `haunt review` emits an advisory diff-review packet and `haunt integrity` emits a whole-inventory sprawl-audit packet. Requires a `.ghost/` fingerprint. |
+| `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer, a plugin of the fingerprint living in the reserved `.ghost/haunt/` subtree (no manifest of its own). It bridges to code you already own (inventory with `paths` globs, checks with `references`); `haunt review` emits an advisory diff-review packet and `haunt integrity` emits a whole-inventory sprawl-audit packet. Requires a `.ghost/` fingerprint. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands
@@ -137,9 +139,10 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
 - The canonical on-disk form is a flat `.ghost/` package: `manifest.yml` plus
-  `glossary.md` plus prose nodes (`<kind>.<slug>.md` or bare `<slug>.md`). The
-  corpus is flat; kinds come from filename prefixes declared in the glossary,
-  never from a separate declaration or a directory hierarchy.
+  `glossary.md` plus prose nodes (`<kind>.<slug>.md` or bare `<slug>.md`),
+  with `haunt/` reserved for the adherence plugin's subtree (never a node
+  source). The corpus is flat; kinds come from filename prefixes declared in
+  the glossary, never from a separate declaration or a directory hierarchy.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated

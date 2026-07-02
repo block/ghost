@@ -1,12 +1,9 @@
-import { resolve } from "node:path";
-import { loadFingerprint } from "../fingerprint/load.js";
+import { loadFingerprint, resolveHauntDir } from "../fingerprint/load.js";
 import { validateHauntGraph } from "../graph/validate.js";
 import type { HauntLintReport } from "../model/types.js";
 import { loadHauntPackage } from "../scan/load-package.js";
 
 export interface ValidateOptions {
-  /** The `.haunt/` package directory (default: `.haunt` under cwd). */
-  package?: string;
   /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
   ghostDir?: string;
 }
@@ -32,7 +29,7 @@ function merge(a: HauntLintReport, b: HauntLintReport): HauntLintReport {
 export async function runValidate(
   options: ValidateOptions,
 ): Promise<{ report: HauntLintReport; code: number }> {
-  const dir = resolve(process.cwd(), options.package ?? ".haunt");
+  const dir = resolveHauntDir(options.ghostDir);
   const { pkg, report: loadReport } = await loadHauntPackage(dir);
 
   if (pkg === null) {

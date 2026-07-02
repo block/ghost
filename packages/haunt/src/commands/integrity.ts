@@ -1,6 +1,5 @@
-import { resolve } from "node:path";
 import { listRepoFiles } from "../bridge/tree.js";
-import { loadFingerprint } from "../fingerprint/load.js";
+import { loadFingerprint, resolveHauntDir } from "../fingerprint/load.js";
 import { loadHauntPackage } from "../scan/load-package.js";
 import { noFingerprintMessage } from "./fingerprint-required.js";
 import {
@@ -10,7 +9,6 @@ import {
 } from "./integrity-packet.js";
 
 export interface IntegrityOptions {
-  package?: string;
   /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
   ghostDir?: string;
   /** Emit the raw JSON packet instead of the markdown prompt. */
@@ -36,7 +34,7 @@ export async function runIntegrity(
   options: IntegrityOptions,
 ): Promise<IntegrityResult> {
   const cwd = options.cwd ?? process.cwd();
-  const dir = resolve(cwd, options.package ?? ".haunt");
+  const dir = resolveHauntDir(options.ghostDir, cwd);
   const { pkg, report } = await loadHauntPackage(dir);
   if (pkg === null) {
     const lines = report.issues.map(

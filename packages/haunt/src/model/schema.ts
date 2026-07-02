@@ -1,15 +1,4 @@
 import { z } from "zod";
-import { HauntIdSchema } from "./ids.js";
-
-export const HAUNT_PACKAGE_SCHEMA = "haunt.package/v1" as const;
-
-/** `manifest.yml` — anchors a `.haunt/` package. */
-export const HauntPackageManifestSchema = z
-  .object({
-    schema: z.literal(HAUNT_PACKAGE_SCHEMA),
-    id: HauntIdSchema,
-  })
-  .strict();
 
 /**
  * inventory frontmatter — the code bridge. `paths` are repo globs naming where
@@ -28,7 +17,7 @@ export const HauntInventoryFrontmatterSchema = z
  * The haunt-side check addition: `references` binds a `ghost.check/v1` check
  * to the prose it enforces — local inventory ids and/or fingerprint node
  * targets (see `classifyReference`). Required, min 1: a haunt check with
- * nothing to reference has no reason to live in `.haunt/`. The rest of the
+ * nothing to reference has no reason to live in `.ghost/haunt/`. The rest of the
  * check frontmatter (`name`, `description`, `severity`, …) is ghost-core's
  * contract, linted by `lintGhostCheck`.
  */

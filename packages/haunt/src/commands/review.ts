@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
-import { loadFingerprint } from "../fingerprint/load.js";
+import { loadFingerprint, resolveHauntDir } from "../fingerprint/load.js";
 import { loadHauntPackage } from "../scan/load-package.js";
 import { noFingerprintMessage } from "./fingerprint-required.js";
 import {
@@ -14,7 +14,6 @@ import {
 const execFileAsync = promisify(execFile);
 
 export interface ReviewOptions {
-  package?: string;
   /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
   ghostDir?: string;
   /** Git ref to diff against (default: HEAD). */
@@ -65,7 +64,7 @@ function readStdin(): Promise<string> {
  * advisory — findings are the agent's job.
  */
 export async function runReview(options: ReviewOptions): Promise<ReviewResult> {
-  const dir = resolve(process.cwd(), options.package ?? ".haunt");
+  const dir = resolveHauntDir(options.ghostDir);
   const { pkg, report } = await loadHauntPackage(dir);
   if (pkg === null) {
     const lines = report.issues.map(

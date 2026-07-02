@@ -36,16 +36,20 @@ bridge reconnects them.
 
 ## Shape
 
-A `.haunt/` package is two flat dirs — no nesting, no inheritance. Brand truths
-(principles, surface composition, stance) live in the repo's `.ghost/`
-fingerprint as prose nodes; haunt checks point at them (see
+Haunt is a plugin of the fingerprint: it lives in the reserved
+`.ghost/haunt/` subtree, always derived from the fingerprint's location, and
+has no manifest of its own — the fingerprint's `manifest.yml` is the only
+anchor. A haunt package is two flat dirs — no nesting, no inheritance. Brand
+truths (principles, surface composition, stance) live at the `.ghost/` root
+as fingerprint prose nodes; haunt checks point at them (see
 `notes/haunt-reconciliation.md`):
 
 ```text
-.haunt/
-  manifest.yml   # schema: haunt.package/v1, id
-  inventory/     # the materials — prose + `paths` to where they live in code.
-  checks/        # ghost.check/v1 assertions — `references` bind them to prose.
+.ghost/
+  manifest.yml   # the fingerprint's anchor
+  haunt/
+    inventory/   # the materials — prose + `paths` to where they live in code.
+    checks/      # ghost.check/v1 assertions — `references` bind them to prose.
 ```
 
 A check is a `ghost.check/v1` document (`name`, `description`, `severity` +
@@ -61,7 +65,7 @@ work without one.
 ## CLI
 
 ```bash
-ghost-haunt init                 # scaffold a .haunt/ package (manifest + inventory + check examples)
+ghost-haunt init                 # scaffold the .ghost/haunt/ package (inventory + check examples)
 ghost-haunt validate             # shape (flat dirs) + check references (local + fingerprint)
 ghost-haunt review --diff=-      # advisory packet: matched materials, referenced fingerprint
                            #   prose, offered checks, coverage gaps, diff (agent renders findings)
@@ -71,6 +75,9 @@ ghost-haunt integrity            # advisory audit packet: the whole inventory pa
 ghost-haunt skill install        # install the host-agent skill bundle
 ghost-haunt manifest             # self-describing JSON of commands + flags
 ```
+
+`ghost haunt <command>` also works via the ghost hub dispatch when both CLIs
+are installed.
 
 `ghost-haunt review` requires a resolvable `.ghost/` package (exit 2 with an on-ramp
 message otherwise; `--ghost-dir <dir>` overrides the location). The bridge is

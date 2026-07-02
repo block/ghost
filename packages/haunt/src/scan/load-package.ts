@@ -1,17 +1,16 @@
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename, join, resolve } from "node:path";
 import {
   type GhostCheckFrontmatter,
   lintGhostCheck,
   loadGhostCheck,
   parseCheckMarkdown,
 } from "@anarchitecture/ghost-fingerprint/core";
-import { parse as parseYaml } from "yaml";
 import { HauntIdSchema } from "../model/ids.js";
 import {
   HauntCheckReferencesSchema,
   HauntInventoryFrontmatterSchema,
-  HauntPackageManifestSchema,
 } from "../model/schema.js";
 import {
   finalizeReport,
@@ -28,49 +27,31 @@ export interface LoadPackageResult {
   report: HauntLintReport;
 }
 
-const MANIFEST_FILE = "manifest.yml";
-
 /** Directories from the retired four-tier shape — warn if any linger. */
 const LEGACY_DIRS = ["tenets", "surfaces", "exemplars"] as const;
 
 /**
- * Load and per-document-validate a `.haunt/` package from disk:
- * `manifest.yml` + `inventory/` (own frontmatter schema) + `checks/`
- * (`ghost.check/v1`, linted by ghost-core, plus the haunt-side `references`
- * lint). Each dir is read *flat* (no recursion, which mechanically enforces
- * "no nesting"). Cross-reference resolution (local + fingerprint) is
- * `ghost-haunt validate`'s job, not here.
+ * Load and per-document-validate a `.ghost/haunt/` package from disk:
+ * `inventory/` (own frontmatter schema) + `checks/` (`ghost.check/v1`, linted
+ * by ghost-core, plus the haunt-side `references` lint). Haunt has no
+ * manifest — the fingerprint's `manifest.yml` is the only anchor; the haunt
+ * package is just the `haunt/` dir. Each dir is read *flat* (no recursion,
+ * which mechanically enforces "no nesting"). Cross-reference resolution
+ * (local + fingerprint) is `ghost-haunt validate`'s job, not here.
  */
 export async function loadHauntPackage(
   dir: string,
 ): Promise<LoadPackageResult> {
   const issues: HauntLintIssue[] = [];
 
-  // --- manifest ---
-  let manifest: HauntPackage["manifest"] | null = null;
-  try {
-    const raw = await readFile(join(dir, MANIFEST_FILE), "utf8");
-    const parsed = parseYaml(raw);
-    const result = HauntPackageManifestSchema.safeParse(parsed);
-    if (result.success) {
-      manifest = result.data;
-    } else {
-      for (const issue of result.error.issues) {
-        issues.push({
-          severity: "error",
-          rule: `manifest/${issue.code}`,
-          where: MANIFEST_FILE,
-          message: issue.message,
-        });
-      }
-    }
-  } catch {
+  if (!existsSync(dir)) {
     issues.push({
       severity: "error",
-      rule: "manifest/missing",
-      where: MANIFEST_FILE,
-      message: `${MANIFEST_FILE} not found — is this a .haunt/ package?`,
+      rule: "package/missing",
+      where: "haunt/",
+      message: `${dir} not found — run \`ghost-haunt init\` to scaffold the .ghost/haunt/ package`,
     });
+    return { pkg: null, report: finalizeReport(issues) };
   }
 
   const inventory = await loadInventory(dir, issues);
@@ -83,17 +64,30 @@ export async function loadHauntPackage(
         severity: "warning",
         rule: "package/legacy-dir",
         where: `${legacy}/`,
-        message: `'${legacy}/' is no longer part of the .haunt/ shape — brand truths live in .ghost/ as fingerprint nodes; remove or migrate this directory`,
+        message: `'${legacy}/' is no longer part of the haunt shape — brand truths live in .ghost/ as fingerprint nodes; remove or migrate this directory`,
       });
     }
   }
 
+  // --- legacy standalone .haunt/ as a sibling of the .ghost/ dir ---
+  // `dir` is `<ghost dir>/haunt`, so the legacy location is two levels up.
+  const legacyHaunt = resolve(dir, "..", "..", ".haunt");
+  if (existsSync(legacyHaunt)) {
+    issues.push({
+      severity: "warning",
+      rule: "package/legacy-haunt-dir",
+      where: ".haunt/",
+      message:
+        "found legacy `.haunt/` — haunt now lives at `.ghost/haunt/`; move inventory/ and checks/ there and delete `.haunt/` (its manifest.yml is no longer needed)",
+    });
+  }
+
   const report = finalizeReport(issues);
-  if (manifest === null || report.errors > 0) {
+  if (report.errors > 0) {
     return { pkg: null, report };
   }
 
-  return { pkg: { manifest, inventory, checks }, report };
+  return { pkg: { inventory, checks }, report };
 }
 
 /** Read a flat dir of `*.md`, enforcing flat slugs and no nesting. */

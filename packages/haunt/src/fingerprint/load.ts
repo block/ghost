@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import type { LoadedFingerprintPackage } from "@anarchitecture/ghost-fingerprint/fingerprint";
 import {
   loadFingerprintPackage,
@@ -6,6 +7,21 @@ import {
 import { resolveGhostDirDefault } from "@anarchitecture/ghost-fingerprint/scan";
 
 export type { LoadedFingerprintPackage };
+
+/**
+ * Resolve the haunt package dir. Haunt is a plugin of the fingerprint: its
+ * location is always `<ghost dir>/haunt`, derived from the same resolution
+ * every command uses for `--ghost-dir` (flag → GHOST_PACKAGE_DIR → `.ghost`).
+ * Never configured separately.
+ */
+export function resolveHauntDir(
+  ghostDir?: string,
+  cwd = process.cwd(),
+): string {
+  const dir = ghostDir ?? resolveGhostDirDefault();
+  const paths = resolveFingerprintPackage(dir, cwd);
+  return join(paths.packageDir, "haunt");
+}
 
 export interface LoadFingerprintOptions {
   /** Explicit `.ghost/` package dir (overrides GHOST_PACKAGE_DIR + default). */

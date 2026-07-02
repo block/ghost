@@ -58,7 +58,6 @@ export interface PacketFingerprintNode {
 }
 
 export interface ReviewPacket {
-  packageId: string;
   fingerprintId: string;
   touchedFiles: string[];
   /** Matched materials with prose + the code facts (files). */
@@ -134,7 +133,6 @@ export function buildReviewPacket(
   });
 
   return {
-    packageId: pkg.manifest.id,
     fingerprintId: fingerprint.manifest.id,
     touchedFiles: res.touchedFiles.map((f) => f.path),
     inventory,
@@ -152,7 +150,7 @@ export function buildReviewPacket(
  */
 export function formatReviewPacket(packet: ReviewPacket): string {
   const out: string[] = [];
-  out.push(`# Haunt review — package \`${packet.packageId}\``);
+  out.push(`# Haunt review — fingerprint \`${packet.fingerprintId}\``);
   out.push("");
   out.push(
     "You are grading **high-altitude compositional drift**: hierarchy collapsing,",

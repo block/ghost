@@ -1,11 +1,6 @@
 import type { GhostCheckFrontmatter } from "@anarchitecture/ghost-fingerprint/core";
 import type { z } from "zod";
-import type {
-  HauntInventoryFrontmatterSchema,
-  HauntPackageManifestSchema,
-} from "./schema.js";
-
-export type HauntPackageManifest = z.infer<typeof HauntPackageManifestSchema>;
+import type { HauntInventoryFrontmatterSchema } from "./schema.js";
 
 export type HauntInventoryFrontmatter = z.infer<
   typeof HauntInventoryFrontmatterSchema
@@ -31,9 +26,12 @@ export interface HauntCheck {
   body: string;
 }
 
-/** The whole `.haunt/` package, loaded and validated per-document. */
+/**
+ * The whole `.ghost/haunt/` package, loaded and validated per-document. Haunt
+ * has no manifest of its own — the fingerprint's `manifest.yml` is the only
+ * anchor; a haunt package is just the `haunt/` dir with inventory + checks.
+ */
 export interface HauntPackage {
-  manifest: HauntPackageManifest;
   inventory: Map<string, HauntInventory>;
   checks: Map<string, HauntCheck>;
 }

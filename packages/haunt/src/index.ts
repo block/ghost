@@ -7,7 +7,7 @@
  * as source of truth) and grades *high-altitude* compositional drift against
  * the fingerprint's brand truths.
  *
- * On-disk shape: a `.haunt/` package of two flat dirs — inventory (materials +
+ * On-disk shape: a `.ghost/haunt/` package of two flat dirs — inventory (materials +
  * `paths` to code) and checks (`ghost.check/v1` documents whose `references`
  * bind them to local inventory ids and/or `.ghost/` fingerprint node targets).
  * Brand stance lives in `.ghost/` as Fingerprint nodes, consumed via
@@ -42,11 +42,10 @@ export {
 export { runSkillInstall } from "./commands/skill.js";
 export { runValidate } from "./commands/validate.js";
 export type { LoadedFingerprintPackage } from "./fingerprint/load.js";
-export { loadFingerprint } from "./fingerprint/load.js";
+export { loadFingerprint, resolveHauntDir } from "./fingerprint/load.js";
 export { validateHauntGraph } from "./graph/validate.js";
 export type { HauntReference } from "./model/ids.js";
 export { classifyReference } from "./model/ids.js";
-export { HAUNT_PACKAGE_SCHEMA } from "./model/schema.js";
 export type {
   HauntCheck,
   HauntInventory,

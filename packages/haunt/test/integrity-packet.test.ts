@@ -58,7 +58,6 @@ describe("buildIntegrityPacket", () => {
     const fingerprint = await loadGhostFixture();
     const packet = buildIntegrityPacket(pkg, fingerprint, FILES);
 
-    expect(packet.packageId).toBe("demo");
     expect(packet.fingerprintId).toBe("demo-fingerprint");
 
     const modals = packet.materials.find((m) => m.id === "modals");

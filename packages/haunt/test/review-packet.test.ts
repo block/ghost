@@ -36,7 +36,6 @@ describe("buildReviewPacket", () => {
       diff("packages/geist/src/Modal/x.tsx"),
     );
 
-    expect(packet.packageId).toBe("demo");
     expect(packet.fingerprintId).toBe("demo-fingerprint");
     expect(packet.inventory[0]?.id).toBe("modals");
     expect(packet.inventory[0]?.prose).toContain("No nested modals");

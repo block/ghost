@@ -1,14 +1,16 @@
-# Authoring a `.haunt/` package
+# Authoring a `.ghost/haunt/` package
 
-A `.haunt/` package is two flat dirs. Flat — **no nesting** (a nested folder
-inside a dir is a hard error), and no inheritance: checks bind to prose through
-explicit `references`, never through folder depth.
+A `.ghost/haunt/` package is two flat dirs inside the fingerprint's reserved
+`haunt/` subtree. Flat — **no nesting** (a nested folder inside a dir is a
+hard error), and no inheritance: checks bind to prose through explicit
+`references`, never through folder depth. Haunt has no manifest of its own —
+the fingerprint's `manifest.yml` is the only anchor.
 
 ```text
-.haunt/
-  manifest.yml   # schema: haunt.package/v1, id
-  inventory/     # the materials — the code bridge
-  checks/        # ghost.check/v1 assertions
+.ghost/
+  haunt/
+    inventory/   # the materials — the code bridge
+    checks/      # ghost.check/v1 assertions
 ```
 
 Brand truths — principles, surface composition, stance — do **not** live here.

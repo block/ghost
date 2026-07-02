@@ -17,26 +17,27 @@ afterEach(async () => {
 });
 
 describe("runInit", () => {
-  it("scaffolds a two-dir package that loads clean", async () => {
+  it("scaffolds the .ghost/haunt/ subtree — two dirs, no manifest — that loads clean", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
-    const pkgDir = join(dir, ".haunt");
-    const result = await runInit({
-      package: pkgDir,
-      ghostDir: join(dir, ".ghost"),
-      id: "demo",
-    });
+    const ghostDir = join(dir, ".ghost");
+    const result = await runInit({ ghostDir });
     expect(result.code).toBe(0);
+    expect(result.dir).toBe(join(ghostDir, "haunt"));
     expect(result.written).toEqual([
-      "manifest.yml",
       "inventory/modals.md",
       "checks/contracts-stay-congruent.md",
     ]);
 
-    const { pkg, report } = await loadHauntPackage(pkgDir);
+    // One .ghost/ root: fingerprint files at the root plus the haunt/ subtree.
+    // No haunt manifest is ever written.
+    expect(existsSync(join(ghostDir, "manifest.yml"))).toBe(true);
+    expect(existsSync(join(ghostDir, "haunt"))).toBe(true);
+    expect(existsSync(join(ghostDir, "haunt", "manifest.yml"))).toBe(false);
+
+    const { pkg, report } = await loadHauntPackage(join(ghostDir, "haunt"));
     expect(report.errors).toBe(0);
     expect(pkg).not.toBeNull();
     if (!pkg) return;
-    expect(pkg.manifest.id).toBe("demo");
 
     // The example check demonstrates the references grammar: one local
     // inventory id plus one fingerprint-shaped `node > Heading` target.
@@ -52,23 +53,25 @@ describe("runInit", () => {
     ).toBe(true);
   });
 
-  it("refuses to overwrite an existing manifest without --force", async () => {
+  it("refuses to overwrite an existing haunt/ subtree without --force", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
-    const pkgDir = join(dir, ".haunt");
     const ghostDir = join(dir, ".ghost");
-    await runInit({ package: pkgDir, ghostDir });
-    const second = await runInit({ package: pkgDir, ghostDir });
+    await runInit({ ghostDir });
+    const second = await runInit({ ghostDir });
     expect(second.code).toBe(3);
+    expect(second.message).toContain("--force");
   });
 
   it("scaffolds a missing .ghost/ fingerprint first and returns the notice", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
-    const pkgDir = join(dir, ".haunt");
     const ghostDir = join(dir, ".ghost");
-    const result = await runInit({ package: pkgDir, ghostDir });
+    const result = await runInit({ ghostDir });
     expect(result.code).toBe(0);
     expect(existsSync(join(ghostDir, "manifest.yml"))).toBe(true);
-    expect(existsSync(join(pkgDir, "manifest.yml"))).toBe(true);
+    expect(existsSync(join(ghostDir, "glossary.md"))).toBe(true);
+    expect(existsSync(join(ghostDir, "haunt", "inventory", "modals.md"))).toBe(
+      true,
+    );
     expect(result.ghostWritten).toContain("manifest.yml");
     expect(result.notice).toBe(NO_TRUTHS_NOTICE);
     expect(NO_TRUTHS_NOTICE).toContain("scaffolded .ghost/");
@@ -76,24 +79,21 @@ describe("runInit", () => {
 
   it("leaves an existing .ghost/ fingerprint untouched", async () => {
     dir = await mkdtemp(join(tmpdir(), "haunt-init-"));
-    const pkgDir = join(dir, ".haunt");
     const ghostDir = join(dir, ".ghost");
-    // First init scaffolds the fingerprint; record its state.
-    await runInit({ package: pkgDir, ghostDir });
+    // First init scaffolds the fingerprint; record its root state.
+    await runInit({ ghostDir });
     const before = await readFile(join(ghostDir, "manifest.yml"), "utf-8");
-    const filesBefore = (await readdir(ghostDir, { recursive: true })).sort();
+    const rootBefore = (await readdir(ghostDir)).sort();
 
-    // Second init (forced, so the .haunt manifest is rewritten) must not
+    // Second init (forced, so the haunt subtree is rewritten) must not
     // touch the existing fingerprint or report a notice.
-    const second = await runInit({ package: pkgDir, ghostDir, force: true });
+    const second = await runInit({ ghostDir, force: true });
     expect(second.code).toBe(0);
     expect(second.ghostWritten).toBeUndefined();
     expect(second.notice).toBeUndefined();
     expect(await readFile(join(ghostDir, "manifest.yml"), "utf-8")).toBe(
       before,
     );
-    expect((await readdir(ghostDir, { recursive: true })).sort()).toEqual(
-      filesBefore,
-    );
+    expect((await readdir(ghostDir)).sort()).toEqual(rootBefore);
   });
 });
