@@ -69,7 +69,13 @@ Gather context before generation:
 
 ```bash
 ghost gather        # list every truth by id, kind, and description — the agent selects
+ghost pull <ids>    # emit the selected truths' full bodies
 ```
+
+`pull` also appends each selection to `.ghost/.pulls`, a local gitignored
+history file — while tuning a node's description, re-run the task and
+`tail .ghost/.pulls` to see whether the agent reached for it. Ghost never
+reads the file back (`--no-history` skips the append).
 
 Install the skill bundle so your host agent (Claude Code, Codex, Cursor,
 Goose, …) knows how to author and consume the fingerprint:

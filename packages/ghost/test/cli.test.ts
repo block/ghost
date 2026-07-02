@@ -416,6 +416,79 @@ describe("ghost CLI", () => {
     expect(validate.stdout).toContain("0 error");
   });
 
+  it("pull emits the named nodes' bodies and appends to the history tape", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "principle.trust.md"),
+      "---\ndescription: Trust at the payment moment.\n---\n\nNear payment, reduce felt risk.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "voice.md"),
+      "---\ndescription: The brand voice.\n---\n\nPlain words. No hype.\n",
+    );
+
+    const pull = await runCli(["pull", "principle.trust", "voice"], dir);
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("Near payment, reduce felt risk.");
+    expect(pull.stdout).toContain("Plain words. No hype.");
+
+    // The tape: one line per pull, ISO timestamp + the pulled ids.
+    const tape = await readFile(join(dir, ".ghost", ".pulls"), "utf-8");
+    expect(tape.trim().split("\n")).toHaveLength(1);
+    expect(tape).toContain("principle.trust voice");
+
+    // JSON format carries id, kind, description, and body.
+    const json = await runCli(
+      ["pull", "principle.trust", "--format", "json"],
+      dir,
+    );
+    expect(json.code).toBe(0);
+    const payload = JSON.parse(json.stdout);
+    expect(payload.kind).toBe("pull");
+    expect(payload.nodes[0]).toMatchObject({
+      id: "principle.trust",
+      kind: "principle",
+      description: "Trust at the payment moment.",
+    });
+    expect(payload.nodes[0].body).toContain("reduce felt risk");
+
+    // Second pull appended; --no-history did not.
+    await runCli(["pull", "voice", "--no-history"], dir);
+    const tapeAfter = await readFile(join(dir, ".ghost", ".pulls"), "utf-8");
+    expect(tapeAfter.trim().split("\n")).toHaveLength(2);
+
+    // The tape is a dotfile: never a node, and gitignored by the scaffold.
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    const menu = JSON.parse(gather.stdout);
+    expect(menu.nodes.some((n: { id: string }) => n.id.includes("pulls"))).toBe(
+      false,
+    );
+    await expect(
+      readFile(join(dir, ".ghost", ".gitignore"), "utf-8"),
+    ).resolves.toContain(".pulls");
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+  });
+
+  it("pull exits 2 with a closest-id hint for an unknown node", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "principle.trust.md"),
+      "---\ndescription: Trust.\n---\n\nBody.\n",
+    );
+
+    const result = await runCli(["pull", "principle.trst"], dir, {
+      allowNoExit: true,
+    });
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("unknown node `principle.trst`");
+    expect(result.stderr).toContain("principle.trust");
+    // A failed pull leaves no tape entry.
+    await expect(
+      readFile(join(dir, ".ghost", ".pulls"), "utf-8"),
+    ).rejects.toThrow();
+  });
+
   // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
   // rebuilt as `gather` in Phase 5/7). Skipped until then.
   it.skip("gathers Relay context as json from an exact package", async () => {

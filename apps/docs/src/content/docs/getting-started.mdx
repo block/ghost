@@ -30,6 +30,7 @@ output. You work through a short loop:
 ghost init        # scaffold .ghost/ (manifest + glossary + a starter index.md)
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather      # emit the menu; your agent selects the truths the task needs
+ghost pull <ids>  # read the selected truths' full bodies
 ```
 
 The CLI does the deterministic work; your agent does the interpretation. The
@@ -107,12 +108,18 @@ against it and pulls the truths it judges relevant:
 ```bash
 ghost gather
 ghost gather --format json
+ghost pull principle.trust voice   # read the selected truths' full bodies
 ```
 
 This is "the right context at the right time": the agent selects just-in-time
 against the actual task, then manifests the truths into whatever it is building.
 Run it before generation, so the agent builds with the brand in hand rather than
 discovering the gaps in review.
+
+Each `pull` also appends a line to `.ghost/.pulls`, a local gitignored history
+file. That one is for you: tweak a node's description, re-run the task, and
+`tail .ghost/.pulls` shows whether the agent reached for the truth. Ghost never
+reads it back.
 
 </DocSection>
 

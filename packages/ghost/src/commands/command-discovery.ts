@@ -127,6 +127,13 @@ const COMMAND_DISCOVERY = [
     summary: "Emit the fingerprint menu for the agent to select from.",
   },
   {
+    name: "pull",
+    group: "core",
+    defaultHelp: true,
+    compactName: "pull",
+    summary: "Emit the named nodes' bodies; log the pull to .ghost/.pulls.",
+  },
+  {
     name: "skill",
     group: "core",
     defaultHelp: true,

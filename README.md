@@ -45,8 +45,14 @@ run. The CLI does the deterministic work; the agent does the interpretation.
 
 ```bash
 ghost gather        # before building: list every truth — the agent picks what applies
+ghost pull <ids>    # read the picked truths' full bodies
 ghost validate      # after edits: check the package shape and every node
 ```
+
+Each `pull` also appends a line to `.ghost/.pulls`, a local gitignored history
+file. That's for you: tweak a node's description, re-run the task, and
+`tail .ghost/.pulls` shows whether the agent reached for it. Ghost never reads
+the file back — it's scratch, not state.
 
 The shift is timing: Ghost gives agents your brand decisions **before** they
 build, not after a review finds the drift. Ghost grounds generation; it never
@@ -74,6 +80,7 @@ grow the fingerprint one repeated decision at a time.
 | `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a starter `index.md` node. |
 | `ghost validate` | Validate the package: shape, node validity, and glossary kind prefixes. |
 | `ghost gather` | Emit the fingerprint menu for the agent to select from. |
+| `ghost pull <id> [<id>…]` | Emit the named nodes' bodies; log the pull to the local `.ghost/.pulls` tape. |
 | `ghost skill install` | Install the skill bundle for your host agent. |
 | `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
 

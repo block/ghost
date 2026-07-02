@@ -29,6 +29,18 @@ function manifestFile(): TemplateFile {
 }
 
 /**
+ * Keep the local pull-history tape (`.pulls`, appended by `ghost pull`) out of
+ * version control: it is disposable per-machine scratch for authors iterating
+ * on the fingerprint, never canonical state.
+ */
+function gitignoreFile(): TemplateFile {
+  return {
+    relativePath: ".gitignore",
+    content: ".pulls\n",
+  };
+}
+
+/**
  * The default starter: a manifest, a package-level glossary declaring the
  * starter category vocabulary, and the package-root `index.md` node — the
  * human-curated front door. Additional truths are plain markdown nodes; an
@@ -42,6 +54,7 @@ const DEFAULT_TEMPLATE: GhostInitTemplate = {
   files() {
     return [
       manifestFile(),
+      gitignoreFile(),
       {
         relativePath: "glossary.md",
         content: `---

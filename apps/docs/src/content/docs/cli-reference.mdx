@@ -104,6 +104,29 @@ This is the pre-generation step, and "the right context at the right time": the
 agent selects just-in-time against the actual task, then manifests the truths
 into whatever it is building — product UI, marketing, email, a landing page.
 
+### Read the selected truths: `pull`
+
+`pull` emits the named nodes' full prose bodies. It is how an agent reads the
+truths it selected from the menu — preferred over opening the files directly,
+because each pull also appends one line (a timestamp plus the pulled ids) to
+`.ghost/.pulls`.
+
+That file is a local history tape for the fingerprint's author: tweak a node's
+description, re-run the task, and `tail .ghost/.pulls` shows whether the agent
+reached for the truth. It is a dotfile (never a node), gitignored by the
+scaffold, and safe to delete at any time. Ghost never reads it back — nothing
+selects, ranks, or validates from it.
+
+<CliHelp tool="ghost" command="pull" hideDescription />
+
+```bash
+ghost pull principle.trust voice
+ghost pull principle.trust --format json
+ghost pull voice --no-history
+```
+
+An unknown id exits `2` with a closest-id hint and appends nothing.
+
 </DocSection>
 
 <DocSection title="Skill And Inspection">

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T13:24:39.373Z",
+  "generatedAt": "2026-07-02T15:01:54.063Z",
   "tools": [
     {
       "tool": "ghost",
@@ -93,6 +93,42 @@
               "default": "markdown",
               "takesValue": true,
               "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "pull",
+          "rawName": "pull <...ids>",
+          "description": "Emit the named nodes' full prose bodies, and append the pull to the local history tape.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "pull",
+          "summary": "Emit the named nodes' bodies; log the pull to .ghost/.pulls.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--no-history",
+              "name": "history",
+              "description": "Skip appending this pull to .ghost/.pulls",
+              "default": true,
+              "takesValue": false,
+              "negated": true
             }
           ]
         },

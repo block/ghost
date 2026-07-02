@@ -6,6 +6,7 @@ import { formatGhostHelp } from "./commands/command-discovery.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
 import { registerManifestCommand } from "./commands/manifest-command.js";
+import { registerPullCommand } from "./commands/pull-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
 
 export {
@@ -18,6 +19,7 @@ export function buildCli(): ReturnType<typeof cac> {
 
   registerFingerprintCommands(cli);
   registerGatherCommand(cli);
+  registerPullCommand(cli);
   registerManifestCommand(cli);
   registerSkillCommand(cli);
 

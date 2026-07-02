@@ -65,12 +65,20 @@ ghost init        # scaffold .ghost/ (manifest + glossary + a starter index node
 # ...author brand-truth nodes...
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather      # emit the fingerprint menu; you select the truths the task needs
+ghost pull <ids>  # read the selected truths' full bodies
 ```
 
 `gather` does no selection. It emits the whole menu — every node's id, kind, and
 description — and you read the ask against it and pull the truths you judge
 relevant. That is "the right context at the right time": you select just-in-time
 against the actual task, not against a precomputed slice.
+
+Prefer `ghost pull` over reading node files directly. It emits the same prose,
+and it appends each selection to `.ghost/.pulls` — a local, gitignored history
+tape. That tape is for the fingerprint's author: while tuning a node's
+description, they can re-run a task and `tail .ghost/.pulls` to see whether the
+truth was reached for. Ghost never reads the tape back; it is scratch, not
+state.
 
 When the haunt plugin's inventory exists (`.ghost/haunt/inventory/`), `gather`
 also appends a **Materials** section — repo-local building blocks generation
@@ -84,6 +92,7 @@ inventory files). Checks are feed-back only and are never gathered.
 | `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a starter `index.md` node (the front door, id `index`). |
 | `ghost validate [file-or-dir]` | Validate the package: artifact shape, per-node validity, and that each node's kind prefix is declared in the glossary. |
 | `ghost gather [--format json]` | Emit the fingerprint menu (every node's id, kind, description) for the agent to select from. |
+| `ghost pull <id> [<id>…]` | Emit the named nodes' full bodies; append the selection to the local `.ghost/.pulls` tape (`--no-history` to skip). |
 | `ghost skill install` | Install this skill bundle. |
 | `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
 
