@@ -38,29 +38,41 @@ no inheritance, no edges. Nesting into folders is a browsing convenience only.
 
 | Part | Job |
 | --- | --- |
-| `manifest.yml` | Schema version and package id — the package's only anchor. |
-| `glossary.md` | The author's category vocabulary and what each kind means (its normative weight). Ghost ships no fixed vocabulary. |
-| `haunt/` | **Reserved subtree** — the adherence plugin's repo-local data (inventory + checks). Never a node source; `gather` and `validate` skip it. |
+| `manifest.yml` | Schema version, package id, and the optional `plugins` list declaring which reserved subtrees the package uses — the package's only anchor. |
+| `glossary.md` | The author's dictionary: every term with defined meaning in the corpus, including terms carried by a single bare node. Ghost ships no fixed vocabulary. |
+| `haunt/` | **Reserved subtree** — the adherence plugin's repo-local data (inventory + checks). Never a node source. `gather` serves its inventory as **materials** (building blocks for generation, listed after the truths) and never serves its checks. |
 | Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | The durable brand truths, written through three authoring **lenses**: intent (the why), inventory (the materials), composition (the patterns). The lenses guide what to capture; they are not fields. Altitude lives in the prose: a narrower truth names its **condition** — the situation it applies in, never a filing destination. |
 | Node frontmatter | `description` (the retrieval payload — the one-liner `gather` puts in the menu). |
 
 One resolution mechanism, read-only:
 
 - **The menu.** `gather` emits every node's id, kind, and description — the
-  whole corpus, flat. The agent reads the ask against the descriptions and
-  pulls the truths it judges relevant. Ghost does no NLP and no selection.
+  whole corpus, flat — followed by the haunt inventory as a distinct
+  materials section when the plugin is present. The agent reads the ask
+  against the descriptions and pulls the truths and materials it judges
+  relevant. Ghost does no NLP and no selection.
 
-Checks are **not** nodes. They live in the reserved `haunt/` subtree — Haunt
-is a plugin that piggybacks on the fingerprint package, anchored by the
-fingerprint's own manifest — and bind to the prose they enforce via
-`references`. The corpus itself stays feed-forward only.
+The entrypoint node is `index.md` (id `index`, one uniform rule: id = path
+minus `.md`): the **human-curated front door** — what this fingerprint is,
+how its kinds organize, what to read first. It is an ordinary node, listed
+in the menu like any other; its curation is an author's job, never a
+generated listing.
+
+Checks are **not** nodes and are **never gathered**. They live in the
+reserved `haunt/` subtree — Haunt is a plugin that piggybacks on the
+fingerprint package, anchored by the fingerprint's own manifest — and bind
+to the prose they enforce via `references`. The feed-forward/feed-back seam
+runs through the plugin itself: inventory grounds generation, checks grade
+output.
 
 Two rules keep the reservation honest:
 
 - **The reserved list is closed.** `manifest.yml`, `glossary.md`, `haunt/`.
   A new entry must pass the shape-test above and ships only with a new
   fingerprint schema version — a tool that wants a home inside `.ghost/` has
-  to amend the constitution, not just claim a directory.
+  to amend the constitution, not just claim a directory. The manifest's
+  `plugins` list declares which reserved subtrees a package actually uses;
+  `validate` warns when a subtree is present but undeclared.
 - **Reserved subtrees never travel.** A fingerprint export — for a fleet
   view, a sibling repo, any consumer outside this repo — is the root nodes
   plus glossary plus manifest. `haunt/` is repo-local by definition (its
@@ -71,7 +83,7 @@ Two rules keep the reservation honest:
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
 | **Authoring** | `ghost init`, `ghost validate` | The raw nodes, for a human or agent writing the fingerprint. The agent does its own repo reconnaissance. | the corpus | **No**, this *is* the model. |
-| **Generation** | `ghost gather` | The flat menu (id + kind + description); the agent selects the truths the task needs and shapes a pre-generation brief. | the menu, then the selected node bodies | **No** if selection stays with the agent. **Leak risk:** pushing retrieval needs back into the corpus shape. |
+| **Generation** | `ghost gather` | The flat menu (id + kind + description) plus the haunt materials section; the agent selects the truths and building blocks the task needs and shapes a pre-generation brief. | the menu, then the selected node bodies and material paths | **No** if selection stays with the agent. **Leak risk:** pushing retrieval needs back into the corpus shape. |
 | **Adherence** | `haunt review` (private) | The referenced fingerprint node bodies, as the baseline a diff is graded against. Checks bind via `references`. | fingerprint prose, read-only | **No** if checks stay offered-and-grounded in Haunt. **Leak risk:** routing checks by anything other than `references`. |
 | **Audit** | `haunt integrity` (private) | The same referenced prose, graded against the whole inventory rather than a diff. | fingerprint prose, read-only | **No**, same boundary as adherence. |
 | **Fleet** | (future, private) | Many fingerprints at once: distances, cohorts. | many corpora, read-only | **No**, consumes exports read-only. |
@@ -98,7 +110,7 @@ thing to fix at the boundary, not a reason to redesign the artifact.
    to the exact prose they enforce. Filtering or routing checks by kind, by
    folder, or by any corpus-side convention is governance policy leaking into
    the artifact.
-   *Fix: keep checks in `.haunt/`, offered-and-grounded, bound via
+   *Fix: keep checks in the `haunt/` subtree, offered-and-grounded, bound via
    `references` only.*
 
 4. **A consumer demanding structure back.** Any consumer that wants edges,
@@ -121,8 +133,10 @@ thing to fix at the boundary, not a reason to redesign the artifact.
   and the model reads it whole.
 - **Not** adding a selection engine (ranking, embeddings-as-routing, precomputed
   slices) inside the artifact; the agent selects against descriptions.
-- **Not** letting checks or review move into `.ghost/`; adherence is Haunt's
-  projection, and it reads the fingerprint read-only.
+- **Not** letting checks become generation input; the haunt subtree lives
+  inside `.ghost/`, but the feed-forward/feed-back seam holds — inventory
+  grounds building, checks grade output, and review stays Haunt's projection,
+  reading the fingerprint read-only.
 - **Not** giving any consumer write access to the shape of the corpus.
 
 ## One line
