@@ -20,7 +20,7 @@ export interface BaselineProse {
  * fingerprint node body — sliced by `sliceNodeSection` when a heading anchor
  * is present (whole body if no anchor; whole body plus a warning line when
  * the anchor doesn't match). Unresolved refs return null (tolerated: they may
- * name not-yet-written prose; `haunt validate` reports them).
+ * name not-yet-written prose; `ghost-haunt validate` reports them).
  */
 export function resolveBaseline(
   raw: string,

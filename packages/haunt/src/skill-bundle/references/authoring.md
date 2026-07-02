@@ -14,7 +14,7 @@ explicit `references`, never through folder depth.
 Brand truths — principles, surface composition, stance — do **not** live here.
 They live in the repo's `.ghost/` fingerprint as prose nodes (author them with
 the `ghost` skill), and checks point at them. A `.ghost/` package is required
-for `haunt review`; if the repo has none, set one up first:
+for `ghost-haunt review`; if the repo has none, set one up first:
 
 ```bash
 npm i -D @anarchitecture/ghost-fingerprint && ghost init
@@ -88,7 +88,7 @@ fingerprint target. If a bare slug collides with both a local inventory id and
 a fingerprint node id, local wins — rename one if that bites.
 
 A fingerprint reference that doesn't resolve yet is a **warning**, not an
-error — it may name not-yet-written prose. `haunt validate` is where dangling
+error — it may name not-yet-written prose. `ghost-haunt validate` is where dangling
 references get caught.
 
 ### What a check's references determine
@@ -116,11 +116,11 @@ Two consequences, both intentional:
   material. That is not a hole; it is review staying quiet unless the diff
   mechanically implicates it. Whole-system contradiction — a new component
   quietly forking the library's pattern, sprawl no single diff reveals — is
-  `haunt integrity`'s job, on a cadence you choose.
+  `ghost-haunt integrity`'s job, on a cadence you choose.
 
 ### Cadence — review is triggered, integrity is chosen
 
-`haunt review` runs on a diff; the trigger is the change itself. `haunt
+`ghost-haunt review` runs on a diff; the trigger is the change itself. `ghost-haunt
 integrity` has no diff and no natural trigger — **the cadence is yours**, and
 its findings are advisory ("fyi") rather than PR-blocking. Common shapes:
 
@@ -137,18 +137,18 @@ integrator's choice.
 
 ### Author for both tenses
 
-The same check serves two verbs: `haunt review` grades a **change** against it,
-`haunt integrity` grades the **whole material** against it (and against its
+The same check serves two verbs: `ghost-haunt review` grades a **change** against it,
+`ghost-haunt integrity` grades the **whole material** against it (and against its
 siblings). Sprawl assertions — "modal contracts stay congruent", "naming
 follows the glossary", "tokens, not hardcoded values" — are ordinary checks
 referencing the materials they guard. A material no check references shows up
 in the integrity packet as an `unreferenced-material` gap: unguarded against
-sprawl. Run `haunt integrity` locally when the system feels like it's
+sprawl. Run `ghost-haunt integrity` locally when the system feels like it's
 drifting, and on PRs whenever a diff touches inventory `paths`.
 
 ## Validate as you go
 
-Run `haunt validate` after edits. It checks the shape (flat dirs, valid
+Run `ghost-haunt validate` after edits. It checks the shape (flat dirs, valid
 frontmatter) and the references:
 
 - local references must resolve to an inventory entry;

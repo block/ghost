@@ -1,10 +1,18 @@
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import {
+  initFingerprintPackage,
+  resolveFingerprintPackage,
+} from "@anarchitecture/ghost-fingerprint/fingerprint";
+import { resolveGhostDirDefault } from "@anarchitecture/ghost-fingerprint/scan";
+import { loadFingerprint } from "../fingerprint/load.js";
 import { HAUNT_PACKAGE_SCHEMA } from "../model/schema.js";
 
 export interface InitOptions {
   package?: string;
+  /** The `.ghost/` fingerprint package dir (default: .ghost / GHOST_PACKAGE_DIR). */
+  ghostDir?: string;
   id?: string;
   force?: boolean;
 }
@@ -14,7 +22,14 @@ export interface InitResult {
   dir: string;
   code: number;
   message?: string;
+  /** Package-relative files written when init scaffolded a missing `.ghost/`. */
+  ghostWritten?: string[];
+  /** Notice for stderr when init scaffolded a missing `.ghost/`. */
+  notice?: string;
 }
+
+export const NO_TRUTHS_NOTICE =
+  "scaffolded .ghost/ — a fingerprint with no authored truths grades nothing; author it first (ghost skill: capture)";
 
 /**
  * Scaffold a `.haunt/` package: a manifest, one inventory example with
@@ -22,11 +37,28 @@ export interface InitResult {
  * grammar — a bare local inventory id plus a fingerprint-shaped
  * `node > Heading` target. The scaffold loads clean; the fingerprint-shaped
  * reference is expected to dangle until you author the `.ghost/` node it
- * names (`haunt validate` surfaces that as a warning, not an error).
+ * names (`ghost-haunt validate` surfaces that as a warning, not an error).
  */
 export async function runInit(options: InitOptions): Promise<InitResult> {
   const dir = resolve(process.cwd(), options.package ?? ".haunt");
   const id = options.id ?? "haunt";
+
+  // A `.haunt/` package binds to a `.ghost/` fingerprint. When none resolves,
+  // scaffold the default fingerprint first (same resolution as review/validate:
+  // --ghost-dir, then GHOST_PACKAGE_DIR, then .ghost).
+  let ghostWritten: string[] | undefined;
+  let notice: string | undefined;
+  const fingerprint = await loadFingerprint({ ghostDir: options.ghostDir });
+  if (fingerprint === null) {
+    const ghostDir = options.ghostDir ?? resolveGhostDirDefault();
+    const paths = resolveFingerprintPackage(ghostDir, process.cwd());
+    // A present-but-broken `.ghost/` is `ghost validate`'s job, not ours.
+    if (!existsSync(paths.manifest)) {
+      const result = await initFingerprintPackage(ghostDir, process.cwd());
+      ghostWritten = result.written;
+      notice = NO_TRUTHS_NOTICE;
+    }
+  }
 
   if (existsSync(join(dir, "manifest.yml")) && !options.force) {
     return {
@@ -34,6 +66,8 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
       dir,
       code: 3,
       message: `${dir}/manifest.yml already exists. Pass --force to overwrite.`,
+      ...(ghostWritten ? { ghostWritten } : {}),
+      ...(notice ? { notice } : {}),
     };
   }
 
@@ -50,7 +84,13 @@ export async function runInit(options: InitOptions): Promise<InitResult> {
     await writeFile(path, content, "utf-8");
     written.push(rel);
   }
-  return { written, dir, code: 0 };
+  return {
+    written,
+    dir,
+    code: 0,
+    ...(ghostWritten ? { ghostWritten } : {}),
+    ...(notice ? { notice } : {}),
+  };
 }
 
 const INVENTORY = `---

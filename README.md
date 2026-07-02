@@ -23,6 +23,9 @@ npm install -D @anarchitecture/ghost-fingerprint
 npx ghost skill install   # teach your agent to author and use the fingerprint
 ```
 
+Every `ghost` command is also available as `ghost-fingerprint` — use it when
+another tool on your machine owns the `ghost` bin.
+
 ## Use It
 
 Ghost is **bring-your-own-agent**. Install the skill bundle so Claude Code,

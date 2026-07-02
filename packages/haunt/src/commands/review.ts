@@ -59,7 +59,7 @@ function readStdin(): Promise<string> {
 }
 
 /**
- * Run `haunt review`: load the package and the fingerprint (required — the
+ * Run `ghost-haunt review`: load the package and the fingerprint (required — the
  * fingerprint's prose is the review baseline), resolve the diff, build the
  * advisory packet. Returns the rendered output and an exit code. The packet is
  * advisory — findings are the agent's job.

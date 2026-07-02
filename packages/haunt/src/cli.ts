@@ -9,7 +9,7 @@ import { formatReport, runValidate } from "./commands/validate.js";
 const VERSION = "0.0.0";
 
 export function buildCli(): ReturnType<typeof cac> {
-  const cli = cac("haunt");
+  const cli = cac("ghost-haunt");
 
   cli
     .command(
@@ -20,11 +20,23 @@ export function buildCli(): ReturnType<typeof cac> {
       "--package <dir>",
       "The .haunt/ package directory (default: .haunt)",
     )
+    .option(
+      "--ghost-dir <dir>",
+      "The .ghost/ fingerprint package directory (default: .ghost, or GHOST_PACKAGE_DIR)",
+    )
     .option("--id <id>", "Package id (default: haunt)")
     .option("--force", "Overwrite an existing manifest")
     .action(
-      async (opts: { package?: string; id?: string; force?: boolean }) => {
+      async (opts: {
+        package?: string;
+        ghostDir?: string;
+        id?: string;
+        force?: boolean;
+      }) => {
         const result = await runInit(opts);
+        if (result.notice) {
+          process.stderr.write(`${result.notice}\n`);
+        }
         if (result.code !== 0) {
           process.stderr.write(`Error: ${result.message}\n`);
           process.exitCode = result.code;
@@ -158,7 +170,7 @@ export function buildCli(): ReturnType<typeof cac> {
       ) => {
         if (action !== "install") {
           process.stderr.write(
-            "Error: haunt skill currently supports only `install`\n",
+            "Error: ghost-haunt skill currently supports only `install`\n",
           );
           process.exitCode = 2;
           return;

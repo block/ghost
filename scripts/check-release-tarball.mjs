@@ -76,6 +76,18 @@ try {
     }
   }
 
+  const packedPkg = JSON.parse(
+    readFileSync(join(packageDir, "package.json"), "utf8"),
+  );
+  if (
+    packedPkg.bin?.ghost !== "./dist/bin.js" ||
+    packedPkg.bin?.["ghost-fingerprint"] !== "./dist/bin.js"
+  ) {
+    fail(
+      "release tarball package.json must expose both ghost and ghost-fingerprint bins pointing at ./dist/bin.js",
+    );
+  }
+
   const help = run("node", [join(packageDir, "dist", "bin.js"), "--help"], {
     cwd: tmpRoot,
   });

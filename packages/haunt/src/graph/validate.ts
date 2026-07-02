@@ -56,7 +56,7 @@ export function validateHauntGraph(
       rule: "reference/no-fingerprint",
       where: "checks",
       message:
-        "checks reference fingerprint nodes but no .ghost/ package resolves — `haunt review` requires one (npm i -D @anarchitecture/ghost-fingerprint && ghost init)",
+        "checks reference fingerprint nodes but no .ghost/ package resolves — `ghost-haunt review` requires one (npm i -D @anarchitecture/ghost-fingerprint && ghost init)",
     });
   }
 

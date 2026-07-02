@@ -16,7 +16,7 @@ export interface LoadFingerprintOptions {
 /**
  * Resolve and load the repo's `.ghost/` fingerprint package, or `null` when
  * none resolves (absent or broken — `ghost validate` owns diagnosing a broken
- * one). `haunt validate` treats null as a warning/info; `haunt review` treats
+ * one). `ghost-haunt validate` treats null as a warning/info; `ghost-haunt review` treats
  * it as a hard error (fingerprint truths are the review baseline).
  */
 export async function loadFingerprint(

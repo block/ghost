@@ -109,6 +109,16 @@ try {
     fail("packed ghost --help output did not include Core workflow");
   }
 
+  // The alias bin is the same CLI under a collision-safe name.
+  const aliasHelp = run("pnpm", ["exec", "ghost-fingerprint", "--help"], {
+    cwd: consumerDir,
+  });
+  if (!aliasHelp.includes("Core workflow")) {
+    fail(
+      "packed ghost-fingerprint --help output did not include Core workflow",
+    );
+  }
+
   const init = run("pnpm", ["exec", "ghost", "init", "--format", "json"], {
     cwd: consumerDir,
   });

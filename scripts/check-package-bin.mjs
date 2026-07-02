@@ -15,10 +15,18 @@ function fail(message) {
 }
 
 const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
-const binPath = pkg?.bin?.ghost;
+const EXPECTED_BINS = ["ghost", "ghost-fingerprint"];
 
-if (typeof binPath !== "string" || binPath.length === 0) {
-  fail("packages/ghost/package.json must define bin.ghost");
+for (const binName of EXPECTED_BINS) {
+  const target = pkg?.bin?.[binName];
+  if (typeof target !== "string" || target.length === 0) {
+    fail(`packages/ghost/package.json must define bin.${binName}`);
+  }
+}
+
+const binPath = pkg.bin.ghost;
+if (pkg.bin["ghost-fingerprint"] !== binPath) {
+  fail("bin.ghost-fingerprint must point at the same target as bin.ghost");
 }
 
 const binAbsolutePath = resolve(dirname(PACKAGE_JSON_PATH), binPath);

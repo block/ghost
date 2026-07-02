@@ -26,7 +26,7 @@ export interface IntegrityResult {
 }
 
 /**
- * Run `haunt integrity`: load the package and the fingerprint (required —
+ * Run `ghost-haunt integrity`: load the package and the fingerprint (required —
  * integrity against *what?* — the fingerprint), enumerate the repo tree, and
  * assemble the audit packet. Holistic always (one run = the whole inventory)
  * and stateless (a deterministic packet, no persisted findings). Advisory —

@@ -3,7 +3,7 @@ name: haunt
 description: Grade high-altitude compositional drift against a repo's design fingerprint. Use when reviewing a diff or PR for hierarchy, density, restraint, product-stance, or composition drift that linters can't see, when auditing the whole inventory for sprawl (haunt integrity), and when authoring or updating a .haunt/ package (inventory, checks).
 license: Apache-2.0
 metadata:
-  cli: haunt
+  cli: ghost-haunt
 ---
 
 # Haunt — Adherence & Drift
@@ -28,7 +28,7 @@ own — it hands you a packet, you produce findings.
 
 Brand truths (principles, surface composition, stance) do **not** live in
 `.haunt/` — they live in `.ghost/` as fingerprint nodes, and checks point at
-them. **A `.ghost/` fingerprint is required for `haunt review`**; without one
+them. **A `.ghost/` fingerprint is required for `ghost-haunt review`**; without one
 review degrades to generic lint, so the CLI refuses and points you at
 `npm i -D @anarchitecture/ghost-fingerprint && ghost init`.
 
@@ -40,9 +40,9 @@ canonical.
 
 | Verb | Purpose |
 |---|---|
-| `haunt validate [--package <dir>] [--ghost-dir <dir>]` | Validate the package: shape (flat dirs, no nesting) and check `references` (local ids resolve; fingerprint targets are checked against `.ghost/` when it resolves). |
-| `haunt review [--diff <patch>] [--base <ref>] [--ghost-dir <dir>] [--json]` | Emit an advisory review packet from the package, the fingerprint, and a diff: matched materials, referenced fingerprint prose, offered checks, coverage gaps, and the diff. Requires `.ghost/`. |
-| `haunt integrity [--package <dir>] [--ghost-dir <dir>] [--json]` | Emit an advisory integrity packet: the whole inventory partitioned by material, each bound to its prose, its checks (with baselines), and its siblings — the sprawl audit. Requires `.ghost/`. |
+| `ghost-haunt validate [--package <dir>] [--ghost-dir <dir>]` | Validate the package: shape (flat dirs, no nesting) and check `references` (local ids resolve; fingerprint targets are checked against `.ghost/` when it resolves). |
+| `ghost-haunt review [--diff <patch>] [--base <ref>] [--ghost-dir <dir>] [--json]` | Emit an advisory review packet from the package, the fingerprint, and a diff: matched materials, referenced fingerprint prose, offered checks, coverage gaps, and the diff. Requires `.ghost/`. |
+| `ghost-haunt integrity [--package <dir>] [--ghost-dir <dir>] [--json]` | Emit an advisory integrity packet: the whole inventory partitioned by material, each bound to its prose, its checks (with baselines), and its siblings — the sprawl audit. Requires `.ghost/`. |
 
 Diff sources for `review`: `--diff <file>`, `--diff=-` (stdin), or omit to run
 `git diff <base>` (default `HEAD`).
@@ -68,7 +68,7 @@ grammar system-wide, shared with `ghost.check/v1`'s `source:`:
 
 ## The stance: review reports, it does not edit
 
-`haunt review` is **advisory**. It reports drift as findings against the
+`ghost-haunt review` is **advisory**. It reports drift as findings against the
 fingerprint and never edits code. Two distinct jobs, and you must not blur them:
 
 - **Review** — inspect the packet, report prioritized findings. Do not edit.
@@ -78,7 +78,7 @@ fingerprint and never edits code. Two distinct jobs, and you must not blur them:
 
 ## The review loop
 
-1. Run `haunt review` (or `--json` for structured input). The packet already did
+1. Run `ghost-haunt review` (or `--json` for structured input). The packet already did
    the deterministic routing: diff → inventory (via `paths`) → offered checks.
    Checks that reference only fingerprint nodes are **always offered** — brand
    truths are always in play; no mechanical hop connects a diff to one. A
@@ -102,7 +102,7 @@ fingerprint and never edits code. Two distinct jobs, and you must not blur them:
 
 ## The integrity loop (the sprawl audit)
 
-1. Run `haunt integrity` (or `--json`). The packet is a **map, not a
+1. Run `ghost-haunt integrity` (or `--json`). The packet is a **map, not a
    payload**: it embeds authored prose (materials, checks, baselines) and
    points at code with glob pointers plus verified match counts — no file
    lists. You explore from the pointers with your own file tools.

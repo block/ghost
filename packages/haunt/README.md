@@ -54,25 +54,25 @@ reference is either a bare local inventory id (`modals`) or a fingerprint node
 target with an optional heading anchor (`checkout/payment > Confirmation`) —
 one pointer grammar system-wide, shared with `ghost.check/v1`'s `source:`.
 
-**A `.ghost/` fingerprint is required for `haunt review`** — without brand
-truths, review degrades to generic lint. `haunt init` and `haunt validate`
+**A `.ghost/` fingerprint is required for `ghost-haunt review`** — without brand
+truths, review degrades to generic lint. `ghost-haunt init` and `ghost-haunt validate`
 work without one.
 
 ## CLI
 
 ```bash
-haunt init                 # scaffold a .haunt/ package (manifest + inventory + check examples)
-haunt validate             # shape (flat dirs) + check references (local + fingerprint)
-haunt review --diff=-      # advisory packet: matched materials, referenced fingerprint
+ghost-haunt init                 # scaffold a .haunt/ package (manifest + inventory + check examples)
+ghost-haunt validate             # shape (flat dirs) + check references (local + fingerprint)
+ghost-haunt review --diff=-      # advisory packet: matched materials, referenced fingerprint
                            #   prose, offered checks, coverage gaps, diff (agent renders findings)
-haunt integrity            # advisory audit packet: the whole inventory partitioned by
+ghost-haunt integrity            # advisory audit packet: the whole inventory partitioned by
                            #   material — prose, bound checks + baselines, sibling pointers,
                            #   glob match counts, gaps (agent renders findings)
-haunt skill install        # install the host-agent skill bundle
-haunt manifest             # self-describing JSON of commands + flags
+ghost-haunt skill install        # install the host-agent skill bundle
+ghost-haunt manifest             # self-describing JSON of commands + flags
 ```
 
-`haunt review` requires a resolvable `.ghost/` package (exit 2 with an on-ramp
+`ghost-haunt review` requires a resolvable `.ghost/` package (exit 2 with an on-ramp
 message otherwise; `--ghost-dir <dir>` overrides the location). The bridge is
 one hop: diff files → inventory via `paths`. Offered checks are those whose
 `references` hit a touched inventory id, plus every check that references only

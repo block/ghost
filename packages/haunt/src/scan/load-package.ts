@@ -39,7 +39,7 @@ const LEGACY_DIRS = ["tenets", "surfaces", "exemplars"] as const;
  * (`ghost.check/v1`, linted by ghost-core, plus the haunt-side `references`
  * lint). Each dir is read *flat* (no recursion, which mechanically enforces
  * "no nesting"). Cross-reference resolution (local + fingerprint) is
- * `haunt validate`'s job, not here.
+ * `ghost-haunt validate`'s job, not here.
  */
 export async function loadHauntPackage(
   dir: string,

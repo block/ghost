@@ -263,6 +263,7 @@ function formatMoreSection(): HelpSection {
     body: [
       "  $ ghost --help --all      Show all advanced commands",
       "  $ ghost <command> --help  Show command-specific options",
+      "  $ ghost haunt <command>   Dispatch to the haunt CLI when installed",
     ].join("\n"),
   };
 }

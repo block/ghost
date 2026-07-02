@@ -23,7 +23,7 @@ function merge(a: HauntLintReport, b: HauntLintReport): HauntLintReport {
 }
 
 /**
- * Run `haunt validate`: load the package (shape) then validate references —
+ * Run `ghost-haunt validate`: load the package (shape) then validate references —
  * local against inventory, fingerprint-shaped against the `.ghost/` catalog
  * when one resolves (absent/broken fingerprint is tolerated here; `review` is
  * where it hard-fails). Returns the combined report and an exit code (0
