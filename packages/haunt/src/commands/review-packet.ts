@@ -24,7 +24,12 @@ export interface PacketCheck {
   id: string;
   severity: string | undefined;
   referencesFingerprint: boolean;
-  /** Refs that put this check in play. */
+  /**
+   * `"matched"` — the diff touched inventory this check references.
+   * `"always"` — fingerprint-only check, always offered; no diff match.
+   */
+  offered: "matched" | "always";
+  /** Refs that put this check in play (see `offered` for the distinction). */
   via: string[];
   /** The check's own prose (the assertion to grade). */
   prose: string;
@@ -109,6 +114,7 @@ export function buildReviewPacket(
       id: offered.id,
       severity: offered.severity,
       referencesFingerprint: offered.referencesFingerprint,
+      offered: offered.offered,
       via: offered.via,
       prose: check?.body ?? "",
       baseline,
@@ -197,7 +203,13 @@ export function formatReviewPacket(packet: ReviewPacket): string {
       out.push(
         `### checks/${c.id}${c.severity ? ` · ${c.severity}` : ""} · ${kind}`,
       );
-      out.push(`Offered via: ${c.via.map((v) => `\`${v}\``).join(", ")}`, "");
+      const refs = c.via.map((v) => `\`${v}\``).join(", ");
+      out.push(
+        c.offered === "matched"
+          ? `Offered via match: ${refs}`
+          : `Always offered — grounds fingerprint truths: ${refs}`,
+        "",
+      );
       out.push(c.prose, "");
     }
   }

@@ -44,6 +44,7 @@ describe("buildReviewPacket", () => {
     const check = packet.checks.find((c) => c.id === "density-does-not-creep");
     expect(check).toBeDefined();
     expect(check?.referencesFingerprint).toBe(true);
+    expect(check?.offered).toBe("matched");
 
     const local = check?.baseline.find((b) => b.ref === "modals");
     expect(local?.kind).toBe("local");
@@ -107,5 +108,21 @@ describe("buildReviewPacket", () => {
     expect(md).toContain("Offered checks — weigh which apply");
     expect(md).toContain("P0");
     expect(md).toContain("```diff");
+  });
+
+  it("renders matched and always-offered checks honestly", async () => {
+    const pkg = await loadValid();
+    const fingerprint = await loadGhostFixture();
+    const packet = buildReviewPacket(
+      pkg,
+      fingerprint,
+      diff("packages/geist/src/Modal/x.tsx"),
+    );
+    const md = formatReviewPacket(packet);
+    // Inventory-matched check states the mechanical match.
+    expect(md).toContain("Offered via match: `modals`");
+    // Fingerprint-only check does not pretend a match happened.
+    expect(md).toContain("Always offered — grounds fingerprint truths:");
+    expect(md).not.toContain("Offered via:");
   });
 });

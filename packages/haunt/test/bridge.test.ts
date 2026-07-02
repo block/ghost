@@ -30,6 +30,7 @@ describe("resolveBridge", () => {
     );
     expect(check).toBeDefined();
     expect(check?.via).toContain("modals");
+    expect(check?.offered).toBe("matched");
     expect(check?.referencesFingerprint).toBe(true); // checkout > Density
   });
 
@@ -44,6 +45,26 @@ describe("resolveBridge", () => {
     expect(res.inventory).toHaveLength(0);
     expect(res.offeredChecks.map((c) => c.id)).toEqual(["restraint-holds"]);
     expect(res.offeredChecks[0]?.referencesFingerprint).toBe(true);
+    expect(res.offeredChecks[0]?.offered).toBe("always");
+  });
+
+  it("distinguishes matched offers from always-offered fingerprint checks", async () => {
+    const pkg = await loadValid();
+    const res = resolveBridge(
+      pkg,
+      diffTouching("packages/geist/src/Modal/Modal.tsx"),
+    );
+
+    const matched = res.offeredChecks.find(
+      (c) => c.id === "density-does-not-creep",
+    );
+    expect(matched?.offered).toBe("matched");
+    expect(matched?.via).toEqual(["modals"]);
+
+    const always = res.offeredChecks.find((c) => c.id === "restraint-holds");
+    expect(always?.offered).toBe("always");
+    // For "always", via lists the references — the reason, not a match.
+    expect(always?.via.length).toBeGreaterThan(0);
   });
 
   it("reports unbridged files as a coverage gap", async () => {

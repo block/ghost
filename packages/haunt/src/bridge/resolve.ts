@@ -14,7 +14,19 @@ export interface MatchedInventory {
 export interface OfferedCheck {
   id: string;
   severity: string | undefined;
-  /** The references that put this check in play (why it's offered). */
+  /**
+   * Why the check is in play:
+   * - `"matched"` — the diff touched inventory this check references (a
+   *   mechanical diff→inventory hit).
+   * - `"always"` — every reference is fingerprint-shaped, so the check is
+   *   always offered; no diff match occurred.
+   */
+  offered: "matched" | "always";
+  /**
+   * The references that put this check in play. For `"matched"`, the touched
+   * inventory refs that hit. For `"always"`, the check's references — they are
+   * the reason it is offered, but no mechanical match happened.
+   */
   via: string[];
   /**
    * Whether the check references fingerprint prose — a signal it is likely
@@ -103,6 +115,7 @@ export function resolveBridge(
       offeredChecks.push({
         id: check.id,
         severity: check.frontmatter.severity,
+        offered: via.length > 0 ? "matched" : "always",
         via: via.length > 0 ? via : check.references.slice(),
         referencesFingerprint,
       });

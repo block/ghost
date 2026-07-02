@@ -81,7 +81,10 @@ fingerprint and never edits code. Two distinct jobs, and you must not blur them:
 1. Run `haunt review` (or `--json` for structured input). The packet already did
    the deterministic routing: diff → inventory (via `paths`) → offered checks.
    Checks that reference only fingerprint nodes are **always offered** — brand
-   truths are always in play; no mechanical hop connects a diff to one.
+   truths are always in play; no mechanical hop connects a diff to one. A
+   mixed check (local + fingerprint references) is scoped to its material: the
+   local reference is the trigger, the fingerprint reference the baseline.
+   Drift outside a material's paths is integrity's job, not review's.
 2. **Weigh which offered checks apply.** Every check is offered; you decide
    relevance against the diff and the referenced prose. A check that doesn't fit
    this change is skipped, not forced.

@@ -101,6 +101,39 @@ references get caught.
   there is no mechanical hop from a diff to a brand truth; the reviewing agent
   weighs relevance. In the integrity packet these checks are listed once, in a
   global section (they assert truths about the whole surface).
+- A **mixed** check (local + fingerprint references) is **scoped to its
+  material at review**: the local reference is the trigger, the fingerprint
+  reference is the baseline to grade against. It is offered only when the diff
+  touches the material's `paths`. Adding a local reference to a check narrows
+  it — "this truth, *as it lands in this material*" — it never widens it.
+
+Two consequences, both intentional:
+
+- If you want a brand truth graded on **every** diff, write a fingerprint-only
+  check. If you want it graded **where a material lands**, write a mixed check.
+  Two intents, two checks — do not overload one.
+- A mixed check is silent when a diff drifts against its truth *outside* its
+  material. That is not a hole; it is review staying quiet unless the diff
+  mechanically implicates it. Whole-system contradiction — a new component
+  quietly forking the library's pattern, sprawl no single diff reveals — is
+  `haunt integrity`'s job, on a cadence you choose.
+
+### Cadence — review is triggered, integrity is chosen
+
+`haunt review` runs on a diff; the trigger is the change itself. `haunt
+integrity` has no diff and no natural trigger — **the cadence is yours**, and
+its findings are advisory ("fyi") rather than PR-blocking. Common shapes:
+
+- **Manual** — run it when the system feels like it's drifting.
+- **Scheduled** — a weekly cron in CI pipes the packet to your agent and posts
+  the report wherever your team reads (issue, Slack, dashboard).
+- **Signal-driven** — run integrity on a PR whenever `review`'s matched
+  materials show the diff touched inventory `paths` (the packet is that
+  signal), or when a `dead-paths` gap appears.
+
+Haunt ships no bot and posts no comments — the packet on stdout is the stable
+contract; the glue (which agent, where it posts, whether it gates) is the
+integrator's choice.
 
 ### Author for both tenses
 
