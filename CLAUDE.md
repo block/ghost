@@ -1,15 +1,14 @@
 # Ghost
 
-Agents can assemble UI. What they cannot reliably preserve is the product
-surface composition behind that UI: hierarchy, density, restraint, repetition,
-trust, flow, and the choices that make a surface feel intentional.
+Agents can assemble UI. What they cannot reliably preserve is the brand behind
+that UI: the stance, the density, the restraint, the trust moves, and the
+choices that make an output feel intentional.
 
-Ghost keeps that surface composition in a repo-local `.ghost/` fingerprint
-package, a graph of prose nodes. The public npm shape is one package,
+Ghost keeps those brand truths in a repo-local `.ghost/` fingerprint package, a
+flat corpus of prose nodes. The public npm shape is one package,
 `@anarchitecture/ghost-fingerprint`, with one user-facing bin, `ghost`. The CLI validates
-the node graph, composes context, selects and grounds checks, and emits
-deterministic packets. The host agent does the interpretive BYOA work through the installed
-`ghost` skill.
+the corpus and emits the fingerprint menu; the host agent does all selection
+and all interpretive BYOA work through the installed `ghost` skill.
 
 ## Build & Run
 
@@ -33,47 +32,49 @@ pnpm --filter @anarchitecture/ghost-fingerprint exec ghost <command>
 Ghost is **BYOA (bring your own agent)**. Claude Code, Codex, Cursor, Goose, or
 another host agent reads, decides, and writes. Ghost grounds that work with two
 things. A **deterministic CLI** does the repeatable parts with no LLM: schema
-and graph validation, repo-signal helpers, context composition, check selection
-and grounding, and advisory review packets. An **interpretive skill bundle** teaches the agent
-how to author and use the fingerprint.
+and node validation, glossary kind-prefix checks, and a flat gather menu. An
+**interpretive skill bundle** teaches the agent how to author and consume the
+fingerprint. Ghost is **feed-forward**: it grounds generation and never grades
+output. Review and audit live in Haunt, the private adherence layer.
 
-The canonical root `.ghost/` package is a directory tree of prose nodes:
+The canonical root `.ghost/` package is a flat set of prose nodes:
 
 ```text
-manifest.yml          # schema + id
-index.md              # the core node, true everywhere (optional)
-<surface>/index.md    # a surface's own prose (the directory is the surface)
-<surface>/<node>.md   # a prose node placed in that surface
-checks/*.md           # optional ghost.check/v1 checks
+manifest.yml          # schema + id (the package anchor)
+glossary.md           # the author's category vocabulary + what each kind means
+<kind>.<slug>.md      # a brand truth of a declared kind (principle.density.md)
+<slug>.md             # an uncategorized brand truth (voice.md)
 ```
 
-The **directory tree is the graph**. A node is a markdown file: descriptive
-frontmatter (`description`, `relates`) plus a prose body. A
-node's identity is its path (`marketing/email.md` → `marketing/email`) and its
-parent is its containing directory. A surface is just a directory, and a
-directory's own prose lives in its `index.md`. The package-root `index.md` is
-the implicit `core` node. The body is written through three authoring lenses
-(they guide what to capture, they are not fields):
+The **corpus is flat**. A node is a markdown file: a `description` in
+frontmatter (the retrieval payload), a brand truth in the prose body. A node's
+identity is its filename minus `.md`; its kind is the filename prefix before
+the first dot, declared in the glossary. There is no hierarchy, no
+inheritance, no edges — nesting into folders is a browsing convenience only.
+The body is written through three authoring lenses (they guide what to
+capture, they are not fields):
 
 - **intent**: the why and the stance.
 - **inventory**: the materials, and pointers to code the agent can inspect.
-- **composition**: the patterns that make the surface feel intentional.
+- **composition**: the patterns that make the output feel intentional.
 
-`description` is the retrieval payload; `relates` links nodes laterally.
-Reserved at the package root:
-`manifest.yml` and the `checks/` subtree; every other `*.md` is a node. Moving a
-node is a rename. `checks/*.md` validate output and bind to the prose they enforce
-via an optional `source:` pointer; every check is offered and the agent judges
-which apply. They are not generation input. Ordinary Git review is the approval boundary for fingerprint
+Altitude lives in the prose: a universal truth is stated plainly; a narrower
+truth names its **condition** — the situation it applies in, never a filing
+destination. `ghost gather` emits the whole menu (every node's id, kind, and
+description); the agent selects just-in-time against the actual task. Reserved
+at the package root: `manifest.yml` and `glossary.md`; every other `*.md` is a
+node. Renaming a node changes its id. Checks do **not** live in `.ghost/`;
+they live in Haunt's `.haunt/` package and bind to fingerprint prose via
+`references`. Ordinary Git review is the approval boundary for fingerprint
 edits.
 
 ## Packages
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost-fingerprint` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, graph validation, check selection and grounding, advisory review packets, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
+| `packages/ghost` | yes: `@anarchitecture/ghost-fingerprint` | **Fingerprint** — unified public package. Ships the `ghost` CLI, node authoring, corpus validation, the flat gather menu, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel` | no | **Vessel** — a standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference ("batteries-included" body a Haunt can inhabit). Design-system-agnostic; nothing in Ghost requires it. |
-| `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer (Problem A). Bridges to code you already own and grades high-altitude compositional drift. Scaffolded; see `notes/naming-and-structure.md`. |
+| `packages/haunt` | no | **Haunt** — the BYO-design-system adherence + drift layer. A `.haunt/` package bridges to code you already own (inventory with `paths` globs, checks with `references`); `haunt review` emits an advisory diff-review packet and `haunt integrity` emits a whole-inventory sprawl-audit packet. Requires a `.ghost/` fingerprint. |
 | `apps/docs` | no | Docs site. |
 
 ## CLI Commands
@@ -82,8 +83,8 @@ Core workflow:
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with a manifest and a core `index.md` node. |
-| `ghost validate` | Validate the package: artifact shape and node validity. |
+| `ghost init` | Scaffold `.ghost/` with a manifest, a starter glossary, and a core `index.md` node. |
+| `ghost validate` | Validate the package: artifact shape, node validity, and glossary kind prefixes. |
 | `ghost gather` | Emit the fingerprint menu for the agent to select from. |
 | `ghost skill install` | Install the unified `ghost` skill bundle. |
 
@@ -93,13 +94,13 @@ Advanced/maintenance:
 | --- | --- |
 | `ghost manifest` | Emit a self-describing JSON manifest of every command and flag. |
 
-Diff review lives in Haunt (`haunt review`), the private adherence + drift
-package (`packages/haunt`).
+Diff review and inventory audit live in Haunt (`haunt review`,
+`haunt integrity`), the private adherence + drift package (`packages/haunt`).
 
 ## Public Exports
 
 - `@anarchitecture/ghost-fingerprint` for the combined surface.
-- `@anarchitecture/ghost-fingerprint/scan` for package-path resolution, checks-dir loading, and legacy migration helpers.
+- `@anarchitecture/ghost-fingerprint/scan` for package-path resolution and legacy migration helpers.
 - `@anarchitecture/ghost-fingerprint/fingerprint` for node package authoring, validation, parsing, and serialization.
 - `@anarchitecture/ghost-fingerprint/core` for shared schemas, types, and loaders.
 - `@anarchitecture/ghost-fingerprint/cli` for `buildCli()`.
@@ -108,8 +109,7 @@ package (`packages/haunt`).
 
 No API key is required to run Ghost. Optional variables:
 
-- `OPENAI_API_KEY` / `VOYAGE_API_KEY` are consumed only by semantic embedding
-  helpers when a host opts into enriched comparison.
+- `GHOST_PACKAGE_DIR` selects a custom package directory (or pass `--package`).
 
 Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
@@ -136,10 +136,10 @@ Use `patch` for fixes and docs, `minor` for new commands/flags/exports, and
 
 - Keep publishable runtime code self-contained in `packages/ghost`; no
   `workspace:*` runtime dependencies in the packed public artifact.
-- The canonical on-disk form is a `.ghost/` directory tree: `manifest.yml` plus
-  prose nodes (`index.md` and `<surface>/<node>.md`) and optional `checks/*.md`.
-  The directory layout is the graph; ids and parents come from paths, never a
-  separate declaration.
+- The canonical on-disk form is a flat `.ghost/` package: `manifest.yml` plus
+  `glossary.md` plus prose nodes (`<kind>.<slug>.md` or bare `<slug>.md`). The
+  corpus is flat; kinds come from filename prefixes declared in the glossary,
+  never from a separate declaration or a directory hierarchy.
 - Skill recipes live in `packages/ghost/src/skill-bundle/references/`; install
   them with `ghost skill install`.
 - The CLI manifest at `apps/docs/src/generated/cli-manifest.json` is generated
