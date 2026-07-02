@@ -71,8 +71,9 @@ only when it is genuinely a different truth.
 
 Decide which posture fits before scaffolding. Follow
 [authoring-scenarios.md](authoring-scenarios.md) when setting up or substantially
-revising a fingerprint. Human intent anchors the truths; scans provide evidence;
-agent synthesis is draft work until a human curates it and Git review accepts it.
+revising a fingerprint. Human intent anchors the truths; what the human says and
+shows — words, images, links, exemplars — is the evidence; agent synthesis is
+draft work until a human curates it and Git review accepts it.
 
 Monorepos and product suites run **one contract per package**.
 
@@ -113,18 +114,21 @@ over-structure.
 
 ### 4. Orient
 
-Read the brand and the product, not just the component library. Look for
-surfaces, docs, tests, copy, and examples that reveal stance, hierarchy, density,
-restraint, repetition, trust, and flow. Read the repo directly (tree, grep,
-source inspection) for raw observations; curate, never copy verbatim.
+Elicit the brand from the human, not from a codebase. Interview for stance,
+audience, and anti-goals; ask for the material they can show — screenshots,
+links, exemplar products, brand docs, copy they love or hate. Treat every
+artifact as testimony to curate, never truth to copy verbatim. Repo-bound
+reality (components, paths, building blocks) belongs to the haunt plugin's
+inventory, not fingerprint prose.
 
 ### 5. Write sparse nodes
 
 Add the smallest useful set of nodes, each a purpose-coherent prose truth written
 through the lenses, named `<kind>.<slug>.md` (or a bare slug when uncategorized).
-State conditions as situations in the prose. Prefer a few high-confidence truths
-over a noisy catalog. Ask the human to keep, soften, reject, or re-title
-important claims before treating draft nodes as durable.
+Draft only what the human said or showed. State conditions as situations in the
+prose. Prefer a few high-confidence truths over a noisy catalog. Ask the human
+to keep, soften, reject, or re-title important claims before treating draft
+nodes as durable.
 
 ### 6. Validate
 
@@ -139,7 +143,9 @@ prefix is a declared glossary category (an undeclared prefix is a warning with a
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never treat raw repo observations as a node without curation.
+- Never derive a brand truth from repo code; what a codebase does is haunt
+  inventory, and what it repeats may be legacy, not stance.
+- Never draft a node the human neither said nor showed.
 - Never invent a hierarchy, inheritance, or cross-node edges — the package is
   flat.
 - Never file a truth by destination; state its condition in the prose.

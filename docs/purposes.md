@@ -82,7 +82,7 @@ Two rules keep the reservation honest:
 
 | Consumer | CLI surface | Projection it needs | Reads | Changes the model? |
 | --- | --- | --- | --- | --- |
-| **Authoring** | `ghost init`, `ghost validate` | The raw nodes, for a human or agent writing the fingerprint. The agent does its own repo reconnaissance. | the corpus | **No**, this *is* the model. |
+| **Authoring** | `ghost init`, `ghost validate` | The raw nodes, for a human or agent writing the fingerprint. Authoring is elicitation: the material is what the human says and shows, never repo scans. | the corpus | **No**, this *is* the model. |
 | **Generation** | `ghost gather` | The flat menu (id + kind + description) plus the haunt materials section; the agent selects the truths and building blocks the task needs and shapes a pre-generation brief. | the menu, then the selected node bodies and material paths | **No** if selection stays with the agent. **Leak risk:** pushing retrieval needs back into the corpus shape. |
 | **Adherence** | `haunt review` (private) | The referenced fingerprint node bodies, as the baseline a diff is graded against. Checks bind via `references`. | fingerprint prose, read-only | **No** if checks stay offered-and-grounded in Haunt. **Leak risk:** routing checks by anything other than `references`. |
 | **Audit** | `haunt integrity` (private) | The same referenced prose, graded against the whole inventory rather than a diff. | fingerprint prose, read-only | **No**, same boundary as adherence. |

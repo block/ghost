@@ -1,13 +1,16 @@
 # @anarchitecture/ghost-fingerprint
 
-**A unified Ghost CLI for product-surface composition fingerprints.**
+**Write a brand decision down once, in your repo, so your agent reads it
+before it builds.**
 
-Agents can assemble UI. They can't reliably preserve the _composition_ behind
-it: the hierarchy, density, restraint, copy, trust, and flow that make a surface
-feel intentional. Ghost captures that composition in a repo-local `.ghost/`
-package that a host agent reads before it builds and checks after it changes.
+Agents can assemble UI, copy, and email. What they can't do is remember the
+decisions behind your product — the stance, the density, the restraint, the
+trust moves you keep re-stating in review. Ghost keeps those decisions in a
+repo-local `.ghost/` folder of plain markdown that a host agent reads before
+it generates.
 
-This package ships one CLI: `ghost`.
+This package ships one CLI: `ghost`. Every command is also available as
+`ghost-fingerprint` for when another tool owns the `ghost` bin.
 
 ## Project Status: Beta
 
@@ -26,67 +29,76 @@ This package ships one CLI: `ghost`.
 ```bash
 npm install -D @anarchitecture/ghost-fingerprint
 npx ghost --help
-npx ghost --help --all
 ```
 
-`ghost --help` shows the core workflow. `ghost --help --all` shows the complete
-command index, and `ghost <command> --help` shows flags for one command.
+`ghost --help` shows the core workflow, `ghost --help --all` the complete
+command index, and `ghost <command> --help` the flags for one command.
 
 ## The Shape
 
-A fingerprint is a directory tree of prose, a **graph of nodes**:
+A fingerprint is a **flat folder of prose nodes** — no hierarchy, no
+inheritance, no links between files:
 
 ```text
 .ghost/
-  manifest.yml          # schema + id
-  index.md              # the core node, true everywhere (optional)
-  <surface>/index.md    # a surface's own prose (the directory is the surface)
-  <surface>/<node>.md   # a prose node placed in that surface
-  checks/*.md           # optional ghost.check/v1 checks
+  manifest.yml          # schema + package id (the anchor)
+  glossary.md           # your category vocabulary + what each category means
+  index.md              # the curated front door node
+  principle.trust.md    # a brand truth of kind `principle`
+  voice.md              # an uncategorized brand truth
+  haunt/                # reserved: the adherence plugin's data; never a node
 ```
 
-The **directory tree is the graph**. A node is one markdown file: descriptive
-frontmatter (`description`, `relates`) plus a prose body written
-through three lenses: **intent** (the why), **inventory** (the materials), and
-**composition** (the patterns). A node's id is its path and its parent is its
-directory; a surface is just a directory, and the package-root `index.md` is the
-implicit `core` node that reaches every surface.
+A node is one markdown file: a `description` in frontmatter (the one-liner
+`gather` shows), a brand truth in the prose body. Its id is its filename minus
+`.md`; its kind is the prefix before the first dot, declared in the glossary.
+A truth that holds everywhere is stated plainly; a narrower truth names the
+**condition** it applies in, right in the prose. The agent reads the condition
+and decides when it applies.
 
 ## Use
 
 Create and validate the fingerprint package:
 
 ```bash
-ghost init
-ghost validate
+ghost init          # scaffold .ghost/ (manifest + glossary + starter index.md)
+ghost validate      # package shape + node validity + glossary kind prefixes
 ```
 
 Gather context before generation:
 
 ```bash
-ghost gather               # list nodes by id + description
-ghost gather checkout      # compose a surface's context slice
+ghost gather        # list every truth by id, kind, and description — the agent selects
 ```
 
-Govern changes afterward:
-
-```bash
-ghost checks --surface checkout
-ghost review --surface checkout --base main
-```
-
-Install the BYOA skill bundle so your host agent can author, brief, review, and
-verify fingerprints:
+Install the skill bundle so your host agent (Claude Code, Codex, Cursor,
+Goose, …) knows how to author and consume the fingerprint:
 
 ```bash
 ghost skill install
 ```
 
-Advanced and maintenance commands (`manifest` and `migrate`) remain available
-in the full command index.
+`ghost manifest` (a self-describing JSON index of commands and flags) remains
+available for tooling.
 
-No API key is required. `OPENAI_API_KEY` / `VOYAGE_API_KEY` are optional and
-only used by semantic embedding helpers when a host opts in.
+Ghost is **feed-forward**: it grounds generation and never grades output.
+Reviewing diffs and auditing code against the fingerprint live in Haunt, the
+private adherence plugin (`ghost-haunt review`, `ghost-haunt integrity`).
+
+No API key is required.
+
+## BYOA
+
+Ghost is bring-your-own-agent. The CLI does the deterministic work: package
+validation, node validity, glossary checks, and the flat gather menu. The
+installed `ghost` skill teaches a host agent how to capture brand truths as
+`.ghost/` nodes and how to brief generation work from them.
+
+```text
+Set up the Ghost fingerprint for this repo.
+Write down the decision I keep repeating about checkout.
+Brief this work from the Ghost fingerprint.
+```
 
 ## Library
 
@@ -94,27 +106,17 @@ only used by semantic embedding helpers when a host opts in.
 import {
   initFingerprintPackage,
   lintFingerprintPackage,
+  loadFingerprintPackage,
 } from "@anarchitecture/ghost-fingerprint/fingerprint";
+import { buildCatalogMenu } from "@anarchitecture/ghost-fingerprint/core";
 import { buildCli } from "@anarchitecture/ghost-fingerprint/cli";
 ```
 
 Available subpath exports: `@anarchitecture/ghost-fingerprint`,
-`@anarchitecture/ghost-fingerprint/scan`, `@anarchitecture/ghost-fingerprint/fingerprint`,
-`@anarchitecture/ghost-fingerprint/core`, and `@anarchitecture/ghost-fingerprint/cli`.
-
-## BYOA
-
-Ghost is bring-your-own-agent. The CLI performs deterministic work: graph
-validation, context composition, check selection and grounding, and advisory
-review packets. The installed `ghost` skill teaches a host
-agent how to capture canonical `.ghost/` surface-composition context, brief and
-generate work from it, review changes against it, and verify generated UI.
-
-```text
-Set up the Ghost fingerprint for this repo.
-Brief this work from the Ghost fingerprint.
-Review this change against the Ghost fingerprint.
-```
+`@anarchitecture/ghost-fingerprint/fingerprint`,
+`@anarchitecture/ghost-fingerprint/core`,
+`@anarchitecture/ghost-fingerprint/cli`, and
+`@anarchitecture/ghost-fingerprint/scan` (deprecated).
 
 ## Maintainers
 

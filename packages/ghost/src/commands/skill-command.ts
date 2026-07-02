@@ -12,7 +12,13 @@ const SKILL_BUNDLE_ROOT = fileURLToPath(
   new URL("../skill-bundle", import.meta.url),
 );
 
-const SUPPORTED_AGENTS = ["claude", "cursor", "codex", "opencode"] as const;
+const SUPPORTED_AGENTS = [
+  "claude",
+  "cursor",
+  "codex",
+  "opencode",
+  "goose",
+] as const;
 type SupportedAgent = (typeof SUPPORTED_AGENTS)[number];
 
 export function registerSkillCommand(cli: CAC): void {
@@ -24,7 +30,7 @@ export function registerSkillCommand(cli: CAC): void {
     )
     .option(
       "--agent <name>",
-      "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode",
+      "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode, goose",
     )
     .option("--force", "Overwrite an existing installed Ghost skill")
     .action(async (action: string, opts) => {
@@ -90,6 +96,12 @@ function detectAgent(): SupportedAgent {
   if (existsSync(resolve(home, ".cursor"))) return "cursor";
   if (existsSync(resolve(home, ".codex"))) return "codex";
   if (existsSync(resolve(home, ".opencode"))) return "opencode";
+  if (
+    existsSync(resolve(home, ".goose")) ||
+    existsSync(resolve(home, ".config", "goose"))
+  ) {
+    return "goose";
+  }
   return "claude";
 }
 
@@ -98,5 +110,8 @@ function agentSkillDir(agent: SupportedAgent): string {
   if (agent === "claude") return resolve(home, ".claude", "skills");
   if (agent === "cursor") return resolve(home, ".cursor", "skills");
   if (agent === "codex") return resolve(home, ".codex", "skills");
-  return resolve(home, ".opencode", "skills");
+  if (agent === "opencode") return resolve(home, ".opencode", "skills");
+  // Goose's canonical writable global skills location is ~/.agents/skills —
+  // the agent-neutral path it scans first among global roots.
+  return resolve(home, ".agents", "skills");
 }

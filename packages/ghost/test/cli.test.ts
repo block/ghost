@@ -284,6 +284,8 @@ describe("ghost CLI", () => {
     });
     expect(bad.code).toBe(2);
     expect(bad.stderr).toContain("--agent must be one of");
+    // Goose is a first-class install destination.
+    expect(bad.stderr).toContain("goose");
   });
 
   it("exits 2 with guidance when no fingerprint package is present", async () => {

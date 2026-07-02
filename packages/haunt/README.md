@@ -2,9 +2,7 @@
 
 **The BYO-design-system adherence + drift layer for Ghost. Problem A.**
 
-Ghost splits into two differently-shaped jobs (see
-[`notes/session-synthesis.md`](../../notes/session-synthesis.md) and
-[`notes/naming-and-structure.md`](../../notes/naming-and-structure.md)):
+Ghost splits into two differently-shaped jobs:
 
 - **Fingerprint** (`@anarchitecture/ghost-fingerprint`) — the portable, medium-agnostic on-brand
   generation contract. The knowledge substrate.
@@ -40,9 +38,8 @@ Haunt is a plugin of the fingerprint: it lives in the reserved
 `.ghost/haunt/` subtree, always derived from the fingerprint's location, and
 has no manifest of its own — the fingerprint's `manifest.yml` is the only
 anchor. A haunt package is two flat dirs — no nesting, no inheritance. Brand
-truths (principles, surface composition, stance) live at the `.ghost/` root
-as fingerprint prose nodes; haunt checks point at them (see
-`notes/haunt-reconciliation.md`):
+truths (principles, composition, stance) live at the `.ghost/` root as
+fingerprint prose nodes; haunt checks point at them:
 
 ```text
 .ghost/
@@ -55,7 +52,7 @@ as fingerprint prose nodes; haunt checks point at them (see
 A check is a `ghost.check/v1` document (`name`, `description`, `severity` +
 prose body) plus the haunt-side `references` field (required, min 1). Each
 reference is either a bare local inventory id (`modals`) or a fingerprint node
-target with an optional heading anchor (`checkout/payment > Confirmation`) —
+target with an optional heading anchor (`principle.trust > Confirmation`) —
 one pointer grammar system-wide, shared with `ghost.check/v1`'s `source:`.
 
 **A `.ghost/` fingerprint is required for `ghost-haunt review`** — without brand
@@ -99,7 +96,7 @@ verified match counts; the agent reads the code. It also requires `.ghost/`
 
 ## Status
 
-Reconciled onto the fingerprint (see `notes/haunt-reconciliation.md`): two-dir
+Reconciled onto the fingerprint: two-dir
 shape, `ghost.check/v1` checks, `references` grammar, fingerprint-required
 review. Deferred: inventory self-linting, the eval/vibe-test harness, and
 first-party Vessel knowledge. Private until the self-lint slice lands.

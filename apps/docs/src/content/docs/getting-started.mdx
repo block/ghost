@@ -27,7 +27,7 @@ Ghost is **feed-forward**: it grounds generation. It does not review or grade
 output. You work through a short loop:
 
 ```bash
-ghost init        # scaffold .ghost/ (manifest + glossary + a core node)
+ghost init        # scaffold .ghost/ (manifest + glossary + a starter index.md)
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather      # emit the menu; your agent selects the truths the task needs
 ```
@@ -70,8 +70,8 @@ always rewrite. Write that one down as a node, and grow the fingerprint decision
 by decision. One high-confidence truth beats an empty catalog.
 
 The CLI handles the deterministic package work. Your agent handles the authoring:
-interviewing, reading repo evidence, drafting node prose, and asking you to
-curate the claims. `ghost init` scaffolds `manifest.yml`, a starter `glossary.md`,
+interviewing you, working with the material you show it, drafting node prose,
+and asking you to curate the claims. `ghost init` scaffolds `manifest.yml`, a starter `glossary.md`,
 and a core `index.md` node.
 
 ```bash
@@ -143,10 +143,11 @@ The fingerprint is a **flat set of prose nodes**:
 .ghost/
   manifest.yml          # schema + package id
   glossary.md           # the category vocabulary + what each category means
-  index.md              # the core node
+  index.md              # the curated front door node
   principle.trust.md    # a brand truth of kind `principle`
   condition.density.md  # a brand truth of kind `condition`
   voice.md              # an uncategorized brand truth
+  haunt/                # reserved: the adherence plugin's data; never a node
 ```
 
 There is no hierarchy, no inheritance, and no edges between nodes. A node's
@@ -158,8 +159,8 @@ flat menu.
 
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names the *situation* it applies in. The agent reads the condition and
-decides when the truth applies. Reserved at the package root: `manifest.yml` and
-`glossary.md`; every other `*.md` is a node.
+decides when the truth applies. Reserved at the package root: `manifest.yml`,
+`glossary.md`, and the `haunt/` subtree; every other `*.md` is a node.
 
 Write and read every prose node through three lenses: intent, inventory, and
 composition. `ghost gather` emits the menu; the agent selects and manifests.

@@ -1,6 +1,6 @@
 ---
 title: Fingerprint Authoring
-description: Co-author Ghost brand fingerprints with human intent, repo evidence, agent synthesis, and Git review.
+description: Co-author Ghost brand fingerprints through elicitation — human intent, shown material, agent synthesis, and Git review.
 kicker: Docs
 section: guide
 order: 20
@@ -10,57 +10,56 @@ slug: fingerprint-authoring
 <DocSection title="The Authoring Model">
 
 A Ghost fingerprint is not a scan dump. It is a set of durable brand truths that
-a human and agent shape together.
+a human and agent shape together — through **elicitation, not scanning**.
 
 The human names the intent: what the brand should feel like, who it serves,
 which truths are universal, which hold only under a condition, and what should
-not drift. Repo scans provide evidence: components, routes, docs, copy, tokens,
-examples, and UI. The agent synthesizes drafts, but ordinary Git review is where
-fingerprint edits become canonical.
+not drift. The evidence is what the human says, shows, and points at — words,
+screenshots, links, exemplar products, brand docs, copy they love or hate. The
+agent synthesizes drafts, but ordinary Git review is where fingerprint edits
+become canonical.
+
+Repo-bound reality — components, tokens, paths, building blocks — belongs to
+the haunt plugin's inventory, not fingerprint prose. What a codebase does is
+not what a brand means; what it repeats may be legacy, not stance.
 
 </DocSection>
 
 <DocSection title="Scenario Matrix">
 
-Start by classifying the authoring scenario. The scenario determines how much
-weight to give human intent, existing code, and library evidence.
+Start by classifying the authoring scenario. The scenario determines what the
+human can articulate, show, or point at — and how the interview should run.
 
 | Scenario | Authoring posture |
 | --- | --- |
-| Net new repo | Human-led. Capture intent, audience, posture, and early anti-goals before inventory grows. |
-| Net new repo + UI library | Human-led with library evidence. Explain how this product uses the library. |
-| Existing repo | Human + scan. Find repeated patterns and exemplars, then ask which ones are canonical. |
-| Existing repo with mixed quality | Curated scan. Separate durable surface composition from legacy debt and accidental repetition. |
-| Design system or UI library | Grammar-led. Describe primitives, tokens, component behavior, accessibility, and composition constraints. |
-| Rebrand, redesign, or migration | Human-led transition. Capture current, target, and migration cautions. |
-| Prototype becoming product | Ratification-led. Preserve only the emergent patterns humans want to keep. |
+| Net new brand | Stance-first. Elicit feel, audience, and early anti-goals before anything else exists to point at. |
+| Established brand, first fingerprint | Artifact-rich interview. The human can show a lot — shipped surfaces, brand docs, campaigns. Elicit which of it is intentional. |
+| Strong opinions, weak articulation | Example-led. Work from exemplars and counter-exemplars ("this feels like us, this never would") toward the stance underneath. |
+| Brand doc or design-language deck exists | Distillation. The document is testimony, not truth: pull the claims that steer decisions, drop the filler, have the human ratify each survivor. |
+| Rebrand, redesign, or migration | Transition-led. Capture current, target, and what must not be lost in between. |
+| Fork, white label, tenant variant | Shared base + local divergence. Keep common truths broad; scope divergence with conditions. |
 
 </DocSection>
 
 <DocSection title="Guided Workflow">
 
-Ghost supports two agent authoring modes:
-
-- **Default** - interview first, scan as needed, draft node prose, then
-  curate.
-- **Auto-draft** - scan first, draft a small starter fingerprint, then curate
-  the claims with a human.
-
-Auto-draft is a skill workflow, not a Ghost CLI command. Ask for it in plain
-English:
+Ask for it in plain English:
 
 ```text
-Set up the Ghost fingerprint for this repo with auto-draft.
+Set up the Ghost fingerprint for this repo.
 ```
 
-1. **Interview** - ask what the product should feel like, who it serves, which
-   surfaces show it at its best, and which existing patterns are accidental or
-   legacy. In auto-draft mode, use this step after the starter draft to curate
-   claims.
-2. **Scan** - inspect routes, components, stories, tests, docs, screenshots,
-   copy, tokens, assets, and UI library references.
-3. **Draft** - write the smallest useful node prose, reading each node through
-   the intent, inventory, and composition lenses.
+1. **Interview** - ask what the brand should feel like, what it should never
+   become, who it serves, and which surfaces or campaigns show it at its best.
+   Counter-exemplars are as valuable as exemplars: "we would never ship this"
+   usually yields a sharper truth than an hour of affirmative description.
+2. **Work the material** - ask for what the human can show: screenshots,
+   links, exemplar products, brand docs, past campaigns, a rejected design and
+   why it was rejected. Every artifact is testimony to curate, never truth by
+   itself.
+3. **Draft** - write the smallest useful node prose from what the human said
+   or showed, reading each node through the intent, inventory, and composition
+   lenses.
 4. **Curate** - have the human keep, soften, reject, restate at a different
    altitude, or record important claims before treating them as durable.
 5. **Validate** - run Ghost validation and use Git review as the approval
@@ -70,10 +69,9 @@ Set up the Ghost fingerprint for this repo with auto-draft.
 ghost validate
 ```
 
-Raw repo observations (gathered with the agent's own tree/grep/source
-inspection) are source evidence only. They can support curated inventory, but
-they do not establish brand truth by themselves. Repetition frequency may seed a
-draft, but it does not decide what the brand should do.
+Artifacts and brand docs are testimony only. They can seed a draft, but they do
+not establish brand truth by themselves — the human ratifies what is
+intentional.
 
 </DocSection>
 

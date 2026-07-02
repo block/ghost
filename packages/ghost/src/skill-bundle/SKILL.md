@@ -100,9 +100,12 @@ Custom package dir: set `GHOST_PACKAGE_DIR=<relative-dir>` or pass `--package
 - Probe your own readiness before generating: follow [references/self-check.md](references/self-check.md).
 - Understand the package shape in full: see [references/schema.md](references/schema.md).
 
-When the user asks to set up a fingerprint with `auto-draft`, treat that as an
-agent authoring mode, not a CLI command: read the repo first, draft the smallest
-evidence-backed nodes, then ask the human to curate them.
+Fingerprint authoring is **elicitation, not scanning**. The raw material is
+what the human brings and points at — words, images, links, exemplar products,
+copy they love or hate. Interview, draft the smallest set of nodes from what
+they actually said or showed, and ask them to curate. Deriving truths from repo
+code is not fingerprint authoring; repo-bound reality (components, paths,
+building blocks) belongs to the haunt plugin's inventory.
 
 ## How it works
 

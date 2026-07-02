@@ -12,7 +12,7 @@
  * bind them to local inventory ids and/or `.ghost/` fingerprint node targets).
  * Brand stance lives in `.ghost/` as Fingerprint nodes, consumed via
  * `@anarchitecture/ghost-fingerprint` — a fingerprint is *required* for
- * `ghost-haunt review` (see notes/haunt-reconciliation.md).
+ * `ghost-haunt review`.
  */
 
 export const HAUNT_VERSION = "0.0.0";

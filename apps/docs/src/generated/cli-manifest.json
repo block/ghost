@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T19:43:55.973Z",
+  "generatedAt": "2026-07-02T13:24:39.373Z",
   "tools": [
     {
       "tool": "ghost",
@@ -137,7 +137,7 @@
             {
               "rawName": "--agent <name>",
               "name": "agent",
-              "description": "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode",
+              "description": "Agent destination to use when --dest is omitted: claude, cursor, codex, opencode, goose",
               "default": null,
               "takesValue": true,
               "negated": false

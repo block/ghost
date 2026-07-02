@@ -4,87 +4,90 @@ description: Choose the right human-agent workflow for authoring Ghost brand fin
 handoffs:
   - label: Validate the fingerprint
     command: ghost validate --format json
-    prompt: Classify this repo's fingerprint authoring scenario and confirm the package validates.
+    prompt: Classify this fingerprint's authoring scenario and confirm the package validates.
 ---
 
 # Recipe: Collaborative Fingerprint Authoring
 
-**Goal:** help a human and agent co-author durable brand truths without turning
-raw repo scans into brand truth.
+**Goal:** help a human and agent co-author durable brand truths through
+conversation — without laundering what a codebase happens to do into what the
+brand means.
 
-Human intent anchors the truths. Code, docs, examples, and UI provide evidence.
-Agent synthesis is draft work until the human curates it and ordinary Git review
-accepts it.
+The fingerprint is medium-agnostic and is not derived from a repo. Its raw
+material is **elicitation**: what the human says, shows, and points at — words,
+screenshots, links, exemplar products, marketing copy, a competitor they define
+themselves against. Agent synthesis is draft work until the human curates it
+and ordinary Git review accepts it.
 
-`auto-draft` is an optional skill mode for reducing blank-page cost. It scans
-first and writes starter node edits, but those edits stay draft work until the
-human curates them and Git review accepts them.
+Repo-bound reality — components, tokens, paths, building blocks — is the haunt
+plugin's inventory, not fingerprint prose. When a conversation surfaces "we
+have a component for that," that is a haunt lead, not a brand truth.
 
 ## 1. Start With One Repeated Decision
 
-Do not try to fingerprint the whole brand at once. Ask the human (or find in
-review history) the one decision whose feedback keeps repeating — the checkout
-always flagged for trust, the voice always re-toned, the empty state always
-rewritten — and capture that one truth as a node first. One high-confidence truth
-beats an empty catalog; the fingerprint grows as the next repeated decision shows
-up.
+Do not try to fingerprint the whole brand at once. Ask the human for the one
+decision whose feedback keeps repeating — the checkout always flagged for
+trust, the voice always re-toned, the empty state always rewritten — and
+capture that one truth as a node first. One high-confidence truth beats an
+empty catalog; the fingerprint grows as the next repeated decision shows up.
 
-The scenario below tunes the authoring *posture* for that first node; it is not a
-gate to clear before writing anything.
+The scenario below tunes the authoring *posture* for that first node; it is not
+a gate to clear before writing anything.
 
 | Scenario | Default authoring posture |
 | --- | --- |
-| Net new brand | Human-led. Capture stance, audience, and early anti-goals before adding much inventory. |
-| Net new + UI library | Human-led with library evidence. Record how this brand uses the library, not just that it exists. |
-| Existing product | Human + scan. Use scans to find repeated patterns and exemplars; ask which are canonical. |
-| Existing, mixed quality | Curated scan. Separate canonical examples from drift, legacy debt, and accidental repetition. |
-| Design system / UI library | Grammar-led. Describe primitives, component behavior, token posture, and composition constraints. |
-| Rebrand, redesign, migration | Human-led transition. Capture current, target, and migration cautions. |
-| Prototype becoming product | Ratification-led. Preserve only the emergent patterns a human wants to keep. |
+| Net new brand | Stance-first. Elicit feel, audience, and early anti-goals before anything else exists to point at. |
+| Established brand, first fingerprint | Artifact-rich interview. The human can show a lot — shipped surfaces, brand docs, campaigns. Elicit which of it is *intentional*. |
+| Strong opinions, weak articulation | Example-led. The human knows it when they see it: work from exemplars and counter-exemplars ("this feels like us, this never would") toward the stance underneath. |
+| Brand doc or design-language deck exists | Distillation. The document is testimony, not truth: pull the claims that actually steer decisions, drop the aspirational filler, and have the human ratify each survivor. |
+| Rebrand, redesign, migration | Transition-led. Capture current, target, and what must not be lost in between. |
 | Fork, white label, tenant variant | Shared base + local divergence. Keep common truths broad; scope divergence with conditions. |
 | Monorepo or product suite | One contract per package. |
 
 If more than one applies, start with the broad scenario, then narrow.
 
-Use auto-draft when an existing repo has enough evidence to support a starter
-sketch. Avoid it for net-new brands, thin prototypes, major redesigns, or
-mixed-quality repos where repeated code may mostly be legacy.
-
 ## 2. Interview The Human
 
-Ask only high-leverage questions that change the fingerprint:
+The interview is the engine. Ask only high-leverage questions that change the
+fingerprint:
 
 - What should this brand feel like, and what should it never become?
 - Who is the audience, and what are they trying to get done?
-- Which screens, flows, or examples show the brand at its best?
-- Which current patterns are legacy, accidental, experimental, or low quality?
-- Where do trust, density, pacing, accessibility, recovery, or disclosure matter most?
+- Which surfaces, campaigns, or moments show the brand at its best? Show me.
+- Which brand or product do you admire — and where do you deliberately differ?
+- What keeps getting flagged in review, re-toned, or rewritten?
+- Where do trust, density, pacing, accessibility, recovery, or disclosure
+  matter most?
 - Which truths are universal, and which only hold under a specific situation?
 
 Capture human-authored or human-approved answers as nodes. Do not treat
 unapproved notes as canonical.
 
-When auto-draft is requested, move the interview after the starter draft and use
-it to curate claims.
+## 3. Work The Material The Human Brings
 
-## 3. Scan For Evidence
+Ask for artifacts and read them closely: screenshots, links, exemplar products,
+brand docs, marketing copy, past campaigns, a rejected design and why it was
+rejected. Treat every artifact as *testimony* — evidence of a stance the human
+holds — never as truth by itself. A pattern that appears everywhere may be
+legacy; a pattern that appears once may be the brand at its best. The human
+says which.
 
-Read the brand and the product, not just the component library. Inspect routes,
-components, stories, tests, docs, copy, tokens, and examples that reveal stance,
-hierarchy, behavior, trust, and flow. Read the repo directly (tree, grep, source
-inspection) for raw observations; treat them as scratch evidence.
+Counter-exemplars are as valuable as exemplars. "We would never ship this" with
+a screenshot attached usually yields a sharper truth than an hour of
+affirmative description.
 
 ## 4. Draft The Nodes
 
 Write the smallest useful set of nodes, each a purpose-coherent prose truth with
 a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when
 uncategorized). Write each body through the intent / inventory / composition
-lenses: the why, the material (with pointers to implementation), and how it is
-assembled. These are lenses, not fields.
+lenses: the why, the material, and how it is assembled. These are lenses, not
+fields.
 
-State universal truths plainly; give narrower truths a **condition** in the prose
-— the situation they apply in, never a destination. Label uncertain reasoning as
-provisional. Prefer a few high-confidence truths over a broad catalog.
+Draft only what the human said or showed. State universal truths plainly; give
+narrower truths a **condition** in the prose — the situation they apply in,
+never a destination. Label uncertain reasoning as provisional. Prefer a few
+high-confidence truths over a broad catalog.
 
 ## 5. Curate With The Human
 
@@ -123,7 +126,11 @@ edits are drafts; checked-in nodes are canonical.
 
 ## Never
 
-- Never copy raw repo observations into canonical nodes without curation.
-- Never claim repetition frequency is brand authority.
+- Never derive brand truth from repo code; what the codebase does is haunt
+  inventory, and what it repeats may be legacy, not stance.
+- Never draft a node the human neither said nor showed; that is invention
+  wearing the brand's clothes.
+- Never treat a brand doc, an artifact, or repetition frequency as brand
+  authority; the human ratifies what is intentional.
 - Never invent a hierarchy, inheritance, or edges — the package is flat.
 - Never file a truth by destination; state its condition in the prose.
