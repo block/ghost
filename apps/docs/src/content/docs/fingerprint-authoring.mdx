@@ -85,15 +85,23 @@ filename's first dotted segment (`principle.trust.md` → kind `principle`), and
 must be a category declared in `glossary.md`; a bare name (`voice.md`) is
 uncategorized. Folders are a human-browsing convenience only.
 
-Reserved at the package root are `manifest.yml` and `glossary.md`; every other
-`*.md` is a node. Moving or renaming a node changes its id.
+Reserved at the package root are `manifest.yml`, `glossary.md`, and the
+`haunts/` directory; every other `*.md` is a node. Moving or renaming a node
+changes its id.
 
 Node frontmatter carries only descriptive properties:
 
 | Property | What it does |
 | --- | --- |
 | `description` | A short summary of the node — the retrieval payload the menu shows. |
+| `materials` | Optional list of locators for the concrete materials the truth is about: repo-relative paths/globs or absolute HTTPS URLs. |
 | _passthrough_ | Free-form keys (`audience`, `stage`, …) are preserved for host tooling. |
+
+`materials` is the single locator field. Components, patterns, logos, motion
+files, illustrations, and external asset libraries all use it. Guidance stays in
+prose; `materials` only says where the material is. Repo-relative locators also
+power `ghost review`: a diff that touches a matched path surfaces the node and
+its checks — see [Checks And Review](/docs/checks-and-review).
 
 The **glossary** (`glossary.md`) declares the category vocabulary and what each
 category means — its normative weight, so an agent knows how to read a node of

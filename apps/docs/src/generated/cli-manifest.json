@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T05:32:38.719Z",
+  "generatedAt": "2026-07-03T05:56:11.327Z",
   "tools": [
     {
       "tool": "ghost",
@@ -8,7 +8,7 @@
           "tool": "ghost",
           "name": "validate",
           "rawName": "validate [file]",
-          "description": "Validate the Ghost fingerprint package — artifact shape and the node graph (links resolve, one root, acyclic). Defaults to .ghost.",
+          "description": "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. Defaults to .ghost.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "validate",

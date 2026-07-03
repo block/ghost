@@ -37,7 +37,7 @@ export interface FingerprintPackagePaths {
   packageDir: string;
   manifest: string;
   glossary: string;
-  /** Legacy facet paths — used only to detect legacy packages for migration. */
+  /** Legacy facet paths — used only to detect pre-flat-corpus packages. */
   intent: string;
   inventory: string;
   composition: string;

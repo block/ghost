@@ -14,8 +14,9 @@ export const GHOST_EVENTS_FILENAME = ".events";
 export const LEGACY_PULL_HISTORY_FILENAME = ".pulls";
 
 /**
- * Legacy facet filenames — retained only so the loader can detect a
- * pre-graph package and guide the user to `ghost migrate`.
+ * Legacy facet filenames from the pre-flat-corpus package shape — retained
+ * only so path helpers can still name them when detecting legacy packages.
+ * There is no automated migration; legacy packages are re-authored by hand.
  */
 export const FINGERPRINT_INTENT_FILENAME = "intent.yml";
 export const FINGERPRINT_INVENTORY_FILENAME = "inventory.yml";

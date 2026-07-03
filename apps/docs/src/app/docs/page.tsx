@@ -1,7 +1,7 @@
 "use client";
 
 import { useStaggerReveal } from "@anarchitecture/ghost-vessel";
-import { BookOpen, FileText, Rocket } from "lucide-react";
+import { BookOpen, FileText, Rocket, ShieldCheck, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { AnimatedPageHeader } from "@/components/docs/animated-page-header";
@@ -14,6 +14,13 @@ const sections: {
   icon: ReactNode;
 }[] = [
   {
+    name: "Five-Minute Ghost",
+    href: "/docs/quickstart",
+    description:
+      "Write down the one decision you keep repeating, once, and let your agent read it before it builds.",
+    icon: <Zap className="size-8" strokeWidth={1.5} />,
+  },
+  {
     name: "Getting Started",
     href: "/docs/getting-started",
     description:
@@ -24,14 +31,21 @@ const sections: {
     name: "Fingerprint Authoring",
     href: "/docs/fingerprint-authoring",
     description:
-      "Co-author nodes through the intent, inventory, and composition lenses, and place them for inheritance.",
+      "Co-author flat prose nodes through the intent, inventory, and composition lenses, with kinds from the glossary.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
+  },
+  {
+    name: "Checks And Review",
+    href: "/docs/checks-and-review",
+    description:
+      "Opt in to the checks haunt, bind review assertions to nodes, and assemble advisory packets from a diff.",
+    icon: <ShieldCheck className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI Reference",
     href: "/docs/cli",
     description:
-      "Every command around the node-graph fingerprint: init, validate, gather, checks, and review.",
+      "Every command around the flat fingerprint: init, haunt, validate, gather, pull, pulse, and review.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];

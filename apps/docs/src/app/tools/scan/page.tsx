@@ -24,7 +24,7 @@ const cards: {
     name: "CLI reference",
     href: "/docs/cli",
     description:
-      "Report node and surface contribution, validate the graph, and compose context.",
+      "Emit the fingerprint menu with gather, read selected truths with pull, and tune with pulse.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
   {
@@ -46,9 +46,9 @@ export default function GhostScanLanding() {
   return (
     <SectionWrapper>
       <AnimatedPageHeader
-        kicker="ghost scan"
-        title="Fingerprint Readiness"
-        description="The deterministic handoff that shows what a repo-local Ghost fingerprint contributes (its nodes and surfaces) before it guides generation and review."
+        kicker="ghost gather"
+        title="Context Before Building"
+        description="The deterministic handoff that emits the fingerprint menu — every truth's id, kind, and description — so your agent can select and pull the right context before it builds."
       />
 
       <div

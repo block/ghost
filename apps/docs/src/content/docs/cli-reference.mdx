@@ -25,6 +25,7 @@ The canonical fingerprint is a `.ghost/` directory: a flat set of prose nodes.
   glossary.md         # the category vocabulary + what each category means
   <kind>.<slug>.md    # a brand truth of a declared kind (principle.density.md)
   <slug>.md           # an uncategorized brand truth (voice.md)
+  haunts/             # optional attached capabilities (e.g. checks); never nodes
 ```
 
 The command tables below are generated from the CLI source. Run
@@ -38,7 +39,7 @@ Every command follows one contract, so an agent can branch on the exit code:
 | --- | --- |
 | `0` | Success. |
 | `1` | The command ran but the result is unhappy: `validate` found issues, or an unexpected error was thrown. |
-| `2` | The command was called wrong: a bad flag or argument, or a missing package for a command that needs one (`gather`). |
+| `2` | The command was called wrong: a bad flag or argument, a missing package for a command that needs one (`gather`), a `pull` with no known ids, or `review` without the checks haunt installed. |
 | `3` | A command-specific refusal, currently only `skill install` when a skill is already present (pass `--force`). |
 
 A missing package is reported, not treated as a crash: `validate` records it as
@@ -53,15 +54,38 @@ a finding (exit `1`).
 Scaffold a `.ghost/` package: a manifest, a starter `glossary.md`, and a core
 `index.md` node. Add truths by adding files (`principle.density.md`). Use
 `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
-wrapper stores Ghost files outside the default `.ghost`.
+wrapper stores Ghost files outside the default `.ghost`. Core `init` scaffolds
+the fingerprint only; pass `--with checks` to also add the checks haunt in one
+move.
 
 <CliHelp tool="ghost" command="init" hideDescription />
 
 ```bash
 ghost init
+ghost init --with checks
 ghost init --package product-fingerprint
 GHOST_PACKAGE_DIR=.agents/ghost ghost init
 ```
+
+### Manage haunts: `haunt`
+
+A **haunt** is an optional capability attached to the fingerprint: a directory
+under `.ghost/haunts/<id>/` anchored by a thin `haunt.yml`. Haunts are
+feed-back only — they never leak into generation context, and they are never
+emitted by `gather` or `pull`. The first haunt is `checks`: review assertions
+consumed by `ghost review`.
+
+<CliHelp tool="ghost" command="haunt" hideDescription />
+
+```bash
+ghost haunt add checks
+ghost haunt list
+ghost haunt remove checks
+```
+
+`haunt list` shows what is installed and what is available. `haunt remove`
+deletes the haunt directory; like every fingerprint edit, ordinary Git review
+is the approval boundary.
 
 </DocSection>
 
@@ -69,10 +93,11 @@ GHOST_PACKAGE_DIR=.agents/ghost ghost init
 
 ### Validation: `validate`
 
-Validate the package: artifact shape, per-node validity, and that each node's
-kind prefix is declared in `glossary.md`. An undeclared prefix is a warning with
-a "did you mean" suggestion, not a failure. Defaults to `.ghost`; pass a file to
-validate a single node.
+Validate the package: artifact shape, per-node validity, material locators,
+installed haunts, check references, and that each node's kind prefix is
+declared in `glossary.md`. An undeclared prefix is a warning with a "did you
+mean" suggestion, not a failure. Defaults to `.ghost`; pass a file to validate
+a single node or check.
 
 <CliHelp tool="ghost" command="validate" hideDescription />
 
@@ -138,6 +163,62 @@ ghost pulse --format json
 ```
 
 A mixed pull partially succeeds: known ids are emitted, unknown ids warn with closest-id hints, and misses are recorded for `pulse`. A pull with no known ids exits `2` after recording the miss.
+
+</DocSection>
+
+<DocSection title="Review A Diff">
+
+### Assemble a review packet: `review`
+
+Where `gather` and `pull` are feed-forward, `review` is feed-back. It reads a
+diff, matches touched files to node `materials` (repo-relative locators only),
+offers the relevant checks, and emits an **advisory packet** for the host agent
+to weigh. The command grades nothing; the agent renders findings.
+
+`review` requires the checks haunt (`ghost haunt add checks`). Without it, the
+command exits `2` with a pointer to add it. For the authoring model behind
+checks — how to write them and how routing works — see
+[Checks And Review](/docs/checks-and-review).
+
+<CliHelp tool="ghost" command="review" hideDescription />
+
+```bash
+ghost review                    # diff the worktree against HEAD
+ghost review --base main        # diff against another ref
+git diff main | ghost review --diff=-   # read a diff from stdin
+ghost review --format json      # raw JSON packet for host tooling
+```
+
+The packet contains:
+
+- **Touched files** parsed from the diff.
+- **Matched material-backed nodes**: every node whose `materials` locators match
+  a touched file, with its full prose and which locators matched.
+- **Offered checks**: checks whose `references` point at a matched node
+  (`matched`), plus checks that reference no material-backed node at all and are
+  therefore always offered (`always`). Each check carries its prose and the
+  referenced nodes' baseline prose.
+- **Coverage gaps**: touched files no node's materials claim, and material-backed
+  nodes no check guards — signals for tuning the fingerprint, not failures.
+
+Each check is one markdown file under `.ghost/haunts/checks/`:
+
+```markdown
+---
+name: logo-clearspace-holds
+description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
+severity: medium
+references:
+  - asset.logo
+---
+
+Grade whether the change preserves the logo guidance in `asset.logo`.
+```
+
+`references` binds the check to fingerprint node ids, optionally scoped to one
+section with a heading anchor (`asset.logo > Clearspace`); `validate` verifies
+every reference resolves. `severity` is one of `high`, `medium`, or `low` —
+advice for the reviewing agent, not an enforcement level.
 
 </DocSection>
 

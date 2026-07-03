@@ -14,15 +14,15 @@ const tools: {
   icon: ReactNode;
 }[] = [
   {
-    name: "ghost scan",
+    name: "ghost gather",
     href: "/tools/scan",
-    blurb: "Check fingerprint contribution",
+    blurb: "Gather brand context before building",
     icon: <FileText className="size-5" strokeWidth={1.5} />,
   },
   {
     name: "ghost review",
     href: "/tools/drift",
-    blurb: "Review UI drift",
+    blurb: "Review a diff against the fingerprint",
     icon: <Orbit className="size-5" strokeWidth={1.5} />,
   },
 ];

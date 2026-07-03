@@ -14,24 +14,24 @@ const cards: {
   icon: ReactNode;
 }[] = [
   {
-    name: "Ghost loop",
-    href: "/docs/getting-started#the-simple-model",
+    name: "Checks and review",
+    href: "/docs/checks-and-review",
     description:
-      "See how context, checks, review, comparison, and intent fit together.",
+      "Opt in to the checks haunt, bind assertions to nodes, and assemble advisory packets.",
     icon: <Orbit className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "Get started",
     href: "/docs/getting-started",
     description:
-      "Install the skill bundle and review changed UI against the .ghost bundle.",
+      "Install the skill bundle and review changed work against the .ghost fingerprint.",
     icon: <Rocket className="size-8" strokeWidth={1.5} />,
   },
   {
     name: "CLI reference",
-    href: "/docs/cli#ghost--review-and-compare",
+    href: "/docs/cli",
     description:
-      "Run checks, emit exemplar-guided advisory review, compare fingerprints, and record intent.",
+      "Every command around the flat fingerprint, including review flags and exit codes.",
     icon: <BookOpen className="size-8" strokeWidth={1.5} />,
   },
 ];
@@ -47,8 +47,8 @@ export default function GhostDriftLanding() {
     <SectionWrapper>
       <AnimatedPageHeader
         kicker="ghost review"
-        title="Drift"
-        description="Check whether changed or generated UI still matches the .ghost bundle. ghost runs deterministic checks, emits exemplar-guided advisory review packets, compares fingerprints, and records whether a difference should be fixed, accepted, or tracked as the new direction."
+        title="Review Against The Fingerprint"
+        description="Check whether a change still matches the .ghost fingerprint. ghost review reads a diff, matches touched files to node materials, offers the relevant checks, and emits an advisory packet your agent weighs — Ghost itself grades nothing."
       />
 
       <div

@@ -15,14 +15,15 @@ import { registerInitCommand } from "./init-command.js";
  * Register fingerprint package commands on the unified Ghost CLI.
  *
  * Verbs author and validate the root `.ghost/` fingerprint package: `init`
- * (scaffold) and `validate` (artifact shape + node-graph integrity).
+ * (scaffold) and `validate` (manifest shape, node validity, material locators,
+ * installed haunts, check references, and glossary kind prefixes).
  */
 export function registerFingerprintCommands(cli: CAC): void {
   // --- validate (shape pass + graph pass) ---
   cli
     .command(
       "validate [file]",
-      "Validate the Ghost fingerprint package — artifact shape and the node graph (links resolve, one root, acyclic). Defaults to .ghost.",
+      "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. Defaults to .ghost.",
     )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {

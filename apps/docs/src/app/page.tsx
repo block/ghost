@@ -30,35 +30,36 @@ export default function Home() {
           <div className="space-y-5 text-muted-foreground leading-relaxed">
             <p className="thesis-item">
               Agents can assemble UI. What they can't reliably preserve is the
-              composition behind it: the hierarchy, density, restraint, copy,
-              trust, and flow that make a surface feel intentional.
+              brand behind it: the stance, density, restraint, copy, trust, and
+              flow that make an output feel intentional.
             </p>
             <p className="thesis-item">
               Design systems solved a human assembly problem: shared tokens,
               components, and usage rules so teams could build from known parts.
               That layer still matters. But agents already recombine those
-              parts. The scarce layer now is the composition that tells them
+              parts. The scarce layer now is the brand truth that tells them
               when and how the parts belong.
             </p>
             <p className="thesis-item">
-              Ghost captures that composition and checks it into the repo, where
+              Ghost captures those truths and checks them into the repo, where
               generation happens. It is a{" "}
-              <span className="text-foreground">graph of prose nodes</span>, one
-              markdown file each, that your agent reads before it builds and
-              checks after it changes.
+              <span className="text-foreground">
+                flat corpus of prose nodes
+              </span>
+              , one markdown file each, that your agent reads before it builds
+              and can review against after it changes.
             </p>
             <ul className="thesis-item list-disc space-y-2 pl-6">
               <li>
                 <code>.ghost/</code> is the portable fingerprint package
               </li>
               <li>
-                the directory tree <em>is</em> the graph: a node&apos;s id is
-                its file path, and its parent is its containing directory
+                a node&apos;s id is its filename; its kind is the filename
+                prefix, declared in the author&apos;s <code>glossary.md</code>
               </li>
               <li>
-                a surface is just a directory; its own prose lives in that
-                directory&apos;s <code>index.md</code>, and the root{" "}
-                <code>index.md</code> is the implicit <code>core</code> node
+                there is no hierarchy, no inheritance, no edges — altitude lives
+                in the prose, and a narrower truth names its condition
               </li>
               <li>
                 each node is written through <code>intent</code>,{" "}
@@ -66,27 +67,26 @@ export default function Home() {
                 the materials, the patterns
               </li>
               <li>
-                <code>checks/*.md</code> validate output; they are never
-                generation input
+                haunts under <code>haunts/</code> are opt-in feed-back
+                capabilities — checks review output and never leak into
+                generation
               </li>
               <li>ordinary Git review is the approval boundary for edits</li>
             </ul>
             <p className="thesis-item">
-              A node inherits everything in the directories above it. The brand
-              soul lives in the root <code>index.md</code> (the{" "}
-              <code>core</code> node) and reaches every surface;
-              surface-specific nodes refine it; <code>relates</code> links them
-              laterally. Asking for context becomes a graph traversal:{" "}
-              <code>ghost gather &lt;surface&gt;</code> composes the slice that
-              applies.
+              Asking for context is a menu, not a traversal:{" "}
+              <code>ghost gather</code> emits every truth&apos;s id, kind, and
+              description, and the agent selects just-in-time against the actual
+              task, then pulls the full bodies with <code>ghost pull</code>.
             </p>
             <p className="thesis-item">The loop is small:</p>
             <ol className="thesis-item list-decimal space-y-2 pl-6">
-              <li>
-                Gather the composed context for the surface you're touching
-              </li>
+              <li>Gather the menu and pull the truths that fit the task</li>
               <li>Generate or edit with your agent</li>
-              <li>Route checks and emit an advisory review against the diff</li>
+              <li>
+                Assemble an advisory review packet against the diff with{" "}
+                <code>ghost review</code>
+              </li>
               <li>
                 Fix code, explain intentional divergence, or update the
                 fingerprint through Git
@@ -94,21 +94,21 @@ export default function Home() {
             </ol>
             <p className="thesis-item">
               Ghost stays bring-your-own-agent. The agent reads, decides, and
-              writes. Ghost does the repeatable work: scaffolding, schema and
-              graph validation, context composition, check routing, and advisory
-              review packets.
+              writes. Ghost does the repeatable work: scaffolding, corpus
+              validation, the gather menu, selected pulls, check routing, and
+              advisory review packets.
             </p>
             <p className="thesis-item">
-              Composition that can't be recalled or evaluated can't be
-              delegated. A surface only its author can assess won't transfer to
+              A brand truth that can't be recalled or reviewed against can't be
+              delegated. A decision only its author can assess won't transfer to
               an agent, a new engineer, or a fork. Ghost makes it transferable,
-              and makes drift measurable: where generated UI diverges from the
+              and makes drift visible: where generated work diverges from the
               fingerprint, the gap is signal, and it is localized.
             </p>
             <p className="thesis-item">
-              Design systems were libraries for humans. Ghost is composition
-              context for agents: every surface carries the fingerprint it
-              extends, and every deviation can carry evidence.
+              Design systems were libraries for humans. Ghost is brand context
+              for agents: every output can carry the fingerprint it manifests,
+              and every deviation can carry evidence.
             </p>
           </div>
         </section>

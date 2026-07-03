@@ -224,6 +224,15 @@ export function Dock() {
               <BookOpen className="mr-2 size-4" />
               CLI Reference
             </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                navigate("/docs/checks-and-review");
+                setSearchOpen(false);
+              }}
+            >
+              <BookOpen className="mr-2 size-4" />
+              Checks And Review
+            </CommandItem>
           </CommandGroup>
 
           <CommandGroup heading="Tools">
@@ -234,7 +243,7 @@ export function Dock() {
               }}
             >
               <Wrench className="mr-2 size-4" />
-              ghost scan
+              ghost gather
             </CommandItem>
             <CommandItem
               onSelect={() => {

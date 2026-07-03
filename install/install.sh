@@ -1,5 +1,5 @@
 #!/bin/sh
-# Ghost — install the unified surface-composition skill bundle.
+# Ghost — install the unified brand-fingerprint skill bundle.
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/block/ghost/main/install/install.sh | sh
@@ -14,9 +14,8 @@
 # What gets installed:
 #   <agent-skills-dir>/ghost/
 #     SKILL.md
-#     references/brief.md, capture.md, compare.md, critique.md
-#     references/patterns.md, recall.md, remediate.md, review.md
-#     references/schema.md, verify.md
+#     references/authoring-scenarios.md, brief.md, capture.md
+#     references/inventory.md, recall.md, schema.md, self-check.md
 #
 # Exit codes:
 #   0  installed
@@ -194,6 +193,6 @@ printf 'Next:\n'
 printf '  cd <your-repo>\n'
 printf '  Tell your agent: "Set up the Ghost fingerprint for this repo"\n'
 printf '\n'
-printf 'The agent will use .ghost/ as checked-in surface-composition context,\n'
-printf 'generate from intent.yml, inventory.yml, and composition.yml, keep optional\n'
-printf 'deterministic gates in validate.yml, and run ghost lint/verify/check/review.\n'
+printf 'The agent will use .ghost/ as the checked-in brand fingerprint: a flat\n'
+printf 'corpus of prose nodes it gathers and pulls before building, validates\n'
+printf 'with ghost validate, and can review diffs against with ghost review.\n'

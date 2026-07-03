@@ -1,0 +1,137 @@
+---
+title: Checks And Review
+description: Opt in to review assertions with the checks haunt, bind them to fingerprint nodes, and assemble advisory review packets from a diff.
+kicker: Docs
+section: guide
+order: 25
+slug: checks-and-review
+---
+
+<DocSection title="The Feed-Back Half Of The Loop">
+
+`gather` and `pull` are feed-forward: they ground your agent **before** it
+builds. Checks and `ghost review` are the optional feed-back half: **after** a
+change exists, they help the same agent review it against the truths you wrote
+down.
+
+The division of labor stays the same. The CLI assembles deterministically — it
+reads a diff, matches touched files to node `materials`, and offers the relevant
+checks. Your agent weighs the packet and renders findings. Ghost grades nothing.
+
+This guide assumes you have a fingerprint; if not, start with
+[Getting Started](/docs/getting-started). Exact flags and exit codes live in
+the [CLI Reference](/docs/cli).
+
+```text
+Review this diff against the Ghost checks.
+```
+
+</DocSection>
+
+<DocSection title="Haunts: Opt-In Capabilities">
+
+The fingerprint is the ghost; **haunts** are what it does to the world. A haunt
+is an optional capability attached under `.ghost/haunts/<id>/`, anchored by a
+thin `haunt.yml` (`schema: ghost.haunt/v1` + `id`). Two properties keep haunts
+honest:
+
+- **Opt-in.** Core `ghost init` ships no haunts. You add them explicitly.
+- **Feed-back only.** Nothing under `haunts/` is a node. `ghost gather` and
+  `ghost pull` never emit haunt content, so haunts cannot leak into generation
+  context.
+
+```bash
+ghost haunt add checks     # attach the checks haunt
+ghost haunt list           # Haunting this fingerprint: checks
+ghost haunt remove checks  # detach it again
+ghost init --with checks   # or opt in at scaffold time
+```
+
+Checks are the first haunt. `ghost validate` validates installed haunts along
+with the rest of the package, and ordinary Git review is the approval boundary
+for haunt changes, same as any fingerprint edit.
+
+</DocSection>
+
+<DocSection title="Authoring Checks">
+
+A check is one markdown file under `.ghost/haunts/checks/`: a review assertion
+bound to the fingerprint nodes it guards.
+
+```markdown
+---
+name: logo-clearspace-holds
+description: Logo usage preserves clearspace, lockup integrity, and glyph rules.
+severity: medium
+references:
+  - asset.logo
+---
+
+Grade whether the change preserves the logo guidance in `asset.logo`. Flag
+compressed clearspace, altered lockups, stretched marks, or cases where the
+glyph is used when the full lockup is required.
+```
+
+| Property | What it does |
+| --- | --- |
+| `name` | The check's identity. |
+| `description` | What the check asserts, in one line. |
+| `severity` | `high`, `medium`, or `low` — advice for the reviewing agent, not an enforcement level. |
+| `references` | Node ids this check is grounded in, optionally scoped to one section with a heading anchor (`asset.logo > Clearspace`). |
+
+The prose body is the instruction the reviewing agent follows. Write it like a
+review comment you would trust another engineer to act on: what to grade, what
+to flag, and what counts as preserved.
+
+`references` does double duty. It grounds the check — `ghost validate` verifies
+every reference resolves to a real node — and it routes the check: when a diff
+touches a file matched by a referenced node's `materials`, that check is
+offered. A check that references no material-backed node is **always offered**,
+which is the right shape for cross-cutting assertions like voice or tone.
+
+</DocSection>
+
+<DocSection title="Running A Review">
+
+`ghost review` requires the checks haunt and a diff. By default it diffs the
+worktree against `HEAD`; point it elsewhere with `--base` or feed it a diff
+directly:
+
+```bash
+ghost review                          # worktree vs HEAD
+ghost review --base main              # vs another ref
+git diff main | ghost review --diff=- # from stdin
+ghost review --format json            # raw packet for host tooling
+```
+
+The advisory packet contains:
+
+- **Touched files** parsed from the diff.
+- **Matched material-backed nodes** — every node whose repo-relative `materials`
+  locators match a touched file, with its full prose and which locators matched.
+  (HTTPS locators identify external material; they never match diff paths.)
+- **Offered checks** — checks routed via a matched node (`matched`) plus checks
+  with no material-backed references (`always`), each with its prose and the
+  referenced nodes' baseline prose.
+- **Coverage gaps** — touched files no node's materials claim, and
+  material-backed nodes no check guards.
+
+The host agent takes it from there: weigh which checks apply, cite the
+fingerprint prose, and do not invent obligations the fingerprint never states.
+
+</DocSection>
+
+<DocSection title="Gaps Are Tuning Signal, Not Failures">
+
+Coverage gaps are the review-side analog of `ghost pulse`: signals for the
+fingerprint's author, not errors.
+
+- **Unmatched files** — the diff touched something no node claims. Maybe that
+  surface deserves a truth, or maybe it is genuinely out of scope.
+- **Unguarded materials** — a node points at concrete material, but no check
+  guards it. The truth feeds generation but nothing asserts it survives review.
+
+Grow coverage the same way you grow the fingerprint: one decision at a time,
+starting with the drift you keep catching by hand.
+
+</DocSection>
