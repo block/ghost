@@ -5,7 +5,7 @@
 `vessel` is the reference component system Ghost uses to exercise registry
 and agent-integration workflows. It's distributed as a generated shadcn registry
 (`public/r/registry.json`) for drop-in consumption, not as an npm package. If you're
-looking for the fingerprint capture and drift-review tool, that's
+looking for the brand-fingerprint CLI and skill bundle, that's
 [`@anarchitecture/ghost-fingerprint`](../ghost).
 
 ## Registry convention
@@ -17,13 +17,14 @@ invariants in [`../../docs/vessel-agent-safe-reference-system.md`](../../docs/ve
 They define how Vessel relates to upstream shadcn, downstream product forks,
 Ghost, and Orbit-style LLM-safe design-system discipline.
 
-This workspace carries a repo-local Ghost reference bundle in `.ghost/`.
-`.ghost/intent.yml` and `.ghost/inventory.yml` describe Ghost UI as implementation vocabulary: tokens,
-component families, registry shape, and reference-registry boundaries. It does
-not define product-specific flows, copy, trust obligations, or business intent
-for consuming apps. New products should reference this bundle and the generated
-`public/r/registry.json`, then fill their own surface-composition fingerprint
-separately.
+This workspace carries a repo-local `.ghost/` fingerprint (a flat corpus of
+prose nodes plus a checks haunt) governing Vessel itself: the token contract,
+agent-safety discipline, registry shape, and the boundary between reference
+vocabulary and product brand truth. It does not define product-specific flows,
+copy, trust obligations, or business intent for consuming apps. New products
+should reference this package and the generated `public/r/registry.json`, then
+author their own brand fingerprint separately. It doubles as a living exemplar
+of the Ghost format — start at `.ghost/index.md`.
 
 Agents should read this README, `.ghost/`,
 `public/r/registry.json`, `registry.json`, `.shadcn/skills.md`, and source files
