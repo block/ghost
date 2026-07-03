@@ -8,14 +8,14 @@ import {
 
 /**
  * Reserved package-root entries that are never nodes: the manifest (the
- * package anchor), the glossary, and `haunt/` (the adherence plugin's
- * subtree — inventory + checks, owned by Haunt). The list is closed.
+ * package anchor), the glossary, and `haunts/` (optional attached capabilities
+ * such as review checks). The list is closed.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
   "manifest.yaml",
   GHOST_GLOSSARY_FILENAME,
-  "haunt",
+  "haunts",
 ]);
 
 export interface LoadedNodeTree {
@@ -32,7 +32,7 @@ export interface LoadedNodeTree {
  * Every `*.md` file under the package directory is a node. Its id is its path
  * with `.md` dropped, uniformly (`marketing/email.md` → `marketing/email`,
  * `index.md` → `index`). The reserved root entries — `manifest.yml`,
- * `glossary.md`, and the `haunt/` plugin subtree — are skipped.
+ * `glossary.md`, and `haunts/` — are skipped.
  *
  * A file that fails per-node lint is collected in `invalid` (with its first
  * error) and skipped rather than throwing, so one bad node does not block

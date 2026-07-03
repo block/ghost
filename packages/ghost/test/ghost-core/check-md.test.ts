@@ -11,6 +11,8 @@ description: Flag hardcoded colors.
 severity: high
 tools: [Read, Grep]
 turn-limit: 20
+references:
+  - principle.trust
 ---
 
 ## Purpose
@@ -56,11 +58,23 @@ describe("lintGhostCheck", () => {
     );
   });
 
+  it("accepts references with heading anchors", () => {
+    const report = lintGhostCheck(
+      VALID.replace(
+        "  - principle.trust\n",
+        "  - checkout/payment > Confirmation\n",
+      ),
+    );
+    expect(
+      report.issues.some((i) => i.rule === "check-reference-malformed"),
+    ).toBe(false);
+  });
+
   it("accepts a source pointer with a heading anchor", () => {
     const report = lintGhostCheck(
       VALID.replace(
-        "severity: high\n",
-        "severity: high\nsource: checkout/payment > Confirmation\n",
+        "references:\n  - principle.trust\n",
+        "source: checkout/payment > Confirmation\n",
       ),
     );
     expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
@@ -70,7 +84,7 @@ describe("lintGhostCheck", () => {
 
   it("warns (does not error) on a malformed source", () => {
     const report = lintGhostCheck(
-      VALID.replace("severity: high\n", "severity: high\nsource: /bad\n"),
+      VALID.replace("references:\n  - principle.trust\n", "source: /bad\n"),
     );
     expect(report.errors).toBe(0);
     expect(report.issues.some((i) => i.rule === "check-source-malformed")).toBe(
@@ -102,11 +116,16 @@ describe("loadGhostCheck", () => {
     expect(doc.body).toContain("Flag hex literals");
   });
 
+  it("carries references through", () => {
+    const doc = loadGhostCheck(VALID);
+    expect(doc.frontmatter.references).toEqual(["principle.trust"]);
+  });
+
   it("carries an optional source pointer through", () => {
     const doc = loadGhostCheck(
       VALID.replace(
-        "severity: high\n",
-        "severity: high\nsource: checkout/payment > Confirmation\n",
+        "references:\n  - principle.trust\n",
+        "source: checkout/payment > Confirmation\n",
       ),
     );
     expect(doc.frontmatter.source).toBe("checkout/payment > Confirmation");

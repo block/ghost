@@ -123,7 +123,7 @@ const COMMAND_DISCOVERY = [
     name: "gather",
     group: "core",
     defaultHelp: true,
-    compactName: "gather",
+    compactName: "gather [ask]",
     summary: "Emit the fingerprint menu for the agent to select from.",
   },
   {
@@ -131,7 +131,29 @@ const COMMAND_DISCOVERY = [
     group: "core",
     defaultHelp: true,
     compactName: "pull",
-    summary: "Emit the named nodes' bodies; log the pull to .ghost/.pulls.",
+    summary: "Emit the named nodes' bodies; log the pull to .ghost/.events.",
+  },
+  {
+    name: "pulse",
+    group: "core",
+    defaultHelp: true,
+    compactName: "pulse",
+    summary: "Summarize local gather/pull events from .ghost/.events.",
+  },
+  {
+    name: "review",
+    group: "core",
+    defaultHelp: true,
+    compactName: "review",
+    summary:
+      "Emit an advisory review packet for a diff (needs the checks haunt).",
+  },
+  {
+    name: "haunt",
+    group: "core",
+    defaultHelp: true,
+    compactName: "haunt add|remove|list",
+    summary: "Manage optional haunts attached to the fingerprint.",
   },
   {
     name: "skill",
@@ -270,7 +292,6 @@ function formatMoreSection(): HelpSection {
     body: [
       "  $ ghost --help --all      Show all advanced commands",
       "  $ ghost <command> --help  Show command-specific options",
-      "  $ ghost haunt <command>   Dispatch to the haunt CLI when installed",
     ].join("\n"),
   };
 }

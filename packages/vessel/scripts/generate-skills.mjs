@@ -23,6 +23,7 @@ function extractComponentMeta(item) {
     exports: [],
     variants: [],
     dataSlots: [],
+    agentDecision: item.meta?.agent_decision ?? null,
   };
 
   for (const file of item.files) {
@@ -120,13 +121,24 @@ const componentTable = componentMetas
   })
   .join("\n");
 
+const decisionTable = componentMetas
+  .filter((m) => m.agentDecision)
+  .map((m) => {
+    const decision = m.agentDecision;
+    const tokenRoles = decision.token_roles?.join(", ") || "-";
+    const avoid = decision.common_misuses?.join("; ") || "-";
+    return `| ${m.name} | ${decision.intent || "-"} | ${tokenRoles} | ${avoid} |`;
+  })
+  .join("\n");
+
 const markdown = `# Ghost UI — Agent Skills
 
 ## Overview
 
-Ghost UI is a magazine-inspired design language built on shadcn/ui with:
-- **Pill geometry**: 999px border-radius on buttons, inputs, and pills
-- **System font stack**: consumers bring their own typeface, magazine-scale heading hierarchy
+Ghost UI is an agent-safe reference system built on shadcn/ui with:
+- **Semantic authoring contract**: prefer shadcn roles like \`background\`, \`foreground\`, \`card\`, \`popover\`, \`muted\`, \`accent\`, \`primary\`, \`destructive\`, \`border\`, \`input\`, and \`ring\`
+- **Pill-forward geometry**: 999px border-radius on buttons, inputs, and pills, with contained surfaces using named radius roles
+- **System font stack**: consumers bring their own typeface; Vessel stays brand-agnostic
 - **4-tier shadow hierarchy**: mini, card, elevated, modal
 - **${uiItems.length} components** across ${Object.keys(categories).length} categories
 - **${tokenCount}+ CSS custom properties** with full light/dark mode support
@@ -137,10 +149,12 @@ This registry uses the \`ghost\` style. Components use CVA (class-variance-autho
 
 ## Token System
 
-Semantic layers:
-- **Backgrounds**: \`--background-default\`, \`--background-alt\`, \`--background-muted\`, \`--background-inverse\`, \`--background-accent\`, \`--background-danger/success/info/warning\`
-- **Borders**: \`--border-default\`, \`--border-input\`, \`--border-strong\`, \`--border-card\`, \`--border-accent\`
-- **Text**: \`--text-default\`, \`--text-muted\`, \`--text-alt\`, \`--text-inverse\`, \`--text-accent\`
+Canonical authoring roles:
+- **Surfaces**: \`background\`, \`card\`, \`popover\`, \`muted\`, \`accent\`, \`primary\`, \`secondary\`, \`destructive\`
+- **Foregrounds**: \`foreground\`, \`card-foreground\`, \`popover-foreground\`, \`muted-foreground\`, \`accent-foreground\`, \`primary-foreground\`, \`secondary-foreground\`, \`destructive-foreground\`
+- **Structure**: \`border\`, \`input\`, \`ring\`, plus shadcn \`sidebar-*\` roles
+- **Vessel extensions**: chart colors, shadows, alpha helpers, dark technical surfaces, and component-specific radii
+- **Deprecated compatibility aliases**: broad \`background-*\`, \`text-*\`, and \`border-*\` families still exist for older components and registry consumers. Do not use them in new component code.
 - **Shadows**: \`--shadow-mini\`, \`--shadow-card\`, \`--shadow-elevated\`, \`--shadow-modal\`
 - **Radii**: \`--radius-pill\` (999px), \`--radius-button\` (999px), \`--radius-card\` (20px), \`--radius-modal\` (16px)
 
@@ -161,6 +175,14 @@ ${presetSummary}
 ${Object.entries(categories)
   .map(([cat, components]) => `- **${cat}**: ${components.join(", ")}`)
   .join("\n")}
+
+## Agent Decision Packets
+
+High-impact components carry \`meta.agent_decision\` in the registry. Read that decision packet before source code: it names the component's intent, safe variants, token roles, and common misuses so agents choose system decisions instead of copying class strings.
+
+| Component | Intent | Token Roles | Common Misuses |
+|-----------|--------|-------------|----------------|
+${decisionTable || "| - | - | - | - |"}
 
 ## Component Reference
 

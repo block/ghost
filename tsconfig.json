@@ -14,7 +14,6 @@
   "files": [],
   "references": [
     { "path": "packages/ghost" },
-    { "path": "packages/haunt" },
     { "path": "packages/vessel/tsconfig.mcp.json" }
   ]
 }

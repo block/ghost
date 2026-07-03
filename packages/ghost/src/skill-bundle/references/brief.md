@@ -15,11 +15,12 @@ never chop one node into three pieces.
    nodes you gathered, label each claim as Ghost-backed or provisional, confirm
    which conditions actually apply, and point to where the fingerprint is silent,
    you are not grounded yet — gather first.
-1. Run `ghost gather --format json` to get the menu, then match the ask to the
-   nodes it belongs to by their descriptions.
+1. Run `ghost gather <ask> --format json` to get the menu, then match the ask to
+   the nodes it belongs to by their descriptions. Use the actual task as the
+   free-text ask so the local event tape records which menu was exposed for what.
 2. Run `ghost pull <id> [<id>…]` to read the selected nodes' bodies (prefer
    `pull` over direct file reads — it logs the selection to the local
-   `.ghost/.pulls` tape for the author). Honor each node's kind: apply a `principle`
+   `.ghost/.events` tape for the author). Honor each node's kind: apply a `principle`
    as always-on; apply a `condition` only when its stated situation holds; treat
    an `exemplar` as illustrative, not normative. The intent, the material, and
    the composition live in that node prose — surface them, do not add to them.

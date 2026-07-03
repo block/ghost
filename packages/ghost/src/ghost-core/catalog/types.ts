@@ -12,6 +12,8 @@ export interface GhostCatalogNode {
   slug: string;
   /** One-line "what this is / when to gather it" — the retrieval payload. */
   description?: string;
+  /** Optional material locators carried by the authored node. */
+  materials?: string[];
   body: string;
 }
 

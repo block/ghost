@@ -1,7 +1,7 @@
 /**
  * vessel — reference component library for Ghost.
  *
- * Re-exports 49 atomic UI components, 48 AI-native elements, theme primitives,
+ * Re-exports 52 atomic UI components, 48 AI-native elements, theme primitives,
  * and shared hooks/utils. Consumer apps (apps/docs) import from
  * here. The library is bundled by Vite lib mode; see vite.lib.config.ts.
  *
@@ -102,9 +102,12 @@ export * from "./components/ui/skeleton.js";
 export * from "./components/ui/slider.js";
 export * from "./components/ui/sonner.js";
 export * from "./components/ui/spinner.js";
+export * from "./components/ui/stack.js";
+export * from "./components/ui/surface.js";
 export * from "./components/ui/switch.js";
 export * from "./components/ui/table.js";
 export * from "./components/ui/tabs.js";
+export * from "./components/ui/text.js";
 export * from "./components/ui/textarea.js";
 export * from "./components/ui/toggle.js";
 export * from "./components/ui/toggle-group.js";

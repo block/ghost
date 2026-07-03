@@ -29,8 +29,9 @@ output. You work through a short loop:
 ```bash
 ghost init        # scaffold .ghost/ (manifest + glossary + a starter index.md)
 ghost validate    # artifact shape + node validity + kind-prefix check
-ghost gather      # emit the menu; your agent selects the truths the task needs
-ghost pull <ids>  # read the selected truths' full bodies
+ghost gather <ask> # emit the menu for this task; your agent selects the truths it needs
+ghost pull <ids>   # read the selected truths' full bodies
+ghost pulse        # inspect the local signal while tuning the fingerprint
 ```
 
 The CLI does the deterministic work; your agent does the interpretation. The
@@ -106,8 +107,8 @@ emits every node's id, kind, and description, and your agent reads the ask
 against it and pulls the truths it judges relevant:
 
 ```bash
-ghost gather
-ghost gather --format json
+ghost gather "checkout settings"
+ghost gather "checkout settings" --format json
 ghost pull principle.trust voice   # read the selected truths' full bodies
 ```
 
@@ -116,10 +117,19 @@ against the actual task, then manifests the truths into whatever it is building.
 Run it before generation, so the agent builds with the brand in hand rather than
 discovering the gaps in review.
 
-Each `pull` also appends a line to `.ghost/.pulls`, a local gitignored history
-file. That one is for you: tweak a node's description, re-run the task, and
-`tail .ghost/.pulls` shows whether the agent reached for the truth. Ghost never
-reads it back.
+Each `gather` and `pull` also appends a structured JSONL event to
+`.ghost/.events`, a local gitignored tape. That one is for you: tweak a node's
+description, re-run the task, and `ghost pulse` shows whether the truth appeared
+on the menu, got pulled, was missed by name, or stayed cold.
+
+```bash
+ghost pulse
+```
+
+Read `pulse` as a tuning signal, not a score. A cold node may need a sharper
+`description`; a repeated miss may mean the id or glossary vocabulary is not
+what agents expect; an abandoned gather means the menu did not lead to a useful
+selection. The tape is local scratch, not canonical fingerprint state.
 
 </DocSection>
 
@@ -153,8 +163,9 @@ The fingerprint is a **flat set of prose nodes**:
   index.md              # the curated front door node
   principle.trust.md    # a brand truth of kind `principle`
   condition.density.md  # a brand truth of kind `condition`
+  asset.logo.md         # a truth that may point at concrete materials
   voice.md              # an uncategorized brand truth
-  haunt/                # reserved: the adherence plugin's data; never a node
+  haunts/               # optional attached capabilities (e.g. checks); never a node
 ```
 
 There is no hierarchy, no inheritance, and no edges between nodes. A node's
@@ -167,10 +178,13 @@ flat menu.
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names the *situation* it applies in. The agent reads the condition and
 decides when the truth applies. Reserved at the package root: `manifest.yml`,
-`glossary.md`, and the `haunt/` subtree; every other `*.md` is a node.
+`glossary.md`, and `haunts/`; every other `*.md` is a node.
 
 Write and read every prose node through three lenses: intent, inventory, and
-composition. `ghost gather` emits the menu; the agent selects and manifests.
+composition. A node may carry `materials`: repo-relative paths/globs or HTTPS
+URLs for the concrete materials the prose governs. `ghost gather` emits the menu;
+the agent selects and manifests. Checks are used by `ghost review`, never by
+generation.
 
 One contract per package: a repo's `.ghost/` is the whole fingerprint.
 

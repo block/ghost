@@ -35,6 +35,7 @@ export function assembleCatalog(input: AssembleCatalogInput): GhostCatalog {
       ...(placed.kind !== undefined ? { kind: placed.kind } : {}),
       slug: placed.slug ?? placed.id.split("/").pop() ?? placed.id,
       ...(fm.description !== undefined ? { description: fm.description } : {}),
+      ...(fm.materials !== undefined ? { materials: fm.materials } : {}),
       body: placed.doc.body,
     });
   }

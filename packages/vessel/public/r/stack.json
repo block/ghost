@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stack",
+  "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ui/stack.tsx",
+      "content": "import { Slot } from \"@radix-ui/react-slot\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport type * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst stackVariants = cva(\"flex\", {\n  variants: {\n    direction: {\n      column: \"flex-col\",\n      row: \"flex-row\",\n    },\n    gap: {\n      none: \"gap-0\",\n      xs: \"gap-1\",\n      sm: \"gap-2\",\n      md: \"gap-4\",\n      lg: \"gap-6\",\n      xl: \"gap-8\",\n    },\n    align: {\n      start: \"items-start\",\n      center: \"items-center\",\n      end: \"items-end\",\n      stretch: \"items-stretch\",\n      baseline: \"items-baseline\",\n    },\n    justify: {\n      start: \"justify-start\",\n      center: \"justify-center\",\n      end: \"justify-end\",\n      between: \"justify-between\",\n    },\n    wrap: {\n      true: \"flex-wrap\",\n      false: \"flex-nowrap\",\n    },\n  },\n  defaultVariants: {\n    direction: \"column\",\n    gap: \"md\",\n    align: \"stretch\",\n    justify: \"start\",\n    wrap: false,\n  },\n});\n\nfunction Stack({\n  className,\n  direction,\n  gap,\n  align,\n  justify,\n  wrap,\n  asChild = false,\n  ...props\n}: React.ComponentProps<\"div\"> &\n  VariantProps<typeof stackVariants> & {\n    asChild?: boolean;\n  }) {\n  const Comp = asChild ? Slot : \"div\";\n\n  return (\n    <Comp\n      data-slot=\"stack\"\n      className={cn(\n        stackVariants({ direction, gap, align, justify, wrap }),\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { Stack, stackVariants };\n",
+      "type": "registry:ui",
+      "target": "components/ui/stack.tsx"
+    }
+  ],
+  "meta": {
+    "agent_decision": {
+      "intent": "Typed flex layout primitive for spacing, alignment, direction, and wrapping decisions.",
+      "when_to_use": [
+        "Use for simple row/column composition before reaching for raw flex class strings."
+      ],
+      "when_not_to_use": [
+        "Do not use when a semantic component such as Card, Dialog, or PromptInput already owns the layout."
+      ],
+      "safe_variants": ["direction", "gap", "align", "justify", "wrap"],
+      "common_misuses": [
+        "Adding one-off gap classes instead of the gap prop.",
+        "Using Stack to hide unclear content hierarchy."
+      ],
+      "token_roles": ["spacing", "layout"]
+    }
+  },
+  "categories": ["layout"],
+  "type": "registry:ui"
+}

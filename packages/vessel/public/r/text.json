@@ -1,0 +1,53 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "text",
+  "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ui/text.tsx",
+      "content": "import { Slot } from \"@radix-ui/react-slot\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport type * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst textVariants = cva(\"\", {\n  variants: {\n    variant: {\n      display: \"font-display text-6xl font-normal leading-none tracking-tight\",\n      headline:\n        \"font-display text-2xl font-normal leading-tight tracking-tight\",\n      title: \"font-display text-lg font-semibold leading-none tracking-tight\",\n      body: \"font-sans text-sm leading-relaxed\",\n      label: \"font-sans text-xs font-medium leading-none tracking-wide\",\n      mono: \"font-mono text-sm\",\n    },\n    tone: {\n      default: \"text-foreground\",\n      muted: \"text-muted-foreground\",\n      inverse: \"text-primary-foreground\",\n      success: \"text-success\",\n      warning: \"text-warning\",\n      info: \"text-info\",\n      destructive: \"text-destructive\",\n    },\n    align: {\n      left: \"text-left\",\n      center: \"text-center\",\n      right: \"text-right\",\n    },\n    balance: {\n      true: \"text-balance\",\n      false: \"\",\n    },\n  },\n  defaultVariants: {\n    variant: \"body\",\n    tone: \"default\",\n    align: \"left\",\n    balance: false,\n  },\n});\n\nfunction Text({\n  className,\n  variant,\n  tone,\n  align,\n  balance,\n  asChild = false,\n  ...props\n}: React.ComponentProps<\"p\"> &\n  VariantProps<typeof textVariants> & {\n    asChild?: boolean;\n  }) {\n  const Comp = asChild ? Slot : \"p\";\n\n  return (\n    <Comp\n      data-slot=\"text\"\n      data-variant={variant}\n      data-tone={tone}\n      className={cn(textVariants({ variant, tone, align, balance }), className)}\n      {...props}\n    />\n  );\n}\n\nexport { Text, textVariants };\n",
+      "type": "registry:ui",
+      "target": "components/ui/text.tsx"
+    }
+  ],
+  "meta": {
+    "expression_dimensions": ["typography", "palette"],
+    "agent_decision": {
+      "intent": "Typed typography primitive for text role, tone, alignment, and balance decisions.",
+      "when_to_use": [
+        "Use for custom copy when a component-specific title, description, or label slot does not already exist."
+      ],
+      "when_not_to_use": [
+        "Do not use to bypass semantic HTML; use asChild for headings, labels, and links when needed.",
+        "Do not create local text colors with raw palette utilities."
+      ],
+      "safe_variants": [
+        "display",
+        "headline",
+        "title",
+        "body",
+        "label",
+        "mono",
+        "tone",
+        "align",
+        "balance"
+      ],
+      "common_misuses": [
+        "Using display scale in dense product panels.",
+        "Using tone to communicate state without text or icon support."
+      ],
+      "token_roles": [
+        "foreground",
+        "muted-foreground",
+        "primary-foreground",
+        "success",
+        "warning",
+        "info",
+        "destructive"
+      ]
+    }
+  },
+  "categories": ["typography", "display"],
+  "type": "registry:ui"
+}

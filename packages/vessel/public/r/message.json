@@ -19,6 +19,29 @@
       "target": "components/ai-elements/message.tsx"
     }
   ],
+  "meta": {
+    "agent_decision": {
+      "intent": "Chat transcript message body with readable streaming/markdown behavior.",
+      "when_to_use": [
+        "Use for assistant, user, and system message rendering in conversational surfaces."
+      ],
+      "when_not_to_use": [
+        "Do not use for generic cards or notifications.",
+        "Do not hand-roll markdown styling beside it."
+      ],
+      "safe_variants": ["message parts and actions exposed by the component"],
+      "common_misuses": [
+        "Inventing separate bubble palettes.",
+        "Mixing transcript spacing with card spacing."
+      ],
+      "token_roles": [
+        "foreground",
+        "muted-foreground",
+        "message-user-bg",
+        "border"
+      ]
+    }
+  },
   "categories": ["ai", "chat"],
   "type": "registry:ui"
 }

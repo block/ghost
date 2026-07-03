@@ -11,6 +11,29 @@
       "target": "components/ai-elements/code-block.tsx"
     }
   ],
+  "meta": {
+    "agent_decision": {
+      "intent": "Readable, copyable code and command output surface.",
+      "when_to_use": [
+        "Use for code snippets, terminal commands, and structured technical output."
+      ],
+      "when_not_to_use": [
+        "Do not use for prose callouts.",
+        "Do not replace terminal when ANSI/session behavior matters."
+      ],
+      "safe_variants": ["language selector", "copy action"],
+      "common_misuses": [
+        "Hardcoding syntax colors outside the highlighter.",
+        "Using code blocks as general panels."
+      ],
+      "token_roles": [
+        "surface-dark",
+        "surface-dark-text",
+        "border",
+        "muted-foreground"
+      ]
+    }
+  },
   "categories": ["ai", "code"],
   "type": "registry:ui"
 }

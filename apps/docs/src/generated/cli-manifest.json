@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T15:01:54.063Z",
+  "generatedAt": "2026-07-03T05:32:38.719Z",
   "tools": [
     {
       "tool": "ghost",
@@ -51,6 +51,14 @@
               "negated": false
             },
             {
+              "rawName": "--with <haunts>",
+              "name": "with",
+              "description": "Comma-separated haunts to add after scaffolding (e.g. checks)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
               "rawName": "--force",
               "name": "force",
               "description": "Overwrite existing Ghost fingerprint files",
@@ -71,11 +79,11 @@
         {
           "tool": "ghost",
           "name": "gather",
-          "rawName": "gather",
+          "rawName": "gather [...ask]",
           "description": "Emit the fingerprint menu — every node's id, kind, and description — for the agent to select from.",
           "group": "core",
           "defaultHelp": true,
-          "compactName": "gather",
+          "compactName": "gather [ask]",
           "summary": "Emit the fingerprint menu for the agent to select from.",
           "options": [
             {
@@ -100,11 +108,11 @@
           "tool": "ghost",
           "name": "pull",
           "rawName": "pull <...ids>",
-          "description": "Emit the named nodes' full prose bodies, and append the pull to the local history tape.",
+          "description": "Emit the named nodes' full prose bodies, and append the pull to the local events tape.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "pull",
-          "summary": "Emit the named nodes' bodies; log the pull to .ghost/.pulls.",
+          "summary": "Emit the named nodes' bodies; log the pull to .ghost/.events.",
           "options": [
             {
               "rawName": "--package <dir>",
@@ -125,10 +133,118 @@
             {
               "rawName": "--no-history",
               "name": "history",
-              "description": "Skip appending this pull to .ghost/.pulls",
+              "description": "Skip appending this pull to .ghost/.events",
               "default": true,
               "takesValue": false,
               "negated": true
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "pulse",
+          "rawName": "pulse",
+          "description": "Summarize local gather/pull events from .ghost/.events.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "pulse",
+          "summary": "Summarize local gather/pull events from .ghost/.events.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "review",
+          "rawName": "review",
+          "description": "Emit an advisory review packet for a diff using material-backed nodes and checks.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "review",
+          "summary": "Emit an advisory review packet for a diff (needs the checks haunt).",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <path>",
+              "name": "diff",
+              "description": "Read diff from a file, or '-' for stdin",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--json",
+              "name": "json",
+              "description": "Emit the raw JSON packet",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "haunt",
+          "rawName": "haunt <action> [id]",
+          "description": "Manage haunts: add, remove, or list.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "haunt add|remove|list",
+          "summary": "Manage optional haunts attached to the fingerprint.",
+          "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: cli or json",
+              "default": "cli",
+              "takesValue": true,
+              "negated": false
             }
           ]
         },

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateMaterialLocator } from "../materials.js";
 
 /**
  * A node id is its path within the package, `.md` dropped (`marketing/email`).
@@ -29,6 +30,17 @@ const NodeRefSchema = z.string().min(1).regex(NODE_ID_PATTERN, {
 export const GhostNodeFrontmatterSchema = z
   .object({
     description: z.string().min(1).optional(),
+    materials: z
+      .array(
+        z
+          .string()
+          .min(1)
+          .superRefine((locator, ctx) => {
+            const message = validateMaterialLocator(locator);
+            if (message !== null) ctx.addIssue({ code: "custom", message });
+          }),
+      )
+      .optional(),
     // `relates` (and all typed edges) were removed in the graph collapse. Reject
     // it with a message that names the key so authors get a clear signal.
     relates: z

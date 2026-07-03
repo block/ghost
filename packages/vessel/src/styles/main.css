@@ -44,45 +44,74 @@
   /* shape */
   --radius: 20px;
 
-  /* theming accents */
-  --background-accent: var(--color-gray-900);
-  --border-accent: var(--color-gray-900);
-  --text-accent: var(--color-gray-900);
+  /*
+   * Canonical authoring contract: shadcn semantic roles.
+   * Components and agents should prefer these names in Tailwind utilities
+   * (`bg-background`, `text-muted-foreground`, `border-border`, etc.).
+   * The broad `background-*`, `text-*`, and `border-*` families below remain
+   * as deprecated compatibility aliases until existing registry consumers and
+   * AI elements are migrated.
+   */
+  --background: var(--color-white);
+  --foreground: var(--color-gray-900);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+  --primary: var(--color-gray-900);
+  --primary-foreground: var(--color-white);
+  --secondary: var(--color-gray-100);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--color-gray-100);
+  --muted-foreground: var(--color-gray-500);
+  --accent: var(--color-gray-100);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-200);
+  --destructive-foreground: var(--color-white);
+  --success: var(--color-green-200);
+  --success-foreground: var(--color-gray-900);
+  --warning: var(--color-yellow-200);
+  --warning-foreground: var(--color-gray-900);
+  --info: var(--color-blue-200);
+  --info-foreground: var(--color-gray-900);
+  --border: var(--color-gray-200);
+  --input: var(--color-gray-300);
+  --ring: var(--color-gray-400);
 
-  /* Semantic backgrounds */
-  --background-default: var(--color-white);
+  /* Deprecated compatibility aliases — do not use in new component code. */
+  --background-accent: var(--primary);
+  --border-accent: var(--primary);
+  --text-accent: var(--primary);
+
+  --background-default: var(--background);
   --background-alt: var(--color-gray-50);
   --background-medium: var(--color-gray-400);
-  --background-muted: var(--color-gray-100);
+  --background-muted: var(--muted);
   --background-inverse: var(--color-black);
-  --background-danger: var(--color-red-200);
-  --background-success: var(--color-green-200);
-  --background-info: var(--color-blue-200);
-  --background-warning: var(--color-yellow-200);
+  --background-danger: var(--destructive);
+  --background-success: var(--success);
+  --background-info: var(--info);
+  --background-warning: var(--warning);
 
-  /* Semantic borders */
-  --border-default: var(--color-gray-200);
-  --border-input: var(--color-gray-300);
+  --border-default: var(--border);
+  --border-input: var(--input);
   --border-input-hover: var(--color-gray-400);
-  --border-strong: var(--color-gray-900);
-  --border-card: var(--color-gray-200);
+  --border-strong: var(--primary);
+  --border-card: var(--border);
   --border-inverse: var(--color-black);
-  --border-danger: var(--color-red-200);
+  --border-danger: var(--destructive);
   --border-success: var(--color-green-200);
   --border-warning: var(--color-yellow-200);
   --border-info: var(--color-blue-200);
 
-  /* Semantic text */
-  --text-default: var(--color-gray-900);
-  --text-muted: var(--color-gray-500);
+  --text-default: var(--foreground);
+  --text-muted: var(--muted-foreground);
   --text-alt: var(--color-gray-600);
-  --text-inverse: var(--color-white);
-  --text-danger: var(--color-red-200);
-  --text-success: var(--color-green-200);
-  --text-warning: var(--color-yellow-200);
-  --text-info: var(--color-blue-200);
-
-  --ring: var(--border-strong);
+  --text-inverse: var(--primary-foreground);
+  --text-danger: var(--destructive);
+  --text-success: var(--success);
+  --text-warning: var(--warning);
+  --text-info: var(--info);
 
   /* Alpha variants */
   --dark-10: rgba(26, 26, 26, 0.1);
@@ -112,26 +141,6 @@
   --chart-3: #d76a6a;
   --chart-4: #d185e0;
   --chart-5: #91cb80;
-
-  /* shadcn/ui standard tokens — aliases into our semantic vars */
-  --background: var(--background-default);
-  --foreground: var(--text-default);
-  --card: var(--background-default);
-  --card-foreground: var(--text-default);
-  --popover: var(--background-default);
-  --popover-foreground: var(--text-default);
-  --primary: var(--background-accent);
-  --primary-foreground: var(--text-inverse);
-  --secondary: var(--background-muted);
-  --secondary-foreground: var(--text-default);
-  --muted: var(--background-muted);
-  --muted-foreground: var(--text-muted);
-  --accent: var(--background-muted);
-  --accent-foreground: var(--text-default);
-  --destructive: var(--background-danger);
-  --destructive-foreground: #ffffff;
-  --border: var(--border-default);
-  --input: var(--border-input);
 
   /* Sidebar */
   --sidebar: var(--background-default);
@@ -201,65 +210,67 @@
 }
 
 .dark {
-  /* theming accents */
-  --background-accent: var(--color-white);
-  --border-accent: var(--color-white);
-  --text-accent: var(--color-white);
+  /* Canonical shadcn semantic roles for dark mode. */
+  --background: var(--color-black);
+  --foreground: var(--color-white);
+  --card: var(--color-gray-800);
+  --card-foreground: var(--foreground);
+  --popover: var(--color-gray-800);
+  --popover-foreground: var(--foreground);
+  --primary: var(--color-white);
+  --primary-foreground: var(--color-black);
+  --secondary: var(--color-gray-700);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--color-gray-800);
+  --muted-foreground: var(--color-gray-500);
+  --accent: var(--color-gray-800);
+  --accent-foreground: var(--foreground);
+  --destructive: var(--color-red-100);
+  --destructive-foreground: var(--color-black);
+  --success: var(--color-green-100);
+  --success-foreground: var(--color-black);
+  --warning: var(--color-yellow-100);
+  --warning-foreground: var(--color-black);
+  --info: var(--color-blue-100);
+  --info-foreground: var(--color-black);
+  --border: var(--color-gray-700);
+  --input: var(--color-gray-700);
+  --ring: var(--color-gray-400);
 
-  /* shadcn/ui standard tokens — same aliases, dark values cascade via custom vars */
-  --background: var(--background-default);
-  --foreground: var(--text-default);
-  --card: var(--background-default);
-  --card-foreground: var(--text-default);
-  --popover: var(--background-default);
-  --popover-foreground: var(--text-default);
-  --primary: var(--background-accent);
-  --primary-foreground: var(--text-inverse);
-  --secondary: var(--background-muted);
-  --secondary-foreground: var(--text-default);
-  --muted: var(--background-muted);
-  --muted-foreground: var(--text-muted);
-  --accent: var(--background-muted);
-  --accent-foreground: var(--text-default);
-  --destructive: var(--background-danger);
-  --destructive-foreground: #ffffff;
-  --border: var(--border-default);
-  --input: var(--border-input);
+  /* Deprecated compatibility aliases — do not use in new component code. */
+  --background-accent: var(--primary);
+  --border-accent: var(--primary);
+  --text-accent: var(--primary);
 
-  /* semantic backgrounds */
-  --background-default: var(--color-black);
-  --background-alt: var(--color-gray-800);
-  --background-medium: var(--color-gray-700);
-  --background-muted: var(--color-gray-800);
+  --background-default: var(--background);
+  --background-alt: var(--card);
+  --background-medium: var(--secondary);
+  --background-muted: var(--muted);
   --background-inverse: var(--color-white);
-  --background-danger: var(--color-red-100);
-  --background-success: var(--color-green-100);
-  --background-info: var(--color-blue-100);
-  --background-warning: var(--color-yellow-100);
+  --background-danger: var(--destructive);
+  --background-success: var(--success);
+  --background-info: var(--info);
+  --background-warning: var(--warning);
 
-  /* semantic borders */
-  --border-default: var(--color-gray-700);
-  --border-input: var(--color-gray-700);
+  --border-default: var(--border);
+  --border-input: var(--input);
   --border-input-hover: var(--color-gray-600);
-  --border-strong: var(--color-white);
-  --border-card: var(--color-gray-700);
+  --border-strong: var(--primary);
+  --border-card: var(--border);
   --border-inverse: var(--color-white);
   --border-danger: var(--color-red-200);
   --border-success: var(--color-green-200);
   --border-warning: var(--color-yellow-200);
   --border-info: var(--color-blue-200);
 
-  /* semantic text */
-  --text-default: var(--color-white);
-  --text-muted: var(--color-gray-500);
+  --text-default: var(--foreground);
+  --text-muted: var(--muted-foreground);
   --text-alt: var(--color-gray-500);
-  --text-inverse: var(--color-black);
-  --text-danger: var(--color-red-100);
-  --text-success: var(--color-green-100);
-  --text-warning: var(--color-yellow-100);
-  --text-info: var(--color-blue-100);
-
-  --ring: var(--border-strong);
+  --text-inverse: var(--primary-foreground);
+  --text-danger: var(--destructive);
+  --text-success: var(--success);
+  --text-warning: var(--warning);
+  --text-info: var(--info);
 
   /* Alpha variants (dark mode) */
   --dark-10: rgba(242, 242, 242, 0.1);
@@ -313,6 +324,12 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
 

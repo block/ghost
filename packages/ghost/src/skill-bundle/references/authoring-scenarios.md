@@ -19,9 +19,10 @@ screenshots, links, exemplar products, marketing copy, a competitor they define
 themselves against. Agent synthesis is draft work until the human curates it
 and ordinary Git review accepts it.
 
-Repo-bound reality — components, tokens, paths, building blocks — is the haunt
-plugin's inventory, not fingerprint prose. When a conversation surfaces "we
-have a component for that," that is a haunt lead, not a brand truth.
+Repo-bound reality — components, tokens, paths, building blocks — can be
+recorded as `materials` on the node whose prose explains their purpose. When a
+conversation surfaces "we have a component for that," treat it as material to
+locate and interpret, not as brand truth by itself.
 
 ## 1. Start With One Repeated Decision
 
@@ -126,8 +127,9 @@ edits are drafts; checked-in nodes are canonical.
 
 ## Never
 
-- Never derive brand truth from repo code; what the codebase does is haunt
-  inventory, and what it repeats may be legacy, not stance.
+- Never derive brand truth from repo code alone; what the codebase repeats may
+  be legacy, not stance. Use repo paths as `materials` only after the prose
+  truth has been curated.
 - Never draft a node the human neither said nor showed; that is invention
   wearing the brand's clothes.
 - Never treat a brand doc, an artifact, or repetition frequency as brand

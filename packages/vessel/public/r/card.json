@@ -11,7 +11,30 @@
     }
   ],
   "meta": {
-    "expression_dimensions": ["surfaces", "spacing", "typography"]
+    "expression_dimensions": ["surfaces", "spacing", "typography"],
+    "agent_decision": {
+      "intent": "Quiet contained surface for related content, not decoration.",
+      "when_to_use": [
+        "Use for stable panels, grouped settings, and bounded summaries."
+      ],
+      "when_not_to_use": [
+        "Do not nest cards unless there is a real hierarchy.",
+        "Do not use cards to decorate every list item by default."
+      ],
+      "safe_variants": [
+        "Card",
+        "CardHeader",
+        "CardContent",
+        "CardFooter",
+        "CardAction"
+      ],
+      "common_misuses": [
+        "Adding arbitrary shadows.",
+        "Using raw gray backgrounds instead of card/background roles.",
+        "Making card titles do page-heading work."
+      ],
+      "token_roles": ["card", "card-foreground", "border", "shadow-card"]
+    }
   },
   "categories": ["display"],
   "type": "registry:ui"

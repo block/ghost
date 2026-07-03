@@ -5,7 +5,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-pill border px-2 py-0.5 text-xs w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-pill border px-2 py-0.5 text-xs whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
   {
     variants: {
       variant: {
@@ -14,9 +14,9 @@ const badgeVariants = cva(
         secondary:
           "border-transparent bg-muted text-foreground [a&]:hover:bg-muted/90",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         outline:
-          "text-foreground [a&]:hover:bg-muted [a&]:hover:text-muted-foreground",
+          "border-border text-foreground [a&]:hover:bg-muted [a&]:hover:text-muted-foreground",
       },
     },
     defaultVariants: {
@@ -27,7 +27,7 @@ const badgeVariants = cva(
 
 function Badge({
   className,
-  variant,
+  variant = "default",
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
@@ -37,6 +37,7 @@ function Badge({
   return (
     <Comp
       data-slot="badge"
+      data-variant={variant}
       className={cn(badgeVariants({ variant }), className)}
       {...props}
     />

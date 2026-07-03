@@ -1,10 +1,12 @@
-import { access, mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import {
   closestIds,
   type GhostCatalog,
   type GhostFingerprintPackageManifest,
   parseGlossary,
+  parseSourceRef,
+  sliceNodeSection,
   UsageError,
 } from "#ghost-core";
 import { isExistingPathError, isMissingPathError } from "../internal/fs.js";
@@ -20,6 +22,7 @@ import {
   lintFingerprintPackageManifest,
   loadFingerprintPackage,
 } from "./fingerprint-package-layers.js";
+import type { LoadedCheck } from "./haunt-tree.js";
 import type { LintIssue, LintReport } from "./lint.js";
 import {
   DEFAULT_TEMPLATE_NAME,
@@ -45,12 +48,18 @@ export interface LoadedFingerprintPackage {
   manifestRaw: string;
   /** The in-memory flat node catalog — the only fingerprint model. */
   catalog: GhostCatalog;
+  /** Ids of haunts installed under `.ghost/haunts/`. */
+  haunts: string[];
+  /** Checks from the `checks` haunt; never part of gather/pull. */
+  checks: Map<string, LoadedCheck>;
   /**
    * Nodes that failed per-node lint and were skipped while folding the catalog,
    * each with its package-relative file path and first error message. Carried
    * so `validate` can surface a malformed node instead of silently dropping it.
    */
   invalid: Array<{ file: string; message: string }>;
+  /** Haunt artifacts (manifests, checks) that failed lint/loading. */
+  invalidHaunts: Array<{ file: string; message: string }>;
 }
 
 export interface InitFingerprintPackageOptions {
@@ -177,13 +186,19 @@ export async function lintFingerprintPackage(
   );
 
   if (manifestRaw !== undefined) {
-    // shape pass: manifest well-formed + plugin declaration hygiene.
-    lintFingerprintPackageManifest(manifestRaw, issues, {
-      hauntDirPresent: await isDirectory(join(paths.packageDir, "haunt")),
-    });
+    // shape pass: manifest well-formed.
+    const beforeManifestErrors = issues.filter(
+      (issue) => issue.severity === "error",
+    ).length;
+    lintFingerprintPackageManifest(manifestRaw, issues);
+    const manifestHasErrors =
+      issues.filter((issue) => issue.severity === "error").length >
+      beforeManifestErrors;
+    if (manifestHasErrors) return finalize(issues);
     // graph pass: fold + validate the node network.
     try {
-      const { catalog, invalid } = await loadFingerprintPackage(paths);
+      const { catalog, checks, invalid, invalidHaunts } =
+        await loadFingerprintPackage(paths);
       // node pass: a node that failed its own schema was skipped while folding
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
@@ -194,7 +209,16 @@ export async function lintFingerprintPackage(
           path: entry.file,
         })),
       );
+      issues.push(
+        ...invalidHaunts.map((entry) => ({
+          severity: "error" as const,
+          rule: "haunt-invalid",
+          message: entry.message,
+          path: entry.file,
+        })),
+      );
       await lintKindPrefixes(paths, catalog, issues);
+      lintCheckReferences(catalog, checks, issues);
     } catch (err) {
       issues.push({
         severity: "error",
@@ -235,6 +259,48 @@ async function lintKindPrefixes(
   }
 }
 
+function lintCheckReferences(
+  catalog: GhostCatalog,
+  checks: Map<string, LoadedCheck>,
+  issues: LintIssue[],
+): void {
+  for (const check of checks.values()) {
+    for (const raw of check.references) {
+      const parsed = parseSourceRef(raw);
+      if (parsed === null) {
+        issues.push({
+          severity: "error",
+          rule: "check-reference-malformed",
+          message: `check reference '${raw}' is not a node id with optional '> Heading' anchor`,
+          path: `haunts/checks/${check.id}.md.references`,
+        });
+        continue;
+      }
+      const node = catalog.nodes.get(parsed.nodeId);
+      if (node === undefined) {
+        issues.push({
+          severity: "warning",
+          rule: "check-reference-unresolved",
+          message: `check reference '${raw}' does not resolve to a fingerprint node`,
+          path: `haunts/checks/${check.id}.md.references`,
+        });
+        continue;
+      }
+      if (
+        parsed.heading !== undefined &&
+        sliceNodeSection(node.body, parsed.heading) === null
+      ) {
+        issues.push({
+          severity: "warning",
+          rule: "check-reference-heading-missing",
+          message: `check reference '${raw}' names a heading that was not found`,
+          path: `haunts/checks/${check.id}.md.references`,
+        });
+      }
+    }
+  }
+}
+
 async function readDeclaredGlossaryKinds(
   glossaryPath: string,
 ): Promise<string[] | undefined> {
@@ -251,14 +317,6 @@ async function readDeclaredGlossaryKinds(
   return result.glossary.frontmatter.categories.map(
     (category) => category.name,
   );
-}
-
-async function isDirectory(path: string): Promise<boolean> {
-  try {
-    return (await stat(path)).isDirectory();
-  } catch {
-    return false;
-  }
 }
 
 async function readRequired(

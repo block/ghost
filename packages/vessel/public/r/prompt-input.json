@@ -20,6 +20,35 @@
       "target": "components/ai-elements/prompt-input.tsx"
     }
   ],
+  "meta": {
+    "agent_decision": {
+      "intent": "Composable AI prompt composer with attachments, commands, model controls, and submit state.",
+      "when_to_use": [
+        "Use as the main input for conversational or agentic tasks."
+      ],
+      "when_not_to_use": [
+        "Do not use for simple single-field forms.",
+        "Do not fork composer controls for local one-off styling."
+      ],
+      "safe_variants": [
+        "PromptInput",
+        "PromptInputTextarea",
+        "PromptInputSubmit",
+        "PromptInputToolbar"
+      ],
+      "common_misuses": [
+        "Adding raw spacing/color overrides inside the composer.",
+        "Hiding submit/stop state from assistive tech."
+      ],
+      "token_roles": [
+        "background",
+        "foreground",
+        "muted-foreground",
+        "border",
+        "ring"
+      ]
+    }
+  },
   "categories": ["ai", "input", "chat"],
   "type": "registry:ui"
 }

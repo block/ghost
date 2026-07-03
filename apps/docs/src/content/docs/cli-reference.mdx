@@ -96,8 +96,8 @@ the package is flat.
 <CliHelp tool="ghost" command="gather" hideDescription />
 
 ```bash
-ghost gather
-ghost gather --format json
+ghost gather "checkout confirmation email"
+ghost gather "checkout confirmation email" --format json
 ```
 
 This is the pre-generation step, and "the right context at the right time": the
@@ -108,14 +108,13 @@ into whatever it is building — product UI, marketing, email, a landing page.
 
 `pull` emits the named nodes' full prose bodies. It is how an agent reads the
 truths it selected from the menu — preferred over opening the files directly,
-because each pull also appends one line (a timestamp plus the pulled ids) to
-`.ghost/.pulls`.
+because gather and pull append structured JSONL events to `.ghost/.events`.
 
-That file is a local history tape for the fingerprint's author: tweak a node's
-description, re-run the task, and `tail .ghost/.pulls` shows whether the agent
-reached for the truth. It is a dotfile (never a node), gitignored by the
-scaffold, and safe to delete at any time. Ghost never reads it back — nothing
-selects, ranks, or validates from it.
+That file is a local event tape for the fingerprint's author: tweak a node's
+description, re-run the task, and `ghost pulse` shows whether the truth appeared
+on the menu, got pulled, was missed by name, or stayed cold. It is a dotfile
+(never a node), gitignored by the scaffold, and safe to delete at any time. The
+tape is local scratch, not canonical fingerprint state.
 
 <CliHelp tool="ghost" command="pull" hideDescription />
 
@@ -125,7 +124,20 @@ ghost pull principle.trust --format json
 ghost pull voice --no-history
 ```
 
-An unknown id exits `2` with a closest-id hint and appends nothing.
+### Read the local signal: `pulse`
+
+`pulse` summarizes the local event tape: gathers, pulls, abandoned gathers,
+exposure-normalized hit rates, cold nodes, and unknown ids the agent tried to
+pull.
+
+<CliHelp tool="ghost" command="pulse" hideDescription />
+
+```bash
+ghost pulse
+ghost pulse --format json
+```
+
+A mixed pull partially succeeds: known ids are emitted, unknown ids warn with closest-id hints, and misses are recorded for `pulse`. A pull with no known ids exits `2` after recording the miss.
 
 </DocSection>
 

@@ -90,13 +90,7 @@ categories you keep, rename, or replace), and the package-root `index.md`
 front door: what this fingerprint is, how its kinds organize the corpus, and
 what to read first. It is an ordinary node, listed in the menu like any other.
 
-The manifest supports an optional `plugins:` key declaring the reserved plugin
-subtrees the package uses (currently only `haunt`); `ghost-haunt init` adds
-`plugins: [haunt]` when it scaffolds the adherence subtree, and `ghost
-validate` warns when a `haunt/` subtree exists undeclared. When a haunt
-inventory exists, `ghost gather` also serves it as a Materials section —
-building blocks generation may lean on; checks are feed-back only and are
-never gathered.
+Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or HTTPS URLs for the concrete materials the prose governs. Optional capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt (`ghost haunt add checks`) — and are feed-back only; they are never gathered.
 
 ### 3. Shape the glossary
 
@@ -118,8 +112,7 @@ Elicit the brand from the human, not from a codebase. Interview for stance,
 audience, and anti-goals; ask for the material they can show — screenshots,
 links, exemplar products, brand docs, copy they love or hate. Treat every
 artifact as testimony to curate, never truth to copy verbatim. Repo-bound
-reality (components, paths, building blocks) belongs to the haunt plugin's
-inventory, not fingerprint prose.
+reality (components, paths, building blocks) can be recorded as `materials` on the node whose prose explains their purpose.
 
 ### 5. Write sparse nodes
 
@@ -143,8 +136,7 @@ prefix is a declared glossary category (an undeclared prefix is a warning with a
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never derive a brand truth from repo code; what a codebase does is haunt
-  inventory, and what it repeats may be legacy, not stance.
+- Never derive a brand truth from repo code alone; what a codebase repeats may be legacy, not stance. Use repo paths as `materials` only when the prose truth has been curated.
 - Never draft a node the human neither said nor showed.
 - Never invent a hierarchy, inheritance, or cross-node edges — the package is
   flat.

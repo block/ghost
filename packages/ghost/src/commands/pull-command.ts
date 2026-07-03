@@ -1,25 +1,16 @@
-import { appendFile } from "node:fs/promises";
-import { join } from "node:path";
 import type { CAC } from "cac";
 import { closestIds, type GhostCatalogNode } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
+import { appendGhostEvent, type PullMiss } from "../observability-events.js";
+import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
 import { failFromError } from "./errors.js";
-
-/**
- * The pull history tape: one line per pull, appended to `.pulls` inside the
- * package directory. A dotfile, so the node scanner never sees it; disposable
- * local scratch (init ignores it via `.gitignore`), never canonical state —
- * nothing in Ghost reads it back. It exists so an author iterating on the
- * fingerprint can see what an agent reached for: `tail .ghost/.pulls`.
- */
-export const PULL_HISTORY_FILENAME = ".pulls";
 
 export function registerPullCommand(cli: CAC): void {
   cli
     .command(
       "pull <...ids>",
-      "Emit the named nodes' full prose bodies, and append the pull to the local history tape.",
+      "Emit the named nodes' full prose bodies, and append the pull to the local events tape.",
     )
     .option(
       "--package <dir>",
@@ -28,7 +19,10 @@ export function registerPullCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
-    .option("--no-history", "Skip appending this pull to .ghost/.pulls")
+    .option(
+      "--no-history",
+      `Skip appending this pull to .ghost/${GHOST_EVENTS_FILENAME}`,
+    )
     .action(async (ids: string[], opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -42,45 +36,54 @@ export function registerPullCommand(cli: CAC): void {
         const catalog = loaded.catalog;
 
         const requested = [...new Set(ids)];
-        const missing = requested.filter((id) => !catalog.nodes.has(id));
-        if (missing.length > 0) {
-          const allIds = [...catalog.nodes.keys()];
-          for (const id of missing) {
-            const suggestions = closestIds(id, allIds);
-            const hint =
-              suggestions.length > 0
-                ? ` (did you mean ${suggestions.map((s) => `\`${s}\``).join(", ")}?)`
-                : "";
-            console.error(`Error: unknown node \`${id}\`${hint}`);
-          }
+        const allIds = [...catalog.nodes.keys()];
+        const known = requested.filter((id) => catalog.nodes.has(id));
+        const missed: PullMiss[] = requested
+          .filter((id) => !catalog.nodes.has(id))
+          .map((id) => ({ requested: id, suggested: closestIds(id, allIds) }));
+
+        for (const miss of missed) {
+          const hint =
+            miss.suggested.length > 0
+              ? ` (did you mean ${miss.suggested.map((s) => `\`${s}\``).join(", ")}?)`
+              : "";
+          console.error(`Warning: unknown node \`${miss.requested}\`${hint}`);
+        }
+        if (missed.length > 0) {
           console.error("Run `ghost gather` to list every node.");
+        }
+
+        if (opts.history !== false) {
+          await appendGhostEvent(paths.packageDir, {
+            event: "pull",
+            ids: known,
+            ...(missed.length > 0 ? { missed } : {}),
+          });
+        }
+
+        if (known.length === 0) {
           process.exit(2);
           return;
         }
 
-        const nodes = requested.map(
+        const nodes = known.map(
           (id) => catalog.nodes.get(id) as GhostCatalogNode,
         );
-
-        if (opts.history !== false) {
-          const line = `${new Date().toISOString()} ${requested.join(" ")}\n`;
-          await appendFile(
-            join(paths.packageDir, PULL_HISTORY_FILENAME),
-            line,
-            "utf8",
-          );
-        }
 
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
               {
                 kind: "pull",
+                ...(missed.length > 0 ? { missed } : {}),
                 nodes: nodes.map((node) => ({
                   id: node.id,
                   ...(node.kind !== undefined ? { kind: node.kind } : {}),
                   ...(node.description
                     ? { description: node.description }
+                    : {}),
+                  ...(node.materials !== undefined
+                    ? { materials: node.materials }
                     : {}),
                   body: node.body,
                 })),
@@ -105,6 +108,10 @@ function formatPullMarkdown(nodes: GhostCatalogNode[]): string {
     const kind = node.kind ? ` _(${node.kind})_` : "";
     const lines = [`# \`${node.id}\`${kind}`];
     if (node.description) lines.push("", `> ${node.description}`);
+    if (node.materials !== undefined && node.materials.length > 0) {
+      lines.push("", "Materials:");
+      for (const material of node.materials) lines.push(`- ${material}`);
+    }
     lines.push("", node.body.trim());
     sections.push(lines.join("\n"));
   }

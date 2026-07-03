@@ -29,8 +29,8 @@ Ask yourself:
 
 When you cannot answer 1–4:
 
-1. Run `ghost gather` to emit the menu, then match the work to nodes by their
-   descriptions.
+1. Run `ghost gather <ask>` to emit the menu for the actual task, then match the
+   work to nodes by their descriptions.
 2. Read the selected nodes' bodies and re-ask the questions, citing node ids.
 
 A genuinely silent fingerprint is an expected state, not a blocker. When it does

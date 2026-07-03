@@ -7,9 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@anarchitecture/ghost-vessel",
-    "@anarchitecture/ghost-haunt",
-    "ghost-docs"
-  ]
+  "ignore": ["@anarchitecture/ghost-vessel", "ghost-docs"]
 }

@@ -37,7 +37,10 @@
     "generate:skills": "node scripts/generate-skills.mjs",
     "build:registry": "pnpm run build:base && pnpm run build:presets && pnpm run generate:skills && shadcn build && pnpm exec biome format --write registry.json",
     "typecheck": "tsc --noEmit",
-    "generate:icons": "npx tsx scripts/generate-icons.ts"
+    "generate:icons": "npx tsx scripts/generate-icons.ts",
+    "audit:agent-safety": "node scripts/audit-agent-safety.mjs",
+    "audit:agent-safety:strict": "node scripts/audit-agent-safety.mjs --strict",
+    "check:agent-safety": "node scripts/audit-agent-safety.mjs --strict"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

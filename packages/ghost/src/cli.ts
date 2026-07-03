@@ -5,8 +5,11 @@ import { cac } from "cac";
 import { formatGhostHelp } from "./commands/command-discovery.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
+import { registerHauntCommand } from "./commands/haunt-command.js";
 import { registerManifestCommand } from "./commands/manifest-command.js";
 import { registerPullCommand } from "./commands/pull-command.js";
+import { registerPulseCommand } from "./commands/pulse-command.js";
+import { registerReviewCommand } from "./commands/review-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
 
 export {
@@ -20,6 +23,9 @@ export function buildCli(): ReturnType<typeof cac> {
   registerFingerprintCommands(cli);
   registerGatherCommand(cli);
   registerPullCommand(cli);
+  registerPulseCommand(cli);
+  registerReviewCommand(cli);
+  registerHauntCommand(cli);
   registerManifestCommand(cli);
   registerSkillCommand(cli);
 

@@ -32,6 +32,11 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
       : typeof frontmatter.turn_limit === "number"
         ? (frontmatter.turn_limit as number)
         : undefined;
+  const references = Array.isArray(frontmatter.references)
+    ? frontmatter.references.filter(
+        (reference): reference is string => typeof reference === "string",
+      )
+    : undefined;
   const source =
     typeof frontmatter.source === "string" ? frontmatter.source : undefined;
 
@@ -42,6 +47,7 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
       severity: severity as GhostCheckMarkdownSeverity,
       ...(tools ? { tools } : {}),
       ...(turnLimit !== undefined ? { turn_limit: turnLimit } : {}),
+      ...(references ? { references } : {}),
       ...(source ? { source } : {}),
     },
     body,

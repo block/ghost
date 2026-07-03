@@ -124,13 +124,20 @@ describe("ghost CLI", () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain("ghost");
     expect(result.stdout).toContain("Core workflow");
-    for (const command of ["init", "validate", "gather", "skill install"]) {
+    for (const command of [
+      "init",
+      "validate",
+      "gather",
+      "pull",
+      "pulse",
+      "review",
+      "haunt add|remove|list",
+      "skill install",
+    ]) {
       expect(result.stdout).toContain(command);
     }
     expect(result.stdout).toContain("ghost --help --all");
     // Removed in the graph collapse.
-    expect(result.stdout).not.toContain("checks");
-    expect(result.stdout).not.toContain("review");
     expect(result.stdout).not.toContain("migrate");
     expect(result.stdout).not.toContain("relay");
   });
@@ -145,16 +152,18 @@ describe("ghost CLI", () => {
     for (const command of [
       "validate [file]",
       "init",
-      "gather",
+      "gather [...ask]",
+      "pull <...ids>",
+      "pulse",
+      "review",
+      "haunt <action> [id]",
       "manifest",
       "skill <action>",
     ]) {
       expect(result.stdout).toContain(command);
     }
     // Removed in the graph collapse.
-    expect(result.stdout).not.toContain("checks");
     expect(result.stdout).not.toContain("migrate");
-    expect(result.stdout).not.toContain("review");
   });
 
   it("emits a self-describing JSON manifest of commands and flags", async () => {
@@ -170,6 +179,9 @@ describe("ghost CLI", () => {
       (command: { name: string }) => command.name,
     );
     expect(names).toContain("gather");
+    expect(names).toContain("pulse");
+    expect(names).toContain("review");
+    expect(names).toContain("haunt");
     expect(names).toContain("manifest");
 
     const gather = manifest.data.commands.find(
@@ -203,6 +215,8 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
+    // Core init is fingerprint-only: haunts are opt-in via --with / haunt add.
+    expect(initOutput.written).not.toContain("checks/example.md.example");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
@@ -416,7 +430,7 @@ describe("ghost CLI", () => {
     expect(validate.stdout).toContain("0 error");
   });
 
-  it("pull emits the named nodes' bodies and appends to the history tape", async () => {
+  it("gather and pull append structured local events", async () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
@@ -427,15 +441,26 @@ describe("ghost CLI", () => {
       "---\ndescription: The brand voice.\n---\n\nPlain words. No hype.\n",
     );
 
+    const gather = await runCli(
+      ["gather", "checkout", "confirmation", "--format", "json"],
+      dir,
+    );
+    expect(gather.code).toBe(0);
+    const menuPayload = JSON.parse(gather.stdout);
+    expect(menuPayload.ask).toBe("checkout confirmation");
+    expect(
+      menuPayload.nodes.some((n: { id: string }) => n.id === "voice"),
+    ).toBe(true);
+
+    const gatherMarkdown = await runCli(["gather", "checkout", "hero"], dir);
+    expect(gatherMarkdown.stdout).toContain(
+      "# Ghost Nodes — for: checkout hero",
+    );
+
     const pull = await runCli(["pull", "principle.trust", "voice"], dir);
     expect(pull.code).toBe(0);
     expect(pull.stdout).toContain("Near payment, reduce felt risk.");
     expect(pull.stdout).toContain("Plain words. No hype.");
-
-    // The tape: one line per pull, ISO timestamp + the pulled ids.
-    const tape = await readFile(join(dir, ".ghost", ".pulls"), "utf-8");
-    expect(tape.trim().split("\n")).toHaveLength(1);
-    expect(tape).toContain("principle.trust voice");
 
     // JSON format carries id, kind, description, and body.
     const json = await runCli(
@@ -452,41 +477,123 @@ describe("ghost CLI", () => {
     });
     expect(payload.nodes[0].body).toContain("reduce felt risk");
 
-    // Second pull appended; --no-history did not.
+    // --no-history skips the event tape.
     await runCli(["pull", "voice", "--no-history"], dir);
-    const tapeAfter = await readFile(join(dir, ".ghost", ".pulls"), "utf-8");
-    expect(tapeAfter.trim().split("\n")).toHaveLength(2);
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events.map((event: { event: string }) => event.event)).toEqual([
+      "gather",
+      "gather",
+      "pull",
+      "pull",
+    ]);
+    expect(events[0]).toMatchObject({
+      event: "gather",
+      ask: "checkout confirmation",
+    });
+    expect(events[0].menu).toContain("principle.trust");
+    expect(events[2]).toMatchObject({
+      event: "pull",
+      ids: ["principle.trust", "voice"],
+    });
 
     // The tape is a dotfile: never a node, and gitignored by the scaffold.
-    const gather = await runCli(["gather", "--format", "json"], dir);
-    const menu = JSON.parse(gather.stdout);
-    expect(menu.nodes.some((n: { id: string }) => n.id.includes("pulls"))).toBe(
-      false,
+    const menu = JSON.parse(
+      (await runCli(["gather", "--format", "json"], dir)).stdout,
     );
+    expect(
+      menu.nodes.some((n: { id: string }) => n.id.includes("events")),
+    ).toBe(false);
     await expect(
       readFile(join(dir, ".ghost", ".gitignore"), "utf-8"),
-    ).resolves.toContain(".pulls");
+    ).resolves.toContain(".events");
     const validate = await runCli(["validate"], dir);
     expect(validate.code).toBe(0);
   });
 
-  it("pull exits 2 with a closest-id hint for an unknown node", async () => {
+  it("pull partially succeeds with closest-id hints for unknown nodes", async () => {
     await runCli(["init"], dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
       "---\ndescription: Trust.\n---\n\nBody.\n",
     );
 
-    const result = await runCli(["pull", "principle.trst"], dir, {
+    const partial = await runCli(
+      ["pull", "principle.trust", "principle.trst"],
+      dir,
+    );
+    expect(partial.code).toBe(0);
+    expect(partial.stdout).toContain("Body.");
+    expect(partial.stderr).toContain("unknown node `principle.trst`");
+    expect(partial.stderr).toContain("principle.trust");
+
+    const onlyMiss = await runCli(["pull", "principle.trst"], dir, {
       allowNoExit: true,
     });
-    expect(result.code).toBe(2);
-    expect(result.stderr).toContain("unknown node `principle.trst`");
-    expect(result.stderr).toContain("principle.trust");
-    // A failed pull leaves no tape entry.
-    await expect(
-      readFile(join(dir, ".ghost", ".pulls"), "utf-8"),
-    ).rejects.toThrow();
+    expect(onlyMiss.code).toBe(2);
+    expect(onlyMiss.stderr).toContain("unknown node `principle.trst`");
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events[0]).toMatchObject({
+      event: "pull",
+      ids: ["principle.trust"],
+      missed: [{ requested: "principle.trst", suggested: ["principle.trust"] }],
+    });
+    expect(events[1]).toMatchObject({
+      event: "pull",
+      ids: [],
+      missed: [{ requested: "principle.trst", suggested: ["principle.trust"] }],
+    });
+  });
+
+  it("pulse reports local gather/pull metrics", async () => {
+    await runCli(["init"], dir);
+    await writeFile(
+      join(dir, ".ghost", "principle.trust.md"),
+      "---\ndescription: Trust.\n---\n\nBody.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "voice.md"),
+      "---\ndescription: Voice.\n---\n\nPlain.\n",
+    );
+
+    await runCli(["gather", "checkout"], dir);
+    await runCli(["pull", "principle.trust", "principle.trst"], dir);
+    await runCli(["gather", "settings"], dir);
+
+    const pulse = await runCli(["pulse", "--format", "json"], dir);
+    expect(pulse.code).toBe(0);
+    const report = JSON.parse(pulse.stdout);
+    expect(report).toMatchObject({
+      kind: "pulse",
+      gathers: 2,
+      pulls: 1,
+      abandonedGathers: 1,
+      pullsPerGather: 0.5,
+    });
+    const trust = report.nodes.find(
+      (node: { id: string }) => node.id === "principle.trust",
+    );
+    expect(trust).toMatchObject({
+      appearances: 2,
+      pulls: 1,
+      hitRate: 0.5,
+    });
+    expect(report.coldNodes).toContain("voice");
+    expect(report.misses[0]).toMatchObject({
+      requested: "principle.trst",
+      count: 1,
+      suggested: ["principle.trust"],
+    });
+
+    const md = await runCli(["pulse"], dir);
+    expect(md.stdout).toContain("# Ghost Pulse");
+    expect(md.stdout).toContain("- Abandoned gathers: 1");
   });
 
   // Phase 3: asserts path/scope/surface_type selection reasons (dormant Job 2,
@@ -620,8 +727,8 @@ describe("ghost CLI", () => {
     ).resolves.toContain(
       "Never claim provisional or local-convention reasoning",
     );
-    // The review/verify/remediate/critique recipes moved out of Fingerprint
-    // (review of output against the fingerprint is Haunt's verb).
+    // The review/verify/remediate/critique recipes are not part of the
+    // fingerprint skill bundle.
     for (const gone of [
       "review.md",
       "verify.md",
@@ -653,25 +760,27 @@ describe("ghost CLI", () => {
     expect(ids).toContain("checkout/clarity");
   });
 
-  it("gather serves haunt inventory as a materials section, never checks", async () => {
+  it("gather shows material counts on nodes and never serves checks", async () => {
     await writeGatherPackage(dir);
-    const haunt = join(dir, ".ghost", "haunt");
-    await mkdir(join(haunt, "inventory"), { recursive: true });
-    await mkdir(join(haunt, "checks"), { recursive: true });
+    const checksHaunt = join(dir, ".ghost", "haunts", "checks");
+    await mkdir(checksHaunt, { recursive: true });
     await writeFile(
-      join(haunt, "inventory", "modals.md"),
-      "---\ndescription: Dialogs, sheets, and overlays.\npaths:\n  - src/Modal/**\n---\n\nModal prose.\n",
+      join(checksHaunt, "haunt.yml"),
+      "schema: ghost.haunt/v1\nid: checks\n",
     );
     await writeFile(
-      join(haunt, "checks", "secret-check.md"),
-      "---\nname: secret-check\ndescription: Never served.\nseverity: high\nreferences:\n  - modals\n---\n\nGrade it.\n",
+      join(dir, ".ghost", "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
+    );
+    await writeFile(
+      join(checksHaunt, "secret-check.md"),
+      "---\nname: secret-check\ndescription: Never served.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
     );
 
     const md = await runCli(["gather", "--package", ".ghost"], dir);
     expect(md.code).toBe(0);
-    expect(md.stdout).toContain("## Materials (haunt inventory)");
-    expect(md.stdout).toContain("- `modals` — Dialogs, sheets, and overlays.");
-    // Checks are feed-back only — never gathered.
+    expect(md.stdout).toContain("`asset.logo`");
+    expect(md.stdout).toContain("materials: 2");
     expect(md.stdout).not.toContain("secret-check");
 
     const json = await runCli(
@@ -680,28 +789,11 @@ describe("ghost CLI", () => {
     );
     expect(json.code).toBe(0);
     const payload = JSON.parse(json.stdout);
-    expect(payload.materials).toEqual([
-      { id: "modals", description: "Dialogs, sheets, and overlays." },
-    ]);
-    // Materials never land in the node menu itself.
-    expect(
-      payload.nodes.some((n: { id: string }) => n.id.includes("modals")),
-    ).toBe(false);
-  });
-
-  it("gather omits the materials section without a haunt inventory", async () => {
-    await writeGatherPackage(dir);
-
-    const md = await runCli(["gather", "--package", ".ghost"], dir);
-    expect(md.code).toBe(0);
-    expect(md.stdout).not.toContain("Materials");
-
-    const json = await runCli(
-      ["gather", "--package", ".ghost", "--format", "json"],
-      dir,
+    const logo = payload.nodes.find(
+      (n: { id: string }) => n.id === "asset.logo",
     );
-    const payload = JSON.parse(json.stdout);
-    expect(payload).not.toHaveProperty("materials");
+    expect(logo.materials).toBe(2);
+    expect(payload).not.toHaveProperty("checks");
   });
 
   it("fails validate when a node uses the removed `relates` key", async () => {
@@ -734,6 +826,94 @@ describe("ghost CLI", () => {
     );
     // Present as a key for every node (undefined when uncategorized).
     expect(Object.keys(byId)).toContain("email/marketing/index");
+  });
+
+  it("review matches diff files to node materials and offers checks", async () => {
+    await runCli(["init", "--with", "checks"], dir);
+    await writeFile(
+      join(dir, ".ghost", "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/logo*.svg\n---\n\nLogo prose.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "haunts", "checks", "logo-clearspace.md"),
+      "---\nname: logo-clearspace\ndescription: Logo clearspace holds.\nseverity: medium\nreferences:\n  - asset.logo\n---\n\nGrade logo clearspace.\n",
+    );
+    const diff = [
+      "diff --git a/brand/logo.svg b/brand/logo.svg",
+      "--- a/brand/logo.svg",
+      "+++ b/brand/logo.svg",
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const result = await runCli(
+      ["review", "--diff=-", "--format", "json"],
+      dir,
+      {
+        stdin: diff,
+      },
+    );
+
+    expect(result.code).toBe(0);
+    const packet = JSON.parse(result.stdout);
+    expect(packet.materialNodes[0]).toMatchObject({
+      id: "asset.logo",
+      files: ["brand/logo.svg"],
+      matchedMaterials: ["brand/logo*.svg"],
+    });
+    expect(packet.checks[0]).toMatchObject({
+      id: "logo-clearspace",
+      offered: "matched",
+    });
+  });
+
+  it("haunt add scaffolds the checks haunt and list reports it", async () => {
+    await runCli(["init"], dir);
+
+    const add = await runCli(
+      ["haunt", "add", "checks", "--format", "json"],
+      dir,
+    );
+    expect(add.code).toBe(0);
+    const added = JSON.parse(add.stdout);
+    expect(added.added).toBe("checks");
+    expect(added.written).toContain("haunt.yml");
+    expect(added.written).toContain("example.md.example");
+    await expect(
+      readFile(join(dir, ".ghost", "haunts", "checks", "haunt.yml"), "utf-8"),
+    ).resolves.toContain("schema: ghost.haunt/v1");
+
+    const list = await runCli(["haunt", "list"], dir);
+    expect(list.code).toBe(0);
+    expect(list.stdout).toContain("Haunting this fingerprint: checks");
+
+    // Adding the same haunt twice is a usage error.
+    const again = await runCli(["haunt", "add", "checks"], dir);
+    expect(again.code).toBe(2);
+
+    // The scaffold validates cleanly (example.md.example is inert).
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+
+    const remove = await runCli(["haunt", "remove", "checks"], dir);
+    expect(remove.code).toBe(0);
+    const listAfter = await runCli(["haunt", "list"], dir);
+    expect(listAfter.stdout).toContain("No haunts installed.");
+  });
+
+  it("haunt add rejects unknown haunt ids", async () => {
+    await runCli(["init"], dir);
+    const result = await runCli(["haunt", "add", "spectre"], dir);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Unknown haunt 'spectre'");
+  });
+
+  it("review without the checks haunt exits with an add hint", async () => {
+    await runCli(["init"], dir);
+    const result = await runCli(["review", "--diff=-"], dir, { stdin: "" });
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("ghost haunt add checks");
   });
 });
 

@@ -1,6 +1,6 @@
 # vessel
 
-**Reference design system for the Ghost project. 97 components, shadcn registry, not published to npm.**
+**Reference design system for the Ghost project. 100 components, shadcn registry, not published to npm.**
 
 `vessel` is the reference component system Ghost uses to exercise registry
 and agent-integration workflows. It's distributed as a generated shadcn registry
@@ -9,6 +9,13 @@ looking for the fingerprint capture and drift-review tool, that's
 [`@anarchitecture/ghost-fingerprint`](../ghost).
 
 ## Registry convention
+
+Vessel is Ghost's agnostic, agent-safe reference body: a coherent implementation
+vocabulary a product fingerprint can inhabit, not the brand truth for every
+Ghost consumer. Before changing its design-system direction, read the Phase 0
+invariants in [`../../docs/vessel-agent-safe-reference-system.md`](../../docs/vessel-agent-safe-reference-system.md).
+They define how Vessel relates to upstream shadcn, downstream product forks,
+Ghost, and Orbit-style LLM-safe design-system discipline.
 
 This workspace carries a repo-local Ghost reference bundle in `.ghost/`.
 `.ghost/intent.yml` and `.ghost/inventory.yml` describe Ghost UI as implementation vocabulary: tokens,
@@ -24,6 +31,7 @@ when integrating components.
 
 The shadcn registry entries can carry opportunistic, namespaced item metadata:
 
+- **`meta.agent_decision`** per high-impact item — the Orbit-style decision packet agents should read before source. It names the component's intent, when to use it, when not to use it, safe variants, common misuses, and token roles.
 - **`meta.fingerprint_dimensions`** per item — declares which embedding dimensions a component primarily expresses (`palette`, `spacing`, `typography`, `surfaces`). Drift tooling can use this for higher-confidence per-component attribution; absent the field, consumers fall back to file content and registry categories.
 
 Shape-aware examples can add two more optional `meta` fields:
@@ -35,7 +43,7 @@ That distinction helps generators pick relevant references instead of treating e
 
 ## What's here
 
-- **Components** — 49 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
+- **Components** — 52 UI primitives (Radix-based) + 48 AI elements (chat, streaming, agent UI) + theme + hooks.
 - **Tokens** — `src/styles/` CSS custom properties consumed by the registry and components.
 - **Registry** — `public/r/registry.json`, generated shadcn-compatible catalogue for consumption. Source entries live in `registry.json`; rebuilt by `just build-registry`.
 - **Ghost reference context** — `.ghost/`, used as reference-registry context by consuming products.

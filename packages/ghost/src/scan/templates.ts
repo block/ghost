@@ -1,4 +1,8 @@
 import { GHOST_FINGERPRINT_PACKAGE_SCHEMA } from "#ghost-core";
+import {
+  GHOST_EVENTS_FILENAME,
+  LEGACY_PULL_HISTORY_FILENAME,
+} from "./constants.js";
 
 /**
  * A single seed file an `init` template writes, relative to the package dir.
@@ -29,23 +33,22 @@ function manifestFile(): TemplateFile {
 }
 
 /**
- * Keep the local pull-history tape (`.pulls`, appended by `ghost pull`) out of
- * version control: it is disposable per-machine scratch for authors iterating
- * on the fingerprint, never canonical state.
+ * Keep local observability tapes out of version control: they are disposable
+ * per-machine scratch for authors iterating on the fingerprint, never canonical
+ * state.
  */
 function gitignoreFile(): TemplateFile {
   return {
     relativePath: ".gitignore",
-    content: ".pulls\n",
+    content: `${GHOST_EVENTS_FILENAME}\n${LEGACY_PULL_HISTORY_FILENAME}\n`,
   };
 }
 
 /**
  * The default starter: a manifest, a package-level glossary declaring the
- * starter category vocabulary, and the package-root `index.md` node — the
- * human-curated front door. Additional truths are plain markdown nodes; an
- * optional kind comes from a dotted filename prefix such as
- * `principle.density.md`.
+ * starter category vocabulary, and a package-root `index.md` node. Additional
+ * truths are plain markdown nodes; optional material locators live on the node
+ * that explains them. Haunts (e.g. checks) are opt-in via `ghost haunt add`.
  */
 const DEFAULT_TEMPLATE: GhostInitTemplate = {
   name: "default",
@@ -62,6 +65,8 @@ categories:
   - name: principle
   - name: condition
   - name: exemplar
+  - name: asset
+  - name: pattern
 ---
 
 # principle
@@ -75,6 +80,14 @@ Situational truth: fires only when the stated situation holds.
 # exemplar
 
 Illustrative reference: useful evidence, but not normative on its own.
+
+# asset
+
+Material truth about concrete brand assets such as logos, illustrations, motion, imagery, or files.
+
+# pattern
+
+Reusable composition or product pattern whose purpose is distinguishable from neighboring patterns.
 `,
       },
       {
@@ -91,7 +104,8 @@ the node's body; the frontmatter above is the retrieval description.
 
 Nodes are prose truths. Use them to capture intent, materials, and composition in
 language an agent can apply across code, copy, and UI decisions. Keep each node
-focused enough to be useful on its own.
+focused enough to be useful on its own. When a node points at concrete materials,
+add a \`materials\` list in frontmatter with repo-relative paths/globs or https URLs.
 
 The glossary declares the category vocabulary. A node's kind comes from its
 filename prefix: \`principle.density.md\` has kind \`principle\` and slug

@@ -1,28 +1,10 @@
 # @anarchitecture/ghost-fingerprint
 
-**Write a brand decision down once, in your repo, so your agent reads it
-before it builds.**
-
-Agents can assemble UI, copy, and email. What they can't do is remember the
-decisions behind your product — the stance, the density, the restraint, the
-trust moves you keep re-stating in review. Ghost keeps those decisions in a
-repo-local `.ghost/` folder of plain markdown that a host agent reads before
-it generates.
+**Write a brand decision down once, in your repo, so your agent reads it before
+it builds and can review against it later.**
 
 This package ships one CLI: `ghost`. Every command is also available as
 `ghost-fingerprint` for when another tool owns the `ghost` bin.
-
-## Project Status: Beta
-
-> [!WARNING]
-> Ghost is pre-1.0 and under active development. The CLI, node schema, on-disk
-> `.ghost/` package shape, and public JavaScript exports may change in breaking
-> ways before a stable 1.0 release.
->
-> Breaking changes may ship in minor versions while Ghost is pre-1.0. Patch
-> versions are reserved for fixes that should not require migration. If you adopt
-> Ghost today, pin the version you depend on and review release notes before
-> upgrading.
 
 ## Install
 
@@ -31,80 +13,42 @@ npm install -D @anarchitecture/ghost-fingerprint
 npx ghost --help
 ```
 
-`ghost --help` shows the core workflow, `ghost --help --all` the complete
-command index, and `ghost <command> --help` the flags for one command.
-
-## The Shape
-
-A fingerprint is a **flat folder of prose nodes** — no hierarchy, no
-inheritance, no links between files:
+## Shape
 
 ```text
 .ghost/
-  manifest.yml          # schema + package id (the anchor)
-  glossary.md           # your category vocabulary + what each category means
-  index.md              # the curated front door node
-  principle.trust.md    # a brand truth of kind `principle`
-  voice.md              # an uncategorized brand truth
-  haunt/                # reserved: the adherence plugin's data; never a node
+  manifest.yml          # schema + package id
+  glossary.md           # category vocabulary
+  index.md              # front door node
+  principle.trust.md    # prose truth
+  asset.logo.md         # prose truth, optionally with materials
+  haunts/               # optional attached capabilities; never gathered as nodes
+    checks/             # the first haunt: review assertions
 ```
 
-A node is one markdown file: a `description` in frontmatter (the one-liner
-`gather` shows), a brand truth in the prose body. Its id is its filename minus
-`.md`; its kind is the prefix before the first dot, declared in the glossary.
-A truth that holds everywhere is stated plainly; a narrower truth names the
-**condition** it applies in, right in the prose. The agent reads the condition
-and decides when it applies.
+A node is markdown with `description`, optional `materials`, and a prose body.
+`materials` accepts repo-relative paths/globs and HTTPS URLs.
+
+A haunt is an optional capability attached under `.ghost/haunts/<id>/`; manage
+them with `ghost haunt add|remove|list`. Checks — the first haunt — live under
+`.ghost/haunts/checks/` and declare `references` to the nodes they review.
+`ghost review` reads a diff, matches touched files to node materials, offers
+relevant checks, and emits an advisory packet for the host agent.
 
 ## Use
 
-Create and validate the fingerprint package:
-
 ```bash
-ghost init          # scaffold .ghost/ (manifest + glossary + starter index.md)
-ghost validate      # package shape + node validity + glossary kind prefixes
+ghost init
+ghost haunt add checks
+ghost validate
+ghost gather "checkout settings"
+ghost pull principle.trust
+ghost review --diff=-
+ghost pulse
 ```
 
-Gather context before generation:
-
-```bash
-ghost gather        # list every truth by id, kind, and description — the agent selects
-ghost pull <ids>    # emit the selected truths' full bodies
-```
-
-`pull` also appends each selection to `.ghost/.pulls`, a local gitignored
-history file — while tuning a node's description, re-run the task and
-`tail .ghost/.pulls` to see whether the agent reached for it. Ghost never
-reads the file back (`--no-history` skips the append).
-
-Install the skill bundle so your host agent (Claude Code, Codex, Cursor,
-Goose, …) knows how to author and consume the fingerprint:
-
-```bash
-ghost skill install
-```
-
-`ghost manifest` (a self-describing JSON index of commands and flags) remains
-available for tooling.
-
-Ghost is **feed-forward**: it grounds generation and never grades output.
-Reviewing diffs and auditing code against the fingerprint live in Haunt, the
-private adherence plugin (`ghost-haunt review`, `ghost-haunt integrity`).
-
-No API key is required.
-
-## BYOA
-
-Ghost is bring-your-own-agent. The CLI does the deterministic work: package
-validation, node validity, glossary checks, and the flat gather menu. The
-installed `ghost` skill teaches a host agent how to capture brand truths as
-`.ghost/` nodes and how to brief generation work from them.
-
-```text
-Set up the Ghost fingerprint for this repo.
-Write down the decision I keep repeating about checkout.
-Brief this work from the Ghost fingerprint.
-```
+`ghost manifest` emits a self-describing JSON index of commands and flags.
+`ghost skill install` installs the host-agent skill bundle.
 
 ## Library
 
@@ -122,13 +66,7 @@ Available subpath exports: `@anarchitecture/ghost-fingerprint`,
 `@anarchitecture/ghost-fingerprint/fingerprint`,
 `@anarchitecture/ghost-fingerprint/core`,
 `@anarchitecture/ghost-fingerprint/cli`, and
-`@anarchitecture/ghost-fingerprint/scan` (deprecated).
-
-## Maintainers
-
-npm renders this package-local `README.md`, not the monorepo root README. The
-npm package page updates only when a new package version is published, so
-README-only changes still need a patch changeset and release.
+`@anarchitecture/ghost-fingerprint/scan`.
 
 ## License
 

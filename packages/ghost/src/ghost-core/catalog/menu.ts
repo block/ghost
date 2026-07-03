@@ -11,6 +11,8 @@ export interface CatalogMenuEntry {
   /** The node's kind (filename prefix), when it declares one. */
   kind?: string;
   description?: string;
+  /** Count of material locators available after pulling this node. */
+  materials?: number;
 }
 
 /**
@@ -26,6 +28,9 @@ export function buildCatalogMenu(graph: GhostCatalog): CatalogMenuEntry[] {
       id: node.id,
       ...(node.kind !== undefined ? { kind: node.kind } : {}),
       ...(node.description ? { description: node.description } : {}),
+      ...(node.materials !== undefined && node.materials.length > 0
+        ? { materials: node.materials.length }
+        : {}),
     });
   }
 

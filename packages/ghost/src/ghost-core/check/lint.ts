@@ -50,12 +50,38 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     });
   }
 
+  const references = frontmatter.references;
+  if (references !== undefined) {
+    if (!Array.isArray(references)) {
+      issues.push({
+        severity: "error",
+        rule: "check-references-invalid",
+        message: "references must be an array of node refs",
+        path: "references",
+      });
+    } else {
+      references.forEach((reference, index) => {
+        if (
+          typeof reference !== "string" ||
+          parseSourceRef(reference) === null
+        ) {
+          issues.push({
+            severity: "warning",
+            rule: "check-reference-malformed",
+            message:
+              "references entries should be node path ids with optional `> Heading` anchors (e.g. 'checkout/payment > Confirmation')",
+            path: `references[${index}]`,
+          });
+        }
+      });
+    }
+  }
+
   const source = frontmatter.source;
   if (source !== undefined) {
-    // `source:` is a soft provenance pointer: `<node-id>` with an optional
-    // `> <heading>` anchor. The node-id part should resolve like a path id; a
-    // malformed shape is a *warning*, never an error, since it may name
-    // not-yet-written prose (OKF-style tolerance).
+    // `source:` is a deprecated soft provenance pointer: `<node-id>` with an
+    // optional `> <heading>` anchor. Keep linting it so older standalone check
+    // files still get useful feedback.
     if (typeof source !== "string" || parseSourceRef(source) === null) {
       issues.push({
         severity: "warning",

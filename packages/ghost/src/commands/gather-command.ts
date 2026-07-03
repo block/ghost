@@ -1,17 +1,14 @@
 import type { CAC } from "cac";
 import { buildCatalogMenu, type CatalogMenuEntry } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
+import { appendGhostEvent } from "../observability-events.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
-import {
-  type HauntMaterialEntry,
-  loadHauntMaterials,
-} from "../scan/haunt-materials.js";
 import { failFromError } from "./errors.js";
 
 export function registerGatherCommand(cli: CAC): void {
   cli
     .command(
-      "gather",
+      "gather [...ask]",
       "Emit the fingerprint menu — every node's id, kind, and description — for the agent to select from.",
     )
     .option(
@@ -21,7 +18,7 @@ export function registerGatherCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
-    .action(async (opts) => {
+    .action(async (askParts: string[] | undefined, opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
@@ -29,12 +26,15 @@ export function registerGatherCommand(cli: CAC): void {
           return;
         }
 
+        const ask = normalizeAsk(askParts);
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
         const menu = buildCatalogMenu(loaded.catalog);
-        // Materials come from the haunt plugin's inventory (id + description
-        // only). Checks are feed-back only and are never served here.
-        const materials = await loadHauntMaterials(paths.packageDir);
+        await appendGhostEvent(paths.packageDir, {
+          event: "gather",
+          ...(ask ? { ask } : {}),
+          menu: menu.map((entry) => entry.id),
+        });
 
         // Ghost does no selection. It emits the catalog; the agent reads the
         // ask against it and pulls the nodes it judges relevant.
@@ -43,15 +43,15 @@ export function registerGatherCommand(cli: CAC): void {
             `${JSON.stringify(
               {
                 kind: "menu",
+                ...(ask ? { ask } : {}),
                 nodes: menu,
-                ...(materials !== undefined ? { materials } : {}),
               },
               null,
               2,
             )}\n`,
           );
         } else {
-          process.stdout.write(formatMenuMarkdown(menu, materials));
+          process.stdout.write(formatMenuMarkdown(menu, ask));
         }
         process.exit(0);
       } catch (err) {
@@ -60,12 +60,14 @@ export function registerGatherCommand(cli: CAC): void {
     });
 }
 
-function formatMenuMarkdown(
-  menu: CatalogMenuEntry[],
-  materials?: HauntMaterialEntry[],
-): string {
+function normalizeAsk(askParts: string[] | undefined): string | undefined {
+  const ask = (askParts ?? []).join(" ").trim();
+  return ask.length > 0 ? ask : undefined;
+}
+
+function formatMenuMarkdown(menu: CatalogMenuEntry[], ask?: string): string {
   const lines: string[] = [
-    "# Ghost Nodes",
+    ask ? `# Ghost Nodes — for: ${ask}` : "# Ghost Nodes",
     "",
     "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
     "",
@@ -74,21 +76,8 @@ function formatMenuMarkdown(
     const kind = entry.kind ? ` _(${entry.kind})_` : "";
     lines.push(`- \`${entry.id}\`${kind}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
-  }
-  if (materials !== undefined && materials.length > 0) {
-    lines.push(
-      "",
-      "## Materials (haunt inventory)",
-      "",
-      "Repo-local building blocks from the haunt plugin — inspect their paths in .ghost/haunt/inventory/.",
-      "",
-    );
-    for (const material of materials) {
-      lines.push(
-        material.description
-          ? `- \`${material.id}\` — ${material.description}`
-          : `- \`${material.id}\``,
-      );
+    if (entry.materials !== undefined) {
+      lines.push(`  - materials: ${entry.materials}`);
     }
   }
   return `${lines.join("\n")}\n`;

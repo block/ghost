@@ -16,6 +16,12 @@ export interface GhostNodeFrontmatter {
    * Optional, but strongly encouraged on any node worth anchoring a task at.
    */
   description?: string;
+  /**
+   * Optional locators for the concrete materials this truth is about: repo-relative
+   * paths/globs and absolute https URLs. Guidance stays in prose; this list is
+   * only where the agent or review harness can find the material.
+   */
+  materials?: string[];
 }
 
 export interface GhostNodeDocument {

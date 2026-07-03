@@ -20,16 +20,12 @@ export interface GhostCheckFrontmatter {
   /** Max tool-use turns the check should spend (passthrough). */
   turn_limit?: number;
   /**
-   * Optional provenance: the fingerprint prose this check enforces, as a node
-   * path id with an optional `> Heading` anchor (`checkout/payment > Confirmation`).
-   * A soft pointer — `review` surfaces it so a finding can cite which section it
-   * derives from. An unresolved `source:` is tolerated: it may name
-   * not-yet-written prose.
-   *
-   * This is the check's only binding to the graph. Checks always fire; the host
-   * agent judges relevance against the diff and the grounded prose. `source:`
-   * tells it which prose the check enforces.
+   * The fingerprint prose this check enforces, as node path ids with optional
+   * `> Heading` anchors (`checkout/payment > Confirmation`). Unresolved refs are
+   * tolerated by validation as warnings: they may name not-yet-written prose.
    */
+  references?: string[];
+  /** Deprecated single-reference alias retained for artifact-level linting. */
   source?: string;
 }
 

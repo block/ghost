@@ -154,30 +154,87 @@ describe("split fingerprint package", () => {
     );
   });
 
-  it("reserves the haunt/ subtree — its files are never nodes and never invalid", async () => {
+  it("loads node materials into the catalog", async () => {
     await writeManifest(dir);
-    await writeGlossary(dir, ["principle"]);
     await writeFile(
-      join(dir, "principle.density.md"),
-      "---\ndescription: Density is earned.\n---\n\nEvery surface earns its density.\n",
-    );
-    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
-    await mkdir(join(dir, "haunt", "checks"), { recursive: true });
-    await writeFile(
-      join(dir, "haunt", "inventory", "x.md"),
-      "---\ndescription: Modals.\npaths:\n  - src/**\n---\n\nModal material.\n",
-    );
-    await writeFile(
-      join(dir, "haunt", "checks", "y.md"),
-      "---\nname: y\ndescription: A check.\nseverity: high\nreferences:\n  - x\n---\n\nGrade it.\n",
+      join(dir, "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/logo*.svg\n  - https://example.com/logo\n---\n\nLogo prose.\n",
     );
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
-    // Only the real node is in the catalog; nothing under haunt/ leaks in —
-    // neither as a node nor as an invalid file.
-    expect([...loaded.catalog.nodes.keys()]).toEqual(["principle.density"]);
+    expect(loaded.catalog.nodes.get("asset.logo")?.materials).toEqual([
+      "brand/logo*.svg",
+      "https://example.com/logo",
+    ]);
+  });
+
+  it("rejects invalid material locators", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - /absolute/logo.svg\n---\n\nLogo prose.\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "node-invalid",
+      path: "asset.logo.md",
+    });
+  });
+
+  it("reserves haunts/ — checks-haunt files are never nodes", async () => {
+    await writeManifest(dir);
+    await writeFile(
+      join(dir, "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
+    );
+    await writeChecksHaunt(dir, [
+      [
+        "logo-clearspace.md",
+        "---\nname: logo-clearspace\ndescription: Logo clearspace holds.\nseverity: high\nreferences:\n  - asset.logo\n---\n\nGrade it.\n",
+      ],
+    ]);
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    expect([...loaded.catalog.nodes.keys()]).toEqual(["asset.logo"]);
+    expect(loaded.haunts).toEqual(["checks"]);
+    expect([...loaded.checks.keys()]).toEqual(["logo-clearspace"]);
     expect(loaded.invalid).toEqual([]);
+    expect(loaded.invalidHaunts).toEqual([]);
+  });
+
+  it("flags a haunt directory without haunt.yml", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "haunts", "checks"), { recursive: true });
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "haunt-invalid",
+      path: "haunts/checks",
+    });
+  });
+
+  it("flags an unknown haunt id", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "haunts", "spectre"), { recursive: true });
+    await writeFile(
+      join(dir, "haunts", "spectre", "haunt.yml"),
+      "schema: ghost.haunt/v1\nid: spectre\n",
+    );
+
+    const report = await lintFingerprintPackage(dir);
+
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "haunt-invalid",
+      path: "haunts/spectre",
+    });
   });
 
   it("gives index.md the uniform id `index` — no core mapping", async () => {
@@ -200,73 +257,20 @@ describe("split fingerprint package", () => {
     expect(loaded.catalog.nodes.get("index")?.kind).toBeUndefined();
   });
 
-  it("warns when a haunt/ subtree exists but is not declared in plugins", async () => {
-    await writeManifest(dir);
-    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(0);
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "warning",
-        rule: "plugin-undeclared",
-        message: "haunt/ subtree present but not declared in manifest plugins",
-      }),
-    );
-  });
-
-  it("accepts a declared haunt plugin with the subtree present", async () => {
+  it("rejects retired plugin declarations", async () => {
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - haunt\n",
-    );
-    await mkdir(join(dir, "haunt", "inventory"), { recursive: true });
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
-    expect(report.info).toBe(0);
-  });
-
-  it("warns on an unknown plugin name", async () => {
-    await mkdir(dir, { recursive: true });
-    await writeFile(
-      join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - spectre\n",
+      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - retired\n",
     );
 
     const report = await lintFingerprintPackage(dir);
 
-    expect(report.errors).toBe(0);
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "warning",
-        rule: "plugin-unknown",
-        message: "unknown plugin 'spectre'",
-      }),
-    );
-  });
-
-  it("notes declared haunt with no subtree as harmless info", async () => {
-    await mkdir(dir, { recursive: true });
-    await writeFile(
-      join(dir, "manifest.yml"),
-      "schema: ghost.fingerprint-package/v1\nid: local\nplugins:\n  - haunt\n",
-    );
-
-    const report = await lintFingerprintPackage(dir);
-
-    expect(report.errors).toBe(0);
-    expect(report.warnings).toBe(0);
-    expect(report.issues).toContainEqual(
-      expect.objectContaining({
-        severity: "info",
-        rule: "plugin-subtree-absent",
-      }),
-    );
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      rule: "schema/unrecognized_keys",
+      path: "manifest.yml",
+    });
   });
 
   it("reports a missing manifest", async () => {
@@ -288,6 +292,21 @@ async function writeManifest(dir: string): Promise<void> {
     join(dir, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: local\n",
   );
+}
+
+async function writeChecksHaunt(
+  dir: string,
+  checks: Array<[string, string]>,
+): Promise<void> {
+  const hauntDir = join(dir, "haunts", "checks");
+  await mkdir(hauntDir, { recursive: true });
+  await writeFile(
+    join(hauntDir, "haunt.yml"),
+    "schema: ghost.haunt/v1\nid: checks\n",
+  );
+  for (const [name, content] of checks) {
+    await writeFile(join(hauntDir, name), content);
+  }
 }
 
 async function writeGlossary(dir: string, categories: string[]): Promise<void> {

@@ -4,13 +4,13 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm transition-all outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         outline: "border border-input bg-background hover:bg-muted",
         secondary: "bg-muted text-foreground hover:bg-muted/80",
         ghost: "hover:bg-muted dark:hover:bg-muted/50",
@@ -18,11 +18,13 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-9",
+        xs: "h-6 gap-1 text-xs [&_svg:not([class*='size-'])]:size-3",
         sm: "h-8 gap-1.5",
         lg: "h-10",
         icon: "w-9 h-9 p-0",
-        "icon-xs": "w-7 h-7 p-0",
+        "icon-xs": "w-7 h-7 p-0 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "w-8 h-8 p-0",
+        "icon-lg": "w-10 h-10 p-0",
       },
       appearance: {
         default: "",
@@ -30,6 +32,11 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
+      {
+        appearance: "default",
+        size: "xs",
+        className: "px-2 has-[>svg]:px-1.5",
+      },
       {
         appearance: "default",
         size: "default",
@@ -52,6 +59,11 @@ const buttonVariants = cva(
       },
       {
         appearance: "icon",
+        size: "xs",
+        className: "w-6 h-6 p-0",
+      },
+      {
+        appearance: "icon",
         size: "sm",
         className: "w-8 h-8 p-0",
       },
@@ -71,8 +83,8 @@ const buttonVariants = cva(
 
 function Button({
   className,
-  variant,
-  size,
+  variant = "default",
+  size = "default",
   asChild = false,
   appearance = "default",
   ...props
@@ -86,6 +98,9 @@ function Button({
   return (
     <Comp
       data-slot="button"
+      data-variant={variant}
+      data-size={size}
+      data-appearance={appearance}
       className={cn(buttonVariants({ variant, size, appearance, className }))}
       {...props}
     />

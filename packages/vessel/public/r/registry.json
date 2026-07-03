@@ -54,6 +54,12 @@
           "--color-accent-foreground": "var(--accent-foreground)",
           "--color-destructive": "var(--destructive)",
           "--color-destructive-foreground": "var(--destructive-foreground)",
+          "--color-success": "var(--success)",
+          "--color-success-foreground": "var(--success-foreground)",
+          "--color-warning": "var(--warning)",
+          "--color-warning-foreground": "var(--warning-foreground)",
+          "--color-info": "var(--info)",
+          "--color-info-foreground": "var(--info-foreground)",
           "--color-border": "var(--border)",
           "--color-input": "var(--input)",
           "--color-background-default": "var(--background-default)",
@@ -153,37 +159,61 @@
         },
         "light": {
           "--radius": "20px",
-          "--background-accent": "var(--color-gray-900)",
-          "--border-accent": "var(--color-gray-900)",
-          "--text-accent": "var(--color-gray-900)",
-          "--background-default": "var(--color-white)",
+          "--background": "var(--color-white)",
+          "--foreground": "var(--color-gray-900)",
+          "--card": "var(--background)",
+          "--card-foreground": "var(--foreground)",
+          "--popover": "var(--background)",
+          "--popover-foreground": "var(--foreground)",
+          "--primary": "var(--color-gray-900)",
+          "--primary-foreground": "var(--color-white)",
+          "--secondary": "var(--color-gray-100)",
+          "--secondary-foreground": "var(--foreground)",
+          "--muted": "var(--color-gray-100)",
+          "--muted-foreground": "var(--color-gray-500)",
+          "--accent": "var(--color-gray-100)",
+          "--accent-foreground": "var(--foreground)",
+          "--destructive": "var(--color-red-200)",
+          "--destructive-foreground": "var(--color-white)",
+          "--success": "var(--color-green-200)",
+          "--success-foreground": "var(--color-gray-900)",
+          "--warning": "var(--color-yellow-200)",
+          "--warning-foreground": "var(--color-gray-900)",
+          "--info": "var(--color-blue-200)",
+          "--info-foreground": "var(--color-gray-900)",
+          "--border": "var(--color-gray-200)",
+          "--input": "var(--color-gray-300)",
+          "--ring": "var(--color-gray-400)",
+          "--background-accent": "var(--primary)",
+          "--border-accent": "var(--primary)",
+          "--text-accent": "var(--primary)",
+          "--background-default": "var(--background)",
           "--background-alt": "var(--color-gray-50)",
           "--background-medium": "var(--color-gray-400)",
-          "--background-muted": "var(--color-gray-100)",
+          "--background-muted": "var(--muted)",
           "--background-inverse": "var(--color-black)",
-          "--background-danger": "var(--color-red-200)",
-          "--background-success": "var(--color-green-200)",
-          "--background-info": "var(--color-blue-200)",
-          "--background-warning": "var(--color-yellow-200)",
-          "--border-default": "var(--color-gray-200)",
-          "--border-input": "var(--color-gray-300)",
+          "--background-danger": "var(--destructive)",
+          "--background-success": "var(--success)",
+          "--background-info": "var(--info)",
+          "--background-warning": "var(--warning)",
+          "--border-default": "var(--border)",
+          "--border-input": "var(--input)",
           "--border-input-hover": "var(--color-gray-400)",
-          "--border-strong": "var(--color-gray-900)",
-          "--border-card": "var(--color-gray-200)",
+          "--border-strong": "var(--primary)",
+          "--border-card": "var(--border)",
           "--border-inverse": "var(--color-black)",
-          "--border-danger": "var(--color-red-200)",
+          "--border-danger": "var(--destructive)",
           "--border-success": "var(--color-green-200)",
           "--border-warning": "var(--color-yellow-200)",
           "--border-info": "var(--color-blue-200)",
-          "--text-default": "var(--color-gray-900)",
-          "--text-muted": "var(--color-gray-500)",
+          "--text-default": "var(--foreground)",
+          "--text-muted": "var(--muted-foreground)",
           "--text-alt": "var(--color-gray-600)",
-          "--text-inverse": "var(--color-white)",
-          "--text-danger": "var(--color-red-200)",
-          "--text-success": "var(--color-green-200)",
-          "--text-warning": "var(--color-yellow-200)",
-          "--text-info": "var(--color-blue-200)",
-          "--ring": "var(--border-strong)",
+          "--text-inverse": "var(--primary-foreground)",
+          "--text-danger": "var(--destructive)",
+          "--text-success": "var(--success)",
+          "--text-warning": "var(--warning)",
+          "--text-info": "var(--info)",
           "--dark-10": "rgba(26, 26, 26, 0.1)",
           "--dark-40": "rgba(26, 26, 26, 0.4)",
           "--dark-04": "rgba(26, 26, 26, 0.04)",
@@ -205,24 +235,6 @@
           "--chart-3": "#d76a6a",
           "--chart-4": "#d185e0",
           "--chart-5": "#91cb80",
-          "--background": "var(--background-default)",
-          "--foreground": "var(--text-default)",
-          "--card": "var(--background-default)",
-          "--card-foreground": "var(--text-default)",
-          "--popover": "var(--background-default)",
-          "--popover-foreground": "var(--text-default)",
-          "--primary": "var(--background-accent)",
-          "--primary-foreground": "var(--text-inverse)",
-          "--secondary": "var(--background-muted)",
-          "--secondary-foreground": "var(--text-default)",
-          "--muted": "var(--background-muted)",
-          "--muted-foreground": "var(--text-muted)",
-          "--accent": "var(--background-muted)",
-          "--accent-foreground": "var(--text-default)",
-          "--destructive": "var(--background-danger)",
-          "--destructive-foreground": "#ffffff",
-          "--border": "var(--border-default)",
-          "--input": "var(--border-input)",
           "--sidebar": "var(--background-default)",
           "--sidebar-foreground": "var(--text-default)",
           "--sidebar-primary": "var(--background-accent)",
@@ -271,55 +283,61 @@
           "--duration-slow": "0.4s"
         },
         "dark": {
-          "--background-accent": "var(--color-white)",
-          "--border-accent": "var(--color-white)",
-          "--text-accent": "var(--color-white)",
-          "--background": "var(--background-default)",
-          "--foreground": "var(--text-default)",
-          "--card": "var(--background-default)",
-          "--card-foreground": "var(--text-default)",
-          "--popover": "var(--background-default)",
-          "--popover-foreground": "var(--text-default)",
-          "--primary": "var(--background-accent)",
-          "--primary-foreground": "var(--text-inverse)",
-          "--secondary": "var(--background-muted)",
-          "--secondary-foreground": "var(--text-default)",
-          "--muted": "var(--background-muted)",
-          "--muted-foreground": "var(--text-muted)",
-          "--accent": "var(--background-muted)",
-          "--accent-foreground": "var(--text-default)",
-          "--destructive": "var(--background-danger)",
-          "--destructive-foreground": "#ffffff",
-          "--border": "var(--border-default)",
-          "--input": "var(--border-input)",
-          "--background-default": "var(--color-black)",
-          "--background-alt": "var(--color-gray-800)",
-          "--background-medium": "var(--color-gray-700)",
-          "--background-muted": "var(--color-gray-800)",
+          "--background": "var(--color-black)",
+          "--foreground": "var(--color-white)",
+          "--card": "var(--color-gray-800)",
+          "--card-foreground": "var(--foreground)",
+          "--popover": "var(--color-gray-800)",
+          "--popover-foreground": "var(--foreground)",
+          "--primary": "var(--color-white)",
+          "--primary-foreground": "var(--color-black)",
+          "--secondary": "var(--color-gray-700)",
+          "--secondary-foreground": "var(--foreground)",
+          "--muted": "var(--color-gray-800)",
+          "--muted-foreground": "var(--color-gray-500)",
+          "--accent": "var(--color-gray-800)",
+          "--accent-foreground": "var(--foreground)",
+          "--destructive": "var(--color-red-100)",
+          "--destructive-foreground": "var(--color-black)",
+          "--success": "var(--color-green-100)",
+          "--success-foreground": "var(--color-black)",
+          "--warning": "var(--color-yellow-100)",
+          "--warning-foreground": "var(--color-black)",
+          "--info": "var(--color-blue-100)",
+          "--info-foreground": "var(--color-black)",
+          "--border": "var(--color-gray-700)",
+          "--input": "var(--color-gray-700)",
+          "--ring": "var(--color-gray-400)",
+          "--background-accent": "var(--primary)",
+          "--border-accent": "var(--primary)",
+          "--text-accent": "var(--primary)",
+          "--background-default": "var(--background)",
+          "--background-alt": "var(--card)",
+          "--background-medium": "var(--secondary)",
+          "--background-muted": "var(--muted)",
           "--background-inverse": "var(--color-white)",
-          "--background-danger": "var(--color-red-100)",
-          "--background-success": "var(--color-green-100)",
-          "--background-info": "var(--color-blue-100)",
-          "--background-warning": "var(--color-yellow-100)",
-          "--border-default": "var(--color-gray-700)",
-          "--border-input": "var(--color-gray-700)",
+          "--background-danger": "var(--destructive)",
+          "--background-success": "var(--success)",
+          "--background-info": "var(--info)",
+          "--background-warning": "var(--warning)",
+          "--border-default": "var(--border)",
+          "--border-input": "var(--input)",
           "--border-input-hover": "var(--color-gray-600)",
-          "--border-strong": "var(--color-white)",
-          "--border-card": "var(--color-gray-700)",
+          "--border-strong": "var(--primary)",
+          "--border-card": "var(--border)",
           "--border-inverse": "var(--color-white)",
           "--border-danger": "var(--color-red-200)",
           "--border-success": "var(--color-green-200)",
           "--border-warning": "var(--color-yellow-200)",
           "--border-info": "var(--color-blue-200)",
-          "--text-default": "var(--color-white)",
-          "--text-muted": "var(--color-gray-500)",
+          "--text-default": "var(--foreground)",
+          "--text-muted": "var(--muted-foreground)",
           "--text-alt": "var(--color-gray-500)",
-          "--text-inverse": "var(--color-black)",
-          "--text-danger": "var(--color-red-100)",
-          "--text-success": "var(--color-green-100)",
-          "--text-warning": "var(--color-yellow-100)",
-          "--text-info": "var(--color-blue-100)",
-          "--ring": "var(--border-strong)",
+          "--text-inverse": "var(--primary-foreground)",
+          "--text-danger": "var(--destructive)",
+          "--text-success": "var(--success)",
+          "--text-warning": "var(--warning)",
+          "--text-info": "var(--info)",
           "--dark-10": "rgba(242, 242, 242, 0.1)",
           "--dark-40": "rgba(242, 242, 242, 0.4)",
           "--dark-04": "rgba(242, 242, 242, 0.04)",
@@ -820,7 +838,29 @@
       ],
       "categories": ["display"],
       "meta": {
-        "expression_dimensions": ["surfaces", "typography", "palette"]
+        "expression_dimensions": ["surfaces", "typography", "palette"],
+        "agent_decision": {
+          "intent": "Compact status, label, or metadata marker.",
+          "when_to_use": [
+            "Use for short categorical labels, state tags, and low-density metadata."
+          ],
+          "when_not_to_use": [
+            "Do not use for primary actions.",
+            "Do not encode long sentences or explanations in badges."
+          ],
+          "safe_variants": ["default", "secondary", "destructive", "outline"],
+          "common_misuses": [
+            "Using raw color scales for status.",
+            "Stacking many badges where a row or list would be clearer."
+          ],
+          "token_roles": [
+            "primary",
+            "muted",
+            "foreground",
+            "destructive",
+            "border"
+          ]
+        }
       }
     },
     {
@@ -870,7 +910,38 @@
           "surfaces",
           "typography",
           "spacing"
-        ]
+        ],
+        "agent_decision": {
+          "intent": "Primary and secondary actions with Vessel pill geometry and semantic state roles.",
+          "when_to_use": [
+            "Use for explicit user actions, form submission, menus, and compact icon controls."
+          ],
+          "when_not_to_use": [
+            "Do not use as a layout container.",
+            "Do not override radius or palette with raw classes."
+          ],
+          "safe_variants": [
+            "default",
+            "secondary",
+            "outline",
+            "ghost",
+            "destructive",
+            "link"
+          ],
+          "common_misuses": [
+            "Adding raw palette utilities to force emphasis.",
+            "Using icon-only buttons without an accessible label.",
+            "Inventing one-off button heights instead of the size prop."
+          ],
+          "token_roles": [
+            "primary",
+            "primary-foreground",
+            "muted",
+            "foreground",
+            "destructive",
+            "ring"
+          ]
+        }
       }
     },
     {
@@ -900,7 +971,30 @@
       ],
       "categories": ["display"],
       "meta": {
-        "expression_dimensions": ["surfaces", "spacing", "typography"]
+        "expression_dimensions": ["surfaces", "spacing", "typography"],
+        "agent_decision": {
+          "intent": "Quiet contained surface for related content, not decoration.",
+          "when_to_use": [
+            "Use for stable panels, grouped settings, and bounded summaries."
+          ],
+          "when_not_to_use": [
+            "Do not nest cards unless there is a real hierarchy.",
+            "Do not use cards to decorate every list item by default."
+          ],
+          "safe_variants": [
+            "Card",
+            "CardHeader",
+            "CardContent",
+            "CardFooter",
+            "CardAction"
+          ],
+          "common_misuses": [
+            "Adding arbitrary shadows.",
+            "Using raw gray backgrounds instead of card/background roles.",
+            "Making card titles do page-heading work."
+          ],
+          "token_roles": ["card", "card-foreground", "border", "shadow-card"]
+        }
       }
     },
     {
@@ -970,7 +1064,36 @@
           "path": "src/components/ui/command.tsx"
         }
       ],
-      "categories": ["input", "navigation"]
+      "categories": ["input", "navigation"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Searchable command/list palette for selecting actions or destinations.",
+          "when_to_use": [
+            "Use when the user needs to search or filter a known command/list space."
+          ],
+          "when_not_to_use": [
+            "Do not use as a generic form container.",
+            "Do not hide primary navigation exclusively behind command search."
+          ],
+          "safe_variants": [
+            "CommandDialog",
+            "CommandInput",
+            "CommandList",
+            "CommandItem"
+          ],
+          "common_misuses": [
+            "Returning ungrouped long lists.",
+            "Using raw selected colors instead of accent roles."
+          ],
+          "token_roles": [
+            "popover",
+            "popover-foreground",
+            "accent",
+            "accent-foreground",
+            "muted-foreground"
+          ]
+        }
+      }
     },
     {
       "name": "context-menu",
@@ -1000,7 +1123,30 @@
       ],
       "categories": ["feedback"],
       "meta": {
-        "expression_dimensions": ["surfaces", "spacing", "palette"]
+        "expression_dimensions": ["surfaces", "spacing", "palette"],
+        "agent_decision": {
+          "intent": "Task-blocking overlay for decisions that must interrupt the current flow.",
+          "when_to_use": [
+            "Use for confirmation, destructive flows, or focused modal tasks."
+          ],
+          "when_not_to_use": [
+            "Do not use for lightweight hints; use popover or inline disclosure instead.",
+            "Do not stack dialogs."
+          ],
+          "safe_variants": ["showCloseButton", "DialogHeader", "DialogFooter"],
+          "common_misuses": [
+            "Putting full pages inside dialogs.",
+            "Hiding close affordances without a strong reason.",
+            "Using dialog for hover/preview content."
+          ],
+          "token_roles": [
+            "background",
+            "foreground",
+            "border",
+            "shadow-modal",
+            "ring"
+          ]
+        }
       }
     },
     {
@@ -1100,7 +1246,29 @@
       ],
       "categories": ["input"],
       "meta": {
-        "expression_dimensions": ["surfaces", "palette", "spacing"]
+        "expression_dimensions": ["surfaces", "palette", "spacing"],
+        "agent_decision": {
+          "intent": "Single-line text entry with quiet tokenized focus and invalid states.",
+          "when_to_use": [
+            "Use for short user-entered values in forms and controls."
+          ],
+          "when_not_to_use": [
+            "Do not use for multi-line prompts or code.",
+            "Do not create custom borders outside input/ring tokens."
+          ],
+          "safe_variants": ["default"],
+          "common_misuses": [
+            "Replacing focus rings with raw colors.",
+            "Using placeholder text as the only label."
+          ],
+          "token_roles": [
+            "input",
+            "ring",
+            "foreground",
+            "muted-foreground",
+            "destructive"
+          ]
+        }
       }
     },
     {
@@ -1177,7 +1345,32 @@
       ],
       "categories": ["feedback"],
       "meta": {
-        "expression_dimensions": ["surfaces", "palette", "spacing"]
+        "expression_dimensions": ["surfaces", "palette", "spacing"],
+        "agent_decision": {
+          "intent": "Lightweight floating contextual surface anchored to a trigger.",
+          "when_to_use": [
+            "Use for contextual controls, brief details, or small pickers that do not block the task."
+          ],
+          "when_not_to_use": [
+            "Do not use for destructive confirmation or long forms.",
+            "Do not use as a mini-dialog."
+          ],
+          "safe_variants": [
+            "PopoverHeader",
+            "PopoverTitle",
+            "PopoverDescription"
+          ],
+          "common_misuses": [
+            "Overloading popovers with navigation stacks.",
+            "Using custom dark surfaces instead of popover tokens."
+          ],
+          "token_roles": [
+            "popover",
+            "popover-foreground",
+            "border",
+            "shadow-popover"
+          ]
+        }
       }
     },
     {
@@ -1360,6 +1553,133 @@
         }
       ],
       "categories": ["feedback"]
+    },
+    {
+      "name": "stack",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/stack.tsx",
+          "path": "src/components/ui/stack.tsx"
+        }
+      ],
+      "categories": ["layout"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Typed flex layout primitive for spacing, alignment, direction, and wrapping decisions.",
+          "when_to_use": [
+            "Use for simple row/column composition before reaching for raw flex class strings."
+          ],
+          "when_not_to_use": [
+            "Do not use when a semantic component such as Card, Dialog, or PromptInput already owns the layout."
+          ],
+          "safe_variants": ["direction", "gap", "align", "justify", "wrap"],
+          "common_misuses": [
+            "Adding one-off gap classes instead of the gap prop.",
+            "Using Stack to hide unclear content hierarchy."
+          ],
+          "token_roles": ["spacing", "layout"]
+        }
+      }
+    },
+    {
+      "name": "surface",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/surface.tsx",
+          "path": "src/components/ui/surface.tsx"
+        }
+      ],
+      "categories": ["layout", "display"],
+      "meta": {
+        "expression_dimensions": ["surfaces", "palette", "spacing"],
+        "agent_decision": {
+          "intent": "Typed semantic surface primitive for choosing role, padding, radius, border, and elevation without raw class strings.",
+          "when_to_use": [
+            "Use for custom contained surfaces when Card, Popover, or Dialog would be too specific."
+          ],
+          "when_not_to_use": [
+            "Do not use to restyle an existing semantic component.",
+            "Do not use dark role as generic decoration; reserve it for technical surfaces."
+          ],
+          "safe_variants": ["role", "padding", "radius", "border", "elevation"],
+          "common_misuses": [
+            "Combining raw background classes with role props.",
+            "Adding arbitrary shadows instead of elevation.",
+            "Using Surface for every div instead of meaningful component anatomy."
+          ],
+          "token_roles": [
+            "background",
+            "foreground",
+            "card",
+            "popover",
+            "muted",
+            "accent",
+            "surface-dark",
+            "border",
+            "shadow-card",
+            "shadow-popover"
+          ]
+        }
+      }
+    },
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+      "registryDependencies": ["utils"],
+      "files": [
+        {
+          "type": "registry:ui",
+          "target": "components/ui/text.tsx",
+          "path": "src/components/ui/text.tsx"
+        }
+      ],
+      "categories": ["typography", "display"],
+      "meta": {
+        "expression_dimensions": ["typography", "palette"],
+        "agent_decision": {
+          "intent": "Typed typography primitive for text role, tone, alignment, and balance decisions.",
+          "when_to_use": [
+            "Use for custom copy when a component-specific title, description, or label slot does not already exist."
+          ],
+          "when_not_to_use": [
+            "Do not use to bypass semantic HTML; use asChild for headings, labels, and links when needed.",
+            "Do not create local text colors with raw palette utilities."
+          ],
+          "safe_variants": [
+            "display",
+            "headline",
+            "title",
+            "body",
+            "label",
+            "mono",
+            "tone",
+            "align",
+            "balance"
+          ],
+          "common_misuses": [
+            "Using display scale in dense product panels.",
+            "Using tone to communicate state without text or icon support."
+          ],
+          "token_roles": [
+            "foreground",
+            "muted-foreground",
+            "primary-foreground",
+            "success",
+            "warning",
+            "info",
+            "destructive"
+          ]
+        }
+      }
     },
     {
       "name": "switch",
@@ -1575,7 +1895,30 @@
           "path": "src/components/ai-elements/code-block.tsx"
         }
       ],
-      "categories": ["ai", "code"]
+      "categories": ["ai", "code"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Readable, copyable code and command output surface.",
+          "when_to_use": [
+            "Use for code snippets, terminal commands, and structured technical output."
+          ],
+          "when_not_to_use": [
+            "Do not use for prose callouts.",
+            "Do not replace terminal when ANSI/session behavior matters."
+          ],
+          "safe_variants": ["language selector", "copy action"],
+          "common_misuses": [
+            "Hardcoding syntax colors outside the highlighter.",
+            "Using code blocks as general panels."
+          ],
+          "token_roles": [
+            "surface-dark",
+            "surface-dark-text",
+            "border",
+            "muted-foreground"
+          ]
+        }
+      }
     },
     {
       "name": "commit",
@@ -1763,7 +2106,32 @@
           "path": "src/components/ai-elements/message.tsx"
         }
       ],
-      "categories": ["ai", "chat"]
+      "categories": ["ai", "chat"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Chat transcript message body with readable streaming/markdown behavior.",
+          "when_to_use": [
+            "Use for assistant, user, and system message rendering in conversational surfaces."
+          ],
+          "when_not_to_use": [
+            "Do not use for generic cards or notifications.",
+            "Do not hand-roll markdown styling beside it."
+          ],
+          "safe_variants": [
+            "message parts and actions exposed by the component"
+          ],
+          "common_misuses": [
+            "Inventing separate bubble palettes.",
+            "Mixing transcript spacing with card spacing."
+          ],
+          "token_roles": [
+            "foreground",
+            "muted-foreground",
+            "message-user-bg",
+            "border"
+          ]
+        }
+      }
     },
     {
       "name": "mic-selector",
@@ -1900,7 +2268,36 @@
           "path": "src/components/ai-elements/prompt-input.tsx"
         }
       ],
-      "categories": ["ai", "input", "chat"]
+      "categories": ["ai", "input", "chat"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Composable AI prompt composer with attachments, commands, model controls, and submit state.",
+          "when_to_use": [
+            "Use as the main input for conversational or agentic tasks."
+          ],
+          "when_not_to_use": [
+            "Do not use for simple single-field forms.",
+            "Do not fork composer controls for local one-off styling."
+          ],
+          "safe_variants": [
+            "PromptInput",
+            "PromptInputTextarea",
+            "PromptInputSubmit",
+            "PromptInputToolbar"
+          ],
+          "common_misuses": [
+            "Adding raw spacing/color overrides inside the composer.",
+            "Hiding submit/stop state from assistive tech."
+          ],
+          "token_roles": [
+            "background",
+            "foreground",
+            "muted-foreground",
+            "border",
+            "ring"
+          ]
+        }
+      }
     },
     {
       "name": "queue",
@@ -1936,7 +2333,25 @@
           "path": "src/components/ai-elements/reasoning.tsx"
         }
       ],
-      "categories": ["ai", "chat"]
+      "categories": ["ai", "chat"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Collapsible reasoning/thinking trace that stays secondary to the answer.",
+          "when_to_use": [
+            "Use for model reasoning traces or explainable intermediate steps."
+          ],
+          "when_not_to_use": [
+            "Do not use for primary answer content.",
+            "Do not force reasoning open unless the task is debugging/inspection."
+          ],
+          "safe_variants": ["collapsed/open controlled state"],
+          "common_misuses": [
+            "Over-emphasizing reasoning with primary styling.",
+            "Mixing reasoning content into final response hierarchy."
+          ],
+          "token_roles": ["muted", "muted-foreground", "border", "foreground"]
+        }
+      }
     },
     {
       "name": "sandbox",
@@ -2078,7 +2493,35 @@
           "path": "src/components/ai-elements/terminal.tsx"
         }
       ],
-      "categories": ["ai", "code"]
+      "categories": ["ai", "code"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Dark technical terminal surface for command/session output.",
+          "when_to_use": [
+            "Use for shell-like output, ANSI logs, and terminal sessions."
+          ],
+          "when_not_to_use": [
+            "Do not use as an aesthetic dark card.",
+            "Do not put ordinary prose content in terminal styling."
+          ],
+          "safe_variants": [
+            "Terminal",
+            "TerminalHeader",
+            "TerminalContent",
+            "TerminalActions"
+          ],
+          "common_misuses": [
+            "Using zinc palette classes directly.",
+            "Using terminal surface for non-code hierarchy."
+          ],
+          "token_roles": [
+            "surface-dark",
+            "surface-dark-text",
+            "surface-dark-muted",
+            "surface-dark-border"
+          ]
+        }
+      }
     },
     {
       "name": "test-results",
@@ -2106,7 +2549,32 @@
           "path": "src/components/ai-elements/tool.tsx"
         }
       ],
-      "categories": ["ai", "display"]
+      "categories": ["ai", "display"],
+      "meta": {
+        "agent_decision": {
+          "intent": "Tool-call lifecycle display with semantic status states.",
+          "when_to_use": [
+            "Use to show tool calls, approval states, output availability, and errors."
+          ],
+          "when_not_to_use": [
+            "Do not use for arbitrary status cards.",
+            "Do not map statuses to raw color scales."
+          ],
+          "safe_variants": ["tool state/status props"],
+          "common_misuses": [
+            "Using color as the only state cue.",
+            "Expanding every tool result by default in dense transcripts."
+          ],
+          "token_roles": [
+            "success",
+            "warning",
+            "info",
+            "destructive",
+            "muted",
+            "border"
+          ]
+        }
+      }
     },
     {
       "name": "toolbar",

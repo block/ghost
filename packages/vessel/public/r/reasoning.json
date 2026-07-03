@@ -19,6 +19,24 @@
       "target": "components/ai-elements/reasoning.tsx"
     }
   ],
+  "meta": {
+    "agent_decision": {
+      "intent": "Collapsible reasoning/thinking trace that stays secondary to the answer.",
+      "when_to_use": [
+        "Use for model reasoning traces or explainable intermediate steps."
+      ],
+      "when_not_to_use": [
+        "Do not use for primary answer content.",
+        "Do not force reasoning open unless the task is debugging/inspection."
+      ],
+      "safe_variants": ["collapsed/open controlled state"],
+      "common_misuses": [
+        "Over-emphasizing reasoning with primary styling.",
+        "Mixing reasoning content into final response hierarchy."
+      ],
+      "token_roles": ["muted", "muted-foreground", "border", "foreground"]
+    }
+  },
   "categories": ["ai", "chat"],
   "type": "registry:ui"
 }

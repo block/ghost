@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: the flat set of brand-truth nodes, the glossary, and the manifest.
+description: The Ghost fingerprint package shape: flat brand-truth nodes, optional materials, optional checks, glossary, and manifest.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -10,71 +10,72 @@ Canonical package:
 ```text
 .ghost/
   manifest.yml        ghost.fingerprint-package/v1: schema + id
-  glossary.md         the category vocabulary + what each category means
-  <kind>.<slug>.md    a brand truth of a declared kind (principle.density.md)
-  <slug>.md           an uncategorized brand truth (voice.md)
-  haunt/              reserved: the adherence plugin's subtree (inventory + checks); never a node
+  glossary.md         category vocabulary + meanings
+  <kind>.<slug>.md    a brand truth of a declared kind
+  <slug>.md           an uncategorized brand truth
+  haunts/             optional attached capabilities; never a node source
 ```
 
-The package is a **flat set of nodes** — no hierarchy, no inheritance, no edges.
-Folders may be used for human browsing, but they carry no meaning; the model
-reads a flat menu. Reserved at the root: `manifest.yml`, `glossary.md`, and the
-`haunt/` subtree (the adherence plugin's inventory + checks — never a node); every
-other `*.md` is a node.
-
-Git is the approval boundary: checked-in files are canonical; uncommitted edits
-are draft work.
+Reserved at the root: `manifest.yml`, `glossary.md`, and `haunts/`. Every other
+`*.md` is a node.
 
 ## Nodes
 
-A node is the unit: a markdown file with a `description` in frontmatter and a
-brand truth in the prose body. A node at `principle.trust.md`:
+A node is markdown with frontmatter and a prose body:
 
-```yaml
+```markdown
 ---
-description: Trust at the payment moment.   # the retrieval payload
-# free-form keys (audience, stage, …) pass through untouched
+description: Logo lockups, clearspace, and when the glyph can stand alone.
+materials:
+  - brand/logo*.svg
+  - https://figma.com/file/example?node-id=logo-lockups
 ---
-Prose brand truth. Intent / inventory / composition are authoring lenses,
-not fields.
+
+Use the full lockup when recognition matters. Use the glyph only when space is
+constrained or when brand presence should recede.
 ```
 
-- **Identity** is the filename minus `.md` (`marketing.email.md` → `marketing.email`).
-- **Kind** is the first dotted segment of the filename (`principle.trust.md` →
-  kind `principle`, slug `trust`). A bare name (`voice.md`) has no kind and is
-  uncategorized — allowed.
-- `description` is how an agent selects a node (like a tool's name +
-  description). It is what `gather` puts in the menu.
+- **Identity** is the filename minus `.md`.
+- **Kind** is the first dotted segment of the filename.
+- `description` is the retrieval payload shown by `ghost gather`.
+- `materials` is optional and accepts repo-relative paths/globs plus absolute
+  HTTPS URLs. It is a locator list, not guidance or metadata.
 
-Moving or renaming a node changes its id.
+## Haunts
 
-## Glossary
-
-`glossary.md` declares the category vocabulary and each category's meaning — its
-normative weight, so an agent knows how to read a node of that kind.
+A haunt is an optional capability attached to the fingerprint. Each haunt is a
+directory under `.ghost/haunts/<id>/`, anchored by a thin manifest:
 
 ```yaml
----
-categories:
-  - name: principle    # a durable stance, true across media unless narrowed
-  - name: condition    # a situational truth, fires when its situation holds
-  - name: exemplar     # illustrative, not normative on its own
----
+# .ghost/haunts/checks/haunt.yml
+schema: ghost.haunt/v1
+id: checks
 ```
 
-The frontmatter `categories` list is the machine-readable set of names; a `#`
-heading section per category gives its prose meaning. Ghost ships no fixed
-vocabulary — the author chooses the kinds. `ghost validate` warns when a node's
-kind prefix is not a declared category and suggests the closest one.
+Install one with `ghost haunt add <id>`; list with `ghost haunt list`. Haunts
+are feed-back only: nothing inside `haunts/` is ever gathered or pulled.
 
-## Altitude and conditions
+## Checks (the first haunt)
 
-A truth is stated at the altitude it is actually true. A universal truth is
-stated plainly. A narrower truth names its **condition** in the prose — the
-*situation* it applies in ("when a surface must show many items at once, carry
-hierarchy with weight, not color"), never a destination or filing bucket ("for
-dashboards:"). The model reads the condition and decides when the truth applies;
-that interpretation is the agent's job, not the filename's.
+Checks live under `.ghost/haunts/checks/*.md` and are not nodes:
+
+```markdown
+---
+name: logo-clearspace-holds
+description: Logo usage preserves clearspace and lockup integrity.
+severity: medium
+references:
+  - asset.logo
+---
+
+Grade whether the change preserves the logo guidance in `asset.logo`.
+```
+
+`references` are node ids with optional heading anchors (`asset.logo > Glyph`).
+`ghost validate` warns when a reference does not resolve. `ghost review` uses
+checks to assemble an advisory packet for a diff; the host agent judges findings.
+Without the checks haunt installed, `ghost review` exits with a hint to run
+`ghost haunt add checks`.
 
 ## Manifest
 
@@ -83,11 +84,11 @@ schema: ghost.fingerprint-package/v1
 id: acme-brand
 ```
 
-The manifest anchors the package: a schema version and a slug id.
+The manifest anchors the package with schema version and slug id.
 
-## Gather
+## Gather / Pull / Review
 
-`ghost gather` emits the **menu**: every node's id, kind, and description. It does
-no selection — the agent reads the ask against the menu and pulls the truths it
-judges relevant. There is no slice and no inheritance between nodes. Selection
-happens just-in-time, against the actual task.
+- `ghost gather` emits the node menu only. Checks are invisible.
+- `ghost pull` emits selected node bodies and their materials.
+- `ghost review` matches diff files to local node materials, offers relevant
+  checks, and emits a packet for the agent.

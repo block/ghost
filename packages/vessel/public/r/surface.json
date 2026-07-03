@@ -1,0 +1,47 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "surface",
+  "dependencies": ["@radix-ui/react-slot", "class-variance-authority"],
+  "registryDependencies": ["utils"],
+  "files": [
+    {
+      "path": "src/components/ui/surface.tsx",
+      "content": "import { Slot } from \"@radix-ui/react-slot\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport type * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst surfaceVariants = cva(\"\", {\n  variants: {\n    role: {\n      default: \"bg-background text-foreground\",\n      card: \"bg-card text-card-foreground\",\n      popover: \"bg-popover text-popover-foreground\",\n      muted: \"bg-muted text-foreground\",\n      accent: \"bg-accent text-accent-foreground\",\n      dark: \"bg-surface-dark text-surface-dark-text\",\n    },\n    padding: {\n      none: \"p-0\",\n      xs: \"p-2\",\n      sm: \"p-3\",\n      md: \"p-4\",\n      lg: \"p-6\",\n    },\n    radius: {\n      none: \"rounded-none\",\n      sm: \"rounded-sm\",\n      md: \"rounded-md\",\n      lg: \"rounded-lg\",\n      card: \"rounded-card\",\n      pill: \"rounded-pill\",\n    },\n    border: {\n      none: \"border-0\",\n      default: \"border border-border\",\n      input: \"border border-input\",\n    },\n    elevation: {\n      none: \"shadow-none\",\n      card: \"shadow-card\",\n      popover: \"shadow-popover\",\n      modal: \"shadow-modal\",\n    },\n  },\n  defaultVariants: {\n    role: \"default\",\n    padding: \"none\",\n    radius: \"md\",\n    border: \"none\",\n    elevation: \"none\",\n  },\n});\n\nfunction Surface({\n  className,\n  role,\n  padding,\n  radius,\n  border,\n  elevation,\n  asChild = false,\n  ...props\n}: React.ComponentProps<\"div\"> &\n  VariantProps<typeof surfaceVariants> & {\n    asChild?: boolean;\n  }) {\n  const Comp = asChild ? Slot : \"div\";\n\n  return (\n    <Comp\n      data-slot=\"surface\"\n      data-role={role}\n      className={cn(\n        surfaceVariants({ role, padding, radius, border, elevation }),\n        className,\n      )}\n      {...props}\n    />\n  );\n}\n\nexport { Surface, surfaceVariants };\n",
+      "type": "registry:ui",
+      "target": "components/ui/surface.tsx"
+    }
+  ],
+  "meta": {
+    "expression_dimensions": ["surfaces", "palette", "spacing"],
+    "agent_decision": {
+      "intent": "Typed semantic surface primitive for choosing role, padding, radius, border, and elevation without raw class strings.",
+      "when_to_use": [
+        "Use for custom contained surfaces when Card, Popover, or Dialog would be too specific."
+      ],
+      "when_not_to_use": [
+        "Do not use to restyle an existing semantic component.",
+        "Do not use dark role as generic decoration; reserve it for technical surfaces."
+      ],
+      "safe_variants": ["role", "padding", "radius", "border", "elevation"],
+      "common_misuses": [
+        "Combining raw background classes with role props.",
+        "Adding arbitrary shadows instead of elevation.",
+        "Using Surface for every div instead of meaningful component anatomy."
+      ],
+      "token_roles": [
+        "background",
+        "foreground",
+        "card",
+        "popover",
+        "muted",
+        "accent",
+        "surface-dark",
+        "border",
+        "shadow-card",
+        "shadow-popover"
+      ]
+    }
+  },
+  "categories": ["layout", "display"],
+  "type": "registry:ui"
+}
