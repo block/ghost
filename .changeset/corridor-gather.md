@@ -10,5 +10,5 @@ from any spine node's `relates` (so a broad rule authored once high in the tree 
 e.g. `relates: { to: arcade }` on `features/` — reaches every descendant), and a
 set of **spokes**: pointer entries (id + description) for the surface's own
 descendants and any edge hub's subtree, which the agent pulls on demand. The
-`GraphSlice` JSON gains a `spokes` array; graph nodes carry their file `folder`.
+`CatalogSlice` JSON gains a `spokes` array; catalog nodes carry their file `folder`.
 Grounding for `checks`/`review` remains the full-body spine + edges.

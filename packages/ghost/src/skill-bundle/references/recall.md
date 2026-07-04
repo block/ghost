@@ -5,6 +5,8 @@ description: Gather the applicable Ghost brand truths for a task.
 
 # Recipe: Recall Ghost Fingerprint
 
+Wild posture is opt-in, never implied. Default `ghost gather` excludes kinds whose glossary entry declares `posture: wild`; use `--wild` only when the brief names explicit open territory where conformance is suspended.
+
 1. Run `ghost gather <ask>` to emit the menu — every node's id, kind, and
    description — for the actual task at hand.
 2. Read the ask against the menu and match it to one or more nodes by their
@@ -20,8 +22,8 @@ description: Gather the applicable Ghost brand truths for a task.
    tradeoff. An author's glossary overrides all of this. Always include `index`
    in your pull unless you have already read it this session — it carries the
    fingerprint's non-negotiables and reading posture. Prefer `pull` over reading
-   the files directly: it also appends the selection to the local
-   `.ghost/.events` tape, so the fingerprint's author can see what was exposed,
+   the files directly: it also appends the selection to
+   the `.ghost/.events` events tape, so the fingerprint's author can see what was exposed,
    reached for, missed, or ignored with `ghost pulse`.
 
 ## Steering read order

@@ -82,8 +82,8 @@ The fingerprint is a **flat set of prose nodes** — no hierarchy, no inheritanc
 no edges. A node's identity is its file path with `.md` dropped
 (`marketing.email.md` is the node `marketing.email`). Its **kind** is the
 filename's first dotted segment (`principle.trust.md` → kind `principle`), and
-must be a category declared in `glossary.md`; a bare name (`voice.md`) is
-uncategorized. Folders are a human-browsing convenience only.
+must be a kind declared in `glossary.md`; a bare name (`voice.md`) has
+no kind. Folders are a human-browsing convenience only.
 
 Reserved at the package root are `manifest.yml`, `glossary.md`, and the
 `haunts/` directory; every other `*.md` is a node. Moving or renaming a node
@@ -103,8 +103,8 @@ prose; `materials` only says where the material is. Repo-relative locators also
 power `ghost review`: a diff that touches a matched path surfaces the node and
 its checks — see [Checks And Review](/docs/checks-and-review).
 
-The **glossary** (`glossary.md`) declares the category vocabulary and what each
-category means — its normative weight, so an agent knows how to read a node of
+The **glossary** (`glossary.md`) declares the kind vocabulary and what each
+kind means — its normative weight, so an agent knows how to read a node of
 that kind. Kinds are the author's choice; Ghost ships no fixed vocabulary.
 
 </DocSection>

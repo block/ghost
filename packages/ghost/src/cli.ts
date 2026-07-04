@@ -1,8 +1,6 @@
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { cac } from "cac";
 import { formatGhostHelp } from "./commands/command-discovery.js";
+import { registerExportCommand } from "./commands/export-command.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
 import { registerHauntCommand } from "./commands/haunt-command.js";
@@ -11,6 +9,7 @@ import { registerPullCommand } from "./commands/pull-command.js";
 import { registerPulseCommand } from "./commands/pulse-command.js";
 import { registerReviewCommand } from "./commands/review-command.js";
 import { registerSkillCommand } from "./commands/skill-command.js";
+import { readPackageVersion } from "./package-version.js";
 
 export {
   buildCliManifest,
@@ -25,6 +24,7 @@ export function buildCli(): ReturnType<typeof cac> {
   registerPullCommand(cli);
   registerPulseCommand(cli);
   registerReviewCommand(cli);
+  registerExportCommand(cli);
   registerHauntCommand(cli);
   registerManifestCommand(cli);
   registerSkillCommand(cli);
@@ -33,12 +33,4 @@ export function buildCli(): ReturnType<typeof cac> {
   cli.version(readPackageVersion());
 
   return cli;
-}
-
-function readPackageVersion(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  const pkg = JSON.parse(
-    readFileSync(resolve(here, "../package.json"), "utf8"),
-  );
-  return pkg.version as string;
 }

@@ -1,8 +1,8 @@
 /**
  * A node in the fingerprint catalog — pure prose plus its filename-derived
  * identity. The body is the design expression; there are no structured content
- * fields. Kind comes from the filename prefix; there is no traversal, no
- * containment graph — the catalog is a flat map the agent selects from.
+ * fields. Kind comes from the filename prefix; there is no traversal or
+ * containment model — the catalog is a flat map the agent selects from.
  */
 export interface GhostCatalogNode {
   id: string;
@@ -14,6 +14,8 @@ export interface GhostCatalogNode {
   description?: string;
   /** Optional material locators carried by the authored node. */
   materials?: string[];
+  /** True when the node's declared kind has `posture: wild` in the glossary. */
+  wild?: true;
   body: string;
 }
 

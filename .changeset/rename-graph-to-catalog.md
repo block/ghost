@@ -2,4 +2,4 @@
 "@anarchitecture/ghost-fingerprint": minor
 ---
 
-Rename the internal graph model to "catalog" to reflect the flat node set: public exports `GhostGraph`→`GhostCatalog`, `GhostGraphNode`→`GhostCatalogNode`, `buildGraphMenu`→`buildCatalogMenu`, `GraphMenuEntry`→`CatalogMenuEntry`, `assembleGraph`→`assembleCatalog`, and the loaded package's `graph` field is now `catalog`.
+Standardize the internal collection vocabulary on "catalog" to reflect the flat node set: public exports are `GhostCatalog`, `GhostCatalogNode`, `buildCatalogMenu`, `CatalogMenuEntry`, and `assembleCatalog`, and the loaded package exposes a `catalog` field.

@@ -4,6 +4,7 @@ import {
   assembleCatalog,
   type GhostFingerprintPackageManifest,
   GhostFingerprintPackageManifestSchema,
+  parseGlossary,
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
@@ -11,9 +12,9 @@ import type {
   FingerprintPackagePaths,
   LoadedFingerprintPackage,
 } from "./fingerprint-package.js";
-import { loadHauntTree } from "./haunt-tree.js";
+import { loadHauntFiles } from "./haunt-files.js";
 import type { LintIssue } from "./lint.js";
-import { loadNodeTree } from "./node-tree.js";
+import { loadNodeFiles } from "./node-files.js";
 
 export async function loadFingerprintPackage(
   paths: FingerprintPackagePaths,
@@ -32,11 +33,14 @@ export async function loadFingerprintPackage(
   }
   const manifest = parseManifest(manifestRaw, "manifest.yml");
 
-  // The catalog is flat and valid by construction — no edges to resolve, so no
-  // graph-level lint. Per-node schema failures are collected as `invalid`.
-  const { nodes: placedNodes, invalid } = await loadNodeTree(paths.packageDir);
-  const haunts = await loadHauntTree(paths.packageDir);
-  const catalog = assembleCatalog({ placedNodes });
+  // The catalog is flat and valid by construction — no edges to resolve.
+  // Per-node schema failures are collected as `invalid`.
+  const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
+  const haunts = await loadHauntFiles(paths.packageDir);
+  const catalog = assembleCatalog({
+    placedNodes,
+    wildKinds: await readWildGlossaryKinds(paths.glossary),
+  });
 
   return {
     manifest,
@@ -70,6 +74,22 @@ export function lintFingerprintPackageManifest(
     );
     return;
   }
+}
+
+async function readWildGlossaryKinds(glossaryPath: string): Promise<string[]> {
+  let raw: string;
+  try {
+    raw = await readFile(glossaryPath, "utf-8");
+  } catch (err) {
+    if (isMissingPathError(err)) return [];
+    throw err;
+  }
+
+  const result = parseGlossary(raw);
+  if (result.glossary === null) return [];
+  return result.glossary.kinds
+    .filter((kind) => kind.posture === "wild")
+    .map((kind) => kind.name);
 }
 
 function parseManifest(

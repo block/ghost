@@ -4,20 +4,23 @@ import {
   lintGhostCheck,
   lintGhostNode,
 } from "#ghost-core";
+import { GHOST_MATERIALS_DIR } from "./constants.js";
 import type { LintReport } from "./lint.js";
 
 export type DetectedFileKind =
   | "fingerprint-manifest"
   | "check"
+  | "material"
   | "node"
   | "unsupported";
 
 /**
  * Decide whether a file is a bundle artifact. The manifest routes to its
- * artifact linter; markdown under a `checks/` directory (including the checks
- * haunt at `haunts/checks/`) is a check; any other markdown is a node (its path
- * is its id — containment is the directory tree). Unknown files remain
- * unsupported instead of being guessed at.
+ * artifact linter; files under a root `materials/` directory are material
+ * files; markdown under a `checks/` directory (including the checks haunt
+ * at `haunts/checks/`) is a check; any other markdown is a node (its path is
+ * its id). Unknown files remain unsupported
+ * instead of being guessed at.
  */
 export function detectFileKind(path: string, raw: string): DetectedFileKind {
   const lowerPath = path.toLowerCase();
@@ -28,14 +31,16 @@ export function detectFileKind(path: string, raw: string): DetectedFileKind {
   if (filename === "manifest.yaml") {
     return "fingerprint-manifest";
   }
+  if (new RegExp(`(^|[\\\\/])${GHOST_MATERIALS_DIR}[\\\\/]`).test(lowerPath)) {
+    return "material";
+  }
   // A markdown check lives under a `checks/` directory (e.g. the checks haunt
   // at `haunts/checks/`). Detected by location so the established agent-check
   // format (no `schema:` field) is recognized.
   if (filename.endsWith(".md") && /(^|[\\/])checks[\\/]/.test(lowerPath)) {
     return "check";
   }
-  // Any other markdown file is a node (ghost.node/v1). Its id is its path; the
-  // containing directory is its parent.
+  // Any other markdown file is a node (ghost.node/v1). Its id is its path.
   if (filename.endsWith(".md")) {
     return "node";
   }
@@ -53,9 +58,15 @@ export function lintDetectedFileKind(
     ? lintFingerprintManifestFile(raw)
     : kind === "check"
       ? lintGhostCheck(raw)
-      : kind === "node"
-        ? lintGhostNode(raw)
-        : lintUnsupportedFile();
+      : kind === "material"
+        ? emptyLintReport()
+        : kind === "node"
+          ? lintGhostNode(raw)
+          : lintUnsupportedFile();
+}
+
+function emptyLintReport(): LintReport {
+  return { issues: [], errors: 0, warnings: 0, info: 0 };
 }
 
 function lintFingerprintManifestFile(raw: string): LintReport {

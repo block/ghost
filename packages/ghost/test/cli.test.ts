@@ -2,6 +2,7 @@ import { mkdir, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
+import { gunzipSync } from "node:zlib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parse as parseYaml } from "yaml";
 import { buildCli } from "../src/cli.js";
@@ -131,13 +132,14 @@ describe("ghost CLI", () => {
       "pull",
       "pulse",
       "review",
+      "export",
       "haunt add|remove|list",
       "skill install",
     ]) {
       expect(result.stdout).toContain(command);
     }
     expect(result.stdout).toContain("ghost --help --all");
-    // Removed in the graph collapse.
+    // Removed in the flat-corpus cleanup.
     expect(result.stdout).not.toContain("migrate");
     expect(result.stdout).not.toContain("relay");
   });
@@ -156,13 +158,14 @@ describe("ghost CLI", () => {
       "pull <...ids>",
       "pulse",
       "review",
+      "export",
       "haunt <action> [id]",
       "manifest",
       "skill <action>",
     ]) {
       expect(result.stdout).toContain(command);
     }
-    // Removed in the graph collapse.
+    // Removed in the flat-corpus cleanup.
     expect(result.stdout).not.toContain("migrate");
   });
 
@@ -181,6 +184,7 @@ describe("ghost CLI", () => {
     expect(names).toContain("gather");
     expect(names).toContain("pulse");
     expect(names).toContain("review");
+    expect(names).toContain("export");
     expect(names).toContain("haunt");
     expect(names).toContain("manifest");
 
@@ -607,6 +611,142 @@ describe("ghost CLI", () => {
     expect(validate.stdout).toContain("0 error");
   });
 
+  it("gather excludes wild nodes by default and includes marked wild nodes with --wild", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "glossary.md"),
+      `---
+kinds:
+  - name: principle
+  - name: provocation
+    posture: wild
+---
+
+# principle
+
+Durable stance.
+
+# provocation
+
+a deliberate provocation past the fingerprint — surfaced only on request
+`,
+    );
+    await writeFile(
+      join(dir, ".ghost", "provocation.noise.md"),
+      "---\ndescription: Break the usual rhythm.\n---\n\nInterrupt the grid.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "principle.trust.md"),
+      "---\ndescription: Trust.\n---\n\nReduce felt risk.\n",
+    );
+
+    const defaultJson = await runCli(
+      ["gather", "hero", "--format", "json"],
+      dir,
+    );
+    expect(defaultJson.code).toBe(0);
+    const defaultPayload = JSON.parse(defaultJson.stdout);
+    expect(
+      defaultPayload.nodes.map((node: { id: string }) => node.id),
+    ).not.toContain("provocation.noise");
+    expect(defaultPayload.wildAvailable).toBe(1);
+
+    const defaultMarkdown = await runCli(["gather", "hero"], dir);
+    expect(defaultMarkdown.stdout).not.toContain("`provocation.noise`");
+    expect(defaultMarkdown.stdout).toContain(
+      "1 wild node available via `--wild`",
+    );
+
+    const wildJson = await runCli(
+      ["gather", "hero", "--wild", "--format", "json"],
+      dir,
+    );
+    expect(wildJson.code).toBe(0);
+    const wildPayload = JSON.parse(wildJson.stdout);
+    const wildNode = wildPayload.nodes.find(
+      (node: { id: string }) => node.id === "provocation.noise",
+    );
+    expect(wildNode).toMatchObject({
+      kind: "provocation",
+      wild: true,
+    });
+    expect(wildPayload.wildAvailable).toBeUndefined();
+
+    const wildMarkdown = await runCli(["gather", "hero", "--wild"], dir);
+    expect(wildMarkdown.stdout).toContain(
+      "`provocation.noise` _(provocation)_ _(wild)",
+    );
+    expect(wildMarkdown.stdout).toContain(
+      "Wild nodes are marked `(wild)`: they push past the fingerprint",
+    );
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events[0]).toMatchObject({
+      event: "gather",
+      wild: false,
+      wildIds: [],
+    });
+    expect(events[2]).toMatchObject({
+      event: "gather",
+      wild: true,
+      wildIds: ["provocation.noise"],
+    });
+  });
+
+  it("pull works for wild nodes and pulse reports wild usage", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "glossary.md"),
+      `---
+kinds:
+  - name: principle
+  - name: provocation
+    posture: wild
+---
+
+# principle
+
+Durable stance.
+
+# provocation
+
+a deliberate provocation past the fingerprint — surfaced only on request
+`,
+    );
+    await writeFile(
+      join(dir, ".ghost", "provocation.noise.md"),
+      "---\ndescription: Break the usual rhythm.\n---\n\nInterrupt the grid.\n",
+    );
+
+    await runCli(["gather", "hero", "--wild"], dir);
+    const pull = await runCli(["pull", "provocation.noise"], dir);
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("Interrupt the grid.");
+    expect(pull.stdout).toContain("_(wild)_");
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events.at(-1)).toMatchObject({
+      event: "pull",
+      ids: ["provocation.noise"],
+      wildIds: ["provocation.noise"],
+    });
+
+    const pulse = await runCli(["pulse", "--format", "json"], dir);
+    expect(pulse.code).toBe(0);
+    expect(JSON.parse(pulse.stdout).wild).toEqual({ exposures: 1, pulls: 1 });
+
+    const md = await runCli(["pulse"], dir);
+    expect(md.stdout).toContain("## Wild usage");
+    expect(md.stdout).toContain("- Wild exposures: 1");
+    expect(md.stdout).toContain("- Wild pulls: 1");
+  });
+
   it("gather and pull append structured local events", async () => {
     await runCli(["init"], dir);
     await writeFile(
@@ -654,8 +794,8 @@ describe("ghost CLI", () => {
     });
     expect(payload.nodes[0].body).toContain("reduce felt risk");
 
-    // --no-history skips the event tape.
-    await runCli(["pull", "voice", "--no-history"], dir);
+    // --no-events skips the events tape.
+    await runCli(["pull", "voice", "--no-events"], dir);
     const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
       .trim()
       .split("\n")
@@ -688,6 +828,154 @@ describe("ghost CLI", () => {
     ).resolves.toContain(".events");
     const validate = await runCli(["validate"], dir);
     expect(validate.code).toBe(0);
+  });
+
+  it("pull inlines material files and elides binary, oversize, and URL locators", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await mkdir(join(dir, "brand"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root { --brand: #111; }\n",
+    );
+    await writeFile(join(dir, "brand", "voice.txt"), "Use plain words.\n");
+    await writeFile(join(dir, "brand", "mark.bin"), Buffer.from([0, 1, 2]));
+    await writeFile(join(dir, "brand", "large.txt"), "x".repeat(8 * 1024 + 1));
+    await writeFile(
+      join(dir, ".ghost", "asset.materials.md"),
+      "---\ndescription: Materials.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - brand/mark.bin\n  - brand/large.txt\n  - https://example.com/brand-kit\n---\n\nRead these materials.\n",
+    );
+
+    const md = await runCli(["pull", "asset.materials"], dir);
+
+    expect(md.code).toBe(0);
+    expect(md.stdout).toContain("Read these materials.");
+    expect(md.stdout).toContain("```.ghost/materials/tokens.css");
+    expect(md.stdout).toContain(":root { --brand: #111; }");
+    expect(md.stdout).toContain("```brand/voice.txt");
+    expect(md.stdout).toContain("Use plain words.");
+    expect(md.stdout).toContain("- brand/mark.bin — binary file");
+    expect(md.stdout).toContain(
+      "- brand/large.txt — exceeds 8 KB inline limit",
+    );
+    expect(md.stdout).toContain(
+      "- https://example.com/brand-kit — HTTPS URL; fetch it only if the task requires it",
+    );
+
+    const events = (await readFile(join(dir, ".ghost", ".events"), "utf-8"))
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line));
+    expect(events.at(-1)).toMatchObject({
+      event: "pull",
+      ids: ["asset.materials"],
+      inlinedMaterials: 2,
+      omittedMaterials: 3,
+    });
+  });
+
+  it("pull supports locator-only output with --no-materials", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
+    );
+
+    const md = await runCli(["pull", "asset.tokens", "--no-materials"], dir);
+
+    expect(md.code).toBe(0);
+    expect(md.stdout).toContain("Materials:");
+    expect(md.stdout).toContain("- materials/tokens.css");
+    expect(md.stdout).not.toContain("```.ghost/materials/tokens.css");
+
+    const json = await runCli(
+      ["pull", "asset.tokens", "--no-materials", "--format", "json"],
+      dir,
+    );
+    expect(json.code).toBe(0);
+    expect(JSON.parse(json.stdout).nodes[0].materials).toEqual([
+      "materials/tokens.css",
+    ]);
+  });
+
+  it("pull emits transported material objects in JSON", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await mkdir(join(dir, "brand"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+    );
+
+    const json = await runCli(
+      ["pull", "asset.tokens", "--format", "json"],
+      dir,
+    );
+
+    expect(json.code).toBe(0);
+    const node = JSON.parse(json.stdout).nodes[0];
+    expect(node.materials).toEqual([
+      {
+        locator: "materials/tokens.css",
+        tier: "bundled",
+        inlined: ":root{}\n",
+      },
+      {
+        locator: "brand/voice.txt",
+        tier: "referenced",
+        inlined: "Plain.\n",
+      },
+      {
+        locator: "https://example.com/tokens",
+        tier: "url",
+        omitted: true,
+        reason: "HTTPS URL; fetch it only if the task requires it",
+      },
+    ]);
+  });
+
+  it("pull expands globs with a cap and notes elision beyond it", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, "brand", "samples"), { recursive: true });
+    for (let i = 0; i < 13; i++) {
+      await writeFile(
+        join(dir, "brand", "samples", `${String(i).padStart(2, "0")}.txt`),
+        `sample ${i}\n`,
+      );
+    }
+    await writeFile(
+      join(dir, ".ghost", "asset.samples.md"),
+      "---\ndescription: Samples.\nmaterials:\n  - brand/samples/*.txt\n---\n\nSample prose.\n",
+    );
+
+    const json = await runCli(
+      ["pull", "asset.samples", "--format", "json"],
+      dir,
+    );
+
+    expect(json.code).toBe(0);
+    const materials = JSON.parse(json.stdout).nodes[0].materials;
+    expect(
+      materials.filter((m: { inlined?: string }) => m.inlined).length,
+    ).toBe(12);
+    expect(materials).toContainEqual(
+      expect.objectContaining({
+        locator: "brand/samples/*.txt",
+        tier: "referenced",
+        omitted: true,
+        reason: "glob matched more than 12 files; omitted the rest",
+      }),
+    );
   });
 
   it("pull partially succeeds with closest-id hints for unknown nodes", async () => {
@@ -752,12 +1040,13 @@ describe("ghost CLI", () => {
       pulls: 1,
       abandonedGathers: 1,
       pullsPerGather: 0.5,
+      wild: { exposures: 0, pulls: 0 },
     });
     const trust = report.nodes.find(
       (node: { id: string }) => node.id === "principle.trust",
     );
     expect(trust).toMatchObject({
-      appearances: 2,
+      exposures: 2,
       pulls: 1,
       hitRate: 0.5,
     });
@@ -771,16 +1060,16 @@ describe("ghost CLI", () => {
       (kind: { kind: string }) => kind.kind === "principle",
     );
     expect(principleKind).toMatchObject({
-      appearances: 2,
+      exposures: 2,
       pulls: 1,
       hitRate: 0.5,
       coldNodes: [],
     });
-    const uncategorizedKind = report.kinds.find(
-      (kind: { kind: string }) => kind.kind === "(uncategorized)",
+    const noKind = report.kinds.find(
+      (kind: { kind: string }) => kind.kind === "(no kind)",
     );
-    expect(uncategorizedKind).toMatchObject({
-      appearances: 4,
+    expect(noKind).toMatchObject({
+      exposures: 4,
       pulls: 0,
       hitRate: 0,
       coldNodes: ["index", "voice"],
@@ -789,6 +1078,7 @@ describe("ghost CLI", () => {
     const md = await runCli(["pulse"], dir);
     expect(md.stdout).toContain("# Ghost Pulse");
     expect(md.stdout).toContain("## Kind hit rates");
+    expect(md.stdout).toContain("## Wild usage");
     expect(md.stdout).toContain("- Abandoned gathers: 1");
   });
 
@@ -907,6 +1197,7 @@ describe("ghost CLI", () => {
       "references/inventory.md",
       "references/brief.md",
       "references/recall.md",
+      "references/wild.md",
       "references/self-check.md",
       "references/schema.md",
       "references/authoring-scenarios.md",
@@ -1020,7 +1311,7 @@ describe("ghost CLI", () => {
     const byId = Object.fromEntries(
       payload.nodes.map((n: { id: string; kind?: string }) => [n.id, n.kind]),
     );
-    // Present as a key for every node (undefined when uncategorized).
+    // Present as a key for every node (undefined when no kind is present).
     expect(Object.keys(byId)).toContain("email/marketing/index");
   });
 
@@ -1062,6 +1353,152 @@ describe("ghost CLI", () => {
       id: "logo-clearspace",
       offered: "matched",
     });
+  });
+
+  it("export writes a portable tarball with export metadata and private events excluded", async () => {
+    await runCli(["init", "--with", "checks"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await writeFile(join(dir, ".ghost", ".events"), '{"event":"gather"}\n');
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+    );
+
+    const out = join(dir, "brand.tgz");
+    const result = await runCli(["export", "--out", out], dir);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("Locator audit");
+    expect(result.stdout).toContain("materials/tokens.css");
+    expect(result.stdout).toContain("HTTPS URL");
+    const archive = parseTarEntries(gunzipSync(await readFile(out)));
+    expect(archive.has("asset.tokens.md")).toBe(true);
+    expect(archive.has("export.yml")).toBe(true);
+    expect(archive.has("glossary.md")).toBe(true);
+    expect(archive.has("haunts/checks/haunt.yml")).toBe(true);
+    expect(archive.has("manifest.yml")).toBe(true);
+    expect(archive.has("materials/tokens.css")).toBe(true);
+    expect(archive.has(".events")).toBe(false);
+    expect(
+      parseYaml(archive.get("export.yml")?.toString("utf-8") ?? ""),
+    ).toMatchObject({
+      schema: "ghost.export/v1",
+      id: "local",
+      cli: expect.any(String),
+      exported: expect.any(String),
+    });
+  });
+
+  it("export --no-haunts excludes haunts from the archive", async () => {
+    await runCli(["init", "--with", "checks"], dir);
+
+    const out = join(dir, "brand-no-haunts.tgz");
+    const result = await runCli(["export", "--out", out, "--no-haunts"], dir);
+
+    expect(result.code).toBe(0);
+    const archive = parseTarEntries(gunzipSync(await readFile(out)));
+    expect([...archive.keys()].some((path) => path.startsWith("haunts/"))).toBe(
+      false,
+    );
+  });
+
+  it("export audits bundled, URL, and referenced local material locators", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await mkdir(join(dir, "brand"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(join(dir, "brand", "voice.txt"), "Plain.\n");
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n  - brand/voice.txt\n  - https://example.com/tokens\n---\n\nToken prose.\n",
+    );
+
+    const result = await runCli(["export", "--format", "json"], dir);
+
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.stdout);
+    expect(payload).toMatchObject({
+      kind: "export",
+      id: "local",
+      archive: expect.stringContaining("local-fingerprint.tgz"),
+    });
+    expect(payload.audit.travels).toEqual([
+      {
+        nodeId: "asset.tokens",
+        locator: "materials/tokens.css",
+        tier: "bundled",
+      },
+      {
+        nodeId: "asset.tokens",
+        locator: "https://example.com/tokens",
+        tier: "url",
+      },
+    ]);
+    expect(payload.audit.stranded).toEqual([
+      { nodeId: "asset.tokens", locator: "brand/voice.txt" },
+    ]);
+  });
+
+  it("export --strict exits 2 when referenced local material locators are stranded", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "asset.voice.md"),
+      "---\ndescription: Voice.\nmaterials:\n  - brand/voice.txt\n---\n\nVoice prose.\n",
+    );
+
+    const result = await runCli(["export", "--strict"], dir);
+
+    expect(result.code).toBe(2);
+    expect(result.stdout).toContain("brand/voice.txt");
+    expect(result.stdout).toContain("Bundle it into `.ghost/materials/`");
+  });
+
+  it("commands work against an unpacked export directory outside a git repo", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
+    await writeFile(
+      join(dir, ".ghost", "materials", "tokens.css"),
+      ":root{}\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - materials/tokens.css\n---\n\nToken prose.\n",
+    );
+    const out = join(dir, "portable.tgz");
+    await runCli(["export", "--out", out], dir);
+
+    const receiver = join(dir, "receiver");
+    const unpacked = join(receiver, "fingerprint");
+    await mkdir(unpacked, { recursive: true });
+    const archive = parseTarEntries(gunzipSync(await readFile(out)));
+    await writeEntries(unpacked, archive);
+
+    const validate = await runCli(
+      ["validate", "--package", unpacked],
+      receiver,
+    );
+    expect(validate.code).toBe(0);
+    const gather = await runCli(
+      ["gather", "--package", unpacked, "--format", "json"],
+      receiver,
+    );
+    expect(gather.code).toBe(0);
+    expect(JSON.parse(gather.stdout).nodes).toContainEqual(
+      expect.objectContaining({ id: "asset.tokens" }),
+    );
+    const pull = await runCli(
+      ["pull", "asset.tokens", "--package", unpacked],
+      receiver,
+    );
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain(":root{}");
   });
 
   it("haunt add scaffolds the checks haunt and list reports it", async () => {
@@ -1113,6 +1550,40 @@ describe("ghost CLI", () => {
   });
 });
 
+function parseTarEntries(buffer: Buffer): Map<string, Buffer> {
+  const entries = new Map<string, Buffer>();
+  let offset = 0;
+  while (offset + 512 <= buffer.byteLength) {
+    const header = buffer.subarray(offset, offset + 512);
+    if (header.every((byte) => byte === 0)) break;
+    const name = readTarString(header, 0, 100);
+    const prefix = readTarString(header, 345, 155);
+    const sizeText = readTarString(header, 124, 12).replace(/\0/g, "").trim();
+    const size = Number.parseInt(sizeText || "0", 8);
+    const path = prefix ? `${prefix}/${name}` : name;
+    const dataStart = offset + 512;
+    entries.set(path, buffer.subarray(dataStart, dataStart + size));
+    offset = dataStart + Math.ceil(size / 512) * 512;
+  }
+  return entries;
+}
+
+function readTarString(buffer: Buffer, offset: number, length: number): string {
+  const slice = buffer.subarray(offset, offset + length);
+  const end = slice.indexOf(0);
+  return slice.subarray(0, end === -1 ? slice.length : end).toString("utf-8");
+}
+
+async function writeEntries(
+  root: string,
+  entries: Map<string, Buffer>,
+): Promise<void> {
+  for (const [path, data] of entries) {
+    await mkdir(join(root, path, ".."), { recursive: true });
+    await writeFile(join(root, path), data);
+  }
+}
+
 async function writeGatherPackage(dir: string): Promise<void> {
   const ghost = join(dir, ".ghost");
   await mkdir(join(ghost, "email", "marketing"), { recursive: true });
@@ -1121,7 +1592,7 @@ async function writeGatherPackage(dir: string): Promise<void> {
     join(ghost, "manifest.yml"),
     "schema: ghost.fingerprint-package/v1\nid: gather-demo\n",
   );
-  // Folders are a browsing convenience only; ids are paths minus .md.
+  // Directories are a browsing convenience only; ids are paths minus .md.
   await writeFile(
     join(ghost, "index.md"),
     "---\ndescription: Brand voice.\n---\n\nWarm and concise.\n",

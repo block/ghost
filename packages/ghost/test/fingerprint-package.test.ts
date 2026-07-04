@@ -7,6 +7,9 @@ import {
   loadFingerprintPackage,
   resolveFingerprintPackage,
 } from "../src/fingerprint.js";
+import { parseGlossary } from "../src/ghost-core/index.js";
+import { detectFileKind } from "../src/scan/file-kind.js";
+import { loadNodeFiles } from "../src/scan/node-files.js";
 
 describe("split fingerprint package", () => {
   let dir: string;
@@ -23,7 +26,7 @@ describe("split fingerprint package", () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it("loads a manifest-only package as an empty graph", async () => {
+  it("loads a manifest-only package as an empty catalog", async () => {
     await writeManifest(dir);
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
@@ -36,7 +39,7 @@ describe("split fingerprint package", () => {
     expect([...loaded.catalog.nodes.keys()]).toEqual([]);
   });
 
-  it("folds the directory tree of *.md nodes into the flat catalog", async () => {
+  it("loads *.md node files into the flat catalog", async () => {
     await writeManifest(dir);
     await mkdir(join(dir, "checkout"), { recursive: true });
     await writeFile(
@@ -58,14 +61,14 @@ describe("split fingerprint package", () => {
     await writeManifest(dir);
     await mkdir(join(dir, "features"), { recursive: true });
     // `relates` is a removed key — the node fails per-node lint and is skipped
-    // while folding, but must not vanish silently.
+    // while loading, but must not vanish silently.
     await writeFile(
       join(dir, "features", "index.md"),
       "---\ndescription: All feature UI.\nrelates:\n  - to: core\n---\n\nFeature prose.\n",
     );
 
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
-    // The malformed node is excluded from the graph but retained as invalid.
+    // The malformed node is excluded from the catalog but retained as invalid.
     expect(loaded.catalog.nodes.has("features")).toBe(false);
     expect(loaded.invalid).toEqual([
       {
@@ -81,6 +84,81 @@ describe("split fingerprint package", () => {
       rule: "node-invalid",
       path: "features/index.md",
     });
+  });
+
+  it("parses glossary kind posture and defaults to steady", () => {
+    const parsed = parseGlossary(`---
+kinds:
+  - name: principle
+  - name: provocation
+    posture: wild
+---
+
+# principle
+
+Floor.
+
+# provocation
+
+Provocation.
+`);
+
+    expect(parsed.glossary?.kinds).toEqual([
+      { name: "principle", posture: "steady", purpose: "Floor." },
+      { name: "provocation", posture: "wild", purpose: "Provocation." },
+    ]);
+    expect(parsed.glossary?.frontmatter.kinds).toEqual([
+      { name: "principle", posture: "steady" },
+      { name: "provocation", posture: "wild" },
+    ]);
+  });
+
+  it("rejects invalid glossary posture values during validation", async () => {
+    await writeManifest(dir);
+    const raw = `---
+kinds:
+  - name: provocation
+    posture: loud
+---
+
+# provocation
+
+Provocation.
+`;
+    await writeFile(join(dir, "glossary.md"), raw);
+
+    const parsed = parseGlossary(raw);
+    expect(parsed.glossary).toBeNull();
+    expect(parsed.errors[0]).toContain("Invalid option");
+
+    const report = await lintFingerprintPackage(dir);
+    expect(report.errors).toBe(1);
+    expect(report.issues[0]).toMatchObject({
+      severity: "error",
+      rule: "glossary-invalid",
+      path: "glossary.md",
+    });
+  });
+
+  it("marks nodes wild when their glossary kind declares wild posture", async () => {
+    await writeManifest(dir);
+    await writeGlossary(dir, [
+      "principle",
+      { name: "provocation", posture: "wild" },
+    ]);
+    await writeFile(
+      join(dir, "provocation.noise.md"),
+      "---\ndescription: Noise.\n---\n\nBreak the pattern.\n",
+    );
+    await writeFile(
+      join(dir, "principle.density.md"),
+      "---\ndescription: Density.\n---\n\nKeep density intentional.\n",
+    );
+
+    const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
+
+    expect(loaded.catalog.nodes.get("provocation.noise")?.wild).toBe(true);
+    expect(loaded.catalog.nodes.get("principle.density")?.wild).toBeUndefined();
   });
 
   it("does not warn when a node kind is declared in the glossary", async () => {
@@ -100,7 +178,7 @@ describe("split fingerprint package", () => {
     );
   });
 
-  it("does not warn for an uncategorized bare node name", async () => {
+  it("does not warn for an bare node name without a kind", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, ["principle"]);
     await writeFile(
@@ -167,6 +245,63 @@ describe("split fingerprint package", () => {
       "brand/logo*.svg",
       "https://example.com/logo",
     ]);
+  });
+
+  it("reserves materials/ — bundled materials are never nodes", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "materials"), { recursive: true });
+    await writeFile(
+      join(dir, "materials", "asset.logo.md"),
+      "---\ndescription: Bundled material.\n---\n\nNot a node.\n",
+    );
+
+    const loadedFiles = await loadNodeFiles(dir);
+
+    expect(loadedFiles.nodes).toEqual([]);
+    expect(loadedFiles.invalid).toEqual([]);
+  });
+
+  it("detects files under materials/ as material artifacts", () => {
+    expect(detectFileKind(join(dir, "materials", "logo.svg"), "<svg />")).toBe(
+      "material",
+    );
+    expect(
+      detectFileKind(join(dir, "nested", "materials", "token.css"), ":root{}"),
+    ).toBe("material");
+  });
+
+  it("warns on dead local material locators and orphaned bundled materials", async () => {
+    await writeManifest(dir);
+    await mkdir(join(dir, "materials"), { recursive: true });
+    await writeFile(join(dir, "materials", "claimed.txt"), "claimed\n");
+    await writeFile(join(dir, "materials", "orphan.txt"), "orphan\n");
+    await writeFile(
+      join(dir, "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - materials/claimed.txt\n  - missing/logo.svg\n  - https://example.com/logo.svg\n---\n\nLogo prose.\n",
+    );
+
+    const report = await lintFingerprintPackage(dir, dir);
+
+    expect(report.errors).toBe(0);
+    expect(report.warnings).toBe(2);
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          severity: "warning",
+          rule: "material-locator-dead",
+          path: "asset.logo.md.materials",
+          message: expect.stringContaining("missing/logo.svg"),
+        }),
+        expect.objectContaining({
+          severity: "warning",
+          rule: "material-orphaned",
+          path: "materials/orphan.txt",
+        }),
+      ]),
+    );
+    expect(report.issues).not.toContainEqual(
+      expect.objectContaining({ message: expect.stringContaining("https://") }),
+    );
   });
 
   it("rejects invalid material locators", async () => {
@@ -309,9 +444,24 @@ async function writeChecksHaunt(
   }
 }
 
-async function writeGlossary(dir: string, categories: string[]): Promise<void> {
+type TestGlossaryKind = string | { name: string; posture?: "steady" | "wild" };
+
+async function writeGlossary(
+  dir: string,
+  kinds: TestGlossaryKind[],
+): Promise<void> {
+  const normalized = kinds.map((kind) =>
+    typeof kind === "string" ? { name: kind } : kind,
+  );
   await writeFile(
     join(dir, "glossary.md"),
-    `---\ncategories:\n${categories.map((name) => `  - name: ${name}`).join("\n")}\n---\n\n${categories.map((name) => `# ${name}\n\n${name} purpose.`).join("\n\n")}\n`,
+    `---\nkinds:\n${normalized
+      .map(
+        (kind) =>
+          `  - name: ${kind.name}${kind.posture ? `\n    posture: ${kind.posture}` : ""}`,
+      )
+      .join(
+        "\n",
+      )}\n---\n\n${normalized.map((kind) => `# ${kind.name}\n\n${kind.name} purpose.`).join("\n\n")}\n`,
   );
 }

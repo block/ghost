@@ -3,11 +3,11 @@ import { validateMaterialLocator } from "../materials.js";
 
 /**
  * A node id is its path within the package, `.md` dropped (`marketing/email`).
- * The directory tree is the containment graph: the containing directory is the
- * parent, so the id *does* encode hierarchy by design. A segment is a permissive
- * lowercase slug (alphanumeric plus `.` `_` `-`); segments join with `/`. No
- * leading, trailing, or doubled slash. Ids are computed by the loader from the
- * file path, never authored in frontmatter.
+ * Directory nesting is only file organization; it does not create parents,
+ * ancestors, or semantic hierarchy. A segment is a permissive lowercase slug
+ * (alphanumeric plus `.` `_` `-`); segments join with `/`. No leading,
+ * trailing, or doubled slash. Ids are computed by the loader from the file
+ * path, never authored in frontmatter.
  */
 const NODE_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*(?:\/[a-z0-9][a-z0-9._-]*)*$/;
 
@@ -41,8 +41,8 @@ export const GhostNodeFrontmatterSchema = z
           }),
       )
       .optional(),
-    // `relates` (and all typed edges) were removed in the graph collapse. Reject
-    // it with a message that names the key so authors get a clear signal.
+    // `relates` (and all typed edges) were removed. Reject it with a message
+    // that names the key so authors get a clear signal.
     relates: z
       .never({ message: "`relates` is a removed key (edges no longer exist)" })
       .optional(),

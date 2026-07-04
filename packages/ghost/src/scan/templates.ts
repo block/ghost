@@ -3,7 +3,6 @@ import {
   GHOST_EVENTS_FILENAME,
   LEGACY_PULL_HISTORY_FILENAME,
 } from "./constants.js";
-
 /**
  * A single seed file an `init` template writes, relative to the package dir.
  */
@@ -12,7 +11,6 @@ export interface TemplateFile {
   relativePath: string;
   content: string;
 }
-
 /**
  * An `init` template: a pure description of the seed files a fresh node package
  * starts with. Templates are the extension seam — adding a `marketing` / `voice`
@@ -24,7 +22,6 @@ export interface GhostInitTemplate {
   description: string;
   files(): TemplateFile[];
 }
-
 function manifestFile(): TemplateFile {
   return {
     relativePath: "manifest.yml",
@@ -33,8 +30,8 @@ function manifestFile(): TemplateFile {
 }
 
 /**
- * Keep local observability tapes out of version control: they are disposable
- * per-machine scratch for authors iterating on the fingerprint, never canonical
+ * Keep events tapes out of version control: they are disposable
+ * per-machine signals for authors iterating on the fingerprint, never canonical
  * state.
  */
 function gitignoreFile(): TemplateFile {
@@ -46,7 +43,7 @@ function gitignoreFile(): TemplateFile {
 
 /**
  * The minimal starter: a manifest, a package-level glossary declaring the
- * starter category vocabulary, and a package-root `index.md` node. Additional
+ * starter kind vocabulary, and a package-root `index.md` node. Additional
  * truths are plain markdown nodes; optional material locators live on the node
  * that explains them. Haunts (e.g. checks) are opt-in via `ghost haunt add`.
  */
@@ -61,13 +58,14 @@ const MINIMAL_TEMPLATE: GhostInitTemplate = {
       {
         relativePath: "glossary.md",
         content: `---
-categories:
+kinds:
   - name: principle
   - name: condition
   - name: exemplar
   - name: anti-goal
   - name: asset
   - name: pattern
+#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -121,9 +119,9 @@ ask a human") that overrides the default proceed-provisionally behavior.
 \`---\` is its body; the frontmatter above is the retrieval description. Its
 privilege is pure convention: the recipes tell agents to pull it first.
 
-The glossary declares the category vocabulary. A node's kind comes from its
+The glossary declares the kind vocabulary. A node's kind comes from its
 filename prefix: \`principle.density.md\` has kind \`principle\` and slug
-\`density\`. A bare filename like \`voice.md\` is uncategorized, which is fine.
+\`density\`. A bare filename like \`voice.md\` has no kind, which is fine.
 When a truth is narrower, state the condition in the prose — the situation where
 it applies — never a filing destination.
 `,
@@ -154,13 +152,14 @@ const COMPOSITION_TEMPLATE: GhostInitTemplate = {
       {
         relativePath: "glossary.md",
         content: `---
-categories:
+kinds:
   - name: principle
   - name: condition
   - name: exemplar
   - name: anti-goal
   - name: asset
   - name: pattern
+#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle
@@ -315,7 +314,7 @@ const STEERING_TEMPLATE: GhostInitTemplate = {
       {
         relativePath: "glossary.md",
         content: `---
-categories:
+kinds:
   - name: principle
   - name: condition
   - name: pattern
@@ -324,6 +323,7 @@ categories:
   - name: asset
   - name: decision
   - name: concept
+#  - { name: provocation, posture: wild, purpose: a deliberate provocation past the fingerprint — surfaced only on request }
 ---
 
 # principle

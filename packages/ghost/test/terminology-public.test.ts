@@ -7,7 +7,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 // Genuinely shipped/public text only. `docs/` is intentionally excluded: it
 // holds the maintainer model doc (docs/purposes.md), which may discuss
-// historical vocabulary ("layers", "cascade") when defending the boundary.
+// historical vocabulary ("older structure terms", "cascade") when defending the boundary.
 // The guard still protects user-facing prose and emitted prompts.
 const PUBLIC_TEXT_ROOTS = [
   "README.md",
@@ -17,6 +17,7 @@ const PUBLIC_TEXT_ROOTS = [
 ] as const;
 
 const FORBIDDEN_TERMS = [
+  /\bgraph\b/i,
   /\bcascade\b/i,
   /\blayer\b/i,
   /\blayers\b/i,
@@ -27,7 +28,19 @@ const FORBIDDEN_TERMS = [
   /layer_dirs/,
   /layerDirs/,
   /sourceLayers/,
+  forbiddenDomainTerm(["categor", "ies"]),
+  forbiddenDomainTerm(["categor", "y"]),
+  forbiddenDomainTerm(["spec", "imen"], "s?"),
+  forbiddenDomainTerm(["polter", "geist"]),
+  forbiddenDomainTerm(["sea", "nce"]),
+  forbiddenDomainTerm(["s", "é", "ance"]),
+  forbiddenDomainTerm(["elid", "ed"]),
+  forbiddenDomainTerm(["appear", "ances"]),
 ] as const;
+
+function forbiddenDomainTerm(parts: string[], suffix = ""): RegExp {
+  return new RegExp(`\\b${parts.join("")}${suffix}\\b`, "i");
+}
 
 describe("public terminology", () => {
   it("keeps public prose and emitted prompts on selected-context vocabulary", async () => {

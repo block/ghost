@@ -2,4 +2,4 @@
 "@anarchitecture/ghost-fingerprint": minor
 ---
 
-Add `ghost pull <id> [<id>…]`: emit selected nodes' prose bodies and record selections in the local `.ghost/.events` tape for fingerprint tuning.
+Add `ghost pull <id> [<id>…]`: emit selected nodes' prose bodies and record selections in the `.ghost/.events` events tape for fingerprint tuning.

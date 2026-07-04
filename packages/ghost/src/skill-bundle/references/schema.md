@@ -10,14 +10,26 @@ Canonical package:
 ```text
 .ghost/
   manifest.yml        ghost.fingerprint-package/v1: schema + id
-  glossary.md         category vocabulary + meanings
+  glossary.md         kind vocabulary + meanings
+  materials/          bundled materials; never a node source
   <kind>.<slug>.md    a brand truth of a declared kind
-  <slug>.md           an uncategorized brand truth
+  <slug>.md           a brand truth without a kind
   haunts/             optional attached capabilities; never a node source
 ```
 
-Reserved at the root: `manifest.yml`, `glossary.md`, and `haunts/`. Every other
-`*.md` is a node.
+Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
+`haunts/`. Every other `*.md` is a node.
+
+## Glossary
+
+The glossary frontmatter declares kind names. A kind may also declare `posture: wild`; omitted posture defaults to `steady`. Wild kinds hold nodes that push past the fingerprint rather than conform to it, so default `ghost gather` excludes them unless `--wild` is explicit.
+
+```yaml
+kinds:
+  - name: principle
+  - name: provocation
+    posture: wild
+```
 
 ## Nodes
 
@@ -89,6 +101,6 @@ The manifest anchors the package with schema version and slug id.
 ## Gather / Pull / Review
 
 - `ghost gather` emits the node menu only. Checks are invisible.
-- `ghost pull` emits selected node bodies and their materials.
+- `ghost pull` emits selected node bodies and inlines small local materials by default.
 - `ghost review` matches diff files to local node materials, offers relevant
   checks, and emits a packet for the agent.

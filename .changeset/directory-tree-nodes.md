@@ -2,8 +2,8 @@
 "@anarchitecture/ghost-fingerprint": minor
 ---
 
-Collapse the on-disk node model into the directory tree: the layout *is* the
-graph. A node's id is its file path (`marketing/email.md` → `marketing/email`)
+Collapse the on-disk node model into the directory tree: the layout supplies the
+catalog. A node's id is its file path (`marketing/email.md` → `marketing/email`)
 and its parent is its containing directory; a surface is just a directory, and a
 directory's own prose lives in its `index.md` (the package-root `index.md` is
 the implicit `core` node). The `surfaces.yml` spine file and the `nodes/`

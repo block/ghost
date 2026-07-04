@@ -12,9 +12,9 @@ function placed(
   return { id, ...extra, doc: { frontmatter: {}, body } };
 }
 
-describe("assembleCatalog (flat catalog fold)", () => {
-  it("folds placed nodes into a flat map keyed by id", () => {
-    const graph = assembleCatalog({
+describe("assembleCatalog (flat catalog assembly)", () => {
+  it("assembles placed nodes into a flat map keyed by id", () => {
+    const catalog = assembleCatalog({
       placedNodes: [
         placed(
           "principle.trust",
@@ -25,19 +25,32 @@ describe("assembleCatalog (flat catalog fold)", () => {
       ],
     });
 
-    const trust = graph.nodes.get("principle.trust");
+    const trust = catalog.nodes.get("principle.trust");
     expect(trust?.body).toBe("Reduce felt risk near payment.");
     expect(trust?.kind).toBe("principle");
     expect(trust?.slug).toBe("trust");
 
-    const voice = graph.nodes.get("voice");
+    const voice = catalog.nodes.get("voice");
     expect(voice?.body).toBe("Calm, never hypey.");
     // Uncategorized: no kind.
     expect(voice?.kind).toBeUndefined();
   });
 
   it("defaults slug from the id leaf when not supplied", () => {
-    const graph = assembleCatalog({ placedNodes: [placed("a/b/c")] });
-    expect(graph.nodes.get("a/b/c")?.slug).toBe("c");
+    const catalog = assembleCatalog({ placedNodes: [placed("a/b/c")] });
+    expect(catalog.nodes.get("a/b/c")?.slug).toBe("c");
+  });
+
+  it("marks nodes wild from glossary posture input", () => {
+    const catalog = assembleCatalog({
+      placedNodes: [
+        placed("principle.trust", { kind: "principle" }),
+        placed("provocation.noise", { kind: "provocation" }),
+      ],
+      wildKinds: ["provocation"],
+    });
+
+    expect(catalog.nodes.get("principle.trust")?.wild).toBeUndefined();
+    expect(catalog.nodes.get("provocation.noise")?.wild).toBe(true);
   });
 });

@@ -39,7 +39,7 @@ export type CliManifestTool = {
  * curated discovery metadata, and its flags. The cac registry is the single
  * source of truth, so this can never drift from the real command definitions.
  *
- * Shared by the terminal help formatter's data layer and the docs-site
+ * Shared by the terminal help formatter's data source and the docs-site
  * manifest dump (`scripts/dump-cli-help.mjs`) so both read one shape.
  */
 export function buildCliManifest(cli: CAC, toolName: string): CliManifestTool {
@@ -149,6 +149,13 @@ const COMMAND_DISCOVERY = [
       "Emit an advisory review packet for a diff (needs the checks haunt).",
   },
   {
+    name: "export",
+    group: "core",
+    defaultHelp: true,
+    compactName: "export",
+    summary: "Package the fingerprint as a portable brand artifact.",
+  },
+  {
     name: "haunt",
     group: "core",
     defaultHelp: true,
@@ -242,11 +249,11 @@ function formatAllCommandSections(commands: Command[]): HelpSection[] {
     ),
   })).filter((section) => section.body.length > 0);
 
-  const uncategorized = commands.filter((command) => !metadataFor(command));
-  if (uncategorized.length > 0) {
+  const unlisted = commands.filter((command) => !metadataFor(command));
+  if (unlisted.length > 0) {
     grouped.push({
       title: "Other",
-      body: formatCommandRows(uncategorized, "raw"),
+      body: formatCommandRows(unlisted, "raw"),
     });
   }
 

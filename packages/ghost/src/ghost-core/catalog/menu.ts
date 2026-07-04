@@ -1,5 +1,10 @@
 import type { GhostCatalog } from "./types.js";
 
+export interface BuildCatalogMenuOptions {
+  /** Include kinds that declare `posture: wild`; default menus omit them. */
+  includeWild?: boolean;
+}
+
 /**
  * One entry in the gather menu: a node presented as `id` + `kind` +
  * `description` — the retrieval payload the agent selects against. The agent
@@ -13,17 +18,25 @@ export interface CatalogMenuEntry {
   description?: string;
   /** Count of material locators available after pulling this node. */
   materials?: number;
+  /** Consumption posture for this menu entry. */
+  posture: "steady" | "wild";
+  /** True when this entry pushes past the fingerprint rather than conforming to it. */
+  wild?: true;
 }
 
 /**
  * Build the gather menu: every authored node, with its kind and description,
- * sorted by id for stable output. A flat catalog — no anchor, no tree
- * positions; the agent selects from it.
+ * sorted by id for stable output. A flat catalog — no anchor, no hierarchy;
+ * the agent selects from it.
  */
-export function buildCatalogMenu(graph: GhostCatalog): CatalogMenuEntry[] {
+export function buildCatalogMenu(
+  catalog: GhostCatalog,
+  options: BuildCatalogMenuOptions = {},
+): CatalogMenuEntry[] {
   const entries: CatalogMenuEntry[] = [];
 
-  for (const node of graph.nodes.values()) {
+  for (const node of catalog.nodes.values()) {
+    if (node.wild && !options.includeWild) continue;
     entries.push({
       id: node.id,
       ...(node.kind !== undefined ? { kind: node.kind } : {}),
@@ -31,6 +44,8 @@ export function buildCatalogMenu(graph: GhostCatalog): CatalogMenuEntry[] {
       ...(node.materials !== undefined && node.materials.length > 0
         ? { materials: node.materials.length }
         : {}),
+      posture: node.wild ? "wild" : "steady",
+      ...(node.wild ? { wild: true as const } : {}),
     });
   }
 

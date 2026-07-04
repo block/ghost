@@ -8,6 +8,8 @@ export type GatherObservabilityEvent = {
   ask?: string;
   menu: string[];
   materials?: string[];
+  wild?: boolean;
+  wildIds?: string[];
 };
 
 export type PullMiss = {
@@ -19,7 +21,10 @@ export type PullObservabilityEvent = {
   ts: string;
   event: "pull";
   ids: string[];
+  wildIds?: string[];
   missed?: PullMiss[];
+  inlinedMaterials?: number;
+  omittedMaterials?: number;
 };
 
 export type GhostObservabilityEvent =
@@ -59,7 +64,7 @@ export async function readGhostEvents(
       const parsed = JSON.parse(line) as unknown;
       if (isGhostEvent(parsed)) events.push(parsed);
     } catch {
-      // Ignore malformed local tape lines; pulse should still be useful.
+      // Ignore malformed events tape lines; pulse should still be useful.
     }
   }
   return events;

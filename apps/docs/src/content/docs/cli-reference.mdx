@@ -22,9 +22,9 @@ The canonical fingerprint is a `.ghost/` directory: a flat set of prose nodes.
 ```text
 .ghost/
   manifest.yml        # schema + id
-  glossary.md         # the category vocabulary + what each category means
+  glossary.md         # the kind vocabulary + what each kind means
   <kind>.<slug>.md    # a brand truth of a declared kind (principle.density.md)
-  <slug>.md           # an uncategorized brand truth (voice.md)
+  <slug>.md           # a brand truth without a kind (voice.md)
   haunts/             # optional attached capabilities (e.g. checks); never nodes
 ```
 
@@ -135,23 +135,23 @@ into whatever it is building — product UI, marketing, email, a landing page.
 truths it selected from the menu — preferred over opening the files directly,
 because gather and pull append structured JSONL events to `.ghost/.events`.
 
-That file is a local event tape for the fingerprint's author: tweak a node's
+That file is an events tape for the fingerprint's author: tweak a node's
 description, re-run the task, and `ghost pulse` shows whether the truth appeared
 on the menu, got pulled, was missed by name, or stayed cold. It is a dotfile
 (never a node), gitignored by the scaffold, and safe to delete at any time. The
-tape is local scratch, not canonical fingerprint state.
+events tape is local tuning signal, not canonical fingerprint state.
 
 <CliHelp tool="ghost" command="pull" hideDescription />
 
 ```bash
 ghost pull principle.trust voice
 ghost pull principle.trust --format json
-ghost pull voice --no-history
+ghost pull voice --no-events
 ```
 
 ### Read the local signal: `pulse`
 
-`pulse` summarizes the local event tape: gathers, pulls, abandoned gathers,
+`pulse` summarizes the events tape: gathers, pulls, abandoned gathers,
 exposure-normalized hit rates, cold nodes, and unknown ids the agent tried to
 pull.
 

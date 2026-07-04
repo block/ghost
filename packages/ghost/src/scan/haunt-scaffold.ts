@@ -6,7 +6,7 @@ import {
   UsageError,
 } from "#ghost-core";
 import { isMissingPathError } from "../internal/fs.js";
-import { GHOST_HAUNTS_DIR, KNOWN_HAUNTS } from "./haunt-tree.js";
+import { GHOST_HAUNTS_DIR, KNOWN_HAUNTS } from "./haunt-files.js";
 
 interface HauntTemplateFile {
   relativePath: string;

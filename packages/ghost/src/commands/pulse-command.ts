@@ -29,7 +29,7 @@ export function registerPulseCommand(cli: CAC): void {
 
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const menu = buildCatalogMenu(loaded.catalog);
+        const menu = buildCatalogMenu(loaded.catalog, { includeWild: true });
         const events = await readGhostEvents(paths.packageDir);
         const report = buildPulseReport(events, menu);
 
@@ -47,14 +47,14 @@ export function registerPulseCommand(cli: CAC): void {
 
 type NodeHitReport = {
   id: string;
-  appearances: number;
+  exposures: number;
   pulls: number;
   hitRate: number;
 };
 
 type KindHitReport = {
   kind: string;
-  appearances: number;
+  exposures: number;
   pulls: number;
   hitRate: number;
   coldNodes: string[];
@@ -77,6 +77,10 @@ type PulseReport = {
   kinds: KindHitReport[];
   coldNodes: string[];
   misses: MissReport[];
+  wild: {
+    exposures: number;
+    pulls: number;
+  };
 };
 
 function buildPulseReport(
@@ -90,11 +94,13 @@ function buildPulseReport(
     { count: number; suggested: Set<string> }
   >();
   const nodeKinds = new Map(
-    currentMenu.map((entry) => [entry.id, entry.kind ?? "(uncategorized)"]),
+    currentMenu.map((entry) => [entry.id, entry.kind ?? "(no kind)"]),
   );
 
   let gathers = 0;
   let pulls = 0;
+  let wildExposures = 0;
+  let wildPulls = 0;
   let abandonedGathers = 0;
   let activeGatherHasPull = false;
   let sawGather = false;
@@ -108,6 +114,7 @@ function buildPulseReport(
       for (const id of event.menu) {
         exposureCounts.set(id, (exposureCounts.get(id) ?? 0) + 1);
       }
+      wildExposures += event.wildIds?.length ?? 0;
       continue;
     }
 
@@ -116,6 +123,7 @@ function buildPulseReport(
     for (const id of event.ids) {
       pullCounts.set(id, (pullCounts.get(id) ?? 0) + 1);
     }
+    wildPulls += event.wildIds?.length ?? 0;
     for (const miss of event.missed ?? []) {
       recordMiss(missCounts, miss);
     }
@@ -126,35 +134,35 @@ function buildPulseReport(
   const nodeIds = new Set([...nodeKinds.keys(), ...exposureCounts.keys()]);
   const nodes = [...nodeIds]
     .map((id) => {
-      const appearances = exposureCounts.get(id) ?? 0;
+      const exposures = exposureCounts.get(id) ?? 0;
       const nodePulls = pullCounts.get(id) ?? 0;
       return {
         id,
-        appearances,
+        exposures,
         pulls: nodePulls,
-        hitRate: appearances > 0 ? nodePulls / appearances : 0,
+        hitRate: exposures > 0 ? nodePulls / exposures : 0,
       };
     })
     .sort((a, b) => {
-      if (b.appearances !== a.appearances) return b.appearances - a.appearances;
+      if (b.exposures !== a.exposures) return b.exposures - a.exposures;
       if (b.pulls !== a.pulls) return b.pulls - a.pulls;
       return a.id.localeCompare(b.id);
     });
 
   const kindCounts = new Map<
     string,
-    { appearances: number; pulls: number; coldNodes: string[] }
+    { exposures: number; pulls: number; coldNodes: string[] }
   >();
   for (const node of nodes) {
-    const kind = nodeKinds.get(node.id) ?? "(uncategorized)";
+    const kind = nodeKinds.get(node.id) ?? "(no kind)";
     const counts = kindCounts.get(kind) ?? {
-      appearances: 0,
+      exposures: 0,
       pulls: 0,
       coldNodes: [],
     };
-    counts.appearances += node.appearances;
+    counts.exposures += node.exposures;
     counts.pulls += node.pulls;
-    if (node.appearances > 0 && node.pulls === 0) {
+    if (node.exposures > 0 && node.pulls === 0) {
       counts.coldNodes.push(node.id);
     }
     kindCounts.set(kind, counts);
@@ -171,19 +179,18 @@ function buildPulseReport(
     kinds: [...kindCounts.entries()]
       .map(([kind, counts]) => ({
         kind,
-        appearances: counts.appearances,
+        exposures: counts.exposures,
         pulls: counts.pulls,
-        hitRate: counts.appearances > 0 ? counts.pulls / counts.appearances : 0,
+        hitRate: counts.exposures > 0 ? counts.pulls / counts.exposures : 0,
         coldNodes: counts.coldNodes.sort(),
       }))
       .sort((a, b) => {
-        if (b.appearances !== a.appearances)
-          return b.appearances - a.appearances;
+        if (b.exposures !== a.exposures) return b.exposures - a.exposures;
         if (b.pulls !== a.pulls) return b.pulls - a.pulls;
         return a.kind.localeCompare(b.kind);
       }),
     coldNodes: nodes
-      .filter((node) => node.appearances > 0 && node.pulls === 0)
+      .filter((node) => node.exposures > 0 && node.pulls === 0)
       .map((node) => node.id),
     misses: [...missCounts.entries()]
       .map(([requested, value]) => ({
@@ -194,6 +201,10 @@ function buildPulseReport(
       .sort(
         (a, b) => b.count - a.count || a.requested.localeCompare(b.requested),
       ),
+    wild: {
+      exposures: wildExposures,
+      pulls: wildPulls,
+    },
   };
 }
 
@@ -233,7 +244,7 @@ function formatPulseMarkdown(report: PulseReport): string {
     );
     for (const node of report.nodes) {
       lines.push(
-        `| \`${node.id}\` | ${node.appearances} | ${node.pulls} | ${formatPercent(node.hitRate)} |`,
+        `| \`${node.id}\` | ${node.exposures} | ${node.pulls} | ${formatPercent(node.hitRate)} |`,
       );
     }
   }
@@ -248,7 +259,7 @@ function formatPulseMarkdown(report: PulseReport): string {
     );
     for (const kind of report.kinds) {
       lines.push(
-        `| \`${kind.kind}\` | ${kind.appearances} | ${kind.pulls} | ${formatPercent(kind.hitRate)} | ${kind.coldNodes.length} |`,
+        `| \`${kind.kind}\` | ${kind.exposures} | ${kind.pulls} | ${formatPercent(kind.hitRate)} | ${kind.coldNodes.length} |`,
       );
     }
   }
@@ -259,6 +270,14 @@ function formatPulseMarkdown(report: PulseReport): string {
   } else {
     for (const id of report.coldNodes) lines.push(`- \`${id}\``);
   }
+
+  lines.push(
+    "",
+    "## Wild usage",
+    "",
+    `- Wild exposures: ${report.wild.exposures}`,
+    `- Wild pulls: ${report.wild.pulls}`,
+  );
 
   lines.push("", "## Misses", "");
   if (report.misses.length === 0) {

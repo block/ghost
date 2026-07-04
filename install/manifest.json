@@ -1,7 +1,7 @@
 {
   "$schema": "ghost.install-manifest/v1",
   "name": "ghost",
-  "description": "Ghost recipes — create, author, and gather the repo-local brand fingerprint bundle.",
+  "description": "Ghost recipes \u2014 create, author, and gather the repo-local brand fingerprint bundle.",
   "version": "0.1.0",
   "source": {
     "package": "packages/ghost/src/skill-bundle"
@@ -15,6 +15,7 @@
     "references/recall.md",
     "references/schema.md",
     "references/self-check.md",
-    "references/steering-audit.md"
+    "references/steering-audit.md",
+    "references/wild.md"
   ]
 }

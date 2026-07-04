@@ -141,6 +141,14 @@ description: A primitive action trigger.
 it, no body. If this brand's button were itself a recognizable brand move, its
 divergence from the generic form would earn a short body.)
 
+## Materials: bundle brand-owned materials, reference implementations
+
+Use the rule of thumb literally. Bundle brand-owned materials: brand-owned artifacts that
+should travel with the fingerprint and survive export or refactors — tokens.css,
+motion.json, logo.svg, type materials. Reference implementations: living app
+code, components, stories, or tests whose home is still the product repo. The
+`materials` list locates both; the prose says what the material proves.
+
 ## Reuse vs. free-compose
 
 Do not pin inventory by prop or markup shape. Document the *purpose* and any

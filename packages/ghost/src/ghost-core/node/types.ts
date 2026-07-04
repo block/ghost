@@ -2,8 +2,8 @@ export const GHOST_NODE_SCHEMA = "ghost.node/v1" as const;
 
 /**
  * A node's frontmatter: descriptive properties only. Identity, kind, and
- * containment are not here — they are the node's location in the directory tree
- * (the file path is the id; the optional filename prefix is the kind). The
+ * containment are not here — the file path is the node id, and the optional
+ * filename prefix is the kind. The
  * prose body carries the design expression; intent / inventory / composition
  * are authorship lenses, never fields.
  */

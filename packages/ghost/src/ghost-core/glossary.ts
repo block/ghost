@@ -1,28 +1,37 @@
 import { z } from "zod";
 import { splitMarkdownFrontmatter } from "./markdown.js";
 
+export const GhostGlossaryKindPostureSchema = z.enum(["steady", "wild"]);
+
+export type GhostGlossaryKindPosture = z.infer<
+  typeof GhostGlossaryKindPostureSchema
+>;
+
 export const GhostGlossaryFrontmatterSchema = z
   .object({
-    categories: z.array(
+    kinds: z.array(
       z
         .object({
           name: z.string().min(1),
+          posture: GhostGlossaryKindPostureSchema.default("steady"),
         })
         .passthrough(),
     ),
   })
   .passthrough();
 
-export interface GhostGlossaryCategory {
+export interface GhostGlossaryKind {
   name: string;
-  /** Prose purpose/normative weight for this category, parsed from its section. */
+  /** Consumption posture for nodes of this kind. */
+  posture: GhostGlossaryKindPosture;
+  /** Prose purpose/normative weight for this kind, parsed from its section. */
   purpose: string;
 }
 
 export interface GhostGlossaryDocument {
   frontmatter: z.infer<typeof GhostGlossaryFrontmatterSchema>;
   body: string;
-  categories: GhostGlossaryCategory[];
+  kinds: GhostGlossaryKind[];
 }
 
 export type GhostGlossaryParseResult =
@@ -48,16 +57,17 @@ export function parseGlossary(raw: string): GhostGlossaryParseResult {
 
   const normalizedBody = body.replace(/^\n+/, "").replace(/\s+$/, "");
   const sections = parseMarkdownSections(normalizedBody);
-  const categories = result.data.categories.map((category) => ({
-    name: category.name,
-    purpose: sections.get(normalizeHeading(category.name)) ?? "",
+  const kinds = result.data.kinds.map((kind) => ({
+    name: kind.name,
+    posture: kind.posture,
+    purpose: sections.get(normalizeHeading(kind.name)) ?? "",
   }));
 
   return {
     glossary: {
       frontmatter: result.data,
       body: normalizedBody,
-      categories,
+      kinds,
     },
     errors: [],
   };

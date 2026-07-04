@@ -123,7 +123,7 @@ Run it before generation, so the agent builds with the brand in hand rather than
 discovering the gaps in review.
 
 Each `gather` and `pull` also appends a structured JSONL event to
-`.ghost/.events`, a local gitignored tape. That one is for you: tweak a node's
+`.ghost/.events`, a gitignored events tape. That one is for you: tweak a node's
 description, re-run the task, and `ghost pulse` shows whether the truth appeared
 on the menu, got pulled, was missed by name, or stayed cold.
 
@@ -134,7 +134,7 @@ ghost pulse
 Read `pulse` as a tuning signal, not a score. A cold node may need a sharper
 `description`; a repeated miss may mean the id or glossary vocabulary is not
 what agents expect; an abandoned gather means the menu did not lead to a useful
-selection. The tape is local scratch, not canonical fingerprint state.
+selection. The events tape is local tuning signal, not canonical fingerprint state.
 
 </DocSection>
 
@@ -164,20 +164,20 @@ The fingerprint is a **flat set of prose nodes**:
 ```text
 .ghost/
   manifest.yml          # schema + package id
-  glossary.md           # the category vocabulary + what each category means
+  glossary.md           # the kind vocabulary + what each kind means
   index.md              # the curated front door node
   principle.trust.md    # a brand truth of kind `principle`
   condition.density.md  # a brand truth of kind `condition`
   asset.logo.md         # a truth that may point at concrete materials
-  voice.md              # an uncategorized brand truth
+  voice.md              # a brand truth without a kind
   haunts/               # optional attached capabilities (e.g. checks); never a node
 ```
 
 There is no hierarchy, no inheritance, and no edges between nodes. A node's
 identity is its file path with `.md` dropped (`marketing.email.md` is the node
 `marketing.email`). Its **kind** is the filename's first dotted segment, and must
-be a category declared in `glossary.md`; a bare name (`voice.md`) is
-uncategorized. Folders are a human-browsing convenience only — the model reads a
+be a kind declared in `glossary.md`; a bare name (`voice.md`) has
+no kind. Folders are a human-browsing convenience only — the model reads a
 flat menu.
 
 Altitude lives in the prose: a universal truth is stated plainly; a narrower

@@ -16,10 +16,10 @@ Ghost treats the fingerprint package as canonical.
 ```text
 .ghost/
   manifest.yml          # schema + id
-  glossary.md           # the category vocabulary + what each category means
+  glossary.md           # the kind vocabulary + what each kind means
   principle.trust.md    # a brand truth of kind `principle`
   condition.density.md  # a brand truth of kind `condition`
-  voice.md              # an uncategorized brand truth
+  voice.md              # a brand truth without a kind
 ```
 
 A **node** is a markdown file: a `description` in frontmatter + a prose body (the
@@ -44,8 +44,8 @@ action beats completeness…
   when to gather it," exactly like a tool's name + description. `ghost gather`
   emits the menu of id + kind + description; the agent matches the ask against
   those. Write one on every node.
-- **Kind is the filename prefix** and must be a category the glossary declares. A
-  bare name (`voice.md`) is uncategorized — fine.
+- **Kind is the filename prefix** and must be a kind the glossary declares. A
+  bare name (`voice.md`) has no kind — fine.
 - **Altitude lives in the prose.** State a universal truth plainly; give a
   narrower truth its **condition** — the *situation* it applies in — in the prose.
   Never file a truth by destination (`for-emails.md`); the model reads the
@@ -175,7 +175,7 @@ ghost validate
 ```
 
 `ghost init` seeds the steering starter: the manifest, a starter `glossary.md`
-(with suggested categories you keep, rename, or replace), the package-root
+(with suggested kinds you keep, rename, or replace), the package-root
 `index.md` (id `index`), and demo nodes for stance, composition, anti-goals,
 patterns, exemplars, materials, and decisions. The demo content is there for
 inspiration and guidance. Replace its claims, paths, examples, and decisions
@@ -188,20 +188,19 @@ kinds organize the corpus, and any stricter silence posture. It is an ordinary
 node mechanically, but by convention agents always pull it first — anything
 that must never be missed belongs here.
 
-Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or HTTPS URLs for the concrete materials the prose governs. Optional capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt (`ghost haunt add checks`) — and are feed-back only; they are never gathered.
+Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or HTTPS URLs for the concrete materials the prose governs. Bundle brand-owned materials, reference implementations: put brand-owned materials that should survive export or refactors (tokens.css, motion.json, logo.svg, type materials) under `materials/`; point at living app code where the implementation itself should stay in place. Optional capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt (`ghost haunt add checks`) — and are feed-back only; they are never gathered.
 
 ### 3. Shape the glossary
 
-Declare the categories you will use in `glossary.md` — the frontmatter
-`categories` list plus a `#` section per category explaining its meaning and
+Declare the kinds you will use in `glossary.md` — the frontmatter
+`kinds` list plus a `#` section per kind explaining its meaning and
 normative weight. Kinds are your choice; Ghost ships no fixed vocabulary. A
-node's filename prefix must match a declared kind (or the node stays
-uncategorized).
+node's filename prefix must match a declared kind (or the node has no kind).
 
 The glossary is a dictionary of every term with defined meaning in the corpus —
 including a term currently used by only a bare node. A root `voice.md` with a
 `voice` glossary entry declares the scope for future `voice.<slug>.md` nodes;
-declaring a category with zero or one users is good hygiene, not
+declaring a kind with zero or one users is good hygiene, not
 over-structure.
 
 ### 4. Orient
@@ -215,7 +214,7 @@ reality (components, paths, building blocks) can be recorded as `materials` on t
 ### 5. Write sparse nodes
 
 Add the smallest useful set of nodes, each a purpose-coherent prose truth written
-through the lenses, named `<kind>.<slug>.md` (or a bare slug when uncategorized).
+through the lenses, named `<kind>.<slug>.md` (or a bare slug when no kind is present).
 Draft only what the human said or showed. State conditions as situations in the
 prose. Prefer a few high-confidence truths over a noisy catalog. Ask the human
 to keep, soften, reject, or re-title important claims before treating draft
@@ -228,7 +227,7 @@ ghost validate .ghost
 ```
 
 `validate` checks artifact shape, per-node validity, and that each node's kind
-prefix is a declared glossary category (an undeclared prefix is a warning with a
+prefix is a declared glossary kind (an undeclared prefix is a warning with a
 "did you mean" suggestion, not a failure).
 
 ## Never

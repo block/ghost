@@ -4,8 +4,8 @@ import type { GhostNodeDocument, GhostNodeFrontmatter } from "./types.js";
 /**
  * Serialize a node back to its `---\n<yaml>\n---\n<body>` markdown form. Keys
  * are emitted in a stable order (description) so round-trips and diffs are
- * deterministic. Identity, kind, and containment are not serialized — they are
- * the node's path in the directory tree. Undefined fields are omitted; a node
+ * deterministic. Identity and kind are not serialized — they come from the
+ * node's file path and optional filename prefix. Undefined fields are omitted; a node
  * with no frontmatter fields emits an empty block.
  */
 export function serializeNode(node: GhostNodeDocument): string {

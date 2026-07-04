@@ -42,15 +42,15 @@ The CLI does deterministic work. The agent does interpretation.
 ghost init          # scaffold .ghost/ with the steering starter (fingerprint only)
 ghost haunt add checks  # opt in to review assertions
 ghost validate      # check package shape, nodes, materials, and haunts
-ghost gather <ask>  # before building: list every truth for this task
+ghost gather <ask>  # before building: list every node for this task
 ghost pull <ids>    # read the picked truths' full bodies
 ghost review        # during review: assemble a diff + matched nodes + checks packet
+ghost export        # package the fingerprint as a portable artifact with a locator audit
 ghost pulse         # while tuning: summarize local gather/pull events
 ```
 
-`gather` and `pull` append structured JSONL events to `.ghost/.events`, a local
-gitignored tape. That's for tuning descriptions and seeing what agents reached
-for. The tape is local scratch, not canonical fingerprint state.
+`gather` and `pull` append structured JSONL events to `.ghost/.events`, a gitignored events tape. That's for tuning descriptions and seeing what agents reached
+for. The events tape is local tuning signal, not canonical fingerprint state.
 
 ## CLI Commands
 
@@ -59,9 +59,10 @@ for. The tape is local scratch, not canonical fingerprint state.
 | `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
 | `ghost haunt add\|remove\|list` | Manage optional haunts — capabilities attached to the fingerprint (e.g. `checks`). |
 | `ghost validate` | Validate the package: manifest, node validity, material locators, installed haunts, check references, and glossary kind prefixes. |
-| `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from; log the exposed ids. |
+| `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from; log the exposed ids. Wild-posture kinds are excluded by default; `--wild` opts in. |
 | `ghost pull <id> [<id>…]` | Emit selected node bodies and material locators; log selected and missed ids. |
 | `ghost review` | Emit an advisory review packet from a diff, matched material-backed nodes, and checks (requires the checks haunt). |
+| `ghost export` | Package the fingerprint as a portable artifact with a locator audit. |
 | `ghost pulse` | Summarize local gather/pull events: abandoned gathers, hit rates, cold nodes, and misses. |
 | `ghost skill install` | Install the skill bundle for your host agent. |
 | `ghost manifest` | Emit a self-describing JSON manifest of commands and flags _(advanced)_. |
@@ -77,7 +78,7 @@ writes, and decides.
 ```text
 .ghost/
   manifest.yml          # schema + package id (the anchor)
-  glossary.md           # your category vocabulary + what each category means
+  glossary.md           # your kind vocabulary + what each kind means
   index.md              # the curated front door
   principle.trust.md    # a brand truth of kind `principle`
   asset.logo.md         # a truth that may point at concrete materials

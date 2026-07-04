@@ -15,10 +15,10 @@ ephemeral working context, never written back into `.ghost/`.
    you are not grounded yet — gather first.
 1. Run `ghost gather <ask> --format json` to get the menu, then match the ask to
    the nodes it belongs to by their descriptions. Use the actual task as the
-   free-text ask so the local event tape records which menu was exposed for what.
+   free-text ask so the events tape records which menu was exposed for what.
 2. Run `ghost pull <id> [<id>…]` to read the selected nodes' bodies (prefer
-   `pull` over direct file reads — it logs the selection to the local
-   `.ghost/.events` tape for the author). Always include `index` in your pull
+   `pull` over direct file reads — it logs the selection to
+   the `.ghost/.events` events tape for the author). Always include `index` in your pull
    unless you have already read it this session — it carries the fingerprint's
    non-negotiables and reading posture. Honor each node's kind **as the
    glossary defines it** — the glossary is the authoritative meaning of every

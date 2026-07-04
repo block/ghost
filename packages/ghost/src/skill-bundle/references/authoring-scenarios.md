@@ -84,8 +84,7 @@ affirmative description.
 ## 4. Draft The Nodes
 
 Write the smallest useful set of nodes, each a purpose-coherent prose truth with
-a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when
-uncategorized). Write each body through the intent / inventory / composition
+a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Write each body through the intent / inventory / composition
 lenses: the why, the material, and how it is assembled. These are lenses, not
 fields.
 
@@ -109,7 +108,7 @@ claims:
 
 Two authoring decisions replace any notion of hierarchy:
 
-- **Kind** — declare the category vocabulary in `glossary.md` and name each node
+- **Kind** — declare the kind vocabulary in `glossary.md` and name each node
   `<kind>.<slug>.md` so its normative weight is clear. The glossary defines what
   each kind means and how strongly it binds (the starter vocabulary reads: a
   `principle` is always-on; a `condition` is situational; an `exemplar` is
@@ -127,7 +126,7 @@ ghost validate .ghost
 ```
 
 `validate` checks artifact shape, per-node validity, and that each node's kind
-prefix is a declared glossary category (undeclared → warning with a "did you
+prefix is a declared glossary kind (undeclared → warning with a "did you
 mean" suggestion). Use ordinary Git review as the approval boundary: uncommitted
 edits are drafts; checked-in nodes are canonical.
 

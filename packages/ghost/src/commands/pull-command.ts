@@ -1,16 +1,33 @@
 import type { CAC } from "cac";
-import { closestIds, type GhostCatalogNode } from "#ghost-core";
+import {
+  classifyMaterialLocator,
+  closestIds,
+  type GhostCatalogNode,
+  type MaterialTransportResult,
+  resolveLocalMaterialLocator,
+  type TransportedMaterial,
+  transportMaterials,
+} from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import { appendGhostEvent, type PullMiss } from "../observability-events.js";
-import { GHOST_EVENTS_FILENAME } from "../scan/constants.js";
+import {
+  GHOST_EVENTS_FILENAME,
+  GHOST_MATERIALS_DIR,
+} from "../scan/constants.js";
 import { loadFingerprintPackage } from "../scan/fingerprint-package.js";
+import { resolveGitRoot } from "../scan/package-paths.js";
 import { failFromError } from "./errors.js";
+
+interface PulledNode {
+  node: GhostCatalogNode;
+  materials: MaterialTransportResult;
+}
 
 export function registerPullCommand(cli: CAC): void {
   cli
     .command(
       "pull <...ids>",
-      "Emit the named nodes' full prose bodies, and append the pull to the local events tape.",
+      "Emit the named nodes' full prose bodies, and append the pull to the events tape.",
     )
     .option(
       "--package <dir>",
@@ -20,9 +37,10 @@ export function registerPullCommand(cli: CAC): void {
       default: "markdown",
     })
     .option(
-      "--no-history",
-      `Skip appending this pull to .ghost/${GHOST_EVENTS_FILENAME}`,
+      "--no-materials",
+      "Emit material locators only; do not inline files",
     )
+    .option("--no-events", `Skip appending to .ghost/${GHOST_EVENTS_FILENAME}`)
     .action(async (ids: string[], opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -53,10 +71,26 @@ export function registerPullCommand(cli: CAC): void {
           console.error("Run `ghost gather` to list every node.");
         }
 
-        if (opts.history !== false) {
+        const nodes = known.map(
+          (id) => catalog.nodes.get(id) as GhostCatalogNode,
+        );
+        const pulledNodes = await resolvePulledNodes(
+          nodes,
+          paths.packageDir,
+          opts.materials !== false,
+        );
+        const counts = sumMaterialCounts(pulledNodes);
+
+        if (opts.events !== false) {
+          const wildIds = nodes
+            .filter((node) => node.wild)
+            .map((node) => node.id);
           await appendGhostEvent(paths.packageDir, {
             event: "pull",
             ids: known,
+            inlinedMaterials: counts.inlined,
+            omittedMaterials: counts.omitted,
+            ...(wildIds.length > 0 ? { wildIds } : {}),
             ...(missed.length > 0 ? { missed } : {}),
           });
         }
@@ -66,25 +100,28 @@ export function registerPullCommand(cli: CAC): void {
           return;
         }
 
-        const nodes = known.map(
-          (id) => catalog.nodes.get(id) as GhostCatalogNode,
-        );
-
         if (opts.format === "json") {
           process.stdout.write(
             `${JSON.stringify(
               {
                 kind: "pull",
                 ...(missed.length > 0 ? { missed } : {}),
-                nodes: nodes.map((node) => ({
+                nodes: pulledNodes.map(({ node, materials }) => ({
                   id: node.id,
                   ...(node.kind !== undefined ? { kind: node.kind } : {}),
                   ...(node.description
                     ? { description: node.description }
                     : {}),
                   ...(node.materials !== undefined
-                    ? { materials: node.materials }
+                    ? {
+                        materials:
+                          opts.materials === false
+                            ? node.materials
+                            : materials.materials.map(formatJsonMaterial),
+                      }
                     : {}),
+                  posture: node.wild ? "wild" : "steady",
+                  ...(node.wild ? { wild: true as const } : {}),
                   body: node.body,
                 })),
               },
@@ -93,7 +130,7 @@ export function registerPullCommand(cli: CAC): void {
             )}\n`,
           );
         } else {
-          process.stdout.write(formatPullMarkdown(nodes));
+          process.stdout.write(formatPullMarkdown(pulledNodes));
         }
         process.exit(0);
       } catch (err) {
@@ -102,17 +139,100 @@ export function registerPullCommand(cli: CAC): void {
     });
 }
 
-function formatPullMarkdown(nodes: GhostCatalogNode[]): string {
+async function resolvePulledNodes(
+  nodes: GhostCatalogNode[],
+  packageDir: string,
+  inlineMaterials: boolean,
+): Promise<PulledNode[]> {
+  const repoRoot = await resolveGitRoot(process.cwd());
+  return Promise.all(
+    nodes.map(async (node) => ({
+      node,
+      materials: inlineMaterials
+        ? await transportMaterials(node.materials, {
+            repoRoot,
+            packageDir,
+            materialsDir: GHOST_MATERIALS_DIR,
+          })
+        : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
+    })),
+  );
+}
+
+function locatorOnlyMaterials(
+  locators: string[] | undefined,
+  repoRoot: string,
+  packageDir: string,
+): MaterialTransportResult {
+  return {
+    materials: (locators ?? []).map((locator) => ({
+      locator,
+      tier:
+        classifyMaterialLocator(locator).kind === "url"
+          ? "url"
+          : resolveLocalMaterialLocator(locator, {
+              repoRoot,
+              packageDir,
+              materialsDir: GHOST_MATERIALS_DIR,
+            }).tier,
+    })),
+    inlined: 0,
+    omitted: 0,
+  };
+}
+
+function sumMaterialCounts(nodes: PulledNode[]): {
+  inlined: number;
+  omitted: number;
+} {
+  return nodes.reduce(
+    (sum, { materials }) => ({
+      inlined: sum.inlined + materials.inlined,
+      omitted: sum.omitted + materials.omitted,
+    }),
+    { inlined: 0, omitted: 0 },
+  );
+}
+
+function formatJsonMaterial(material: TransportedMaterial): {
+  locator: string;
+  tier: TransportedMaterial["tier"];
+  inlined?: string;
+  omitted?: true;
+  reason?: string;
+} {
+  return {
+    locator: material.locator,
+    tier: material.tier,
+    ...(material.inlined !== undefined ? { inlined: material.inlined } : {}),
+    ...(material.omitted
+      ? { omitted: true as const, reason: material.reason ?? "not inlined" }
+      : {}),
+  };
+}
+
+function formatPullMarkdown(nodes: PulledNode[]): string {
   const sections: string[] = [];
-  for (const node of nodes) {
+  for (const { node, materials } of nodes) {
     const kind = node.kind ? ` _(${node.kind})_` : "";
-    const lines = [`# \`${node.id}\`${kind}`];
+    const wild = node.wild ? " _(wild)_" : "";
+    const lines = [`# \`${node.id}\`${kind}${wild}`];
     if (node.description) lines.push("", `> ${node.description}`);
-    if (node.materials !== undefined && node.materials.length > 0) {
-      lines.push("", "Materials:");
-      for (const material of node.materials) lines.push(`- ${material}`);
-    }
     lines.push("", node.body.trim());
+    if (materials.materials.length > 0) {
+      lines.push("", "Materials:");
+      for (const material of materials.materials) {
+        if (material.inlined !== undefined) {
+          const info = material.path ?? material.locator;
+          lines.push("", `\`\`\`${info}`, material.inlined.trimEnd(), "```");
+        } else {
+          const reason = material.omitted
+            ? ` — ${material.reason ?? "not inlined"}`
+            : "";
+          lines.push(`- ${material.locator}${reason}`);
+        }
+      }
+    }
     sections.push(lines.join("\n"));
   }
   return `${sections.join("\n\n---\n\n")}\n`;

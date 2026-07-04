@@ -19,17 +19,23 @@ import { registerInitCommand } from "./init-command.js";
  * installed haunts, check references, and glossary kind prefixes).
  */
 export function registerFingerprintCommands(cli: CAC): void {
-  // --- validate (shape pass + graph pass) ---
+  // --- validate (shape pass + catalog pass) ---
   cli
     .command(
       "validate [file]",
       "Validate the Ghost fingerprint package — manifest shape, node validity, material locators, installed haunts, check references, and glossary kind prefixes. Defaults to .ghost.",
     )
+    .option(
+      "--package <dir>",
+      "Use this fingerprint package directory (default: ./.ghost)",
+    )
     .option("--format <fmt>", "Output format: cli or json", { default: "cli" })
     .action(async (path: string | undefined, opts) => {
       try {
         const ghostDir = ghostDirFromEnv();
-        const packagePath = path ?? ghostDir;
+        const exactPackage =
+          typeof opts.package === "string" ? opts.package : undefined;
+        const packagePath = exactPackage ?? path ?? ghostDir;
         const target = resolveFingerprintPackage(
           packagePath,
           process.cwd(),

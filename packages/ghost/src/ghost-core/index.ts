@@ -4,6 +4,7 @@
 export {
   type AssembleCatalogInput,
   assembleCatalog,
+  type BuildCatalogMenuOptions,
   buildCatalogMenu,
   type CatalogMenuEntry,
   closestIds,
@@ -31,11 +32,15 @@ export {
 } from "./check/index.js";
 // --- CLI exit-code contract ---
 export { EXIT, UsageError } from "./errors.js";
+// --- Glob matching (repo-relative locators) ---
+export { hasGlobMagic, matchesGlob, normalizeGlobPath } from "./glob.js";
 // --- Glossary (reserved fingerprint vocabulary slot) ---
 export {
-  type GhostGlossaryCategory,
   type GhostGlossaryDocument,
   GhostGlossaryFrontmatterSchema,
+  type GhostGlossaryKind,
+  type GhostGlossaryKindPosture,
+  GhostGlossaryKindPostureSchema,
   type GhostGlossaryParseResult,
   parseGlossary,
 } from "./glossary.js";
@@ -45,6 +50,18 @@ export {
   GHOST_HAUNT_SCHEMA,
   GhostHauntManifestSchema,
 } from "./haunt-manifest.js";
+export {
+  type ExpandedLocalMaterialLocator,
+  expandLocalMaterialLocator,
+  listBundledMaterialFiles,
+  type MaterialTransportOptions,
+  type MaterialTransportResult,
+  materialLocatorClaimsPath,
+  resolveLocalMaterialLocator,
+  type TransportedMaterial,
+  type TransportedMaterialTier,
+  transportMaterials,
+} from "./material-transport.js";
 // --- Materials (node locators) ---
 export {
   type ClassifiedGhostMaterialLocator,

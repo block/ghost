@@ -24,7 +24,7 @@ export interface LoadedCheck {
   references: string[];
 }
 
-export interface LoadedHauntTree {
+export interface LoadedHauntFiles {
   /** Ids of haunts installed under `.ghost/haunts/`, sorted. */
   installed: string[];
   /** Checks from the `checks` haunt; empty when the haunt is absent. */
@@ -37,12 +37,12 @@ export interface LoadedHauntTree {
  * by a thin `haunt.yml` manifest. Haunts are feed-back capabilities: nothing
  * loaded here is ever served by `gather` or `pull`.
  */
-export async function loadHauntTree(
+export async function loadHauntFiles(
   packageDir: string,
-): Promise<LoadedHauntTree> {
+): Promise<LoadedHauntFiles> {
   const installed: string[] = [];
   const checks = new Map<string, LoadedCheck>();
-  const invalid: LoadedHauntTree["invalid"] = [];
+  const invalid: LoadedHauntFiles["invalid"] = [];
   const hauntsDir = join(packageDir, GHOST_HAUNTS_DIR);
 
   let entries: Array<{ name: string; isDirectory(): boolean }>;
@@ -83,7 +83,7 @@ export async function loadHauntTree(
 async function lintHauntManifest(
   id: string,
   hauntDir: string,
-  invalid: LoadedHauntTree["invalid"],
+  invalid: LoadedHauntFiles["invalid"],
 ): Promise<boolean> {
   const manifestPath = join(hauntDir, GHOST_HAUNT_MANIFEST_FILENAME);
   let raw: string;
@@ -132,7 +132,7 @@ async function lintHauntManifest(
 async function loadChecksHaunt(
   hauntDir: string,
   checks: Map<string, LoadedCheck>,
-  invalid: LoadedHauntTree["invalid"],
+  invalid: LoadedHauntFiles["invalid"],
 ): Promise<void> {
   let entries: Array<{ name: string; isDirectory(): boolean }>;
   try {
@@ -146,7 +146,7 @@ async function loadChecksHaunt(
     if (entry.isDirectory()) {
       invalid.push({
         file: `haunts/checks/${entry.name}`,
-        message: "the checks haunt is flat; nested folders are not allowed",
+        message: "the checks haunt is flat; nested directories are not allowed",
       });
       continue;
     }

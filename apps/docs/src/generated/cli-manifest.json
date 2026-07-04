@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T00:21:23.906Z",
+  "generatedAt": "2026-07-04T11:23:23.574Z",
   "tools": [
     {
       "tool": "ghost",
@@ -14,6 +14,14 @@
           "compactName": "validate",
           "summary": "Validate the fingerprint: artifact shape + node validity.",
           "options": [
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
             {
               "rawName": "--format <fmt>",
               "name": "format",
@@ -101,6 +109,14 @@
               "default": "markdown",
               "takesValue": true,
               "negated": false
+            },
+            {
+              "rawName": "--wild",
+              "name": "wild",
+              "description": "Include wild-posture nodes in the menu",
+              "default": null,
+              "takesValue": false,
+              "negated": false
             }
           ]
         },
@@ -108,7 +124,7 @@
           "tool": "ghost",
           "name": "pull",
           "rawName": "pull <...ids>",
-          "description": "Emit the named nodes' full prose bodies, and append the pull to the local events tape.",
+          "description": "Emit the named nodes' full prose bodies, and append the pull to the events tape.",
           "group": "core",
           "defaultHelp": true,
           "compactName": "pull",
@@ -131,9 +147,17 @@
               "negated": false
             },
             {
-              "rawName": "--no-history",
-              "name": "history",
-              "description": "Skip appending this pull to .ghost/.events",
+              "rawName": "--no-materials",
+              "name": "materials",
+              "description": "Emit material locators only; do not inline files",
+              "default": true,
+              "takesValue": false,
+              "negated": true
+            },
+            {
+              "rawName": "--no-events",
+              "name": "events",
+              "description": "Skip appending to .ghost/.events",
               "default": true,
               "takesValue": false,
               "negated": true
@@ -216,6 +240,58 @@
               "description": "Emit the raw JSON packet",
               "default": null,
               "takesValue": false,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "export",
+          "rawName": "export",
+          "description": "Package the fingerprint as a portable brand artifact with a locator audit.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "export",
+          "summary": "Package the fingerprint as a portable brand artifact.",
+          "options": [
+            {
+              "rawName": "--out <path>",
+              "name": "out",
+              "description": "Write the archive to this path",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--no-haunts",
+              "name": "haunts",
+              "description": "Exclude the haunts/ subtree from the archive",
+              "default": true,
+              "takesValue": false,
+              "negated": true
+            },
+            {
+              "rawName": "--strict",
+              "name": "strict",
+              "description": "Exit 2 if any referenced local material locators will not travel",
+              "default": null,
+              "takesValue": false,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
+              "takesValue": true,
               "negated": false
             }
           ]

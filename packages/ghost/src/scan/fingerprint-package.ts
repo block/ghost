@@ -1,9 +1,13 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import {
+  classifyMaterialLocator,
   closestIds,
+  expandLocalMaterialLocator,
   type GhostCatalog,
   type GhostFingerprintPackageManifest,
+  listBundledMaterialFiles,
+  materialLocatorClaimsPath,
   parseGlossary,
   parseSourceRef,
   sliceNodeSection,
@@ -17,13 +21,15 @@ import {
   FINGERPRINT_MANIFEST_FILENAME,
   FINGERPRINT_PACKAGE_DIR,
   GHOST_GLOSSARY_FILENAME,
+  GHOST_MATERIALS_DIR,
 } from "./constants.js";
 import {
   lintFingerprintPackageManifest,
   loadFingerprintPackage,
-} from "./fingerprint-package-layers.js";
-import type { LoadedCheck } from "./haunt-tree.js";
+} from "./fingerprint-package-loader.js";
+import type { LoadedCheck } from "./haunt-files.js";
 import type { LintIssue, LintReport } from "./lint.js";
+import { resolveGitRoot } from "./package-paths.js";
 import {
   DEFAULT_TEMPLATE_NAME,
   getInitTemplate,
@@ -53,7 +59,7 @@ export interface LoadedFingerprintPackage {
   /** Checks from the `checks` haunt; never part of gather/pull. */
   checks: Map<string, LoadedCheck>;
   /**
-   * Nodes that failed per-node lint and were skipped while folding the catalog,
+   * Nodes that failed per-node lint and were skipped while loading the catalog,
    * each with its package-relative file path and first error message. Carried
    * so `validate` can surface a malformed node instead of silently dropping it.
    */
@@ -195,11 +201,11 @@ export async function lintFingerprintPackage(
       issues.filter((issue) => issue.severity === "error").length >
       beforeManifestErrors;
     if (manifestHasErrors) return finalize(issues);
-    // graph pass: fold + validate the node network.
+    // catalog pass: load + validate the node catalog.
     try {
       const { catalog, checks, invalid, invalidHaunts } =
         await loadFingerprintPackage(paths);
-      // node pass: a node that failed its own schema was skipped while folding
+      // node pass: a node that failed its own schema was skipped while loading
       // the catalog; surface it here so a malformed node is loud, not silent.
       issues.push(
         ...invalid.map((entry) => ({
@@ -217,12 +223,14 @@ export async function lintFingerprintPackage(
           path: entry.file,
         })),
       );
+      await lintGlossary(paths.glossary, issues);
       await lintKindPrefixes(paths, catalog, issues);
+      await lintMaterialLocators(paths, catalog, issues, cwd);
       lintCheckReferences(catalog, checks, issues);
     } catch (err) {
       issues.push({
         severity: "error",
-        rule: "package-graph-invalid",
+        rule: "package-catalog-invalid",
         message: err instanceof Error ? err.message : String(err),
         path: ".ghost",
       });
@@ -230,6 +238,30 @@ export async function lintFingerprintPackage(
   }
 
   return finalize(issues);
+}
+
+async function lintGlossary(
+  glossaryPath: string,
+  issues: LintIssue[],
+): Promise<void> {
+  let raw: string;
+  try {
+    raw = await readFile(glossaryPath, "utf-8");
+  } catch (err) {
+    if (isMissingPathError(err)) return;
+    throw err;
+  }
+
+  const result = parseGlossary(raw);
+  if (result.glossary !== null) return;
+  issues.push(
+    ...result.errors.map((message) => ({
+      severity: "error" as const,
+      rule: "glossary-invalid",
+      message,
+      path: GHOST_GLOSSARY_FILENAME,
+    })),
+  );
 }
 
 async function lintKindPrefixes(
@@ -252,11 +284,72 @@ async function lintKindPrefixes(
       message:
         `Kind prefix \`${node.kind}\` is not declared in ${GHOST_GLOSSARY_FILENAME}.` +
         (suggestion === undefined
-          ? " Drop the prefix if this node is uncategorized."
-          : ` Did you mean \`${suggestion}\`? Drop the prefix if this node is uncategorized.`),
+          ? " Drop the prefix if this node has no kind."
+          : ` Did you mean \`${suggestion}\`? Drop the prefix if this node has no kind.`),
       path: `${node.id}.md`,
     });
   }
+}
+
+async function lintMaterialLocators(
+  paths: FingerprintPackagePaths,
+  catalog: GhostCatalog,
+  issues: LintIssue[],
+  cwd: string,
+): Promise<void> {
+  const repoRoot = await resolveGitRoot(cwd);
+  const options = {
+    repoRoot,
+    packageDir: paths.packageDir,
+    materialsDir: GHOST_MATERIALS_DIR,
+  };
+
+  const claimedLocators: string[] = [];
+  for (const node of catalog.nodes.values()) {
+    for (const locator of node.materials ?? []) {
+      if (classifyMaterialLocator(locator).kind === "url") continue;
+      claimedLocators.push(locator);
+      const expanded = await expandLocalMaterialLocator(locator, options, {
+        cap: Number.POSITIVE_INFINITY,
+      });
+      if (expanded.matches.length > 0) continue;
+      issues.push({
+        severity: "warning",
+        rule: "material-locator-dead",
+        message: `material locator '${locator}' matches no local files`,
+        path: `${node.id}.md.materials`,
+      });
+    }
+  }
+
+  const bundledFiles = await listBundledMaterialFiles(options);
+  for (const file of bundledFiles) {
+    const claimed = claimedLocators.some((locator) =>
+      materialLocatorClaimsPath(locator, file, options),
+    );
+    if (claimed) continue;
+    issues.push({
+      severity: "warning",
+      rule: "material-orphaned",
+      message:
+        "bundled material is not claimed by any node `materials` locator",
+      path: toPackageRelative(file, repoRoot, paths.packageDir),
+    });
+  }
+}
+
+function toPackageRelative(
+  repoRelativePath: string,
+  repoRoot: string,
+  packageDir: string,
+): string {
+  const packageRelative = relative(
+    packageDir,
+    resolve(repoRoot, repoRelativePath),
+  )
+    .replace(/\\/g, "/")
+    .replace(/^\.\//, "");
+  return packageRelative.startsWith("../") ? repoRelativePath : packageRelative;
 }
 
 function lintCheckReferences(
@@ -314,9 +407,7 @@ async function readDeclaredGlossaryKinds(
 
   const result = parseGlossary(raw);
   if (result.glossary === null) return [];
-  return result.glossary.frontmatter.categories.map(
-    (category) => category.name,
-  );
+  return result.glossary.frontmatter.kinds.map((kind) => kind.name);
 }
 
 async function readRequired(

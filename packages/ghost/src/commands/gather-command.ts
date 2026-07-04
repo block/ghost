@@ -34,6 +34,7 @@ export function registerGatherCommand(cli: CAC): void {
     .option("--format <fmt>", "Output format: markdown or json", {
       default: "markdown",
     })
+    .option("--wild", "Include wild-posture nodes in the menu")
     .action(async (askParts: string[] | undefined, opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
@@ -45,12 +46,22 @@ export function registerGatherCommand(cli: CAC): void {
         const ask = normalizeAsk(askParts);
         const paths = resolveFingerprintPackage(opts.package, process.cwd());
         const loaded = await loadFingerprintPackage(paths);
-        const menu = buildCatalogMenu(loaded.catalog);
+        const wildIds = [...loaded.catalog.nodes.values()]
+          .filter((node) => node.wild)
+          .map((node) => node.id)
+          .sort();
+        const includeWild = Boolean(opts.wild);
+        const menu = buildCatalogMenu(loaded.catalog, { includeWild });
+        const exposedWildIds = menu
+          .filter((entry) => entry.wild)
+          .map((entry) => entry.id);
         const kinds = await readMenuKinds(paths.glossary);
         await appendGhostEvent(paths.packageDir, {
           event: "gather",
           ...(ask ? { ask } : {}),
           menu: menu.map((entry) => entry.id),
+          wild: includeWild,
+          wildIds: exposedWildIds,
         });
 
         // Ghost does no selection. It emits the catalog; the agent reads the
@@ -63,13 +74,22 @@ export function registerGatherCommand(cli: CAC): void {
                 ...(ask ? { ask } : {}),
                 ...(kinds.length > 0 ? { kinds } : {}),
                 nodes: menu,
+                ...(wildIds.length > 0 && !includeWild
+                  ? { wildAvailable: wildIds.length }
+                  : {}),
               },
               null,
               2,
             )}\n`,
           );
         } else {
-          process.stdout.write(formatMenuMarkdown(menu, kinds, ask));
+          process.stdout.write(
+            formatMenuMarkdown(menu, kinds, {
+              ask,
+              wildAvailable: includeWild ? 0 : wildIds.length,
+              wildIncluded: includeWild && exposedWildIds.length > 0,
+            }),
+          );
         }
         process.exit(0);
       } catch (err) {
@@ -98,29 +118,41 @@ async function readMenuKinds(glossaryPath: string): Promise<MenuKind[]> {
   }
   const result = parseGlossary(raw);
   if (result.glossary === null) return [];
-  return result.glossary.categories
-    .filter((category) => category.purpose.length > 0)
-    .map((category) => ({
-      name: category.name,
+  return result.glossary.kinds
+    .filter((kind) => kind.purpose.length > 0)
+    .map((kind) => ({
+      name: kind.name,
       // Legend entries are one line each: keep the section's first paragraph
       // and collapse internal wrapping.
-      purpose: (category.purpose.split(/\n\s*\n/, 1)[0] ?? "")
+      purpose: (kind.purpose.split(/\n\s*\n/, 1)[0] ?? "")
         .replace(/\s+/g, " ")
         .trim(),
     }));
 }
 
+interface FormatMenuOptions {
+  ask?: string;
+  wildAvailable?: number;
+  wildIncluded?: boolean;
+}
+
 function formatMenuMarkdown(
   menu: CatalogMenuEntry[],
   kinds: MenuKind[],
-  ask?: string,
+  options: FormatMenuOptions = {},
 ): string {
   const lines: string[] = [
-    ask ? `# Ghost Nodes — for: ${ask}` : "# Ghost Nodes",
+    options.ask ? `# Ghost Nodes — for: ${options.ask}` : "# Ghost Nodes",
     "",
     "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
     "",
   ];
+  if (options.wildIncluded) {
+    lines.push(
+      "Wild nodes are marked `(wild)`: they push past the fingerprint and require explicit open territory in the brief.",
+      "",
+    );
+  }
   if (kinds.length > 0) {
     lines.push("Kinds:", "");
     for (const kind of kinds) {
@@ -130,11 +162,18 @@ function formatMenuMarkdown(
   }
   for (const entry of menu) {
     const kind = entry.kind ? ` _(${entry.kind})_` : "";
-    lines.push(`- \`${entry.id}\`${kind}`);
+    const wild = entry.wild ? " _(wild)_" : "";
+    lines.push(`- \`${entry.id}\`${kind}${wild}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
     if (entry.materials !== undefined) {
       lines.push(`  - materials: ${entry.materials}`);
     }
+  }
+  if ((options.wildAvailable ?? 0) > 0) {
+    lines.push(
+      "",
+      `${options.wildAvailable} wild node${options.wildAvailable === 1 ? "" : "s"} available via \`--wild\`.`,
+    );
   }
   return `${lines.join("\n")}\n`;
 }

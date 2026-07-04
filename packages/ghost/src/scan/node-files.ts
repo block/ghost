@@ -4,21 +4,24 @@ import { type PlacedNode, parseNode } from "#ghost-core";
 import {
   FINGERPRINT_MANIFEST_FILENAME,
   GHOST_GLOSSARY_FILENAME,
+  GHOST_MATERIALS_DIR,
 } from "./constants.js";
 
 /**
  * Reserved package-root entries that are never nodes: the manifest (the
- * package anchor), the glossary, and `haunts/` (optional attached capabilities
- * such as review checks). The list is closed.
+ * package anchor), the glossary, `materials/` (bundled materials), and
+ * `haunts/` (optional attached capabilities such as review checks). The list
+ * is closed.
  */
 const RESERVED_ROOT_ENTRIES = new Set<string>([
   FINGERPRINT_MANIFEST_FILENAME,
   "manifest.yaml",
   GHOST_GLOSSARY_FILENAME,
+  GHOST_MATERIALS_DIR,
   "haunts",
 ]);
 
-export interface LoadedNodeTree {
+export interface LoadedNodeFiles {
   nodes: PlacedNode[];
   /** Files that failed lint, with their first error message (path-relative id). */
   invalid: Array<{ file: string; message: string }>;
@@ -26,23 +29,23 @@ export interface LoadedNodeTree {
 
 /**
  * Load authored prose nodes from the package directory. The corpus is flat:
- * there is no hierarchy, no inheritance, no edges. Nesting into folders is a
+ * there is no hierarchy, no inheritance, no edges. Nesting into directories is a
  * browsing convenience only.
  *
  * Every `*.md` file under the package directory is a node. Its id is its path
  * with `.md` dropped, uniformly (`marketing/email.md` → `marketing/email`,
  * `index.md` → `index`). The reserved root entries — `manifest.yml`,
- * `glossary.md`, and `haunts/` — are skipped.
+ * `glossary.md`, `materials/`, and `haunts/` — are skipped.
  *
  * A file that fails per-node lint is collected in `invalid` (with its first
  * error) and skipped rather than throwing, so one bad node does not block
- * folding the rest. Absent or empty tree → no nodes.
+ * loading the rest. A missing package directory or empty corpus yields no nodes.
  */
-export async function loadNodeTree(
+export async function loadNodeFiles(
   packageDir: string,
-): Promise<LoadedNodeTree> {
+): Promise<LoadedNodeFiles> {
   const nodes: PlacedNode[] = [];
-  const invalid: LoadedNodeTree["invalid"] = [];
+  const invalid: LoadedNodeFiles["invalid"] = [];
 
   await walk(packageDir, "", true, nodes, invalid);
 
@@ -57,7 +60,7 @@ async function walk(
   relDir: string,
   isRoot: boolean,
   nodes: PlacedNode[],
-  invalid: LoadedNodeTree["invalid"],
+  invalid: LoadedNodeFiles["invalid"],
 ): Promise<void> {
   const absDir = relDir === "" ? packageDir : join(packageDir, relDir);
   let entries: Array<{ name: string; isDir: boolean }>;
