@@ -29,7 +29,7 @@ assembles advisory review packets after, but never grades output itself. You
 work through a short loop:
 
 ```bash
-ghost init        # scaffold .ghost/ (manifest + glossary + a starter index.md)
+ghost init        # scaffold .ghost/ with the steering starter
 ghost validate    # artifact shape + node validity + kind-prefix check
 ghost gather <ask> # emit the menu for this task; your agent selects the truths it needs
 ghost pull <ids>   # read the selected truths' full bodies
@@ -79,8 +79,7 @@ by decision. One high-confidence truth beats an empty catalog.
 
 The CLI handles the deterministic package work. Your agent handles the authoring:
 interviewing you, working with the material you show it, drafting node prose,
-and asking you to curate the claims. `ghost init` scaffolds `manifest.yml`, a starter `glossary.md`,
-and a core `index.md` node.
+and asking you to curate the claims. `ghost init` scaffolds the steering starter: `manifest.yml`, a starter `glossary.md`, a core `index.md` node, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. The demo content is there for inspiration and guidance. Replace its claims, paths, examples, and decisions with your real product truth before using it to steer generation. Use `ghost init --template minimal` when you only want the small manifest/glossary/index starter.
 
 ```bash
 ghost init

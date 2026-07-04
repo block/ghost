@@ -1,15 +1,13 @@
 ---
 name: brief
-description: Build a pre-generation brief from the gathered brand truths — an instruction-plus-materials packet shaped as intent, inventory, and composition.
+description: Build a pre-generation brief from gathered brand truths as a steering packet with provenance.
 ---
 
 # Recipe: Brief Work From Ghost Fingerprint
 
 A brief turns the truths you gathered into a packet the generating agent can act
-on: the materials (the selected node prose) plus the instruction (how to read
-it), organized through the three authoring lenses. The lenses are an output
-*view* here, not fields or structure — synthesize across the truths you pulled;
-never chop one node into three pieces.
+on: the selected node prose plus instructions for how to read it. The packet is
+ephemeral working context, never written back into `.ghost/`.
 
 0. Before building, run the [self-check](self-check.md): if you cannot name the
    nodes you gathered, label each claim as Ghost-backed or provisional, confirm
@@ -20,33 +18,44 @@ never chop one node into three pieces.
    free-text ask so the local event tape records which menu was exposed for what.
 2. Run `ghost pull <id> [<id>…]` to read the selected nodes' bodies (prefer
    `pull` over direct file reads — it logs the selection to the local
-   `.ghost/.events` tape for the author). Honor each node's kind: apply a `principle`
-   as always-on; apply a `condition` only when its stated situation holds; treat
-   an `exemplar` as illustrative, not normative. The intent, the material, and
-   the composition live in that node prose — surface them, do not add to them.
+   `.ghost/.events` tape for the author). Always include `index` in your pull
+   unless you have already read it this session — it carries the fingerprint's
+   non-negotiables and reading posture. Honor each node's kind **as the
+   glossary defines it** — the glossary is the authoritative meaning of every
+   kind, and `ghost gather` emits each kind's purpose in the menu legend. The
+   starter vocabulary is only a default; an author's glossary overrides it.
 3. When the truths are sparse, label local reasoning provisional rather than
    inventing rules. An empty section is a valid result: write "the fingerprint is
    silent here" instead of manufacturing one.
 
 The host agent owns natural-language matching: read the menu (each node's
-description) and pick the truths the ask belongs to. Ghost never selects for you.
+`description`) and pick the truths the ask belongs to. Ghost never selects for
+you.
 
 ## The packet
 
-Return one short packet. Every claim is tagged: cite the node id for Ghost-backed
-lines; mark the rest provisional. The packet is ephemeral working context, never
-written back into `.ghost/`.
+Return one short packet. Every claim is tagged: cite the node id for
+Ghost-backed lines; mark the rest provisional. Use these sections when relevant:
 
-- **Grounded in:** the node ids you pulled, and the conditions you determined to
-  apply.
-- **Intent** — the why and the stance the work must carry.
-- **Inventory** — the concrete materials to build with, and pointers to code the
-  agent can inspect. Do not name materials the fingerprint never did.
-- **Composition** — the patterns to hold so the output feels intentional
-  (hierarchy, density, restraint, repetition, trust, flow).
+- **Grounded in:** the node ids you pulled.
+- **Conditions that apply:** which conditional truths apply or do not apply, and
+  why, respecting the glossary and the node prose.
+- **Non-negotiables:** the hard invariants from the pulled nodes (and `index`),
+  stated as never/always lines with node ids. These bind regardless of taste;
+  everything below them is direction to interpret.
+- **Stance:** the governing principle, tradeoff, or intent the work must carry.
+- **Materials:** concrete assets, tokens, components, implementation paths, or
+  other locators the fingerprint names. Do not name materials the fingerprint
+  never did.
+- **Patterns:** bound/open structure the output should follow.
+- **Exemplars:** what good form, rhythm, quality, code shape, or voice to match;
+  state what the exemplar is normative for and what is incidental.
+- **Anti-goals:** plausible generic or neighboring outputs to avoid.
+- **Decision traces:** settled tradeoffs that should not be re-litigated, plus
+  any stated reversal condition.
 - **Silent / provisional:** where the fingerprint does not cover the task and
   what carries the reasoning there.
 
-The lenses are this packet's output view — never reshape the fingerprint into
-intent/inventory/composition on disk. Fingerprint edits are ordinary Git-reviewed
-edits.
+The steering sections are a briefing view, not on-disk fields. Never reshape the
+fingerprint into required `stance` / `materials` / `patterns` fields. Fingerprint
+edits are ordinary Git-reviewed edits.

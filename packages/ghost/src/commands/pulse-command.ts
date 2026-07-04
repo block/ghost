@@ -1,5 +1,5 @@
 import type { CAC } from "cac";
-import { buildCatalogMenu } from "#ghost-core";
+import { buildCatalogMenu, type CatalogMenuEntry } from "#ghost-core";
 import { resolveFingerprintPackage } from "../fingerprint.js";
 import {
   type GhostObservabilityEvent,
@@ -31,10 +31,7 @@ export function registerPulseCommand(cli: CAC): void {
         const loaded = await loadFingerprintPackage(paths);
         const menu = buildCatalogMenu(loaded.catalog);
         const events = await readGhostEvents(paths.packageDir);
-        const report = buildPulseReport(
-          events,
-          menu.map((entry) => entry.id),
-        );
+        const report = buildPulseReport(events, menu);
 
         if (opts.format === "json") {
           process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -55,6 +52,14 @@ type NodeHitReport = {
   hitRate: number;
 };
 
+type KindHitReport = {
+  kind: string;
+  appearances: number;
+  pulls: number;
+  hitRate: number;
+  coldNodes: string[];
+};
+
 type MissReport = {
   requested: string;
   count: number;
@@ -69,13 +74,14 @@ type PulseReport = {
   abandonedGathers: number;
   pullsPerGather: number;
   nodes: NodeHitReport[];
+  kinds: KindHitReport[];
   coldNodes: string[];
   misses: MissReport[];
 };
 
 function buildPulseReport(
   events: GhostObservabilityEvent[],
-  currentMenuIds: string[],
+  currentMenu: CatalogMenuEntry[],
 ): PulseReport {
   const exposureCounts = new Map<string, number>();
   const pullCounts = new Map<string, number>();
@@ -83,6 +89,9 @@ function buildPulseReport(
     string,
     { count: number; suggested: Set<string> }
   >();
+  const nodeKinds = new Map(
+    currentMenu.map((entry) => [entry.id, entry.kind ?? "(uncategorized)"]),
+  );
 
   let gathers = 0;
   let pulls = 0;
@@ -114,7 +123,7 @@ function buildPulseReport(
 
   if (sawGather && !activeGatherHasPull) abandonedGathers += 1;
 
-  const nodeIds = new Set([...currentMenuIds, ...exposureCounts.keys()]);
+  const nodeIds = new Set([...nodeKinds.keys(), ...exposureCounts.keys()]);
   const nodes = [...nodeIds]
     .map((id) => {
       const appearances = exposureCounts.get(id) ?? 0;
@@ -132,6 +141,25 @@ function buildPulseReport(
       return a.id.localeCompare(b.id);
     });
 
+  const kindCounts = new Map<
+    string,
+    { appearances: number; pulls: number; coldNodes: string[] }
+  >();
+  for (const node of nodes) {
+    const kind = nodeKinds.get(node.id) ?? "(uncategorized)";
+    const counts = kindCounts.get(kind) ?? {
+      appearances: 0,
+      pulls: 0,
+      coldNodes: [],
+    };
+    counts.appearances += node.appearances;
+    counts.pulls += node.pulls;
+    if (node.appearances > 0 && node.pulls === 0) {
+      counts.coldNodes.push(node.id);
+    }
+    kindCounts.set(kind, counts);
+  }
+
   return {
     kind: "pulse",
     events: events.length,
@@ -140,6 +168,20 @@ function buildPulseReport(
     abandonedGathers,
     pullsPerGather: gathers > 0 ? pulls / gathers : 0,
     nodes,
+    kinds: [...kindCounts.entries()]
+      .map(([kind, counts]) => ({
+        kind,
+        appearances: counts.appearances,
+        pulls: counts.pulls,
+        hitRate: counts.appearances > 0 ? counts.pulls / counts.appearances : 0,
+        coldNodes: counts.coldNodes.sort(),
+      }))
+      .sort((a, b) => {
+        if (b.appearances !== a.appearances)
+          return b.appearances - a.appearances;
+        if (b.pulls !== a.pulls) return b.pulls - a.pulls;
+        return a.kind.localeCompare(b.kind);
+      }),
     coldNodes: nodes
       .filter((node) => node.appearances > 0 && node.pulls === 0)
       .map((node) => node.id),
@@ -192,6 +234,21 @@ function formatPulseMarkdown(report: PulseReport): string {
     for (const node of report.nodes) {
       lines.push(
         `| \`${node.id}\` | ${node.appearances} | ${node.pulls} | ${formatPercent(node.hitRate)} |`,
+      );
+    }
+  }
+
+  lines.push("", "## Kind hit rates", "");
+  if (report.kinds.length === 0) {
+    lines.push("No kinds found.");
+  } else {
+    lines.push(
+      "| Kind | Seen on menus | Pulled | Hit rate | Cold nodes |",
+      "|---|---:|---:|---:|---:|",
+    );
+    for (const kind of report.kinds) {
+      lines.push(
+        `| \`${kind.kind}\` | ${kind.appearances} | ${kind.pulls} | ${formatPercent(kind.hitRate)} | ${kind.coldNodes.length} |`,
       );
     }
   }

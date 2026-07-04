@@ -32,7 +32,9 @@ true, and an agent reads the relevant truths before building.
 - A node's **kind** comes from its filename prefix (`principle.density.md` →
   kind `principle`). A bare name (`voice.md`) is uncategorized.
 - The **glossary** declares the category vocabulary and what each category means.
-- The starter `index.md` node (id `index`) is the human-curated front door.
+- The starter `index.md` node (id `index`) is the human-curated front door:
+  by convention it carries the non-negotiables and reading posture, and agents
+  pull it first.
 - There is **no hierarchy, no inheritance, no edges**. Folders are for browsing
   only; the model reads a flat menu.
 - A **haunt** is an optional capability attached to the fingerprint, living
@@ -45,7 +47,7 @@ true, and an agent reads the relevant truths before building.
 ## The loop
 
 ```bash
-ghost init          # scaffold .ghost/ (fingerprint only)
+ghost init          # scaffold .ghost/ with the steering starter
 ghost haunt add checks  # opt in to review assertions
 ghost validate      # artifact shape + node/material/haunt validation
 ghost gather <ask>  # emit the fingerprint menu for this task
@@ -67,7 +69,7 @@ host agent renders findings.
 
 | Verb | Purpose |
 |---|---|
-| `ghost init` | Scaffold `.ghost/` with a manifest, starter glossary, and starter `index.md`. `--with checks` also adds the checks haunt. |
+| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
 | `ghost haunt add\|remove\|list` | Manage optional haunts (e.g. `ghost haunt add checks`). |
 | `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, installed haunts, check references, and glossary kind prefixes. |
 | `ghost gather [ask…] [--format json]` | Emit the node menu for selection; log exposed ids. |
@@ -85,6 +87,7 @@ host agent renders findings.
 - Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).
 - Probe readiness before generating: follow [references/self-check.md](references/self-check.md).
+- Audit steering coverage: follow [references/steering-audit.md](references/steering-audit.md).
 - Understand the package shape: see [references/schema.md](references/schema.md).
 
 Fingerprint authoring is **elicitation, not scanning**. The raw material is what
@@ -96,8 +99,10 @@ conventions, but durable brand truth should be curated by the human.
 
 A silent fingerprint does not require stopping. Proceed from nearby product
 surfaces, local conventions, and ordinary reasoning when safe, and label that
-reasoning as provisional and non-Ghost-backed. Ask a human before high-risk,
-irreversible, privacy, security, legal, or brand-defining choices.
+reasoning as provisional and non-Ghost-backed — unless the fingerprint itself
+declares a stricter silence posture (check the `index` node), which overrides
+this default. Ask a human before high-risk, irreversible, privacy, security,
+legal, or brand-defining choices.
 
 ## Never
 

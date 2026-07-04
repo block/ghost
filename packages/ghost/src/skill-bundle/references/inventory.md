@@ -43,10 +43,14 @@ Neither is correct. A concrete inventory node is a deliberate trade, not a leak.
 
 ## Tier first: not everything earns a node
 
-- **Primitives** (button, input, badge, avatar, spinner…) get **no prose body**.
-  They are shared vocabulary, not intent. If you record one at all, give it only
-  a `description` so `gather` can surface it; the absence of a body is the signal
-  it is a primitive.
+- **Primitives** (button, input, badge, avatar, spinner…) get **no prose body**
+  when the generic form serves. They are shared vocabulary, not intent. If you
+  record one at all, give it only a `description` so `gather` can surface it;
+  the absence of a body is the signal that training priors are acceptable here.
+  When a primitive is itself brand-distinctive (a button whose shape, weight, or
+  focus treatment is a recognizable brand move), its *divergence from the
+  generic form* is a truth worth a body: state what differs and why, not the
+  full API.
 - **Anything that encodes a user moment** (confirmation, plan, task, tool,
   reasoning, sources…) earns **one short prose body**. This is what the method is
   for.
@@ -77,9 +81,10 @@ when (use X instead) / never*:
 - **never**: what it must not be conscripted into, so the agent does not stretch
   it to fit.
 
-Keep appearance, props, tokens, and code out; those are API reference, not
-inventory prose. The body documents purpose; the implementation beneath it is
-swappable.
+Keep props, markup, and API reference out; the body documents purpose, and the
+implementation beneath it is swappable. Explicit values are the exception when
+the value itself is the brand truth — an exact color, a specific corner radius —
+not a swappable implementation detail.
 
 ## How a match runs
 
@@ -132,8 +137,9 @@ description: A primitive action trigger.
 ---
 ```
 
-(A primitive: a `description` so `gather` can surface it, no body. The agent
-already knows what a button is.)
+(A primitive the generic form serves: a `description` so `gather` can surface
+it, no body. If this brand's button were itself a recognizable brand move, its
+divergence from the generic form would earn a short body.)
 
 ## Reuse vs. free-compose
 
@@ -144,9 +150,11 @@ prop APIs re-imports implementation opinion and creates a mirror to maintain.
 
 ## Never
 
-- Never write a prose body on a primitive; the absence of a body is the signal.
-- Never put props, tokens, or markup in an inventory body; that is API reference,
-  not purpose.
+- Never write a prose body on a primitive the generic form serves; the absence
+  of a body is the signal. A brand-distinctive primitive earns a body for its
+  divergence, never for its API.
+- Never put props, markup, or API reference in an inventory body; explicit
+  values belong only when the value itself is the brand truth.
 - Never let the fingerprint reference the realizing surface; inventory is read,
   not addressed.
 - Never split two blocks that answer the same first question; that is one node.

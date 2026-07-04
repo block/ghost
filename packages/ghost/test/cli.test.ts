@@ -206,7 +206,7 @@ describe("ghost CLI", () => {
     expect(result.stderr).toContain("--format json");
   });
 
-  it("initializes the default fingerprint package", async () => {
+  it("initializes the default steering fingerprint package", async () => {
     const init = await runCli(["init", "--format", "json"], dir);
 
     expect(init.code).toBe(0);
@@ -215,14 +215,167 @@ describe("ghost CLI", () => {
     expect(initOutput.written).toContain("manifest.yml");
     expect(initOutput.written).toContain("glossary.md");
     expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("principle.stance.md");
+    expect(initOutput.written).toContain("principle.composition.md");
+    expect(initOutput.written).toContain(
+      "anti-goal.generic-generated-output.md",
+    );
+    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+    expect(initOutput.written).toContain("exemplar.annotated-reference.md");
+    expect(initOutput.written).toContain("asset.materials.md");
+    expect(initOutput.written).toContain("decision.tradeoff.md");
     // Core init is fingerprint-only: haunts are opt-in via --with / haunt add.
     expect(initOutput.written).not.toContain("checks/example.md.example");
     await expect(
       readFile(join(dir, ".ghost", "manifest.yml"), "utf-8"),
     ).resolves.toContain("schema: ghost.fingerprint-package/v1");
 
+    const index = await readFile(join(dir, ".ghost", "index.md"), "utf-8");
+    expect(index).toContain(
+      "Everything in this starter package is demo content",
+    );
+    expect(index).toContain(
+      "replace the claims, paths, examples, and decisions",
+    );
+
     const validate = await runCli(["validate"], dir);
     expect(validate.code).toBe(0);
+  });
+
+  it("initializes the minimal fingerprint package", async () => {
+    const init = await runCli(
+      ["init", "--template", "minimal", "--format", "json"],
+      dir,
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("glossary.md");
+    expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).not.toContain("principle.stance.md");
+    expect(initOutput.written).not.toContain("decision.tradeoff.md");
+
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+  });
+
+  it("keeps default as an alias for the steering template", async () => {
+    const init = await runCli(
+      ["init", "--template", "default", "--format", "json"],
+      dir,
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.written).toContain("principle.stance.md");
+    expect(initOutput.written).toContain("decision.tradeoff.md");
+
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+  });
+
+  it("initializes the composition starter template", async () => {
+    const init = await runCli(
+      ["init", "--template", "composition", "--format", "json"],
+      dir,
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("glossary.md");
+    expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("principle.composition.md");
+    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+
+    // The scaffolded package is valid as written.
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+
+    // The ladder nodes surface in the gather menu with their kinds.
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const menu = JSON.parse(gather.stdout);
+    const ids = menu.nodes.map((node: { id: string }) => node.id);
+    expect(ids).toContain("principle.composition");
+    expect(ids).toContain("pattern.status-with-next-step");
+    const pattern = menu.nodes.find(
+      (node: { id: string }) => node.id === "pattern.status-with-next-step",
+    );
+    expect(pattern.kind).toBe("pattern");
+
+    // The pattern body carries the bound/open/refines convention.
+    const pull = await runCli(["pull", "pattern.status-with-next-step"], dir);
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("Bound (decided");
+    expect(pull.stdout).toContain("Open (your call");
+    expect(pull.stdout).toContain("principle.composition");
+  });
+
+  it("initializes the steering starter template", async () => {
+    const init = await runCli(
+      ["init", "--template", "steering", "--format", "json"],
+      dir,
+    );
+
+    expect(init.code).toBe(0);
+    const initOutput = JSON.parse(init.stdout);
+    expect(initOutput.written).toContain("manifest.yml");
+    expect(initOutput.written).toContain("glossary.md");
+    expect(initOutput.written).toContain("index.md");
+    expect(initOutput.written).toContain("principle.stance.md");
+    expect(initOutput.written).toContain("principle.composition.md");
+    expect(initOutput.written).toContain(
+      "anti-goal.generic-generated-output.md",
+    );
+    expect(initOutput.written).toContain("pattern.status-with-next-step.md");
+    expect(initOutput.written).toContain("exemplar.annotated-reference.md");
+    expect(initOutput.written).toContain("asset.materials.md");
+    expect(initOutput.written).toContain("decision.tradeoff.md");
+    expect(initOutput.written).not.toContain("concept.scoped-direction.md");
+
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const menu = JSON.parse(gather.stdout);
+    const ids = menu.nodes.map((node: { id: string }) => node.id);
+    expect(ids).toContain("principle.stance");
+    expect(ids).toContain("principle.composition");
+    expect(ids).toContain("anti-goal.generic-generated-output");
+    expect(ids).toContain("pattern.status-with-next-step");
+    expect(ids).toContain("exemplar.annotated-reference");
+    expect(ids).toContain("asset.materials");
+    expect(ids).toContain("decision.tradeoff");
+
+    const antiGoal = menu.nodes.find(
+      (node: { id: string }) =>
+        node.id === "anti-goal.generic-generated-output",
+    );
+    expect(antiGoal.kind).toBe("anti-goal");
+    const decision = menu.nodes.find(
+      (node: { id: string }) => node.id === "decision.tradeoff",
+    );
+    expect(decision.kind).toBe("decision");
+    expect(menu.kinds.map((kind: { name: string }) => kind.name)).toContain(
+      "concept",
+    );
+  });
+
+  it("rejects an unknown init template with a usage error", async () => {
+    const result = await runCli(
+      ["init", "--template", "nope", "--format", "json"],
+      dir,
+      { allowNoExit: true },
+    );
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("Unknown init template 'nope'");
+    expect(result.stderr).toContain("minimal");
+    expect(result.stderr).toContain("composition");
+    expect(result.stderr).toContain("steering");
   });
 
   it("uses GHOST_PACKAGE_DIR as the default fingerprint package directory for init", async () => {
@@ -323,7 +476,7 @@ describe("ghost CLI", () => {
   });
 
   it("refuses to overwrite existing fingerprint files unless forced", async () => {
-    await runCli(["init"], dir);
+    await runCli(["init", "--template", "minimal"], dir);
     await writeFile(
       join(dir, ".ghost", "index.md"),
       "---\n---\n\nCurated Surface voice.\n",
@@ -344,7 +497,7 @@ describe("ghost CLI", () => {
     expect(forced.code).toBe(0);
     await expect(
       readFile(join(dir, ".ghost", "index.md"), "utf-8"),
-    ).resolves.toContain("The glossary declares the category vocabulary");
+    ).resolves.toContain("Everything in this starter package is demo content");
   });
 
   it("does not guess arbitrary YAML files are validate.yml", async () => {
@@ -420,6 +573,30 @@ describe("ghost CLI", () => {
     expect(slice.nodes.some((n: { id: string }) => n.id === "index")).toBe(
       true,
     );
+  });
+
+  it("gather surfaces glossary kind purposes as a menu legend", async () => {
+    await runCli(["init"], dir);
+
+    // JSON carries the glossary's declared kinds with their prose purposes.
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    const menu = JSON.parse(gather.stdout);
+    const principle = menu.kinds.find(
+      (k: { name: string }) => k.name === "principle",
+    );
+    expect(principle.purpose).toContain("Durable stance");
+
+    // Markdown renders the same legend above the node list.
+    const markdown = await runCli(["gather"], dir);
+    expect(markdown.stdout).toContain("Kinds:");
+    expect(markdown.stdout).toContain("- **principle** — Durable stance");
+
+    // A missing glossary degrades to no legend, not an error.
+    await rm(join(dir, ".ghost", "glossary.md"));
+    const bare = await runCli(["gather", "--format", "json"], dir);
+    expect(bare.code).toBe(0);
+    expect(JSON.parse(bare.stdout).kinds).toBeUndefined();
   });
 
   it("runs validate from the unified cli", async () => {
@@ -552,7 +729,7 @@ describe("ghost CLI", () => {
   });
 
   it("pulse reports local gather/pull metrics", async () => {
-    await runCli(["init"], dir);
+    await runCli(["init", "--template", "minimal"], dir);
     await writeFile(
       join(dir, ".ghost", "principle.trust.md"),
       "---\ndescription: Trust.\n---\n\nBody.\n",
@@ -590,9 +767,28 @@ describe("ghost CLI", () => {
       count: 1,
       suggested: ["principle.trust"],
     });
+    const principleKind = report.kinds.find(
+      (kind: { kind: string }) => kind.kind === "principle",
+    );
+    expect(principleKind).toMatchObject({
+      appearances: 2,
+      pulls: 1,
+      hitRate: 0.5,
+      coldNodes: [],
+    });
+    const uncategorizedKind = report.kinds.find(
+      (kind: { kind: string }) => kind.kind === "(uncategorized)",
+    );
+    expect(uncategorizedKind).toMatchObject({
+      appearances: 4,
+      pulls: 0,
+      hitRate: 0,
+      coldNodes: ["index", "voice"],
+    });
 
     const md = await runCli(["pulse"], dir);
     expect(md.stdout).toContain("# Ghost Pulse");
+    expect(md.stdout).toContain("## Kind hit rates");
     expect(md.stdout).toContain("- Abandoned gathers: 1");
   });
 

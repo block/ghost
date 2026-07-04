@@ -51,8 +51,7 @@ a finding (exit `1`).
 
 ### Initialize: `init`
 
-Scaffold a `.ghost/` package: a manifest, a starter `glossary.md`, and a core
-`index.md` node. Add truths by adding files (`principle.density.md`). Use
+Scaffold a `.ghost/` package with the steering starter: a manifest, a starter `glossary.md`, a core `index.md` node, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. The demo content is there for inspiration and guidance. Replace it with real product truth before using it to steer generation. Use `--template minimal` when you only want the small manifest/glossary/index starter. Add truths by adding files (`principle.density.md`). Use
 `--package <dir>` for an exact directory, or set `GHOST_PACKAGE_DIR` when a host
 wrapper stores Ghost files outside the default `.ghost`. Core `init` scaffolds
 the fingerprint only; pass `--with checks` to also add the checks haunt in one
@@ -62,6 +61,7 @@ move.
 
 ```bash
 ghost init
+ghost init --template minimal
 ghost init --with checks
 ghost init --package product-fingerprint
 GHOST_PACKAGE_DIR=.agents/ghost ghost init

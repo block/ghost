@@ -65,6 +65,96 @@ frontmatter keys or node types, and a node may lean entirely on one:
 Keep a node **purpose-coherent**: one truth, any length. Split into a second node
 only when it is genuinely a different truth.
 
+## Encode in the strongest form that fixes the failure
+
+A node's body is prose, but prose is not always description. Match the encoding
+to the gap you are closing:
+
+| The agent keeps… | Encode as | Why |
+| --- | --- | --- |
+| inventing values it can't know (colors, type, spacing, component names) | explicit values in the body + `materials` locators | knowledge gap — no stance compensates for a missing token |
+| producing generic form (tone, rhythm, layout, density) | a **verbatim sample** in the body | models match shown form far better than described form |
+| crossing hard lines | **never/always invariants** with concrete objects | specific negations get the highest compliance of any prose |
+| misreading novel situations | stance prose | the interpretive frame for everything the above don't cover |
+
+A node body may *be* a sample. When the human shows you copy they love, a
+screenshot of the product at its best, or an interaction that "feels like us,"
+capture it verbatim (or point `materials` at it) and annotate what makes it
+theirs — do not summarize it away into adjectives. A real on-brand error message
+out-steers a paragraph about the error-message voice.
+
+`exemplar.error-voice.md`:
+
+```markdown
+---
+description: A verbatim on-brand error message — the voice at failure moments.
+---
+
+Normative for rhythm and stance at failure moments; match its form, not its words.
+
+> We couldn't save your changes. Your work is still here — try again, and if it
+> keeps failing, we'll hold onto everything while you sort it out.
+
+What makes it ours: leads with what happened, not with apology. States what is
+safe before what to do. One calm next step. No "Oops," no exclamation points,
+no blame on the user or the network.
+```
+
+The annotation ("what makes it ours") is the load-bearing part: a bare sample
+teaches form, the annotation teaches *which features of the form are
+intentional*, which stops an agent from copying incidental details.
+
+Counter-exemplars deserve the same first-class treatment. Escaping a generic
+default requires the generic thing to be *named and rejected*, not just the
+target described — "not bootstrap-blue, not rounded-xl cards on gray-50"
+collapses the prior that "use our distinctive palette" leaves intact.
+
+`anti-goal.generic-ui.md`:
+
+```markdown
+---
+description: The default AI-generated aesthetic we reject — read before building any UI.
+---
+
+We are not the generic generated interface: no bootstrap-blue or indigo-600
+primaries, no rounded-xl cards floating on gray-50, no emoji in headings, no
+gradient hero text, no "Oops!" copy. When a layout feels like a template that
+any product could ship, it is off-brand even if every token is right. Our
+defaults when in doubt: flat surfaces, hard alignment to the grid, one accent
+used sparingly.
+```
+
+Every never/always line in the fingerprint is also a candidate **check** — a
+check is an invariant made reviewable (see the checks haunt).
+
+## Author through steering jobs
+
+The steering buckets are mandatory questions, not mandatory fields. Do not fill
+every bucket on every node. Encode the truth in the strongest form that fixes the
+observed failure.
+
+| If the agent keeps... | Author... |
+| --- | --- |
+| missing the truth | sharper `description` / `index` mention |
+| inventing values | `asset.*` node with materials and exact names |
+| producing generic output | `anti-goal.*` plus annotated `exemplar.*` |
+| choosing the wrong structure | `pattern.*` with bound/open |
+| crossing hard lines | invariant prose plus a check |
+| applying guidance too broadly | condition in prose |
+| making bad tradeoffs | `decision.*` trace |
+| producing correct but forgettable work | scoped `concept.*` |
+
+Ask while authoring:
+
+- What generic output would an agent probably produce?
+- What does this brand refuse?
+- What real material should the agent inspect?
+- What should be copied from this exemplar, and what is incidental?
+- What is bound, and what is open?
+- What hard line would you block in review?
+- What decision almost went the other way?
+- When would this guidance reverse?
+
 ## Steps
 
 ### 1. Classify the authoring scenario
@@ -80,15 +170,23 @@ Monorepos and product suites run **one contract per package**.
 ### 2. Initialize
 
 ```bash
-ghost init            # scaffolds manifest + a starter glossary + a starter index node
+ghost init            # scaffolds the steering starter
 ghost validate
 ```
 
-`ghost init` seeds the manifest, a starter `glossary.md` (with suggested
-categories you keep, rename, or replace), and the package-root `index.md`
-(id `index`), demonstrating the shape. Write `index.md` as the human-curated
-front door: what this fingerprint is, how its kinds organize the corpus, and
-what to read first. It is an ordinary node, listed in the menu like any other.
+`ghost init` seeds the steering starter: the manifest, a starter `glossary.md`
+(with suggested categories you keep, rename, or replace), the package-root
+`index.md` (id `index`), and demo nodes for stance, composition, anti-goals,
+patterns, exemplars, materials, and decisions. The demo content is there for
+inspiration and guidance. Replace its claims, paths, examples, and decisions
+with real product truth before using it to steer generation. Use
+`ghost init --template minimal` when you only want the small
+manifest/glossary/index starter. Write `index.md` as the human-curated
+front door: the non-negotiables that apply to every task (stated briefly,
+linking to full nodes by id for depth), what this fingerprint covers, how its
+kinds organize the corpus, and any stricter silence posture. It is an ordinary
+node mechanically, but by convention agents always pull it first — anything
+that must never be missed belongs here.
 
 Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or HTTPS URLs for the concrete materials the prose governs. Optional capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt (`ghost haunt add checks`) — and are feed-back only; they are never gathered.
 

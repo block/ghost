@@ -11,7 +11,10 @@ export function registerInitCommand(cli: CAC): void {
       "--package <dir>",
       "Exact fingerprint package directory to initialize",
     )
-    .option("--template <name>", "Init template to scaffold (default: default)")
+    .option(
+      "--template <name>",
+      "Init template to scaffold (default: steering)",
+    )
     .option(
       "--with <haunts>",
       "Comma-separated haunts to add after scaffolding (e.g. checks)",

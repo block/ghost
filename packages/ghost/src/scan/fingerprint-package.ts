@@ -63,7 +63,7 @@ export interface LoadedFingerprintPackage {
 }
 
 export interface InitFingerprintPackageOptions {
-  /** Init template name (default: "default"). */
+  /** Init template name (default: "steering"). */
   template?: string;
   force?: boolean;
 }

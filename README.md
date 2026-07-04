@@ -39,7 +39,7 @@ The CLI does deterministic work. The agent does interpretation.
 ## The Loop
 
 ```bash
-ghost init          # scaffold .ghost/ (fingerprint only)
+ghost init          # scaffold .ghost/ with the steering starter (fingerprint only)
 ghost haunt add checks  # opt in to review assertions
 ghost validate      # check package shape, nodes, materials, and haunts
 ghost gather <ask>  # before building: list every truth for this task
@@ -56,7 +56,7 @@ for. The tape is local scratch, not canonical fingerprint state.
 
 | Command | Description |
 | --- | --- |
-| `ghost init` | Scaffold `.ghost/` with a manifest, starter glossary, and starter `index.md`. `--with checks` also adds the checks haunt. |
+| `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
 | `ghost haunt add\|remove\|list` | Manage optional haunts — capabilities attached to the fingerprint (e.g. `checks`). |
 | `ghost validate` | Validate the package: manifest, node validity, material locators, installed haunts, check references, and glossary kind prefixes. |
 | `ghost gather [ask…]` | Emit the fingerprint menu for the agent to select from; log the exposed ids. |

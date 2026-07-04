@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T05:56:11.327Z",
+  "generatedAt": "2026-07-04T00:21:23.906Z",
   "tools": [
     {
       "tool": "ghost",
@@ -45,7 +45,7 @@
             {
               "rawName": "--template <name>",
               "name": "template",
-              "description": "Init template to scaffold (default: default)",
+              "description": "Init template to scaffold (default: steering)",
               "default": null,
               "takesValue": true,
               "negated": false

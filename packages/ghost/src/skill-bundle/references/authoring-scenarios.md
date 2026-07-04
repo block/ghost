@@ -52,10 +52,14 @@ If more than one applies, start with the broad scenario, then narrow.
 The interview is the engine. Ask only high-leverage questions that change the
 fingerprint:
 
-- What should this brand feel like, and what should it never become?
+- What should this brand feel like, and what should it never become? (The
+  "never become" answers are anti-goal nodes — capture them with the same care
+  as the affirmative stance.)
 - Who is the audience, and what are they trying to get done?
 - Which surfaces, campaigns, or moments show the brand at its best? Show me.
 - Which brand or product do you admire — and where do you deliberately differ?
+  (The deliberate differences also route to anti-goal nodes: the rejected
+  neighbor, named.)
 - What keeps getting flagged in review, re-toned, or rewritten?
 - Where do trust, density, pacing, accessibility, recovery, or disclosure
   matter most?
@@ -106,9 +110,11 @@ claims:
 Two authoring decisions replace any notion of hierarchy:
 
 - **Kind** — declare the category vocabulary in `glossary.md` and name each node
-  `<kind>.<slug>.md` so its normative weight is clear (a `principle` is
-  always-on; a `condition` is situational; an `exemplar` is illustrative). Kinds
-  are your choice; Ghost ships no fixed vocabulary.
+  `<kind>.<slug>.md` so its normative weight is clear. The glossary defines what
+  each kind means and how strongly it binds (the starter vocabulary reads: a
+  `principle` is always-on; a `condition` is situational; an `exemplar` is
+  illustrative unless the glossary says otherwise). Kinds are your choice; Ghost
+  ships no fixed vocabulary.
 - **Altitude** — state a truth at the level it is actually true. Universal → state
   it plainly. Narrower → name the situation that activates it, in the prose. Never
   file a truth by destination (`for-emails.md`); the model reads the condition and
