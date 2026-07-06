@@ -11,8 +11,8 @@ const hasBuiltExports = existsSync(
 describe.runIf(hasBuiltExports)("built public exports", () => {
   it("exposes fingerprint-first package subpaths", async () => {
     const [fingerprint, scan] = await Promise.all([
-      import("@decentralized-design/ghost/fingerprint"),
-      import("@decentralized-design/ghost/scan"),
+      import("@design-intelligence/ghost/fingerprint"),
+      import("@design-intelligence/ghost/scan"),
     ]);
 
     const fingerprintApi = fingerprint as Record<string, unknown>;
@@ -35,7 +35,7 @@ describe.runIf(hasBuiltExports)("built public exports", () => {
   });
 
   it("exposes the source-ref parser from the core subpath", async () => {
-    const core = (await import("@decentralized-design/ghost/core")) as Record<
+    const core = (await import("@design-intelligence/ghost/core")) as Record<
       string,
       unknown
     >;

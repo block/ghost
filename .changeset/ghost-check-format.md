@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Add `ghost.check/v1`: markdown + frontmatter checks (`name`, `description`,

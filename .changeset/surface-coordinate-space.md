@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Replace topology/applies_to/surface_type/scope coordinates with a surface

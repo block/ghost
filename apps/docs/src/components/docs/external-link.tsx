@@ -1,4 +1,4 @@
-import { cn } from "@decentralized-design/vessel";
+import { cn } from "@design-intelligence/vessel";
 import { ArrowUpRight } from "lucide-react";
 import { ComponentProps } from "react";
 

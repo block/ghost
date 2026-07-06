@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": patch
+"@design-intelligence/ghost": patch
 ---
 
 Make CLI exit codes consistent so an agent can branch on them: unexpected

@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Recompose `gather` on a corridor + hub-and-spoke model and fix a sibling-surface

@@ -5,7 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@decentralized-design/vessel";
+} from "@design-intelligence/vessel";
 import { ComponentProps } from "react";
 import { useShowTooltips } from "@/store/preferences-store";
 

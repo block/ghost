@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": patch
+"@design-intelligence/ghost": patch
 ---
 
 Clean em dashes out of the shipped skill bundle and package README prose,

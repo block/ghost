@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Bindings can reference an external contract: a `.ghost.bind.yml` `contract:` now

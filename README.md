@@ -18,24 +18,28 @@ on every surface. The agent that built the thing never saw them. Ghost writes
 them down once, where the agent looks first.
 
 One portable packet; Claude Code, Codex, Cursor, and Goose all read the same
-one. One package, `@decentralized-design/ghost`. One CLI, `ghost`.
+one. One package, `@design-intelligence/ghost`. One CLI, `ghost`.
 
-## Why "Decentralized Design"
+## Thesis
 
-For decades the brand lived in a few heads and a few tucked-away frames.
-Reviewers applied it one comment at a time, and it left when they left the
-room. Now agents do the making, and an agent holds only what you hand it. So
-make the brand something you can hand over: prose truths, written by people
-with a point of view, that travel to wherever work ships and that agents read
-before they make anything. The few still write the taste; they no longer gate
-it. That is decentralized design.
+Agents changed the unit of design work. When they make the screens, the
+emails, and the sentences, polishing any one of them moves nothing; the next
+generation starts from the model's average again. The work that compounds is
+architectural: decide where that average serves, decide where the brand must
+win, and put those decisions where the agent reads before it makes.
 
-[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@decentralized-design/ghost)
+Ghost is that artifact: a fingerprint checked into the repo, carrying the
+truths, the materials they point at, and the conditions they hold under.
+Buttons stay buttons. The moments that carry your brand get your stance
+instead of the default. The few author it once. Every agent it travels to
+builds from it.
+
+[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@design-intelligence/ghost)
 
 ## Install
 
 ```bash
-npm install -D @decentralized-design/ghost
+npm install -D @design-intelligence/ghost
 npx ghost skill install
 ```
 
@@ -187,7 +191,7 @@ point at things that moved.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, corpus validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@decentralized-design/ghost` |
+| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, corpus validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@design-intelligence/ghost` |
 | [`packages/vessel`](./packages/vessel) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 

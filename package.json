@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --build",
-    "build:ui": "pnpm --filter @decentralized-design/vessel build",
+    "build:ui": "pnpm --filter @design-intelligence/vessel build",
     "check": "biome check . && pnpm typecheck && pnpm check:package-bin && pnpm check:packed-package && pnpm check:file-sizes && pnpm check:terminology && pnpm check:docs && pnpm check:install-bundle && pnpm check:release-tarball && pnpm check:release-workflows && pnpm check:cli-manifest",
     "check:file-sizes": "node scripts/check-file-sizes.mjs",
     "check:packed-package": "node scripts/check-packed-package.mjs",
@@ -29,7 +29,7 @@
     "lint": "biome lint .",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm --filter @decentralized-design/ghost build && changeset publish"
+    "release": "pnpm --filter @design-intelligence/ghost build && changeset publish"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

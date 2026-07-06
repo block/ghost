@@ -38,7 +38,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @decentralized-design/ghost build
+      - run: pnpm --filter @design-intelligence/ghost build
 
       - name: Create Release PR or publish
         id: changesets
@@ -67,8 +67,8 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(echo "$PUBLISHED_PACKAGES" \
-            | python3 -c "import json,sys; pkgs=json.load(sys.stdin); print(next(p['version'] for p in pkgs if p['name']=='@decentralized-design/ghost'))")"
-          TAG="decentralized-design-ghost@${VERSION}"
+            | python3 -c "import json,sys; pkgs=json.load(sys.stdin); print(next(p['version'] for p in pkgs if p['name']=='@design-intelligence/ghost'))")"
+          TAG="design-intelligence-ghost@${VERSION}"
           mkdir -p dist-tarball
           node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"
           ls -la dist-tarball
@@ -78,7 +78,7 @@ jobs:
           gh release upload "$TAG" dist-tarball/*.tgz --clobber
           # Export the tag, sha256, and artifact URL so the Homebrew tap can
           # pin the exact tarball. The packed filename is dynamic
-          # (decentralized-design-ghost-X.Y.Z.tgz), so resolve it from the staging dir.
+          # (design-intelligence-ghost-X.Y.Z.tgz), so resolve it from the staging dir.
           archive="$(ls dist-tarball/*.tgz | head -n 1)"
           filename="$(basename "$archive")"
           sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"

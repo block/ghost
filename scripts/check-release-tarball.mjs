@@ -52,7 +52,7 @@ try {
 
   run("node", ["scripts/pack-release-tarball.mjs", packDir]);
 
-  const expectedName = `decentralized-design-ghost-${PACKAGE_JSON.version}.tgz`;
+  const expectedName = `design-intelligence-ghost-${PACKAGE_JSON.version}.tgz`;
   const tarballPath = resolve(packDir, expectedName);
   if (!existsSync(tarballPath)) {
     fail(`expected release tarball at ${tarballPath}`);

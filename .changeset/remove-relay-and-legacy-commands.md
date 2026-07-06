@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Remove the absorbed and dead commands: `relay`, `stack`, `survey`, `diff`, and

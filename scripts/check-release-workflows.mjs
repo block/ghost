@@ -15,8 +15,7 @@ function readWorkflow(name) {
 
 const releaseWorkflow = readWorkflow("release.yml");
 const tarballWorkflow = readWorkflow("release-tarball.yml");
-const friendlyTagAssignment =
-  'TAG="decentralized-design-ghost@$' + '{VERSION}"';
+const friendlyTagAssignment = 'TAG="design-intelligence-ghost@$' + '{VERSION}"';
 const releaseTarballPackCommand =
   'node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"';
 const tapAppSecretGate =
@@ -49,7 +48,7 @@ if (
 
 if (!releaseWorkflow.includes(friendlyTagAssignment)) {
   fail(
-    "release.yml must keep the Homebrew-friendly decentralized-design-ghost@<version> release tag",
+    "release.yml must keep the Homebrew-friendly design-intelligence-ghost@<version> release tag",
   );
 }
 

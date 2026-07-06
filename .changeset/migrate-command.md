@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Add `ghost migrate`: transform a legacy `.ghost/` package onto the directory-tree

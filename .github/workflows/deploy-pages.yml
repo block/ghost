@@ -33,13 +33,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build Ghost CLI package
-        run: pnpm --filter @decentralized-design/ghost build
+        run: pnpm --filter @design-intelligence/ghost build
 
       - name: Build ghost-ui library
-        run: pnpm --filter @decentralized-design/vessel build:lib
+        run: pnpm --filter @design-intelligence/vessel build:lib
 
       - name: Build shadcn registry
-        run: pnpm --filter @decentralized-design/vessel build:registry
+        run: pnpm --filter @design-intelligence/vessel build:registry
 
       - name: Build docs site (base=/ghost/)
         env:

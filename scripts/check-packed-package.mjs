@@ -12,13 +12,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const ROOT = process.cwd();
-const PACKAGE_NAME = "@decentralized-design/ghost";
+const PACKAGE_NAME = "@design-intelligence/ghost";
 const PUBLIC_IMPORTS = [
-  "@decentralized-design/ghost",
-  "@decentralized-design/ghost/cli",
-  "@decentralized-design/ghost/fingerprint",
-  "@decentralized-design/ghost/scan",
-  "@decentralized-design/ghost/core",
+  "@design-intelligence/ghost",
+  "@design-intelligence/ghost/cli",
+  "@design-intelligence/ghost/fingerprint",
+  "@design-intelligence/ghost/scan",
+  "@design-intelligence/ghost/core",
 ];
 
 function fail(message) {
@@ -27,10 +27,18 @@ function fail(message) {
 }
 
 function run(command, args, options = {}) {
+  // Strip npm_config_* vars injected by the parent `pnpm run` so the
+  // temp consumer install resolves its registry from its own environment
+  // (e.g. the user's ~/.npmrc) instead of this repo's .npmrc.
+  const parentEnv = Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([key]) => !key.toLowerCase().startsWith("npm_config_"),
+    ),
+  );
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? ROOT,
     encoding: "utf8",
-    env: { ...process.env, ...(options.env ?? {}) },
+    env: { ...parentEnv, ...(options.env ?? {}) },
   });
   if (result.error) {
     fail(
@@ -92,7 +100,15 @@ try {
 
   writeFileSync(
     join(consumerDir, "package.json"),
-    JSON.stringify({ type: "module", private: true }, null, 2),
+    JSON.stringify(
+      {
+        type: "module",
+        private: true,
+        packageManager: "pnpm@10.33.0",
+      },
+      null,
+      2,
+    ),
   );
   run(
     "pnpm",
@@ -138,7 +154,7 @@ try {
 
   // Smoke the exported CLI builder as an embeddable package entrypoint.
   runNode(
-    `const { buildCli } = await import("@decentralized-design/ghost/cli");\n` +
+    `const { buildCli } = await import("@design-intelligence/ghost/cli");\n` +
       `if (typeof buildCli !== "function") throw new Error("missing buildCli export");`,
     consumerDir,
   );

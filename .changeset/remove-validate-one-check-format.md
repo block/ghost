@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Collapse to one check format. Remove `ghost.validate/v1`, the `validate.yml`

@@ -1,4 +1,4 @@
-import { cn } from "@decentralized-design/vessel";
+import { cn } from "@design-intelligence/vessel";
 import type { ReactNode } from "react";
 
 type Variant = "info" | "warning" | "wip";

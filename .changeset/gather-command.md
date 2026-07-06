@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Add `ghost gather <surface>`: compose a surface's context slice (its own placed

@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@decentralized-design/vessel";
+import { ThemeProvider } from "@design-intelligence/vessel";
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 import DocsIndex from "@/app/docs/page";

@@ -1,4 +1,4 @@
-# @decentralized-design/ghost
+# @design-intelligence/ghost
 
 **Your brand, packed for agents: a portable steering packet of prose truths,
 checked into the repo, read before anything is made and reviewable after.**
@@ -13,7 +13,7 @@ ships.
 ## Install
 
 ```bash
-npm install -D @decentralized-design/ghost
+npm install -D @design-intelligence/ghost
 npx ghost --help
 ```
 
@@ -61,16 +61,16 @@ import {
   initFingerprintPackage,
   lintFingerprintPackage,
   loadFingerprintPackage,
-} from "@decentralized-design/ghost/fingerprint";
-import { buildCatalogMenu } from "@decentralized-design/ghost/core";
-import { buildCli } from "@decentralized-design/ghost/cli";
+} from "@design-intelligence/ghost/fingerprint";
+import { buildCatalogMenu } from "@design-intelligence/ghost/core";
+import { buildCli } from "@design-intelligence/ghost/cli";
 ```
 
-Available subpath exports: `@decentralized-design/ghost`,
-`@decentralized-design/ghost/fingerprint`,
-`@decentralized-design/ghost/core`,
-`@decentralized-design/ghost/cli`, and
-`@decentralized-design/ghost/scan`.
+Available subpath exports: `@design-intelligence/ghost`,
+`@design-intelligence/ghost/fingerprint`,
+`@design-intelligence/ghost/core`,
+`@design-intelligence/ghost/cli`, and
+`@design-intelligence/ghost/scan`.
 
 ## License
 

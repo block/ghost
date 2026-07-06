@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Add fingerprint grounding to `ghost checks`: for each touched surface, emit the

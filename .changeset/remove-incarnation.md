@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": major
+"@design-intelligence/ghost": major
 ---
 
 Remove the `incarnation` node field and the `--as` gather/checks flag. Ghost

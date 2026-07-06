@@ -44,7 +44,7 @@ importers:
 
   apps/docs:
     dependencies:
-      '@decentralized-design/vessel':
+      '@design-intelligence/vessel':
         specifier: workspace:*
         version: link:../../packages/vessel
       '@hookform/resolvers':

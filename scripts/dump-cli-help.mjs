@@ -14,7 +14,7 @@ const ROOT = process.cwd();
 const TOOLS = [
   {
     name: "ghost",
-    filter: "@decentralized-design/ghost",
+    filter: "@design-intelligence/ghost",
     dist: "packages/ghost/dist/cli.js",
   },
 ];

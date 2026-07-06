@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": patch
+"@design-intelligence/ghost": patch
 ---
 
-Add the decentralized-design manifesto to the package README: the scope's thesis, stated once — authored by the few, gated by no one.
+Add a thesis section to the README: agents changed the unit of design work, the work that compounds is architectural, and Ghost is the artifact those decisions live in.

@@ -1,4 +1,4 @@
-# @decentralized-design/ghost
+# @design-intelligence/ghost
 
 ## 0.18.0
 

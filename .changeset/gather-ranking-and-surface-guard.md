@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Return the node menu plus closest-id "did you mean" suggestions when `ghost

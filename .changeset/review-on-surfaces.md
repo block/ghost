@@ -1,5 +1,5 @@
 ---
-"@decentralized-design/ghost": minor
+"@design-intelligence/ghost": minor
 ---
 
 Rebuild `ghost review` on the surface rails: it now resolves the diff's touched

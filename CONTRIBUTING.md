@@ -47,7 +47,7 @@ the list.
   docs frontmatter, packed-tarball checks.
 - Added, removed, or renamed a CLI command or flag? Run `pnpm dump:cli-help`
   and commit the regenerated manifest, or the drift check declines for you.
-- **Changesets:** `@decentralized-design/ghost` is the only public
+- **Changesets:** `@design-intelligence/ghost` is the only public
   package. Write the changeset file yourself — `patch` for fixes and docs,
   `minor` for new commands/flags/exports, `major` for removed or renamed
   public behavior. One sentence, user-facing, present tense.
