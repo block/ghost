@@ -1,9 +1,9 @@
 ---
-"@anarchitecture/ghost-fingerprint": minor
+"@decentralized-design/ghost": minor
 ---
 
-Rename the published package from `@anarchitecture/ghost` to
-`@anarchitecture/ghost-fingerprint`. Ghost is now a family of packages —
+Rename the published package from `@decentralized-design/ghost` to
+`@decentralized-design/ghost`. Ghost is now a family of packages —
 `ghost-fingerprint` (the fingerprint and its CLI), `ghost-haunt` (the
 code-anchored adherence bridge), and `ghost-vessel` (the reference body) —
 and the package name now says which part it is. The `ghost` bin, all export

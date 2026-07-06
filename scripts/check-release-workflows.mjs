@@ -16,7 +16,7 @@ function readWorkflow(name) {
 const releaseWorkflow = readWorkflow("release.yml");
 const tarballWorkflow = readWorkflow("release-tarball.yml");
 const friendlyTagAssignment =
-  'TAG="anarchitecture-ghost-fingerprint@$' + '{VERSION}"';
+  'TAG="decentralized-design-ghost@$' + '{VERSION}"';
 const releaseTarballPackCommand =
   'node scripts/pack-release-tarball.mjs "$GITHUB_WORKSPACE/dist-tarball"';
 const tapAppSecretGate =
@@ -49,7 +49,7 @@ if (
 
 if (!releaseWorkflow.includes(friendlyTagAssignment)) {
   fail(
-    "release.yml must keep the Homebrew-friendly anarchitecture-ghost-fingerprint@<version> release tag",
+    "release.yml must keep the Homebrew-friendly decentralized-design-ghost@<version> release tag",
   );
 }
 

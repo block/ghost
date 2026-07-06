@@ -17,7 +17,7 @@ place.
 
 Material contract:
 
-- **Tokens and primitives** come from `@anarchitecture/ghost-vessel/styles.css`,
+- **Tokens and primitives** come from `@decentralized-design/vessel/styles.css`,
   backed by `packages/vessel/src/styles/main.css`. Author with semantic roles
   (`bg-background`, `text-foreground`, `text-muted-foreground`, `border-border`,
   `bg-card`) and the named docs typography variables (`--heading-*`,

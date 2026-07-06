@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { splitMarkdownFrontmatter } from "./markdown.js";
 
-export const GhostGlossaryKindPostureSchema = z.enum(["steady", "wild"]);
+export const GhostGlossaryKindPostureSchema = z.enum([
+  "steady",
+  "wild",
+  "guard",
+]);
 
 export type GhostGlossaryKindPosture = z.infer<
   typeof GhostGlossaryKindPostureSchema

@@ -66,6 +66,11 @@ type MissReport = {
   suggested: string[];
 };
 
+type ConcretenessReport = {
+  concrete: { exposures: number; pulls: number; hitRate: number };
+  proseOnly: { exposures: number; pulls: number; hitRate: number };
+};
+
 type PulseReport = {
   kind: "pulse";
   events: number;
@@ -81,6 +86,7 @@ type PulseReport = {
     exposures: number;
     pulls: number;
   };
+  concreteness: ConcretenessReport;
 };
 
 function buildPulseReport(
@@ -95,6 +101,9 @@ function buildPulseReport(
   >();
   const nodeKinds = new Map(
     currentMenu.map((entry) => [entry.id, entry.kind ?? "(no kind)"]),
+  );
+  const nodeConcrete = new Map(
+    currentMenu.map((entry) => [entry.id, entry.concrete]),
   );
 
   let gathers = 0;
@@ -168,6 +177,8 @@ function buildPulseReport(
     kindCounts.set(kind, counts);
   }
 
+  const concreteness = buildConcretenessReport(nodes, nodeConcrete);
+
   return {
     kind: "pulse",
     events: events.length,
@@ -205,6 +216,40 @@ function buildPulseReport(
       exposures: wildExposures,
       pulls: wildPulls,
     },
+    concreteness,
+  };
+}
+
+function buildConcretenessReport(
+  nodes: NodeHitReport[],
+  nodeConcrete: Map<string, boolean>,
+): ConcretenessReport {
+  const counts = {
+    concrete: { exposures: 0, pulls: 0 },
+    proseOnly: { exposures: 0, pulls: 0 },
+  };
+  for (const node of nodes) {
+    const bucket = nodeConcrete.get(node.id)
+      ? counts.concrete
+      : counts.proseOnly;
+    bucket.exposures += node.exposures;
+    bucket.pulls += node.pulls;
+  }
+  return {
+    concrete: {
+      ...counts.concrete,
+      hitRate:
+        counts.concrete.exposures > 0
+          ? counts.concrete.pulls / counts.concrete.exposures
+          : 0,
+    },
+    proseOnly: {
+      ...counts.proseOnly,
+      hitRate:
+        counts.proseOnly.exposures > 0
+          ? counts.proseOnly.pulls / counts.proseOnly.exposures
+          : 0,
+    },
   };
 }
 
@@ -230,6 +275,13 @@ function formatPulseMarkdown(report: PulseReport): string {
     `- Pulls: ${report.pulls}`,
     `- Pulls per gather: ${formatRatio(report.pullsPerGather)}`,
     `- Abandoned gathers: ${report.abandonedGathers}`,
+    "",
+    "## Concrete vs prose-only",
+    "",
+    "| Segment | Seen on menus | Pulled | Hit rate |",
+    "|---|---:|---:|---:|",
+    `| Concrete material | ${report.concreteness.concrete.exposures} | ${report.concreteness.concrete.pulls} | ${formatPercent(report.concreteness.concrete.hitRate)} |`,
+    `| Prose-only | ${report.concreteness.proseOnly.exposures} | ${report.concreteness.proseOnly.pulls} | ${formatPercent(report.concreteness.proseOnly.hitRate)} |`,
     "",
     "## Node hit rates",
     "",

@@ -1,6 +1,8 @@
-import { appendFile, readFile } from "node:fs/promises";
+import { access, appendFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { GHOST_EVENTS_FILENAME } from "./scan/constants.js";
+
+const FIRST_WRITE_NOTICE = `ghost: logging selection events locally to .ghost/${GHOST_EVENTS_FILENAME} (gitignored; never leaves your machine). Summarize with \`ghost pulse\`.`;
 
 export type GatherObservabilityEvent = {
   ts: string;
@@ -40,8 +42,18 @@ export async function appendGhostEvent(
   event: NewGhostObservabilityEvent,
 ): Promise<void> {
   const line = `${JSON.stringify({ ts: new Date().toISOString(), ...event })}\n`;
+  const tapePath = join(packageDir, GHOST_EVENTS_FILENAME);
   try {
-    await appendFile(join(packageDir, GHOST_EVENTS_FILENAME), line, "utf8");
+    const isFirstWrite = await access(tapePath).then(
+      () => false,
+      () => true,
+    );
+    await appendFile(tapePath, line, "utf8");
+    if (isFirstWrite) {
+      // One-time notice on tape creation. Stderr so piped gather/pull
+      // output stays clean; silent on every subsequent write.
+      process.stderr.write(`${FIRST_WRITE_NOTICE}\n`);
+    }
   } catch {
     // Local observability is advisory. It must never break gather/pull.
   }

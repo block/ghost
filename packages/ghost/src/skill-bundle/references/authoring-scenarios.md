@@ -77,9 +77,11 @@ holds — never as truth by itself. A pattern that appears everywhere may be
 legacy; a pattern that appears once may be the brand at its best. The human
 says which.
 
-Counter-exemplars are as valuable as exemplars. "We would never ship this" with
-a screenshot attached usually yields a sharper truth than an hour of
-affirmative description.
+Counter-exemplars are as valuable as exemplars when they name the replacement.
+"We would never ship this; we would ship that instead" with artifacts attached
+usually yields a sharper guard than an hour of affirmative description. Avoid
+blacklist-only anti-goals: the rejected pattern should be purged from exemplars
+and enforced in review, not repeated as the model's main example.
 
 ## 4. Draft The Nodes
 
@@ -91,7 +93,9 @@ fields.
 Draft only what the human said or showed. State universal truths plainly; give
 narrower truths a **condition** in the prose — the situation they apply in,
 never a destination. Label uncertain reasoning as provisional. Prefer a few
-high-confidence truths over a broad catalog.
+high-confidence truths over a broad catalog. Hold draft prose to the node prose
+stances in [capture.md](capture.md) and score each node against its drafting
+gate before presenting drafts for curation.
 
 ## 5. Curate With The Human
 
@@ -110,10 +114,10 @@ Two authoring decisions replace any notion of hierarchy:
 
 - **Kind** — declare the kind vocabulary in `glossary.md` and name each node
   `<kind>.<slug>.md` so its normative weight is clear. The glossary defines what
-  each kind means and how strongly it binds (the starter vocabulary reads: a
-  `principle` is always-on; a `condition` is situational; an `exemplar` is
-  illustrative unless the glossary says otherwise). Kinds are your choice; Ghost
-  ships no fixed vocabulary.
+  each kind means and how strongly it binds. Use `posture: guard` for
+  review-critical replacement nodes, `posture: wild` for opt-in provocations,
+  and the default steady posture for ordinary truths. Kinds are your choice;
+  Ghost ships no fixed vocabulary.
 - **Altitude** — state a truth at the level it is actually true. Universal → state
   it plainly. Narrower → name the situation that activates it, in the prose. Never
   file a truth by destination (`for-emails.md`); the model reads the condition and

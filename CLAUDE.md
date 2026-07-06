@@ -1,12 +1,13 @@
 # Ghost
 
-Agents can assemble UI. What they cannot reliably preserve is the brand behind
-that UI: the stance, the density, the restraint, the trust moves, and the
-choices that make an output feel intentional.
+Agents now do the making — screens, emails, empty states, sentences. What they
+cannot reliably preserve is the brand behind that work: the stance, the
+density, the restraint, the trust moves, and the choices that make an output
+feel intentional. An agent holds nothing it isn't handed.
 
-Ghost keeps those brand truths in a repo-local `.ghost/` fingerprint package, a
-flat corpus of prose nodes. The public npm shape is one package,
-`@anarchitecture/ghost-fingerprint`, with one user-facing bin, `ghost`. The CLI
+Ghost hands it the brand as a portable steering packet: a repo-local `.ghost/`
+fingerprint package, a flat corpus of prose nodes read before anything is made. The public npm shape is one package,
+`@decentralized-design/ghost`, with one user-facing bin, `ghost`. The CLI
 validates the corpus, emits the fingerprint menu, pulls selected nodes, records
 local selection events, and assembles advisory review packets from checks. Optional
 capabilities (haunts) attach under `.ghost/haunts/`. The host agent does all
@@ -26,7 +27,7 @@ Run the public CLI after building:
 
 ```bash
 node packages/ghost/dist/bin.js <command>
-pnpm --filter @anarchitecture/ghost-fingerprint exec ghost <command>
+pnpm --filter @decentralized-design/ghost exec ghost <command>
 ```
 
 ## Architecture
@@ -93,7 +94,7 @@ checks.
 
 | Package | Published? | Description |
 | --- | --- | --- |
-| `packages/ghost` | yes: `@anarchitecture/ghost-fingerprint` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
+| `packages/ghost` | yes: `@decentralized-design/ghost` | The public package. Ships the `ghost` CLI, node authoring, corpus validation, gather/pull/pulse, review packet assembly, and the unified skill bundle. Shared runtime lives in `packages/ghost/src/ghost-core`. |
 | `packages/vessel` | no | A standalone shadcn component registry plus `vessel-mcp` MCP server: the opinionated default reference body. Design-system-agnostic; nothing in Ghost requires it. |
 | `apps/docs` | no | Docs site. |
 
@@ -120,11 +121,11 @@ Advanced/maintenance:
 
 ## Public Exports
 
-- `@anarchitecture/ghost-fingerprint` for the combined surface.
-- `@anarchitecture/ghost-fingerprint/scan` for package-path resolution helpers.
-- `@anarchitecture/ghost-fingerprint/fingerprint` for node package authoring, validation, parsing, and serialization.
-- `@anarchitecture/ghost-fingerprint/core` for shared schemas, types, and loaders.
-- `@anarchitecture/ghost-fingerprint/cli` for `buildCli()`.
+- `@decentralized-design/ghost` for the combined surface.
+- `@decentralized-design/ghost/scan` for package-path resolution helpers.
+- `@decentralized-design/ghost/fingerprint` for node package authoring, validation, parsing, and serialization.
+- `@decentralized-design/ghost/core` for shared schemas, types, and loaders.
+- `@decentralized-design/ghost/cli` for `buildCli()`.
 
 ## Environment Variables
 
@@ -136,7 +137,7 @@ Each CLI auto-loads `.env` and `.env.local` from the working directory.
 
 ## Releasing & Changesets
 
-`@anarchitecture/ghost-fingerprint` is the only public package. Private packages
+`@decentralized-design/ghost` is the only public package. Private packages
 are ignored by Changesets.
 
 When an agent completes a user-visible change to the public package, write a
@@ -144,7 +145,7 @@ changeset file instead of asking the user to run `pnpm changeset`:
 
 ```markdown
 ---
-"@anarchitecture/ghost-fingerprint": patch
+"@decentralized-design/ghost": patch
 ---
 
 One sentence, user-facing, present tense.

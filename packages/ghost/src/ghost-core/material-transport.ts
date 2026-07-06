@@ -246,7 +246,11 @@ async function transportFile(
   }
 
   if (isBinary(buffer)) {
-    return { ...base, omitted: true as const, reason: "binary file" };
+    return {
+      ...base,
+      omitted: true as const,
+      reason: "binary inspect-pointer",
+    };
   }
 
   try {

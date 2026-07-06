@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost-fingerprint": minor
+"@decentralized-design/ghost": minor
 ---
 
 Rebuild `ghost review` on the surface rails: it now resolves the diff's touched

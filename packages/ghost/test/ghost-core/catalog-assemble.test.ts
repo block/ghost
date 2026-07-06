@@ -41,6 +41,35 @@ describe("assembleCatalog (flat catalog assembly)", () => {
     expect(catalog.nodes.get("a/b/c")?.slug).toBe("c");
   });
 
+  it("derives concreteness from materials, substantial fences, and Skeleton sections", () => {
+    const catalog = assembleCatalog({
+      placedNodes: [
+        placed("asset.tokens", {}, "Prose."),
+        {
+          ...placed("principle.sample", {}, "```txt\none\ntwo\nthree\n```"),
+        },
+        placed("pattern.shell", {}, "## Skeleton\n\n```tsx\n<section />\n```"),
+        placed("principle.short", {}, "```txt\none\n```"),
+      ].map((node) =>
+        node.id === "asset.tokens"
+          ? {
+              ...node,
+              doc: {
+                frontmatter: { materials: ["tokens.css"] },
+                body: node.doc.body,
+              },
+            }
+          : node,
+      ),
+    });
+
+    expect(catalog.nodes.get("asset.tokens")?.concrete).toBe(true);
+    expect(catalog.nodes.get("principle.sample")?.concrete).toBe(true);
+    expect(catalog.nodes.get("pattern.shell")?.concrete).toBe(true);
+    expect(catalog.nodes.get("pattern.shell")?.hasSkeleton).toBe(true);
+    expect(catalog.nodes.get("principle.short")?.concrete).toBe(false);
+  });
+
   it("marks nodes wild from glossary posture input", () => {
     const catalog = assembleCatalog({
       placedNodes: [

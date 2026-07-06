@@ -29,6 +29,7 @@ export function registerReviewCommand(cli: CAC): void {
       default: "markdown",
     })
     .option("--json", "Emit the raw JSON packet")
+    .option("--no-probes", "Skip check probe shell commands")
     .action(async (opts) => {
       try {
         const format = opts.json ? "json" : opts.format;
@@ -51,7 +52,10 @@ export function registerReviewCommand(cli: CAC): void {
           base: opts.base,
           diff: opts.diff,
         });
-        const packet = buildReviewPacket(fingerprint, diffText);
+        const packet = await buildReviewPacket(fingerprint, diffText, {
+          runProbes: opts.probes !== false,
+          cwd: process.cwd(),
+        });
         process.stdout.write(
           format === "json"
             ? `${JSON.stringify(packet, null, 2)}\n`

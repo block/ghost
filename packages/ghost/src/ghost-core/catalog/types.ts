@@ -14,8 +14,16 @@ export interface GhostCatalogNode {
   description?: string;
   /** Optional material locators carried by the authored node. */
   materials?: string[];
+  /** True when the node carries materials, a substantial fence, or a Skeleton. */
+  concrete: boolean;
+  /** True when the node declares a `## Skeleton` section. */
+  hasSkeleton: boolean;
+  /** Consumption posture derived from the node's glossary kind. */
+  posture: "steady" | "wild" | "guard";
   /** True when the node's declared kind has `posture: wild` in the glossary. */
   wild?: true;
+  /** True when the node's declared kind has `posture: guard` in the glossary. */
+  guard?: true;
   body: string;
 }
 

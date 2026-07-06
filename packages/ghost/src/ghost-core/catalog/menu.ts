@@ -18,10 +18,16 @@ export interface CatalogMenuEntry {
   description?: string;
   /** Count of material locators available after pulling this node. */
   materials?: number;
+  /** True when this entry carries concrete material by derived structure. */
+  concrete: boolean;
+  /** True when this entry includes a Skeleton section. */
+  hasSkeleton?: true;
   /** Consumption posture for this menu entry. */
-  posture: "steady" | "wild";
+  posture: "steady" | "wild" | "guard";
   /** True when this entry pushes past the fingerprint rather than conforming to it. */
   wild?: true;
+  /** True when this entry is review-critical guard posture. */
+  guard?: true;
 }
 
 /**
@@ -44,8 +50,11 @@ export function buildCatalogMenu(
       ...(node.materials !== undefined && node.materials.length > 0
         ? { materials: node.materials.length }
         : {}),
-      posture: node.wild ? "wild" : "steady",
+      concrete: node.concrete,
+      ...(node.hasSkeleton ? { hasSkeleton: true as const } : {}),
+      posture: node.posture,
       ...(node.wild ? { wild: true as const } : {}),
+      ...(node.guard ? { guard: true as const } : {}),
     });
   }
 

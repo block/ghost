@@ -1,15 +1,19 @@
-# @anarchitecture/ghost-fingerprint
+# @decentralized-design/ghost
 
-**Write a brand decision down once, in your repo, so your agent reads it before
-it builds and can review against it later.**
+**Your brand, packed for agents: a portable steering packet of prose truths,
+checked into the repo, read before anything is made and reviewable after.**
 
 This package ships one CLI: `ghost`. Every command is also available as
 `ghost-fingerprint` for when another tool owns the `ghost` bin.
 
+The scope is the thesis: the few still write the taste; they no longer gate it.
+You hand the brand over as a packet of authority that travels to wherever work
+ships.
+
 ## Install
 
 ```bash
-npm install -D @anarchitecture/ghost-fingerprint
+npm install -D @decentralized-design/ghost
 npx ghost --help
 ```
 
@@ -57,16 +61,16 @@ import {
   initFingerprintPackage,
   lintFingerprintPackage,
   loadFingerprintPackage,
-} from "@anarchitecture/ghost-fingerprint/fingerprint";
-import { buildCatalogMenu } from "@anarchitecture/ghost-fingerprint/core";
-import { buildCli } from "@anarchitecture/ghost-fingerprint/cli";
+} from "@decentralized-design/ghost/fingerprint";
+import { buildCatalogMenu } from "@decentralized-design/ghost/core";
+import { buildCli } from "@decentralized-design/ghost/cli";
 ```
 
-Available subpath exports: `@anarchitecture/ghost-fingerprint`,
-`@anarchitecture/ghost-fingerprint/fingerprint`,
-`@anarchitecture/ghost-fingerprint/core`,
-`@anarchitecture/ghost-fingerprint/cli`, and
-`@anarchitecture/ghost-fingerprint/scan`.
+Available subpath exports: `@decentralized-design/ghost`,
+`@decentralized-design/ghost/fingerprint`,
+`@decentralized-design/ghost/core`,
+`@decentralized-design/ghost/cli`, and
+`@decentralized-design/ghost/scan`.
 
 ## License
 

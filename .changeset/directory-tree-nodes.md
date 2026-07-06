@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost-fingerprint": minor
+"@decentralized-design/ghost": minor
 ---
 
 Collapse the on-disk node model into the directory tree: the layout supplies the

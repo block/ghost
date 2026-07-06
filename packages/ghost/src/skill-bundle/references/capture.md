@@ -18,70 +18,59 @@ Ghost treats the fingerprint package as canonical.
   manifest.yml          # schema + id
   glossary.md           # the kind vocabulary + what each kind means
   principle.trust.md    # a brand truth of kind `principle`
-  condition.density.md  # a brand truth of kind `condition`
+  pattern.invoice.md    # a pattern with an optional ## Skeleton
+  anti-goal.generic.md  # a guard when its kind declares posture: guard
   voice.md              # a brand truth without a kind
 ```
 
-A **node** is a markdown file: a `description` in frontmatter + a prose body (the
-brand truth). The package is **flat** — no hierarchy, no inheritance, no edges. A
-node's kind comes from its filename prefix; the glossary declares the kinds.
+A **node** is a markdown file: a `description`, optional `materials`, and a
+prose body. The package is **flat** — no hierarchy, no inheritance, no edges. A
+node's kind comes from its filename prefix; the glossary declares the kinds and
+may declare consumption posture such as `posture: guard`.
 
-## The node shape
+## Lead with an annotated exemplar over a complete artifact
 
-A node at `principle.trust.md` (id `principle.trust`, kind `principle`):
+The strongest steering artifact is not a summary; it is a complete on-brand
+artifact with annotation. Capture the whole thing, then name what the agent
+should preserve and what is incidental.
 
-```markdown
+`exemplar.status-card.md`:
+
+````markdown
 ---
-description: Trust at the payment moment.  # the retrieval payload (see below)
-# free-form keys (audience, stage, …) are allowed and pass through untouched
+description: Complete status card exemplar — normative for density, evidence placement, and action language.
+materials:
+  - src/components/status-card.tsx
 ---
 
-Near the moment of payment, reduce felt risk. Proximity of reassurance to the
-action beats completeness…
+Normative for the opening fact, square edge, evidence placement, and accountable
+action. The exact invoice count and dates are incidental.
+
+```tsx
+<section className="border-l border-[#D8DED8] bg-[#F7F5EF] p-6 text-[#17201B]">
+  <p className="text-xs uppercase tracking-[0.14em] text-[#2F6F4F]">Bank sync</p>
+  <h1 className="mt-3 text-2xl font-semibold">3 deposits need matching</h1>
+  <p className="mt-2 max-w-prose text-sm">
+    They total $8,410 and arrived between Jul 12 and Jul 15.
+  </p>
+  <button className="mt-6 border border-[#17201B] px-4 py-2 text-sm">
+    Match deposits — about 4 minutes
+  </button>
+</section>
 ```
 
-- **`description`** is how an agent finds the node: a one-line "what this is and
-  when to gather it," exactly like a tool's name + description. `ghost gather`
-  emits the menu of id + kind + description; the agent matches the ask against
-  those. Write one on every node.
-- **Kind is the filename prefix** and must be a kind the glossary declares. A
-  bare name (`voice.md`) has no kind — fine.
-- **Altitude lives in the prose.** State a universal truth plainly; give a
-  narrower truth its **condition** — the *situation* it applies in — in the prose.
-  Never file a truth by destination (`for-emails.md`); the model reads the
-  condition and decides when it applies.
+What makes it ours: the surface opens with an accountable fact, keeps evidence
+next to the claim, uses square structure instead of floating cards, and prices
+the user's next action in time. Do not copy the exact amounts, dates, or class
+names unless the implementation path confirms them.
+````
 
-## Write the body through three lenses
+The annotation is load-bearing. A bare sample teaches form; the annotation
+teaches which features of the form are intentional, which stops an agent from
+copying incidental details.
 
-Intent / inventory / composition are **authoring lenses**: angles you think
-through as you write a node's prose body. They live in that prose, never as
-frontmatter keys or node types, and a node may lean entirely on one:
-
-- **intent**: the why and the stance.
-- **inventory**: the material you have (tokens, components, and pointers to the
-  actual implementation in code).
-- **composition**: how it is assembled (the patterns that make it intentional).
-
-Keep a node **purpose-coherent**: one truth, any length. Split into a second node
-only when it is genuinely a different truth.
-
-## Encode in the strongest form that fixes the failure
-
-A node's body is prose, but prose is not always description. Match the encoding
-to the gap you are closing:
-
-| The agent keeps… | Encode as | Why |
-| --- | --- | --- |
-| inventing values it can't know (colors, type, spacing, component names) | explicit values in the body + `materials` locators | knowledge gap — no stance compensates for a missing token |
-| producing generic form (tone, rhythm, layout, density) | a **verbatim sample** in the body | models match shown form far better than described form |
-| crossing hard lines | **never/always invariants** with concrete objects | specific negations get the highest compliance of any prose |
-| misreading novel situations | stance prose | the interpretive frame for everything the above don't cover |
-
-A node body may *be* a sample. When the human shows you copy they love, a
-screenshot of the product at its best, or an interaction that "feels like us,"
-capture it verbatim (or point `materials` at it) and annotate what makes it
-theirs — do not summarize it away into adjectives. A real on-brand error message
-out-steers a paragraph about the error-message voice.
+Protect exact voice artifacts the same way. A real on-brand error message
+out-steers a paragraph about error-message voice:
 
 `exemplar.error-voice.md`:
 
@@ -100,59 +89,187 @@ safe before what to do. One calm next step. No "Oops," no exclamation points,
 no blame on the user or the network.
 ```
 
-The annotation ("what makes it ours") is the load-bearing part: a bare sample
-teaches form, the annotation teaches *which features of the form are
-intentional*, which stops an agent from copying incidental details.
+## Add Skeletons when the opening structure matters
 
-Counter-exemplars deserve the same first-class treatment. Escaping a generic
-default requires the generic thing to be *named and rejected*, not just the
-target described — "not bootstrap-blue, not rounded-xl cards on gray-50"
-collapses the prior that "use our distinctive palette" leaves intact.
+A `## Skeleton` section contains the literal opening structure the agent should
+start from. Use it on a pattern node when the first tokens determine whether the
+surface lands in the right shape.
+
+Rules:
+
+- Put exactly one fenced block in each `## Skeleton` section. `ghost validate`
+  warns when there are zero or multiple fences.
+- Make the block complete enough to begin from, but not so complete that it
+  invents task-specific facts.
+- Keep explanation above the `## Skeleton`; `ghost pull` extracts skeleton
+  fences and emits them dead last under the banner to begin from this structure.
+- If a pulled skeleton matches the requested surface, write it first verbatim,
+  then fill it with the task's facts and materials.
+
+## Write rules only after concrete artifacts
+
+Rules are useful when they name the decision that survives across examples.
+Keep them short, specific, and attached to concrete objects whenever possible:
+
+- exact values when the agent keeps inventing values;
+- never/always invariants when a hard line is crossed;
+- conditions in prose when guidance applies only in a situation;
+- decision traces when two plausible choices keep competing.
+
+Do not turn every observation into a rule. Stale or generic rules average
+against the exemplars and pull the packet back toward the median.
+
+## Write guards as replacement, not as blacklist
+
+A guard is ordinary node prose whose kind declares `posture: guard` in
+`glossary.md`:
+
+```yaml
+kinds:
+  - name: anti-goal
+    posture: guard
+```
+
+A good guard states **not X; instead Y; recognize the switch by Z**. The
+replacement matters because negation alone raises the salience of the rejected
+thing.
 
 `anti-goal.generic-ui.md`:
 
 ```markdown
 ---
-description: The default AI-generated aesthetic we reject — read before building any UI.
+description: Review-critical replacement for the generic AI dashboard default.
 ---
 
-We are not the generic generated interface: no bootstrap-blue or indigo-600
-primaries, no rounded-xl cards floating on gray-50, no emoji in headings, no
-gradient hero text, no "Oops!" copy. When a layout feels like a template that
-any product could ship, it is off-brand even if every token is right. Our
-defaults when in doubt: flat surfaces, hard alignment to the grid, one accent
-used sparingly.
+Not: rounded-xl cards on gray-50, indigo primary buttons, gradient hero text,
+emoji headings, and "You're crushing it" optimism.
+
+Instead: flat paper surfaces, one restrained accent, square alignment, and a
+next action backed by the number or source that justifies it.
+
+Recognize the switch: if removing the logo would make the surface look like any
+SaaS template, the guard failed even when every token is technically valid.
 ```
 
-Every never/always line in the fingerprint is also a candidate **check** — a
-check is an invariant made reviewable (see the checks haunt).
+The strongest anti-goal is silent: purged from exemplars, absent from starter
+structures, and enforced by a probe-backed check in review. Use guard prose to
+name the replacement; use checks and `probe:` commands to catch regressions.
+
+## The node shape
+
+A node at `principle.trust.md` (id `principle.trust`, kind `principle`):
+
+```markdown
+---
+description: Trust at the payment moment.  # the retrieval payload
+# optional: materials, audience, stage, or other free-form keys
+---
+
+Near the moment of payment, reduce felt risk. Proximity of reassurance to the
+action beats completeness...
+```
+
+- **`description`** is how an agent finds the node: a one-line "what this is and
+  when to gather it." `ghost gather` emits the menu of id, kind, description,
+  concrete coverage, and material count; the agent matches the ask against it.
+- **Kind is the filename prefix** and must be a kind the glossary declares. A
+  bare name (`voice.md`) has no kind.
+- **Altitude lives in the prose.** State a universal truth plainly; give a
+  narrower truth its **condition** — the situation it applies in — in the prose.
+  Never file a truth by destination (`for-emails.md`).
+- **Concreteness is derived.** A node carries concrete material when it has
+  `materials`, a substantial fenced example, or a `## Skeleton`. You do not
+  declare a separate type.
+
+## Write the body through three lenses
+
+Intent / inventory / composition are **authoring lenses**: angles you think
+through as you write a node's prose body. They live in that prose, never as
+frontmatter keys or node types, and a node may lean entirely on one:
+
+- **intent**: the why and the stance.
+- **inventory**: the material you have (tokens, components, and pointers to the
+  actual implementation in code).
+- **composition**: how it is assembled (the patterns that make it intentional).
+
+Keep a node **purpose-coherent**: one truth, any length. Split only when it is
+genuinely a different truth.
+
+## Node prose stances
+
+Node prose is steering payload. A generic sentence in a body averages every
+future generation toward the median, so hold drafts to these stances before the
+human sees them.
+
+Two carve-outs come first, because they invert ordinary prose advice:
+
+- **Guards keep their negation.** "Not X; instead Y; recognize the switch by Z"
+  is the required guard form. Naming the rejected thing is the guard's job;
+  never "improve" a guard by stating only the replacement.
+- **Invariants keep their absolutes.** "Never" and "always" are correct in an
+  invariant when the hard line is real and human-ratified. Absolutes are lazy
+  only when they stand in for an uncurated stance.
+
+Everywhere else:
+
+- **No aspirational abstractions.** "We value clarity and trust" steers
+  nothing. Name the decision the truth forces: what gets picked when two goods
+  compete, and what gets given up.
+- **Descriptions must discriminate.** Read the description alone. If it also
+  fits a competitor's brand, it is retrieval-dead; rewrite it until it could
+  belong to no one else.
+- **Cut unratified hedges.** "Generally," "where possible," and "consider" in a
+  body mean the human never picked a side. Get the ratification or cut the
+  sentence.
+- **Ban brand-deck filler.** "Elevate," "delight," "seamless," "best-in-class,"
+  "empower." When a brand doc supplies these words, they are testimony to
+  distill, never prose to keep.
+- **Settle the altitude on purpose.** Every truth is either claimed universal
+  or given its condition in the prose. A body that does neither was never
+  curated for altitude; ask the human which it is.
+
+## Score drafts before curation
+
+Before handing drafts to the human (step 5), rate each node 1 to 5 per
+dimension:
+
+| Dimension | Question |
+| --- | --- |
+| Testimony | Can you quote the human words or artifact this node came from? |
+| Discrimination | Does the description fit only this brand? |
+| Force | Does the body decide something, or merely describe something? |
+| Altitude | Is it universal on purpose, or given its condition? |
+| Residue | Is it free of starter-demo prose and brand-deck filler? |
+
+Below 20 of 25, the node goes back to the interview, not into the package. The
+score is a drafting gate for the agent; the human's keep/soften/reject verdict
+in curation still decides what becomes canonical.
 
 ## Author through steering jobs
 
-The steering buckets are mandatory questions, not mandatory fields. Do not fill
-every bucket on every node. Encode the truth in the strongest form that fixes the
-observed failure.
+The steering jobs are questions, not mandatory fields. Encode the truth in the
+strongest form that fixes the observed failure.
 
 | If the agent keeps... | Author... |
 | --- | --- |
 | missing the truth | sharper `description` / `index` mention |
 | inventing values | `asset.*` node with materials and exact names |
-| producing generic output | `anti-goal.*` plus annotated `exemplar.*` |
-| choosing the wrong structure | `pattern.*` with bound/open |
-| crossing hard lines | invariant prose plus a check |
+| producing generic output | `anti-goal.*` guard plus annotated `exemplar.*` |
+| choosing the wrong structure | `pattern.*` with bound/open and a `## Skeleton` |
+| crossing hard lines | invariant prose plus a check, optionally with `probe:` |
 | applying guidance too broadly | condition in prose |
 | making bad tradeoffs | `decision.*` trace |
 | producing correct but forgettable work | scoped `concept.*` |
 
 Ask while authoring:
 
-- What generic output would an agent probably produce?
-- What does this brand refuse?
-- What real material should the agent inspect?
+- What complete artifact shows the brand at its best?
 - What should be copied from this exemplar, and what is incidental?
-- What is bound, and what is open?
+- What generic output would an agent probably produce?
+- What does this brand refuse, and what replaces it?
+- What real material should the agent inspect?
+- What opening structure should be preserved?
 - What hard line would you block in review?
-- What decision almost went the other way?
 - When would this guidance reverse?
 
 ## Steps
@@ -176,49 +293,57 @@ ghost validate
 
 `ghost init` seeds the steering starter: the manifest, a starter `glossary.md`
 (with suggested kinds you keep, rename, or replace), the package-root
-`index.md` (id `index`), and demo nodes for stance, composition, anti-goals,
-patterns, exemplars, materials, and decisions. The demo content is there for
-inspiration and guidance. Replace its claims, paths, examples, and decisions
-with real product truth before using it to steer generation. Use
+`index.md`, and worked demo nodes for stance, composition, anti-goals, patterns,
+exemplars, materials, and decisions. Replace demo claims, paths, examples, and
+decisions with real product truth before using it to steer generation. Use
 `ghost init --template minimal` when you only want the small
-manifest/glossary/index starter. Write `index.md` as the human-curated
-front door: the non-negotiables that apply to every task (stated briefly,
-linking to full nodes by id for depth), what this fingerprint covers, how its
-kinds organize the corpus, and any stricter silence posture. It is an ordinary
-node mechanically, but by convention agents always pull it first — anything
-that must never be missed belongs here.
+manifest/glossary/index starter.
 
-Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or HTTPS URLs for the concrete materials the prose governs. Bundle brand-owned materials, reference implementations: put brand-owned materials that should survive export or refactors (tokens.css, motion.json, logo.svg, type materials) under `materials/`; point at living app code where the implementation itself should stay in place. Optional capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt (`ghost haunt add checks`) — and are feed-back only; they are never gathered.
+Write `index.md` as the human-curated front door: non-negotiables that apply to
+every task, what this fingerprint covers, how its kinds organize the corpus, and
+any stricter silence posture. It is an ordinary node mechanically, but by
+convention agents pull it first — anything that must never be missed belongs
+here.
+
+Nodes may carry a `materials` list in frontmatter: repo-relative paths/globs or
+HTTPS URLs for the concrete materials the prose governs. Put brand-owned
+materials that should survive export or refactors under `materials/`; point at
+living app code where the implementation itself should stay in place. Optional
+capabilities (haunts) live under `.ghost/haunts/` — e.g. the checks haunt
+(`ghost haunt add checks`) — and are feed-back only; they are never gathered.
 
 ### 3. Shape the glossary
 
-Declare the kinds you will use in `glossary.md` — the frontmatter
-`kinds` list plus a `#` section per kind explaining its meaning and
-normative weight. Kinds are your choice; Ghost ships no fixed vocabulary. A
-node's filename prefix must match a declared kind (or the node has no kind).
+Declare the kinds you will use in `glossary.md` — the frontmatter `kinds` list
+plus a `#` section per kind explaining its meaning and normative weight. Kinds
+are your choice; Ghost ships no fixed vocabulary. A node's filename prefix must
+match a declared kind (or the node has no kind). Use `posture: guard` for kinds
+whose nodes are review-critical replacements; use `posture: wild` only for
+truths that should stay opt-in.
 
-The glossary is a dictionary of every term with defined meaning in the corpus —
-including a term currently used by only a bare node. A root `voice.md` with a
-`voice` glossary entry declares the scope for future `voice.<slug>.md` nodes;
-declaring a kind with zero or one users is good hygiene, not
-over-structure.
+The glossary is a dictionary of every term with defined meaning in the corpus.
+A root `voice.md` with a `voice` glossary entry declares the scope for future
+`voice.<slug>.md` nodes; declaring a kind with zero or one users is good
+hygiene, not over-structure.
 
 ### 4. Orient
 
 Elicit the brand from the human, not from a codebase. Interview for stance,
-audience, and anti-goals; ask for the material they can show — screenshots,
-links, exemplar products, brand docs, copy they love or hate. Treat every
-artifact as testimony to curate, never truth to copy verbatim. Repo-bound
-reality (components, paths, building blocks) can be recorded as `materials` on the node whose prose explains their purpose.
+audience, anti-goals, and exemplars; ask for the material they can show —
+screenshots, links, exemplar products, brand docs, copy they love or hate. Treat
+every artifact as testimony to curate, never truth to copy verbatim. Repo-bound
+reality can be recorded as `materials` on the node whose prose explains its
+purpose.
 
 ### 5. Write sparse nodes
 
 Add the smallest useful set of nodes, each a purpose-coherent prose truth written
-through the lenses, named `<kind>.<slug>.md` (or a bare slug when no kind is present).
-Draft only what the human said or showed. State conditions as situations in the
-prose. Prefer a few high-confidence truths over a noisy catalog. Ask the human
-to keep, soften, reject, or re-title important claims before treating draft
-nodes as durable.
+through the lenses, named `<kind>.<slug>.md` or a bare slug. Draft only what the
+human said or showed. State conditions as situations in the prose. Prefer a few
+high-confidence truths over a noisy catalog. Hold each draft to the node prose
+stances and score it before curation; a node below the gate returns to the
+interview. Ask the human to keep, soften,
+reject, or re-title important claims before treating draft nodes as durable.
 
 ### 6. Validate
 
@@ -226,15 +351,19 @@ nodes as durable.
 ghost validate .ghost
 ```
 
-`validate` checks artifact shape, per-node validity, and that each node's kind
-prefix is a declared glossary kind (an undeclared prefix is a warning with a
-"did you mean" suggestion, not a failure).
+`validate` checks artifact shape, per-node validity, glossary kind prefixes,
+material locators, haunts, check references, and Skeleton fence counts.
+Undeclared kind prefixes and malformed Skeleton sections are warnings.
 
 ## Never
 
 - Never describe any file outside `.ghost/` as canonical package input.
-- Never derive a brand truth from repo code alone; what a codebase repeats may be legacy, not stance. Use repo paths as `materials` only when the prose truth has been curated.
+- Never derive a brand truth from repo code alone; what a codebase repeats may
+  be legacy, not stance. Use repo paths as `materials` only when the prose truth
+  has been curated.
 - Never draft a node the human neither said nor showed.
 - Never invent a hierarchy, inheritance, or cross-node edges — the package is
   flat.
 - Never file a truth by destination; state its condition in the prose.
+- Never ship a blacklist-only anti-goal; state the replacement and enforce the
+  hard line in review.

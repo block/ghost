@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost-fingerprint": patch
+"@decentralized-design/ghost": patch
 ---
 
 Clean em dashes out of the shipped skill bundle and package README prose,

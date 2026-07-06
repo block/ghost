@@ -1,20 +1,41 @@
 # Ghost
 
-**You keep leaving the same review comment.** "Don't introduce a new button
-style on checkout." "This empty state needs a way out." "That's not our voice."
-The agent that built the thing never saw those decisions, so you flag them
-again, and again.
+**Ghost is your brand, packed for agents.** A `.ghost/` folder of plain-prose
+truths — your stance, your voice, your trust moves — checked into the repo and
+read by any agent before it makes anything: a screen, an email, an empty
+state, a sentence.
 
-Ghost lets you **write that decision down once, in your repo, so your agent
-reads it before it builds**. One package, `@anarchitecture/ghost-fingerprint`.
-One CLI, `ghost`.
+```text
+.ghost/
+  glossary.md           # your vocabulary
+  principle.trust.md    # "near the moment of payment, reduce felt risk…"
+  voice.md              # how the brand talks
+  asset.logo.md         # points at the actual SVGs
+```
 
-[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@anarchitecture/ghost-fingerprint)
+Today those decisions live in reviewers' heads — "that's not our voice," again,
+on every surface. The agent that built the thing never saw them. Ghost writes
+them down once, where the agent looks first.
+
+One portable packet; Claude Code, Codex, Cursor, and Goose all read the same
+one. One package, `@decentralized-design/ghost`. One CLI, `ghost`.
+
+## Why "Decentralized Design"
+
+For decades the brand lived in a few heads and a few tucked-away frames.
+Reviewers applied it one comment at a time, and it left when they left the
+room. Now agents do the making, and an agent holds only what you hand it. So
+make the brand something you can hand over: prose truths, written by people
+with a point of view, that travel to wherever work ships and that agents read
+before they make anything. The few still write the taste; they no longer gate
+it. That is decentralized design.
+
+[Documentation](https://block.github.io/ghost/) · [npm](https://www.npmjs.com/package/@decentralized-design/ghost)
 
 ## Install
 
 ```bash
-npm install -D @anarchitecture/ghost-fingerprint
+npm install -D @decentralized-design/ghost
 npx ghost skill install
 ```
 
@@ -132,10 +153,28 @@ Grade whether the change preserves the logo guidance in `asset.logo`.
 
 `ghost gather` and `ghost pull` are feed-forward. `ghost review` is feed-back: it
 reads a diff, matches touched files to node `materials`, offers relevant checks,
-and emits an advisory packet for the host agent to judge.
+and emits an advisory packet for the host agent to weigh.
 
 Reserved at the package root: `manifest.yml`, `glossary.md`, and `haunts/`.
 Every other `*.md` is a node. Renaming a node changes its id.
+
+The packet is the product; the CLI is the courier. Everything above —
+gather, pull, review, haunts, the events tape — is machinery around the
+fingerprint, and the fingerprint outlives all of it.
+
+## Portable by Design
+
+The fingerprint travels. It is agent-agnostic (every host agent reads the same
+packet), medium-agnostic (the same truths steer a screen, a page, an email, a
+sentence), and repo-native (it moves with a clone, a fork, a new hire's first
+checkout). When you need it as a standalone artifact:
+
+```bash
+ghost export    # package the fingerprint as a portable brand artifact, with a locator audit
+```
+
+The export audits every `materials` locator so the packet doesn't silently
+point at things that moved.
 
 ## Project Status: Beta
 
@@ -148,7 +187,7 @@ Every other `*.md` is a node. Renaming a node changes its id.
 
 | Path | Role | Published? |
 | ---- | ---- | --- |
-| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, corpus validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@anarchitecture/ghost-fingerprint` |
+| [`packages/ghost`](./packages/ghost) | The public `ghost` CLI, node authoring, corpus validation, gather/pull, review packet assembly, and the skill bundle. | yes: `@decentralized-design/ghost` |
 | [`packages/vessel`](./packages/vessel) | A standalone shadcn component registry plus `vessel-mcp` MCP server. | no |
 | [`apps/docs`](./apps/docs) | Docs site. | no |
 

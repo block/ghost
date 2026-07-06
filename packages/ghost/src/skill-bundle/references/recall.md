@@ -1,56 +1,38 @@
 ---
 name: recall
-description: Gather the applicable Ghost brand truths for a task.
+description: Gather and pull the applicable Ghost brand truths for a task.
 ---
 
 # Recipe: Recall Ghost Fingerprint
 
-Wild posture is opt-in, never implied. Default `ghost gather` excludes kinds whose glossary entry declares `posture: wild`; use `--wild` only when the brief names explicit open territory where conformance is suspended.
+Wild posture is opt-in. Default `ghost gather` excludes kinds whose glossary
+entry declares `posture: wild`; use `--wild` only when the brief names explicit
+open territory where conformance is suspended. Guard posture stays visible by
+default because guards are brand-defining.
 
-1. Run `ghost gather <ask>` to emit the menu — every node's id, kind, and
-   description — for the actual task at hand.
-2. Read the ask against the menu and match it to one or more nodes by their
-   descriptions.
-3. Run `ghost pull <id> [<id>…]` to read the selected nodes' bodies, and apply
-   the truths, honoring each node's kind **as the glossary defines it** — the
-   glossary is the authoritative meaning of every kind, and `ghost gather`
-   emits each kind's purpose in the menu legend. The starter vocabulary reads: a
-   `principle` is usually stance or floor, a `condition` fires only when its
-   stated situation holds, an `exemplar` is illustrative unless the node says it
-   is normative, an `anti-goal` names likely wrong outputs, an `asset` points at
-   concrete materials, a `pattern` binds structure, and a `decision` preserves a
-   tradeoff. An author's glossary overrides all of this. Always include `index`
-   in your pull unless you have already read it this session — it carries the
-   fingerprint's non-negotiables and reading posture. Prefer `pull` over reading
-   the files directly: it also appends the selection to
-   the `.ghost/.events` events tape, so the fingerprint's author can see what was exposed,
-   reached for, missed, or ignored with `ghost pulse`.
+1. Run `ghost gather <ask>` for the actual task. Read the coverage line: all
+   prose-only fingerprints are weak steering, and guard count tells you whether
+   review-critical negative space exists.
+2. Select against `description`; Ghost never selects for you.
+3. Run `ghost pull <id> [<id>…]`. Prefer `pull` over reading files directly: it
+   orders the packet for steering, inlines small local materials, emits
+   inspect-pointers for binary materials, extracts Skeletons last, and logs the
+   pull to `.ghost/.events`.
 
-## Steering read order
+## Read order = pull emission order
 
-Ghost does no selection — it emits the menu; you pick. When preparing to
-generate, this read order is a useful default, not routing logic:
+`ghost pull` emits selected nodes in steering order:
 
-1. Pull `index` first for non-negotiables and silence posture.
-2. Pull applicable `principle.*` nodes for stance, tradeoffs, and hard floor.
-3. Pull `asset.*` nodes when exact materials, tokens, components, or files
-   matter.
-4. Pull `pattern.*` nodes when the task has a known structure.
-5. Pull `exemplar.*` nodes when form, rhythm, voice, quality, or code shape
-   matters.
-6. Pull `anti-goal.*` nodes when generic output risk is high.
-7. Pull `decision.*` nodes when tradeoffs are ambiguous or likely to be
-   re-litigated.
-8. Label anything missing as silent/provisional instead of inventing coverage.
+1. `index` / stance first: non-negotiables and silence posture.
+2. Concrete-material nodes: `materials`, substantial fenced examples, or
+   `## Skeleton` sections, with materials inlined or pointed to inspect.
+3. Prose-only rules: principles, conditions, decisions, and other rules without
+   concrete payload.
+4. Guard nodes: `posture: guard`, flagged review-critical; read the replacement
+   carefully.
+5. Skeleton fences dead last: if one matches the surface, start from that
+   structure verbatim.
 
-Return:
-
-- The truths you selected and their short claims (cite by node id).
-- How each applies (or does not) to the task at hand, respecting stated
-  conditions.
-- Any gaps where the fingerprint is silent and local evidence must carry the
-  reasoning.
-
-If the fingerprint is silent on the task, say so plainly and continue with
-provisional local reasoning when safe. Fingerprint edits are ordinary
-Git-reviewed edits.
+Return the selected truths with node ids, how each applies, and where the
+fingerprint is silent. If silence is safe, proceed provisionally and label it;
+if it is brand-defining or high-risk, ask or author a node first.

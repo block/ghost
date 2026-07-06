@@ -62,8 +62,8 @@ export function Hero() {
             <span className="hero-line block">Ghost</span>
           </h1>
           <p className="hero-line mt-8 max-w-[46ch] text-center text-balance text-base md:text-lg text-muted-foreground leading-relaxed">
-            The brand fingerprint your agent reads before it builds and can
-            review against after it changes.
+            Your brand, packed for agents: a steering packet they read before
+            they make anything. Design authority without a center.
           </p>
         </div>
       </section>

@@ -72,6 +72,7 @@ export function registerGatherCommand(cli: CAC): void {
               {
                 kind: "menu",
                 ...(ask ? { ask } : {}),
+                coverage: menuCoverage(menu),
                 ...(kinds.length > 0 ? { kinds } : {}),
                 nodes: menu,
                 ...(wildIds.length > 0 && !includeWild
@@ -136,6 +137,23 @@ interface FormatMenuOptions {
   wildIncluded?: boolean;
 }
 
+function menuCoverage(menu: CatalogMenuEntry[]): {
+  nodes: number;
+  concrete: number;
+  guards: number;
+} {
+  return {
+    nodes: menu.length,
+    concrete: menu.filter((entry) => entry.concrete).length,
+    guards: menu.filter((entry) => entry.guard).length,
+  };
+}
+
+function menuCoverageLine(menu: CatalogMenuEntry[]): string {
+  const coverage = menuCoverage(menu);
+  return `${coverage.nodes} nodes · ${coverage.concrete} carry concrete material · ${coverage.guards} guards`;
+}
+
 function formatMenuMarkdown(
   menu: CatalogMenuEntry[],
   kinds: MenuKind[],
@@ -145,6 +163,7 @@ function formatMenuMarkdown(
     options.ask ? `# Ghost Nodes — for: ${options.ask}` : "# Ghost Nodes",
     "",
     "The fingerprint menu. Match the ask against these nodes and read the ones you judge relevant.",
+    menuCoverageLine(menu),
     "",
   ];
   if (options.wildIncluded) {
@@ -163,10 +182,16 @@ function formatMenuMarkdown(
   for (const entry of menu) {
     const kind = entry.kind ? ` _(${entry.kind})_` : "";
     const wild = entry.wild ? " _(wild)_" : "";
-    lines.push(`- \`${entry.id}\`${kind}${wild}`);
+    const guard = entry.guard ? " _(guard)_" : "";
+    lines.push(`- \`${entry.id}\`${kind}${wild}${guard}`);
     if (entry.description) lines.push(`  - ${entry.description}`);
     if (entry.materials !== undefined) {
       lines.push(`  - materials: ${entry.materials}`);
+    }
+    if (entry.concrete) {
+      lines.push(
+        `  - carries concrete material${entry.hasSkeleton ? " (Skeleton)" : ""}`,
+      );
     }
   }
   if ((options.wildAvailable ?? 0) > 0) {

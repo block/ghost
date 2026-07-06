@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@anarchitecture/ghost-vessel";
+import { cn } from "@decentralized-design/vessel";
 import type { ReactNode } from "react";
 
 /**

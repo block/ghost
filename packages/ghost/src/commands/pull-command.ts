@@ -2,9 +2,11 @@ import type { CAC } from "cac";
 import {
   classifyMaterialLocator,
   closestIds,
+  extractSkeletonFences,
   type GhostCatalogNode,
   type MaterialTransportResult,
   resolveLocalMaterialLocator,
+  stripSkeletonSections,
   type TransportedMaterial,
   transportMaterials,
 } from "#ghost-core";
@@ -21,6 +23,12 @@ import { failFromError } from "./errors.js";
 interface PulledNode {
   node: GhostCatalogNode;
   materials: MaterialTransportResult;
+}
+
+interface PulledSkeleton {
+  nodeId: string;
+  info?: string;
+  content: string;
 }
 
 export function registerPullCommand(cli: CAC): void {
@@ -40,11 +48,19 @@ export function registerPullCommand(cli: CAC): void {
       "--no-materials",
       "Emit material locators only; do not inline files",
     )
+    .option("--order <mode>", "Output order: steering or given", {
+      default: "steering",
+    })
     .option("--no-events", `Skip appending to .ghost/${GHOST_EVENTS_FILENAME}`)
     .action(async (ids: string[], opts) => {
       try {
         if (opts.format !== "markdown" && opts.format !== "json") {
           console.error("Error: --format must be 'markdown' or 'json'");
+          process.exit(2);
+          return;
+        }
+        if (opts.order !== "steering" && opts.order !== "given") {
+          console.error("Error: --order must be 'steering' or 'given'");
           process.exit(2);
           return;
         }
@@ -71,9 +87,11 @@ export function registerPullCommand(cli: CAC): void {
           console.error("Run `ghost gather` to list every node.");
         }
 
-        const nodes = known.map(
+        const givenNodes = known.map(
           (id) => catalog.nodes.get(id) as GhostCatalogNode,
         );
+        const nodes =
+          opts.order === "given" ? givenNodes : orderPulledNodes(givenNodes);
         const pulledNodes = await resolvePulledNodes(
           nodes,
           paths.packageDir,
@@ -120,10 +138,12 @@ export function registerPullCommand(cli: CAC): void {
                             : materials.materials.map(formatJsonMaterial),
                       }
                     : {}),
-                  posture: node.wild ? "wild" : "steady",
+                  posture: node.posture,
                   ...(node.wild ? { wild: true as const } : {}),
-                  body: node.body,
+                  ...(node.guard ? { guard: true as const } : {}),
+                  body: stripSkeletonSections(node.body),
                 })),
+                skeletons: pulledSkeletons(pulledNodes),
               },
               null,
               2,
@@ -157,6 +177,21 @@ async function resolvePulledNodes(
         : locatorOnlyMaterials(node.materials, repoRoot, packageDir),
     })),
   );
+}
+
+function orderPulledNodes(nodes: GhostCatalogNode[]): GhostCatalogNode[] {
+  return nodes
+    .map((node, index) => ({ node, index, bucket: steeringBucket(node) }))
+    .sort((a, b) => a.bucket - b.bucket || a.index - b.index)
+    .map((entry) => entry.node);
+}
+
+function steeringBucket(node: GhostCatalogNode): number {
+  if (node.id === "index" || node.slug === "index") return 0;
+  if (node.guard) return 3;
+  if (node.wild) return 2;
+  if (node.concrete) return 1;
+  return 2;
 }
 
 function locatorOnlyMaterials(
@@ -194,12 +229,23 @@ function sumMaterialCounts(nodes: PulledNode[]): {
   );
 }
 
+function pulledSkeletons(nodes: PulledNode[]): PulledSkeleton[] {
+  return nodes.flatMap(({ node }) =>
+    extractSkeletonFences(node.body).map((fence) => ({
+      nodeId: node.id,
+      ...(fence.info ? { info: fence.info } : {}),
+      content: fence.content,
+    })),
+  );
+}
+
 function formatJsonMaterial(material: TransportedMaterial): {
   locator: string;
   tier: TransportedMaterial["tier"];
   inlined?: string;
   omitted?: true;
   reason?: string;
+  inspect?: string;
 } {
   return {
     locator: material.locator,
@@ -207,6 +253,9 @@ function formatJsonMaterial(material: TransportedMaterial): {
     ...(material.inlined !== undefined ? { inlined: material.inlined } : {}),
     ...(material.omitted
       ? { omitted: true as const, reason: material.reason ?? "not inlined" }
+      : {}),
+    ...(material.reason === "binary inspect-pointer"
+      ? { inspect: material.path ?? material.locator }
       : {}),
   };
 }
@@ -216,15 +265,20 @@ function formatPullMarkdown(nodes: PulledNode[]): string {
   for (const { node, materials } of nodes) {
     const kind = node.kind ? ` _(${node.kind})_` : "";
     const wild = node.wild ? " _(wild)_" : "";
-    const lines = [`# \`${node.id}\`${kind}${wild}`];
+    const guard = node.guard ? " _(guard · review-critical)_" : "";
+    const lines = [`# \`${node.id}\`${kind}${wild}${guard}`];
     if (node.description) lines.push("", `> ${node.description}`);
-    lines.push("", node.body.trim());
+    lines.push("", stripSkeletonSections(node.body).trim());
     if (materials.materials.length > 0) {
       lines.push("", "Materials:");
       for (const material of materials.materials) {
         if (material.inlined !== undefined) {
           const info = material.path ?? material.locator;
           lines.push("", `\`\`\`${info}`, material.inlined.trimEnd(), "```");
+        } else if (material.reason === "binary inspect-pointer") {
+          lines.push(
+            `- inspect: ${material.path ?? material.locator} — view this image before generating`,
+          );
         } else {
           const reason = material.omitted
             ? ` — ${material.reason ?? "not inlined"}`
@@ -235,5 +289,21 @@ function formatPullMarkdown(nodes: PulledNode[]): string {
     }
     sections.push(lines.join("\n"));
   }
+
+  const skeletons = pulledSkeletons(nodes);
+  if (skeletons.length > 0) {
+    const lines = [
+      "# Skeletons — begin the artifact from this structure",
+      "",
+      "Begin the artifact from the matching structure below verbatim, then fill it.",
+    ];
+    for (const skeleton of skeletons) {
+      lines.push("", `## From \`${skeleton.nodeId}\``, "");
+      const info = skeleton.info ? skeleton.info : "";
+      lines.push(`\`\`\`${info}`, skeleton.content.trimEnd(), "```");
+    }
+    sections.push(lines.join("\n"));
+  }
+
   return `${sections.join("\n\n---\n\n")}\n`;
 }

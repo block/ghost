@@ -37,9 +37,11 @@ export async function loadFingerprintPackage(
   // Per-node schema failures are collected as `invalid`.
   const { nodes: placedNodes, invalid } = await loadNodeFiles(paths.packageDir);
   const haunts = await loadHauntFiles(paths.packageDir);
+  const postureKinds = await readPostureGlossaryKinds(paths.glossary);
   const catalog = assembleCatalog({
     placedNodes,
-    wildKinds: await readWildGlossaryKinds(paths.glossary),
+    wildKinds: postureKinds.wild,
+    guardKinds: postureKinds.guard,
   });
 
   return {
@@ -76,20 +78,27 @@ export function lintFingerprintPackageManifest(
   }
 }
 
-async function readWildGlossaryKinds(glossaryPath: string): Promise<string[]> {
+async function readPostureGlossaryKinds(
+  glossaryPath: string,
+): Promise<{ wild: string[]; guard: string[] }> {
   let raw: string;
   try {
     raw = await readFile(glossaryPath, "utf-8");
   } catch (err) {
-    if (isMissingPathError(err)) return [];
+    if (isMissingPathError(err)) return { wild: [], guard: [] };
     throw err;
   }
 
   const result = parseGlossary(raw);
-  if (result.glossary === null) return [];
-  return result.glossary.kinds
-    .filter((kind) => kind.posture === "wild")
-    .map((kind) => kind.name);
+  if (result.glossary === null) return { wild: [], guard: [] };
+  return {
+    wild: result.glossary.kinds
+      .filter((kind) => kind.posture === "wild")
+      .map((kind) => kind.name),
+    guard: result.glossary.kinds
+      .filter((kind) => kind.posture === "guard")
+      .map((kind) => kind.name),
+  };
 }
 
 function parseManifest(

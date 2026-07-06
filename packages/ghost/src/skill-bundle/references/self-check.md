@@ -44,9 +44,11 @@ Before generating, can you cite:
 
 Classify readiness:
 
-- **Green:** enough Ghost-backed guidance to generate.
+- **Green:** enough Ghost-backed guidance and concrete material for this surface
+  to generate.
 - **Yellow:** generation is safe, but some reasoning must be labeled
-  provisional.
+  provisional; if there is no concrete material for this surface, readiness is
+  at most Yellow.
 - **Red:** missing brand-defining, high-risk, or irreversible guidance; ask a
   human or author a node first.
 

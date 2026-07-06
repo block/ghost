@@ -4,6 +4,7 @@ import {
   classifyMaterialLocator,
   closestIds,
   expandLocalMaterialLocator,
+  extractSkeletonSections,
   type GhostCatalog,
   type GhostFingerprintPackageManifest,
   listBundledMaterialFiles,
@@ -225,6 +226,7 @@ export async function lintFingerprintPackage(
       );
       await lintGlossary(paths.glossary, issues);
       await lintKindPrefixes(paths, catalog, issues);
+      lintSkeletonSections(catalog, issues);
       await lintMaterialLocators(paths, catalog, issues, cwd);
       lintCheckReferences(catalog, checks, issues);
     } catch (err) {
@@ -288,6 +290,25 @@ async function lintKindPrefixes(
           : ` Did you mean \`${suggestion}\`? Drop the prefix if this node has no kind.`),
       path: `${node.id}.md`,
     });
+  }
+}
+
+function lintSkeletonSections(
+  catalog: GhostCatalog,
+  issues: LintIssue[],
+): void {
+  for (const node of catalog.nodes.values()) {
+    const sections = extractSkeletonSections(node.body);
+    for (const section of sections) {
+      if (section.fences.length === 1) continue;
+      issues.push({
+        severity: "warning",
+        rule: "skeleton-fence-count",
+        message:
+          "## Skeleton section should contain exactly one fenced block; pull will emit all found skeleton fences",
+        path: `${node.id}.md`,
+      });
+    }
   }
 }
 

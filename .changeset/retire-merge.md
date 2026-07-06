@@ -1,5 +1,5 @@
 ---
-"@anarchitecture/ghost-fingerprint": minor
+"@decentralized-design/ghost": minor
 ---
 
 Retire the `child-wins-by-id` fingerprint merge (Leak E): nested `.ghost/`

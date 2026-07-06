@@ -1,4 +1,4 @@
-# @anarchitecture/ghost
+# @decentralized-design/ghost
 
 ## 0.18.0
 

@@ -1,15 +1,15 @@
 ---
 name: steering-audit
-description: Audit a Ghost fingerprint for steering coverage without turning steering buckets into required fields.
+description: Audit a Ghost fingerprint for concrete steering coverage and guard routing.
 ---
 
 # Recipe: Audit Steering Coverage
 
-A steering audit asks whether a fingerprint can steer generation, not whether it
-fills a schema. The buckets are mandatory questions, not mandatory fields. Missing
-coverage is an authoring signal, not a validation failure.
+A steering audit asks whether a fingerprint can move generation away from the
+generic median. It is not a validation pass; `ghost validate` handles package
+shape.
 
-Start by running:
+Start with:
 
 ```bash
 ghost validate
@@ -17,71 +17,45 @@ ghost gather --format json
 ghost pulse --format json
 ```
 
-If the checks haunt is installed and there is a change to review, also run
-`ghost review` to inspect review coverage gaps.
+If checks are installed and a diff exists, run `ghost review` too.
 
-## Corpus-level audit
+## Headline the audit with concreteness + guards
 
-Read the gathered menu, the `index` node, and representative nodes from each kind.
-Return a compact table:
+Report first:
 
-| Bucket | Status | Evidence | Next move |
+- **Concreteness coverage:** total nodes, concrete-material nodes, prose-only
+  nodes. Concrete means non-empty `materials`, a fenced code block of at least 3
+  lines, or a `## Skeleton` section.
+- **Guard routing:** how many guard nodes exist, whether they stay in default
+  gather, and whether `ghost review` can auto-offer matched guards via
+  materials.
+- **Pulse by concreteness:** concrete exposure/pull rate vs prose-only
+  exposure/pull rate. This is the tuning instrument: if concrete nodes are not
+  pulled, descriptions or task selection are failing.
+
+## Corpus-level table
+
+| Row | Status | Evidence | Next move |
 | --- | --- | --- | --- |
 | Retrieval | strong / weak | descriptions, ids, `index` | sharpen descriptions or mention cold nodes in `index` |
-| Stance | present / missing | `principle.*` or equivalent | write forced-choice principles |
-| Materials | present / missing | `materials`, `asset.*` | add concrete locators and explain what they mean |
-| Exemplars | annotated / unannotated / missing | `exemplar.*` | say what to copy and what is incidental |
-| Anti-goals | specific / generic / missing | `anti-goal.*` | name likely wrong outputs |
-| Patterns | bound-open / loose / missing | `pattern.*` | state applies / bound / open |
-| Invariants | checkable / soft / missing | always/never lines | make hard lines concrete and consider checks |
-| Conditions | clear / weak / missing | prose situations | replace destinations with activation conditions |
-| Decision traces | present / missing | `decision.*` | record tradeoffs, rejected options, and reversal conditions |
-| Checks | covered / partial / missing | checks haunt, review packet | add checks for high-risk invariants |
-| Silence posture | defined / missing | `index` | say when to proceed provisionally or ask a human |
-
-Use `ghost pulse` as tuning signal. If a kind or node is always exposed but never
-pulled, its description may be weak, it may be too broad, or it may belong in
-`index` if it is truly non-negotiable.
+| Concreteness | strong / thin | materials, fenced examples, Skeletons | add concrete locators, exemplars, or opening structures |
+| Guards | routed / missing / vague | `posture: guard`, review packet | write not-X-instead-Y guards and material locators |
+| Consistency | clean / conflicting | concrete bodies vs rules/guards | update stale examples; examples average with rules |
+| Stance | present / missing | `index`, `principle.*` | write forced-choice principles |
+| Materials | present / missing | `materials`, inspect-pointers | point at real assets/components/tokens |
+| Exemplars | annotated / unannotated / missing | fenced samples, screenshots | say what to copy and what is incidental |
+| Patterns | bound-open / loose / missing | `pattern.*`, Skeletons | state applies / bound / open and add a Skeleton when opening structure matters |
+| Checks | covered / partial / missing | checks haunt, probes, review packet | add checks/probes for high-risk invariants |
+| Silence posture | defined / missing | `index` | say when to proceed provisionally or ask |
 
 ## Task-level readiness
 
-For a specific task, run `ghost gather <ask> --format json`, pull the selected
-nodes, and report:
+For a task, gather, pull, and report:
 
-```markdown
-Readiness: Green / Yellow / Red
+- **Green:** enough Ghost-backed concrete guidance to generate.
+- **Yellow:** safe to generate, but some reasoning is provisional. If there is
+  no concrete material for this surface, readiness is at most Yellow.
+- **Red:** missing brand-defining, high-risk, irreversible, legal, privacy, or
+  security guidance; ask or author first.
 
-Grounded:
-- `node.id` — short claim
-
-Missing:
-- <bucket or decision the fingerprint does not cover>
-
-Proceed:
-- <how to generate, what to label provisional, or what to ask a human>
-```
-
-Use these labels:
-
-- **Green:** enough Ghost-backed guidance to generate.
-- **Yellow:** generation is safe, but some reasoning must be labeled
-  provisional.
-- **Red:** missing brand-defining, high-risk, or irreversible guidance; ask a
-  human or author a node first.
-
-## Recommend the next node by failure mode
-
-| Failure | Next authoring move |
-| --- | --- |
-| Agent did not find the truth | sharpen `description` or mention it in `index` |
-| Agent invented facts | add `asset.*`, exact values, and material locators |
-| Output looked generic | add `anti-goal.*` and an annotated `exemplar.*` |
-| Wrong structure | add `pattern.*` with applies / bound / open |
-| Hard line violated | add an invariant and a check |
-| Guidance applied too broadly | add a condition in prose |
-| Bad tradeoff | add `decision.*` |
-| Correct but forgettable | add scoped `concept.*`, clearly not reusable law |
-| Drift missed in review | add or reroute a check |
-
-Never report steering coverage as a deterministic pass/fail. `ghost validate`
-handles package shape. This audit handles authoring quality.
+Never present steering coverage as deterministic pass/fail.

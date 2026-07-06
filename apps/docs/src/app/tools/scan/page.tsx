@@ -1,6 +1,6 @@
 "use client";
 
-import { useStaggerReveal } from "@anarchitecture/ghost-vessel";
+import { useStaggerReveal } from "@decentralized-design/vessel";
 import { BookOpen, FileText, Rocket } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";

@@ -44,7 +44,7 @@ importers:
 
   apps/docs:
     dependencies:
-      '@anarchitecture/ghost-vessel':
+      '@decentralized-design/vessel':
         specifier: workspace:*
         version: link:../../packages/vessel
       '@hookform/resolvers':
@@ -315,7 +315,6 @@ importers:
       zod:
         specifier: ^4.3.6
         version: 4.3.6
-
 
   packages/vessel:
     dependencies:

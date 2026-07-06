@@ -747,6 +747,139 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(md.stdout).toContain("- Wild pulls: 1");
   });
 
+  it("announces the events tape once, on first write, on stderr only", async () => {
+    await runCli(["init"], dir);
+
+    // First event-writing command creates the tape and prints the notice.
+    const first = await runCli(["gather", "checkout"], dir);
+    expect(first.code).toBe(0);
+    expect(first.stderr).toContain(".ghost/.events");
+    expect(first.stderr).toContain("gitignored");
+    expect(first.stderr).toContain("never leaves your machine");
+    // Stdout stays clean for piping.
+    expect(first.stdout).not.toContain("never leaves your machine");
+
+    // Every subsequent write is silent.
+    const second = await runCli(["gather", "checkout"], dir);
+    expect(second.code).toBe(0);
+    expect(second.stderr).not.toContain(".ghost/.events");
+
+    const pull = await runCli(["pull", "index"], dir);
+    expect(pull.code).toBe(0);
+    expect(pull.stderr).not.toContain(".ghost/.events");
+  });
+
+  it("gather reports concrete coverage and pull uses steering order with given-order escape hatch", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "glossary.md"),
+      "---\nkinds:\n  - name: anti-goal\n    posture: guard\n  - name: asset\n  - name: principle\n---\n\n# anti-goal\n\nReview-critical replacement.\n\n# asset\n\nConcrete material.\n\n# principle\n\nRule.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "asset.tokens.md"),
+      "---\ndescription: Tokens.\nmaterials:\n  - missing.css\n---\n\nUse exact tokens.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "principle.rule.md"),
+      "---\ndescription: Rule.\n---\n\nPlain rule.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "anti-goal.generic.md"),
+      "---\ndescription: Generic replacement.\n---\n\nNot vague; instead exact.\n",
+    );
+
+    const gather = await runCli(["gather", "--format", "json"], dir);
+    expect(gather.code).toBe(0);
+    expect(JSON.parse(gather.stdout).coverage).toEqual({
+      nodes: 4,
+      concrete: 1,
+      guards: 1,
+    });
+    const markdown = await runCli(["gather"], dir);
+    expect(markdown.stdout).toContain(
+      "4 nodes · 1 carry concrete material · 1 guards",
+    );
+
+    const steering = await runCli(
+      ["pull", "anti-goal.generic", "principle.rule", "asset.tokens"],
+      dir,
+    );
+    expect(steering.code).toBe(0);
+    expect(steering.stdout.indexOf("`asset.tokens`")).toBeLessThan(
+      steering.stdout.indexOf("`principle.rule`"),
+    );
+    expect(steering.stdout.indexOf("`principle.rule`")).toBeLessThan(
+      steering.stdout.indexOf("`anti-goal.generic`"),
+    );
+
+    const given = await runCli(
+      [
+        "pull",
+        "anti-goal.generic",
+        "principle.rule",
+        "asset.tokens",
+        "--order",
+        "given",
+      ],
+      dir,
+    );
+    expect(given.stdout.indexOf("`anti-goal.generic`")).toBeLessThan(
+      given.stdout.indexOf("`principle.rule`"),
+    );
+  });
+
+  it("pull extracts Skeletons last and validate warns on malformed Skeleton sections", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await writeFile(
+      join(dir, ".ghost", "pattern.card.md"),
+      "---\ndescription: Card pattern.\n---\n\nPattern prose.\n\n## Skeleton\n\n```tsx\n<section>{children}</section>\n```\n\nAfter skeleton should be stripped.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "pattern.bad.md"),
+      "---\ndescription: Bad skeleton.\n---\n\n## Skeleton\n\nNo fence here.\n",
+    );
+
+    const pull = await runCli(["pull", "pattern.card"], dir);
+    expect(pull.code).toBe(0);
+    expect(pull.stdout).toContain("Pattern prose.");
+    expect(pull.stdout).not.toContain("After skeleton should be stripped.");
+    expect(pull.stdout).toContain(
+      "# Skeletons — begin the artifact from this structure",
+    );
+    expect(pull.stdout.indexOf("# `pattern.card`")).toBeLessThan(
+      pull.stdout.indexOf("# Skeletons"),
+    );
+    expect(pull.stdout).toContain("<section>{children}</section>");
+
+    const validate = await runCli(["validate"], dir);
+    expect(validate.code).toBe(0);
+    expect(validate.stdout).toContain("skeleton-fence-count");
+  });
+
+  it("pull emits binary materials as inspect-pointers in markdown and JSON", async () => {
+    await runCli(["init", "--template", "minimal"], dir);
+    await mkdir(join(dir, "brand"), { recursive: true });
+    await writeFile(join(dir, "brand", "mark.png"), Buffer.from([0, 1, 2]));
+    await writeFile(
+      join(dir, ".ghost", "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/mark.png\n---\n\nInspect the blessed mark.\n",
+    );
+
+    const md = await runCli(["pull", "asset.logo"], dir);
+    expect(md.stdout).toContain(
+      "- inspect: brand/mark.png — view this image before generating",
+    );
+
+    const json = await runCli(["pull", "asset.logo", "--format", "json"], dir);
+    expect(JSON.parse(json.stdout).nodes[0].materials[0]).toMatchObject({
+      locator: "brand/mark.png",
+      tier: "referenced",
+      omitted: true,
+      reason: "binary inspect-pointer",
+      inspect: "brand/mark.png",
+    });
+  });
+
   it("gather and pull append structured local events", async () => {
     await runCli(["init"], dir);
     await writeFile(
@@ -830,7 +963,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(validate.code).toBe(0);
   });
 
-  it("pull inlines material files and elides binary, oversize, and URL locators", async () => {
+  it("pull inlines material files and emits inspect-pointers for binary materials, oversize files, and URL locators", async () => {
     await runCli(["init", "--template", "minimal"], dir);
     await mkdir(join(dir, ".ghost", "materials"), { recursive: true });
     await mkdir(join(dir, "brand"), { recursive: true });
@@ -854,7 +987,9 @@ a deliberate provocation past the fingerprint — surfaced only on request
     expect(md.stdout).toContain(":root { --brand: #111; }");
     expect(md.stdout).toContain("```brand/voice.txt");
     expect(md.stdout).toContain("Use plain words.");
-    expect(md.stdout).toContain("- brand/mark.bin — binary file");
+    expect(md.stdout).toContain(
+      "- inspect: brand/mark.bin — view this image before generating",
+    );
     expect(md.stdout).toContain(
       "- brand/large.txt — exceeds 8 KB inline limit",
     );
@@ -1353,6 +1488,78 @@ a deliberate provocation past the fingerprint — surfaced only on request
       id: "logo-clearspace",
       offered: "matched",
     });
+  });
+
+  it("review runs check probes as evidence and supports --no-probes", async () => {
+    await runCli(["init", "--with", "checks"], dir);
+    await writeFile(
+      join(dir, ".ghost", "asset.logo.md"),
+      "---\ndescription: Logo.\nmaterials:\n  - brand/logo.svg\n---\n\nLogo prose.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "haunts", "checks", "logo-probe.md"),
+      "---\nname: logo-probe\ndescription: Probe logo evidence.\nseverity: low\nreferences:\n  - asset.logo\nprobe: node -e \"console.log('probe evidence')\"\n---\n\nUse probe evidence, then judge.\n",
+    );
+    const diff = [
+      "diff --git a/brand/logo.svg b/brand/logo.svg",
+      "--- a/brand/logo.svg",
+      "+++ b/brand/logo.svg",
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const probed = await runCli(
+      ["review", "--diff=-", "--format", "json"],
+      dir,
+      {
+        stdin: diff,
+      },
+    );
+    expect(probed.code).toBe(0);
+    expect(JSON.parse(probed.stdout).checks[0].probe).toMatchObject({
+      exitCode: 0,
+      stdout: "probe evidence\n",
+    });
+
+    const skipped = await runCli(
+      ["review", "--diff=-", "--format", "json", "--no-probes"],
+      dir,
+      { stdin: diff },
+    );
+    expect(JSON.parse(skipped.stdout).checks[0].probe).toBeUndefined();
+  });
+
+  it("review auto-offers matched guard nodes without check references", async () => {
+    await runCli(["init", "--with", "checks"], dir);
+    await writeFile(
+      join(dir, ".ghost", "glossary.md"),
+      "---\nkinds:\n  - name: anti-goal\n    posture: guard\n---\n\n# anti-goal\n\nReview-critical replacements.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "anti-goal.generic-logo.md"),
+      "---\ndescription: Replace generic marks.\nmaterials:\n  - brand/logo.svg\n---\n\nNot a stock spark; instead use the wordmark and measured clearspace.\n",
+    );
+    await writeFile(
+      join(dir, ".ghost", "haunts", "checks", "unrelated.md"),
+      "---\nname: unrelated\ndescription: Always review unrelated posture.\nseverity: low\nreferences:\n  - missing.future\n---\n\nReview unrelated things.\n",
+    );
+    const diff = [
+      "diff --git a/brand/logo.svg b/brand/logo.svg",
+      "--- a/brand/logo.svg",
+      "+++ b/brand/logo.svg",
+      "@@ -1 +1 @@",
+      "-old",
+      "+new",
+    ].join("\n");
+
+    const result = await runCli(["review", "--diff=-"], dir, { stdin: diff });
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("## Matched guard nodes — review-critical");
+    expect(result.stdout).toContain(
+      "### `anti-goal.generic-logo` _(anti-goal)_",
+    );
   });
 
   it("export writes a portable tarball with export metadata and private events excluded", async () => {

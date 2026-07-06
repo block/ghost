@@ -34,7 +34,7 @@ true, and an agent reads the relevant truths before building.
   Guidance stays in prose.
 - A node's **kind** comes from its filename prefix (`principle.density.md` →
   kind `principle`). A bare name (`voice.md`) has no kind.
-- The **glossary** declares the kind vocabulary, what each kind means, and optional consumption posture: `steady` by default, or `posture: wild` for truths that push past the fingerprint and require explicit request.
+- The **glossary** declares the kind vocabulary, what each kind means, and optional consumption posture: `steady` by default, `posture: wild` for truths that require explicit request, or `posture: guard` for review-critical anti-goals with positive replacement.
 - The starter `index.md` node (id `index`) is the human-curated front door:
   by convention it carries the non-negotiables and reading posture, and agents
   pull it first.
@@ -44,8 +44,9 @@ true, and an agent reads the relevant truths before building.
   under `.ghost/haunts/<id>/` with a thin `haunt.yml`. Haunts are feed-back;
   they never leak into generation context.
 - **Checks** are the first haunt (`.ghost/haunts/checks/*.md`). Each check
-  declares `references` to node ids and is used by `ghost review`. Checks are
-  never emitted by `ghost gather` or `ghost pull`.
+  declares `references` to node ids and is used by `ghost review`. A check may
+  include `probe: <command>`; review runs it as evidence unless `--no-probes` is
+  set. Checks are never emitted by `ghost gather` or `ghost pull`.
 
 ## The loop
 
@@ -61,13 +62,19 @@ ghost pulse         # summarize local gather/pull events while tuning
 ```
 
 `gather` does no selection. It emits the menu and you read the ask against it,
-then pull the truths you judge relevant. Prefer `ghost pull` over reading files
-directly: it emits the same prose, inlines small local materials by default, and
-appends structured events to `.ghost/.events` for local tuning.
+then pull the truths you judge relevant. Its header includes a coverage line —
+total nodes, nodes carrying concrete material, and guards — so an all-prose or
+unrouted fingerprint is visible before generation.
+
+Prefer `ghost pull` over reading files directly: it emits the same prose,
+inlines small local materials by default, turns binary materials into
+inspect-pointers, orders the packet for steering (`index`, concrete nodes,
+prose rules, guards), extracts Skeletons dead last, and appends structured
+events to `.ghost/.events` for local tuning.
 
 `review` does no grading. It assembles an advisory packet: touched files,
-matched material-backed nodes, offered checks, coverage gaps, and the diff. The
-host agent renders findings.
+matched material-backed nodes, matched guard nodes, offered checks, probe
+evidence, coverage gaps, and the diff. The host agent renders findings.
 
 ## CLI verbs
 
@@ -76,13 +83,22 @@ host agent renders findings.
 | `ghost init` | Scaffold `.ghost/` with the steering starter: manifest, glossary, `index.md`, and demo nodes for stance, composition, anti-goals, patterns, exemplars, materials, and decisions. `--template minimal` writes only the small manifest/glossary/index starter. `--with checks` also adds the checks haunt. |
 | `ghost haunt add\|remove\|list` | Manage optional haunts (e.g. `ghost haunt add checks`). |
 | `ghost validate [file-or-dir]` | Validate manifest, nodes, material locators, installed haunts, check references, and glossary kind prefixes. |
-| `ghost gather [ask…] [--wild] [--format json]` | Emit the node menu for selection; log exposed ids. Default gather excludes wild kinds unless `--wild` is explicit. |
-| `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials; log selected/missed ids. |
-| `ghost review [--diff <path|->] [--base <ref>] [--format json]` | Emit an advisory review packet for a diff (requires the checks haunt). |
+| `ghost gather [ask…] [--wild] [--format json]` | Emit the node menu for selection plus coverage line; log exposed ids. Default gather excludes wild kinds unless `--wild` is explicit. |
+| `ghost pull <id> [<id>…]` | Emit selected nodes' full bodies and materials in steering order; log selected/missed ids. |
+| `ghost review [--diff <path|->] [--base <ref>] [--format json] [--no-probes]` | Emit an advisory review packet for a diff (requires the checks haunt). |
 | `ghost export [--out <path>] [--no-haunts] [--strict] [--format json]` | Package `.ghost/` as a portable brand artifact and report which material locators will not travel. |
 | `ghost pulse [--format json]` | Summarize local `.ghost/.events`. |
 | `ghost skill install` | Install this skill bundle. |
 | `ghost manifest [--format json]` | Emit a self-describing JSON manifest of every command and flag. |
+
+## Skeleton convention
+
+A `## Skeleton` section in a node contains the literal opening structure for a
+surface, usually on a `pattern.*` node. `ghost validate` warns unless each
+Skeleton section has exactly one fenced block. `ghost pull` removes Skeletons
+from the node body and emits the fences at the end under a begin-from-this banner.
+If a pulled Skeleton matches the task, start the artifact from it verbatim, then
+fill with task facts.
 
 ## Receiving a fingerprint
 

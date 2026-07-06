@@ -105,7 +105,7 @@ const requiredDistFiles = ["bin.js", "cli.js", "index.js"].map((file) =>
 for (const distFile of requiredDistFiles) {
   if (!existsSync(distFile)) {
     fail(
-      `missing built output at ${distFile}; run pnpm --filter @anarchitecture/ghost-fingerprint build first`,
+      `missing built output at ${distFile}; run pnpm --filter @decentralized-design/ghost build first`,
     );
   }
 }
@@ -137,7 +137,7 @@ try {
     copyDependency(dependencyName, nodeModulesDir);
   }
 
-  const archiveName = `anarchitecture-ghost-fingerprint-${PACKAGE_JSON.version}.tgz`;
+  const archiveName = `decentralized-design-ghost-${PACKAGE_JSON.version}.tgz`;
   const archivePath = join(destinationDir, archiveName);
   rmSync(archivePath, { force: true });
   run("tar", ["-czf", archivePath, "-C", tmpRoot, "package"]);

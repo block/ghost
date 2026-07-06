@@ -77,6 +77,19 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     }
   }
 
+  const probe = frontmatter.probe;
+  if (
+    probe !== undefined &&
+    (typeof probe !== "string" || probe.trim() === "")
+  ) {
+    issues.push({
+      severity: "error",
+      rule: "check-probe-invalid",
+      message: "probe must be a non-empty shell command string",
+      path: "probe",
+    });
+  }
+
   const source = frontmatter.source;
   if (source !== undefined) {
     // `source:` is a deprecated soft provenance pointer: `<node-id>` with an

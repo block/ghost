@@ -27,6 +27,8 @@ export interface GhostCheckFrontmatter {
   references?: string[];
   /** Deprecated single-reference alias retained for artifact-level linting. */
   source?: string;
+  /** Optional repo-owned shell probe run by `ghost review` as evidence only. */
+  probe?: string;
 }
 
 export interface GhostCheckDocument {

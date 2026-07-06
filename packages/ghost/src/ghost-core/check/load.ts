@@ -39,6 +39,8 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
     : undefined;
   const source =
     typeof frontmatter.source === "string" ? frontmatter.source : undefined;
+  const probe =
+    typeof frontmatter.probe === "string" ? frontmatter.probe : undefined;
 
   return {
     frontmatter: {
@@ -49,6 +51,7 @@ export function loadGhostCheck(raw: string): GhostCheckDocument {
       ...(turnLimit !== undefined ? { turn_limit: turnLimit } : {}),
       ...(references ? { references } : {}),
       ...(source ? { source } : {}),
+      ...(probe ? { probe } : {}),
     },
     body,
   };

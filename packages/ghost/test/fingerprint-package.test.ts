@@ -92,6 +92,8 @@ kinds:
   - name: principle
   - name: provocation
     posture: wild
+  - name: anti-goal
+    posture: guard
 ---
 
 # principle
@@ -101,15 +103,21 @@ Floor.
 # provocation
 
 Provocation.
+
+# anti-goal
+
+Replacement guard.
 `);
 
     expect(parsed.glossary?.kinds).toEqual([
       { name: "principle", posture: "steady", purpose: "Floor." },
       { name: "provocation", posture: "wild", purpose: "Provocation." },
+      { name: "anti-goal", posture: "guard", purpose: "Replacement guard." },
     ]);
     expect(parsed.glossary?.frontmatter.kinds).toEqual([
       { name: "principle", posture: "steady" },
       { name: "provocation", posture: "wild" },
+      { name: "anti-goal", posture: "guard" },
     ]);
   });
 
@@ -140,15 +148,20 @@ Provocation.
     });
   });
 
-  it("marks nodes wild when their glossary kind declares wild posture", async () => {
+  it("marks nodes wild or guard when their glossary kind declares posture", async () => {
     await writeManifest(dir);
     await writeGlossary(dir, [
       "principle",
       { name: "provocation", posture: "wild" },
+      { name: "anti-goal", posture: "guard" },
     ]);
     await writeFile(
       join(dir, "provocation.noise.md"),
       "---\ndescription: Noise.\n---\n\nBreak the pattern.\n",
+    );
+    await writeFile(
+      join(dir, "anti-goal.generic.md"),
+      "---\ndescription: Generic.\n---\n\nNot vague; use concrete next steps.\n",
     );
     await writeFile(
       join(dir, "principle.density.md"),
@@ -158,6 +171,10 @@ Provocation.
     const loaded = await loadFingerprintPackage(resolveFingerprintPackage(dir));
 
     expect(loaded.catalog.nodes.get("provocation.noise")?.wild).toBe(true);
+    expect(loaded.catalog.nodes.get("anti-goal.generic")?.guard).toBe(true);
+    expect(loaded.catalog.nodes.get("anti-goal.generic")?.posture).toBe(
+      "guard",
+    );
     expect(loaded.catalog.nodes.get("principle.density")?.wild).toBeUndefined();
   });
 
@@ -444,7 +461,9 @@ async function writeChecksHaunt(
   }
 }
 
-type TestGlossaryKind = string | { name: string; posture?: "steady" | "wild" };
+type TestGlossaryKind =
+  | string
+  | { name: string; posture?: "steady" | "wild" | "guard" };
 
 async function writeGlossary(
   dir: string,

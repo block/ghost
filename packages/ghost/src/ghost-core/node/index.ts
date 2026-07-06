@@ -12,6 +12,15 @@ export {
 } from "./schema.js";
 export { serializeNode } from "./serialize.js";
 export {
+  carriesConcreteMaterial,
+  extractSkeletonFences,
+  extractSkeletonSections,
+  type FencedBlock,
+  hasThreeLineFence,
+  type SkeletonSection,
+  stripSkeletonSections,
+} from "./steering.js";
+export {
   GHOST_NODE_SCHEMA,
   type GhostNodeDocument,
   type GhostNodeFrontmatter,

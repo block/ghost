@@ -12,7 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   useTheme,
-} from "@anarchitecture/ghost-vessel";
+} from "@decentralized-design/vessel";
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,

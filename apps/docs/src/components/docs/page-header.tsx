@@ -1,4 +1,4 @@
-import { cn } from "@anarchitecture/ghost-vessel";
+import { cn } from "@decentralized-design/vessel";
 import { ComponentProps } from "react";
 
 function PageHeader({

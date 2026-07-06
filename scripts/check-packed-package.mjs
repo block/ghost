@@ -12,13 +12,13 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const ROOT = process.cwd();
-const PACKAGE_NAME = "@anarchitecture/ghost-fingerprint";
+const PACKAGE_NAME = "@decentralized-design/ghost";
 const PUBLIC_IMPORTS = [
-  "@anarchitecture/ghost-fingerprint",
-  "@anarchitecture/ghost-fingerprint/cli",
-  "@anarchitecture/ghost-fingerprint/fingerprint",
-  "@anarchitecture/ghost-fingerprint/scan",
-  "@anarchitecture/ghost-fingerprint/core",
+  "@decentralized-design/ghost",
+  "@decentralized-design/ghost/cli",
+  "@decentralized-design/ghost/fingerprint",
+  "@decentralized-design/ghost/scan",
+  "@decentralized-design/ghost/core",
 ];
 
 function fail(message) {
@@ -138,7 +138,7 @@ try {
 
   // Smoke the exported CLI builder as an embeddable package entrypoint.
   runNode(
-    `const { buildCli } = await import("@anarchitecture/ghost-fingerprint/cli");\n` +
+    `const { buildCli } = await import("@decentralized-design/ghost/cli");\n` +
       `if (typeof buildCli !== "function") throw new Error("missing buildCli export");`,
     consumerDir,
   );

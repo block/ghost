@@ -71,6 +71,10 @@ export {
 } from "./materials.js";
 // --- Node (ghost.node/v1) — the markdown node artifact ---
 export {
+  carriesConcreteMaterial,
+  extractSkeletonFences,
+  extractSkeletonSections,
+  type FencedBlock,
   GHOST_NODE_SCHEMA,
   type GhostNodeDocument,
   type GhostNodeFrontmatter,
@@ -83,7 +87,9 @@ export {
   NodeRefSchema,
   type ParseNodeResult,
   parseNode,
+  type SkeletonSection,
   serializeNode,
+  stripSkeletonSections,
 } from "./node/index.js";
 // --- Fingerprint package manifest (ghost.fingerprint-package/v1) ---
 export type { GhostFingerprintPackageManifest } from "./package-manifest.js";

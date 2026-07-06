@@ -6,7 +6,7 @@
 and agent-integration workflows. It's distributed as a generated shadcn registry
 (`public/r/registry.json`) for drop-in consumption, not as an npm package. If you're
 looking for the brand-fingerprint CLI and skill bundle, that's
-[`@anarchitecture/ghost-fingerprint`](../ghost).
+[`@decentralized-design/ghost`](../ghost).
 
 ## Registry convention
 
@@ -61,7 +61,7 @@ npx shadcn add <registry-url>/<component>
 Or build the library locally for workspace linking:
 
 ```bash
-pnpm --filter @anarchitecture/ghost-vessel build:lib
+pnpm --filter @decentralized-design/vessel build:lib
 ```
 
 See [`apps/docs`](../../apps/docs) for the live component catalogue.
@@ -71,7 +71,7 @@ See [`apps/docs`](../../apps/docs) for the live component catalogue.
 `vessel` also ships a `vessel-mcp` bin — a Model Context Protocol server that re-exposes the component registry to AI assistants (Claude Code, Cursor, etc.) so they can discover and install components without a human in the loop. 5 tools, 2 resources. Source lives in `src/mcp/`, built separately via `tsconfig.mcp.json` → `dist-mcp/`.
 
 ```bash
-pnpm --filter @anarchitecture/ghost-vessel build:mcp
+pnpm --filter @decentralized-design/vessel build:mcp
 node packages/vessel/dist-mcp/bin.js   # stdio server
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: schema
-description: The Ghost fingerprint package shape: flat brand-truth nodes, optional materials, optional checks, glossary, and manifest.
+description: The Ghost fingerprint package shape: flat nodes, derived concreteness, Skeletons, guards, probes, and haunts.
 ---
 
 # Ghost Fingerprint Package Reference
@@ -10,7 +10,7 @@ Canonical package:
 ```text
 .ghost/
   manifest.yml        ghost.fingerprint-package/v1: schema + id
-  glossary.md         kind vocabulary + meanings
+  glossary.md         kind vocabulary + meanings + optional posture
   materials/          bundled materials; never a node source
   <kind>.<slug>.md    a brand truth of a declared kind
   <slug>.md           a brand truth without a kind
@@ -20,16 +20,25 @@ Canonical package:
 Reserved at the root: `manifest.yml`, `glossary.md`, `materials/`, and
 `haunts/`. Every other `*.md` is a node.
 
-## Glossary
+## Glossary posture
 
-The glossary frontmatter declares kind names. A kind may also declare `posture: wild`; omitted posture defaults to `steady`. Wild kinds hold nodes that push past the fingerprint rather than conform to it, so default `ghost gather` excludes them unless `--wild` is explicit.
+A kind may declare posture. Omitted posture defaults to `steady`.
 
 ```yaml
 kinds:
   - name: principle
+  - name: anti-goal
+    posture: guard
   - name: provocation
     posture: wild
 ```
+
+- `steady`: default, gathered normally.
+- `guard`: review-critical negative space. Stays in default gather, appears at
+  the tail of `ghost pull`, and is auto-offered by `ghost review` when its
+  materials match touched files.
+- `wild`: deliberate push beyond the fingerprint. Default gather excludes wild
+  kinds unless `--wild` is explicit.
 
 ## Nodes
 
@@ -43,33 +52,42 @@ materials:
   - https://figma.com/file/example?node-id=logo-lockups
 ---
 
-Use the full lockup when recognition matters. Use the glyph only when space is
-constrained or when brand presence should recede.
+Use the full lockup when recognition matters.
 ```
 
-- **Identity** is the filename minus `.md`.
-- **Kind** is the first dotted segment of the filename.
+- Identity is the filename minus `.md`.
+- Kind is the first dotted segment of the filename.
 - `description` is the retrieval payload shown by `ghost gather`.
-- `materials` is optional and accepts repo-relative paths/globs plus absolute
-  HTTPS URLs. It is a locator list, not guidance or metadata.
+- `materials` accepts repo-relative paths/globs plus absolute HTTPS URLs. It is
+  a locator list, not guidance.
 
-## Haunts
+Ghost derives whether a node carries concrete material from structure: non-empty
+`materials`, a fenced code block of at least 3 lines, or a `## Skeleton` section.
+This is reported in gather/pulse and used for pull ordering.
 
-A haunt is an optional capability attached to the fingerprint. Each haunt is a
-directory under `.ghost/haunts/<id>/`, anchored by a thin manifest:
+## Skeleton convention
 
-```yaml
-# .ghost/haunts/checks/haunt.yml
-schema: ghost.haunt/v1
-id: checks
+A `## Skeleton` section contains the literal opening structure for a surface.
+It should contain exactly one fenced block; `ghost validate` warns, never fails,
+when a Skeleton section has zero or multiple fences.
+
+```markdown
+## Skeleton
+
+```tsx
+<section>
+  <h1>{status}</h1>
+  <button>{nextStep}</button>
+</section>
+```
 ```
 
-Install one with `ghost haunt add <id>`; list with `ghost haunt list`. Haunts
-are feed-back only: nothing inside `haunts/` is ever gathered or pulled.
+`ghost pull` extracts Skeleton fences and emits them dead last under a banner
+instructing the agent to begin from that structure verbatim.
 
-## Checks (the first haunt)
+## Haunts and checks
 
-Checks live under `.ghost/haunts/checks/*.md` and are not nodes:
+Checks live under `.ghost/haunts/checks/*.md` and are never gathered or pulled:
 
 ```markdown
 ---
@@ -78,29 +96,24 @@ description: Logo usage preserves clearspace and lockup integrity.
 severity: medium
 references:
   - asset.logo
+probe: pnpm test:logo-clearspace
 ---
 
 Grade whether the change preserves the logo guidance in `asset.logo`.
 ```
 
-`references` are node ids with optional heading anchors (`asset.logo > Glyph`).
-`ghost validate` warns when a reference does not resolve. `ghost review` uses
-checks to assemble an advisory packet for a diff; the host agent judges findings.
-Without the checks haunt installed, `ghost review` exits with a hint to run
-`ghost haunt add checks`.
-
-## Manifest
-
-```yaml
-schema: ghost.fingerprint-package/v1
-id: acme-brand
-```
-
-The manifest anchors the package with schema version and slug id.
+`references` are node ids with optional heading anchors. `probe` is optional: a
+repo-root shell command that `ghost review` runs for offered checks by default
+(timeout 30s; stdout/stderr truncated). Probe output is evidence only, never a
+Ghost pass/fail verdict. Use `ghost review --no-probes` to skip. Trust model:
+probes are the same class as npm scripts; Git review is the boundary.
 
 ## Gather / Pull / Review
 
-- `ghost gather` emits the node menu only. Checks are invisible.
-- `ghost pull` emits selected node bodies and inlines small local materials by default.
+- `ghost gather` emits the node menu, including coverage counts. Checks are
+  invisible.
+- `ghost pull` emits selected nodes in steering order and inlines small local
+  materials. Binary local materials become inspect-pointers.
 - `ghost review` matches diff files to local node materials, offers relevant
-  checks, and emits a packet for the agent.
+  checks and matched guard nodes, embeds probe evidence, and emits a packet for
+  the host agent to judge.

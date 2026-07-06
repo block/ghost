@@ -30,6 +30,7 @@ export interface CoverageGap {
 export interface ReviewResolution {
   touchedFiles: TouchedFile[];
   materialNodes: MatchedMaterialNode[];
+  guardNodes: MatchedMaterialNode[];
   offeredChecks: OfferedCheck[];
   gaps: CoverageGap[];
 }
@@ -120,13 +121,18 @@ export function resolveReview(
     });
   }
 
+  const matchedNodes = [...matched].map(([id, entry]) => ({
+    id,
+    files: [...entry.files].sort(),
+    locators: [...entry.locators].sort(),
+  }));
+
   return {
     touchedFiles,
-    materialNodes: [...matched].map(([id, entry]) => ({
-      id,
-      files: [...entry.files].sort(),
-      locators: [...entry.locators].sort(),
-    })),
+    materialNodes: matchedNodes,
+    guardNodes: matchedNodes.filter(
+      (node) => catalog.nodes.get(node.id)?.guard,
+    ),
     offeredChecks,
     gaps,
   };

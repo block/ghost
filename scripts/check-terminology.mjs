@@ -4,6 +4,7 @@ import { join, relative } from "node:path";
 const ROOTS = [
   "README.md",
   "CLAUDE.md",
+  "CONTRIBUTING.md",
   "package.json",
   "docs",
   "apps",
