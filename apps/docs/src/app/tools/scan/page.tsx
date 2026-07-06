@@ -30,8 +30,7 @@ const cards: {
   {
     name: "Authoring",
     href: "/docs/fingerprint-authoring",
-    description:
-      "How to write nodes through the intent, inventory, and composition lenses.",
+    description: "How to write node prose that steers generation.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
 ];

@@ -3,6 +3,9 @@
 > **Prose, exemplar materials, and invariants are the right starting triad, but they are not the whole steering system.**  
 > The fuller model is: **retrieval → conditioning → commitment → constraint → review → renewal.**
 
+> Research grounding for the claims in this doc — with honest evidence tiers —
+> lives in [research-references.md](./research-references.md).
+
 Brand work is moving from static outputs to **agent-readable input systems**. Ghost is the operational version: making those inputs **selectable, grounded, ratified, and reviewable**.
 
 The core theory:

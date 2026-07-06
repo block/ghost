@@ -87,17 +87,15 @@ ghost init
 ghost validate
 ```
 
-Each node's prose records a durable brand truth through three lenses:
+Each node's prose records a durable brand truth. While drafting, ask three
+questions of every truth: **why** (the stance — what this brand is, who it
+serves, what must remain true), **with what** (the materials — building blocks,
+files, assets, and source links agents may inspect or use), and **how it is
+assembled** (the patterns that make it intentional — hierarchy, density,
+restraint, repetition, trust, and flow).
 
-1. **Intent** - the why and the stance: what this brand is, who it serves, and
-   what must remain true.
-2. **Inventory** - the materials it draws from: building blocks, files, assets,
-   and source links agents may inspect or use.
-3. **Composition** - the patterns that make it intentional: hierarchy, density,
-   restraint, repetition, trust, and flow.
-
-These lenses shape how you write the prose body; they are never frontmatter
-fields. Node frontmatter carries only `description` plus free-form passthrough
+These are drafting prompts, never frontmatter fields. Node frontmatter carries
+only `description` plus free-form passthrough
 keys. A node's **kind** comes from its filename prefix (`principle.density.md` →
 kind `principle`), and the kinds are declared in `glossary.md`. When a truth is
 narrower than universal, state its **condition** in the prose — the situation it
@@ -186,8 +184,7 @@ truth names the *situation* it applies in. The agent reads the condition and
 decides when the truth applies. Reserved at the package root: `manifest.yml`,
 `glossary.md`, and `haunts/`; every other `*.md` is a node.
 
-Write and read every prose node through three lenses: intent, inventory, and
-composition. A node may carry `materials`: repo-relative paths/globs or HTTPS
+A node may carry `materials`: repo-relative paths/globs or HTTPS
 URLs for the concrete materials the prose governs. `ghost gather` emits the menu;
 the agent selects and manifests. Checks are used by `ghost review`, never by
 generation.

@@ -9,9 +9,9 @@
   "files": [
     "SKILL.md",
     "references/authoring-scenarios.md",
+    "references/blocks.md",
     "references/brief.md",
     "references/capture.md",
-    "references/inventory.md",
     "references/recall.md",
     "references/schema.md",
     "references/self-check.md",

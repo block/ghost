@@ -1,50 +1,52 @@
 ---
-name: inventory
-description: Author the inventory lens well so an agent can match a fingerprint's intent to concrete materials.
+name: blocks
+description: Author block and material nodes so an agent can match a fingerprint's stance to concrete building blocks.
 handoffs:
   - label: List the node menu
     command: ghost gather
     prompt: What materials does this fingerprint document, and what is absent?
 ---
 
-# Recipe: Author the Inventory Lens
+# Recipe: Author Block And Material Nodes
 
-**Goal:** when you are documenting the **materials** a brand draws from, write
-that prose so an agent can translate the fingerprint's intent into concrete
-building blocks without the fingerprint ever naming a component.
+**Goal:** when you are documenting the **materials** a brand draws from — its
+building blocks, assets, and reusable pieces — write that prose so an agent can
+translate the fingerprint's stance into concrete building blocks without the
+fingerprint ever naming a component.
 
-This is opinionated method, not new schema. Intent / inventory / composition are
-**authoring lenses**: angles for an author to think through while writing a
-node's prose body. They live in that prose; a lens is never a frontmatter key, a
-node type, or a required section. A node may lean entirely on one lens: a
-pure-inventory node is fine. Inventory can be one paragraph inside a broader
-node, or split across many nodes, one per block, whatever keeps each node
-purpose-coherent. It adds nothing to the artifact: a node is still a markdown
-file with a `description` and a prose body, named `<kind>.<slug>.md` (or a bare
-slug). See [capture.md](capture.md) for the node shape.
+This is opinionated method, not new schema. **"Block node" is shorthand in this
+recipe, not a Ghost concept**: it means any node whose truth is a reusable
+building block, whatever kind the author's glossary declares for it (`block`,
+`asset`, `pattern`, …). A block node is a node like any other: a markdown file
+with a `description` and a prose body, named `<kind>.<slug>.md` (or a bare
+slug). See [capture.md](capture.md) for the node shape. Block prose can be one
+paragraph inside a broader node, or split across many nodes, one per block,
+whatever keeps each node purpose-coherent.
 
 ## Where it sits
 
-A fingerprint declares intent as stance. Inventory grounds that intent in
-concrete materials. A realizing agent **reads** the inventory and matches against
-it. Strip every inventory node and the fingerprint is still valid — it just gives
-the agent less to draw on. The agent does the matching.
+A fingerprint declares stance. Block and material nodes ground that stance in
+concrete materials — they are what makes a node **concrete** in gather, pull
+ordering, and review matching. A realizing agent **reads** them and matches
+against them. Strip every block node and the fingerprint is still valid — it
+just gives the agent less to draw on, and prose-only steering is weak steering.
+The agent does the matching.
 
-## Inventory richness is the grounding dial
+## Concreteness is the grounding dial
 
 This trade belongs to the author:
 
-- **Abstract inventory** (principles, arrangement, no concrete components) →
+- **Abstract materials** (principles, arrangement, no concrete components) →
   leaves the agent more room, grounds it less.
-- **Concrete inventory** (named building blocks) → strongly grounds the agent in
+- **Concrete materials** (named building blocks) → strongly grounds the agent in
   the materials it should reach for, at the cost of that room.
 
-Neither is correct. A concrete inventory node is a deliberate trade, not a leak.
+Neither is correct. A concrete block node is a deliberate trade, not a leak.
 
 ## Tier first: not everything earns a node
 
 - **Primitives** (button, input, badge, avatar, spinner…) get **no prose body**
-  when the generic form serves. They are shared vocabulary, not intent. If you
+  when the generic form serves. They are shared vocabulary, not stance. If you
   record one at all, give it only a `description` so `gather` can surface it;
   the absence of a body is the signal that training priors are acceptable here.
   When a primitive is itself brand-distinctive (a button whose shape, weight, or
@@ -55,13 +57,13 @@ Neither is correct. A concrete inventory node is a deliberate trade, not a leak.
   reasoning, sources…) earns **one short prose body**. This is what the method is
   for.
 - The **composer middle** (card, table, form, sidebar…) is a call to weigh. Give
-  it a body when its arrangement carries intent worth matching.
+  it a body when its arrangement carries a stance worth matching.
 
-If a primitive ever seems to need intent guidance, that is a signal it is doing a
-composer's job. Promote the pattern into a node; do not write a body on the
+If a primitive ever seems to need stance guidance, that is a signal it is doing
+a composer's job. Promote the pattern into a node; do not write a body on the
 primitive.
 
-## The shape of an inventory node
+## The shape of a block node
 
 A node like any other. Frontmatter carries `description` (the retrieval payload —
 write one on every block worth matching); the body is prose the agent reasons
@@ -88,8 +90,8 @@ not a swappable implementation detail.
 
 ## How a match runs
 
-The agent reads the fingerprint's intent, `gather`s the menu, ranks candidate
-inventory nodes by description, separates near-neighbors on *not when* and
+The agent reads the fingerprint's stance, `gather`s the menu, ranks candidate
+block nodes by description, separates near-neighbors on *not when* and
 *never*, and assembles. The realizing surface authors the chosen blocks in its
 medium. The fingerprint never named a component; the agent bridged via documented
 purpose.
@@ -103,7 +105,17 @@ question, they are one node, not two.
 
 ## Worked example
 
-`inventory.confirmation.md` (kind `inventory`, slug `confirmation`):
+These examples use a `block` kind. The starter glossary does not ship one, so
+declare it (or reuse a declared kind such as `pattern`) before copying the
+filenames:
+
+```yaml
+kinds:
+  - name: block
+    purpose: a reusable building block matched by purpose, not named by component
+```
+
+`block.confirmation.md` (kind `block`, slug `confirmation`):
 
 ```markdown
 ---
@@ -112,11 +124,11 @@ description: Gate a consequential action behind explicit user approval.
 Gates a tool action behind explicit user approval. Reach for it when the user's
 first question is "do I allow this?", when a consequential action needs a human
 decision before it runs. Not when the action is already complete (that's
-`inventory.tool`) or when no decision is required. It is never a status display;
+`block.tool`) or when no decision is required. It is never a status display;
 with no decision to make, it only manufactures friction.
 ```
 
-`inventory.table.md`:
+`block.table.md`:
 
 ```markdown
 ---
@@ -124,12 +136,12 @@ description: Present many records across shared, comparable columns.
 ---
 Presents many records across shared, comparable columns. Reach for it when the
 user's first question is "how do these compare across the same attributes?" Not
-when each item needs rich, non-uniform presentation (use repeated `inventory.card`)
+when each item needs rich, non-uniform presentation (use repeated `block.card`)
 or there is a single subject rather than a collection. It is never a single
 record's detail view.
 ```
 
-`inventory.button.md`:
+`block.button.md`:
 
 ```markdown
 ---
@@ -151,7 +163,7 @@ code, components, stories, or tests whose home is still the product repo. The
 
 ## Reuse vs. free-compose
 
-Do not pin inventory by prop or markup shape. Document the *purpose* and any
+Do not pin a block by prop or markup shape. Document the *purpose* and any
 *guarantees* a block must hold (an action routes through a declared tool, a
 control is keyboard-reachable). Let the realizing agent author the form. Pinning
 prop APIs re-imports implementation opinion and creates a mirror to maintain.
@@ -161,8 +173,8 @@ prop APIs re-imports implementation opinion and creates a mirror to maintain.
 - Never write a prose body on a primitive the generic form serves; the absence
   of a body is the signal. A brand-distinctive primitive earns a body for its
   divergence, never for its API.
-- Never put props, markup, or API reference in an inventory body; explicit
+- Never put props, markup, or API reference in a block body; explicit
   values belong only when the value itself is the brand truth.
-- Never let the fingerprint reference the realizing surface; inventory is read,
+- Never let the fingerprint reference the realizing surface; blocks are read,
   not addressed.
 - Never split two blocks that answer the same first question; that is one node.

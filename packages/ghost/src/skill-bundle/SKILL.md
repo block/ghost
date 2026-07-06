@@ -109,7 +109,7 @@ against the unpacked package with `--package <dir>`.
 ## Workflows
 
 - Author or update the fingerprint: follow [references/capture.md](references/capture.md).
-- Write material-aware node bodies: follow [references/inventory.md](references/inventory.md).
+- Author material-backed nodes: follow [references/blocks.md](references/blocks.md).
 - Choose the right human-agent authoring workflow: follow [references/authoring-scenarios.md](references/authoring-scenarios.md).
 - Gather applicable truths for a task: follow [references/recall.md](references/recall.md).
 - Shape a pre-generation brief: follow [references/brief.md](references/brief.md).

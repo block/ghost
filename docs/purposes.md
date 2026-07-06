@@ -39,7 +39,7 @@ into folders is a browsing convenience only.
 | --- | --- |
 | `manifest.yml` | Schema version and package id; the package's anchor. |
 | `glossary.md` | The author's dictionary: every term with defined meaning in the corpus. Ghost ships no fixed vocabulary. |
-| Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | Durable brand truths, written through three authoring lenses: intent, inventory, composition. Altitude lives in prose; narrower truths name their condition. |
+| Prose nodes (`<kind>.<slug>.md`, `<slug>.md`) | Durable brand truths; each body answers why (the stance), with what (the materials), or how it is assembled (the patterns). Altitude lives in prose; narrower truths name their condition. |
 | Node frontmatter | `description` (retrieval payload) and optional `materials` (repo-relative paths/globs or HTTPS URLs for concrete materials the prose governs). |
 | `haunts/` | Optional attached capabilities, each a directory anchored by a thin `haunt.yml`. Never a node source and never generation input. The first haunt is `checks`: review assertions binding to nodes with `references`. |
 

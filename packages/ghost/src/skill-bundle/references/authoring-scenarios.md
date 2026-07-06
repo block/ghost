@@ -86,9 +86,9 @@ and enforced in review, not repeated as the model's main example.
 ## 4. Draft The Nodes
 
 Write the smallest useful set of nodes, each a purpose-coherent prose truth with
-a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Write each body through the intent / inventory / composition
-lenses: the why, the material, and how it is assembled. These are lenses, not
-fields.
+a one-line `description`, named `<kind>.<slug>.md` (or a bare slug when no kind is present). Ask three questions of each body: why (the stance), with what
+(the materials), and how it is assembled (the patterns). These are drafting
+prompts, not fields.
 
 Draft only what the human said or showed. State universal truths plainly; give
 narrower truths a **condition** in the prose — the situation they apply in,

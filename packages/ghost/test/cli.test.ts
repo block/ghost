@@ -1329,7 +1329,7 @@ a deliberate provocation past the fingerprint — surfaced only on request
     for (const path of [
       "SKILL.md",
       "references/capture.md",
-      "references/inventory.md",
+      "references/blocks.md",
       "references/brief.md",
       "references/recall.md",
       "references/wild.md",

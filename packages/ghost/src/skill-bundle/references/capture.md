@@ -181,16 +181,23 @@ action beats completeness...
   `materials`, a substantial fenced example, or a `## Skeleton`. You do not
   declare a separate type.
 
-## Write the body through three lenses
+## What a body answers
 
-Intent / inventory / composition are **authoring lenses**: angles you think
-through as you write a node's prose body. They live in that prose, never as
-frontmatter keys or node types, and a node may lean entirely on one:
+While drafting, ask three questions of every truth — *why* (the stance), *with
+what* (the materials), and *how it is assembled* (the patterns). These are
+drafting prompts, never frontmatter keys, node types, or required sections, and
+a node may answer only one. Each answer lands as a steering dimension the
+machinery already scores:
 
-- **intent**: the why and the stance.
-- **inventory**: the material you have (tokens, components, and pointers to the
-  actual implementation in code).
-- **composition**: how it is assembled (the patterns that make it intentional).
+- **why** lands as stance prose — read first in `ghost pull`, weakest at
+  moving output form on its own; it is the yardstick every later selection is
+  measured against.
+- **with what** lands as `materials` and concreteness — drives pull ordering
+  and `ghost review` matching. See [blocks.md](blocks.md) for authoring
+  material-backed nodes.
+- **how it is assembled** lands as patterns and `## Skeleton` sections — the
+  strongest steering; Skeleton fences are extracted and emitted dead last so
+  generation starts from them.
 
 Keep a node **purpose-coherent**: one truth, any length. Split only when it is
 genuinely a different truth.
@@ -337,8 +344,9 @@ purpose.
 
 ### 5. Write sparse nodes
 
-Add the smallest useful set of nodes, each a purpose-coherent prose truth written
-through the lenses, named `<kind>.<slug>.md` or a bare slug. Draft only what the
+Add the smallest useful set of nodes, each a purpose-coherent prose truth
+answering why, with what, or how it is assembled, named `<kind>.<slug>.md` or a
+bare slug. Draft only what the
 human said or showed. State conditions as situations in the prose. Prefer a few
 high-confidence truths over a noisy catalog. Hold each draft to the node prose
 stances and score it before curation; a node below the gate returns to the

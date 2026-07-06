@@ -64,13 +64,10 @@ patterns, logos, motion files, illustrations, and external asset libraries all
 use the same field. Guidance stays in prose; `materials` only says where the
 material is.
 
-The body is written through three authoring lenses (they guide what to capture,
-they are not fields):
-
-- **intent**: the why and the stance.
-- **inventory**: the materials, and pointers to implementation or assets the
-  agent can inspect.
-- **composition**: the patterns that make the output feel intentional.
+While drafting a body, ask three questions of every truth (drafting prompts,
+never fields): **why** (the stance), **with what** (the materials, and pointers
+to implementation or assets the agent can inspect), and **how it is assembled**
+(the patterns that make the output feel intentional).
 
 Altitude lives in the prose: a universal truth is stated plainly; a narrower
 truth names its **condition**, the situation it applies in, never a filing

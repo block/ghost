@@ -31,7 +31,7 @@ const sections: {
     name: "Fingerprint Authoring",
     href: "/docs/fingerprint-authoring",
     description:
-      "Co-author flat prose nodes through the intent, inventory, and composition lenses, with kinds from the glossary.",
+      "Co-author flat prose nodes that steer generation, with kinds from the glossary.",
     icon: <FileText className="size-8" strokeWidth={1.5} />,
   },
   {
