@@ -1,0 +1,89 @@
+---
+title: Enterprise review integration
+slug: integrations/enterprise-review
+description: How Ghost deterministic findings flow into enterprise PR review systems.
+section: guide
+order: 50
+---
+
+<DocSection title="Ownership Boundary">
+
+Ghost is not a PR bot. Ghost emits deterministic design findings; your review
+orchestrator owns PR discovery, diff-line mapping, status updates, and the
+GitHub posting identity.
+
+A typical enterprise lane is:
+
+```text
+PR opened or updated
+  ↓
+Enterprise code-review routine
+  ↓
+ghost check --package <trusted-package-dir> --diff <patch> --format json
+  ↓
+Ghost emits deterministic findings
+  ↓
+Review orchestrator maps findings to inline PR comments
+  ↓
+The organization's approved review bot posts comments
+```
+
+Repo-local scripts should not call `gh pr comment` directly for Ghost review
+findings when a first-party review system owns comment identity, auditability,
+and branch-protection behavior.
+
+</DocSection>
+
+<DocSection title="Ghost Contract">
+
+An enterprise review lane can invoke Ghost as a deterministic check engine:
+
+```bash
+ghost check --package <trusted-package-dir> --diff <patch> --format json
+```
+
+For environments that do not have `ghost` preinstalled, use a pinned npm
+invocation:
+
+```bash
+npx --yes @anarchitecture/ghost@0.18.1 check \
+  --package <trusted-package-dir> \
+  --diff <patch> \
+  --format json
+```
+
+The JSON shape is stable for consumers:
+
+```json
+{
+  "schema": "ghost.check-report/v1",
+  "result": "fail",
+  "findings": [
+    {
+      "check_id": "no-palette-utilities",
+      "title": "No raw palette utilities",
+      "severity": "high",
+      "path": "src/features/chat/ui/GhostReviewDemo.tsx",
+      "line": 20,
+      "detector": "forbidden-regex",
+      "message": "Added UI code matched a forbidden pattern.",
+      "match": "bg-gray-100",
+      "repair": "Use semantic token utilities."
+    }
+  ]
+}
+```
+
+</DocSection>
+
+<DocSection title="Trust Model">
+
+Use the base branch Ghost package as trusted review policy and the PR diff as
+reviewed input. A PR should not be able to change the policy that evaluates
+itself by default.
+
+For demos where a PR introduces its first Ghost package, make any head-branch
+policy mode explicit in the host review system and clearly label findings as
+demo-grounded. Production review lanes should use the base-branch package.
+
+</DocSection>

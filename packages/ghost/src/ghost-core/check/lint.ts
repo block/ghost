@@ -1,6 +1,7 @@
 import { parseCheckMarkdown } from "./parse.js";
 import { parseSourceRef } from "./source-ref.js";
 import {
+  GHOST_CHECK_DETECTOR_TYPES,
   GHOST_CHECK_SEVERITIES,
   type GhostCheckLintIssue,
   type GhostCheckLintReport,
@@ -93,6 +94,23 @@ export function lintGhostCheck(raw: string): GhostCheckLintReport {
     }
   }
 
+  const detector = frontmatter.detector;
+  if (detector !== undefined) {
+    lintDetector(detector, issues);
+  }
+
+  for (const key of ["id", "title", "message", "repair"]) {
+    const value = frontmatter[key];
+    if (value !== undefined && typeof value !== "string") {
+      issues.push({
+        severity: "error",
+        rule: `check-${key}-invalid`,
+        message: `${key} must be a string when provided`,
+        path: key,
+      });
+    }
+  }
+
   if (body.trim().length === 0) {
     issues.push({
       severity: "error",
@@ -128,4 +146,73 @@ function finalize(issues: GhostCheckLintIssue[]): GhostCheckLintReport {
     warnings: issues.filter((issue) => issue.severity === "warning").length,
     info: issues.filter((issue) => issue.severity === "info").length,
   };
+}
+
+function lintDetector(detector: unknown, issues: GhostCheckLintIssue[]): void {
+  if (!detector || typeof detector !== "object" || Array.isArray(detector)) {
+    issues.push({
+      severity: "error",
+      rule: "check-detector-invalid",
+      message: "detector must be an object with type and pattern",
+      path: "detector",
+    });
+    return;
+  }
+
+  const raw = detector as Record<string, unknown>;
+  if (
+    typeof raw.type !== "string" ||
+    !GHOST_CHECK_DETECTOR_TYPES.includes(raw.type as never)
+  ) {
+    issues.push({
+      severity: "error",
+      rule: "check-detector-type-invalid",
+      message: `detector.type must be one of: ${GHOST_CHECK_DETECTOR_TYPES.join(", ")}`,
+      path: "detector.type",
+    });
+  }
+
+  if (typeof raw.pattern !== "string" || raw.pattern.length === 0) {
+    issues.push({
+      severity: "error",
+      rule: "check-detector-pattern-missing",
+      message: "detector.pattern must be a non-empty regex string",
+      path: "detector.pattern",
+    });
+  } else {
+    try {
+      new RegExp(raw.pattern);
+    } catch (err) {
+      issues.push({
+        severity: "error",
+        rule: "check-detector-pattern-invalid",
+        message: `detector.pattern is not a valid regex: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+        path: "detector.pattern",
+      });
+    }
+  }
+
+  if (raw.flags !== undefined && typeof raw.flags !== "string") {
+    issues.push({
+      severity: "error",
+      rule: "check-detector-flags-invalid",
+      message: "detector.flags must be a string when provided",
+      path: "detector.flags",
+    });
+  }
+
+  if (
+    raw.paths !== undefined &&
+    (!Array.isArray(raw.paths) ||
+      raw.paths.some((path) => typeof path !== "string"))
+  ) {
+    issues.push({
+      severity: "error",
+      rule: "check-detector-paths-invalid",
+      message: "detector.paths must be a string array when provided",
+      path: "detector.paths",
+    });
+  }
 }

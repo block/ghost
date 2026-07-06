@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cac } from "cac";
+import { registerCheckCommand } from "./commands/check-command.js";
 import { formatGhostHelp } from "./commands/command-discovery.js";
 import { registerFingerprintCommands } from "./commands/fingerprint-commands.js";
 import { registerGatherCommand } from "./commands/gather-command.js";
@@ -21,6 +22,7 @@ export function buildCli(): ReturnType<typeof cac> {
   const cli = cac("ghost");
 
   registerFingerprintCommands(cli);
+  registerCheckCommand(cli);
   registerGatherCommand(cli);
   registerPullCommand(cli);
   registerPulseCommand(cli);

@@ -1,8 +1,7 @@
 /**
  * Public surface for `ghost.check/v1` — markdown + frontmatter checks an agent
- * evaluates (Ghost never runs them). Every check is offered to the reviewer;
- * the agent judges relevance against the diff and the grounded prose. A check's
- * optional `source:` names the fingerprint prose it enforces.
+ * evaluates. Detector-backed checks can also be run deterministically by
+ * `ghost check`; checks without detectors remain agent-evaluated in review.
  */
 
 export { lintGhostCheck } from "./lint.js";
@@ -14,8 +13,11 @@ export {
   sliceNodeSection,
 } from "./source-ref.js";
 export {
+  GHOST_CHECK_DETECTOR_TYPES,
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,
+  type GhostCheckDetector,
+  type GhostCheckDetectorType,
   type GhostCheckDocument,
   type GhostCheckFrontmatter,
   type GhostCheckLintIssue,

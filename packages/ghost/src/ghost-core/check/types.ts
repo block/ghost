@@ -1,5 +1,20 @@
 export const GHOST_CHECK_SCHEMA = "ghost.check/v1" as const;
 
+export const GHOST_CHECK_DETECTOR_TYPES = [
+  "forbidden-regex",
+  "required-regex",
+] as const;
+export type GhostCheckDetectorType =
+  (typeof GHOST_CHECK_DETECTOR_TYPES)[number];
+
+export interface GhostCheckDetector {
+  type: GhostCheckDetectorType;
+  pattern: string;
+  flags?: string;
+  /** Optional glob-like path filters within the reviewed diff. */
+  paths?: string[];
+}
+
 /** Severity vocabulary, matching the established agent-check format. */
 export const GHOST_CHECK_SEVERITIES = ["high", "medium", "low"] as const;
 export type GhostCheckMarkdownSeverity =
@@ -27,6 +42,16 @@ export interface GhostCheckFrontmatter {
   references?: string[];
   /** Deprecated single-reference alias retained for artifact-level linting. */
   source?: string;
+  /** Optional stable id for deterministic check reports. Defaults to name slug. */
+  id?: string;
+  /** Optional PR-comment title. Defaults to description, then name. */
+  title?: string;
+  /** Optional message for deterministic check reports. Defaults to description. */
+  message?: string;
+  /** Optional repair guidance surfaced with deterministic findings. */
+  repair?: string;
+  /** Optional deterministic detector. If omitted, Ghost routes the check but does not run it. */
+  detector?: GhostCheckDetector;
 }
 
 export interface GhostCheckDocument {

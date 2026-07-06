@@ -128,6 +128,7 @@ describe("ghost CLI", () => {
       "init",
       "validate",
       "gather",
+      "check",
       "pull",
       "pulse",
       "review",
@@ -153,6 +154,7 @@ describe("ghost CLI", () => {
       "validate [file]",
       "init",
       "gather [...ask]",
+      "check",
       "pull <...ids>",
       "pulse",
       "review",
@@ -179,6 +181,7 @@ describe("ghost CLI", () => {
       (command: { name: string }) => command.name,
     );
     expect(names).toContain("gather");
+    expect(names).toContain("check");
     expect(names).toContain("pulse");
     expect(names).toContain("review");
     expect(names).toContain("haunt");
@@ -828,6 +831,113 @@ describe("ghost CLI", () => {
     expect(Object.keys(byId)).toContain("email/marketing/index");
   });
 
+  it("check emits deterministic JSON findings for detector-backed checks", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(join(ghost, "haunts", "checks"), { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: c-check\n",
+    );
+    await writeFile(join(ghost, "glossary.md"), "---\n---\n\n# Glossary\n");
+    await writeFile(join(ghost, "index.md"), "---\n---\n\nCore.\n");
+    await writeFile(
+      join(ghost, "haunts", "checks", "haunt.yml"),
+      "schema: ghost.haunt/v1\nid: checks\n",
+    );
+    await writeFile(
+      join(ghost, "haunts", "checks", "palette.md"),
+      `---
+name: palette utilities
+description: No raw palette utilities.
+severity: high
+references: [index]
+title: No raw palette utilities
+message: Added UI code matched a forbidden pattern.
+repair: Use semantic token utilities.
+detector:
+  type: forbidden-regex
+  pattern: 'bg-gray-100'
+  paths: ['src/**/*.tsx']
+---
+Flag raw palette utilities.
+`,
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch(
+        "src/features/chat/ui/GhostReviewDemo.tsx",
+        '<div className="bg-gray-100" />',
+      ),
+    );
+
+    const result = await runCli(
+      ["check", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(1);
+    const report = JSON.parse(result.stdout);
+    expect(report.schema).toBe("ghost.check-report/v1");
+    expect(report.result).toBe("fail");
+    expect(report.findings[0]).toMatchObject({
+      check_id: "palette",
+      title: "No raw palette utilities",
+      severity: "high",
+      path: "src/features/chat/ui/GhostReviewDemo.tsx",
+      line: 1,
+      detector: "forbidden-regex",
+      message: "Added UI code matched a forbidden pattern.",
+      match: "bg-gray-100",
+      repair: "Use semantic token utilities.",
+    });
+  });
+
+  it("check passes when required regex is present in each changed file", async () => {
+    const ghost = join(dir, ".ghost");
+    await mkdir(join(ghost, "haunts", "checks"), { recursive: true });
+    await writeFile(
+      join(ghost, "manifest.yml"),
+      "schema: ghost.fingerprint-package/v1\nid: c-required\n",
+    );
+    await writeFile(join(ghost, "glossary.md"), "---\n---\n\n# Glossary\n");
+    await writeFile(join(ghost, "index.md"), "---\n---\n\nCore.\n");
+    await writeFile(
+      join(ghost, "haunts", "checks", "haunt.yml"),
+      "schema: ghost.haunt/v1\nid: checks\n",
+    );
+    await writeFile(
+      join(ghost, "haunts", "checks", "token.md"),
+      `---
+name: token use
+description: Require semantic tokens.
+severity: medium
+references: [index]
+detector:
+  type: required-regex
+  pattern: 'bg-accent'
+  paths: ['src/**/*.tsx']
+---
+Require semantic token utilities.
+`,
+    );
+    await writeFile(
+      join(dir, "change.patch"),
+      webPatch("src/app/page.tsx", '<div className="bg-accent" />'),
+    );
+
+    const result = await runCli(
+      ["check", "--diff", "change.patch", "--format", "json"],
+      dir,
+    );
+
+    expect(result.code).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      schema: "ghost.check-report/v1",
+      result: "pass",
+      findings: [],
+    });
+  });
+
   it("review matches diff files to node materials and offers checks", async () => {
     await runCli(["init", "--with", "checks"], dir);
     await writeFile(
@@ -1269,5 +1379,15 @@ Native Swift app.
 ## Conventions
 
 Use feature scopes.
+`;
+}
+
+function webPatch(path: string, added: string): string {
+  return `diff --git a/${path} b/${path}
+index 1111111..2222222 100644
+--- a/${path}
++++ b/${path}
+@@ -0,0 +1 @@
++${added}
 `;
 }

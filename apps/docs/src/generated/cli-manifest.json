@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T05:32:38.719Z",
+  "generatedAt": "2026-07-06T18:55:13.135Z",
   "tools": [
     {
       "tool": "ghost",
@@ -71,6 +71,50 @@
               "name": "format",
               "description": "Output format: cli or json",
               "default": "cli",
+              "takesValue": true,
+              "negated": false
+            }
+          ]
+        },
+        {
+          "tool": "ghost",
+          "name": "check",
+          "rawName": "check",
+          "description": "Run deterministic ghost.check/v1 gates with detectors against a git diff.",
+          "group": "core",
+          "defaultHelp": true,
+          "compactName": "check",
+          "summary": "Run deterministic detector-backed checks against a diff.",
+          "options": [
+            {
+              "rawName": "--base <ref>",
+              "name": "base",
+              "description": "Git ref to diff against (default: HEAD)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--diff <patch>",
+              "name": "diff",
+              "description": "Unified diff file to check instead of running git diff. Use '-' for stdin.",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--package <dir>",
+              "name": "package",
+              "description": "Use this fingerprint package directory (default: ./.ghost)",
+              "default": null,
+              "takesValue": true,
+              "negated": false
+            },
+            {
+              "rawName": "--format <fmt>",
+              "name": "format",
+              "description": "Output format: markdown or json",
+              "default": "markdown",
               "takesValue": true,
               "negated": false
             }

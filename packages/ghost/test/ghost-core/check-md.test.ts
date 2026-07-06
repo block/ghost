@@ -13,6 +13,13 @@ tools: [Read, Grep]
 turn-limit: 20
 references:
   - principle.trust
+title: Use design tokens
+message: Added UI code matched a forbidden pattern.
+repair: Replace raw values with semantic tokens.
+detector:
+  type: forbidden-regex
+  pattern: '#[0-9a-fA-F]{3,8}'
+  paths: ['**/*.tsx']
 ---
 
 ## Purpose
@@ -112,13 +119,17 @@ describe("loadGhostCheck", () => {
       severity: "high",
       tools: ["Read", "Grep"],
       turn_limit: 20,
+      references: ["principle.trust"],
+      title: "Use design tokens",
+      message: "Added UI code matched a forbidden pattern.",
+      repair: "Replace raw values with semantic tokens.",
+      detector: {
+        type: "forbidden-regex",
+        pattern: "#[0-9a-fA-F]{3,8}",
+        paths: ["**/*.tsx"],
+      },
     });
     expect(doc.body).toContain("Flag hex literals");
-  });
-
-  it("carries references through", () => {
-    const doc = loadGhostCheck(VALID);
-    expect(doc.frontmatter.references).toEqual(["principle.trust"]);
   });
 
   it("carries an optional source pointer through", () => {

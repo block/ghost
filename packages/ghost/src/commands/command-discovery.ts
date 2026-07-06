@@ -141,6 +141,13 @@ const COMMAND_DISCOVERY = [
     summary: "Summarize local gather/pull events from .ghost/.events.",
   },
   {
+    name: "check",
+    group: "core",
+    defaultHelp: true,
+    compactName: "check",
+    summary: "Run deterministic detector-backed checks against a diff.",
+  },
+  {
     name: "review",
     group: "core",
     defaultHelp: true,

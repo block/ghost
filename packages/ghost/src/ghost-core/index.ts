@@ -13,8 +13,11 @@ export {
 } from "./catalog/index.js";
 // --- Check (ghost.check/v1) — markdown checks, agent-evaluated ---
 export {
+  GHOST_CHECK_DETECTOR_TYPES,
   GHOST_CHECK_SCHEMA,
   GHOST_CHECK_SEVERITIES,
+  type GhostCheckDetector,
+  type GhostCheckDetectorType,
   type GhostCheckDocument,
   type GhostCheckFrontmatter,
   type GhostCheckLintIssue,

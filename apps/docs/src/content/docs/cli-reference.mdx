@@ -141,6 +141,46 @@ A mixed pull partially succeeds: known ids are emitted, unknown ids warn with cl
 
 </DocSection>
 
+<DocSection title="Govern Changes">
+
+### Run deterministic checks: `check`
+
+Run detector-backed `ghost.check/v1` checks against a unified diff and emit a
+stable report. Checks without `detector:` remain agent-evaluated and are
+surfaced by `ghost review`, not run by `ghost check`.
+
+<CliHelp tool="ghost" command="check" hideDescription />
+
+```bash
+ghost check --diff change.patch --format json
+ghost check --base origin/main --format json
+```
+
+The JSON report is intended for review orchestrators that own PR posting
+identity:
+
+```json
+{
+  "schema": "ghost.check-report/v1",
+  "result": "fail",
+  "findings": [
+    {
+      "check_id": "no-palette-utilities",
+      "title": "No raw palette utilities",
+      "severity": "high",
+      "path": "src/features/chat/ui/GhostReviewDemo.tsx",
+      "line": 20,
+      "detector": "forbidden-regex",
+      "message": "Added UI code matched a forbidden pattern.",
+      "match": "bg-gray-100",
+      "repair": "Use semantic token utilities."
+    }
+  ]
+}
+```
+
+</DocSection>
+
 <DocSection title="Skill And Inspection">
 
 ### Install the skill: `skill`
