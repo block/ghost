@@ -1,5 +1,252 @@
 # @design-intelligence/ghost
 
+## 0.20.0
+
+### Minor Changes
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost.binding/v1` (`.ghost.bind.yml`) and the path road: a repo path
+  resolves to the surface that owns it (directory-default binding or explicit
+  declaration), and `ghost gather --path <file>` composes that surface's slice.
+  The contract still carries no paths — bindings own all path matching.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost checks` and `ghost review` now route by catalog references and ground from the selected prose packet: grounding is the surface's gathered nodes by provenance (own / ancestor / edge), replacing the typed why/what (principles, contracts, patterns, exemplars) split — the why and what now live in each node's prose. `ghost checks` gains `--as <incarnation>` to filter grounding to one output form. Exemplar `path:` is dropped from grounding.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reduce the fingerprint collection to a flat catalog: remove the `checks`, `review`, and `migrate` commands, drop node `relates` edges and traversal, and reduce `gather` to emitting the menu the agent selects from.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove check surface routing: every check is now offered to the reviewer and the agent judges relevance, so the check `surface:` field, `selectChecksForSurfaces`, `RoutedCheck`, and `CheckRelevance` are gone. Checks bind to the fingerprint through an optional `source:` pointer (`node > Heading`) that `review` surfaces so a finding can cite the prose it enforces.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost init --template composition` scaffolds a composition-steering starter: the default files plus an invariants floor (`principle.composition`), a worked bound/open/refines pattern node, a glossary whose `pattern` and `principle` kinds carry the binding-depth convention, and an index that teaches the ladder — patterns when they match, principles as the floor when they don't, narrowing-only between them.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds opt-in wild consumption posture for glossary kinds and gather/pull/pulse observability.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Recompose `gather` on a corridor + hub-and-spoke model and fix a sibling-surface
+  context leak. A surface's slice is now: a **spine** of full-body nodes from every
+  file on the corridor (the package root down to the surface's own folder — folders
+  are walls, so sibling folders never leak in), the **edges** reachable in one hop
+  from any spine node's `relates` (so a broad rule authored once high in the tree —
+  e.g. `relates: { to: arcade }` on `features/` — reaches every descendant), and a
+  set of **spokes**: pointer entries (id + description) for the surface's own
+  descendants and any edge hub's subtree, which the agent pulls on demand. The
+  `CatalogSlice` JSON gains a `spokes` array; catalog nodes carry their file `folder`.
+  Grounding for `checks`/`review` remains the full-body spine + edges.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add cross-package inheritance via `extends`. A package's `manifest.yml` can declare `extends: { <id>: <dir> }`, mapping another contract's identity to where it lives. Node refs then reference inherited context by identity, never path — `relates: [{ to: brand:core/trust }]` (the `<package-id>:<path>` form replaces the earlier npm-style `<pkg>#<id>` ref grammar). Inherited nodes load read-only and flow into gather and validate like local ones. `ghost validate` resolves cross-package refs and reports unresolved refs, packages not declared in `extends`, identity mismatches, and cross-package cycles. This delivers the shared-brand story: one brand contract extended by many products, without copy-paste or merge. One level of `extends` in v1 (no transitive); location is an explicit relative dir (identity-based discovery is a future upgrade that keeps refs unchanged).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make `description` a first-class node field — the retrieval payload an agent matches a task against, the way a tool is selected by name + description. `ghost gather` with no argument now lists nodes by id + description (the catalog), built from the catalog rather than a separate surface menu. Node frontmatter is now passthrough: free-form descriptive keys (`audience`, `stage`, …) are allowed and ride along untouched. The surface composition-edge vocabulary (`composes`/`governed-by`) is removed — lateral composition lives on node `relates`.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Collapse the on-disk node model into the directory tree: the layout supplies the
+  catalog. A node's id is its file path (`marketing/email.md` → `marketing/email`)
+  and its parent is its containing directory; a surface is just a directory, and a
+  directory's own prose lives in its `index.md` (the package-root `index.md` is
+  the implicit `core` node). The `surfaces.yml` spine file and the `nodes/`
+  directory are removed, along with the node frontmatter `id` and `under` fields —
+  identity and containment now come from where a file sits, never from frontmatter
+  or a declared spine. Node frontmatter carries descriptive properties only
+  (`description`, `relates`, `incarnation`, plus passthrough keys); `relates` and
+  cross-package `extends` refs are path ids (`core/trust`, `brand:core/trust`).
+  `ghost init` scaffolds `manifest.yml` + a core `index.md`; `ghost migrate`
+  writes a directory tree; any `*.md` outside the reserved `checks/` subtree lints
+  as a node. Moving a node is a rename — `ghost validate` reports `relates` that no
+  longer resolve.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Export `parseSourceRef` and `sliceNodeSection` from the core entrypoint: the shared parser for a check's `source:` reference grammar (`node-id > Heading`) and a helper to slice the referenced section out of a node body.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Bindings can reference an external contract: a `.ghost.bind.yml` `contract:` now
+  accepts an npm package name (`@scope/brand`) in addition to `.` (in-repo),
+  resolved from `node_modules`. `ghost verify` checks the external contract
+  resolves and that each bound surface exists in it. External fingerprint loading
+  for grounding remains a follow-up.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the facet model — the catalog is now the only fingerprint model. The `intent.yml`/`inventory.yml`/`composition.yml` schemas, the `GhostFingerprintDocument`, the facet→node load-time projection, and the dormant facet slice/grounding are deleted; the loader assembles the package's prose nodes directly into the catalog. `ghost lint` and `ghost verify` are replaced by one `ghost validate` verb (artifact shape pass + catalog pass); `ghost emit` is removed. `ghost scan` now reports node/surface contribution instead of facet contribution. Legacy facet packages no longer load directly — `ghost validate`/load fail with guidance to run `ghost migrate`. Structured exemplar-path and evidence verification is dropped (evidence lives in node prose, per the prose-node model).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add fingerprint grounding to `ghost checks`: for each touched surface, emit the
+  _why_ (principles and experience contracts) and the _what good looks like_
+  (patterns and exemplars with paths), drawn from that surface's slice and
+  inherited from its ancestors. A flagged check can now cite the design intent it
+  serves and point at an exemplar. Use `--no-grounding` for relevance only.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost gather <surface>`: compose a surface's context slice (its own placed
+  nodes, cascaded ancestors, and one-hop typed-edge contributions) with
+  provenance, or return the surface menu when no surface is named.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost gather` now surfaces the glossary's kind purposes as a menu legend, in both markdown and JSON output, so the menu is self-sufficient selection context.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost gather` now composes its context packet from selected fingerprint catalog nodes and emits nodes-by-provenance prose (own / ancestor / edge), and gains `--as <incarnation>` to filter the packet to one output form (e.g. email, billboard, voice) while always keeping essence (untagged) nodes.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Return the node menu plus closest-id "did you mean" suggestions when `ghost
+gather` is given an inexact query, instead of a separate ranked-candidate
+  search — the agent re-picks by description from the same menu the no-argument
+  form prints. `gather`, `checks`, and `review` all emit the stable
+  `ERR_UNKNOWN_SURFACE` code with closest-id suggestions for a node or surface
+  that is not in the package.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the `gather` slice vocabulary to plain language. The JSON `slice.spokes`
+  field is now `slice.pointers`, and the pointer `kind` `"edge-hub"` is now
+  `"related"` with its origin in a `from` field (was `hub`). Docs and the skill
+  bundle drop the spine/corridor/hub-and-spoke metaphors; `edge` provenance is
+  unchanged.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost.check/v1`: markdown + frontmatter checks (`name`, `description`,
+  `severity`, optional `tools` / `turn-limit`, plus a Ghost `surface:` placement),
+  parsed and linted but never executed by Ghost. Markdown files under a `checks/`
+  directory lint as checks. This mirrors the established agent-check format so
+  Ghost can route and ground checks without owning a check engine.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add local gather/pull event tracing and a pulse report for fingerprint tuning.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `goose` as a first-class `ghost skill install --agent` destination, installing to `~/.agents/skills` (Goose's canonical global skills directory) and auto-detecting Goose installs.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Ghost validates material locator liveness and inlines small local materials during pull.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost migrate`: transform a legacy `.ghost/` package onto the directory-tree
+  node model — derive surface directories from old `topology.scopes`, place
+  single-scope nodes inside them, and report (never guess) any node it cannot place
+  unambiguously.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost init` now scaffolds a node package (`manifest.yml` + a core `index.md` node) via a template registry (`--template <name>`, `default` for now) instead of emitting `intent.yml`/`inventory.yml`/`composition.yml`; the `--reference` flag is removed. `ghost migrate` now performs a one-way conversion of legacy/facet packages into a directory tree of nodes (the facet→node projection becomes the writer) and removes the old facet files. The authoring skill (`capture.md`, `SKILL.md`) teaches node authoring with intent/inventory/composition as authoring lenses rather than facet files.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the path→surface binding (`ghost.binding/v1`, `.ghost.bind.yml`) and all nesting (fingerprint stacks, cross-package discovery): one contract per package, surfaces are the only locality. `checks` and `review` now take agent-stated `--surface <ids>` instead of resolving surfaces from a diff; `gather` takes only a surface or returns the menu. Removed `gather --path`, `checks --diff`, `lint --all`, `verify --all`, `scan --include-nested`, `emit --path`, `init --scope`, and `init --monorepo`. The agent names the touched surfaces; Ghost no longer infers intent from repo location.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add `ghost pull <id> [<id>…]`: emit selected nodes' prose bodies and record selections in the `.ghost/.events` events tape for fingerprint tuning.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds `ghost export` to package fingerprints as portable brand artifacts with material locator audits.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove `compare`, `drift`, `ack`, `track`, and `diverge` commands and the direct `fingerprint.md` machinery (parser, writer, semantic diff, decisions/dimensions, embeddings, perceptual prior). These rested on a quantified visual-design-system model (fixed dimensions + decision embeddings) that the catalog reframe abandoned; the concepts are parked for a later rethink (see docs/ideas/compare-drift-fleet-rethink.md). The `./compare` and `./drift` package subpaths and the root `compare`/`drift` exports are removed. `ghost lint` now validates `.ghost/` packages and node/surface/check artifacts only (direct `fingerprint.md` is no longer linted); a `*.md` node file lints as a `ghost.node/v1` node.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove cross-package `extends` and inherited nodes. A Ghost package is a single
+  self-contained contract: its `.ghost/` directory tree is the whole fingerprint.
+  The manifest no longer accepts `extends`, `relates` targets must be local path
+  ids (the `<package>:<path>` colon ref is gone), and the catalog drops the
+  `origin` / inherited-node distinction. Use `ghost --package <dir>` to address a
+  package; there is no shared-brand inheritance in this version.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Removes the optional-capability subsystem and its per-capability manifest schema. Checks are now a core capability in a flat `.ghost/checks/` directory: scaffold with `ghost checks init` (or `ghost init --with checks`), and `ghost export --no-checks` replaces the old exclusion flag. `ghost validate` flags packages still using the old nested checks location.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the `incarnation` node field and the `--as` gather/checks flag. Ghost
+  fingerprints a single-medium product surface; the cross-medium projection axis
+  (essence vs. incarnation, the portability dial) is dropped rather than shipped
+  unused. Slices no longer carry an `incarnation` field and `ResolveCatalogSliceOptions`
+  is removed.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the absorbed and dead commands: `relay`, `stack`, `survey`, `diff`, and
+  `describe`, along with the relay-only context modules and the `./relay` package
+  export. Their intent now lives in the surface model — `gather` for context,
+  `checks` for diff-routed governance, and bindings for path resolution. The skill
+  bundle teaches the surface workflow.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the `ghost scan` and `ghost signals` commands and the deterministic repo-inventory subsystem; the host agent does its own repo reconnaissance and `validate`/`gather` cover package inspection.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Collapse to one check format. Remove `ghost.validate/v1`, the `validate.yml`
+  facet, the `ghost check` deterministic gate, and the `./govern` export. Ghost
+  now has a single check format — markdown `ghost.check/v1`, routed by surface
+  (`ghost checks`) and grounded by the fingerprint. `parseUnifiedDiff` moved to a
+  neutral module; the `drift` stance ledger is unchanged.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Standardize the internal collection vocabulary on "catalog" to reflect the flat node set: public exports are `GhostCatalog`, `GhostCatalogNode`, `buildCatalogMenu`, `CatalogMenuEntry`, and `assembleCatalog`, and the loaded package exposes a `catalog` field.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the public package from `@anarchitecture/ghost-fingerprint` to `@design-intelligence/ghost`. The `ghost` and `ghost-fingerprint` bins, all subpath exports (`/core`, `/fingerprint`, `/scan`, `/cli`), and the `.ghost/` package format are unchanged; only the npm name moves. Release tags and tarballs now use the `design-intelligence-ghost` prefix.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the npm scope from `@decentralized-design` to `@design-intelligence`; the package is now `@design-intelligence/ghost` and release tarballs/tags use the `design-intelligence-ghost` prefix.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rename the published package from `@design-intelligence/ghost` to
+  `@design-intelligence/ghost`. Ghost is now a family of packages —
+  `ghost-fingerprint` (the fingerprint and its CLI), `ghost-adherence` (the
+  code-anchored adherence bridge), and `ghost-vessel` (the reference body) —
+  and the package name now says which part it is. The `ghost` bin, all export
+  subpaths (`/fingerprint`, `/scan`, `/core`, `/cli`), and the `.ghost/`
+  on-disk format are unchanged; only the install name moves. Existing installs
+  keep working from the old name until it is deprecated on npm with a pointer
+  forward.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Collapse the separate adherence package into the fingerprint: nodes carry optional `materials` locators, checks become an opt-in capability of the fingerprint package, and `ghost review` assembles advisory diff packets from material-backed nodes and checks. The external dispatch to a second binary is removed.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Retire the `child-wins-by-id` fingerprint merge (Leak E): nested `.ghost/`
+  packages now bind paths to the root contract's surfaces instead of merging their
+  own facets in. A path resolves to the single root contract, used as-is — a child
+  package can no longer silently override or disable an inherited rule or check.
+  The `stack` / `check` / `review` outputs expose `contract` instead of `merged`,
+  and drop the `provenance.merge` field.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rebuild `ghost review` on the surface rails: it now resolves the diff's touched
+  surfaces (via bindings), selects the markdown checks governing them, and grounds
+  each in the fingerprint slice — instead of emitting `validate.yml` and a
+  path-selection context packet. The advisory-review JSON replaces
+  `fingerprint` / `context_markdown` / `checks` / `stacks` with `touched_surfaces`,
+  `routed_checks`, and `grounding`. `ghost check` remains the deterministic gate.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add a `ghost manifest --format json` command that emits a self-describing manifest of every command and flag, so a host agent can discover the CLI in one call instead of scraping `--help`. The terminal help, docs-site manifest, and this command all derive from one shared `buildCliManifest()` (also exported from `@design-intelligence/ghost/cli`).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make the steering starter the default `ghost init` scaffold, move the old small scaffold to `--template minimal`, and mark starter steering content as demo guidance to replace.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds steering-ordered pulls, derived concreteness coverage, guard posture review routing, check probes, inspect-pointers for binary materials, and a worked steering starter.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Adds a steering-ready fingerprint template and skill guidance for authoring, briefing, and auditing agent-readable brand steering.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Replace topology/applies_to/surface_type/scope coordinates with a surface
+  coordinate space and a single surface placement per node. Remove the
+  `ghost.map/v1` (`map.md`) coordinate and routing system; checks now route by
+  `applies_to.paths`.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add markdown checks (`ghost.check/v1`) in a package's `checks/` directory.
+  `ghost checks --surface <ids>` grounds the named surfaces and offers every
+  check; the host agent judges which apply. A check binds to the prose it enforces
+  through an optional `source:` pointer (a node id with an optional `> Heading`),
+  not by surface routing. Ghost selects, grounds, and emits checks; it never runs
+  them.
+
+### Patch Changes
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reframe fingerprint authoring as elicitation in the skill bundle and docs: remove the repo-scan-first auto-draft mode, rebuild the authoring scenarios around what the human says and shows, and point repo-derived reality at the adherence inventory.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add node prose stances and a scored drafting gate to the capture recipe so authoring agents hold draft nodes to anti-slop standards before human curation.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove redundant containment bookkeeping in favor of path-derived ids: parent and ancestor facts are derived from node paths, and the redundant parent/children maps are removed.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Remove the dormant context-selection machinery (`buildContextEntrypoint`, `buildSelectedContext`, and selection-reasons) that was inert since the coordinate removal and orphaned once `review` moved onto the surface rails. Internal cleanup; no public surface change.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Align docs and the skill bundle with the prose-bound check model: checks are no
+  longer routed by surface, every check is offered and the agent judges which
+  apply, and a check binds to prose via its optional `source:` pointer. Fix
+  the `ghost scan` next-step hint and skill recipes that referenced a nonexistent
+  `ghost check` command.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Refresh the README and docs site onto the current command set (drop the removed
+  `lint`/`verify`/`relay`/`describe`/`survey`/`emit` commands).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Drop two unused runtime dependencies (`jiti`, `tinyglobby`) — neither was imported anywhere in source. Ghost now ships three runtime deps (`cac`, `yaml`, `zod`), shrinking the install footprint by ~1.8 MB. Also fix the build to clear `tsconfig.tsbuildinfo` so `dist/` no longer retains deleted modules from incremental builds (the packed package drops from ~1.9 MB / 777 files to ~397 KB / 248 files).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Print a one-time stderr notice when the local `.ghost/.events` tape is first created, so gather/pull logging is never a surprise.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make CLI exit codes consistent so an agent can branch on them: unexpected
+  errors exit `1`, caller mistakes (bad flags, invalid environment, refused
+  overwrites) exit `2` via a typed `UsageError`, and a missing package now exits
+  `2` with a `ghost init` hint instead of leaking a raw filesystem error.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Lead fingerprint authoring with a concrete first move — capture the one surface whose review feedback keeps repeating — instead of a scenario-classification step.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add an inventory-lens authoring reference to the skill bundle.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Rewrite the package README onto the flat-corpus model: plain-language framing, current CLI commands only, and removal of stale relation-era shapes (`relates`, surface directories, `checks/` at the fingerprint root, `ghost checks`/`ghost review`/`ghost migrate`).
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Retire the "three lenses" vocabulary: authoring docs now speak the same steering dimensions the CLI scores (stance, concreteness, patterns), and the inventory recipe becomes references/blocks.md with a neutral block kind in its examples.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Add a thesis section to the README: agents changed the unit of design work, the work that compounds is architectural, and Ghost is the artifact those decisions live in.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Clean em dashes out of the shipped skill bundle and package README prose,
+  rewriting them as plain sentences, colons, or parentheticals.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Make the glossary the authoritative source of kind semantics in the skill recipes, teach sample and counter-exemplar capture, add an `anti-goal` starter kind, and establish the `index` node as the always-pulled carrier of a fingerprint's non-negotiables and silence posture.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reorder the skill bundle to lead with the workflow loop and CLI verbs, moving the node-catalog model into a later "How It Works" section.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Teach the authoring lenses and `incarnation`/essence distinction from a shown node example instead of negative definitions ("not fields", "essence is untagged").
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Reframe the package README and description around the fingerprint as a portable brand steering packet.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - Update `ghost validate --help` to describe what validation actually checks today: manifest shape, node validity, material locators, check references, and glossary kind prefixes.
+
+- [#205](https://github.com/block/ghost/pull/205) [`0f94bb9`](https://github.com/block/ghost/commit/0f94bb93746e9940952e2367127dcde58e7e54cd) Thanks [@nahiyankhan](https://github.com/nahiyankhan)! - `ghost validate` now reports a node that fails its own schema instead of silently dropping it from the catalog.
+
 ## 0.18.1
 
 ### Patch Changes
